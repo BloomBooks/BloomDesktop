@@ -1999,7 +1999,7 @@ namespace BloomTests.Book
             );
 
             //SUT
-            storage.MigrateToMediaLevel1ShrinkLargeImages(); // does nothing in this situation, but should still bump level
+            storage.MigrateToMediaLevel1ShrinkLargeImages(new NullProgress()); // does nothing in this situation, but should still bump level
             var mediaLevel = storage.Dom.GetMetaValue("mediaMaintenanceLevel", "0");
             Assert.That(mediaLevel, Is.EqualTo("1"));
             storage.MigrateToLevel2RemoveTransparentComicalSvgs();
@@ -2129,7 +2129,7 @@ These are similar but already have game-theme classes
             );
 
             //SUT
-            storage.MigrateToMediaLevel1ShrinkLargeImages();
+            storage.MigrateToMediaLevel1ShrinkLargeImages(new NullProgress());
             storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             storage.MigrateToLevel3PutImgFirst();
 
@@ -2167,7 +2167,7 @@ These are similar but already have game-theme classes
             );
 
             //SUT
-            storage.MigrateToMediaLevel1ShrinkLargeImages();
+            storage.MigrateToMediaLevel1ShrinkLargeImages(new NullProgress());
             storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             storage.MigrateToLevel3PutImgFirst();
 
@@ -2333,7 +2333,7 @@ These are similar but already have game-theme classes
             );
 
             //SUT
-            storage.MigrateToMediaLevel1ShrinkLargeImages();
+            storage.MigrateToMediaLevel1ShrinkLargeImages(new NullProgress());
             storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             storage.MigrateToLevel3PutImgFirst();
 
@@ -2615,7 +2615,7 @@ These are similar but already have game-theme classes
             );
 
             //SUT
-            storage.MigrateToMediaLevel1ShrinkLargeImages();
+            storage.MigrateToMediaLevel1ShrinkLargeImages(new NullProgress());
             storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             storage.MigrateToLevel3PutImgFirst();
 

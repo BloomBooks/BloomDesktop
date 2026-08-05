@@ -88,13 +88,12 @@ namespace Bloom.Book
             // BookStorage.MigrateToMediaLevel1ShrinkLargeImages, won't help here: the bridge HTML
             // already carries a modern maintenance level, so BringBookUpToDate below treats that
             // migration as already done and skips it. So we do the shrink ourselves, unconditionally
-            // (not gated by mediaMaintenanceLevel), and it must come BEFORE BringBookUpToDate: (a) on
-            // a book old enough that the migration WOULD run, it normally finds nothing left to
-            // shrink, so its modal progress dialog is not created on this background thread (where a
-            // WinForms dialog is illegal, BL-16646) -- "normally" because a GraphicsMagick failure can
-            // leave an image oversized, in which case that narrow old-book case can still hit the
-            // dialog; (b) the off-screen per-page fix-up then measures and lays out against the
-            // final, already-shrunk images.
+            // (not gated by mediaMaintenanceLevel), and it must come BEFORE BringBookUpToDate so that
+            // the off-screen per-page fix-up measures and lays out against the final, already-shrunk
+            // images. (This used to have a second reason -- keeping the migration from creating its
+            // modal progress dialog on this background thread, which WinForms forbids. BL-16646
+            // removed that dialog in favor of reporting through the caller's IProgress, so only the
+            // layout reason remains.)
             if (ImageUtils.NeedToShrinkImages(book.FolderPath))
             {
                 Log("shrinking oversized images in the book folder");

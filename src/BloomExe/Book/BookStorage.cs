@@ -107,7 +107,7 @@ namespace Bloom.Book
         void CaptureInitialStateForMigration();
         void RestoreStuffBeforeMigration();
         void MigrateMaintenanceLevels();
-        void MigrateToMediaLevel1ShrinkLargeImages();
+        void MigrateToMediaLevel1ShrinkLargeImages(IProgress progress);
         void MigrateToLevel2RemoveTransparentComicalSvgs();
         void MigrateToLevel3PutImgFirst();
 
@@ -4047,7 +4047,7 @@ namespace Bloom.Book
         /// memory. However, it is still helpful for performance and reducing published file sizes.
         /// Does nothing if mediaMaintenanceLevel indicates it has already been done.
         /// </summary>
-        public void MigrateToMediaLevel1ShrinkLargeImages()
+        public void MigrateToMediaLevel1ShrinkLargeImages(IProgress progress)
         {
             var levelString = Dom.GetMetaValue("mediaMaintenanceLevel", "0");
             if (!int.TryParse(levelString, out int level))
@@ -4073,62 +4073,14 @@ namespace Bloom.Book
                 // This update can be very slow, so encourage the user that something is happening.
                 // NO images should have transparency removed.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8846.
 
-                if (Program.RunningUnitTests)
-                {
-                    // TeamCity enforces not showing modal dialogs during unit tests on Windows 10.
-                    ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                        FolderPath,
-                        new List<string>(),
-                        new NullProgress()
-                    );
-                }
-                else
-                {
-                    // We may get invoked from a background thread, so we need to make sure we are on the UI thread
-                    // before showing a dialog.
-                    var shell = Shell.GetShellOrOtherOpenForm();
-                    if (shell == null)
-                    {
-                        // This shouldn't happen in normal operation, but just in case...
-                        ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                            FolderPath,
-                            new List<string>(),
-                            new NullProgress()
-                        );
-                    }
-                    else if (shell.InvokeRequired)
-                    {
-                        shell.Invoke(UpdateImagesWithProgressDialog);
-                    }
-                    else
-                    {
-                        UpdateImagesWithProgressDialog();
-                    }
-                }
+                ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                    FolderPath,
+                    new List<string>(),
+                    progress
+                );
             }
 
             Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
-        }
-
-        /// <summary>
-        /// Shrink any overlarge images (and remove any transparency) in the book folder, showing a
-        /// progress dialog while we work because it can be very slow. Must be called on the UI
-        /// thread: WinForms does not allow creating a Form anywhere else.
-        /// </summary>
-        private void UpdateImagesWithProgressDialog()
-        {
-            using (var dlg = new ProgressDialogBackground())
-            {
-                dlg.Text = "Updating Image Files";
-                dlg.ShowAndDoWork(
-                    (progress, args) =>
-                        ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                            FolderPath,
-                            new List<string>(),
-                            progress
-                        )
-                );
-            }
         }
 
         private int GetMaintenanceLevel()
