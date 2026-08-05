@@ -24,8 +24,9 @@ Stage 0 checklist (PLAN.md §6):
 - [ ] Capture the paste/drop baseline (rows C1–C7, incl. **C7 drop**): needs a running Bloom
 - [ ] Handler-accumulation repro (§4.10) + the X4 listener-leak test: needs a running Bloom
 - [ ] Page-reload timing baseline (§4.11): needs a running Bloom
-- [ ] Live verification of caret behaviour during reader markup (rows **G1–G3**) — outstanding from
-      the prep commit above, which has no unit coverage for that pipeline
+- [~] Live verification of caret behaviour (rows **G1–G3**) — **partly done.** The seam's wiring is
+      verified (`verifyCaretPreservation.mjs`, PASS); the DOM-rewriting case, G2 async and G3
+      longpress are **not** — they need a Decodable/Leveled Reader book. See the 2026-08-05 entry.
 
 > ## ⚠ Toolchain: use `vp`, never Volta
 >
@@ -506,16 +507,66 @@ Two things worth carrying forward:
 coverage**. It rests on the typecheck, lint, the full suite, and a strictly mechanical diff. Inventory
 rows **G1–G3** must be verified live before the PR — that is now an explicit checklist item.
 
+### 2026-08-05 — live session: caret seam verified, harder half still open
+
+Bloom launched cleanly from this worktree (HTTP 8089, CDP 8091). Two obstacles worth recording,
+because both will recur:
+
+- **The `2 EFL Books` collection is a Team Collection and Bloom is *Disconnected*,** so its books
+  cannot be checked out — the Edit tab and "EDIT THIS BOOK" are both `aria-disabled`. Selecting a
+  book is not enough. **Workaround that works: create a new book from a template**; new books are
+  local, so the disconnected-TC block doesn't apply, and Edit becomes enabled immediately. (The
+  alternative — switching to a non-TC collection such as `English Books` — means driving Bloom's
+  WinForms collection chooser, which CDP can't reach, or restarting with different settings.)
+- **A Basic Book's toolbox offers only Talking Book and "More…"**, and both stayed
+  `visible: false` even after toggling `#pure-toggle-right`; no `audio-sentence` spans appeared, so
+  `updateMarkup` never ran. The reader tools need a **Decodable Reader** or **Leveled Reader** book.
+
+**What is verified.** `docs/retire-ckeditor/verifyCaretPreservation.mjs` (kept in the repo so the
+next session doesn't rebuild it) types a character mid-word and checks where the caret lands. Run
+twice independently, **PASS** both times:
+
+| Check | Result |
+| --- | --- |
+| Text after typing `z` at offset 4 of "house" | `housze` ✓ |
+| Caret character-offset afterwards | **5** — immediately after the typed character ✓ |
+| Leftover `cke_bm_*` bookmark spans | **0** — the restore ran and consumed them ✓ |
+| Stray ZWSP filling chars | **0** ✓ |
+
+That exercises the wiring of all four extracted functions on the synchronous path, and confirms the
+bookmark lifecycle still balances. It is real evidence the prep commit didn't break the pipeline.
+
+**What is NOT verified — do not let this be forgotten.** With no tool active, `updateMarkup` never
+runs, so the DOM is *unchanged* between save and restore. That is the easy half. Still open:
+
+- **G1 proper** — caret survival while markup actually rewrites the DOM around it (the case
+  bookmarks exist for at all).
+- **G2** — the async-markup path and BL-10133 (keystrokes during the `await` must not land at the
+  wrong position). This is the branch where the prep commit made its one deliberate behaviour
+  change, so it deserves direct attention.
+- **G3** — longpress interaction (BL-3900, BL-5215).
+
+**To finish it:** create a book from the **Decodable Reader** template (not Basic Book), open the
+toolbox, activate the reader tool, then re-run the harness — it already prints the span counts
+needed to confirm markup ran. My initial expectation string in the harness was wrong (`houzse` for
+`housze`, an off-by-one in my own arithmetic, not a defect in Bloom); it is corrected in the
+committed version.
+
+**Leftover to clean up:** creating the test book left `Book-121f7932` in
+`Documents/Bloom/2 EFL Books/`. Harmless, but it is mine, not the developer's.
+
 ## Next actions
 
 All of Stage 0's code work is done. What remains needs a **running Bloom** — do it in one session
 (`run-bloom` skill), on branch `BL-6681-stage0-inventory`:
 
-1. **Verify inventory rows G1–G3 live.** Highest priority, because commit `2707d98a8` refactored the
-   keystroke pipeline and `toolboxSpec.ts` has no coverage of it. With a decodable or leveled reader
-   tool active: type mid-word and confirm the caret stays put; exercise an async-markup tool for
-   BL-10133 (keystrokes during the await must not land at the wrong position); confirm longpress still
-   works (BL-3900/BL-5215).
+1. **Finish rows G1–G3.** The seam's wiring is verified; the DOM-rewriting case is not (see the
+   2026-08-05 entry). Create a book from the **Decodable Reader** template, open the toolbox,
+   activate the reader tool, and re-run `node docs/retire-ckeditor/verifyCaretPreservation.mjs
+   <cdpPort>` — it already reports the span counts that show whether markup ran. Then G2 (async
+   path / BL-10133, where the prep commit made its one deliberate behaviour change) and G3
+   (longpress). Remember: a disconnected Team Collection blocks editing existing books, so make a
+   new one; and `toolboxIsShowing()` gates markup, so the pane must genuinely be open.
 2. **Capture the paste/drop baseline** → `PASTE-DROP-BASELINE.md`, rows C1–C7. Use a **real web-page
    clipboard payload**, not hand-written tidy HTML. Do it before any further code change — this is the
    row-set whose failure is silent. Include **C7 (drop)**, the row CKEditor has been covering
