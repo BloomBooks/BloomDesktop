@@ -4110,6 +4110,11 @@ namespace Bloom.Book
             Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
         }
 
+        /// <summary>
+        /// Shrink any overlarge images (and remove any transparency) in the book folder, showing a
+        /// progress dialog while we work because it can be very slow. Must be called on the UI
+        /// thread: WinForms does not allow creating a Form anywhere else.
+        /// </summary>
         private void UpdateImagesWithProgressDialog()
         {
             using (var dlg = new ProgressDialogBackground())
