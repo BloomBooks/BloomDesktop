@@ -32,15 +32,33 @@ Stage 0 checklist (PLAN.md §6):
 > *load* time (they never reach an assertion). It also blocks running Bloom at all via `./go.sh`,
 > which is why three of the four remaining Stage 0 items are blocked.
 >
-> **2. `pnpm` cannot run in this shell: Node is too old.** Volta's default here is **22.12.0**;
-> pinned pnpm 11.5.2 needs **≥ 22.13**, and `package.json` `devEngines` asks for **24.13.0**.
-> `volta run --node 22.21.1 -- pnpm …` gets past that but then pnpm wants to **purge
-> `node_modules`** and aborts for lack of a TTY.
+> **2. `pnpm` cannot run in this shell, because the wrong Node manager is in charge.** The fix is in
+> `ReadMe.md` under "Building", and it is **not** Volta:
 >
-> **Do NOT** set `CI=true` or `confirmModulesPurge=false` to force it through — that silently wipes
-> `node_modules`. Getting a supported Node and running `pnpm install` deliberately is the developer's
-> call, since it is slow and would disrupt a running dev server (nothing was running when this was
-> found).
+> > *Install [vite-plus (`vp`)](https://vite.plus) globally on your computer. It reads the
+> > `.node-version` and `packageManager` fields in the repo and provides the correct node and pnpm.
+> > (We previously used volta, but it does not fully support pnpm.)*
+>
+> State when this was found: `.node-version` says **24.13.0** (agreeing with `devEngines`), **`vp`
+> was not installed**, and **Volta was on PATH serving 22.12.0** — a leftover from the abandoned
+> toolchain, below the **≥ 22.13** that pinned pnpm 11.5.2 requires. So nothing was reading
+> `.node-version`. Volta doesn't know that file exists.
+>
+> The documented sequence is: install `vp`, then **`./init.sh`** from the repo root, which runs
+> `pnpm install` in `src/content` and `src/BloomBrowserUI`, builds `WebView2PdfMaker`, and finishes
+> with `pnpm run build`. (That last step is the one legitimate exception to `AGENTS.md`'s
+> "don't run the full `pnpm build`" rule — it is the documented setup path, and there is no dev
+> server to disrupt at that point.)
+>
+> **Two traps recorded so nobody repeats them:**
+> - **Do not reach for Volta** (`volta install`/`volta pin`). It is the abandoned manager, and the
+>   stale yarn-era `volta` field still frozen in `output/browser/package.json`
+>   (`node 22.21.1`, `yarn 1.22.22`) is what makes this look pinned when it isn't. Volta being left
+>   on PATH alongside `vp` gives two managers competing for `node`, decided by PATH order — the
+>   ambiguity that caused this in the first place.
+> - **Do not** set `CI=true` or `confirmModulesPurge=false` to force pnpm past its prompt — that
+>   silently wipes `node_modules`. `volta run --node 22.21.1 -- pnpm …` reaches exactly that prompt
+>   and aborts for lack of a TTY.
 >
 > **Workaround that does work, for React-free specs:** invoke vitest directly, bypassing the pnpm
 > launcher and its dependency-status check:
@@ -431,15 +449,30 @@ comment and in the commit message.
 items all need either `toolboxSpec.ts` to run or Bloom to launch, and both need a working
 `node_modules`.
 
+I initially misdiagnosed this as "upgrade Node via Volta"; John pointed at `ReadMe.md`, which says
+to install `vp` (vite-plus) and notes Volta was dropped precisely because it doesn't fully support
+pnpm. The boxed warning now records the documented path and the two traps. **Lesson: check
+`ReadMe.md`'s Building section before reasoning about toolchain state from what happens to be
+installed** — the machine had Volta on PATH and no `vp`, which looks like a Volta project until you
+read the docs.
+
 Deliberately **did not** press on with the `toolbox.ts` prep commit: it refactors the most delicate
 keystroke code in the app, its own spec can't currently load, and doing that unverified is exactly
 the wrong trade. Better to stop and ask.
 
 ## Next actions
 
-**First: unblock the environment** (boxed warning above) — get a Node ≥ 22.13 (ideally the 24.13.0
-`devEngines` asks for) and run `pnpm install` in `src/BloomBrowserUI`. Developer's call, since it
-purges `node_modules`. Then confirm `bloomFieldSpec.ts` / `toolboxSpec.ts` load again.
+**First: unblock the environment** (boxed warning above) — install **`vp`** per `ReadMe.md`, then run
+**`./init.sh`**. Not Volta. Then verify before resuming:
+
+```sh
+node --version   # v24.13.0
+cd src/BloomBrowserUI && node -e "console.log(require('react-dom/package.json').version)"  # 18.3.1
+```
+
+and confirm `bloomFieldSpec.ts` / `toolboxSpec.ts` load again. Once `vp` provides pnpm, the
+`node node_modules/vitest/vitest.mjs` workaround below should stop being necessary — prefer
+`pnpm test`.
 
 Then continue Stage 0 on branch `BL-6681-stage0-inventory`, in this order:
 
