@@ -629,3 +629,34 @@ Later, not Stage 0:
 - Before designing `clipboard.ts`, read PR #8140 and `origin/BL-16459-clipboard-failure-reporting`.
 - Optional, offered but not done: comment on **BL-13502** that undo is another reason to want
   save/reload decoupled.
+
+### 2026-08-05 (later still) — Stage 0 preflighted; PR #8153 open as draft
+
+**PR:** https://github.com/BloomBooks/BloomDesktop/pull/8153 (draft). Branch pushed, card linked,
+QA test-ideas comment posted, Devin consultation logged.
+
+Reviewer outcomes at HEAD `178269d78`:
+
+| Reviewer | Outcome |
+| --- | --- |
+| Local review (light, 1 subagent) | Clean — no correctness problems. It mutation-tested the new spec (neutering `selectAtOffset` fails 9 of 10 tests) and raised one accuracy note, which was fixed. |
+| Devin | **Re-review clean** — 0 bugs, 0 investigate flags, 8 informational. Three informational items acted on; the rest declined with reasons, recorded in the PR consultation log. |
+| CI (`pr-automation`) | pass |
+| CodeRabbit | see the run's final report |
+
+**Three things Devin's informational tier caught that were worth fixing** — a reminder that the
+lowest-signal tier is not always noise:
+
+1. The committed harness hard-coded `repoRoot = "C:/github/BloomDesktop"`, so it only ran in the
+   checkout it was written in. Now derived from `import.meta.url`.
+2. **The extraction has two deliberate behaviour differences, not one.**
+   `restoreSelectionAfterMarkup` re-reads the editor and no-ops if it has gone, where the old code
+   sat inside `if (ckeditorOfThisBox)` and would have thrown. Unreachable in practice
+   (`bloomCkEditor` is assigned once and never cleared) but real, and now documented on the
+   function. Notable because this branch already corrects two *other* comments in the same pipeline
+   that misled by overstating — a third would have been poor form.
+3. The inventory pointed at `PASTE-DROP-BASELINE.md` as if it existed.
+
+**G3 (longpress) is now verified too** — John spot-checked it manually and reports it basically
+works. So of the G rows, G1 and G3 are verified, and **G2 (async markup path / BL-10133) is the one
+still open**, along with the new G6/G7 highlight rows.
