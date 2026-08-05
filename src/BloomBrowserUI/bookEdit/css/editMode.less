@@ -1062,23 +1062,65 @@ even when the div is focused (as long as it is empty).*/
         position: unset;
     }
 }
-// For an INLINE element that is itself background-colored (e.g. a decodable/leveled-reader
-// violation span, or the sentence span that is the ::highlight range), also unset position
-// on the element itself. Do not use this on block containers - see the note above.
+// For an INLINE element that is itself background-colored (e.g. the sentence span that is the
+// ::highlight range), also unset position on the element itself. Do not use this on block
+// containers - see the note above.
 .bl11633-unset-position() {
     position: unset;
     .bl11633-unset-position-on-children();
 }
 
-/*This block handles marking elements that violate decodable book and leveled reader constraints*/
-span.sentence-too-long {
-    background-color: @LeveledReaderViolationColor;
-    .bl11633-unset-position();
+// This block handles marking text that violates decodable book and leveled reader constraints.
+// These are ::highlight() pseudo-elements painted over Ranges by readerHighlights.ts, not
+// classes on spans: marking up the DOM inside a contenteditable tempts CKEditor into copying
+// the highlight's background color into a permanent inline style (BL-16558).
+// As for the Talking Book highlight, we paint with a thick offset underline rather than a
+// background color. Because the underline is drawn behind the glyphs and does not extend as far
+// upwards as a background would, it covers much less of the previous line when lines are
+// tightly spaced.
+.reader-violation-highlight(@color) {
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-color: @color;
+    // The skip-ink setting allows the underline to be drawn right against the text.
+    text-decoration-thickness: 1.1em;
+    text-underline-offset: -0.8em;
+    text-decoration-skip-ink: none;
 }
 
-span.word-too-long {
-    background-color: @bloom-lightblue;
-    .bl11633-unset-position();
+::highlight(bloom-reader-sentence-too-long) {
+    .reader-violation-highlight(@LeveledReaderViolationColor);
+}
+
+::highlight(bloom-reader-word-too-long) {
+    .reader-violation-highlight(@bloom-lightblue);
+}
+
+::highlight(bloom-reader-word-not-decodable) {
+    .reader-violation-highlight(@DecodableReaderViolationColor);
+}
+
+// Sight words get no paint of their own; the highlight exists so that hovering one can explain
+// why it is not marked as a problem. (See bloom-reader-highlight-tip below.)
+
+// The hover tip readerHighlights.ts shows when the mouse is over one of the highlights above.
+// Since the highlights are pseudo-elements there is no element to hang a tooltip on, so we
+// position our own. bloom-ui keeps it out of the saved page.
+.bloom-reader-highlight-tip {
+    position: absolute;
+    z-index: 25000;
+    display: none;
+    max-width: 250px;
+    padding: 3px 6px;
+    border: 1px solid @bloom-gray;
+    border-radius: 3px;
+    background-color: white;
+    color: black;
+    font-family: @UIFontStack;
+    font-size: 9pt;
+    // The tip must never intercept clicks meant for the text underneath it, nor trigger the
+    // mousemove hit test against itself.
+    pointer-events: none;
 }
 
 .page-too-many-words-or-sentences .marginBox {
@@ -1097,14 +1139,6 @@ span.word-too-long {
     z-index: 20000;
 }
 
-span.sight-word {
-}
-
-span.word-not-found {
-    background-color: @DecodableReaderViolationColor;
-    .bl11633-unset-position();
-}
-
 // div.bloom-editable and p are block-level and carry the language-code tags and paragraph/
 // line-break markers, which are positioned relative to them, so they must keep their own
 // position:relative; only their inline children need position:unset. (In the edit tab the
@@ -1121,15 +1155,6 @@ div.bloom-editable p > .audio-sentence,
 div.bloom-editable p > .bloom-highlightSegment {
     .bl11633-unset-position();
 }
-
-/* We are disabling the "Possible Word" feature at this time.
-SPAN.possible-word
-{
-    -moz-text-decoration-style: wavy;
-    -moz-text-decoration-line: underline;
-    -moz-text-decoration-color: blue;
-}
-*/
 
 div.cke_float {
     div.cke_top {

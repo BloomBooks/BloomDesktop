@@ -33,6 +33,7 @@ import {
     postString,
 } from "../../../utils/bloomApi";
 import { EditableDivUtils } from "../../js/editableDivUtils";
+import { theOneReaderHighlightManager } from "./readerHighlights";
 import {
     allPromiseSettled,
     setTimeoutPromise,
@@ -100,8 +101,9 @@ export class ReaderToolsModel {
     // (The constructor must return synchronously)
     public async initAsync(): Promise<void> {
         const keys = {
-            "EditTab.Toolbox.DecodableReaderTool.StageNofM": "Stage {0} of {1}",
-            "EditTab.Toolbox.LeveledReaderTool.LevelNofM": "Level {0} of {1}",
+            "EditTab.Toolbox.DecodableReaderTool.StageNumber": "Stage {0}",
+            "EditTab.Toolbox.LeveledReaderTool.LevelNumber": "Level {0}",
+            "EditTab.Toolbox.ReaderTools.OfCount": "of {0}",
         };
 
         // Asynchronously pre-load the localizations (in the UI language) of the specified keys
@@ -520,6 +522,18 @@ export class ReaderToolsModel {
         return didMarkup;
     }
 
+    /**
+     * Remove the decodable/leveled reader highlights from the page, e.g. when the tool is turned
+     * off or the page has nothing we can mark.
+     */
+    private clearReaderHighlights(): void {
+        // the contentWindow is not available during unit testing
+        const contentWindow = this.safelyGetContentWindow();
+        theOneReaderHighlightManager.clearAll(
+            contentWindow?.document.body ?? undefined,
+        );
+    }
+
     private safelyGetContentWindow(): Window | null {
         const page = parent.window.document.getElementById("page");
         if (!page) return null;
@@ -631,7 +645,10 @@ export class ReaderToolsModel {
      */
     public doMarkup(createCkEditorBookMarks: boolean = true): void {
         if (!this.readyToDoMarkup()) return;
-        if (this.currentMarkupType === MarkupType.None) return;
+        if (this.currentMarkupType === MarkupType.None) {
+            this.clearReaderHighlights();
+            return;
+        }
 
         let oldSelectionPosition = -1;
         if (this.activeElement)
@@ -645,6 +662,11 @@ export class ReaderToolsModel {
         // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
 
         let bookmarksForEachEditable: object[] = [];
+        if (editableElements.length === 0) {
+            // e.g. a cover page. There is nothing to mark, so make sure nothing is left
+            // highlighted from a page that did have something.
+            this.clearReaderHighlights();
+        }
         if (editableElements.length > 0) {
             // qtips can be orphaned if the element they belong to is deleted
             // (and so the mouse can't move off their owning element, and they never go away).
@@ -760,12 +782,6 @@ export class ReaderToolsModel {
                 offset: oldSelectionPosition,
             });
             this.redoStack = []; // ok because only referred to by this variable.
-        }
-
-        // the contentWindow is not available during unit testing
-        const contentWindow = this.safelyGetContentWindow();
-        if (contentWindow) {
-            contentWindow.postMessage("Qtips", "*");
         }
     }
 

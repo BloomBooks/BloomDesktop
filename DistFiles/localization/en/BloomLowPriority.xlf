@@ -363,6 +363,26 @@
         <note>ID: EditTab.PasteTextFailed</note>
         <note>Shown as a toast when Bloom fails to read text from the computer's clipboard, usually because some other program is momentarily holding the clipboard.</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.PreviewTooLarge" translate="no">
+        <source xml:lang="en">This image is too large to preview here, but you can still use it.</source>
+        <note>ID: ImageLibrary.PreviewTooLarge</note>
+        <note>Shown in the details pane of the image chooser, in place of the image, when the selected image is too big for the browser to decode for preview. The user can still choose it, so the tone should be reassuring rather than an error.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PreviewUnavailable" translate="no">
+        <source xml:lang="en">This image could not be previewed.</source>
+        <note>ID: ImageLibrary.PreviewUnavailable</note>
+        <note>Shown in the details pane of the image chooser, in place of the image, when the preview fails to load for some reason other than the image being too large.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.FieldType.BookTitle">
+        <source xml:lang="en">Book Title</source>
+        <note>ID: EditTab.CustomCover.FieldType.BookTitle</note>
+        <note>One choice in the "Field Type:" menu of a text block on a custom layout page. Choosing it makes that block hold the title of the book.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.FieldType.CoverCredits">
+        <source xml:lang="en">Cover Credits</source>
+        <note>ID: EditTab.CustomCover.FieldType.CoverCredits</note>
+        <note>One choice in the "Field Type:" menu of a text block on a custom layout page. Choosing it makes that block hold the credits (author, illustrator, etc.) that are shown on the cover.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

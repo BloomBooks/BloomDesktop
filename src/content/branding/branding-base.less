@@ -127,10 +127,22 @@ Rules that format the branding go in branding-base.less, or in the branding.less
     }
 }
 
-// Allow all custom back cover pages to use text canvas elements, even when the branding
-// prevents customized text in the normal places by hiding the .bloom-translationGroup. (BL-16106)
+// Allow any custom-layout xmatter page to use text canvas elements, even when the branding
+// prevents customized text in the normal places by hiding the .bloom-translationGroup.
+// (BL-16106 for the outside back cover; generalized to any such page for BL-16648, which
+// enables custom layout on the inside back cover.)
 // (But, we don't want to force any image description to be visible!)
-.outsideBackCover.bloom-customLayout[data-custom-layout-id="customOutsideBackCover"]
+//
+// About the !important and the specificity: brandings hide these groups in their own
+// branding.less files, each of which @imports this file first, so on a tie the branding
+// wins. Almost every branding hides the group without !important, so it loses to the
+// !important here whatever its specificity. The one exception is RobotsMali, which hides
+// the inside back cover's group with !important at (0,3,0)
+// (.insideBackCover .marginBox .bloom-translationGroup); it is the only reason we need both
+// !important and a selector above (0,4,0). This selector is (0,6,0) -- the same as the
+// outside-back-cover-only rule it replaced -- which leaves headroom if some branding ever
+// gets more specific still.
+.bloom-page.bloom-customLayout[data-custom-layout-id]
     .marginBox
     .bloom-translationGroup:not(.bloom-imageDescription) {
     display: flex !important; // flex is the default set in basePage.less for .bloom-translationGroup

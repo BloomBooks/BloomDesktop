@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Media.Imaging;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
@@ -15,6 +16,7 @@ using Bloom.MiscUI;
 using Bloom.Utils;
 using SIL.Core.ClearShare;
 using SIL.IO;
+using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 
@@ -24,7 +26,7 @@ namespace Bloom.web.controllers
     /// Api for the image gallery (image chooser dialog) — local collections, file picker,
     /// remote search results, and saving chosen images into the current book.
     /// </summary>
-    public class ImageGalleryApi
+    public class ImageGalleryApi : IDisposable
     {
         public EditingView View { get; set; }
 
@@ -36,6 +38,53 @@ namespace Bloom.web.controllers
         /// only serves this exact file, preventing arbitrary local-file access via the endpoint.
         /// </summary>
         private string _lastPickedLocalImagePath;
+
+        /// <summary>
+        /// A temporary JPEG standing in for _lastPickedLocalImagePath when the browser could
+        /// not display the original itself (see MakeBrowserSafePreview).
+        /// Null when the original is served as-is. Deleted when another file is picked.
+        /// </summary>
+        private string _lastPickedLocalImagePreviewPath;
+
+        /// <summary>
+        /// The file _lastPickedLocalImagePreviewPath was made from, or null if we have not yet
+        /// looked at any file. This is what the cache is keyed on, so that a stand-in can only
+        /// ever be served for the file it was made from — rather than that being an invariant
+        /// maintained by the order in which HandlePickLocalImageFile does things.
+        /// It is also how we remember that a file needs no stand-in, which is why it is set
+        /// even in that case: without it we would re-examine such a file on every request.
+        /// </summary>
+        private string _lastPickedLocalImagePreviewSourcePath;
+
+        /// <summary>
+        /// Guards the two fields above. The gallery uses the preview URL as both the
+        /// thumbnail and the large preview, so two requests for it typically arrive at once;
+        /// without this they would each spend seconds building a preview and one would leak.
+        /// </summary>
+        private readonly object _previewLock = new object();
+
+        /// <summary>
+        /// Chromium — and therefore WebView2 — flatly refuses to decode an image whose pixel
+        /// count times 4 bytes/pixel overflows a signed 32-bit int, i.e. anything larger than
+        /// about 536.9 megapixels. The &lt;img&gt; fires "error" a fraction of a second after
+        /// the bytes arrive and nothing paints, which is why the image chooser showed an empty
+        /// preview for a 30000x23756 scan (BL-16597). Decoding at a reduced size does not help:
+        /// createImageBitmap() with resizeWidth and the WebCodecs ImageDecoder with desiredWidth
+        /// both fail identically, because the limit is tested against the image's natural size
+        /// before any scaling is applied.
+        ///
+        /// Well below that hard ceiling, handing the renderer a hundred-megapixel image still
+        /// costs it seconds of decode time and gigabytes of RAM, all to fill a preview pane a
+        /// few hundred pixels tall. So past this threshold we substitute a downscaled JPEG.
+        /// (Size is only one of the two reasons for substituting one — see NeedsStandIn.)
+        /// </summary>
+        internal const long kMaxPreviewPixels = 40L * 1000 * 1000;
+
+        /// <summary>
+        /// Longest side, in pixels, of a generated preview. The gallery's preview pane caps the
+        /// image at 420px tall, so this leaves plenty of room for high-DPI screens.
+        /// </summary>
+        internal const int kPreviewMaxDimension = 1600;
 
         /// <summary>
         /// The root folder where SIL image collections (including Art of Reading) are installed.
@@ -59,10 +108,18 @@ namespace Bloom.web.controllers
                 HandlePickLocalImageFile,
                 false
             );
+            // requiresSync: false deliberately. Building a stand-in for a very large image
+            // decodes and re-encodes it, which takes on the order of seconds; if this ran under
+            // the api handler's global lock it would stall every other synchronized request for
+            // that whole time. Nothing here needs that lock: the only state shared between
+            // requests is the preview cache, and _previewLock already guards it (and still
+            // coalesces the gallery's near-simultaneous thumbnail and large-preview requests
+            // into a single build).
             apiHandler.RegisterEndpointHandler(
                 "imageGallery/localFilePreview",
                 HandleLocalFilePreview,
-                false
+                false,
+                requiresSync: false
             );
             apiHandler.RegisterEndpointHandler(
                 "imageGallery/local-collections/collections",
@@ -367,12 +424,370 @@ namespace Bloom.web.controllers
                 )
             );
 
+            // The previous pick's downscaled stand-in (if any) is now unreachable. Serving the
+            // wrong image is prevented by the cache's key, not by this; the point here is just
+            // to not leave the temp file lying around until the next pick.
+            DeleteLastPickedImagePreview();
             _lastPickedLocalImagePath = selectedPath;
+
             var previewUrl = string.IsNullOrEmpty(selectedPath)
                 ? ""
                 : "/bloom/api/imageGallery/localFilePreview?path="
                     + Uri.EscapeDataString(selectedPath);
-            request.ReplyWithJson(new { filePath = selectedPath, previewUrl });
+
+            // Report the *original* file's dimensions and byte count. The gallery displays
+            // these, and without them it would fall back to measuring whatever the preview
+            // turns out to be — which for a huge image is the downscaled stand-in, not the
+            // file the user actually chose.
+            var (width, height) = GetImageDimensions(selectedPath);
+            long size = 0;
+            if (!string.IsNullOrEmpty(selectedPath) && RobustFile.Exists(selectedPath))
+            {
+                try
+                {
+                    size = new FileInfo(selectedPath).Length;
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteMinorEvent(
+                        $"ImageGalleryApi could not read the size of {selectedPath}: {e.Message}"
+                    );
+                }
+            }
+
+            request.ReplyWithJson(
+                new
+                {
+                    filePath = selectedPath,
+                    previewUrl,
+                    width,
+                    height,
+                    size,
+                }
+            );
+        }
+
+        /// <summary>
+        /// Reads an image's pixel dimensions without decoding its pixels. Returns (0,0) if the
+        /// dimensions can't be determined (e.g. an SVG, or a format WIC doesn't know).
+        /// </summary>
+        internal static (int width, int height) GetImageDimensions(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
+                return (0, 0);
+            try
+            {
+                var header = ReadImageHeader(path);
+                // Report the dimensions as they will actually be seen, i.e. after the viewer
+                // applies any EXIF rotation.
+                return IsQuarterTurned(header.exifOrientation)
+                    ? (header.height, header.width)
+                    : (header.width, header.height);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteMinorEvent(
+                    $"ImageGalleryApi could not read the dimensions of {path}: {e.Message}"
+                );
+                return (0, 0);
+            }
+        }
+
+        /// <summary>
+        /// Reads an image's dimensions and EXIF orientation without decoding its pixels. WIC
+        /// parses the header up front but reads everything else lazily, so all the values we
+        /// want must be pulled out while the stream is still open — hence one method rather
+        /// than handing a BitmapFrame back to the caller.
+        /// </summary>
+        private static (int width, int height, int exifOrientation) ReadImageHeader(string path)
+        {
+            using var stream = RobustFile.OpenRead(path);
+            var decoder = BitmapDecoder.Create(
+                stream,
+                BitmapCreateOptions.IgnoreColorProfile | BitmapCreateOptions.DelayCreation,
+                BitmapCacheOption.None
+            );
+            var frame = decoder.Frames[0];
+            return (
+                frame.PixelWidth,
+                frame.PixelHeight,
+                ReadExifOrientation(frame.Metadata as BitmapMetadata)
+            );
+        }
+
+        /// <summary>
+        /// The EXIF orientation recorded in the given metadata, or 1 ("upright") if there is
+        /// none. The chooser accepts TIFFs as well as JPEGs, and the tag lives at a different
+        /// query path in each, so both are tried.
+        /// </summary>
+        private static int ReadExifOrientation(BitmapMetadata metadata)
+        {
+            if (metadata == null)
+                return 1;
+            // 274 (0x112) is the EXIF "Orientation" tag. In a JPEG it hangs off the APP1
+            // marker segment; in a TIFF it is in the top-level IFD.
+            foreach (var query in new[] { "/app1/ifd/{ushort=274}", "/ifd/{ushort=274}" })
+            {
+                try
+                {
+                    if (
+                        metadata.GetQuery(query) is ushort orientation
+                        && orientation >= 1
+                        && orientation <= 8
+                    )
+                        return orientation;
+                }
+                catch (Exception)
+                {
+                    // Plenty of images carry no EXIF block at all, and asking a decoder for a
+                    // query path its format doesn't have is how we find that out.
+                }
+            }
+            return 1;
+        }
+
+        /// <summary>Whether the given EXIF orientation swaps width and height.</summary>
+        private static bool IsQuarterTurned(int exifOrientation) => exifOrientation >= 5;
+
+        /// <summary>
+        /// The rotation/flip an EXIF orientation calls for, or null when none is needed.
+        /// </summary>
+        private static System.Windows.Media.Transform GetOrientationTransform(int exifOrientation)
+        {
+            switch (exifOrientation)
+            {
+                case 2:
+                    return new System.Windows.Media.ScaleTransform(-1, 1);
+                case 3:
+                    return new System.Windows.Media.RotateTransform(180);
+                case 4:
+                    return new System.Windows.Media.ScaleTransform(1, -1);
+                case 5:
+                    var transpose = new System.Windows.Media.TransformGroup();
+                    transpose.Children.Add(new System.Windows.Media.RotateTransform(90));
+                    transpose.Children.Add(new System.Windows.Media.ScaleTransform(-1, 1));
+                    return transpose;
+                case 6:
+                    return new System.Windows.Media.RotateTransform(90);
+                case 7:
+                    var transverse = new System.Windows.Media.TransformGroup();
+                    transverse.Children.Add(new System.Windows.Media.RotateTransform(270));
+                    transverse.Children.Add(new System.Windows.Media.ScaleTransform(-1, 1));
+                    return transverse;
+                case 8:
+                    return new System.Windows.Media.RotateTransform(270);
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Lays the image over a white background, so that anything see-through in it becomes
+        /// white rather than whatever happens to be in the RGB channels underneath.
+        ///
+        /// A stand-in is encoded as JPEG, which has no alpha channel: without this, a large
+        /// image with transparent areas — a line-art scan on transparency, say — previews with
+        /// those areas solid black, because that is what is stored under a fully transparent
+        /// pixel. White is what the chooser and the page behind it both use.
+        ///
+        /// Done unconditionally rather than only for images that carry transparency, because
+        /// deciding that reliably means enumerating the pixel formats that can hold an alpha
+        /// channel *and* checking indexed palettes for a transparent entry, whereas this is one
+        /// pass over an image already capped at kPreviewMaxDimension — milliseconds against the
+        /// seconds the decode itself takes. Pure pixel arithmetic, so unlike the WPF rendering
+        /// stack it is safe on whatever thread the API server hands us.
+        /// </summary>
+        private static BitmapSource FlattenOntoWhite(BitmapSource source)
+        {
+            // Bgra32 is straight (non-premultiplied) alpha, which is what the blend below
+            // assumes; Pbgra32 would already have the colour scaled by the alpha.
+            var bgra = new FormatConvertedBitmap(
+                source,
+                System.Windows.Media.PixelFormats.Bgra32,
+                null,
+                0
+            );
+            int width = bgra.PixelWidth,
+                height = bgra.PixelHeight;
+            int stride = width * 4;
+            var pixels = new byte[(long)height * stride];
+            bgra.CopyPixels(pixels, stride, 0);
+            for (int i = 0; i < pixels.Length; i += 4)
+            {
+                byte alpha = pixels[i + 3];
+                if (alpha == 255)
+                    continue;
+                // result = colour*alpha + white*(1-alpha), in 0..255 integer arithmetic.
+                int inverse = 255 - alpha;
+                pixels[i] = (byte)((pixels[i] * alpha + 255 * inverse) / 255);
+                pixels[i + 1] = (byte)((pixels[i + 1] * alpha + 255 * inverse) / 255);
+                pixels[i + 2] = (byte)((pixels[i + 2] * alpha + 255 * inverse) / 255);
+                pixels[i + 3] = 255;
+            }
+            var flattened = BitmapSource.Create(
+                width,
+                height,
+                96,
+                96,
+                System.Windows.Media.PixelFormats.Bgra32,
+                null,
+                pixels,
+                stride
+            );
+            flattened.Freeze();
+            return flattened;
+        }
+
+        /// <summary>
+        /// File types the browser can put in an &lt;img&gt;. The chooser also offers .tif/.tiff,
+        /// which it cannot, so those get a stand-in (see NeedsStandIn). Matched on extension
+        /// rather than on the actual bytes deliberately: ReplyWithImage derives the response's
+        /// content type from the extension, so the extension is what the browser goes on.
+        /// </summary>
+        private static readonly HashSet<string> s_browserRenderableExtensions = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase
+        )
+        {
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".gif",
+            ".bmp",
+            ".svg",
+            ".webp",
+        };
+
+        /// <summary>
+        /// Whether the browser would fail to display this file as it stands, so that we should
+        /// serve it a re-encoded stand-in instead. Two separate reasons: the file is a format
+        /// the browser cannot draw at all, or it is so large the browser refuses to decode it
+        /// (see kMaxPreviewPixels).
+        /// </summary>
+        private static bool NeedsStandIn(string path, int width, int height)
+        {
+            if (!s_browserRenderableExtensions.Contains(Path.GetExtension(path)))
+                return true;
+            return (long)width * height > kMaxPreviewPixels;
+        }
+
+        /// <summary>
+        /// If the browser could not display <paramref name="originalPath"/> as it stands — too
+        /// many pixels, or a format it cannot draw — writes a JPEG stand-in to a temp file and
+        /// returns its path. Otherwise returns null, meaning "serve the original".
+        ///
+        /// WIC's DecodePixelWidth/Height does the scaling as part of the decode, so a 713
+        /// megapixel JPEG costs about 2.5 seconds and under 100MB rather than the ~2.6GB a
+        /// full decode would need.
+        /// </summary>
+        internal static string MakeBrowserSafePreview(string originalPath)
+        {
+            try
+            {
+                var header = ReadImageHeader(originalPath);
+                if (!NeedsStandIn(originalPath, header.width, header.height))
+                    return null;
+
+                // Constrain the longer side; WIC preserves the aspect ratio when only one of
+                // DecodePixelWidth/DecodePixelHeight is set, and does the scaling as part of
+                // the decode rather than decoding full size and shrinking afterwards. An image
+                // that is already smaller than that is left at its own size — a stand-in made
+                // only because of its format has no reason to be enlarged.
+                // A stream rather than a UriSource, because Uri would treat a "#" in a
+                // perfectly legal filename as the start of a fragment. CacheOption.OnLoad
+                // makes EndInit() do the decoding, so the stream can be closed right after.
+                var scaled = new BitmapImage();
+                using (var stream = RobustFile.OpenRead(originalPath))
+                {
+                    scaled.BeginInit();
+                    scaled.StreamSource = stream;
+                    scaled.CacheOption = BitmapCacheOption.OnLoad;
+                    scaled.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+                    if (Math.Max(header.width, header.height) > kPreviewMaxDimension)
+                    {
+                        if (header.width >= header.height)
+                            scaled.DecodePixelWidth = kPreviewMaxDimension;
+                        else
+                            scaled.DecodePixelHeight = kPreviewMaxDimension;
+                    }
+                    scaled.EndInit();
+                }
+                scaled.Freeze();
+
+                // Bake in any EXIF rotation. We re-encode without an EXIF block, so a viewer
+                // has no orientation tag to apply and the pixels must already be upright.
+                BitmapSource upright = scaled;
+                var transform = GetOrientationTransform(header.exifOrientation);
+                if (transform != null)
+                {
+                    var rotated = new TransformedBitmap(scaled, transform);
+                    rotated.Freeze();
+                    upright = rotated;
+                }
+
+                // A plain temp path rather than SIL's TempFile, whose Dispose would delete the
+                // file we are about to start serving. DeleteLastPickedImagePreview cleans up.
+                var previewPath = Path.Combine(
+                    Path.GetTempPath(),
+                    "BloomImagePreview-" + Guid.NewGuid() + ".jpg"
+                );
+                var encoder = new JpegBitmapEncoder { QualityLevel = 85 };
+                encoder.Frames.Add(BitmapFrame.Create(FlattenOntoWhite(upright)));
+                using (var output = RobustFile.Create(previewPath))
+                    encoder.Save(output);
+
+                Logger.WriteMinorEvent(
+                    $"ImageGalleryApi made a {upright.PixelWidth}x{upright.PixelHeight} preview"
+                        + $" for {Path.GetFileName(originalPath)}"
+                        + $" ({header.width}x{header.height}, which the browser could not display)"
+                );
+                return previewPath;
+            }
+            catch (Exception e)
+            {
+                // Includes SVG and anything else WIC can't open. Falling back to the original
+                // is right: those are the formats the browser handles fine anyway.
+                Logger.WriteMinorEvent(
+                    $"ImageGalleryApi could not make a downscaled preview for {originalPath}: {e.Message}"
+                );
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Empties the preview cache, deleting the downscaled stand-in if there is one.
+        /// </summary>
+        private void DeleteLastPickedImagePreview()
+        {
+            lock (_previewLock)
+            {
+                if (!string.IsNullOrEmpty(_lastPickedLocalImagePreviewPath))
+                {
+                    try
+                    {
+                        RobustFile.Delete(_lastPickedLocalImagePreviewPath);
+                    }
+                    catch (Exception e)
+                    {
+                        // Nothing to do about it; it's a temp file, and it is named
+                        // recognisably enough to be swept up later.
+                        Logger.WriteMinorEvent(
+                            $"ImageGalleryApi could not delete {_lastPickedLocalImagePreviewPath}: {e.Message}"
+                        );
+                    }
+                }
+                _lastPickedLocalImagePreviewPath = null;
+                _lastPickedLocalImagePreviewSourcePath = null;
+            }
+        }
+
+        /// <summary>
+        /// Picking a new file removes the previous file's stand-in, so at most one is ever
+        /// left over — the one for the last file picked. This is where that one goes; Autofac
+        /// disposes us with the project's lifetime scope.
+        /// </summary>
+        public void Dispose()
+        {
+            DeleteLastPickedImagePreview();
         }
 
         /// <summary>
@@ -397,7 +812,30 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            request.ReplyWithImage(fullPath);
+            // Images past a certain size don't render in the browser at all, so substitute a
+            // downscaled copy (BL-16597). What we worked out about a file is remembered and
+            // reused, since the gallery asks for this URL as both the thumbnail and the large
+            // preview — including the "this one is fine as it is" answer, which costs a header
+            // read to reach.
+            string pathToServe;
+            lock (_previewLock)
+            {
+                var answerIsAboutThisFile =
+                    _lastPickedLocalImagePreviewSourcePath == fullPath
+                    && (
+                        _lastPickedLocalImagePreviewPath == null
+                        || RobustFile.Exists(_lastPickedLocalImagePreviewPath)
+                    );
+                if (!answerIsAboutThisFile)
+                {
+                    DeleteLastPickedImagePreview();
+                    _lastPickedLocalImagePreviewPath = MakeBrowserSafePreview(fullPath);
+                    _lastPickedLocalImagePreviewSourcePath = fullPath;
+                }
+                pathToServe = _lastPickedLocalImagePreviewPath ?? fullPath;
+            }
+
+            request.ReplyWithImage(pathToServe);
         }
 
         /// <summary>

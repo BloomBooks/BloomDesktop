@@ -10,15 +10,21 @@ import {
 import { Span } from "../../../../react_components/l10nComponents";
 import BloomButton from "../../../../react_components/bloomButton";
 import { css, ThemeProvider } from "@emotion/react";
-import { Link } from "../../../../react_components/link";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { DataWord } from "../libSynphony/bloomSynphonyExtensions";
 import { useL10n } from "../../../../react_components/l10nHooks";
 import {
-    kBloomLightBlue,
+    kBloomBlue,
     kBloomDarkestBackground,
 } from "../../../../utils/colorUtils";
 import { ReaderToolNav } from "../ReaderToolNav";
+import { ReaderSetupButton } from "../ReaderSetupButton";
+import {
+    kReaderAccent,
+    readerSectionHeaderCss,
+    readerTextButtonCss,
+} from "../readerToolStyles";
+import { SummarizeOutlined } from "@mui/icons-material";
 import { toolboxTheme } from "../../../../bloomMaterialUITheme";
 import { useMountEffect } from "../../../../utils/useMountEffect";
 import { BloomTooltip } from "../../../../react_components/BloomToolTip";
@@ -99,7 +105,10 @@ const DecodableGrid: FunctionComponent<{
                     min-height: 0;
                     flex: 1 1 auto;
                     overflow: auto;
-                    margin-left: 8px;
+                    // Reserve space for the vertical scrollbar so its appearance
+                    // (when the word list grows tall) doesn't shrink/reflow the
+                    // grid, matching the Leveled Reader stabilization. (BL-16585)
+                    scrollbar-gutter: stable;
                     margin-top: 4px;
                     padding-bottom: 0.6em;
                     font-family: ${getTheOneReaderToolsModel().fontName};
@@ -141,8 +150,10 @@ const StageGraphemes: FunctionComponent = () => {
             <Span
                 l10nKey="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage"
                 css={css`
-                    margin-left: 8px;
-                    color: ${kBloomLightBlue};
+                    ${readerSectionHeaderCss};
+                    // Make the underline rule span the full panel width, matching
+                    // the Leveled Reader's "Word Counts" section header.
+                    display: block;
                 `}
             >
                 Letters in this stage
@@ -212,10 +223,13 @@ const SortButton: FunctionComponent<{
                     height: 20px;
                     margin-top: 1px;
                     border-radius: 0;
-                    color: white;
-                    border: 1px solid white;
+                    border: 1px solid ${kReaderAccent};
+                    // Accent outline when idle; the selected sort fills solid
+                    // kBloomBlue with a white icon so the current choice stands
+                    // out. (BL-16585)
+                    color: ${shouldHighlight ? "white" : kReaderAccent};
                     background-color: ${shouldHighlight
-                        ? "grey"
+                        ? kBloomBlue
                         : "transparent"};
 
                     &&,
@@ -225,7 +239,7 @@ const SortButton: FunctionComponent<{
 
                     &:hover {
                         background-color: ${shouldHighlight
-                            ? "grey"
+                            ? kBloomBlue
                             : "transparent"};
                     }
                 `}
@@ -251,19 +265,23 @@ const SortedStageWords: FunctionComponent<{
                 overflow: hidden;
             `}
         >
+            {/* The section header (styled like the Leveled Reader's "Word Counts")
+                shares its row with the sort buttons; the underline rule spans the
+                whole width beneath both. */}
             <div
                 css={css`
+                    ${readerSectionHeaderCss};
                     display: flex;
+                    align-items: center;
                 `}
             >
                 {model.synphony?.source.useAllowedWords === 1 ? (
                     <Span
                         l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage"
                         css={css`
-                            margin-left: 8px;
-                            color: ${kBloomLightBlue};
-                            display: inline-flex;
-                            width: 110px;
+                            flex: 1;
+                            // Keep the label off the sort buttons on its right.
+                            padding-right: 12px;
                         `}
                     >
                         Allowed words in this stage
@@ -272,10 +290,9 @@ const SortedStageWords: FunctionComponent<{
                     <Span
                         l10nKey="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage"
                         css={css`
-                            margin-left: 8px;
-                            color: ${kBloomLightBlue};
-                            display: inline-flex;
-                            width: 110px;
+                            flex: 1;
+                            // Keep the label off the sort buttons on its right.
+                            padding-right: 12px;
                         `}
                     >
                         Sample words in this stage
@@ -394,50 +411,22 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                     overflow-x: hidden;
                 `}
             >
-                {showTool && (
-                    <>
-                        <div
-                            css={css`
-                                display: flex;
-                                flex-direction: column;
-                                flex: 1 1 auto;
-                                min-height: 0;
-                                overflow-x: hidden;
-                            `}
-                        >
-                            <div
-                                css={css`
-                                    display: flex;
-                                    margin-left: auto;
-                                    margin-bottom: 10px;
-                                    padding-right: 2px;
-                                `}
-                            >
-                                <BloomButton
-                                    href="javascript:window.toolboxBundle.showSetupDialog('stages');"
-                                    l10nKey="EditTab.Toolbox.DecodableReaderTool.SetUpStages"
-                                    variant="text"
-                                    enabled={true}
-                                    hasText={true}
-                                    enabledImageFile="/bloom/bookEdit/toolbox/readers/edit-white.png"
-                                    css={css`
-                                        font-size: xx-small;
-                                        text-decoration: underline;
-                                        font-weight: normal;
-                                        height: 22px;
-                                        img {
-                                            height: 14px;
-                                            margin-right: 2px;
-                                            margin-bottom: 2px;
-                                        }
-                                        &:hover {
-                                            text-decoration: underline;
-                                        }
-                                    `}
-                                >
-                                    Set Up Stages
-                                </BloomButton>
-                            </div>
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        flex: 1 1 auto;
+                        min-height: 0;
+                        overflow-x: hidden;
+                        // A single horizontal padding on the whole panel
+                        // gives every row one shared left edge (matching
+                        // the Leveled Reader), instead of the stage being
+                        // hard against the left edge. (BL-16585)
+                        padding: 8px 12px 0 12px;
+                    `}
+                >
+                    {showTool && (
+                        <>
                             <ReaderToolNav
                                 isForLeveled={false}
                                 changeFunction={changeStage}
@@ -446,22 +435,6 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                                 <StageGraphemes />
                             )}
                             <SortedStageWords changeSortFunc={changeSortFunc} />
-                        </div>
-                        <>
-                            {model.synphony?.source.useAllowedWords === 0 && (
-                                <Link
-                                    l10nKey="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
-                                    href="javascript:toolboxBundle.makeLetterWordList();"
-                                    css={css`
-                                        padding: 8px;
-                                        padding-left: 11px;
-                                        background-color: ${kBloomDarkestBackground};
-                                        text-decoration: underline;
-                                    `}
-                                >
-                                    Generate a letter and word list report
-                                </Link>
-                            )}
                             {model.getAllowedWordsAsObjects(model.stageNumber)
                                 .length >= model.maxAllowedWords && (
                                 <Span
@@ -479,13 +452,59 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                                 </Span>
                             )}
                         </>
-                    </>
-                )}
-                <div>
-                    <ReaderToolSwitch
-                        isForLeveled={false}
-                        changeDisplayFunc={() => setShowTool((prev) => !prev)}
-                    />
+                    )}
+                    {/* Bottom group, top to bottom: Generate Report, the "Book is
+                        Decodable" toggle, then the Set Up Stages button last.
+                        Generate Report only appears when sampling words; allowed-
+                        words mode has no report to generate. margin-top:auto pushes
+                        the group to the bottom while the tool content shows; it
+                        scrolls with the content when the panel overflows. The toggle
+                        stays mounted even when the content is hidden so the user can
+                        turn the book back into a decodable reader. */}
+                    <div
+                        css={css`
+                            display: flex;
+                            flex-direction: column;
+                            align-items: flex-start;
+                            gap: 8px;
+                            margin-bottom: 10px;
+                            ${showTool
+                                ? "margin-top: auto; padding-top: 12px;"
+                                : ""}
+                        `}
+                    >
+                        {showTool &&
+                            model.synphony?.source.useAllowedWords === 0 && (
+                                <BloomButton
+                                    l10nKey="EditTab.Toolbox.DecodableReaderTool.GenerateReport"
+                                    l10nTipEnglishEnabled="Create and open a text file listing the letters and words available at each decodable stage."
+                                    href="javascript:toolboxBundle.makeLetterWordList();"
+                                    variant="text"
+                                    enabled={true}
+                                    hasText={true}
+                                    iconBeforeText={
+                                        <SummarizeOutlined
+                                            css={css`
+                                                // currentColor picks up the
+                                                // button's accent text color.
+                                                color: currentColor;
+                                                font-size: 16px;
+                                            `}
+                                        />
+                                    }
+                                    css={readerTextButtonCss}
+                                >
+                                    Generate Report
+                                </BloomButton>
+                            )}
+                        <ReaderToolSwitch
+                            isForLeveled={false}
+                            changeDisplayFunc={() =>
+                                setShowTool((prev) => !prev)
+                            }
+                        />
+                        {showTool && <ReaderSetupButton isForLeveled={false} />}
+                    </div>
                 </div>
             </div>
         </ThemeProvider>

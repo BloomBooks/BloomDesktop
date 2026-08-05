@@ -73,9 +73,9 @@ import {
 import { animateStyleName } from "../../../utils/shared";
 import jQuery from "jquery";
 import {
-    AudioTextHighlightManager,
+    AudioHighlightManager,
     currentHighlightName,
-} from "./audioTextHighlightManager";
+} from "./audioHighlightManager";
 import { TalkingBookUiState, Status } from "./TalkingBookUiState";
 
 // ENHANCE: Replace AudioRecordingMode with this?
@@ -193,7 +193,7 @@ export default class AudioRecording implements IAudioRecorder {
     public __testonly__sentenceToIdListMap = this.sentenceToIdListMap; // Exposing it for unit tests. Not meant for public use.
 
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
-    private audioTextHighlightManager = new AudioTextHighlightManager();
+    private audioHighlightManager = new AudioHighlightManager();
 
     // Incremented each time setHighlightToAsync starts. During page setup several rounds of it
     // can overlap (newPageReady fires twice, and a quick page change can leave the previous
@@ -911,7 +911,7 @@ export default class AudioRecording implements IAudioRecorder {
             this.removeAudioCurrent(pageDocBody);
         }
 
-        this.audioTextHighlightManager.clearAllManagedHighlights(
+        this.audioHighlightManager.clearAllManagedHighlights(
             pageDocBody ?? undefined,
         );
     }
@@ -1095,7 +1095,7 @@ export default class AudioRecording implements IAudioRecorder {
             : null;
         // The manager keeps both the yellow current highlight and the blue post-split
         // highlights in sync so callers do not need separate refresh paths.
-        this.audioTextHighlightManager.refreshHighlights(
+        this.audioHighlightManager.refreshHighlights(
             activeHighlight,
             currentTextBox,
             suppressCurrentHighlight,
@@ -3057,9 +3057,7 @@ export default class AudioRecording implements IAudioRecorder {
         if (
             mustRefresh ||
             !alreadyRegistered ||
-            this.audioTextHighlightManager.currentHighlightHasDeadRanges(
-                pageBody,
-            )
+            this.audioHighlightManager.currentHighlightHasDeadRanges(pageBody)
         ) {
             this.refreshAudioTextHighlights(this.highlightedElement);
         }
@@ -4650,7 +4648,7 @@ export default class AudioRecording implements IAudioRecorder {
             currentTextBox.removeAttribute("data-audioRecordingEndTimes");
         }
 
-        this.audioTextHighlightManager.clearSplitHighlights(
+        this.audioHighlightManager.clearSplitHighlights(
             currentTextBox ?? undefined,
         );
     }

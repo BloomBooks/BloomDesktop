@@ -10,11 +10,7 @@ import {
     notifyToolOfChangedImage,
     wrapWithRequestPageContentDelay,
 } from "../bloomEditing";
-import {
-    isPlaceHolderImage,
-    kImageContainerClass,
-    SetupMetadataButton,
-} from "../bloomImages";
+import { kImageContainerClass, SetupMetadataButton } from "../bloomImages";
 import {
     adjustTarget,
     correctTabIndex,
@@ -216,7 +212,7 @@ export class CanvasElementClipboard {
     private replaceImageInCanvasElement(
         bloomCanvas: HTMLElement,
         canvasElement: HTMLElement,
-        img: HTMLElement,
+        img: HTMLImageElement,
         imageInfo: IImageInfo,
     ): void {
         changeImageInfo(img, imageInfo);
@@ -240,8 +236,8 @@ export class CanvasElementClipboard {
         const bloomCanvas = this.host.getActiveOrFirstBloomCanvasOnPage()!;
         const canvasElements =
             bloomCanvas.getElementsByClassName(kCanvasElementClass);
-
-        // If it's an empty canvas, make this its background image.
+        // If it's an empty canvas, make this its background image.  An empty canvas may already
+        // have a background image, but no other content.  See BL-16542.
         // A possible special case is the custom game page, where the only canvas element is the
         // header. But that works out to our advantage, since we think a background is unlikely
         // in games, and would prefer to interpret the pasted image as a game item.
@@ -250,7 +246,7 @@ export class CanvasElementClipboard {
             canvasElements[0].classList.contains(kBackgroundImageClass)
         ) {
             const bgimg = canvasElements[0].getElementsByTagName("img")[0];
-            if (isPlaceHolderImage(bgimg.getAttribute("src"))) {
+            if (bgimg) {
                 this.replaceImageInCanvasElement(
                     bloomCanvas,
                     canvasElements[0] as HTMLElement,
@@ -261,17 +257,21 @@ export class CanvasElementClipboard {
             }
         }
 
-        // If there is an image canvas element (other than the background one) already selected
-        // and it is a placeholder, just set its image.
+        // If an image canvas element is currently selected, replace its image rather than
+        // creating a new overlay on top of it. This applies whether the selected element is the
+        // background image (as when a Standard Layout cover's picture is selected) or an overlay,
+        // and whether or not it currently holds a placeholder. It matches the behavior of the
+        // image context menu's Paste command and the expectation that pasting onto a selected
+        // image replaces that image. See BL-16542.
         const activeElement = this.host.getActiveElement();
-        if (
-            activeElement &&
-            !activeElement.classList.contains(kBackgroundImageClass)
-        ) {
+        if (activeElement) {
             const img = activeElement
                 .getElementsByClassName(kImageContainerClass)[0]
                 ?.getElementsByTagName("img")[0];
-            if (img && isPlaceHolderImage(img.getAttribute("src"))) {
+            if (img) {
+                // Reuse the shared helper rather than duplicating its geometry sequence, so the
+                // background-image case also rebuilds the copyright/metadata button (BL-16605).
+                // Inlining the geometry-only steps here previously skipped that rebuild.
                 this.replaceImageInCanvasElement(
                     bloomCanvas,
                     activeElement as HTMLElement,

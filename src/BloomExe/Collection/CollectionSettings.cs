@@ -496,6 +496,38 @@ namespace Bloom.Collection
                 omitDirection
             );
             Language1.AddSelectorCssRule(sb, omitDirection);
+            // Content marked lang="*" is deliberately language-independent -- arithmetic equations,
+            // and similar template text that isn't in any language (BL-5616). Because our font
+            // machinery is keyed by language tag, no rule above matches it, so before BL-16624 it
+            // inherited whatever font the surrounding document happened to supply. That differed per
+            // surface: Bloom's UI font in the Edit tab, something else in the preview, and a system
+            // fallback once published. Give it L1's font so every surface agrees.
+            // Font only, deliberately:
+            //  - no direction, because digits and math symbols are not the writing system's text and
+            //    should not be flipped when L1 is right-to-left;
+            //  - no line-height (-1 suppresses it), for the reason given above about basePage.css.
+            // It must stay L1's font rather than becoming its own setting: GetUsedFontsCommand finds
+            // fonts through DefaultLangStylesCssRegex, whose language group is [-a-zA-Z]* and so never
+            // matches "*". A font used ONLY here would be invisible to that scan and could go
+            // unembedded by the harvester. Sharing L1's font means it is always already reported.
+            // Scoped to content pages on purpose. Xmatter must NOT be caught by this: XMatterHelper
+            // sets lang=<metadata language> on every xmatter page div specifically so that fields
+            // with no useful lang -- including lang="*" ones like the ISBN and the branding html
+            // blocks -- inherit the metadata language's font (BL-8545). A rule matching those
+            // elements directly would beat that inheritance and silently switch them to L1's font.
+            // Also no word-break: whatever L1 does about breaking lines only at spaces is about its
+            // script, and has nothing to say about digits and math symbols.
+            // ePUB needs no special case here: its export writes the resolved font inline before
+            // deleting the lang="*" attribute the validator rejects.
+            WritingSystem.AddSelectorCssRule(
+                sb,
+                ".bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) [lang='*']",
+                Language1.FontName,
+                Language1.IsRightToLeft,
+                -1, // suppresses line-height
+                false, // breakOnlyAtSpaces
+                true // omitDirection
+            );
             if (Language2Tag != Language1Tag)
                 Language2.AddSelectorCssRule(sb, omitDirection);
             if (

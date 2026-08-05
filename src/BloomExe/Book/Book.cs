@@ -3524,6 +3524,12 @@ namespace Bloom.Book
         /// <param name="dom"></param>
         internal void AddPreviewJavascript(HtmlDom dom)
         {
+            // Keep this bundle free of Bloom's UI css. It goes into book documents (preview,
+            // thumbnails, printing), so anything UI-ish it drags in gets applied to the rendered
+            // book: bloomUI.css used to come along and put the UI font stack on book text, which
+            // then broke when BL-15300 moved the matching @font-face declarations out of the
+            // bundle. These documents deliberately carry no UI font faces, so a re-leak shows up
+            // as a wrong font rather than rendering plausibly.
             dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
         }
 

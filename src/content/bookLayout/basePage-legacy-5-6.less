@@ -123,6 +123,12 @@ span.bloom-linebreak {
     display: block;
     text-indent: 0;
 }
+// added from basePage-sharedRules.less (which this file does not import) so that the
+// "No Indent" command works in legacy books too. See BL-16649 and the fuller comment on
+// the original rule, including why the selector is this long.
+.bloom-page .bloom-editable p.bloom-noIndent {
+    text-indent: 0 !important;
+}
 .pdfPublishMode .bloom-page.Device16x9Portrait {
     min-width: 99.74791667mm;
     max-width: 99.74791667mm;

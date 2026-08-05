@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Bloom.Api;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.ToPalaso;
 using SIL.Progress;
@@ -14,7 +16,9 @@ namespace Bloom.Book
     /// Runs, off-screen, the same per-page "fix-up" that a user gets by opening a book in the Edit
     /// tab and visiting every page, but without disturbing the live UI. It is driven by the
     /// external/process-book API and used by BloomBridge to finish a freshly-generated
-    /// book whose raw HTML "isn't quite right" yet.
+    /// book whose raw HTML "isn't quite right" yet. Before the per-page work it also shrinks any
+    /// oversized images BloomBridge wrote straight to the book folder, since those never passed
+    /// through Bloom's normal image import.
     ///
     /// Why a real browser is needed: when an editable page loads, the editing JavaScript
     /// (bloomEditing.ts bootstrap/SetupElements) measures and mutates the DOM — image sizing,
@@ -30,26 +34,31 @@ namespace Bloom.Book
         private const int kReadyTimeoutMs = 30000;
 
         /// <summary>
-        /// Bring the book structurally up to date (xmatter/layout migrations; this also ensures the
-        /// needed CSS file links are present, and on save the actual CSS files), then run the
-        /// per-page browser fix-up over every page and save the result to disk. Returns the number
-        /// of pages processed.
+        /// Shrink any oversized images sitting in the book folder, bring the book structurally up to
+        /// date (xmatter/layout migrations; this also ensures the needed CSS file links are present,
+        /// and on save the actual CSS files), then run the per-page browser fix-up over every page and
+        /// save the result to disk. Returns the number of pages processed.
         ///
-        /// All-or-nothing: a failure on any page (capture error or timeout) throws, the save at the
-        /// end is skipped, and nothing is persisted. The caller (external/process-book) surfaces this
-        /// as an error so BloomBridge can re-run, rather than leaving a half-processed book on disk.
+        /// All-or-nothing for the HTML: a failure on any page (capture error or timeout) throws and
+        /// the save at the end is skipped, so none of the page fix-up is persisted. The caller
+        /// (external/process-book) surfaces this as an error so BloomBridge can re-run, rather than
+        /// leaving a half-processed book on disk. (The up-front image shrink is the one exception:
+        /// it rewrites image files in place before the page loop, and a later failure does not undo
+        /// it -- harmless, since a re-run simply finds those images already small enough.)
         ///
         /// Can run on any thread (and the caller runs it on a background thread so the UI stays responsive):
         /// the WebView2 it drives lives on the OffScreenBrowser's own dedicated thread, and this method just
         /// blocks on it. The book, however, must not be touched by another thread while we process it.
         ///
-        /// When <paramref name="fitImageTextSplits"/> is true, simple two-pane origami pages with a
-        /// single illustration in the first pane and a single text block in the second pane have their
-        /// split auto-fit. This currently covers both image-above-text and image-left-of-text layouts.
-        /// The image pane is grown (and the text pane shrunk) as far as it can without making the text
-        /// overflow, but no further than the image filling the relevant page dimension. This uses the
-        /// real off-screen browser layout (no font/text estimation); see fitImageOverTextSplits() in
-        /// bloomEditing.ts.
+        /// When <paramref name="fitImageTextSplits"/> is true, origami image/text pages have their
+        /// split auto-fit: two-pane pages with one illustration in the first pane and one text block in
+        /// the second (both image-above-text and image-left-of-text), plus top-to-bottom stacks of
+        /// three or more panes holding one illustration and text in the rest -- text above / picture /
+        /// text below and the like. Each divider moves to the size the content actually calls for, in
+        /// either direction, but never so far that text overflows, and never past the point where the
+        /// illustration already fills the relevant page dimension (beyond which a bigger pane is only
+        /// whitespace). This uses the real off-screen browser layout (no font/text estimation); see
+        /// fitImageOverTextSplits() in bloomEditing.ts.
         /// </summary>
         public static int ProcessBook(Book book, bool fitImageTextSplits = false)
         {
@@ -73,6 +82,30 @@ namespace Bloom.Book
             // started. (Re-capturing mid-batch would be wrong: by then Bloom itself often holds the
             // foreground, so we'd "restore" to Bloom's own window.)
             var priorForeground = ProcessExtra.GetForegroundWindow();
+
+            // BloomBridge writes book folders straight to disk, bypassing the normal add-image import
+            // path that would otherwise have already shrunk any oversized image. The usual catch-all,
+            // BookStorage.MigrateToMediaLevel1ShrinkLargeImages, won't help here: the bridge HTML
+            // already carries a modern maintenance level, so BringBookUpToDate below treats that
+            // migration as already done and skips it. So we do the shrink ourselves, unconditionally
+            // (not gated by mediaMaintenanceLevel), and it must come BEFORE BringBookUpToDate: (a) on
+            // a book old enough that the migration WOULD run, it normally finds nothing left to
+            // shrink, so its modal progress dialog is not created on this background thread (where a
+            // WinForms dialog is illegal, BL-16646) -- "normally" because a GraphicsMagick failure can
+            // leave an image oversized, in which case that narrow old-book case can still hit the
+            // dialog; (b) the off-screen per-page fix-up then measures and lays out against the
+            // final, already-shrunk images.
+            if (ImageUtils.NeedToShrinkImages(book.FolderPath))
+            {
+                Log("shrinking oversized images in the book folder");
+                var shrinkTimer = Stopwatch.StartNew();
+                ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                    book.FolderPath,
+                    new List<string>(),
+                    new NullProgress()
+                );
+                Log($"done shrinking images ({shrinkTimer.ElapsedMilliseconds}ms)");
+            }
 
             book.BringBookUpToDate(new NullProgress());
 

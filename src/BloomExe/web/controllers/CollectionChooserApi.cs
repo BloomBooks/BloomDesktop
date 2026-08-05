@@ -181,6 +181,7 @@ namespace Bloom.web.controllers
             return new
             {
                 path = collectionFilePath,
+                folderPath,
                 title = Path.GetFileNameWithoutExtension(collectionFilePath),
                 bookCount = CountBooksInCollection(folderPath),
                 isTeamCollection,
