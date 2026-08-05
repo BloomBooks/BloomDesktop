@@ -623,6 +623,14 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
                         flex: 1 1 auto;
                         min-height: 0;
                         overflow-x: hidden;
+                        // Stated rather than left implicit: this is what keeps
+                        // everything reachable in a panel too short for the nav,
+                        // the scrolling region's floor and the control block —
+                        // the whole tool scrolls. (It is what overflow-x: hidden
+                        // alone already computes to, since a non-visible axis
+                        // forces the other to auto, but the fallback matters
+                        // enough not to leave it as a side effect.)
+                        overflow-y: auto;
                         // A single horizontal padding on the whole panel keeps
                         // every row (including "Level x of y") on one left edge,
                         // instead of each section supplying its own left margin.
