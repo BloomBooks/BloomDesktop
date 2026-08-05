@@ -1829,18 +1829,56 @@ svg.bloom-videoControl {
     position: relative;
     z-index: 1;
 
-    // Draw the usual flower placeholder until a real image has been chosen.
-    &:has(img[src*="placeHolder.png"]) {
-        .image-placeholder-background();
+    // THE IMAGE'S BOX, as custom properties, for anything that must sit exactly on the
+    // image rather than on the wrapper: the wrapper's own box is NOT the image's box (the
+    // vertical offset is transparent padding at the top, and in the middle band the
+    // wrapper spans the whole editable with a narrower image centered in it). Both the
+    // resize-handle frame and the placeholder flower below consume these, so they cannot
+    // drift apart.
+    --inline-image-box-top: 0px;
+    --inline-image-box-inset: 0px;
+    // Only the three floating docks put the offset padding at the top of the wrapper. The
+    // bottom dock ignores --inline-image-offset, so its image box starts at the top.
+    &.bloom-inlineImageLeft,
+    &.bloom-inlineImageRight,
+    &.bloom-inlineImageMiddle {
+        --inline-image-box-top: var(--inline-image-offset, 0px);
+    }
+    // In the middle band the image is centered at --inline-image-width of a full-width
+    // wrapper, so half of what is left over on each side is wrapper rather than image.
+    &.bloom-inlineImageMiddle {
+        --inline-image-box-inset: calc(
+            (100% - var(--inline-image-width, 40%)) / 2
+        );
+    }
 
-        // That mixin hides the placeholder img with display:none, because there is no
-        // real placeHolder.png file to load and we don't want a broken-image icon. But
-        // we still need the img's *box*: its width plus --inline-image-aspect-ratio is
-        // the only thing giving the wrapper a height for the flower to be drawn in. So
-        // bring it back as laid out but invisible.
+    // Draw the usual flower placeholder until a real image has been chosen -- on the
+    // IMAGE's box, not the wrapper's, or the flower floats up into the offset padding
+    // where the text flows, disconnected from the handles (John, live testing).
+    &:has(img[src*="placeHolder.png"]) {
+        // There is no real placeHolder.png file to load, so hide the broken-image icon;
+        // but we still need the img's *box*: its width plus --inline-image-aspect-ratio
+        // is the only thing giving the image area a height for the flower to be drawn in.
         img[src*="placeHolder.png"] {
             display: block;
             visibility: hidden;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: var(--inline-image-box-top);
+            bottom: 0;
+            left: var(--inline-image-box-inset);
+            right: var(--inline-image-box-inset);
+            background-image: @image-placeholder;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            // Behind the resize handles (the wrapper has z-index:1, so it is a stacking
+            // context of its own and -1 cannot escape it), and invisible to the mouse.
+            z-index: -1;
+            pointer-events: none;
         }
     }
 
@@ -1867,40 +1905,18 @@ svg.bloom-videoControl {
 // (John, live testing). Inside loses nothing: the corner is still obvious and grabbable.
 @inline-image-handle-nudge: 0px;
 
-// The frame the four resize handles hang off. The wrapper's own box is NOT the image's box:
-// the vertical offset is transparent padding at the top of the wrapper, and in the middle
-// band the wrapper spans the whole editable with a narrower image centered in it. So the
-// frame reconstructs the image's box from the same two custom properties the layout uses,
-// and the handles sit at ITS corners.
+// The frame the four resize handles hang off. It sits on the IMAGE's box, which the
+// wrapper publishes as --inline-image-box-top/-inset (see the wrapper section above; the
+// placeholder flower uses the same values, so the two cannot drift apart).
 .bloom-ui-inlineImage-handle-frame {
     position: absolute;
-    top: var(--inline-image-handle-frame-top, 0px);
+    top: var(--inline-image-box-top, 0px);
     bottom: 0;
-    left: var(--inline-image-handle-frame-inset, 0px);
-    right: var(--inline-image-handle-frame-inset, 0px);
+    left: var(--inline-image-box-inset, 0px);
+    right: var(--inline-image-box-inset, 0px);
     // The frame is only a coordinate system. A press on it belongs to the image (which means
     // a drag); only the handles themselves take one back, below.
     pointer-events: none;
-}
-
-// Only the three floating docks put the offset padding at the top of the wrapper. The bottom
-// dock ignores --inline-image-offset, so its handles must not shift by it either.
-.bloom-inlineImage:is(
-        .bloom-inlineImageLeft,
-        .bloom-inlineImageRight,
-        .bloom-inlineImageMiddle
-    )
-    > .bloom-ui-inlineImage-handle-frame {
-    --inline-image-handle-frame-top: var(--inline-image-offset, 0px);
-}
-
-// In the middle band the image is centered at --inline-image-width of a full-width wrapper,
-// so half of what is left over on each side is wrapper rather than image.
-.bloom-inlineImage.bloom-inlineImageMiddle
-    > .bloom-ui-inlineImage-handle-frame {
-    --inline-image-handle-frame-inset: calc(
-        (100% - var(--inline-image-width, 40%)) / 2
-    );
 }
 
 .bloom-ui-inlineImage-handle {
