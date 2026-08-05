@@ -4084,22 +4084,46 @@ namespace Bloom.Book
                 }
                 else
                 {
-                    using (var dlg = new ProgressDialogBackground())
+                    // We may get invoked from a background thread, so we need to make sure we are on the UI thread
+                    // before showing a dialog.
+                    var shell = Shell.GetShellOrOtherOpenForm();
+                    if (shell == null)
                     {
-                        dlg.Text = "Updating Image Files";
-                        dlg.ShowAndDoWork(
-                            (progress, args) =>
-                                ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                                    FolderPath,
-                                    new List<string>(),
-                                    progress
-                                )
+                        // This shouldn't happen in normal operation, but just in case...
+                        ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                            FolderPath,
+                            new List<string>(),
+                            new NullProgress()
                         );
+                    }
+                    else if (shell.InvokeRequired)
+                    {
+                        shell.Invoke(UpdateImagesWithProgressDialog);
+                    }
+                    else
+                    {
+                        UpdateImagesWithProgressDialog();
                     }
                 }
             }
 
             Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
+        }
+
+        private void UpdateImagesWithProgressDialog()
+        {
+            using (var dlg = new ProgressDialogBackground())
+            {
+                dlg.Text = "Updating Image Files";
+                dlg.ShowAndDoWork(
+                    (progress, args) =>
+                        ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                            FolderPath,
+                            new List<string>(),
+                            progress
+                        )
+                );
+            }
         }
 
         private int GetMaintenanceLevel()
