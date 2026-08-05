@@ -4047,6 +4047,10 @@ namespace Bloom.Book
         /// memory. However, it is still helpful for performance and reducing published file sizes.
         /// Does nothing if mediaMaintenanceLevel indicates it has already been done.
         /// </summary>
+        /// <param name="progress">Where to report the (potentially very slow) shrinking, so the
+        /// user can see why we are busy. Callers pass whatever progress they already own; headless
+        /// callers such as the bulk-upload CLI pass a NullProgress and so report nothing. Must not
+        /// be null: ImageUtils.FixSizeAndTransparencyOfImagesInFolder dereferences it.</param>
         public void MigrateToMediaLevel1ShrinkLargeImages(IProgress progress)
         {
             var levelString = Dom.GetMetaValue("mediaMaintenanceLevel", "0");
@@ -4058,10 +4062,11 @@ namespace Bloom.Book
             {
                 // If the book contains overlarge images, we want to fix those before editing because this can lead
                 // to thumbnails not being created properly and other bad behavior.  This is a one-time fix that can
-                // permanently change the images in the original book folder.  If any images must be shrunk, then a
-                // progress dialog pops up because that can be a very slow process.  If nothing needs to be done,
-                // nothing will appear on the screen, and it usually takes a small fraction of a second to determine
-                // this.
+                // permanently change the images in the original book folder.  Shrinking can be very slow, so we
+                // report it through the caller's progress rather than putting up our own dialog (BL-16646: this
+                // used to create a WinForms dialog, which is illegal on the background threads several of these
+                // callers run on).  If nothing needs to be done, nothing is reported at all, and it usually takes
+                // a small fraction of a second to determine this.
 
                 // Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
                 // order to avoid out of memory errors that can happen with really large images.
