@@ -8,9 +8,16 @@ To resume after an interruption, issue **`/resume-ckeditor`** (see
 
 ## Current state
 
-**Phase: Stage 0, environment fixed, code work done; live verification remains.** Branch
-**`BL-6681-stage0-inventory`**, 6 commits, **not pushed, no PR yet**. All of PLAN.md §10 is decided
-except the Stage-5 legacy-cleanup lifetime, which blocks nothing.
+**Phase: Stage 0 preflighted and open as a draft PR.**
+**PR [#8153](https://github.com/BloomBooks/BloomDesktop/pull/8153)** (draft), branch
+**`BL-6681-stage0-inventory`**, pushed and rebased onto master. Card linked; QA test-ideas posted;
+Devin consultation logged. All of PLAN.md §10 is decided except the Stage-5 legacy-cleanup lifetime,
+which blocks nothing.
+
+**Not yet merged, and three Stage 0 verification items are deliberately still open** — they are
+carried, not forgotten: the paste/drop baseline, the handler-accumulation repro, and the page-reload
+timing baseline, plus G2/G6/G7 below. None of them block this PR, because it changes no behaviour in
+those areas.
 
 Stage 0 checklist (PLAN.md §6):
 
