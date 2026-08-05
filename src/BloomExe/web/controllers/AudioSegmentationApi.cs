@@ -229,8 +229,9 @@ namespace Bloom.web.controllers
             );
         }
 
-        // Returns true if the command returned with an error
-        protected bool DoesCommandCauseError(
+        // Returns true if the command returned with an error.
+        // Virtual so that tests can verify that a code path runs no external commands at all.
+        protected virtual bool DoesCommandCauseError(
             string commandString,
             string workingDirectory,
             out string standardOutput,
@@ -401,15 +402,16 @@ namespace Bloom.web.controllers
                 requestParameters.audioTextFragments;
             string requestedLangCode = requestParameters.lang;
 
+            // "Apply Timings File..." just reads the times out of a file the user already has,
+            // so none of the forced-alignment machinery (Python, Aeneas, eSpeak, FFMPEG) is involved.
+            var usingManualTimings = !string.IsNullOrEmpty(requestParameters.manualTimingsPath);
+
             // The client was supposed to validate this already, but double-check in case something strange happened.
             // Since this is basically a desperate fallback that shouldn't ever happen we won't try to make the message
             // contain a hot link here. That code is in Typescript.
             // If we're just trying to read a manual timings file, we don't need to check the Aeneas installation.
             string message;
-            if (
-                string.IsNullOrEmpty(requestParameters.manualTimingsPath)
-                && !AreAutoSegmentDependenciesMet(out message)
-            )
+            if (!usingManualTimings && !AreAutoSegmentDependenciesMet(out message))
             {
                 var localizedFormatString = L10NSharp.LocalizationManager.GetString(
                     "EditTab.Toolbox.TalkingBook.MissingDependency",
@@ -422,24 +424,32 @@ namespace Bloom.web.controllers
                 return null;
             }
 
-            // When using TTS overrides, there's no Aeneas error message that tells us if the language is unsupported.
-            // Therefore, we explicitly test if the language is supported by the dependency (eSpeak) before getting started.
-            string stdOut;
-            string stdErr;
-            string langCode = GetBestSupportedLanguage(requestedLangCode, out stdOut, out stdErr);
-
-            if (string.IsNullOrEmpty(langCode))
+            // The language actually spoken to Aeneas' TTS engine. It only differs from the requested
+            // one if eSpeak can't handle the requested one and we fall back to another language
+            // (possibly along with an orthography conversion). Applying a manual timings file involves
+            // no TTS at all, so we leave it as requested and never ask eSpeak anything.
+            string langCode = requestedLangCode;
+            if (!usingManualTimings)
             {
-                // FYI: The error message is expected to be in stdError with an empty stdOut, but I included both just in case.
-                Logger.WriteEvent("AudioSegmentationApi.GetAeneasTimings(): eSpeak error.");
-                ErrorReport.ReportNonFatalMessageWithStackTrace(
-                    $"eSpeak error: {stdOut}\n{stdErr}"
+                // When using TTS overrides, there's no Aeneas error message that tells us if the language is unsupported.
+                // Therefore, we explicitly test if the language is supported by the dependency (eSpeak) before getting started.
+                string stdOut;
+                string stdErr;
+                langCode = GetBestSupportedLanguage(requestedLangCode, out stdOut, out stdErr);
+
+                if (string.IsNullOrEmpty(langCode))
+                {
+                    // FYI: The error message is expected to be in stdError with an empty stdOut, but I included both just in case.
+                    Logger.WriteEvent("AudioSegmentationApi.GetAeneasTimings(): eSpeak error.");
+                    ErrorReport.ReportNonFatalMessageWithStackTrace(
+                        $"eSpeak error: {stdOut}\n{stdErr}"
+                    );
+                    return null;
+                }
+                Logger.WriteMinorEvent(
+                    $"AudioSegmentationApi.GetAeneasTimings(): Attempting to segment with langCode={langCode}"
                 );
-                return null;
             }
-            Logger.WriteMinorEvent(
-                $"AudioSegmentationApi.GetAeneasTimings(): Attempting to segment with langCode={langCode}"
-            );
 
             string textFragmentsFilename = Path.Combine(
                 directoryName,
@@ -478,9 +488,7 @@ namespace Bloom.web.controllers
             List<Tuple<string, string>> timingStartEndRangeList = null;
             try
             {
-                RobustFile.WriteAllLines(textFragmentsFilename, fragmentList);
-
-                if (!string.IsNullOrEmpty(requestParameters.manualTimingsPath))
+                if (usingManualTimings)
                 {
                     response.timingsFilePath = Path.Combine(
                         directoryName,
@@ -503,6 +511,8 @@ namespace Bloom.web.controllers
                 }
                 else
                 {
+                    // Aeneas reads the text it is aligning from this file.
+                    RobustFile.WriteAllLines(textFragmentsFilename, fragmentList);
                     response.timingsFilePath = Path.Combine(
                         directoryName,
                         $"{requestParameters.audioFilenameBase}_timings.txt"

@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Bloom.Book;
 using Bloom.web.controllers;
+using BloomTemp;
+using Moq;
 using NUnit.Framework;
 using Assert = NUnit.Framework.Assert;
 
@@ -268,6 +271,79 @@ namespace BloomTests.web.controllers
 
             // Assert
             CollectionAssert.AreEqual(expectedOutput, output);
+        }
+
+        /// <summary>
+        /// "Apply Timings File..." must work on machines that have none of the forced-alignment
+        /// dependencies installed. In particular it used to ask eSpeak which language to use, which
+        /// failed when eSpeak was missing.
+        /// </summary>
+        [Test]
+        public void GetAeneasTimings_ManualTimingsFile_RunsNoExternalCommands()
+        {
+            using (var bookFolder = new TemporaryFolder("AudioSegmentationApiTests"))
+            {
+                var audioFolder = Directory.CreateDirectory(
+                    Path.Combine(bookFolder.FolderPath, "audio")
+                );
+                // GetAeneasTimings insists on an audio file to apply the timings to; it doesn't read it.
+                File.WriteAllText(Path.Combine(audioFolder.FullName, "textBoxId.mp3"), "");
+                var timingsPath = Path.Combine(audioFolder.FullName, "textBoxId_timings.txt");
+                File.WriteAllLines(
+                    timingsPath,
+                    new[] { "0.000\t1.500\tSentence 1.", "1.500\t4.250\tSentence 2." }
+                );
+
+                var book = new Mock<Bloom.Book.Book>();
+                book.SetupGet(b => b.FolderPath).Returns(bookFolder.FolderPath);
+                var bookSelection = new BookSelection();
+                bookSelection.SelectBook(book.Object);
+                var api = new NoExternalCommandsAudioSegmentationApi(bookSelection);
+
+                var request = new AutoSegmentRequest
+                {
+                    audioFilenameBase = "textBoxId",
+                    audioTextFragments = new[]
+                    {
+                        new AudioTextFragment { fragmentText = "Sentence 1.", id = "id1" },
+                        new AudioTextFragment { fragmentText = "Sentence 2.", id = "id2" },
+                    },
+                    // A language eSpeak would certainly reject, to prove we never consult it.
+                    lang = "qaa",
+                    manualTimingsPath = timingsPath,
+                };
+
+                var response = api.GetAeneasTimings(request);
+
+                Assert.That(response, Is.Not.Null, "Should have applied the timings file");
+                Assert.That(response.allEndTimesString, Is.EqualTo("1.500 4.250"));
+                Assert.That(response.warningMessage, Is.Empty);
+                Assert.That(response.successMessage, Is.EqualTo("Applied 2 manual timings."));
+            }
+        }
+
+        /// <summary>
+        /// An AudioSegmentationApi that fails the test if anything tries to run an external
+        /// command (python, aeneas, espeak, ffmpeg).
+        /// </summary>
+        private class NoExternalCommandsAudioSegmentationApi : AudioSegmentationApi
+        {
+            public NoExternalCommandsAudioSegmentationApi(BookSelection bookSelection)
+                : base(bookSelection) { }
+
+            protected override bool DoesCommandCauseError(
+                string commandString,
+                string workingDirectory,
+                out string standardOutput,
+                out string standardError,
+                params int[] errorCodesToIgnore
+            )
+            {
+                Assert.Fail($"Should not have run an external command: {commandString}");
+                standardOutput = "";
+                standardError = "";
+                return false;
+            }
         }
     }
 }
