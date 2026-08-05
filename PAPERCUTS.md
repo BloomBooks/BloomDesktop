@@ -34,6 +34,19 @@ House rules:
 - **Context:** BL-16638 / PR #8134. Andrew chose "make a papercut entry" over fixing it inline.
   Loop at `index.spec.ts:426`, assertion at `index.spec.ts:486`.
 
+## 2026-07-28 — One talkingBookSpec test fails only under full-suite worker load
+- **Cut:** `talkingBookSpec.ts > showTool(checksum=missing, audio=missing, scenario=PreTextBox) => UPDATE`
+  fails intermittently in `pnpm test`, but passes when its file is run alone, passes on a
+  re-run of the identical tree, and passes if you exclude *any* one unrelated spec file
+  (`--exclude "**/textHighlightManagerSpec.ts"` works just as well as excluding a related
+  one). So it's sensitive to how many files the pool is juggling, not to any code change —
+  but it reads as a real regression and costs 15+ minutes to clear each time it appears.
+- **Idea:** Make the test wait for the audio player's `src` deterministically instead of
+  relying on timing, or mark it as needing serial execution. Failing that, note it in the
+  spec so the next person doesn't re-triage it from scratch.
+- **Context:** BL-16558 preflight. Full suite 611 passing; this test failed on two
+  consecutive runs then passed on the third with no code change in between.
+
 ## 2026-07-24 — killBloomProcess.mjs --help kills Bloom instead of printing usage
 - **Cut:** Running `node .github/skills/bloom-automation/killBloomProcess.mjs --help` to check
   its options killed the running Bloom (output: "Killed process IDs: 56212, 55352"). Unknown
@@ -114,6 +127,29 @@ House rules:
 - **Context:** BloomDesktop, found during `/preflight` of PR #8112 (BL-16602). Related to the
   2026-07-24 entry (wrapper reports failure as success) — same "trust the summary line, not
   the exit code" hazard, different cause.
+
+
+## 2026-07-27 — Three C# tests fail intermittently under load
+
+- **Cut:** `CheckAudioForAllText_SpansAudioMissing`, `BringBookUpToDate_MovesMetaDataToJson` and
+  `InsertPageAfter_FromAnotherBook_CopiesWidget(True)` fail sometimes and pass sometimes. They
+  failed together on one full-suite run, passed on a second run at the *identical* commit, and
+  passed when run on their own — so they are flaky rather than broken, and none of them is anywhere
+  near what that branch was changing (image handling). The cost is that a full run can no longer be
+  trusted on one reading: an agent has to run the suite twice to tell noise from a real regression.
+  That matters more now than when this was first written, because the full suite otherwise comes
+  back completely green (see the 2026-08-04 note below) — these three are the only remaining noise,
+  so any other failure is signal.
+- **Idea:** Find the shared state (all three build books/collections in temp folders, so likely a
+  fixture or folder-name collision when the suite runs under load) — or, cheaply, quarantine them
+  with `[Retry]` so the noise stops masking real failures.
+- **Context:** BloomDesktop, seen during `/preflight` of PR #8111 (BL-16597), on two of six
+  full-suite runs that day.
+- **2026-08-04:** All three passed on a full run of 3027 tests with **0 failures** — the first
+  entirely green full suite under `build/agent-dotnet.sh`, now that PR #8107 has fixed the nine
+  environmental failures that used to accompany them. Not evidence against this cut: intermittent
+  is intermittent. Recorded because it removes the nine-failure baseline the original wording
+  leaned on.
 
 
 ## 2026-07-24 — agent-dotnet.sh test exits 0 even when tests fail
@@ -199,3 +235,29 @@ brand-new worktree (`Version6.4-2`). Two things blocked that, neither documented
 
 Worth writing down somewhere: the minimum steps to make a new worktree test-capable, and
 whether an agent may run a one-time front-end build for that purpose.
+
+## 2026-07-30 — The AI-editor CDP driver breaks on editor-UI drift, silently
+
+`driveAiImageEditor.mjs dummy-edit` drives the `bloom-ai-image-tools` overlay by
+role/text selectors copied from that repo's own e2e spec. Two of them had drifted since
+they were written, and each failure is a 30-second Playwright timeout naming a selector,
+with no hint that the UI simply changed shape:
+
+- `getByText("Custom Edit", { exact: true })` — the tool button's text is now the name
+  *followed by its description* ("Custom EditEdit the image, optionally with additional…"),
+  so exact-text never matches. Fixed to `getByRole("button", {name: /^Custom Edit/})`.
+- `getByRole("button", {name: /Enhance/i})` now resolves to two elements (strict-mode
+  violation). Fixed with `.first()`.
+
+Also, `editorFrame` only recognized the editor at `localhost:3000`, so the driver worked
+*only* under `./go.sh --with bloom-ai-image-tools=<path>` and not on a plain `./go.sh`,
+where BloomServer serves the built dist-app at `/bloom/aiImageEditor/index.html`. Fixed to
+accept both.
+
+**Idea:** these selectors are a cross-repo contract with no test on either side. Either
+give the editor stable `data-testid`s for the tool tiles and category headers (it already
+has them for the model picker, prompt, and commit button — those did NOT drift), or have
+the editor repo publish its host-harness selectors so this driver can import rather than
+copy them.
+
+**Context:** BL-16603, verifying the credits fix end-to-end against a real Bloom.

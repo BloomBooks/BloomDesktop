@@ -15,6 +15,7 @@ import {
     kBloomUnselectedTabBackground,
 } from "../../utils/colorUtils";
 import { getMasterToolList } from "./toolbox";
+import { kToolboxHeaderZIndex } from "./toolboxZIndexes";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../react_components/requiresSubscription";
 
 // React host for the toolbox sidebar.
@@ -901,6 +902,22 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     min-height: 32px;
                                     padding-left: 5px;
                                     padding-right: 12px;
+                                    // Keep the headers above the Talking Book tool's disabling
+                                    // overlay, so they neither look grayed out nor stop
+                                    // responding in Show Playback Order mode (BL-16630); see
+                                    // toolboxZIndexes.ts for where the number comes from.
+                                    // Only works while no ancestor creates a stacking context
+                                    // -- a transform, filter, opacity or z-index on the
+                                    // Accordion, the Collapse or the tool-body host would
+                                    // trap it.
+                                    position: relative;
+                                    z-index: ${kToolboxHeaderZIndex};
+                                    // The header has to paint its own background for that to
+                                    // help. A collapsed header would otherwise be transparent
+                                    // and show the Accordion root's background, which stays
+                                    // under the overlay and so keeps being dimmed. Same colour
+                                    // the root uses, so nothing changes visually.
+                                    background-color: ${kBloomUnselectedTabBackground};
 
                                     & .MuiAccordionSummary-content {
                                         margin: 8px 0;

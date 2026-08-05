@@ -4,25 +4,27 @@
 // all of the actual integration logic lives here because it is large and self-contained.
 //
 // This is the front-end half of a feature whose C# half is AiImageEditorApi.cs
-// (read that file's header for the full picture). The editor is a SEPARATE web app
+// (read that file's header for the full picture). The AI image editor is a SEPARATE web app
 // (the `bloom-ai-image-tools` package); we do not import it — we load it into an
 // <iframe> overlay. The flow:
 //   1. POST aiImageEditor/launch -> C# mints a session, makes the per-book
-//      .ai-image-editor folder, and returns the editor URL + the whole-book image
+//      .ai-image-editor folder, and returns the AI image editor URL + the whole-book image
 //      list + enumerated history + httpBase/sessionToken.
 //   2. Build a fixed overlay <div id="ai-editor-overlay"> holding an <iframe> at
 //      that URL with ?mode=bloom-iframe.
 //   3. Handshake over window.postMessage on channel "bloom-ai-image-tools": the
-//      editor posts `ready`; we post `init` (the launch reply + the right-clicked
+//      AI image editor posts `ready`; we post `init` (the launch reply + the right-clicked
 //      image as selectedBookImageId). Image bytes never ride postMessage — they go
-//      over HTTP via aiImageEditor/file; the editor references results by id.
+//      over HTTP via aiImageEditor/file; the AI image editor references results by id.
 //   4. On `commit` we POST aiImageEditor/commit; C# applies replacements to all
-//      non-current pages and returns {oldSrc,newSrc} for any on the live page, which
-//      we apply here via Bloom's changeImageByElement(). `cancel`/close just tear the overlay
+//      non-current pages and returns {oldSrc,newSrc,copyright,creator,license} for any on
+//      the live page, which we apply here via Bloom's changeImageByElement(). The credits
+//      come from the host because it read them off the new image file; see the comment at
+//      the changeImageByElement call. `cancel`/close just tear the overlay
 //      down. (There is intentionally no C#->iframe message channel; init flows from
 //      here, the overlay JS, because only the browser can postMessage to the iframe.)
 
-import { post, postJson } from "../../../utils/bloomApi";
+import { post, postJson, postThatMightNavigate } from "../../../utils/bloomApi";
 import {
     getImageUrlFromImageContainer,
     GetRawImageUrl,
@@ -58,16 +60,16 @@ export const launchAiImageEditor = (
                 name?: string;
             }>;
             // Enumerated by C# from the per-book history folder; rides through
-            // the `...launchData` spread into the editor's init payload.
+            // the `...launchData` spread into the AI image editor's init payload.
             history?: Array<{
                 id: string;
                 url: string;
                 metadata?: Record<string, unknown> | null;
             }>;
             apiKey?: string | null;
-            // Playground/demo context: the editor must disable its
+            // Playground/demo context: the AI image editor must disable its
             // "set OpenRouter API key" UI. Rides through the `...launchData`
-            // spread below into the editor's init payload.
+            // spread below into the AI image editor's init payload.
             demoOnly?: boolean;
         };
         const hostWindow = (window.top ?? window) as Window & {
@@ -81,11 +83,11 @@ export const launchAiImageEditor = (
         iframeUrl.searchParams.set("mode", "bloom-iframe");
         // Bloom (C#) enumerates every user-changeable image in the whole book
         // and supplies them as `launchData.bookImages`, each with a stable
-        // "{pageId}:{ordinal}" id the editor echoes back on commit. The host
+        // "{pageId}:{ordinal}" id the AI image editor echoes back on commit. The host
         // applies replacements book-wide in C#, so there is no per-image DOM
         // id wrangling here anymore.
 
-        // Identify the image the user actually right-clicked so the editor can
+        // Identify the image the user actually right-clicked so the AI image editor can
         // open with it already in the "Image to Edit" slot. We match by page +
         // filename rather than DOM ordinal, because the live page has extra
         // injected UI images that would throw positional indices off.
@@ -135,10 +137,26 @@ export const launchAiImageEditor = (
 
         hostWindow.__bloomAiImageEditorCleanup?.();
 
+        // Set once a current-page swap has landed in the live DOM and so needs saving
+        // (see the commit handler, which explains why). The save is DEFERRED to
+        // cleanup() because saveChangesAndRethinkPageEvent reloads the page frame, and
+        // everything that operates this overlay — the message listener, the ✕ button's
+        // handler, this cleanup function itself — is code belonging to that frame, even
+        // though the overlay div lives in the top window. Saving while the overlay is
+        // still up therefore kills its controls and leaves a full-screen overlay the
+        // user can't close without restarting Bloom. That matters because on a partial
+        // failure we deliberately keep the overlay up for the user to read the error,
+        // so the save has to wait until they close it.
+        let livePageNeedsSaving = false;
+
         const cleanup = () => {
             hostWindow.removeEventListener("message", handleMessage);
             hostDocument.getElementById("ai-editor-overlay")?.remove();
             delete hostWindow.__bloomAiImageEditorCleanup;
+            if (livePageNeedsSaving) {
+                livePageNeedsSaving = false;
+                postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+            }
         };
 
         const overlay = hostDocument.createElement("div");
@@ -185,6 +203,10 @@ export const launchAiImageEditor = (
         // it), so it returns oldSrc/newSrc and we use Bloom's changeImageByElement()
         // on the live DOM. We match by oldSrc rather than index because the live
         // page has extra UI images that would throw off positional ordinals.
+        // onApplied fires after each successful swap. The caller counts with it rather
+        // than with the returned `applied`, because a throw part-way through this loop
+        // never returns: the live DOM would then hold swaps that nothing had counted,
+        // so nothing would save them (see the save call in the commit handler).
         const applyCurrentPageReplacements = (
             results?: Array<{
                 incomingId?: string;
@@ -192,7 +214,13 @@ export const launchAiImageEditor = (
                 isCurrentPage?: boolean;
                 oldSrc?: string;
                 newSrc?: string;
+                // The data-copyright/data-creator/data-license the new file's embedded
+                // metadata calls for, as the host read them back off that file.
+                copyright?: string;
+                creator?: string;
+                license?: string;
             }>,
+            onApplied?: () => void,
         ): { applied: number; expected: number } => {
             const toApply = (results ?? []).filter(
                 (r) => r && r.ok && r.isCurrentPage && r.newSrc && r.oldSrc,
@@ -226,14 +254,21 @@ export const launchAiImageEditor = (
             pairs.forEach(({ replacement: r, element: target }) => {
                 changeImageByElement(target, {
                     src: r.newSrc as string,
-                    creator: target.getAttribute("data-creator") || "",
-                    copyright: target.getAttribute("data-copyright") || "",
-                    license: target.getAttribute("data-license") || "",
+                    // Take the credits from the host, which read them off the new image
+                    // file. Reading them off `target` instead would carry the REPLACED
+                    // image's credits forward, so the page would go on showing credits
+                    // (and no "missing information" indicator) for a new image that has
+                    // none — until the next book-up-to-date pass re-derived them from the
+                    // file and they silently vanished (BL-16603).
+                    creator: r.creator ?? "",
+                    copyright: r.copyright ?? "",
+                    license: r.license ?? "",
                     // The AI commit applies replacements book-wide in C#
                     // (saved directly, not undoable), so don't register a
                     // separate per-image undo for the current-page piece.
                     undoable: "false",
                 });
+                onApplied?.();
             });
             return { applied: pairs.length, expected: toApply.length };
         };
@@ -251,9 +286,29 @@ export const launchAiImageEditor = (
                       payload?: {
                           level?: string;
                           message?: string;
+                          // We relay this array to C# as-is, so every field the AI
+                          // image editor sends is declared here even though nothing
+                          // on this side reads them. Rebuilding the array field by
+                          // field instead of passing it through would silently drop
+                          // `credits`, and the result would lose its credits — the
+                          // bug this whole feature exists to prevent.
                           replacements?: Array<{
                               incomingId?: string;
                               resultId?: string;
+                              sourceUrl?: string;
+                              credits?: {
+                                  copyrightNotice?: string;
+                                  creator?: string;
+                                  // Two license fields, not one: a CC license has both a
+                                  // URL and (possibly) free-text license notes, and
+                                  // flattening them into one string lost the notes
+                                  // (BL-16603). See AiImageEditorApi.ImageCredits.
+                                  licenseUrl?: string;
+                                  licenseRightsStatement?: string;
+                                  attributionUrl?: string;
+                                  collectionName?: string;
+                                  collectionUri?: string;
+                              } | null;
                           }>;
                           apiKey?: string | null;
                       };
@@ -321,19 +376,24 @@ export const launchAiImageEditor = (
                                           isCurrentPage?: boolean;
                                           oldSrc?: string;
                                           newSrc?: string;
+                                          copyright?: string;
+                                          creator?: string;
+                                          license?: string;
                                       }>;
                                   }
                                 | undefined;
                             // The server reports whether it staged every replacement;
                             // for current-page slots only this live DOM knows if the
-                            // edit actually landed. Combine both so the editor's ack
+                            // edit actually landed. Combine both so the AI image editor's ack
                             // reflects the true outcome, and always ack (even on an
-                            // apply exception) so the editor overlay can't hang.
+                            // apply exception) so the AI image editor overlay can't hang.
                             let finalOk = false;
                             let message: string | undefined;
+                            let currentPageApplied = 0;
                             try {
                                 const cp = applyCurrentPageReplacements(
                                     result?.results,
+                                    () => currentPageApplied++,
                                 );
                                 const serverOk = result?.ok !== false;
                                 finalOk =
@@ -352,6 +412,23 @@ export const launchAiImageEditor = (
                                         : String(e));
                             } finally {
                                 ackEditor(finalOk, message);
+                                // changeImageByElement only mutated the LIVE page DOM;
+                                // unlike the off-page slots (which C# saved), a current-page
+                                // swap is not otherwise persisted. Save + rethink the page so
+                                // storage matches the live DOM — otherwise a relaunch would
+                                // enumerate the stale storage (showing the pre-edit image) and
+                                // a later commit's oldSrc, read from that stale storage, would
+                                // no longer match the live page ("0 of N could be updated").
+                                // Mirrors doVideoCommand's save after updateVideoInContainer.
+                                // currentPageApplied is counted per swap as it happens, so a
+                                // throw part-way through still saves the swaps that landed.
+                                // cleanup() is what actually saves, so flag it BEFORE the
+                                // cleanup() call below: on success the save then happens at
+                                // once, and on a partial failure it waits for the user to
+                                // close the overlay they are reading the error in.
+                                if (currentPageApplied > 0) {
+                                    livePageNeedsSaving = true;
+                                }
                                 if (finalOk) {
                                     cleanup();
                                 }
@@ -372,10 +449,9 @@ export const launchAiImageEditor = (
                     );
                     break;
                 case "saveCredentials":
-                    // Bloom owns the OpenRouter API key. When the user pastes a key
-                    // in the editor, the editor hands it up here so Bloom persists it
-                    // per-user (and supplies it on the next launch). A null apiKey
-                    // clears the stored key.
+                    // Bloom owns the OpenRouter API key. A key the user pastes into the AI
+                    // image editor is handed up here so Bloom persists it per-user (and
+                    // supplies it on the next launch). A null apiKey clears the stored key.
                     postJson(
                         "aiImageEditor/saveCredentials?session=" +
                             encodeURIComponent(launchData.sessionToken),

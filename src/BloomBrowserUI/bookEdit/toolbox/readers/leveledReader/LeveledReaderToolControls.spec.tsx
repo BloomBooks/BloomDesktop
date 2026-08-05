@@ -43,6 +43,9 @@ const bookStats = {
 // most precise way to find a row.
 const kKeyPrefix = "EditTab.Toolbox.LeveledReaderTool.";
 
+// What a Max cell shows when it has no number to display (BL-16585).
+const kNoMaxShown = "—";
+
 // Each stats grid lays its cells out as a flat list of children: one or two
 // section headers, then the Max/Actual header row, then three cells per
 // statistic (label, max, actual). Find a row by its label and return the other
@@ -162,19 +165,20 @@ describe("LeveledReaderStats", () => {
     it("shows the level's limit in the Max cell, except on the two rows that share the limit above them", () => {
         // Pre-React behavior we are keeping: on these two rows the limit decides
         // the color but is not displayed, because the row above already shows it.
+        // They get the same em dash as a row with no limit at all.
         expect(
             getRow(container, "WordLengths", "ThisPageLC").maxCell.textContent,
         ).toBe(`${kMaxGlyphsPerWord}`);
         expect(
             getRow(container, "WordLengths", "MaxInBook").maxCell.textContent,
-        ).toBe("");
+        ).toBe(kNoMaxShown);
         expect(
             getRow(container, "ThisPage", "PerSentence").maxCell.textContent,
         ).toBe(`${kMaxWordsPerSentence}`);
         expect(
             getRow(container, "ThisBook", "MaxSentenceLength").maxCell
                 .textContent,
-        ).toBe("");
+        ).toBe(kNoMaxShown);
     });
 
     it("compares averages at full precision, not as displayed", () => {
@@ -184,10 +188,10 @@ describe("LeveledReaderStats", () => {
         expect(average.actualCell.classList).toContain("tooLarge");
     });
 
-    it("leaves the Max cell blank when this level has no limit for a statistic", () => {
+    it("shows an em dash in the Max cell when this level has no limit for a statistic", () => {
         expect(
             getRow(container, "ThisPage", "PerPage").maxCell.textContent,
-        ).toBe("");
+        ).toBe(kNoMaxShown);
     });
 
     it("re-reads the level's limits when the level changes", () => {

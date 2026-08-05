@@ -1,12 +1,10 @@
 /// <reference path="readerToolsModel.ts" />
 /// <reference path="directoryWatcher.ts" />
-/// <reference path="../../../typings/jquery.qtip.d.ts" />
 /// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
 import $ from "jquery";
 import jQuery from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
 import { getTheOneReaderToolsModel } from "./readerToolsModel";
-import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import {
     theOneLanguageDataInstance,
     theOneLibSynphony,
@@ -23,13 +21,6 @@ import * as _ from "underscore";
 import { renderRoot } from "../../../utils/reactRender";
 import * as React from "react";
 import { ReaderToolSwitch } from "./ReaderToolSwitch";
-
-interface textMarkup extends JQueryStatic {
-    cssSentenceTooLong(): JQuery;
-    cssSightWord(): JQuery;
-    cssWordNotFound(): JQuery;
-    cssPossibleWord(): JQuery;
-}
 
 // listen for messages sent to this page
 window.addEventListener("message", processDLRMessage, false);
@@ -191,59 +182,8 @@ function processDLRMessage(event: MessageEvent): void {
             getTheOneReaderToolsModel().setMarkupType(parseInt(params[1]));
             return;
 
-        case "Qtips": // request from toolbox to add qtips to marked-up spans
-            // We could make separate messages for these...
-            markDecodableStatus();
-            markLeveledStatus();
-
-            return;
-
         default:
     }
-}
-
-function markDecodableStatus(): void {
-    // q-tips; mark sight words and non-decodable words
-    const sightWord = theOneLocalizationManager.getText(
-        "EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord",
-        "Sight Word",
-    );
-    const notDecodable = theOneLocalizationManager.getText(
-        "EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable",
-        "This word is not decodable in this stage.",
-    );
-    const editableElements = $(".bloom-content1");
-    editableElements
-        .find("span." + (<textMarkup>$).cssSightWord())
-        .each(function () {
-            this.qtip({ content: sightWord });
-        });
-
-    editableElements
-        .find("span." + (<textMarkup>$).cssWordNotFound())
-        .each(function () {
-            this.qtip({ content: notDecodable });
-        });
-
-    // we're considering dropping this entirely
-    // We are disabling the "Possible Word" feature at this time.
-    //editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-    //    $(this.qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
-    //});
-}
-
-function markLeveledStatus(): void {
-    // q-tips; mark sentences that are too long
-    const tooLong = theOneLocalizationManager.getText(
-        "EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong",
-        "This sentence is too long for this level.",
-    );
-    const editableElements = $(".bloom-content1");
-    editableElements
-        .find("span." + (<textMarkup>$).cssSentenceTooLong())
-        .each(function () {
-            $(this).qtip({ content: tooLong });
-        });
 }
 
 export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
