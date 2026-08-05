@@ -50,9 +50,11 @@ reach:
   including the front-end one that keeps prettier off vendored third-party code.
 - **Lint and typecheck** — `lint-staged` (eslint) and a whole-project typecheck, **only when
   the commit stages a front-end source file** (`.ts`/`.tsx`/`.mts`/`.cts` and, since the
-  tsconfig sets `allowJs`, `.js`/`.jsx`/`.mjs`/`.cjs` under `src/BloomBrowserUI/`). These two
-  genuinely are confined to that directory, so a commit of only workflows, docs or C# gives
-  them nothing to do.
+  tsconfig sets `allowJs`, `.js`/`.jsx`/`.mjs`/`.cjs` under `src/BloomBrowserUI/`), **or one
+  of the four config files that change what the typecheck means** — `tsconfig.json`, and
+  `package.json` / `pnpm-lock.yaml` / `pnpm-workspace.yaml`, which decide the typings
+  everything resolves against. These two tools genuinely are confined to that directory, so a
+  commit of only workflows, docs or C# gives them nothing to do.
 - **C#** — the `build/check-csharp-*.sh` scripts and `build/run-csharpier.sh`. Every commit;
   they need only dotnet, never the front-end dependencies.
 

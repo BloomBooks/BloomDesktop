@@ -52,9 +52,18 @@ pinned_version() {
 
 prettier_version=$(pinned_version prettier)
 pretty_quick_version=$(pinned_version pretty-quick)
-if [ -z "$prettier_version" ] || [ -z "$pretty_quick_version" ]; then
-    echo "pre-commit: could not read the pinned prettier/pretty-quick versions from" >&2
-    echo "            src/BloomBrowserUI/package.json. Has the file moved or changed shape?" >&2
+# Insist on something that starts with a digit, not merely on something non-empty. If the
+# front-end ever moves to a pnpm catalog the value reads back as the literal "catalog:",
+# which would sail through an emptiness test and then fail deep inside dlx -- landing us in
+# the warn-and-continue path below, i.e. quietly not formatting. Fail here instead, where
+# the message can say what actually needs fixing.
+versions_ok=yes
+case "$prettier_version" in [0-9]*) ;; *) versions_ok=no ;; esac
+case "$pretty_quick_version" in [0-9]*) ;; *) versions_ok=no ;; esac
+if [ "$versions_ok" = no ]; then
+    echo "pre-commit: could not read pinned prettier/pretty-quick version numbers from" >&2
+    echo "            src/BloomBrowserUI/package.json. If those deps moved to a pnpm" >&2
+    echo "            catalog or similar indirection, this hook needs teaching to resolve it." >&2
     exit 1
 fi
 
@@ -99,10 +108,17 @@ cd "$repo_root" || exit 1
 # do, and skipping them is what lets such a commit proceed without `pnpm install`.
 #
 # The extensions are the ones those two tools actually consume: TypeScript, plus JS
-# because the tsconfig sets "allowJs": true. Not .json (resolveJsonModule is commented
-# out, so JSON is not in the program), and not .css/.less/.html/.yml, which neither tool
-# reads -- matching those would only force needless whole-project typechecks. .pug is out
-# for the same reason: no prettier pug plugin is installed and pug is not in the program.
+# because the tsconfig sets "allowJs": true. Not .json in general (resolveJsonModule is
+# commented out, so JSON files are not in the program), and not .css/.less/.html/.yml,
+# which neither tool reads -- matching those would only force needless whole-project
+# typechecks. .pug is out for the same reason: no prettier pug plugin is installed and pug
+# is not in the program.
+#
+# Four config files are named explicitly, because they change what the typecheck MEANS
+# without being sources themselves: tsconfig.json (the compiler options and the shape of
+# the program), and package.json / pnpm-lock.yaml / pnpm-workspace.yaml (which versions of
+# the typings everything resolves against). Bumping a @types dependency and breaking the
+# build is an easy thing to do and an annoying one to discover in CI instead of here.
 #
 # Deletions count (hence D alongside ACM): removing a .ts is the change most likely to
 # break another module's imports, so it is exactly when the typecheck is worth running.
@@ -118,7 +134,7 @@ cd "$repo_root" || exit 1
 # silently skip the checks for that file.
 staged_frontend=$(git -c core.quotePath=false diff --cached --no-renames --name-only -z --diff-filter=ACMD |
     tr '\0' '\n' |
-    grep -E '^src/BloomBrowserUI/.*\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$')
+    grep -E '^src/BloomBrowserUI/(.*\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)|tsconfig\.json|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml)$')
 
 if [ -n "$staged_frontend" ]; then
     # Front-end sources are staged, so these must run. There is no dlx fallback here:
