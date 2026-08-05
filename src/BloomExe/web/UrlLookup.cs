@@ -300,7 +300,7 @@ namespace Bloom.web
             catch (Exception e)
             {
                 _internetAvailable = false;
-                var mode = inBackground ? "background" : "blocking";
+                var mode = ModeName(inBackground);
                 var msg =
                     $"Exception while attempting to get URL data from server ({mode} retrieval, {overallTimeout.TotalSeconds}s budget)";
                 Logger.WriteEvent($"{msg}: {e.Message}");
@@ -308,38 +308,49 @@ namespace Bloom.web
                     e,
                     msg,
                     configureScope: scope =>
-                    {
-                        // We want to be able to tell these three cases apart in Sentry, so the
-                        // fingerprint (which is what decides how events are grouped into issues)
-                        // separates them rather than leaving them to Sentry's default grouping by
-                        // exception and stack, which is identical for both of ours:
-                        //  - Events from before this change keep landing in the old issues
-                        //    (BLOOM-DESKTOP-ERZ / -2H2). Nothing new joins them, because those
-                        //    were grouped by the default and these are not, so anything in them
-                        //    is by definition from an older Bloom.
-                        //  - A "blocking" failure means we tried a synchronous lookup and lost the
-                        //    short race. Expected to be rare, since startup should have populated
-                        //    the cache long before.
-                        //  - A "background" failure means the internet looked available yet we
-                        //    could not fetch a small file in the whole patient budget. That is
-                        //    genuinely surprising and worth investigating, so it must never be
-                        //    buried among the routine quick ones.
-                        // The tags are what make these searchable/filterable; the message alone is
-                        // only a breadcrumb. See BL-16575.
-                        scope.SetTag("urlLookupMode", mode);
-                        scope.SetTag(
-                            "urlLookupBudgetSeconds",
-                            overallTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture)
-                        );
-                        scope.SetFingerprint(
-                            "UrlLookup.TryGetUrlDataFromServer",
-                            mode,
-                            e.GetType().FullName
-                        );
-                    }
+                        DescribeFailureForSentry(scope, mode, overallTimeout, e)
                 );
             }
             return false;
+        }
+
+        /// <summary>
+        /// The name we use, in logging and in Sentry, for which of the two time budgets was in force.
+        /// </summary>
+        internal static string ModeName(bool inBackground)
+        {
+            return inBackground ? "background" : "blocking";
+        }
+
+        /// <summary>
+        /// Label a failed retrieval so that we can tell the three interesting cases apart in Sentry.
+        /// The fingerprint is what does the real work, because it is what decides how events are
+        /// grouped into issues; left to Sentry's default grouping, by exception and stack, our two
+        /// cases would be indistinguishable from each other and from pre-BL-16575 events:
+        /// - Events from before this change stay in the old issues (BLOOM-DESKTOP-ERZ / -2H2), and
+        ///   nothing new can join them, since those were grouped by the default and these are not.
+        ///   So anything appearing there is by definition from an older version of Bloom.
+        /// - A "blocking" failure means a synchronous lookup lost the short race. It should be rare,
+        ///   because startup normally fills the cache long before anything asks synchronously.
+        /// - A "background" failure means the internet looked available and yet we could not fetch a
+        ///   small file within the whole patient budget. That is genuinely surprising and worth
+        ///   investigating, so it must never be buried among the routine quick timeouts.
+        /// The tags are what make these searchable and filterable; note that the message passed to
+        /// ReportSentryOnly becomes only a breadcrumb, which Sentry neither indexes nor groups by.
+        /// </summary>
+        internal static void DescribeFailureForSentry(
+            Scope scope,
+            string mode,
+            TimeSpan overallTimeout,
+            Exception e
+        )
+        {
+            scope.SetTag("urlLookupMode", mode);
+            scope.SetTag(
+                "urlLookupBudgetSeconds",
+                overallTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture)
+            );
+            scope.SetFingerprint("UrlLookup.TryGetUrlDataFromServer", mode, e.GetType().FullName);
         }
 
         /// <summary>
