@@ -36,6 +36,21 @@ ships:
 2. else if a husky hook exists in `.git/hooks/pre-commit` → run that;
 3. else → **fail loudly** with instructions, instead of skipping silently.
 
+## What the vite-plus hook runs
+
+Routing aside, `src/BloomBrowserUI/.vite-hooks/pre-commit` runs two groups of checks:
+
+- **Front-end** — `pretty-quick`, `lint-staged` (eslint), and a whole-project typecheck.
+  These run **only when the commit stages a front-end source file**, matched by extension
+  under `src/BloomBrowserUI/`. So a commit of only workflows, docs or C# skips them, and a
+  worktree used for that kind of work needs no `pnpm install` at all. This is not the
+  silent skip the dispatcher exists to prevent: that one is "a hook system was configured
+  but nothing ran"; this one is "these tools have nothing staged to look at". When
+  front-end files *are* staged and `node_modules` is missing, the hook fails loudly and
+  names the fix rather than waving the commit through.
+- **C#** — the `build/check-csharp-*.sh` scripts and `build/run-csharpier.sh`. These run on
+  every commit; they need only dotnet, never the front-end dependencies.
+
 ## How to enable it (per clone)
 
 `core.hooksPath` is git config, not a tracked file, so each clone sets it once:
