@@ -301,20 +301,9 @@ namespace Bloom.Publish
             // makes reporting it worth doing at all. So every other worker could be waiting for that lock,
             // and this one waiting here, with the server believing a worker was still free. That is
             // BL-16612.
-            var server = BloomServer._theOneInstance;
-            var registered = false;
-            try
+            using (BloomServer._theOneInstance?.ReportThreadBlocking())
             {
-                server?.RegisterThreadBlocking();
-                registered = true;
                 return tcs.Task.GetAwaiter().GetResult();
-            }
-            finally
-            {
-                // Only unregister if we actually registered, so the pair is guaranteed by structure rather
-                // than by an argument about what can throw.
-                if (registered)
-                    server?.RegisterThreadUnblocked();
             }
         }
 
