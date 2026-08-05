@@ -82,6 +82,11 @@ export function saveSelectionForMarkup(
  *
  * Note that with today's implementation this also removes the marker spans from the DOM, so it must
  * be called exactly once per save, and the saved value must not be reused afterwards.
+ *
+ * Behaviour note: this re-reads the editor and no-ops if it has gone, whereas the pre-extraction
+ * code sat inside `if (ckeditorOfThisBox)` and so would have thrown. Unreachable in practice —
+ * `bloomCkEditor` is assigned once per div (BloomField.WireToCKEditor) and never cleared — but the
+ * difference is real, so it is written down rather than left to be rediscovered.
  */
 export function restoreSelectionAfterMarkup(
     editableDiv: HTMLElement,

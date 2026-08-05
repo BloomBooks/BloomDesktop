@@ -1560,8 +1560,9 @@ function handlePageEditing(
                             editableDiv,
                             savedSelection,
                         );
-                        // The one deliberate difference from the pre-extraction code, and it is a
-                        // narrow one. That code did restore-then-re-save here, both steps
+                        // One of two deliberate differences from the pre-extraction code (the other
+                        // is noted on restoreSelectionAfterMarkup), and it is a narrow one. That
+                        // code did restore-then-re-save here, both steps
                         // dereferencing getSelection() unguarded. The restore is still unguarded
                         // (see restoreSelectionAfterMarkup), so a null selection there still throws
                         // exactly where it used to. What this guard covers is only the case where

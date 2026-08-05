@@ -22,8 +22,14 @@
 // toolbox pane has to be genuinely open, not merely toggled.
 import { createRequire } from "node:module";
 import path from "node:path";
+import url from "node:url";
 
-const repoRoot = "C:/github/BloomDesktop";
+// Derive the repo root from this file's own location (docs/retire-ckeditor/), so the harness works
+// from any checkout or worktree rather than only the one it was written in.
+const repoRoot = path.resolve(
+    path.dirname(url.fileURLToPath(import.meta.url)),
+    "../..",
+);
 const ctDir = path.join(
     repoRoot,
     "src/BloomBrowserUI/react_components/component-tester",

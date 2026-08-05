@@ -21,9 +21,11 @@ ticket. Where the code's account of a ticket looks wrong, the row says so.
 
 - `Verify` says how each row gets checked: **unit** (vitest), **live** (running Bloom over CDP via
   the `run-bloom` skill), or **manual** (a human tester; feed these to the `add-test-ideas` skill).
-- Rows marked **⚠ capture first** must have today's actual behaviour recorded in
-  [PASTE-DROP-BASELINE.md](PASTE-DROP-BASELINE.md) *before* any code changes, because the row is a
-  guarantee whose failure is silent and the config string alone doesn't tell us what really happens.
+- Rows marked **⚠ capture first** must have today's actual behaviour recorded in a
+  `PASTE-DROP-BASELINE.md` *before* any code changes, because the row is a guarantee whose failure is
+  silent and the config string alone doesn't tell us what really happens. **That file does not exist
+  yet** — producing it is an open Stage 0 item (see PROGRESS.md), and deliberately so: it has to be
+  captured against a running Bloom, not written from the config.
 - Rows marked **✗ must NOT survive** are current behaviour we intend to *remove*. They are here so
   nobody faithfully reimplements a workaround for a problem that no longer exists.
 
