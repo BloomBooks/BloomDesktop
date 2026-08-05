@@ -221,13 +221,27 @@ Locate the editable **structurally**, not by `id`: ordinary `.bloom-editable` di
 `id` (only the talking-book tool assigns them, `audioRecording.ts:1380, 3681`), and after a
 restore or reload the element object is new anyway.
 
-Why this beats bookmarks: `toolbox.ts:1521-1528` documents the bookmark approach's own bug —
-inserting a marker mid-word makes the markup routine see `"hous"`-marker-`"e"`, so
-decodable/leveled reader markup is temporarily wrong while you fix a letter. An offset-based
-anchor doesn't perturb the DOM, so **dropping bookmarks fixes that bug**, and it deletes the
-whole `fixUpEmptyishParagraphs` / `safelyReplaceContentWithCkEditorData` /
+Why this beats bookmarks — and the case got **stronger** while this plan was being written.
+Originally: the bookmark approach's own documented bug is that inserting a marker mid-word makes
+the markup routine see `"hous"`-marker-`"e"`, so reader markup is temporarily wrong while you fix
+a letter. An offset anchor doesn't perturb the DOM, so dropping bookmarks fixes that, and it
+deletes the whole `fixUpEmptyishParagraphs` / `safelyReplaceContentWithCkEditorData` /
 `setCkeditorBookmarkContent` / `cleanUpNbsps`-bookmark-emptying family plus the `cke_bm_`
 scrubbing on the C# side.
+
+**Then BL-16558 landed on master (2026-08), and it raises the stakes.** The decodable and leveled
+reader tools no longer rewrite the DOM to show violations at all: they paint with the CSS Custom
+Highlight API — `::highlight()` pseudo-elements over **live `Range` objects**
+(`bookEdit/js/textHighlightManager.ts`, `readerHighlights.ts`, styles at `editMode.less:1074-1100`).
+Talking Book's current-sentence highlight works the same way (`editMode.less:1145`). The
+consequence, which BL-16558 had to fix for `cleanUpNbsps`, is general:
+
+> **Any code that rebuilds an editable's text nodes silently collapses every live Range pointing
+> into them, and the highlights vanish.**
+
+That makes DOM-mutating bookmarks actively hostile to the current architecture, not merely
+inelegant — inserting and removing marker spans around the caret is exactly the kind of node
+churn those Ranges cannot survive. It also imposes a new obligation on *our* work; see §4.11.
 
 Defer range (non-collapsed) anchors: every identified consumer needs only a caret. And for the
 *snapshot* case specifically there's a simpler trick — inject a caret marker into the captured
@@ -509,6 +523,17 @@ structural case. The `kind` field on `IUndoEntry` (§4.1) exists for this.
 | **1 — editable** | Typing, inline formatting, paste or cut within one `.bloom-editable` | Restore `editable.innerHTML` + `ISelectionAnchor`. Nothing else. | Instant, no C# round-trip |
 | **2 — subtree** | Delete / duplicate / modify a canvas element, image swap | Restore the `.bloom-canvas` subtree's HTML, then `refreshCanvasElementEditing` — the existing path used when adding a canvas element | Fast, no reload |
 | **3 — page** | Anything touching page structure | Install the snapshot into the live DOM, then re-run normal page init (§4.10). **In place — no navigation.** | Moderate; and see below: this tier may be empty |
+
+> **⚠ New obligation from BL-16558 (§4.3): every tier must repaint live-Range highlights.**
+> Because the reader tools and Talking Book now draw their highlights as `::highlight()`
+> pseudo-elements over live `Range`s, restoring `editable.innerHTML` — Tier 1's whole mechanism —
+> rebuilds the text nodes and collapses those Ranges, so the highlights disappear with no error.
+> So a Tier 1/2 restore must, after writing the HTML, ask the highlight owners to repaint:
+> `textHighlightManager` for the reader violations and `audioTextHighlightManager` for the current
+> audio sentence. Add this to `reinitializePageAfterRestore()`'s contract, and note the same trap
+> applies to the toolbox-markup anchor path — which is precisely why BL-16558 had to move
+> `updateMarkup()` to *after* `cleanUpNbsps`. **The symptom is silent**: undo appears to work and the
+> highlights are simply gone until something else repaints them.
 
 **Tier 1 is verified safe and already has a working precedent in-tree.** No event handlers are
 attached to nodes *inside* editables — they attach to the `.bloom-editable` div itself, which

@@ -153,6 +153,24 @@ The reason CKEditor bookmarks exist. Being replaced by offset-based anchors (§4
 | G3 | Longpress (the character map) is not broken by markup updates, and its replacement of the preceding letter still works | keydown-not-keypress; `isLongPressEvaluating` guard | BL-3900, BL-5215 | manual |
 | G4 | Caret survives the reader-tools `innerHTML` rewrite | `readerToolsModel` caret offset + `makeSelectionIn` | | unit |
 | G5 | Caret position is restored correctly around `<br>` elements | `makeSelectionIn`'s `divBrCount` | | unit |
+| G6 | **Reader violation highlights survive typing** — over-long sentences/words and non-decodable words stay highlighted as you type, rather than flashing off at every pause | `textHighlightManager.ts` / `readerHighlights.ts`, `::highlight()` over live Ranges; `editMode.less:1074-1100` | BL-16558 | live (see note) |
+| G7 | **The Talking Book current-sentence highlight survives the same way** | `audioTextHighlightManager`, `editMode.less:1145` | BL-16558 | live |
+
+**G6/G7 are new since this inventory was first written, and they change G1's premise.** Reader
+markup no longer rewrites the DOM to show violations — it paints `::highlight()` pseudo-elements
+over **live `Range` objects**. So:
+
+- The old worry "markup rewrites the DOM around the caret" is now *less* true for reader tools, and
+  the new worry is the reverse: **anything that rebuilds an editable's text nodes collapses those
+  Ranges and the highlights silently vanish.** That is what BL-16558 fixed by making `cleanUpNbsps`
+  write `innerHTML` only when it actually changed something, and by moving `updateMarkup()` to after
+  it.
+- This binds our work directly: a Tier 1 undo restores `editable.innerHTML` (PLAN §4.11), which will
+  collapse them. The restore must repaint. **The failure mode is silent** — no error, undo looks
+  fine, the highlights are just gone.
+- `toolbox.ts` says outright that the ordering here is not unit-testable and must be checked by
+  "*typing in a Leveled Reader book and watching the over-long sentences stay highlighted*". Treat
+  that as the acceptance test for G6.
 
 **✗ Must NOT survive — a bug to fix, not preserve:** the bookmark approach makes the markup routine
 see `"hous"`-marker-`"e"` while the user fixes a letter mid-word, so reader markup is briefly wrong

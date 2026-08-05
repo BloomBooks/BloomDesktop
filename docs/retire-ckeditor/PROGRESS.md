@@ -24,9 +24,15 @@ Stage 0 checklist (PLAN.md §6):
 - [ ] Capture the paste/drop baseline (rows C1–C7, incl. **C7 drop**): needs a running Bloom
 - [ ] Handler-accumulation repro (§4.10) + the X4 listener-leak test: needs a running Bloom
 - [ ] Page-reload timing baseline (§4.11): needs a running Bloom
-- [~] Live verification of caret behaviour (rows **G1–G3**) — **partly done.** The seam's wiring is
-      verified (`verifyCaretPreservation.mjs`, PASS); the DOM-rewriting case, G2 async and G3
-      longpress are **not** — they need a Decodable/Leveled Reader book. See the 2026-08-05 entry.
+- [x] Rebased onto `origin/master` (was 64 behind; one conflict in `toolbox.ts`, resolved). Now 0
+      behind. Typecheck clean, 63 tests green.
+- [x] **G1 verified, both halves.** Automated: `verifyCaretPreservation.mjs` PASS (caret at the right
+      offset, bookmarks consumed, no ZWSP). Manual, by John: decodable reader open, "real typing
+      seems fine" — the case automation couldn't reach, and the check `toolbox.ts` itself prescribes.
+- [ ] **G2** (async markup path / BL-10133 — where the prep commit made its one deliberate behaviour
+      change) and **G3** (longpress) still unverified
+- [ ] **G6/G7** (new, from BL-16558): reader and Talking Book highlights are live Ranges and must
+      survive typing — and our restore paths must repaint them
 
 > ## ⚠ Toolchain: use `vp`, never Volta
 >
@@ -554,6 +560,43 @@ committed version.
 
 **Leftover to clean up:** creating the test book left `Book-121f7932` in
 `Documents/Bloom/2 EFL Books/`. Harmless, but it is mine, not the developer's.
+
+### 2026-08-05 (later) — rebased onto master; BL-16558 changes two premises
+
+**Drift was real and immediate.** Master had moved **64 commits** ahead, and three files this stage
+touches had changed: `toolbox.ts`, `bloomEditing.ts`, `BloomField.ts`. Rebased onto `origin/master`;
+one conflict, in `toolbox.ts`, in exactly the region the prep commit refactored. Resolved by keeping
+master's change and re-wording only my trailing comment. Now **0 behind master**; typecheck clean;
+`toolboxSpec.ts` (7 tests now — master added two), `editableDivUtilsSelectionSpec.ts` and
+`bloomFieldSpec.ts` all green, 63 tests.
+
+Worth noting for the project's rebase strategy: this is the first stage, it sat unpushed for part of
+one day, and it already collided. The plan's "land small PRs promptly, don't keep a long-lived
+branch" (§5.2) is not theoretical — **get Stage 0 onto master.**
+
+**BL-16558 (on master) invalidates two premises and adds a requirement.** The decodable and leveled
+reader tools no longer rewrite the DOM to show violations: they paint `::highlight()` pseudo-elements
+over **live `Range` objects** (`bookEdit/js/textHighlightManager.ts`, `readerHighlights.ts`, styles
+at `editMode.less:1074-1100`). Talking Book's current-sentence highlight is the same
+(`editMode.less:1145`). Consequences, now folded into the plan and inventory:
+
+1. **§4.3's case against bookmarks got stronger, not weaker.** DOM-mutating marker spans are now
+   actively hostile: inserting and removing nodes around the caret is exactly the churn live Ranges
+   cannot survive. Previously the argument was "bookmarks briefly confuse the markup"; now it is
+   "bookmarks would break the highlight architecture".
+2. **New obligation on our restore paths (§4.11).** A Tier 1 undo restores `editable.innerHTML`,
+   which rebuilds the text nodes and **collapses every live Range**, so the highlights vanish —
+   with no error. `reinitializePageAfterRestore()` must repaint via `textHighlightManager` and
+   `audioTextHighlightManager`. This is exactly why BL-16558 had to move `updateMarkup()` to after
+   `cleanUpNbsps` and make the latter write `innerHTML` only when it changed something.
+3. **New inventory rows G6/G7**, with the acceptance test `toolbox.ts` itself prescribes: type in a
+   Leveled Reader book and watch the over-long sentences stay highlighted.
+
+**G1 proper is now verified — by John, manually.** He switched to a non-TC collection, opened a
+decodable reader, and reports "real typing seems fine". That is precisely the check master's own
+comment asks for, and it covers the case automation could not reach (a reader tool active, markup
+running). Combined with the automated harness result, the prep commit is verified on both halves.
+**G2 (async path / BL-10133) and G3 (longpress) remain unverified.**
 
 ## Next actions
 
