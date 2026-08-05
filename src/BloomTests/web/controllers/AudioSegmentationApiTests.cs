@@ -294,11 +294,9 @@ namespace BloomTests.web.controllers
                     new[] { "0.000\t1.500\tSentence 1.", "1.500\t4.250\tSentence 2." }
                 );
 
-                var book = new Mock<Bloom.Book.Book>();
-                book.SetupGet(b => b.FolderPath).Returns(bookFolder.FolderPath);
-                var bookSelection = new BookSelection();
-                bookSelection.SelectBook(book.Object);
-                var api = new NoExternalCommandsAudioSegmentationApi(bookSelection);
+                var api = new NoExternalCommandsAudioSegmentationApi(
+                    SelectionOf(bookFolder.FolderPath)
+                );
 
                 var request = new AutoSegmentRequest
                 {
@@ -358,11 +356,7 @@ namespace BloomTests.web.controllers
                     "Sanity check: the path has to trip the guard or this test proves nothing"
                 );
 
-                var book = new Mock<Bloom.Book.Book>();
-                book.SetupGet(b => b.FolderPath).Returns(bookFolder);
-                var bookSelection = new BookSelection();
-                bookSelection.SelectBook(book.Object);
-                var api = new NoExternalCommandsAudioSegmentationApi(bookSelection);
+                var api = new NoExternalCommandsAudioSegmentationApi(SelectionOf(bookFolder));
 
                 var request = new AutoSegmentRequest
                 {
@@ -386,6 +380,24 @@ namespace BloomTests.web.controllers
                 Assert.That(response.allEndTimesString, Is.EqualTo("1.500 4.250"));
                 Assert.That(response.successMessage, Is.EqualTo("Applied 2 manual timings."));
             }
+        }
+
+        /// <summary>
+        /// A BookSelection reporting a book in the given folder, which is all GetAeneasTimings needs
+        /// from it.
+        ///
+        /// Deliberately a mock rather than a real BookSelection with SelectBook() called on it:
+        /// SelectBook writes the folder into Settings.Default.CurrentBookPath and saves it, which is
+        /// process-wide state that outlives the test. Doing that here made 47 unrelated tests fail
+        /// (the spreadsheet import ones), so don't reintroduce it.
+        /// </summary>
+        private static BookSelection SelectionOf(string bookFolderPath)
+        {
+            var book = new Mock<Bloom.Book.Book>();
+            book.SetupGet(b => b.FolderPath).Returns(bookFolderPath);
+            var selection = new Mock<BookSelection>();
+            selection.SetupGet(s => s.CurrentSelection).Returns(book.Object);
+            return selection.Object;
         }
 
         /// <summary>
