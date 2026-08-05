@@ -892,9 +892,16 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                             disableGutters
                             expanded={expandedSectionId === section.id}
                             onChange={(_event, expanded) => {
-                                setActiveSection(
-                                    expanded ? section.id : undefined,
-                                );
+                                if (!expanded) {
+                                    // Clicking the open tool's header can't close it: the
+                                    // toolbox always has an active tool, and the effect that
+                                    // syncs us with the legacy toolbox re-expands whatever
+                                    // legacy still thinks is current. Honoring the collapse
+                                    // therefore only produced a flash, in which the tools
+                                    // below jumped up and back down. (BL-16533)
+                                    return;
+                                }
+                                setActiveSection(section.id);
                             }}
                         >
                             <AccordionSummary
