@@ -2685,14 +2685,23 @@ namespace Bloom.Api
                         // tell _listenerThread and the worker threads they should stop
                         _stop.Set();
 
-                        // Note (BL-16612): do NOT start disposing _stop or _ready here without also giving
-                        // EnsureAWorkerCanStillTakeWork a shutdown guard. A worker part-way through a
-                        // request can still report a block while we are joining threads below, which can add
-                        // a worker after the join has passed it. That is harmless only because we merely
-                        // SIGNAL _stop and leave both handles alive, so the new worker's WaitAny returns at
-                        // once and it exits. If these handles are ever disposed, that worker would instead
-                        // die of an ObjectDisposedException on a background thread, which takes the process
-                        // down.
+                        // Note (BL-16612): a worker part-way through a request can still report a block while
+                        // we are joining threads below, and EnsureAWorkerCanStillTakeWork has no shutdown
+                        // guard, so that can add a worker after the join has passed it. Two things make that
+                        // survivable, and BOTH have to stay true:
+                        //   1. We only SIGNAL _stop here and never dispose it or _ready, so a late worker's
+                        //      WaitAny returns at once and it exits. Dispose those handles and it would die
+                        //      instead of an ObjectDisposedException on a background thread, taking the
+                        //      process with it.
+                        //   2. We actually reach this line. Note that it is inside `if (_listener != null)`,
+                        //      so if CloseListener() ran first -- it is public, nulls _listener, and its own
+                        //      comment mentions the shutdown timer -- _stop is never signalled at all.
+                        // Caveat worth knowing about (2): workers are FOREGROUND threads, so a worker still
+                        // waiting on _ready/_stop keeps the process alive. Pre-existing workers have always
+                        // been exposed to that; what the top-up adds is the chance of creating a NEW one
+                        // during that window. Devin raised it; it is recorded rather than fixed here because
+                        // the fix (guard the top-up on shutdown, or make added workers background threads)
+                        // changes behaviour and was left for the developer to decide.
                         var secondsToWait = 2.0;
                         // wait for _listenerThread to stop
                         if (_listenerThread.ThreadState != ThreadState.Unstarted)
