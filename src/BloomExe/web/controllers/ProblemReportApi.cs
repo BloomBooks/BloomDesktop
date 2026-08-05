@@ -725,16 +725,17 @@ namespace Bloom.web.controllers
                             dlg.SetScaledSize(731, height);
 
                             // ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
-                            BloomServer._theOneInstance.RegisterThreadBlocking();
-                            try
+                            using (BloomServer._theOneInstance.ReportThreadBlocking())
                             {
-                                // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
-                                dlg.ShowDialog(owner);
-                            }
-                            finally
-                            {
-                                BloomServer._theOneInstance.RegisterThreadUnblocked();
-                                _additionalPathsToInclude = null;
+                                try
+                                {
+                                    // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
+                                    dlg.ShowDialog(owner);
+                                }
+                                finally
+                                {
+                                    _additionalPathsToInclude = null;
+                                }
                             }
                         }
                     }
