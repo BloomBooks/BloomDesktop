@@ -23,8 +23,18 @@ export PATH="$(pwd)/src/BloomBrowserUI/node_modules/.bin:$PATH"
 # or this hook itself from triggering a full typecheck. A commit that stages none of them
 # -- a workflow, a doc, C# only -- therefore does not need node_modules to exist at all,
 # which is what lets a worktree used only for such work commit without `pnpm install`.
-staged_frontend=$(git diff --cached --name-only --diff-filter=ACMR |
-    grep -E '^src/BloomBrowserUI/.*\.(ts|tsx|js|jsx|mjs|cjs|json|css|less|scss|html|htm|yaml|yml)$')
+#
+# Deletions count (hence D alongside ACMR): removing a .ts is the change most likely to
+# break another module's imports, so it is exactly when the typecheck is worth running.
+# The tools re-derive their own file lists, so a deletion-only commit simply gives
+# prettier and eslint nothing to do while the typecheck still runs.
+#
+# core.quotePath=false plus -z stops git C-quoting a non-ASCII path ("caf\303\251.ts"),
+# whose added surrounding quotes would defeat both anchors of the regex below and so
+# silently skip the checks for that file.
+staged_frontend=$(git -c core.quotePath=false diff --cached --name-only -z --diff-filter=ACMRD |
+    tr '\0' '\n' |
+    grep -E '^src/BloomBrowserUI/.*\.(ts|tsx|mts|cts|js|jsx|mjs|cjs|json|css|less|scss|html|htm|yaml|yml)$')
 
 if [ -n "$staged_frontend" ]; then
     # When front-end files ARE staged, a missing install has to fail loudly: silently
