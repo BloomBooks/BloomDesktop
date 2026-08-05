@@ -1560,13 +1560,17 @@ function handlePageEditing(
                             editableDiv,
                             savedSelection,
                         );
-                        // The one deliberate difference from the pre-extraction code, which did
-                        // `bookmarks = editor.getSelection().createBookmarks(true)` unguarded here.
-                        // If the editor reported no selection at this point that threw, inside an
-                        // async function nobody awaits, so the pass died half-done (comments already
-                        // stripped, marker spans possibly still in the DOM) via an unhandled
-                        // rejection. Abandoning the pass cleanly is the same outcome without the
-                        // wreckage. The first save above already bails this way.
+                        // The one deliberate difference from the pre-extraction code, and it is a
+                        // narrow one. That code did restore-then-re-save here, both steps
+                        // dereferencing getSelection() unguarded. The restore is still unguarded
+                        // (see restoreSelectionAfterMarkup), so a null selection there still throws
+                        // exactly where it used to. What this guard covers is only the case where
+                        // the restore's getSelection() succeeds and the immediately following
+                        // re-save's returns null: previously that threw inside an async function
+                        // nobody awaits, so the pass died half-done -- comments already stripped,
+                        // marker spans possibly left in the DOM -- via an unhandled rejection.
+                        // Abandoning the pass cleanly is the same outcome without the wreckage, and
+                        // is how the first save above has always behaved.
                         if (!resaved) {
                             return;
                         }
