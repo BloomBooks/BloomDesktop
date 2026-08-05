@@ -17,15 +17,35 @@
 # on PATH (as an absolute path, before we cd) so its bins resolve.
 export PATH="$(pwd)/src/BloomBrowserUI/node_modules/.bin:$PATH"
 
-# JavaScript/TypeScript checks (run from the front-end project)
-cd src/BloomBrowserUI || exit 1
-pretty-quick --staged || exit 1
-# --no-stash keeps linting fast and is safe because lint-staged doesn't modify files here.
-lint-staged --no-stash || exit 1
-node scripts/typecheck.js || exit 1
+# Which staged paths the front-end tools could actually act on: prettier-formattable or
+# lint/typecheck-able sources under the front-end project. Matching on extension rather
+# than just the directory keeps a staged image, README (prettier-ignored at the repo root)
+# or this hook itself from triggering a full typecheck. A commit that stages none of them
+# -- a workflow, a doc, C# only -- therefore does not need node_modules to exist at all,
+# which is what lets a worktree used only for such work commit without `pnpm install`.
+staged_frontend=$(git diff --cached --name-only --diff-filter=ACMR |
+    grep -E '^src/BloomBrowserUI/.*\.(ts|tsx|js|jsx|mjs|cjs|json|css|less|scss|html|htm|yaml|yml)$')
+
+if [ -n "$staged_frontend" ]; then
+    # When front-end files ARE staged, a missing install has to fail loudly: silently
+    # skipping here is how an unchecked front-end commit would get through.
+    if [ ! -x src/BloomBrowserUI/node_modules/.bin/pretty-quick ]; then
+        echo "pre-commit: front-end files are staged, but src/BloomBrowserUI/node_modules is missing," >&2
+        echo "            so the front-end checks cannot run. Run 'pnpm install' in" >&2
+        echo "            src/BloomBrowserUI (or './init.sh' for the whole worktree)." >&2
+        exit 1
+    fi
+
+    # JavaScript/TypeScript checks (run from the front-end project)
+    cd src/BloomBrowserUI || exit 1
+    pretty-quick --staged || exit 1
+    # --no-stash keeps linting fast and is safe because lint-staged doesn't modify files here.
+    lint-staged --no-stash || exit 1
+    node scripts/typecheck.js || exit 1
+    cd ../.. || exit 1
+fi
 
 # C# checks (run from the repo root)
-cd ../.. || exit 1
 build/check-csharp-robustfile.sh || exit 1
 build/check-csharp-xmlclasses.sh || exit 1
 build/check-csharp-ApplicationExit.sh || exit 1
