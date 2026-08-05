@@ -8,7 +8,6 @@ using Bloom.web.controllers;
 using BloomTemp;
 using Moq;
 using NUnit.Framework;
-using SIL.Reporting;
 using Assert = NUnit.Framework.Assert;
 
 namespace BloomTests.web.controllers
@@ -324,111 +323,69 @@ namespace BloomTests.web.controllers
         }
 
         /// <summary>
-        /// Aeneas runs under Python, which can't cope with a UNC path, so Bloom refuses forced
-        /// alignment outright when the collection lives on a network share (BL-9959). That is a
-        /// limitation of the forced-alignment tooling, so it must not block "Apply Timings File...",
-        /// which only reads numbers out of a file.
+        /// Aeneas runs under Python, which can't cope with a path that doesn't start with a drive
+        /// letter, so Bloom refuses forced alignment outright for one (BL-9959) -- typically a
+        /// collection on a network share. That is a limitation of the forced-alignment tooling, so it
+        /// must not block "Apply Timings File...", which only reads numbers out of a file.
         /// </summary>
         [Test]
         [Platform(
             Exclude = "Linux",
             Reason = "The drive-letter guard being tested only runs on Windows"
         )]
-        public void GetAeneasTimings_ManualTimingsOnNetworkPath_NotBlockedByDriveLetterGuard()
+        public void GetAeneasTimings_ManualTimingsOnNonDriveLetterPath_AppliesThemAnyway()
         {
-            // Note: this test takes about a second, because looking for the (absent) audio file on a
-            // server that doesn't exist has to wait for Windows to fail to resolve the name.
-            const string bookFolder = @"\\nosuchserver\share\somebook";
-            var book = new Mock<Bloom.Book.Book>();
-            book.SetupGet(b => b.FolderPath).Returns(bookFolder);
-            var bookSelection = new BookSelection();
-            bookSelection.SelectBook(book.Object);
-            var api = new NoExternalCommandsAudioSegmentationApi(bookSelection);
-
-            var request = new AutoSegmentRequest
+            using (var realFolder = new TemporaryFolder("AudioSegmentationApiTests"))
             {
-                audioFilenameBase = "textBoxId",
-                audioTextFragments = new[]
+                var audioFolder = Directory.CreateDirectory(
+                    Path.Combine(realFolder.FolderPath, "audio")
+                );
+                File.WriteAllText(Path.Combine(audioFolder.FullName, "textBoxId.mp3"), "");
+                var timingsPath = Path.Combine(audioFolder.FullName, "textBoxId_timings.txt");
+                File.WriteAllLines(
+                    timingsPath,
+                    new[] { "0.000\t1.500\tSentence 1.", "1.500\t4.250\tSentence 2." }
+                );
+
+                // The guard trips on any path starting with a backslash instead of a drive letter. We
+                // use the Win32 "extended-length" \\?\ form of a real local folder rather than a
+                // genuine \\server\share path, so the test exercises that branch without depending on
+                // network name resolution -- which would make it slow, and flaky on a build agent with
+                // an unusual DNS or WINS setup.
+                var bookFolder = @"\\?\" + realFolder.FolderPath;
+                Assert.That(
+                    bookFolder.StartsWith("\\"),
+                    "Sanity check: the path has to trip the guard or this test proves nothing"
+                );
+
+                var book = new Mock<Bloom.Book.Book>();
+                book.SetupGet(b => b.FolderPath).Returns(bookFolder);
+                var bookSelection = new BookSelection();
+                bookSelection.SelectBook(book.Object);
+                var api = new NoExternalCommandsAudioSegmentationApi(bookSelection);
+
+                var request = new AutoSegmentRequest
                 {
-                    new AudioTextFragment { fragmentText = "Sentence 1.", id = "id1" },
-                },
-                lang = "qaa",
-                manualTimingsPath = bookFolder + @"\audio\textBoxId_timings.txt",
-            };
+                    audioFilenameBase = "textBoxId",
+                    audioTextFragments = new[]
+                    {
+                        new AudioTextFragment { fragmentText = "Sentence 1.", id = "id1" },
+                        new AudioTextFragment { fragmentText = "Sentence 2.", id = "id2" },
+                    },
+                    lang = "qaa",
+                    manualTimingsPath = timingsPath,
+                };
 
-            var recorder = new RecordingErrorReporter();
-            var originalReporter = ErrorReport.GetErrorReporter();
-            ErrorReport.SetErrorReporter(recorder);
-            AutoSegmentResponse response;
-            try
-            {
-                response = api.GetAeneasTimings(request);
+                var response = api.GetAeneasTimings(request);
+
+                Assert.That(
+                    response,
+                    Is.Not.Null,
+                    "Applying a timings file must not be refused by the Aeneas-only drive-letter guard"
+                );
+                Assert.That(response.allEndTimesString, Is.EqualTo("1.500 4.250"));
+                Assert.That(response.successMessage, Is.EqualTo("Applied 2 manual timings."));
             }
-            finally
-            {
-                ErrorReport.SetErrorReporter(originalReporter);
-            }
-
-            // We do still expect this to fail -- there is no such server, so there's no audio file to
-            // apply the timings to. The point is only that it failed for THAT reason, having got past
-            // the drive-letter guard, rather than being turned away by the guard itself.
-            Assert.That(response, Is.Null, "Expected failure: the audio file cannot exist");
-            var reported = string.Join(" | ", recorder.Messages);
-            Assert.That(recorder.Messages, Is.Not.Empty, "Should have reported some problem");
-            Assert.That(
-                reported,
-                Does.Not.Contain("drive letter"),
-                "Applying a timings file must not be refused by the Aeneas-only UNC-path guard"
-            );
-            Assert.That(
-                reported,
-                Does.Contain("No audio file found"),
-                "Should have got past the guard and failed later, looking for the audio"
-            );
-        }
-
-        /// <summary>
-        /// An IErrorReporter that just records the text of everything reported through it, so a test
-        /// can assert on which problem was reported. Records every overload, so it doesn't matter
-        /// which one the code under test happens to route through.
-        /// </summary>
-        private class RecordingErrorReporter : IErrorReporter
-        {
-            public List<string> Messages { get; } = new List<string>();
-
-            public void NotifyUserOfProblem(
-                IRepeatNoticePolicy policy,
-                Exception exception,
-                string message
-            ) => Messages.Add(message);
-
-            public ErrorResult NotifyUserOfProblem(
-                IRepeatNoticePolicy policy,
-                string alternateButton1Label,
-                ErrorResult resultIfAlternateButtonPressed,
-                string message
-            )
-            {
-                Messages.Add(message);
-                return ErrorResult.OK;
-            }
-
-            public void ReportFatalException(Exception e) => Messages.Add(e.ToString());
-
-            public void ReportFatalMessageWithStackTrace(string message, object[] args) =>
-                Messages.Add(message);
-
-            public void ReportNonFatalException(Exception exception, IRepeatNoticePolicy policy) =>
-                Messages.Add(exception.ToString());
-
-            public void ReportNonFatalExceptionWithMessage(
-                Exception error,
-                string message,
-                params object[] args
-            ) => Messages.Add(message);
-
-            public void ReportNonFatalMessageWithStackTrace(string message, params object[] args) =>
-                Messages.Add(message);
         }
 
         /// <summary>
