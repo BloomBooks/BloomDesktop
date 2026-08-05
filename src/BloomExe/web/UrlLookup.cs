@@ -299,6 +299,19 @@ namespace Bloom.web
             }
             catch (Exception e)
             {
+                // If another thread finished successfully while we were failing, our failure says
+                // nothing about whether the internet works - it demonstrably does - and the data
+                // the caller wanted is already in the cache. Latching "no internet" here would
+                // switch off online features for the rest of the session on the strength of a
+                // lost race, and the Sentry report would be exactly the noise this is meant to
+                // stop. This is not hypothetical: the patient background retrieval can now be
+                // running for 40 seconds, so it can easily succeed while a blocking caller that
+                // started later is still burning its own short budget. Return true, because by
+                // the time _gotJsonFromServer is set the dictionary is populated (see above), so
+                // it really is worth the caller looking again.
+                if (_gotJsonFromServer)
+                    return true;
+
                 _internetAvailable = false;
                 var mode = ModeName(inBackground);
                 // Invariant culture so this reads the same as the urlLookupBudgetSeconds tag

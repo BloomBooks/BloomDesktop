@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -35,7 +36,6 @@ namespace BloomTests.WebLibraryIntegration
         private sealed class StalledServer : IDisposable
         {
             private readonly TcpListener _listener;
-            private readonly CancellationTokenSource _stop = new CancellationTokenSource();
             private int _connectionCount;
 
             public StalledServer()
@@ -51,10 +51,13 @@ namespace BloomTests.WebLibraryIntegration
 
             private async Task AcceptLoop()
             {
-                var held = new System.Collections.Generic.List<TcpClient>();
+                var held = new List<TcpClient>();
                 try
                 {
-                    while (!_stop.IsCancellationRequested)
+                    // Dispose() stops the listener, which faults the pending accept and so ends
+                    // this loop. (A cancellation token would be decorative: nothing here would
+                    // observe it while parked in AcceptTcpClientAsync.)
+                    while (true)
                     {
                         var client = await _listener.AcceptTcpClientAsync();
                         Interlocked.Increment(ref _connectionCount);
@@ -73,7 +76,6 @@ namespace BloomTests.WebLibraryIntegration
 
             public void Dispose()
             {
-                _stop.Cancel();
                 _listener.Stop();
             }
         }
@@ -101,44 +103,45 @@ namespace BloomTests.WebLibraryIntegration
                     Timeout = perAttempt,
                     MaxErrorRetry = maxErrorRetry,
                 };
-                var s3 = new AmazonS3Client("fake-access-key", "fake-secret-key", config);
-
-                Assert.That(
-                    server.ConnectionCount,
-                    Is.EqualTo(0),
-                    "test setup problem: something connected before we made the request"
-                );
-
-                var stopwatch = Stopwatch.StartNew();
-                using (var cts = new CancellationTokenSource(overall))
+                using (var s3 = new AmazonS3Client("fake-access-key", "fake-secret-key", config))
                 {
                     Assert.That(
-                        () =>
-                            s3.GetObjectAsync(
-                                    new GetObjectRequest { BucketName = "b", Key = "k" },
-                                    cts.Token
-                                )
-                                .GetAwaiter()
-                                .GetResult(),
-                        Throws.Exception,
-                        "a server that never answers must not somehow produce a result"
+                        server.ConnectionCount,
+                        Is.EqualTo(0),
+                        "test setup problem: something connected before we made the request"
                     );
-                    stopwatch.Stop();
+
+                    var stopwatch = Stopwatch.StartNew();
+                    using (var cts = new CancellationTokenSource(overall))
+                    {
+                        Assert.That(
+                            () =>
+                                s3.GetObjectAsync(
+                                        new GetObjectRequest { BucketName = "b", Key = "k" },
+                                        cts.Token
+                                    )
+                                    .GetAwaiter()
+                                    .GetResult(),
+                            Throws.Exception,
+                            "a server that never answers must not somehow produce a result"
+                        );
+                        stopwatch.Stop();
+
+                        Assert.That(
+                            cts.IsCancellationRequested,
+                            Is.False,
+                            $"the overall token should still have had time left, but the attempts took {stopwatch.Elapsed}"
+                        );
+                    }
 
                     Assert.That(
-                        cts.IsCancellationRequested,
-                        Is.False,
-                        $"the overall token should still have had time left, but the attempts took {stopwatch.Elapsed}"
+                        server.ConnectionCount,
+                        Is.EqualTo(maxErrorRetry + 1),
+                        "an attempt-level timeout should be retried; if this is 1, the SDK aborted the "
+                            + "whole operation on the first timeout and UrlLookup's background budget "
+                            + "buys only one attempt, not MaxErrorRetry+1"
                     );
                 }
-
-                Assert.That(
-                    server.ConnectionCount,
-                    Is.EqualTo(maxErrorRetry + 1),
-                    "an attempt-level timeout should be retried; if this is 1, the SDK aborted the "
-                        + "whole operation on the first timeout and UrlLookup's background budget "
-                        + "buys only one attempt, not MaxErrorRetry+1"
-                );
             }
         }
 
@@ -161,10 +164,9 @@ namespace BloomTests.WebLibraryIntegration
                     // Far more retries than the overall budget can accommodate.
                     MaxErrorRetry = 50,
                 };
-                var s3 = new AmazonS3Client("fake-access-key", "fake-secret-key", config);
-
                 var overall = TimeSpan.FromSeconds(3);
                 var stopwatch = Stopwatch.StartNew();
+                using (var s3 = new AmazonS3Client("fake-access-key", "fake-secret-key", config))
                 using (var cts = new CancellationTokenSource(overall))
                 {
                     Assert.That(
