@@ -14,6 +14,12 @@ import {
     getPageIframeBody,
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
+import {
+    boxParticipatesInMarkup,
+    restoreAndResaveSelectionForMarkup,
+    restoreSelectionAfterMarkup,
+    saveSelectionForMarkup,
+} from "./markupSelectionPreservation";
 import { isLongPressEvaluating } from "../longPressShared";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import { showRequiresSubscriptionDialogInAnyView } from "../../react_components/requiresSubscription";
@@ -1507,18 +1513,10 @@ function handlePageEditing(
             return;
         }
 
-        // the hard thing about all this is preserving the user's insertion point while we change the actual
-        // html out from under them to add/remove markup.
-        // ckeditor specific discussion: http://stackoverflow.com/questions/16835365/set-cursor-to-specific-position-in-ckeditor
-        // This "bookmark" approach makes that easy:
-        // We insert a dummy element where the insert point is. Later when we do the markup,
-        // we'll find the bookmark again, put the selection there, and remove this element.
-        // The problem with this approach is that when the user is fixing an existing word, the markup
-        // will see our bookmark as a word-breaking element. For example, if I type "houze" and go
-        // to fix that z, the markup routine is going to see "hous"-bookmark-"e". When the user
-        // clicks away, the markup will be redone and fixed. So this is a known tradeoff; we get
-        // more reliable insertion-point-preservation, at the cost of some temporarily inaccurate
-        // markup.
+        // The hard thing about all this is preserving the user's insertion point while we change the
+        // actual html out from under them to add/remove markup. That job — and the known tradeoff
+        // in how it is currently done — now lives in markupSelectionPreservation.ts, so that it can
+        // be reimplemented without touching this pipeline. See BL-6681.
         const selNode = selection ? selection.anchorNode : null;
         const editableDiv = selNode
             ? $(selNode).parents(".bloom-editable")[0]
@@ -1526,25 +1524,14 @@ function handlePageEditing(
         // In 3.9, this is null when you press backspace in an empty box; the selection.anchorNode is itself a .bloom-editable, so
         // presumably we could adjust the above query to still get the div it's looking for.
         if (editableDiv) {
-            const ckeditorOfThisBox = (
-                editableDiv as HTMLElement & { bloomCkEditor?: CKEDITOR.editor }
-            ).bloomCkEditor;
-            // Normally every editable box has a ckeditor attached. But some arithmetic template boxes are
-            // intended to contain numbers not needing translation and don't get one...because the logic
-            // that invokes WireToCKEditor is looking for classes like bloom-content1 that are not present
-            // in ArithmeticTemplate. Here we're presuming that if a block didn't get one attached,
-            // it's not true vernacular text and doesn't need markup. So all the code below is skipped
-            // if we don't have one.
-            if (ckeditorOfThisBox) {
-                let ckeditorSelection = ckeditorOfThisBox.getSelection();
-                if (!ckeditorSelection) {
+            // Normally every editable box has a rich-text editor attached, and so participates in
+            // markup. If a block didn't get one, we presume it isn't true vernacular text and
+            // doesn't need markup, so all the code below is skipped.
+            if (boxParticipatesInMarkup(editableDiv)) {
+                let savedSelection = saveSelectionForMarkup(editableDiv);
+                if (!savedSelection) {
                     return; // may be changing pages?
                 }
-                // there is also createBookmarks2(), which avoids actually inserting anything. That has the
-                // advantage that changing a character in the middle of a word will allow the entire word to
-                // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
-                // actually go back to where it was: it gets shifted to the right.
-                let bookmarks = ckeditorSelection.createBookmarks(true);
 
                 // For some reason, we have cases, mostly (always?) on paste, where
                 // ckeditor is inserting tons of comments which are messing with our parsing
@@ -1569,11 +1556,21 @@ function handlePageEditing(
                         // it now, and then again after actually changing the markup, which might move the selection again.
                         // (This is why we don't allow updateMarkupAsync to modify the DOM, except by means of
                         // the function it returns, which is executed synchronously with fixing the selection.)
-                        ckeditorOfThisBox
-                            .getSelection()
-                            .selectBookmarks(bookmarks);
-                        ckeditorSelection = ckeditorOfThisBox.getSelection();
-                        bookmarks = ckeditorSelection.createBookmarks(true);
+                        const resaved = restoreAndResaveSelectionForMarkup(
+                            editableDiv,
+                            savedSelection,
+                        );
+                        // The one deliberate difference from the pre-extraction code, which did
+                        // `bookmarks = editor.getSelection().createBookmarks(true)` unguarded here.
+                        // If the editor reported no selection at this point that threw, inside an
+                        // async function nobody awaits, so the pass died half-done (comments already
+                        // stripped, marker spans possibly still in the DOM) via an unhandled
+                        // rejection. Abandoning the pass cleanly is the same outcome without the
+                        // wreckage. The first save above already bails this way.
+                        if (!resaved) {
+                            return;
+                        }
+                        savedSelection = resaved;
 
                         const actualUpdateFunc =
                             await activeTool.updateMarkupAsync();
@@ -1620,13 +1617,12 @@ function handlePageEditing(
                     activeTool.updateMarkup();
                 }
 
-                //set the selection to wherever our bookmark node ended up
+                //put the caret back where it was before all of the above
                 //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
                 //restoring the selection, that we got interference with longpress's replacePreviousLetterWithText(),
                 // in some way that is still not understood. This was fixed by changing all this to trigger on
                 // a different event (keydown instead of keypress).
-                // Note: causing the bookmarks to be selected actually removes the bookmark spans.
-                ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
+                restoreSelectionAfterMarkup(editableDiv, savedSelection);
             }
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
