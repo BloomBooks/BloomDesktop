@@ -8,18 +8,53 @@ To resume after an interruption, issue **`/resume-ckeditor`** (see
 
 ## Current state
 
-**Phase: Stage 0 in progress.** Branch **`BL-6681-stage0-inventory`**, not yet pushed, no PR yet.
-All of PLAN.md §10 is decided except the Stage-5 legacy-cleanup lifetime, which blocks nothing.
+**Phase: Stage 0, partly done, now BLOCKED on the local environment.** Branch
+**`BL-6681-stage0-inventory`**, 3 commits, not pushed, no PR yet. All of PLAN.md §10 is decided
+except the Stage-5 legacy-cleanup lifetime, which blocks nothing.
 
 Stage 0 checklist (PLAN.md §6):
 
 - [x] Planning docs committed (`b7e849c62`)
-- [x] `BEHAVIOR-INVENTORY.md` written — 10 sections (A–K) plus cross-cutting criteria X1–X7
-- [ ] Capture today's paste/drop behaviour → `PASTE-DROP-BASELINE.md` (inventory rows C1–C7)
-- [ ] Characterization tests pinning the pure-ish functions
-- [ ] `toolbox.ts` selection-bracket prep commit (§5.4)
-- [ ] Handler-accumulation repro attempt (§4.10)
-- [ ] Page-reload timing baseline (§4.11)
+- [x] `BEHAVIOR-INVENTORY.md` — sections A–K plus cross-cutting X1–X7 (`c435b9708`)
+- [x] Characterization tests for the selection functions (`07f4500a8`) — 10 tests, passing,
+      falsification-checked. Covers inventory G4/G5.
+- [ ] **BLOCKED** — `toolbox.ts` selection-bracket prep commit (§5.4): needs `toolboxSpec.ts` to run
+- [ ] **BLOCKED** — capture the paste/drop baseline (rows C1–C7): needs a running Bloom
+- [ ] **BLOCKED** — handler-accumulation repro (§4.10): needs a running Bloom
+- [ ] **BLOCKED** — page-reload timing baseline (§4.11): needs a running Bloom
+
+> ## ⚠ Read this before resuming — two local-environment blockers
+>
+> **1. `node_modules` in `src/BloomBrowserUI` is stale and needs `pnpm install`.** It holds
+> **react-dom 17.0.2** while `package.json` and `pnpm-lock.yaml` both require **18.3.1**, so any
+> module importing `react-dom/client` fails to resolve. That is not a code problem and not caused by
+> this branch — it breaks `bloomFieldSpec.ts`, `toolboxSpec.ts` and `ImageUndoManagerSpec.ts` at
+> *load* time (they never reach an assertion). It also blocks running Bloom at all via `./go.sh`,
+> which is why three of the four remaining Stage 0 items are blocked.
+>
+> **2. `pnpm` cannot run in this shell: Node is too old.** Volta's default here is **22.12.0**;
+> pinned pnpm 11.5.2 needs **≥ 22.13**, and `package.json` `devEngines` asks for **24.13.0**.
+> `volta run --node 22.21.1 -- pnpm …` gets past that but then pnpm wants to **purge
+> `node_modules`** and aborts for lack of a TTY.
+>
+> **Do NOT** set `CI=true` or `confirmModulesPurge=false` to force it through — that silently wipes
+> `node_modules`. Getting a supported Node and running `pnpm install` deliberately is the developer's
+> call, since it is slow and would disrupt a running dev server (nothing was running when this was
+> found).
+>
+> **Workaround that does work, for React-free specs:** invoke vitest directly, bypassing the pnpm
+> launcher and its dependency-status check:
+> ```sh
+> cd src/BloomBrowserUI && node node_modules/vitest/vitest.mjs run <spec path>
+> ```
+> This is how `editableDivUtilsSelectionSpec.ts` was run. It only works for specs that don't pull in
+> the React chain.
+>
+> **3. Fixed already, but note it for other clones/worktrees:** `git commit` failed with a yarn
+> lockfile error, because a stale **husky v4** hook in `.git/hooks/` (installed from a different
+> worktree) hard-codes `packageManager=yarn`. The repo replaced husky with its own `.githooks`
+> dispatcher but `core.hooksPath` was unset in this clone. Fixed per `.githooks/README.md` with
+> `git config core.hooksPath .githooks` — one line, and **not** `--no-verify`.
 
 ## Log
 
@@ -368,23 +403,57 @@ worth keeping:
 - X4 ("no listener leak") **fails today** — stated as such, so it reads as a known-red criterion
   rather than a passing one.
 
+### 2026-08-04 — Stage 0 part 2: characterization tests, then blocked
+
+**Found that existing coverage was much better than the plan assumed.** Inventory rows D1–D3, D5,
+D6, B9, B10 and K3 are already tested in `bloomFieldSpec.ts`; F1, F2 and F4 in
+`editableDivUtilsSpec.ts`. So rather than duplicating them, hunted for the genuine gap.
+
+**The gap that mattered: `makeSelectionIn`'s `divBrCount`.** Nothing in the app passes anything but
+`-1` for it (`readerToolsModel.ts:587-592`, `toolbox.ts`), yet §4.3's new selection anchors depend on
+exactly that `<br>`-stepping behaviour. So it was completely unpinned. Now covered by
+`bookEdit/js/editableDivUtilsSelectionSpec.ts` — 10 tests over the offset round-trip, counting across
+inline markup, `divBrCount` 0/1/2-with-only-one-`<br>`, the not-at-a-boundary case, and `atStart`
+either way.
+
+**All 10 passed first run, which for characterization tests is a reason for suspicion, not
+satisfaction.** So I falsified deliberately: changed the `divBrCount`-1 expectation from 2 to 99 and
+confirmed it failed with `expected 2 to be 99`. The assertions genuinely observe the DOM rather than
+passing vacuously. Reverted, re-confirmed green.
+
+**A design finding the tests forced out:** both functions hard-code
+`parent.window.document.getElementById("page")` and operate on that iframe's window, which is why the
+test harness has to build such an iframe. The replacement `selectionApi.ts` should take a
+document/root instead — testable, and reusable outside the page frame. Recorded in the spec's header
+comment and in the commit message.
+
+**Then hit the environment wall** (see the boxed warning at the top). The remaining three Stage 0
+items all need either `toolboxSpec.ts` to run or Bloom to launch, and both need a working
+`node_modules`.
+
+Deliberately **did not** press on with the `toolbox.ts` prep commit: it refactors the most delicate
+keystroke code in the app, its own spec can't currently load, and doing that unverified is exactly
+the wrong trade. Better to stop and ask.
+
 ## Next actions
 
-Continue Stage 0 on branch `BL-6681-stage0-inventory`, in this order:
+**First: unblock the environment** (boxed warning above) — get a Node ≥ 22.13 (ideally the 24.13.0
+`devEngines` asks for) and run `pnpm install` in `src/BloomBrowserUI`. Developer's call, since it
+purges `node_modules`. Then confirm `bloomFieldSpec.ts` / `toolboxSpec.ts` load again.
 
-1. **Capture the paste/drop baseline** → `PASTE-DROP-BASELINE.md`, covering inventory rows C1–C7.
+Then continue Stage 0 on branch `BL-6681-stage0-inventory`, in this order:
+
+1. **`toolbox.ts` prep commit** (§5.4): extract the save-selection / restore-selection bracket from
+   `handleKeyboardInput` into two functions with a clean seam. Behaviour-neutral. **Do not attempt
+   until `toolboxSpec.ts` runs** — this is the app's most delicate keystroke code.
+2. **Capture the paste/drop baseline** → `PASTE-DROP-BASELINE.md`, covering inventory rows C1–C7.
    Needs a running Bloom (`run-bloom` skill) and a real web-page clipboard payload, not hand-written
    tidy HTML. Do this **before** any code change; it is the only row-set whose failure is silent.
-2. **Characterization tests** for the pure-ish functions the inventory pins — the `BloomField` paste
-   transforms (D1–D7), `removeCkEditorFillingChars`/`fixUpEmptyishParagraphs` (F1–F4),
-   `makeSelectionIn` round-trips (G4–G5).
-3. **`toolbox.ts` prep commit** (§5.4): extract the save-selection / restore-selection bracket from
-   `handleKeyboardInput` into two functions with a clean seam. Behaviour-neutral; verify with the
-   G-section rows.
-4. **Handler-accumulation repro** (§4.10): call `refreshCanvasElementEditing` repeatedly, watch for
+   Remember C7 (drop) as well as paste — that is the row CKEditor has been covering invisibly.
+3. **Handler-accumulation repro** (§4.10): call `refreshCanvasElementEditing` repeatedly, watch for
    duplicate `document` keydown handlers; F6 is the likeliest visible symptom. File its own card if it
-   reproduces. Add the X4 listener-count leak test either way.
-5. **Page-reload timing baseline** (§4.11) with the performance-log feature.
+   reproduces. Add the X4 listener-count leak test either way (it should fail before any fix).
+4. **Page-reload timing baseline** (§4.11) with the performance-log feature.
 
 Then: open the Stage 0 PR via `preflight`.
 
