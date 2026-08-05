@@ -83,10 +83,12 @@ Decision (John): give no weight to the old `imagePusherDowner` two-element trick
 
 **Drag = updating numbers, never re-parenting (except bottom).** While dragging the image:
 - crossing horizontal thirds of the box switches dock class (left / middle band / right);
-- vertical delta writes `--inline-image-offset` (clamped ≥ 0);
-- drop in bottom zone moves the wrapper to last child (`bloom-inlineImageBottom`); drag out of it moves it back to first child;
+- vertical delta writes `--inline-image-offset`, clamped so the whole wrapper stays inside the block (the maximum is measured live from the wrapper's rendered bottom, since a same-side float above shifts where the offset starts);
+- the bottom zone (last fifth) belongs to the bottom dock only in the MIDDLE third and anywhere below the block; in the outer thirds the side docks win all the way down, so the lower corners are reachable (John, live testing);
+- a dock switch into a side with no room (an earlier same-side float fills it) is refused: the image stays on its previous side rather than hanging outside the block;
+- drop in the bottom dock moves the wrapper to last child (`bloom-inlineImageBottom`); dragging out moves it back;
 - corner handles write `width` (aspect-ratio keeps height honest). Continuous drag-resize, not presets.
-Then one call to `syncInlineImagesFromEditable()` stamps the wrapper into sibling editables, plus overflow re-check and the page-dirty path.
+Then one call to `syncInlineImagesFromEditable()` stamps the wrapper into sibling editables, plus overflow re-check. Floats clear per side (left clears left, right clears right), so same-side images stack down that edge while opposite sides are independent; `clear: both` forced every new image below all existing ones, which dropped a new image below the block itself when one had been dragged low (John, live testing).
 
 **Undo: every operation undoable via the workspace undo chain.** `workspaceRoot.handleUndo()`/`canUndo()` try origami → toolbox → `ImageUndoManager` → CKEditor, and CKEditor's stack cannot see programmatic DOM changes, so inline-image operations need their own layer, modeled on `ImageUndoManager.ts`: `inlineImages.ts` keeps a stack of per-operation snapshots of the whole TG's inline-image state (wrapper outerHTML + slot per editable, or null), recorded before insert / remove / image change / dock change / drag (at drag start, committed at drop) / resize. Undo restores the snapshot to all editables. Stack clears on page change (same `clearImageOperationUndoOnPageChange` pattern). Gate `inlineImageCanUndo()` on the inline image being selected/active, mirroring how `canUndoImageOperation` gates on an image container, so our stack never shadows a more recent text edit. Wire `inlineImageCanUndo`/`inlineImageUndo` into the chain in `workspaceRoot.ts` (both `handleUndo` and `canUndo`) and export through `editablePage.ts` like `imageOperationUndo`. No redo, matching the image-operation layer.
 

@@ -140,23 +140,32 @@ describe("inlineImageInteractions", () => {
             ).toBe(kInlineImageRightClass);
         });
 
-        it("docks at the bottom in the last fifth of the block, whatever the horizontal position", () => {
-            // Sanity check: the same x above the bottom zone is not the bottom dock.
+        it("gives the bottom dock the bottom zone only in the middle third, leaving the lower corners to the sides", () => {
+            // Sanity check: the same x just above the bottom zone is the band.
             expect(
-                computeInlineImageDock({ x: 20, y: 159 }, kEditableBox),
+                computeInlineImageDock({ x: 150, y: 159 }, kEditableBox),
+            ).toBe(kInlineImageMiddleClass);
+            expect(
+                computeInlineImageDock({ x: 150, y: 160 }, kEditableBox),
+            ).toBe(kInlineImageBottomClass);
+            // The side docks win all the way down, so an image can be parked in a lower
+            // corner (with clear:both zones stealing the whole strip, the corners were
+            // unreachable).
+            expect(
+                computeInlineImageDock({ x: 20, y: 160 }, kEditableBox),
             ).toBe(kInlineImageLeftClass);
-            [20, 150, 280].forEach((x) => {
-                expect(
-                    computeInlineImageDock({ x, y: 160 }, kEditableBox),
-                    `x=${x} at the top of the bottom zone`,
-                ).toBe(kInlineImageBottomClass);
-            });
+            expect(
+                computeInlineImageDock({ x: 280, y: 199 }, kEditableBox),
+            ).toBe(kInlineImageRightClass);
         });
 
-        it("docks at the bottom for a position below the block altogether", () => {
-            expect(
-                computeInlineImageDock({ x: 150, y: 5000 }, kEditableBox),
-            ).toBe(kInlineImageBottomClass);
+        it("docks at the bottom for a position below the block altogether, whatever the horizontal position", () => {
+            [20, 150, 280].forEach((x) => {
+                expect(
+                    computeInlineImageDock({ x, y: 5000 }, kEditableBox),
+                    `x=${x} below the block`,
+                ).toBe(kInlineImageBottomClass);
+            });
         });
 
         it("answers with the band for a block that has no width", () => {
@@ -192,9 +201,13 @@ describe("inlineImageInteractions", () => {
             expect(clampInlineImageOffset(150, 200)).toBe(150);
         });
 
-        it("treats a maximum of zero or less as no maximum", () => {
-            expect(clampInlineImageOffset(150, 0)).toBe(150);
-            expect(clampInlineImageOffset(150, -5)).toBe(150);
+        it("pins the image to the top when the maximum is zero or negative (image fills the block)", () => {
+            expect(clampInlineImageOffset(150, 0)).toBe(0);
+            expect(clampInlineImageOffset(150, -5)).toBe(0);
+        });
+
+        it("applies no maximum when none is given (no box to measure against)", () => {
+            expect(clampInlineImageOffset(150)).toBe(150);
         });
     });
 

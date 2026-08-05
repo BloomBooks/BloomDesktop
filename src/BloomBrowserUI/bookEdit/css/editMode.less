@@ -1861,8 +1861,11 @@ svg.bloom-videoControl {
 // Cleanup() takes them out before the page is saved and the sync that copies a wrapper to
 // the other languages' editables leaves them out of the copy.
 @inline-image-handle-size: 10px;
-// Half the handle, so that it straddles the edge it belongs to rather than sitting inside it.
-@inline-image-handle-nudge: -5px;
+// The handles sit fully INSIDE the image box. Straddling the corners (the usual editor
+// look) pokes them past the wrapper's edge, and on a right-docked image that is past the
+// editable's edge too, which produced a horizontal scrollbar on the whole text block
+// (John, live testing). Inside loses nothing: the corner is still obvious and grabbable.
+@inline-image-handle-nudge: 0px;
 
 // The frame the four resize handles hang off. The wrapper's own box is NOT the image's box:
 // the vertical offset is transparent padding at the top of the wrapper, and in the middle
@@ -1936,4 +1939,15 @@ svg.bloom-videoControl {
 // above the bloom-page and so is never part of what gets saved.
 body.bloom-inlineImage-dragging .bloom-editable {
     user-select: none;
+}
+
+// Like the other edit-time guides (see the .bloom-page:hover section near the top of this
+// file), the resize handles disappear when the mouse leaves the page, so the user sees the
+// page as it will print -- even while the image is still selected. The exception is an
+// active drag/resize: pointer capture lets the pointer wander off the page mid-gesture,
+// and the handles vanishing mid-resize is disorienting.
+body:not(.bloom-inlineImage-dragging)
+    .bloom-page:not(:hover)
+    .bloom-ui-inlineImage-handle-frame {
+    display: none;
 }

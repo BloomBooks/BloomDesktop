@@ -148,22 +148,29 @@ export function getInlineImageActionTarget(
 /**
  * Which dock a position calls for. The position is where the IMAGE is (or would be), not
  * where the cursor is -- see the grab offsets in IInlineImageDragState for why. Crossing a
- * third of the block's width switches between left, the middle band, and right; reaching the
- * bottom of the block means the bottom dock, whatever the horizontal position.
+ * third of the block's width switches between left, the middle band, and right. The bottom
+ * dock claims the bottom zone only in the MIDDLE third (and anywhere below the block
+ * itself): in the outer thirds the side docks win all the way down, so the image can be
+ * parked in a lower corner -- with the whole bottom strip going to the bottom dock, the
+ * corners were unreachable (John, live testing).
  */
 export function computeInlineImageDock(
     imageCenter: { x: number; y: number },
     editableBox: IBox,
 ): InlineImageDock {
-    const bottomZoneTop =
-        editableBox.top +
-        editableBox.height * (1 - kInlineImageBottomZoneFraction);
-    if (imageCenter.y >= bottomZoneTop) return kInlineImageBottomClass;
     // A box with no width says nothing about thirds; the band is the neutral answer.
     const fraction =
         editableBox.width > 0
             ? (imageCenter.x - editableBox.left) / editableBox.width
             : 0.5;
+    if (imageCenter.y >= editableBox.top + editableBox.height)
+        return kInlineImageBottomClass;
+    const bottomZoneTop =
+        editableBox.top +
+        editableBox.height * (1 - kInlineImageBottomZoneFraction);
+    const inMiddleThird = fraction >= 1 / 3 && fraction <= 2 / 3;
+    if (imageCenter.y >= bottomZoneTop && inMiddleThird)
+        return kInlineImageBottomClass;
     if (fraction < 1 / 3) return kInlineImageLeftClass;
     if (fraction > 2 / 3) return kInlineImageRightClass;
     return kInlineImageMiddleClass;
@@ -171,9 +178,11 @@ export function computeInlineImageDock(
 
 /**
  * The value to write to --inline-image-offset: whole pixels, never negative (the image
- * cannot sit above the top of its block), and no further down than the block is tall. A
- * maximum of zero or less means there is nothing sensible to clamp against, so only the
- * lower bound applies.
+ * cannot sit above the top of its block), and no further than the given maximum, which is
+ * "how far down can the image start and still fit inside the block". A maximum at or below
+ * zero is a real answer -- the image already fills the block, so it stays pinned to the
+ * top. Pass undefined when there is no box to measure against (a degenerate layout), and
+ * only the lower bound applies.
  */
 export function clampInlineImageOffset(
     offsetPx: number,
@@ -182,8 +191,8 @@ export function clampInlineImageOffset(
     const rounded = Math.round(offsetPx);
     // Negatives and NaN both land here.
     if (!(rounded > 0)) return 0;
-    if (maxPx !== undefined && maxPx > 0)
-        return Math.min(rounded, Math.round(maxPx));
+    if (maxPx !== undefined)
+        return Math.min(rounded, Math.max(0, Math.round(maxPx)));
     return rounded;
 }
 
@@ -545,6 +554,8 @@ function continueDrag(state: IInlineImageDragState, event: PointerEvent): void {
         )
     )
         return;
+    const previousDock = state.dock;
+    const previousOffsetPx = getInlineImageOffsetPx(state.wrapper);
     const dock = computeInlineImageDock(
         {
             x: event.clientX + state.grabOffsetX,
@@ -552,7 +563,7 @@ function continueDrag(state: IInlineImageDragState, event: PointerEvent): void {
         },
         state.editableBox,
     );
-    if (dock !== state.dock) {
+    if (dock !== previousDock) {
         // setInlineImageDock also moves the wrapper between the first-child and last-child
         // slots, which is the only DOM difference between the bottom dock and the others.
         setInlineImageDock(state.wrapper, dock);
@@ -561,11 +572,51 @@ function continueDrag(state: IInlineImageDragState, event: PointerEvent): void {
     // The bottom dock is in normal flow at the end of the block, so it has no offset; the
     // value stays in the style attribute, ready for when the image is dragged back up.
     if (dock === kInlineImageBottomClass) return;
+    // The maximum keeps the whole wrapper (offset padding + image) inside the block: an
+    // offset that pushes the image past the bottom makes the block scroll (John, live
+    // testing). The offset is measured from where the float NATURALLY starts, which is
+    // below any earlier same-side float, not from the top of the block -- so the room
+    // left is computed from the wrapper's live rendered bottom: however far that sits
+    // above the block's bottom is how much further the current offset may grow. This
+    // remeasures every move, so it also self-corrects after a dock switch. A block with
+    // no measurable height (jsdom) gives no maximum at all.
+    const blockBottom = state.editableBox.top + state.editableBox.height;
+    let maxPx: number | undefined;
+    if (state.editableBox.height > 0) {
+        const wrapperBottom = state.wrapper.getBoundingClientRect().bottom;
+        maxPx =
+            getInlineImageOffsetPx(state.wrapper) +
+            (blockBottom - wrapperBottom);
+    }
     const offsetPx = clampInlineImageOffset(
         state.startOffsetPx + (event.clientY - state.startY),
-        state.editableBox.height,
+        maxPx,
     );
     state.wrapper.style.setProperty(kInlineImageOffsetVar, `${offsetPx}px`);
+    if (state.editableBox.height <= 0) return;
+    // The maximum above was measured before this move's offset was applied, so a fast
+    // move can land a few pixels long; measure once more and take back any remainder.
+    let over = state.wrapper.getBoundingClientRect().bottom - blockBottom;
+    if (over > 0) {
+        state.wrapper.style.setProperty(
+            kInlineImageOffsetVar,
+            `${clampInlineImageOffset(offsetPx - over)}px`,
+        );
+        over = state.wrapper.getBoundingClientRect().bottom - blockBottom;
+    }
+    // If the wrapper hangs past the block's bottom even with its offset clamped to
+    // nothing, the side the drag just entered has no room (an earlier same-side float
+    // fills it). Hanging outside the block scrolls the text and puts the image where it
+    // cannot even be clicked, so refuse the switch: put the image back on the side it
+    // came from, with the offset it had.
+    if (over > 1 && dock !== previousDock) {
+        setInlineImageDock(state.wrapper, previousDock);
+        state.wrapper.style.setProperty(
+            kInlineImageOffsetVar,
+            `${previousOffsetPx}px`,
+        );
+        state.dock = previousDock;
+    }
 }
 
 function startResize(event: PointerEvent, handle: HTMLElement): void {

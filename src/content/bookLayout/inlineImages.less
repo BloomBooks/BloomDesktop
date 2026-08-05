@@ -41,29 +41,31 @@
     // narrowed column instead), translateY moves paint but not the wrap, anchor
     // positioning is out of flow, and CSS Exclusions never shipped.
     // SEVERAL IMAGES IN ONE BLOCK
-    // A text block may hold any number of inline images. clear:both below means each floating
-    // image starts below the previous one rather than sitting beside it, so two left-docked
-    // images stack vertically down the left edge, each with its own offset measured from where
-    // the previous one ended. That is the accepted v1 behavior: it is predictable, it cannot
-    // produce overlapping images, and it degrades the same way in every renderer. Side-by-side
-    // floats would need the clear dropped, which makes the offsets interact in ways that are
-    // hard to reason about across languages whose text is a different length.
+    // A text block may hold any number of inline images. The clears are per side: a left
+    // image clears only earlier LEFT floats and a right image only earlier RIGHT ones, so
+    // two same-side images stack vertically down that edge (each offset measured from where
+    // the previous one ended), while a left image and a right image can sit at the same
+    // height on opposite sides. clear:both here would force every new image below ALL
+    // existing ones -- with one image dragged low, a newly added one landed below the block
+    // itself (John, live testing). Same-side stacking cannot produce overlapping images and
+    // degrades the same way in every renderer.
     &.bloom-inlineImageLeft,
     &.bloom-inlineImageRight,
     &.bloom-inlineImageMiddle {
         padding-top: var(--inline-image-offset, 0px);
         shape-outside: inset(var(--inline-image-offset, 0px) 0 0 0);
-        clear: both;
     }
 
     &.bloom-inlineImageLeft {
         float: left;
+        clear: left;
         width: var(--inline-image-width, 40%);
         margin: 0 1em 0.5em 0;
     }
 
     &.bloom-inlineImageRight {
         float: right;
+        clear: right;
         width: var(--inline-image-width, 40%);
         margin: 0 0 0.5em 1em;
     }
@@ -72,9 +74,12 @@
     // line box can fit beside it, and the image is centered inside it at its own
     // width. It still has to be a float, because that is what allows text above it
     // (the un-excluded offset region at the top of the shape); an ordinary block
-    // first child would always sit at the very top of the editable.
+    // first child would always sit at the very top of the editable. Being full-width,
+    // it genuinely belongs below every earlier float on either side, so this one
+    // keeps clear:both.
     &.bloom-inlineImageMiddle {
         float: left;
+        clear: both;
         width: 100%;
 
         img {
