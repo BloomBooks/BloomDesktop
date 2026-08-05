@@ -316,6 +316,13 @@ namespace Bloom
                 {
                     // WithScope gives us a temporary scope, so whatever the caller sets applies to
                     // this event alone rather than leaking onto everything reported afterwards.
+                    // UPGRADE WARNING: this depends on Sentry 3.x semantics, where WithScope pushes
+                    // a scope that the CaptureException inside the callback then picks up. Sentry
+                    // 4.x deprecated WithScope in favour of CaptureException(exception, scope => ...).
+                    // If you upgrade, port this too: otherwise the tags and fingerprints callers set
+                    // here would silently stop being applied, and nothing would tell you - the
+                    // callers' own unit tests configure a Scope directly and would still pass, while
+                    // in production the events would quietly go back to being indistinguishable.
                     SentrySdk.WithScope(scope =>
                     {
                         configureScope(scope);
