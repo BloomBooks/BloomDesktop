@@ -8,8 +8,8 @@ To resume after an interruption, issue **`/resume-ckeditor`** (see
 
 ## Current state
 
-**Phase: Stage 0, partly done, now BLOCKED on the local environment.** Branch
-**`BL-6681-stage0-inventory`**, 3 commits, not pushed, no PR yet. All of PLAN.md §10 is decided
+**Phase: Stage 0, environment fixed, code work done; live verification remains.** Branch
+**`BL-6681-stage0-inventory`**, 6 commits, **not pushed, no PR yet**. All of PLAN.md §10 is decided
 except the Stage-5 legacy-cleanup lifetime, which blocks nothing.
 
 Stage 0 checklist (PLAN.md §6):
@@ -18,61 +18,50 @@ Stage 0 checklist (PLAN.md §6):
 - [x] `BEHAVIOR-INVENTORY.md` — sections A–K plus cross-cutting X1–X7 (`c435b9708`)
 - [x] Characterization tests for the selection functions (`07f4500a8`) — 10 tests, passing,
       falsification-checked. Covers inventory G4/G5.
-- [ ] **BLOCKED** — `toolbox.ts` selection-bracket prep commit (§5.4): needs `toolboxSpec.ts` to run
-- [ ] **BLOCKED** — capture the paste/drop baseline (rows C1–C7): needs a running Bloom
-- [ ] **BLOCKED** — handler-accumulation repro (§4.10): needs a running Bloom
-- [ ] **BLOCKED** — page-reload timing baseline (§4.11): needs a running Bloom
+- [x] Environment unblocked (`vp` + install). Full suite green: **591 passed**.
+- [x] `toolbox.ts` selection-bracket prep commit (`2707d98a8`) — §5.4 done
+- [ ] Capture the paste/drop baseline (rows C1–C7, incl. **C7 drop**): needs a running Bloom
+- [ ] Handler-accumulation repro (§4.10) + the X4 listener-leak test: needs a running Bloom
+- [ ] Page-reload timing baseline (§4.11): needs a running Bloom
+- [ ] Live verification of caret behaviour during reader markup (rows **G1–G3**) — outstanding from
+      the prep commit above, which has no unit coverage for that pipeline
 
-> ## ⚠ Read this before resuming — two local-environment blockers
+> ## ⚠ Toolchain: use `vp`, never Volta
 >
-> **1. `node_modules` in `src/BloomBrowserUI` is stale and needs `pnpm install`.** It holds
-> **react-dom 17.0.2** while `package.json` and `pnpm-lock.yaml` both require **18.3.1**, so any
-> module importing `react-dom/client` fails to resolve. That is not a code problem and not caused by
-> this branch — it breaks `bloomFieldSpec.ts`, `toolboxSpec.ts` and `ImageUndoManagerSpec.ts` at
-> *load* time (they never reach an assertion). It also blocks running Bloom at all via `./go.sh`,
-> which is why three of the four remaining Stage 0 items are blocked.
+> `ReadMe.md` "Building" is authoritative: install [vite-plus (`vp`)](https://vite.plus), which reads
+> `.node-version` (**24.13.0**) and `packageManager`, then run `./init.sh`. Volta was dropped
+> *because it does not fully support pnpm*.
 >
-> **2. `pnpm` cannot run in this shell, because the wrong Node manager is in charge.** The fix is in
-> `ReadMe.md` under "Building", and it is **not** Volta:
+> **`vp` is installed and working**, but note: **Volta is still on PATH and still wins for bare
+> `node`.** Windows puts Machine-scope PATH ahead of User-scope, and Volta's `C:\Program Files\Volta\`
+> is Machine while vp's `~/.vite-plus/bin` is User — so **no amount of User-PATH reordering can make
+> `vp` win**. Bare `node` in a shell here is still Volta's 22.12.0. Consequences:
 >
-> > *Install [vite-plus (`vp`)](https://vite.plus) globally on your computer. It reads the
-> > `.node-version` and `packageManager` fields in the repo and provides the correct node and pnpm.
-> > (We previously used volta, but it does not fully support pnpm.)*
+> - **Always run project commands through `vp`**: `vp install`, `vp run typecheck`,
+>   `vp exec vitest run`, `vp exec eslint …`. These work correctly.
+> - A bare `node`/`pnpm` will use the wrong Node. `pnpm` then fails outright (needs ≥ 22.13).
+> - Removing Volta from PATH (or uninstalling it) is the clean fix, but **four maintenance worktrees
+>   still depend on it** — `Version6.1`/`origin-Version6.1` (node 16.14.0 + yarn 1.22.19),
+>   `Version6.2` (22.11.0), `Version6.3` (22.21.1) all still carry yarn-era `volta` fields. So this
+>   is a real trade-off, not pure cleanup. Left to the developer.
 >
-> State when this was found: `.node-version` says **24.13.0** (agreeing with `devEngines`), **`vp`
-> was not installed**, and **Volta was on PATH serving 22.12.0** — a leftover from the abandoned
-> toolchain, below the **≥ 22.13** that pinned pnpm 11.5.2 requires. So nothing was reading
-> `.node-version`. Volta doesn't know that file exists.
+> **Traps, recorded so nobody repeats them:**
+> - **Never `volta install`/`volta pin`** for this repo. The stale yarn-era `volta` field frozen in
+>   `output/browser/package.json` makes it look like a Volta project; it isn't.
+> - `CI=true` / `confirmModulesPurge=false` make pnpm skip its "remove node_modules?" prompt. That is
+>   destructive and normally wrong. It *was* used deliberately once here, for the repair install
+>   below, having first confirmed nothing was running — purging was the point.
 >
-> The documented sequence is: install `vp`, then **`./init.sh`** from the repo root, which runs
-> `pnpm install` in `src/content` and `src/BloomBrowserUI`, builds `WebView2PdfMaker`, and finishes
-> with `pnpm run build`. (That last step is the one legitimate exception to `AGENTS.md`'s
-> "don't run the full `pnpm build`" rule — it is the documented setup path, and there is no dev
-> server to disrupt at that point.)
+> **What the repair actually was:** `node_modules` held **react-dom 17.0.2** where `package.json` and
+> the lockfile both require **18.3.1**, so anything importing `react-dom/client` failed to *load* —
+> breaking `bloomFieldSpec.ts`, `toolboxSpec.ts`, `ImageUndoManagerSpec.ts` and blocking Bloom
+> itself. `CI=true vp install` in `src/BloomBrowserUI` fixed it (1m41s). Its `prepare` step also set
+> `core.hooksPath -> .githooks` automatically.
 >
-> **Two traps recorded so nobody repeats them:**
-> - **Do not reach for Volta** (`volta install`/`volta pin`). It is the abandoned manager, and the
->   stale yarn-era `volta` field still frozen in `output/browser/package.json`
->   (`node 22.21.1`, `yarn 1.22.22`) is what makes this look pinned when it isn't. Volta being left
->   on PATH alongside `vp` gives two managers competing for `node`, decided by PATH order — the
->   ambiguity that caused this in the first place.
-> - **Do not** set `CI=true` or `confirmModulesPurge=false` to force pnpm past its prompt — that
->   silently wipes `node_modules`. `volta run --node 22.21.1 -- pnpm …` reaches exactly that prompt
->   and aborts for lack of a TTY.
->
-> **Workaround that does work, for React-free specs:** invoke vitest directly, bypassing the pnpm
-> launcher and its dependency-status check:
-> ```sh
-> cd src/BloomBrowserUI && node node_modules/vitest/vitest.mjs run <spec path>
-> ```
-> This is how `editableDivUtilsSelectionSpec.ts` was run. It only works for specs that don't pull in
-> the React chain.
->
-> **3. Fixed already, but note it for other clones/worktrees:** `git commit` failed with a yarn
-> lockfile error, because a stale **husky v4** hook in `.git/hooks/` (installed from a different
-> worktree) hard-codes `packageManager=yarn`. The repo replaced husky with its own `.githooks`
-> dispatcher but `core.hooksPath` was unset in this clone. Fixed per `.githooks/README.md` with
-> `git config core.hooksPath .githooks` — one line, and **not** `--no-verify`.
+> **Git hooks:** a stale **husky v4** hook in `.git/hooks/` hard-codes `packageManager=yarn` and was
+> running because `core.hooksPath` was unset, so commits failed with a yarn lockfile error. Now fixed
+> (and `vp install`'s `prepare` keeps it fixed). If it recurs in another clone/worktree:
+> `git config core.hooksPath .githooks` — **not** `--no-verify`.
 
 ## Log
 
@@ -460,35 +449,66 @@ Deliberately **did not** press on with the `toolbox.ts` prep commit: it refactor
 keystroke code in the app, its own spec can't currently load, and doing that unverified is exactly
 the wrong trade. Better to stop and ask.
 
+### 2026-08-05 — environment fixed, prep commit done
+
+**Environment.** John installed `vp` and ran `init.sh`, but `react-dom` was still 17.0.2 — `init.sh`'s
+backgrounded `pnpm install` had evidently failed under Volta's Node. Ran `CI=true vp install` in
+`src/BloomBrowserUI` directly (nothing running, verified first); react-dom is now 18.3.1 with
+`./client` exported, and the previously-unloadable specs pass. Full suite: **591 passed, 5 skipped**.
+
+The residual PATH finding is in the boxed warning: Volta still wins for bare `node` and *cannot* be
+outranked by User-PATH reordering, because Machine scope always precedes User scope. So all project
+commands go through `vp`.
+
+**Prep commit `2707d98a8` — `markupSelectionPreservation.ts`** (§5.4). Extracted the
+save/restore-selection bracket out of `handleKeyboardInput` into four functions —
+`boxParticipatesInMarkup`, `saveSelectionForMarkup`, `restoreSelectionAfterMarkup`,
+`restoreAndResaveSelectionForMarkup` — keeping the CKEditor-bookmark implementation exactly as it
+was. The saved value is typed `unknown[]` so callers can't peek; the planned replacement stores a
+character offset instead. Now the anchor swap changes four function bodies and leaves the pipeline
+alone.
+
+Two things worth carrying forward:
+
+- **One deliberate behaviour difference**, commented at the site and in the commit message. The async
+  path previously called `createBookmarks` unguarded; had the editor reported no selection there it
+  would have thrown inside an async function nobody awaits — an unhandled rejection leaving the pass
+  half-done, comments already stripped and marker spans possibly still in the DOM. It now abandons
+  the pass cleanly, which is what the first save has always done.
+- **Corrected a long-wrong comment.** It claimed ArithmeticTemplate number boxes get no editor
+  "because the logic that invokes WireToCKEditor is looking for classes like bloom-content1".
+  `ckeditableSelector` explicitly includes `.Equation-style`, added for that very template. The real
+  no-editor case is `cursor: not-allowed`. (Same error the inventory caught in the plan's own §2.)
+
+**Verification gap to close:** `toolboxSpec.ts` covers only `cleanUpNbsps` and
+`removeCommentsFromEditableHtml`, not the keystroke pipeline, so this refactor has **no direct test
+coverage**. It rests on the typecheck, lint, the full suite, and a strictly mechanical diff. Inventory
+rows **G1–G3** must be verified live before the PR — that is now an explicit checklist item.
+
 ## Next actions
 
-**First: unblock the environment** (boxed warning above) — install **`vp`** per `ReadMe.md`, then run
-**`./init.sh`**. Not Volta. Then verify before resuming:
+All of Stage 0's code work is done. What remains needs a **running Bloom** — do it in one session
+(`run-bloom` skill), on branch `BL-6681-stage0-inventory`:
 
-```sh
-node --version   # v24.13.0
-cd src/BloomBrowserUI && node -e "console.log(require('react-dom/package.json').version)"  # 18.3.1
-```
-
-and confirm `bloomFieldSpec.ts` / `toolboxSpec.ts` load again. Once `vp` provides pnpm, the
-`node node_modules/vitest/vitest.mjs` workaround below should stop being necessary — prefer
-`pnpm test`.
-
-Then continue Stage 0 on branch `BL-6681-stage0-inventory`, in this order:
-
-1. **`toolbox.ts` prep commit** (§5.4): extract the save-selection / restore-selection bracket from
-   `handleKeyboardInput` into two functions with a clean seam. Behaviour-neutral. **Do not attempt
-   until `toolboxSpec.ts` runs** — this is the app's most delicate keystroke code.
-2. **Capture the paste/drop baseline** → `PASTE-DROP-BASELINE.md`, covering inventory rows C1–C7.
-   Needs a running Bloom (`run-bloom` skill) and a real web-page clipboard payload, not hand-written
-   tidy HTML. Do this **before** any code change; it is the only row-set whose failure is silent.
-   Remember C7 (drop) as well as paste — that is the row CKEditor has been covering invisibly.
-3. **Handler-accumulation repro** (§4.10): call `refreshCanvasElementEditing` repeatedly, watch for
-   duplicate `document` keydown handlers; F6 is the likeliest visible symptom. File its own card if it
-   reproduces. Add the X4 listener-count leak test either way (it should fail before any fix).
+1. **Verify inventory rows G1–G3 live.** Highest priority, because commit `2707d98a8` refactored the
+   keystroke pipeline and `toolboxSpec.ts` has no coverage of it. With a decodable or leveled reader
+   tool active: type mid-word and confirm the caret stays put; exercise an async-markup tool for
+   BL-10133 (keystrokes during the await must not land at the wrong position); confirm longpress still
+   works (BL-3900/BL-5215).
+2. **Capture the paste/drop baseline** → `PASTE-DROP-BASELINE.md`, rows C1–C7. Use a **real web-page
+   clipboard payload**, not hand-written tidy HTML. Do it before any further code change — this is the
+   row-set whose failure is silent. Include **C7 (drop)**, the row CKEditor has been covering
+   invisibly.
+3. **Handler-accumulation repro** (§4.10): drive `refreshCanvasElementEditing` repeatedly and watch
+   for duplicate `document` keydown handlers via CDP `DOMDebugger.getEventListeners`; F6 is the
+   likeliest visible symptom. File its own card if it reproduces. Add the X4 listener-leak test either
+   way — it should fail before any fix.
 4. **Page-reload timing baseline** (§4.11) with the performance-log feature.
 
 Then: open the Stage 0 PR via `preflight`.
+
+Note: launching Bloom uses `./go.sh`. If it fails with missing types like `PodcastUtilities` or
+`IDevice` (CS0246), this worktree lacks its C# dependencies — run `./init.sh` (see `AGENTS.md`).
 
 Later, not Stage 0:
 - Before designing `clipboard.ts`, read PR #8140 and `origin/BL-16459-clipboard-failure-reporting`.
