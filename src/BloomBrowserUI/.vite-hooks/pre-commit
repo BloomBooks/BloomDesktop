@@ -24,15 +24,21 @@ export PATH="$(pwd)/src/BloomBrowserUI/node_modules/.bin:$PATH"
 # -- a workflow, a doc, C# only -- therefore does not need node_modules to exist at all,
 # which is what lets a worktree used only for such work commit without `pnpm install`.
 #
-# Deletions count (hence D alongside ACMR): removing a .ts is the change most likely to
+# Deletions count (hence D alongside ACM): removing a .ts is the change most likely to
 # break another module's imports, so it is exactly when the typecheck is worth running.
 # The tools re-derive their own file lists, so a deletion-only commit simply gives
 # prettier and eslint nothing to do while the typecheck still runs.
 #
+# --no-renames is what makes that cover a file moved OUT of the front-end, which is the
+# same event wearing a disguise. With rename detection on, --name-only prints only the
+# destination, so moving src/BloomBrowserUI/foo.ts to src/content/foo.ts would produce no
+# path under src/BloomBrowserUI and skip the typecheck. Off, the move is reported as its
+# two halves -- a delete of the old path and an add of the new -- and the delete matches.
+#
 # core.quotePath=false plus -z stops git C-quoting a non-ASCII path ("caf\303\251.ts"),
 # whose added surrounding quotes would defeat both anchors of the regex below and so
 # silently skip the checks for that file.
-staged_frontend=$(git -c core.quotePath=false diff --cached --name-only -z --diff-filter=ACMRD |
+staged_frontend=$(git -c core.quotePath=false diff --cached --no-renames --name-only -z --diff-filter=ACMD |
     tr '\0' '\n' |
     grep -E '^src/BloomBrowserUI/.*\.(ts|tsx|mts|cts|js|jsx|mjs|cjs|json|css|less|scss|html|htm|yaml|yml)$')
 
