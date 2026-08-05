@@ -286,7 +286,32 @@ namespace Bloom.Publish
                 },
                 null
             );
-            return tcs.Task.GetAwaiter().GetResult();
+
+            // We are about to block, and publishing runs as an api request, so the thread we block is
+            // usually a BloomServer worker. Tell the server, so that it keeps a worker free to serve the
+            // requests this browser is about to make -- including the very page we navigate to, which
+            // BloomServer serves from memory.
+            //
+            // Without this the server could not tell that its whole pool was blocked. Reporting a block is
+            // opt-in, and the only other report on this path (BloomApiHandler) covers ACQUIRING the api
+            // lock, not the long stretch while publishing holds it. So every other worker could be waiting
+            // for that lock, and this one waiting here, with the server believing a worker was still free.
+            // That is BL-16612.
+            var server = BloomServer._theOneInstance;
+            var registered = false;
+            try
+            {
+                server?.RegisterThreadBlocking();
+                registered = true;
+                return tcs.Task.GetAwaiter().GetResult();
+            }
+            finally
+            {
+                // Only unregister if we actually registered, so the pair is guaranteed by structure rather
+                // than by an argument about what can throw.
+                if (registered)
+                    server?.RegisterThreadUnblocked();
+            }
         }
 
         /// <summary>

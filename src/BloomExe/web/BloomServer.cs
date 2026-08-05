@@ -1928,14 +1928,10 @@ namespace Bloom.Api
                 // Deal with a situation where all the workers are blocked,
                 // but there is a request in the queue that would unblock the current workers
                 // but that request can't run because it's stuck in queue
-                // and none of the existing worker threads are able to make progress anymore
-                if (_countBlockedThreads >= _workers.Count)
-                {
-                    // The worker should be spun up such that it can receive _ready.Set()
-                    SpinUpAWorker();
-
-                    // Note: Currently these workers are never stopped, so as not to complicate the code any further
-                }
+                // and none of the existing worker threads are able to make progress anymore.
+                // Any worker added here is added before the _ready.Set() below, so it receives it.
+                // (Monitor is reentrant, so it is fine that we already hold this lock.)
+                EnsureAWorkerCanStillTakeWork();
 
                 _ready.Set();
             }
@@ -2411,11 +2407,75 @@ namespace Bloom.Api
             // Check if the current thread looks like a Server Worker
             // If not, we can just ignore this request.
             // Notably, ProblemReportApi can be invoked by both server and non-server code
-            if (IsWorkerThread(Thread.CurrentThread))
+            if (!IsWorkerThread(Thread.CurrentThread))
+                return;
+
+            // Note: So far only BloomApiHandler and problem report dialog have been analyzed to call this when needed.
+            Interlocked.Increment(ref _countBlockedThreads);
+            EnsureAWorkerCanStillTakeWork();
+        }
+
+        /// <summary>
+        /// If every worker is now blocked, add one, so that some worker is still able to take a request off
+        /// the queue. This matters because the request that would let the blocked workers finish is often
+        /// itself sitting in the queue: in BL-16612 a publish held an api lock while every other worker
+        /// waited for that same lock, so no worker was left to serve the page the publish was waiting for,
+        /// and the whole server deadlocked.
+        ///
+        /// This is called from RegisterThreadBlocking rather than being offered as a separate method for
+        /// callers to remember, so that every caller which correctly reports that it is blocking gets the
+        /// top-up automatically. There is deliberately no way to register a block WITHOUT it -- reporting
+        /// the block is the only thing a caller has to get right.
+        ///
+        /// QueueRequest makes the same check as a request ARRIVES, which is not sufficient by itself: if
+        /// the request that would break the deadlock is already in the queue, no new request need ever
+        /// arrive to trigger the check. Checking here covers the other moment the pool can run out -- when
+        /// a worker becomes blocked.
+        /// </summary>
+        private void EnsureAWorkerCanStillTakeWork()
+        {
+            // Fast path, deliberately outside the lock: this now runs on every api request that waits for a
+            // lock, and _queue's lock is already contended by the listener enqueuing and workers dequeuing.
+            // Both values are safe to read unsynchronized (an int, and a ConcurrentDictionary's Count), and
+            // a stale read costs us nothing: we make this same check again every time another worker blocks
+            // or another request arrives.
+            if (Volatile.Read(ref _countBlockedThreads) < _workers.Count)
+                return;
+
+            var addedWorker = false;
+            // Nothing in here may throw. Callers register, and then unblock in a finally that only begins
+            // AFTER this returns, so an exception escaping this method would leak the blocked count for the
+            // life of the process. Adding a worker is a safety net; failing to add one must never turn into
+            // a failed request.
+            try
             {
-                // Note: So far only BloomApiHandler and problem report dialog have been analyzed to call this when needed.
-                Interlocked.Increment(ref _countBlockedThreads);
+                // SpinUpAWorker requires this lock, since it modifies _workers. Re-checking under the lock
+                // means we decide against the current worker count rather than the one we read above.
+                lock (_queue)
+                {
+                    if (_countBlockedThreads >= _workers.Count)
+                    {
+                        // Note: Currently these workers are never stopped, so as not to complicate the code
+                        // any further.
+                        SpinUpAWorker();
+                        addedWorker = true;
+                    }
+                }
             }
+            catch (Exception e)
+            {
+                Logger.WriteEvent(
+                    "BloomServer: could not add a worker while one was blocking: " + e.Message
+                );
+            }
+            // Logged after releasing our own lock (QueueRequest's caller may still hold it), since logging
+            // can be slow. This is the event to look for in a log when investigating a freeze, so it is
+            // worth a line even though it is not an error.
+            if (addedWorker)
+                Logger.WriteEvent(
+                    "BloomServer: every worker was blocked, so added one to keep requests moving "
+                        + $"({_workers.Count} workers, {_countBlockedThreads} blocked)."
+                );
         }
 
         /// <summary>
@@ -2432,6 +2492,12 @@ namespace Bloom.Api
                 Interlocked.Decrement(ref _countBlockedThreads);
             }
         }
+
+        /// <summary>
+        /// The number of worker threads in the pool. For tests, which need to observe that a worker was
+        /// added when they made every existing worker report itself blocked.
+        /// </summary>
+        internal int WorkerCount => _workers.Count;
 
         private bool IsWorkerThread(Thread thread) =>
             thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
