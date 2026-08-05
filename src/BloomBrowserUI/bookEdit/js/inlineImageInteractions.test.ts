@@ -12,6 +12,7 @@ import {
     insertInlineImage,
     kInlineImageBottomClass,
     kInlineImageClass,
+    kInlineImageIdAttr,
     kInlineImageLeftClass,
     kInlineImageMiddleClass,
     kInlineImageRightClass,
@@ -293,22 +294,21 @@ describe("inlineImageInteractions", () => {
             expect(target.editable).toBe(editableFor(group, "en"));
         });
 
-        it("offers nothing in the text of a block whose group already has an image", () => {
+        it("still offers adding in the text of a block whose group already has an image", () => {
             const group = makeSimpleGroup();
             insertInlineImage(group);
-            // v1 allows one inline image per group, and the image's own commands are reached
-            // by right-clicking the image.
+            // There is no limit on inline images per group; each add appends a new one.
             expect(
                 getInlineImageActionTarget(
                     editableFor(group, "en").querySelector("p") as HTMLElement,
                 ).kind,
-            ).toBe("none");
-            // ...including from a sibling language's block.
+            ).toBe("add");
+            // ...from a sibling language's block too.
             expect(
                 getInlineImageActionTarget(
                     editableFor(group, "fr").querySelector("p") as HTMLElement,
                 ).kind,
-            ).toBe("none");
+            ).toBe("add");
         });
     });
 
@@ -377,14 +377,51 @@ describe("inlineImageInteractions", () => {
         it("selects nothing for a click that offers no commands", () => {
             const group = makeSimpleGroup();
             insertInlineImage(group);
-            // The text of a block whose group already has an image offers nothing.
-            const items = getInlineImageMenuItemsForClick(
-                editableFor(group, "en").querySelector("p") as HTMLElement,
-            );
+            // A click outside any editable (here, the group itself) offers nothing.
+            const items = getInlineImageMenuItemsForClick(group);
             expect(items).toEqual([]);
             expect(
                 document.querySelector("." + kInlineImageSelectedClass),
             ).toBeNull();
+        });
+
+        it("Remove Image removes just the clicked image, in every language", () => {
+            const group = makeSimpleGroup();
+            const first = insertInlineImage(group);
+            const second = insertInlineImage(group);
+            const firstId = first.getAttribute(kInlineImageIdAttr);
+            const secondId = second.getAttribute(kInlineImageIdAttr);
+            // Sanity: two distinct images, each present in both languages.
+            expect(firstId).toBeTruthy();
+            expect(secondId).toBeTruthy();
+            expect(firstId).not.toBe(secondId);
+            expect(
+                document.querySelectorAll(
+                    `[${kInlineImageIdAttr}="${firstId}"]`,
+                ).length,
+            ).toBe(2);
+
+            const items = buildInlineImageMenuItems(
+                getInlineImageActionTarget(first),
+            );
+            const remove = items.find(
+                (i) => i.l10nId === "EditTab.InlineImage.RemoveImage",
+            );
+            expect(remove, "expected a Remove Image item").toBeTruthy();
+            // Actually invoke the command (a gap a real runtime break slipped through once).
+            (remove!.onClick as () => void)();
+
+            expect(
+                document.querySelectorAll(
+                    `[${kInlineImageIdAttr}="${firstId}"]`,
+                ).length,
+            ).toBe(0);
+            // The other image survives in both languages.
+            expect(
+                document.querySelectorAll(
+                    `[${kInlineImageIdAttr}="${secondId}"]`,
+                ).length,
+            ).toBe(2);
         });
     });
 

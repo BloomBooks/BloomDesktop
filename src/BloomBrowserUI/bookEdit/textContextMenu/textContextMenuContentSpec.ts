@@ -67,16 +67,16 @@ describe("getTextContextMenuContent", () => {
         expect(content!.paragraph).toBe(element("first"));
     });
 
-    it("offers only the paragraph command once the text box has an image", () => {
+    it("offers the paragraph command and Add Image once the text box has an image", () => {
         insertInlineImage(element("plainGroup"));
 
         const content = getTextContextMenuContent(element("first"));
 
         // Still a menu, and still No Indent...
         expect(content!.paragraph).toBe(element("first"));
-        // ...but v1 allows one inline image per text box, so there is nothing to add, and the
-        // commands for the image itself belong to a click on the image.
-        expect(l10nIdsOf(content)).toEqual([]);
+        // ...and since there is no limit on inline images per text box, adding another is
+        // still offered; the commands for an existing image belong to a click on that image.
+        expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.AddImage"]);
     });
 
     it("offers the image's own commands for a click on the image", () => {
@@ -141,12 +141,14 @@ describe("getTextContextMenuContent", () => {
         expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.AddImage"]);
     });
 
-    it("offers nothing in the empty space of a text box that already has an image", () => {
+    it("offers Add Image in the empty space of a text box that already has an image", () => {
         insertInlineImage(element("plainGroup"));
-        // No paragraph and nothing to add: back to leaving the click alone.
-        expect(
-            getTextContextMenuContent(element("ordinaryText")),
-        ).toBeUndefined();
+        // There is no limit on inline images per box, so there is still something to add;
+        // an existing image's own commands are reached by clicking that image.
+        const content = getTextContextMenuContent(element("ordinaryText"));
+        expect(content, "expected the menu to open").toBeTruthy();
+        expect(content!.paragraph).toBeUndefined();
+        expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.AddImage"]);
     });
 
     it("offers nothing for a non-element target", () => {

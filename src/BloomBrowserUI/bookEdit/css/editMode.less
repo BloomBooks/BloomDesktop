@@ -1844,17 +1844,11 @@ svg.bloom-videoControl {
         }
     }
 
-    // Subtle until you point at it; the same 1px outline gets stronger when the image is
-    // the selected object, so the box doesn't move as you hover and select.
-    outline: 1px solid transparent;
-    outline-offset: 2px;
-
-    &:hover {
-        outline-color: @bloom-bluetransparent;
-    }
-
+    // No outline on the wrapper, hovered or selected: the wrapper's box includes the
+    // transparent offset padding above the image, so an outline runs all the way to the top
+    // of the text block when the image is dragged down (John, live testing). Selection is
+    // shown by the corner handles, which sit on the IMAGE box.
     &.bloom-inlineImage-selected {
-        outline: 2px solid @bloom-blue;
         // Dragging it somewhere else is the main thing you do with a selected inline image.
         cursor: move;
         // The handle frame below is positioned against this box.

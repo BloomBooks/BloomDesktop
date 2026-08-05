@@ -104,14 +104,12 @@ export interface IBox {
 /**
  * What the user's pointer is over, as far as inline images are concerned:
  * - "existing": an inline image, which can be changed, documented or removed;
- * - "add": a text block that is eligible for one and hasn't got one;
+ * - "add": a text block eligible for inline images (there is no limit on how many);
  * - "none": anywhere else, which offers no inline-image commands at all.
  *
  * A block is eligible if it is a bloom-editable directly inside a translation group and is
  * not inside a canvas element (those have their own context menu, which already knows about
- * their images). Since v1 allows at most one inline image per translation group, a block
- * whose group already has one is not offered "add"; the commands for that image belong to
- * the image itself.
+ * their images). The commands for an existing image belong to the image itself.
  */
 export type InlineImageActionTarget =
     | { kind: "none" }
@@ -141,7 +139,9 @@ export function getInlineImageActionTarget(
     ) as HTMLElement | null;
     if (wrapper)
         return { kind: "existing", translationGroup, editable, wrapper };
-    if (getInlineImage(translationGroup)) return { kind: "none" };
+    // There is no limit on how many inline images a block can hold, so "add" is offered
+    // whether or not the group already has some; each insert appends a new image with its
+    // own identity.
     return { kind: "add", translationGroup, editable };
 }
 
@@ -342,8 +342,7 @@ export function buildInlineImageMenuItems(
                 l10nId: "EditTab.InlineImage.RemoveImage",
                 english: "Remove Image",
                 icon: React.createElement(DeleteIcon, null),
-                onClick: () =>
-                    removeInlineImageCommand(target.translationGroup),
+                onClick: () => removeInlineImageCommand(target.wrapper),
             },
         ];
     }
@@ -362,9 +361,13 @@ function addInlineImage(translationGroup: HTMLElement): void {
     refreshOverflow(translationGroup);
 }
 
-// removeInlineImage records its own undo point and clears the copy out of every language.
-function removeInlineImageCommand(translationGroup: HTMLElement): void {
-    removeInlineImage(translationGroup);
+// removeInlineImage records its own undo point and clears THIS image's copy (matched by its
+// identity attribute) out of every language, leaving any other inline images alone.
+function removeInlineImageCommand(wrapper: HTMLElement): void {
+    const translationGroup = wrapper.closest(
+        ".bloom-translationGroup",
+    ) as HTMLElement;
+    removeInlineImage(wrapper);
     refreshOverflow(translationGroup);
 }
 

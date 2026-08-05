@@ -75,7 +75,7 @@ Decision (John): give no weight to the old `imagePusherDowner` two-element trick
 - Margin-top can't replace the padding trick (line boxes avoid a float's whole margin box). `translateY` moves paint, not wrap. Anchor positioning is out-of-flow, never wrapped. CSS Exclusions is dead. Floats + shape-outside is the whole design space.
 - **ePub on ancient readers degrades gracefully**: without shape-outside the text runs in a narrower column beside the transparent padding instead of flowing above the image. Readable, accepted (we routinely compromise on ePub). Only if QA on real readers demands it: a contained publish-time transform in `EpubMaker` (insert spacer, drop padding). Not built now.
 - Bonus later: contour wrap via `shape-outside: circle()` etc.
-- Edit-time rules (hover outline, drag handles, button cluster, hide in thumbnails) → `bookEdit/css/editMode.less`.
+- Edit-time rules (drag handles, cursor, wrapper stacking) → `bookEdit/css/editMode.less`. No hover/selected outline on the wrapper: its box includes the transparent offset padding, so an outline runs to the top of the block when the image is dragged down (John, live testing); the corner handles on the image box are the selection indicator. The wrapper needs `position: relative; z-index: 1` at edit time because Bloom's paragraphs are position:relative and would otherwise hit-test above the float, making the image unclickable.
 
 ## Edit UX
 
