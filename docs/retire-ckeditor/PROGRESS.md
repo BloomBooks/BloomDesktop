@@ -18,7 +18,8 @@ Stage 0 checklist (PLAN.md §6):
 - [x] `BEHAVIOR-INVENTORY.md` — sections A–K plus cross-cutting X1–X7 (`c435b9708`)
 - [x] Characterization tests for the selection functions (`07f4500a8`) — 10 tests, passing,
       falsification-checked. Covers inventory G4/G5.
-- [x] Environment unblocked (`vp` + install). Full suite green: **591 passed**.
+- [x] Environment unblocked: `vp`/`volta` PATH untangled, `init.sh` clean, `output/browser`
+      repopulated. Full front-end suite green: **591 passed**.
 - [x] `toolbox.ts` selection-bracket prep commit (`2707d98a8`) — §5.4 done
 - [ ] Capture the paste/drop baseline (rows C1–C7, incl. **C7 drop**): needs a running Bloom
 - [ ] Handler-accumulation repro (§4.10) + the X4 listener-leak test: needs a running Bloom
@@ -32,22 +33,42 @@ Stage 0 checklist (PLAN.md §6):
 > `.node-version` (**24.13.0**) and `packageManager`, then run `./init.sh`. Volta was dropped
 > *because it does not fully support pnpm*.
 >
-> **`vp` is installed and working**, but note: **Volta is still on PATH and still wins for bare
-> `node`.** Windows puts Machine-scope PATH ahead of User-scope, and Volta's `C:\Program Files\Volta\`
-> is Machine while vp's `~/.vite-plus/bin` is User — so **no amount of User-PATH reordering can make
-> `vp` win**. Bare `node` in a shell here is still Volta's 22.12.0. Consequences:
+**RESOLVED as of 2026-08-05.** `node` is 24.13.0 and `pnpm` 11.5.2, both served by `vp`, while
+`volta` still works for the maintenance worktrees. How it was untangled, since the intermediate
+states were each misleading:
 >
-> - **Always run project commands through `vp`**: `vp install`, `vp run typecheck`,
->   `vp exec vitest run`, `vp exec eslint …`. These work correctly.
-> - A bare `node`/`pnpm` will use the wrong Node. `pnpm` then fails outright (needs ≥ 22.13).
-> - Removing Volta from PATH (or uninstalling it) is the clean fix, but **four maintenance worktrees
->   still depend on it** — `Version6.1`/`origin-Version6.1` (node 16.14.0 + yarn 1.22.19),
->   `Version6.2` (22.11.0), `Version6.3` (22.21.1) all still carry yarn-era `volta` fields. So this
->   is a real trade-off, not pure cleanup. Left to the developer.
+> 1. **Volta's shim dir was in *Machine* PATH**, and Windows evaluates Machine before User, so vp's
+>    User-scope `~/.vite-plus/bin` could never win. No User-PATH reordering can fix that; the Machine
+>    entry has to go. Removed by the developer via elevated System-PATH edit.
+> 2. **That broke more than node.** Every binary in `%LOCALAPPDATA%\Volta\bin` is a shim whose entire
+>    body is `volta run "$(basename $0)" "$@"` — so with `volta.exe` off PATH, `pnpm`, `pnpx`,
+>    `reviewable` (used by the `reviewable-replies` skill), `nx`, `nx-cloud` and
+>    `chrome-devtools-mcp` all died with "volta: command not found". This is what made `init.sh`
+>    report it could not find volta. **Note for future advice: that directory is not "harmless
+>    because it contains no node" — its shims need `volta.exe`.**
+> 3. **`vp` does not put `pnpm` on PATH.** `vp env doctor` lists its shims as node, npm, npx,
+>    corepack, vpx, vpr — no pnpm. vp runs pnpm internally for its own subcommands (`vp install`),
+>    but `init.sh` calls bare `pnpm`. Fixed with the corepack that vp ships:
+>    ```sh
+>    corepack enable pnpm --install-directory ~/.vite-plus/bin
+>    ```
+>    which honours each package.json's `packageManager` (11.5.2 in `src/BloomBrowserUI`; in the repo
+>    root, which has no such field, bare `pnpm` reports corepack's own default — harmless, since
+>    `init.sh` cds into the package directories first).
+> 4. **Restored `volta` without letting it win**, by putting `C:\Program Files\Volta\` in **User**
+>    PATH (appended, so after `~/.vite-plus/bin`) rather than Machine. Verified resolution order:
+>    `node` → vp 24.13.0, `pnpm` → vp 11.5.2, `volta` → 2.0.2 available; `reviewable`, `nx` and
+>    `chrome-devtools-mcp` working again.
+>
+> Net effect: `vp` governs this repo, `volta` remains usable for the four maintenance worktrees
+> (`Version6.1`/`origin-Version6.1` node 16.14.0, `Version6.2` 22.11.0, `Version6.3` 22.21.1, all
+> yarn-era), and nothing has to be uninstalled.
 >
 > **Traps, recorded so nobody repeats them:**
 > - **Never `volta install`/`volta pin`** for this repo. The stale yarn-era `volta` field frozen in
 >   `output/browser/package.json` makes it look like a Volta project; it isn't.
+> - **Never remove `%LOCALAPPDATA%\Volta\bin` from PATH** while any `volta install`-ed global tool is
+>   still wanted — see (2).
 > - `CI=true` / `confirmModulesPurge=false` make pnpm skip its "remove node_modules?" prompt. That is
 >   destructive and normally wrong. It *was* used deliberately once here, for the repair install
 >   below, having first confirmed nothing was running — purging was the point.
