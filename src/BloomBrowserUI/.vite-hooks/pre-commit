@@ -50,35 +50,44 @@ pinned_version() {
         "$repo_root/src/BloomBrowserUI/package.json" | head -1
 }
 
-prettier_version=$(pinned_version prettier)
-pretty_quick_version=$(pinned_version pretty-quick)
-# Insist on something that starts with a digit, not merely on something non-empty. If the
-# front-end ever moves to a pnpm catalog the value reads back as the literal "catalog:",
-# which would sail through an emptiness test and then fail deep inside dlx -- landing us in
-# the warn-and-continue path below, i.e. quietly not formatting. Fail here instead, where
-# the message can say what actually needs fixing.
-versions_ok=yes
-case "$prettier_version" in [0-9]*) ;; *) versions_ok=no ;; esac
-case "$pretty_quick_version" in [0-9]*) ;; *) versions_ok=no ;; esac
-if [ "$versions_ok" = no ]; then
-    echo "pre-commit: could not read pinned prettier/pretty-quick version numbers from" >&2
-    echo "            src/BloomBrowserUI/package.json. If those deps moved to a pnpm" >&2
-    echo "            catalog or similar indirection, this hook needs teaching to resolve it." >&2
-    exit 1
-fi
+# A version is usable by dlx as long as it is something npm can resolve -- an exact pin,
+# but equally "^3.6.2" or ">=3". What it cannot resolve is a pnpm indirection such as
+# "catalog:", "workspace:*" or "link:../x", all of which are recognisable by their colon.
+# Note this deliberately does NOT reject anything else: an earlier revision demanded a
+# leading digit, which would have blocked EVERY commit the day someone wrote a caret range
+# -- an absurd price for a formatting concern.
+version_usable() {
+    case "$1" in
+        "" | *:*) return 1 ;;
+        *) return 0 ;;
+    esac
+}
 
 # Local install first: it is lockfile-verified, costs no network, and so still works
 # offline. `pnpm dlx` is the fallback that lets a worktree which has never run
 # `pnpm install` -- one used only for workflows, docs or C# -- still commit properly
-# formatted code. Versions are pinned exactly, so the fallback runs the same prettier
-# the project pins.
+# formatted code.
+#
+# The versions are read lazily, inside this branch, precisely so that an unreadable
+# package.json can never affect an installed worktree, which does not need them at all.
 run_pretty_quick() {
     if [ -x "$repo_root/src/BloomBrowserUI/node_modules/.bin/pretty-quick" ]; then
         pretty-quick "$@"
-    else
-        pnpm dlx --package="prettier@$prettier_version" \
-                 --package="pretty-quick@$pretty_quick_version" pretty-quick "$@"
+        return $?
     fi
+
+    prettier_version=$(pinned_version prettier)
+    pretty_quick_version=$(pinned_version pretty-quick)
+    if ! version_usable "$prettier_version" || ! version_usable "$pretty_quick_version"; then
+        echo "pre-commit: cannot resolve the prettier/pretty-quick versions in" >&2
+        echo "            src/BloomBrowserUI/package.json ('$prettier_version' /" >&2
+        echo "            '$pretty_quick_version'). If they moved to a pnpm catalog or" >&2
+        echo "            similar indirection, this hook needs teaching to resolve it." >&2
+        return 1
+    fi
+
+    pnpm dlx --package="prettier@$prettier_version" \
+             --package="pretty-quick@$pretty_quick_version" pretty-quick "$@"
 }
 
 cd src/BloomBrowserUI || exit 1
@@ -88,14 +97,15 @@ if ! run_pretty_quick --staged; then
         # missing-dependency situation, so it blocks.
         exit 1
     fi
-    # The fallback could not run -- no pnpm, no network, a registry that is down.
-    # Warn loudly but let the commit through: refusing here would put us back to a
-    # worktree that cannot commit a docs change at all, and unformatted code is a
-    # cosmetic problem, not a broken build.
-    echo "pre-commit: WARNING - could not format staged files." >&2
+    # The fallback could not run -- no pnpm, no network, a registry that is down, or an
+    # unresolvable version (each of which has already said so above). Warn loudly but let
+    # the commit through: refusing here would put us back to a worktree that cannot commit
+    # a docs change at all, and unformatted code is a cosmetic problem, not a broken build.
+    # The riskier checks, lint and typecheck, still fail hard further down.
+    echo "pre-commit: WARNING - staged files were NOT formatted (see above)." >&2
     echo "            src/BloomBrowserUI/node_modules is missing and the 'pnpm dlx'" >&2
-    echo "            fallback failed (no pnpm, or no network). Committing anyway;" >&2
-    echo "            the files may need formatting later." >&2
+    echo "            fallback did not run. Committing anyway; the files may need" >&2
+    echo "            formatting later, which any commit from an installed worktree does." >&2
 fi
 cd "$repo_root" || exit 1
 
