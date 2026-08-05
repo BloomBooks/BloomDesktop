@@ -2481,25 +2481,13 @@ namespace Bloom.Api
         /// </summary>
         private void EnsureAWorkerCanStillTakeWork()
         {
-            // Fast path that avoids _queue's lock, which the listener (enqueuing) and the workers (dequeuing)
-            // are already contending for; this now runs on every api request that waits for a lock. Not free
-            // -- ConcurrentDictionary.Count takes all of the dictionary's internal locks -- but a good deal
-            // cheaper than joining the queue behind those two, and QueueRequest already read Count on every
-            // request. Both reads are safe unsynchronized, and a stale one costs us nothing: the same check
-            // runs again every time another worker blocks or another request arrives.
-            //
-            // It is also correct rather than merely likely: Interlocked.Increment gives the increments a
-            // total order, so whichever thread performs the last one reads a count that includes every
-            // earlier block. The worker that exhausts the pool therefore always sees the shortage, even if
-            // the ones before it read stale values.
-            if (Volatile.Read(ref _countBlockedThreads) < _workers.Count)
-                return;
-
-            // NOTHING below may throw, logging included. The caller increments the blocked count and only
-            // receives the scope that undoes it AFTER this returns, so an exception escaping here would leak
-            // that count for the life of the process -- which would then make every later block add yet
-            // another worker. Adding a worker is a safety net; neither failing to add one nor failing to
-            // log it may turn into a failed request.
+            // NOTHING in this method may throw, logging and the fast-path reads alike. The caller increments
+            // the blocked count and only receives the scope that undoes it AFTER this returns, so an
+            // exception escaping here would leak that count for the life of the process -- which would then
+            // make every later block add yet another worker. Adding a worker is a safety net; neither
+            // failing to add one nor failing to log it may turn into a failed request. The fast path is
+            // inside the try so that guarantee is structural, rather than resting on an argument about what
+            // ConcurrentDictionary.Count can do.
             //
             // REVIEWED DECISION (BL-16612): catching everything here, including around the logging in the
             // catch below, is a deliberate exception to this repo's "fail fast, don't be defensive"
@@ -2511,6 +2499,21 @@ namespace Bloom.Api
             // into a narrower catch without revisiting that reasoning.
             try
             {
+                // Fast path that avoids _queue's lock, which the listener (enqueuing) and the workers
+                // (dequeuing) are already contending for; this runs on every api request that waits for a
+                // lock. Not free -- ConcurrentDictionary.Count takes all of the dictionary's internal locks
+                // -- but a good deal cheaper than joining the queue behind those two, and QueueRequest
+                // already read Count on every request. Both reads are safe unsynchronized, and a stale one
+                // costs us nothing: the same check runs again every time another worker blocks or another
+                // request arrives.
+                //
+                // It is also correct rather than merely likely: Interlocked.Increment gives the increments a
+                // total order, so whichever thread performs the last one reads a count that includes every
+                // earlier block. The worker that exhausts the pool therefore always sees the shortage, even
+                // if the ones before it read stale values.
+                if (Volatile.Read(ref _countBlockedThreads) < _workers.Count)
+                    return;
+
                 var addedWorker = false;
                 // SpinUpAWorker requires this lock, since it modifies _workers. Re-checking under the lock
                 // means we decide against the current worker count rather than the one we read above.
