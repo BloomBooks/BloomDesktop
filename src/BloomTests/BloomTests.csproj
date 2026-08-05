@@ -106,9 +106,11 @@
 		<PackageReference Include="Moq" Version="4.14.7" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="NUnit" Version="3.14.0" />
-		<PackageReference Include="NUnit.ConsoleRunner" Version="3.20.1" />
-		<PackageReference Include="NUnit.Extension.TeamCityEventListener" Version="1.0.10" />
 		<PackageReference Include="NUnit3TestAdapter" Version="5.1.0" />
+		<!-- Lets `dotnet test` write its results as NUnit3 xml, which is what both TeamCity's
+		     importData and the nightly's publish action already read. Keeping the format means
+		     moving off nunit3-console costs no changes downstream of the build. -->
+		<PackageReference Include="NunitXml.TestLogger" Version="6.1.0" />
 		<PackageReference Include="RestSharp" Version="106.12.0" />
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
 		<PackageReference Include="SIL.Core" Version="18.0.0-beta0028" />
