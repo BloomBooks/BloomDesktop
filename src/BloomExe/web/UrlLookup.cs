@@ -301,8 +301,11 @@ namespace Bloom.web
             {
                 _internetAvailable = false;
                 var mode = ModeName(inBackground);
+                // Invariant culture so this reads the same as the urlLookupBudgetSeconds tag
+                // (see DescribeFailureForSentry) rather than picking up a comma decimal
+                // separator on some machines and disagreeing with it.
                 var msg =
-                    $"Exception while attempting to get URL data from server ({mode} retrieval, {overallTimeout.TotalSeconds}s budget)";
+                    $"Exception while attempting to get URL data from server ({mode} retrieval, {BudgetSecondsText(overallTimeout)}s budget)";
                 Logger.WriteEvent($"{msg}: {e.Message}");
                 NonFatalProblem.ReportSentryOnly(
                     e,
@@ -346,11 +349,19 @@ namespace Bloom.web
         )
         {
             scope.SetTag("urlLookupMode", mode);
-            scope.SetTag(
-                "urlLookupBudgetSeconds",
-                overallTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture)
-            );
+            scope.SetTag("urlLookupBudgetSeconds", BudgetSecondsText(overallTimeout));
             scope.SetFingerprint("UrlLookup.TryGetUrlDataFromServer", mode, e.GetType().FullName);
+        }
+
+        /// <summary>
+        /// How we render a time budget wherever we report one. Invariant culture, so that the
+        /// number reads the same in the log, the Sentry breadcrumb, and the Sentry tag, on every
+        /// machine - a comma decimal separator in one of the three but not the others would make
+        /// them look like they were describing different things.
+        /// </summary>
+        private static string BudgetSecondsText(TimeSpan budget)
+        {
+            return budget.TotalSeconds.ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>
