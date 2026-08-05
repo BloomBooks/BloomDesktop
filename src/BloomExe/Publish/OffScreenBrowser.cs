@@ -293,10 +293,14 @@ namespace Bloom.Publish
             // BloomServer serves from memory.
             //
             // Without this the server could not tell that its whole pool was blocked. Reporting a block is
-            // opt-in, and the only other report on this path (BloomApiHandler) covers ACQUIRING the api
-            // lock, not the long stretch while publishing holds it. So every other worker could be waiting
-            // for that lock, and this one waiting here, with the server believing a worker was still free.
-            // That is BL-16612.
+            // opt-in, and neither of the two existing reports covers us. BloomApiHandler's covers ACQUIRING
+            // the api lock, not the long stretch while publishing holds it. ApiRequest's covers marshalling
+            // a handler onto the UI thread, which the publish endpoints deliberately opt out of (they
+            // register with handleOnUiThread: false), so it never runs on this path -- and that opt-out is
+            // also why the thread we block here is a server worker rather than the UI thread, which is what
+            // makes reporting it worth doing at all. So every other worker could be waiting for that lock,
+            // and this one waiting here, with the server believing a worker was still free. That is
+            // BL-16612.
             var server = BloomServer._theOneInstance;
             var registered = false;
             try

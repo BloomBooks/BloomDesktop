@@ -2434,21 +2434,28 @@ namespace Bloom.Api
         /// </summary>
         private void EnsureAWorkerCanStillTakeWork()
         {
-            // Fast path, deliberately outside the lock: this now runs on every api request that waits for a
-            // lock, and _queue's lock is already contended by the listener enqueuing and workers dequeuing.
-            // Both values are safe to read unsynchronized (an int, and a ConcurrentDictionary's Count), and
-            // a stale read costs us nothing: we make this same check again every time another worker blocks
-            // or another request arrives.
+            // Fast path that avoids _queue's lock, which the listener (enqueuing) and the workers (dequeuing)
+            // are already contending for; this now runs on every api request that waits for a lock. Not free
+            // -- ConcurrentDictionary.Count takes all of the dictionary's internal locks -- but a good deal
+            // cheaper than joining the queue behind those two, and QueueRequest already read Count on every
+            // request. Both reads are safe unsynchronized, and a stale one costs us nothing: the same check
+            // runs again every time another worker blocks or another request arrives.
+            //
+            // It is also correct rather than merely likely: Interlocked.Increment gives the increments a
+            // total order, so whichever thread performs the last one reads a count that includes every
+            // earlier block. The worker that exhausts the pool therefore always sees the shortage, even if
+            // the ones before it read stale values.
             if (Volatile.Read(ref _countBlockedThreads) < _workers.Count)
                 return;
 
-            var addedWorker = false;
-            // Nothing in here may throw. Callers register, and then unblock in a finally that only begins
-            // AFTER this returns, so an exception escaping this method would leak the blocked count for the
-            // life of the process. Adding a worker is a safety net; failing to add one must never turn into
-            // a failed request.
+            // NOTHING below may throw, logging included. Callers register, and then unblock in a finally
+            // that only begins AFTER this returns, so an exception escaping this method would leak the
+            // blocked count for the life of the process -- which would then make every later block add yet
+            // another worker. Adding a worker is a safety net; neither failing to add one nor failing to
+            // log it may turn into a failed request.
             try
             {
+                var addedWorker = false;
                 // SpinUpAWorker requires this lock, since it modifies _workers. Re-checking under the lock
                 // means we decide against the current worker count rather than the one we read above.
                 lock (_queue)
@@ -2461,21 +2468,27 @@ namespace Bloom.Api
                         addedWorker = true;
                     }
                 }
+                // Logged after releasing our own lock (QueueRequest's caller may still hold it), since
+                // logging can be slow. This is the event to look for in a log when investigating a freeze,
+                // so it is worth a line even though it is not an error.
+                if (addedWorker)
+                    Logger.WriteEvent(
+                        "BloomServer: every worker was blocked, so added one to keep requests moving "
+                            + $"({_workers.Count} workers, {_countBlockedThreads} blocked)."
+                    );
             }
             catch (Exception e)
             {
-                Logger.WriteEvent(
-                    "BloomServer: could not add a worker while one was blocking: " + e.Message
-                );
+                // This last attempt to record what went wrong could itself fail, and nothing may escape
+                // (see above), so it is deliberately allowed to fail silently.
+                try
+                {
+                    Logger.WriteEvent(
+                        "BloomServer: trouble adding a worker while one was blocking: " + e.Message
+                    );
+                }
+                catch { }
             }
-            // Logged after releasing our own lock (QueueRequest's caller may still hold it), since logging
-            // can be slow. This is the event to look for in a log when investigating a freeze, so it is
-            // worth a line even though it is not an error.
-            if (addedWorker)
-                Logger.WriteEvent(
-                    "BloomServer: every worker was blocked, so added one to keep requests moving "
-                        + $"({_workers.Count} workers, {_countBlockedThreads} blocked)."
-                );
         }
 
         /// <summary>
