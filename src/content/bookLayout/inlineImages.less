@@ -1,0 +1,159 @@
+// Inline (Word-style) images: an image that lives inside a bloom-editable so that the
+// text of that editable wraps around it. See INLINE-IMAGES-PLAN.md, and
+// BloomBrowserUI/bookEdit/js/inlineImages.ts for the edit-time behavior.
+//
+// This file is imported by basePage-sharedRules.less (which serves basePage.css and the
+// ePUB stylesheet, so edit, PDF, bloom-player and ePUB all get these rules) and also by
+// basePage-legacy-5-6.less, so that books using the legacy theme render inline images
+// too. It is deliberately not in the compileLess "entries" list for bookLayout, so no
+// standalone inlineImages.css is produced; it only ever arrives via those imports.
+//
+// GEOMETRY MODEL
+// Everything about an inline image's position and size is either a dock class or a
+// custom property in the wrapper's style attribute. Nothing else. That is what lets
+// inlineImages.ts treat (class list + style attribute) as the complete state of an
+// inline image and stamp one language's copy onto its sibling editables without
+// parsing or recomputing anything.
+//     --inline-image-width         width of the visible image, as a % of the editable
+//     --inline-image-offset        how far down from the top of the editable the image
+//                                  sits (see the offset comment below)
+//     --inline-image-aspect-ratio  natural width/height of the image, so that layout
+//                                  (and therefore the overflow checker) is right even
+//                                  before the image has loaded
+// The width is a custom property rather than a plain `width` because the middle dock
+// needs a full-width wrapper containing a narrower image: with the number in a
+// variable, one declaration serves both cases, with no !important fight and no second
+// width to keep in sync. Similarly the aspect ratio is applied to the img rather than
+// the wrapper, since for the middle dock the wrapper is wider than the image.
+.bloom-editable .bloom-inlineImage {
+    box-sizing: border-box;
+
+    img {
+        display: block;
+        width: 100%;
+        aspect-ratio: var(--inline-image-aspect-ratio, auto);
+    }
+
+    // The vertical offset is transparent padding on top of the wrapper, and the wrap
+    // shape excludes that padding, so the text flows *through* it at the editable's
+    // full width and only starts avoiding the image lower down. Nothing else can do
+    // this: line boxes avoid a float's whole margin box (so margin-top gives a
+    // narrowed column instead), translateY moves paint but not the wrap, anchor
+    // positioning is out of flow, and CSS Exclusions never shipped.
+    &.bloom-inlineImageLeft,
+    &.bloom-inlineImageRight,
+    &.bloom-inlineImageMiddle {
+        padding-top: var(--inline-image-offset, 0px);
+        shape-outside: inset(var(--inline-image-offset, 0px) 0 0 0);
+        clear: both;
+    }
+
+    &.bloom-inlineImageLeft {
+        float: left;
+        width: var(--inline-image-width, 40%);
+        margin: 0 1em 0.5em 0;
+    }
+
+    &.bloom-inlineImageRight {
+        float: right;
+        width: var(--inline-image-width, 40%);
+        margin: 0 0 0.5em 1em;
+    }
+
+    // A band with text above and below: the wrapper spans the whole editable, so no
+    // line box can fit beside it, and the image is centered inside it at its own
+    // width. It still has to be a float, because that is what allows text above it
+    // (the un-excluded offset region at the top of the shape); an ordinary block
+    // first child would always sit at the very top of the editable.
+    &.bloom-inlineImageMiddle {
+        float: left;
+        width: 100%;
+
+        img {
+            width: var(--inline-image-width, 40%);
+            margin: 0 auto;
+        }
+    }
+
+    // The bottom dock is the one case where the wrapper is not the editable's first
+    // child but its last, and it is not floated at all: it is simply the final block
+    // of the field, centered. (Because of that, inlineImages.ts leaves
+    // bloom-keepFirstInField off a bottom-docked wrapper.)
+    &.bloom-inlineImageBottom {
+        float: none;
+        clear: both;
+        width: var(--inline-image-width, 40%);
+        margin: 0.5em auto 0 auto;
+    }
+}
+
+// FLOAT CONTAINMENT
+// An editable holding an inline image has to contain its float, or the image hangs out
+// below the editable, over the next language's block or whatever follows on the page.
+// There are two separate obstacles:
+//   1. an ordinary block does not contain its floats, so we need flow-root;
+//   2. a *visible* editable is display:flex inside a vertically-aligned text block
+//      (see langVisibility.less), and float is ignored on the child of a flex
+//      container, so the text would not wrap at all.
+// display:flow-root fixes both. The cost is that an editable showing an inline image
+// can no longer vertically center or bottom-align its own text (which only comes up
+// for a monolingual bloom-vertical-align-* block, since in multilingual ones the
+// alignment is applied to the translation group instead); wrapping wins.
+// The class is repeated to raise specificity above langVisibility.less's display:flex,
+// which is otherwise an exact tie and is imported later.
+// :has is supported by every renderer we control. An ancient ePUB reader that ignores
+// it just gets an uncontained float, which is the same class of graceful degradation we
+// already accept there for shape-outside.
+.bloom-editable.bloom-editable.bloom-visibility-code-on:has(
+        > .bloom-inlineImage
+    ) {
+    display: flow-root;
+}
+
+// SHOW ONCE PER TRANSLATION GROUP
+// Every language's editable carries its own copy of the image (that is the only way a
+// float can wrap that language's text), but showing the same picture once per visible
+// language looks broken. So the image renders only in the first visible language block.
+//
+// "First" here is precedence, not DOM order: the .bloom-content* classes drive the flex
+// `order` property, so the DOM order of the editables tells us nothing about which one
+// the reader sees first. Precedence is bloom-contentFirst (assigned by the appearance
+// system) when the group has one, otherwise bloom-content1, then content2, then
+// content3 -- the same preference bloomEditing.ts uses in
+// SetupThingsSensitiveToStyleChanges.
+//
+// Rather than pick a winner, each rule below hides the copy in a visible editable that
+// is outranked by some other visible editable in the same group. Reading it that way:
+//   - monolingual: nothing outranks the single visible editable, so it shows;
+//   - bilingual/trilingual: only the highest-precedence visible one shows;
+//   - L1 not among the visible languages (so no visible bloom-content1): the highest
+//     visible language still shows it, rather than the image silently vanishing.
+// This is display-only. All the copies stay in the DOM, in every language, so nothing
+// here affects what is saved or published.
+.bloom-translationGroup {
+    // Outranked by a visible bloom-contentFirst.
+    &:has(> .bloom-editable.bloom-visibility-code-on.bloom-contentFirst)
+        > .bloom-editable.bloom-visibility-code-on:not(.bloom-contentFirst)
+        > .bloom-inlineImage,
+    // Outranked by a visible bloom-content1 (no visible contentFirst outranking it).
+    &:has(> .bloom-editable.bloom-visibility-code-on.bloom-content1)
+        > .bloom-editable.bloom-visibility-code-on:not(.bloom-contentFirst):not(
+            .bloom-content1
+        )
+        > .bloom-inlineImage,
+    // Outranked by a visible bloom-content2.
+    &:has(> .bloom-editable.bloom-visibility-code-on.bloom-content2)
+        > .bloom-editable.bloom-visibility-code-on:not(.bloom-contentFirst):not(
+            .bloom-content1
+        ):not(.bloom-content2)
+        > .bloom-inlineImage,
+    // Outranked by a visible bloom-content3. (Only reachable for a visible editable
+    // with no content class at all, which would be unusual.)
+    &:has(> .bloom-editable.bloom-visibility-code-on.bloom-content3)
+        > .bloom-editable.bloom-visibility-code-on:not(.bloom-contentFirst):not(
+            .bloom-content1
+        ):not(.bloom-content2):not(.bloom-content3)
+        > .bloom-inlineImage {
+        display: none;
+    }
+}

@@ -718,6 +718,36 @@ describe("audio recording tests", () => {
             );
         });
 
+        // An inline (Word-style) image is a contenteditable=false island inside the
+        // bloom-editable. It holds no recordable text, and recursing into it bottoms out at
+        // the img, which would then be treated as a leaf and get audio markup written into
+        // it. See inlineImages.ts.
+        it("skips a contenteditable=false island such as an inline image", () => {
+            const islandHtml =
+                '<div class="bloom-inlineImage bloom-inlineImageRight" contenteditable="false"><img src="flower.jpg"></div>';
+            const div = $(
+                `<div class="bloom-editable">${islandHtml}<p>This is a sentence. This is another.</p></div>`,
+            );
+            const recording = new AudioRecording();
+            recording.makeAudioSentenceElementsTest(
+                div,
+                RecordingMode.Sentence,
+            );
+
+            // The paragraph got its sentence spans as usual...
+            const spans = div.find("p span.audio-sentence");
+            expect(spans.length).toBe(2);
+            // ...and the island came through untouched: no spans, no id, no audio class.
+            const island = div.find(".bloom-inlineImage");
+            expect(island.length).toBe(1);
+            expect(island.find("span").length).toBe(0);
+            expect(island.attr("class")).toBe(
+                "bloom-inlineImage bloom-inlineImageRight",
+            );
+            expect(island.attr("id")).toBeUndefined();
+            expect(island.html()).toBe('<img src="flower.jpg">');
+        });
+
         it("flattens nested audio spans", () => {
             const p = $(
                 '<p><span id="efgh" recordingmd5="xyz" class="audio-sentence"><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first.</span> <span id="abde" recordingmd5="qef" class="audio-sentence">This is the second.</span> This is the third.</span></p>',
@@ -2941,16 +2971,25 @@ export async function setupForAudioRecordingTests() {
         },
     };
 
-    await initializeTalkingBookToolAsync();
-
     // Mock urlPrefix to return the correct base URL for tests
     // The real implementation constructs from iframe.src, but in tests iframe.src is "about:blank"
     // Real format: "/bloom/api/audio/wavFile?id=" + bookFolderUrl + "audio/"
     // In tests, we simulate the full path as if bookFolderUrl was "http://localhost:63315/bloom/C%23Injection/"
+    //
+    // This must go on the PROTOTYPE and BEFORE initializeTalkingBookToolAsync, not on
+    // theOneAudioRecorder afterwards. theOneAudioRecorder does not exist until that call creates
+    // it, and the call itself already sets the player's src. So a mock installed afterwards left
+    // that first src built by the REAL urlPrefix -- a relative URL, which jsdom resolves against
+    // its own base of http://localhost:3000/. Because setCurrentAudioId only refreshes the player
+    // when the audio id CHANGES, a test whose id was already current never overwrote that stale
+    // value, and then compared localhost:3000 against the mocked localhost:63315. It depended on
+    // which ids earlier work happened to leave behind, so it passed locally and failed in CI.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.spyOn(theOneAudioRecorder as any, "urlPrefix").mockReturnValue(
+    vi.spyOn(AudioRecording.prototype as any, "urlPrefix").mockReturnValue(
         "http://localhost:63315/bloom/api/audio/wavFile?id=audio/",
     );
+
+    await initializeTalkingBookToolAsync();
 }
 
 export function StripPlayerSrcNoCacheSuffix(url: string): string {

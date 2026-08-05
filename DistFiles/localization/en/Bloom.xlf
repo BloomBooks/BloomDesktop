@@ -2065,6 +2065,16 @@
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
         <note>ID: EditTab.Image.TryRestart</note>
       </trans-unit>
+      <trans-unit id="EditTab.InlineImage.AddImage" translate="no">
+        <source xml:lang="en">Add Image</source>
+        <note>ID: EditTab.InlineImage.AddImage</note>
+        <note>Command in the menu you get by right-clicking a block of text in the Edit tab. It puts a picture inside the text block, with the text wrapping around it (like an inline image in Word).</note>
+      </trans-unit>
+      <trans-unit id="EditTab.InlineImage.RemoveImage" translate="no">
+        <source xml:lang="en">Remove Image</source>
+        <note>ID: EditTab.InlineImage.RemoveImage</note>
+        <note>Command in the menu you get by right-clicking a picture that is inside a block of text in the Edit tab. It takes the picture out of the text block. "Remove" here means delete it, not merely hide it.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Instructions.DeleteAllowed" sil:dynamic="true">
         <source xml:lang="en">Feel free to modify or delete this page.</source>
         <note>ID: EditTab.Instructions.DeleteAllowed</note>

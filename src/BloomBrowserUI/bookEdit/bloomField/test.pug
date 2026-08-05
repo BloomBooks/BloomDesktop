@@ -75,6 +75,45 @@ html
 				display: block;
 				clear: both;
 			}
+
+			/* Inline (Word-style) images. A real book gets these from
+			   content/bookLayout/inlineImages.less; this hand-test page has no basePage.css,
+			   so the load-bearing rules are repeated here. */
+			.bloom-editable:has(> .bloom-inlineImage) {
+				/* contain the float, so the image can't hang out of the field */
+				display: flow-root;
+			}
+			.bloom-inlineImage img {
+				display: block;
+				width: 100%;
+				aspect-ratio: var(--inline-image-aspect-ratio, auto);
+			}
+			.bloom-inlineImageLeft,
+			.bloom-inlineImageMiddle {
+				/* the offset is transparent padding, and the wrap shape excludes it, so text
+				   flows through it at full width */
+				padding-top: var(--inline-image-offset, 0px);
+				shape-outside: inset(var(--inline-image-offset, 0px) 0 0 0);
+				clear: both;
+			}
+			.bloom-inlineImageLeft {
+				float: left;
+				width: var(--inline-image-width, 40%);
+				margin: 0 1em 0.5em 0;
+			}
+			.bloom-inlineImageMiddle {
+				float: left;
+				width: 100%;
+			}
+			.bloom-inlineImageMiddle img {
+				width: var(--inline-image-width, 40%);
+				margin: 0 auto;
+			}
+			#inlineImageLeft,
+			#inlineImageMiddle {
+				height: 220px;
+				width: 400px;
+			}
 		script(type='text/javascript').
 			$(document).ready(function () {
 				$(".bloom-editable").each(function () {
@@ -103,6 +142,19 @@ html
 							.caption(contenteditable='true', lang='teo')
 								| Caption
 					//- p.bloom-cloneToOtherLanguages.bloom-preventRemoval
+				h4 Fields with an inline (Word-style) image
+				ul
+					li The text should wrap around the image, and the first lines should run at full width above it (that is the vertical offset).
+					li You should not be able to delete the image, and it should not move up or down as you type.
+					li In the second field the image is a full-width band: text above and below it, none beside it.
+				+field#inlineImageLeft
+					.bloom-inlineImage.bloom-inlineImageLeft.bloom-keepFirstInField.bloom-preventRemoval(contenteditable='false', style='--inline-image-width: 40%; --inline-image-offset: 40px; --inline-image-aspect-ratio: 4 / 3')
+						img(src='../../images/experiment.png', alt='')
+					p Docked left with a 40px offset. These first words should start at the very left edge of the field, above the beaker, and only the later lines should be pushed over to the right of it.
+				+field#inlineImageMiddle
+					.bloom-inlineImage.bloom-inlineImageMiddle.bloom-keepFirstInField.bloom-preventRemoval(contenteditable='false', style='--inline-image-width: 50%; --inline-image-offset: 30px; --inline-image-aspect-ratio: 4 / 3')
+						img(src='../../images/experiment.png', alt='')
+					p A middle band. This first line belongs above the picture, and everything after the band starts again below it at full width.
 				+field#brAtStart
 					br
 					| brAtStart There was a br at the start here

@@ -2107,6 +2107,80 @@ These are similar but already have game-theme classes
                 );
         }
 
+        /// <summary>
+        /// The inline image wrapper deliberately uses its own class (bloom-inlineImage) rather than
+        /// bloom-imageContainer, so that the level-7 bloom-canvas migration passes it by. This locks
+        /// that in: a real bloom-imageContainer on the same page IS renamed (proving the migration
+        /// ran), while the wrapper and its img come through untouched.
+        /// </summary>
+        [Test]
+        public void MigrateToLevel7BloomCanvas_LeavesInlineImageAlone()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='6'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-imageContainer' id='shouldBeRenamed'>
+			<img src='rubbish' />
+		</div>
+		<div class='bloom-translationGroup'>
+			<div class='bloom-editable normal-style' lang='en' contenteditable='true'>
+				<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval'
+					 id='inlineWrapper' contenteditable='false' style='--inline-image-offset: 120px; width: 40%;'>
+					<img src='flower.jpg' />
+				</div>
+				<p>Text that wraps around the image.</p>
+			</div>
+		</div>
+	</div>
+</body></html>"
+            );
+
+            // Sanity check the starting state: one imageContainer, one inline image wrapper, no bloom-canvas.
+            Assert.That(
+                storage.Dom.SelectSingleNode("//*[@id='shouldBeRenamed']").GetAttribute("class"),
+                Is.EqualTo("bloom-imageContainer")
+            );
+            AssertThatXmlIn
+                .Dom(storage.Dom.RawDom)
+                .HasNoMatchForXpath("//div[contains(@class,'bloom-canvas')]");
+
+            //SUT
+            storage.MigrateToLevel7BloomCanvas();
+
+            //Verification
+            Assert.That(storage.Dom.GetMetaValue("maintenanceLevel", "0"), Is.EqualTo("7"));
+            // The migration really did run: the genuine image container is now a bloom-canvas.
+            var migrated = storage.Dom.SelectSingleNode("//*[@id='shouldBeRenamed']");
+            Assert.That(migrated.GetAttribute("class"), Does.Contain("bloom-canvas"));
+            Assert.That(migrated.GetAttribute("class"), Does.Not.Contain("bloom-imageContainer"));
+
+            // The inline image wrapper is exactly as it was.
+            var wrapper = storage.Dom.SelectSingleNode("//*[@id='inlineWrapper']");
+            var classes = wrapper.GetAttribute("class");
+            Assert.That(classes, Does.Contain("bloom-inlineImage"));
+            Assert.That(classes, Does.Contain("bloom-inlineImageRight"));
+            Assert.That(classes, Does.Contain("bloom-keepFirstInField"));
+            Assert.That(classes, Does.Contain("bloom-preventRemoval"));
+            Assert.That(
+                classes,
+                Does.Not.Contain("bloom-canvas"),
+                "the migration must not turn the inline image wrapper into a bloom-canvas"
+            );
+            Assert.That(wrapper.GetAttribute("contenteditable"), Is.EqualTo("false"));
+            Assert.That(wrapper.GetAttribute("style"), Does.Contain("width: 40%"));
+            AssertThatXmlIn
+                .Dom(storage.Dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='inlineWrapper']/img[@src='flower.jpg']",
+                    1
+                );
+        }
+
         [Test]
         public void PerformNecessaryMaintenanceOnBook_EnsuresImgAtStartOfImageContainer()
         {

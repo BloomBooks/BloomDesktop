@@ -2301,5 +2301,261 @@ namespace BloomTests.Book
                     3
                 );
         }
+
+        /// <summary>
+        /// An inline image (the Word-style image wrapper that lives INSIDE a bloom-editable) must
+        /// survive the creation of a new language block: the whole wrapper, its classes, its
+        /// contenteditable='false', its inline style (dock offset/width/aspect-ratio) and its img
+        /// are part of the "structure" that gets cloned, while the prototype's text is stripped.
+        /// </summary>
+        [Test]
+        public void PrepareElementsInPageOrDocument_PrototypeEditableHasInlineImage_WrapperClonedIntact()
+        {
+            const string contents =
+                @"<html><body><div class='bloom-page'>
+					<div class='bloom-translationGroup normal-style'>
+						<div class='bloom-editable normal-style' lang='en' contenteditable='true'>
+							<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval'
+								 contenteditable='false' style='--inline-image-offset: 120px; width: 40%; aspect-ratio: 800 / 600;'>
+								<img src='flower.jpg' data-copyright='Copyright Me' data-license='cc-by'></img>
+							</div>
+							<p>Do not copy me.</p>
+						</div>
+					</div>
+				</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+
+            // Sanity check: exactly one inline image wrapper, in the English block, before we start.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-inlineImage')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 0);
+
+            TranslationGroupManager.PrepareElementsInPageOrDocument(
+                (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                bookData
+            );
+
+            // A block was made for each of xyz (L1), fr (L2) and es (L3), and each got its own copy
+            // of the wrapper (4 blocks in all, counting the original English one).
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-inlineImage')]",
+                    4
+                );
+
+            var frWrapper = dom.SelectSingleNode(
+                "//div[@lang='fr']/div[contains(@class,'bloom-inlineImage')]"
+            );
+            Assert.That(
+                frWrapper,
+                Is.Not.Null,
+                "the new French block should have gotten a wrapper"
+            );
+            var frWrapperClasses = frWrapper.GetAttribute("class");
+            Assert.That(frWrapperClasses, Does.Contain("bloom-inlineImage"));
+            Assert.That(frWrapperClasses, Does.Contain("bloom-inlineImageRight"));
+            Assert.That(frWrapperClasses, Does.Contain("bloom-keepFirstInField"));
+            Assert.That(frWrapperClasses, Does.Contain("bloom-preventRemoval"));
+            Assert.That(frWrapper.GetAttribute("contenteditable"), Is.EqualTo("false"));
+            var frWrapperStyle = frWrapper.GetAttribute("style");
+            Assert.That(frWrapperStyle, Does.Contain("--inline-image-offset: 120px"));
+            Assert.That(frWrapperStyle, Does.Contain("width: 40%"));
+            Assert.That(frWrapperStyle, Does.Contain("aspect-ratio: 800 / 600"));
+
+            // The wrapper is still the first child of the new editable (bloom-keepFirstInField's slot).
+            var frEditable = dom.SelectSingleNode("//div[@lang='fr']");
+            var firstChildElement =
+                frEditable.ChildNodes.FirstOrDefault(x => x is SafeXmlElement) as SafeXmlElement;
+            Assert.That(
+                firstChildElement.GetAttribute("class"),
+                Does.Contain("bloom-inlineImage"),
+                "the wrapper should still be the first child element of the new editable"
+            );
+
+            // The img and its metadata came along...
+            var frImg = dom.SelectSingleNode(
+                "//div[@lang='fr']/div[contains(@class,'bloom-inlineImage')]/img"
+            );
+            Assert.That(frImg, Is.Not.Null);
+            Assert.That(frImg.GetAttribute("src"), Is.EqualTo("flower.jpg"));
+            Assert.That(frImg.GetAttribute("data-copyright"), Is.EqualTo("Copyright Me"));
+            Assert.That(frImg.GetAttribute("data-license"), Is.EqualTo("cc-by"));
+
+            // ...but the prototype's text did not.
+            AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@lang='fr']//p");
+            Assert.That(frEditable.InnerText.Trim(), Is.Empty);
+
+            // And the original English block was left with both its wrapper and its text.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@lang='en']/div[contains(@class,'bloom-inlineImage')]/img[@src='flower.jpg']",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@lang='en']/p[contains(text(),'Do not copy me')]",
+                    1
+                );
+        }
+
+        /// <summary>
+        /// PrepareElementsOnPageOneLanguage deletes language-less DIRECT children of a
+        /// translationGroup. An inline image wrapper has no lang, but it is nested inside a
+        /// bloom-editable rather than being a direct child of the group, so it must survive.
+        /// This checks both directions: the wrapper stays, a stray language-less direct child goes.
+        /// </summary>
+        [Test]
+        public void PrepareElementsInPageOrDocument_LangLessDivsRemoved_InlineImageWrapperSurvives()
+        {
+            const string contents =
+                @"<html><body><div class='bloom-page'>
+					<div class='bloom-translationGroup normal-style'>
+						<div class='bloom-editable normal-style' lang='en' contenteditable='true'>
+							<div class='bloom-inlineImage bloom-inlineImageRight' contenteditable='false' style='width: 40%;'>
+								<img src='flower.jpg'></img>
+							</div>
+						</div>
+						<div class='strayDiv'>I have no lang and am a direct child, so I should be deleted.</div>
+					</div>
+				</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+
+            // Sanity check: both the wrapper and the stray div are there to begin with.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'strayDiv')]", 1);
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-inlineImage')]",
+                    1
+                );
+
+            TranslationGroupManager.PrepareElementsInPageOrDocument(
+                (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                bookData
+            );
+
+            // The stray language-less direct child of the group is gone...
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasNoMatchForXpath("//div[contains(@class,'strayDiv')]");
+            // ...while every editable (en plus the three new ones) still has its wrapper, complete
+            // with the img and the contenteditable='false' that makes it a non-editable island.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable')]/div[contains(@class,'bloom-inlineImage') and @contenteditable='false']/img[@src='flower.jpg']",
+                    4
+                );
+            // The wrapper must NOT have been given a lang by the "editables without a lang" sweep;
+            // that sweep only matches contenteditable='true' or bloom-editable.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasNoMatchForXpath("//div[contains(@class,'bloom-inlineImage') and @lang]");
+        }
+
+        /// <summary>
+        /// UpdateContentLanguageClasses walks every div under a translationGroup, not just the
+        /// editables, so it sees the inline image wrapper too. It must not turn the wrapper into
+        /// something that looks like a visible language block: no bloom-visibility-code-on, no
+        /// bloom-contentN, and its own classes intact.
+        /// </summary>
+        [Test]
+        public void UpdateContentLanguageClasses_InlineImageWrapper_GetsNoVisibilityOrContentClasses()
+        {
+            const string contents =
+                @"<html><body><div class='bloom-page'>
+					<div class='bloom-translationGroup normal-style'>
+						<div class='bloom-editable normal-style' lang='xyz' contenteditable='true'>
+							<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval'
+								 contenteditable='false' style='width: 40%;'>
+								<img src='flower.jpg'></img>
+							</div>
+							<p>Some vernacular text.</p>
+						</div>
+						<div class='bloom-editable normal-style' lang='fr' contenteditable='true'>
+							<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval bloom-visibility-code-on'
+								 contenteditable='false' style='width: 40%;'>
+								<img src='flower.jpg'></img>
+							</div>
+						</div>
+					</div>
+				</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+
+            // Sanity check: the only pre-existing generated class is the stale
+            // bloom-visibility-code-on we planted on the French wrapper, which proves below that
+            // the sweep really does reach inside the editables (and strips such classes off the
+            // wrapper, so the wrapper must never depend on one).
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-inlineImage') and contains(@class,'bloom-visibility-code-on')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[contains(@class,'bloom-editable') and contains(@class,'bloom-visibility-code-on')]"
+                );
+
+            var pageDiv = (SafeXmlElement)
+                dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+            TranslationGroupManager.UpdateContentLanguageClasses(
+                pageDiv,
+                bookData,
+                LegacyAppearanceSettings,
+                "xyz",
+                "fr",
+                null
+            );
+
+            // Sanity check that the pass actually ran: the vernacular editable was turned on.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@lang='xyz' and contains(@class,'bloom-visibility-code-on') and contains(@class,'bloom-content1')]",
+                    1
+                );
+
+            foreach (
+                SafeXmlElement wrapper in dom.SafeSelectNodes(
+                    "//div[contains(@class,'bloom-inlineImage')]"
+                )
+            )
+            {
+                var classes = wrapper.GetAttribute("class");
+                Assert.That(
+                    classes,
+                    Does.Not.Contain("bloom-visibility-code"),
+                    "the wrapper is not a language block and must not be marked visible/invisible"
+                );
+                Assert.That(
+                    classes,
+                    Does.Not.Contain("bloom-content"),
+                    "the wrapper must not gain bloom-contentN/bloom-contentNationalN classes"
+                );
+                // Its own classes are all still there.
+                Assert.That(classes, Does.Contain("bloom-inlineImage"));
+                Assert.That(classes, Does.Contain("bloom-inlineImageRight"));
+                Assert.That(classes, Does.Contain("bloom-keepFirstInField"));
+                Assert.That(classes, Does.Contain("bloom-preventRemoval"));
+                Assert.That(wrapper.GetAttribute("contenteditable"), Is.EqualTo("false"));
+                Assert.That(wrapper.GetAttribute("style"), Does.Contain("width: 40%"));
+            }
+        }
     }
 }

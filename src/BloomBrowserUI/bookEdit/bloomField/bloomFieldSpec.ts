@@ -1,6 +1,6 @@
 ///<reference path="BloomField.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-import { describe, it, expect, beforeEach, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
 import BloomField from "./BloomField";
 import $ from "jquery";
@@ -262,6 +262,66 @@ describe("BloomField", () => {
     it("bloom-editable div creates a <p>", () => {
         WireUp();
         expect($("div p").length).toBeGreaterThan(0);
+    });
+
+    // Inline (Word-style) images use the same two protections that the old embedded-image
+    // templates did, so these tests pin down that BloomField still recognizes them by class
+    // when the class is on a .bloom-inlineImage wrapper. See inlineImages.ts.
+    describe("inline image protections", () => {
+        const inlineImageHtml =
+            '<div class="bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval" contenteditable="false"><img src="placeHolder.png" alt=""></div>';
+
+        it("EnsureParagraphsPresent puts the <p> after a bloom-keepFirstInField inline image", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml;
+            // Sanity check: no paragraph yet, and the image is the only child.
+            expect(editable.querySelectorAll("p").length).toBe(0);
+            expect(editable.children.length).toBe(1);
+
+            WireUp();
+
+            expect(editable.querySelectorAll("p").length).toBe(1);
+            // The image must stay first (that is what the class means) with the paragraph
+            // after it, since the text has to come after the float to wrap around it.
+            expect(
+                editable.firstElementChild!.classList.contains(
+                    "bloom-inlineImage",
+                ),
+            ).toBe(true);
+            expect(editable.lastElementChild!.tagName).toBe("P");
+        });
+
+        it("counts a bloom-preventRemoval inline image, so ctrl+a DEL is undone", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            // jsdom has no execCommand, and we only want to know that BloomField asked for
+            // the undo.
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            // Simulate the damage ctrl+a DEL does, then the keyup that follows it.
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        it("does not undo on a keyup that left the inline image alone", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+
+            expect(execCommand).not.toHaveBeenCalled();
+        });
     });
 
     describe("backspacePreventionTests", () => {
