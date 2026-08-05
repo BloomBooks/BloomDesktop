@@ -8,6 +8,7 @@ using Bloom.web.controllers;
 using BloomTemp;
 using Moq;
 using NUnit.Framework;
+using SIL.Reporting;
 using Assert = NUnit.Framework.Assert;
 
 namespace BloomTests.web.controllers
@@ -320,6 +321,114 @@ namespace BloomTests.web.controllers
                 Assert.That(response.warningMessage, Is.Empty);
                 Assert.That(response.successMessage, Is.EqualTo("Applied 2 manual timings."));
             }
+        }
+
+        /// <summary>
+        /// Aeneas runs under Python, which can't cope with a UNC path, so Bloom refuses forced
+        /// alignment outright when the collection lives on a network share (BL-9959). That is a
+        /// limitation of the forced-alignment tooling, so it must not block "Apply Timings File...",
+        /// which only reads numbers out of a file.
+        /// </summary>
+        [Test]
+        [Platform(
+            Exclude = "Linux",
+            Reason = "The drive-letter guard being tested only runs on Windows"
+        )]
+        public void GetAeneasTimings_ManualTimingsOnNetworkPath_NotBlockedByDriveLetterGuard()
+        {
+            // Note: this test takes about a second, because looking for the (absent) audio file on a
+            // server that doesn't exist has to wait for Windows to fail to resolve the name.
+            const string bookFolder = @"\\nosuchserver\share\somebook";
+            var book = new Mock<Bloom.Book.Book>();
+            book.SetupGet(b => b.FolderPath).Returns(bookFolder);
+            var bookSelection = new BookSelection();
+            bookSelection.SelectBook(book.Object);
+            var api = new NoExternalCommandsAudioSegmentationApi(bookSelection);
+
+            var request = new AutoSegmentRequest
+            {
+                audioFilenameBase = "textBoxId",
+                audioTextFragments = new[]
+                {
+                    new AudioTextFragment { fragmentText = "Sentence 1.", id = "id1" },
+                },
+                lang = "qaa",
+                manualTimingsPath = bookFolder + @"\audio\textBoxId_timings.txt",
+            };
+
+            var recorder = new RecordingErrorReporter();
+            var originalReporter = ErrorReport.GetErrorReporter();
+            ErrorReport.SetErrorReporter(recorder);
+            AutoSegmentResponse response;
+            try
+            {
+                response = api.GetAeneasTimings(request);
+            }
+            finally
+            {
+                ErrorReport.SetErrorReporter(originalReporter);
+            }
+
+            // We do still expect this to fail -- there is no such server, so there's no audio file to
+            // apply the timings to. The point is only that it failed for THAT reason, having got past
+            // the drive-letter guard, rather than being turned away by the guard itself.
+            Assert.That(response, Is.Null, "Expected failure: the audio file cannot exist");
+            var reported = string.Join(" | ", recorder.Messages);
+            Assert.That(recorder.Messages, Is.Not.Empty, "Should have reported some problem");
+            Assert.That(
+                reported,
+                Does.Not.Contain("drive letter"),
+                "Applying a timings file must not be refused by the Aeneas-only UNC-path guard"
+            );
+            Assert.That(
+                reported,
+                Does.Contain("No audio file found"),
+                "Should have got past the guard and failed later, looking for the audio"
+            );
+        }
+
+        /// <summary>
+        /// An IErrorReporter that just records the text of everything reported through it, so a test
+        /// can assert on which problem was reported. Records every overload, so it doesn't matter
+        /// which one the code under test happens to route through.
+        /// </summary>
+        private class RecordingErrorReporter : IErrorReporter
+        {
+            public List<string> Messages { get; } = new List<string>();
+
+            public void NotifyUserOfProblem(
+                IRepeatNoticePolicy policy,
+                Exception exception,
+                string message
+            ) => Messages.Add(message);
+
+            public ErrorResult NotifyUserOfProblem(
+                IRepeatNoticePolicy policy,
+                string alternateButton1Label,
+                ErrorResult resultIfAlternateButtonPressed,
+                string message
+            )
+            {
+                Messages.Add(message);
+                return ErrorResult.OK;
+            }
+
+            public void ReportFatalException(Exception e) => Messages.Add(e.ToString());
+
+            public void ReportFatalMessageWithStackTrace(string message, object[] args) =>
+                Messages.Add(message);
+
+            public void ReportNonFatalException(Exception exception, IRepeatNoticePolicy policy) =>
+                Messages.Add(exception.ToString());
+
+            public void ReportNonFatalExceptionWithMessage(
+                Exception error,
+                string message,
+                params object[] args
+            ) => Messages.Add(message);
+
+            public void ReportNonFatalMessageWithStackTrace(string message, params object[] args) =>
+                Messages.Add(message);
         }
 
         /// <summary>

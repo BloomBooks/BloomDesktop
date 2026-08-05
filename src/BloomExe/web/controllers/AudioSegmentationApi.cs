@@ -364,10 +364,17 @@ namespace Bloom.web.controllers
                 warningMessage = "",
             };
 
+            // "Apply Timings File..." just reads the times out of a file the user already has,
+            // so none of the forced-alignment machinery (Python, Aeneas, eSpeak, FFMPEG) is involved.
+            var usingManualTimings = !string.IsNullOrEmpty(requestParameters.manualTimingsPath);
+
             // The client was supposed to validate this already, but double-check in case something strange happened.
             string directoryName = GetAudioDirectory();
 
-            if (!Platform.IsLinux)
+            // Aeneas runs under Python, which can't cope with a UNC path, so we refuse up front rather
+            // than fail obscurely later. That's a limitation of the forced-alignment tooling, though, so
+            // it doesn't apply when we're only reading times out of a file the user chose.
+            if (!usingManualTimings && !Platform.IsLinux)
             {
                 if (directoryName.StartsWith("\\"))
                 {
@@ -401,10 +408,6 @@ namespace Bloom.web.controllers
             IEnumerable<AudioTextFragment> audioTextFragments =
                 requestParameters.audioTextFragments;
             string requestedLangCode = requestParameters.lang;
-
-            // "Apply Timings File..." just reads the times out of a file the user already has,
-            // so none of the forced-alignment machinery (Python, Aeneas, eSpeak, FFMPEG) is involved.
-            var usingManualTimings = !string.IsNullOrEmpty(requestParameters.manualTimingsPath);
 
             // The client was supposed to validate this already, but double-check in case something strange happened.
             // Since this is basically a desperate fallback that shouldn't ever happen we won't try to make the message
