@@ -12,22 +12,100 @@
 # vite/rolldown/oxc toolchain instead of this project's pinned eslint/prettier/tsgo,
 # and would not match how we lint and type-check everywhere else. Instead we invoke
 # the project's own tools directly.
+#
+# The two groups of checks below have deliberately different reach, which is the thing
+# to understand before editing either:
+#
+#   formatting      repo-wide, and runs on EVERY commit
+#   lint+typecheck  front-end only, and runs only when a front-end source file is staged
 
 # The dispatcher runs us from the repo root; put the front-end's node_modules/.bin
 # on PATH (as an absolute path, before we cd) so its bins resolve.
-export PATH="$(pwd)/src/BloomBrowserUI/node_modules/.bin:$PATH"
+repo_root=$(pwd)
+export PATH="$repo_root/src/BloomBrowserUI/node_modules/.bin:$PATH"
 
-# Which staged paths the front-end tools could actually act on: prettier-formattable or
-# lint/typecheck-able sources under the front-end project. Matching on extension rather
-# than just the directory keeps a staged image, README (prettier-ignored at the repo root)
-# or this hook itself from triggering a full typecheck. A commit that stages none of them
-# -- a workflow, a doc, C# only -- therefore does not need node_modules to exist at all,
-# which is what lets a worktree used only for such work commit without `pnpm install`.
+# ---------------------------------------------------------------------------
+# Formatting -- every commit, whatever it touches
+# ---------------------------------------------------------------------------
+# `pretty-quick --staged` is NOT scoped to the directory it runs in: it resolves the
+# git root and formats every staged file prettier understands, anywhere in the tree,
+# filtered by .prettierignore. That is why it runs unconditionally. Gating it on
+# "was a front-end file staged" silently stopped formatting ~350 tracked files --
+# .github/workflows/*.yml, scripts/*.mjs, DistFiles/**/*.json, src/content, and so on.
+# The repo-root .prettierignore is the tell: everything it lists lives outside the
+# front-end folder, which would be pointless if prettier only ever looked inside.
+#
+# We still cd into src/BloomBrowserUI to run it, because that is what applies BOTH
+# ignore files -- the repo-root one and the front-end one that keeps prettier off
+# vendored third-party code (lib, Readium, modified_libraries, bookEdit/iconfont,
+# font-awesome). Running it from the repo root would reformat all of that.
+
+# Read a pinned version out of the front-end package.json, so the dlx fallback below
+# can never drift from the prettier the project actually uses -- a different prettier
+# would reformat files differently and produce churn. Prints nothing if not found;
+# note this must NOT exit on failure, because a bare `exit` inside $( ) would only
+# leave the subshell and the hook would sail on.
+pinned_version() {
+    sed -n 's/^[[:space:]]*"'"$1"'"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+        "$repo_root/src/BloomBrowserUI/package.json" | head -1
+}
+
+prettier_version=$(pinned_version prettier)
+pretty_quick_version=$(pinned_version pretty-quick)
+if [ -z "$prettier_version" ] || [ -z "$pretty_quick_version" ]; then
+    echo "pre-commit: could not read the pinned prettier/pretty-quick versions from" >&2
+    echo "            src/BloomBrowserUI/package.json. Has the file moved or changed shape?" >&2
+    exit 1
+fi
+
+# Local install first: it is lockfile-verified, costs no network, and so still works
+# offline. `pnpm dlx` is the fallback that lets a worktree which has never run
+# `pnpm install` -- one used only for workflows, docs or C# -- still commit properly
+# formatted code. Versions are pinned exactly, so the fallback runs the same prettier
+# the project pins.
+run_pretty_quick() {
+    if [ -x "$repo_root/src/BloomBrowserUI/node_modules/.bin/pretty-quick" ]; then
+        pretty-quick "$@"
+    else
+        pnpm dlx --package="prettier@$prettier_version" \
+                 --package="pretty-quick@$pretty_quick_version" pretty-quick "$@"
+    fi
+}
+
+cd src/BloomBrowserUI || exit 1
+if ! run_pretty_quick --staged; then
+    if [ -x "$repo_root/src/BloomBrowserUI/node_modules/.bin/pretty-quick" ]; then
+        # The project's own installed tool failed: that is a real error, not a
+        # missing-dependency situation, so it blocks.
+        exit 1
+    fi
+    # The fallback could not run -- no pnpm, no network, a registry that is down.
+    # Warn loudly but let the commit through: refusing here would put us back to a
+    # worktree that cannot commit a docs change at all, and unformatted code is a
+    # cosmetic problem, not a broken build.
+    echo "pre-commit: WARNING - could not format staged files." >&2
+    echo "            src/BloomBrowserUI/node_modules is missing and the 'pnpm dlx'" >&2
+    echo "            fallback failed (no pnpm, or no network). Committing anyway;" >&2
+    echo "            the files may need formatting later." >&2
+fi
+cd "$repo_root" || exit 1
+
+# ---------------------------------------------------------------------------
+# Lint and typecheck -- only when front-end sources are staged
+# ---------------------------------------------------------------------------
+# Unlike formatting, these two genuinely are confined to src/BloomBrowserUI: eslint is
+# configured for its .ts/.tsx, and the tsconfig has no "include", so the typecheck's
+# program is that directory. A commit staging none of those files gives them nothing to
+# do, and skipping them is what lets such a commit proceed without `pnpm install`.
+#
+# The extensions are the ones those two tools actually consume: TypeScript, plus JS
+# because the tsconfig sets "allowJs": true. Not .json (resolveJsonModule is commented
+# out, so JSON is not in the program), and not .css/.less/.html/.yml, which neither tool
+# reads -- matching those would only force needless whole-project typechecks. .pug is out
+# for the same reason: no prettier pug plugin is installed and pug is not in the program.
 #
 # Deletions count (hence D alongside ACM): removing a .ts is the change most likely to
 # break another module's imports, so it is exactly when the typecheck is worth running.
-# The tools re-derive their own file lists, so a deletion-only commit simply gives
-# prettier and eslint nothing to do while the typecheck still runs.
 #
 # --no-renames is what makes that cover a file moved OUT of the front-end, which is the
 # same event wearing a disguise. With rename detection on, --name-only prints only the
@@ -40,25 +118,25 @@ export PATH="$(pwd)/src/BloomBrowserUI/node_modules/.bin:$PATH"
 # silently skip the checks for that file.
 staged_frontend=$(git -c core.quotePath=false diff --cached --no-renames --name-only -z --diff-filter=ACMD |
     tr '\0' '\n' |
-    grep -E '^src/BloomBrowserUI/.*\.(ts|tsx|mts|cts|js|jsx|mjs|cjs|json|css|less|scss|html|htm|yaml|yml)$')
+    grep -E '^src/BloomBrowserUI/.*\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$')
 
 if [ -n "$staged_frontend" ]; then
-    # When front-end files ARE staged, a missing install has to fail loudly: silently
-    # skipping here is how an unchecked front-end commit would get through.
-    if [ ! -x src/BloomBrowserUI/node_modules/.bin/pretty-quick ]; then
-        echo "pre-commit: front-end files are staged, but src/BloomBrowserUI/node_modules is missing," >&2
-        echo "            so the front-end checks cannot run. Run 'pnpm install' in" >&2
-        echo "            src/BloomBrowserUI (or './init.sh' for the whole worktree)." >&2
+    # Front-end sources are staged, so these must run. There is no dlx fallback here:
+    # eslint and tsgo need the project's whole dependency graph, not one tool, so a
+    # missing install has to fail loudly -- silently skipping is how an unchecked
+    # front-end commit would get through.
+    if [ ! -x "$repo_root/src/BloomBrowserUI/node_modules/.bin/lint-staged" ]; then
+        echo "pre-commit: front-end sources are staged, but src/BloomBrowserUI/node_modules" >&2
+        echo "            is missing, so lint and typecheck cannot run. Run 'pnpm install'" >&2
+        echo "            in src/BloomBrowserUI (or './init.sh' for the whole worktree)." >&2
         exit 1
     fi
 
-    # JavaScript/TypeScript checks (run from the front-end project)
     cd src/BloomBrowserUI || exit 1
-    pretty-quick --staged || exit 1
     # --no-stash keeps linting fast and is safe because lint-staged doesn't modify files here.
     lint-staged --no-stash || exit 1
     node scripts/typecheck.js || exit 1
-    cd ../.. || exit 1
+    cd "$repo_root" || exit 1
 fi
 
 # C# checks (run from the repo root)

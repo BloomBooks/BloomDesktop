@@ -38,18 +38,38 @@ ships:
 
 ## What the vite-plus hook runs
 
-Routing aside, `src/BloomBrowserUI/.vite-hooks/pre-commit` runs two groups of checks:
+Routing aside, `src/BloomBrowserUI/.vite-hooks/pre-commit` runs three groups of checks,
+and the thing worth knowing before editing it is that they have deliberately different
+reach:
 
-- **Front-end** — `pretty-quick`, `lint-staged` (eslint), and a whole-project typecheck.
-  These run **only when the commit stages a front-end source file**, matched by extension
-  under `src/BloomBrowserUI/`. So a commit of only workflows, docs or C# skips them, and a
-  worktree used for that kind of work needs no `pnpm install` at all. This is not the
-  silent skip the dispatcher exists to prevent: that one is "a hook system was configured
-  but nothing ran"; this one is "these tools have nothing staged to look at". When
-  front-end files *are* staged and `node_modules` is missing, the hook fails loudly and
-  names the fix rather than waving the commit through.
-- **C#** — the `build/check-csharp-*.sh` scripts and `build/run-csharpier.sh`. These run on
-  every commit; they need only dotnet, never the front-end dependencies.
+- **Formatting** — `pretty-quick`, on **every commit, whatever it touches**. Despite living
+  in the front-end folder, it is not scoped to it: `pretty-quick --staged` resolves the git
+  root and formats every staged file prettier understands anywhere in the tree, filtered by
+  `.prettierignore`. That is why the repo root has its own `.prettierignore`. The hook still
+  runs it from `src/BloomBrowserUI`, because that is what applies *both* ignore files —
+  including the front-end one that keeps prettier off vendored third-party code.
+- **Lint and typecheck** — `lint-staged` (eslint) and a whole-project typecheck, **only when
+  the commit stages a front-end source file** (`.ts`/`.tsx`/`.mts`/`.cts` and, since the
+  tsconfig sets `allowJs`, `.js`/`.jsx`/`.mjs`/`.cjs` under `src/BloomBrowserUI/`). These two
+  genuinely are confined to that directory, so a commit of only workflows, docs or C# gives
+  them nothing to do.
+- **C#** — the `build/check-csharp-*.sh` scripts and `build/run-csharpier.sh`. Every commit;
+  they need only dotnet, never the front-end dependencies.
+
+**Committing without `pnpm install`.** A worktree used only for workflow, docs or C# work
+can commit without ever installing the front-end dependencies. Formatting still happens
+there: if `node_modules` is absent the hook falls back to `pnpm dlx` at the exact prettier
+and pretty-quick versions pinned in `package.json` (read from the file, so the fallback
+cannot drift from what the project uses). An installed worktree always prefers its own
+lockfile-verified binaries, so the normal case needs no network and works offline.
+
+Two skips are worth telling apart. If front-end sources *are* staged and `node_modules` is
+missing, the hook **fails loudly** — eslint and tsgo need the whole dependency graph, not one
+tool, and silently skipping is how an unchecked front-end commit would get through. If only
+the *formatting* fallback cannot run (no pnpm, no network), the hook **warns and lets the
+commit through**: unformatted code is cosmetic, and blocking would put us back to a worktree
+that cannot commit a docs change at all. Neither is the silent skip this dispatcher exists to
+prevent — that one is "a hook system was configured but nothing ran".
 
 ## How to enable it (per clone)
 
