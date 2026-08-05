@@ -463,7 +463,13 @@ export function showRequiresSubscriptionDialogInEditView(featureName: string) {
 }
 
 export function showRequiresSubscriptionDialogInAnyView(featureName: string) {
-    if (getPageIframeBody()?.ownerDocument ?? document !== document) {
+    // The parentheses matter: !== binds tighter than ??, so without them this asked
+    // "is there a page iframe body?" instead of "is it in some other document than
+    // mine?". Harmless for today's callers -- they are either in the toolbox iframe
+    // (where both readings say yes) or in a top-level window like a publish screen
+    // (where there is no page iframe, so both say no) -- but it would have quietly
+    // sent a future caller inside the page iframe itself down the wrong branch.
+    if ((getPageIframeBody()?.ownerDocument ?? document) !== document) {
         // We're in edit mode, but executing from the toolbox. We want the dialog to
         // show in the edit view, where there is room for it, so we have to
         // use a function in that iframe's code to show it. (It's not enough
