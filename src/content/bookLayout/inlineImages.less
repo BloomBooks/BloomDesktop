@@ -40,6 +40,14 @@
     // this: line boxes avoid a float's whole margin box (so margin-top gives a
     // narrowed column instead), translateY moves paint but not the wrap, anchor
     // positioning is out of flow, and CSS Exclusions never shipped.
+    // SEVERAL IMAGES IN ONE BLOCK
+    // A text block may hold any number of inline images. clear:both below means each floating
+    // image starts below the previous one rather than sitting beside it, so two left-docked
+    // images stack vertically down the left edge, each with its own offset measured from where
+    // the previous one ended. That is the accepted v1 behavior: it is predictable, it cannot
+    // produce overlapping images, and it degrades the same way in every renderer. Side-by-side
+    // floats would need the clear dropped, which makes the offsets interact in ways that are
+    // hard to reason about across languages whose text is a different length.
     &.bloom-inlineImageLeft,
     &.bloom-inlineImageRight,
     &.bloom-inlineImageMiddle {

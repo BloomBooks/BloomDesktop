@@ -8,11 +8,17 @@ import {
     clearInlineImageUndoState,
     commitPendingInlineImageUndo,
     discardPendingInlineImageUndo,
+    getEditables,
     getInlineImage,
+    getInlineImageById,
+    getInlineImageId,
     getInlineImageInEditable,
     getInlineImages,
+    getInlineImagesInEditable,
     handleInlineImageChanged,
     kInlineImageChangedEvent,
+    kInlineImageLeftClass,
+    kInlineImageMiddleClass,
     inlineImageCanUndo,
     inlineImageUndo,
     insertInlineImage,
@@ -136,6 +142,28 @@ describe("inlineImages", () => {
             expect(editableFor(group, "en").querySelectorAll("p").length).toBe(
                 1,
             );
+        });
+
+        // A heading is a block too (BloomField's kBlockElementSelector), so a box holding one
+        // already has somewhere to type and must not collect an empty paragraph under it --
+        // that would show as a blank line, and persist once the page is saved.
+        it("does not add a paragraph to an editable that holds only a heading", () => {
+            const group = makeTranslationGroup([
+                {
+                    lang: "en",
+                    classes: "bloom-content1",
+                    content: "<h1>A heading</h1>",
+                },
+            ]);
+            const editable = editableFor(group, "en");
+            // Sanity check: a heading and no paragraph is the case under test.
+            expect(editable.querySelectorAll("h1").length).toBe(1);
+            expect(editable.querySelectorAll("p").length).toBe(0);
+
+            insertInlineImage(group);
+
+            expect(editable.querySelectorAll("p").length).toBe(0);
+            expect(editable.querySelector("h1")!.textContent).toBe("A heading");
         });
     });
 
@@ -400,15 +428,222 @@ describe("inlineImages", () => {
                 { lang: "fr", content: "<p>b</p>" },
                 { lang: "z", content: "<p></p>" },
             ]);
-            insertInlineImage(group);
+            const wrapper = insertInlineImage(group);
             // Sanity check: all three have one before we remove.
             expect(getInlineImages(group).length).toBe(3);
 
-            removeInlineImage(group);
+            removeInlineImage(wrapper);
 
             expect(getInlineImages(group).length).toBe(0);
             expect(getInlineImage(group)).toBeNull();
             // The text survives.
+            expect(editableFor(group, "fr").textContent).toBe("b");
+        });
+
+        it("removes only the image it was given, in every language", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+                { lang: "fr", content: "<p>b</p>" },
+            ]);
+            const first = insertInlineImage(group);
+            const second = insertInlineImage(group);
+            const firstId = getInlineImageId(first);
+            const secondId = getInlineImageId(second);
+            // Sanity check: two distinct images, both in both languages.
+            expect(firstId).not.toBe(secondId);
+            expect(getInlineImages(group).length).toBe(4);
+
+            removeInlineImage(second);
+
+            expect(getInlineImages(group).length).toBe(2);
+            getEditables(group).forEach((editable) => {
+                expect(
+                    getInlineImageById(editable, firstId!),
+                    "the untouched image should survive in every language",
+                ).not.toBeNull();
+                expect(getInlineImageById(editable, secondId!)).toBeNull();
+            });
+        });
+
+        it("throws rather than guess when handed something that is not an inline image", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+            ]);
+            insertInlineImage(group);
+            // Passing the translation group used to mean "remove them all"; with several
+            // images per block that could only guess, so it must fail loudly instead.
+            expect(() => removeInlineImage(group)).toThrow();
+            expect(getInlineImages(group).length).toBe(1);
+        });
+    });
+
+    // A text block may hold any number of inline images (requirement from live testing,
+    // 2026-08-05). Copies are matched across languages by kInlineImageIdAttr, and the order
+    // within a cluster is the images' order.
+    describe("several images in one block", () => {
+        it("gives each image its own identity, in every language, in insertion order", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+                { lang: "fr", content: "<p>b</p>" },
+                { lang: "z", content: "<p></p>" },
+            ]);
+
+            const first = insertInlineImage(group);
+            const second = insertInlineImage(group);
+
+            expect(getInlineImages(group).length).toBe(6);
+            const ids = [getInlineImageId(first)!, getInlineImageId(second)!];
+            expect(ids[0]).not.toBe(ids[1]);
+            getEditables(group).forEach((editable) => {
+                // Same two ids, in the same order, in every language.
+                expect(
+                    getInlineImagesInEditable(editable).map(getInlineImageId),
+                ).toEqual(ids);
+            });
+        });
+
+        it("keeps each image's geometry and dock separate when syncing", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+                { lang: "fr", content: "<p>b</p>" },
+            ]);
+            const first = insertInlineImage(group);
+            const second = insertInlineImage(group);
+            const source = editableFor(group, "en");
+            const sibling = editableFor(group, "fr");
+
+            first.style.setProperty("--inline-image-width", "20%");
+            first.style.setProperty("--inline-image-offset", "10px");
+            setInlineImageDock(second, kInlineImageLeftClass);
+            second.style.setProperty("--inline-image-width", "70%");
+            second.style.setProperty("--inline-image-offset", "200px");
+            syncInlineImagesFromEditable(source);
+
+            const [stampedFirst, stampedSecond] =
+                getInlineImagesInEditable(sibling);
+            expect(getInlineImageId(stampedFirst)).toBe(
+                getInlineImageId(first),
+            );
+            expect(
+                stampedFirst.style.getPropertyValue("--inline-image-width"),
+            ).toBe("20%");
+            expect(
+                stampedFirst.style.getPropertyValue("--inline-image-offset"),
+            ).toBe("10px");
+            expect(
+                stampedFirst.classList.contains(kInlineImageRightClass),
+            ).toBe(true);
+            expect(
+                stampedSecond.style.getPropertyValue("--inline-image-width"),
+            ).toBe("70%");
+            expect(
+                stampedSecond.style.getPropertyValue("--inline-image-offset"),
+            ).toBe("200px");
+            expect(
+                stampedSecond.classList.contains(kInlineImageLeftClass),
+            ).toBe(true);
+        });
+
+        it("clusters floating images before the text and bottom-docked ones after it", () => {
+            const group = makeTranslationGroup([
+                {
+                    lang: "en",
+                    classes: "bloom-content1",
+                    content: "<p>one</p><p>two</p>",
+                },
+                { lang: "fr", content: "<p>un</p>" },
+            ]);
+            const floating = insertInlineImage(group);
+            const bottom = insertInlineImage(group);
+            const source = editableFor(group, "en");
+
+            setInlineImageDock(bottom, kInlineImageBottomClass);
+            syncInlineImagesFromEditable(source);
+
+            [source, editableFor(group, "fr")].forEach((editable) => {
+                const children = Array.from(editable.children);
+                const floatingCopy = getInlineImageById(
+                    editable,
+                    getInlineImageId(floating)!,
+                )!;
+                const bottomCopy = getInlineImageById(
+                    editable,
+                    getInlineImageId(bottom)!,
+                )!;
+                expect(children.indexOf(floatingCopy)).toBe(0);
+                expect(children.indexOf(bottomCopy)).toBe(children.length - 1);
+                // The text is still between them, and unharmed.
+                expect(editable.querySelectorAll("p").length).toBeGreaterThan(
+                    0,
+                );
+            });
+            expect(editableFor(group, "fr").textContent).toBe("un");
+        });
+
+        it("switching between floating docks does not reorder the images", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+            ]);
+            const first = insertInlineImage(group);
+            const second = insertInlineImage(group);
+            const editable = editableFor(group, "en");
+            // Sanity check on the starting order.
+            expect(getInlineImagesInEditable(editable)).toEqual([
+                first,
+                second,
+            ]);
+
+            setInlineImageDock(first, kInlineImageLeftClass);
+            setInlineImageDock(first, kInlineImageMiddleClass);
+
+            expect(getInlineImagesInEditable(editable)).toEqual([
+                first,
+                second,
+            ]);
+        });
+
+        it("sync is still idempotent with several images", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+                { lang: "fr", content: "<p>b</p>" },
+            ]);
+            insertInlineImage(group);
+            const second = insertInlineImage(group);
+            setInlineImageDock(second, kInlineImageBottomClass);
+            const source = editableFor(group, "en");
+
+            syncInlineImagesFromEditable(source);
+            const afterFirst = group.innerHTML;
+            syncInlineImagesFromEditable(source);
+
+            expect(group.innerHTML).toBe(afterFirst);
+        });
+
+        it("undo restores the whole set, in order", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+                { lang: "fr", content: "<p>b</p>" },
+            ]);
+            const first = insertInlineImage(group);
+            const second = insertInlineImage(group);
+            const idsBefore = [
+                getInlineImageId(first)!,
+                getInlineImageId(second)!,
+            ];
+            putCaretIn(editableFor(group, "en"));
+
+            removeInlineImage(second);
+            // Sanity check: one image left in each of the two languages.
+            expect(getInlineImages(group).length).toBe(2);
+
+            expect(inlineImageCanUndo()).toBe(true);
+            expect(inlineImageUndo()).toBe(true);
+
+            getEditables(group).forEach((editable) => {
+                expect(
+                    getInlineImagesInEditable(editable).map(getInlineImageId),
+                ).toEqual(idsBefore);
+            });
             expect(editableFor(group, "fr").textContent).toBe("b");
         });
     });
@@ -471,8 +706,7 @@ describe("inlineImages", () => {
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
                 { lang: "fr", content: "<p>b</p>" },
             ]);
-            insertInlineImage(group);
-            removeInlineImage(group);
+            removeInlineImage(insertInlineImage(group));
             // Sanity check: they really are gone, and nothing is selected.
             expect(getInlineImages(group).length).toBe(0);
             putCaretIn(editableFor(group, "en"));

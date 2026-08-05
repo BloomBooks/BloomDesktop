@@ -2557,5 +2557,302 @@ namespace BloomTests.Book
                 Assert.That(wrapper.GetAttribute("style"), Does.Contain("width: 40%"));
             }
         }
+
+        /// <summary>
+        /// Returns the data-bloom-inline-image-id of each inline image wrapper directly inside the
+        /// editable for the given language, in document order.
+        /// </summary>
+        private static string[] GetInlineImageIdsInOrder(HtmlDom dom, string langTag)
+        {
+            return dom.SafeSelectNodes(
+                    $"//div[@lang='{langTag}']/div[contains(@class,'bloom-inlineImage')]"
+                )
+                .Cast<SafeXmlElement>()
+                .Select(w => w.GetAttribute("data-bloom-inline-image-id"))
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Multiple inline images per translation group are matched up across the sibling language
+        /// editables by data-bloom-inline-image-id, so cloning a prototype editable to make a new
+        /// language block must carry that attribute through unchanged on every wrapper, and must
+        /// keep the wrappers in the same order (the ids are the only thing tying a wrapper to its
+        /// counterparts, and the order is what the reader sees).
+        /// </summary>
+        [Test]
+        public void PrepareElementsInPageOrDocument_EditableHasTwoInlineImages_IdsAndOrderPreservedInClones()
+        {
+            const string contents =
+                @"<html><body><div class='bloom-page'>
+					<div class='bloom-translationGroup normal-style'>
+						<div class='bloom-editable normal-style' lang='en' contenteditable='true'>
+							<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval'
+								 data-bloom-inline-image-id='abc123' contenteditable='false' style='width: 40%;'>
+								<img src='flower.jpg'></img>
+							</div>
+							<p>Do not copy me.</p>
+							<div class='bloom-inlineImage bloom-inlineImageLeft bloom-preventRemoval'
+								 data-bloom-inline-image-id='def456' contenteditable='false' style='width: 25%;'>
+								<img src='tree.jpg'></img>
+							</div>
+							<p>Do not copy me either.</p>
+						</div>
+					</div>
+				</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+
+            // Sanity check the starting state: two wrappers, in the order abc123 then def456,
+            // and only in English so far.
+            Assert.That(
+                GetInlineImageIdsInOrder(dom, "en"),
+                Is.EqualTo(new[] { "abc123", "def456" })
+            );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@data-bloom-inline-image-id]", 2);
+
+            TranslationGroupManager.PrepareElementsInPageOrDocument(
+                (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                bookData
+            );
+
+            // Every language block (en plus the new xyz, fr and es) has both wrappers, with the
+            // same ids in the same order.
+            foreach (var lang in new[] { "en", "xyz", "fr", "es" })
+            {
+                Assert.That(
+                    GetInlineImageIdsInOrder(dom, lang),
+                    Is.EqualTo(new[] { "abc123", "def456" }),
+                    $"the {lang} block should have both wrappers, in order, with their ids intact"
+                );
+            }
+
+            // Nothing renamed or de-duplicated the shared id values: each appears once per language.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@data-bloom-inline-image-id='abc123']",
+                    4
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@data-bloom-inline-image-id='def456']",
+                    4
+                );
+
+            // Each clone kept the rest of its wrapper too, matched to the right id.
+            var frFirst = dom.SelectSingleNode(
+                "//div[@lang='fr']/div[@data-bloom-inline-image-id='abc123']"
+            );
+            Assert.That(frFirst.GetAttribute("class"), Does.Contain("bloom-inlineImageRight"));
+            Assert.That(frFirst.GetAttribute("style"), Does.Contain("width: 40%"));
+            Assert.That(frFirst.GetAttribute("contenteditable"), Is.EqualTo("false"));
+            Assert.That(
+                frFirst.SelectSingleNode("img").GetAttribute("src"),
+                Is.EqualTo("flower.jpg")
+            );
+            var frSecond = dom.SelectSingleNode(
+                "//div[@lang='fr']/div[@data-bloom-inline-image-id='def456']"
+            );
+            Assert.That(frSecond.GetAttribute("class"), Does.Contain("bloom-inlineImageLeft"));
+            Assert.That(frSecond.GetAttribute("style"), Does.Contain("width: 25%"));
+            Assert.That(
+                frSecond.SelectSingleNode("img").GetAttribute("src"),
+                Is.EqualTo("tree.jpg")
+            );
+
+            // The prototype's text still did not come along.
+            AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@lang='fr']//p");
+            Assert.That(dom.SelectSingleNode("//div[@lang='fr']").InnerText.Trim(), Is.Empty);
+        }
+
+        /// <summary>
+        /// The pass that deletes language-less direct children of a translation group must leave
+        /// multiple nested inline image wrappers alone, ids and all, and must not stamp a lang onto
+        /// them.
+        /// </summary>
+        [Test]
+        public void PrepareElementsInPageOrDocument_LangLessDivsRemoved_MultipleInlineImageIdsSurvive()
+        {
+            const string contents =
+                @"<html><body><div class='bloom-page'>
+					<div class='bloom-translationGroup normal-style'>
+						<div class='bloom-editable normal-style' lang='en' contenteditable='true'>
+							<div class='bloom-inlineImage bloom-inlineImageRight' data-bloom-inline-image-id='abc123'
+								 contenteditable='false' style='width: 40%;'>
+								<img src='flower.jpg'></img>
+							</div>
+							<div class='bloom-inlineImage bloom-inlineImageBottom' data-bloom-inline-image-id='def456'
+								 contenteditable='false' style='width: 25%;'>
+								<img src='tree.jpg'></img>
+							</div>
+						</div>
+						<div class='strayDiv'>I have no lang and am a direct child, so I should be deleted.</div>
+					</div>
+				</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+
+            // Sanity check: the stray div and both wrappers are all there to begin with.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'strayDiv')]", 1);
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@data-bloom-inline-image-id]", 2);
+
+            TranslationGroupManager.PrepareElementsInPageOrDocument(
+                (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                bookData
+            );
+
+            // The stray language-less direct child of the group is gone...
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasNoMatchForXpath("//div[contains(@class,'strayDiv')]");
+            // ...but the nested wrappers are not: 2 per language block, 8 in all, each still
+            // carrying its id, its contenteditable='false' and its img.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@data-bloom-inline-image-id]", 8);
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable')]/div[@data-bloom-inline-image-id='abc123' and @contenteditable='false']/img[@src='flower.jpg']",
+                    4
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable')]/div[@data-bloom-inline-image-id='def456' and @contenteditable='false']/img[@src='tree.jpg']",
+                    4
+                );
+            // The "editables without a lang" sweep must not have given the wrappers a lang; if it
+            // had, they would start collecting bloom-content* classes from UpdateContentLanguageClasses.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasNoMatchForXpath("//div[@data-bloom-inline-image-id and @lang]");
+        }
+
+        /// <summary>
+        /// UpdateContentLanguageClasses walks every div under a translation group, so it sees the
+        /// inline image wrappers. With several wrappers per editable and the same id repeated across
+        /// sibling language editables, it must leave every data-bloom-inline-image-id exactly as it
+        /// found it, and add no visibility/content classes to the wrappers.
+        /// </summary>
+        [Test]
+        public void UpdateContentLanguageClasses_MultipleInlineImages_IdsUntouchedAcrossSiblings()
+        {
+            const string contents =
+                @"<html><body><div class='bloom-page'>
+					<div class='bloom-translationGroup normal-style'>
+						<div class='bloom-editable normal-style' lang='xyz' contenteditable='true'>
+							<div class='bloom-inlineImage bloom-inlineImageRight' data-bloom-inline-image-id='abc123'
+								 contenteditable='false' style='width: 40%;'>
+								<img src='flower.jpg'></img>
+							</div>
+							<p>Some vernacular text.</p>
+							<div class='bloom-inlineImage bloom-inlineImageLeft' data-bloom-inline-image-id='def456'
+								 contenteditable='false' style='width: 25%;'>
+								<img src='tree.jpg'></img>
+							</div>
+						</div>
+						<div class='bloom-editable normal-style' lang='fr' contenteditable='true'>
+							<div class='bloom-inlineImage bloom-inlineImageRight' data-bloom-inline-image-id='abc123'
+								 contenteditable='false' style='width: 40%;'>
+								<img src='flower.jpg'></img>
+							</div>
+							<div class='bloom-inlineImage bloom-inlineImageLeft' data-bloom-inline-image-id='def456'
+								 contenteditable='false' style='width: 25%;'>
+								<img src='tree.jpg'></img>
+							</div>
+						</div>
+					</div>
+				</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+
+            // Sanity check: the two sibling editables already share both id values, which is the
+            // whole point of the scheme, and nothing has a generated visibility class yet.
+            Assert.That(
+                GetInlineImageIdsInOrder(dom, "xyz"),
+                Is.EqualTo(new[] { "abc123", "def456" })
+            );
+            Assert.That(
+                GetInlineImageIdsInOrder(dom, "fr"),
+                Is.EqualTo(new[] { "abc123", "def456" })
+            );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasNoMatchForXpath("//div[contains(@class,'bloom-visibility-code-on')]");
+
+            var pageDiv = (SafeXmlElement)
+                dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+            TranslationGroupManager.UpdateContentLanguageClasses(
+                pageDiv,
+                bookData,
+                LegacyAppearanceSettings,
+                "xyz",
+                "fr",
+                null
+            );
+
+            // Sanity check that the pass actually ran: the vernacular editable was turned on.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@lang='xyz' and contains(@class,'bloom-visibility-code-on') and contains(@class,'bloom-content1')]",
+                    1
+                );
+
+            // Both editables still have both wrappers, in order, with their shared ids intact.
+            Assert.That(
+                GetInlineImageIdsInOrder(dom, "xyz"),
+                Is.EqualTo(new[] { "abc123", "def456" })
+            );
+            Assert.That(
+                GetInlineImageIdsInOrder(dom, "fr"),
+                Is.EqualTo(new[] { "abc123", "def456" })
+            );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@data-bloom-inline-image-id='abc123']",
+                    2
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@data-bloom-inline-image-id='def456']",
+                    2
+                );
+
+            foreach (
+                SafeXmlElement wrapper in dom.SafeSelectNodes(
+                    "//div[contains(@class,'bloom-inlineImage')]"
+                )
+            )
+            {
+                var classes = wrapper.GetAttribute("class");
+                Assert.That(
+                    classes,
+                    Does.Not.Contain("bloom-visibility-code"),
+                    "a wrapper is not a language block and must not be marked visible/invisible"
+                );
+                Assert.That(
+                    classes,
+                    Does.Not.Contain("bloom-content"),
+                    "a wrapper must not gain bloom-contentN/bloom-contentNationalN classes"
+                );
+                Assert.That(wrapper.GetAttribute("contenteditable"), Is.EqualTo("false"));
+                Assert.That(
+                    wrapper.GetAttribute("data-bloom-inline-image-id"),
+                    Is.Not.Empty,
+                    "the sweep must not have cleared the id that ties this wrapper to its counterparts"
+                );
+            }
+        }
     }
 }

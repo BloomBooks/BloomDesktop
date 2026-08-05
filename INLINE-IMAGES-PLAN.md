@@ -42,7 +42,7 @@ Showing the same image in each visible language block looks broken. Rule: the im
 - Size = inline `width` (% of editable) + `aspect-ratio` from natural dimensions (stable layout before image load; keeps OverflowChecker honest).
 - The new class dodges `BookStorage.MigrateToLevel7BloomCanvas` (matches only `bloom-imageContainer`) and `SetupImagesInContainer`'s selectors (`bloomImages.ts:117`). Never prefix inline-image classes with `bloom-content` (the `UpdateContentLanguageClasses` sweep strips those).
 - Locked in by C# tests (see Tests): the class sweep visits the wrapper on every page load and strips any `bloom-visibility-code*`/`bloom-content*` class and `dir` attribute from it, so the wrapper must never rely on those; and `contenteditable="false"` in the PERSISTED DOM is load-bearing, since it is the only thing keeping the lang-stamping sweep (`TranslationGroupManager.cs:816`) from treating the wrapper as an editable. Edit-time code must never save it as `true`.
-- v1 rules: max one inline image per translation group; wrapper only ever in the first-child slot (or last-child for bottom).
+- No limit on the number of inline images per translation group (requirement from live testing 2026-08-05; replaces the earlier one-image v1 rule). Each wrapper carries a persistent id attribute so sync/undo can match copies across editables. Floating-dock wrappers cluster in order at the top of the editable; bottom-docked ones at the end.
 
 ## CSS: shape-outside, not the legacy pusher-downer
 
@@ -79,7 +79,7 @@ Decision (John): give no weight to the old `imagePusherDowner` two-element trick
 
 ## Edit UX
 
-**Insertion: right-click context menu.** Text blocks currently have no JS context menu (the WebView2 native menu carries only debug items, `IBrowser.cs:343`). Add one following the canvas element menu pattern (MUI menu, `LocalizableMenuItem`): right-click in an eligible `bloom-editable` (inside a TG, not inside a canvas element, no inline image yet in the TG) shows "Add Image". Choosing it inserts the wrapper (placeHolder.png, docked right, 40%, offset 0) into ALL sibling editables via sync, then opens the image chooser via `doImageCommand(img, "change")`.
+**Insertion: right-click context menu.** Master's BL-16649 `textContextMenu/TextContextMenu.tsx` is the menu; the inline-image items are wired into it (`buildInlineImageMenuItems` returns `ILocalizableMenuItemProps[]`). Right-click in an eligible `bloom-editable` (inside a TG, not inside a canvas element) shows "Add Image" — always, with no limit on how many images the TG already has. Choosing it inserts the wrapper (placeHolder.png, docked right, 40%, offset 0) into ALL sibling editables via sync and selects it. It does NOT open the image chooser (John, live testing); the user changes the picture afterwards via right-click → Change Image. Right-click on an existing wrapper offers Change Image, image credits, Remove Image.
 
 **Drag = updating numbers, never re-parenting (except bottom).** While dragging the image:
 - crossing horizontal thirds of the box switches dock class (left / middle band / right);

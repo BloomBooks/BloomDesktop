@@ -1820,6 +1820,15 @@ svg.bloom-videoControl {
     // rather than text you type in.
     cursor: pointer;
 
+    // Bloom's paragraphs are position:relative, and a positioned element later in the DOM
+    // paints -- and therefore hit-tests -- ABOVE a float. Without a stacking level of our
+    // own, every click "on" the image actually lands on the following paragraph's invisible
+    // full-width box, which makes the image unselectable (verified live over CDP with
+    // elementsFromPoint). Edit-time only: nothing needs to click the image in a published
+    // book, and text never paints over the float either way.
+    position: relative;
+    z-index: 1;
+
     // Draw the usual flower placeholder until a real image has been chosen.
     &:has(img[src*="placeHolder.png"]) {
         .image-placeholder-background();

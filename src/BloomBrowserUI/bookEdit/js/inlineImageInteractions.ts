@@ -21,14 +21,12 @@
 // dragged, how wide a resize has made it) is in pure exported functions, which is where the
 // tests are aimed; jsdom has no layout, so the gestures themselves are not unit-testable.
 //
-// TO DO (merge with master): the commands below have no menu on them yet, deliberately.
-// master has since grown a right-click menu for text blocks, in
-// bookEdit/textContextMenu/TextContextMenu.tsx (BL-16649), which is where they belong; this
-// branch has no copy of that file to add them to. buildInlineImageMenuItems() returns them in
-// the ILocalizableMenuItemProps shape that menu's items already use, so registering them
-// there is a small edit. See the comment on buildInlineImageMenuItems for the one wrinkle:
-// that menu's target lookup only recognizes a right-click on a <p>, which reaches the "add"
-// command but never the commands that act on the image itself.
+// The commands reach the user through the text block's right-click menu, which is not ours:
+// bookEdit/textContextMenu/TextContextMenu.tsx (BL-16649) owns it and also carries paragraph
+// commands like "No Indent". It asks getInlineImageMenuItemsForClick what we have to offer for
+// the click it is handling. So this module has no contextmenu listener of its own -- two
+// handlers for one event on the same elements would fight, and that menu stops propagation
+// once it decides to act.
 import * as React from "react";
 import { default as AddImageIcon } from "@mui/icons-material/AddPhotoAlternateOutlined";
 import { default as ChangeImageIcon } from "@mui/icons-material/Search";
@@ -302,24 +300,12 @@ export function cleanupInlineImageInteractions(): void {
 // --- the commands ------------------------------------------------------------
 
 /**
- * The commands to offer for what the user right-clicked, ready to hand to a menu.
+ * The commands to offer for what the user right-clicked, in the shape TextContextMenu renders
+ * (which is why this returns ILocalizableMenuItemProps rather than anything of our own).
  *
  * "Change image" and the credits dialog deliberately share their l10n ids with the canvas
  * element menu's equivalents, so that the same command reads the same wherever the user meets
  * it.
- *
- * TO DO (merge with master): register these in TextContextMenu.tsx, whose items are
- * LocalizableMenuItem/LocalizableSelectableMenuItem, which is why this returns
- * ILocalizableMenuItemProps. Two things to know when doing it:
- *  - That menu decides what it is looking at with findParagraphForTextContextMenu, which
- *    requires the click to be on a <p>. Pass that paragraph to getInlineImageActionTarget and
- *    the "add" command works as it should. But an inline image wrapper is a SIBLING of the
- *    paragraphs, never inside one, so a right-click on the image itself never reaches that
- *    menu at all, and the three commands that act on an existing image ("existing", below)
- *    stay unreachable until its lookup is broadened to return either a paragraph or a wrapper.
- *  - Its handler calls preventDefault/stopPropagation on the contextmenu event whenever it
- *    finds a paragraph, so a second contextmenu handler for the image commands must not
- *    compete with it. It does not have to: the two conditions are mutually exclusive.
  */
 export function buildInlineImageMenuItems(
     target: InlineImageActionTarget,
@@ -364,15 +350,16 @@ export function buildInlineImageMenuItems(
     return [];
 }
 
-// Adds an inline image to the block and goes straight on to choosing the picture, which is
-// what the user would have to do next anyway. insertInlineImage records its own undo point
-// and puts a copy in every editable of the group, so there is nothing to sync here; the
-// chosen picture reaches the other languages through handleInlineImageChanged.
+// Adds an inline image to the block, leaving it selected and holding a placeholder. It
+// deliberately does NOT go on to open the image chooser: the user's next move is often to put
+// the image where they want it rather than to pick a picture, and a dialog that opens itself
+// takes that choice away. The picture is chosen later, from the same menu's "Change image".
+// insertInlineImage records its own undo point and puts a copy in every editable of the group,
+// so there is nothing to sync here.
 function addInlineImage(translationGroup: HTMLElement): void {
     const wrapper = insertInlineImage(translationGroup);
     selectInlineImage(wrapper);
     refreshOverflow(translationGroup);
-    doImageCommand(getImageOf(wrapper), "change");
 }
 
 // removeInlineImage records its own undo point and clears the copy out of every language.
@@ -394,11 +381,14 @@ function showInlineImageMetadata(wrapper: HTMLElement): void {
 // --- keeping the selection honest when inlineImages.ts replaces things -------
 
 /**
- * The commands' entry point for a right-click, once there is a menu to put them on: the
- * commands for what was clicked, or an empty list if inline images have nothing to offer
- * there. Selecting an existing image as a side effect is deliberate -- it is what makes the
- * commands visibly apply to something, and what keeps ctrl+z routed to the inline-image undo
- * layer, whose gate is the selection.
+ * What inline images contribute to the text block's right-click menu: the commands for what
+ * was clicked, or an empty list if there are none to offer there. TextContextMenu calls this
+ * for every right-click it sees, and an empty list is how it learns we are not interested.
+ *
+ * Selecting an existing image as a side effect is deliberate -- it is what makes the commands
+ * visibly apply to something, and what keeps ctrl+z routed to the inline-image undo layer,
+ * whose gate is the selection. Hence "ForClick": call it once per right-click, not on every
+ * render of the menu.
  */
 export function getInlineImageMenuItemsForClick(
     clickedElement: HTMLElement | undefined | null,
@@ -509,6 +499,16 @@ function onFocusIn(event: FocusEvent): void {
     const target = event.target as HTMLElement | null;
     if (!target?.closest(".bloom-page")) return;
     if (target.closest("." + kInlineImageClass)) return;
+    // Clicking the wrapper (contenteditable=false) inevitably lands keyboard focus on the
+    // editable that CONTAINS it, a beat after pointerdown selected it. That focus change is
+    // a side effect of the selecting click, not the caret returning to the text, so it must
+    // not drop the selection (a press on the text itself deselects in onPointerDown instead).
+    // Without this, the first click on an image always self-cancels and only a second click
+    // sticks (verified live over CDP against WebView2).
+    const selected = target.ownerDocument.querySelector(
+        "." + kInlineImageSelectedClass,
+    );
+    if (selected && target.contains(selected)) return;
     deselectAllInlineImages(target.ownerDocument);
 }
 
