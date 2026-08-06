@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.ExceptionServices;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -4062,6 +4061,7 @@ namespace Bloom.Book
                 level = 0;
             if (level >= 1)
                 return;
+            var success = true;
             if (ImageUtils.NeedToShrinkImages(FolderPath))
             {
                 // If the book contains overlarge images, we want to fix those before editing because this can lead
@@ -4128,10 +4128,11 @@ namespace Bloom.Book
                 {
                     // InvokeRequired was false, so we are on the shell's own thread and may create
                     // the dialog right here; no marshalling needed.
-                    ShrinkImagesBehindProgressDialog();
+                    success = ShrinkImagesBehindProgressDialog();
                 }
             }
-            Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
+            if (success)
+                Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
         }
 
         /// <summary>
@@ -4143,10 +4144,11 @@ namespace Bloom.Book
         /// ProgressDialogBackground never reads RunWorkerCompletedEventArgs.Error, so an exception
         /// thrown by the work would otherwise disappear and we would carry on and record the book as
         /// migrated when its images were not in fact shrunk -- permanently, since the level is never
-        /// revisited. So capture it and rethrow it here, which both reports the failure and leaves
-        /// mediaMaintenanceLevel alone, exactly as the direct (no-dialog) path does.
+        /// revisited. So capture it, log it, and return false here, which both records the failure in
+        /// the log and leaves mediaMaintenanceLevel alone, so the shrink is attempted again next time.
         /// </remarks>
-        private void ShrinkImagesBehindProgressDialog()
+        /// <returns>True if the images were successfully shrunk; otherwise, false.</returns>
+        private bool ShrinkImagesBehindProgressDialog()
         {
             Exception errorInWorker = null;
             using (var dlg = new ProgressDialogBackground())
@@ -4171,7 +4173,14 @@ namespace Bloom.Book
                 );
             }
             if (errorInWorker != null)
-                ExceptionDispatchInfo.Capture(errorInWorker).Throw();
+            {
+                // Log the whole exception, not just its Message: the likeliest failure is a
+                // TagLib error on one particular image, and the message alone often does not
+                // say which file, nor carry the inner exception.
+                Logger.WriteError("Shrinking images failed in " + FolderPath, errorInWorker);
+                return false;
+            }
+            return true;
         }
 
         private int GetMaintenanceLevel()
