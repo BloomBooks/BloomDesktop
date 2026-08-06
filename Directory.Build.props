@@ -3,6 +3,13 @@
         <!-- Single source of truth for Velopack versions used in BloomExe.csproj and build/Bloom.proj.
                  We always use the same version for BloomBooks.Velopack and BloomBooks.Velopack.Cli. -->
         <VelopackVersion>0.0.1350-l10n-0020</VelopackVersion>
+        <!-- Which channel stage this branch currently serves: Alpha, Beta, Release, or Retired.
+             Read by .github/workflows/release-installer.yml to decide which channels this branch
+             builds and publishes (continuous: Alpha/BetaInternal/ReleaseInternal on every commit;
+             manual: Alpha/Beta/stable). Promotion is a one-line change here on each affected
+             branch: e.g. when 6.5 replaces 6.4 as Beta, Version6.4 flips Beta -> Release and
+             Version6.3 flips Release -> Retired. master is always Alpha. -->
+        <BloomChannelStage>Alpha</BloomChannelStage>
     </PropertyGroup>
 
     <!--
