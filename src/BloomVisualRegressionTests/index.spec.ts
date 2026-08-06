@@ -48,6 +48,124 @@ let bloomExit: { code: number | null; signal: NodeJS.Signals | null } | null =
 // instanceInfo and kill that too.
 let bloomServingPid: number | null = null;
 
+// How many times we will load a page looking for a render that is complete enough to screenshot.
+// More than one because the first request can catch Bloom still busy with the book; bounded
+// because a book whose image really is missing must fail, not retry forever.
+const MAX_CAPTURE_ATTEMPTS = 3;
+
+// The active bloom-player slide: the one page element the player captures screenshot.
+const ACTIVE_PLAYER_PAGE = ".swiper-slide-active .bloom-page";
+
+// Wait until what we are about to screenshot has actually finished rendering — not merely
+// appeared — and report anything that came out wrong. The two things that otherwise render
+// differently from run to run are the web fonts (both Bloom and bloom-player load Andika
+// asynchronously, and text metrics and line breaking change the instant the real face arrives)
+// and the images; a fixed timeout raced both. So wait for document.fonts.ready, for every image
+// to finish, and then for one more layout frame.
+//
+// Waiting makes the capture DETERMINISTIC (it happens once the browser has finished trying) but
+// not necessarily CORRECT: an image or font that ended in an ERROR state is settled too. So we
+// also report those, rather than screenshot a page that is missing its pictures or has fallen
+// back to a substitute font. A finished <img> with a src but no intrinsic width did not load;
+// Bloom then renders its alt text ("This image, X, is missing or was loading too slowly."), which
+// is exactly the wrong render we must never accept. (Note that alt text is on EVERY image, loaded
+// or not, so its presence proves nothing — only naturalWidth does.)
+//
+// `rootSelector` scopes which images matter: the whole document for the book preview, or just the
+// active slide for a bloom-player capture. Fonts are always document-wide. Returns a list of
+// problems; empty means the page is good to capture.
+//
+// This is handed to page.evaluate() and therefore runs INSIDE the browser, so it must be entirely
+// self-contained: it cannot call anything declared outside itself.
+async function settleAndReportProblems(
+    rootSelector: string | null,
+): Promise<string[]> {
+    const g = globalThis as any;
+    const doc = g.document;
+    await doc.fonts.ready;
+    const root = rootSelector ? doc.querySelector(rootSelector) : doc;
+    const problems: string[] = [];
+    if (rootSelector && !root) {
+        problems.push(`${rootSelector} was not present`);
+        return problems;
+    }
+
+    // Pictures reach the screen two different ways, and we have to handle both. The book preview
+    // uses real <img> elements. bloom-player does NOT: it paints a page's illustration as a CSS
+    // background-image on a div, so the active slide contains no <img> at all and an image-only
+    // check would silently pass on an empty list.
+    const imgs: any[] = Array.from(root.querySelectorAll("img"));
+    await Promise.all(
+        imgs.map((img: any) =>
+            img.complete
+                ? Promise.resolve()
+                : new Promise((resolve) => {
+                      img.addEventListener("load", resolve, { once: true });
+                      img.addEventListener("error", resolve, { once: true });
+                  }),
+        ),
+    );
+
+    // A background image exposes no load state to the DOM, so the only way to wait for one — or to
+    // notice that it failed — is to ask for the same URL ourselves and watch that. The browser has
+    // already requested it, so this normally resolves straight from the cache. Only look at
+    // elements that actually occupy space: a hidden element's background is never fetched for the
+    // render, so probing it could invent a failure that does not affect the screenshot.
+    const backgroundUrls = new Set<string>();
+    for (const el of Array.from(root.querySelectorAll("*")) as any[]) {
+        const box = el.getBoundingClientRect();
+        if (box.width === 0 || box.height === 0) continue;
+        const background = g.getComputedStyle(el).backgroundImage;
+        if (!background || background === "none") continue;
+        for (const match of background.matchAll(/url\((["']?)(.*?)\1\)/g)) {
+            const url = match[2];
+            if (url && !url.startsWith("data:")) backgroundUrls.add(url);
+        }
+    }
+    const failedBackgrounds: string[] = [];
+    await Promise.all(
+        Array.from(backgroundUrls).map(
+            (url) =>
+                new Promise((resolve) => {
+                    const probe = new g.Image();
+                    probe.addEventListener("load", resolve, { once: true });
+                    probe.addEventListener(
+                        "error",
+                        () => {
+                            failedBackgrounds.push(url);
+                            resolve(null);
+                        },
+                        { once: true },
+                    );
+                    probe.src = url;
+                }),
+        ),
+    );
+
+    // Fonts/images are in; let layout settle for two frames before we capture.
+    await new Promise((resolve) =>
+        g.requestAnimationFrame(() => g.requestAnimationFrame(resolve)),
+    );
+
+    for (const img of imgs) {
+        const src = img.getAttribute("src");
+        if (src && img.naturalWidth === 0)
+            problems.push(`image did not load: ${src}`);
+    }
+    for (const url of failedBackgrounds)
+        problems.push(`background image did not load: ${url}`);
+    for (const font of Array.from(doc.fonts) as any[]) {
+        // Include the weight/style: a family is several FontFaces, and knowing which one failed is
+        // the difference between "the font server is down" and "we asked for a bold that does not
+        // exist".
+        if (font.status === "error")
+            problems.push(
+                `font did not load: ${font.family} ${font.style} ${font.weight}`,
+            );
+    }
+    return problems;
+}
+
 describe("All books", () => {
     let page: Page;
     // A second page dedicated to bloom-player captures, with its own fixed viewport, so that
@@ -144,10 +262,9 @@ describe("All books", () => {
         await setBranding(testCase.branding);
         await setTheme(testCase.theme);
         // Each of the calls above brings the book up to date, which rewrites the book's support
-        // files (basePage.css, previewMode.css, etc.) and triggers an async re-render. Give that a
-        // moment to settle so our book-preview/player requests below don't race the tail of a write
-        // (which Bloom logs and retries, but which stops a debugger set to break on the exception).
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // files (basePage.css, previewMode.css, etc.) and triggers an async re-render. We used to
+        // sleep a fixed second here to let that settle; saveScreenshot now waits for the preview to
+        // actually BE ready (and reloads it if it is not), which is both safer and no slower.
         const screenshotsDir = ensureDir(
             Path.join(testCase.bookFolder, "screenshots"),
         );
@@ -204,25 +321,44 @@ describe("All books", () => {
         await playerPage.goto("about:blank");
     }
 
+    // Load the book preview and wait until it is genuinely ready to screenshot — not merely
+    // present. Returns a list of problems with this render; empty means it is good to capture.
+    async function loadPreviewAndWaitUntilReady(): Promise<string[]> {
+        await page.goto(`${bloomOrigin}/bloom/book-preview/index.htm`, {
+            waitUntil: "networkidle",
+        });
+        // Waiting for .bloom-page (not just body) is the real "content is in the DOM" signal: the
+        // first preview load right after a book is brought up to date can come back before Bloom
+        // has put the book in it.
+        const havePage = await page
+            .waitForSelector(".bloom-page", { timeout: 15000 })
+            .then(() => true)
+            .catch(() => false);
+        if (!havePage) return ["no .bloom-page ever appeared"];
+        // The preview is one page containing the whole book, so the whole document is what we
+        // are about to screenshot.
+        return await page.evaluate(settleAndReportProblems, null);
+    }
+
     async function saveScreenshot(imagePath: string) {
-        // The first preview load right after a book is brought up to date can occasionally come back
-        // before the book content is in the DOM (a cold-start race), which made the very first case
-        // time out waiting for the page. Retry the navigation until the book page is actually present,
-        // then screenshot. Waiting for .bloom-page (not just body) is also the real "content ready"
-        // signal we want before capturing.
-        for (let attempt = 0; ; attempt++) {
-            await page.goto(`${bloomOrigin}/bloom/book-preview/index.htm`, {
-                waitUntil: "networkidle",
-            });
-            const ready = await page
-                .waitForSelector(".bloom-page", { timeout: 15000 })
-                .then(() => true)
-                .catch(() => false);
-            if (ready) break;
-            if (attempt >= 2)
+        // A preview requested while Bloom is still finishing with the book (it has just been
+        // brought up to date, which rewrites its support files) can come back without the book in
+        // the DOM, or with its images unserved. Both are transient, and both produce a wrong
+        // screenshot rather than merely a late one, so reload until we get a good render. Failing
+        // after a bounded number of tries keeps a genuinely broken book from passing quietly.
+        for (let attempt = 1; ; attempt++) {
+            const problems = await loadPreviewAndWaitUntilReady();
+            if (problems.length === 0) break;
+            if (attempt >= MAX_CAPTURE_ATTEMPTS)
                 throw new Error(
-                    "book-preview never rendered a .bloom-page after 3 attempts",
+                    `The book preview never rendered correctly (${MAX_CAPTURE_ATTEMPTS} attempts). ` +
+                        `The last attempt had these problems:\n  ${problems.join("\n  ")}`,
                 );
+            console.log(
+                chalk.yellow(
+                    `book-preview attempt ${attempt} was not usable (${problems.join("; ")}); reloading.`,
+                ),
+            );
         }
 
         // Capture the body element rather than the whole page. A full-page capture's height comes
@@ -369,42 +505,52 @@ describe("All books", () => {
         return last;
     }
 
-    // Wait until the active player page is actually ready to screenshot — not just present. The two
-    // things that otherwise render differently from run to run are the web font (bloom-player loads
-    // Andika asynchronously, and text metrics/shaping change the instant it arrives) and images; a
-    // fixed timeout raced both. Wait for document.fonts.ready, for every image on the active page to
-    // finish, and then for one more layout frame. Returns the active .bloom-page element to shoot.
-    async function waitForActivePageReady() {
-        const active = await playerPage.waitForSelector(
-            ".swiper-slide-active .bloom-page",
-            { timeout: 30000 },
-        );
-        await playerPage.evaluate(async () => {
-            const g = globalThis as any;
-            const doc = g.document;
-            await doc.fonts.ready;
-            const page = doc.querySelector(".swiper-slide-active .bloom-page");
-            const imgs = page ? Array.from(page.querySelectorAll("img")) : [];
-            await Promise.all(
-                imgs.map((img: any) =>
-                    img.complete
-                        ? Promise.resolve()
-                        : new Promise((resolve) => {
-                              img.addEventListener("load", resolve, {
-                                  once: true,
-                              });
-                              img.addEventListener("error", resolve, {
-                                  once: true,
-                              });
-                          }),
+    // Load player page `n` of the staged book and wait until its active page is genuinely ready to
+    // screenshot, reloading if it is not. The player counterpart of loadPreviewAndWaitUntilReady()
+    // plus saveScreenshot()'s retry loop, and deliberately held to the same contract: we never
+    // screenshot a page whose images or fonts did not arrive. Returns the .bloom-page element to
+    // shoot.
+    async function loadPlayerPageAndWaitUntilReady(
+        stagedUrl: string,
+        n: number,
+    ) {
+        for (let attempt = 1; ; attempt++) {
+            await playerPage.goto(playerUrl(stagedUrl, n), {
+                waitUntil: "networkidle",
+            });
+            // Hide scrollbars: on pages whose text overflows the device page, bloom-player shows a
+            // scrollbar (via the niceScroll plugin) whose thumb renders slightly differently from
+            // run to run (a few hundred pixels of noise), which would make the comparison flaky. It
+            // is player chrome, not book content, and its rails are position:absolute overlays (so
+            // hiding them does not reflow the page), so we remove it for a stable capture. Add it
+            // before the settle wait so it can't perturb layout timing afterward.
+            await playerPage.addStyleTag({
+                content:
+                    ".nicescroll-rails,.nicescroll-cursors{display:none!important}",
+            });
+            const active = await playerPage.waitForSelector(
+                ACTIVE_PLAYER_PAGE,
+                { timeout: 30000 },
+            );
+            // Only the active slide's images matter: bloom-player keeps the other slides in the
+            // DOM, and lazy-renders them, so a not-yet-loaded image on a slide we are not
+            // photographing is normal rather than a problem.
+            const problems = await playerPage.evaluate(
+                settleAndReportProblems,
+                ACTIVE_PLAYER_PAGE,
+            );
+            if (problems.length === 0) return active;
+            if (attempt >= MAX_CAPTURE_ATTEMPTS)
+                throw new Error(
+                    `bloom-player page ${n} never rendered correctly (${MAX_CAPTURE_ATTEMPTS} attempts). ` +
+                        `The last attempt had these problems:\n  ${problems.join("\n  ")}`,
+                );
+            console.log(
+                chalk.yellow(
+                    `bloom-player page ${n} attempt ${attempt} was not usable (${problems.join("; ")}); reloading.`,
                 ),
             );
-            // Fonts/images are in; let layout settle for two frames before we capture.
-            await new Promise((resolve) =>
-                g.requestAnimationFrame(() => g.requestAnimationFrame(resolve)),
-            );
-        });
-        return active;
+        }
     }
 
     // Render the staged BloomPUB in bloom-player and capture (or compare) one clean image per page.
@@ -424,22 +570,12 @@ describe("All books", () => {
         const pageCount = await stablePlayerPageCount();
 
         for (let n = 0; n < pageCount; n++) {
-            await playerPage.goto(playerUrl(stagedUrl, n), {
-                waitUntil: "networkidle",
-            });
-            // Hide scrollbars: on pages whose text overflows the device page, bloom-player shows a
-            // scrollbar (via the niceScroll plugin) whose thumb renders slightly differently from
-            // run to run (a few hundred pixels of noise), which would make the comparison flaky. It
-            // is player chrome, not book content, and its rails are position:absolute overlays (so
-            // hiding them does not reflow the page), so we remove it for a stable capture. Add it
-            // before the settle wait so it can't perturb layout timing afterward.
-            await playerPage.addStyleTag({
-                content:
-                    ".nicescroll-rails,.nicescroll-cursors{display:none!important}",
-            });
             // Screenshot just the active page element, so the image is the book page itself with no
             // player chrome or letterbox around it — once fonts/images/layout have settled.
-            const pageElement = await waitForActivePageReady();
+            const pageElement = await loadPlayerPageAndWaitUntilReady(
+                stagedUrl,
+                n,
+            );
             await captureOrCompare(
                 `${labelBase}-player-p${n}`,
                 screenshotsDir,
