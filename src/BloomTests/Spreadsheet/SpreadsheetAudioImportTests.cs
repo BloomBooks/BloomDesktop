@@ -20,6 +20,7 @@ namespace BloomTests.Spreadsheet
     {
         private HtmlDom _dom;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
         private TemporaryFolder _otherAudioFolder;
         private ProgressSpy _progressSpy;
@@ -36,13 +37,14 @@ namespace BloomTests.Spreadsheet
             var testAudioPath = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
                 "src/BloomTests/Spreadsheet/testAudio/"
             );
-            _bookFolder = new TemporaryFolder("SpreadsheetAudioImportTests");
-            _spreadsheetFolder = new TemporaryFolder("SpreadsheetAudioImportDest");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
+            _spreadsheetFolder = new TemporaryFolder(_testFolder, "Dest");
             var spreadsheetAudioPath = Path.Combine(_spreadsheetFolder.FolderPath, "audio");
             Directory.CreateDirectory(spreadsheetAudioPath);
             // A place to put audio that is not in the spreadsheet folder so we can test absolute path import.
             // Also gives us more choices of non-conflicting audio files.
-            _otherAudioFolder = new TemporaryFolder("other audio folder");
+            _otherAudioFolder = new TemporaryFolder(_testFolder, "other audio folder");
             var audioFilePaths = Directory.EnumerateFiles(testAudioPath).ToArray();
             foreach (var audioFilePath in audioFilePaths)
             {
@@ -360,8 +362,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
-            _otherAudioFolder.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase(0, "i9c7f4e02-4685-48fc-8653-71d88f218706", "div")]
@@ -810,6 +812,7 @@ namespace BloomTests.Spreadsheet
     {
         private HtmlDom _dom;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
         private TemporaryFolder _otherAudioFolder;
         private ProgressSpy _progressSpy;
@@ -864,13 +867,14 @@ namespace BloomTests.Spreadsheet
             var testAudioPath = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
                 "src/BloomTests/Spreadsheet/testAudio/"
             );
-            _bookFolder = new TemporaryFolder("SpreadsheetAudioImportModifyTests");
-            _spreadsheetFolder = new TemporaryFolder("SpreadsheetAudioImportModifyDest");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
+            _spreadsheetFolder = new TemporaryFolder(_testFolder, "Dest");
             var spreadsheetAudioPath = Path.Combine(_spreadsheetFolder.FolderPath, "audio");
             Directory.CreateDirectory(spreadsheetAudioPath);
             // A place to put audio that is not in the spreadsheet folder so we can test absolute path import.
             // Also gives us more choices of non-conflicting audio files.
-            _otherAudioFolder = new TemporaryFolder("other audio folder");
+            _otherAudioFolder = new TemporaryFolder(_testFolder, "other audio folder");
             var audioFilePaths = Directory.EnumerateFiles(testAudioPath).ToArray();
             foreach (var audioFilePath in audioFilePaths)
             {
@@ -1072,8 +1076,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
-            _otherAudioFolder.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase(4)]
