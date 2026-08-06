@@ -4128,11 +4128,19 @@ namespace Bloom.Book
                 {
                     if (progress == null)
                         progress = new NullProgress();
-                    ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                        FolderPath,
-                        new List<string>(),
-                        progress
-                    );
+                    try
+                    {
+                        ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                            FolderPath,
+                            new List<string>(),
+                            progress
+                        );
+                    }
+                    catch (Exception e)
+                    {
+                        ReportShrinkFailure(e, progress);
+                        success = false;
+                    }
                 }
                 else
                 {
@@ -4186,13 +4194,41 @@ namespace Bloom.Book
             }
             if (errorInWorker != null)
             {
-                // Log the whole exception, not just its Message: the likeliest failure is a
-                // TagLib error on one particular image, and the message alone often does not
-                // say which file, nor carry the inner exception.
-                Logger.WriteError("Shrinking images failed in " + FolderPath, errorInWorker);
+                // No progress to report to: we only take this branch when the caller had none.
+                ReportShrinkFailure(errorInWorker);
                 return false;
             }
             return true;
+        }
+
+        /// <summary>
+        /// Report a failed image shrink, in every place that has somewhere to report it.
+        /// </summary>
+        /// <remarks>
+        /// The toast is passive on purpose: the book still works, its pictures are merely left large,
+        /// and we will try again next time, so this is not worth interrupting the user for. Note that
+        /// writing to the caller's progress must not use WriteError: ProgressDialogForeground shows a
+        /// modal "There was a problem performing that operation" when its progress records an error,
+        /// which would defeat the point of reporting this passively.
+        /// </remarks>
+        /// <param name="error">The failure to report. Logged whole, so the stack trace and any inner
+        /// exception survive; the message alone often does not even name the offending file.</param>
+        /// <param name="progress">The caller's progress, if it had one. Without this, an operation
+        /// that is already showing the user a progress box would appear to have finished cleanly.</param>
+        private void ReportShrinkFailure(Exception error, IProgress progress = null)
+        {
+            var message = LocalizationManager.GetString(
+                "ImageUtils.ShrinkingImagesFailed",
+                "Bloom could not make this book's pictures smaller. It will try again the next time the book is updated."
+            );
+            progress?.WriteWarning(message);
+            NonFatalProblem.Report(
+                ModalIf.None,
+                PassiveIf.All,
+                message,
+                "Shrinking images failed in " + FolderPath,
+                exception: error
+            );
         }
 
         private int GetMaintenanceLevel()
