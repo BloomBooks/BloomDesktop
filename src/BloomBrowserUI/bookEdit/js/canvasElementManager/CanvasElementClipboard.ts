@@ -11,6 +11,7 @@ import {
     wrapWithRequestPageContentDelay,
 } from "../bloomEditing";
 import {
+    isPlaceHolderImage,
     kImageContainerClass,
     SetupMetadataButton,
 } from "../bloomImages";
@@ -164,7 +165,9 @@ export class CanvasElementClipboard {
     // Otherwise, if there is a bloom canvas on the page, it will pick the one that has the active element
     // or the first one if none has an active element.
     // (If there is no canvas, it returns false.)
-    // If the canvas is empty (including the background), set the background to the image.
+    // If the canvas holds nothing but a background that is still a placeholder, set that
+    // background to the image. (A background that already holds a real image is left alone;
+    // select it first if you want to replace it.)
     // Else if canvas is allowed by the subscription tier, add the image as a canvas/game item.
     // Make it up to 1/3 width and 1/3 height of the canvas, roughly centered on the canvas.
     // Is it a draggable item? Yes, if we are in the "Start" mode of a game.
@@ -240,7 +243,7 @@ export class CanvasElementClipboard {
         const canvasElements =
             bloomCanvas.getElementsByClassName(kCanvasElementClass);
         // If it's an empty canvas, make this its background image.  An empty canvas may already
-        // have a background image, but no other content.  See BL-16542.
+        // have a background placeholder image, but no other content.  See BL-16542.
         // A possible special case is the custom game page, where the only canvas element is the
         // header. But that works out to our advantage, since we think a background is unlikely
         // in games, and would prefer to interpret the pasted image as a game item.
@@ -249,7 +252,12 @@ export class CanvasElementClipboard {
             canvasElements[0].classList.contains(kBackgroundImageClass)
         ) {
             const bgimg = canvasElements[0].getElementsByTagName("img")[0];
-            if (bgimg) {
+            // Use the shared placeholder test rather than an exact match on the src: at
+            // runtime a placeholder src is not always the bare "placeHolder.png" we write
+            // into the templates, and every other place in the code that asks "is this
+            // still empty?" goes through isPlaceHolderImage().
+            const src = bgimg?.getAttribute("src");
+            if (bgimg && (!src?.trim() || isPlaceHolderImage(src))) {
                 this.replaceImageInCanvasElement(
                     bloomCanvas,
                     canvasElements[0] as HTMLElement,

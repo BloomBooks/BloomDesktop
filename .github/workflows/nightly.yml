@@ -196,6 +196,11 @@ jobs:
               shell: pwsh
               run: msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER
 
+            # The nightly is the run that pays for the slow tests, so it excludes as little as
+            # possible: only SkipOnTeamCity. It deliberately keeps Integration (the tests that
+            # talk to the live S3 bucket) and Nightly, both of which the harvester workflow and
+            # developers' local runs leave out. Don't "align" this list with theirs
+            # — if the nightly skips these too, nothing runs them at all.
             - name: Run C# tests
               id: csharp_tests
               if: ${{ !cancelled() && steps.build_csharp.outcome == 'success' && env.RUN_CSHARP_TESTS == 'true' }}

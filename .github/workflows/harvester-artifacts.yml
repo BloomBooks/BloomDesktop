@@ -172,6 +172,19 @@ jobs:
 
             # TestOnly runs the suite with `dotnet test` (see Bloom.proj's RunNUnit) and writes
             # NUnit3 xml to output/Tests/Release/x64/TestResults.xml.
+            #
+            # This workflow's job is to produce harvester artifacts, so it wants a fast, reliable
+            # gate rather than full coverage: Integration (talks to the live S3 bucket) and Nightly
+            # (reserved for the long tests only the nightly should pay for) are both left out. The
+            # nightly is where those run.
+            #
+            # The %3B are escaped semicolons, and they are load-bearing: a raw semicolon would
+            # break this step. pwsh reads it as a statement separator, so only "Integration" would
+            # reach msbuild and the rest would be run as a command (which fails the step, since
+            # Actions sets $ErrorActionPreference = 'stop' for pwsh); and a semicolon that did
+            # arrive intact would be split by MSBuild into separate /p: assignments, failing with
+            # "MSB1006: Property is not valid". Both are loud, but neither runs any tests. See the
+            # comment on CategoriesToExclude in Bloom.proj for the two forms that do work.
             - name: Run C# tests
               id: csharp_tests
               working-directory: build
@@ -179,7 +192,7 @@ jobs:
               run: |
                   msbuild Bloom.proj /t:TestOnly `
                     /p:BUILD_NUMBER=$env:BUILD_NUMBER `
-                    /p:excludedCategories=SkipOnTeamCity
+                    /p:excludedCategories=Integration%3BNightly%3BSkipOnTeamCity
 
             # ----- Test reports, one per suite -----
             # Each suite gets its OWN invocation of the publish action, and therefore its own

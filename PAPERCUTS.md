@@ -150,6 +150,20 @@ House rules:
   environmental failures that used to accompany them. Not evidence against this cut: intermittent
   is intermittent. Recorded because it removes the nine-failure baseline the original wording
   leaned on.
+- **2026-08-06 — seen again, and the shared state this Idea line asks for is now identified:**
+  a different pair (`BookWithUnknownLayout_GetsUpdatedToA5Portrait`,
+  `CompressBookForDevice_MakesThumbnailFromCoverPicture`) failed on one full run and passed on the
+  next at the identical commit, and the exceptions name the culprit directly: an
+  `UnauthorizedAccessException` on `%TEMP%\BookTests\test\colorPalettes.json` and a
+  `DirectoryNotFoundException` on `%TEMP%\BookTests\book\basePage.css`. That path is a **fixed,
+  machine-wide** folder, so it is shared by every worktree — another worktree was running the suite
+  at the same time, and the two runs deleted each other's files mid-test. So this is not only "under
+  load": `build/agent-dotnet.sh` isolates *build* output per terminal, but the tests themselves still
+  share one scratch directory, which means two agents in two worktrees can never trust a red result.
+  Fix is narrower than the original Idea suggests: give the test scratch root a per-process suffix
+  (e.g. include the pid or the `BLOOM_AGENT_BUILD_DIR` key in the `BookTests` folder name).
+- **Context (2026-08-06):** BloomDesktop, `/preflight` of PR #8166, while another worktree ran its
+  own suite.
 
 
 ## 2026-07-24 — agent-dotnet.sh test exits 0 even when tests fail
