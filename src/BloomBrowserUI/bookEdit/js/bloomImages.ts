@@ -1182,6 +1182,25 @@ export function SetupMetadataButton(parent: HTMLElement) {
     }
 }
 
+// Turn the src of an image into the file name we want to show a human in the alt text.
+// Strips any query string, then undoes the URL encoding.
+//
+// decodeURIComponent, not decodeURI: decodeURI deliberately leaves the characters that are
+// reserved in a URL (@ # $ & + , / : ; = ?) still escaped, so a file name like
+// "This Image !@#$%^&().jpg" came out as the half-decoded "This Image !%40%23%24%^%26().jpg".
+// It is a file name here, not a URL, so every escape should be undone.
+export function getDisplayNameFromImageUrl(rawImageUrl: string): string {
+    const nameWithoutQueryString = rawImageUrl.split("?")[0];
+    try {
+        return decodeURIComponent(nameWithoutQueryString);
+    } catch {
+        // decodeURIComponent throws on a stray '%' that isn't a valid escape, which a real file
+        // name can certainly contain ("50%.jpg"). Such a name is already readable as it stands,
+        // so show it unchanged rather than letting this throw and lose the alt text entirely.
+        return nameWithoutQueryString;
+    }
+}
+
 // Instead of "missing", we want to show it in the right ui language. We also want the text
 // to indicate that it might not be missing, just didn't load (this happens on slow machines)
 function SetAlternateTextOnImages(element) {
@@ -1196,8 +1215,7 @@ function SetAlternateTextOnImages(element) {
         //don't show this on the empty license image when we don't know the license yet
         const englishText =
             "This image, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
-        const nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
-        const decodedName = decodeURI(nameWithoutQueryString);
+        const decodedName = getDisplayNameFromImageUrl(rawImageUrl);
         // show English to start with in case localization never returns even a failure
         $(element).attr(
             "alt",

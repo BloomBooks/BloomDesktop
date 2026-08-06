@@ -2495,10 +2495,16 @@ namespace Bloom.Api
 
             if (di.Parent != null)
             {
-                return Path.Combine(
-                    GetExactPathName(di.Parent.FullName),
-                    di.Parent.GetFileSystemInfos(di.Name)[0].Name
-                );
+                // The entry may not be found: the file can be deleted while we walk up the path,
+                // and a directory enumeration does not always see a file that was only just
+                // written. Indexing [0] blindly turned that into an IndexOutOfRangeException that
+                // crashed the caller -- which is only a Debug-time check of the filename's case,
+                // so it must never be the thing that brings a request (or a test) down. When we
+                // can't confirm the on-disk spelling, keep the name we were given; that just means
+                // the case check silently passes, which is the right way for a diagnostic to fail.
+                var entries = di.Parent.GetFileSystemInfos(di.Name);
+                var exactName = entries.Length > 0 ? entries[0].Name : di.Name;
+                return Path.Combine(GetExactPathName(di.Parent.FullName), exactName);
             }
             else
             {
