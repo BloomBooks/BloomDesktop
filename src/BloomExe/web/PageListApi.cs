@@ -358,7 +358,7 @@ namespace Bloom.web
 
         // As a further form of optimization, mark img elements as being thumbnails. The server
         // produces miniatures that take up less memory.
-        private static void MarkImageNodesForThumbnail(SafeXmlElement pageElementForThumbnail)
+        internal static void MarkImageNodesForThumbnail(SafeXmlElement pageElementForThumbnail)
         {
             var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(
                 pageElementForThumbnail
@@ -384,11 +384,20 @@ namespace Bloom.web
                             // gets interpreted as part of the filename.
                             url = filename + query.NotEncoded + "&thumbnail=1";
                         }
-                        // filename is already URL-encoded; we must NOT re-encode the whole string or ? becomes
-                        // %3f and lands in the path, making the thumbnail param invisible to GetQueryParameters().
+                        // At this point url is exactly what we want in the src attribute: an
+                        // already-URL-encoded path followed by a literal (unencoded) query. So we
+                        // must neither encode nor decode it on the way out (BL-16658).
+                        // - urlEncode:false, because re-encoding the whole string would turn the ?
+                        //   into %3f and bury the thumbnail param in the path, invisible to
+                        //   GetQueryParameters().
+                        // - strictlyTreatAsEncoded:true, because otherwise CreateFromUnencodedString
+                        //   sees the %XX escapes in the path and helpfully decodes them, and we would
+                        //   then write out a raw filename like "This Image !@#$%^&()2.jpg?thumbnail=1",
+                        //   where the browser treats the # as the start of a fragment and never
+                        //   requests the real file.
                         HtmlDom.SetImageElementUrl(
                             imgNode,
-                            UrlPathString.CreateFromUnencodedString(url),
+                            UrlPathString.CreateFromUnencodedString(url, true),
                             urlEncode: false
                         );
                     }
