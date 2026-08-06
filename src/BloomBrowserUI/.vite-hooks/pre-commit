@@ -18,6 +18,13 @@
 #
 #   formatting      repo-wide, and runs on EVERY commit
 #   lint+typecheck  front-end only, and runs only when a front-end source file is staged
+#
+# What they have in common: NOTHING here is skippable. A check that cannot run blocks the
+# commit. The `pnpm dlx` fallback exists so that a worktree which never ran `pnpm install`
+# can still commit workflow, docs and C# changes -- it removes the need for the install, it
+# does not make the checks optional. (Only formatting has such a fallback: eslint and tsgo
+# need the project's whole dependency graph, not one tool, so there is nothing to fall back
+# to for them.)
 
 # The dispatcher runs us from the repo root; put the front-end's node_modules/.bin
 # on PATH (as an absolute path, before we cd) so its bins resolve.
@@ -90,22 +97,18 @@ run_pretty_quick() {
              --package="pretty-quick@$pretty_quick_version" pretty-quick "$@"
 }
 
+# No path here lets a commit through unchecked. The point of the dlx fallback is to remove
+# the need for `pnpm install`, NOT to make the checks optional: if neither the local tool nor
+# the fallback can run -- no pnpm, no network, a registry outage, an unresolvable version --
+# this is a setup problem, and a setup problem stops the commit rather than quietly shipping
+# unformatted code. Each branch above has already said which one it hit.
 cd src/BloomBrowserUI || exit 1
 if ! run_pretty_quick --staged; then
-    if [ -x "$repo_root/src/BloomBrowserUI/node_modules/.bin/pretty-quick" ]; then
-        # The project's own installed tool failed: that is a real error, not a
-        # missing-dependency situation, so it blocks.
-        exit 1
-    fi
-    # The fallback could not run -- no pnpm, no network, a registry that is down, or an
-    # unresolvable version (each of which has already said so above). Warn loudly but let
-    # the commit through: refusing here would put us back to a worktree that cannot commit
-    # a docs change at all, and unformatted code is a cosmetic problem, not a broken build.
-    # The riskier checks, lint and typecheck, still fail hard further down.
-    echo "pre-commit: WARNING - staged files were NOT formatted (see above)." >&2
-    echo "            src/BloomBrowserUI/node_modules is missing and the 'pnpm dlx'" >&2
-    echo "            fallback did not run. Committing anyway; the files may need" >&2
-    echo "            formatting later, which any commit from an installed worktree does." >&2
+    echo "pre-commit: staged files could not be formatted, so the commit is blocked." >&2
+    echo "            Either install the front-end dependencies ('pnpm install' in" >&2
+    echo "            src/BloomBrowserUI, or './init.sh'), or make 'pnpm dlx' able to run" >&2
+    echo "            (it needs pnpm on PATH and, the first time, network access)." >&2
+    exit 1
 fi
 cd "$repo_root" || exit 1
 

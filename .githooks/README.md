@@ -58,20 +58,27 @@ reach:
 - **C#** — the `build/check-csharp-*.sh` scripts and `build/run-csharpier.sh`. Every commit;
   they need only dotnet, never the front-end dependencies.
 
-**Committing without `pnpm install`.** A worktree used only for workflow, docs or C# work
-can commit without ever installing the front-end dependencies. Formatting still happens
-there: if `node_modules` is absent the hook falls back to `pnpm dlx` at the exact prettier
-and pretty-quick versions pinned in `package.json` (read from the file, so the fallback
-cannot drift from what the project uses). An installed worktree always prefers its own
+**Committing without `pnpm install`.** A worktree used only for workflow, docs or C# work can
+commit without ever installing the front-end dependencies. Formatting still happens there: if
+`node_modules` is absent the hook falls back to `pnpm dlx` at the exact prettier and
+pretty-quick versions pinned in `package.json` (read from the file, so the fallback cannot
+drift from what the project uses). An installed worktree always prefers its own
 lockfile-verified binaries, so the normal case needs no network and works offline.
 
-Two skips are worth telling apart. If front-end sources *are* staged and `node_modules` is
-missing, the hook **fails loudly** — eslint and tsgo need the whole dependency graph, not one
-tool, and silently skipping is how an unchecked front-end commit would get through. If only
-the *formatting* fallback cannot run (no pnpm, no network), the hook **warns and lets the
-commit through**: unformatted code is cosmetic, and blocking would put us back to a worktree
-that cannot commit a docs change at all. Neither is the silent skip this dispatcher exists to
-prevent — that one is "a hook system was configured but nothing ran".
+**Nothing here is skippable.** That fallback removes the need for the install; it does not make
+the checks optional. A check that cannot run **blocks the commit**, and says which fix it
+wants:
+
+- Front-end sources staged with no `node_modules` → blocked. There is no fallback for this
+  case and there cannot easily be one: eslint and tsgo need the project's whole dependency
+  graph, not a single tool.
+- Formatting unable to run at all — no `node_modules` *and* no working `pnpm dlx` (no pnpm on
+  PATH, no network on the first use) → blocked. That is a setup problem, and a setup problem
+  should be fixed rather than worked around.
+
+So the only skip in the whole design is the deliberate one: lint and typecheck do not run when
+the commit stages nothing they could look at. That is not the silent skip this dispatcher
+exists to prevent — that one is "a hook system was configured but nothing ran".
 
 ## How to enable it (per clone)
 
