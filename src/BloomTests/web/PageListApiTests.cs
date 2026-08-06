@@ -65,6 +65,18 @@ namespace BloomTests.web
             Assert.AreEqual(encodedName + "?optional=true&thumbnail=1", result);
         }
 
+        // A src that is genuinely a path, not a bare file name, must keep its separators usable.
+        // "/api/" srcs are skipped earlier, but other rooted srcs (e.g. branding) are not.
+        [Test]
+        public void MarkImageNodesForThumbnail_RootedPathSrc_KeepsSeparatorsUnescaped()
+        {
+            Assert.AreEqual(
+                "/bloom/branding/Some-Brand/logo.png?thumbnail=1",
+                GetThumbnailSrc("/bloom/branding/Some-Brand/logo.png"),
+                "Path separators must not be escaped to %2f, or the server can't resolve the src."
+            );
+        }
+
         [Test]
         public void MarkImageNodesForThumbnail_ApiUrl_LeftAlone()
         {

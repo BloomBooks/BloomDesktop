@@ -372,7 +372,12 @@ namespace Bloom.web
                     if (imageElementUrl.NotEncoded.Contains("/api/"))
                         continue;
 
-                    var filename = imageElementUrl.PathOnly.UrlEncoded;
+                    // UrlEncodedForHttpPath rather than UrlEncoded, because the latter escapes the
+                    // path separators themselves ('/' as %2f, ':' as %3a). For an ordinary book
+                    // image the two are identical -- a Windows file name can contain neither
+                    // character -- but for a src that really is a path (say "/bloom/branding/x.png",
+                    // which the "/api/" test above doesn't catch) only this form stays requestable.
+                    var filename = imageElementUrl.PathOnly.UrlEncodedForHttpPath;
                     if (!string.IsNullOrWhiteSpace(filename))
                     {
                         var url = filename + "?thumbnail=1";
