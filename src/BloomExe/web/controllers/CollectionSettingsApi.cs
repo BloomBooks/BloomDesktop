@@ -220,86 +220,17 @@ namespace Bloom.web.controllers
                     }
                     else
                     {
-#if DEBUG
-                        // DEV-ONLY (Debug builds): force the collection's branding to an arbitrary
-                        // key at runtime so tooling can survey every branding's rendered pages
-                        // without restarting Bloom or minting real subscription codes. This reuses
-                        // the already-registered handler so it takes effect via hot-reload with no
-                        // restart. NOT shipped behavior (Release still throws). See BL-16370.
-                        // POST body: either a bare branding descriptor (e.g. "Default"), or JSON
-                        // {"branding":..,"layout":..,"xmatter":..} where any field may be omitted
-                        // (null/absent = leave that axis unchanged). Used by the branding-report
-                        // survey tool to walk branding × layout × xmatter for one book.
-                        // This handler is registered handleOnUiThread:true, so the book work runs
-                        // on the UI thread (safe). We update the in-memory selected book in place
-                        // because the whole-book preview renders CurrentSelection directly.
-                        string branding = null,
-                            layout = null,
-                            xmatter = null;
-                        try
-                        {
-                            // Read and parse inside the try as well: a malformed body is exactly
-                            // the sort of one-cell failure the catch below is meant to absorb.
-                            var body = request.RequiredPostString();
-                            if (body.TrimStart().StartsWith("{"))
-                            {
-                                var o = Newtonsoft.Json.Linq.JObject.Parse(body);
-                                branding = (string)o["branding"];
-                                layout = (string)o["layout"];
-                                xmatter = (string)o["xmatter"];
-                            }
-                            else
-                            {
-                                branding = body;
-                            }
-                            if (!string.IsNullOrEmpty(branding))
-                                _collectionSettings.Subscription =
-                                    SubscriptionAndFeatures.Subscription.ForUnitTestWithOverrideTierOrDescriptor(
-                                        SubscriptionAndFeatures.SubscriptionTier.Enterprise,
-                                        branding
-                                    );
-                            if (!string.IsNullOrEmpty(xmatter))
-                                _collectionSettings.XMatterPackName = xmatter;
-                            var book = _bookSelection?.CurrentSelection;
-                            if (book != null)
-                            {
-                                if (!string.IsNullOrEmpty(layout))
-                                    book.SetLayout(
-                                        new Layout
-                                        {
-                                            SizeAndOrientation = SizeAndOrientation.FromString(
-                                                layout
-                                            ),
-                                        }
-                                    );
-                                book.BringBookUpToDate(new SIL.Progress.NullProgress());
-                            }
-                            request.PostSucceeded();
-                        }
-                        catch (Exception ex)
-                        {
-                            // Don't let one cell's failure take down Bloom or wedge the run;
-                            // report it (type + message) so the survey/control tool can log and
-                            // move on. NOTE: request.Failed() puts this text in the HTTP status
-                            // reason phrase (response.statusText), NOT the body.
-                            request.Failed(
-                                "set-state (branding='"
-                                    + branding
-                                    + "', layout='"
-                                    + layout
-                                    + "', xmatter='"
-                                    + xmatter
-                                    + "') failed: "
-                                    + ex.GetType().Name
-                                    + ": "
-                                    + ex.Message
-                            );
-                        }
-#else
+                        // Setting the branding is not a thing a user can do: it flows from the
+                        // (checksum-validated) subscription code. Tooling that needs to force a
+                        // branding in order to survey how each one renders uses
+                        // POST e2e/setState instead (E2eTestingApi), which also carries layout and
+                        // xmatter and is gated on the --e2e flag at runtime rather than on the build
+                        // configuration, so it works in a Release build from CI. A DEBUG-only
+                        // version of that override used to live here; it was replaced because a
+                        // Debug-only handler cannot serve a tester running an installed Bloom.
                         throw new NotImplementedException(
                             "We don't expect to be setting the branding key, ever. It flows from the subscription code."
                         );
-#endif
                     }
                 },
                 true

@@ -61,6 +61,40 @@ Other agents run Blooms from other worktrees on other ports. **Never trust a bar
 
 The runtime-only things (branding file copy into the book, real QR generation, autofit) **only** exist in real Bloom — so badge/QR work must ultimately be verified there, not in a static preview.
 
+### Surveying many brandings at once — the branding viewer
+When the question is comparative ("does this look right across every branding", "show me every
+branding's back cover", "compare a branding across layouts"), don't drive Bloom by hand. Use
+**https://github.com/BloomBooks/branding-viewer**, a standalone tool that walks
+branding × page × layout × xmatter and screenshots each cell into a filterable web UI. It lives in
+its own repo so a tester with only a CI-built Bloom can run it; nothing about it needs this
+checkout.
+
+```bash
+git clone https://github.com/BloomBooks/branding-viewer   # once; needs bun, plus Chrome or Edge
+cd branding-viewer
+bun control.mjs                                  # interactive panel -> http://localhost:8798/
+bun survey.mjs --brandings all --pages back      # batch capture
+bun serve.mjs branding-viewer-out                # read-only viewer  -> http://localhost:8799/
+```
+
+Three things to get right:
+
+- **`./go.sh` does not pass `--e2e`,** and without it Bloom does not register the endpoints the
+  tool needs, so it refuses to start. Launch the exe directly instead:
+  `./output/Debug/AnyCPU/Bloom.exe "<some.bloomCollection>" --e2e --automation`. The flag is a
+  runtime check rather than `#if DEBUG`, which is what lets the same tool drive a Release build.
+- **Point it at a *copy* of a collection.** It changes the collection's branding and the selected
+  book's layout, restoring them on Ctrl-C but not on a hard kill.
+  `src/BloomVisualRegressionTests/collections/basic` is a good throwaway, and it has both an A5
+  Portrait and a 16x9 Landscape book.
+- **Match the layout to the question.** Device16x9**Portrait** proves nothing about
+  Device16x9**Landscape**; back-cover overflow only shows on short pages. And check which Bloom
+  answered: the tool talks to whatever is on port 8089, often another worktree's instance. Its
+  `manifest.json` records the `bloomVersion` it captured against.
+
+The host half of the contract is `GET api/e2e/surveyOptions` and `POST api/e2e/setState` in
+`src/BloomExe/web/controllers/E2eTestingApi.cs`. Change either shape in both repos together.
+
 ### Quick CSS preview without launching Bloom (non-authoritative)
 Bloom books are self-contained (they carry their own `basePage.css`, `branding.css`, xmatter css, and the branding images). You can render the saved book `.htm` (or its xmatter pages) in headless Chromium with the book's own stylesheets plus a candidate-override CSS to iterate on *formatting* fast. Page dimensions come from the size class (`--page-width`/`--page-height` in `basePage.css`); swap the size class to preview other layouts. Headless screenshot needs `--virtual-time-budget=<ms>` or it shoots blank. **Caveat:** this uses the book's *already-stamped* css/markup and cannot run Bloom's runtime — it will NOT show the real QR, real branding-file copy, or prove the deploy. Use it for CSS layout iteration only; confirm the final result in real Bloom.
 
