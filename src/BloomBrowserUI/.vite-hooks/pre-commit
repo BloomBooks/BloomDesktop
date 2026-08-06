@@ -77,6 +77,14 @@ version_usable() {
 #
 # The versions are read lazily, inside this branch, precisely so that an unreadable
 # package.json can never affect an installed worktree, which does not need them at all.
+#
+# Because we run from src/BloomBrowserUI (see below for why -- the .prettierignore files),
+# dlx also picks up that directory's pnpm-workspace.yaml, and with it minimumReleaseAge.
+# That is a feature: the same 7-day quarantine that protects a normal install protects this
+# path too. It does mean that for a week after someone bumps prettier, the fallback cannot
+# resolve the new version and uninstalled worktrees are blocked until they install or the
+# week elapses. That is the correct end of the trade -- refusing beats reaching for a
+# package too new to have been vetted -- and the failure message below names it.
 run_pretty_quick() {
     if [ -x "$repo_root/src/BloomBrowserUI/node_modules/.bin/pretty-quick" ]; then
         pretty-quick "$@"
@@ -93,6 +101,10 @@ run_pretty_quick() {
         return 1
     fi
 
+    # Say so before doing it. On a machine whose pnpm store is cold this fetches from the
+    # registry, and an unexplained multi-second pause during `git commit` reads as a hang.
+    echo "pre-commit: src/BloomBrowserUI/node_modules not found; running prettier" >&2
+    echo "            $prettier_version via 'pnpm dlx' (first use may download)." >&2
     pnpm dlx --package="prettier@$prettier_version" \
              --package="pretty-quick@$pretty_quick_version" pretty-quick "$@"
 }
@@ -105,9 +117,12 @@ run_pretty_quick() {
 cd src/BloomBrowserUI || exit 1
 if ! run_pretty_quick --staged; then
     echo "pre-commit: staged files could not be formatted, so the commit is blocked." >&2
-    echo "            Either install the front-end dependencies ('pnpm install' in" >&2
-    echo "            src/BloomBrowserUI, or './init.sh'), or make 'pnpm dlx' able to run" >&2
-    echo "            (it needs pnpm on PATH and, the first time, network access)." >&2
+    echo "            Install the front-end dependencies ('pnpm install' in" >&2
+    echo "            src/BloomBrowserUI, or './init.sh'). That is also the fix if" >&2
+    echo "            prettier was bumped within the last 7 days: pnpm's minimumReleaseAge" >&2
+    echo "            quarantine deliberately keeps the dlx fallback off a version that" >&2
+    echo "            new. Otherwise 'pnpm dlx' just needs pnpm on PATH and, the first" >&2
+    echo "            time, network access." >&2
     exit 1
 fi
 cd "$repo_root" || exit 1
