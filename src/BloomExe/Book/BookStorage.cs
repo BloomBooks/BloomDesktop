@@ -4041,6 +4041,16 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// Set when an attempt to shrink this book's images failed, so that we do not repeat the whole
+        /// slow attempt a moment later in the same pass: Book.EnsureUpToDate calls the migration twice,
+        /// once by way of EnsureUpToDateMemory and once directly afterwards, and the second call used to
+        /// be a no-op only because the first had already bumped mediaMaintenanceLevel. The level itself
+        /// deliberately stays at 0, so the shrink is still retried the next time this book is loaded and
+        /// brought up to date -- we just do not do it twice over, and fail twice, in one pass.
+        /// </summary>
+        private bool _mediaLevel1ShrinkFailed;
+
+        /// <summary>
         /// In very old books (before 4.9) we did not shrink even very large images before adding them to
         /// books. When we encounter such a book, we go ahead and shrink them. This is probably less
         /// necessary than in Gecko days, when super-large images were prone to make Bloom run out of
@@ -4059,7 +4069,7 @@ namespace Bloom.Book
             var levelString = Dom.GetMetaValue("mediaMaintenanceLevel", "0");
             if (!int.TryParse(levelString, out int level))
                 level = 0;
-            if (level >= 1)
+            if (level >= 1 || _mediaLevel1ShrinkFailed)
                 return;
             var success = true;
             if (ImageUtils.NeedToShrinkImages(FolderPath))
@@ -4133,6 +4143,8 @@ namespace Bloom.Book
             }
             if (success)
                 Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
+            else
+                _mediaLevel1ShrinkFailed = true;
         }
 
         /// <summary>
