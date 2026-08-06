@@ -81,9 +81,11 @@ isolated as well.
 
 Two consequences worth knowing:
 
-- **After a failing run the folder is kept**, so you can look at what the failing test wrote; the
-  path is printed at the end of the run. Passing runs delete theirs, and anything older than a day
-  is cleared by the next run.
+- **After a failing run the folder is kept**, so you can look at what the failing test wrote —
+  find it under `%TEMP%\BloomTests\`. (The run also reports the path through NUnit's progress
+  channel, but `dotnet test` does not show that at its default verbosity, so go and look rather
+  than expecting it in the output.) Passing runs delete theirs, and anything older than a day is
+  cleared by the next run.
 - Every temp path is longer by `BloomTests\<key>-p<pid>\`. Deeply-nested temp paths in tests are
   that much closer to `MAX_PATH`.
 
