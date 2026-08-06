@@ -108,7 +108,7 @@ namespace Bloom.Book
         void CaptureInitialStateForMigration();
         void RestoreStuffBeforeMigration();
         void MigrateMaintenanceLevels();
-        void MigrateToMediaLevel1ShrinkLargeImages(IProgress progress);
+        void MigrateToMediaLevel1ShrinkLargeImages(IProgress progress = null);
         void MigrateToLevel2RemoveTransparentComicalSvgs();
         void MigrateToLevel3PutImgFirst();
 
@@ -4049,12 +4049,13 @@ namespace Bloom.Book
         /// Does nothing if mediaMaintenanceLevel indicates it has already been done.
         /// </summary>
         /// <param name="progress">Where to report the (potentially very slow) shrinking, so the user
-        /// can see why we are busy. This is used when we are already off the UI thread, or headless,
-        /// or under test: the messages then land in whatever progress the caller already owns
-        /// (headless callers pass a NullProgress and so report nothing). When we are ON the UI thread
-        /// we put up our own dialog instead and this is not used -- see the branch below. Must not be
-        /// null: ImageUtils.FixSizeAndTransparencyOfImagesInFolder dereferences it.</param>
-        public void MigrateToMediaLevel1ShrinkLargeImages(IProgress progress)
+        /// can see why we are busy. It is used whenever it is somewhere real to report, and also
+        /// whenever we could not put up a dialog even if we wanted to: off the UI thread, headless,
+        /// or under test. Only when we are on the UI thread AND all the caller gave us is a
+        /// NullProgress (or nothing) do we put up our own dialog instead and leave this unused --
+        /// see the branch below. Passing nothing is equivalent to passing a NullProgress; in
+        /// practice only tests do, since Book.EnsureUpToDate substitutes one for a null.</param>
+        public void MigrateToMediaLevel1ShrinkLargeImages(IProgress progress = null)
         {
             var levelString = Dom.GetMetaValue("mediaMaintenanceLevel", "0");
             if (!int.TryParse(levelString, out int level))
@@ -4088,17 +4089,25 @@ namespace Bloom.Book
                 // This update can be very slow, so encourage the user that something is happening.
                 // NO images should have transparency removed.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8846.
 
+                // A NullProgress reports nowhere, so having one is the same as having none: it is
+                // what a caller passes when it has no way to show the user anything. Anything else
+                // is somewhere real to report, and we should use it rather than opening a window
+                // over the top of whatever the caller is already showing.
+                var haveSomewhereToReport = progress != null && !(progress is NullProgress);
                 var shell = Shell.GetShellOrOtherOpenForm();
                 // shell is null when no window is open at all -- the bulk-upload and hydrate CLI
                 // commands. There is nothing to show a dialog on and no thread affinity to respect,
-                // so use the caller's progress like any other off-the-UI-thread case.
+                // so use the caller's progress like any other off-the-UI-thread case.  NullProgress
+                // is used if the caller did not pass one.
                 if (
                     Program.RunningUnitTests
-                    || progress is WebProgressAdapter
+                    || haveSomewhereToReport
                     || shell == null
                     || shell.InvokeRequired
                 )
                 {
+                    if (progress == null)
+                        progress = new NullProgress();
                     ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
                         FolderPath,
                         new List<string>(),
