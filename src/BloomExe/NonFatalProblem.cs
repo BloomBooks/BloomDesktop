@@ -280,12 +280,18 @@ namespace Bloom
         /// <param name="exception">The exception to report to Sentry</param>
         /// <param name="message">An optional message to send with the exception to provide more context</param>
         /// <param name="throwOnException">If true, will rethrow any exception which occurs while reporting to Sentry.</param>
+        /// <param name="configureScope">If supplied, gets a chance to add tags, extras, or a fingerprint to
+        /// this one report. Note that <paramref name="message"/> becomes a breadcrumb, which Sentry neither
+        /// indexes for searching nor uses when grouping events into issues; so when you need to be able to
+        /// find these reports, or to keep them from being lumped in with superficially similar ones, set a
+        /// tag or a fingerprint here instead of relying on the message.</param>
         /// <remarks>Note, some previous Sentry reports were adding the message as a fullDetailedMessage tag, but when we refactored
         /// to create this method, we decided to standardize on the more versatile breadcrumbs approach.</remarks>
         public static void ReportSentryOnly(
             Exception exception,
             string message = null,
-            bool throwOnException = false
+            bool throwOnException = false,
+            Action<Scope> configureScope = null
         )
         {
             if (ApplicationUpdateSupport.IsDev)
@@ -300,9 +306,31 @@ namespace Bloom
             }
             try
             {
-                if (!string.IsNullOrWhiteSpace(message))
-                    SentrySdk.AddBreadcrumb(message);
-                SentrySdk.CaptureException(exception);
+                if (configureScope == null)
+                {
+                    if (!string.IsNullOrWhiteSpace(message))
+                        SentrySdk.AddBreadcrumb(message);
+                    SentrySdk.CaptureException(exception);
+                }
+                else
+                {
+                    // WithScope gives us a temporary scope, so whatever the caller sets applies to
+                    // this event alone rather than leaking onto everything reported afterwards.
+                    // UPGRADE WARNING: this depends on Sentry 3.x semantics, where WithScope pushes
+                    // a scope that the CaptureException inside the callback then picks up. Sentry
+                    // 4.x deprecated WithScope in favour of CaptureException(exception, scope => ...).
+                    // If you upgrade, port this too: otherwise the tags and fingerprints callers set
+                    // here would silently stop being applied, and nothing would tell you - the
+                    // callers' own unit tests configure a Scope directly and would still pass, while
+                    // in production the events would quietly go back to being indistinguishable.
+                    SentrySdk.WithScope(scope =>
+                    {
+                        configureScope(scope);
+                        if (!string.IsNullOrWhiteSpace(message))
+                            SentrySdk.AddBreadcrumb(message);
+                        SentrySdk.CaptureException(exception);
+                    });
+                }
             }
             catch (Exception err)
             {

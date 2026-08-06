@@ -387,11 +387,14 @@ namespace Bloom
                 {
                     if (IsLocalizationHarvestingLaunch(args))
                         LocalizationManager.IgnoreExistingEnglishTranslationFiles = true;
-                    else if (!RunningE2eTests)
-                        // This allows us to debug things like  interpreting a URL.
-                        // Skipped for e2e runs (--e2e), which launch Bloom with a collection
-                        // argument but must not block on a modal prompt nobody will dismiss.
-                        MessageBox.Show("Attach debugger now");
+                    // Commented out because it fired for ANY argument, not just the URL case it was
+                    // meant for. A Debug Bloom launched on a collection path then blocked forever on
+                    // a modal dialog, which no script or external tool can get past (and which looks
+                    // like a hang: alive, no window, no server). Uncomment if you need to attach
+                    // before Bloom interprets its arguments.
+                    //else
+                    //    // This allows us to debug things like  interpreting a URL.
+                    //    MessageBox.Show("Attach debugger now");
                 }
                 var harvest = Environment.GetEnvironmentVariable("HARVEST_FOR_LOCALIZATION");
                 if (

@@ -59,7 +59,6 @@
   <UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
   <UsingTask TaskName="Split" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
   <UsingTask TaskName="FileUpdate" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
-  <UsingTask TaskName="NUnit3" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
   <UsingTask TaskName="S3BuildPublisher" AssemblyFile="$(BuildTasksAwsDll)" Condition="Exists('$(BuildTasksAwsDll)')" />
   <Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
   <UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
@@ -193,21 +192,115 @@
     <CallTarget Targets="TestOnly"/>
   </Target>
   <Target Name="TestOnly" DependsOnTargets="RunNUnit"/>
+  <!--
+	Runs the C# suite with `dotnet test` (the same runner developers use) rather than with the
+	nunit3-console that the SIL.BuildTasks NUnit3 task wraps.
+
+	The console runner launches a per-framework agent process that asks the host only for
+	Microsoft.NETCore.App, never Microsoft.WindowsDesktop.App. Managed WPF assemblies still
+	resolve through our deps.json, but the native search path is derived from what the process
+	asked for, so anything calling into WPF's native code dies with "Unable to load DLL
+	'wpfgfx_cor3.dll'". `dotnet test` starts the host from BloomTests.runtimeconfig.json, which
+	does ask for WindowsDesktop. That gap is why ImageGalleryApi's tests passed every local run
+	and turned TeamCity red the moment they merged (BL-16597). The build and the developers were
+	not running the same thing. This makes them the same thing.
+
+	We deliberately point dotnet test at the already-built assembly rather than at the csproj:
+	several tests locate content by walking up from the assembly's own folder (see
+	BloomFileLocatorTests.kRelativePathToBrowserFolder), so letting dotnet test rebuild into
+	its default bin folder would quietly change what those paths resolve to.
+
+	Note we do NOT rely on the runner to report to TeamCity. We write NUnit3 xml (the format that
+	both TeamCity's importData and the nightly's publish action already understand) and hand
+	TeamCity the file. The Exec must not abort the target on failure, or a failing run would
+	skip the import and TeamCity would lose exactly the results worth looking at; so we capture
+	the exit code, import, and only then fail.
+  -->
   <Target Name="RunNUnit">
     <PropertyGroup>
-      <TestResultsXmlFile Condition="$(isOnTeamCity) == false">$(RootDir)/output/Tests/$(Configuration)/x64/TestResults.xml</TestResultsXmlFile>
-      <ExtraExcludeCategories Condition="'$(teamcity_version)' != ''">SkipOnTeamCity,$(ExtraExcludeCategories)</ExtraExcludeCategories>
+      <TestResultsXmlFile>$(RootDir)/output/Tests/$(Configuration)/x64/TestResults.xml</TestResultsXmlFile>
+      <!-- Categories to leave out, semicolon separated, which is what MSBuild splits an Include
+	       on. Each caller passes what it wants left out: TeamCity /p:excludedCategories=Integration
+	       (the tests that talk to the live S3 bucket); the harvester-artifacts workflow that plus
+	       Nightly, since it only wants a fast gate; the nightly just SkipOnTeamCity, because it is
+	       the run that deliberately does pay for the Integration and Nightly tests. Developers get
+	       their own default from
+	       src/BloomTests/BloomTests.runsettings, which this path never reads (we run dotnet test
+	       against the built assembly, not the project — see above). TeamCity
+	       additionally always wants SkipOnTeamCity, so add it there rather than making the build
+	       configuration repeat it. Note the name must differ from excludedCategories by more
+	       than case: MSBuild property names are case insensitive, so a property "ExcludedCategories"
+	       reading "$(excludedCategories)" would be reading itself.
+
+	       PASSING MORE THAN ONE CATEGORY ON A COMMAND LINE. The obstacle is that MSBuild reads a
+	       raw semicolon in a /p: switch as a separator between property assignments, so a bare
+	       /p:excludedCategories=A;B does not set this property to "A;B"; it fails with
+	       "MSB1006: Property is not valid. Switch: B". Two forms get around that, and both work:
+
+	         /p:"excludedCategories=A;B"  works only if those quotes survive to MSBuild.exe, which
+	         they do when the caller spawns it directly (TeamCity's MSBuild runner does, and its
+	         build configuration uses this form) or from cmd, but NOT from PowerShell, which strips
+	         them and leaves MSBuild splitting the value again.
+
+	         /p:excludedCategories=A%3BB  works from any shell, since there is nothing for a shell
+	         to strip or split. It needs the Unescape below to turn the escape back into a real
+	         separator. The GitHub Actions workflows use this form because they run in pwsh.
+
+	       So do not "fix" TeamCity's quoted form to match the workflows, or vice versa: each is
+	       correct for how it invokes MSBuild. -->
+
+      <CategoriesToExclude>$(excludedCategories)</CategoriesToExclude>
+      <CategoriesToExclude Condition="'$(teamcity_version)' != ''">SkipOnTeamCity;$(excludedCategories)</CategoriesToExclude>
+      <!-- Unescape so that a %3B-escaped separator (see above) becomes a real one and splits into
+	       one item per category below. Without this the whole list arrives as a SINGLE item and the
+	       filter becomes "TestCategory!=A;B", which matches nothing and therefore excludes nothing:
+	       the build would quietly run the very tests it was told to skip. A raw semicolon (reachable
+	       when the property is set in the environment rather than on a command line) is unaffected,
+	       and so is a single category. Everything downstream uses this unescaped form, so that the
+	       comma guard below inspects the same string the filter is actually built from. -->
+      <UnescapedCategoriesToExclude>$([MSBuild]::Unescape($(CategoriesToExclude)))</UnescapedCategoriesToExclude>
     </PropertyGroup>
-    <NUnit3
-			Assemblies="@(TestAssemblies)"
-			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.20.1/tools"
-			ExcludeCategory="$(ExtraExcludeCategories)$(excludedCategories)"
-			WorkingDirectory="$(RootDir)/output/Tests/$(Configuration)/x64"
-			Trace="Debug"
-			Verbose="true"
-			OutputXmlFile="$(TestResultsXmlFile)"
-			UseNUnit3Xml="true"
-			TeamCity="$(isOnTeamCity)"/>
+    <!-- A comma would survive as part of a category name and yield "TestCategory!=A,B", which
+	     matches nothing and so silently excludes nothing, running a suite nobody asked for. Reachable
+	     by setting the property in the environment, or by escaping it as %2C on a command line: an
+	     unescaped comma never gets this far, because MSBuild reads it as its own separator between
+	     properties, so /p:excludedCategories=A,B fails outright. Worth catching, since the failure it
+	     prevents is a silent one — and note it tests the UNESCAPED value, or a %2C would slip past
+	     the guard and then be turned into the very comma the guard exists to reject. -->
+    <Error Condition="$(UnescapedCategoriesToExclude.Contains(','))"
+		   Text="excludedCategories is semicolon separated, but got '$(UnescapedCategoriesToExclude)'"/>
+    <ItemGroup>
+      <ExcludedCategory Include="$(UnescapedCategoriesToExclude)"/>
+      <!-- Every identity should now be a bare category name. One that still contains a separator
+	       means the list did not split, which is not a failure that announces itself: the filter
+	       becomes the single term "TestCategory!=A;B", matches no test, excludes nothing, and the
+	       build goes green having run exactly what it was told to skip. The unescaping above is what
+	       prevents that today, so this asserts the result rather than trusting it to keep working
+	       across MSBuild versions and future edits. Nothing to check when only one category was
+	       passed — there is no split to get wrong. -->
+      <MalformedExcludedCategory Include="@(ExcludedCategory)"
+			   Condition="$([System.String]::Copy('%(Identity)').Contains(';'))"/>
+    </ItemGroup>
+    <Error Condition="'@(MalformedExcludedCategory)' != ''"
+		   Text="excludedCategories did not split into separate categories: got '@(MalformedExcludedCategory)' as one category. The filter would have excluded nothing. See the comment on CategoriesToExclude for how to pass several categories."/>
+    <PropertyGroup>
+      <TestFilterArgument Condition="'@(ExcludedCategory)' != ''">--filter "@(ExcludedCategory->'TestCategory!=%(Identity)', '&amp;')"</TestFilterArgument>
+    </PropertyGroup>
+    <Message Importance="high" Text="Running C# tests: @(TestAssemblies) $(TestFilterArgument)"/>
+    <!-- The logger only writes the results file once a run completes, so a run that dies before
+	     that (crashed test host, a filter dotnet test rejects, no dotnet on PATH) would leave
+	     the previous run's file sitting there for importData to hand the build server. The build
+	     still goes red on the exit code, but the report it shows would be a different run's, and
+	     plausibly all green. Delete it first so a missing report reads as missing. TeamCity
+	     checkouts persist between builds, which is what makes this reachable. -->
+    <Delete Files="$(TestResultsXmlFile)"/>
+    <Exec Command='dotnet test "@(TestAssemblies)" --nologo $(TestFilterArgument) --logger:"nunit;LogFilePath=$(TestResultsXmlFile)"'
+		  WorkingDirectory="$(RootDir)/output/Tests/$(Configuration)/x64"
+		  ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="TestExitCode"/>
+    </Exec>
+    <Message Condition="$(isOnTeamCity) == true" Importance="high" Text="##teamcity[importData type='nunit' path='$(TestResultsXmlFile)']"/>
+    <Error Condition="'$(TestExitCode)' != '0'" Text="C# tests failed (dotnet test returned $(TestExitCode)). Results: $(TestResultsXmlFile)"/>
   </Target>
   <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
 		Condition="'$(OS)'=='Windows_NT'">

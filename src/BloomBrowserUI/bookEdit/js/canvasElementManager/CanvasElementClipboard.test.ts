@@ -11,8 +11,11 @@ import {
 // this suite exists because the Ctrl+V path used to skip it (BL-16605).
 vi.mock("../bloomImages", () => ({
     kImageContainerClass: "bloom-imageContainer",
+    // Mirror the real helper's semantics (bloomImages.ts): case-insensitive, and it wants the
+    // whole "placeholder.png", not just the stem. The empty-canvas branch now leans on this
+    // predicate, so a looser stub here would let the tests pass on behavior we don't ship.
     isPlaceHolderImage: (src: string | null) =>
-        !!src && src.includes("placeHolder"),
+        !!src && src.toLowerCase().includes("placeholder.png"),
     SetupMetadataButton: vi.fn(),
 }));
 
@@ -56,7 +59,10 @@ vi.mock("../../toolbox/canvas/CanvasElementItem", () => ({
 }));
 
 import { SetupMetadataButton } from "../bloomImages";
-import { changeImageInfo } from "../bloomEditing";
+import {
+    changeImageInfo,
+    wrapWithRequestPageContentDelay,
+} from "../bloomEditing";
 import {
     CanvasElementClipboard,
     ICanvasElementClipboardHost,
@@ -201,5 +207,69 @@ describe("CanvasElementClipboard paste refreshes the metadata button (BL-16605)"
         expect(host.adjustContainerAspectRatio).toHaveBeenCalledTimes(1);
         expect(host.adjustBackgroundImageSize).not.toHaveBeenCalled();
         expect(SetupMetadataButton).not.toHaveBeenCalled();
+    });
+});
+
+describe("CanvasElementClipboard only claims a placeholder background (BL-16542)", () => {
+    beforeEach(() => {
+        document.body.innerHTML = "";
+        vi.mocked(SetupMetadataButton).mockReset();
+        vi.mocked(changeImageInfo).mockClear();
+        vi.mocked(wrapWithRequestPageContentDelay).mockClear();
+    });
+
+    test("a canvas whose only content is a placeholder background takes the pasted image as its background", () => {
+        const { bloomCanvas, img } = makeCanvasWithPlaceholder(true);
+        const host = makeHost(bloomCanvas, undefined);
+
+        expect(img.getAttribute("src")).toBe("placeHolder.png");
+
+        makeClipboard(host).finishPasteImageFromClipboard(pastedImageInfo);
+
+        expect(img.getAttribute("src")).toBe("pasted.png");
+        expect(host.adjustBackgroundImageSize).toHaveBeenCalledTimes(1);
+        // We handled it here, so we never reached the add-a-new-element branch.
+        expect(wrapWithRequestPageContentDelay).not.toHaveBeenCalled();
+    });
+
+    test("a background that already holds a real image is left alone; the paste becomes a new canvas element", () => {
+        // Nothing is selected (the state right after the page is displayed), so the only way
+        // this paste could replace the background is the empty-canvas branch. That branch must
+        // not fire once the background holds a real image: replacing the picture the user can
+        // see needs them to select it first. See BL-16542.
+        const { bloomCanvas, img } = makeCanvasWithPlaceholder(true);
+        img.setAttribute("src", "realBackground.png");
+        const host = makeHost(bloomCanvas, undefined);
+
+        // Sanity check: one canvas element, and it IS the background, so the only thing
+        // keeping us out of that branch is the non-placeholder src.
+        expect(
+            bloomCanvas.getElementsByClassName(kCanvasElementClass).length,
+        ).toBe(1);
+        expect(
+            bloomCanvas
+                .getElementsByClassName(kCanvasElementClass)[0]
+                .classList.contains(kBackgroundImageClass),
+        ).toBe(true);
+
+        makeClipboard(host).finishPasteImageFromClipboard(pastedImageInfo);
+
+        expect(img.getAttribute("src")).toBe("realBackground.png");
+        expect(changeImageInfo).not.toHaveBeenCalled();
+        expect(host.adjustBackgroundImageSize).not.toHaveBeenCalled();
+        expect(SetupMetadataButton).not.toHaveBeenCalled();
+        // Instead we fell through to the branch that adds a new canvas element.
+        expect(wrapWithRequestPageContentDelay).toHaveBeenCalledTimes(1);
+    });
+
+    test("a background whose src is missing counts as empty", () => {
+        const { bloomCanvas, img } = makeCanvasWithPlaceholder(true);
+        img.removeAttribute("src");
+        const host = makeHost(bloomCanvas, undefined);
+
+        makeClipboard(host).finishPasteImageFromClipboard(pastedImageInfo);
+
+        expect(img.getAttribute("src")).toBe("pasted.png");
+        expect(host.adjustBackgroundImageSize).toHaveBeenCalledTimes(1);
     });
 });
