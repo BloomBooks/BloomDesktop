@@ -30,6 +30,7 @@ import {
 import { AboutDialogLauncher } from "../../react_components/aboutDialog";
 import { RegistrationDialogEventLauncher } from "../../react_components/registration/registrationDialogLauncher";
 import { RequiresSubscriptionOverlayWrapper } from "../../react_components/requiresSubscription";
+import { useWorkspaceTabInfo } from "../../react_components/TopBar/TopBar";
 
 export const CheckoutNeededScreen: React.FunctionComponent<{
     titleForDisplay: string;
@@ -108,9 +109,12 @@ export const PublishTabPane: React.FunctionComponent = () => {
     const [tabIndex, setTabIndex] = React.useState(
         kWaitForUserToChooseTabIndex,
     );
-    // True while the Apps tool has a Reading App Builder action running (its Cancel button is
-    // showing). While busy, switching to another publish tool is blocked so the operation is modal.
-    const [appsBusy, setAppsBusy] = React.useState(false);
+    // True while a long-running publish operation has made itself modal by locking navigation:
+    // a BloomLibrary upload, or one of the Apps tool's Reading App Builder actions. C# owns this
+    // flag (it is the same one that greys out the main workspace tabs), so the publish tools
+    // unlock at exactly the moment the operation really finishes or is cancelled — not when the
+    // browser guesses it has. See BL-16654.
+    const navigationLocked = useWorkspaceTabInfo().navigationLocked;
     const appBuilderFeatureStatus = useGetFeatureStatus("AppBuilder");
     const setup = () => {
         setTabIndex(kWaitForUserToChooseTabIndex);
@@ -242,11 +246,11 @@ export const PublishTabPane: React.FunctionComponent = () => {
                             labelBackgroundColor={kPanelBackground}
                             selectedIndex={tabIndex}
                             onSelect={(newIndex) => {
-                                // While a Reading App Builder action is running (its Cancel button
-                                // is showing), the Apps operation is modal: veto switching to another
-                                // publish tool until it finishes or is cancelled. The main workspace
-                                // tabs are locked from C# (RabPublishApi) to match.
-                                if (appsBusy) {
+                                // While an upload or an Apps action is running (its Cancel button is
+                                // showing), the operation is modal: veto switching to another publish
+                                // tool until it finishes or is cancelled. The main workspace tabs are
+                                // locked from C# by the same flag.
+                                if (navigationLocked) {
                                     return false;
                                 }
                                 post("publish/switchingPublishMode");
@@ -311,7 +315,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                     display: none;
                                 }
                                 // Doubled class for enough specificity to override the tab color
-                                // rule above, so tools disabled during a modal Apps action read as
+                                // rule above, so tools disabled during a modal operation read as
                                 // greyed out (react-tabs already makes them non-clickable).
                                 .react-tabs__tab--disabled.react-tabs__tab--disabled {
                                     opacity: 0.4;
@@ -331,9 +335,14 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                 {publishTabs.map((tab, index) => (
                                     <Tab
                                         key={index}
-                                        // Grey out the other publish tools while an Apps action is
-                                        // running, so it's clear the operation is modal.
-                                        disabled={appsBusy && tab.id !== "apps"}
+                                        // Grey out the other publish tools while a modal operation
+                                        // is running, so it's clear why they don't respond. The tool
+                                        // the operation belongs to stays looking normal, the same way
+                                        // C# leaves the active workspace tab looking active.
+                                        disabled={
+                                            navigationLocked &&
+                                            index !== tabIndex
+                                        }
                                         className={
                                             tab.hidden
                                                 ? "invisible_tab"
@@ -393,7 +402,6 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                         isActive={
                                             publishTabs[tabIndex]?.id === "apps"
                                         }
-                                        onBusyChange={setAppsBusy}
                                     />
                                 </RequiresSubscriptionOverlayWrapper>
                             </TabPanel>

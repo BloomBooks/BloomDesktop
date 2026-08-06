@@ -735,6 +735,14 @@ window.showWorkspaceInitializationFailure = function(message) {
             tabInfo.tabStates.collection = GetTabStateForUi("collection", activeTabId);
             tabInfo.tabStates.edit = GetTabStateForUi("edit", activeTabId);
             tabInfo.tabStates.publish = GetTabStateForUi("publish", activeTabId);
+            // True while something has locked navigation to make itself modal: a BloomLibrary
+            // upload, a Reading App Builder action, or an Edit-tab modal dialog. The tabStates
+            // above already encode this for the main tabs, but the Publish tab also has its own
+            // switcher between publish tools (in a different browser control, so nothing we do
+            // here disables it for free). Reporting the lock itself, rather than making the
+            // Publish tab infer it from the tab states, lets that switcher lock and unlock in
+            // exact step with the main tabs. See BL-16654.
+            tabInfo.navigationLocked = !_tabsEnabled;
             return tabInfo;
         }
 
