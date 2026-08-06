@@ -190,6 +190,26 @@ span.bloom-linebreak {
     text-indent: 0;
 }
 
+// BL-16649: the user can put this on an individual paragraph with the "No Indent" command
+// on the right-click menu of a text box. It is for continuation paragraphs, e.g. where the
+// author has manually split a paragraph across two pages and the part at the top of the
+// second page should not get the style's first-line indent.
+//
+// The Format dialog writes rules like `.mystyle-style > p {text-indent: 20pt !important}`
+// into userModifiedStyles, so this has to be !important too. It also has to out-specify
+// hand-written rules in customBookStyles/customCollectionStyles, which we cannot win on
+// source order: StyleSheetLinkSorter puts basePage *before* those, so among equally
+// specific !important rules theirs would win. Hence the deliberately long selector
+// (0-3-1) rather than just `.bloom-page p.bloom-noIndent` (0-2-1), which a custom
+// `.bloom-page .mystyle-style p` (also 0-2-1, but loaded later) would have beaten.
+// The marked paragraph is always inside a .bloom-editable -- that is the only place the
+// command is offered -- so requiring it here costs us no matches.
+//
+// NB: there is a copy of this rule in basePage-legacy-5-6.less, which does not import this file.
+.bloom-page .bloom-editable p.bloom-noIndent {
+    text-indent: 0 !important;
+}
+
 // Text wrapping algorithms.
 .bloom-page .bloom-editable.bloom-visibility-code-on {
     // Very long words should just allow themselves to be broken at the end of a line if they're
