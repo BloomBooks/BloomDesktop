@@ -51,9 +51,9 @@ doesn't re-litigate settled points.
 7. **The toolbox keystroke pipeline is the one place "one-line dispatch" fails**
    (`toolbox.ts:1509-1607`, ~100 lines of the app's most delicate code). Added a mechanical
    behaviour-preserving prep commit in Stage 0 that extracts the save/restore-selection bracket,
-   so the eventual change swaps a function body. → §5.4
+   so the eventual change swaps a function body. → §5.7.3
 8. **The flag is a `localStorage` dev switch.** A URL parameter is not zero-touch: the page
-   iframe's `src` comes from C# via `switchContentPage`. → §5.5
+   iframe’s `src` comes from C# via `switchContentPage`. → §5.7.4
 9. **`canUndo()` must stay synchronous and O(1)** — C# polls it on a timer with a reentrancy
    guard (`WebView2Browser.cs:963-996`); expensive work there makes the button flicker. → §4.1
 

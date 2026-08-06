@@ -700,13 +700,164 @@ half-undoes. Nested wrapping will keep happening as call sites accrete, so speci
 semantics in `undoTypes.ts` up front: a depth counter, outermost entry wins, inner pushes are
 no-ops.
 
-## 5. Rebase strategy
+## 5. Keeping up with master without merging
+
+**The constraint (2026-08-06):** nothing from this project may merge to `master` until a `Version6.5`
+branch is cut, which happens once 6.5 is mostly finished. So the work must stay current with a
+fast-moving `master` for months while landing none of it.
+
+**This kills the plan's original central defence.** The old rule was "don't keep a long-lived branch —
+land a dozen small PRs promptly". That option is gone, and pretending otherwise would be the single
+most expensive mistake available here. Everything in this section is the replacement.
+
+### 5.1 How much drift there actually is
+
+Guessing at this would give either paranoid over-syncing or a nasty surprise, so it was measured
+(30 days to 2026-08-06):
+
+| | Commits |
+| --- | --- |
+| All of `master` | **522** (~17/day) |
+| Touching any file this project touches | **50** (~1.7/day) |
+
+And the risk is concentrated — four paths are 74% of it:
+
+| Commits (30d) | File |
+| --- | --- |
+| 19 | `bookEdit/js/bloomEditing.ts` |
+| 9 | `bookEdit/toolbox/toolbox.ts` |
+| 5 | `bookEdit/bloomField/BloomField.ts` |
+| 4 | `lib/ckeditor/` |
+| 3 | `bookEdit/StyleEditor/StyleEditor.ts` |
+| 2 | `bookEdit/toolbox/readers/readerToolsModel.ts` |
+| 1 each | `editableDivUtils.ts`, `canvasElementManager/CanvasElementManager.ts` |
+| **0** | `workspaceRoot.ts`, `origami.ts`, `ImageUndoManager.ts`, `editablePage.ts` |
+
+Three things follow directly:
+
+- **1.7 commits a day is a weekly sync, not a daily one.** A month between syncs would mean ~50
+  commits to reconcile at once, which is what made the one Stage 0 rebase painful.
+- **Stage 1's integration risk is near zero** — every file its deferred edits touch is in the
+  zero-commit row. Stages 3 and 6 are where the cost lands, because that is where
+  `bloomEditing.ts` and `toolbox.ts` are.
+- **`lib/ckeditor/` is still being actively patched** — 4 commits in 30 days, to the library we are
+  deleting. Each is a behaviour somebody needed. Stage 5 must diff that directory against the
+  project's start point and account for every change, rather than deleting a directory assumed
+  frozen.
+
+### 5.2 Topology: one integration branch, not a chain
+
+```
+master ──────────────────────────────────────────────►
+   │  (periodic merge, one direction only)
+   ▼
+BL-6681-ckeditor  ──●────────●────────●──────────────►   ← the project's trunk
+                    ▲        ▲        ▲                    one squashed commit per stage
+                 stage-1  stage-2  stage-3                 + "Merge master" commits
+```
+
+- **`BL-6681-ckeditor`** is the long-lived integration branch and the only thing that tracks
+  `master`.
+- **Each stage is a short-lived branch off it**, PR'd *into* it, reviewed, then **squash-merged** —
+  so integration's history is one commit per stage interleaved with merge commits, which is exactly
+  the "occasionally squash so there are only one or a few commits per stage" that makes the eventual
+  master review tractable. Squash-merge is a button; no manual squashing.
+- **Delete each stage branch after it merges** and cut the next one fresh from integration.
+  Otherwise a sibling branch created before the squash re-applies changes that are already in, and
+  the duplicate-content conflicts are genuinely confusing.
+- **At the end, one PR: `BL-6681-ckeditor` → `master`.** Every commit in it has already been
+  reviewed on its stage PR, so that PR is a formality rather than a second review.
+
+**Why not a chain of stage branches each off the previous one** (the obvious alternative): the diff
+and review properties are the same, but the sync cost is not. With a chain, taking `master` in means
+merging into stage 1, then stage 1 into stage 2, then stage 2 into stage 3 — *N* merges, strictly
+ordered, every time, and every branch in the chain has to be kept alive and coherent even when
+nobody is working on it. With one integration branch it is a single merge, and every stage already
+merged comes along for free. The chain also has no natural place to squash. The saving compounds:
+by Stage 4 a chain costs five merges per sync where this costs one.
+
+### 5.3 Sync procedure — merge, never rebase
+
+```sh
+git checkout BL-6681-ckeditor
+git fetch origin
+git merge origin/master          # NOT rebase
+# resolve, then:
+pnpm test && build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj
+git push
+```
+
+**Merge rather than rebase, and this is a reversal of what Stage 0 did.** Rebasing was right while
+branches were short-lived and unreviewed. It is wrong now: rebasing rewrites commits that have
+already been reviewed on a PR, discards the review threads attached to them, and requires a
+force-push to a branch other work is based on. A rebase also replays *every* project commit over
+each new master state, so the same conflict can be re-resolved many times; a merge resolves it once
+and records the resolution. (`git rerere` is worth enabling for the merges themselves:
+`git config rerere.enabled true`.)
+
+An individual stage branch that is still unreviewed and unpushed may still be rebased freely onto
+integration — that rule was never about small branches.
+
+**When to sync:**
+
+- **On a cadence — weekly.** From §5.1, that is ~12 watchlist commits per sync.
+- **Plus whenever `master` touches the watchlist in the area being worked on.** Cheap to check:
+
+  ```sh
+  git log <last-sync-sha>..origin/master --oneline -- \
+      src/BloomBrowserUI/bookEdit/js/bloomEditing.ts \
+      src/BloomBrowserUI/bookEdit/toolbox/toolbox.ts \
+      src/BloomBrowserUI/bookEdit/bloomField/BloomField.ts \
+      src/BloomBrowserUI/lib/ckeditor
+  ```
+
+- **Always immediately before starting a new stage**, so the stage is cut from current code.
+- Record each sync's master SHA in [PROGRESS.md](PROGRESS.md), so the next check has a start point.
+
+### 5.4 Keep the branch mergeable at every stage boundary
+
+Because the merge date is set by someone else and may move, **every stage boundary must be a state
+that could ship as-is**: green, flag-inert, no half-finished dispatch. That was already true when
+stages were landing individually; it now has to be maintained deliberately rather than enforced by
+the act of merging. It is what preserves the original "if the project stalls, Bloom is still better
+off" property — the fallback is just "merge the integration branch as far as it got" instead of
+"everything already landed".
+
+### 5.5 What the branch loses, and how to get it back
+
+- **CI and Devin still work.** `pr-automation.yml` triggers on `pull_request: [opened, synchronize]`
+  with **no base-branch filter** (verified 2026-08-06), so a stage PR into the integration branch
+  gets the same checks and the same Devin trigger as one into master. Nothing to change.
+- **The nightly does not.** `nightly.yml` is scheduled-only and its header says "everything on
+  master" — and it is the only thing that runs the **full C# suite** and the **visual-regression
+  suite**. A branch that never merges never gets either. It supports `workflow_dispatch`, so after
+  each master sync run it explicitly:
+
+  ```sh
+  gh workflow run nightly.yml --ref BL-6681-ckeditor
+  ```
+
+  Without this, months of work accumulate with no visual-regression coverage at all — and this
+  project changes editing UI.
+
+### 5.6 What happens to Stage 0's PR (#8153)
+
+It targets `master` and is ready for human review. **Leave it there**: retargeting a PR mid-review
+churns it for no benefit, and it cannot merge either way under the new constraint. Its commits are
+already the base of the integration branch. When the time comes, either merge it to master first
+**with a merge commit rather than a squash** (a squash would create a duplicate-content commit that
+the integration merge then has to reconcile), or simply close it as superseded by the integration
+PR, which contains the same commits. Decide then; both are cheap. Do **not** squash-merge it.
+
+### 5.7 Keeping the conflicts small in the first place
+
+These rules predate the no-merging constraint and all survive it — several matter considerably more
+now than they did when stages were landing weekly.
 
 1. **Almost all new code in new directories** — `src/BloomBrowserUI/bookEdit/undo/` and
-   `src/BloomBrowserUI/bookEdit/textEditor/`. New files never conflict.
-2. **Don't keep a long-lived branch.** The real defence against repeated rebasing is not to
-   rebase: land a dozen small PRs on `master`, each green, each inert behind a flag.
-3. **Integration points into existing files are one-line dispatches** wherever possible:
+   `src/BloomBrowserUI/bookEdit/textEditor/`. New files never conflict, which is the single biggest
+   reason a months-long branch is survivable at all.
+2. **Integration points into existing files are one-line dispatches** wherever possible:
 
    ```ts
    export function attachToCkEditor(element) {
@@ -716,7 +867,7 @@ no-ops.
    ```
    Note the dispatch goes *inside* `attachToCkEditor`, so its two call sites (`bloomEditing.ts:1226`,
    `CanvasElementManager.ts:951`) need no edit at all.
-4. **One exception, and it needs a prep commit.** The toolbox keystroke pipeline
+3. **One exception, and it needs a prep commit.** The toolbox keystroke pipeline
    (`toolbox.ts:1509-1607`) interleaves `createBookmarks`, `removeCommentsFromEditableHtml`, the
    async-updateMarkup double-bookmark dance (BL-10133), `cleanUpNbsps`, and `selectBookmarks`.
    Swapping bookmarks for anchors there rewrites ~100 lines of the most delicate keystroke code
@@ -724,21 +875,32 @@ no-ops.
    early** (Stage 0): extract the save-selection / restore-selection bracket into two small
    functions with a clean seam. Then the eventual change swaps one function body instead of
    performing open-heart surgery mid-project.
-5. **The flag is read in exactly one function**, `useNewTextEditor()`, in one new file — a
+4. **The flag is read in exactly one function**, `useNewTextEditor()`, in one new file — a
    synchronous body-class check, set by C# at page-generation time from an
    `ExperimentalFeatures` token (with an env-var override). See **§4.12** for why, and for what
    falls out of it.
-6. **All deletion is last** (Stage 5), in a few mechanical commits. Never rebase those —
-   regenerate them.
-7. **Avoid the churn-prone files** until late: `bloomEditing.ts` (2092 lines),
+5. **All deletion is last** (Stage 5), in a few mechanical commits. **Regenerate them, never
+   reconcile them** — if a deletion commit conflicts with an incoming master change, throw it away
+   and redo it mechanically against the new state. §5.1's finding that `lib/ckeditor/` is still
+   being patched makes this concrete rather than theoretical.
+6. **Avoid the churn-prone files** until late: `bloomEditing.ts` (2092 lines),
    `CanvasElementManager.ts` (3224), `toolbox.ts`, `audioRecording.ts` (5121),
-   `StyleEditor.ts` (2627).
-8. Keep [PROGRESS.md](PROGRESS.md) current so an interrupted session resumes cleanly.
+   `StyleEditor.ts` (2627). §5.1's measurements confirm the guess: `bloomEditing.ts` and
+   `toolbox.ts` alone are 56% of all watchlist churn.
+7. Keep [PROGRESS.md](PROGRESS.md) current so an interrupted session resumes cleanly — and record
+   each master-sync SHA there (§5.3).
 
 ## 6. Stages
 
 Stages 1–2 deliver the Undo improvements **without touching CKEditor at all**, and are ordered
-by user value per unit of risk. If the project stalls, Bloom is still better off.
+by user value per unit of risk.
+
+The original reason for that ordering was "if the project stalls, Bloom is still better off",
+which assumed each stage landed as it finished. Under the no-merging constraint (§5) nothing lands
+until the end, so the property has to be maintained deliberately instead: **every stage boundary is
+a green, flag-inert state the integration branch could merge as-is** (§5.4). The ordering then still
+earns its keep — it means that whenever the merge window opens, whatever is finished is the most
+valuable subset, not an arbitrary one.
 
 ### Stage 0 — Inventory, safety net, and the one prep commit
 
@@ -759,7 +921,7 @@ by user value per unit of risk. If the project stalls, Bloom is still better off
   **pasted and dropped**. Capture today's actual behaviour for each before changing anything, so
   the new sanitizer is measured against reality rather than against the config string.
 - Characterization tests pinning the pure-ish functions before they move.
-- **The toolbox prep commit** from §5.4.
+- **The toolbox prep commit** from §5.7.3.
 - **Attempt to reproduce the handler-accumulation bug** described in §4.10 (repeated
   `refreshCanvasElementEditing` → duplicate `document` keydown handlers and duplicate
   per-editable jQuery handlers; F6 is the likeliest visible symptom). If it reproduces, file it

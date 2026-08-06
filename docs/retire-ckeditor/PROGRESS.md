@@ -8,13 +8,32 @@ To resume after an interruption, issue **`/resume-ckeditor`** (see
 
 ## Current state
 
-**Phase: Stage 0 preflighted and open as a draft PR.**
-**PR [#8153](https://github.com/BloomBooks/BloomDesktop/pull/8153)** (draft), branch
-**`BL-6681-stage0-inventory`**, pushed and rebased onto master. Card linked; QA test-ideas posted;
-Devin consultation logged. All of PLAN.md §10 is decided except the Stage-5 legacy-cleanup lifetime,
-which blocks nothing.
+> ## ⚠ Nothing merges to `master` until the 6.5 branch is cut
+>
+> Decided 2026-08-06 by John's manager: no part of this project may land on `master` until a
+> `Version6.5` branch exists, which happens once 6.5 is mostly finished. **This reversed the plan's
+> central rebase defence** ("land small PRs promptly, never keep a long-lived branch"), so §5 of
+> [PLAN.md](PLAN.md) is rewritten around a long-lived integration branch. Read §5 before doing any
+> branch work; the short version is the table below.
 
-**Not yet merged, and three Stage 0 verification items are deliberately still open** — they are
+**Branch topology** — one integration branch tracks `master`; each stage is a short-lived branch off
+it, PR'd into it and **squash-merged**, so integration carries one commit per stage:
+
+| Branch | What | State |
+| --- | --- | --- |
+| **`BL-6681-ckeditor`** | The project's trunk. The only branch that merges `master` in. Eventually one PR into `master`. | Created 2026-08-06 at Stage 0's HEAD; synced to master `9b6ba1cd9` |
+| `BL-6681-stage0-inventory` | PR [#8153](https://github.com/BloomBooks/BloomDesktop/pull/8153) — docs, characterization tests, the `toolbox.ts` seam | Ready for review, awaiting a human. Left targeting `master` on purpose (§5.6) |
+| `BL-6681-stage1-undostack` | `bookEdit/undo/` — the one undo stack, new files only | Local, green, inert; to be PR'd into `BL-6681-ckeditor` |
+
+**Master-sync log** (§5.3 — record every sync here so the next drift check has a start point):
+
+| Date | Merged `master` at | Watchlist commits in that range |
+| --- | --- | --- |
+| 2026-08-06 | `9b6ba1cd9` | **0** of 51 — clean merge, nothing of ours touched |
+
+All of PLAN.md §10 is decided except the Stage-5 legacy-cleanup lifetime, which blocks nothing.
+
+**Three Stage 0 verification items are deliberately still open** — they are
 carried, not forgotten: the paste/drop baseline, the handler-accumulation repro, and the page-reload
 timing baseline, plus G2/G6/G7 below. None of them block this PR, because it changes no behaviour in
 those areas.
@@ -27,7 +46,7 @@ Stage 0 checklist (PLAN.md §6):
       falsification-checked. Covers inventory G4/G5.
 - [x] Environment unblocked: `vp`/`volta` PATH untangled, `init.sh` clean, `output/browser`
       repopulated. Full front-end suite green: **591 passed**.
-- [x] `toolbox.ts` selection-bracket prep commit (`2707d98a8`) — §5.4 done
+- [x] `toolbox.ts` selection-bracket prep commit (`2707d98a8`) — §5.7.3 done
 - [ ] Capture the paste/drop baseline (rows C1–C7, incl. **C7 drop**): needs a running Bloom
 - [ ] Handler-accumulation repro (§4.10) + the X4 listener-leak test: needs a running Bloom
 - [ ] Page-reload timing baseline (§4.11): needs a running Bloom
@@ -495,7 +514,7 @@ The residual PATH finding is in the boxed warning: Volta still wins for bare `no
 outranked by User-PATH reordering, because Machine scope always precedes User scope. So all project
 commands go through `vp`.
 
-**Prep commit `2707d98a8` — `markupSelectionPreservation.ts`** (§5.4). Extracted the
+**Prep commit `2707d98a8` — `markupSelectionPreservation.ts`** (§5.7.3). Extracted the
 save/restore-selection bracket out of `handleKeyboardInput` into four functions —
 `boxParticipatesInMarkup`, `saveSelectionForMarkup`, `restoreSelectionAfterMarkup`,
 `restoreAndResaveSelectionForMarkup` — keeping the CKEditor-bookmark implementation exactly as it
@@ -579,7 +598,12 @@ master's change and re-wording only my trailing comment. Now **0 behind master**
 
 Worth noting for the project's rebase strategy: this is the first stage, it sat unpushed for part of
 one day, and it already collided. The plan's "land small PRs promptly, don't keep a long-lived
-branch" (§5.2) is not theoretical — **get Stage 0 onto master.**
+branch" is not theoretical — **get Stage 0 onto master.**
+
+> **Overtaken by events, 2026-08-06.** That rule no longer exists: nothing may merge to master until
+> the 6.5 branch is cut, so the project *must* keep a long-lived branch. §5 is rewritten around that.
+> The observation itself still stands and is now the evidence for syncing weekly rather than
+> occasionally — see §5.1, which measures the drift instead of guessing at it.
 
 **BL-16558 (on master) invalidates two premises and adds a requirement.** The decodable and leveled
 reader tools no longer rewrite the DOM to show violations: they paint `::highlight()` pseudo-elements
@@ -604,6 +628,75 @@ decodable reader, and reports "real typing seems fine". That is precisely the ch
 comment asks for, and it covers the case automation could not reach (a reader tool active, markup
 running). Combined with the automated harness result, the prep commit is verified on both halves.
 **G2 (async path / BL-10133) and G3 (longpress) remain unverified.**
+
+### 2026-08-06 (later) — the no-merging constraint, and §5 rewritten around it
+
+John's manager ruled that **nothing from this project may merge to `master` until a `Version6.5`
+branch is cut**, after 6.5 is mostly finished. That invalidates the plan's whole rebase strategy,
+whose first rule was "don't keep a long-lived branch — land a dozen small PRs promptly". §5 is
+rewritten; the old text is not worth preserving because following it is now impossible.
+
+**Measured the drift instead of guessing at it**, since the sync cadence is the main decision and a
+guess would give either paranoid over-syncing or a nasty surprise. Over the 30 days to 2026-08-06:
+
+- `master` took **522 commits** (~17/day)
+- of which **50** touched any file this project touches (~1.7/day)
+- and four paths are **74%** of that: `bloomEditing.ts` (19), `toolbox.ts` (9), `BloomField.ts` (5),
+  `lib/ckeditor/` (4)
+
+Three things fell straight out, all now in §5.1:
+
+- **Weekly syncing, not occasional.** ~12 watchlist commits per sync is tractable; a month's worth
+  (~50) is what made the one Stage 0 rebase painful.
+- **Stage 1's integration risk is near zero.** Every file its deferred edits touch —
+  `workspaceRoot.ts`, `origami.ts`, `ImageUndoManager.ts`, `editablePage.ts` — had **zero** commits
+  in 30 days. The cost lands in Stages 3 and 6, which is where `bloomEditing.ts` and `toolbox.ts`
+  are.
+- **`lib/ckeditor/` is still being actively patched** — 4 commits in 30 days to the library we are
+  deleting. Each is a behaviour someone needed. Stage 5 must diff that directory against the
+  project's start point rather than deleting a directory assumed frozen. New, and it would have
+  been missed.
+
+**Topology: one integration branch, not a chain of stage branches.** John suggested each stage
+branching from the previous one and merging master into each in turn. Same diff and review
+properties, worse economics: a chain costs *N* strictly-ordered merges per sync and keeps every
+branch alive even when nobody is on it, where one integration branch costs a single merge and every
+already-merged stage comes along free. By Stage 4 that is five merges per sync versus one. The chain
+also has no natural place to squash; squash-merging each stage PR into integration gives the "one or
+a few commits per stage" John asked for as a side effect of the merge button.
+
+**Merge, never rebase — a deliberate reversal of what Stage 0 did.** Rebasing was right for a
+short-lived unreviewed branch. It is wrong now: it rewrites commits already reviewed on a PR,
+discards their review threads, needs a force-push, and replays every project commit over each new
+master state so the same conflict is re-resolved repeatedly. A merge resolves it once and records
+it. (`git config rerere.enabled true` is worth setting.) Individual unreviewed stage branches may
+still be rebased.
+
+**Two gaps this creates, both now closed in §5.5:**
+
+1. **CI and Devin still work** — checked, rather than assumed: `pr-automation.yml` triggers on
+   `pull_request: [opened, synchronize]` with **no base-branch filter**, so a stage PR into the
+   integration branch gets the same checks and Devin trigger. Nothing to change.
+2. **The nightly does not.** `nightly.yml` is schedule-only and is described in its own header as
+   "everything on master" — and it is the only thing that runs the **full C# suite** and the
+   **visual-regression suite**. A branch that never merges gets neither, for months, on a project
+   that changes editing UI. It supports `workflow_dispatch`, so §5.5 requires
+   `gh workflow run nightly.yml --ref BL-6681-ckeditor` after every master sync.
+
+**Did the first sync while setting this up:** created `BL-6681-ckeditor` at Stage 0's HEAD and merged
+`origin/master` (`9b6ba1cd9`). 51 commits behind after roughly one day — and **none** of them touched
+the watchlist, so the merge was clean. A good illustration of why the raw commit count is the wrong
+thing to watch.
+
+**PR #8153 is left targeting `master`** (§5.6). Retargeting a PR mid-review churns it for no benefit,
+and it cannot merge either way under the constraint. When the window opens, either merge it with a
+**merge commit rather than a squash** (a squash would duplicate content the integration merge then
+has to reconcile) or close it as superseded by the integration PR, which contains the same commits.
+
+**One knock-on worth noticing: Stage 1's deferred edits are no longer blocked.** They were waiting on
+"Stage 0 merges to master", which is now months away — that would have left Stage 1 unverifiable for
+the whole period. Stage 0's commits are the integration branch's base, so the edits can land on the
+Stage 1 branch now, and DEFERRED-EDITS.md's trigger is updated to say so.
 
 ## Next actions
 

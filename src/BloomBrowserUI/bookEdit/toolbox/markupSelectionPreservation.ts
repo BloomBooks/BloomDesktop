@@ -5,7 +5,7 @@
 // This module exists to give that job a seam. It is deliberately a *pure extraction* of what
 // toolbox.ts's keystroke pipeline (handleKeyboardInput) has always done, with no behaviour change,
 // so that the CKEditor-retirement project (BL-6681) can swap the implementation without operating
-// on the most delicate code in the app. See docs/retire-ckeditor/PLAN.md 4.3 and 5.4, and inventory
+// on the most delicate code in the app. See docs/retire-ckeditor/PLAN.md 4.3 and 5.7.3, and inventory
 // rows G1-G5.
 //
 // TODAY'S IMPLEMENTATION uses CKEditor "bookmarks": a dummy span is inserted at the caret, and
