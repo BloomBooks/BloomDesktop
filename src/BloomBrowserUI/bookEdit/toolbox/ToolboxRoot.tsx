@@ -891,8 +891,14 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                             `}
                             disableGutters
                             expanded={expandedSectionId === section.id}
-                            onChange={(_event, expanded) => {
-                                if (!expanded) {
+                            // MUI reports the state the accordion is heading TO, not the state
+                            // it is in: it calls onChange(event, !expanded). So clicking a
+                            // closed tool's header arrives here as true, and clicking the open
+                            // one's arrives as false. (MUI's own name for the parameter is just
+                            // "expanded", which reads like "this one is the active tool" and is
+                            // the opposite of what it means -- hence the name used here.)
+                            onChange={(_event, willBeExpanded) => {
+                                if (!willBeExpanded) {
                                     // Clicking the open tool's header can't close it: the
                                     // toolbox always has an active tool, and the effect that
                                     // syncs us with the legacy toolbox re-expands whatever
