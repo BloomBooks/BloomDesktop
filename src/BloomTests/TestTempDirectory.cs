@@ -77,6 +77,13 @@ public class TestTempDirectory
     [OneTimeTearDown]
     public void RemoveOurTempFolderUnlessSomethingFailed()
     {
+        // Point temp back at the machine's own folder before we go. Anything that runs after
+        // this -- NUnit's own shutdown, a background thread that outlives the tests -- would
+        // otherwise compute temp paths inside a directory we are about to delete, and fail
+        // confusingly at the very end of an otherwise good run.
+        Environment.SetEnvironmentVariable("TMP", MachineTempFolder);
+        Environment.SetEnvironmentVariable("TEMP", MachineTempFolder);
+
         // When tests failed, leave the folder alone. What a failing test wrote is often the
         // evidence you need, and this suite's nastiest bugs have been about temp folders
         // appearing and disappearing — deleting the scene of the crime would be perverse.
