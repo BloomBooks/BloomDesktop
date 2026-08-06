@@ -139,6 +139,15 @@ namespace Bloom.Api
         /// Pool of threads that pull a request from the _queue and processes it.
         /// This is a ConcurrentDictionary (ManagedThreadId to thread) just so we can add and remove
         /// things from it without worrying about locking (or deadlocking).
+        ///
+        /// Two properties of this collection that other code relies on, so take care before changing
+        /// either. Additions are made only under lock (_queue) (see SpinUpAWorker), which is what lets a
+        /// caller re-check a count and act on it without another thread adding a worker underneath it. And
+        /// an entry is only ever REMOVED for a thread that has already died (see the pruning in
+        /// EnqueueIncomingRequests) -- nothing removes a live worker. That second property is what makes it
+        /// safe for EnsureAWorkerCanStillTakeWork to count live workers WITHOUT the lock: a concurrent
+        /// removal can only take away something that was not going to be counted as live anyway, so it
+        /// cannot inflate the answer.
         /// </summary>
         private readonly ConcurrentDictionary<int, Thread> _workers = new();
 
@@ -2504,23 +2513,36 @@ namespace Bloom.Api
                 // lock. Walking the workers to count the live ones is not free, but it is far cheaper than
                 // joining the queue behind those two.
                 //
-                // It has to be the LIVE count here as well as under the lock, even though this is the hot
-                // path. This test can only ever cause us to SKIP the accurate check below, so if it
-                // over-counts -- which the raw entry count does, since a dead thread keeps its entry until
-                // the listener prunes it -- we return early and the accurate check never runs at all. A
-                // cheap-but-wrong gate in front of a correct check just makes the correct check
-                // unreachable.
+                // Why this counts LIVE workers even out here, where a cheap approximation would normally be
+                // fine: the only thing this test can do is SKIP the more careful check below, so the two
+                // directions of error are not symmetric.
+                //   Too LOW (say we race a SpinUpAWorker that has not added its thread yet): we decline to
+                //     return, take the lock, and get the better answer. Self-correcting -- and the reason
+                //     reading this unsynchronized is acceptable at all.
+                //   Too HIGH: we return here and the check below never runs. The raw entry count is
+                //     SYSTEMATICALLY too high, because a dead thread keeps its entry until the listener
+                //     prunes it, so using it here left the careful check unreachable.
+                // A concurrent removal cannot push us into that dangerous direction, because entries are
+                // only removed for threads that are already dead; see the note on _workers.
                 //
-                // Reading it unsynchronized is fine, and stale values cannot make us miss a shortage
-                // permanently: Interlocked.Increment gives the increments a total order, so whichever
-                // thread performs the last one reads a count including every earlier block. The worker that
-                // exhausts the pool therefore always sees the shortage, even if the ones before it did not.
+                // Be clear about what a live count does NOT buy, though. It is a fact about the instant it
+                // was taken, and a worker can die immediately afterwards. The re-check under the lock is no
+                // better in that respect: the lock covers changes to _workers, not thread liveness. So
+                // neither reading is authoritative about how many workers are still alive by the time we
+                // act on it. What counting live workers removes is the systematic over-count from lingering
+                // dead entries -- not that race.
+                //
+                // Staleness in the blocked count is harmless: Interlocked.Increment gives the increments a
+                // total order, so whichever thread performs the last one reads a count including every
+                // earlier block. The worker that exhausts the pool therefore always sees the shortage, even
+                // if the ones before it did not.
                 if (Volatile.Read(ref _countBlockedThreads) < LiveWorkerCount())
                     return;
 
                 var addedWorker = false;
-                // SpinUpAWorker requires this lock, since it modifies _workers. Re-checking under the lock
-                // means we decide against the current count rather than the one we read above.
+                // SpinUpAWorker requires this lock, since it modifies _workers. Re-checking here means we
+                // decide against a count taken after any concurrent add, rather than the one above -- but
+                // per the note above, not against a count guaranteed still true when we act on it.
                 lock (_queue)
                 {
                     if (_countBlockedThreads >= LiveWorkerCount())
@@ -2564,18 +2586,12 @@ namespace Bloom.Api
         /// seen worker threads die (see the pruning in EnqueueIncomingRequests), and a dead one leaves its
         /// entry in _workers until that pruning runs, so _workers.Count can overstate the pool.
         ///
-        /// Walked rather than LINQ-counted because this runs while holding the queue lock.
+        /// Counts the dictionary itself rather than its Values, which on a ConcurrentDictionary materialises
+        /// a snapshot list -- worth avoiding on something EnsureAWorkerCanStillTakeWork calls for every api
+        /// request that waits for a lock. Callers may hold lock (_queue) or not; see that method for why
+        /// counting without it is safe.
         /// </summary>
-        private int LiveWorkerCount()
-        {
-            var live = 0;
-            foreach (var thread in _workers.Values)
-            {
-                if (thread != null && thread.IsAlive)
-                    live++;
-            }
-            return live;
-        }
+        private int LiveWorkerCount() => _workers.Count(kvp => kvp.Value?.IsAlive == true);
 
         /// <summary>
         /// The number of worker threads in the pool, alive or not. For tests, which need to observe that a
@@ -2589,8 +2605,11 @@ namespace Bloom.Api
         /// </summary>
         internal int BlockedWorkerCount => _countBlockedThreads;
 
+        // Ordinal deliberately: the default overloads of both StartsWith and IndexOf(string) are
+        // culture-sensitive, which is the wrong kind of comparison for a thread name we generated
+        // ourselves -- and slower.
         private bool IsWorkerThread(Thread thread) =>
-            thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
+            thread?.Name?.StartsWith(WorkerThreadNamePrefix, StringComparison.Ordinal) == true;
 
         private string GetHtmlForRootOfBloomUI()
         {
