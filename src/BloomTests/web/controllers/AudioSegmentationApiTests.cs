@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Bloom.Book;
 using Bloom.web.controllers;
+using BloomTemp;
+using Moq;
 using NUnit.Framework;
 using Assert = NUnit.Framework.Assert;
 
@@ -268,6 +271,157 @@ namespace BloomTests.web.controllers
 
             // Assert
             CollectionAssert.AreEqual(expectedOutput, output);
+        }
+
+        /// <summary>
+        /// "Apply Timings File..." must work on machines that have none of the forced-alignment
+        /// dependencies installed. In particular it used to ask eSpeak which language to use, which
+        /// failed when eSpeak was missing.
+        /// </summary>
+        [Test]
+        public void GetAeneasTimings_ManualTimingsFile_RunsNoExternalCommands()
+        {
+            using (var bookFolder = new TemporaryFolder("AudioSegmentationApiTests"))
+            {
+                var audioFolder = Directory.CreateDirectory(
+                    Path.Combine(bookFolder.FolderPath, "audio")
+                );
+                // GetAeneasTimings insists on an audio file to apply the timings to; it doesn't read it.
+                File.WriteAllText(Path.Combine(audioFolder.FullName, "textBoxId.mp3"), "");
+                var timingsPath = Path.Combine(audioFolder.FullName, "textBoxId_timings.txt");
+                File.WriteAllLines(
+                    timingsPath,
+                    new[] { "0.000\t1.500\tSentence 1.", "1.500\t4.250\tSentence 2." }
+                );
+
+                var api = new NoExternalCommandsAudioSegmentationApi(
+                    SelectionOf(bookFolder.FolderPath)
+                );
+
+                var request = new AutoSegmentRequest
+                {
+                    audioFilenameBase = "textBoxId",
+                    audioTextFragments = new[]
+                    {
+                        new AudioTextFragment { fragmentText = "Sentence 1.", id = "id1" },
+                        new AudioTextFragment { fragmentText = "Sentence 2.", id = "id2" },
+                    },
+                    // A language eSpeak would certainly reject, to prove we never consult it.
+                    lang = "qaa",
+                    manualTimingsPath = timingsPath,
+                };
+
+                var response = api.GetAeneasTimings(request);
+
+                Assert.That(response, Is.Not.Null, "Should have applied the timings file");
+                Assert.That(response.allEndTimesString, Is.EqualTo("1.500 4.250"));
+                Assert.That(response.warningMessage, Is.Empty);
+                Assert.That(response.successMessage, Is.EqualTo("Applied 2 manual timings."));
+            }
+        }
+
+        /// <summary>
+        /// Aeneas runs under Python, which can't cope with a path that doesn't start with a drive
+        /// letter, so Bloom refuses forced alignment outright for one (BL-9959) -- typically a
+        /// collection on a network share. That is a limitation of the forced-alignment tooling, so it
+        /// must not block "Apply Timings File...", which only reads numbers out of a file.
+        /// </summary>
+        [Test]
+        [Platform(
+            Exclude = "Linux",
+            Reason = "The drive-letter guard being tested only runs on Windows"
+        )]
+        public void GetAeneasTimings_ManualTimingsOnNonDriveLetterPath_AppliesThemAnyway()
+        {
+            using (var realFolder = new TemporaryFolder("AudioSegmentationApiTests"))
+            {
+                var audioFolder = Directory.CreateDirectory(
+                    Path.Combine(realFolder.FolderPath, "audio")
+                );
+                File.WriteAllText(Path.Combine(audioFolder.FullName, "textBoxId.mp3"), "");
+                var timingsPath = Path.Combine(audioFolder.FullName, "textBoxId_timings.txt");
+                File.WriteAllLines(
+                    timingsPath,
+                    new[] { "0.000\t1.500\tSentence 1.", "1.500\t4.250\tSentence 2." }
+                );
+
+                // The guard trips on any path starting with a backslash instead of a drive letter. We
+                // use the Win32 "extended-length" \\?\ form of a real local folder rather than a
+                // genuine \\server\share path, so the test exercises that branch without depending on
+                // network name resolution -- which would make it slow, and flaky on a build agent with
+                // an unusual DNS or WINS setup.
+                var bookFolder = @"\\?\" + realFolder.FolderPath;
+                Assert.That(
+                    bookFolder.StartsWith("\\"),
+                    "Sanity check: the path has to trip the guard or this test proves nothing"
+                );
+
+                var api = new NoExternalCommandsAudioSegmentationApi(SelectionOf(bookFolder));
+
+                var request = new AutoSegmentRequest
+                {
+                    audioFilenameBase = "textBoxId",
+                    audioTextFragments = new[]
+                    {
+                        new AudioTextFragment { fragmentText = "Sentence 1.", id = "id1" },
+                        new AudioTextFragment { fragmentText = "Sentence 2.", id = "id2" },
+                    },
+                    lang = "qaa",
+                    manualTimingsPath = timingsPath,
+                };
+
+                var response = api.GetAeneasTimings(request);
+
+                Assert.That(
+                    response,
+                    Is.Not.Null,
+                    "Applying a timings file must not be refused by the Aeneas-only drive-letter guard"
+                );
+                Assert.That(response.allEndTimesString, Is.EqualTo("1.500 4.250"));
+                Assert.That(response.successMessage, Is.EqualTo("Applied 2 manual timings."));
+            }
+        }
+
+        /// <summary>
+        /// A BookSelection reporting a book in the given folder, which is all GetAeneasTimings needs
+        /// from it.
+        ///
+        /// Deliberately a mock rather than a real BookSelection with SelectBook() called on it:
+        /// SelectBook writes the folder into Settings.Default.CurrentBookPath and saves it, which is
+        /// process-wide state that outlives the test. Doing that here made 47 unrelated tests fail
+        /// (the spreadsheet import ones), so don't reintroduce it.
+        /// </summary>
+        private static BookSelection SelectionOf(string bookFolderPath)
+        {
+            var book = new Mock<Bloom.Book.Book>();
+            book.SetupGet(b => b.FolderPath).Returns(bookFolderPath);
+            var selection = new Mock<BookSelection>();
+            selection.SetupGet(s => s.CurrentSelection).Returns(book.Object);
+            return selection.Object;
+        }
+
+        /// <summary>
+        /// An AudioSegmentationApi that fails the test if anything tries to run an external
+        /// command (python, aeneas, espeak, ffmpeg).
+        /// </summary>
+        private class NoExternalCommandsAudioSegmentationApi : AudioSegmentationApi
+        {
+            public NoExternalCommandsAudioSegmentationApi(BookSelection bookSelection)
+                : base(bookSelection) { }
+
+            protected override bool DoesCommandCauseError(
+                string commandString,
+                string workingDirectory,
+                out string standardOutput,
+                out string standardError,
+                params int[] errorCodesToIgnore
+            )
+            {
+                Assert.Fail($"Should not have run an external command: {commandString}");
+                standardOutput = "";
+                standardError = "";
+                return false;
+            }
         }
     }
 }
