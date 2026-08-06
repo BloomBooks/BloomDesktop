@@ -222,6 +222,70 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
+        public void FixSizeAndTransparencyOfImagesInFolder_UnreadableImageFiles_StillShrinksTheRest()
+        {
+            using (var folder = new TemporaryFolder("FixSizeOfImagesInFolder_Unreadable"))
+            {
+                var bigPath = folder.Combine("big.png");
+                // Book folders really do contain these: RobustFileIO.MetadataFromFile says JPEG
+                // files sometimes get .png extensions. TagLib throws on them (BL-16647).
+                var jpegNamedPngPath = folder.Combine("really-a-jpeg.png");
+                var pngNamedJpgPath = folder.Combine("really-a-png.jpg");
+                var notAnImagePath = folder.Combine("not-an-image.png");
+
+                CreateImageFile(bigPath, kOversizedLongSide, kOversizedShortSide, ImageFormat.Png);
+                CreateImageFile(jpegNamedPngPath, 600, 400, ImageFormat.Jpeg);
+                CreateImageFile(pngNamedJpgPath, 600, 400, ImageFormat.Png);
+                File.WriteAllText(notAnImagePath, "this is not a PNG");
+
+                // Sanity check: the scan tolerates the bad files and still reports the big one.
+                Assert.That(
+                    ImageUtils.NeedToShrinkImages(folder.Path),
+                    Is.True,
+                    "Test setup problem: the scan did not see the oversized image."
+                );
+                var originalBigSize = GetImageDimensions(bigPath);
+                var jpegNamedPngBytes = File.ReadAllBytes(jpegNamedPngPath);
+                var pngNamedJpgBytes = File.ReadAllBytes(pngNamedJpgPath);
+                var notAnImageBytes = File.ReadAllBytes(notAnImagePath);
+
+                // A file we cannot read must not abort the whole folder: before BL-16647 this threw
+                // out of the middle of the loop, leaving oversized images behind it unshrunk.
+                Assert.DoesNotThrow(
+                    () =>
+                        ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                            folder.Path,
+                            new List<string>(),
+                            new NullProgress()
+                        ),
+                    "An unreadable image file should be skipped, not thrown out of."
+                );
+
+                AssertShrunkToFitWithAspectRatioPreserved(bigPath, originalBigSize);
+                Assert.That(
+                    ImageUtils.NeedToShrinkImages(folder.Path),
+                    Is.False,
+                    "The oversized image should have been shrunk despite its unreadable neighbours."
+                );
+                Assert.That(
+                    File.ReadAllBytes(jpegNamedPngPath),
+                    Is.EqualTo(jpegNamedPngBytes),
+                    "A JPEG wrongly named .png should be left exactly as it was."
+                );
+                Assert.That(
+                    File.ReadAllBytes(pngNamedJpgPath),
+                    Is.EqualTo(pngNamedJpgBytes),
+                    "A PNG wrongly named .jpg should be left exactly as it was."
+                );
+                Assert.That(
+                    File.ReadAllBytes(notAnImagePath),
+                    Is.EqualTo(notAnImageBytes),
+                    "A file that is not an image at all should be left exactly as it was."
+                );
+            }
+        }
+
+        [Test]
         public void FixSizeAndTransparencyOfImagesInFolder_NothingOversized_ChangesNothing()
         {
             using (var folder = new TemporaryFolder("FixSizeOfImagesInFolder_NothingOversized"))
