@@ -196,7 +196,15 @@
   <Target Name="RunNUnit">
     <PropertyGroup>
       <TestResultsXmlFile Condition="$(isOnTeamCity) == false">$(RootDir)/output/Tests/$(Configuration)/x64/TestResults.xml</TestResultsXmlFile>
-      <ExtraExcludeCategories Condition="'$(teamcity_version)' != ''">SkipOnTeamCity,$(ExtraExcludeCategories)</ExtraExcludeCategories>
+      <!-- Categories excluded only when TeamCity (our PR gate) is the one running us:
+             SkipOnTeamCity - runs nowhere in automation. The nightly excludes it too (it passes
+               the same name in excludedCategories), so this means "developer machines only".
+             Nightly - runs in the nightly but NOT in the PR gate. For tests that are sound but
+               too slow, or too dependent on the agent's load or network, to be worth gating a
+               PR on. The nightly passes only SkipOnTeamCity, so these still run there daily.
+           Keep the trailing comma: ExcludeCategory below concatenates this with
+           excludedCategories without a separator. -->
+      <ExtraExcludeCategories Condition="'$(teamcity_version)' != ''">SkipOnTeamCity,Nightly,$(ExtraExcludeCategories)</ExtraExcludeCategories>
     </PropertyGroup>
     <NUnit3
 			Assemblies="@(TestAssemblies)"

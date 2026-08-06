@@ -27,8 +27,15 @@ namespace BloomTests.WebLibraryIntegration
     ///
     /// The stand-in for a slow server is a socket that accepts connections and never answers, so
     /// every attempt can only end in a timeout. Counting accepted connections counts attempts.
+    ///
+    /// Nightly rather than PR-gating: these spend real seconds waiting for real socket timeouts,
+    /// and they assert an exact attempt count, which depends on the agent's load and on loopback
+    /// being unrestricted. That is a poor thing to block a PR on, while the behavior they pin
+    /// changes only when someone upgrades the AWS SDK - rare, deliberate, and caught by the next
+    /// nightly well before it could ship.
     /// </summary>
     [TestFixture]
+    [Category("Nightly")]
     public class S3RetryBudgetTests
     {
         // A server that accepts TCP connections, holds them open, and never sends a response.
