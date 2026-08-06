@@ -356,7 +356,7 @@ namespace Bloom
                 {
                     if (IsLocalizationHarvestingLaunch(args))
                         LocalizationManager.IgnoreExistingEnglishTranslationFiles = true;
-                    else
+                    else if (!IsPlainCollectionLaunch(args))
                         // This allows us to debug things like  interpreting a URL.
                         MessageBox.Show("Attach debugger now");
                 }
@@ -1301,6 +1301,23 @@ namespace Bloom
             return args.Length == 1
                 && args[0].StartsWith("--ha")
                 && "--harvest-for-localization".StartsWith(args[0]);
+        }
+
+        /// <summary>
+        /// True if the arguments are just "open this collection" (a .bloomCollection path, possibly
+        /// with switches), rather than something like a URL to interpret.
+        ///
+        /// This exists so the DEBUG-only "Attach debugger now" prompt does not fire for it. That
+        /// prompt is there to let a developer attach before Bloom interprets a URL, but it triggers
+        /// on ANY argument, so simply launching a Debug build on a chosen collection blocks forever
+        /// on a modal dialog. That makes it impossible to drive Bloom from a script or an external
+        /// tool (see BrandingPreviewApi) without a human clicking OK.
+        /// </summary>
+        private static bool IsPlainCollectionLaunch(string[] args)
+        {
+            var nonSwitches = args.Where(a => !a.StartsWith("-")).ToArray();
+            return nonSwitches.Length == 1
+                && nonSwitches[0].EndsWith(".bloomCollection", StringComparison.OrdinalIgnoreCase);
         }
 
         // I think this does something like the Wix element
