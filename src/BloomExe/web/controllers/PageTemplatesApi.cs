@@ -139,6 +139,13 @@ namespace Bloom.web.controllers
             return collections
                 .Distinct() //seems to be needed in case a shortcut points to a folder that's already in the list.
                 .SelectMany(ProjectContext.SafeGetDirectories) // get all the (book) folders in those collections
+                // A folder can go away between being listed above and being looked at below --
+                // a sync client (Dropbox etc.), an antivirus tool, or the user can delete one
+                // while we are part way through a collection. FindBookHtmlInFolder throws for a
+                // folder that does not exist (that check is there for the save path, where a
+                // missing book folder really is the user's problem), and one such folder would
+                // otherwise abort the whole scan. Skipping it is all we want here. (BL-16661)
+                .Where(Directory.Exists)
                 .Select(BookStorage.FindBookHtmlInFolder); // and get the book from each
         }
 

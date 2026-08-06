@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using Bloom.web.controllers;
 using BloomTemp;
@@ -153,6 +154,71 @@ namespace BloomTests.web.controllers
                     sourceBookPaths
                 );
                 Assert.AreEqual(3, result.Count, "Should list each unique path, not name.");
+            }
+        }
+
+        /// <summary>
+        /// A book folder can be deleted while we are part way through scanning its collection --
+        /// by a sync client, an antivirus tool, or the user. That must not abort the whole scan.
+        /// See BL-16661, where one folder disappearing took out a whole test fixture.
+        /// </summary>
+        [Test]
+        public void GetBooksInCollectionDirectories_FolderDeletedPartWayThrough_SkipsItAndKeepsGoing()
+        {
+            using (var collection = new TemporaryFolder("FolderDeletedPartWayThrough"))
+            {
+                // Two books. "a book" is read first; "b book" is the one we will delete after the
+                // scan has started but before it reaches that folder.
+                var stays = new TemplateBookTestFolder(collection.FolderPath, "a book");
+                File.WriteAllText(stays.HtmlPath, "<html></html>");
+                var vanishes = new TemplateBookTestFolder(collection.FolderPath, "b book");
+                File.WriteAllText(vanishes.HtmlPath, "<html></html>");
+
+                // Sanity check: both books are really there, and findable, before we start.
+                Assert.That(File.Exists(stays.HtmlPath), Is.True);
+                Assert.That(File.Exists(vanishes.HtmlPath), Is.True);
+                Assert.That(
+                    Directory.GetDirectories(collection.FolderPath).Length,
+                    Is.EqualTo(2),
+                    "Setup sanity check: the collection should contain exactly the two book folders."
+                );
+
+                var found = new List<string>();
+                // The result is lazy, so pulling one item at a time lets us delete the second
+                // book folder mid-scan -- exactly the race this guards against.
+                using (
+                    var scan = PageTemplatesApi
+                        .GetBooksInCollectionDirectories(new[] { collection.FolderPath })
+                        .GetEnumerator()
+                )
+                {
+                    Assert.That(scan.MoveNext(), Is.True, "Should have found the first book.");
+                    found.Add(scan.Current);
+
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(
+                        Path.GetDirectoryName(vanishes.HtmlPath)
+                    );
+                    Assert.That(
+                        Directory.Exists(Path.GetDirectoryName(vanishes.HtmlPath)),
+                        Is.False,
+                        "Sanity check: the second book folder should now be gone."
+                    );
+
+                    // Before the fix this threw, killing the whole scan.
+                    while (scan.MoveNext())
+                        found.Add(scan.Current);
+                }
+
+                Assert.That(
+                    found,
+                    Does.Contain(stays.HtmlPath),
+                    "The book that was still there should have been found."
+                );
+                Assert.That(
+                    found.Count,
+                    Is.EqualTo(1),
+                    "The deleted folder should have been skipped, not reported as a book."
+                );
             }
         }
     }
