@@ -29,7 +29,14 @@
 		     "(TestCategory!=Integration)&(TestCategory=Integration)" and match nothing at all,
 		     making the Integration tests unrunnable. dotnet test surfaces its filter
 		     argument as the VSTestTestCaseFilter property, so when the caller asks for specific
-		     tests we hand VSTest no runsettings and let their filter stand alone. -->
+		     tests we hand VSTest no runsettings and let their filter stand alone.
+
+		     Consequence worth knowing: this is all-or-nothing, so ANY filter drops the whole
+		     default, not just the part you were overriding. A run narrowed by name (a filter of
+		     "FullyQualifiedName~BloomS3ClientTests", say) is therefore back to including that
+		     fixture's Integration tests, live S3 bucket and all. Add TestCategory!=Integration to
+		     such a filter yourself if you want it. (Leading hyphens are omitted throughout this
+		     comment on purpose: a double hyphen would make the XML unparseable.) -->
 		<RunSettingsFilePath Condition="'$(VSTestTestCaseFilter)' == ''">$(MSBuildProjectDirectory)\BloomTests.runsettings</RunSettingsFilePath>
 	</PropertyGroup>
 	<ItemGroup>

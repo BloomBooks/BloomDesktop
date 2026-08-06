@@ -251,22 +251,26 @@
 
       <CategoriesToExclude>$(excludedCategories)</CategoriesToExclude>
       <CategoriesToExclude Condition="'$(teamcity_version)' != ''">SkipOnTeamCity;$(excludedCategories)</CategoriesToExclude>
+      <!-- Unescape so that a %3B-escaped separator (see above) becomes a real one and splits into
+	       one item per category below. Without this the whole list arrives as a SINGLE item and the
+	       filter becomes "TestCategory!=A;B", which matches nothing and therefore excludes nothing:
+	       the build would quietly run the very tests it was told to skip. A raw semicolon (reachable
+	       when the property is set in the environment rather than on a command line) is unaffected,
+	       and so is a single category. Everything downstream uses this unescaped form, so that the
+	       comma guard below inspects the same string the filter is actually built from. -->
+      <UnescapedCategoriesToExclude>$([MSBuild]::Unescape($(CategoriesToExclude)))</UnescapedCategoriesToExclude>
     </PropertyGroup>
     <!-- A comma would survive as part of a category name and yield "TestCategory!=A,B", which
-	     matches nothing and so silently excludes nothing, running a suite nobody asked for. Only
-	     reachable by setting the property in the environment: on the command line MSBuild reads a
-	     comma as its own separator between properties, so /p:excludedCategories=A,B never gets
-	     this far. Worth catching anyway, since the failure it prevents is a silent one. -->
-    <Error Condition="$(CategoriesToExclude.Contains(','))"
-		   Text="excludedCategories is semicolon separated, but got '$(CategoriesToExclude)'"/>
-    <!-- Unescape so that a %3B-escaped separator (see above) becomes a real one and splits into
-	     one item per category. Without this the whole list arrives as a SINGLE item and the filter
-	     becomes "TestCategory!=A;B", which matches nothing and therefore excludes nothing: the
-	     build would quietly run the very tests it was told to skip. A raw semicolon (reachable when
-	     the property is set in the environment rather than on a command line) is unaffected, and a
-	     single category is unaffected. -->
+	     matches nothing and so silently excludes nothing, running a suite nobody asked for. Reachable
+	     by setting the property in the environment, or by escaping it as %2C on a command line: an
+	     unescaped comma never gets this far, because MSBuild reads it as its own separator between
+	     properties, so /p:excludedCategories=A,B fails outright. Worth catching, since the failure it
+	     prevents is a silent one — and note it tests the UNESCAPED value, or a %2C would slip past
+	     the guard and then be turned into the very comma the guard exists to reject. -->
+    <Error Condition="$(UnescapedCategoriesToExclude.Contains(','))"
+		   Text="excludedCategories is semicolon separated, but got '$(UnescapedCategoriesToExclude)'"/>
     <ItemGroup>
-      <ExcludedCategory Include="$([MSBuild]::Unescape($(CategoriesToExclude)))"/>
+      <ExcludedCategory Include="$(UnescapedCategoriesToExclude)"/>
     </ItemGroup>
     <PropertyGroup>
       <TestFilterArgument Condition="'@(ExcludedCategory)' != ''">--filter "@(ExcludedCategory->'TestCategory!=%(Identity)', '&amp;')"</TestFilterArgument>

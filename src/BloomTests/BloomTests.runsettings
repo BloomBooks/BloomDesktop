@@ -17,9 +17,9 @@
 			unit-test S3 bucket, so they are slow, need internet access, and need credentials for
 			that bucket.
 
-			Nightly: reserved for tests too slow or too environment-dependent to belong in the run
-			a developer does before every commit. Nothing carries this category yet; it is here so
-			that tagging a test is all it takes to keep it out of local runs.
+			Nightly: too slow or too environment-dependent to belong in the run a developer does
+			before every commit. S3RetryBudgetTests carries it (2 tests that wait on real socket
+			timeouts); tagging another test is all it takes to keep that one out of local runs too.
 
 			The nightly workflow is what runs all of the above, so anything you tag still gets
 			run by something. Ask for a category when you want it, by passing
