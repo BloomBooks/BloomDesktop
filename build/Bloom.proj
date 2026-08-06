@@ -271,7 +271,18 @@
 		   Text="excludedCategories is semicolon separated, but got '$(UnescapedCategoriesToExclude)'"/>
     <ItemGroup>
       <ExcludedCategory Include="$(UnescapedCategoriesToExclude)"/>
+      <!-- Every identity should now be a bare category name. One that still contains a separator
+	       means the list did not split, which is not a failure that announces itself: the filter
+	       becomes the single term "TestCategory!=A;B", matches no test, excludes nothing, and the
+	       build goes green having run exactly what it was told to skip. The unescaping above is what
+	       prevents that today, so this asserts the result rather than trusting it to keep working
+	       across MSBuild versions and future edits. Nothing to check when only one category was
+	       passed — there is no split to get wrong. -->
+      <MalformedExcludedCategory Include="@(ExcludedCategory)"
+			   Condition="$([System.String]::Copy('%(Identity)').Contains(';'))"/>
     </ItemGroup>
+    <Error Condition="'@(MalformedExcludedCategory)' != ''"
+		   Text="excludedCategories did not split into separate categories: got '@(MalformedExcludedCategory)' as one category. The filter would have excluded nothing. See the comment on CategoriesToExclude for how to pass several categories."/>
     <PropertyGroup>
       <TestFilterArgument Condition="'@(ExcludedCategory)' != ''">--filter "@(ExcludedCategory->'TestCategory!=%(Identity)', '&amp;')"</TestFilterArgument>
     </PropertyGroup>

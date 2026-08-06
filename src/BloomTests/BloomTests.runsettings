@@ -26,6 +26,10 @@
 			`filter TestCategory=Integration` (with the usual leading hyphens), which suppresses
 			this file entirely.
 
+			Untested: whether clicking Run on an excluded test in Visual Studio's Test Explorer runs
+			it or silently skips it, since VSTest may combine this filter with the IDE's selection.
+			We no longer develop in Visual Studio, so nobody has checked.
+
 			The builds do not read this file at all: build/Bloom.proj's RunNUnit target, which is
 			what TeamCity and the GitHub Actions workflows invoke, runs dotnet test against the
 			already-built BloomTests.dll rather than against this project (deliberately; see the
