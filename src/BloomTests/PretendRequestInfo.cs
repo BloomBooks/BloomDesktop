@@ -43,7 +43,15 @@ namespace Bloom.Api
             // Use the same decoding logic as in the "real" RequestInfo.
             var pathWithoutLiteralPlusSigns = urlToDecode.Replace("+", "%2B");
             LocalPathWithoutQuery = System.Web.HttpUtility.UrlDecode(pathWithoutLiteralPlusSigns);
+
+            var startOfQuery = RawUrl.IndexOf('?');
+            _queryParameters =
+                startOfQuery < 0
+                    ? new NameValueCollection()
+                    : System.Web.HttpUtility.ParseQueryString(RawUrl.Substring(startOfQuery + 1));
         }
+
+        private readonly NameValueCollection _queryParameters;
 
         public string LocalPathWithoutQuery { get; set; }
 
@@ -105,9 +113,14 @@ namespace Bloom.Api
             StatusCode = errorCode;
         }
 
+        /// <summary>
+        /// The query parameters of the url this was constructed with. This used to always be empty,
+        /// which made any request the server routes on a query parameter (such as the assetv one it
+        /// adds to every JS request) impossible to test.
+        /// </summary>
         public NameValueCollection GetQueryParameters()
         {
-            return new NameValueCollection();
+            return _queryParameters;
         }
 
         public NameValueCollection GetPostDataWhenFormEncoded()
