@@ -20,6 +20,17 @@
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<IsTestProject>true</IsTestProject>
 		<Platforms>x64;ARM64</Platforms>
+		<!-- Gives `dotnet test <this project>` and the IDE test runners a default filter that
+		     leaves out the Integration category; see BloomTests.runsettings for why.
+
+		     The condition is what makes opting back in possible. VSTest ANDs a runsettings
+		     TestCaseFilter with any filter given on the command line (it does not replace it),
+		     so an unconditional setting here would make "TestCategory=Integration" resolve to
+		     "(TestCategory!=Integration)&(TestCategory=Integration)" and match nothing at all,
+		     making the Integration tests unrunnable. dotnet test surfaces its filter
+		     argument as the VSTestTestCaseFilter property, so when the caller asks for specific
+		     tests we hand VSTest no runsettings and let their filter stand alone. -->
+		<RunSettingsFilePath Condition="'$(VSTestTestCaseFilter)' == ''">$(MSBuildProjectDirectory)\BloomTests.runsettings</RunSettingsFilePath>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">

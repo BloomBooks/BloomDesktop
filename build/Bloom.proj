@@ -220,12 +220,35 @@
     <PropertyGroup>
       <TestResultsXmlFile>$(RootDir)/output/Tests/$(Configuration)/x64/TestResults.xml</TestResultsXmlFile>
       <!-- Categories to leave out, semicolon separated, which is what MSBuild splits an Include
-	       on. Callers pass one: TeamCity /p:excludedCategories=Integration (the tests that talk
-	       to the live S3 bucket), the nightly /p:excludedCategories=SkipOnTeamCity. TeamCity
+	       on. Each caller passes what it wants left out: TeamCity /p:excludedCategories=Integration
+	       (the tests that talk to the live S3 bucket); the harvester-artifacts workflow that plus
+	       Nightly, since it only wants a fast gate; the nightly just SkipOnTeamCity, because it is
+	       the run that deliberately does pay for the Integration and Nightly tests. Developers get
+	       their own default from
+	       src/BloomTests/BloomTests.runsettings, which this path never reads (we run dotnet test
+	       against the built assembly, not the project — see above). TeamCity
 	       additionally always wants SkipOnTeamCity, so add it there rather than making the build
 	       configuration repeat it. Note the name must differ from excludedCategories by more
 	       than case: MSBuild property names are case insensitive, so a property "ExcludedCategories"
-	       reading "$(excludedCategories)" would be reading itself. -->
+	       reading "$(excludedCategories)" would be reading itself.
+
+	       PASSING MORE THAN ONE CATEGORY ON A COMMAND LINE. The obstacle is that MSBuild reads a
+	       raw semicolon in a /p: switch as a separator between property assignments, so a bare
+	       /p:excludedCategories=A;B does not set this property to "A;B"; it fails with
+	       "MSB1006: Property is not valid. Switch: B". Two forms get around that, and both work:
+
+	         /p:"excludedCategories=A;B"  works only if those quotes survive to MSBuild.exe, which
+	         they do when the caller spawns it directly (TeamCity's MSBuild runner does, and its
+	         build configuration uses this form) or from cmd, but NOT from PowerShell, which strips
+	         them and leaves MSBuild splitting the value again.
+
+	         /p:excludedCategories=A%3BB  works from any shell, since there is nothing for a shell
+	         to strip or split. It needs the Unescape below to turn the escape back into a real
+	         separator. The GitHub Actions workflows use this form because they run in pwsh.
+
+	       So do not "fix" TeamCity's quoted form to match the workflows, or vice versa: each is
+	       correct for how it invokes MSBuild. -->
+
       <CategoriesToExclude>$(excludedCategories)</CategoriesToExclude>
       <CategoriesToExclude Condition="'$(teamcity_version)' != ''">SkipOnTeamCity;$(excludedCategories)</CategoriesToExclude>
     </PropertyGroup>
@@ -236,8 +259,14 @@
 	     this far. Worth catching anyway, since the failure it prevents is a silent one. -->
     <Error Condition="$(CategoriesToExclude.Contains(','))"
 		   Text="excludedCategories is semicolon separated, but got '$(CategoriesToExclude)'"/>
+    <!-- Unescape so that a %3B-escaped separator (see above) becomes a real one and splits into
+	     one item per category. Without this the whole list arrives as a SINGLE item and the filter
+	     becomes "TestCategory!=A;B", which matches nothing and therefore excludes nothing: the
+	     build would quietly run the very tests it was told to skip. A raw semicolon (reachable when
+	     the property is set in the environment rather than on a command line) is unaffected, and a
+	     single category is unaffected. -->
     <ItemGroup>
-      <ExcludedCategory Include="$(CategoriesToExclude)"/>
+      <ExcludedCategory Include="$([MSBuild]::Unescape($(CategoriesToExclude)))"/>
     </ItemGroup>
     <PropertyGroup>
       <TestFilterArgument Condition="'@(ExcludedCategory)' != ''">--filter "@(ExcludedCategory->'TestCategory!=%(Identity)', '&amp;')"</TestFilterArgument>

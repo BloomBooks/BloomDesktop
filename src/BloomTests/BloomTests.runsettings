@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	Default settings for `dotnet test` (and Visual Studio's Test Explorer) on this project.
+	Wired in by BloomTests.csproj's RunSettingsFilePath, so a developer or agent gets this
+	without having to remember a flag; see the comment there for how opting back in works.
+
+	Careful: an XML comment cannot contain a double hyphen, so command-line switches are
+	written here without their leading hyphens. A stray "- -filter" in a comment makes VSTest
+	reject the whole file with "Settings file provided does not conform to required format".
+-->
+<RunSettings>
+	<RunConfiguration>
+		<!--
+			What a developer's plain `dotnet test` leaves out:
+
+			Integration: the WebLibraryIntegration tests upload to and download from the live
+			unit-test S3 bucket, so they are slow, need internet access, and need credentials for
+			that bucket.
+
+			Nightly: reserved for tests too slow or too environment-dependent to belong in the run
+			a developer does before every commit. Nothing carries this category yet; it is here so
+			that tagging a test is all it takes to keep it out of local runs.
+
+			The nightly workflow is what runs all of the above, so anything you tag still gets
+			run by something. Ask for a category when you want it, by passing
+			`filter TestCategory=Integration` (with the usual leading hyphens), which suppresses
+			this file entirely.
+
+			The builds do not read this file at all: build/Bloom.proj's RunNUnit target, which is
+			what TeamCity and the GitHub Actions workflows invoke, runs dotnet test against the
+			already-built BloomTests.dll rather than against this project (deliberately; see the
+			comment above that target), so no MSBuild property of ours is ever evaluated there.
+			Those builds keep controlling their own categories through /p:excludedCategories.
+		-->
+		<TestCaseFilter>TestCategory!=Integration&amp;TestCategory!=Nightly</TestCaseFilter>
+	</RunConfiguration>
+</RunSettings>
