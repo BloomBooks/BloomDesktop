@@ -34,11 +34,13 @@ namespace BloomTests.WebLibraryIntegration
     /// changes only when someone upgrades the AWS SDK - rare, deliberate, and caught by the next
     /// nightly well before it could ship.
     ///
-    /// Note that nothing in this repository acts on the Nightly category - do not go looking for
-    /// it in Bloom.proj and conclude the attribute is dead. The PR build excludes it by passing
-    /// the category name in excludedCategories, which is configured on the build server, so that
-    /// it keeps working if we ever move the PR build off TeamCity. The nightly does not pass it,
-    /// which is what makes these run there.
+    /// Who acts on the Nightly category, since it is deliberately not keyed off anything in
+    /// Bloom.proj: a developer's plain `dotnet test` leaves it out via
+    /// src/BloomTests/BloomTests.runsettings, and the harvester-artifacts workflow leaves it out by
+    /// passing the name in excludedCategories. The PR build does the same, but configured on the
+    /// build server rather than here, so that it keeps working if we ever move that build off
+    /// TeamCity. The nightly is the one runner that does not exclude it, which is what makes these
+    /// run daily.
     /// </summary>
     [TestFixture]
     [Category("Nightly")]
