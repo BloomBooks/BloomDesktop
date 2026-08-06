@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Bloom.web.controllers;
@@ -167,16 +168,14 @@ namespace BloomTests.web.controllers
         {
             using (var collection = new TemporaryFolder("FolderDeletedPartWayThrough"))
             {
-                // Two books. "a book" is read first; "b book" is the one we will delete after the
-                // scan has started but before it reaches that folder.
-                var stays = new TemplateBookTestFolder(collection.FolderPath, "a book");
-                File.WriteAllText(stays.HtmlPath, "<html></html>");
-                var vanishes = new TemplateBookTestFolder(collection.FolderPath, "b book");
-                File.WriteAllText(vanishes.HtmlPath, "<html></html>");
+                var bookA = new TemplateBookTestFolder(collection.FolderPath, "a book");
+                File.WriteAllText(bookA.HtmlPath, "<html></html>");
+                var bookB = new TemplateBookTestFolder(collection.FolderPath, "b book");
+                File.WriteAllText(bookB.HtmlPath, "<html></html>");
 
                 // Sanity check: both books are really there, and findable, before we start.
-                Assert.That(File.Exists(stays.HtmlPath), Is.True);
-                Assert.That(File.Exists(vanishes.HtmlPath), Is.True);
+                Assert.That(File.Exists(bookA.HtmlPath), Is.True);
+                Assert.That(File.Exists(bookB.HtmlPath), Is.True);
                 Assert.That(
                     Directory.GetDirectories(collection.FolderPath).Length,
                     Is.EqualTo(2),
@@ -184,24 +183,37 @@ namespace BloomTests.web.controllers
                 );
 
                 var found = new List<string>();
-                // The result is lazy, so pulling one item at a time lets us delete the second
-                // book folder mid-scan -- exactly the race this guards against.
+                string deletedBookPath;
+                // The result is lazy, so pulling one item at a time lets us delete a book folder
+                // mid-scan -- exactly the race this guards against.
                 using (
                     var scan = PageTemplatesApi
                         .GetBooksInCollectionDirectories(new[] { collection.FolderPath })
                         .GetEnumerator()
                 )
                 {
-                    Assert.That(scan.MoveNext(), Is.True, "Should have found the first book.");
+                    Assert.That(scan.MoveNext(), Is.True, "Should have found one of the books.");
                     found.Add(scan.Current);
 
-                    SIL.IO.RobustIO.DeleteDirectoryAndContents(
-                        Path.GetDirectoryName(vanishes.HtmlPath)
-                    );
+                    // Delete whichever book the scan has NOT yet handed us. Which one that is
+                    // depends on the order Directory.GetDirectories returns folders in, and that
+                    // is up to the file system -- alphabetical on NTFS, arbitrary on ext4 -- so
+                    // work it out at run time rather than assuming "b book" comes second.
+                    var notYetSeen = string.Equals(
+                        found[0],
+                        bookA.HtmlPath,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                        ? bookB
+                        : bookA;
+                    deletedBookPath = notYetSeen.HtmlPath;
+                    var deletedFolder = Path.GetDirectoryName(deletedBookPath);
+
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(deletedFolder);
                     Assert.That(
-                        Directory.Exists(Path.GetDirectoryName(vanishes.HtmlPath)),
+                        Directory.Exists(deletedFolder),
                         Is.False,
-                        "Sanity check: the second book folder should now be gone."
+                        "Sanity check: the book folder we deleted should now be gone."
                     );
 
                     // Before the fix this threw, killing the whole scan.
@@ -211,13 +223,13 @@ namespace BloomTests.web.controllers
 
                 Assert.That(
                     found,
-                    Does.Contain(stays.HtmlPath),
-                    "The book that was still there should have been found."
+                    Has.None.EqualTo(deletedBookPath),
+                    "The book whose folder was deleted should not have been reported as a book."
                 );
                 Assert.That(
                     found.Count,
                     Is.EqualTo(1),
-                    "The deleted folder should have been skipped, not reported as a book."
+                    "The surviving book should have been found, and the deleted one skipped rather than aborting the scan."
                 );
             }
         }
