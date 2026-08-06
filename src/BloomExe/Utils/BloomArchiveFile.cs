@@ -160,6 +160,15 @@ namespace Bloom.Utils
                     if (dirName == null)
                         continue; // Don't want to bundle these up
 
+                    // Skip the AI Image Editor's per-book working folder: its state/history
+                    // is regenerable working data that must not ship inside team-collection
+                    // books, .bloomSource backups, or other archives of a book folder.
+                    // Deliberately narrow — a blanket "skip all dot-folders" rule here would
+                    // silently change what every archive producer includes (e.g. user-supplied
+                    // widget folders can legitimately contain dot-folders like .well-known).
+                    if (dirName.Equals(".ai-image-editor", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
                     count += AddDirectory(folder, dirNameOffest, extensionsToExclude, justCount);
                 }
             }
@@ -170,7 +179,7 @@ namespace Bloom.Utils
                 if (ze.Message.ToLowerInvariant().Contains("crc"))
                     msg += ": CRC check failed";
                 Logger.WriteError(msg, ze);
-                throw ze;
+                throw;
             }
 
             return count;

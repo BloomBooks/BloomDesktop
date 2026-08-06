@@ -335,7 +335,9 @@ export class EditableDivUtils {
 
     // Get the cleaned up data (getData()) from ckeditor, rather than just the raw html.
     // Specifically, we want it to remove the zero-width space characters that ckeditor inserts.
-    // See BL-12391.
+    // See BL-12391. Note that getData() only removes the filling char ckeditor is actively
+    // tracking; an orphaned one survives it, so we also strip stray filling chars explicitly
+    // (see removeCkEditorFillingChars and BL-16490).
     // Return the bookmarks for each editable div, so that we can restore the selection after
     // modifying the divs.
     // Changes to this logic may need to be reflected in audioRecording.ts' cleanUpCkEditorHtml.
@@ -364,7 +366,13 @@ export class EditableDivUtils {
                     }
                 }
 
-                const ckEditorData = ckeditorOfThisBox.getData();
+                // Strip stray filling chars before comparing: if the live DOM has an
+                // orphaned filling char that getData() didn't remove, the stripped data
+                // will differ from div.innerHTML and trigger the replacement that removes it.
+                const ckEditorData =
+                    EditableDivUtils.removeCkEditorFillingChars(
+                        ckeditorOfThisBox.getData(),
+                    );
                 if (ckEditorData !== div.innerHTML) {
                     this.safelyReplaceContentWithCkEditorData(
                         div,
@@ -385,6 +393,12 @@ export class EditableDivUtils {
         div: HTMLDivElement,
         ckEditorData: string,
     ) {
+        // Belt-and-suspenders for callers that pass getData() directly (e.g.
+        // audioRecording.cleanUpCkEditorHtml): make sure we never write an
+        // orphaned ckeditor filling char into the DOM. See BL-16490.
+        ckEditorData =
+            EditableDivUtils.removeCkEditorFillingChars(ckEditorData);
+
         let needToRemoveInitialParagraph = false;
         let divChildNodes = Array.from(div.childNodes);
         if (
@@ -434,6 +448,20 @@ export class EditableDivUtils {
 
     private static isNodeCkEditorBookmark(node: Node): boolean {
         return node.nodeName === "SPAN" && node["id"].startsWith("cke_bm_");
+    }
+
+    // CKEditor 4 inserts a "filling char" (U+200B ZERO WIDTH SPACE) at the caret on
+    // WebKit/Blink to keep the cursor navigable near inline-element boundaries and
+    // before <br>. It removes the one it is tracking, but when the decodable/leveled
+    // reader rewrites a box's innerHTML out from under ckeditor, that filling char is
+    // orphaned: getData() no longer strips it, so it gets saved and corrupts reader
+    // word matching (the analyzer treats U+200B as a word split while the highlighter
+    // does not). Strip any such stray filling chars. See BL-16490.
+    // We deliberately remove only U+200B; U+200C (ZWNJ) and U+200D (ZWJ) are legitimate
+    // in some scripts and must be preserved.
+    public static removeCkEditorFillingChars(html: string): string {
+        const fillingChar = String.fromCharCode(0x200b); // U+200B ZERO WIDTH SPACE
+        return html.split(fillingChar).join("");
     }
 
     // I don't know why cdEditor's getData() converts paragraphs with only a <br>

@@ -1,7 +1,9 @@
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using SIL.Reporting;
 
 namespace Bloom
@@ -192,30 +194,48 @@ namespace Bloom
                     return false;
                 }
             }
-            catch (WebException e)
+            catch (HttpRequestException e)
             {
                 Logger.WriteEvent(
-                    "***Error (WebException) in CanGetVersionTableFromWeb: " + e.Message
+                    "***Error (HttpRequestException) in CanGetVersionTableFromWeb: " + e.Message
                 );
-                if (e.Status == WebExceptionStatus.ProtocolError)
+                // Translate the HttpClient exception into a WebException carrying an equivalent
+                // WebExceptionStatus, since that is what UpdateTableLookupResult exposes to callers.
+                var status = WebExceptionStatus.UnknownError;
+                if (e.HttpRequestError == HttpRequestError.NameResolutionError)
                 {
-                    if (
-                        e.Response is HttpWebResponse resp
-                        && resp.StatusCode == HttpStatusCode.NotFound
-                    )
+                    status = WebExceptionStatus.NameResolutionFailure;
+                    Logger.WriteEvent(
+                        "***Error: UpdateVersionTable could not connect to the server"
+                    );
+                }
+                else if (e.StatusCode != null)
+                {
+                    status = WebExceptionStatus.ProtocolError;
+                    if (e.StatusCode == HttpStatusCode.NotFound)
                     {
                         Logger.WriteEvent(
                             $"***Error: UpdateVersionTable failed to find a file at {GetUrlOfTable()} (channel='{ApplicationUpdateSupport.ChannelName}'"
                         );
                     }
                 }
-                else if (IsConnectionError(e))
+                errorResult = new UpdateTableLookupResult()
                 {
-                    Logger.WriteEvent(
-                        "***Error: UpdateVersionTable could not connect to the server"
-                    );
-                }
-                errorResult = new UpdateTableLookupResult() { Error = e };
+                    // Keep the original exception as InnerException so diagnostics don't lose
+                    // the underlying transport detail.
+                    Error = new WebException(e.Message, e, status, null),
+                };
+                return false;
+            }
+            catch (TaskCanceledException e)
+            {
+                // HttpClient throws TaskCanceledException when its Timeout elapses.
+                Logger.WriteEvent("***Error (Timeout) in CanGetVersionTableFromWeb: " + e.Message);
+                Logger.WriteEvent("***Error: UpdateVersionTable could not connect to the server");
+                errorResult = new UpdateTableLookupResult()
+                {
+                    Error = new WebException(e.Message, e, WebExceptionStatus.Timeout, null),
+                };
                 return false;
             }
             catch (Exception e)
@@ -248,15 +268,6 @@ namespace Bloom
                 ApplicationUpdateSupport.ChannelName,
                 UpdateVersionTable.ArchitectureSuffix
             );
-        }
-
-        private bool IsConnectionError(WebException ex)
-        {
-            return ex.Status == WebExceptionStatus.Timeout
-                || ex.Status == WebExceptionStatus.NameResolutionFailure;
-            //I'm not sure if you'd ever get one of these?
-            //				ex.Status == WebExceptionStatus.ReceiveFailure ||
-            //			ex.Status == WebExceptionStatus.ConnectFailure;
         }
     }
 }

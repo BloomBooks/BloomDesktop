@@ -108,6 +108,9 @@ export const PublishTabPane: React.FunctionComponent = () => {
     const [tabIndex, setTabIndex] = React.useState(
         kWaitForUserToChooseTabIndex,
     );
+    // True while the Apps tool has a Reading App Builder action running (its Cancel button is
+    // showing). While busy, switching to another publish tool is blocked so the operation is modal.
+    const [appsBusy, setAppsBusy] = React.useState(false);
     const appBuilderFeatureStatus = useGetFeatureStatus("AppBuilder");
     const setup = () => {
         setTabIndex(kWaitForUserToChooseTabIndex);
@@ -239,6 +242,13 @@ export const PublishTabPane: React.FunctionComponent = () => {
                             labelBackgroundColor={kPanelBackground}
                             selectedIndex={tabIndex}
                             onSelect={(newIndex) => {
+                                // While a Reading App Builder action is running (its Cancel button
+                                // is showing), the Apps operation is modal: veto switching to another
+                                // publish tool until it finishes or is cancelled. The main workspace
+                                // tabs are locked from C# (RabPublishApi) to match.
+                                if (appsBusy) {
+                                    return false;
+                                }
                                 post("publish/switchingPublishMode");
                                 logPublishTabSelected(newIndex);
                                 setTabIndex(newIndex);
@@ -300,12 +310,30 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                 .invisible_tab {
                                     display: none;
                                 }
+                                // Doubled class for enough specificity to override the tab color
+                                // rule above, so tools disabled during a modal Apps action read as
+                                // greyed out (react-tabs already makes them non-clickable).
+                                .react-tabs__tab--disabled.react-tabs__tab--disabled {
+                                    opacity: 0.4;
+                                    cursor: default;
+                                }
                             `}
                         >
-                            <TabList>
+                            {/* Dark panel: the far-left tab strip scrolls and is
+                                dark, so opt it into Bloom's shared dark scrollbar
+                                style (bloomUI.less). The class goes on the tab-list
+                                only, not on BloomTabs, so the light tab panels
+                                (which are siblings, not descendants) are unaffected.
+                                react-tabs supplies "react-tabs__tab-list" only as a
+                                default className, so a custom className replaces it;
+                                we must repeat it here to keep the tab-list styling. */}
+                            <TabList className="react-tabs__tab-list bloomDarkScrollbars">
                                 {publishTabs.map((tab, index) => (
                                     <Tab
                                         key={index}
+                                        // Grey out the other publish tools while an Apps action is
+                                        // running, so it's clear the operation is modal.
+                                        disabled={appsBusy && tab.id !== "apps"}
                                         className={
                                             tab.hidden
                                                 ? "invisible_tab"
@@ -365,6 +393,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                         isActive={
                                             publishTabs[tabIndex]?.id === "apps"
                                         }
+                                        onBusyChange={setAppsBusy}
                                     />
                                 </RequiresSubscriptionOverlayWrapper>
                             </TabPanel>

@@ -73,6 +73,9 @@ namespace BloomTests.Publish.Rab
             var rabLauncherPath = RealRabProjectService.FindInstalledRabLauncherPath(paths);
             var rabKeytoolPath = RealRabProjectService.FindInstalledRabKeytoolPath(paths);
 
+            // The user opted in with the env var, so an incomplete toolchain is a failure — but a
+            // fast one, checked up front, rather than letting the build churn for ~10 seconds
+            // before reporting a confusing error.
             Assert.That(
                 !string.IsNullOrWhiteSpace(rabLauncherPath) && RobustFile.Exists(rabLauncherPath),
                 Is.True,
@@ -82,6 +85,14 @@ namespace BloomTests.Publish.Rab
                 !string.IsNullOrWhiteSpace(rabKeytoolPath) && RobustFile.Exists(rabKeytoolPath),
                 Is.True,
                 $"Reading App Builder runtime keytool is missing. Expected keytool discovered by Bloom's RAB path logic."
+            );
+            // RAB itself shells out to buildapp.bat, which comes from its separate build-tools
+            // component and must be on the PATH. Without it, the build churns for ~10 seconds and
+            // then reports "'buildapp.bat' is not recognized...", so check up front.
+            Assert.That(
+                CanFindOnPath("buildapp.bat"),
+                Is.True,
+                "Reading App Builder's build tools are not installed (buildapp.bat is not on the PATH). Install them before running this test."
             );
 
             var sourceBloomPubPath = GetRepoBloomPubPath();
@@ -143,6 +154,18 @@ namespace BloomTests.Publish.Rab
                     "The generated APK should contain AndroidManifest.xml."
                 );
             }
+        }
+
+        /// <summary>
+        /// True if the given file name resolves via the PATH environment variable, the way
+        /// cmd.exe will resolve it when Reading App Builder invokes it.
+        /// </summary>
+        private static bool CanFindOnPath(string fileName)
+        {
+            var path = Environment.GetEnvironmentVariable("PATH") ?? "";
+            return path.Split(Path.PathSeparator)
+                .Where(dir => !string.IsNullOrWhiteSpace(dir))
+                .Any(dir => File.Exists(Path.Combine(dir.Trim(), fileName)));
         }
 
         private string[] CreateLauncherIcons(string launcherIconRoot)

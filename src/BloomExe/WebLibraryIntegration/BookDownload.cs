@@ -17,7 +17,6 @@ using Bloom.CollectionCreating;
 using Bloom.MiscUI;
 using Bloom.Publish.BloomLibrary;
 using Bloom.ToPalaso;
-using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using BloomTemp;
 using DesktopAnalytics;

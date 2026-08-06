@@ -11,7 +11,6 @@ namespace Bloom.Collection
 {
     public class WritingSystem
     {
-        private readonly int _languageNumberInCollection;
         private readonly Func<string> _tagOfDefaultLanguageForNaming;
         public static LanguageLookupModel LookupModel = new LanguageLookupModel();
         private string _langTag;

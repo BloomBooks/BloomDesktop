@@ -2,7 +2,17 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import Avatar, { Cache, ConfigProvider } from "react-avatar";
-import { getMd5 } from "../bookEdit/toolbox/talkingBook/md5Util";
+import { getBloomApiPrefix } from "../utils/bloomApi";
+
+// react-avatar does not cache actual avatars. It only caches which source urls failed
+// (whether because the user was offline or the source 404'd), and then doesn't retry the failed
+// urls so long as they are valid in cache. We do want it to retry (the local server may have gained
+// connectivity), so keep its cache empty. The config never changes, so this is a module-level
+// constant rather than being rebuilt on every render.
+const emptyAvatarCache = new Cache({
+    sourceTTL: 0, // retain for 0 milliseconds
+    sourceSize: 0, // retain a maximum of 0 items in cache
+});
 
 export const BloomAvatar: React.FunctionComponent<{
     email: string;
@@ -19,14 +29,15 @@ export const BloomAvatar: React.FunctionComponent<{
         ? `${borderSizeInt}px solid ${props.borderColor}`
         : undefined;
 
-    // react-avatar does not cache actual avatars. It only caches which gravatar urls failed
-    // (whether because user was offline or doesn't have a gravatar),
-    // and then doesn't retry the failed urls so long as they are valid in cache.
-    // We do want it to retry retrieving gravatars, so keep its cache empty
-    const cache = new Cache({
-        sourceTTL: 0, // retain for 0 milliseconds
-        sourceSize: 0, // retain a maximum of 0 items in cache
-    });
+    // The avatar image comes from Bloom's own local server, keyed by email: it decides the best
+    // source (the person's known Google/Firebase photo if we have one, otherwise Gravatar), caches
+    // the actual bytes so avatars survive restart and work offline, and returns 404 when it has
+    // nothing -- in which case react-avatar falls back to the generated initials from `name`. The
+    // server hashes/normalizes the email itself, so we just pass the email.
+    const avatarSrc = props.email
+        ? `${getBloomApiPrefix()}avatar?email=${encodeURIComponent(props.email)}`
+        : undefined;
+
     return (
         <React.Suspense fallback={<React.Fragment />}>
             <div
@@ -43,9 +54,9 @@ export const BloomAvatar: React.FunctionComponent<{
                     background-color: ${props.borderColor};
                 `}
             >
-                <ConfigProvider cache={cache}>
+                <ConfigProvider cache={emptyAvatarCache}>
                     <Avatar
-                        md5Email={getMd5(props.email)}
+                        src={avatarSrc}
                         name={props.name}
                         size={avatarSize}
                         maxInitials={3}

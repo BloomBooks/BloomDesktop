@@ -45,4 +45,4 @@ echo ""
 export BLOOM_COMPONENT_TESTER_SUPPRESS_OPEN=1
 export PLAYWRIGHT_INCLUDE_MANUAL=1
 
-yarn playwright test "../$MANUAL_TEST_RELATIVE_PATH" --headed -g "$TEST_NAME" "$@"
+pnpm exec playwright test "../$MANUAL_TEST_RELATIVE_PATH" --headed -g "$TEST_NAME" "$@"

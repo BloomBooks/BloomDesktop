@@ -278,13 +278,9 @@ namespace BloomTests.TeamCollection
 
                 // System Under Test
                 TestDelegate systemUnderTest = () =>
-                    ApiTest.GetString(
-                        _server,
-                        endPoint: "teamCollection/currentBookStatus",
-                        returnType: ApiTest.ContentType.Text
-                    );
+                    ApiTest.GetString(_server, endPoint: "teamCollection/currentBookStatus");
 
-                Assert.Throws(typeof(System.Net.WebException), systemUnderTest);
+                Assert.Throws(typeof(System.Net.Http.HttpRequestException), systemUnderTest);
             }
             finally
             {
@@ -316,8 +312,7 @@ namespace BloomTests.TeamCollection
                 // System Under Test
                 var result = ApiTest.GetString(
                     _server,
-                    endPoint: "teamCollection/selectedBookStatus",
-                    returnType: ApiTest.ContentType.Text
+                    endPoint: "teamCollection/selectedBookStatus"
                 );
 
                 // Verification
@@ -388,8 +383,7 @@ namespace BloomTests.TeamCollection
                 // System Under Test
                 var result = ApiTest.GetString(
                     _server,
-                    endPoint: "teamCollection/selectedBookStatus",
-                    returnType: ApiTest.ContentType.Text
+                    endPoint: "teamCollection/selectedBookStatus"
                 );
 
                 // Verification
@@ -418,14 +412,10 @@ namespace BloomTests.TeamCollection
 
             TestDelegate systemUnderTest = () =>
             {
-                ApiTest.GetString(
-                    _server,
-                    endPoint: "teamCollection/getLog",
-                    returnType: ApiTest.ContentType.JSON
-                );
+                ApiTest.GetString(_server, endPoint: "teamCollection/getLog");
             };
 
-            Assert.Throws(typeof(System.Net.WebException), systemUnderTest);
+            Assert.Throws(typeof(System.Net.Http.HttpRequestException), systemUnderTest);
         }
 
         [Test]
@@ -450,11 +440,7 @@ namespace BloomTests.TeamCollection
                 );
 
             // System Under Test
-            var result = ApiTest.GetString(
-                _server,
-                endPoint: "teamCollection/getLog",
-                returnType: ApiTest.ContentType.JSON
-            );
+            var result = ApiTest.GetString(_server, endPoint: "teamCollection/getLog");
 
             // Verification
             var deserializedArray = JsonConvert.DeserializeObject<BloomWebSocketProgressEvent[]>(
@@ -480,8 +466,7 @@ namespace BloomTests.TeamCollection
             // System Under Test
             var result = ApiTest.GetString(
                 _server,
-                endPoint: "teamCollection/isTeamCollectionEnabled",
-                returnType: ApiTest.ContentType.Text
+                endPoint: "teamCollection/isTeamCollectionEnabled"
             );
 
             Assert.That(result, Is.EqualTo("false"));
@@ -507,8 +492,7 @@ namespace BloomTests.TeamCollection
             // System Under Test
             var result = ApiTest.GetString(
                 _server,
-                endPoint: "teamCollection/isTeamCollectionEnabled",
-                returnType: ApiTest.ContentType.Text
+                endPoint: "teamCollection/isTeamCollectionEnabled"
             );
 
             Assert.That(result, Is.EqualTo("false"));
@@ -531,8 +515,7 @@ namespace BloomTests.TeamCollection
             // System Under Test
             var result = ApiTest.GetString(
                 _server,
-                endPoint: "teamCollection/isTeamCollectionEnabled",
-                returnType: ApiTest.ContentType.Text
+                endPoint: "teamCollection/isTeamCollectionEnabled"
             );
 
             Assert.That(result, Is.EqualTo("true"));
@@ -558,8 +541,7 @@ namespace BloomTests.TeamCollection
             // System Under Test
             var result = ApiTest.GetString(
                 _server,
-                endPoint: "teamCollection/isTeamCollectionEnabled",
-                returnType: ApiTest.ContentType.Text
+                endPoint: "teamCollection/isTeamCollectionEnabled"
             );
 
             Assert.That(result, Is.EqualTo("true"));
@@ -578,13 +560,9 @@ namespace BloomTests.TeamCollection
 
             // System Under Test
             TestDelegate systemUnderTest = () =>
-                ApiTest.GetString(
-                    _server,
-                    endPoint: "teamCollection/isTeamCollectionEnabled",
-                    returnType: ApiTest.ContentType.Text
-                );
+                ApiTest.GetString(_server, endPoint: "teamCollection/isTeamCollectionEnabled");
 
-            Assert.Throws(typeof(System.Net.WebException), systemUnderTest);
+            Assert.Throws(typeof(System.Net.Http.HttpRequestException), systemUnderTest);
         }
         #endregion
 
@@ -600,11 +578,7 @@ namespace BloomTests.TeamCollection
             api.RegisterWithApiHandler(_server.ApiHandler);
 
             // System Under Test
-            var result = ApiTest.GetString(
-                _server,
-                endPoint: "teamCollection/repoFolderPath",
-                returnType: ApiTest.ContentType.Text
-            );
+            var result = ApiTest.GetString(_server, endPoint: "teamCollection/repoFolderPath");
 
             Assert.That(result, Is.EqualTo(""));
         }
@@ -624,11 +598,7 @@ namespace BloomTests.TeamCollection
                 .Returns(mockTeamCollection.Object);
 
             // System Under Test
-            var result = ApiTest.GetString(
-                _server,
-                endPoint: "teamCollection/repoFolderPath",
-                returnType: ApiTest.ContentType.Text
-            );
+            var result = ApiTest.GetString(_server, endPoint: "teamCollection/repoFolderPath");
 
             Assert.That(result, Is.EqualTo("Fake Description"));
         }
@@ -645,13 +615,9 @@ namespace BloomTests.TeamCollection
                 .Returns(() => throw new ApplicationException());
 
             TestDelegate systemUnderTest = () =>
-                ApiTest.GetString(
-                    _server,
-                    endPoint: "teamCollection/repoFolderPath",
-                    returnType: ApiTest.ContentType.Text
-                );
+                ApiTest.GetString(_server, endPoint: "teamCollection/repoFolderPath");
 
-            Assert.Throws(typeof(System.Net.WebException), systemUnderTest);
+            Assert.Throws(typeof(System.Net.Http.HttpRequestException), systemUnderTest);
         }
 
         #endregion

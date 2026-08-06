@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Book;
 using BloomTemp;
@@ -11,6 +14,28 @@ namespace BloomTests.Book
 {
     public class LicenseCheckerTests
     {
+        // Always restore the static state we touch, so these tests don't leak into the others
+        // (which rely on internet access being allowed, no offline folder, and a real HttpClient).
+        [TearDown]
+        public void TearDown()
+        {
+            LicenseChecker.SetAllowInternetAccess(true);
+            LicenseChecker.SetOfflineFolder(null);
+            LicenseChecker.SetHttpClientForTests(new HttpClient());
+        }
+
+        // An HttpClient handler that always fails, to simulate the license server being unreachable.
+        private sealed class FailingHttpMessageHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request,
+                CancellationToken cancellationToken
+            )
+            {
+                throw new HttpRequestException("simulated network failure");
+            }
+        }
+
         [Test]
         public void ProblemLanguages_KeepsExactMatchNeedingTrim_RemovesNotMatched_WritesOfflineCache()
         {
@@ -61,6 +86,71 @@ namespace BloomTests.Book
             Assert.That(result, Does.Contain("fr"));
             Assert.That(result, Does.Not.Contain("ru"));
             Assert.That(result, Does.Not.Contain("zh-CN"));
+        }
+
+        [Test]
+        public void GetProblemLanguages_NetworkFailsAndNoCache_DidCheckFalseAndReturnsAllInput()
+        {
+            LicenseChecker.SetAllowInternetAccess(true);
+            LicenseChecker.SetOfflineFolder(null); // no offline cache available
+            LicenseChecker.SetHttpClientForTests(new HttpClient(new FailingHttpMessageHandler()));
+            var checker = new LicenseChecker();
+            var inputLangs = new[] { "en", "bjn" };
+
+            var result = checker.GetProblemLanguages(
+                inputLangs,
+                "kingstone.superbible.ruth",
+                out bool didCheck
+            );
+
+            Assert.That(
+                didCheck,
+                Is.False,
+                "a network failure with no cache means we could not check the license"
+            );
+            Assert.That(
+                result,
+                Is.EquivalentTo(inputLangs),
+                "when we cannot check, no language is flagged as a problem"
+            );
+        }
+
+        [Test]
+        public void GetProblemLanguages_NetworkFailsButCacheExists_FallsBackToCache()
+        {
+            using (var folder = SetupDefaultOfflineLicenseInfo())
+            {
+                // SetupDefaultOfflineLicenseInfo disables internet access; re-enable it so we take the
+                // online path, hit the failing client, and fall back to the cache it wrote.
+                LicenseChecker.SetAllowInternetAccess(true);
+                LicenseChecker.SetHttpClientForTests(
+                    new HttpClient(new FailingHttpMessageHandler())
+                );
+                var checker = new LicenseChecker();
+                var inputLangs = new[] { "en", "bjn" };
+
+                var result = checker.GetProblemLanguages(
+                    inputLangs,
+                    "kingstone.superbible.ruth",
+                    out bool didCheck
+                );
+
+                Assert.That(
+                    didCheck,
+                    Is.True,
+                    "a network failure should fall back to the offline cache"
+                );
+                Assert.That(
+                    result,
+                    Does.Contain("en"),
+                    "en is not licensed per the cached data, so it is a problem language"
+                );
+                Assert.That(
+                    result,
+                    Does.Not.Contain("bjn"),
+                    "bjn is licensed per the cached data, so it is not a problem"
+                );
+            }
         }
 
         private TemporaryFolder SetupDefaultOfflineLicenseInfo()

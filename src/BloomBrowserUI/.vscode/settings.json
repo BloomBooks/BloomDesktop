@@ -59,7 +59,7 @@
     },
     // Vitest extension settings for debugging from test panel
     "vitest.enable": true,
-    "vitest.commandLine": "yarn vitest",
+    "vitest.commandLine": "pnpm exec vitest",
     "vitest.debugExclude": ["**/node_modules/**", "**/dist/**"],
     "vitest.include": ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"],
     "vitest.exclude": [

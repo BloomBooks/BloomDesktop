@@ -44,14 +44,14 @@ namespace Bloom.Registration
 			this._acceptButton = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.l10NSharpExtender1)).BeginInit();
 			this.SuspendLayout();
-			// 
+			//
 			// l10NSharpExtender1
-			// 
+			//
 			this.l10NSharpExtender1.LocalizationManagerId = null;
 			this.l10NSharpExtender1.PrefixForNewItems = null;
-			// 
+			//
 			// _acceptButton
-			// 
+			//
 			this._acceptButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._acceptButton.DialogResult = System.Windows.Forms.DialogResult.OK;
 			this.l10NSharpExtender1.SetLocalizableToolTip(this._acceptButton, null);
@@ -64,12 +64,12 @@ namespace Bloom.Registration
 			this._acceptButton.TabIndex = 0;
 			this._acceptButton.Text = "I accept the terms of the license agreement";
 			this._acceptButton.UseVisualStyleBackColor = true;
-			// 
+			//
 			// LicenseDialog
-			// 
+			//
 			this.AcceptButton = this._acceptButton;
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.BackColor = System.Drawing.SystemColors.Window;
 			this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
 			this.ClientSize = new System.Drawing.Size(515, 302);

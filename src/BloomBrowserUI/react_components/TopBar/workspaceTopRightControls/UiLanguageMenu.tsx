@@ -5,7 +5,7 @@ import {
     get,
     postJson,
     useApiBoolean,
-    useApiString,
+    useWatchApiData,
 } from "../../../utils/bloomApi";
 import { TopRightMenuButton, topRightMenuArrowCss } from "./TopRightMenuButton";
 import { useL10n } from "../../l10nHooks";
@@ -51,7 +51,12 @@ const normalizeLanguageNames = (languageNames: unknown): string[] => {
 };
 
 export const UiLanguageMenu: React.FunctionComponent = () => {
-    const label = useApiString("workspace/uiLanguageLabel", "");
+    const label = useWatchApiData(
+        "workspace/uiLanguageLabel",
+        "",
+        "app",
+        "uiLanguageChanged",
+    );
     const showUnapprovedTranslationsText = useL10n(
         "Show translations which have not been approved yet",
         "CollectionTab.LanguageMenu.ShowUnapprovedTranslations",

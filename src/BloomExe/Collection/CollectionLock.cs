@@ -46,10 +46,10 @@ namespace Bloom.Collection
                     FileShare.ReadWrite
                 );
             }
-            catch (Exception err)
+            catch (Exception)
             {
 #if DEBUG
-                throw err;
+                throw;
 #endif
                 // Swallow because this locking is totally optional and so not worth crashing over if for
                 // some reason something else also has it open.
@@ -64,10 +64,10 @@ namespace Bloom.Collection
             {
                 _streamToLockCollectionFile.Close();
             }
-            catch (Exception err)
+            catch (Exception)
             {
 #if DEBUG
-                throw err;
+                throw;
 #endif
                 //swallow
             }

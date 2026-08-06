@@ -8,6 +8,10 @@ using SIL.Progress;
 
 namespace BloomTests.WebLibraryIntegration
 {
+    // Integration tests: the fixture setup uploads (and later downloads) a real book to the
+    // live unit-test S3 bucket, so these need internet access. Exclude them from a quick local
+    // run with --filter TestCategory!=Integration
+    [Category("Integration")]
     class BloomS3StandardUpDownloadTests
     {
         private BloomS3ClientTestDouble _client;
@@ -23,7 +27,7 @@ namespace BloomTests.WebLibraryIntegration
         public void SetupFixture()
         {
             // Basic setup
-            _workFolder = new TemporaryFolder("unittest2");
+            _workFolder = new TemporaryFolder("BloomS3StandardUpDownloadTests");
             var workFolderPath = _workFolder.FolderPath;
             Assert.AreEqual(
                 0,

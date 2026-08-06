@@ -32,6 +32,15 @@ Effects are an **escape hatch** from React. They let you synchronize with extern
 3. **Deriving state** - Just compute it: `const fullName = firstName + ' ' + lastName`
 4. **Chaining state updates** - Calculate all next state in the event handler
 
+## Pure Mount Effects (Bloom convention)
+
+When you've confirmed an effect is warranted and it should run only once, on mount
+(with optional cleanup on unmount), use the `useMountEffect` helper in
+`src/BloomBrowserUI/utils/useMountEffect.ts` rather than a bare
+`useEffect(effect, [])`. It states the "run on mount" intent and keeps the single
+justified `react-hooks/exhaustive-deps` suppression in one place instead of scattered
+eslint-disable comments.
+
 ## Decision Tree
 
 ```

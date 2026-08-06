@@ -1,9 +1,11 @@
 name: PR Automation
 
 # Runs housekeeping when a PR is opened or gets new commits (synchronize):
-#   - assign the PR to its author (so the author shows up on the PR Review
-#     Tracker board)
 #   - kick off a devinreview.com review and add its link to the PR description
+#
+# This used to also assign the PR to its author, which existed solely so the
+# author showed up on the "PR Review Tracker" org project board. We retired that
+# board, so the assignee step went with it.
 #
 # The devin step loads the matching devinreview.com URL in the Google Chrome
 # preinstalled on the runner, driven by Playwright. Chrome runs the page's
@@ -26,24 +28,17 @@ jobs:
         permissions:
             pull-requests: write
         steps:
-            # Done first so a later (flaky) browser step can't cause us to skip it.
-            - name: Assign the PR to its author
-              env:
-                  GH_TOKEN: ${{ github.token }}
-                  # gh can't infer the repo without a checkout, so pass it explicitly.
-                  GH_REPO: ${{ github.repository }}
-                  PR_NUMBER: ${{ github.event.pull_request.number }}
-                  PR_AUTHOR: ${{ github.event.pull_request.user.login }}
-              run: gh pr edit "$PR_NUMBER" --add-assignee "$PR_AUTHOR"
-
             - uses: actions/setup-node@v6
               with:
                   node-version: lts/*
 
             - name: Install Playwright driver (no browser download)
+              # npm (not pnpm) is deliberate here: this job runs without a repo checkout,
+              # so the repo's pnpm policy doesn't apply. It only needs playwright-core in
+              # a throwaway directory on the runner, and npm is preinstalled there.
               run: |
-                  yarn init -y
-                  yarn add playwright-core
+                  npm init -y
+                  npm install playwright-core
 
             - name: Open the devinreview.com URL in a real (headless) browser
               env:

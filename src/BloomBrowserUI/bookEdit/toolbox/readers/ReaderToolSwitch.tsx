@@ -9,6 +9,7 @@ import { isReaderToolEnabledOnCurrentPage } from "./readerToolPageState";
 
 export const ReaderToolSwitch: React.FunctionComponent<{
     isForLeveled: boolean;
+    changeDisplayFunc?: () => void;
 }> = (props) => {
     const prefix = props.isForLeveled ? "leveled" : "decodable";
 
@@ -18,27 +19,16 @@ export const ReaderToolSwitch: React.FunctionComponent<{
     const [checked, setChecked] = React.useState<boolean>(() =>
         isReaderToolEnabledOnCurrentPage(props.isForLeveled),
     );
-    const isFirstContentSync = React.useRef(true);
-
-    // This component must update a non-React toolbox pane element, so we need an effect to keep
-    // that external DOM synchronized whenever the controlled switch state changes.
-    React.useEffect(() => {
-        if (isFirstContentSync.current) {
-            isFirstContentSync.current = false;
-            return;
-        }
-
-        document
-            .getElementById(prefix + "-reader-tool-content")
-            ?.classList.toggle("turned-off", !checked);
-    }, [prefix, checked]);
-
     return (
         <ThemeProvider theme={toolboxTheme}>
             <BloomSwitch
                 size="small"
                 css={css`
                     margin-left: 2px; // by experimentation. We have to override the default -11px.
+                    // Uppercase the label to match the uppercase button labels in
+                    // the reader tool panels (Set Up, Copy Book Stats, etc.).
+                    // (BL-16585)
+                    text-transform: uppercase;
                 `}
                 l10nKey={
                     props.isForLeveled
@@ -69,6 +59,10 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                     // (Currently nothing automatically updates the classes from the page body back up to the book body,
                     //  and I don't know if adding such an update is safe.)
                     postBoolean(`toolbox/${prefix}`, checked);
+
+                    if (props.changeDisplayFunc !== undefined) {
+                        props.changeDisplayFunc();
+                    }
                 }}
             />
         </ThemeProvider>

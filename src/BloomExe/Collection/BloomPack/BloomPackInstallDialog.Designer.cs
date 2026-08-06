@@ -41,9 +41,9 @@
 			((System.ComponentModel.ISupportInitialize)(this._errorImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
-			// 
+			//
 			// pictureBox1
-			// 
+			//
 			this.pictureBox1.Image = global::Bloom.Properties.Resources.BloomPack64x64;
 			this._L10NSharpExtender.SetLocalizableToolTip(this.pictureBox1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.pictureBox1, null);
@@ -53,9 +53,9 @@
 			this.pictureBox1.Size = new System.Drawing.Size(67, 68);
 			this.pictureBox1.TabIndex = 0;
 			this.pictureBox1.TabStop = false;
-			// 
+			//
 			// _okButton
-			// 
+			//
 			this._L10NSharpExtender.SetLocalizableToolTip(this._okButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._okButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._okButton, "Common.OKButton");
@@ -66,11 +66,11 @@
 			this._okButton.Text = "&OK";
 			this._okButton.UseVisualStyleBackColor = true;
 			this._okButton.Click += new System.EventHandler(this._okButton_Click);
-			// 
+			//
 			// _message
-			// 
-			this._message.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+			//
+			this._message.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._message.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this._message.Enabled = false;
@@ -86,9 +86,9 @@
 			this._message.Size = new System.Drawing.Size(267, 0);
 			this._message.TabIndex = 2;
 			this._message.TabStop = false;
-			// 
+			//
 			// _errorImage
-			// 
+			//
 			this._errorImage.Image = global::Bloom.Properties.Resources.Error70x70;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._errorImage, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._errorImage, null);
@@ -100,29 +100,29 @@
 			this._errorImage.TabIndex = 3;
 			this._errorImage.TabStop = false;
 			this._errorImage.Visible = false;
-			// 
+			//
 			// _backgroundWorker
-			// 
+			//
 			this._backgroundWorker.WorkerReportsProgress = true;
 			this._backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this._backgroundWorker_DoWork);
 			this._backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this._backgroundWorker_ProgressChanged);
 			this._backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this._backgroundWorker_RunWorkerCompleted);
-			// 
+			//
 			// _startupTimer
-			// 
+			//
 			this._startupTimer.Enabled = true;
 			this._startupTimer.Tick += new System.EventHandler(this._startupTimer_Tick);
-			// 
+			//
 			// _L10NSharpExtender
-			// 
+			//
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = "BloomPackInstallDialog";
-			// 
+			//
 			// BloomPackInstallDialog
-			// 
+			//
 			this.AcceptButton = this._okButton;
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.ClientSize = new System.Drawing.Size(422, 172);
 			this.Controls.Add(this._errorImage);
 			this.Controls.Add(this._message);

@@ -5,9 +5,12 @@ import {
     kBackgroundImageClass,
     showCanvasTool,
     theOneCanvasElementManager,
-} from "../../js/CanvasElementManager";
+} from "../../js/canvasElementManager/CanvasElementManager";
 import { EditableDivUtils } from "../../js/editableDivUtils";
-import { kBloomCanvasClass, kCanvasElementClass } from "./canvasElementUtils";
+import {
+    kBloomCanvasClass,
+    kCanvasElementClass,
+} from "./canvasElementPageBridge";
 import { ensureFieldFitsOnCustomPage } from "./derivedFieldFitting";
 import { getAsync, postData, postString } from "../../../utils/bloomApi";
 import { Bubble, BubbleSpec } from "comicaljs";

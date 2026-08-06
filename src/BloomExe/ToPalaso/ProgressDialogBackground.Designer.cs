@@ -35,9 +35,9 @@ namespace Bloom.ToPalaso
 			this.StatusLabel = new SimpleStatusProgress();
 			this._backgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this.SuspendLayout();
-			// 
+			//
 			// ProgressBar
-			// 
+			//
 			this.ProgressBar.Location = new System.Drawing.Point(24, 35);
 			this.ProgressBar.MarqueeAnimationSpeed = 50;
 			this.ProgressBar.Name = "ProgressBar";
@@ -47,9 +47,9 @@ namespace Bloom.ToPalaso
 			this.ProgressBar.SyncContext = null;
 			this.ProgressBar.TabIndex = 1;
 			this.ProgressBar.UseWaitCursor = true;
-			// 
+			//
 			// _statusLabel
-			// 
+			//
 			this.StatusLabel.AutoSize = true;
 			this.StatusLabel.CancelRequested = false;
 			this.StatusLabel.ErrorEncountered = false;
@@ -62,11 +62,11 @@ namespace Bloom.ToPalaso
 			this.StatusLabel.Text = "...";
 			this.StatusLabel.UseWaitCursor = true;
 			this.StatusLabel.WarningEncountered = false;
-			// 
+			//
 			// ProgressDialogBackground
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			//
+			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.ClientSize = new System.Drawing.Size(421, 130);
 			this.ControlBox = false;
 			this.Controls.Add(this.StatusLabel);

@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Bloom.Api;
+﻿using Bloom.Api;
 
 namespace BloomTests
 {
@@ -11,11 +10,13 @@ namespace BloomTests
             JSON,
         }
 
+        // Issues a GET to the given endpoint and returns the response body.
+        // (Unlike PostString, there is no ContentType/returnType option: a GET has no body, so
+        // no Content-Type request header is sent, and the server ignores it for GETs anyway.)
         public static string GetString(
             BloomServer server,
             string endPoint,
             string query = "",
-            ContentType returnType = ContentType.Text,
             EndpointHandler handler = null,
             string endOfUrlForTest = null,
             int? timeoutInMilliseconds = null
@@ -27,8 +28,6 @@ namespace BloomTests
             }
             server.EnsureListening();
             var client = new WebClientWithTimeout { Timeout = timeoutInMilliseconds ?? 3000 };
-            client.Headers[HttpRequestHeader.ContentType] =
-                returnType == ContentType.Text ? "text/plain" : "application/json";
 
             if (endOfUrlForTest != null)
             {
@@ -61,8 +60,7 @@ namespace BloomTests
             }
             server.EnsureListening();
             var client = new WebClientWithTimeout { Timeout = timeoutInMilliseconds ?? 3000 };
-            client.Headers[HttpRequestHeader.ContentType] =
-                returnType == ContentType.Text ? "text/plain" : "application/json";
+            client.ContentType = returnType == ContentType.Text ? "text/plain" : "application/json";
 
             return client.UploadString(
                 BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endPoint,

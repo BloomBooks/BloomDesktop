@@ -32,6 +32,7 @@ export const BoxWithIconAndText: React.FunctionComponent<{
     closeButton?: boolean;
     onCloseButtonClick?: () => void;
     bottomRightButton?: JSX.Element;
+    children?: React.ReactNode;
 }> = (props) => {
     let border = css``;
     if (props.hasBorder) {
@@ -167,6 +168,7 @@ interface IBoxProps {
     closeButton?: boolean;
     onCloseButtonClick?: () => void;
     bottomRightButton?: JSX.Element;
+    children?: React.ReactNode;
 }
 export const NoteBox: React.FunctionComponent<IBoxProps> = (props) => {
     const localizedMessage = useL10n(props.l10Msg || "", props.l10nKey || null);

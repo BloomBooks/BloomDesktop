@@ -70,7 +70,13 @@ namespace Bloom
                 // containers, which is what we want for all the application singletons.
                 .SingleInstance()
                 .Where(t =>
-                    new[] { typeof(CommonApi), typeof(NewCollectionWizardApi) }.Contains(t)
+                    new[]
+                    {
+                        typeof(CommonApi),
+                        typeof(NewCollectionWizardApi),
+                        typeof(CollectionChooserApi),
+                        typeof(I18NApi),
+                    }.Contains(t)
                 );
 
             _container = builder.Build();
@@ -87,6 +93,8 @@ namespace Bloom
             var server = _container.Resolve<BloomServer>();
             _container.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
             _container.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(server.ApiHandler);
+            _container.Resolve<CollectionChooserApi>().RegisterWithApiHandler(server.ApiHandler);
+            _container.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
             server.ApiHandler.RecordApplicationLevelHandlers();
         }
 
@@ -95,11 +103,6 @@ namespace Bloom
             Application.ApplicationExit -= OnApplicationExit;
             Program.FinishLocalizationHarvesting();
             Dispose();
-        }
-
-        public OpenAndCreateCollectionDialog OpenAndCreateCollectionDialog()
-        {
-            return _container.Resolve<OpenAndCreateCollectionDialog>();
         }
 
         public HtmlThumbNailer HtmlThumbnailer => _container.Resolve<HtmlThumbNailer>();

@@ -1,7 +1,7 @@
 /**
  * Tests for Registration Dialog - Character Encoding and Special Input
  * Covers: emoji, non-Latin scripts, JSON escaping, special characters, control characters
- * Run with: yarn test
+ * Run with: ../test.sh (or `pnpm test` from react_components/component-tester)
  */
 
 import { expect, test } from "../../component-tester/playwrightTest";

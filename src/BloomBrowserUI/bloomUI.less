@@ -1,11 +1,10 @@
 /* Common Bloom UI styling */
 
-// I (AP) don't think the following comment is accurate as of July 2023.
-//   Unless I'm missing something, UIFontStack *is* a constant and could be imported by reference.
-//   However, in order to get the fontface rules to work, you would need to import NOT by reference.
-// This import needs to NOT be by "(reference)", since the UIFontStack variable we need is not a constant.
-// That also means that if you want this bloomUI file to govern the font-family of your Less that
-// imports this file, it should do a normal full import of bloomUI.less.
+// bloomWebFonts.less now contains only variables (@UIFontStack), so this import emits nothing
+// into the compiled css. The @font-face rules that used to be there live in bloomUIFontFaces.css,
+// which is deliberately NOT imported here: bloomUI.less is compiled into many separate
+// stylesheets, and duplicated @font-face rules cause a text flicker (BL-15300). See
+// bloomUIFontFaces.css for how the fonts are delivered once per document.
 @import "./bloomWebFonts.less";
 
 // Working towards making this the source of truth for the font size we use in our UI.
@@ -209,4 +208,88 @@ body.bloom-hidden-for-animation > *:not(div.bloom-animationPreview) {
 
 body.bloom-hidden-for-animation {
     overflow: hidden; //hide the scrollbar during an animation preview.
+}
+
+// ============================================================================
+// Unified dark scrollbar — "Flush & soft" (BL-16585)
+//
+// Bloom has exactly two scrollbar looks. Light panels (the Publish tab's middle
+// and right panels, and dialogs) keep the browser default. Dark panels
+// (everything in the Edit and Collection tabs except dialogs, and the Publish
+// tab's dark left preview) use the style below.
+//
+// Rather than making the dark style the global default, we define it once here
+// and opt a dark panel in by adding the `bloomDarkScrollbars` class to its root
+// container. The rules then style that element's own scrollbar and the
+// scrollbars of all its scrolling descendants, so one class on a panel root is
+// enough.
+//
+// The track sits flush with the panel background, the thumb is a rounded
+// mid-gray inset by a transparent border, and each end shows one quiet arrow.
+// WebView2 is Chromium, so the non-standard ::-webkit-scrollbar pseudo-elements
+// apply. (The standard css-scrollbars-1 properties, scrollbar-width/-color,
+// can't express the fixed width, rounded/inset thumb, hover-active states, or
+// custom arrow buttons, and only reached Blink in Chromium 121 anyway.)
+.bloom-dark-scrollbar-rules() {
+    &::-webkit-scrollbar {
+        width: 15px;
+        height: 15px;
+    }
+    // Track matches the panel background so it reads as flush with the panel.
+    &::-webkit-scrollbar-track {
+        background: @bloom-panelBackground;
+    }
+    // Rounded mid-gray thumb. The transparent border (revealed by
+    // background-clip: padding-box) keeps the thumb slimmer than the track.
+    &::-webkit-scrollbar-thumb {
+        background: #5c5c5c;
+        border-radius: 4px;
+        border: 3px solid @bloom-panelBackground;
+        background-clip: padding-box;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: #7a7a7a;
+        background-clip: padding-box;
+    }
+    &::-webkit-scrollbar-thumb:active {
+        background: #8f8f8f;
+        background-clip: padding-box;
+    }
+    // Arrow buttons at both ends. ":single-button" shows one arrow per end.
+    &::-webkit-scrollbar-button:single-button {
+        background: @bloom-panelBackground;
+        height: 15px;
+        width: 15px;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 8px;
+    }
+    &::-webkit-scrollbar-button:single-button:hover {
+        background-color: #3a3a3a;
+    }
+    // Vertical arrows (#a6a6a6 triangles).
+    &::-webkit-scrollbar-button:single-button:vertical:decrement {
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="5" viewBox="0 0 8 5"><path d="M4 0 L8 5 L0 5 Z" fill="%23a6a6a6"/></svg>');
+    }
+    &::-webkit-scrollbar-button:single-button:vertical:increment {
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="5" viewBox="0 0 8 5"><path d="M0 0 L8 0 L4 5 Z" fill="%23a6a6a6"/></svg>');
+    }
+    // Horizontal arrows.
+    &::-webkit-scrollbar-button:single-button:horizontal:decrement {
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="5" height="8" viewBox="0 0 5 8"><path d="M0 4 L5 0 L5 8 Z" fill="%23a6a6a6"/></svg>');
+    }
+    &::-webkit-scrollbar-button:single-button:horizontal:increment {
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="5" height="8" viewBox="0 0 5 8"><path d="M0 0 L5 4 L0 8 Z" fill="%23a6a6a6"/></svg>');
+    }
+    // Where the vertical and horizontal bars meet.
+    &::-webkit-scrollbar-corner {
+        background: @bloom-panelBackground;
+    }
+}
+
+.bloomDarkScrollbars {
+    .bloom-dark-scrollbar-rules(); // the panel's own scrollbar
+    & * {
+        .bloom-dark-scrollbar-rules(); // and every scrolling descendant's
+    }
 }

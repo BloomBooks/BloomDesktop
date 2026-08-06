@@ -21,7 +21,7 @@ import { getFeatureStatusAsync } from "../react_components/featureStatus";
 import {
     kBloomCanvasClass,
     kBloomCanvasSelector,
-} from "../bookEdit/toolbox/canvas/canvasElementUtils";
+} from "../bookEdit/toolbox/canvas/canvasElementConstants";
 
 interface IPageChooserDialogProps {
     forChooseLayout: boolean;

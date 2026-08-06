@@ -78,8 +78,8 @@ namespace Bloom.Edit
                     kApiUrlPart + "deletePage",
                     request =>
                     {
-                        if (ConfirmRemovePageDialog.Confirm())
-                            _editingModel.OnDeletePage();
+                        // The browser side has already confirmed with the user (BL-16421).
+                        _editingModel.OnDeletePage();
                         request.PostSucceeded();
                     },
                     true

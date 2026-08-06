@@ -1,6 +1,6 @@
 import * as React from "react";
-import ReactDOM from "react-dom";
-import { act } from "react-dom/test-utils";
+import { renderRoot, unmountRoot } from "../../utils/reactRender";
+import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockPost, mockPostJson, mockCloseDialog, configrPaneRenderState } =
@@ -239,7 +239,7 @@ describe("BookAndPageSettingsDialog saving", () => {
 
     const renderDialog = async () => {
         await act(async () => {
-            ReactDOM.render(<BookAndPageSettingsDialog />, container);
+            renderRoot(<BookAndPageSettingsDialog />, container);
         });
     };
 
@@ -255,7 +255,7 @@ describe("BookAndPageSettingsDialog saving", () => {
     });
 
     afterEach(() => {
-        ReactDOM.unmountComponentAtNode(container);
+        unmountRoot(container);
         container.remove();
         document.body.innerHTML = "";
     });
@@ -317,7 +317,7 @@ describe("BookAndPageSettingsDialog saving", () => {
 
     it("reopens Theme & Layout when the link is clicked a second time", async () => {
         await act(async () => {
-            ReactDOM.render(
+            renderRoot(
                 <BookAndPageSettingsDialog initiallySelectedPageKey="cover" />,
                 container,
             );

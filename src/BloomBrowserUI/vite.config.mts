@@ -87,7 +87,7 @@ function compileMarkdownFile(
 // Custom plugin to compile Markdown files to HTML
 // Handles 4 different types of markdown files with different styling/output
 // Claude sonnet 4.5 came up with this, based on our previous gulpfile handling of markdown.
-function compileMarkdownPlugin(): Plugin {
+function compileMarkdownPlugin(outputBrowserDir: string): Plugin {
     return {
         name: "compile-markdown",
         apply: "build",
@@ -102,7 +102,7 @@ function compileMarkdownPlugin(): Plugin {
             md.use(markdownItContainer, "note");
             md.use(markdownItAttrs);
 
-            const outputBase = path.resolve(__dirname, "../../output/browser");
+            const outputBase = outputBrowserDir;
 
             // 1. Help files: ./help/**/*.md -> output/browser/help/*.htm (flattened)
             const helpFiles = glob.sync("./help/**/*.md");
@@ -186,7 +186,7 @@ function compileMarkdownPlugin(): Plugin {
 // and make an xBundle.js that would REPLACE xBundle-main.js, reducing the number of files and
 // the indirection,but somehow it works out that some of the bundles actually load the root
 // -main.js files of OTHER bundles, so modifying or deleting them is not a good option.
-function postBuildPlugin(): Plugin {
+function postBuildPlugin(outputBrowserDir: string): Plugin {
     interface ManifestEntry {
         file: string;
         isEntry?: boolean;
@@ -199,10 +199,18 @@ function postBuildPlugin(): Plugin {
         name: "post-build",
         apply: "build", // Only run during build, not dev
         async closeBundle() {
-            const outputDir = path.resolve(__dirname, "../../output/browser");
+            const outputDir = outputBrowserDir;
             const manifestPath = path.join(outputDir, ".vite/manifest.json");
 
             try {
+                if (!fs.existsSync(manifestPath)) {
+                    console.warn(
+                        `[post-build] Skipping manifest processing because ${manifestPath} does not exist. ` +
+                            "An earlier build error likely prevented manifest generation.",
+                    );
+                    return;
+                }
+
                 // Read the manifest file
                 const manifestContent = await fs.promises.readFile(
                     manifestPath,
@@ -508,6 +516,33 @@ export default defineConfig(async ({ command }) => {
             ? parsedPort
             : 5173;
 
+    // LINKED LIBRARIES (set by `go.mjs --with`): alias each bare package import to its local
+    // checkout so edits there flow into this dev server. Format: "name=absPath;name=absPath".
+    // Empty/absent in a normal run, so the libraries resolve from node_modules as usual.
+    const linkedLibs: Record<string, string> = {};
+    for (const pair of (process.env.BLOOM_LINKED_LIBS ?? "")
+        .split(";")
+        .map((p) => p.trim())
+        .filter(Boolean)) {
+        const eq = pair.indexOf("=");
+        if (eq > 0) {
+            linkedLibs[pair.slice(0, eq)] = pair.slice(eq + 1);
+        }
+    }
+
+    // AGENT (ISOLATED) BUILD
+    // When BLOOM_UI_OUTDIR is set (by build/agent-vite.sh|ps1), redirect the whole
+    // build into a private per-terminal tree instead of the shared output/browser, so
+    // an agent can verify the bundle compiles without clobbering a developer's running
+    // Bloom, its Vite dev server, or a `vite build --watch`. This is the front-end twin
+    // of the C# build/agent-dotnet.sh wrapper. In an agent build we also skip the
+    // pug/LESS/markdown/static-copy side-effect plugins (see the plugins array below).
+    const agentOutDir = process.env.BLOOM_UI_OUTDIR;
+    const isAgentBuild = !!agentOutDir;
+    const outputBrowserDir = agentOutDir
+        ? path.resolve(agentOutDir)
+        : path.resolve(__dirname, "../../output/browser");
+
     // ENTRY POINTS CONFIGURATION
     // Define all JavaScript/TypeScript entry points - these are the "root" files that
     // Vite will build into separate bundles. Each entry becomes a standalone .js file
@@ -554,6 +589,8 @@ export default defineConfig(async ({ command }) => {
         languageChooserBundle: "./collection/LanguageChooserDialog.tsx",
         newCollectionLanguageChooserBundle:
             "./collection/NewCollectionLanguageChooser.tsx",
+        collectionChooserBundle:
+            "./collection/CollectionChooserDialog.entry.tsx",
         registrationDialogBundle:
             "./react_components/registration/registrationDialog.tsx",
     };
@@ -566,6 +603,12 @@ export default defineConfig(async ({ command }) => {
             // React plugin: Enables JSX, Fast Refresh, and React-specific optimizations
             react({
                 reactRefreshHost: `http://localhost:${devServerPort}`,
+                // jsxImportSource is also set in tsconfig.json; duplicating here ensures
+                // it applies to bloom-image-gallery files (see exclude below).
+                jsxImportSource: "@emotion/react",
+                // Include bloom-image-gallery in the transform pipeline even though it's in
+                // node_modules — its TSX source uses emotion's css prop and needs this plugin.
+                exclude: /node_modules\/(?!bloom-image-gallery)/,
                 babel: {
                     parserOpts: {
                         // This enables decorators like @mobxReact.observer.
@@ -574,18 +617,26 @@ export default defineConfig(async ({ command }) => {
                 },
             }),
             transformLessImportsPlugin(), // Transform LESS imports to inline CSS injection (build only)
-            compilePugPlugin(), // Compile Pug templates to HTML during build
-            compileLessPlugin(), // Compile standalone LESS files to CSS during build
-            compileMarkdownPlugin(), // Compile Markdown files to HTML during build
+            // In an agent build (BLOOM_UI_OUTDIR set) skip these side-effect plugins:
+            // they exist to populate the shared output/browser for a running Bloom, are
+            // irrelevant to a bundle-compile check, and skipping them keeps the isolated
+            // build fast and guarantees it writes ONLY under the private tree.
+            ...(isAgentBuild
+                ? []
+                : [
+                      compilePugPlugin(), // Compile Pug templates to HTML during build
+                      compileLessPlugin(), // Compile standalone LESS files to CSS during build
+                      compileMarkdownPlugin(outputBrowserDir), // Compile Markdown files to HTML during build
+                  ]),
             reportBuildErrorPlugin(),
-            postBuildPlugin(), // Process manifest and create final bundles (build only)
+            postBuildPlugin(outputBrowserDir), // Process manifest and create final bundles (build only)
 
             // STATIC FILE COPYING (BUILD ONLY)
             // vite-plugin-static-copy copies files from source to output directory
             // CRITICAL: These plugins must only run during build, not dev mode
             // In dev mode, scanning 525+ files causes 30+ second delays
             // Conditionally include these plugins only when command === 'build'
-            ...(command === "build"
+            ...(command === "build" && !isAgentBuild
                 ? [
                       // structured: false = flatten directory structure (all files go to dest root)
                       // Copy files that need flattening (structured: false)
@@ -602,6 +653,13 @@ export default defineConfig(async ({ command }) => {
                               {
                                   src: "node_modules/bloom-player/dist/*",
                                   dest: "./bloom-player/dist/",
+                              },
+                              // Copy the AI Image Editor's prebuilt app (dist-app/) so Bloom
+                              // serves it at /bloom/aiImageEditor/. Mirrors the dev-time
+                              // staging in go.mjs/aiEditorBuild.mjs.
+                              {
+                                  src: "node_modules/bloom-ai-image-tools/dist-app/*",
+                                  dest: "./aiImageEditor/",
                               },
                           ],
                       }),
@@ -622,6 +680,9 @@ export default defineConfig(async ({ command }) => {
                                       "!**/*.bat",
                                       "!**/node_modules/**/*.*",
                                       "!**/tsconfig.json",
+                                      "!**/test-results/**/*",
+                                      "!**/playwright-report/**/*",
+                                      "!**/.playwright-artifacts-*/**/*",
                                   ],
                                   dest: ".",
                               },
@@ -643,12 +704,21 @@ export default defineConfig(async ({ command }) => {
                 clientPort: devServerPort,
                 overlay: true,
             },
+            watch: {
+                // When bloom-image-gallery is yarn-linked for local development, its files
+                // live in node_modules but resolve to a real path outside it. Allow HMR
+                // to watch them by exempting that package from the node_modules exclusion.
+                ignored: (watchPath: string) => {
+                    if (watchPath.includes("bloom-image-gallery")) return false;
+                    return /node_modules/.test(watchPath);
+                },
+            },
         },
 
         // BUILD CONFIGURATION
         // Controls how Vite creates production bundles
         build: {
-            outDir: "../../output/browser", // Where to output built files
+            outDir: outputBrowserDir, // Where to output built files (redirected by BLOOM_UI_OUTDIR for agent builds)
             sourcemap: true, // Generate .map files for debugging production code
             minify: false, // Keep code readable (set to 'esbuild' or 'terser' to minify)
             cssCodeSplit: true, // Generate separate CSS files (loaded dynamically by postBuildPlugin)
@@ -708,7 +778,11 @@ export default defineConfig(async ({ command }) => {
         // MODULE RESOLUTION CONFIGURATION
         // Controls how Vite finds and loads modules
         resolve: {
-            preserveSymlinks: false, // Follow symlinks to actual files
+            // When bloom-image-gallery is yarn-linked for local development, follow the
+            // symlink to its real path so Vite treats it as a first-party source file
+            // rather than a node_modules package. This lets the react plugin transform it
+            // and lets tsconfig.json in that repo supply jsxImportSource for emotion.
+            preserveSymlinks: false,
 
             // DEDUPE: Prevent duplicate copies of these packages in bundles
             // If multiple dependencies use React, only include one copy
@@ -751,6 +825,8 @@ export default defineConfig(async ({ command }) => {
                     "lib/long-press/jquery.longpress.js",
                 ),
                 "App.less": path.resolve(__dirname, "app/App.less"),
+                // Local checkouts of our libraries when launched via `go.sh --with <name>`.
+                ...linkedLibs,
             },
         },
 
@@ -764,7 +840,7 @@ export default defineConfig(async ({ command }) => {
                 ? ["default", "junit"]
                 : ["default"],
             outputFile: "./bloombrowserui-test-results.xml",
-            includeConsoleOutput: true,
+            includeConsoleOutput: false,
             // Uncomment to run only specific test files during development:
             // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
             exclude: [
@@ -773,16 +849,28 @@ export default defineConfig(async ({ command }) => {
                 "**/cypress/**",
                 "**/.{idea,git,cache,output,temp}/**",
                 "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+                "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via pnpm e2e canvas)
                 "**/react_components/component-tester/**", // Exclude playwright component tests
                 "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
             ],
             environment: "jsdom", // Use jsdom to simulate browser DOM in Node
             globals: false, // Don't inject global test functions (use imports instead)
             testTimeout: 30000, // 30 second timeout for async operations
+            teardownTimeout: 10000, // 10s max for after-test cleanup; prevents hung workers from blocking the pool
+            // Use worker threads instead of child-process forks. Vitest 4.0 changed the
+            // default pool to 'forks', but on Windows the process-creation overhead causes
+            // workers to time out before they start ("Timeout starting forks runner").
+            // The threads pool is lighter-weight and avoids that issue.
+            pool: "threads",
+            // Limit concurrent workers. The heavy transform cost of some test files
+            // (notably PrepareAppStepper.spec.tsx with its deep MUI import chain) saturates
+            // the CPU while workers are starting, causing other workers to miss the
+            // hardcoded 5-second vitest startup timeout. With pool: "threads" the
+            // per-worker startup overhead is negligible, so we can safely use more workers.
+            // 4 workers roughly halves the wall-clock collect time compared to 2.
+            maxWorkers: 4,
+            minWorkers: 2,
             sourcemap: true, // Enable source maps for debugging test code
-            deps: {
-                inline: ["vitest-canvas-mock"], // Force this dep to be bundled (not externalized)
-            },
             browser: {
                 // This whole block is unused since enabled is false. The settings are our current
                 // best guess for our next attempt to get browser mode working.
@@ -795,9 +883,7 @@ export default defineConfig(async ({ command }) => {
                 ],
             },
             environmentOptions: {
-                jsdom: {
-                    resources: "usable", // Allow jsdom to load external resources
-                },
+                jsdom: {},
             },
         },
 
@@ -808,7 +894,10 @@ export default defineConfig(async ({ command }) => {
                 "jquery", // Always pre-bundle jQuery
                 "comicaljs", // Pre-bundle comicaljs (webpack UMD bundle needs processing)
             ],
-            exclude: ["lib/localizationManager/localizationManager"], // Don't pre-bundle this
+            exclude: [
+                "lib/localizationManager/localizationManager", // Don't pre-bundle this
+                "bloom-image-gallery", // TypeScript source entry point — must go through Vite's transform pipeline, not esbuild pre-bundling
+            ],
             // Force Vite to treat comicaljs as having named exports even though it's CommonJS/UMD
             esbuildOptions: {
                 plugins: [],

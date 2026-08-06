@@ -12,6 +12,7 @@ using System.Net.Http;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Bloom.Api;
@@ -80,10 +81,10 @@ namespace Bloom.Publish.Rab
         private readonly CollectionSettings _collectionSettings;
         private readonly BloomWebSocketServer _webSocketServer;
         private readonly IWebSocketProgress _progress;
-        private string _activeProgressAction;
+        private volatile string _activeProgressAction;
         private int _lastBuildProgressPercent;
-        private string _lastLoggedProgressStage;
-        private int? _lastLoggedProgressPercent;
+        private volatile string _lastLoggedProgressStage;
+        private volatile int _lastLoggedProgressPercent = -1;
 
         // When non-null, RAB process output lines are collected here (in addition to being sent to
         // the progress log) so a build that produces no APK can surface RAB's own diagnostics.
@@ -91,6 +92,29 @@ namespace Bloom.Publish.Rab
         // access is guarded by _rabOutputCaptureLock to keep the List<string> from corrupting.
         private List<string> _rabOutputCapture;
         private readonly object _rabOutputCaptureLock = new object();
+
+        // Cancellation state for the currently running action (prepare/build/install).
+        private volatile bool _cancelRequested;
+        private readonly object _currentProcessLock = new object();
+        private Process _currentProcess;
+
+        // While true, the RAB/adb subprocess helpers run to completion without being killed by a
+        // cancellation and without throwing on a pending cancel. Used to make the "uninstall the old
+        // copy, then reinstall" recovery in Install atomic, so a cancel arriving mid-recovery cannot
+        // leave the phone with the old app removed and nothing put back in its place.
+        private volatile bool _protectCurrentProcessFromCancellation;
+
+        // Cancels in-process async I/O (currently the installer download) that killing a subprocess
+        // would not interrupt, so a stalled HTTP request aborts immediately on cancel instead of
+        // hanging until the HttpClient timeout. Guarded by _currentProcessLock, which serializes all
+        // of the current action's cancellation state.
+        private CancellationTokenSource _actionCancellationSource;
+
+        // Set while a Bloom-run installer is in progress and only cleared on a clean finish, so a
+        // later Prepare in this session reinstalls over a possibly half-installed tree instead of
+        // trusting it (BL-16350; Devin). In-memory (not a persisted marker) on purpose: it must not
+        // survive to hide a real install — e.g. one the user completes manually — from GetStatus.
+        private volatile bool _rabInstallInterrupted;
 
         public RabProjectService(
             CollectionModel collectionModel,
@@ -372,6 +396,9 @@ namespace Bloom.Publish.Rab
                     )
                 );
 
+            // read this once early in the method to avoid returning inconsistent progress info if
+            // another thread changes it.
+            var activeAction = _activeProgressAction;
             var status = new RabProjectStatus()
             {
                 RabInstalled = rabInstalled,
@@ -386,6 +413,12 @@ namespace Bloom.Publish.Rab
                 TrackedBooks = trackedBooks,
                 TrackedBookTitles = trackedBooks.Select(book => book.Title).ToArray(),
                 PrepareSteps = prepareSteps,
+                ActiveAction = activeAction,
+                ActiveActionProgressStage = activeAction != null ? _lastLoggedProgressStage : null,
+                ActiveActionProgressPercent =
+                    activeAction != null
+                        ? (_lastLoggedProgressPercent < 0 ? 0 : _lastLoggedProgressPercent)
+                        : 0,
             };
 
             if (status.ProjectExists)
@@ -440,6 +473,137 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
+        /// True while a prepare/build/install action is running on a background thread.
+        /// </summary>
+        internal bool IsActionInProgress => _activeProgressAction != null;
+
+        /// <summary>
+        /// True when the user has actually requested cancellation of the current action. Lets the API
+        /// layer tell a user-initiated <see cref="OperationCanceledException"/> apart from one thrown
+        /// by library code (e.g. an HttpClient download timeout, whose TaskCanceledException also
+        /// derives from OperationCanceledException), so a genuine failure isn't misreported — and
+        /// unlogged — as a cancellation.
+        /// </summary>
+        internal bool IsCancellationRequested => _cancelRequested;
+
+        /// <summary>
+        /// Atomically claims the action slot, setting <see cref="_activeProgressAction"/> to
+        /// <paramref name="action"/>. Returns true if this call won the slot, false if another
+        /// action is already running.
+        /// </summary>
+        internal bool TryBeginAction(string action)
+        {
+            if (Interlocked.CompareExchange(ref _activeProgressAction, action, null) != null)
+                return false;
+            // Reset stale progress from the previous action so a status poll that lands
+            // before the first ReportProgressStage call doesn't serve stale values.
+            _lastLoggedProgressStage = null;
+            _lastLoggedProgressPercent = -1;
+            _cancelRequested = false;
+            lock (_currentProcessLock)
+            {
+                _actionCancellationSource?.Dispose();
+                _actionCancellationSource = new CancellationTokenSource();
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Requests cancellation of the currently running prepare/build/install action.
+        /// Kills the active RAB subprocess (if any) so the background thread unblocks and can clean up,
+        /// and cancels the action's token so any in-flight async I/O (e.g. a stalled installer
+        /// download) aborts immediately instead of blocking until its timeout.
+        /// </summary>
+        internal void RequestCancellation()
+        {
+            _cancelRequested = true;
+            Process processToKill;
+            CancellationTokenSource sourceToCancel;
+            lock (_currentProcessLock)
+            {
+                processToKill = _currentProcess;
+                sourceToCancel = _actionCancellationSource;
+            }
+            // Cancel outside the lock so any read-abort continuations the token fires don't run while
+            // we hold it. The source can be disposed by a concurrent ClearAction, so tolerate that.
+            try
+            {
+                sourceToCancel?.Cancel();
+            }
+            catch (ObjectDisposedException) { }
+            if (processToKill != null)
+            {
+                try
+                {
+                    processToKill.Kill(true);
+                }
+                catch (Exception) { } // Process may have already exited
+            }
+        }
+
+        /// <summary>
+        /// The current action's cancellation token, or <see cref="CancellationToken.None"/> when no
+        /// action is running. Used to make blocking async I/O (the installer download) abort promptly
+        /// when the user cancels.
+        /// </summary>
+        private CancellationToken CurrentCancellationToken
+        {
+            get
+            {
+                lock (_currentProcessLock)
+                    return _actionCancellationSource?.Token ?? CancellationToken.None;
+            }
+        }
+
+        /// <summary>
+        /// Throws <see cref="OperationCanceledException"/> if the user has requested cancellation of
+        /// the current action, so callers can bail at a safe point.
+        /// </summary>
+        private void ThrowIfCancellationRequested()
+        {
+            if (_cancelRequested)
+                throw new OperationCanceledException();
+        }
+
+        /// <summary>
+        /// Logs a user-facing "cancelled" message to the progress channel.
+        /// </summary>
+        public void ReportCancellation(string action)
+        {
+            _progress.MessageWithoutLocalizing($"{action} cancelled.");
+        }
+
+        /// <summary>
+        /// Releases the action slot. Called by <see cref="RabPublishApi"/> just before
+        /// <see cref="SendActionCompleteEvent"/> so the slot remains claimed until the
+        /// action is complete. (We clear it before actually sending the notification
+        /// so that the notification handlers correctly see that no task is running).
+        /// </summary>
+        internal void ClearAction()
+        {
+            _activeProgressAction = null;
+            lock (_currentProcessLock)
+            {
+                _actionCancellationSource?.Dispose();
+                _actionCancellationSource = null;
+            }
+        }
+
+        /// <summary>
+        /// Sends an "actionComplete" websocket event so the Apps screen knows when a background
+        /// prepare/build/install has finished.  Called by RabPublishApi after ReportFailure (if
+        /// any) so the error message is logged before the UI tears down the progress subscriber.
+        /// </summary>
+        internal void SendActionCompleteEvent(string action, bool succeeded)
+        {
+            _webSocketServer.SendString(
+                kWebSocketContext,
+                RabPublishApi.kWebSocketEventId_ActionComplete,
+                $"{action}:{(succeeded ? "success" : "failure")}"
+            );
+        }
+
+        /// <summary>
         /// Reports an App Builder failure to Bloom's log and the progress channel used by the Apps screen.
         /// </summary>
         public void ReportFailure(string action, Exception error)
@@ -456,114 +620,104 @@ namespace Bloom.Publish.Rab
         private void Prepare()
         {
             var paths = GetPaths();
-            _activeProgressAction = "prepare";
-            try
+            ReportProgressStage("checking-installer", 0);
+            if (!EnsureRabInstalledForPrepare())
+                return;
+
+            // Prepare makes the on-disk RAB workspace match Bloom's current settings and tracked-book list,
+            // creating the project only on the first run and refreshing inputs after that.
+            EnsureWorkspaceFolders(paths);
+            EnsureRabBuildPrerequisites(paths);
+
+            ReportProgressStage("preparing-workspace", 0);
+            _progress.MessageWithoutLocalizing(
+                "Preparing the Reading App Builder workspace...",
+                ProgressKind.Heading
+            );
+
+            ReportProgressStage("exporting-bloompubs", 10);
+            var trackedBooks = ExportPrepareBooks(paths);
+            var effectiveSettings = GetEffectiveAppSettings(paths);
+            var supportFiles = EnsureProjectSupportFiles(paths);
+            var existingProjectPath = FindAppDefPath(paths);
+            RabPrepareState state;
+            var createdNewProject = string.IsNullOrEmpty(existingProjectPath);
+
+            if (createdNewProject)
             {
-                ReportProgressStage("checking-installer", 0);
-                if (!EnsureRabInstalledForPrepare())
-                    return;
+                ReportProgressStage("generating-signing-key", 55);
+                _progress.MessageWithoutLocalizing("Preparing Bloom's Android signing key...");
+                state = CreatePrepareState(EnsureBloomOwnedSigningState(paths));
 
-                // Prepare makes the on-disk RAB workspace match Bloom's current settings and tracked-book list,
-                // creating the project only on the first run and refreshing inputs after that.
-                EnsureWorkspaceFolders(paths);
-                EnsureRabBuildPrerequisites(paths);
-
-                ReportProgressStage("preparing-workspace", 0);
+                ReportProgressStage("creating-project", 70);
                 _progress.MessageWithoutLocalizing(
-                    "Preparing the Reading App Builder workspace...",
-                    ProgressKind.Heading
+                    "Creating the initial Reading App Builder project..."
+                );
+                RunRabCommand(
+                    BuildRabArgsForNewProject(
+                        paths,
+                        effectiveSettings,
+                        trackedBooks,
+                        state,
+                        supportFiles
+                    ),
+                    paths.RabRoot
                 );
 
-                ReportProgressStage("exporting-bloompubs", 10);
-                var trackedBooks = ExportPrepareBooks(paths);
-                var effectiveSettings = GetEffectiveAppSettings(paths);
-                var supportFiles = EnsureProjectSupportFiles(paths);
-                var existingProjectPath = FindAppDefPath(paths);
-                RabPrepareState state;
-                var createdNewProject = string.IsNullOrEmpty(existingProjectPath);
-
-                if (createdNewProject)
-                {
-                    ReportProgressStage("generating-signing-key", 55);
-                    _progress.MessageWithoutLocalizing("Preparing Bloom's Android signing key...");
-                    state = CreatePrepareState(EnsureBloomOwnedSigningState(paths));
-
-                    ReportProgressStage("creating-project", 70);
-                    _progress.MessageWithoutLocalizing(
-                        "Creating the initial Reading App Builder project..."
+                existingProjectPath = FindAppDefPath(paths);
+                if (string.IsNullOrEmpty(existingProjectPath))
+                    throw new ApplicationException(
+                        "Reading App Builder finished, but Bloom could not find the generated .appDef file."
                     );
-                    RunRabCommand(
-                        BuildRabArgsForNewProject(
-                            paths,
-                            effectiveSettings,
-                            trackedBooks,
-                            state,
-                            supportFiles
-                        ),
-                        paths.RabRoot
-                    );
-
-                    existingProjectPath = FindAppDefPath(paths);
-                    if (string.IsNullOrEmpty(existingProjectPath))
-                        throw new ApplicationException(
-                            "Reading App Builder finished, but Bloom could not find the generated .appDef file."
-                        );
-                }
-                else
-                {
-                    ReportProgressStage("updating-project", 70);
-                    _progress.MessageWithoutLocalizing(
-                        "The Reading App Builder project already exists. Refreshing BloomPUB inputs instead."
-                    );
-                    state = EnsureStateHasProjectAndSigningInfo(
-                        paths,
-                        LoadState(paths) ?? new RabPrepareState(),
-                        existingProjectPath
-                    );
-                    state = ApplyBloomOwnedSigningState(state, EnsureBloomOwnedSigningState(paths));
-                }
-
-                state = EnsureStateHasProjectAndSigningInfo(paths, state, existingProjectPath);
-                EnsureKeystore(state.KeystorePath, state.KeystorePassword);
-                state.Books = trackedBooks;
-
-                if (!createdNewProject)
-                {
-                    PrepareProjectForTrackedBookImport(existingProjectPath, trackedBooks);
-                    ReportProgressStage("updating-project", 85);
-                    RunRabCommand(
-                        BuildRabArgsForProjectUpdate(
-                            paths,
-                            state,
-                            trackedBooks,
-                            supportFiles,
-                            false
-                        ),
-                        paths.RabRoot
-                    );
-                }
-
-                ReconcileProjectWithImportedBooks(existingProjectPath, trackedBooks);
-                SynchronizeProjectFonts(existingProjectPath, trackedBooks);
-                EnsureProjectInterfaceLanguage(existingProjectPath);
-                ReportProgressStage("updating-project", 85);
-                SaveState(paths, state);
-
-                ReportProgressStage("complete", 100);
-                _progress.MessageWithoutLocalizing("Prepare complete.", ProgressKind.Heading);
-                _progress.MessageWithoutLocalizing($"Project file: {existingProjectPath}");
             }
-            finally
+            else
             {
-                _activeProgressAction = null;
+                ReportProgressStage("updating-project", 70);
+                _progress.MessageWithoutLocalizing(
+                    "The Reading App Builder project already exists. Refreshing BloomPUB inputs instead."
+                );
+                state = EnsureStateHasProjectAndSigningInfo(
+                    paths,
+                    LoadState(paths) ?? new RabPrepareState(),
+                    existingProjectPath
+                );
+                state = ApplyBloomOwnedSigningState(state, EnsureBloomOwnedSigningState(paths));
             }
+
+            state = EnsureStateHasProjectAndSigningInfo(paths, state, existingProjectPath);
+            EnsureKeystore(state.KeystorePath, state.KeystorePassword);
+            state.Books = trackedBooks;
+
+            if (!createdNewProject)
+            {
+                PrepareProjectForTrackedBookImport(existingProjectPath, trackedBooks);
+                ReportProgressStage("updating-project", 85);
+                RunRabCommand(
+                    BuildRabArgsForProjectUpdate(paths, state, trackedBooks, supportFiles, false),
+                    paths.RabRoot
+                );
+            }
+
+            ReconcileProjectWithImportedBooks(existingProjectPath, trackedBooks);
+            SynchronizeProjectFonts(existingProjectPath, trackedBooks);
+            EnsureProjectInterfaceLanguage(existingProjectPath);
+            ReportProgressStage("updating-project", 85);
+            SaveState(paths, state);
+
+            ReportProgressStage("complete", 100);
+            _progress.MessageWithoutLocalizing("Prepare complete.", ProgressKind.Heading);
+            _progress.MessageWithoutLocalizing($"Project file: {existingProjectPath}");
         }
 
         private bool EnsureRabInstalledForPrepare()
         {
             ReportProgressStage("checking-installer", 0);
 
-            if (IsRabInstalledForPrepare())
+            // If a Bloom-run install this session was interrupted, don't trust a possibly
+            // half-installed tree even if rab.bat + keytool happen to be present — reinstall (the
+            // installer is idempotent and completes/repairs). This gates only the install decision,
+            // not GetStatus, so a genuinely-installed RAB is never reported as missing (BL-16350).
+            if (!_rabInstallInterrupted && IsRabInstalledForPrepare())
                 return true;
 
             var installerPath = GetRabSetupInstallerPath();
@@ -661,45 +815,49 @@ namespace Bloom.Publish.Rab
             // Build reuses BloomPUBs created during the current Apps-screen session and regenerates only missing ones.
             var paths = GetPaths();
             EnsureWorkspaceFolders(paths);
-            _activeProgressAction = "build";
             _lastBuildProgressPercent = 0;
+            ReportProgressStage("preparing-build", 0);
+            var state = LoadStateOrThrow(paths);
+            EnsureKeystore(state.KeystorePath, state.KeystorePassword);
+            EnsureRabBuildPrerequisites(paths);
+            ReportProgressStage("exporting-bloompubs", 10);
+            var trackedBooks = ExportTrackedBooks(paths, state);
+            var supportFiles = EnsureProjectSupportFiles(paths);
+
+            ReportProgressStage("updating-project", 35);
+            _progress.MessageWithoutLocalizing(
+                "Updating the Reading App Builder project with fresh BloomPUB files..."
+            );
+            PrepareProjectForTrackedBookImport(state.AppDefPath, trackedBooks);
+            RunRabCommand(
+                BuildRabArgsForProjectUpdate(paths, state, trackedBooks, supportFiles, false),
+                paths.RabRoot
+            );
+            ReconcileProjectWithImportedBooks(state.AppDefPath, trackedBooks);
+            SynchronizeProjectFonts(state.AppDefPath, trackedBooks);
+            EnsureProjectInterfaceLanguage(state.AppDefPath);
+            state.Books = trackedBooks;
+            SaveState(paths, state);
+
+            ReportProgressStage("building-android-app", 45);
+            _progress.MessageWithoutLocalizing(
+                "Building the Android app with Reading App Builder...",
+                ProgressKind.Heading
+            );
+            Directory.CreateDirectory(paths.SafeApkRoot);
+
+            // Snapshot the deliverable APKs before the build so the abnormal-path cleanup below can
+            // tell a previous good APK (untouched by this attempt) from one this attempt created or
+            // rewrote. See DeleteApksWrittenDuringBuild for why this matters.
+            var preBuildApkWriteTimes = SnapshotDeliverableApkWriteTimes(paths);
+
+            // Capture this run's RAB output so that, if no APK is produced, we can surface
+            // Reading App Builder's own diagnostics (e.g. a missing font) instead of a generic
+            // "no APK was found" message that gives the user nothing to act on (BL-16467).
+            var buildOutput = new List<string>();
+            _rabOutputCapture = buildOutput;
             try
             {
-                ReportProgressStage("preparing-build", 0);
-                var state = LoadStateOrThrow(paths);
-                EnsureKeystore(state.KeystorePath, state.KeystorePassword);
-                EnsureRabBuildPrerequisites(paths);
-                ReportProgressStage("exporting-bloompubs", 10);
-                var trackedBooks = ExportTrackedBooks(paths, state);
-                var supportFiles = EnsureProjectSupportFiles(paths);
-
-                ReportProgressStage("updating-project", 35);
-                _progress.MessageWithoutLocalizing(
-                    "Updating the Reading App Builder project with fresh BloomPUB files..."
-                );
-                PrepareProjectForTrackedBookImport(state.AppDefPath, trackedBooks);
-                RunRabCommand(
-                    BuildRabArgsForProjectUpdate(paths, state, trackedBooks, supportFiles, false),
-                    paths.RabRoot
-                );
-                ReconcileProjectWithImportedBooks(state.AppDefPath, trackedBooks);
-                SynchronizeProjectFonts(state.AppDefPath, trackedBooks);
-                EnsureProjectInterfaceLanguage(state.AppDefPath);
-                state.Books = trackedBooks;
-                SaveState(paths, state);
-
-                ReportProgressStage("building-android-app", 45);
-                _progress.MessageWithoutLocalizing(
-                    "Building the Android app with Reading App Builder...",
-                    ProgressKind.Heading
-                );
-                Directory.CreateDirectory(paths.SafeApkRoot);
-
-                // Capture this run's RAB output so that, if no APK is produced, we can surface
-                // Reading App Builder's own diagnostics (e.g. a missing font) instead of a generic
-                // "no APK was found" message that gives the user nothing to act on (BL-16467).
-                var buildOutput = new List<string>();
-                _rabOutputCapture = buildOutput;
                 try
                 {
                     RunRabCommand(
@@ -725,32 +883,89 @@ namespace Bloom.Publish.Rab
                         e
                     );
                 }
-                finally
-                {
-                    _rabOutputCapture = null;
-                }
-
-                ReportProgressStage("finalizing-apk", 98);
-
-                var apkPath = FindLatestApkPath(paths);
-                if (string.IsNullOrEmpty(apkPath))
-                    throw new ApplicationException(DescribeMissingApkFailure(buildOutput));
-
-                ReportProgressStage("complete", 100);
-                _progress.MessageWithoutLocalizing("Build complete.", ProgressKind.Heading);
-                _progress.MessageWithoutLocalizing($"APK: {apkPath}");
-
-                state.LastBuiltInputSignature = ComputeBuildInputSignature(
-                    GetEffectiveAppSettings(paths),
-                    trackedBooks
-                );
-                state.LastBuiltApkPath = apkPath;
-                SaveState(paths, state);
+            }
+            catch (Exception)
+            {
+                // The build didn't finish — the user cancelled, or RAB failed partway. Clean up any
+                // APK this attempt left behind that a later status check or "Try on phone" (both
+                // scan the directories via FindLatestApkPath) could mistake for a finished, signed
+                // app: (1) partial/unsigned intermediates Gradle wrote under BuildRoot, and (2) a
+                // deliverable in SafeApkRoot that RAB was writing when it was killed — Bloom cannot
+                // see whether RAB writes that final APK atomically, so a kill mid-write could leave a
+                // truncated file at the deliverable name (BL-16350). Both run only on the abnormal
+                // path, so a successful build is untouched; and SafeApkRoot cleanup deletes only APKs
+                // this attempt created or rewrote, so a previous good APK still survives a failed
+                // rebuild.
+                DeleteIntermediateBuildApks(paths);
+                DeleteApksWrittenDuringBuild(paths, preBuildApkWriteTimes);
+                // If RAB finished a complete, signed APK before a late cancel (or a failure reported a
+                // moment later) arrived, DeleteApksWrittenDuringBuild kept it — so record it as the
+                // built app too. Otherwise apkExists would be true while GetStatus still reported a
+                // build as needed, because the signature is only saved on the normal path below
+                // (BL-16350; Devin). FindCompleteApkWrittenThisBuild guards on "written this attempt"
+                // so a surviving previous-build APK is not mis-recorded against this build's inputs.
+                var finishedApk = FindCompleteApkWrittenThisBuild(paths, preBuildApkWriteTimes);
+                if (finishedApk != null)
+                    RecordBuiltApk(paths, state, trackedBooks, finishedApk);
+                throw;
             }
             finally
             {
-                _activeProgressAction = null;
+                _rabOutputCapture = null;
             }
+
+            ReportProgressStage("finalizing-apk", 98);
+
+            var apkPath = FindLatestApkPath(paths);
+            if (string.IsNullOrEmpty(apkPath))
+                throw new ApplicationException(DescribeMissingApkFailure(buildOutput));
+
+            ReportProgressStage("complete", 100);
+            _progress.MessageWithoutLocalizing("Build complete.", ProgressKind.Heading);
+            _progress.MessageWithoutLocalizing($"APK: {apkPath}");
+
+            RecordBuiltApk(paths, state, trackedBooks, apkPath);
+        }
+
+        /// <summary>
+        /// Records the just-built APK as this project's build result — its path plus the input
+        /// signature that produced it — and persists the state, so GetStatus reports the app as
+        /// current. Extracted so both the normal build path and the late-cancel path (where a complete
+        /// APK survived) record it consistently (BL-16350).
+        /// </summary>
+        private void RecordBuiltApk(
+            RabWorkspacePaths paths,
+            RabPrepareState state,
+            IEnumerable<RabBookPublishInfo> trackedBooks,
+            string apkPath
+        )
+        {
+            state.LastBuiltInputSignature = ComputeBuildInputSignature(
+                GetEffectiveAppSettings(paths),
+                trackedBooks
+            );
+            state.LastBuiltApkPath = apkPath;
+            SaveState(paths, state);
+        }
+
+        /// <summary>
+        /// Returns the finished deliverable APK this build attempt produced, or null. Used on the
+        /// abnormal path to tell a complete APK that RAB finished writing before a late cancel (record
+        /// it) from a surviving previous-build APK this attempt never touched (leave the old build
+        /// state alone). "Written this attempt" = new since, or rewritten after, the pre-build snapshot.
+        /// </summary>
+        private string FindCompleteApkWrittenThisBuild(
+            RabWorkspacePaths paths,
+            IReadOnlyDictionary<string, DateTime> preBuildApkWriteTimes
+        )
+        {
+            var apkPath = FindLatestApkPath(paths);
+            if (string.IsNullOrEmpty(apkPath) || !IsCompleteApk(apkPath))
+                return null;
+            var writtenThisBuild =
+                !preBuildApkWriteTimes.TryGetValue(apkPath, out var previousWriteTimeUtc)
+                || RobustFile.GetLastWriteTimeUtc(apkPath) != previousWriteTimeUtc;
+            return writtenThisBuild ? apkPath : null;
         }
 
         // Markers that flag a RAB output line as worth surfacing when a build produces no APK.
@@ -858,53 +1073,59 @@ namespace Bloom.Publish.Rab
         {
             // Install re-reads package/app metadata from the project so launching uses the same identity that was built.
             var paths = GetPaths();
-            _activeProgressAction = "install";
-            try
+            var apkPath = FindLatestApkPath(paths);
+            if (string.IsNullOrEmpty(apkPath))
+                throw new ApplicationException(
+                    "Build the app before trying to install it on a phone."
+                );
+
+            var adbPath = FindAdbPath();
+            if (string.IsNullOrEmpty(adbPath))
+                throw new ApplicationException(
+                    "Bloom could not find adb. Install Android platform-tools or make adb available on PATH."
+                );
+
+            var project = LoadProjectOrNull(paths);
+            var packageName = project?.PackageName;
+            if (string.IsNullOrWhiteSpace(packageName))
+                packageName = GetPackageName();
+
+            var appName = project?.AppName;
+            if (string.IsNullOrWhiteSpace(appName))
+                appName = GetAppName();
+
+            ReportProgressStage("checking-device", 0);
+            _progress.MessageWithoutLocalizing("Checking for a connected Android device...");
+            var device = GetSingleConnectedDevice(adbPath);
+
+            ReportProgressStage("installing-on-phone", 45);
+            _progress.MessageWithoutLocalizing(
+                $"Installing {Path.GetFileName(apkPath)} on {device.DisplayName}...",
+                ProgressKind.Heading
+            );
+            var installResult = InstallApkOnDevice(adbPath, device.Serial, apkPath, paths.RabRoot);
+            if (installResult.ExitCode != 0)
             {
-                var apkPath = FindLatestApkPath(paths);
-                if (string.IsNullOrEmpty(apkPath))
-                    throw new ApplicationException(
-                        "Build the app before trying to install it on a phone."
-                    );
-
-                var adbPath = FindAdbPath();
-                if (string.IsNullOrEmpty(adbPath))
-                    throw new ApplicationException(
-                        "Bloom could not find adb. Install Android platform-tools or make adb available on PATH."
-                    );
-
-                var project = LoadProjectOrNull(paths);
-                var packageName = project?.PackageName;
-                if (string.IsNullOrWhiteSpace(packageName))
-                    packageName = GetPackageName();
-
-                var appName = project?.AppName;
-                if (string.IsNullOrWhiteSpace(appName))
-                    appName = GetAppName();
-
-                ReportProgressStage("checking-device", 0);
-                _progress.MessageWithoutLocalizing("Checking for a connected Android device...");
-                var device = GetSingleConnectedDevice(adbPath);
-
-                ReportProgressStage("installing-on-phone", 45);
-                _progress.MessageWithoutLocalizing(
-                    $"Installing {Path.GetFileName(apkPath)} on {device.DisplayName}...",
-                    ProgressKind.Heading
-                );
-                var installResult = InstallApkOnDevice(
-                    adbPath,
-                    device.Serial,
-                    apkPath,
-                    paths.RabRoot
-                );
-                if (installResult.ExitCode != 0)
+                if (IsUpdateIncompatibleInstallFailure(installResult.Output))
                 {
-                    if (IsUpdateIncompatibleInstallFailure(installResult.Output))
+                    // The first attempt failed only because a differently-signed copy is already
+                    // installed, and that copy is still intact. If the user asked to cancel during
+                    // that attempt, stop here — before the destructive uninstall — so their existing
+                    // app is left untouched.
+                    ThrowIfCancellationRequested();
+
+                    _progress.MessageWithoutLocalizing(
+                        $"A different signed copy of {appName} is already installed on {device.DisplayName}. Removing it and retrying...",
+                        ProgressKind.Warning
+                    );
+
+                    // Uninstalling removes the phone's current copy, so once we start we must finish
+                    // the reinstall even if the user cancels in between; otherwise the phone would be
+                    // left with no app at all. Shield this pair of adb calls from cancellation, then
+                    // honor any pending cancel once the app is safely back.
+                    _protectCurrentProcessFromCancellation = true;
+                    try
                     {
-                        _progress.MessageWithoutLocalizing(
-                            $"A different signed copy of {appName} is already installed on {device.DisplayName}. Removing it and retrying...",
-                            ProgressKind.Warning
-                        );
                         UninstallAppFromDevice(adbPath, device.Serial, packageName, paths.RabRoot);
                         installResult = InstallApkOnDevice(
                             adbPath,
@@ -913,35 +1134,36 @@ namespace Bloom.Publish.Rab
                             paths.RabRoot
                         );
                     }
-
-                    if (installResult.ExitCode != 0)
+                    finally
                     {
-                        throw new ApplicationException(
-                            $"{Path.GetFileName(adbPath)} exited with code {installResult.ExitCode}."
-                        );
+                        _protectCurrentProcessFromCancellation = false;
                     }
+
+                    // The app is reinstalled; if the user cancelled during the protected recovery,
+                    // honor it now. (A failed reinstall falls through to the error check below.)
+                    if (installResult.ExitCode == 0)
+                        ThrowIfCancellationRequested();
                 }
 
-                ReportProgressStage("launching-on-phone", 85);
-                _progress.MessageWithoutLocalizing(
-                    $"Launching {appName} on {device.DisplayName}...",
-                    ProgressKind.Heading
-                );
-                RunProcess(
-                    adbPath,
-                    BuildLaunchAppArguments(device.Serial, packageName),
-                    paths.RabRoot
-                );
-                ReportProgressStage("complete", 100);
-                _progress.MessageWithoutLocalizing(
-                    $"Install complete. Opened {appName} on {device.DisplayName}.",
-                    ProgressKind.Heading
-                );
+                if (installResult.ExitCode != 0)
+                {
+                    throw new ApplicationException(
+                        $"{Path.GetFileName(adbPath)} exited with code {installResult.ExitCode}."
+                    );
+                }
             }
-            finally
-            {
-                _activeProgressAction = null;
-            }
+
+            ReportProgressStage("launching-on-phone", 85);
+            _progress.MessageWithoutLocalizing(
+                $"Launching {appName} on {device.DisplayName}...",
+                ProgressKind.Heading
+            );
+            RunProcess(adbPath, BuildLaunchAppArguments(device.Serial, packageName), paths.RabRoot);
+            ReportProgressStage("complete", 100);
+            _progress.MessageWithoutLocalizing(
+                $"Install complete. Opened {appName} on {device.DisplayName}.",
+                ProgressKind.Heading
+            );
         }
 
         internal virtual RabWorkspacePaths GetPaths()
@@ -1213,6 +1435,13 @@ namespace Bloom.Publish.Rab
 
             for (var index = 0; index < booksToExport.Count; index++)
             {
+                // Creating a BloomPUB runs entirely in-process (no RAB subprocess whose exit lets
+                // RunProcess notice cancellation), so a user who clicks Cancel during a multi-book
+                // export would otherwise wait for every remaining book to finish. Check between
+                // books so cancellation takes effect promptly.
+                if (_cancelRequested)
+                    throw new OperationCanceledException();
+
                 var bookInfo = booksToExport[index];
                 var book = _collectionModel.GetBookFromBookInfo(bookInfo);
                 var existing =
@@ -2197,12 +2426,58 @@ namespace Bloom.Publish.Rab
                         ReportProcessOutputLine(args.Data, ProgressKind.Warning);
                 };
 
+                // Don't launch another subprocess if the user has already asked to cancel: otherwise
+                // a long step (e.g. the Gradle build) would run to completion before the post-exit
+                // check below noticed it, leaving the user — with navigation locked — stuck watching
+                // it finish (BL-16350). The protected recovery is exempt (it must complete).
+                if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                    throw new OperationCanceledException();
+
                 if (!process.Start())
                     throw new ApplicationException($"Bloom could not start {fileName}.");
 
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                process.WaitForExit();
+                // When protected, don't register the process for the cancellation kill so this call
+                // runs to completion even if the user cancels (see _protectCurrentProcessFromCancellation).
+                if (!_protectCurrentProcessFromCancellation)
+                {
+                    lock (_currentProcessLock)
+                        _currentProcess = process;
+                }
+                // Close the race between Start() above and registering _currentProcess: a cancel that
+                // arrived in that window found no process to kill, so kill it now.
+                if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                {
+                    try
+                    {
+                        process.Kill(true);
+                    }
+                    catch (Exception) { }
+                }
+                try
+                {
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                    process.WaitForExit();
+                }
+                catch (InvalidOperationException)
+                    when (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                {
+                    // The race-kill above can tear the process down before the async output readers
+                    // attach, which surfaces as InvalidOperationException. Since we were cancelling,
+                    // report it as a cancellation, not a failure (BL-16350; Devin).
+                    throw new OperationCanceledException();
+                }
+                finally
+                {
+                    if (!_protectCurrentProcessFromCancellation)
+                    {
+                        lock (_currentProcessLock)
+                            _currentProcess = null;
+                    }
+                }
+
+                if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                    throw new OperationCanceledException();
 
                 if (process.ExitCode != 0)
                     throw new ApplicationException(
@@ -2294,12 +2569,58 @@ namespace Bloom.Publish.Rab
                     ReportProcessOutputLine(args.Data, ProgressKind.Warning);
                 };
 
+                // Don't launch another subprocess if the user has already asked to cancel: otherwise
+                // a long step would run to completion before the post-exit check below noticed it,
+                // leaving the user — with navigation locked — stuck waiting (BL-16350). The protected
+                // recovery is exempt (it must complete).
+                if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                    throw new OperationCanceledException();
+
                 if (!process.Start())
                     throw new ApplicationException($"Bloom could not start {fileName}.");
 
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                process.WaitForExit();
+                // When protected, don't register the process for the cancellation kill so this call
+                // runs to completion even if the user cancels (see _protectCurrentProcessFromCancellation).
+                if (!_protectCurrentProcessFromCancellation)
+                {
+                    lock (_currentProcessLock)
+                        _currentProcess = process;
+                }
+                // Close the race between Start() above and registering _currentProcess: a cancel that
+                // arrived in that window found no process to kill, so kill it now.
+                if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                {
+                    try
+                    {
+                        process.Kill(true);
+                    }
+                    catch (Exception) { }
+                }
+                try
+                {
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                    process.WaitForExit();
+                }
+                catch (InvalidOperationException)
+                    when (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                {
+                    // The race-kill above can tear the process down before the async output readers
+                    // attach, which surfaces as InvalidOperationException. Since we were cancelling,
+                    // report it as a cancellation, not a failure (BL-16350; Devin).
+                    throw new OperationCanceledException();
+                }
+                finally
+                {
+                    if (!_protectCurrentProcessFromCancellation)
+                    {
+                        lock (_currentProcessLock)
+                            _currentProcess = null;
+                    }
+                }
+
+                if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                    throw new OperationCanceledException();
 
                 return (process.ExitCode, string.Join(Environment.NewLine, outputLines));
             }
@@ -2446,34 +2767,91 @@ namespace Bloom.Publish.Rab
             Action<long, long> reportProgress
         )
         {
+            // Downloading the RAB installer can take many minutes on a slow connection and runs
+            // entirely in-process (no subprocess whose exit lets RunProcess notice cancellation).
+            // Thread the action's cancellation token through the HTTP calls so a Cancel click aborts
+            // even a stalled request/response immediately rather than waiting for the HttpClient
+            // timeout. When the user cancels, these calls throw an OperationCanceledException that
+            // RabPublishApi reports as a cancellation.
+            var cancellationToken = CurrentCancellationToken;
             using var httpClient = CreateRabInstallerHttpClient();
             using var response = httpClient
-                .GetAsync(kRabSetupDownloadUrl, HttpCompletionOption.ResponseHeadersRead)
+                .GetAsync(
+                    kRabSetupDownloadUrl,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken
+                )
                 .GetAwaiter()
                 .GetResult();
             response.EnsureSuccessStatusCode();
 
-            Directory.CreateDirectory(Path.GetDirectoryName(installerPath));
-
             using var responseStream = response
-                .Content.ReadAsStreamAsync()
+                .Content.ReadAsStreamAsync(cancellationToken)
                 .GetAwaiter()
                 .GetResult();
-            using var fileStream = RobustFile.Create(installerPath);
 
-            CopyRabInstallerDownloadStream(
+            SaveDownloadStreamAtomically(
+                installerPath,
                 responseStream,
-                fileStream,
                 response.Content.Headers.ContentLength ?? -1,
-                reportProgress
+                reportProgress,
+                cancellationToken
             );
+        }
+
+        /// <summary>
+        /// Copies a download stream to <paramref name="installerPath"/> by writing to a temporary
+        /// ".part" file next to it and moving it into place only after the whole download succeeds.
+        /// If the download is cancelled or fails, the partial file is deleted, so a half-written (or
+        /// zero-byte) file is never left at the real installer name — where <see
+        /// cref="FindRabSetupInstallerPath"/> would otherwise find it and Bloom would try to run a
+        /// truncated installer, a broken state that would not self-heal on the next attempt.
+        /// </summary>
+        internal void SaveDownloadStreamAtomically(
+            string installerPath,
+            Stream responseStream,
+            long totalBytes,
+            Action<long, long> reportProgress,
+            CancellationToken cancellationToken
+        )
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(installerPath));
+            var partialPath = installerPath + ".part";
+            try
+            {
+                using (var fileStream = RobustFile.Create(partialPath))
+                {
+                    CopyRabInstallerDownloadStream(
+                        responseStream,
+                        fileStream,
+                        totalBytes,
+                        reportProgress,
+                        cancellationToken
+                    );
+                }
+                // The download finished; publish it under the real installer name. Delete any older
+                // installer first because RobustFile.Move does not overwrite.
+                RobustFile.Delete(installerPath);
+                RobustFile.Move(partialPath, installerPath);
+            }
+            catch (Exception)
+            {
+                // Cancelled or failed: don't leave a partial download behind.
+                try
+                {
+                    RobustFile.Delete(partialPath);
+                }
+                catch (Exception) { }
+                throw;
+            }
         }
 
         internal virtual void CopyRabInstallerDownloadStream(
             Stream responseStream,
             Stream fileStream,
             long totalBytes,
-            Action<long, long> reportProgress
+            Action<long, long> reportProgress,
+            CancellationToken cancellationToken
         )
         {
             var buffer = new byte[81920];
@@ -2481,11 +2859,24 @@ namespace Bloom.Publish.Rab
 
             while (true)
             {
-                var bytesRead = responseStream.Read(buffer, 0, buffer.Length);
+                // Reading the network stream can block indefinitely if the connection stalls, so pass
+                // the cancellation token into the read/write: a Cancel click then aborts the stalled
+                // read immediately. The _cancelRequested check is a cheap backstop that also stops the
+                // loop between chunks if this ever runs without an active-action token.
+                if (_cancelRequested)
+                    throw new OperationCanceledException();
+
+                var bytesRead = responseStream
+                    .ReadAsync(buffer, 0, buffer.Length, cancellationToken)
+                    .GetAwaiter()
+                    .GetResult();
                 if (bytesRead <= 0)
                     break;
 
-                fileStream.Write(buffer, 0, bytesRead);
+                fileStream
+                    .WriteAsync(buffer, 0, bytesRead, cancellationToken)
+                    .GetAwaiter()
+                    .GetResult();
                 transferredBytes += bytesRead;
                 reportProgress?.Invoke(transferredBytes, totalBytes);
             }
@@ -2602,6 +2993,19 @@ namespace Bloom.Publish.Rab
 
             _progress.MessageWithoutLocalizing($"> {Path.GetFileName(installerPath)} {arguments}");
 
+            // Don't launch the installer if the user has already asked to cancel (BL-16350). The
+            // silent install can run for a while, and because navigation is locked while an action
+            // runs, the user would otherwise be stuck watching it finish with a dead Cancel button.
+            // The protected recovery path is exempt (it must complete). Mirrors RunProcess.
+            if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                throw new OperationCanceledException();
+
+            // Flag the install as in progress before launching. If the installer is killed or fails
+            // partway, this stays set and a later Prepare this session reinstalls over the
+            // (possibly half-written) tree instead of trusting it (BL-16350; Devin). Cleared only
+            // after a clean finish below.
+            _rabInstallInterrupted = true;
+
             using var process = StartShellProcess(
                 new ProcessStartInfo()
                 {
@@ -2618,12 +3022,51 @@ namespace Bloom.Publish.Rab
                     $"Bloom could not start the installer at {installerPath}."
                 );
 
-            process.WaitForExit();
+            // Register the installer so RequestCancellation can kill it (Kill(true) takes the whole
+            // process tree, covering the second-phase process a silent InnoSetup installer spawns).
+            // Skip registration when protected so a recovery install still runs to completion.
+            if (!_protectCurrentProcessFromCancellation)
+            {
+                lock (_currentProcessLock)
+                    _currentProcess = process;
+            }
+            // Close the race between StartShellProcess above and registering _currentProcess: a
+            // cancel that arrived in that window found no process to kill, so kill it now.
+            if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+            {
+                try
+                {
+                    process.Kill(true);
+                }
+                catch (Exception) { }
+            }
+
+            try
+            {
+                process.WaitForExit();
+            }
+            finally
+            {
+                if (!_protectCurrentProcessFromCancellation)
+                {
+                    lock (_currentProcessLock)
+                        _currentProcess = null;
+                }
+            }
+
+            // A cancel that killed the installer mid-run leaves a nonzero exit code; surface it as a
+            // cancellation (a killed install is recoverable — the next Prepare re-runs it) rather than
+            // as an installer "failed" error.
+            if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                throw new OperationCanceledException();
 
             if (process.ExitCode != 0)
                 throw new ApplicationException(
                     $"Reading App Builder installer exited with code {process.ExitCode}."
                 );
+
+            // Clean finish — the install completed, so this attempt is no longer interrupted.
+            _rabInstallInterrupted = false;
         }
 
         /// <summary>
@@ -3668,19 +4111,154 @@ namespace Bloom.Publish.Rab
                 .FirstOrDefault();
         }
 
-        internal virtual string FindLatestApkPath(RabWorkspacePaths paths)
+        /// <summary>
+        /// Deletes any intermediate .apk files Gradle may have written under the build folder after an
+        /// interrupted or failed build. These are never the deliverable — a finished build signs the
+        /// app and writes it to SafeApkRoot, and <see cref="FindLatestApkPath"/> no longer even scans
+        /// BuildRoot — so this is hygiene: it keeps stale unsigned intermediates from piling up. Only
+        /// BuildRoot is touched; SafeApkRoot (the deliverable) is left to
+        /// <see cref="DeleteApksWrittenDuringBuild"/>, so a failed rebuild still keeps the previous
+        /// good APK.
+        /// </summary>
+        private static void DeleteIntermediateBuildApks(RabWorkspacePaths paths)
         {
-            var searchRoots = new[]
+            if (!Directory.Exists(paths.BuildRoot))
+                return;
+
+            foreach (
+                var apkPath in Directory.GetFiles(
+                    paths.BuildRoot,
+                    "*.apk",
+                    SearchOption.AllDirectories
+                )
+            )
             {
-                paths.ApkRoot,
-                paths.SafeApkRoot,
-                paths.BuildRoot,
-                paths.RabRoot,
+                try
+                {
+                    RobustFile.Delete(apkPath);
+                }
+                catch (Exception)
+                {
+                    // A leftover we can't delete (e.g. still locked by a lingering Gradle process) is
+                    // not worth failing the cancellation/failure path over; it will be superseded by
+                    // the next successful build's signed APK in SafeApkRoot.
+                }
             }
+        }
+
+        /// <summary>
+        /// Records the last-write time (UTC) of every deliverable APK present before the build, across
+        /// all deliverable roots (see <see cref="GetExistingDeliverableApkRoots"/>), keyed by full
+        /// path. Taken just before a build so the abnormal-path helpers can distinguish a previous good
+        /// APK the build never touched from one the build created or rewrote. Must cover the same roots
+        /// <see cref="FindLatestApkPath"/> searches, or an APK in a root the snapshot missed would be
+        /// wrongly treated as "written this build" (BL-16350; Devin).
+        /// </summary>
+        private static IReadOnlyDictionary<string, DateTime> SnapshotDeliverableApkWriteTimes(
+            RabWorkspacePaths paths
+        )
+        {
+            var snapshot = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
+            foreach (var root in GetExistingDeliverableApkRoots(paths))
+            foreach (var apkPath in Directory.GetFiles(root, "*.apk", SearchOption.AllDirectories))
+                snapshot[apkPath] = RobustFile.GetLastWriteTimeUtc(apkPath);
+            return snapshot;
+        }
+
+        /// <summary>
+        /// Removes a deliverable APK (in any deliverable root — see
+        /// <see cref="GetExistingDeliverableApkRoots"/>) only if this build attempt left it truncated.
+        /// Called only on the abnormal path (cancel/failure), with a <paramref name="preBuildApkWriteTimes"/>
+        /// snapshot taken before the build over those same roots. Reading App Builder writes the
+        /// finished, signed APK as its final step, and Bloom cannot see whether that write is atomic, so
+        /// a build killed mid-write could leave a truncated APK at the deliverable name that
+        /// <see cref="GetStatus"/> and <see cref="Install"/> (both resolve the app via
+        /// <see cref="FindLatestApkPath"/>) would treat as a finished app (BL-16350). An APK is deleted
+        /// only when BOTH: this attempt created or rewrote it (its write time changed), AND it is no
+        /// longer a complete, readable APK. That leaves alone (a) a previous good APK this attempt never
+        /// touched, and — crucially — (b) a complete APK that RAB finished writing before a
+        /// cancel/failure a moment later arrived: deleting that would needlessly discard a usable build
+        /// and, for a same-named rebuild, the previous one it replaced (a regression Devin caught in the
+        /// first version of this fix). Only a write cut off mid-stream, the truncation this exists for,
+        /// leaves an unreadable file, and only that is removed.
+        /// </summary>
+        private static void DeleteApksWrittenDuringBuild(
+            RabWorkspacePaths paths,
+            IReadOnlyDictionary<string, DateTime> preBuildApkWriteTimes
+        )
+        {
+            foreach (var root in GetExistingDeliverableApkRoots(paths))
+            foreach (var apkPath in Directory.GetFiles(root, "*.apk", SearchOption.AllDirectories))
+            {
+                // Keep an APK that was already present and unchanged since before this build: it is
+                // a previous good build this attempt never wrote to, so it is still trustworthy.
+                if (
+                    preBuildApkWriteTimes.TryGetValue(apkPath, out var previousWriteTimeUtc)
+                    && RobustFile.GetLastWriteTimeUtc(apkPath) == previousWriteTimeUtc
+                )
+                    continue;
+
+                // This attempt created or rewrote this APK. Keep it if it is still a complete,
+                // readable app — RAB had finished writing it before the cancel/failure, so it is
+                // usable and must not be thrown away. Only a truncated (unreadable) file is deleted.
+                if (IsCompleteApk(apkPath))
+                    continue;
+
+                try
+                {
+                    RobustFile.Delete(apkPath);
+                }
+                catch (Exception)
+                {
+                    // Best-effort, like DeleteIntermediateBuildApks: a file we can't delete is not
+                    // worth failing the already-failing build over, and the next successful build
+                    // overwrites it anyway.
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns true if <paramref name="apkPath"/> is a complete, readable APK (a valid zip archive
+        /// with at least one entry). A build killed while Reading App Builder was writing the APK leaves
+        /// a truncated file whose zip central directory is missing or unreadable, so opening it throws;
+        /// a fully-written APK opens fine. Used to tell a truncated deliverable (safe to delete) from a
+        /// finished one (must keep).
+        /// </summary>
+        private static bool IsCompleteApk(string apkPath)
+        {
+            try
+            {
+                // Opening and reading the entry list forces the zip central directory (written last) to
+                // be parsed; a truncated APK throws here rather than reporting a bogus entry count.
+                using var archive = ZipFile.OpenRead(apkPath);
+                return archive.Entries.Count > 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The existing directories a finished, signed APK can live in: the collection-local ApkRoot
+        /// and SafeApkRoot (where RAB is told to write via apk.output) — NOT BuildRoot (or RabRoot,
+        /// which contains build/), whose APKs are unsigned Gradle intermediates. Lookup, pre-build
+        /// snapshotting, and abnormal-path cleanup all use this same set so an APK cannot look
+        /// "written this build" to one helper yet "pre-existing" to another (BL-16350; Devin). ApkRoot
+        /// is first so it wins the FindLatestApkPath tie-break when the same APK exists in both roots
+        /// with equal timestamps (OrderByDescending is stable).
+        /// </summary>
+        private static string[] GetExistingDeliverableApkRoots(RabWorkspacePaths paths)
+        {
+            return new[] { paths.ApkRoot, paths.SafeApkRoot }
                 .Where(Directory.Exists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
+        }
 
+        internal virtual string FindLatestApkPath(RabWorkspacePaths paths)
+        {
+            var searchRoots = GetExistingDeliverableApkRoots(paths);
             if (!searchRoots.Any())
                 return null;
 
@@ -3807,7 +4385,15 @@ namespace Bloom.Publish.Rab
 
         internal virtual RabAdbConnectedDevice GetSingleConnectedDevice(string adbPath)
         {
-            return RabAdbHelper.GetSingleConnectedDevice(adbPath, GetPaths().RabRoot, _progress);
+            // Run adb through the cancellation-aware RunProcessCapturingOutput (it registers the
+            // process for the cancel kill and reports stderr as warnings) so a Cancel during
+            // "checking for a connected phone" kills adb — which can stall while it starts the adb
+            // server — instead of only taking effect at the next step (BL-16350; Devin). The parse is
+            // robust to the merged stdout/stderr: it only recognizes real device lines.
+            var result = RunProcessCapturingOutput(adbPath, "devices -l", GetPaths().RabRoot);
+            if (result.ExitCode != 0)
+                throw new ApplicationException($"adb devices exited with code {result.ExitCode}.");
+            return RabAdbHelper.SelectSingleConnectedDevice(result.Output);
         }
 
         private static bool IsUpdateIncompatibleInstallFailure(string output)

@@ -131,6 +131,10 @@ class LessWatchManager {
         this.logger = options.logger ?? console;
         this.lessRenderer = options.lessRenderer ?? less.render;
         this.metadataVersion = 1;
+        // When true, the bulk "initial sync" compiles are not logged per-file
+        // (the CLI prints a one-line summary instead). Live recompiles during
+        // watching are always logged.
+        this.quietInitialSync = options.quietInitialSync ?? false;
 
         this.entries = new Map();
         this.entryByPath = new Map();
@@ -509,12 +513,14 @@ class LessWatchManager {
 
         this.compiledCount += 1;
 
-        this.logger.log(
-            `[LESS] ✓ ${entry.id} (${reason ?? "recompiled"}) → ${pathToRepoRelative(
-                this.repoRoot,
-                entry.outputPath,
-            )}`,
-        );
+        if (!(this.quietInitialSync && reason === "initial sync")) {
+            this.logger.log(
+                `[LESS] ✓ ${entry.id} (${reason ?? "recompiled"}) → ${pathToRepoRelative(
+                    this.repoRoot,
+                    entry.outputPath,
+                )}`,
+            );
+        }
     }
 
     clearDependencyMappings(entryId) {

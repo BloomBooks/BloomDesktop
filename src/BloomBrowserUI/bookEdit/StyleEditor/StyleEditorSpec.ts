@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 /// <reference path="./StyleEditor.ts" />
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 
@@ -51,14 +51,12 @@ function ChangeSizeAbsolute(
     editor.changeSizeInternal(newSize + "pt", shouldSetDefaultRule);
 }
 
-function GetUserModifiedStyleSheet(): any {
+function GetUserModifiedStyleSheet(): CSSStyleSheet | undefined {
     for (let i = 0; i < document.styleSheets.length; i++) {
-        if (document.styleSheets[i].title == "userModifiedStyles")
+        if (document.styleSheets[i].title === "userModifiedStyles")
             return <CSSStyleSheet>document.styleSheets[i];
     }
-    // this is not a valid constructor
-    //return new CSSStyleSheet();
-    return {};
+    return undefined;
 }
 
 function GetFooStyleRuleFontSize(): number {
@@ -83,8 +81,8 @@ function ParseRuleForFontSize(ruleText: string): number {
 }
 
 function GetRuleForFooStyle(): CSSRule | null {
-    const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
-        .cssRules;
+    const x = GetUserModifiedStyleSheet()?.cssRules;
+    if (!x) return null;
 
     for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf("foo-style") > -1) {
@@ -95,8 +93,7 @@ function GetRuleForFooStyle(): CSSRule | null {
 }
 
 function GetRuleForNormalStyle(): CSSRule | null {
-    const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
-        .cssRules;
+    const x = GetUserModifiedStyleSheet()?.cssRules;
     if (!x) return null;
 
     for (let i = 0; i < x.length; i++) {
@@ -108,8 +105,7 @@ function GetRuleForNormalStyle(): CSSRule | null {
 }
 
 function GetRuleForCoverTitleStyle(): CSSRule | null {
-    const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
-        .cssRules;
+    const x = GetUserModifiedStyleSheet()?.cssRules;
     if (!x) return null;
     for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf("Title-On-Cover-style") > -1) {
@@ -128,8 +124,9 @@ function GetCalculatedFontSize(target: string): number {
 }
 
 function GetRuleMatchingSelector(selector: string): CSSRule | null {
-    const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
-    const count = 0;
+    const sheet = GetUserModifiedStyleSheet();
+    const x = sheet?.cssRules;
+    if (!x) return null;
     for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf(selector) > -1) {
             return x[i];
@@ -139,7 +136,9 @@ function GetRuleMatchingSelector(selector: string): CSSRule | null {
 }
 
 function HasRuleMatchingThisSelector(selector: string): boolean {
-    const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+    const sheet = GetUserModifiedStyleSheet();
+    const x = sheet?.cssRules;
+    if (!x) return false;
     let count = 0;
     for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf(selector) > -1) {
@@ -150,8 +149,8 @@ function HasRuleMatchingThisSelector(selector: string): boolean {
 }
 
 function countFooStyleRules(): number {
-    const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
-        .cssRules;
+    const x = GetUserModifiedStyleSheet()?.cssRules;
+    if (!x) return 0;
 
     let count = 0;
     for (let i = 0; i < x.length; i++) {
@@ -320,6 +319,69 @@ describe("StyleEditor", () => {
         if (rule != null) expect(ParseRuleForFontSize(rule.cssText)).toBe(20);
     });
 
+    it("putAudioHiliteRulesInDom stores audio highlight legacy properties", () => {
+        const editor = new StyleEditor(
+            "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+        );
+
+        const sentenceSelector = "foo-style span.ui-audioCurrent";
+        const paddedSentenceSelector =
+            "foo-style span.ui-audioCurrent > span.ui-enableHighlight";
+        const paragraphSelector = "foo-style.ui-audioCurrent p";
+
+        // sanity check that the rules do not yet exist
+        expect(HasRuleMatchingThisSelector(sentenceSelector)).toBeFalsy();
+        expect(HasRuleMatchingThisSelector(paddedSentenceSelector)).toBeFalsy();
+        expect(HasRuleMatchingThisSelector(paragraphSelector)).toBeFalsy();
+
+        editor.putAudioHiliteRulesInDom(
+            "foo-style",
+            "rgb(1, 2, 3)",
+            "rgb(4, 5, 6)",
+        );
+
+        const sentenceRule = GetRuleMatchingSelector(sentenceSelector);
+        const paddedSentenceRule = GetRuleMatchingSelector(
+            paddedSentenceSelector,
+        );
+        const paragraphRule = GetRuleMatchingSelector(paragraphSelector);
+
+        expect(sentenceRule?.cssText).toContain(
+            "background-color: rgb(4, 5, 6)",
+        );
+        expect(sentenceRule?.cssText).toContain("color: rgb(1, 2, 3)");
+        expect(paddedSentenceRule?.cssText).toContain(
+            "background-color: rgb(4, 5, 6)",
+        );
+        expect(paddedSentenceRule?.cssText).toContain("color: rgb(1, 2, 3)");
+        expect(paragraphRule?.cssText).toContain(
+            "background-color: rgb(4, 5, 6)",
+        );
+        expect(paragraphRule?.cssText).toContain("color: rgb(1, 2, 3)");
+    });
+
+    it("getAudioHiliteProps reads colors from audio highlight legacy properties", () => {
+        const editor = new StyleEditor(
+            "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+        );
+
+        const origProps = editor.getAudioHiliteProps("foo-style");
+
+        expect(origProps?.hiliteTextColor).not.toBe("rgb(1, 2, 3)");
+        expect(origProps?.hiliteBgColor).not.toBe("rgb(4, 5, 6)");
+
+        editor.putAudioHiliteRulesInDom(
+            "foo-style",
+            "rgb(1, 2, 3)",
+            "rgb(4, 5, 6)",
+        );
+
+        const props = editor.getAudioHiliteProps("foo-style");
+
+        expect(props.hiliteTextColor).toBe("rgb(1, 2, 3)");
+        expect(props.hiliteBgColor).toBe("rgb(4, 5, 6)");
+    });
+
     // Skipped because currently we're running in jsdom. Making use of the existing rule depends on
     // getComputedStyle, which jsdom does not support. ChatGpt thinks it also depends on actual
     // dom element sizes, which jsdom also does not support. Attempts to polyfill proved difficult.
@@ -377,5 +439,93 @@ describe("StyleEditor", () => {
         MakeBigger2("#testTarget2");
 
         expect(GetRuleForCoverTitleStyle()).not.toBeNull();
+    });
+
+    it("changeWordSpace still updates the style rules after UpdateControlsToReflectAppliedStyle fails partway", () => {
+        // GetSettings is normally injected into the page by C#.
+        (globalThis as any).GetSettings = () => ({
+            languageForNewTextBoxes: "xyz",
+        });
+        try {
+            $("body").append(
+                "<div id='testTarget' class='foo-style' lang='xyz'></div>" +
+                    "<select id='word-space-select'><option>Normal</option><option>Wide</option><option>Extra Wide</option></select>",
+            );
+            const editor = new StyleEditor(
+                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+            );
+            editor.boxBeingEdited = $("#testTarget").get(0);
+            // cleanupAfterStyleChange does page-layout work (overflow checking, box
+            // resizing) that requires real browser layout, not jsdom; it is irrelevant
+            // to the rule-writing and control-guard behavior under test here.
+            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+                () => {},
+            );
+
+            const select = document.getElementById(
+                "word-space-select",
+            ) as HTMLSelectElement;
+            select.selectedIndex = 1; // Wide
+            editor.changeWordSpace();
+            // sanity check: the control works before anything goes wrong
+            expect(
+                GetRuleMatchingSelector('.foo-style[lang="xyz"]')?.cssText,
+            ).toContain("word-spacing: 5pt");
+
+            // Simulate a failure occurring somewhere in the middle of
+            // UpdateControlsToReflectAppliedStyle (which runs when the user applies a
+            // different style in the Format dialog, after it sets ignoreControlChanges).
+            vi.spyOn(editor, "changeCanvasElementProps").mockImplementation(
+                () => {
+                    throw new Error("simulated failure");
+                },
+            );
+            expect(() =>
+                editor.UpdateControlsToReflectAppliedStyle(""),
+            ).toThrow("simulated failure");
+
+            // The dialog controls must not be left permanently dead: choosing a new
+            // word spacing must still change the document.
+            select.selectedIndex = 2; // Extra Wide
+            editor.changeWordSpace();
+            expect(
+                GetRuleMatchingSelector('.foo-style[lang="xyz"]')?.cssText,
+            ).toContain("word-spacing: 10pt");
+        } finally {
+            delete (globalThis as any).GetSettings;
+        }
+    });
+
+    it("UpdateControlsToReflectAppliedStyle passes the real highlight colors to changeHiliteProps", () => {
+        $("body").append(
+            "<div id='testTarget' class='foo-style' lang='xyz'></div>",
+        );
+        const editor = new StyleEditor(
+            "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+        );
+        editor.boxBeingEdited = $("#testTarget").get(0);
+        // cleanupAfterStyleChange does page-layout work that needs real browser layout.
+        vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+            () => {},
+        );
+        // Give the style a custom audio-highlight text and background color.
+        editor.putAudioHiliteRulesInDom(
+            "foo-style",
+            "rgb(1, 2, 3)",
+            "rgb(4, 5, 6)",
+        );
+        // sanity check that getFormatValues sees those colors
+        expect(editor.getFormatValues().hiliteTextColor).toBe("rgb(1, 2, 3)");
+
+        const spy = vi.spyOn(editor, "changeHiliteProps");
+        editor.UpdateControlsToReflectAppliedStyle("");
+        // The highlight controls must be re-rendered with the style's actual highlight
+        // colors, not with the ordinary text color in the hiliteTextColor slot (which
+        // both displayed wrongly and could then be written back into the book).
+        expect(spy).toHaveBeenCalledWith(
+            "rgb(1, 2, 3)",
+            "rgb(4, 5, 6)",
+            expect.any(String),
+        );
     });
 });

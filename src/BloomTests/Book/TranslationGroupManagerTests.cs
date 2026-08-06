@@ -43,7 +43,6 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/BloomTests",
                 null,
-                "",
                 new string[] { }
             );
         }

@@ -19,6 +19,7 @@ namespace Bloom.Workspace
 		{
 			if (disposing)
 			{
+				Current = null;
 				_editingView?.Dispose();
 				_editingView = null;
 

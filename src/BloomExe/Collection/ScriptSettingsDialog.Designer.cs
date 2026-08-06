@@ -45,14 +45,14 @@
 			this.flowLayoutPanel1.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.SuspendLayout();
-			// 
+			//
 			// _L10NSharpExtender
-			// 
+			//
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
-			// 
+			//
 			// _languageNameLabel
-			// 
+			//
 			this._languageNameLabel.AutoSize = true;
 			this._languageNameLabel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
 			this._L10NSharpExtender.SetLocalizableToolTip(this._languageNameLabel, null);
@@ -65,9 +65,9 @@
 			this._languageNameLabel.Size = new System.Drawing.Size(118, 19);
 			this._languageNameLabel.TabIndex = 1;
 			this._languageNameLabel.Text = "Language Name";
-			// 
+			//
 			// _rtlLanguageCheckBox
-			// 
+			//
 			this._rtlLanguageCheckBox.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._rtlLanguageCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._rtlLanguageCheckBox, null);
@@ -79,9 +79,9 @@
 			this._rtlLanguageCheckBox.TabIndex = 25;
 			this._rtlLanguageCheckBox.Text = "This script is written right to left like Arabic, Hebrew, and Urdu.";
 			this._rtlLanguageCheckBox.UseVisualStyleBackColor = true;
-			// 
+			//
 			// _tallerLinesCheckBox
-			// 
+			//
 			this._tallerLinesCheckBox.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._tallerLinesCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._tallerLinesCheckBox, null);
@@ -93,9 +93,9 @@
 			this._tallerLinesCheckBox.Text = "Use special line spacing.";
 			this._tallerLinesCheckBox.UseVisualStyleBackColor = true;
 			this._tallerLinesCheckBox.CheckedChanged += new System.EventHandler(this._tallerLinesCheckBox_CheckedChanged);
-			// 
+			//
 			// _lineSpacingCombo
-			// 
+			//
 			this._lineSpacingCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this._lineSpacingCombo.FormattingEnabled = true;
 			this._lineSpacingCombo.ItemHeight = 17;
@@ -108,9 +108,9 @@
 			this._lineSpacingCombo.Name = "_lineSpacingCombo";
 			this._lineSpacingCombo.Size = new System.Drawing.Size(121, 25);
 			this._lineSpacingCombo.TabIndex = 27;
-			// 
+			//
 			// _okButton
-			// 
+			//
 			this._okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._okButton.AutoSize = true;
 			this._okButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
@@ -126,9 +126,9 @@
 			this._okButton.TabIndex = 3;
 			this._okButton.Text = "&OK";
 			this._okButton.UseVisualStyleBackColor = true;
-			// 
+			//
 			// _lineBreakCheckBox
-			// 
+			//
 			this._lineBreakCheckBox.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._lineBreakCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._lineBreakCheckBox, resources.GetString("_lineBreakCheckBox.LocalizationComment"));
@@ -139,9 +139,9 @@
 			this._lineBreakCheckBox.TabIndex = 28;
 			this._lineBreakCheckBox.Text = "Do not use special Asian script word breaking";
 			this._lineBreakCheckBox.UseVisualStyleBackColor = true;
-			// 
+			//
 			// _UIFontSizeLabel
-			// 
+			//
 			this._UIFontSizeLabel.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._UIFontSizeLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._UIFontSizeLabel, resources.GetString("_UIFontSizeLabel.LocalizationComment"));
@@ -151,9 +151,9 @@
 			this._UIFontSizeLabel.Size = new System.Drawing.Size(210, 19);
 			this._UIFontSizeLabel.TabIndex = 29;
 			this._UIFontSizeLabel.Text = "Font size when displayed in tools";
-			// 
+			//
 			// _uiFontSizeCombo
-			// 
+			//
 			this._uiFontSizeCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this._uiFontSizeCombo.FormattingEnabled = true;
 			this._uiFontSizeCombo.ItemHeight = 17;
@@ -166,9 +166,9 @@
 			this._uiFontSizeCombo.Name = "_uiFontSizeCombo";
 			this._uiFontSizeCombo.Size = new System.Drawing.Size(121, 25);
 			this._uiFontSizeCombo.TabIndex = 30;
-			// 
+			//
 			// flowLayoutPanel1
-			// 
+			//
 			this.flowLayoutPanel1.AutoSize = true;
 			this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowOnly;
 			this.flowLayoutPanel1.Controls.Add(this._languageNameLabel);
@@ -179,9 +179,9 @@
 			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
 			this.flowLayoutPanel1.Size = new System.Drawing.Size(318, 267);
 			this.flowLayoutPanel1.TabIndex = 0;
-			// 
+			//
 			// tableLayoutPanel1
-			// 
+			//
 			this.tableLayoutPanel1.AutoSize = true;
 			this.tableLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this.tableLayoutPanel1.ColumnCount = 1;
@@ -203,11 +203,11 @@
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.Size = new System.Drawing.Size(312, 197);
 			this.tableLayoutPanel1.TabIndex = 2;
-			// 
+			//
 			// ScriptSettingsDialog
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			//
+			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.AutoSize = true;
 			this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this.ClientSize = new System.Drawing.Size(362, 321);

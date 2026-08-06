@@ -6,7 +6,7 @@
 // Currently that is done using a regular script tag in the HTML, not via an import here.
 
 import $ from "jquery";
-import { bootstrap } from "./js/bloomEditing";
+import { bootstrap, IImageInfo } from "./js/bloomEditing";
 import { EditableDivUtils } from "./js/editableDivUtils";
 import "../lib/long-press/jquery.longpress.js";
 import "../lib/jquery.i18n.custom"; // side-effect: adds .localize() to $.fn (kept via sideEffects allow-list)
@@ -14,7 +14,8 @@ import "errorHandler";
 import {
     theOneCanvasElementManager,
     CanvasElementManager,
-} from "./js/CanvasElementManager";
+} from "./js/canvasElementManager/CanvasElementManager";
+import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
 
 function getPageId(): string {
@@ -74,9 +75,35 @@ export interface IPageFrameExports {
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
 
+    e2eSetActiveCanvasElementByIndex(index: number): boolean;
+    e2eSetActivePatriarchBubbleOrFirstCanvasElement(): boolean;
+    e2eDeleteLastCanvasElement(): void;
+    e2eDuplicateActiveCanvasElement(): void;
+    e2eDeleteActiveCanvasElement(): void;
+    e2eClearActiveCanvasElement(): void;
+    e2eSetActiveCanvasElementBackgroundColor(
+        color: string,
+        opacity: number,
+    ): void;
+    e2eGetActiveCanvasElementStyleSummary(): {
+        textColor: string;
+        outerBorderColor: string;
+        backgroundColors: string[];
+    };
+    e2eResetActiveCanvasElementCropping(): void;
+    e2eCanExpandActiveCanvasElementToFillSpace(): boolean;
+    e2eOverrideCanExpandToFillSpace(value: boolean): boolean;
+    e2eClearCanExpandToFillSpaceOverride(): void;
+
     SayHello(): void;
     renderDragActivityTabControl(currentTab: number): void;
     showGamePromptDialog: (onlyIfEmpty: boolean) => void;
+    changeImage(imageInfo: IImageInfo): void;
+    changeImageByElement(
+        imgOrImageContainer: HTMLElement,
+        imageInfo: Omit<IImageInfo, "imageId">,
+    ): void;
+    removeImageId(imageId: string): void;
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
@@ -84,6 +111,7 @@ export interface IPageFrameExports {
 import {
     getBodyContentForSavePage,
     requestPageContent,
+    captureContentForExternalProcessing,
     userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
@@ -95,6 +123,7 @@ import {
     attachToCkEditor,
     removeImageId,
     changeImage,
+    changeImageByElement,
     imageOperationCanUndo,
     imageOperationUndo,
     addRequestPageContentDelay,
@@ -104,6 +133,7 @@ import { showGamePromptDialog } from "./toolbox/games/GameTool";
 export {
     getBodyContentForSavePage,
     requestPageContent,
+    captureContentForExternalProcessing,
     userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
@@ -115,6 +145,7 @@ export {
     attachToCkEditor,
     removeImageId,
     changeImage,
+    changeImageByElement,
     imageOperationCanUndo,
     imageOperationUndo,
     addRequestPageContentDelay,
@@ -147,6 +178,128 @@ const styleSheets = [
 
 function getTheOneCanvasElementManager(): CanvasElementManager {
     return theOneCanvasElementManager;
+}
+
+function getCanvasElementManagerForE2e(): CanvasElementManager {
+    if (!theOneCanvasElementManager) {
+        throw new Error("CanvasElementManager is not available.");
+    }
+
+    return theOneCanvasElementManager;
+}
+
+function getCanvasElementsForE2e(): HTMLElement[] {
+    return Array.from(
+        document.querySelectorAll(kCanvasElementSelector),
+    ) as HTMLElement[];
+}
+
+let originalCanExpandToFillSpaceForE2e: (() => boolean) | undefined;
+
+function e2eSetActiveCanvasElementByIndex(index: number): boolean {
+    const element = getCanvasElementsForE2e()[index];
+    if (!element) {
+        return false;
+    }
+
+    getCanvasElementManagerForE2e().setActiveElement(element);
+    return true;
+}
+
+function e2eSetActivePatriarchBubbleOrFirstCanvasElement(): boolean {
+    const manager = getCanvasElementManagerForE2e();
+    const patriarchBubble = manager.getPatriarchBubbleOfActiveElement?.();
+    const patriarchContent = patriarchBubble?.content as
+        | HTMLElement
+        | undefined;
+    if (patriarchContent) {
+        manager.setActiveElement(patriarchContent);
+        return true;
+    }
+
+    const firstCanvasElement = getCanvasElementsForE2e()[0];
+    if (!firstCanvasElement) {
+        return false;
+    }
+
+    manager.setActiveElement(firstCanvasElement);
+    return true;
+}
+
+function e2eDeleteLastCanvasElement(): void {
+    const elements = getCanvasElementsForE2e();
+    const lastElement = elements[elements.length - 1];
+    if (!lastElement) {
+        return;
+    }
+
+    const manager = getCanvasElementManagerForE2e();
+    manager.setActiveElement(lastElement);
+    manager.deleteCurrentCanvasElement();
+}
+
+function e2eDuplicateActiveCanvasElement(): void {
+    getCanvasElementManagerForE2e().duplicateCanvasElement();
+}
+
+function e2eDeleteActiveCanvasElement(): void {
+    getCanvasElementManagerForE2e().deleteCurrentCanvasElement();
+}
+
+function e2eClearActiveCanvasElement(): void {
+    getCanvasElementManagerForE2e().setActiveElement(undefined);
+}
+
+function e2eSetActiveCanvasElementBackgroundColor(
+    color: string,
+    opacity: number,
+): void {
+    getCanvasElementManagerForE2e().setBackgroundColor([color], opacity);
+}
+
+function e2eGetActiveCanvasElementStyleSummary(): {
+    textColor: string;
+    outerBorderColor: string;
+    backgroundColors: string[];
+} {
+    const manager = getCanvasElementManagerForE2e();
+    const textColorInfo = manager.getTextColorInformation?.();
+    const bubbleSpec = manager.getSelectedItemBubbleSpec?.();
+
+    return {
+        textColor: textColorInfo?.color ?? "",
+        outerBorderColor: bubbleSpec?.outerBorderColor ?? "",
+        backgroundColors: bubbleSpec?.backgroundColors ?? [],
+    };
+}
+
+function e2eResetActiveCanvasElementCropping(): void {
+    getCanvasElementManagerForE2e().resetCropping?.();
+}
+
+function e2eCanExpandActiveCanvasElementToFillSpace(): boolean {
+    return getCanvasElementManagerForE2e().canExpandToFillSpace();
+}
+
+function e2eOverrideCanExpandToFillSpace(value: boolean): boolean {
+    const manager = getCanvasElementManagerForE2e();
+    if (!originalCanExpandToFillSpaceForE2e) {
+        originalCanExpandToFillSpaceForE2e =
+            manager.canExpandToFillSpace.bind(manager);
+    }
+
+    manager.canExpandToFillSpace = () => value;
+    return true;
+}
+
+function e2eClearCanExpandToFillSpaceOverride(): void {
+    if (!originalCanExpandToFillSpaceForE2e) {
+        return;
+    }
+
+    const manager = getCanvasElementManagerForE2e();
+    manager.canExpandToFillSpace = originalCanExpandToFillSpaceForE2e;
+    originalCanExpandToFillSpaceForE2e = undefined;
 }
 
 // This is using an implementation secret of a particular version of ckeditor; but it seems to
@@ -209,6 +362,15 @@ window["PasteImageCredits"] = () => {
 $(document).ready(() => {
     $("body").find("*[data-i18n]").localize();
     bootstrap();
+    // Step 1 of the off-screen page-capture handshake (see __bloomEditablePageReady in the
+    // `declare global` block below): bootstrap()/SetupElements() has now run. That applies the
+    // load-time DOM fix-ups (canvas-element layout, image sizing, etc.) — but note that some of them,
+    // notably image sizing, finish ASYNCHRONOUSLY after bootstrap() returns (they fetch image info and
+    // wait for images to load). Those register requestPageContent delays, and the capture step
+    // (captureContentForExternalProcessing) waits for those delays to clear, so setting this flag here
+    // just signals that bootstrap itself has run and it is safe to ask for the content. Harmless no-op
+    // in the live editor, which never reads this flag.
+    window.__bloomEditablePageReady = true;
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
@@ -228,6 +390,7 @@ export function SayHello() {
 // NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
 interface EditablePageBundleApi {
     requestPageContent: typeof requestPageContent;
+    captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
     getBodyContentForSavePage: typeof getBodyContentForSavePage;
     userStylesheetContent: typeof userStylesheetContent;
     pageUnloading: typeof pageUnloading;
@@ -240,6 +403,7 @@ interface EditablePageBundleApi {
     attachToCkEditor: typeof attachToCkEditor;
     removeImageId: typeof removeImageId;
     changeImage: typeof changeImage;
+    changeImageByElement: typeof changeImageByElement;
     imageOperationCanUndo: typeof imageOperationCanUndo;
     imageOperationUndo: typeof imageOperationUndo;
     origamiCanUndo: typeof origamiCanUndo;
@@ -249,6 +413,18 @@ interface EditablePageBundleApi {
     ckeditorUndo: typeof ckeditorUndo;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
     removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
+    e2eSetActiveCanvasElementByIndex: typeof e2eSetActiveCanvasElementByIndex;
+    e2eSetActivePatriarchBubbleOrFirstCanvasElement: typeof e2eSetActivePatriarchBubbleOrFirstCanvasElement;
+    e2eDeleteLastCanvasElement: typeof e2eDeleteLastCanvasElement;
+    e2eDuplicateActiveCanvasElement: typeof e2eDuplicateActiveCanvasElement;
+    e2eDeleteActiveCanvasElement: typeof e2eDeleteActiveCanvasElement;
+    e2eClearActiveCanvasElement: typeof e2eClearActiveCanvasElement;
+    e2eSetActiveCanvasElementBackgroundColor: typeof e2eSetActiveCanvasElementBackgroundColor;
+    e2eGetActiveCanvasElementStyleSummary: typeof e2eGetActiveCanvasElementStyleSummary;
+    e2eResetActiveCanvasElementCropping: typeof e2eResetActiveCanvasElementCropping;
+    e2eCanExpandActiveCanvasElementToFillSpace: typeof e2eCanExpandActiveCanvasElementToFillSpace;
+    e2eOverrideCanExpandToFillSpace: typeof e2eOverrideCanExpandToFillSpace;
+    e2eClearCanExpandToFillSpaceOverride: typeof e2eClearCanExpandToFillSpaceOverride;
     SayHello: typeof SayHello;
     renderDragActivityTabControl: typeof renderDragActivityTabControl;
     showGamePromptDialog: typeof showGamePromptDialog;
@@ -257,11 +433,42 @@ interface EditablePageBundleApi {
 declare global {
     interface Window {
         editablePageBundle: EditablePageBundleApi;
+        // ── Off-screen page-capture handshake (C# BookProcessor ⇆ this bundle) ──────────────────
+        // The "process-book" feature (external/process-book API, used by BloomBridge to run
+        // finished books through Bloom's browser-only page fix-ups) re-saves every page of a book
+        // WITHOUT opening the live editor. For each page, C# loads it into a throwaway, off-screen
+        // WebView2 and runs this three-step handshake against the two globals below:
+        //
+        //   1. C# polls window.__bloomEditablePageReady until it is true. We set it (once, in
+        //      $(document).ready below) the moment bootstrap()/SetupElements() returns. That kicks off
+        //      the load-time DOM fix-ups (canvas-element layout, image sizing, ...); some of them finish
+        //      asynchronously, which is exactly why step 2 still has to wait for in-flight work to settle.
+        //   2. C# calls editablePageBundle.captureContentForExternalProcessing() (defined in
+        //      bloomEditing.ts). That waits for any in-flight async DOM work to settle, then stashes
+        //      the finished page onto window.__bloomExternalPageContent.
+        //   3. C# polls window.__bloomExternalPageContent until it is non-empty and reads it back.
+        //
+        // Why globals + polling, rather than posting to the editView/pageContent API the way the live
+        // editor's requestPageContent() does:
+        //   - That API feeds the live EditingModel; reusing it off-screen would corrupt the real
+        //     editor's state. We want the same page-cleanup output, delivered out-of-band.
+        //   - C#'s JS runner on this path (RunJavascriptWithStringResult_Sync_Dangerous) is
+        //     synchronous, so it can't directly await the capture function's internal async settle.
+        //     A plain window field it can poll is the simplest bridge.
+        // This looks fragile (two magic globals) but is well-contained: exactly one writer (the
+        // capture fn) and one reader (BookProcessor), and every page gets its own fresh disposable
+        // browser, so there is no stale-value or cross-page-bleed risk.
+        //
+        // Step 1's flag: set in $(document).ready below; read in BookProcessor.ProcessPage.
+        __bloomEditablePageReady?: boolean;
+        // Step 2/3's mailbox: the combined "body<SPLIT-DATA>userCss" string, or "ERROR: <message>".
+        __bloomExternalPageContent?: string;
     }
 }
 
 window.editablePageBundle = {
     requestPageContent,
+    captureContentForExternalProcessing,
     getBodyContentForSavePage,
     userStylesheetContent,
     pageUnloading,
@@ -274,6 +481,7 @@ window.editablePageBundle = {
     attachToCkEditor,
     removeImageId,
     changeImage,
+    changeImageByElement,
     imageOperationCanUndo: imageOperationCanUndo,
     imageOperationUndo: imageOperationUndo,
     origamiCanUndo,
@@ -283,6 +491,18 @@ window.editablePageBundle = {
     ckeditorUndo,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
+    e2eSetActiveCanvasElementByIndex,
+    e2eSetActivePatriarchBubbleOrFirstCanvasElement,
+    e2eDeleteLastCanvasElement,
+    e2eDuplicateActiveCanvasElement,
+    e2eDeleteActiveCanvasElement,
+    e2eClearActiveCanvasElement,
+    e2eSetActiveCanvasElementBackgroundColor,
+    e2eGetActiveCanvasElementStyleSummary,
+    e2eResetActiveCanvasElementCropping,
+    e2eCanExpandActiveCanvasElementToFillSpace,
+    e2eOverrideCanExpandToFillSpace,
+    e2eClearCanExpandToFillSpaceOverride,
     SayHello,
     renderDragActivityTabControl,
     showGamePromptDialog,

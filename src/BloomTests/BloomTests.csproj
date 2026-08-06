@@ -10,7 +10,7 @@
 		<Company>SIL</Company>
 		<Product>BloomTests</Product>
 		<Copyright>© SIL Global 2014-2026</Copyright>
-		<Version>6.4.0.0</Version>
+		<Version>6.5.0.0</Version>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
@@ -20,6 +20,24 @@
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<IsTestProject>true</IsTestProject>
 		<Platforms>x64;ARM64</Platforms>
+		<!-- Gives `dotnet test <this project>` and the IDE test runners a default filter that
+		     leaves out the Integration and Nightly categories; see BloomTests.runsettings for why.
+
+		     The condition is what makes opting back in possible. VSTest ANDs a runsettings
+		     TestCaseFilter with any filter given on the command line (it does not replace it),
+		     so an unconditional setting here would make "TestCategory=Integration" resolve to
+		     "(TestCategory!=Integration)&(TestCategory=Integration)" and match nothing at all,
+		     making the Integration tests unrunnable. dotnet test surfaces its filter
+		     argument as the VSTestTestCaseFilter property, so when the caller asks for specific
+		     tests we hand VSTest no runsettings and let their filter stand alone.
+
+		     Consequence worth knowing: this is all-or-nothing, so ANY filter drops the whole
+		     default, not just the part you were overriding. A run narrowed by name (a filter of
+		     "FullyQualifiedName~BloomS3ClientTests", say) is therefore back to including that
+		     fixture's Integration tests, live S3 bucket and all. Add TestCategory!=Integration to
+		     such a filter yourself if you want it. (Leading hyphens are omitted throughout this
+		     comment on purpose: a double hyphen would make the XML unparseable.) -->
+		<RunSettingsFilePath Condition="'$(VSTestTestCaseFilter)' == ''">$(MSBuildProjectDirectory)\BloomTests.runsettings</RunSettingsFilePath>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -100,22 +118,24 @@
 	</Target>
 	<ItemGroup>
 		<PackageReference Include="EPPlus" Version="6.2.4" />
-		<PackageReference Include="L10NSharp" Version="9.0.0" />
+		<PackageReference Include="L10NSharp" Version="10.0.0-beta0005" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
 		<PackageReference Include="Moq" Version="4.14.7" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="NUnit" Version="3.14.0" />
-		<PackageReference Include="NUnit.ConsoleRunner" Version="3.20.1" />
-		<PackageReference Include="NUnit.Extension.TeamCityEventListener" Version="1.0.10" />
 		<PackageReference Include="NUnit3TestAdapter" Version="5.1.0" />
+		<!-- Lets `dotnet test` write its results as NUnit3 xml, which is what both TeamCity's
+		     importData and the nightly's publish action already read. Keeping the format means
+		     moving off nunit3-console costs no changes downstream of the build. -->
+		<PackageReference Include="NunitXml.TestLogger" Version="6.1.0" />
 		<PackageReference Include="RestSharp" Version="106.12.0" />
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
-		<PackageReference Include="SIL.Core" Version="18.0.0-beta0001" />
-		<PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0001" />
-		<PackageReference Include="SIL.Media" Version="18.0.0-beta0001" />
-		<PackageReference Include="SIL.TestUtilities" Version="18.0.0-beta0001" />
-		<PackageReference Include="SIL.Windows.Forms" Version="18.0.0-beta0001" />
+		<PackageReference Include="SIL.Core" Version="18.0.0-beta0028" />
+		<PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
+		<PackageReference Include="SIL.Media" Version="18.0.0-beta0028" />
+		<PackageReference Include="SIL.TestUtilities" Version="18.0.0-beta0028" />
+		<PackageReference Include="SIL.Windows.Forms" Version="18.0.0-beta0028" />
 		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
 		<PackageReference Include="PolySharp" Version="1.13.2">
 			<PrivateAssets>all</PrivateAssets>

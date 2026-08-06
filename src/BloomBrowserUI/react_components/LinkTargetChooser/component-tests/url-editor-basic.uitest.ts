@@ -1,7 +1,7 @@
 /**
  * Tests for LinkTargetChooser - URLEditor Basic Functionality
  * Covers: URL input, button visibility and state
- * Run with: yarn test
+ * Run with: pnpm test
  */
 
 import { test, expect } from "../../component-tester/playwrightTest";

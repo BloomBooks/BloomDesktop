@@ -35,9 +35,9 @@ namespace Bloom.ToPalaso.Experimental
 			this._status = new SimpleStatusProgress();
 			this._messageLabelProgress = new Bloom.ToPalaso.MessageLabelProgress();
 			this.SuspendLayout();
-			// 
+			//
 			// ProgressBar
-			// 
+			//
 			this.ProgressBar.Location = new System.Drawing.Point(24, 35);
 			this.ProgressBar.MarqueeAnimationSpeed = 50;
 			this.ProgressBar.Name = "ProgressBar";
@@ -47,9 +47,9 @@ namespace Bloom.ToPalaso.Experimental
 			this.ProgressBar.SyncContext = null;
 			this.ProgressBar.TabIndex = 1;
 			this.ProgressBar.UseWaitCursor = true;
-			// 
+			//
 			// _status
-			// 
+			//
 			this._status.AutoSize = true;
 			this._status.CancelRequested = false;
 			this._status.ErrorEncountered = false;
@@ -62,9 +62,9 @@ namespace Bloom.ToPalaso.Experimental
 			this._status.Text = "...";
 			this._status.UseWaitCursor = true;
 			this._status.WarningEncountered = false;
-			// 
+			//
 			// _messageLabelProgress
-			// 
+			//
 			this._messageLabelProgress.AutoSize = true;
 			this._messageLabelProgress.CancelRequested = false;
 			this._messageLabelProgress.ErrorEncountered = false;
@@ -75,11 +75,11 @@ namespace Bloom.ToPalaso.Experimental
 			this._messageLabelProgress.SyncContext = null;
 			this._messageLabelProgress.TabIndex = 3;
 			this._messageLabelProgress.Text = "..";
-			// 
+			//
 			// ProgressDialogForeground
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			//
+			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.ClientSize = new System.Drawing.Size(371, 130);
 			this.ControlBox = false;
 			this.Controls.Add(this._messageLabelProgress);

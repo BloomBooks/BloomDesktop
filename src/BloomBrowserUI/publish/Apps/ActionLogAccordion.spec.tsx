@@ -1,6 +1,6 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { act } from "react-dom/test-utils";
+import { renderRoot, unmountRoot } from "../../utils/reactRender";
+import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { postJson } from "../../utils/bloomApi";
 import {
@@ -131,7 +131,7 @@ describe("ActionLogAccordion", () => {
         }
 
         act(() => {
-            ReactDOM.render(<TestHarness />, container);
+            renderRoot(<TestHarness />, container);
         });
 
         return container;
@@ -162,7 +162,7 @@ describe("ActionLogAccordion", () => {
 
     afterEach(() => {
         if (container) {
-            ReactDOM.unmountComponentAtNode(container);
+            unmountRoot(container);
             container.remove();
             container = null;
         }

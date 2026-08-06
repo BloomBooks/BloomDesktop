@@ -372,12 +372,6 @@ namespace Bloom.Publish.Epub
 
         public string SetupEpubControlContent()
         {
-            // This gets called on a background thread but one step needs to happen on the UI thread,
-            // so the Maker needs a control to Invoke on. An Api class doesn't naturally have one to give it,
-            // so we arrange that this class is given the Bloom main window by the PublishView when the
-            // publish tab is activated. In production, this is roughly equivalent to just using
-            // Form.ActiveForms.Last(), but that fails when debugging; this is more robust.
-            EpubMaker.ControlForInvoke = ControlForInvoke;
             EpubMaker.StageEpub(_progress);
             if (StagingDirectory == null)
                 return null; // aborted, hopefully already reported.

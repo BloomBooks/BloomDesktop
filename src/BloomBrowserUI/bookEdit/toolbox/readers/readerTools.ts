@@ -1,12 +1,10 @@
 /// <reference path="readerToolsModel.ts" />
 /// <reference path="directoryWatcher.ts" />
-/// <reference path="../../../typings/jquery.qtip.d.ts" />
 /// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
 import $ from "jquery";
 import jQuery from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
 import { getTheOneReaderToolsModel } from "./readerToolsModel";
-import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import {
     theOneLanguageDataInstance,
     theOneLibSynphony,
@@ -20,16 +18,9 @@ import "../../../lib/jquery.onSafe";
 import axios from "axios";
 import { get } from "../../../utils/bloomApi";
 import * as _ from "underscore";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../../utils/reactRender";
 import * as React from "react";
 import { ReaderToolSwitch } from "./ReaderToolSwitch";
-
-interface textMarkup extends JQueryStatic {
-    cssSentenceTooLong(): JQuery;
-    cssSightWord(): JQuery;
-    cssWordNotFound(): JQuery;
-    cssPossibleWord(): JQuery;
-}
 
 // listen for messages sent to this page
 window.addEventListener("message", processDLRMessage, false);
@@ -191,158 +182,21 @@ function processDLRMessage(event: MessageEvent): void {
             getTheOneReaderToolsModel().setMarkupType(parseInt(params[1]));
             return;
 
-        case "Qtips": // request from toolbox to add qtips to marked-up spans
-            // We could make separate messages for these...
-            markDecodableStatus();
-            markLeveledStatus();
-
-            return;
-
         default:
     }
-}
-
-function markDecodableStatus(): void {
-    // q-tips; mark sight words and non-decodable words
-    const sightWord = theOneLocalizationManager.getText(
-        "EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord",
-        "Sight Word",
-    );
-    const notDecodable = theOneLocalizationManager.getText(
-        "EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable",
-        "This word is not decodable in this stage.",
-    );
-    const editableElements = $(".bloom-content1");
-    editableElements
-        .find("span." + (<textMarkup>$).cssSightWord())
-        .each(function () {
-            this.qtip({ content: sightWord });
-        });
-
-    editableElements
-        .find("span." + (<textMarkup>$).cssWordNotFound())
-        .each(function () {
-            this.qtip({ content: notDecodable });
-        });
-
-    // we're considering dropping this entirely
-    // We are disabling the "Possible Word" feature at this time.
-    //editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-    //    $(this.qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
-    //});
-}
-
-function markLeveledStatus(): void {
-    // q-tips; mark sentences that are too long
-    const tooLong = theOneLocalizationManager.getText(
-        "EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong",
-        "This sentence is too long for this level.",
-    );
-    const editableElements = $(".bloom-content1");
-    editableElements
-        .find("span." + (<textMarkup>$).cssSentenceTooLong())
-        .each(function () {
-            $(this).qtip({ content: tooLong });
-        });
 }
 
 export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
     // load synphony settings and then finish init
     return beginLoadSynphonySettings().then(() => {
-        const runWithReaderModelReady = (action: () => void) => {
-            const model = getTheOneReaderToolsModel();
-            if (model.synphony) {
-                action();
-                return;
-            }
-
-            beginLoadSynphonySettings().then(() => action());
-        };
-
-        const delegationRoot = $(document);
-
-        // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
-        delegationRoot
-            .off("click.readerTools", "#incStage")
-            .on("click.readerTools", "#incStage", () => {
-                runWithReaderModelReady(() =>
-                    getTheOneReaderToolsModel().incrementStage(),
-                );
-            });
-
-        delegationRoot
-            .off("click.readerTools", "#decStage")
-            .on("click.readerTools", "#decStage", () => {
-                runWithReaderModelReady(() =>
-                    getTheOneReaderToolsModel().decrementStage(),
-                );
-            });
-
-        delegationRoot
-            .off("click.readerTools", "#sortAlphabetic")
-            .on("click.readerTools", "#sortAlphabetic", () => {
-                getTheOneReaderToolsModel().sortAlphabetically();
-            });
-
-        delegationRoot
-            .off("click.readerTools", "#sortLength")
-            .on("click.readerTools", "#sortLength", () => {
-                getTheOneReaderToolsModel().sortByLength();
-            });
-
-        delegationRoot
-            .off("click.readerTools", "#sortFrequency")
-            .on("click.readerTools", "#sortFrequency", () => {
-                getTheOneReaderToolsModel().sortByFrequency();
-            });
-
         getTheOneReaderToolsModel().updateControlContents();
         $("#toolbox").accordion("refresh");
-
-        $(window).resize(() => {
-            resizeWordList(false);
-        });
-
-        setTimeout(() => {
-            resizeWordList();
-        }, 200);
-        setTimeout(() => {
-            $.divsToColumns("letter");
-        }, 100);
     });
 }
 
 export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
     // load synphony settings
     return beginLoadSynphonySettings().then(() => {
-        const runWithReaderModelReady = (action: () => void) => {
-            const model = getTheOneReaderToolsModel();
-            if (model.synphony) {
-                action();
-                return;
-            }
-
-            beginLoadSynphonySettings().then(() => action());
-        };
-
-        const delegationRoot = $(document);
-
-        delegationRoot
-            .off("click.readerTools", "#incLevel")
-            .on("click.readerTools", "#incLevel", () => {
-                runWithReaderModelReady(() =>
-                    getTheOneReaderToolsModel().incrementLevel(),
-                );
-            });
-
-        delegationRoot
-            .off("click.readerTools", "#decLevel")
-            .on("click.readerTools", "#decLevel", () => {
-                runWithReaderModelReady(() =>
-                    getTheOneReaderToolsModel().decrementLevel(),
-                );
-            });
-
         getTheOneReaderToolsModel().updateControlContents();
         $("#toolbox").accordion("refresh");
     });
@@ -606,140 +460,4 @@ export function makeLetterWordList(): void {
     };
 
     $.ajax(<JQueryAjaxSettings>ajaxSettings);
-}
-
-/**
- * We need to check the size of the decodable reader tool pane periodically so we can adjust the height of the word list
- * @global {number} previousHeight
- */
-export function resizeWordList(startTimeout: boolean = true): void {
-    const div: JQuery = $("body").find(
-        'div[data-toolId="decodableReaderTool"]',
-    );
-    if (div.length === 0) return; // if not found, the tool was closed
-
-    const wordList: JQuery = div.find("#wordList");
-    const wordListParent = wordList.parent();
-    const wordListParentElement = wordListParent.get(0);
-    if (
-        !wordListParentElement ||
-        !wordListParentElement.isConnected ||
-        !wordListParentElement.ownerDocument?.defaultView
-    ) {
-        return;
-    }
-
-    const currentHeight: number = div.height();
-    const currentWidth: number = wordList.width();
-
-    const readerToolsModel = getTheOneReaderToolsModel();
-    if (!readerToolsModel) {
-        // FYI, this prevents setting future timeouts as well.
-        return;
-    }
-
-    // resize the word list if the size of the pane changed
-    if (
-        readerToolsModel.previousHeight !== currentHeight ||
-        readerToolsModel.previousWidth !== currentWidth
-    ) {
-        readerToolsModel.previousHeight = currentHeight;
-        readerToolsModel.previousWidth = currentWidth;
-
-        const parentPosition = wordListParent.position();
-        if (!parentPosition) {
-            return;
-        }
-
-        const top = parentPosition.top;
-
-        const synphony = readerToolsModel.synphony;
-        if (synphony.source) {
-            let ht = currentHeight - top;
-            if (synphony.source.useAllowedWords === 1) {
-                ht -= div.find("#allowed-word-list-truncated").height();
-            } else {
-                ht -= div.find("#make-letter-word-list-div").height();
-            }
-
-            // This entire function is what I would consider a horrible hack.
-            // The whole tool structure needs to be reworked with flexbox.
-            // But instead, the tool will probably be rewritten in React at some point.
-            // So I'm not going to go to any heroic lengths to solve these issues.
-            // For now, just include the height of the toggle so that it doesn't overlap the
-            // absolutely-positioned link at the bottom of the tool.
-            ht -=
-                div
-                    .find("#decodable-reader-tool-toggle-react-container")
-                    .height() || 0;
-
-            // for a reason I haven't discovered, the height calculation is always off by 6 pixels
-            ht += 6;
-
-            if (ht < 50) ht = 50;
-
-            wordListParent.css("height", Math.floor(ht) + "px");
-        }
-    }
-
-    if (startTimeout)
-        setTimeout(() => {
-            resizeWordList();
-        }, 500);
-}
-
-export function createToggle(isForLeveled: boolean) {
-    const container = document.getElementById(
-        `${isForLeveled ? "leveled" : "decodable"}-reader-tool-toggle-react-container`,
-    );
-    if (!container) {
-        return;
-    }
-
-    const renderToggle = (currentBookKey: string) => {
-        // ReaderToolSwitch is controlled, so a normal render updates it for the current page
-        // without the visible blanking caused by unmounting first.
-        ReactDOM.render(
-            React.createElement(ReaderToolSwitch, {
-                isForLeveled,
-                key: getReaderToggleRenderKey(isForLeveled, currentBookKey),
-            }),
-            container,
-        );
-    };
-
-    get(
-        "editView/currentBookId",
-        (result) => {
-            renderToggle((result?.data as string) || "");
-        },
-        () => {
-            renderToggle("");
-        },
-    );
-}
-
-export function setReaderToolContentShown(
-    isForLeveled: boolean,
-    isShown: boolean,
-): void {
-    const prefix = isForLeveled ? "leveled" : "decodable";
-    document
-        .getElementById(`${prefix}-reader-tool-content`)
-        ?.classList.toggle("turned-off", !isShown);
-}
-
-export function setReaderToolToggleShown(
-    isForLeveled: boolean,
-    isShown: boolean,
-): void {
-    const prefix = isForLeveled ? "leveled" : "decodable";
-    const element = document.getElementById(
-        `${prefix}-reader-tool-toggle-react-container`,
-    );
-    if (!element) {
-        return;
-    }
-
-    element.style.display = isShown ? "" : "none";
 }

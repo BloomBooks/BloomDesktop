@@ -150,6 +150,33 @@ namespace Bloom
             _audioRecording.PauseMonitoringAudio(true);
         }
 
+        /// <summary>
+        /// Keep the main workspace layout in sync when the window moves to a monitor with
+        /// a different DPI, or when monitor scaling changes while Bloom is running.
+        /// </summary>
+        protected override void OnDpiChanged(DpiChangedEventArgs e)
+        {
+            base.OnDpiChanged(e);
+            if (AppIsShuttingDown || Disposing || IsDisposed)
+                return;
+
+            Logger.WriteMinorEvent($"Shell DPI changed from {e.DeviceDpiOld} to {e.DeviceDpiNew}");
+            NotifyDpiChanged();
+        }
+
+        /// <summary>
+        /// Refreshes layout and notifies browser UI listeners that DPI-related state changed.
+        /// </summary>
+        private void NotifyDpiChanged()
+        {
+            if (_workspaceView == null || _workspaceView.Disposing || _workspaceView.IsDisposed)
+                return;
+
+            BloomWebSocketServer.Instance?.SendEvent("recordVideo", "dpiChanged");
+            _workspaceView.PerformLayout();
+            _workspaceView.Invalidate(true);
+        }
+
         public bool AppIsShuttingDown => _startedClosingEvent || _finishedClosingEvent;
 
         private bool _startedClosingEvent;

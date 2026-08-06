@@ -34,6 +34,7 @@ export const normalDialogEnvironmentForStorybook: IBloomDialogEnvironmentParams 
 export const StorybookDialogWrapper: React.FunctionComponent<{
     id: string;
     params: object;
+    children?: React.ReactNode;
 }> = (props) => {
     useEffect(() => {
         // I'm not certain this delay is needed, but I do want to make sure the dialog

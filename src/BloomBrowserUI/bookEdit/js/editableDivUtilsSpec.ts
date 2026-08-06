@@ -194,4 +194,36 @@ describe("EditableDivUtils Tests", () => {
             expect(div.innerHTML).toEqual(testCase[2]);
         }
     });
+
+    it("removeCkEditorFillingChars removes U+200B but preserves U+200C and U+200D", () => {
+        const zwsp = String.fromCharCode(0x200b); // filling char we want gone
+        const zwnj = String.fromCharCode(0x200c); // legitimate; must be kept
+        const zwj = String.fromCharCode(0x200d); // legitimate; must be kept
+
+        // sanity check the test data
+        expect(zwsp).not.toEqual(zwnj);
+        const input = `a${zwsp}b${zwnj}c${zwj}d${zwsp}`;
+        expect(input.indexOf(zwsp)).toBeGreaterThan(-1);
+
+        const result = EditableDivUtils.removeCkEditorFillingChars(input);
+
+        expect(result.indexOf(zwsp)).toEqual(-1);
+        expect(result).toEqual(`ab${zwnj}c${zwj}d`);
+    });
+
+    it("safelyReplaceContentWithCkEditorData strips orphaned filling chars", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const ckEditorData = `<p>ca${zwsp}t${zwsp}</p>`;
+        // sanity check: our input really does contain the filling char we expect to be stripped.
+        expect(ckEditorData.indexOf(zwsp)).toBeGreaterThan(-1);
+
+        const div = document.createElement("div");
+        EditableDivUtils.safelyReplaceContentWithCkEditorData(
+            div,
+            ckEditorData,
+        );
+
+        expect(div.innerHTML.indexOf(zwsp)).toEqual(-1);
+        expect(div.innerHTML).toEqual("<p>cat</p>");
+    });
 });

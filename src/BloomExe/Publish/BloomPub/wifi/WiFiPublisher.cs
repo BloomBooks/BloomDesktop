@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web;
@@ -26,13 +27,55 @@ namespace Bloom.Publish.BloomPub.wifi
         private BloomReaderUDPListener _wifiListener;
         public const string ProtocolVersion = "2.0";
 
-        // This is the web client we use in StartSendBookToClientOnLocalSubNet() to send a book to an android.
-        // It is non-null only for the duration of a send, being destroyed in its own UploadDataCompleted
-        // event. Thus, its non-null status indicates a transfer is in progress, and we won't start any
-        // others. One reason for this is that depending on various network latencies, it is possible
-        // for us to get another request from the same device to which we are already sending.
-        // Trying to send the same thing to the same device twice at the same time does not work well.
-        private WebClient _wifiSender;
+        // A single shared HttpClient is the recommended pattern; reusing it avoids socket exhaustion.
+        // We give it no timeout (rely on cancellation instead), since sending a book over local WiFi
+        // can take a while and we don't want to abort a legitimate, slow transfer.
+        private static readonly HttpClient s_defaultHttpClient = new HttpClient
+        {
+            Timeout = System.Threading.Timeout.InfiniteTimeSpan,
+        };
+
+        // Defaults to the shared client; tests substitute one backed by a fake handler.
+        private HttpClient _httpClient = s_defaultHttpClient;
+
+        // This indicates a send (in StartSendBookToClientOnLocalSubNet) is in progress: it is non-null
+        // only for the duration of a send, being cleared when the send completes (or is canceled).
+        // Its non-null status means we won't start another send. One reason for this is that depending
+        // on various network latencies, it is possible for us to get another request from the same
+        // device to which we are already sending. Trying to send the same thing to the same device
+        // twice at the same time does not work well. Canceling this token aborts an in-progress send.
+        private CancellationTokenSource _wifiSendCancellation;
+
+        // Test seam: lets tests inject an HttpClient with a fake handler so the upload can be
+        // exercised without a real device.
+        internal void SetHttpClientForTests(HttpClient client)
+        {
+            _httpClient = client;
+        }
+
+        // Test seam: lets tests set/inspect the in-progress indicator without going through SendBook.
+        // Locked so the seam follows the same discipline as every production access of the field.
+        internal CancellationTokenSource WifiSendCancellationForTests
+        {
+            get
+            {
+                lock (this)
+                    return _wifiSendCancellation;
+            }
+            set
+            {
+                lock (this)
+                    _wifiSendCancellation = value;
+            }
+        }
+
+        // Test seam: lets tests set/inspect the advertiser so they can verify Paused handling
+        // without starting a real advertisement.
+        internal WiFiAdvertiser WifiAdvertiserForTests
+        {
+            get { return _wifiAdvertiser; }
+            set { _wifiAdvertiser = value; }
+        }
 
         public WiFiPublisher(WebSocketProgress progress, BookServer bookServer)
         {
@@ -73,7 +116,7 @@ namespace Bloom.Publish.BloomPub.wifi
                     // Of course, there are async effects from network latency. But if we do get another request while
                     // handling this one, we will ignore it, since StartSendBook checks for a transfer in progress.
                     _wifiAdvertiser.Paused = true;
-                    StartSendBookOverWiFi(
+                    StartSendBookToClientOnLocalSubNet(
                         book,
                         androidIpAddress,
                         androidName,
@@ -133,7 +176,7 @@ namespace Bloom.Publish.BloomPub.wifi
         public void Stop()
         {
             // Locked to avoid contention with code in the thread that reports a transfer complete,
-            // which disposes of _wifiSender and tries to restart the advertiser.
+            // which clears _wifiSendCancellation and tries to restart the advertiser.
             lock (this)
             {
                 if (_wifiAdvertiser != null)
@@ -142,41 +185,32 @@ namespace Bloom.Publish.BloomPub.wifi
                     _wifiAdvertiser.Dispose();
                     _wifiAdvertiser = null;
                 }
-                if (_wifiSender != null)
+                if (_wifiSendCancellation != null)
                 {
-                    _wifiSender.CancelAsync();
-                    Debug.WriteLine("attempting async cancel send");
-                }
-                if (_uploadTimer != null)
-                {
-                    _uploadTimer.Stop();
-                    _uploadTimer.Dispose();
-                    _uploadTimer = null;
+                    _wifiSendCancellation.Cancel();
+                    Debug.WriteLine("attempting to cancel send");
                 }
             }
             // To avoid leaving a thread around when quitting, try to wait for the sender to cancel or complete.
-            // We expect another thread to set _wifiSender to null in the UploadDataCompleted event
-            // (which is supposed to be triggered also by canceling).
-            for (int i = 0; i < 30 && _wifiSender != null; i++)
+            // We expect the send's completion continuation to clear _wifiSendCancellation (the cancel above
+            // triggers that completion).
+            for (int i = 0; i < 30 && _wifiSendCancellation != null; i++)
             {
                 Thread.Sleep(100);
             }
             lock (this)
             {
-                if (_wifiSender != null)
+                if (_wifiSendCancellation != null)
                 {
-                    // If it's still null we give up on the Cancel and try to shut it down any way we can.
-                    // Note that if the cancelAsync didn't work, as it generally seems not to, this could
-                    // cancel a file transfer rather abruptly. But the alternative is to leave the thread
-                    // running, possibly after Bloom has otherwise exited, causing problems like BL-5272.
-                    // (In practice even aborting this thread doesn't seem to force the file transfer to
-                    // stop, nor does anything else I've tried, so we just do our best to make sure
-                    // the thread won't outlive the application by much. Not allowing requests to queue
-                    // up is one thing that helps. At worst there's only one in progress that either
-                    // finishes or aborts before too long.)
-                    _wifiSender.Dispose();
-                    _wifiSender = null;
-                    Debug.WriteLine("had to force dispose sender");
+                    // The completion continuation didn't run within our wait. We've already canceled the
+                    // token (which aborts the underlying transfer), so stop tracking this send to avoid
+                    // leaving a thread that could outlive the application (see BL-5272). We deliberately
+                    // do NOT Dispose the CancellationTokenSource here: the continuation owns disposal, and
+                    // the request may still hold a registration on the token, so disposing now could race.
+                    // Once we null the field, a late continuation will see it's no longer current
+                    // (ReferenceEquals fails) and will not disturb any newer send.
+                    _wifiSendCancellation = null;
+                    Debug.WriteLine("had to force-abandon sender");
                 }
             }
             if (_wifiListener != null)
@@ -187,8 +221,6 @@ namespace Bloom.Publish.BloomPub.wifi
                 }
             }
         }
-
-        private System.Timers.Timer _uploadTimer;
 
         /// <summary>
         /// Send the book to a client over local network, typically WiFi (at least on Android end).
@@ -209,148 +241,216 @@ namespace Bloom.Publish.BloomPub.wifi
             BloomPubPublishSettings settings = null
         )
         {
+            CancellationTokenSource cancellation;
             // Locked in case more than one thread at a time can handle incoming packets, though I don't think
-            // this is true. Also, Stop() on the main thread cares whether _wifiSender is null.
+            // this is true. Also, Stop() on the main thread cares whether _wifiSendCancellation is null.
             lock (this)
             {
                 // We only support one send at a time. If we somehow get more than one request, we ignore the other.
                 // The device will retry soon if still listening and we are still advertising.
-                if (_wifiSender != null) // indicates transfer in progress
+                if (_wifiSendCancellation != null) // indicates transfer in progress
                     return;
                 // now THIS transfer is 'in progress' as far as any thread checking this is concerned.
-                _wifiSender = new WebClient();
+                cancellation = _wifiSendCancellation = new CancellationTokenSource();
             }
-            _wifiSender.UploadDataCompleted += WifiSenderUploadCompleted;
-            // Now we actually start the send...but using an async API, so there's no long delay here.
-            PublishToBloomPubApi.SendBook(
-                book,
-                _bookServer,
-                destFileName: null,
-                sendAction: (publishedFileName, bloomDPath) =>
-                {
-                    var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
-                    _wifiSender.UploadDataAsync(
-                        new Uri(
-                            androidHttpAddress
-                                + "/putfile?path="
-                                + Uri.EscapeDataString(publishedFileName)
-                        ),
-                        RobustFile.ReadAllBytes(bloomDPath)
-                    );
-                    Debug.WriteLine(
-                        $"upload started to http://{androidIpAddress}:5914 ({androidName}) for {publishedFileName}"
-                    );
-                },
-                _progress,
-                startingMessageFunction: (publishedFileName, bookTitle) =>
-                    _progress.GetMessageWithParams(
-                        idSuffix: "Sending",
-                        comment: "{0} is the name of the book, {1} is the name of the device",
-                        message: "Sending \"{0}\" to device {1}",
-                        parameters: new object[] { bookTitle, androidName }
-                    ),
-                confirmFunction: null,
-                backColor,
-                settings
-            );
-            // Occasionally preparing a book for sending will, despite our best efforts, result in a different sha.
-            // For example, it might change missing or out-of-date mp3 files. In case the sha we just computed
-            // is different from the one we're advertising, update the advertisement, so at least subsequent
-            // advertisements will conform to the version the device just got.
-            _wifiAdvertiser.BookVersion = BloomPubMaker.HashOfMostRecentlyCreatedBook;
-            lock (this)
-            {
-                // The UploadDataCompleted event handler quit working at Bloom 4.6.1238 Alpha (Windows test build).
-                // The data upload still works, but the event handler is *NEVER* called.  Trying to revise the upload
-                // by using UploadDataTaskAsync with async/await  did not work any better: the await never happened.
-                // To get around this bug, we introduce a timer that periodically checks the IsBusy flag of the
-                // _wifiSender object.  It's a hack, but I haven't come up with anything better in two days of
-                // looking at this problem.
-                // See https://issues.bloomlibrary.org/youtrack/issue/BL-7227 for details.
-                if (_uploadTimer == null)
-                {
-                    _uploadTimer = new System.Timers.Timer { Interval = 500.0, Enabled = false };
-                    _uploadTimer.Elapsed += (sender, args) =>
-                    {
-                        if (_wifiSender != null && _wifiSender.IsBusy)
-                            return;
-                        _uploadTimer.Stop();
-                        Debug.WriteLine("upload timed out, appears to be finished");
-                        WifiSenderUploadCompleted(_uploadTimer, null);
-                    };
-                }
-                _uploadTimer.Start();
-            }
-            PublishToBloomPubApi.ReportAnalytics("wifi", book);
-        }
-
-        private void WifiSenderUploadCompleted(object sender, UploadDataCompletedEventArgs args)
-        {
-            // Runs on the async transfer thread after the transfer initiated above.  (Or on the async
-            // timer thread if the completion event handler is not called, as seems to be happening
-            // since Bloom 4.6.1238 Alpha according to BL-7227)
-            if (args?.Error != null)
-            {
-                ReportException(args.Error);
-            }
-            // Should we report if canceled? Thinking not, we typically only cancel while shutting down,
-            // it's probably too late for a useful report.
-
-            // To avoid contention with Stop(), which may try to cancel the send if it finds
-            // an existing wifiSender, and may destroy the advertiser we are trying to restart.
-            lock (this)
-            {
-                Debug.WriteLine(
-                    $"upload completed, sender is {sender}, cancelled is {args?.Cancelled}"
-                );
-                if (_wifiSender != null) // should be null only in a desperate abort-the-thread situation.
-                {
-                    _wifiSender.Dispose();
-                    _wifiSender = null;
-                }
-                if (_wifiAdvertiser != null)
-                    _wifiAdvertiser.Paused = false;
-                if (_uploadTimer != null)
-                {
-                    _uploadTimer.Stop();
-                    _uploadTimer.Dispose();
-                    _uploadTimer = null;
-                }
-            }
-        }
-
-        private void StartSendBookOverWiFi(
-            Book.Book book,
-            string androidIpAddress,
-            string androidName,
-            Color backColor,
-            BloomPubPublishSettings settings = null
-        )
-        {
+            // Tracks whether the async upload was actually started (and thus a completion continuation
+            // attached). It is set inside the synchronous sendAction callback below.
+            var uploadStarted = false;
             try
             {
-                StartSendBookToClientOnLocalSubNet(
+                // Now we actually start the send...but using an async API, so there's no long delay here.
+                PublishToBloomPubApi.SendBook(
                     book,
-                    androidIpAddress,
-                    androidName,
+                    _bookServer,
+                    destFileName: null,
+                    sendAction: (publishedFileName, bloomDPath) =>
+                    {
+                        UploadToDevice(
+                            androidIpAddress,
+                            publishedFileName,
+                            RobustFile.ReadAllBytes(bloomDPath),
+                            cancellation
+                        );
+                        // From here on, the upload's completion continuation owns clearing the
+                        // in-progress state and disposing the CancellationTokenSource.
+                        uploadStarted = true;
+                        Debug.WriteLine(
+                            $"upload started to http://{androidIpAddress}:5914 ({androidName}) for {publishedFileName}"
+                        );
+                    },
+                    _progress,
+                    startingMessageFunction: (publishedFileName, bookTitle) =>
+                        _progress.GetMessageWithParams(
+                            idSuffix: "Sending",
+                            comment: "{0} is the name of the book, {1} is the name of the device",
+                            message: "Sending \"{0}\" to device {1}",
+                            parameters: new object[] { bookTitle, androidName }
+                        ),
+                    confirmFunction: null,
                     backColor,
                     settings
                 );
+                // Occasionally preparing a book for sending will, despite our best efforts, result in a different sha.
+                // For example, it might change missing or out-of-date mp3 files. In case the sha we just computed
+                // is different from the one we're advertising, update the advertisement, so at least subsequent
+                // advertisements will conform to the version the device just got.
+                _wifiAdvertiser.BookVersion = BloomPubMaker.HashOfMostRecentlyCreatedBook;
+                PublishToBloomPubApi.ReportAnalytics("wifi", book);
             }
             catch (Exception e)
             {
-                ReportException(e);
+                HandleSendSetupFailure(e, cancellation, uploadStarted);
             }
         }
 
-        private void ReportException(Exception e)
+        /// <summary>
+        /// Handles an exception thrown while setting up/starting a send. Reports it, and—only if the
+        /// upload never actually started—clears the in-progress state and resumes advertising. If the
+        /// upload had started, its completion continuation owns the CancellationTokenSource and will do
+        /// that cleanup; clearing/disposing here would clobber an in-flight transfer and could let a
+        /// second send start concurrently.
+        /// </summary>
+        internal void HandleSendSetupFailure(
+            Exception e,
+            CancellationTokenSource cancellation,
+            bool uploadStarted
+        )
         {
-            // If this happens while _wifiSender is null, it can only be because Stop() tried to abort a transfer
-            // and CancelAsync didn't work (as usual). At this point the exception is being reported on an orphan thread
-            // very possibly after Bloom has closed down and the localization manager is disposed.
+            // Report while the send still counts as 'in progress' (ReportException suppresses itself
+            // once the in-progress state has been cleared).
+            ReportException(e);
+            if (uploadStarted)
+                return;
+            lock (this)
+            {
+                if (ReferenceEquals(_wifiSendCancellation, cancellation))
+                {
+                    ClearWifiSend();
+                    if (_wifiAdvertiser != null)
+                        _wifiAdvertiser.Paused = false;
+                }
+                else
+                {
+                    // This send was abandoned (Stop() gave up waiting for it) and a newer send may be
+                    // in progress, so leave the shared state and the advertiser's Paused status alone.
+                    // Since the upload never started, no completion continuation exists to dispose our
+                    // CancellationTokenSource, so dispose it here.
+                    cancellation.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// POSTs the given book bytes to the device's putfile endpoint and wires up completion
+        /// handling. The continuation (which runs on a thread-pool thread when the transfer finishes,
+        /// faults, or is canceled) reports any error and clears the in-progress state. Unlike the old
+        /// WebClient.UploadDataCompleted event, an HttpClient continuation fires reliably, so the
+        /// BL-7227 IsBusy/timer hack is no longer needed.
+        /// Returns the completion task; production code ignores it, but tests await it.
+        /// </summary>
+        internal Task UploadToDevice(
+            string androidIpAddress,
+            string publishedFileName,
+            byte[] bytes,
+            CancellationTokenSource cancellation
+        )
+        {
+            var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
+            var uri = new Uri(
+                androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(publishedFileName)
+            );
+            var content = new ByteArrayContent(bytes);
+            // The old WebClient sent application/octet-stream by default; set it explicitly so the
+            // bytes-on-the-wire to the BloomReader device are guaranteed unchanged by the HttpClient
+            // migration (ByteArrayContent sends no Content-Type on its own).
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(
+                "application/octet-stream"
+            );
+            return _httpClient
+                .PostAsync(uri, content, cancellation.Token)
+                .ContinueWith(task => WifiSendCompleted(task, content, cancellation));
+        }
+
+        // Runs on a thread-pool thread when the upload started above finishes, faults, or is canceled.
+        // 'cancellation' is the CancellationTokenSource that belongs to *this* send.
+        private void WifiSendCompleted(
+            Task<HttpResponseMessage> task,
+            ByteArrayContent content,
+            CancellationTokenSource cancellation
+        )
+        {
+            content.Dispose();
+            // The finally guarantees the state cleanup below runs even if reporting the outcome throws
+            // (e.g. the progress channel is being torn down); otherwise the in-progress flag would stay
+            // set and the advertiser paused, silently blocking all future sends. This continuation is
+            // fire-and-forget in production, so a throw here would not even be observed.
+            try
+            {
+                if (task.IsFaulted)
+                {
+                    var error = task.Exception?.GetBaseException();
+                    // Don't report cancellation: we typically only cancel while shutting down, when it's
+                    // too late for a useful report.
+                    if (error != null && !(error is OperationCanceledException))
+                        ReportException(error);
+                }
+                else if (!task.IsCanceled)
+                {
+                    using (var response = task.Result)
+                    {
+                        if (!response.IsSuccessStatusCode)
+                            ReportException(
+                                new HttpRequestException(
+                                    $"Device returned {(int)response.StatusCode} {response.ReasonPhrase}"
+                                )
+                            );
+                    }
+                }
+            }
+            finally
+            {
+                // To avoid contention with Stop(), which may try to cancel the send if it finds
+                // an existing transfer, and may destroy the advertiser we are trying to restart.
+                lock (this)
+                {
+                    Debug.WriteLine($"upload completed, cancelled is {task.IsCanceled}");
+                    // A newer send may have started (e.g. after Stop() abandoned this one) while this
+                    // continuation was still pending. Only clear the shared in-progress state and resume
+                    // advertising if we are still the current send; otherwise we would wrongly cancel the
+                    // newer send's "in progress" status and resume advertising during its transfer.
+                    if (ReferenceEquals(_wifiSendCancellation, cancellation))
+                    {
+                        _wifiSendCancellation = null;
+                        if (_wifiAdvertiser != null)
+                            _wifiAdvertiser.Paused = false;
+                    }
+                }
+                // This continuation owns its CancellationTokenSource. The request has finished using the
+                // token by the time the continuation runs, so disposing here is safe (and is the single
+                // place the CTS gets disposed).
+                cancellation.Dispose();
+            }
+        }
+
+        // Disposes and clears the in-progress send. Callers must hold the lock on 'this'.
+        // Used only when a send fails during setup, before its completion continuation is attached.
+        private void ClearWifiSend()
+        {
+            if (_wifiSendCancellation != null)
+            {
+                _wifiSendCancellation.Dispose();
+                _wifiSendCancellation = null;
+            }
+        }
+
+        protected virtual void ReportException(Exception e)
+        {
+            // If this happens while _wifiSendCancellation is null, it can only be because Stop() tried to
+            // abort a transfer. At this point the exception is being reported on an orphan thread, very
+            // possibly after Bloom has closed down and the localization manager is disposed.
             // Certainly the _progress thing is no longer visible. So no point in trying to send something
             // there, it will just cause exceptions.
-            if (_wifiSender != null)
+            if (_wifiSendCancellation != null)
             {
                 // This method is called on a background thread in response to receiving a request from Bloom Reader.
                 // Exceptions somehow get discarded, so there is no point in letting them propagate further.

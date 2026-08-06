@@ -20,29 +20,11 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler(
-                "workspace/openOrCreateCollection/",
-                HandleOpenOrCreateCollection,
-                true
-            );
-
-            apiHandler.RegisterEndpointHandler(
                 "workspace/showLegacySettingsDialog",
                 HandleShowLegacySettingsDialog,
                 true
             );
 
-            apiHandler.RegisterEndpointHandler("workspace/uiLanguages", HandleGetUiLanguages, true);
-            apiHandler.RegisterEndpointHandler(
-                "workspace/uiLanguageAction",
-                HandleUiLanguageAction,
-                true
-            );
-            apiHandler.RegisterBooleanEndpointHandler(
-                "workspace/showUnapprovedTranslations",
-                request => WorkspaceView.GetShowUnapprovedTranslations(),
-                (request, value) => WorkspaceView.SetShowUnapprovedTranslations(value),
-                true
-            );
             apiHandler.RegisterEndpointHandler("workspace/helpAction", HandleHelpAction, true);
             apiHandler.RegisterEndpointHandler(
                 "workspace/reportProblem",
@@ -52,11 +34,6 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 "workspace/checkForUpdates",
                 HandleCheckForUpdates,
-                true
-            );
-            apiHandler.RegisterEndpointHandler(
-                "workspace/uiLanguageLabel",
-                HandleGetUiLanguageLabel,
                 true
             );
             apiHandler.RegisterEndpointHandler("workspace/topRight/zoom", HandleZoom, true);
@@ -69,20 +46,6 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler("toast/test", HandleToastTest, false);
-        }
-
-        private void HandleOpenOrCreateCollection(ApiRequest request)
-        {
-            // This shuts everything down, so it needs to happen after all the request processing
-            // is complete.
-            Application.Idle += OpenCreateCollection;
-            request.PostSucceeded();
-        }
-
-        private void OpenCreateCollection(object sender, EventArgs e)
-        {
-            Application.Idle -= OpenCreateCollection;
-            WorkspaceView.OpenCreateCollection();
         }
 
         private void HandleShowLegacySettingsDialog(ApiRequest request)
@@ -103,25 +66,6 @@ namespace Bloom.web.controllers
         {
             Application.Idle -= ShowLegacySettingsDialog;
             WorkspaceView.OpenLegacySettingsDialog();
-        }
-
-        private void HandleGetUiLanguageLabel(ApiRequest request)
-        {
-            request.ReplyWithJson(WorkspaceView.GetCurrentUiLanguageLabel());
-        }
-
-        private void HandleGetUiLanguages(ApiRequest request)
-        {
-            request.ReplyWithJson(WorkspaceView.GetAvailableUiLanguageNames());
-        }
-
-        private void HandleUiLanguageAction(ApiRequest request)
-        {
-            dynamic data = request.RequiredPostDynamic();
-            var action = (string)data.action;
-            var languageName = (string)data.languageName;
-            WorkspaceView.HandleUiLanguageAction(action, languageName);
-            request.PostSucceeded();
         }
 
         private void HandleHelpAction(ApiRequest request)

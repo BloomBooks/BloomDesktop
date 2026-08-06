@@ -37,6 +37,7 @@ import {
 import { ShowEditViewDialog } from "../bookEdit/workspaceRoot";
 import { getPageIframeBody } from "../utils/shared";
 import { getWorkspaceBundleExports } from "../bookEdit/js/workspaceFrames";
+import { BloomTooltip } from "./BloomToolTip";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 
@@ -134,8 +135,48 @@ export const BloomEnterpriseIconWithTooltip: React.FunctionComponent<{
     );
 };
 
+// This component displays the bloom subscription badge, and is used
+// primarily for the tool options that appear in the settings and the
+// enabled tool headers that appear above the "More..." button
+export const SubscriptionBadgeWithTooltipAndDialog: React.FunctionComponent<{
+    featureName: string;
+}> = (props) => {
+    // check whether the tool is a feature provided in the user's
+    // current subscription tier, and retrieve the proper message
+    // that explains whether the tool is available or not
+    const featureStatus = useGetFeatureStatus(props.featureName);
+    const featureMessage = useGetFeatureAvailabilityMessage(featureStatus);
+
+    return (
+        <BloomTooltip tip={featureMessage} placement="bottom-end">
+            <img
+                css={css`
+                    height: 1.5em;
+                    margin-left: 1em;
+                    cursor: ${featureStatus?.enabled ? "default" : "pointer"};
+                `}
+                src={badgeUrl}
+                onClick={(event) => {
+                    // Clicking the badge must do nothing beyond (possibly) showing the
+                    // dialog. In the toolbox, the badge sits inside the accordion header,
+                    // which toggles the tool open/closed when clicked, so letting the click
+                    // bubble collapsed the active tool (and the toolbox then immediately
+                    // re-expanded it), making everything below it jump. (BL-16533)
+                    event.stopPropagation();
+                    if (!featureStatus?.enabled) {
+                        showRequiresSubscriptionDialogInAnyView(
+                            props.featureName,
+                        );
+                    }
+                }}
+            />
+        </BloomTooltip>
+    );
+};
+
 export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
     featureName: string;
+    children?: React.ReactNode;
 }> = (props) => {
     const memoizedFeatureName = React.useMemo(
         () => props.featureName,
@@ -145,6 +186,8 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
 
     return (
         <div
+            data-testid="requires-subscription-overlay-wrapper"
+            data-feature-name={memoizedFeatureName} // somehow used by tests
             css={css`
                 height: 100%;
                 box-sizing: border-box;
@@ -163,7 +206,7 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
             >
                 {props.children}
             </div>
-            {featureStatus?.enabled || (
+            {featureStatus === undefined || featureStatus.enabled || (
                 <div
                     css={css`
                         position: absolute;
@@ -420,7 +463,13 @@ export function showRequiresSubscriptionDialogInEditView(featureName: string) {
 }
 
 export function showRequiresSubscriptionDialogInAnyView(featureName: string) {
-    if (getPageIframeBody()?.ownerDocument ?? document !== document) {
+    // The parentheses matter: !== binds tighter than ??, so without them this asked
+    // "is there a page iframe body?" instead of "is it in some other document than
+    // mine?". Harmless for today's callers -- they are either in the toolbox iframe
+    // (where both readings say yes) or in a top-level window like a publish screen
+    // (where there is no page iframe, so both say no) -- but it would have quietly
+    // sent a future caller inside the page iframe itself down the wrong branch.
+    if ((getPageIframeBody()?.ownerDocument ?? document) !== document) {
         // We're in edit mode, but executing from the toolbox. We want the dialog to
         // show in the edit view, where there is room for it, so we have to
         // use a function in that iframe's code to show it. (It's not enough

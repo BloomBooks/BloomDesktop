@@ -1,0 +1,57 @@
+import { css } from "@emotion/react";
+import * as React from "react";
+import { kBloomBlue } from "../bloomMaterialUITheme";
+
+// NOTE: Two additional uses of the underlying SVG file still exist that cannot easily be
+// converted to this component:
+// - src/BloomExe/TeamCollection/TeamCollection.cs passes a URL string to BrowserProgressDialog
+//   via JSON serialization; C# has no way to produce a React component.
+// - src/BloomBrowserUI/react_components/Progress/ProgressDialog.stories.tsx passes a string
+//   to ProgressDialog's titleIcon prop which only accepts a URL string.
+
+/// <summary>
+/// Inline SVG version of teamCollection/Team Collection.svg with a configurable fill color.
+/// The original file is white-on-transparent; use color="white" when rendering on a dark background,
+/// or kBloomBlue (the default) when rendering on a white/light background.
+/// </summary>
+export const TeamCollectionIcon: React.FunctionComponent<{
+    color?: string;
+    className?: string;
+}> = (props) => (
+    <svg
+        width="20"
+        height="17"
+        viewBox="0 0 31 26"
+        xmlns="http://www.w3.org/2000/svg"
+        className={props.className}
+        css={css`
+            flex-shrink: 0;
+            color: ${props.color ?? kBloomBlue};
+        `}
+    >
+        <path
+            d="M12.0924 4.93754C12.0925 4.92789 12.0925 4.91823 12.0925 4.90857C12.0925 2.46623 10.1126 0.486328 7.67028 0.486328C5.22794 0.486328 3.24803 2.46623 3.24803 4.90857C3.24803 7.35091 5.22794 9.33081 7.67028 9.33081C8.37699 9.33081 9.04499 9.16504 9.6375 8.87025C9.85476 7.23106 10.7784 5.81484 12.0924 4.93754Z"
+            fill="currentColor"
+        />
+        <path
+            d="M20.7912 8.94507C20.5852 7.21291 19.5916 5.7224 18.1785 4.8418C18.2142 2.43025 20.1802 0.486328 22.6003 0.486328C25.0426 0.486328 27.0225 2.46623 27.0225 4.90857C27.0225 7.35091 25.0426 9.33081 22.6003 9.33081C21.9558 9.33081 21.3435 9.19294 20.7912 8.94507Z"
+            fill="currentColor"
+        />
+        <path
+            d="M9.59225 9.8239C8.75366 9.78295 7.82841 9.76972 7.82841 9.76972C7.86217 9.76972 5.53481 9.75293 4.91311 9.85198C2.08701 10.3022 0.207919 13.0766 0.108378 15.2407L0.0405273 20.0098C0.0405273 20.0098 3.74695 21.2104 5.95304 21.3583C5.95304 21.3583 6.3276 21.3697 6.74453 21.3814L6.78024 18.8716C6.87589 16.792 8.43682 14.21 10.8756 13.1958C10.1128 12.2733 9.63878 11.1031 9.59225 9.8239Z"
+            fill="currentColor"
+        />
+        <path
+            d="M23.6146 21.3854C23.6728 20.1273 23.7233 18.92 23.7138 18.6986C23.4911 16.35 21.8244 13.9703 19.5866 13.1433C20.3313 12.2204 20.7901 11.0572 20.8283 9.7882C21.7106 9.76194 22.7814 9.76972 22.7584 9.76972C22.7584 9.76972 24.9293 9.80076 25.6344 9.91495C28.0343 10.3037 29.9133 12.7129 30.1384 15.0865C30.1572 15.5239 29.9133 20.277 29.9133 20.277C29.9133 20.277 27.6968 21.2493 24.6398 21.3583C24.6398 21.3583 24.1138 21.3725 23.6146 21.3854Z"
+            fill="currentColor"
+        />
+        <path
+            d="M7.79491 19.6203L7.72706 24.3894C7.72706 24.3894 11.4335 25.59 13.6396 25.7379C13.6396 25.7379 15.2883 25.7882 15.5179 25.7853C15.7476 25.7824 17.3963 25.7379 17.3963 25.7379C20.4534 25.6289 22.6699 24.6566 22.6699 24.6566C22.6699 24.6566 22.9137 19.9035 22.895 19.4661C22.6699 17.0925 20.7908 14.6832 18.3909 14.2945C17.6859 14.1803 15.5149 14.1493 15.5149 14.1493C15.5487 14.1493 13.2213 14.1325 12.5996 14.2315C9.77355 14.6818 7.89445 17.4562 7.79491 19.6203Z"
+            fill="currentColor"
+        />
+        <path
+            d="M19.7714 9.27292C19.7714 11.7153 17.7915 13.6952 15.3492 13.6952C12.9069 13.6952 10.927 11.7153 10.927 9.27292C10.927 6.83058 12.9069 4.85067 15.3492 4.85067C17.7915 4.85067 19.7714 6.83058 19.7714 9.27292Z"
+            fill="currentColor"
+        />
+    </svg>
+);

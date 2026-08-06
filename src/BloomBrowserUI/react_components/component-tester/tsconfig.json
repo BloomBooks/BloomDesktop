@@ -1,17 +1,26 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "outDir": "./dist",
-
+        // No outDir: this config type-checks only (noEmit below); vite/tsx do the
+        // building. Under TS 6.0 a stale outDir triggers rootDir layout errors (TS6059)
+        // for the component-tests it includes from sibling directories.
         "module": "ESNext",
         "target": "ES2020",
         "moduleResolution": "Node",
+        // TS 6.0 deprecates the legacy "node"/node10 resolution (TS5107) ahead of its
+        // removal in TS 7.0. We rely on it here (bundler resolution can't resolve the
+        // bare-specifier side-effect imports these component-tests pull in), so silence
+        // the deprecation for now; revisit when moving to TS 7.0.
+        "ignoreDeprecations": "6.0",
         "jsx": "react-jsx",
         "jsxImportSource": "@emotion/react",
         "types": ["vite/client"],
         "noEmit": true
     },
     "include": [
+        // ambient module declarations (e.g. *.less, side-effect imports) shared with
+        // the main UI; `extends` does not inherit the parent's `include`.
+        "../../custom.d.ts",
         "./*.ts",
         "./*.tsx",
         "../**/component-tests/**/*.ts",

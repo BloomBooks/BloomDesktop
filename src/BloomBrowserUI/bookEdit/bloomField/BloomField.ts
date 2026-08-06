@@ -1,7 +1,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/ckeditor/ckeditor.d.ts" />
 
-import AudioRecording from "../toolbox/talkingBook/audioRecording";
+import { createValidXhtmlUniqueId } from "../js/xhtmlIdUtils";
 import { get, post } from "../../utils/bloomApi";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { tryProcessHyperlink } from "./hyperlinks";
@@ -554,7 +554,7 @@ export default class BloomField {
             nodelist.forEach(
                 (span: Element, key: number, parent: NodeListOf<Element>) => {
                     const oldId = span.getAttribute("id");
-                    const newId = AudioRecording.createValidXhtmlUniqueId();
+                    const newId = createValidXhtmlUniqueId();
                     span.setAttribute("id", newId);
                     post(`audio/copyAudioFile?oldId=${oldId}&newId=${newId}`);
                 },
@@ -801,7 +801,9 @@ export default class BloomField {
         if ($(field).hasClass("WordFind-style")) return;
 
         BloomField.ConvertTopLevelTextNodesToParagraphs(field);
-        $(field).find("br").remove();
+        // Replace <br> with a space instead of removing it to avoid mushing words together
+        // None of these should exist in Bloom books, but some antique books may have them.  See BL-16518.
+        $(field).find("br").replaceWith(" ");
 
         // in cases where we are embedding images inside of bloom-editables, the paragraphs actually have to go at the
         // end, for reason of wrapping. See SHRP C1P4 Pupils Book

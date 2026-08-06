@@ -2,12 +2,12 @@
 {
     partial class SourceTextControl
     {
-        /// <summary> 
+        /// <summary>
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary> 
+        /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -22,8 +22,8 @@
 
         #region Component Designer generated code
 
-        /// <summary> 
-        /// Required method for Designer support - do not modify 
+        /// <summary>
+        /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
@@ -33,9 +33,9 @@
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this._tabControl.SuspendLayout();
             this.SuspendLayout();
-            // 
+            //
             // _tabControl
-            // 
+            //
             this._tabControl.Alignment = System.Windows.Forms.TabAlignment.Right;
             this._tabControl.Controls.Add(this.tabPage1);
             this._tabControl.Controls.Add(this.tabPage2);
@@ -47,10 +47,10 @@
             this._tabControl.SelectedIndex = 0;
             this._tabControl.Size = new System.Drawing.Size(150, 150);
             this._tabControl.TabIndex = 0;
-            
-            // 
+
+            //
             // tabPage1
-            // 
+            //
             this.tabPage1.Location = new System.Drawing.Point(4, 4);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
@@ -58,9 +58,9 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
-            // 
+            //
             // tabPage2
-            // 
+            //
             this.tabPage2.Location = new System.Drawing.Point(4, 4);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
@@ -68,11 +68,11 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
-            // 
+            //
             // SourceTextControl
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            //
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.Controls.Add(this._tabControl);
             this.Name = "SourceTextControl";
             this._tabControl.ResumeLayout(false);

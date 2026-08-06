@@ -64,4 +64,4 @@ if [ "$component_arg_added" -eq 0 ]; then
 	args+=("$component_prefix")
 fi
 
-yarn test "${args[@]}"
+pnpm test "${args[@]}"

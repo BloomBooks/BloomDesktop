@@ -93,7 +93,7 @@ namespace Bloom.CollectionCreating
 			this._vernacularLanguagePage.Size = new System.Drawing.Size(712, 309);
 			this._vernacularLanguagePage.TabIndex = 1;
 			this._vernacularLanguagePage.Text = "Choose the main language for this collection.";
-			// 
+			//
 			// _languageChooserReactControl
 			//
 			this._languageChooserReactControl.JavascriptBundleName = "newCollectionLanguageChooserBundle";
@@ -190,8 +190,8 @@ namespace Bloom.CollectionCreating
 			//
 			// NewCollectionWizard
 			//
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.ClientSize = new System.Drawing.Size(1084, 586);
 			this.ControlBox = true;

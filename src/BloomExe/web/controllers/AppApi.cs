@@ -72,11 +72,8 @@ namespace Bloom.Api
                 {
                     // Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
                     var url = UrlLookup.LookupUrl(UrlType.LibrarySite, null) + "/installers";
-                    if (SIL.PlatformUtilities.Platform.IsWindows)
-                        // Let the default browser open the link.
-                        ProcessExtra.SafeStartInFront(url);
-                    else
-                        ProcessExtra.SafeStartInFront("xdg-open", Uri.EscapeUriString(url)); // may not need this distinction
+                    // Let the default browser open the link.
+                    ProcessExtra.SafeStartInFront(url);
                     request.ExternalLinkSucceeded();
                 },
                 true

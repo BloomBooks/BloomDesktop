@@ -15,6 +15,7 @@ import {
     useSubscribeToWebSocketForEvent,
 } from "../utils/WebSocketManager";
 import { BookProblem } from "../react_components/bookProblem";
+import { TeamCollectionIcon } from "./TeamCollectionIcon";
 import { SimpleMenu } from "../react_components/simpleMenu";
 import { SimpleMenuItem } from "../react_components/SimpleMenuItem";
 import { AvatarDialog } from "./AvatarDialog";
@@ -437,14 +438,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         `}
                         title={mainTitleUnlocked}
                         subTitle={subTitleUnlocked}
-                        icon={
-                            <img
-                                src={
-                                    "/bloom/teamCollection/Team Collection.svg"
-                                }
-                                alt="available"
-                            />
-                        }
+                        icon={<TeamCollectionIcon color="white" />}
                         button={getBloomButton(
                             "Check out book",
                             "TeamCollection.Checkout",

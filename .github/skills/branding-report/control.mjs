@@ -340,7 +340,13 @@ const controlHtml = path.join(import.meta.dirname, "control", "index.html");
 // area is showing). Formatted independently of the on-screen matrix: a grid whose cells
 // have a large minimum size (in inches), so every screenshot stays legible on A4/Letter.
 // Grouped by layout, page-broken between layouts. Images are served from this server.
-function buildPrintHtml(paperName) {
+// A4 is the only paper this report targets, and this is its single source of truth: it
+// feeds the @page rule, the figure max-width/max-height below (A4 minus the 0.5in
+// margins), and the label in the report header. renderUrlToPdf reads the size and margins
+// straight off the @page rule, so nothing else has to be told about paper.
+const PAPER = "A4";
+
+function buildPrintHtml() {
     const layouts = [...selection.layouts];
     const brandings = [...selection.brandings];
     const pages = PAGE_ORDER.filter((p) => selection.pages.has(p));
@@ -388,7 +394,7 @@ function buildPrintHtml(paperName) {
     const when = new Date().toLocaleString();
     return `<!doctype html><html><head><meta charset="utf-8"><title>Bloom branding report</title>
 <style>
-  @page { size: A4; margin: 0.5in; }
+  @page { size: ${PAPER}; margin: 0.5in; }
   html,body{margin:0}
   body{font-family:"Segoe UI",system-ui,sans-serif;color:#141414;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   h1{font-size:16pt;margin:0 0 2pt}
@@ -406,7 +412,7 @@ function buildPrintHtml(paperName) {
   figcaption b{color:#000}
 </style></head><body>
   <h1>Bloom branding report</h1>
-  <div class="meta">book: ${esc((model.book || "").split(/[\\/]/).pop())} &middot; ${total} pages &middot; paper: ${esc(paperName)} &middot; ${esc(when)}</div>
+  <div class="meta">book: ${esc((model.book || "").split(/[\\/]/).pop())} &middot; ${total} pages &middot; paper: ${esc(PAPER)} &middot; ${esc(when)}</div>
   ${sections || '<p class="meta">No captured pages match the current selection.</p>'}
 </body></html>`;
 }
@@ -416,9 +422,8 @@ const server = http.createServer(async (req, res) => {
 
     if (urlPath === "/api/state") return sendJson(res, snapshot());
     if (urlPath === "/api/pdf") {
-        const paper = "A4"; // always A4
         try {
-            const html = buildPrintHtml(paper);
+            const html = buildPrintHtml();
             fs.writeFileSync(path.join(opts.out, "report-print.html"), html);
             const pdfName = "branding-report.pdf";
             // No paper/margin opts: renderUrlToPdf takes those from the page's

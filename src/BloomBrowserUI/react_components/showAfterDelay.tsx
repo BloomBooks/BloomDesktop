@@ -3,7 +3,7 @@ import * as React from "react";
 // This class shows nothing for showAfterDelay ms, then its children.
 // Thanks to goulashsoup on StackOverflow.
 class ShowAfterDelay extends React.Component<
-    { waitBeforeShow: number },
+    { waitBeforeShow: number; children?: React.ReactNode },
     { hidden: boolean }
 > {
     constructor(props: { waitBeforeShow: number }) {

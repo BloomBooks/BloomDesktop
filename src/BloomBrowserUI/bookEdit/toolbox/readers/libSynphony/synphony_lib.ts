@@ -228,6 +228,31 @@ export function setLangData(data) {
     theOneLibSynphony.processVocabularyGroups();
 }
 
+// The zero-width and directional format characters that we treat as word boundaries.
+// U+200B ZERO WIDTH SPACE is the notable one: despite its name it is Unicode category
+// Cf (Format), NOT Zs (Space Separator), so it is NOT matched by \p{Z} or \s. Along with
+// the LTR/RTL marks (U+200E/U+200F), the directional embedding/override markers
+// (U+202A-U+202E), and the directional isolates (U+2066-U+2069), these can appear between
+// (or stray inside) words without being visible.
+// This is the body of a regex character class (no enclosing brackets). It MUST be kept in
+// sync between getWordsFromHtmlString (which splits story text into words on these) and
+// find_words_extra (which locates those words for highlighting): if the two disagree about
+// where a word ends, a decodable word next to one of these characters gets left unmarked
+// or mis-marked. See BL-3933, BL-7081, and BL-16490.
+// NOTE: U+200C (ZWNJ) and U+200D (ZWJ) are deliberately excluded; they are legitimate
+// within words in some scripts and must NOT split or bound a word (BL-13428).
+// Built with String.fromCharCode (not string escapes) so this source file itself stays
+// free of the very invisible characters it describes.
+const zeroWidthAndDirectionalSplitters =
+    String.fromCharCode(0x200b) + // ZERO WIDTH SPACE
+    String.fromCharCode(0x200e, 0x200f) + // LEFT-TO-RIGHT / RIGHT-TO-LEFT MARK
+    String.fromCharCode(0x202a) +
+    "-" +
+    String.fromCharCode(0x202e) + // directional embedding/override markers
+    String.fromCharCode(0x2066) +
+    "-" +
+    String.fromCharCode(0x2069); // directional "isolate" markers
+
 /**
  * Class that holds Synphony-related functions
  * @returns {LibSynphony}
@@ -635,24 +660,20 @@ export class LibSynphony {
         // Originally the code had p{C} (all Control characters), but this was too all-encompassing.
         const whitespace = "\\p{Z}";
         const controlChars = "\\p{Cc}"; // "real" Control characters
-        // The following constants are Control(format) [p{Cf}] characters that should split words.
-        // e.g. ZERO WIDTH SPACE is a Control(format) charactor
+        // We also split on some Control(format) [p{Cf}] characters (ZERO WIDTH SPACE and the
+        // LTR/RTL/directional markers). e.g. ZERO WIDTH SPACE is a Control(format) character
         // (See http://issues.bloomlibrary.org/youtrack/issue/BL-3933),
-        // but so are ZERO WIDTH JOINER and NON JOINER (See https://issues.bloomlibrary.org/youtrack/issue/BL-7081).
+        // as are ZERO WIDTH JOINER and NON JOINER (See https://issues.bloomlibrary.org/youtrack/issue/BL-7081).
         // See list at: https://www.compart.com/en/unicode/category/Cf
-        const zeroWidthSplitters = "\u200b"; // ZERO WIDTH SPACE
-        const ltrrtl = "\u200e\u200f"; // LEFT-TO-RIGHT MARK / RIGHT-TO-LEFT MARK
-        const directional = "\u202A-\u202E"; // more LTR/RTL/directional markers
-        const isolates = "\u2066-\u2069"; // directional "isolate" markers
+        // These live in the shared zeroWidthAndDirectionalSplitters constant so that
+        // find_words_extra bounds words at exactly the same characters we split on here
+        // (See BL-16490).
         // split on whitespace, Control(control) and some Control(format) characters
         regex = XRegExp(
             "[" +
                 whitespace +
                 controlChars +
-                zeroWidthSplitters +
-                ltrrtl +
-                directional +
-                isolates +
+                zeroWidthAndDirectionalSplitters +
                 "]+",
             "xg",
         );
@@ -1036,10 +1057,19 @@ export class LibSynphony {
         // These kinds of spaces are allowed, but only before a trailingPunct; otherwise,
         // they are considered part of the inter-sentence white space.
         // \\u202F: narrow non-breaking space that our long-press inserts for non-breaking space.
+        // \\u00A0: a real NO-BREAK SPACE. nbspReplacement above only stands in for the "&nbsp;"
+        // *entity*, which is what we see when the input is HTML. Callers that pass us plain text
+        // (the reader tools' mapVisibleText, and removeAllHtmlMarkupFromString, which decodes
+        // entities) have the actual character instead, and without it here a French-style
+        // "Bonjour ! " would break the sentence before its closing guillemet.
         // Using a non-capturing group here, because it's only to allow the space+trailing
         // sequence to repeat; we don't want to use it separately in the result.
         var afterSEP =
-            "(?:[" + nbspReplacement + "\\u202F]*" + trailingPunct + ")*";
+            "(?:[" +
+            nbspReplacement +
+            "\\u00A0\\u202F]*" +
+            trailingPunct +
+            ")*";
 
         // regex to find sentence ending sequences and inter-sentence space
         // \p{SEP} is defined as a list of sentence ending punctuation characters by a call to XRegExp.addUnicodeData
@@ -1424,69 +1454,61 @@ export class LibSynphony {
     }
 
     /**
-     * Wraps words in <code>storyHTML</code> that are contained in <code>aWords</code>
-     * @param {String} storyHTML
+     * Finds every occurrence in <code>storyText</code> of a word in <code>aWords</code>, and
+     * returns the character span of each. The reader tools use these to highlight the words with
+     * ::highlight() pseudo-elements, which is why this reports positions instead of wrapping the
+     * words in spans: wrapping them would mean rewriting the innerHTML of a contenteditable, which
+     * CKEditor turns into a permanent inline background-color style (BL-16558).
+     * @param {String} storyText plain text (not HTML), as seen by mapVisibleText()
      * @param {Array} aWords
-     * @param {String} cssClass
-     * @param {String} extra
-     * @returns {String}
+     * @returns {Array} an array of {start, end} character offsets within storyText
      */
-    public wrap_words_extra(storyHTML, aWords, cssClass, extra) {
-        if (aWords === undefined || aWords.length === 0) return storyHTML;
+    public find_words_extra(
+        storyText: string,
+        aWords: string[],
+    ): { start: number; end: number }[] {
+        if (aWords === undefined || aWords.length === 0) return [];
 
-        // Remove empty strings from the aWords array.  And if the array is then
-        // empty, return the original storyHTML.
-        aWords = aWords.filter((x) => x);
-        if (aWords.length === 0) return storyHTML;
+        // Ignore empty strings in the aWords array; they would match everywhere.
+        const words = aWords.filter((x) => x);
+        if (words.length === 0) return [];
 
-        if (storyHTML.trim().length === 0) return storyHTML;
+        if (storyText.trim().length === 0) return [];
 
-        // make sure extra starts with a space
-        if (extra.length > 0 && extra.substring(0, 1) !== " ")
-            extra = " " + extra;
-
-        var beforeWord = "(^\\s*|>\\s*|[\\s\\p{Z}]|\\p{P}|&nbsp;)"; // word beginning delimiter
-        var afterWord =
-            "(?=(\\s*$|\\s*<|[\\s\\p{Z}]|\\p{P}+\\s|\\p{P}+<br|[\\s]*&nbsp;|\\p{P}+&nbsp;|\\p{P}+$))"; // word ending delimiter
+        // Bound words at the same zero-width / directional splitters that
+        // getWordsFromHtmlString splits on (via zeroWidthAndDirectionalSplitters), in
+        // addition to ordinary whitespace/separators. Without this, a decodable word that
+        // touches (or is split by) an invisible character such as U+200B ZERO WIDTH SPACE
+        // is not matched here and so shows up unmarked or as not-decodable, even though the
+        // analyzer counted it. U+200B et al. are Unicode category Cf, so \p{Z} does NOT
+        // include them; they must be listed explicitly. See BL-16490.
+        const wordBoundaryChars =
+            "\\s\\p{Z}" + zeroWidthAndDirectionalSplitters;
+        // Working on plain text rather than HTML, we need no alternatives for tag boundaries
+        // or &nbsp; entities: a non-breaking space is a real \p{Z} character here, and where a
+        // tag used to bound a word there is now either ordinary text or the separating space
+        // that mapVisibleText() puts in for a <br> or a block boundary.
+        const beforeWord = "(^\\s*|[" + wordBoundaryChars + "]|\\p{P})"; // word beginning delimiter
+        const afterWord =
+            "(?=(\\s*$|[" + wordBoundaryChars + "]|\\p{P}+\\s|\\p{P}+$))"; // word ending delimiter
 
         // escape special characters
-        var escapedWords = aWords.map(RegExp.quote);
+        const escapedWords = words.map(RegExp.quote);
 
-        var regex = XRegExp(
+        const regex = XRegExp(
             beforeWord + "(" + escapedWords.join("|") + ")" + afterWord,
             "xgi",
         );
 
-        // We must not replace any occurrences inside <...>. For example, if html is abc <span class='word'>x</span>
-        // and we are trying to wrap 'word', we should not change anything.
-        // To prevent this we split the string into sections starting at <. If this is valid html, each except the first
-        // should have exactly one >. We strip off everything up to the > and do the wrapping within the rest.
-        // Finally we put the pieces back together.
-        var parts = storyHTML.split("<");
-        var modParts: any[] = [];
-        for (var i = 0; i < parts.length; i++) {
-            var text = parts[i];
-            var prefix = "";
-            if (i != 0) {
-                var index = text.indexOf(">");
-                prefix = text.substring(0, index + 1);
-                text = text.substring(index + 1, text.length);
-            }
-            modParts.push(
-                prefix +
-                    XRegExp.replace(
-                        text,
-                        regex,
-                        '$1<span class="' +
-                            cssClass +
-                            '"' +
-                            extra +
-                            ">$2</span>",
-                    ),
-            );
+        const spans: { start: number; end: number }[] = [];
+        let match: RegExpExecArray | null;
+        // Every match contains a non-empty word, so lastIndex always advances.
+        while ((match = regex.exec(storyText)) !== null) {
+            // Group 1 is the delimiter the match had to start with; the word itself is group 2.
+            const start = match.index + match[1].length;
+            spans.push({ start, end: start + match[2].length });
         }
-
-        return modParts.join("<");
+        return spans;
     }
 }
 

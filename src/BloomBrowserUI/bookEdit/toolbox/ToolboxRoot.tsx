@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 import axios from "axios";
 import { css } from "@emotion/react";
 import Accordion from "@mui/material/Accordion";
@@ -15,6 +15,8 @@ import {
     kBloomUnselectedTabBackground,
 } from "../../utils/colorUtils";
 import { getMasterToolList } from "./toolbox";
+import { kToolboxHeaderZIndex } from "./toolboxZIndexes";
+import { SubscriptionBadgeWithTooltipAndDialog } from "../../react_components/requiresSubscription";
 
 // React host for the toolbox sidebar.
 //
@@ -67,25 +69,6 @@ const toolIconPathByToolId: Record<string, string> = {
     impairmentVisualizer:
         "/bloom/bookEdit/toolbox/impairmentVisualizer/blind-eye-white.svg",
 };
-
-const legacyToolSubPathByToolId: Record<string, string> = {
-    talkingBook: "talkingBook/talkingBookToolboxTool.html",
-    decodableReader: "readers/decodableReader/decodableReaderToolboxTool.html",
-    leveledReader: "readers/leveledReader/leveledReaderToolboxTool.html",
-    settings: "settings/Settings.html",
-    settingsTool: "settings/Settings.html",
-};
-
-// While Show Playback Order mode is on, the Talking Book tool covers the whole toolbox with a
-// translucent overlay at this z-index.
-// cf @disablingOverlayZindex in bookEdit/toolbox/talkingBook/audioRecording.less
-const kDisablingOverlayZIndex = 1001;
-
-// The tool headers have to clear that overlay, and also the handful of controls inside the tool
-// that opt out of it at one above it (the Help link, and the Show Playback Order switch in
-// talkingBookAdvancedSection.tsx). The offset lands on 1005, which is what the pre-6.4
-// "#toolbox h3" rule in toolbox.less used, so this stays a like-for-like restoration.
-const kToolboxHeaderZIndex = kDisablingOverlayZIndex + 4;
 
 const toolboxHeaderIconStyles = css`
     width: 16px;
@@ -168,7 +151,6 @@ const makeSectionFromToolId = (toolId: string): ToolboxSection => {
         id: toolId,
         englishLabel: labelInfo.englishLabel,
         l10nKey: labelInfo.l10nKey,
-        legacyToolHtmlSubPath: legacyToolSubPathByToolId[toolId],
     };
 };
 
@@ -247,6 +229,67 @@ const getLiveToolBodyElement = (toolId: string): HTMLDivElement | undefined => {
     // Use the element created by legacy beginAddTool() so we don't instantiate
     // a second React tool root and desynchronize tool state.
     return getExistingToolboxContentElement(toolId);
+};
+
+// This is part of the mess that Copilot made to allow the root of the toolbox to be
+// rendered in React while still supporting several tools that have not yet been
+// migrated to React. It was one of my first big refactors using CoPilot, and I should
+// not have been so quick to just be glad it seemed to work. For some reason, its
+// solution was to maintain an old jquery accordion in parallel with a new React
+// implementation. Somehow, across these two versions of the toolbox that exist in
+// parallel, a React tool can think it has a root element to render into, but it
+// doesn't actually exist. Then we get stuck in a state where the tool's content
+// is permanently replaced by a loading message. This function detects this
+// situation and adjusts things so that the root element for the tool content
+// gets created when needed.
+// I don't think there's any good reason not to use the normal function declaration
+// syntax except that Copilot seems to have done everything else in this file this way.
+// I don't want to put a lot of effort into cleaning it up because I hope sometime soon
+// we rework the remaining few non-React tools and can then get rid of the duplication
+// and manage everything in normal React. I expect most of the code in this file to
+// go away.
+const ensureReactToolBodyElement = (
+    toolId: string,
+): HTMLDivElement | undefined => {
+    const existing = getExistingToolboxContentElement(toolId);
+    if (existing) {
+        return existing;
+    }
+
+    const normalizedToolId = normalizeToolId(toolId);
+
+    const tool = getMasterToolList().find((candidate) => {
+        return candidate.id() === normalizedToolId;
+    });
+    if (!tool || !tool.makeRootElement) {
+        return undefined;
+    }
+
+    const legacyToolboxRoot = document.getElementById("toolbox");
+    if (!legacyToolboxRoot) {
+        return undefined;
+    }
+
+    const fullToolId = toToolboxToolId(normalizedToolId);
+    const content = tool.makeRootElement();
+    content.setAttribute("data-toolId", fullToolId);
+
+    const existingHeader = Array.from(legacyToolboxRoot.children).find(
+        (child) => {
+            return (
+                child.tagName.toLowerCase() === "h3" &&
+                child.getAttribute("data-toolId") === fullToolId
+            );
+        },
+    ) as HTMLElement | undefined;
+    if (!existingHeader) {
+        const header = document.createElement("h3");
+        header.setAttribute("data-toolId", fullToolId);
+        legacyToolboxRoot.appendChild(header);
+    }
+
+    legacyToolboxRoot.appendChild(content);
+    return content;
 };
 
 const getLegacyCurrentToolId = (): string | undefined => {
@@ -361,6 +404,29 @@ export const ToolboxRoot: React.FunctionComponent = () => {
     >([]);
     const hydratedToolIds = React.useRef<Set<string>>(new Set());
 
+    // Expand the given section and tell the legacy toolbox code about it.
+    // The legacy code keeps its own idea of which tool is current and drives each tool's
+    // showTool()/hideTool() lifecycle from it, so every path that changes which section is
+    // expanded has to go through here. A path that quietly changed only the React state left
+    // the two out of sync, so the tool the user could see was never activated: that is how
+    // visiting a game page killed Talking Book highlighting (BL-16602).
+    // Passing undefined means "nothing is expanded"; we deliberately don't notify legacy in
+    // that case, since it has no representation for "no current tool" and re-expanding the
+    // same section will notify with the same tool anyway.
+    const setActiveSection = React.useCallback(
+        (sectionId: string | undefined) => {
+            setExpandedSectionId(sectionId);
+            if (!sectionId) {
+                return;
+            }
+            const toolId = toToolboxToolId(sectionId);
+            activeToolChangedCallbacks.current.forEach((callback) => {
+                callback(toolId);
+            });
+        },
+        [],
+    );
+
     // Resolve body content for a section.
     // Prefer a live legacy element to avoid duplicate tool roots; otherwise
     // load static legacy HTML as a temporary fallback.
@@ -389,33 +455,19 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             return;
         }
 
-        const legacyToolHtmlSubPath = legacyToolSubPathByToolId[toolId];
-        if (legacyToolHtmlSubPath) {
-            try {
-                const legacyToolBodyHtml = await loadLegacyToolBodyHtml({
-                    id: toolId,
-                    englishLabel: "",
-                    l10nKey: "",
-                    legacyToolHtmlSubPath,
-                });
-                setSections((previousSections) =>
-                    previousSections.map((section) => {
-                        if (section.id !== toolId) {
-                            return section;
-                        }
-                        return {
-                            ...section,
-                            legacyToolBodyHtml,
-                        };
-                    }),
-                );
-            } catch (error) {
-                hydratedToolIds.current.delete(toolId);
-                console.error(
-                    `Failed to load legacy toolbox HTML for ${toolId}.`,
-                    error,
-                );
-            }
+        const createdReactToolBodyElement = ensureReactToolBodyElement(toolId);
+        if (createdReactToolBodyElement) {
+            setSections((previousSections) =>
+                previousSections.map((section) => {
+                    if (section.id !== toolId) {
+                        return section;
+                    }
+                    return {
+                        ...section,
+                        liveToolBodyElement: createdReactToolBodyElement,
+                    };
+                }),
+            );
             return;
         }
 
@@ -507,9 +559,16 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             // Similar logic so that only if we actually find a newly disconnected element
             // do we return a different object and cause a re-render.
             const nextSections = previousSections.map((section) => {
+                // Only clear disconnected live elements for tools we can rebuild from legacy sources.
+                // React-only tools (like Canvas) may temporarily disconnect during host moves; if we clear
+                // their only live element reference, they can get stuck on "Loading ...".
+                const canRehydrateFromLegacySource =
+                    !!section.legacyToolHtmlSubPath ||
+                    !!section.legacyToolBodyHtml;
                 if (
                     !section.liveToolBodyElement ||
-                    section.liveToolBodyElement.isConnected
+                    section.liveToolBodyElement.isConnected ||
+                    !canRehydrateFromLegacySource
                 ) {
                     return section;
                 }
@@ -540,9 +599,27 @@ export const ToolboxRoot: React.FunctionComponent = () => {
     React.useEffect(() => {
         const intervalId = window.setInterval(() => {
             sections.forEach((section) => {
+                const hasConnectedLiveToolBodyElement =
+                    !!section.liveToolBodyElement &&
+                    section.liveToolBodyElement.isConnected;
+                const hasDisconnectedLiveToolBodyElement =
+                    !!section.liveToolBodyElement &&
+                    !section.liveToolBodyElement.isConnected;
+                const canRehydrateFromLegacySource =
+                    !!section.legacyToolHtmlSubPath ||
+                    !!section.legacyToolBodyHtml;
+
+                if (
+                    canRehydrateFromLegacySource &&
+                    hasDisconnectedLiveToolBodyElement &&
+                    hydratedToolIds.current.has(section.id)
+                ) {
+                    hydratedToolIds.current.delete(section.id);
+                }
+
                 if (
                     section.legacyToolBodyHtml &&
-                    !section.liveToolBodyElement
+                    !hasConnectedLiveToolBodyElement
                 ) {
                     const liveToolBodyElement = getLiveToolBodyElement(
                         section.id,
@@ -568,7 +645,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
 
                 const hasBodyContent =
                     !!section.legacyToolBodyHtml ||
-                    !!section.liveToolBodyElement;
+                    hasConnectedLiveToolBodyElement;
 
                 if (hasBodyContent) {
                     return;
@@ -581,7 +658,14 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                     hydratedToolIds.current.delete(section.id);
                 }
 
-                if (!hydratedToolIds.current.has(section.id)) {
+                const shouldForceHydrateRetryForReactTool =
+                    !section.legacyToolHtmlSubPath &&
+                    !section.legacyToolBodyHtml;
+
+                if (
+                    shouldForceHydrateRetryForReactTool ||
+                    !hydratedToolIds.current.has(section.id)
+                ) {
                     void hydrateToolBody(section.id);
                 }
             });
@@ -620,24 +704,26 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             const removedToolId = normalizeToolId(customEvent.detail.toolId);
             hydratedToolIds.current.delete(removedToolId);
 
-            setSections((previousSections) => {
-                const nextSections = previousSections.filter(
+            setSections((previousSections) =>
+                previousSections.filter(
                     (section) => section.id !== removedToolId,
-                );
+                ),
+            );
 
-                const firstSection = nextSections[0];
-                // actually changes the expanded section only if the removed tool was the expanded one.
-                // The awkward way of doing this is to guard against a stale value of expandedSectionId.
-                setExpandedSectionId((previousExpandedSectionId) =>
-                    previousExpandedSectionId === removedToolId
-                        ? firstSection
-                            ? firstSection.id
-                            : undefined
-                        : previousExpandedSectionId,
-                );
+            if (expandedSectionId !== removedToolId) {
+                // The tool that went away wasn't the active one, so the active tool is unaffected.
+                return;
+            }
 
-                return nextSections;
-            });
+            // The active tool has just been taken away from us (e.g. leaving a game page removes
+            // the Game tool, which that page required). Something else has to become active, and
+            // it must go through setActiveSection so that the legacy code actually activates it.
+            // (Before the React toolbox, the jQuery accordion's refresh did the equivalent, firing
+            // its activate event when the active panel disappeared.)
+            const replacementSection = sections.find(
+                (section) => section.id !== removedToolId,
+            );
+            setActiveSection(replacementSection?.id);
         };
 
         // These events get dispatched by legacy toolbox code when tools are added or removed
@@ -649,7 +735,11 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             window.removeEventListener("toolbox-tool-added", onToolAdded);
             window.removeEventListener("toolbox-tool-removed", onToolRemoved);
         };
-    }, [hydrateToolBody]);
+        // sections and expandedSectionId are dependencies because onToolRemoved has to know
+        // what is currently active and what is left to activate in its place. Re-subscribing
+        // when they change can't lose an event: the removal and re-adding of the listener
+        // happen together, synchronously, when React commits.
+    }, [hydrateToolBody, sections, expandedSectionId, setActiveSection]);
 
     // Expose activation adapter so legacy toolbox code can drive and observe React accordion state.
     React.useEffect(() => {
@@ -669,12 +759,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
         window.toolboxReactAdapter = {
             isEnabled: () => true,
             setActiveToolByToolId: (toolId: string) => {
-                const normalizedToolId = normalizeToolId(toolId);
-                setExpandedSectionId(normalizedToolId);
-                const callbackToolId = toToolboxToolId(normalizedToolId);
-                activeToolChangedCallbacks.current.forEach((callback) => {
-                    callback(callbackToolId);
-                });
+                setActiveSection(normalizeToolId(toolId));
             },
             getActiveToolId: () => {
                 if (!expandedSectionId) {
@@ -686,7 +771,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                 activeToolChangedCallbacks.current.push(callback);
             },
         };
-    }, [expandedSectionId, sections]);
+    }, [expandedSectionId, sections, setActiveSection]);
 
     // The old jQuery toolbox logic still runs for now, and it calls .show() on #toolbox.
     // Keep that legacy root hidden so only the React root is visible.
@@ -806,20 +891,23 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                             `}
                             disableGutters
                             expanded={expandedSectionId === section.id}
-                            onChange={(_event, expanded) => {
-                                const nextSectionId = expanded
-                                    ? section.id
-                                    : undefined;
-                                setExpandedSectionId(nextSectionId);
-                                if (nextSectionId) {
-                                    const toolId =
-                                        toToolboxToolId(nextSectionId);
-                                    activeToolChangedCallbacks.current.forEach(
-                                        (callback) => {
-                                            callback(toolId);
-                                        },
-                                    );
+                            // MUI reports the state the accordion is heading TO, not the state
+                            // it is in: it calls onChange(event, !expanded). So clicking a
+                            // closed tool's header arrives here as true, and clicking the open
+                            // one's arrives as false. (MUI's own name for the parameter is just
+                            // "expanded", which reads like "this one is the active tool" and is
+                            // the opposite of what it means -- hence the name used here.)
+                            onChange={(_event, willBeExpanded) => {
+                                if (!willBeExpanded) {
+                                    // Clicking the open tool's header can't close it: the
+                                    // toolbox always has an active tool, and the effect that
+                                    // syncs us with the legacy toolbox re-expands whatever
+                                    // legacy still thinks is current. Honoring the collapse
+                                    // therefore only produced a flash, in which the tools
+                                    // below jumped up and back down. (BL-16533)
+                                    return;
                                 }
+                                setActiveSection(section.id);
                             }}
                         >
                             <AccordionSummary
@@ -829,13 +917,12 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     padding-right: 12px;
                                     // Keep the headers above the Talking Book tool's disabling
                                     // overlay, so they neither look grayed out nor stop
-                                    // responding in Show Playback Order mode. Until 6.4 the
-                                    // "#toolbox h3" rule in toolbox.less did this; it stopped
-                                    // matching once the headers became MUI AccordionSummaries,
-                                    // which is BL-16630. Only works while no ancestor creates a
-                                    // stacking context -- a transform, filter, opacity or
-                                    // z-index on the Accordion, the Collapse or the tool-body
-                                    // host would trap it.
+                                    // responding in Show Playback Order mode (BL-16630); see
+                                    // toolboxZIndexes.ts for where the number comes from.
+                                    // Only works while no ancestor creates a stacking context
+                                    // -- a transform, filter, opacity or z-index on the
+                                    // Accordion, the Collapse or the tool-body host would
+                                    // trap it.
                                     position: relative;
                                     z-index: ${kToolboxHeaderZIndex};
                                     // The header has to paint its own background for that to
@@ -886,7 +973,11 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     </LocalizedString>
                                 </Typography>
                                 {subscriptionToolIds.has(section.id) && (
-                                    <span className="subscription-badge"></span>
+                                    <span>
+                                        <SubscriptionBadgeWithTooltipAndDialog
+                                            featureName={section.id}
+                                        />
+                                    </span>
                                 )}
                             </AccordionSummary>
                             <AccordionDetails
@@ -908,17 +999,6 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                         min-height: 100%;
                                         overflow: visible;
 
-                                        #leveled-reader-tool-content,
-                                        #decodable-reader-tool-content {
-                                            width: 100% !important;
-                                            box-sizing: border-box;
-                                            min-width: 0;
-                                            display: block !important;
-                                            align-self: stretch;
-                                            margin-right: 0 !important;
-                                            padding-right: 0 !important;
-                                        }
-
                                         div[data-toolid="leveledReaderTool"],
                                         div[data-toolId="decodableReaderTool"] {
                                             width: 100% !important;
@@ -928,6 +1008,40 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                             box-sizing: border-box;
                                             margin-right: 0 !important;
                                             padding-right: 0 !important;
+                                        }
+
+                                        // The Decodable/Leveled reader tool bodies are
+                                        // adopted from the old jQuery-UI accordion and
+                                        // still wear its header classes (ui-accordion-header,
+                                        // ui-state-default) plus jQuery hover/focus handlers
+                                        // that add ui-state-hover/-focus. Here they are tool
+                                        // *bodies*, not headers, so that theming is wrong: left
+                                        // alone, hovering an opened reader tool paints its whole
+                                        // body the jQuery-UI "hover" lightcoral (#f08080).
+                                        // Neutralize the stray header theming. (BL-16501)
+                                        div[data-toolid].ui-accordion-header {
+                                            &,
+                                            &.ui-state-hover,
+                                            &.ui-state-focus,
+                                            &.ui-state-active {
+                                                background: transparent !important;
+                                                border: none !important;
+                                                font-weight: normal;
+                                            }
+                                        }
+
+                                        // Those same adopted bodies also keep the
+                                        // header icon jQuery-UI's _createIcons()
+                                        // prepends to every header: a
+                                        // ui-icon-triangle-1-e sprite. As a body
+                                        // (not a header) it renders as a stray
+                                        // right-pointing arrowhead in the top-left
+                                        // corner. The rule above only neutralized the
+                                        // header background/border, not this child
+                                        // icon, so hide it too. (BL-16538)
+                                        div[data-toolid]
+                                            span.ui-accordion-header-icon {
+                                            display: none !important;
                                         }
                                     `}
                                 >
@@ -982,5 +1096,5 @@ export const renderToolboxRoot = (): void => {
     hostElement.style.display = "flex";
     hostElement.style.flexDirection = "column";
 
-    ReactDOM.render(<ToolboxRoot />, hostElement);
+    renderRoot(<ToolboxRoot />, hostElement);
 };

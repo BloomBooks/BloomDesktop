@@ -12,3 +12,7 @@ Cross-repo team workflow skills (`preflight`, `pr-ready-for-human`, `devin-revie
 id like `BL-1234`, follow `youtrack-fix`) live in
 https://github.com/BloomBooks/bloom-team-skills. Install them per that repo's README (clone,
 then symlink each skill into `~/.claude/skills` so they are discovered globally).
+
+
+Whenever a task adds, modifies, or reviews localizable strings (XLF entries), automatically
+follow `.github/skills/xlf-strings/SKILL.md` — no explicit request needed.

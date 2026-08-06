@@ -143,8 +143,13 @@ namespace Bloom.MiscUI
                         "Common.ProblemTitle",
                         "Bloom Problem"
                     );
-                    dlg.Height = 950;
-                    dlg.Width = 750;
+                    // Use logical dialog dimensions and scale them to current monitor DPI.
+                    // Force handle creation first so DeviceDpi reflects the target display context.
+                    var _ = dlg.Handle;
+                    var scaledHeight = (int)Math.Round(950 * dlg.DeviceDpi / 96.0);
+                    var scaledWidth = (int)Math.Round(750 * dlg.DeviceDpi / 96.0);
+                    dlg.Height = scaledHeight;
+                    dlg.Width = scaledWidth;
                     dlg.ShowDialog();
                 }
             }

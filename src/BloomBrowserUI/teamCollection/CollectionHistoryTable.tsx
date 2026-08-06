@@ -18,6 +18,7 @@ interface IBookHistoryEvent {
 
 const HeaderCell: React.FunctionComponent<{
     colSpan?: number;
+    children?: React.ReactNode;
 }> = (props) => {
     return (
         <td
@@ -36,6 +37,7 @@ const HeaderCell: React.FunctionComponent<{
 const TextCell: React.FunctionComponent<{
     className?: string;
     colSpan?: number;
+    children?: React.ReactNode;
 }> = (props) => {
     return (
         <td

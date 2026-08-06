@@ -21,13 +21,20 @@
 # The zip's internal layout deliberately matches the TeamCity downloadAll artifact
 # (bin/Release/x64, output/browser, DistFiles) so the consumer script only changes its URL.
 #
-# Mirrors the TC build steps, INCLUDING its yarn usage: this branch lineage (6.4-era) is
-# yarn-based (yarn.lock, and build-prod itself invokes yarn), unlike master which uses
-# pnpm. No Velopack, no signing, no S3 — harvester binaries run on our server.
+# No Velopack, no signing, no S3 — harvester binaries run on our server, not on end users'
+# machines.
 #
-# NOTE: push triggers use the workflow file as it exists on the pushed branch, so this
-# file must be present on the harvester branches (via merge from this branch) to take
-# effect there.
+# HOW Bloom is built here (toolchains, dependency install, the msbuild targets, the test
+# reports) deliberately mirrors nightly.yml, which is the master workflow that gets exercised
+# every day; this file differs only in what it does AFTERWARDS — assemble the bundle and
+# publish it. When you change one, look at the other.
+#
+# NOTE: push triggers use the workflow file as it exists on the pushed branch, so this file
+# must be present on a harvester branch to take effect there. It gets there by merging master
+# into harvester-development. This copy is pnpm-based; so are the harvester branches, since
+# harvester-development merged a pnpm master (it used to descend from the 6.4-era, yarn-based
+# lineage and carried its own yarn-based copy of this file). Keep the copies identical, so
+# that merge stays a fast-forward of this file rather than a conflict.
 
 name: Harvester Artifacts
 
@@ -36,7 +43,8 @@ on:
         branches:
             - harvester-development
             - harvester-production
-    # Manual re-run (e.g. after a flaky failure). Publishing stays branch-gated.
+    # Manual re-run (e.g. after a flaky failure), and how this file gets exercised from a
+    # non-harvester branch such as master. Publishing stays branch-gated.
     workflow_dispatch:
 
 # Only the newest build matters (the release asset is latest-only and there are no
@@ -51,7 +59,7 @@ jobs:
         timeout-minutes: 120
 
         # contents: write is needed to create/update the rolling release;
-        # checks: write lets the test-report step create its check run.
+        # checks: write lets the test-report steps create their check runs.
         permissions:
             contents: write
             checks: write
@@ -70,82 +78,164 @@ jobs:
 
             - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
 
-            # yarn 1 (classic) is preinstalled on windows-latest runners; this branch
-            # lineage has no packageManager field, so no corepack/action setup is needed.
+            # pnpm, not npm/yarn. The version comes from the packageManager field in
+            # src/BloomBrowserUI/package.json, so it can never drift from what developers use.
+            - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+              with:
+                  package_json_file: src/BloomBrowserUI/package.json
+
             - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
               with:
-                  node-version: 22
-                  cache: yarn
+                  # Track the repo's canonical Node version (.node-version) rather than a
+                  # hardcoded major, so this build never drifts from the version developers use.
+                  node-version-file: .node-version
+                  cache: pnpm
                   cache-dependency-path: |
-                      src/BloomBrowserUI/yarn.lock
-                      src/content/yarn.lock
+                      src/BloomBrowserUI/pnpm-lock.yaml
+                      src/content/pnpm-lock.yaml
 
-            # ----- Dependencies (mirrors the TeamCity build steps) -----
+            # ----- Dependencies (mirrors init.sh) -----
 
             - name: Get binary dependencies (TeamCity artifacts, chm, ffmpeg, etc.)
               shell: bash
               run: ./build/getDependencies-windows.sh
 
-            - name: Get npm dependencies for content
-              working-directory: src/content
-              run: yarn --network-timeout 200000
-
-            - name: Get npm dependencies for BloomBrowserUI
-              working-directory: src/BloomBrowserUI
-              run: yarn --network-timeout 200000
+            - name: pnpm install
+              shell: bash
+              run: |
+                  # Install the two workspaces in parallel, but wait on each PID
+                  # individually: a bare `wait` (no operands) always exits 0, so it would
+                  # mask a failed install (e.g. an out-of-date lockfile) and let the step
+                  # pass green. `wait <pid>` propagates that child's exit status instead,
+                  # so under the runner's `set -e` a failed install fails the step.
+                  (cd src/content && pnpm install --frozen-lockfile) &
+                  pid_content=$!
+                  (cd src/BloomBrowserUI && pnpm install --frozen-lockfile) &
+                  pid_ui=$!
+                  wait "$pid_content"
+                  wait "$pid_ui"
 
             # ----- Front-end production build + tests -----
 
-            - name: yarn build-prod
+            - name: Build browser UI (production)
+              id: build_frontend
               working-directory: src/BloomBrowserUI
-              run: yarn build-prod
+              run: pnpm run build-prod
 
-            # The junit file feeds the "Publish test results" step at the end of the job.
-            - name: Javascript tests
+            # The junit file feeds this suite's "Publish ..." step at the end of the job.
+            #
+            # Two easy ways to get a silently-empty report here, both of which the nightly hit:
+            #
+            # 1. Do NOT write `pnpm run test:ci -- --reporter=...`. pnpm (unlike npm) forwards
+            #    the `--` through to the script as a literal argv element, so vitest sees
+            #    `vitest run "--" "--reporter=junit" ...`. Its CLI parser treats everything
+            #    after a bare `--` as passthrough, so every flag is ignored and no file is
+            #    written. Pass the flags with no `--`.
+            # 2. Use the string form --outputFile=, NOT --outputFile.junit=: vite.config.mts
+            #    sets outputFile to a plain string, and the dotted CLI form does not override
+            #    it — vitest falls back to the config path. The string form overrides correctly
+            #    and vitest creates the directory.
+            #
+            # The publish step below sets action_fail_on_inconclusive, so if this regresses the
+            # job goes red instead of quietly under-reporting.
+            - name: Run browser UI tests
+              id: frontend_tests
               working-directory: src/BloomBrowserUI
-              run: yarn test:ci --reporter=default --reporter=junit --outputFile.junit=../../output/Tests/vitest-junit.xml
+              run: pnpm run test:ci --reporter=default --reporter=junit --outputFile=../../output/Tests/vitest-junit.xml
 
             # ----- C# build + tests -----
-            # Harvester artifacts never reach end users, so the assembly version just
-            # needs to identify the build (VersionNumbers requires all 4 parts).
+            # Harvester artifacts never reach end users, so the assembly version just needs to
+            # identify the build. VersionNumbers requires all 4 parts and reads the 4th as the
+            # build hash, so give it the commit.
             - name: Compute BUILD_NUMBER
               shell: pwsh
               run: |
                   $hash = (git rev-parse --short HEAD).Trim()
                   "BUILD_NUMBER=0.0.${{ github.run_number }}.$hash" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
-            # NuGet restore of the solution, exactly as the TeamCity config does. (The
-            # SIL.BuildTasks msbuild-task dlls that Bloom.proj's targets need are NOT part
-            # of this restore; the Build target installs them itself on first run via its
-            # RestartBuild self-heal, and the TestOnly invocation finds them on disk after
-            # that.)
-            - name: msbuild restore
+            # Restore SIL.BuildTasks in its own msbuild invocation: Bloom.proj's UsingTask
+            # declarations only load if those dlls already exist, so a combined build would not
+            # see them. RestartBuild=false stops RestoreBuildTasks from ALSO running
+            # BuildInternal (it does that when the dlls were missing), which would compile the
+            # whole app twice — once here and once in the Build step below.
+            - name: Restore MSBuild build tasks
+              id: restore_build_tasks
+              working-directory: build
               shell: pwsh
-              run: msbuild -t:Restore Bloom.sln
+              run: msbuild Bloom.proj /t:RestoreBuildTasks /p:RestartBuild=false
 
-            - name: msbuild Build
+            - name: Build
+              id: build_csharp
               working-directory: build
               shell: pwsh
               run: msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER
 
-            - name: msbuild TestOnly
+            # TestOnly runs the suite with `dotnet test` (see Bloom.proj's RunNUnit) and writes
+            # NUnit3 xml to output/Tests/Release/x64/TestResults.xml.
+            #
+            # This workflow's job is to produce harvester artifacts, so it wants a fast, reliable
+            # gate rather than full coverage: Integration (talks to the live S3 bucket) and Nightly
+            # (reserved for the long tests only the nightly should pay for) are both left out. The
+            # nightly is where those run.
+            #
+            # The %3B are escaped semicolons, and they are load-bearing: a raw semicolon would
+            # break this step. pwsh reads it as a statement separator, so only "Integration" would
+            # reach msbuild and the rest would be run as a command (which fails the step, since
+            # Actions sets $ErrorActionPreference = 'stop' for pwsh); and a semicolon that did
+            # arrive intact would be split by MSBuild into separate /p: assignments, failing with
+            # "MSB1006: Property is not valid". Both are loud, but neither runs any tests. See the
+            # comment on CategoriesToExclude in Bloom.proj for the two forms that do work.
+            - name: Run C# tests
+              id: csharp_tests
               working-directory: build
               shell: pwsh
               run: |
                   msbuild Bloom.proj /t:TestOnly `
                     /p:BUILD_NUMBER=$env:BUILD_NUMBER `
-                    /p:excludedCategories=SkipOnTeamCity
+                    /p:excludedCategories=Integration%3BNightly%3BSkipOnTeamCity
 
-            # Renders both suites as a human-readable report: pass/fail/skip counts in the
-            # job summary page, a check run on the commit, and per-test annotations for
-            # failures. always() so the report appears precisely when tests DID fail.
-            - name: Publish test results
-              if: ${{ always() }}
+            # ----- Test reports, one per suite -----
+            # Each suite gets its OWN invocation of the publish action, and therefore its own
+            # check run on the commit and its own job-summary section: pass/fail/skip counts
+            # plus per-test annotations for failures.
+            #
+            # Not one combined report: a merged total hides which stack broke and, worse, hides
+            # a suite that contributed *nothing*. When the nightly's vitest junit file silently
+            # stopped being written, the combined report still said "All tests pass" because the
+            # C# suite alone accounts for that number.
+            #
+            # Shared conventions:
+            #   - !cancelled() plus a check that the suite's step was not skipped. Without
+            #     !cancelled() a failing test step would skip its own report, hiding exactly the
+            #     run we care about; without the skipped check we would publish an empty report
+            #     for a suite that never ran because an earlier step failed.
+            #   - check_name must be unique per invocation, or the reports overwrite each other.
+            #   - action_fail_on_inconclusive: true — the action treats a missing/empty results
+            #     file as "inconclusive", which by default passes green. Since the point is to
+            #     notice a suite that reported nothing, make that turn the job red.
+            #   - comment_mode: off — the action defaults to commenting on an associated PR,
+            #     which fails with 403 here (the job grants checks: write, not
+            #     pull-requests: write), and a harvester-branch push has no PR to comment on.
+            #   - files uses the unified input (junit_files/nunit_files are deprecated); the
+            #     action auto-detects each file's format (JUnit for vitest, NUnit3 for C#).
+            - name: Publish front-end test results
+              if: ${{ !cancelled() && steps.frontend_tests.outcome != 'skipped' }}
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
-                  check_name: Test results (harvester)
-                  junit_files: output/Tests/vitest-junit.xml
-                  nunit_files: output/Tests/Release/x64/TestResults.xml
+                  # Quoted: an unquoted YAML scalar cannot contain ": ".
+                  check_name: "Harvester tests: front-end (vitest)"
+                  comment_mode: "off"
+                  action_fail_on_inconclusive: true
+                  files: output/Tests/vitest-junit.xml
+
+            - name: Publish C# test results
+              if: ${{ !cancelled() && steps.csharp_tests.outcome != 'skipped' }}
+              uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+              with:
+                  check_name: "Harvester tests: C# (NUnit)"
+                  comment_mode: "off"
+                  action_fail_on_inconclusive: true
+                  files: output/Tests/Release/x64/TestResults.xml
 
             # ----- Bundle -----
             # Stage into the same internal layout as the old TeamCity downloadAll zip so
@@ -221,8 +311,9 @@ jobs:
                   gh workflow run ci.yml --repo BloomBooks/bloom-harvester --ref $ref
                   if ($LASTEXITCODE -ne 0) { throw "Failed to dispatch bloom-harvester ci.yml on '$ref'" }
 
-            # On non-harvester branches (the temporary test trigger) attach the bundle as
-            # a short-lived workflow artifact instead, so the layout can be inspected.
+            # On non-harvester branches (i.e. a workflow_dispatch run from master, which is how
+            # changes to this file get tested) attach the bundle as a short-lived workflow
+            # artifact instead, so the layout can be inspected without touching a release.
             - name: Upload bundle as workflow artifact (test runs)
               if: ${{ env.IS_HARVESTER_BRANCH != 'true' }}
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

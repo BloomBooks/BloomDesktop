@@ -3,7 +3,7 @@
 
 import * as jQuery from "jquery";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "./reactRender";
 
 // Ensure jQuery is available globally for legacy scripts (e.g., jquery-ui)
 // After jQuery is evaluated, expose globals expected by legacy code
@@ -49,7 +49,7 @@ export const bootstrapReactComponent = (
         if (typeof wireUp === "function") {
             wireUp(rootDiv, props);
         } else {
-            ReactDOM.render(React.createElement(Component), rootDiv);
+            renderRoot(React.createElement(Component), rootDiv);
         }
     }
 

@@ -8,6 +8,7 @@ import { useL10n } from "../react_components/l10nHooks";
 import { ProgressBox } from "../react_components/Progress/progressBox";
 import { IBloomWebSocketProgressEvent } from "../utils/WebSocketManager";
 import { kBloomBlue } from "../bloomMaterialUITheme";
+import { TeamCollectionIcon } from "./TeamCollectionIcon";
 import {
     BloomDialog,
     DialogBottomButtons,
@@ -91,7 +92,7 @@ const TeamCollectionDialog: React.FunctionComponent<{
                 <ThemeProvider theme={lightTheme}>
                     <DialogTitle
                         title={`${dialogTitle} (experimental)`}
-                        icon={"/bloom/teamCollection/Team Collection.svg"}
+                        icon={<TeamCollectionIcon color="white" />}
                         backgroundColor={kBloomBlue}
                         color={"white"}
                     />

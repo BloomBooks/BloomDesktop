@@ -1,11 +1,11 @@
 import { css } from "@emotion/react";
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import Menu from "@mui/material/Menu";
 import { ThemeProvider } from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { LocalizableSelectableMenuItem } from "../../react_components/localizableMenuItem";
+import { renderRoot } from "../../utils/reactRender";
 import {
     canToggleNoIndent,
     findParagraphForTextContextMenu,
@@ -69,6 +69,11 @@ const TextContextMenu: React.FunctionComponent<{
 const kTextContextMenuRootId = "text-context-menu";
 
 // Renders (or re-renders) the text context menu into a root div of the page document.
+// renderRoot rather than the React 17 ReactDOM.render this was first written against: under
+// React 18 a container may be given a Root only once, and this function deliberately
+// re-renders the same container to drive the menu's open state. renderRoot caches the Root
+// per container for exactly that. Its mount is asynchronous, which is fine here -- nothing
+// reads the menu's DOM after the call.
 function renderTextContextMenu(
     paragraph: HTMLElement,
     open: boolean,
@@ -85,7 +90,7 @@ function renderTextContextMenu(
         // portals into the body while it is open.
         pageDocument.body.appendChild(root);
     }
-    ReactDOM.render(
+    renderRoot(
         <TextContextMenu
             paragraph={paragraph}
             open={open}

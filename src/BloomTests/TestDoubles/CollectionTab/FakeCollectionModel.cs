@@ -52,7 +52,7 @@ namespace BloomTests.TestDoubles.CollectionTab
 
         protected static SourceCollectionsList GetDefaultSourceCollectionsList()
         {
-            var parentFolder = new TemporaryFolder("Parent");
+            var parentFolder = new TemporaryFolder("FakeCollectionModel_Parent");
             var templateCollectionFolder = new TemporaryFolder(parentFolder, "Templates");
 
             return new SourceCollectionsList(null, null, null, new string[] { parentFolder.Path });

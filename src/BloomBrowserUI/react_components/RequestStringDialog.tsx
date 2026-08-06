@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../utils/reactRender";
 import { L10nTextField } from "./L10nTextField";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -102,7 +102,7 @@ export function showRequestStringDialog(
 ) {
     root = document.createElement("div");
     document.body.appendChild(root);
-    ReactDOM.render(
+    renderRoot(
         <RequestStringDialog
             initialContent={initialContent}
             setValue={saveNewContent}

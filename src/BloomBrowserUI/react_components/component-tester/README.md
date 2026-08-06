@@ -18,6 +18,20 @@ To set up a component for ui testing:
 ### Imports
 `vite dev` has to be able to handle your component. Eventually that will not be a big deal, but for now, it may mean that you have to extract out the core of it with few imports. For the RegistrationDialog, we had to extract out the core behavior and test that.
 
+### If a red run looks impossible, clear Vite's dep cache
+Adding or removing an import in `component-harness.tsx` invalidates Vite's optimized-dependency
+cache, but `playwright.config.ts` uses `reuseExistingServer: true`, so an already-running dev
+server can keep serving a half-rebuilt chunk. That shows up as a whole component's tests failing
+with something like `styled_default is not a function` — which looks like a real MUI/emotion
+regression but is not. Stop the dev server, `rm -rf node_modules/.vite`, and re-run before
+believing it.
+
+### Tools/plugins that read global jQuery
+The harness assigns the real jQuery to `window.$`/`window.jQuery`. Don't replace that with a
+hand-rolled stub: some dependencies are jQuery plugins (select2, via `StyleEditor`) whose UMD
+wrappers attach to `$.fn` at import time by reading the global, and they throw if it isn't real
+jQuery.
+
 ### Callback Props
 Component props must be JSON-serializable because the Playwright test runs in a different process than the browser. Functions cannot be serialized.
 
@@ -51,15 +65,15 @@ These are fine. This system tells the bloom l10n system to just return English.
 cd src/BloomBrowserUI/react_components/component-tester
 
 # Install dependencies (first time only)
-yarn install
+pnpm install
 
 # Start the dev server
-yarn dev
+pnpm dev
 
 # Run automated tests
-yarn test              # headless
-yarn test:headed       # see browser
-yarn test:ui          # interactive UI
+pnpm test              # headless
+pnpm test:headed       # see browser
+pnpm test:ui          # interactive UI
 
 # Play with a component manually
 ./show.sh

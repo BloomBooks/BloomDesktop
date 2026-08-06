@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using SIL.IO;
 using SIL.PlatformUtilities;
 
@@ -27,6 +29,10 @@ namespace Bloom.Utils
         // it's online and it's not. It could go offline any time, even after we check
         // and before we complete whatever we are doing.
         private static readonly TimeSpan _cacheTimeout = TimeSpan.FromSeconds(10);
+
+        // A single shared HttpClient is the recommended pattern; reusing it avoids socket exhaustion.
+        // It follows redirects by default, matching the old request's AllowAutoRedirect = true.
+        private static readonly HttpClient s_httpClient = new HttpClient();
 
         /// <summary>
         /// Location(s) for the Dropbox info.json file based on information in
@@ -180,13 +186,23 @@ namespace Bloom.Utils
         {
             try
             {
-                var request = (System.Net.HttpWebRequest)
-                    System.Net.WebRequest.Create("https://www.dropbox.com/");
-                request.Method = "HEAD";
-                request.Timeout = 5000; // 5 seconds
-                request.AllowAutoRedirect = true;
-
-                using (var response = (System.Net.HttpWebResponse)request.GetResponse())
+                // The timeout starts inside the delegate so that thread-pool queueing delay (possible
+                // when the pool is busy) doesn't count against the 5-second budget for the request itself.
+                // (RunSync executes on the thread pool so we don't deadlock if called on a thread
+                // with a synchronization context, e.g. the WinForms UI thread.)
+                using (
+                    var response = AsyncUtil.RunSync(async () =>
+                    {
+                        using (var cts = new CancellationTokenSource(5000)) // 5 seconds
+                        using (
+                            var request = new HttpRequestMessage(
+                                HttpMethod.Head,
+                                "https://www.dropbox.com/"
+                            )
+                        )
+                            return await s_httpClient.SendAsync(request, cts.Token);
+                    })
+                )
                 {
                     var code = (int)response.StatusCode;
                     return code >= 200 && code < 400;

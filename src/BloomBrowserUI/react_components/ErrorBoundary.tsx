@@ -5,7 +5,10 @@ interface IErrorState {
     errorInfo: any;
 }
 // This is a very minimal error boundary, but hopefully better than nothing.
-export class ErrorBoundary extends React.Component<unknown, IErrorState> {
+export class ErrorBoundary extends React.Component<
+    { children?: React.ReactNode },
+    IErrorState
+> {
     constructor(props) {
         super(props);
         this.state = { error: null, errorInfo: null };

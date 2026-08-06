@@ -1,4 +1,5 @@
-import ReactDOM from "react-dom";
+import { act } from "react";
+import { renderRoot, unmountRoot } from "../../utils/reactRender";
 import {
     ConfigrArea,
     ConfigrPane,
@@ -16,50 +17,60 @@ function renderSettingsPane(
     document.body.appendChild(container);
     renderedContainer = container;
 
-    ReactDOM.render(
-        <ConfigrPane
-            label="Settings"
-            initialValues={{}}
-            showAppBar={false}
-            showJson={false}
-            initiallySelectedTopLevelPageKey={initiallySelectedTopLevelPageKey}
-        >
-            <ConfigrArea key="bookArea" label="Book" pageKey="bookArea">
-                <ConfigrPage
-                    key="themeAndLayout"
-                    label="Theme & Layout"
-                    pageKey="themeAndLayout"
+    // React 18's createRoot renders asynchronously; act() flushes the initial render
+    // (and its effects) synchronously so the tab selection is in the DOM when we assert.
+    act(() => {
+        renderRoot(
+            <ConfigrPane
+                label="Settings"
+                initialValues={{}}
+                showAppBar={false}
+                showJson={false}
+                initiallySelectedTopLevelPageKey={
+                    initiallySelectedTopLevelPageKey
+                }
+            >
+                <ConfigrArea key="bookArea" label="Book" pageKey="bookArea">
+                    <ConfigrPage
+                        key="themeAndLayout"
+                        label="Theme & Layout"
+                        pageKey="themeAndLayout"
+                    >
+                        {/* Test-only placeholder body; this spec only cares which tab ConfigrPane selects. */}
+                        <ConfigrStatic>
+                            <div>Theme &amp; Layout test content</div>
+                        </ConfigrStatic>
+                    </ConfigrPage>
+                    <ConfigrPage key="cover" label="Cover" pageKey="cover">
+                        <ConfigrStatic>
+                            <div>Cover test content</div>
+                        </ConfigrStatic>
+                    </ConfigrPage>
+                    <ConfigrPage
+                        key="normalTextBoxLanguages"
+                        label="Languages"
+                        pageKey="normalTextBoxLanguages"
+                    >
+                        <ConfigrStatic>
+                            <div>Languages test content</div>
+                        </ConfigrStatic>
+                    </ConfigrPage>
+                </ConfigrArea>
+                <ConfigrArea
+                    key="pageArea"
+                    label="Current Page"
+                    pageKey="pageArea"
                 >
-                    {/* Test-only placeholder body; this spec only cares which tab ConfigrPane selects. */}
-                    <ConfigrStatic>
-                        <div>Theme &amp; Layout test content</div>
-                    </ConfigrStatic>
-                </ConfigrPage>
-                <ConfigrPage key="cover" label="Cover" pageKey="cover">
-                    <ConfigrStatic>
-                        <div>Cover test content</div>
-                    </ConfigrStatic>
-                </ConfigrPage>
-                <ConfigrPage
-                    key="normalTextBoxLanguages"
-                    label="Languages"
-                    pageKey="normalTextBoxLanguages"
-                >
-                    <ConfigrStatic>
-                        <div>Languages test content</div>
-                    </ConfigrStatic>
-                </ConfigrPage>
-            </ConfigrArea>
-            <ConfigrArea key="pageArea" label="Current Page" pageKey="pageArea">
-                <ConfigrPage key="colors" label="Colors" pageKey="colors">
-                    <ConfigrStatic>
-                        <div>Colors test content</div>
-                    </ConfigrStatic>
-                </ConfigrPage>
-            </ConfigrArea>
-        </ConfigrPane>,
-        container,
-    );
+                    <ConfigrPage key="colors" label="Colors" pageKey="colors">
+                        <ConfigrStatic>
+                            <div>Colors test content</div>
+                        </ConfigrStatic>
+                    </ConfigrPage>
+                </ConfigrArea>
+            </ConfigrPane>,
+            container,
+        );
+    });
 
     return container;
 }
@@ -72,7 +83,7 @@ function getSelectedTabLabels(): string[] {
 
 afterEach(() => {
     if (renderedContainer) {
-        ReactDOM.unmountComponentAtNode(renderedContainer);
+        unmountRoot(renderedContainer);
         renderedContainer.remove();
         renderedContainer = undefined;
     }

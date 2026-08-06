@@ -13,19 +13,26 @@ import * as _ from "underscore";
 import { theOneLibSynphony, LibSynphony } from "./synphony_lib";
 import "./bloomSynphonyExtensions"; //add several functions to LanguageData
 import { ReaderToolsModel } from "../readerToolsModel";
+import { TextOffsetMap } from "../../../js/textHighlightManager";
+import {
+    kSentenceTooLongHighlight,
+    kSightWordHighlight,
+    kWordNotDecodableHighlight,
+    kWordTooLongHighlight,
+    makeRangesForSpans,
+    mapReaderText,
+    theOneReaderHighlightManager,
+    TextSpan,
+    trimSpan,
+} from "../readerHighlights";
 
 /**
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
  * @param {jQuery} $
  */
 (($) => {
-    const cssSentenceTooLong = "sentence-too-long";
-    const cssSightWord = "sight-word";
-    const cssWordNotFound = "word-not-found";
-    const cssPossibleWord = "possible-word";
     const cssDesiredGrapheme = "desired-grapheme";
     const cssTooMuchStuffOnPage = "page-too-many-words-or-sentences";
-    const cssWordTooLong = "word-too-long";
 
     /**
      * Checks the innerHTML of an HTML entity (div) using the selected options
@@ -57,51 +64,57 @@ import { ReaderToolsModel } from "../readerToolsModel";
             opts.maxSentencesPerPage = Infinity;
         }
 
-        // remove previous synphony markup
+        // Clean out markup spans inserted by earlier versions of Bloom, which used to mark
+        // violations by modifying the DOM, and the inline background-color spans CKEditor made
+        // from them (BL-16558). The leveled reader's markers were background-colored too, so it
+        // did the same damage the decodable reader did.
         this.removeSynphonyMarkup();
+        this.removeCkEditorMarkup();
 
         // initialize words per page
         let totalWordCount = 0;
         // initialize sentences per page
         let totalSentenceCount = 0;
 
-        const checkLeaf = (leaf) => {
-            stashNonTextUIElementsInEditBox(leaf);
-            // split into sentences. We need it both with markup
-            // (to preserve bold/italic/ckEditor landmarks in the output)
-            // and without (because some markup, especially ckEditor invisible landmarks,
-            // may alter word counts and lists)
-            const fragments = theOneLibSynphony.stringToSentences(
-                $(leaf).html(),
-            );
+        // What we found in each leaf, kept until we have seen every leaf: the long-word list is
+        // cumulative over the whole page, so we can't decide which words to highlight in the
+        // first leaf until we have analyzed the last one.
+        const leafResults: {
+            map: TextOffsetMap;
+            sentenceTooLongSpans: TextSpan[];
+        }[] = [];
 
-            let newHtml = "";
+        const checkLeaf = (leaf: HTMLElement) => {
+            // The text as the reader sees it, with a note of where in the DOM each character
+            // came from so we can highlight our findings later. Analyzing plain text rather than
+            // HTML means we don't have to preserve (or work around) bold/italic markup or
+            // ckEditor's invisible landmarks: they are simply not in the string.
+            const map = mapReaderText(leaf);
+            const fragments = theOneLibSynphony.stringToSentences(map.text);
+            const sentenceTooLongSpans: TextSpan[] = [];
 
+            // Locating a sentence relies on the fragments concatenating to exactly the text we
+            // mapped, so that a running total tells us where each one starts. That holds for
+            // ordinary text, but stringToSentences canonicalizes a few HTML-ish sequences - it
+            // rewrites "<br>" to "<br />", for instance - so a box in which the user literally
+            // typed "<br>" would shift every following offset. Rather than mis-highlight, check,
+            // and if the text came back changed just don't mark sentences in this leaf. The word
+            // counts below are unaffected, as is word highlighting, which works from map.text.
+            const canLocateSentences =
+                fragments.map((fragment) => fragment.text).join("") ===
+                map.text;
+
+            let offset = 0;
             for (let i = 0; i < fragments.length; i++) {
                 const fragment = fragments[i];
 
                 if (fragment.isSpace) {
                     // this is inter-sentence space
-                    newHtml += fragment.text;
                     allWords += " ";
                 } else {
-                    // This is basically duplicating how stringToSentences comes up with
-                    // fragment.text but with removeAllHtmlMarkupFromString applied.
-                    // I don't much like that duplication. But we need removeAllHtmlMarkupFromString
-                    // so that the words we count won't be messed up by (e.g.) invisible spaces
-                    // that ckEdit puts in as bookmarks to keep our place. We can't apply it
-                    // to the input to stringToSentences, because we want to preserve the markup
-                    // and bookmark when we put the fragments back together to make the new
-                    // text. I tried making two parallel fragments arrays, one using the
-                    // unmodified text, and one from removeAllHtmlMarkupFromString; but in general they
-                    // don't come out the same length, or with pieces corresponding. For example,
-                    // removeAllHtmlMarkupFromString cleans out <br>, which otherwise becomes an element in
-                    // the list.
-                    const cleanText = removeAllHtmlMarkupFromString(
+                    const words = theOneLibSynphony.getWordsFromHtmlString(
                         fragment.text,
                     );
-                    const words =
-                        theOneLibSynphony.getWordsFromHtmlString(cleanText);
                     if (opts.maxGlyphsPerWord > 0) {
                         for (const w of words) {
                             if (
@@ -114,52 +127,31 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     }
                     const sentenceWordCount = words.length;
                     totalWordCount += sentenceWordCount;
-                    allWords += cleanText;
+                    allWords += fragment.text;
                     if (sentenceWordCount) ++totalSentenceCount;
 
                     // check sentence length
-                    if (sentenceWordCount > opts.maxWordsPerSentence) {
-                        // Mark this sentence as having too many words.  fragment.text
-                        // may start out with one or two </span> close tags.  We need
-                        // to insert the span marking the overly long sentence after
-                        // all of those leading close </span> tags to preserve proper
-                        // nesting of the marked sentence.
-                        let leadingClosers = "";
-                        const leadingCloseSpans =
-                            fragment.text.match(/^( *<\/span>)+ */);
-                        if (leadingCloseSpans) {
-                            leadingClosers = leadingCloseSpans[0];
-                        }
-                        newHtml +=
-                            leadingClosers +
-                            '<span class="' +
-                            cssSentenceTooLong +
-                            '" data-segment="sentence">' +
-                            fragment.text.substring(leadingClosers.length) +
-                            "</span>";
-                    } else {
-                        // nothing to see here
-                        newHtml += fragment.text;
+                    if (
+                        canLocateSentences &&
+                        sentenceWordCount > opts.maxWordsPerSentence
+                    ) {
+                        sentenceTooLongSpans.push(
+                            trimSpan(map.text, {
+                                start: offset,
+                                end: offset + fragment.text.length,
+                            }),
+                        );
                     }
                 }
+                offset += fragment.text.length;
             }
 
             // If this element represents a paragraph, then the overall page text needs a paragraph break here.
             if (leaf.tagName === "P") {
                 allWords += "\r\n";
             }
-            if (longWords.length) {
-                newHtml = theOneLibSynphony.wrap_words_extra(
-                    newHtml,
-                    longWords,
-                    cssWordTooLong,
-                    ' data-segment="word"',
-                );
-            }
 
-            // set the html
-            $(leaf).html(newHtml);
-            restoreNonTextUIElementsInEditBox(leaf);
+            leafResults.push({ map, sentenceTooLongSpans });
         };
 
         const checkRoot = (root) => {
@@ -214,6 +206,30 @@ import { ReaderToolsModel } from "../readerToolsModel";
             pageDiv.removeClass(cssTooMuchStuffOnPage);
         }
 
+        // Now that we know every long word on the page, highlight all of them, along with the
+        // sentences we found to be too long.
+        theOneReaderHighlightManager.beginPass();
+        leafResults.forEach((leafResult) => {
+            theOneReaderHighlightManager.addRanges(
+                kSentenceTooLongHighlight,
+                makeRangesForSpans(
+                    leafResult.map,
+                    leafResult.sentenceTooLongSpans,
+                ),
+            );
+            theOneReaderHighlightManager.addRanges(
+                kWordTooLongHighlight,
+                makeRangesForSpans(
+                    leafResult.map,
+                    theOneLibSynphony.find_words_extra(
+                        leafResult.map.text,
+                        longWords,
+                    ),
+                ),
+            );
+        });
+        theOneReaderHighlightManager.endPass(this[0]);
+
         this["allWords"] = allWords;
         return this;
     };
@@ -235,12 +251,17 @@ import { ReaderToolsModel } from "../readerToolsModel";
         );
         let text = "";
 
-        // remove previous synphony markup
+        // Clean out markup spans inserted by earlier versions of Bloom, and the inline
+        // background-color spans CKEditor made from them (BL-16558).
         this.removeSynphonyMarkup();
+        this.removeCkEditorMarkup();
 
-        // get all text
+        // Snapshot the text of each element as the reader sees it, and get all the page's text.
+        const maps: TextOffsetMap[] = [];
         this.each(function () {
-            text += " " + removeAllHtmlMarkupFromString($(this).html());
+            const map = mapReaderText(this);
+            maps.push(map);
+            text += " " + map.text;
         });
 
         /**
@@ -254,42 +275,37 @@ import { ReaderToolsModel } from "../readerToolsModel";
             opts.sightWords.join(" "),
         );
 
-        // markup
-        this.each(function () {
-            stashNonTextUIElementsInEditBox(this);
-            let html = $(this).html();
+        // remove numbers from list of bad words
+        const notDecodable = _.difference(
+            results.remaining_words,
+            results.getNumbers(),
+        ) as string[];
 
+        theOneReaderHighlightManager.beginPass();
+        maps.forEach((map) => {
             // ignore empty elements
-            if (html.trim().length > 0 && text.trim().length > 0) {
-                html = theOneLibSynphony.wrap_words_extra(
-                    html,
-                    results.sight_words,
-                    cssSightWord,
-                    ' data-segment="word"',
-                );
-                html = theOneLibSynphony.wrap_words_extra(
-                    html,
-                    results.possible_words,
-                    cssPossibleWord,
-                    ' data-segment="word"',
-                );
-
-                // remove numbers from list of bad words
-                const notFound = _.difference(
-                    results.remaining_words,
-                    results.getNumbers(),
-                );
-
-                html = theOneLibSynphony.wrap_words_extra(
-                    html,
-                    notFound,
-                    cssWordNotFound,
-                    ' data-segment="word"',
-                );
-                $(this).html(html);
+            if (map.text.trim().length === 0 || text.trim().length === 0) {
+                return;
             }
-            restoreNonTextUIElementsInEditBox(this);
+            theOneReaderHighlightManager.addRanges(
+                kSightWordHighlight,
+                makeRangesForSpans(
+                    map,
+                    theOneLibSynphony.find_words_extra(
+                        map.text,
+                        results.sight_words,
+                    ),
+                ),
+            );
+            theOneReaderHighlightManager.addRanges(
+                kWordNotDecodableHighlight,
+                makeRangesForSpans(
+                    map,
+                    theOneLibSynphony.find_words_extra(map.text, notDecodable),
+                ),
+            );
         });
+        theOneReaderHighlightManager.endPass(this[0]);
 
         return this;
     };
@@ -382,6 +398,36 @@ import { ReaderToolsModel } from "../readerToolsModel";
                 .removeClass(cssTooMuchStuffOnPage);
     };
 
+    /**
+     * Undo the damage described in BL-16558: when the user replaced text that the reader tools
+     * had marked, CKEditor copied the marking span's computed background-color into an inline
+     * style of its own, which got saved into the book. We no longer give it anything to copy,
+     * but books edited by earlier versions still contain these spans.
+     */
+    $.fn.removeCkEditorMarkup = function () {
+        this.each(function () {
+            $(this)
+                .find("span[style]")
+                .filter((_index, element) => {
+                    const style = (element as HTMLElement).getAttribute(
+                        "style",
+                    );
+                    // CKeditor copies the highlight style as a barebones inline style containing
+                    // only the background-color property.
+                    return !!style && /^background-color: [^;]*;$/.test(style);
+                })
+                .contents()
+                .unwrap();
+            // NB: do NOT remove CKEditor's hidden cke_* spans here. We used to, so that they
+            // could not skew the word markup, but mapReaderText() now simply skips them, and
+            // removing them moved the insertion point to the start of the text box after every
+            // typing pause: the hidden spans include the selection bookmarks that
+            // readerToolsModel.doMarkup() has EditableDivUtils.doCkEditorCleanup() insert before
+            // it calls us, and that it passes to restoreSelectionFromCkEditorBookmarks()
+            // afterwards to put the caret back. See also (BL-16490)
+        });
+    };
+
     $.extend({
         /**
          * Highlights selected graphemes in a word
@@ -417,27 +463,6 @@ import { ReaderToolsModel } from "../readerToolsModel";
         },
     });
 
-    $.extend({
-        cssSentenceTooLong: () => {
-            return cssSentenceTooLong;
-        },
-    });
-    $.extend({
-        cssSightWord: () => {
-            return cssSightWord;
-        },
-    });
-    $.extend({
-        cssWordNotFound: () => {
-            return cssWordNotFound;
-        },
-    });
-    $.extend({
-        cssPossibleWord: () => {
-            return cssPossibleWord;
-        },
-    });
-
     function oldMarkup(gpcForm, desiredGPCs) {
         let returnVal = "";
 
@@ -456,29 +481,9 @@ import { ReaderToolsModel } from "../readerToolsModel";
         return returnVal;
     }
 
-    /**
-     * The formatButton is a div at the end of the editable text that needs to be ignored as we scan and markup the text box.
-     * It should be restored witha a call to restoreFormatButton();
-     **/
-
-    let stashedFormatButton;
-
-    function stashNonTextUIElementsInEditBox(element) {
-        stashedFormatButton = $(element).find("#formatButton");
-        if (stashedFormatButton) {
-            stashedFormatButton.remove();
-        }
-    }
-    /**
-     * The formatButton is a div at the end of the editable text that needs to be ignored as we scan and markup the text box.
-     * Calls to this should be preceded by a call to stashFormatButton();
-     **/
-    function restoreNonTextUIElementsInEditBox(element) {
-        if (stashedFormatButton) {
-            $(element).append(stashedFormatButton);
-            stashedFormatButton = null;
-        }
-    }
+    // We used to have to remove the formatButton (a div of UI at the end of the editable text)
+    // before scanning, and put it back afterwards, because scanning meant rewriting the
+    // element's HTML. Now that we only read the DOM, mapReaderText() simply skips it.
 })(jQuery);
 
 /**

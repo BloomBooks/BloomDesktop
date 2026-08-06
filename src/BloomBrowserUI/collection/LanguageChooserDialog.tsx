@@ -19,7 +19,7 @@ import {
     BloomDialog,
     DialogBottomButtons,
 } from "../react_components/BloomDialog/BloomDialog";
-import * as ReactDOM from "react-dom";
+import { renderRootSync } from "../utils/reactRender";
 import { AppBar } from "@mui/material";
 import { kBloomLightGray } from "../utils/colorUtils";
 import {
@@ -33,6 +33,7 @@ export interface ILanguageData {
     LanguageTag: string | null;
     DefaultName: string | null;
     DesiredName: string | null;
+    IsRtl: boolean | null;
     Country?: string | null;
 }
 
@@ -46,11 +47,13 @@ export function getLanguageData(
         (selection?.language
             ? defaultDisplayName(selection.language) || null
             : null);
+    const isRtl = selection?.script?.isRtl;
     // Ensure values are null rather than undefined. Otherwise, the property won't be serialized at all.
     return {
         LanguageTag: languageTag || null,
         DefaultName: defaultName,
         DesiredName: selection?.customDetails?.customDisplayName || defaultName,
+        IsRtl: isRtl !== undefined ? isRtl : null,
         Country: languageTag
             ? defaultRegionForLangTag(languageTag, selection?.language)?.name ||
               null
@@ -176,7 +179,7 @@ export function showLanguageChooserDialog(
     initialCustomName?: string,
 ) {
     try {
-        ReactDOM.render(
+        renderRootSync(
             <LanguageChooserDialog
                 initialLanguageTag={initialLanguageTag}
                 initialCustomName={initialCustomName}

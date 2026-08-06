@@ -1,7 +1,7 @@
 // The logic behind the "No Indent" command on the text context menu (BL-16649).
 // Kept separate from the React component so it can be unit tested against a plain DOM.
 
-import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 
 // Put on an individual <p> to cancel the first-line indent that the paragraph's style
 // (see the Format dialog) would otherwise give it. The matching CSS rule is in

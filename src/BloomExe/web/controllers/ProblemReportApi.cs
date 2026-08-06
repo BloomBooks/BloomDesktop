@@ -721,15 +721,15 @@ namespace Bloom.web.controllers
                             dlg.ControlBox = true; // Add controls like the X button back to the top bar
                             dlg.Text = ""; // Remove the title from the WinForms top bar
 
-                            dlg.Width = 731;
-                            dlg.Height = height;
+                            var owner = GetParentFormForErrorDialogs();
+                            dlg.SetScaledSize(731, height);
 
                             // ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
                             BloomServer._theOneInstance.RegisterThreadBlocking();
                             try
                             {
                                 // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
-                                dlg.ShowDialog(GetParentFormForErrorDialogs());
+                                dlg.ShowDialog(owner);
                             }
                             finally
                             {
@@ -1058,10 +1058,6 @@ namespace Bloom.web.controllers
 
         private const uint PW_RENDERFULLCONTENT = 0x00000002;
 
-        /// <summary>Returns the handle of the window currently in the foreground.</summary>
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
-
         /// <summary>Returns the thread and process that created the given window.</summary>
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
@@ -1072,7 +1068,7 @@ namespace Bloom.web.controllers
         /// </summary>
         private static bool IsBloomProcessInForeground()
         {
-            var fgWindow = GetForegroundWindow();
+            var fgWindow = ProcessExtra.GetForegroundWindow();
             if (fgWindow == IntPtr.Zero)
                 return false;
             GetWindowThreadProcessId(fgWindow, out uint fgProcessId);
@@ -1564,10 +1560,10 @@ namespace Bloom.web.controllers
 
         private static void AppendTimeZone(StringBuilder bldr)
         {
-            var tzName = TimeZone.CurrentTimeZone.IsDaylightSavingTime(DateTime.Now)
-                ? TimeZone.CurrentTimeZone.DaylightName
-                : TimeZone.CurrentTimeZone.StandardName;
-            var tzOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+            var tzName = TimeZoneInfo.Local.IsDaylightSavingTime(DateTime.Now)
+                ? TimeZoneInfo.Local.DaylightName
+                : TimeZoneInfo.Local.StandardName;
+            var tzOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
             var tzFormatString = (tzOffset < TimeSpan.Zero ? "\\-" : "") + "hh\\:mm";
             bldr.AppendLine(
                 "User timezone: UTC" + tzOffset.ToString(tzFormatString) + "  (" + tzName + ")"

@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -107,6 +106,12 @@ namespace Bloom
         internal static string StartupLabel { get; private set; }
         internal static bool StartupAutomation { get; private set; }
 
+        // Control port of the dev launcher (scripts/watchBloomExe.mjs) that started
+        // this Bloom, passed as --launcher-port. When present, DevLauncher watches for
+        // pending C# changes and offers a dev-only toast that asks the launcher to
+        // rebuild and relaunch us.
+        internal static int? StartupLauncherPort { get; private set; }
+
         internal static string StartupRequestedPortSummary =>
             string.Join(
                 ", ",
@@ -114,11 +119,13 @@ namespace Bloom
                 {
                     StartupAutomation ? "automation=true" : null,
                     StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
+                    StartupLauncherPort.HasValue
+                        ? $"launcherPort={StartupLauncherPort.Value}"
+                        : null,
                 }.Where(value => value != null)
             );
 
         [STAThread]
-        [HandleProcessCorruptedStateExceptions]
         static int Main(string[] args1)
         {
             // AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
@@ -134,6 +141,16 @@ namespace Bloom
             // Ensure that the registration information is loaded early before Team Collection
             // needs it.
             Registration.Registration.Default.EnsureLoaded();
+
+            // This needs to be done before we create any WebView2s, so they will inherit
+            // our DPI awareness and render fonts better.
+            // Even though BloomExe.csproj sets ApplicationHighDpiMode=PerMonitorV2,
+            // that alone was not sufficient in Bloom's custom startup path. One likely
+            // reason is that Bloom does not use the standard generated WinForms startup
+            // initialization path that newer templates rely on. In testing, Bloom and
+            // its root WebView2 still came up as only System DPI aware until we made
+            // the explicit WinForms call here.
+            Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
 
             // Initializing localization can pop up a dialog if the system language
             // is not one of our supported languages. The following calls must be done
@@ -344,11 +361,25 @@ namespace Bloom
                 // by the user.
                 if (!Settings.Default.LicenseAccepted)
                 {
-                    using (var dlg = new LicenseDialog("license.htm"))
-                        if (dlg.ShowDialog() != DialogResult.OK)
-                            return 1;
-                    Settings.Default.LicenseAccepted = true;
-                    Settings.Default.Save();
+                    if (RunningE2eTests)
+                    {
+                        // e2e / visual-regression runs (--e2e) launch Bloom with a collection
+                        // argument and no human to click Accept. Showing the modal LicenseDialog
+                        // would block startup forever (Bloom never opens the collection or starts
+                        // its server), so treat the license as accepted and proceed. Mirrors the
+                        // debugger-prompt skip below.
+                        Settings.Default.LicenseAccepted = true;
+                        Settings.Default.Save();
+                    }
+                    else
+                    {
+                        using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
+                        using (var dlg = new LicenseDialog("license.htm"))
+                            if (dlg.ShowDialog() != DialogResult.OK)
+                                return 1;
+                        Settings.Default.LicenseAccepted = true;
+                        Settings.Default.Save();
+                    }
                 }
 
 #if DEBUG
@@ -356,9 +387,14 @@ namespace Bloom
                 {
                     if (IsLocalizationHarvestingLaunch(args))
                         LocalizationManager.IgnoreExistingEnglishTranslationFiles = true;
-                    else
-                        // This allows us to debug things like  interpreting a URL.
-                        MessageBox.Show("Attach debugger now");
+                    // Commented out because it fired for ANY argument, not just the URL case it was
+                    // meant for. A Debug Bloom launched on a collection path then blocked forever on
+                    // a modal dialog, which no script or external tool can get past (and which looks
+                    // like a hang: alive, no window, no server). Uncomment if you need to attach
+                    // before Bloom interprets its arguments.
+                    //else
+                    //    // This allows us to debug things like  interpreting a URL.
+                    //    MessageBox.Show("Attach debugger now");
                 }
                 var harvest = Environment.GetEnvironmentVariable("HARVEST_FOR_LOCALIZATION");
                 if (
@@ -746,6 +782,8 @@ namespace Bloom
             StartupVitePort = null;
             StartupLabel = null;
             StartupAutomation = false;
+            StartupLauncherPort = null;
+            RunningE2eTests = false;
 
             var remainingArgs = new List<string>();
 
@@ -758,6 +796,14 @@ namespace Bloom
                         "--vite-port",
                         () => StartupVitePort,
                         value => StartupVitePort = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupPortArgument(
+                        args,
+                        ref i,
+                        "--launcher-port",
+                        () => StartupLauncherPort,
+                        value => StartupLauncherPort = value,
                         out errorMessage
                     )
                     || TryHandleStartupStringArgument(
@@ -775,6 +821,14 @@ namespace Bloom
                         "--automation",
                         () => StartupAutomation,
                         value => StartupAutomation = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupFlagArgument(
+                        args,
+                        ref i,
+                        "--e2e",
+                        () => RunningE2eTests,
+                        value => RunningE2eTests = value,
                         out errorMessage
                     )
                 )
@@ -1317,7 +1371,6 @@ namespace Bloom
             _projectContext = projectContext;
         }
 
-        [HandleProcessCorruptedStateExceptions]
         private static void Run(string[] args)
         {
             if (!IsInstallerLaunch(args))
@@ -1754,81 +1807,64 @@ namespace Bloom
         /// time when switching collectons.</param>
         /// <returns>true if we switched collections. (However, in this case we may exit the application, so the
         /// caller shouldn't do anything unnecessary.)</returns>
-        public static bool ChooseACollection(Shell formToClose = null)
+        /// <summary>
+        /// The collection path chosen by the user via the React collection chooser dialog at
+        /// startup (before any project is loaded). Set by CollectionChooserApi and read here
+        /// after the ReactDialog closes.
+        /// </summary>
+        internal static string CollectionChosenAtStartup { get; set; }
+
+        public static bool ChooseACollection()
         {
-            if (formToClose != null)
-            {
-                // Clear any previous value; we'll set it again only if the user clicks OK.
-                _collectionPathToOpenAfterCurrentProjectClosed = null;
-            }
+            // We normally start listening when setting up the project context. However, this
+            // method may run at startup before we have a chosen project.
+            _applicationContainer.BloomServer.EnsureListening();
+
             while (true)
             {
-                // We decided to stop doing this (BL-1229) since the wizard can feel like part
-                // of installation that might be irrevocable.
-                ////If it looks like the 1st time, put up the create collection with the welcome.
-                ////The user can cancel that if they want to go looking for a collection on disk.
-                //if(Settings.Default.MruProjects.Latest == null)
-                //{
-                //	var path = NewCollectionWizard.CreateNewCollection();
-                //	if (!string.IsNullOrEmpty(path) && RobustFile.Exists(path))
-                //	{
-                //		OpenCollection(path);
-                //		return;
-                //	}
-                //}
-
-                // We normally start listening when setting up the project context. However, this dialog might
-                // get run at startup when we don't have a chosen project from which to make a ProjectContext
-                _applicationContainer.BloomServer.EnsureListening();
-                using (var dlg = _applicationContainer.OpenAndCreateCollectionDialog())
+                CollectionChosenAtStartup = null;
+                string closeSource;
+                var dialogTitle = LocalizationManager.GetString(
+                    "OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle",
+                    "Open/Create Collections"
+                );
+                using (var dlg = new ReactDialog("collectionChooserBundle", null, dialogTitle))
                 {
-                    if (formToClose == null) // otherwise default position on same screen is fine
-                    {
-                        dlg.StartPosition = FormStartPosition.Manual; // try not to have it under the splash screen
-                        dlg.SetDesktopLocation(50, 50);
-                    }
-
-                    try
-                    {
-                        if (dlg.ShowDialog(formToClose) != DialogResult.OK)
-                        {
-                            // If there is a form to close, it means the collection chooser is not the only thing open,
-                            // and we don't want to exit the application. Otherwise, we are in initial startup and
-                            // closing the chooser should exit the application.
-                            if (formToClose == null)
-                                ProgramExit.Exit();
-                            return false;
-                        }
-
-                        if (formToClose != null)
-                        {
-                            _collectionPathToOpenAfterCurrentProjectClosed = dlg.SelectedPath;
-                            formToClose.UserWantsToOpenADifferentProject = true;
-                            formToClose.Close();
-                            formToClose = null; // can't use it after it's closed and disposed
-                            return true;
-                        }
-
-                        if (OpenCollection(dlg.SelectedPath))
-                            return true;
-                    }
-                    catch (Exception error)
-                    {
-                        if (
-                            LongPathAware.ShouldConvertToPathTooLongException(
-                                error,
-                                out string path
-                            )
-                        )
-                        {
-                            throw new Utils.PathTooLongException(path);
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
+                    dlg.SetScaledSize(700, 500);
+                    dlg.StartPosition = FormStartPosition.CenterScreen;
+                    dlg.ShowInTaskbar = true;
+                    // Ensure the dialog comes to the foreground even when opened
+                    // programmatically (e.g. after closing/reopening for a language change).
+                    dlg.TopMost = true;
+                    dlg.Activated += (s, e) => dlg.TopMost = false;
+                    dlg.ShowDialog();
+                    closeSource = dlg.CloseSource;
                 }
+
+                // Language was changed: reopen the dialog so all strings re-fetch in the new language.
+                if (closeSource == "languageChanged")
+                    continue;
+
+                var selectedPath = CollectionChosenAtStartup;
+
+                if (selectedPath == null)
+                {
+                    ProgramExit.Exit();
+                    return false;
+                }
+
+                try
+                {
+                    if (OpenCollection(selectedPath))
+                        return true;
+                }
+                catch (Exception error)
+                {
+                    if (LongPathAware.ShouldConvertToPathTooLongException(error, out string path))
+                        throw new Utils.PathTooLongException(path);
+                    throw;
+                }
+                // If OpenCollection failed, loop to show the dialog again
             }
         }
 
@@ -1841,6 +1877,18 @@ namespace Bloom
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Switches directly to the specified collection without showing the chooser dialog.
+        /// Used by the React-based collection chooser. Closes the current Shell and reopens
+        /// with the selected collection, exactly as the old dialog did on confirmation.
+        /// </summary>
+        public static void SwitchToCollection(string path, Shell formToClose)
+        {
+            _collectionPathToOpenAfterCurrentProjectClosed = path;
+            formToClose.UserWantsToOpenADifferentProject = true;
+            formToClose.Close();
         }
 
         /// ------------------------------------------------------------------------------------
@@ -1925,7 +1973,6 @@ namespace Bloom
                     fakeLocalDir,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     //the parameters that follow are namespace beginnings:
                     new string[] { "Bloom" }
                 );
@@ -1945,7 +1992,6 @@ namespace Bloom
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     //the parameters that follow are namespace beginnings:
                     new string[] { "Bloom" }
                 );
@@ -1976,7 +2022,6 @@ namespace Bloom
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     new string[] { "SIL" }
                 );
 
@@ -1988,7 +2033,6 @@ namespace Bloom
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     new string[] { "Bloom" }
                 );
 
@@ -2000,7 +2044,6 @@ namespace Bloom
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     new string[] { "Bloom" }
                 );
 
@@ -2016,8 +2059,6 @@ namespace Bloom
                 {
                     LocalizationManager.FallbackLanguageIds = new[] { "es", "en" };
                 }
-
-                LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = false; // BL-5111
 
                 // It's now safe to read the localized strings.  See BL-13245.
                 HtmlErrorReporter.Instance.LocalizeDefaultReportLabel();
@@ -2140,6 +2181,80 @@ namespace Bloom
         // Only the token owner may release it and run Bloom's global temp cleanup on exit.
         private static bool _ownsSingleInstanceToken;
 
+        /// <summary>
+        /// Decides whether a Sentry event is the benign "unobserved Task socket/IO abort" noise
+        /// that we want to drop rather than report. Used by the BeforeSend filter installed in
+        /// SetUpErrorHandling.
+        ///
+        /// Background: the Sentry .NET SDK auto-subscribes to TaskScheduler.UnobservedTaskException.
+        /// Fleck (our WebSocket library, see BloomWebSocketServer) does fire-and-forget socket.Send()
+        /// calls whose faulted Tasks are never observed; when a socket aborts (mostly at app shutdown)
+        /// the finalizer thread surfaces a benign SocketException/IOException and Sentry reports it.
+        /// An earlier IsAvailable-check mitigation (BL-11124) did not stop it, so tens of thousands of
+        /// these events accumulated with zero user impact (Sentry BLOOM-DESKTOP-EQ4 / -E4J / -E9K).
+        ///
+        /// We drop ONLY this exact pattern - an event carrying the UnobservedTaskException mechanism
+        /// whose exception chain contains a benign socket/IO abort type - so genuine unobserved-Task
+        /// bugs are still reported. The decision is carried by exception TYPE plus the mechanism, never
+        /// by message text: the message ("The I/O operation has been aborted...") is localized by the
+        /// user's OS language, which is why it showed up as several separate Sentry issues.
+        /// </summary>
+        internal static bool IsBenignUnobservedTaskSocketNoise(SentryEvent sentryEvent)
+        {
+            var exceptions = sentryEvent.SentryExceptions?.ToList();
+            if (exceptions == null || exceptions.Count == 0)
+                return false;
+
+            // Must have come through the TaskScheduler.UnobservedTaskException integration.
+            // Any (not All) is required here: Sentry attaches the mechanism only to the outer
+            // AggregateException wrapper, never to the inner exceptions in the chain, so
+            // requiring it on every entry would mean the filter never matched anything.
+            var isUnobservedTask = exceptions.Any(e =>
+                e.Mechanism?.Type == "UnobservedTaskException"
+            );
+            if (!isUnobservedTask)
+                return false;
+
+            // ...and the underlying fault must be a benign socket/IO abort (match on type, not
+            // text). At least one benign abort must be present, and nothing else may be in the
+            // chain except the AggregateException wrapper the unobserved-Task path adds: an
+            // AggregateException can aggregate several faults, and if a real bug is mixed in
+            // with the socket noise we still want the report.
+            if (!exceptions.Any(e => IsBenignSocketAbortExceptionType(e.Type)))
+                return false;
+            return exceptions.All(e =>
+                e.Type == "System.AggregateException" || IsBenignSocketAbortExceptionType(e.Type)
+            );
+        }
+
+        /// <summary>
+        /// True for the exception types that represent a benign socket/IO abort or cancellation
+        /// (as opposed to something we would actually want to know about). Matched by full type
+        /// name so it is independent of the OS-localized exception message.
+        /// </summary>
+        private static bool IsBenignSocketAbortExceptionType(string exceptionTypeName)
+        {
+            switch (exceptionTypeName)
+            {
+                // The observed noise is a SocketException, but the abort surfaces from the socket
+                // stack as an IOException just as often (an IOException frequently wraps the
+                // SocketException), and a shutdown race can instead cancel the send. All three are
+                // benign teardown outcomes of an *unobserved* fire-and-forget socket.Send(); this
+                // predicate only ever runs for events already carrying the UnobservedTaskException
+                // mechanism (see IsBenignUnobservedTaskSocketNoise), which is what keeps it from
+                // suppressing these same types when they arrive through a normal, observed path.
+                // The trade-off is accepted deliberately: an unobserved-Task IOException/cancellation
+                // is treated as noise here rather than reported.
+                case "System.Net.Sockets.SocketException":
+                case "System.IO.IOException":
+                case "System.OperationCanceledException":
+                case "System.Threading.Tasks.TaskCanceledException":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         /// ------------------------------------------------------------------------------------
         internal static void SetUpErrorHandling()
         {
@@ -2150,9 +2265,15 @@ namespace Bloom
             {
                 try
                 {
-                    _sentry = SentrySdk.Init(
-                        "https://bba22972ad6b4c2ab03a056f549cc23d@o1009031.ingest.sentry.io/5983534"
-                    );
+                    _sentry = SentrySdk.Init(options =>
+                    {
+                        options.Dsn =
+                            "https://bba22972ad6b4c2ab03a056f549cc23d@o1009031.ingest.sentry.io/5983534";
+                        // Screen out the benign unobserved-Task socket/IO abort noise
+                        // (Sentry BLOOM-DESKTOP-EQ4/E4J/E9K). See IsBenignUnobservedTaskSocketNoise.
+                        options.BeforeSend = sentryEvent =>
+                            IsBenignUnobservedTaskSocketNoise(sentryEvent) ? null : sentryEvent;
+                    });
                     SentrySdk.ConfigureScope(scope =>
                     {
                         scope.SetExtra("channel", ApplicationUpdateSupport.ChannelName);
@@ -2502,6 +2623,30 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
         // Should be set to true if this is being called by Harvester, false otherwise.
         public static bool RunningHarvesterMode { get; set; }
+
+        private static bool _runningE2eTests;
+
+        // True while the visual-regression / e2e suite (see src/BloomVisualRegressionTests) is
+        // driving Bloom. Set by the --e2e command-line flag, which the suite passes when it launches
+        // its own dedicated Bloom. In this mode we suppress modal error dialogs so that a problem
+        // surfaces as a failed API call / logged error and fails the test, instead of popping a
+        // dialog nobody can dismiss and hanging the whole run. See NonFatalProblem.Report and
+        // FatalExceptionHandler.
+        public static bool RunningE2eTests
+        {
+            get => _runningE2eTests;
+            set
+            {
+                _runningE2eTests = value;
+                // Debug.Assert/Debug.Fail (e.g. BloomServer's request-error guard) otherwise pop a
+                // modal Windows assertion dialog. With no human to dismiss it, that dialog freezes
+                // the request/UI thread and every test times out, while hiding the real error behind
+                // it. Route assertions to the trace/log output instead while in e2e mode, and restore
+                // normal behavior when the suite turns the mode back off.
+                foreach (var listener in Trace.Listeners.OfType<DefaultTraceListener>())
+                    listener.AssertUiEnabled = !value;
+            }
+        }
 
         // Show UI for development and testing which isn't shown to the user.
         // e.g. the gfx/wv2 labels and the experimental feature checkbox for wv2.

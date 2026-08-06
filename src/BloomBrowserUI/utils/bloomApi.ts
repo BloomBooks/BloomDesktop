@@ -56,6 +56,8 @@ export async function wrapAxios<T>(
     report: boolean = true,
     url: string = "unknown",
 ): Promise<void | AxiosResponse<T>> {
+    const isTest =
+        typeof process !== "undefined" && process.env.NODE_ENV === "test";
     // Save the place where the original axios call was made.
     // The stack in the error passed to catch is usually not very
     // useful, containing just a few levels from the axios code
@@ -70,6 +72,9 @@ export async function wrapAxios<T>(
     // performance-critical calls.
     const axiosCallState = new Error("dummy");
     return call.catch((error) => {
+        if (isTest) {
+            return;
+        }
         if (!report) {
             return;
         }
@@ -576,6 +581,13 @@ export async function getWithConfigAsync<T>(
 }
 
 export function postString(urlSuffix: string, value: string) {
+    // Match post(): unit tests should not hit Bloom backend endpoints.
+    const isTest =
+        typeof process !== "undefined" && process.env.NODE_ENV === "test";
+    if (isTest) {
+        return Promise.resolve();
+    }
+
     return wrapAxios(
         axios.post(getBloomApiPrefix() + urlSuffix, value, {
             headers: {
@@ -611,7 +623,6 @@ export function post(
         typeof process !== "undefined" && process.env.NODE_ENV === "test";
 
     if (isTest) {
-        console.log(`skipping post to ${urlSuffix} because in unit tests`);
         if (successCallback) {
             successCallback({} as AxiosResponse); // A dummy AxiosResponse for compiling purposes. Unit tests should avoid using it.
         }

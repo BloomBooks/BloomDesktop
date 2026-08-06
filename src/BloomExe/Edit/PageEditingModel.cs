@@ -34,6 +34,7 @@ namespace Bloom.Edit
             string imageId,
             UrlPathString priorImageSrc,
             PalasoImage imageInfo,
+            string pageBackgroundColor = null,
             bool undoable = false
         )
         {

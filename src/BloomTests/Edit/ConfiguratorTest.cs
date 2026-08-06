@@ -49,7 +49,7 @@ namespace BloomTests.Edit
                 }
             );
 
-            var projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
+            var projectFolder = new TemporaryFolder("ConfiguratorTests_ProjectCollection");
             var collectionSettings = new CollectionSettings(
                 Path.Combine(projectFolder.Path, "test.bloomCollection")
             );
@@ -60,8 +60,8 @@ namespace BloomTests.Edit
                     new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings),
                 collection
             );
-            _shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
-            _collectionFolder = new TemporaryFolder("BookStarterTests_Collection");
+            _shellCollectionFolder = new TemporaryFolder("ConfiguratorTests_ShellCollection");
+            _collectionFolder = new TemporaryFolder("ConfiguratorTests_Collection");
         }
 
         [Test]

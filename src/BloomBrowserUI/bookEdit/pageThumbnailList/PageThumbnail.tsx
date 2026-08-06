@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import "../../lib/errorHandler";
 import { get } from "../../utils/bloomApi";
 import { IPage } from "./pageThumbnailList";
+import { layoutScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 
 // Global information across all PageThumbnails...see comments in requestPage()
 let lastPageRequestTime = 0;
@@ -99,9 +100,9 @@ export const PageThumbnail: React.FunctionComponent<{
     const reForOverflow = /^[^>]*class="[^"]*pageOverflows/;
     const overflowing = reForOverflow.test(content); // enhance: memo?
 
-    const scrollingWillBeAvailable =
-        props.pageLayout.indexOf("Device") > -1 ||
-        props.pageLayout.indexOf("Ebook") > -1;
+    const scrollingWillBeAvailable = layoutScrollsInsteadOfOverflowing(
+        props.pageLayout,
+    );
 
     useEffect(() => {
         if (Math.abs(Date.now() - lastPageRequestTime) > 5000) {

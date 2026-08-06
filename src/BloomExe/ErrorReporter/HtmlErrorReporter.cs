@@ -454,13 +454,24 @@ namespace Bloom.ErrorReporter
                             dlg.ControlBox = true; // Add controls like the X button back to the top bar
                             dlg.Text = ""; // Remove the title from the WinForms top bar
 
-                            dlg.Width = 620;
-
-                            // 360px was experimentally determined as what was needed for the longest known text for NotifyUserOfProblem
-                            // (which is "Before saving, Bloom did an integrity check of your book [...]" from BookStorage.cs)
-                            // You can make this height taller if need be.
-                            // A scrollbar will appear if the height is not tall enough for the text
-                            dlg.Height = 360;
+                            if (dlg is ReactDialog reactDialog)
+                            {
+                                // 360px was experimentally determined as what was needed for the longest known text for NotifyUserOfProblem.
+                                // (which is "Before saving, Bloom did an integrity check of your book [...]" from BookStorage.cs)
+                                // You can make this height taller if need be.
+                                // A scrollbar will appear if the height is not tall enough for the text
+                                reactDialog.SetScaledSize(620, 360);
+                            }
+                            else
+                            {
+                                // I can't even imagine a scenario where the result of CreateReactDialog isn't a ReactDialog.
+                                // Normally, I'd want to fail fast and throw an exception if it isn't,
+                                // but here we're in the middle of reporting an error, so I'd rather we just do our
+                                // best to show the original error. So we'll go with prior code (and maybe get a poorly sized
+                                // dialog if scale is not 100%).
+                                dlg.Width = 620;
+                                dlg.Height = 360;
+                            }
 
                             // ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
                             BloomServer.RegisterThreadBlocking();

@@ -20,6 +20,7 @@ interface IAdvancedSettings {
     showExperimentalBookSources?: boolean;
     allowTeamCollection?: boolean;
     allowAppBuilder?: boolean;
+    allowAiImageEditing?: boolean;
     showQrCode?: boolean;
     qrcodeCaption?: string;
 }
@@ -64,6 +65,10 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "App Builder",
         "CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder",
     );
+    const aiImageEditingLabel = useL10n(
+        "Edit Images with AI",
+        "CollectionSettingsDialog.AdvancedTab.Experimental.EditWithAI",
+    );
     const qrCodesLabel = useL10n(
         "QR Codes",
         "CollectionSettingsDialog.AdvancedTab.QrCodes",
@@ -93,6 +98,11 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         appBuilderFeatureStatus === undefined
             ? false
             : appBuilderFeatureStatus.enabled;
+    const aiImageEditingFeatureStatus = useGetFeatureStatus("AiImageEditing");
+    const aiImageEditingOptionEnabled =
+        aiImageEditingFeatureStatus === undefined
+            ? false
+            : aiImageEditingFeatureStatus.enabled;
     const canChangeTeamCollectionOption = allowTeamCollectionEnabled !== false;
 
     const normalizeConfigrSettings = React.useCallback(
@@ -260,6 +270,34 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                 >
                                     <BloomSubscriptionIndicatorIconAndText
                                         feature="AppBuilder"
+                                        className="bloom-subscriptionIndicator"
+                                    />
+                                </div>
+                            </div>
+                            <div
+                                css={css`
+                                    .Mui-disabled {
+                                        opacity: 1;
+                                    }
+                                `}
+                            >
+                                <ConfigrBoolean
+                                    label={aiImageEditingLabel}
+                                    path="allowAiImageEditing"
+                                    disabled={!aiImageEditingOptionEnabled}
+                                />
+                                <div
+                                    css={css`
+                                        display: flex;
+                                        justify-content: flex-end;
+                                        .bloom-subscriptionIndicator {
+                                            font-size: 10pt;
+                                            font-weight: 700;
+                                        }
+                                    `}
+                                >
+                                    <BloomSubscriptionIndicatorIconAndText
+                                        feature="AiImageEditing"
                                         className="bloom-subscriptionIndicator"
                                     />
                                 </div>

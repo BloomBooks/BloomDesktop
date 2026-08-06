@@ -26,6 +26,7 @@ import {
     useApiBoolean,
     useApiStateWithStatus,
     useApiString,
+    useWatchApiData,
     useWatchBooleanEvent,
 } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
@@ -174,9 +175,11 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
 
     const [progressState, setProgressState] = useState(ProgressState.Working);
     const [activeStep, setActiveStep] = useState(0);
-    const [isScalingActive] = useApiBoolean(
+    const isScalingActive = useWatchApiData<boolean>(
         "publish/av/isScalingActive",
         false,
+        "recordVideo",
+        "dpiChanged",
     );
     const gotRecording = useWatchBooleanEvent(false, "recordVideo", "ready");
 

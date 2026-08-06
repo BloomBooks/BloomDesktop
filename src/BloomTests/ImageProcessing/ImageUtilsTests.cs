@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -63,9 +64,27 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
-        public void ProcessAndSaveImageIntoFolder_PhotoButPNGFile_SavesAsJpeg()
+        public void ProcessAndSaveImageIntoFolder_PhotoButPNGFile_SavesAsPng()
         {
-            ProcessAndSaveImageIntoFolder_AndTestResults("man.png", ImageFormat.Jpeg);
+            // Import no longer converts formats; PNG is preserved as-is.
+            ProcessAndSaveImageIntoFolder_AndTestResults("man.png", ImageFormat.Png);
+        }
+
+        [Test]
+        public void AdjustImageForDisplay_PhotoButPNGFile_ConvertsToJpeg()
+        {
+            var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "man.png"
+            );
+            using (var destFolder = new TemporaryFolder("AdjustImageForDisplay_PhotoPng"))
+            {
+                var result = ImageUtils.AdjustImageForDisplay(inputPath, destFolder.Path);
+                Assert.IsNotNull(result, "Expected a processed version to be created");
+                Assert.AreEqual(".jpg", Path.GetExtension(result));
+                using (var img = Image.FromFile(result))
+                    Assert.AreEqual(ImageFormat.Jpeg, img.RawFormat);
+            }
         }
 
         [Test]
@@ -165,6 +184,73 @@ namespace BloomTests.ImageProcessing
                         Assert.AreEqual(ImageFormat.Png, result.RawFormat);
                         Assert.That(originalFileSize <= new FileInfo(outputPath).Length);
                     }
+                }
+            }
+        }
+
+        [Test]
+        public void AdjustImageForDisplay_LineArtPngWithTransparent_MakesBackgroundTransparent()
+        {
+            using (var sourceFolder = new TemporaryFolder("AdjustImageForDisplay_LineArt_Source"))
+            using (var destFolder = new TemporaryFolder("AdjustImageForDisplay_LineArt_Dest"))
+            {
+                var sourcePath = sourceFolder.Combine("line-art.png");
+                using (var bitmap = new Bitmap(40, 40))
+                using (var graphics = Graphics.FromImage(bitmap))
+                using (var pen = new Pen(Color.Black, 3))
+                {
+                    graphics.Clear(Color.White);
+                    graphics.DrawLine(pen, 5, 20, 35, 20);
+                    bitmap.Save(sourcePath, ImageFormat.Png);
+                }
+
+                var result = ImageUtils.AdjustImageForDisplay(
+                    sourcePath,
+                    destFolder.Path,
+                    transparencyMode: ImageTransparencyMode.Auto
+                );
+
+                Assert.IsNotNull(result);
+                Assert.AreEqual(".png", Path.GetExtension(result));
+                using (var resultBitmap = (Bitmap)Image.FromFile(result))
+                {
+                    Assert.That(resultBitmap.GetPixel(0, 0).A, Is.EqualTo(0));
+                    Assert.That(resultBitmap.GetPixel(20, 20).A, Is.EqualTo(255));
+                }
+            }
+        }
+
+        [Test]
+        public void AdjustImageForDisplay_LineArtJpegWithTransparent_ConvertsToPngAndMakesTransparent()
+        {
+            using (
+                var sourceFolder = new TemporaryFolder("AdjustImageForDisplay_LineArtJpeg_Source")
+            )
+            using (var destFolder = new TemporaryFolder("AdjustImageForDisplay_LineArtJpeg_Dest"))
+            {
+                var sourcePath = sourceFolder.Combine("line-art.jpg");
+                using (var bitmap = new Bitmap(40, 40))
+                using (var graphics = Graphics.FromImage(bitmap))
+                using (var pen = new Pen(Color.Black, 3))
+                {
+                    graphics.Clear(Color.White);
+                    graphics.DrawLine(pen, 5, 20, 35, 20);
+                    bitmap.Save(sourcePath, ImageFormat.Jpeg);
+                }
+
+                var result = ImageUtils.AdjustImageForDisplay(
+                    sourcePath,
+                    destFolder.Path,
+                    transparencyMode: ImageTransparencyMode.Auto
+                );
+
+                Assert.IsNotNull(result);
+                Assert.AreEqual(".png", Path.GetExtension(result));
+                using (var resultBitmap = (Bitmap)Image.FromFile(result))
+                {
+                    Assert.AreEqual(ImageFormat.Png, resultBitmap.RawFormat);
+                    Assert.That(resultBitmap.GetPixel(0, 0).A, Is.EqualTo(0));
+                    Assert.That(resultBitmap.GetPixel(20, 20).A, Is.EqualTo(255));
                 }
             }
         }
@@ -326,35 +412,54 @@ namespace BloomTests.ImageProcessing
             return (color.R | color.G | color.B) == 0 && color.A == 255;
         }
 
-        // The pixel counts are for the randomization introduced by a seed of 271828182.  Not randomizing,
-        // or using different seeds, changed the pixel counts as shown in parentheses.  For one image
-        // (Retangles1.png), a seed of 123456 caused an incorrect return value (a false positive).
-        // That particular image is really designed to make a partial check of pixels be problematic.
-        [Test]
-        [TestCase("aor_Nab037.png", true)] // indexed image with 2 colors, white found
-        [TestCase("bluebird-indexed.png", false)] // indexed image with 2 colors, white not found
-        [TestCase("MemoryReport-indexed.png", false)] // indexed image with 16 colors
-        [TestCase("aor_oce003m.png", true)] // 100 pixels examined, 6 shades of gray/white/black found
-        [TestCase("Boxes.png", true)] // 100 pixels examined, 2 colors found, white found
-        [TestCase("bluebird.png", false)] // 77 pixels examined before 3 colors found (100,24,6,100,77)
-        [TestCase("bird.png", false)] // 1 pixels examined before a transparent pixel found
-        [TestCase("levels.png", false)] // 1 pixels examined before a transparent pixel found
-        [TestCase("Mars 2.png", false)] // 1 pixels examined before a transparent pixel found
-        [TestCase("Jesus Children.png", false)] // 3 pixels examined before 3 colors found (3,3,3,3,3)
-        [TestCase("lady24b.png", false)] // 46 pixels examined before 3 colors found (46,46,26,46,46)
-        // The rest of these are more like torture tests rather than realistic drawings likely to be used in Bloom.
-        [TestCase("AceByDaisyError.png", false)] // 11 pixels examined before 3 colors found (100,12,6,6,11)
-        [TestCase("LineDrawing-2017.png", false)] // 38 pixels examined before 3 colors found (34,34,34,34,38)
-        [TestCase("Bloom-No-Microphone.png", false)] // 42 pixels examined before 3 colors found (42,12,12,13,42)
-        [TestCase("UpdateNotice-2017.png", false)] // 22 pixels examined before 3 colors found (44,58,61,64,22)
-        [TestCase("Rectangles1.png", false)] // 34 pixels examined before 3 colors found (45,100*,80,46,34)
-        [TestCase("MemoryReport.png", false)] // 21 pixels examined before 3 colors found (52,45,13,17,21)
-        [TestCase("CreateTC.png", false)] // 14 pixels examined before 3 colors found (97,24,14,14,14)
-        public void TestForNeedingTransparentBackground(string filename, bool expectedResult)
+        // Test cases come from two sources:
+        //   1) Every PNG dropped into images/line-art-tests/yes/ is expected to be detected
+        //      as line art; every PNG in images/line-art-tests/no/ is expected to not be.
+        //      Drop new test images into those folders and they will be picked up automatically.
+        //   2) A few images that are referenced by other tests stay in the parent images/ folder
+        //      to avoid duplicating large files; they are listed explicitly below.
+        public static IEnumerable<TestCaseData> LineArtTestCases()
+        {
+            foreach (var item in EnumerateFolderTestCases("line-art-tests/yes", true))
+                yield return item;
+            foreach (var item in EnumerateFolderTestCases("line-art-tests/no", false))
+                yield return item;
+
+            // These images are referenced by other tests (Spreadsheet, BloomPubMaker, etc.)
+            // so they stay in the parent images/ folder rather than being moved into the
+            // line-art-tests subfolders. The line-art outcome is still pinned here.
+            yield return new TestCaseData("aor_Nab037.png", true);
+            yield return new TestCaseData("bird.png", false); // has transparency
+            yield return new TestCaseData("levels.png", false); // has transparency
+            yield return new TestCaseData("bluebird.png", false); // multi-colored
+            yield return new TestCaseData("lady24b.png", false); // multi-colored
+            yield return new TestCaseData("Mars 2.png", false); // has transparency
+        }
+
+        private static IEnumerable<TestCaseData> EnumerateFolderTestCases(
+            string subfolder,
+            bool expected
+        )
+        {
+            var folder = FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                _pathToTestImages,
+                subfolder.Replace('/', Path.DirectorySeparatorChar)
+            );
+            foreach (var path in Directory.EnumerateFiles(folder, "*.png"))
+            {
+                var rel = subfolder + "/" + Path.GetFileName(path);
+                yield return new TestCaseData(rel, expected).SetName(
+                    $"TestForNeedingTransparentBackground({rel}, {expected})"
+                );
+            }
+        }
+
+        [Test, TestCaseSource(nameof(LineArtTestCases))]
+        public void TestForNeedingTransparentBackground(string relativePath, bool expectedResult)
         {
             var imagePath = FileLocationUtilities.GetFileDistributedWithApplication(
                 _pathToTestImages,
-                filename
+                relativePath.Replace('/', Path.DirectorySeparatorChar)
             );
             using (var image = PalasoImage.FromFileRobustly(imagePath))
             {
@@ -362,6 +467,76 @@ namespace BloomTests.ImageProcessing
                 Assert.That(isBW, Is.EqualTo(expectedResult));
             }
         }
+
+        // To use: uncomment GetDominantColorBucketsForDiagnostics in ImageUtils.cs (remove
+        // the surrounding #if false / #endif), then run this test explicitly via the IDE or
+        //   dotnet test --filter "FullyQualifiedName~DiagnoseLineArtColorBuckets"
+        // It writes LineArtDiagnostics.html to the system temp folder; open it in a browser
+        // to see colored swatches, sample counts, and BG/INK labels for each image.
+#if false
+        [Test, Explicit]
+        public void DiagnoseLineArtColorBuckets()
+        {
+            // Add any images of interest here — relative to _pathToTestImages, or just a filename.
+            var imagesToDiagnose = new[]
+            {
+                "line-art-tests/no/AceByDaisyError.png",
+                "line-art-tests/yes/AceByDaisyError Mono antialised.png",
+                "lady24b.png",
+                "line-art-tests/yes/aor_oce003m.png",
+                "line-art-tests/no/LineDrawing-2017.png",
+            };
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("<!doctype html><html><body style='font-family:sans-serif;padding:16px'>");
+
+            foreach (var relPath in imagesToDiagnose)
+            {
+                var imagePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    relPath.Replace('/', Path.DirectorySeparatorChar)
+                );
+                using var palasoImage = PalasoImage.FromFileRobustly(imagePath);
+                var bmp = palasoImage.Image as Bitmap;
+                if (bmp == null)
+                {
+                    sb.AppendLine($"<p><b>{Path.GetFileName(relPath)}</b>: not a Bitmap</p>");
+                    continue;
+                }
+                var buckets = ImageUtils.GetDominantColorBucketsForDiagnostics(bmp);
+                var result = ImageUtils.ShouldMakeBackgroundTransparent(palasoImage);
+                sb.AppendLine(
+                    $"<h2>{Path.GetFileName(relPath)} ({bmp.Width}×{bmp.Height}) — "
+                    + $"{buckets.Length} buckets — "
+                    + $"<span style='color:{(result ? "green" : "red")}'>"
+                    + $"{(result ? "LINE ART ✓" : "not line art")}</span></h2>"
+                );
+                sb.AppendLine("<div style='display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px'>");
+                foreach (var (color, count, isBackground) in buckets)
+                {
+                    var hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+                    var brightness = 0.299 * color.R + 0.587 * color.G + 0.114 * color.B;
+                    var textColor = brightness > 128 ? "#000" : "#fff";
+                    sb.AppendLine(
+                        $"<div style='text-align:center;font-size:11px;width:72px'>"
+                        + $"<div style='background:{hex};width:72px;height:72px;border:1px solid #999;"
+                        + $"display:flex;align-items:center;justify-content:center;"
+                        + $"color:{textColor};font-weight:bold'>{(isBackground ? "BG" : "INK")}</div>"
+                        + $"<div>{hex}</div>"
+                        + $"<div>{color.R},{color.G},{color.B}</div>"
+                        + $"<div>{count} px</div>"
+                        + $"</div>"
+                    );
+                }
+                sb.AppendLine("</div>");
+            }
+
+            sb.AppendLine("</body></html>");
+            var outPath = Path.Combine(Path.GetTempPath(), "LineArtDiagnostics.html");
+            File.WriteAllText(outPath, sb.ToString());
+            TestContext.Out.WriteLine($"Diagnostic output written to: {outPath}");
+        }
+#endif
 
         [Test]
         public void StripMetadataFromImageFile()
@@ -996,8 +1171,10 @@ namespace BloomTests.ImageProcessing
             // This test verifies that when source and destination folders are different,
             // the original file is never deleted.
 
-            using (var sourceFolder = new TemporaryFolder("SourceFolder"))
-            using (var destFolder = new TemporaryFolder("DestFolder"))
+            using (
+                var sourceFolder = new TemporaryFolder("ReallyCropImages_DifferentFolders_Source")
+            )
+            using (var destFolder = new TemporaryFolder("ReallyCropImages_DifferentFolders_Dest"))
             {
                 var imagePath = Path.Combine(sourceFolder.Path, "original.png");
                 var _pathToTestImages = "src\\BloomTests\\ImageProcessing\\images";
