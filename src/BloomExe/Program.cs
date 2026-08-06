@@ -356,9 +356,14 @@ namespace Bloom
                 {
                     if (IsLocalizationHarvestingLaunch(args))
                         LocalizationManager.IgnoreExistingEnglishTranslationFiles = true;
-                    else if (!IsPlainCollectionLaunch(args))
-                        // This allows us to debug things like  interpreting a URL.
-                        MessageBox.Show("Attach debugger now");
+                    // Commented out because it fired for ANY argument, not just the URL case it was
+                    // meant for. A Debug Bloom launched on a collection path then blocked forever on
+                    // a modal dialog, which no script or external tool can get past (and which looks
+                    // like a hang: alive, no window, no server). Uncomment if you need to attach
+                    // before Bloom interprets its arguments.
+                    //else
+                    //    // This allows us to debug things like  interpreting a URL.
+                    //    MessageBox.Show("Attach debugger now");
                 }
                 var harvest = Environment.GetEnvironmentVariable("HARVEST_FOR_LOCALIZATION");
                 if (
@@ -1301,23 +1306,6 @@ namespace Bloom
             return args.Length == 1
                 && args[0].StartsWith("--ha")
                 && "--harvest-for-localization".StartsWith(args[0]);
-        }
-
-        /// <summary>
-        /// True if the arguments are just "open this collection" (a .bloomCollection path, possibly
-        /// with switches), rather than something like a URL to interpret.
-        ///
-        /// This exists so the DEBUG-only "Attach debugger now" prompt does not fire for it. That
-        /// prompt is there to let a developer attach before Bloom interprets a URL, but it triggers
-        /// on ANY argument, so simply launching a Debug build on a chosen collection blocks forever
-        /// on a modal dialog. That makes it impossible to drive Bloom from a script or an external
-        /// tool (see BrandingPreviewApi) without a human clicking OK.
-        /// </summary>
-        private static bool IsPlainCollectionLaunch(string[] args)
-        {
-            var nonSwitches = args.Where(a => !a.StartsWith("-")).ToArray();
-            return nonSwitches.Length == 1
-                && nonSwitches[0].EndsWith(".bloomCollection", StringComparison.OrdinalIgnoreCase);
         }
 
         // I think this does something like the Wix element
