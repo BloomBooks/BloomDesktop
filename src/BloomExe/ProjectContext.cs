@@ -201,6 +201,7 @@ namespace Bloom
                                 typeof(WorkspaceTabSelection),
                                 typeof(CopyrightAndLicenseApi),
                                 typeof(ExternalApi),
+                                typeof(BrandingPreviewApi),
                                 typeof(PublishView),
                             }.Contains(t)
                         );
@@ -475,6 +476,7 @@ namespace Bloom
             _scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ExternalApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<BrandingPreviewApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<LoggerApi>().RegisterWithApiHandler(server.ApiHandler);
         }
 
