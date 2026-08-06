@@ -76,6 +76,17 @@ const legacyToolSubPathByToolId: Record<string, string> = {
     settingsTool: "settings/Settings.html",
 };
 
+// While Show Playback Order mode is on, the Talking Book tool covers the whole toolbox with a
+// translucent overlay at this z-index.
+// cf @disablingOverlayZindex in bookEdit/toolbox/talkingBook/audioRecording.less
+const kDisablingOverlayZIndex = 1001;
+
+// The tool headers have to clear that overlay, and also the handful of controls inside the tool
+// that opt out of it at one above it (the Help link, and the Show Playback Order switch in
+// talkingBookAdvancedSection.tsx). The offset lands on 1005, which is what the pre-6.4
+// "#toolbox h3" rule in toolbox.less used, so this stays a like-for-like restoration.
+const kToolboxHeaderZIndex = kDisablingOverlayZIndex + 4;
+
 const toolboxHeaderIconStyles = css`
     width: 16px;
     height: 16px;
@@ -816,6 +827,23 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     min-height: 32px;
                                     padding-left: 5px;
                                     padding-right: 12px;
+                                    // Keep the headers above the Talking Book tool's disabling
+                                    // overlay, so they neither look grayed out nor stop
+                                    // responding in Show Playback Order mode. Until 6.4 the
+                                    // "#toolbox h3" rule in toolbox.less did this; it stopped
+                                    // matching once the headers became MUI AccordionSummaries,
+                                    // which is BL-16630. Only works while no ancestor creates a
+                                    // stacking context -- a transform, filter, opacity or
+                                    // z-index on the Accordion, the Collapse or the tool-body
+                                    // host would trap it.
+                                    position: relative;
+                                    z-index: ${kToolboxHeaderZIndex};
+                                    // The header has to paint its own background for that to
+                                    // help. A collapsed header would otherwise be transparent
+                                    // and show the Accordion root's background, which stays
+                                    // under the overlay and so keeps being dimmed. Same colour
+                                    // the root uses, so nothing changes visually.
+                                    background-color: ${kBloomUnselectedTabBackground};
 
                                     & .MuiAccordionSummary-content {
                                         margin: 8px 0;
