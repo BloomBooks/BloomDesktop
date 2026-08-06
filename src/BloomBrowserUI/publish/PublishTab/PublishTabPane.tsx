@@ -115,6 +115,15 @@ export const PublishTabPane: React.FunctionComponent = () => {
     // unlock at exactly the moment the operation really finishes or is cancelled — not when the
     // browser guesses it has. See BL-16654.
     const navigationLocked = useWorkspaceTabInfo().navigationLocked;
+    // ...but only once a tool is actually showing. The lock exists to stop the user walking away
+    // from an operation in progress, and no operation can be in progress while the sentinel
+    // "no tool chosen yet" panel is up. That distinction matters because the lock is a shared
+    // flag other subsystems also set — e.g. the Copyright and License dialog, reachable from
+    // this tab's own "Missing Copyright" link, posts editView/setModalState, which locks. Without
+    // this guard, a lock still set while tabIndex is the sentinel would grey out every tool at
+    // once and leave the user no way to choose one at all.
+    const publishToolsLocked =
+        navigationLocked && tabIndex !== kWaitForUserToChooseTabIndex;
     const appBuilderFeatureStatus = useGetFeatureStatus("AppBuilder");
     const setup = () => {
         setTabIndex(kWaitForUserToChooseTabIndex);
@@ -250,7 +259,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                 // showing), the operation is modal: veto switching to another publish
                                 // tool until it finishes or is cancelled. The main workspace tabs are
                                 // locked from C# by the same flag.
-                                if (navigationLocked) {
+                                if (publishToolsLocked) {
                                     return false;
                                 }
                                 post("publish/switchingPublishMode");
@@ -340,7 +349,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                         // the operation belongs to stays looking normal, the same way
                                         // C# leaves the active workspace tab looking active.
                                         disabled={
-                                            navigationLocked &&
+                                            publishToolsLocked &&
                                             index !== tabIndex
                                         }
                                         className={
