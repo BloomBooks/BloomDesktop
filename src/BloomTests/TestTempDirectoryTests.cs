@@ -11,6 +11,10 @@ namespace BloomTests
     /// </summary>
     public class TestTempDirectoryTests
     {
+        /// <summary>
+        /// The redirect happened at all: this process's temp directory is our own run folder
+        /// rather than the machine-wide one that other runs also write to.
+        /// </summary>
         [Test]
         public void TempPath_IsARunFolderOfOurOwn_NotTheMachineTempFolder()
         {
@@ -45,6 +49,10 @@ namespace BloomTests
             return Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
         }
 
+        /// <summary>
+        /// The redirect reaches the code that matters: an ordinary fixed-name TemporaryFolder,
+        /// written exactly as the ~180 existing calls are, is created inside our run folder.
+        /// </summary>
         [Test]
         public void TemporaryFolderWithAFixedName_LandsInsideOurRunFolder()
         {

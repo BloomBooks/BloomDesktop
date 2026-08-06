@@ -49,6 +49,10 @@ public class TestTempDirectory
     /// <summary>The folder this run's temporary files live in.</summary>
     internal static string RunFolder => _runFolder;
 
+    /// <summary>
+    /// Points this process's temp directory at a folder of our own, before any fixture runs, and
+    /// takes the opportunity to clear out folders left by runs that died. NUnit calls this once.
+    /// </summary>
     [OneTimeSetUp]
     public void RedirectTempToAFolderOfOurOwn()
     {
@@ -65,6 +69,11 @@ public class TestTempDirectory
         RemoveFoldersLeftByRunsThatDiedBeforeCleaningUp(container);
     }
 
+    /// <summary>
+    /// Deletes this run's temp folder — and with it everything the run put in temp, since every
+    /// temp path the process computed descends from it. Kept instead of deleted when tests
+    /// failed, so their files can be examined. NUnit calls this once, at the end of the run.
+    /// </summary>
     [OneTimeTearDown]
     public void RemoveOurTempFolderUnlessSomethingFailed()
     {
