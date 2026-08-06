@@ -48,6 +48,11 @@ let bloomExit: { code: number | null; signal: NodeJS.Signals | null } | null =
 // instanceInfo and kill that too.
 let bloomServingPid: number | null = null;
 
+// How many times we will load the book preview looking for a render that is complete enough to
+// screenshot. More than one because the first request can catch Bloom still busy with the book;
+// bounded because a book whose image really is missing must fail, not retry forever.
+const MAX_PREVIEW_ATTEMPTS = 3;
+
 describe("All books", () => {
     let page: Page;
     // A second page dedicated to bloom-player captures, with its own fixed viewport, so that
@@ -144,10 +149,9 @@ describe("All books", () => {
         await setBranding(testCase.branding);
         await setTheme(testCase.theme);
         // Each of the calls above brings the book up to date, which rewrites the book's support
-        // files (basePage.css, previewMode.css, etc.) and triggers an async re-render. Give that a
-        // moment to settle so our book-preview/player requests below don't race the tail of a write
-        // (which Bloom logs and retries, but which stops a debugger set to break on the exception).
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // files (basePage.css, previewMode.css, etc.) and triggers an async re-render. We used to
+        // sleep a fixed second here to let that settle; saveScreenshot now waits for the preview to
+        // actually BE ready (and reloads it if it is not), which is both safer and no slower.
         const screenshotsDir = ensureDir(
             Path.join(testCase.bookFolder, "screenshots"),
         );
@@ -204,25 +208,94 @@ describe("All books", () => {
         await playerPage.goto("about:blank");
     }
 
+    // Load the book preview and wait until it is genuinely ready to screenshot — not merely
+    // present. This is the preview's counterpart to waitForActivePageReady() (see its comment): the
+    // things that otherwise render differently from run to run are the web fonts (text metrics and
+    // line breaking change the instant the real face arrives) and the images. Returns a list of
+    // problems with this render; empty means the page is good to capture.
+    async function loadPreviewAndWaitUntilReady(): Promise<string[]> {
+        await page.goto(`${bloomOrigin}/bloom/book-preview/index.htm`, {
+            waitUntil: "networkidle",
+        });
+        // Waiting for .bloom-page (not just body) is the real "content is in the DOM" signal: the
+        // first preview load right after a book is brought up to date can come back before Bloom
+        // has put the book in it.
+        const havePage = await page
+            .waitForSelector(".bloom-page", { timeout: 15000 })
+            .then(() => true)
+            .catch(() => false);
+        if (!havePage) return ["no .bloom-page ever appeared"];
+
+        return await page.evaluate(async () => {
+            const g = globalThis as any;
+            const doc = g.document;
+            await doc.fonts.ready;
+            const imgs = Array.from(doc.querySelectorAll("img")) as any[];
+            await Promise.all(
+                imgs.map((img: any) =>
+                    img.complete
+                        ? Promise.resolve()
+                        : new Promise((resolve) => {
+                              img.addEventListener("load", resolve, {
+                                  once: true,
+                              });
+                              img.addEventListener("error", resolve, {
+                                  once: true,
+                              });
+                          }),
+                ),
+            );
+            // Fonts/images are in; let layout settle for two frames before we capture.
+            await new Promise((resolve) =>
+                g.requestAnimationFrame(() => g.requestAnimationFrame(resolve)),
+            );
+
+            // Waiting above makes the capture DETERMINISTIC (it happens once the browser has
+            // finished trying) but not necessarily CORRECT: an image or font that ended in an error
+            // state is settled too. So report those, rather than screenshot a page that is missing
+            // its pictures or has fallen back to a substitute font. A finished <img> with a src but
+            // no intrinsic width did not load; Bloom then renders its alt text ("This image, X, is
+            // missing or was loading too slowly."), which is exactly the wrong render we must never
+            // accept. (That alt text is on every image, loaded or not, so its presence proves
+            // nothing — only naturalWidth does.)
+            const problems: string[] = [];
+            for (const img of imgs) {
+                const src = img.getAttribute("src");
+                if (src && img.naturalWidth === 0)
+                    problems.push(`image did not load: ${src}`);
+            }
+            for (const font of Array.from(doc.fonts) as any[]) {
+                // Include the weight/style: a family is several FontFaces, and knowing which one
+                // failed is the difference between "the font server is down" and "we asked for a
+                // bold that does not exist".
+                if (font.status === "error")
+                    problems.push(
+                        `font did not load: ${font.family} ${font.style} ${font.weight}`,
+                    );
+            }
+            return problems;
+        });
+    }
+
     async function saveScreenshot(imagePath: string) {
-        // The first preview load right after a book is brought up to date can occasionally come back
-        // before the book content is in the DOM (a cold-start race), which made the very first case
-        // time out waiting for the page. Retry the navigation until the book page is actually present,
-        // then screenshot. Waiting for .bloom-page (not just body) is also the real "content ready"
-        // signal we want before capturing.
-        for (let attempt = 0; ; attempt++) {
-            await page.goto(`${bloomOrigin}/bloom/book-preview/index.htm`, {
-                waitUntil: "networkidle",
-            });
-            const ready = await page
-                .waitForSelector(".bloom-page", { timeout: 15000 })
-                .then(() => true)
-                .catch(() => false);
-            if (ready) break;
-            if (attempt >= 2)
+        // A preview requested while Bloom is still finishing with the book (it has just been
+        // brought up to date, which rewrites its support files) can come back without the book in
+        // the DOM, or with its images unserved. Both are transient, and both produce a wrong
+        // screenshot rather than merely a late one, so reload until we get a good render. Failing
+        // after a bounded number of tries keeps a genuinely broken book from passing quietly.
+        for (let attempt = 1; ; attempt++) {
+            const problems = await loadPreviewAndWaitUntilReady();
+            if (problems.length === 0) break;
+            if (attempt >= MAX_PREVIEW_ATTEMPTS)
                 throw new Error(
-                    "book-preview never rendered a .bloom-page after 3 attempts",
+                    `The book preview never rendered correctly (${MAX_PREVIEW_ATTEMPTS} attempts). ` +
+                        `The last attempt had these problems:\n  ${problems.join("\n  ")}`,
                 );
+            console.log(
+                chalk.yellow(
+                    `book-preview attempt ${attempt} was not usable (${problems.join("; ")}); reloading.`,
+                ),
+            );
         }
 
         // Capture the body element rather than the whole page. A full-page capture's height comes
