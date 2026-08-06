@@ -33,6 +33,12 @@ namespace BloomTests.WebLibraryIntegration
     /// being unrestricted. That is a poor thing to block a PR on, while the behavior they pin
     /// changes only when someone upgrades the AWS SDK - rare, deliberate, and caught by the next
     /// nightly well before it could ship.
+    ///
+    /// Note that nothing in this repository acts on the Nightly category - do not go looking for
+    /// it in Bloom.proj and conclude the attribute is dead. The PR build excludes it by passing
+    /// the category name in excludedCategories, which is configured on the build server, so that
+    /// it keeps working if we ever move the PR build off TeamCity. The nightly does not pass it,
+    /// which is what makes these run there.
     /// </summary>
     [TestFixture]
     [Category("Nightly")]

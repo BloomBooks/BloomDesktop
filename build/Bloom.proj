@@ -225,14 +225,9 @@
 	       additionally always wants SkipOnTeamCity, so add it there rather than making the build
 	       configuration repeat it. Note the name must differ from excludedCategories by more
 	       than case: MSBuild property names are case insensitive, so a property "ExcludedCategories"
-	       reading "$(excludedCategories)" would be reading itself.
-	       Nightly is the other one TeamCity always wants left out, for the same reason: tests
-	       that are sound but too slow, or too dependent on the agent's load or network, to be
-	       worth gating a PR on. Note this is NOT the same as SkipOnTeamCity, which the nightly
-	       excludes too and so means "developer machines only"; the nightly passes only that name,
-	       so Nightly tests do still run there, daily. -->
+	       reading "$(excludedCategories)" would be reading itself. -->
       <CategoriesToExclude>$(excludedCategories)</CategoriesToExclude>
-      <CategoriesToExclude Condition="'$(teamcity_version)' != ''">SkipOnTeamCity;Nightly;$(excludedCategories)</CategoriesToExclude>
+      <CategoriesToExclude Condition="'$(teamcity_version)' != ''">SkipOnTeamCity;$(excludedCategories)</CategoriesToExclude>
     </PropertyGroup>
     <!-- A comma would survive as part of a category name and yield "TestCategory!=A,B", which
 	     matches nothing and so silently excludes nothing, running a suite nobody asked for. Only
