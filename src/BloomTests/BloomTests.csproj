@@ -21,7 +21,7 @@
 		<IsTestProject>true</IsTestProject>
 		<Platforms>x64;ARM64</Platforms>
 		<!-- Gives `dotnet test <this project>` and the IDE test runners a default filter that
-		     leaves out the Integration category; see BloomTests.runsettings for why.
+		     leaves out the Integration and Nightly categories; see BloomTests.runsettings for why.
 
 		     The condition is what makes opting back in possible. VSTest ANDs a runsettings
 		     TestCaseFilter with any filter given on the command line (it does not replace it),

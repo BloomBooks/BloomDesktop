@@ -178,10 +178,13 @@ jobs:
             # (reserved for the long tests only the nightly should pay for) are both left out. The
             # nightly is where those run.
             #
-            # The %3B are escaped semicolons, and they are load-bearing: a raw semicolon here would
-            # be eaten by pwsh as a statement separator and then split by MSBuild into separate
-            # /p: assignments, either of which silently reduces the list to "Integration". See the
-            # comment on CategoriesToExclude in Bloom.proj.
+            # The %3B are escaped semicolons, and they are load-bearing: a raw semicolon would
+            # break this step. pwsh reads it as a statement separator, so only "Integration" would
+            # reach msbuild and the rest would be run as a command (which fails the step, since
+            # Actions sets $ErrorActionPreference = 'stop' for pwsh); and a semicolon that did
+            # arrive intact would be split by MSBuild into separate /p: assignments, failing with
+            # "MSB1006: Property is not valid". Both are loud, but neither runs any tests. See the
+            # comment on CategoriesToExclude in Bloom.proj for the two forms that do work.
             - name: Run C# tests
               id: csharp_tests
               working-directory: build
