@@ -36,6 +36,50 @@ ships:
 2. else if a husky hook exists in `.git/hooks/pre-commit` → run that;
 3. else → **fail loudly** with instructions, instead of skipping silently.
 
+## What the vite-plus hook runs
+
+Routing aside, `src/BloomBrowserUI/.vite-hooks/pre-commit` runs three groups of checks,
+and the thing worth knowing before editing it is that they have deliberately different
+reach:
+
+- **Formatting** — `pretty-quick`, on **every commit, whatever it touches**. Despite living
+  in the front-end folder, it is not scoped to it: `pretty-quick --staged` resolves the git
+  root and formats every staged file prettier understands anywhere in the tree, filtered by
+  `.prettierignore`. That is why the repo root has its own `.prettierignore`. The hook still
+  runs it from `src/BloomBrowserUI`, because that is what applies *both* ignore files —
+  including the front-end one that keeps prettier off vendored third-party code.
+- **Lint and typecheck** — `lint-staged` (eslint) and a whole-project typecheck, **only when
+  the commit stages a front-end source file** (`.ts`/`.tsx`/`.mts`/`.cts` and, since the
+  tsconfig sets `allowJs`, `.js`/`.jsx`/`.mjs`/`.cjs` under `src/BloomBrowserUI/`), **or one
+  of the four config files that change what the typecheck means** — `tsconfig.json`, and
+  `package.json` / `pnpm-lock.yaml` / `pnpm-workspace.yaml`, which decide the typings
+  everything resolves against. These two tools genuinely are confined to that directory, so a
+  commit of only workflows, docs or C# gives them nothing to do.
+- **C#** — the `build/check-csharp-*.sh` scripts and `build/run-csharpier.sh`. Every commit;
+  they need only dotnet, never the front-end dependencies.
+
+**Committing without `pnpm install`.** A worktree used only for workflow, docs or C# work can
+commit without ever installing the front-end dependencies. Formatting still happens there: if
+`node_modules` is absent the hook falls back to `pnpm dlx` at the exact prettier and
+pretty-quick versions pinned in `package.json` (read from the file, so the fallback cannot
+drift from what the project uses). An installed worktree always prefers its own
+lockfile-verified binaries, so the normal case needs no network and works offline.
+
+**Nothing here is skippable.** That fallback removes the need for the install; it does not make
+the checks optional. A check that cannot run **blocks the commit**, and says which fix it
+wants:
+
+- Front-end sources staged with no `node_modules` → blocked. There is no fallback for this
+  case and there cannot easily be one: eslint and tsgo need the project's whole dependency
+  graph, not a single tool.
+- Formatting unable to run at all — no `node_modules` *and* no working `pnpm dlx` (no pnpm on
+  PATH, no network on the first use) → blocked. That is a setup problem, and a setup problem
+  should be fixed rather than worked around.
+
+So the only skip in the whole design is the deliberate one: lint and typecheck do not run when
+the commit stages nothing they could look at. That is not the silent skip this dispatcher
+exists to prevent — that one is "a hook system was configured but nothing ran".
+
 ## How to enable it (per clone)
 
 `core.hooksPath` is git config, not a tracked file, so each clone sets it once:
