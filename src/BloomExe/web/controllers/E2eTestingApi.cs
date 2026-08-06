@@ -1,20 +1,28 @@
+using System;
+using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.SubscriptionAndFeatures;
+using Newtonsoft.Json.Linq;
+using SIL.IO;
 using SIL.Progress;
 
 namespace Bloom.web.controllers
 {
     /// <summary>
     /// A collection of endpoints that exist ONLY to support end-to-end / visual-regression
-    /// testing (see src/BloomVisualRegressionTests). They deliberately let a test do things that
-    /// no real user should be able to do, so they are registered ONLY when Bloom is launched in
+    /// testing (see src/BloomVisualRegressionTests) and the external branding survey tool
+    /// (https://github.com/BloomBooks/branding-viewer). They deliberately let a caller do things
+    /// that no real user should be able to do, so they are registered ONLY when Bloom is launched in
     /// e2e test mode (the --e2e flag; see Program.RunningE2eTests and ProjectContext). A normal run
     /// never exposes them, in any build configuration. (These used to be compiled into DEBUG builds
-    /// only, but CI runs the e2e suite against Release builds, so the guard is now at runtime.)
+    /// only, but CI runs the e2e suite against Release builds, so the guard is now at runtime. The
+    /// branding viewer depends on that too: it drives whatever Bloom a tester has installed, which
+    /// is a Release build from CI.)
     /// </summary>
     public class E2eTestingApi
     {
@@ -24,18 +32,21 @@ namespace Bloom.web.controllers
         private readonly BookSelection _bookSelection;
         private readonly PublishApi _publishApi;
         private readonly CollectionModel _collectionModel;
+        private readonly XMatterPackFinder _xmatterPackFinder;
 
         public E2eTestingApi(
             CollectionSettings collectionSettings,
             BookSelection bookSelection,
             PublishApi publishApi,
-            CollectionModel collectionModel
+            CollectionModel collectionModel,
+            XMatterPackFinder xmatterPackFinder
         )
         {
             _collectionSettings = collectionSettings;
             _bookSelection = bookSelection;
             _publishApi = publishApi;
             _collectionModel = collectionModel;
+            _xmatterPackFinder = xmatterPackFinder;
         }
 
         /// <summary>
@@ -85,6 +96,23 @@ namespace Bloom.web.controllers
                 request => IsCollectionReady(),
                 null, // read only
                 false // does not need the UI thread
+            );
+
+            // POST JSON {"branding":..,"layout":..,"xmatter":..}; any field omitted or null leaves
+            // that axis alone. Sets all three in ONE call so a survey walks the
+            // branding x layout x xmatter matrix with a single book-update per cell instead of
+            // three. Must run on the UI thread because bringing the book up to date shows a dialog.
+            apiHandler.RegisterEndpointHandler(kApiUrlPart + "setState", HandleSetState, true);
+
+            // GET returns everything a survey tool needs to build its axes, so it does not need a
+            // BloomDesktop checkout to know what exists. This is the whole reason the branding
+            // viewer can live in its own repo and ship as a standalone exe: the running Bloom is
+            // the source of truth for which brandings/layouts/xmatter packs THIS build has.
+            // Read-only; safe off the UI thread.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "surveyOptions",
+                HandleSurveyOptions,
+                false
             );
         }
 
@@ -162,6 +190,128 @@ namespace Bloom.web.controllers
                 book.BringBookUpToDate(new NullProgress());
 
             request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Set any combination of branding, layout and xmatter on the current collection/book, then
+        /// bring the book up to date once so the render reflects all of them together.
+        ///
+        /// Unlike the other handlers here, this one catches its own exceptions and reports them
+        /// through request.Failed(). A survey walks hundreds of cells and some combinations are
+        /// genuinely invalid (a branding whose xmatter the collection does not offer, a layout the
+        /// book's stylesheets do not support). One bad cell must not take Bloom down or wedge the
+        /// run: the caller logs the message and moves to the next cell. NOTE: request.Failed() puts
+        /// the text in the HTTP status reason phrase (response.statusText), not the body.
+        /// </summary>
+        private void HandleSetState(ApiRequest request)
+        {
+            string branding = null,
+                layout = null,
+                xmatter = null;
+            try
+            {
+                // Parse inside the try: a malformed body is exactly the sort of single-cell
+                // failure this method is meant to absorb and report.
+                var body = request.RequiredPostString();
+                var o = JObject.Parse(body);
+                branding = (string)o["branding"];
+                layout = (string)o["layout"];
+                xmatter = (string)o["xmatter"];
+
+                if (!string.IsNullOrEmpty(branding))
+                    _collectionSettings.Subscription = MakeSubscriptionForBranding(branding);
+                if (!string.IsNullOrEmpty(xmatter))
+                    _collectionSettings.XMatterPackName = xmatter;
+
+                // As in HandleSetBranding, we update the selected book in place rather than going
+                // through CollectionModel.BringBookUpToDate(), which deselects and reselects and so
+                // leaves CurrentBook null for a window in which an in-flight book-preview image
+                // request would throw. There is nothing to update if no book is selected.
+                var book = _bookSelection.CurrentSelection;
+                if (book != null)
+                {
+                    if (!string.IsNullOrEmpty(layout))
+                        book.SetLayout(
+                            new Layout
+                            {
+                                SizeAndOrientation = SizeAndOrientation.FromString(layout),
+                            }
+                        );
+                    book.BringBookUpToDate(new NullProgress());
+                }
+
+                request.PostSucceeded();
+            }
+            catch (Exception ex)
+            {
+                request.Failed(
+                    $"setState (branding='{branding}', layout='{layout}', xmatter='{xmatter}') failed: {ex.GetType().Name}: {ex.Message}"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Report the axes a survey can vary on THIS build, plus the current state and the selected
+        /// book, so an external tool needs no BloomDesktop source tree.
+        /// </summary>
+        private void HandleSurveyOptions(ApiRequest request)
+        {
+            var book = _bookSelection.CurrentSelection;
+
+            // Layout choices come from the selected book's own stylesheets, so they are the layouts
+            // that book actually supports rather than a hard-coded list.
+            var layouts =
+                book == null
+                    ? new string[0]
+                    : book.GetSizeAndOrientationChoices()
+                        .Select(l => l.SizeAndOrientation.ToString())
+                        .OrderBy(s => s)
+                        .ToArray();
+
+            var xmatterKeyForcedByBranding =
+                _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
+
+            request.ReplyWithJson(
+                new
+                {
+                    // The tool keys its capability check off this: a Bloom built before these
+                    // endpoints existed 404s, and one that answers is new enough to survey.
+                    bloomVersion = Application.ProductVersion,
+                    brandings = GetAvailableBrandingKeys(),
+                    layouts,
+                    xmatterOfferings = _xmatterPackFinder
+                        .GetXMattersToOfferInSettings(xmatterKeyForcedByBranding)
+                        .Select(p => p.Key)
+                        .ToArray(),
+                    current = new
+                    {
+                        branding = _collectionSettings.Subscription.Descriptor,
+                        layout = book?.GetLayout().SizeAndOrientation.ToString(),
+                        xmatter = _collectionSettings.XMatterPackName,
+                    },
+                    book = book == null
+                        ? null
+                        : new { path = book.FolderPath, title = book.TitleBestForUserDisplay },
+                }
+            );
+        }
+
+        /// <summary>
+        /// The branding keys this build ships, read from the distribution's branding folder. A
+        /// branding is a folder containing branding.json; "source" subfolders hold artwork sources
+        /// and are not brandings.
+        /// </summary>
+        private static string[] GetAvailableBrandingKeys()
+        {
+            var brandingRoot = BloomFileLocator.GetOptionalBrowserDirectory("branding");
+            if (string.IsNullOrEmpty(brandingRoot) || !Directory.Exists(brandingRoot))
+                return new string[0];
+            return Directory
+                .GetDirectories(brandingRoot)
+                .Where(d => RobustFile.Exists(Path.Combine(d, "branding.json")))
+                .Select(Path.GetFileName)
+                .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
         }
 
         /// <summary>
