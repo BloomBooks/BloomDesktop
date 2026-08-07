@@ -11,11 +11,23 @@ namespace BloomTests.CLI
     [TestFixture]
     public class CreateArtifactsCommandTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            // Program.Main sets this for a real command-line run, before it dispatches to the verb. These
+            // tests call HandleInternal directly and so bypass Main, which means they have to stand in for
+            // it — exactly as TearDown below already does for RunningHarvesterMode. ApplicationContainer
+            // reads this flag to know there is no GUI application whose exit it should listen for; without
+            // it set, the container tears itself down mid-run and the epub step fails (BL-16668).
+            Program.RunningInConsoleMode = true;
+        }
+
         [TearDown]
         public void TearDown()
         {
             // Without this, subsequent tests will fail because they think the harvester is still running.
             Program.RunningHarvesterMode = false;
+            Program.RunningInConsoleMode = false;
         }
 
         [Test]
