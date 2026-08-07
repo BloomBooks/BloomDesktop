@@ -160,8 +160,23 @@ if (typeof window !== "undefined") {
 
     // Watch for urls built out of a JavaScript value that wasn't ready. Installed here because
     // every bundle's root module imports this file, which is exactly the coverage we want: the
-    // bug can be in any of our pages, and the server can't tell us which one. See BL-16577.
-    installUndefinedUrlDetector(reportError);
+    // bug can be in any of our pages, and the server can't tell us which one. See BL-16666.
+    installUndefinedUrlDetector((message, error) => {
+        // Source-map the stack the same way we do for unhandled errors above. Without this the
+        // report points into a bundle, which would defeat the purpose: the only reason to catch
+        // these in the browser at all is to name the line of *our* source that built the url.
+        // Unlike window.onerror we don't send a preliminary unmapped report first - nothing is
+        // about to crash and take the mapping with it, and these are diagnostics we deliberately
+        // keep quiet, so one report per problem is enough.
+        StackTrace.fromError(error)
+            .then((stackframes) =>
+                reportError(
+                    message,
+                    stackframes.map((sf) => sf.toString()).join("\n"),
+                ),
+            )
+            .catch(() => reportError(message, error.stack));
+    });
 }
 
 // Saving this as it MIGHT be useful if we decide to have another go at catching

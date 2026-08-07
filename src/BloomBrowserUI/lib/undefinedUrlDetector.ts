@@ -58,7 +58,12 @@ export function describeBadUrl(url: unknown, whereItWasSet: string): string {
     );
 }
 
-type Reporter = (message: string, stack: string | undefined) => void;
+/**
+ * Takes the Error rather than its stack text, so the caller can source-map it. A raw stack points
+ * into a bundle, which is close to useless for a feature whose whole job is to name a line of our
+ * source. errorHandler does that mapping, since it already owns it for window.onerror.
+ */
+type Reporter = (message: string, error: Error) => void;
 
 let installed = false;
 
@@ -92,7 +97,7 @@ export function installUndefinedUrlDetector(report: Reporter): void {
             return;
         alreadyReported.add(message);
         // The stack of *this* call is the whole point: it names the line that built the url.
-        report(message, new Error().stack);
+        report(message, new Error(message));
     };
 
     guardSrcProperty(window.HTMLImageElement, "an image's src", check);
