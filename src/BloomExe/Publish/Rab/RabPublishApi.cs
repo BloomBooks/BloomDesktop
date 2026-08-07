@@ -33,11 +33,12 @@ namespace Bloom.Publish.Rab
         /// of a prepare/build/install action. While an action runs — i.e. while its Cancel button is
         /// showing — the operation is modal: the user cannot navigate to another workspace tab until
         /// it finishes or is cancelled. Mirrors how a BloomLibrary upload locks the tabs (see
-        /// LibraryPublishApi.SetParentControlsState). The publish-tool switcher on the Publish tab is
-        /// blocked separately on the React side (PublishTabPane).
-        /// Note that SetTabsEnabled is a single shared flag, so if an upload and an Apps action ever
-        /// overlap, whichever finishes first unlocks the tabs for both; making the lock compose across
-        /// its several independent users is BL-16654.
+        /// LibraryPublishApi.SetParentControlsState). The switcher between publish tools on the
+        /// Publish tab follows the same lock: WorkspaceView reports it to the browser as
+        /// "navigationLocked" and PublishTabPane disables the other tools while it is set (BL-16654).
+        /// SetTabsEnabled remains a single shared flag rather than a count, deliberately: now that the
+        /// publish-tool switcher is locked too, the user cannot start a second publish operation while
+        /// one is running, so two of them can no longer overlap and race to unlock the tabs.
         /// </summary>
         private void SetWorkspaceTabsEnabled(bool enable)
         {
