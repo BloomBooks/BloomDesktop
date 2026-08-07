@@ -1,5 +1,6 @@
 import * as StackTrace from "stacktrace-js";
 import Axios from "axios";
+import { installUndefinedUrlDetector } from "./undefinedUrlDetector";
 
 // This file implements custom Bloom global error handling.
 // It should be imported by the root module in each bundle.
@@ -156,6 +157,11 @@ if (typeof window !== "undefined") {
         });
         return true; // suppress normal handling.
     };
+
+    // Watch for urls built out of a JavaScript value that wasn't ready. Installed here because
+    // every bundle's root module imports this file, which is exactly the coverage we want: the
+    // bug can be in any of our pages, and the server can't tell us which one. See BL-16577.
+    installUndefinedUrlDetector(reportError);
 }
 
 // Saving this as it MIGHT be useful if we decide to have another go at catching

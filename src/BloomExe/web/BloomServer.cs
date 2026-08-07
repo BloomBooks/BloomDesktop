@@ -1427,7 +1427,11 @@ namespace Bloom.Api
             {
                 if (ShouldReportFailedRequest(info, CurrentBook?.FolderPath))
                 {
-                    ReportMissingFile(localPath, path);
+                    ReportMissingFile(
+                        localPath,
+                        path,
+                        GetJavascriptValueDiagnostics(info, localPath)
+                    );
                 }
                 return false; // from here we head off to BloomServer.MakeReply() which now uses the same ShouldReportFailedRequest() method.
             }
@@ -1441,7 +1445,11 @@ namespace Bloom.Api
             return path.EndsWith($".{AudioRecording.kRecordableExtension}");
         }
 
-        private static void ReportMissingFile(string localPath, string path)
+        private static void ReportMissingFile(
+            string localPath,
+            string path,
+            string extraDiagnostics = ""
+        )
         {
             if (path == null)
             {
@@ -1472,9 +1480,10 @@ namespace Bloom.Api
                     "Cannot Find Image File"
                 );
                 var detailMsg = String.Format(
-                    "Server could not find the image file {0}. LocalPath was {1}{2}",
+                    "Server could not find the image file {0}. LocalPath was {1}{2}{3}",
                     path,
                     localPath,
+                    extraDiagnostics,
                     Environment.NewLine
                 );
                 NonFatalProblem.Report(ModalIf.None, PassiveIf.All, userMsg, detailMsg);
@@ -1487,13 +1496,52 @@ namespace Bloom.Api
                     "Cannot Find File"
                 );
                 var detailMsg = String.Format(
-                    "Server could not find the file {0}. LocalPath was {1}{2}",
+                    "Server could not find the file {0}. LocalPath was {1}{2}{3}",
                     path,
                     localPath,
+                    extraDiagnostics,
                     Environment.NewLine
                 );
                 NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, userMsg, detailMsg);
             }
+        }
+
+        /// <summary>
+        /// True if any part of the requested path is literally "undefined", "null" or "NaN" - what a
+        /// JavaScript value of that kind becomes when something puts it into a url without checking.
+        /// No real file is named any of those, so such a request is always a front-end bug rather
+        /// than a genuinely missing file. See BL-16577, and BL-16447 for one instance we have fixed.
+        /// </summary>
+        internal static bool LooksLikeAJavascriptValueInAUrl(string localPath)
+        {
+            if (String.IsNullOrEmpty(localPath))
+                return false;
+            foreach (var segment in localPath.Split('/', '\\'))
+            {
+                // Not case-insensitive: JavaScript produces exactly these spellings, and being
+                // strict keeps us from flagging a book or file someone really did call "Undefined".
+                if (segment == "undefined" || segment == "null" || segment == "NaN")
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// The extra detail we attach when the request looks like the JavaScript-value bug above.
+        /// The referrer is the whole point: it names the page that issued the bogus request, which
+        /// is what lets us find the code responsible. See BL-16577.
+        /// </summary>
+        private static string GetJavascriptValueDiagnostics(IRequestInfo info, string localPath)
+        {
+            if (!LooksLikeAJavascriptValueInAUrl(localPath))
+                return "";
+            return String.Format(
+                "{0}Part of this path is a JavaScript value turned into text, so some of our front-end code built a url out of something it did not have yet."
+                    + " The page that asked for it was {1}. The raw url was {2}.",
+                Environment.NewLine,
+                String.IsNullOrEmpty(info.Referer) ? "(the browser did not say)" : info.Referer,
+                info.RawUrl
+            );
         }
 
         private static bool IsSimulatedFileUrl(string localPath)
@@ -2162,7 +2210,12 @@ namespace Bloom.Api
         private void ReportMissingFile(IRequestInfo info)
         {
             var localPath = GetLocalPathWithoutQuery(info);
-            Logger.WriteEvent("**{0}: File Missing: {1}", GetType().Name, localPath);
+            Logger.WriteEvent(
+                "**{0}: File Missing: {1}{2}",
+                GetType().Name,
+                localPath,
+                GetJavascriptValueDiagnostics(info, localPath)
+            );
         }
 
         /// <summary>
@@ -2187,6 +2240,13 @@ namespace Bloom.Api
                 return false;
 
             var localPath = GetLocalPathWithoutQuery(info);
+
+            // A path containing "undefined"/"null"/"NaN" is one of our own bugs, never a file the
+            // user is responsible for, so none of the suppressions below should hide it - and the
+            // book-folder one in particular was hiding most of them, since a bogus url built by a
+            // book page resolves inside that book's folder. See BL-16577.
+            if (LooksLikeAJavascriptValueInAUrl(localPath))
+                return true;
             var localFolderTestPath = localPath;
             // We don't need even a toast for missing files in the book folder. That's the user's problem
             // and should be adequately documented by the browser message saying the file is missing.

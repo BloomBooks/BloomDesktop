@@ -25,10 +25,12 @@ namespace Bloom.Api
             string url,
             HttpMethods httpMethod = HttpMethods.Get,
             bool forPrinting = false,
-            bool forSrcAttr = false
+            bool forSrcAttr = false,
+            string referer = null
         )
         {
             HttpMethod = httpMethod;
+            Referer = referer;
             if (forPrinting)
                 url = url.Replace("/bloom/", "/bloom/OriginalImages/");
 
@@ -46,6 +48,11 @@ namespace Bloom.Api
         }
 
         public string LocalPathWithoutQuery { get; set; }
+
+        /// <summary>
+        /// The url of the document that made the request, as the constructor was told it.
+        /// </summary>
+        public string Referer { get; }
 
         public string RequestContentType { get; }
         public string ResponseContentType { private get; set; }
