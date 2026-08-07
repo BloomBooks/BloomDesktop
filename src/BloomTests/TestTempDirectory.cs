@@ -136,8 +136,11 @@ public class TestTempDirectory
             return $"Its contents could not even be listed: {e.Message}";
         }
 
-        // Whatever refuses to open exclusively is almost always the thing holding the folder, so
-        // report the first one of those along with what the OS said about it.
+        // Whatever refuses to open exclusively is almost always what is holding the folder, so
+        // report the first such file with whatever the OS said about it. Deliberately not
+        // claiming the file is "in use": the commonest cause is another handle on it, but a
+        // read-only file or a permissions problem lands here too, and the OS message is what
+        // tells the two apart.
         foreach (var file in files)
         {
             try
@@ -146,7 +149,7 @@ public class TestTempDirectory
             }
             catch (Exception e)
             {
-                return $"{files.Length} file(s) remain; at least this one is still in use: {file} -- {e.Message}";
+                return $"{files.Length} file(s) remain; this one could not be opened, which is usually what stops the delete: {file} -- {e.Message}";
             }
         }
 

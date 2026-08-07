@@ -63,11 +63,11 @@ namespace BloomTests
                 var innocentPath = Path.Combine(folder.FolderPath, "closed-properly.txt");
                 File.WriteAllText(innocentPath, "contents");
 
-                // Sanity check: with nothing holding either file, there is no lock to report.
+                // Sanity check: with nothing holding either file, no file should be singled out.
                 Assert.That(
                     TestTempDirectory.DescribeWhyFolderCouldNotBeDeleted(folder.FolderPath),
-                    Does.Not.Contain("still in use"),
-                    "Setup sanity check: neither file is open yet, so nothing should be reported as in use."
+                    Does.Not.Contain("could not be opened"),
+                    "Setup sanity check: neither file is open yet, so none should be blamed."
                 );
 
                 using (File.Open(lockedPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
