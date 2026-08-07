@@ -2780,6 +2780,14 @@ export class CanvasElementManager {
             Comical.update(containerElement);
         }
 
+        // The qtip bubbles belonging to things inside this canvas element (source bubbles, hint
+        // bubbles, and in particular the "Choose topic" link on a data-derived="topic" field)
+        // are not children of it; they live in the page scaling container. So removing the
+        // canvas element would leave them behind until the page is reloaded. Destroy them now,
+        // while the divs they are attached to still exist. This is scoped to this canvas
+        // element, so other canvas elements (e.g., a second topic field) keep their bubbles.
+        BloomSourceBubbles.removeSourceBubbles(textOverPicDiv);
+
         Comical.deleteBubbleFromFamily(textOverPicDiv, containerElement);
 
         // Update UI and make sure things get redrawn correctly.
