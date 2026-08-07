@@ -107,7 +107,7 @@ namespace Bloom.Book
         void CaptureInitialStateForMigration();
         void RestoreStuffBeforeMigration();
         void MigrateMaintenanceLevels();
-        void MigrateToMediaLevel1ShrinkLargeImages();
+        void MigrateToMediaLevel1ShrinkLargeImages(IProgress progress = null);
         void MigrateToLevel2RemoveTransparentComicalSvgs();
         void MigrateToLevel3PutImgFirst();
 
@@ -4041,27 +4041,53 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// Set when an attempt to shrink this book's images failed, so that we do not repeat the whole
+        /// slow attempt a moment later in the same pass: Book.EnsureUpToDate calls the migration twice,
+        /// once by way of EnsureUpToDateMemory and once directly afterwards, and the second call used to
+        /// be a no-op only because the first had already bumped mediaMaintenanceLevel. The level itself
+        /// deliberately stays at 0, so the shrink is still retried the next time this book is loaded and
+        /// brought up to date -- we just do not do it twice over, and fail twice, in one pass.
+        /// </summary>
+        private bool _mediaLevel1ShrinkFailed;
+
+        /// <summary>
         /// In very old books (before 4.9) we did not shrink even very large images before adding them to
         /// books. When we encounter such a book, we go ahead and shrink them. This is probably less
         /// necessary than in Gecko days, when super-large images were prone to make Bloom run out of
         /// memory. However, it is still helpful for performance and reducing published file sizes.
         /// Does nothing if mediaMaintenanceLevel indicates it has already been done.
         /// </summary>
-        public void MigrateToMediaLevel1ShrinkLargeImages()
+        /// <param name="progress">Where to report the (potentially very slow) shrinking, so the user
+        /// can see why we are busy. It is used whenever it is somewhere real to report, and also
+        /// whenever we could not put up a dialog even if we wanted to: off the UI thread, headless,
+        /// or under test. Only when we are on the UI thread AND all the caller gave us is a
+        /// NullProgress (or nothing) do we put up our own dialog instead and leave this unused --
+        /// see the branch below. Passing nothing is equivalent to passing a NullProgress; in
+        /// practice only tests do, since Book.EnsureUpToDate substitutes one for a null.</param>
+        public void MigrateToMediaLevel1ShrinkLargeImages(IProgress progress = null)
         {
             var levelString = Dom.GetMetaValue("mediaMaintenanceLevel", "0");
             if (!int.TryParse(levelString, out int level))
                 level = 0;
-            if (level >= 1)
+            if (level >= 1 || _mediaLevel1ShrinkFailed)
                 return;
+            var success = true;
             if (ImageUtils.NeedToShrinkImages(FolderPath))
             {
                 // If the book contains overlarge images, we want to fix those before editing because this can lead
                 // to thumbnails not being created properly and other bad behavior.  This is a one-time fix that can
-                // permanently change the images in the original book folder.  If any images must be shrunk, then a
-                // progress dialog pops up because that can be a very slow process.  If nothing needs to be done,
-                // nothing will appear on the screen, and it usually takes a small fraction of a second to determine
-                // this.
+                // permanently change the images in the original book folder.  Shrinking can be very slow, so we
+                // always report it somewhere -- but which way round depends on the thread we are on, because
+                // WinForms only allows a Form to be created on the UI thread.  Creating it anywhere else was the
+                // bug behind BL-16646.
+                //   - Already off the UI thread: the caller got here from something that is itself reporting
+                //     progress (a progress dialog's background worker, or a websocket progress), so we hand our
+                //     messages to the progress it passed us and add no window of our own.
+                //   - On the UI thread: there is no such progress to borrow, and doing the work inline would
+                //     freeze Bloom for the duration, so we put up our own dialog, which runs the work on a
+                //     background worker and keeps the UI alive.
+                // If nothing needs shrinking, nothing is reported at all, and it usually takes a small fraction
+                // of a second to determine that.
 
                 // Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
                 // order to avoid out of memory errors that can happen with really large images.
@@ -4073,33 +4099,136 @@ namespace Bloom.Book
                 // This update can be very slow, so encourage the user that something is happening.
                 // NO images should have transparency removed.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8846.
 
-                if (Program.RunningUnitTests)
+                // A NullProgress reports nowhere, so having one is the same as having none: it is
+                // what a caller passes when it has no way to show the user anything. Anything else
+                // is somewhere real to report, and we should use it rather than opening a window
+                // over the top of whatever the caller is already showing.
+                //
+                // Note the invariant this puts on such a caller: taking the caller's progress also
+                // means doing the shrinking synchronously on the caller's thread, so a caller that
+                // is on the UI thread needs a progress that pumps messages, or Bloom will be frozen
+                // for the whole (potentially minutes-long) shrink. Today the only UI-thread caller
+                // with a real progress is CollectionModel.BringBookUpToDate ("Update Book"), which
+                // is safe on both counts: ProgressDialogForeground runs all of BringBookUpToDate on
+                // the UI thread anyway, and its MultiProgress includes an ApplicationDoEventsProgress
+                // that pumps on every message. A future UI-thread caller passing a progress that does
+                // not pump would need the dialog branch below instead.
+                var haveSomewhereToReport = progress != null && !(progress is NullProgress);
+                var shell = Shell.GetShellOrOtherOpenForm();
+                // shell is null when no window is open at all -- the bulk-upload and hydrate CLI
+                // commands. There is nothing to show a dialog on and no thread affinity to respect,
+                // so use the caller's progress like any other off-the-UI-thread case.  NullProgress
+                // is used if the caller did not pass one.
+                if (
+                    Program.RunningUnitTests
+                    || haveSomewhereToReport
+                    || shell == null
+                    || shell.InvokeRequired
+                )
                 {
-                    // TeamCity enforces not showing modal dialogs during unit tests on Windows 10.
-                    ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                        FolderPath,
-                        new List<string>(),
-                        new NullProgress()
-                    );
+                    if (progress == null)
+                        progress = new NullProgress();
+                    try
+                    {
+                        ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                            FolderPath,
+                            new List<string>(),
+                            progress
+                        );
+                    }
+                    catch (Exception e)
+                    {
+                        ReportShrinkFailure(e, progress);
+                        success = false;
+                    }
                 }
                 else
                 {
-                    using (var dlg = new ProgressDialogBackground())
-                    {
-                        dlg.Text = "Updating Image Files";
-                        dlg.ShowAndDoWork(
-                            (progress, args) =>
-                                ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                                    FolderPath,
-                                    new List<string>(),
-                                    progress
-                                )
-                        );
-                    }
+                    // InvokeRequired was false, so we are on the shell's own thread and may create
+                    // the dialog right here; no marshalling needed.
+                    success = ShrinkImagesBehindProgressDialog();
                 }
             }
+            if (success)
+                Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
+            else
+                _mediaLevel1ShrinkFailed = true;
+        }
 
-            Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
+        /// <summary>
+        /// Shrink this book's overlarge images behind our own "Updating Image Files" dialog, which runs
+        /// the work on a background worker so Bloom stays responsive while it happens. Must be called
+        /// on the UI thread: WinForms does not allow creating a Form anywhere else.
+        /// </summary>
+        /// <remarks>
+        /// ProgressDialogBackground never reads RunWorkerCompletedEventArgs.Error, so an exception
+        /// thrown by the work would otherwise disappear and we would carry on and record the book as
+        /// migrated when its images were not in fact shrunk -- permanently, since the level is never
+        /// revisited. So capture it, log it, and return false here, which both records the failure in
+        /// the log and leaves mediaMaintenanceLevel alone, so the shrink is attempted again next time.
+        /// </remarks>
+        /// <returns>True if the images were successfully shrunk; otherwise, false.</returns>
+        private bool ShrinkImagesBehindProgressDialog()
+        {
+            Exception errorInWorker = null;
+            using (var dlg = new ProgressDialogBackground())
+            {
+                dlg.Text = "Updating Image Files";
+                dlg.ShowAndDoWork(
+                    (dialogProgress, args) =>
+                    {
+                        try
+                        {
+                            ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                                FolderPath,
+                                new List<string>(),
+                                dialogProgress
+                            );
+                        }
+                        catch (Exception e)
+                        {
+                            errorInWorker = e;
+                        }
+                    }
+                );
+            }
+            if (errorInWorker != null)
+            {
+                // No progress to report to: we only take this branch when the caller had none.
+                ReportShrinkFailure(errorInWorker);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Report a failed image shrink, in every place that has somewhere to report it.
+        /// </summary>
+        /// <remarks>
+        /// The toast is passive on purpose: the book still works, its pictures are merely left large,
+        /// and we will try again next time, so this is not worth interrupting the user for. Note that
+        /// writing to the caller's progress must not use WriteError: ProgressDialogForeground shows a
+        /// modal "There was a problem performing that operation" when its progress records an error,
+        /// which would defeat the point of reporting this passively.
+        /// </remarks>
+        /// <param name="error">The failure to report. Logged whole, so the stack trace and any inner
+        /// exception survive; the message alone often does not even name the offending file.</param>
+        /// <param name="progress">The caller's progress, if it had one. Without this, an operation
+        /// that is already showing the user a progress box would appear to have finished cleanly.</param>
+        private void ReportShrinkFailure(Exception error, IProgress progress = null)
+        {
+            var message = LocalizationManager.GetString(
+                "ImageUtils.ShrinkingImagesFailed",
+                "Bloom could not make this book's pictures smaller. It will try again the next time the book is updated."
+            );
+            progress?.WriteWarning(message);
+            NonFatalProblem.Report(
+                ModalIf.None,
+                PassiveIf.All,
+                message,
+                "Shrinking images failed in " + FolderPath,
+                exception: error
+            );
         }
 
         private int GetMaintenanceLevel()
