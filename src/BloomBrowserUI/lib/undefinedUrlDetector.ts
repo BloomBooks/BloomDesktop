@@ -11,6 +11,14 @@
 // The interception below is deliberately passive: it reports and then lets the assignment
 // proceed exactly as before. What we need from it is the stack, and we get that either way, so
 // there is no reason to change what the app does.
+//
+// Coverage, so nobody reads a silence here as proof of innocence: this patches the prototypes of
+// *the window it is installed in*. Bloom's edit screen puts the book page and the toolbox in
+// iframes, and elements created inside a frame are instances of that frame's own constructors. We
+// are installed in every frame that runs one of our bundles, since each bundle's root module
+// imports errorHandler - but parent-frame code that reaches into a child frame's document
+// (`pageIframe.contentDocument.createElement("img").src = x`, a pattern bookEdit does use) is
+// creating elements from the child's constructors while running in the parent, and is not seen.
 
 /// The exact strings JavaScript produces when these values are turned into text. We match them
 /// case-sensitively and only as a whole url or a whole path segment, so a real file that happens
