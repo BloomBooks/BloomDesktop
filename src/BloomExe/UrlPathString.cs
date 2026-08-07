@@ -37,12 +37,15 @@ namespace Bloom
     ///     Book.cs writes these decoded and actively normalizes them back to the plain name.
     ///
     /// Why "not encoded" for something as URL-ish as a sound that ends up in a src: because far
-    /// more of our code treats these as file names than as URLs. The one consumer that wants a
-    /// URL is BloomPlayer, which assigns the value straight into an audio src -- so a sound whose
-    /// name contains a percent escape ("beep%41.mp3") still fails to play there. Fixing that
-    /// belongs in BloomPlayer (encode when building the src); encoding it here instead would mean
+    /// more of our code treats these as file names than as URLs. Encoding them instead would mean
     /// the three file-system consumers above no longer find any name containing a space, and the
     /// first of them would delete the file as unused.
+    ///
+    /// The cost of that choice, which we accept: the consumers that DO build a URL from these
+    /// values just concatenate them, so a sound whose name contains a percent escape
+    /// ("beep%41.mp3") fails to play. That is true both in BloomPlayer and in our own editor
+    /// (GameTool.tsx's playSound does "audio/" + name). Fixing it belongs in those two places, by
+    /// encoding when the URL is built rather than by storing the name encoded.
     ///
     /// Note that this is all about URL encoding. XML/HTML encoding is a separate matter and is
     /// handled for us: SetAttribute and InnerText escape on write and unescape on read, so a '&amp;'
