@@ -119,6 +119,16 @@ namespace Bloom.Publish
                     // so we don't leave a Control to be finalized on a dead thread. We are on the owning
                     // thread, the only one allowed to do that, and WM_QUIT is only retrieved once the
                     // queue is otherwise empty, so everything posted has already run.
+                    //
+                    // What this does NOT clean up, deliberately: WinForms' per-thread ThreadContext.
+                    // Installing the synchronization context creates one, Application.Run's teardown
+                    // used to remove it, and disposing the context here does not. So each browser leaves
+                    // one behind, held by a static table. We decided (BL-16668) to accept that rather
+                    // than chase it: the table is keyed by native thread id, so entries are overwritten
+                    // as ids are reused instead of accumulating without bound, and the per-instance cost
+                    // is a small object plus a thread handle. The only way to really remove it would be
+                    // to keep one browser thread for the process lifetime, which would undo
+                    // ReleaseBrowser's deliberate "don't leave an idle WebView2 running" intent.
                     ctx.Dispose();
                 }
             }
