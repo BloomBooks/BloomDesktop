@@ -5,9 +5,11 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
+using Bloom;
+using Bloom.Api;
 using SIL.IO;
 
-namespace Bloom.Api
+namespace BloomTests
 {
     public class PretendRequestInfo : IRequestInfo
     {
