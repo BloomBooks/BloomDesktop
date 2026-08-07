@@ -2096,8 +2096,18 @@ namespace Bloom.Book
                 if (startOfDontCacheHack > -1)
                     imageFileName = imageFileName.Substring(0, startOfDontCacheHack);
 
-                while (Uri.UnescapeDataString(imageFileName) != imageFileName)
-                    imageFileName = Uri.UnescapeDataString(imageFileName);
+                // Some old books have srcs that were encoded more than once, so the name may still
+                // hold escapes even after GetImageElementUrl decoded it. Keep undoing them, but
+                // only for as long as that is actually helping us find the file: a real file name
+                // may legitimately contain a '%' ("photo%41.jpg"), and decoding that would turn a
+                // file that is present into one we falsely report as missing. (BL-16669)
+                while (!RobustFile.Exists(Path.Combine(FolderPath, imageFileName)))
+                {
+                    var moreDecoded = Uri.UnescapeDataString(imageFileName);
+                    if (moreDecoded == imageFileName)
+                        break;
+                    imageFileName = moreDecoded;
+                }
 
                 if (!RobustFile.Exists(Path.Combine(FolderPath, imageFileName)))
                 {
@@ -4613,8 +4623,11 @@ namespace Bloom.Book
                     suffix++;
                 }
                 RobustIO.MoveDirectory(originalFolderPath, truncatedFolderPath);
+                // strictlyTreatAsUnencoded: these are real folder and file names, so a '%' in one
+                // of them is a literal '%', not the start of an escape (BL-16669).
                 var newEncodedSrc = UrlPathString.CreateFromUnencodedString(
-                    $"activities/{Path.GetFileName(truncatedFolderPath)}/{originalFileName}"
+                    $"activities/{Path.GetFileName(truncatedFolderPath)}/{originalFileName}",
+                    strictlyTreatAsUnencoded: true
                 );
                 var newRawSrc = newEncodedSrc.UrlEncodedForHttpPath;
                 iframe.SetAttribute("src", newRawSrc);

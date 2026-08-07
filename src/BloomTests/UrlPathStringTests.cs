@@ -136,7 +136,7 @@ namespace BloomTests
         }
 
         [Test]
-        public void PathOnly_LooksEncodedButSetStrictlyTreatAsEncodedTrue_RoundTrips()
+        public void PathOnly_LooksEncodedButSetStrictlyTreatAsUnencodedTrue_RoundTrips()
         {
             //this checks that PathOnly doesn't do processing in ambiguous mode, undoing the information we gave it to be strict
             Assert.AreEqual(
@@ -164,11 +164,38 @@ namespace BloomTests
         }
 
         [Test]
-        public void CreateFromUnencodedString_LooksEncodedButSetStrictlyTreatAsEncodedTrue_RoundTrips()
+        public void CreateFromUnencodedString_LooksEncodedButSetStrictlyTreatAsUnencodedTrue_RoundTrips()
         {
             Assert.AreEqual(
                 "test%20me",
                 UrlPathString.CreateFromUnencodedString("test%20me", true).NotEncoded
+            );
+        }
+
+        /// <summary>
+        /// The bug behind BL-16669: a real file name can contain a '%' followed by two hex digits
+        /// ("photo%41.jpg"), which the ambiguous mode mistakes for an escape and decodes to a
+        /// completely different name. Callers that know they hold a file name say so, and then
+        /// the name survives a trip out to the browser as a src and back again.
+        /// </summary>
+        [Test]
+        public void FileNameContainsPercentThenHexDigits_StrictlyUnencoded_SurvivesRoundTrip()
+        {
+            // Sanity check: this is exactly what goes wrong without the flag.
+            Assert.That(
+                UrlPathString.CreateFromUnencodedString("photo%41.jpg").NotEncoded,
+                Is.EqualTo("photoA.jpg"),
+                "ambiguous mode is expected to mangle this name; that is why the flag exists"
+            );
+
+            var encoded = UrlPathString
+                .CreateFromUnencodedString("photo%41.jpg", strictlyTreatAsUnencoded: true)
+                .UrlEncoded;
+            Assert.That(encoded, Is.EqualTo("photo%2541.jpg"));
+            // ...and the browser's request for that src decodes back to the real file name.
+            Assert.That(
+                UrlPathString.CreateFromUrlEncodedString(encoded).NotEncoded,
+                Is.EqualTo("photo%41.jpg")
             );
         }
 

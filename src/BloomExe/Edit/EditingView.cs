@@ -540,9 +540,13 @@ namespace Bloom.Edit
             // string (e.g. "image1.png?transparent=yes") and/or still be URL-encoded. Reduce it
             // to the actual file name on disk before we try to load the image; otherwise
             // PalasoImage fails to find the file and we wrongly report it as corrupt. (BL-16446)
-            // CreateFromUnencodedString only decodes if the string still looks encoded (the
-            // server already decodes query parameters once), and PathOnly drops the query string.
-            fileName = UrlPathString.CreateFromUnencodedString(fileName).PathOnly.NotEncoded;
+            // The server already decoded the query parameter once, so what we have here is the
+            // real file name; PathOnly is what we're after, to drop the query string. We must pass
+            // strictlyTreatAsUnencoded so that a name which merely looks encoded ("photo%41.jpg")
+            // isn't decoded a second time into a name that isn't there ("photoA.jpg"). (BL-16669)
+            fileName = UrlPathString
+                .CreateFromUnencodedString(fileName, strictlyTreatAsUnencoded: true)
+                .PathOnly.NotEncoded;
 
             // keep a reference to the fileName rather the image to avoid dispose issues
             _fileNameOfImageBeingModified = fileName;
@@ -1020,7 +1024,11 @@ namespace Bloom.Edit
             var args = new PageEditingModel.ImageInfoForJavascript()
             {
                 imageId = imageId,
-                src = UrlPathString.CreateFromUnencodedString(destName).UrlEncoded,
+                // destName is the name of the file we just copied into the book folder, so it is
+                // certainly not URL-encoded; see the same call in PageEditingModel.ChangePicture.
+                src = UrlPathString
+                    .CreateFromUnencodedString(destName, strictlyTreatAsUnencoded: true)
+                    .UrlEncoded,
                 // Enhance: can we provide any of this for a GIF?
                 copyright = "",
                 license = "",

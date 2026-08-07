@@ -29,9 +29,14 @@ namespace Bloom
             return new UrlPathString(HttpUtility.UrlDecode(encoded));
         }
 
+        /// <param name="strictlyTreatAsUnencoded">Pass true when you know the string really is
+        /// unencoded -- typically because it is a file name you just read from (or wrote to) the
+        /// file system. Otherwise the guessing described below applies, and a genuine file name
+        /// that happens to contain something shaped like an escape ("photo%41.jpg") is silently
+        /// decoded into a different name ("photoA.jpg"). See BL-16669.</param>
         public static UrlPathString CreateFromUnencodedString(
             string unencoded,
-            bool strictlyTreatAsEncoded = false
+            bool strictlyTreatAsUnencoded = false
         )
         {
             unencoded = unencoded.Trim();
@@ -47,7 +52,7 @@ namespace Bloom
             // the name of the method) but if it's obviously encoded, then
             // decode it.
 
-            if (!strictlyTreatAsEncoded && Regex.IsMatch(unencoded, "%[A-Fa-f0-9]{2}"))
+            if (!strictlyTreatAsUnencoded && Regex.IsMatch(unencoded, "%[A-Fa-f0-9]{2}"))
                 unencoded = HttpUtility.UrlDecode(unencoded.Replace("+", "%2B")); // preserve + as + (as above)
             return new UrlPathString(unencoded);
         }

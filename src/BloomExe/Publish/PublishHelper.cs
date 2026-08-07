@@ -1194,7 +1194,13 @@ namespace Bloom.Publish
                     RewriteReference = canonicalRelativePath =>
                         HtmlDom.SetImageElementUrl(
                             imageElement,
-                            UrlPathString.CreateFromUnencodedString(canonicalRelativePath)
+                            // strictlyTreatAsUnencoded: canonicalRelativePath is a real relative
+                            // path (it came from PathOnly.NotEncoded and we have checked the file
+                            // exists), so a '%' in it is literal (BL-16669).
+                            UrlPathString.CreateFromUnencodedString(
+                                canonicalRelativePath,
+                                strictlyTreatAsUnencoded: true
+                            )
                         ),
                 };
             }
@@ -1250,7 +1256,11 @@ namespace Bloom.Publish
                     RewriteReference = canonicalRelativePath =>
                         HtmlDom.SetVideoElementUrl(
                             videoContainer,
-                            UrlPathString.CreateFromUnencodedString(canonicalRelativePath)
+                            // strictlyTreatAsUnencoded: see the image case above (BL-16669).
+                            UrlPathString.CreateFromUnencodedString(
+                                canonicalRelativePath,
+                                strictlyTreatAsUnencoded: true
+                            )
                         ),
                 };
             }

@@ -395,7 +395,7 @@ namespace Bloom.web
                         // - urlEncode:false, because re-encoding the whole string would turn the ?
                         //   into %3f and bury the thumbnail param in the path, invisible to
                         //   GetQueryParameters().
-                        // - strictlyTreatAsEncoded:true, because otherwise CreateFromUnencodedString
+                        // - strictlyTreatAsUnencoded:true, because otherwise CreateFromUnencodedString
                         //   sees the %XX escapes in the path and helpfully decodes them, and we would
                         //   then write out a raw filename like "This Image !@#$%^&()2.jpg?thumbnail=1",
                         //   where the browser treats the # as the start of a fragment and never

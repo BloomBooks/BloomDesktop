@@ -1041,6 +1041,12 @@ namespace BloomTests.web
             }
         }
 
+        // NB: a test here for a file name containing a literal '%' (BL-16669) would fail for a
+        // reason that has nothing to do with the server: PretendRequestInfo decodes the url twice
+        // (UnescapeFileNameForHttp and then UrlDecode) where the real RequestInfo decodes once.
+        // That case is covered against the real RequestInfo in
+        // RequestInfoTests.LocalPathWithoutQuery_SpecialCharactersDecodedCorrectly.
+
         [Test]
         public void GetLocalPathRoot_UrlToFileInRoot_ReturnsDirectoryAsRoot()
         {

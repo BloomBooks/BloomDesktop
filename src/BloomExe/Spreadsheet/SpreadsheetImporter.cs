@@ -723,7 +723,11 @@ namespace Bloom.Spreadsheet
             // is found.
             srcElt.SetAttribute(
                 "src",
-                UrlPathString.CreateFromUnencodedString("video/" + videoFile).UrlEncoded
+                // strictlyTreatAsUnencoded: videoFile is a real file name, so a '%' in it is a
+                // literal '%', not the start of an escape (BL-16669).
+                UrlPathString
+                    .CreateFromUnencodedString("video/" + videoFile, strictlyTreatAsUnencoded: true)
+                    .UrlEncoded
             );
             videoContainer.RemoveClass("bloom-noVideoSelected");
         }
@@ -769,7 +773,11 @@ namespace Bloom.Spreadsheet
             // base URL which interferes with finding its assets using relative URLs.
             iframeElt.SetAttribute(
                 "src",
-                UrlPathString.CreateFromUnencodedString(source).UrlEncodedForHttpPath
+                // strictlyTreatAsUnencoded: source is a real relative path (we Path.Combine it
+                // with the spreadsheet folder below), so a '%' in it is literal (BL-16669).
+                UrlPathString
+                    .CreateFromUnencodedString(source, strictlyTreatAsUnencoded: true)
+                    .UrlEncodedForHttpPath
             );
             widgetContainer.RemoveClass("bloom-noWidgetSelected");
 
@@ -879,7 +887,11 @@ namespace Bloom.Spreadsheet
             // Enhance: warn if null?
             imgElement?.SetAttribute(
                 "src",
-                UrlPathString.CreateFromUnencodedString(destFileName).UrlEncoded
+                // strictlyTreatAsUnencoded: destFileName is a real file name in the book folder,
+                // so a '%' in it is a literal '%', not the start of an escape (BL-16669).
+                UrlPathString
+                    .CreateFromUnencodedString(destFileName, strictlyTreatAsUnencoded: true)
+                    .UrlEncoded
             );
             // Earlier versions of Bloom often had explicit height and width settings on images.
             // In case anything of the sort remains, it probably won't be correct for the new image,

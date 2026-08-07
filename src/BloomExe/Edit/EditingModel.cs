@@ -1184,7 +1184,13 @@ namespace Bloom.Edit
 
         public void UpdateMetaData(string url)
         {
-            var match = UrlPathString.CreateFromUnencodedString(url).UrlEncoded;
+            // url is a file name (from EditingView._fileNameOfImageBeingModified), which we
+            // re-encode here to match what is in the src attribute. strictlyTreatAsUnencoded so
+            // that a name like "photo%41.jpg" doesn't get decoded to "photoA.jpg" and then fail
+            // to match the img we are looking for. (BL-16669)
+            var match = UrlPathString
+                .CreateFromUnencodedString(url, strictlyTreatAsUnencoded: true)
+                .UrlEncoded;
             var imgElt = _pageSelection
                 .CurrentSelection.GetDivNodeForThisPage()
                 .SafeSelectNodes($".//img[@src='{match}']")
