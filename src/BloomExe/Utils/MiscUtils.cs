@@ -442,7 +442,11 @@ namespace Bloom.Utils
                     dlg.DefaultExt = defaultExtension;
                     dlg.FileName = initialFilename;
                     dlg.Filter = filter;
-                    dlg.RestoreDirectory = false;
+                    // True so the dialog does not leave the process's current working directory
+                    // wherever the user browsed; see the comment in BloomOpenFileDialog's
+                    // constructor (BL-16577). Where the dialog opens is controlled by
+                    // InitialDirectory below, not by this.
+                    dlg.RestoreDirectory = true;
                     dlg.OverwritePrompt = true;
                     dlg.InitialDirectory = initialFolder;
                     dlg.FileOk += (sender, args) =>

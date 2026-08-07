@@ -218,6 +218,7 @@ namespace BloomTests.Spreadsheet
         private List<ContentRow> _rowsFromExport;
         private InternalSpreadsheet _sheetFromFile;
         private List<ContentRow> _rowsFromFile;
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _spreadsheetFolder;
         private TemporaryFolder _bookFolder;
         private ProgressSpy _progressSpy;
@@ -227,8 +228,9 @@ namespace BloomTests.Spreadsheet
         {
             var dom = new HtmlDom(imageBook, true);
 
-            _spreadsheetFolder = new TemporaryFolder("SpreadsheetImagesTests");
-            _bookFolder = new TemporaryFolder("SpreadsheetImagesTests_Book");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _spreadsheetFolder = new TemporaryFolder(_testFolder, "Spreadsheet");
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
             mockLangDisplayNameResolver
@@ -274,8 +276,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _spreadsheetFolder?.Dispose();
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         void SetupFor(string source)
@@ -558,8 +560,8 @@ namespace BloomTests.Spreadsheet
         [Test]
         public void Export_ImagesWithConflictingNames_AllEmbeddedWithoutError()
         {
-            using (var bookFolder = new TemporaryFolder("SpreadsheetImageConflict_Book"))
-            using (var outputFolder = new TemporaryFolder("SpreadsheetImageConflict_Out"))
+            using (var bookFolder = new TemporaryFolder(_testFolder, "ImageConflict_Book"))
+            using (var outputFolder = new TemporaryFolder(_testFolder, "ImageConflict_Out"))
             {
                 // Copy one known-good image to three names that collide once the extension is dropped.
                 var sourceImage = Path.Combine(
@@ -693,8 +695,8 @@ namespace BloomTests.Spreadsheet
         [Test]
         public void Export_SmallImage_RowNotSizedFromOversizedTarget()
         {
-            using (var bookFolder = new TemporaryFolder("SmallImageRowHeight_Book"))
-            using (var outputFolder = new TemporaryFolder("SmallImageRowHeight_Out"))
+            using (var bookFolder = new TemporaryFolder(_testFolder, "SmallImageRowHeight_Book"))
+            using (var outputFolder = new TemporaryFolder(_testFolder, "SmallImageRowHeight_Out"))
             {
                 var sourceImage = Path.Combine(
                     SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
