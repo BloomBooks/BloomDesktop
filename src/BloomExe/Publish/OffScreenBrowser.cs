@@ -1,5 +1,7 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -27,8 +29,8 @@ namespace Bloom.Publish
     /// deliberately not static/shared between instances, so instances on different threads never contend).
     /// A caller that only needs one browser simply never calls StartFreshBrowser.
     ///
-    /// How it stays safe: the browser is owned by a private, dedicated STA thread with its own Windows Forms
-    /// message loop, and THAT thread — not the caller — services the browser's callbacks. So a caller can
+    /// How it stays safe: the browser is owned by a private, dedicated STA thread with its own message
+    /// loop, and THAT thread — not the caller — services the browser's callbacks. So a caller can
     /// simply block for a result. It never has to pump the MAIN UI message loop the way
     /// Browser.RunJavascriptWithStringResult_Sync_Dangerous does (Application.DoEvents), which lets unrelated
     /// user commands run in the middle of the call stack — the reentrancy blamed for BL-12614 / BL-13120. And
@@ -48,9 +50,6 @@ namespace Bloom.Publish
         // every inner browser this instance creates. Captured from the first browser and reused for each
         // fresh browser (see StartFreshBrowser), so we don't pay environment creation each time.
         private CoreWebView2Environment _environment;
-
-        // The message loop we run on the dedicated thread; ExitThread() on it ends the loop at Dispose.
-        private ApplicationContext _appContext;
 
         // The dedicated thread's Windows Forms synchronization context. Posting to it marshals work onto that
         // thread; awaits inside that work resume there too.
@@ -90,14 +89,15 @@ namespace Bloom.Publish
         /// </summary>
         public int BrowserThreadId => _thread.ManagedThreadId;
 
-        // Runs on the dedicated thread: establishes a message loop, creates the browser, then pumps messages
-        // until Dispose() ends the loop via the ApplicationContext.
+        // Runs on the dedicated thread: establishes a synchronization context, creates the browser, then
+        // pumps messages until Dispose() posts WM_QUIT.
         private void ThreadMain()
         {
             try
             {
-                // Give this thread a Windows Forms message loop + synchronization context, so the browser's
-                // async continuations (and cross-thread Posts from callers) run here.
+                // Give this thread a Windows Forms synchronization context, so the browser's async
+                // continuations (and cross-thread Posts from callers) run here. Posting through it works by
+                // sending window messages to a hidden marshaling control, which our pump below dispatches.
                 var ctx = new WindowsFormsSynchronizationContext();
                 SynchronizationContext.SetSynchronizationContext(ctx);
                 _ctx = ctx;
@@ -106,8 +106,18 @@ namespace Bloom.Publish
                 // CoreWebView2 initialization completes via that loop), then signal the constructor.
                 ctx.Post(_ => InitializeAsync(), null);
 
-                _appContext = new ApplicationContext();
-                Application.Run(_appContext); // pump until the context's loop is ended in Dispose
+                try
+                {
+                    RunPrivateMessageLoop();
+                }
+                finally
+                {
+                    // Application.Run disposed this thread's windows as its loop ended; since we no longer
+                    // use it, dispose the synchronization context (and so its hidden marshaling control)
+                    // ourselves. We are on the owning thread, the only one allowed to do that, and WM_QUIT
+                    // is only retrieved once the queue is otherwise empty, so all posted work has run.
+                    ctx.Dispose();
+                }
             }
             catch (Exception e)
             {
@@ -115,6 +125,75 @@ namespace Bloom.Publish
                 _ready.Set();
             }
         }
+
+        /// <summary>
+        /// Pumps this thread's messages until WM_QUIT, using the raw Win32 loop rather than
+        /// <see cref="Application.Run(ApplicationContext)"/>.
+        /// </summary>
+        /// <remarks>
+        /// Why not Application.Run: it registers this loop with WinForms as an *application* message loop.
+        /// Ending it therefore makes WinForms conclude that the application is exiting (when, as in a CLI
+        /// process, it is the process's only such loop) and raise Application.ApplicationExit. That is a lie
+        /// — a worker's private browser thread finishing is not the application quitting — and things
+        /// listening for a real shutdown act on it: ApplicationContainer disposed itself, killing the DI
+        /// scope the harvester's still-running createArtifacts depended on (BL-16668). We create and tear
+        /// down one of these browsers per batch of page checks, so that fired mid-run.
+        ///
+        /// A bare GetMessage/TranslateMessage/DispatchMessage loop dispatches everything this thread
+        /// actually needs — the WindowsFormsSynchronizationContext's marshaling control, the WebView2's
+        /// windows and their async completions — while remaining invisible to WinForms' application-lifetime
+        /// bookkeeping. So no non-GUI entry point (the harvester, bulk upload, any future CLI verb) can be
+        /// told the application is exiting just because we finished with a browser.
+        /// </remarks>
+        private static void RunPrivateMessageLoop()
+        {
+            // GetMessage returns 0 for WM_QUIT and -1 on error; anything else means we have a message.
+            int result;
+            while ((result = GetMessage(out var msg, IntPtr.Zero, 0, 0)) != 0)
+            {
+                if (result == -1)
+                    throw new Win32Exception(
+                        Marshal.GetLastWin32Error(),
+                        "GetMessage failed in the OffScreenBrowser message loop"
+                    );
+                TranslateMessage(ref msg);
+                DispatchMessage(ref msg);
+            }
+        }
+
+        #region Win32 message pump
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativeMessage
+        {
+            public IntPtr HWnd;
+            public uint Message;
+            public IntPtr WParam;
+            public IntPtr LParam;
+            public uint Time;
+            public int PointX;
+            public int PointY;
+        }
+
+        [DllImport("user32.dll", EntryPoint = "GetMessageW", SetLastError = true)]
+        private static extern int GetMessage(
+            out NativeMessage message,
+            IntPtr hWnd,
+            uint filterMin,
+            uint filterMax
+        );
+
+        [DllImport("user32.dll")]
+        private static extern bool TranslateMessage(ref NativeMessage message);
+
+        [DllImport("user32.dll", EntryPoint = "DispatchMessageW")]
+        private static extern IntPtr DispatchMessage(ref NativeMessage message);
+
+        // Queues WM_QUIT for the CALLING thread, which is why Dispose posts the call onto our thread.
+        [DllImport("user32.dll")]
+        private static extern void PostQuitMessage(int exitCode);
+
+        #endregion
 
         private async void InitializeAsync()
         {
@@ -308,7 +387,9 @@ namespace Bloom.Publish
                         }
                         finally
                         {
-                            _appContext?.ExitThread();
+                            // We are on the browser's own thread here, so this queues WM_QUIT for the loop
+                            // in RunPrivateMessageLoop.
+                            PostQuitMessage(0);
                         }
                     },
                     null
