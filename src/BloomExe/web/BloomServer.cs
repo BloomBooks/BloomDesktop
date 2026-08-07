@@ -44,8 +44,11 @@ namespace Bloom.Api
     // when it doesn't want to spin up a real one.
     public interface IBloomServer
     {
-        void RegisterThreadBlocking();
-        void RegisterThreadUnblocked();
+        /// <summary>
+        /// See BloomServer.ReportThreadBlocking. Dispose the result when the blocking work is done;
+        /// there is deliberately no separate "unblocked" call to forget or to get wrong.
+        /// </summary>
+        IDisposable ReportThreadBlocking();
 
         // ENHANCE: Add other methods as needed
     }
@@ -136,6 +139,15 @@ namespace Bloom.Api
         /// Pool of threads that pull a request from the _queue and processes it.
         /// This is a ConcurrentDictionary (ManagedThreadId to thread) just so we can add and remove
         /// things from it without worrying about locking (or deadlocking).
+        ///
+        /// Two properties of this collection that other code relies on, so take care before changing
+        /// either. Additions are made only under lock (_queue) (see SpinUpAWorker), which is what lets a
+        /// caller re-check a count and act on it without another thread adding a worker underneath it. And
+        /// an entry is only ever REMOVED for a thread that has already died (see the pruning in
+        /// EnqueueIncomingRequests) -- nothing removes a live worker. That second property is what makes it
+        /// safe for EnsureAWorkerCanStillTakeWork to count live workers WITHOUT the lock: a concurrent
+        /// removal can only take away something that was not going to be counted as live anyway, so it
+        /// cannot inflate the answer.
         /// </summary>
         private readonly ConcurrentDictionary<int, Thread> _workers = new();
 
@@ -151,7 +163,7 @@ namespace Bloom.Api
 
         /// <summary>
         /// Keeps track of the number of worker threads that are blocked
-        /// Note: This is NOT automatically computed. Other code should call RegisterThreadAboutToBlock() and RegisterThreadUnblocked()
+        /// Note: This is NOT automatically computed. Other code should call ReportThreadBlocking() and dispose the scope it returns
         ///        whenever it causes a thread which is or potentially is a server worker thread to block.
         /// Note: This is different than _busyThreads, because a thread may be busy but not blocked.
         /// </summary>
@@ -1967,14 +1979,10 @@ namespace Bloom.Api
                 // Deal with a situation where all the workers are blocked,
                 // but there is a request in the queue that would unblock the current workers
                 // but that request can't run because it's stuck in queue
-                // and none of the existing worker threads are able to make progress anymore
-                if (_countBlockedThreads >= _workers.Count)
-                {
-                    // The worker should be spun up such that it can receive _ready.Set()
-                    SpinUpAWorker();
-
-                    // Note: Currently these workers are never stopped, so as not to complicate the code any further
-                }
+                // and none of the existing worker threads are able to make progress anymore.
+                // Any worker added here is added before the _ready.Set() below, so it receives it.
+                // (Monitor is reentrant, so it is fine that we already hold this lock.)
+                EnsureAWorkerCanStillTakeWork();
 
                 _ready.Set();
             }
@@ -2436,44 +2444,222 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// Registers that the current thread is about to block.
-        /// This function should be called immediately before any server thread blocks
-        /// (e.g. waits for a lock, wait for a modal dialog to close, etc.)
-        /// Must be paired with RegisterThreadUnblocked() when done.
+        /// Reports that the calling thread is about to block -- waiting for a lock, for a modal dialog to
+        /// close, for an off-screen browser, and so on. Call it immediately before the blocking work and
+        /// dispose the result as soon as that work is done, normally with a `using` block.
         ///
-        /// This can be called by any code that at least sometimes (if not always)
-        /// is called by a BloomServer worker thread. The caller need not guarantee that
-        /// the current thread is a server thread. This method will check for that.
+        /// Any code that is *sometimes* run by a server worker may call this; it need not know whether the
+        /// current thread is one. Blocks reported by other threads are ignored, since they are not using up
+        /// a worker.
+        ///
+        /// Why this returns a scope instead of having a matching "unblocked" method: whether a block counts
+        /// depends on whether the caller is one of our workers, and that answer has to be REMEMBERED rather
+        /// than worked out again at the end. Blocking work that contains an await can resume on a different
+        /// thread -- a worker carries no synchronization context, so continuations land on the thread pool --
+        /// and asking "am I a worker?" there would answer no and silently skip the decrement, inflating the
+        /// count for the life of the process. The scope closes over the answer, so it cannot drift, and it
+        /// releases on every exit path including an exception. Both bugs were real: see BL-16612.
         /// </summary>
-        public void RegisterThreadBlocking()
+        public IDisposable ReportThreadBlocking()
         {
-            // Check if the current thread looks like a Server Worker
-            // If not, we can just ignore this request.
-            // Notably, ProblemReportApi can be invoked by both server and non-server code
-            if (IsWorkerThread(Thread.CurrentThread))
+            // Notably, ProblemReportApi can be invoked by both server and non-server code.
+            if (!IsWorkerThread(Thread.CurrentThread))
+                return NotBlockingAWorker;
+
+            Interlocked.Increment(ref _countBlockedThreads);
+            // Must not throw; if it did, the caller would never receive the scope that undoes the
+            // increment above. See the guarantee inside it.
+            EnsureAWorkerCanStillTakeWork();
+            return new BlockedWorkerScope(this);
+        }
+
+        // Shared, stateless scope handed to callers whose thread is not one of our workers, so those
+        // callers still get something disposable and need no special case.
+        private static readonly IDisposable NotBlockingAWorker = new DoNothingScope();
+
+        private sealed class DoNothingScope : IDisposable
+        {
+            public void Dispose() { }
+        }
+
+        /// <summary>
+        /// Undoes exactly one counted block, once. Holding the server (rather than re-deriving anything
+        /// from the current thread) is the whole point -- see ReportThreadBlocking.
+        /// </summary>
+        private sealed class BlockedWorkerScope : IDisposable
+        {
+            private BloomServer _server;
+
+            public BlockedWorkerScope(BloomServer server)
             {
-                // Note: So far only BloomApiHandler and problem report dialog have been analyzed to call this when needed.
-                Interlocked.Increment(ref _countBlockedThreads);
+                _server = server;
+            }
+
+            public void Dispose()
+            {
+                // Taking the reference away atomically makes a second Dispose -- e.g. a `using` inside a
+                // method whose caller also disposes -- harmless instead of double-decrementing.
+                var server = Interlocked.Exchange(ref _server, null);
+                if (server != null)
+                    Interlocked.Decrement(ref server._countBlockedThreads);
             }
         }
 
         /// <summary>
-        /// Registers that the current thread is no longer blocked.
-        /// Should be called as a pair with RegisterThreadBlocking(), after any blocking work returns.
+        /// If every worker is now blocked, add one, so that some worker is still able to take a request off
+        /// the queue. This matters because the request that would let the blocked workers finish is often
+        /// itself sitting in the queue: in BL-16612 a publish held an api lock while every other worker
+        /// waited for that same lock, so no worker was left to serve the page the publish was waiting for,
+        /// and the whole server deadlocked.
+        ///
+        /// This is called from ReportThreadBlocking rather than being offered as a separate method for
+        /// callers to remember, so that every caller which correctly reports that it is blocking gets the
+        /// top-up automatically. There is deliberately no way to register a block WITHOUT it -- reporting
+        /// the block is the only thing a caller has to get right.
+        ///
+        /// QueueRequest makes the same check as a request ARRIVES, which is not sufficient by itself: if
+        /// the request that would break the deadlock is already in the queue, no new request need ever
+        /// arrive to trigger the check. Checking here covers the other moment the pool can run out -- when
+        /// a worker becomes blocked.
+        ///
+        /// Deliberately has no shutdown guard, unlike QueueRequest, which gives up once the listener has
+        /// closed. A worker can therefore add one more worker while Dispose is joining threads. That is safe
+        /// only because Dispose signals _stop without disposing it or _ready, so the new worker wakes
+        /// immediately and exits -- see the note in Dispose, which must stay true for this to remain safe.
         /// </summary>
-        public void RegisterThreadUnblocked()
+        private void EnsureAWorkerCanStillTakeWork()
         {
-            // Check if the current thread looks like a Server Worker
-            // If not, we can just ignore this request.
-            // Notably, ProblemReportApi can be invoked by both server and non-server code
-            if (IsWorkerThread(Thread.CurrentThread))
+            // NOTHING in this method may throw, logging and the fast-path reads alike. The caller increments
+            // the blocked count and only receives the scope that undoes it AFTER this returns, so an
+            // exception escaping here would leak that count for the life of the process -- which would then
+            // make every later block add yet another worker. Adding a worker is a safety net; neither
+            // failing to add one nor failing to log it may turn into a failed request. The fast path is
+            // inside the try so that guarantee is structural, rather than resting on an argument about what
+            // ConcurrentDictionary.Count can do.
+            //
+            // REVIEWED DECISION (BL-16612): catching everything here, including around the logging in the
+            // catch below, is a deliberate exception to this repo's "fail fast, don't be defensive"
+            // guidance in AGENTS.md. Do not "clean this up" into a narrower catch without reading the rest
+            // of this comment, because the obvious objection to it has already been raised and answered.
+            //
+            // The immediate reason: the caller increments the blocked count and only receives the scope
+            // that undoes it after this returns, so an exception escaping here would leave that count
+            // permanently high -- the very condition this method exists to relieve.
+            //
+            // That is not the only way to arrange things, and a cheaper alternative than we first thought
+            // does exist: hand the caller its scope BEFORE calling this, dispose it and rethrow if this
+            // throws, and then this method would be free to fail fast. That touches only
+            // ReportThreadBlocking, not every call site. It was considered and declined, and the reason is
+            // a judgement rather than a constraint: topping up the pool is an opportunistic safety net, and
+            // a safety net failing is not itself a reason to fail the user's request that happened to
+            // trigger it. Publishing a book should not die because the server could not create a spare
+            // thread it may well not need. If you disagree with that trade, the restructure above is the
+            // way to change it -- but change it deliberately, not by narrowing this catch and reintroducing
+            // the leak.
+            try
             {
-                Interlocked.Decrement(ref _countBlockedThreads);
+                // Fast path that avoids _queue's lock, which the listener (enqueuing) and the workers
+                // (dequeuing) are already contending for; this runs on every api request that waits for a
+                // lock. Walking the workers to count the live ones is not free, but it is far cheaper than
+                // joining the queue behind those two.
+                //
+                // Why this counts LIVE workers even out here, where a cheap approximation would normally be
+                // fine: the only thing this test can do is SKIP the more careful check below, so the two
+                // directions of error are not symmetric.
+                //   Too LOW (say we race a SpinUpAWorker that has not added its thread yet): we decline to
+                //     return, take the lock, and get the better answer. Self-correcting -- and the reason
+                //     reading this unsynchronized is acceptable at all.
+                //   Too HIGH: we return here and the check below never runs. The raw entry count is
+                //     SYSTEMATICALLY too high, because a dead thread keeps its entry until the listener
+                //     prunes it, so using it here left the careful check unreachable.
+                // A concurrent removal cannot push us into that dangerous direction, because entries are
+                // only removed for threads that are already dead; see the note on _workers.
+                //
+                // Be clear about what a live count does NOT buy, though. It is a fact about the instant it
+                // was taken, and a worker can die immediately afterwards. The re-check under the lock is no
+                // better in that respect: the lock covers changes to _workers, not thread liveness. So
+                // neither reading is authoritative about how many workers are still alive by the time we
+                // act on it. What counting live workers removes is the systematic over-count from lingering
+                // dead entries -- not that race.
+                //
+                // Staleness in the blocked count is harmless: Interlocked.Increment gives the increments a
+                // total order, so whichever thread performs the last one reads a count including every
+                // earlier block. The worker that exhausts the pool therefore always sees the shortage, even
+                // if the ones before it did not.
+                if (Volatile.Read(ref _countBlockedThreads) < LiveWorkerCount())
+                    return;
+
+                var addedWorker = false;
+                // SpinUpAWorker requires this lock, since it modifies _workers. Re-checking here means we
+                // decide against a count taken after any concurrent add, rather than the one above -- but
+                // per the note above, not against a count guaranteed still true when we act on it.
+                lock (_queue)
+                {
+                    if (_countBlockedThreads >= LiveWorkerCount())
+                    {
+                        // REVIEWED DECISION (BL-16612): workers are never retired -- that predates this
+                        // code -- and we accepted that the pool can therefore end a session larger than it
+                        // started. During a long publish, several requests can queue behind the same lock
+                        // and each one can add a worker, so growth is bounded by how many are actually
+                        // waiting, not unbounded. We judged that a fair price for not deadlocking, but it
+                        // is why thread counts in a diagnostic may look higher than you expect. Retiring
+                        // idle workers would be the real fix and is a much larger change.
+                        SpinUpAWorker();
+                        addedWorker = true;
+                    }
+                }
+                // Logged after releasing our own lock (QueueRequest's caller may still hold it), since
+                // logging can be slow. This is the event to look for in a log when investigating a freeze,
+                // so it is worth a line even though it is not an error.
+                if (addedWorker)
+                    Logger.WriteEvent(
+                        "BloomServer: every worker was blocked, so added one to keep requests moving "
+                            + $"({_workers.Count} workers, {_countBlockedThreads} blocked)."
+                    );
+            }
+            catch (Exception e)
+            {
+                // This last attempt to record what went wrong could itself fail, and nothing may escape
+                // (see above), so it is deliberately allowed to fail silently.
+                try
+                {
+                    Logger.WriteEvent(
+                        "BloomServer: trouble adding a worker while one was blocking: " + e.Message
+                    );
+                }
+                catch { }
             }
         }
 
+        /// <summary>
+        /// How many workers are actually alive and so could still take a request off the queue. Bloom has
+        /// seen worker threads die (see the pruning in EnqueueIncomingRequests), and a dead one leaves its
+        /// entry in _workers until that pruning runs, so _workers.Count can overstate the pool.
+        ///
+        /// Counts the dictionary itself rather than its Values, which on a ConcurrentDictionary materialises
+        /// a snapshot list -- worth avoiding on something EnsureAWorkerCanStillTakeWork calls for every api
+        /// request that waits for a lock. Callers may hold lock (_queue) or not; see that method for why
+        /// counting without it is safe.
+        /// </summary>
+        private int LiveWorkerCount() => _workers.Count(kvp => kvp.Value?.IsAlive == true);
+
+        /// <summary>
+        /// The number of worker threads in the pool, alive or not. For tests, which need to observe that a
+        /// worker was added when they made every existing worker report itself blocked.
+        /// </summary>
+        internal int WorkerCount => _workers.Count;
+
+        /// <summary>
+        /// How many workers currently report themselves blocked. For tests, which need to prove that a
+        /// reported block is undone even when the scope is disposed on a different thread than reported it.
+        /// </summary>
+        internal int BlockedWorkerCount => _countBlockedThreads;
+
+        // Ordinal deliberately: the default overloads of both StartsWith and IndexOf(string) are
+        // culture-sensitive, which is the wrong kind of comparison for a thread name we generated
+        // ourselves -- and slower.
         private bool IsWorkerThread(Thread thread) =>
-            thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
+            thread?.Name?.StartsWith(WorkerThreadNamePrefix, StringComparison.Ordinal) == true;
 
         private string GetHtmlForRootOfBloomUI()
         {
@@ -2596,6 +2782,23 @@ namespace Bloom.Api
                         // tell _listenerThread and the worker threads they should stop
                         _stop.Set();
 
+                        // Note (BL-16612): a worker part-way through a request can still report a block while
+                        // we are joining threads below, and EnsureAWorkerCanStillTakeWork has no shutdown
+                        // guard, so that can add a worker after the join has passed it. Two things make that
+                        // survivable, and BOTH have to stay true:
+                        //   1. We only SIGNAL _stop here and never dispose it or _ready, so a late worker's
+                        //      WaitAny returns at once and it exits. Dispose those handles and it would die
+                        //      instead of an ObjectDisposedException on a background thread, taking the
+                        //      process with it.
+                        //   2. We actually reach this line. Note that it is inside `if (_listener != null)`,
+                        //      so if CloseListener() ran first -- it is public, nulls _listener, and its own
+                        //      comment mentions the shutdown timer -- _stop is never signalled at all.
+                        // Caveat worth knowing about (2): workers are FOREGROUND threads, so a worker still
+                        // waiting on _ready/_stop keeps the process alive. Pre-existing workers have always
+                        // been exposed to that; what the top-up adds is the chance of creating a NEW one
+                        // during that window. Devin raised it; it is recorded rather than fixed here because
+                        // the fix (guard the top-up on shutdown, or make added workers background threads)
+                        // changes behaviour and was left for the developer to decide.
                         var secondsToWait = 2.0;
                         // wait for _listenerThread to stop
                         if (_listenerThread.ThreadState != ThreadState.Unstarted)
