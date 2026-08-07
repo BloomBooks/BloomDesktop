@@ -62,11 +62,26 @@ function setUpTwoTopicCanvasElements(): HTMLElement[] {
     return canvasElements;
 }
 
+// qtip renders its bubble after a show delay rather than synchronously, so wait for the
+// bubbles to appear. Polling rather than sleeping a fixed time keeps this from becoming a
+// race on a loaded machine.
+async function waitForRenderedBubbles(expectedCount: number): Promise<void> {
+    const deadline = Date.now() + 5000;
+    const rendered = () => document.querySelectorAll("div.qtip").length;
+    while (rendered() < expectedCount) {
+        if (Date.now() > deadline) {
+            throw new Error(
+                `Test setup: only ${rendered()} of ${expectedCount} qtip bubbles rendered`,
+            );
+        }
+        await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+}
+
 describe("CanvasElementManager.deleteCanvasElement", () => {
     test("removes the deleted element's topic chooser bubble but not another one's", async () => {
         const [canvasElement1, canvasElement2] = setUpTwoTopicCanvasElements();
-        // qtip renders after its default show delay, so let that happen.
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        await waitForRenderedBubbles(2);
         const manager = new CanvasElementManager();
         // Rebuilding the editing UI needs the whole editor; it isn't what we're testing.
         manager.refreshCanvasElementEditing = () => {};
