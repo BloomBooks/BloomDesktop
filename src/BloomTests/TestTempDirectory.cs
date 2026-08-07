@@ -59,7 +59,7 @@ public class TestTempDirectory
         MachineTempFolder = Path.GetTempPath();
         var container = Path.Combine(MachineTempFolder, kContainerName);
         _runFolder = Path.Combine(container, KeyForThisRun());
-        Directory.CreateDirectory(_runFolder);
+        StartFolderEmpty(_runFolder);
 
         // Path.GetTempPath() is defined in terms of these, so from this point on every temp path
         // the process computes — ours and Bloom's own — lands inside _runFolder.
@@ -163,7 +163,27 @@ public class TestTempDirectory
     }
 
     /// <summary>
-    /// A name for this run's folder: unique, so no two runs can ever share one, but still
+    /// Makes sure the run folder exists and is empty.
+    ///
+    /// Emptying matters because the name can repeat. A run that crashes leaves its folder behind
+    /// (and a failing run leaves it deliberately), those folders survive for a day, and Windows
+    /// recycles process ids — so this exact path may already exist, holding the remains of a run
+    /// that is long gone. Inheriting those would produce exactly the confusing, stale-file
+    /// failures this class exists to prevent.
+    ///
+    /// Deleting it is safe: a process id is unique among *running* processes, and this one is
+    /// ours, so nothing alive can be using the folder.
+    /// </summary>
+    internal static void StartFolderEmpty(string folder)
+    {
+        if (Directory.Exists(folder))
+            TemporaryFolder.DeleteFolderThatMayBeInUseAndIfNotFailSilently(folder);
+        Directory.CreateDirectory(folder);
+    }
+
+    /// <summary>
+    /// A name for this run's folder: unique among live runs, but not unique forever, since it is
+    /// built from a process id and those get recycled — see <see cref="StartFolderEmpty"/>. Still
     /// recognizable, so you can tell which terminal a leftover folder came from.
     /// </summary>
     private static string KeyForThisRun()

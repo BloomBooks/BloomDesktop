@@ -50,6 +50,64 @@ namespace BloomTests
         }
 
         /// <summary>
+        /// A run folder's name is built from a process id, and Windows recycles those, so a run
+        /// can be handed the path of a crashed earlier run whose files are still sitting there.
+        /// Starting from whatever that run left behind would cause exactly the stale-file
+        /// confusion this class exists to prevent, so the folder must be emptied, not just made.
+        /// </summary>
+        [Test]
+        public void StartFolderEmpty_FolderAlreadyHasFilesInIt_ClearsThem()
+        {
+            using (var parent = new TemporaryFolder("StartFolderEmptyTests"))
+            {
+                var reusedPath = Path.Combine(parent.FolderPath, "a7920d49-p12345");
+                Directory.CreateDirectory(Path.Combine(reusedPath, "leftover subfolder"));
+                File.WriteAllText(
+                    Path.Combine(reusedPath, "leftover subfolder", "stale.txt"),
+                    "from a run that died"
+                );
+                File.WriteAllText(Path.Combine(reusedPath, "also-stale.txt"), "likewise");
+
+                // Sanity check: the setup really did leave something behind to be cleared.
+                Assert.That(
+                    Directory.GetFiles(reusedPath, "*", SearchOption.AllDirectories).Length,
+                    Is.EqualTo(2),
+                    "Setup sanity check: two stale files should be sitting in the reused folder."
+                );
+
+                TestTempDirectory.StartFolderEmpty(reusedPath);
+
+                Assert.That(
+                    Directory.Exists(reusedPath),
+                    Is.True,
+                    "The folder should still be there, ready to be used."
+                );
+                Assert.That(
+                    Directory.GetFileSystemEntries(reusedPath),
+                    Is.Empty,
+                    "Nothing from the previous run should have survived into this one."
+                );
+            }
+        }
+
+        /// <summary>
+        /// The same call is what creates the folder in the ordinary case, where nothing is there.
+        /// </summary>
+        [Test]
+        public void StartFolderEmpty_FolderDoesNotExist_CreatesIt()
+        {
+            using (var parent = new TemporaryFolder("StartFolderEmptyCreates"))
+            {
+                var path = Path.Combine(parent.FolderPath, "brand-new");
+                Assert.That(Directory.Exists(path), Is.False, "Setup sanity check.");
+
+                TestTempDirectory.StartFolderEmpty(path);
+
+                Assert.That(Directory.Exists(path), Is.True);
+            }
+        }
+
+        /// <summary>
         /// When a test leaves a file open, the end-of-run warning has to say which file and why,
         /// otherwise "could not delete the temp folder" gives whoever reads it nowhere to start.
         /// </summary>
