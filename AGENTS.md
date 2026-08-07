@@ -86,6 +86,34 @@ multiple terminals can build/test at once. See `Directory.Build.props` for how i
 - The first build in a fresh terminal is a full (cold) build into that terminal's private
   tree; subsequent builds there are incremental. `output/` is gitignored.
 
+### Temp folders are isolated per test run too
+
+The build tree is not the only thing two concurrent runs would otherwise share. Our tests name
+their scratch folders after themselves (`new TemporaryFolder("SomeFixtureTests")`), which are
+machine-global paths, and `TemporaryFolder` **deletes** an existing folder of that name before
+creating it — so one run's setup would delete another run's in-flight folder.
+
+`src/BloomTests/TestTempDirectory.cs` prevents that: before any fixture runs, it points this
+process's temp directory at `%TEMP%\BloomTests\<key>-p<pid>\`. You therefore do **not** need to
+invent unique folder names in tests — keep naming a temp folder after your fixture, and it is
+already scoped to the run. It also means production code writing to temp while under test is
+isolated as well.
+
+Two consequences worth knowing:
+
+- **After a failing run the folder is kept**, so you can look at what the failing test wrote; the
+  path is printed on standard error at the end of the run. Passing runs delete theirs, and
+  anything older than a day is cleared by the next run.
+- **If the folder cannot be deleted, the run says so** — again on standard error, naming one file
+  that is still open and the reason the OS gave, without failing the run. That normally means a
+  test finished without disposing something; worth chasing, because a leaked handle can make
+  later runs behave oddly.
+- Note that standard error is the only channel `dotnet test` shows at its default verbosity —
+  `Console.Out`, `TestContext.Out` and `TestContext.Progress` are all swallowed. Use
+  `Console.Error` for anything a developer must see.
+- Every temp path is longer by `BloomTests\<key>-p<pid>\`. Deeply-nested temp paths in tests are
+  that much closer to `MAX_PATH`.
+
 ## Building / testing the front-end (web UI) while Bloom is running
 
 The developer usually launches Bloom with `./go.sh`, which starts a **Vite dev server** and
