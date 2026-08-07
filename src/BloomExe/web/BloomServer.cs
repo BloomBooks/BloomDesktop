@@ -1459,6 +1459,29 @@ namespace Bloom.Api
                 path = "(was null)";
             }
 
+            // A url containing a JavaScript value is our bug, and there is nothing the user can do
+            // about it, so record it for ourselves without interrupting them. This matters because
+            // ShouldReportFailedRequest deliberately stopped suppressing these: without this branch,
+            // un-suppressing them would start showing "Cannot Find File" toasts (and, on beta, a
+            // modal) to users on pages that previously failed silently. The distinct message also
+            // gives this class its own Sentry issue rather than burying it in the general one.
+            // See BL-16666.
+            if (LooksLikeAJavascriptValueInAUrl(localPath))
+            {
+                NonFatalProblem.Report(
+                    ModalIf.None,
+                    PassiveIf.None,
+                    "Url built from a JavaScript value",
+                    String.Format(
+                        "Server could not find the file {0}. LocalPath was {1}{2}",
+                        path,
+                        localPath,
+                        extraDiagnostics
+                    )
+                );
+                return;
+            }
+
             // we have any number of incidences where something asks for a page after we've navigated from it. E.g. BL-3715, BL-3769.
             // I suspect our disposal algorithm is just flawed: the page is removed from the _url cache as soon as we navigated away,
             // which is too soon. But that will take more research and we're trying to finish 3.7.

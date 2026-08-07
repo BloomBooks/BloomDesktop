@@ -58,7 +58,7 @@ describe("describeBadUrl", () => {
         const message = describeBadUrl(undefined, "an image's src");
         expect(message).toContain("an image's src");
         expect(message).toContain('"undefined"');
-        expect(message).toContain("BL-16577");
+        expect(message).toContain("BL-16666");
     });
 });
 
