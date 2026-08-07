@@ -24,7 +24,7 @@ namespace Bloom.Api
         /// <summary>
         /// The url of the document that asked for this, or null if the browser didn't say.
         /// Diagnostics only - it tells us which of our pages issued a request we can't satisfy.
-        /// See BL-16577.
+        /// See BL-16666.
         /// </summary>
         string Referer { get; }
         bool HaveFullyProcessedRequest { get; }

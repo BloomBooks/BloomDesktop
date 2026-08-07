@@ -4,7 +4,7 @@
 // `element.src = someUndefinedVariable` doesn't fail: the DOM turns the value into the *text*
 // "undefined" and asks the server for a file by that name. The server can only report that some
 // file called "undefined" is missing, which tells us nothing about who asked for it - so these
-// have sat in Sentry for years without ever being traceable to a line of code (BL-16577). We
+// have sat in Sentry for years without ever being traceable to a line of code (BL-16666, split from BL-16577). We
 // already fixed one instance the hard way (BL-16447, where the Adjust Timings dialog rendered
 // before its audio url was ready); this exists so the next one names itself.
 //
@@ -46,7 +46,7 @@ export function isJavascriptValueUrl(url: unknown): boolean {
 export function describeBadUrl(url: unknown, whereItWasSet: string): string {
     return (
         `A url was built from a JavaScript value that wasn't ready: ${whereItWasSet} was set to "${String(url)}". ` +
-        `Bloom will now ask the server for a file by that name and fail. See BL-16577.`
+        `Bloom will now ask the server for a file by that name and fail. See BL-16666.`
     );
 }
 
