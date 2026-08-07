@@ -195,7 +195,15 @@ namespace Bloom.CLI
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex.ToString());
-                        exitCode = CreateArtifactsExitCode.EpubException;
+                        // |=, not =: these are [Flags] values and every other step here accumulates.
+                        // A plain assignment discarded whatever had already been recorded -- most
+                        // notably BookHtmlNotFound from the bloomdigital step just above -- so the
+                        // harvester was told only "EpubException" and lost the fact that the book's
+                        // HTML was also wrong. That is the combination the harvester actually hits,
+                        // since it always asks for both artifacts. Safe to accumulate from this
+                        // worker: the main thread is blocked on countdownEvent below and does not
+                        // touch exitCode until after we signal.
+                        exitCode |= CreateArtifactsExitCode.EpubException;
                     }
                     countdownEvent.Signal(); // Decrement by one
                 });
