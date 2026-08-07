@@ -30,11 +30,11 @@
 # publish it. When you change one, look at the other.
 #
 # NOTE: push triggers use the workflow file as it exists on the pushed branch, so this file
-# must be present on a harvester branch to take effect there. This master copy is pnpm-based,
-# matching master. The harvester branches currently descend from the 6.4-era, yarn-based
-# lineage and carry their own yarn-based copy of this file; when they are next re-based on a
-# pnpm master, this copy replaces it. Until then, do not "fix" the yarn version on those
-# branches to match this one — it would break their build.
+# must be present on a harvester branch to take effect there. It gets there by merging master
+# into harvester-development. This copy is pnpm-based; so are the harvester branches, since
+# harvester-development merged a pnpm master (it used to descend from the 6.4-era, yarn-based
+# lineage and carried its own yarn-based copy of this file). Keep the copies identical, so
+# that merge stays a fast-forward of this file rather than a conflict.
 
 name: Harvester Artifacts
 
