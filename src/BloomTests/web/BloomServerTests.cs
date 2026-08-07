@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2018 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -166,6 +167,64 @@ namespace BloomTests.web
 
                 Assert.That(BloomServer.CanOpenConsecutivePorts(startingPort, 2), Is.False);
             }
+        }
+
+        /// <summary>
+        /// A bundle we inject into a page at the server root imports its sibling chunks by bare
+        /// name, so the server is regularly asked for files that sit directly in the browser folder
+        /// with no directory in the request at all (BL-16577).
+        ///
+        /// It must resolve those to a full path. Finding a file that ships with Bloom may not depend
+        /// on the process's current working directory: Windows File Explorer sets that to the folder
+        /// of a file the user double-clicked, and any Open/Save dialog can move it mid-session.
+        /// We deliberately do NOT move the current directory here to prove that - it is
+        /// process-wide state, and doing so makes other tests in this assembly fail
+        /// unpredictably - so instead we assert the property that a current-directory-relative
+        /// lookup would violate: the path we resolved to and served is rooted.
+        /// </summary>
+        [Test]
+        public void CanGetJavascriptDirectlyInBrowserRoot_AndResolvesItToAFullPath()
+        {
+            // Named like a Vite chunk (which is what the real requests are), but unique so we
+            // neither collide with nor depend on any particular chunk of the current build.
+            var chunkName = "BloomServerTestsChunk" + Guid.NewGuid().ToString("N") + ".js";
+            var chunkPath = Path.Combine(BloomFileLocator.AbsoluteBrowserRoot, chunkName);
+            using (var server = CreateBloomServer())
+            {
+                try
+                {
+                    RobustFile.WriteAllText(chunkPath, "// pretend chunk");
+
+                    var transaction = MakeJavascriptRequest(server, chunkName);
+
+                    Assert.That(transaction.StatusCode, Is.Not.EqualTo(404));
+                    Assert.That(transaction.ReplyContents, Is.EqualTo("// pretend chunk"));
+                    Assert.That(
+                        Path.IsPathRooted(transaction.ReplyImagePath),
+                        Is.True,
+                        $"Served {transaction.ReplyImagePath}, which is not a full path, so finding it depended on the current working directory."
+                    );
+                    Assert.That(transaction.ReplyImagePath, Is.EqualTo(chunkPath));
+                }
+                finally
+                {
+                    RobustFile.Delete(chunkPath);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Requests a JS file by bare name. The assetv query parameter is what the server itself
+        /// redirects JS requests to (see ProcessRequestAsync); supplying it up front keeps this
+        /// test on the file-serving path instead of getting the redirect.
+        /// </summary>
+        private PretendRequestInfo MakeJavascriptRequest(BloomServer server, string fileName)
+        {
+            var transaction = new PretendRequestInfo(
+                BloomServer.ServerUrlWithBloomPrefixEndingInSlash + fileName + "?assetv=test"
+            );
+            server.MakeReply(transaction);
+            return transaction;
         }
 
         [Test]

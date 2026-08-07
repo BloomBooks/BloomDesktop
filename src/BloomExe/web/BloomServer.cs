@@ -1214,9 +1214,12 @@ namespace Bloom.Api
                 && Path.GetExtension(modPath).Equals(".js", StringComparison.OrdinalIgnoreCase)
             )
             {
-                var browserRelativePath = Path.Combine(BloomFileLocator.BrowserRoot, modPath);
-                if (RobustFileExistsWithCaseCheck(browserRelativePath))
-                    return browserRelativePath;
+                // AbsoluteBrowserRoot, not BrowserRoot: the latter is relative, so this test would
+                // resolve against the process's current working directory, which Bloom does not
+                // control and which is often not the application folder (BL-16577, BL-16230).
+                var browserFilePath = Path.Combine(BloomFileLocator.AbsoluteBrowserRoot, modPath);
+                if (RobustFileExistsWithCaseCheck(browserFilePath))
+                    return browserFilePath;
             }
 
             // Is this request the full path to an image file? For most images, we just have the filename. However, in at
@@ -1499,7 +1502,9 @@ namespace Bloom.Api
                     "Server could not find the file {0}. LocalPath was {1}{2}{3}",
                     path,
                     localPath,
-                    extraDiagnostics,
+                    // Both, because they answer different questions and a request can raise both:
+                    // a bare "undefined" has no directory AND is a JavaScript value.
+                    extraDiagnostics + GetBareNameDiagnostics(localPath),
                     Environment.NewLine
                 );
                 NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, userMsg, detailMsg);
@@ -1542,6 +1547,41 @@ namespace Bloom.Api
                 String.IsNullOrEmpty(info.Referer) ? "(the browser did not say)" : info.Referer,
                 info.RawUrl
             );
+        }
+
+        /// <summary>
+        /// Extra detail for the report when the request had no directory at all, e.g. "Checkbox.js".
+        /// Those are almost always files we ship: a bundle we inject into a page at the server root
+        /// (see Book.AddJavascriptFile) imports its sibling chunks by bare name, so they arrive here
+        /// as a bare name too. Such a file should always be found under BrowserRoot, so if it isn't
+        /// we want to know what the process's working directory was (some of our lookups used to
+        /// resolve BrowserRoot against it) and whether the file is really absent from the install.
+        /// See BL-16577. Returns the empty string for ordinary requests, which carry a directory.
+        /// </summary>
+        private static string GetBareNameDiagnostics(string localPath)
+        {
+            try
+            {
+                if (!String.IsNullOrEmpty(Path.GetDirectoryName(localPath)))
+                    return "";
+                var browserRoot = BloomFileLocator.AbsoluteBrowserRoot;
+                var expectedPath = Path.Combine(browserRoot, localPath);
+                return String.Format(
+                    "{0}The request had no directory. BrowserRoot is {1} (exists: {2}); {3} exists: {4}; current directory is {5}",
+                    Environment.NewLine,
+                    browserRoot,
+                    Directory.Exists(browserRoot),
+                    expectedPath,
+                    RobustFile.Exists(expectedPath),
+                    Directory.GetCurrentDirectory()
+                );
+            }
+            catch (Exception e)
+            {
+                // This is only diagnostics for a problem we are already reporting; never let it
+                // become the thing that fails.
+                return Environment.NewLine + "Could not gather diagnostics: " + e.Message;
+            }
         }
 
         private static bool IsSimulatedFileUrl(string localPath)
@@ -2555,10 +2595,16 @@ namespace Bloom.Api
 
             if (di.Parent != null)
             {
-                return Path.Combine(
-                    GetExactPathName(di.Parent.FullName),
-                    di.Parent.GetFileSystemInfos(di.Name)[0].Name
-                );
+                // The entry may not be found: the file can be deleted while we walk up the path,
+                // and a directory enumeration does not always see a file that was only just
+                // written. Indexing [0] blindly turned that into an IndexOutOfRangeException that
+                // crashed the caller -- which is only a Debug-time check of the filename's case,
+                // so it must never be the thing that brings a request (or a test) down. When we
+                // can't confirm the on-disk spelling, keep the name we were given; that just means
+                // the case check silently passes, which is the right way for a diagnostic to fail.
+                var entries = di.Parent.GetFileSystemInfos(di.Name);
+                var exactName = entries.Length > 0 ? entries[0].Name : di.Name;
+                return Path.Combine(GetExactPathName(di.Parent.FullName), exactName);
             }
             else
             {

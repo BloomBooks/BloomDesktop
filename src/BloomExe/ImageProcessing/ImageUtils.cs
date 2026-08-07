@@ -1489,7 +1489,12 @@ namespace Bloom.ImageProcessing
                 // Very large PNG files can cause "out of memory" errors here, while making thumbnails,
                 // and when creating ePUBs or BloomPub books.  So, we check for sizes bigger than our
                 // maximum and reduce the image here if needed.
-                var tagFile = RobustFileIO.CreateTaglibFile(path);
+                var tagFile = TryCreateTaglibFileForImage(path);
+                if (tagFile == null)
+                {
+                    ++completed;
+                    continue;
+                }
                 if (tagFile.Properties != null && tagFile.Properties.Description.Contains("PNG"))
                 {
                     var size = GetDesiredImageSize(
@@ -1554,7 +1559,12 @@ namespace Bloom.ImageProcessing
                 // Very large JPG files can cause "out of memory" errors while making thumbnails and
                 // when creating ePUBs or BloomPub books.  So, we check for sizes bigger than our
                 // maximum and reduce the image here if needed.
-                var tagFile = RobustFileIO.CreateTaglibFile(path);
+                var tagFile = TryCreateTaglibFileForImage(path);
+                if (tagFile == null)
+                {
+                    ++completed;
+                    continue;
+                }
                 if (tagFile.Properties != null && tagFile.Properties.Description.Contains("JFIF"))
                 {
                     var size = GetDesiredImageSize(
@@ -1577,6 +1587,36 @@ namespace Bloom.ImageProcessing
                     }
                 }
                 ++completed;
+            }
+        }
+
+        /// <summary>
+        /// Read a book image's metadata, or return null if the file cannot be read as the kind of
+        /// image its extension claims it is.
+        /// </summary>
+        /// <remarks>
+        /// Book folders really do contain mislabeled image files: see the comment on
+        /// RobustFileIO.MetadataFromFile, which works around JPEG files that have been given .png
+        /// extensions.  TagLib throws on those, and on any file that is not an image at all.
+        /// NeedToShrinkImages already shrugs such a file off and carries on; before BL-16647 the
+        /// fix-up did not, so one bad file could throw out of the middle of
+        /// FixSizeAndTransparencyOfImagesInFolder, leaving the rest of the folder's oversized
+        /// images unshrunk and aborting whatever asked for the fix-up (the book-open migration, or
+        /// BookProcessor.ProcessBook).  Skipping just the unreadable file is what the caller wants:
+        /// we cannot resize an image we cannot read, and it is not worth failing the whole book over.
+        /// </remarks>
+        private static TagLib.File TryCreateTaglibFileForImage(string path)
+        {
+            try
+            {
+                return RobustFileIO.CreateTaglibFile(path);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent(
+                    $"ImageUtils could not read {path} as an image, so it was left alone: {e.Message}"
+                );
+                return null;
             }
         }
 
