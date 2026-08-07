@@ -84,8 +84,15 @@ namespace Bloom
 
             if (DisplayError(e.Exception))
             {
-                //Are we inside a Application.Run() statement?
-                if (Application.MessageLoop)
+                // Is there a running GUI application to shut down?
+                //
+                // Deliberately NOT Application.MessageLoop, which used to be asked here. That is a
+                // per-THREAD flag, so it answers "does the thread this exception arrived on have a
+                // WinForms loop" — and for anything surfacing on a worker thread the answer is no even
+                // while Bloom is running perfectly normally. We then took Environment.Exit(1), which
+                // does not run `finally` blocks and so skips the one in Main that releases Bloom's
+                // single-instance token, potentially leaving Bloom unable to start again (BL-16668).
+                if (Program.MainMessageLoopIsRunning)
                     ProgramExit.Exit();
                 else
                     Environment.Exit(1); //the 1 here is just non-zero

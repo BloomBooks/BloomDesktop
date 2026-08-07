@@ -1408,6 +1408,7 @@ namespace Bloom
             // Crashes if initialized twice, and there's at least once case when joining a TC
             // where we can come here twice.
             WritingSystem.EnsureSldrInitialized();
+            MainMessageLoopIsRunning = true;
             try
             {
                 Application.Run();
@@ -1450,6 +1451,7 @@ namespace Bloom
             }
             finally
             {
+                MainMessageLoopIsRunning = false;
                 if (FileMeddlerManager.IsMeddling)
                     FileMeddlerManager.Stop();
                 WebView2Browser.CleanupWebView2UserFolders();
@@ -2623,6 +2625,21 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
         // Should be set to true if this is being called by Harvester, false otherwise.
         public static bool RunningHarvesterMode { get; set; }
+
+        /// <summary>
+        /// True only while Bloom's MAIN message loop — the Application.Run() in RunBloom — is pumping.
+        /// In other words, "there is a running GUI application to shut down".
+        /// </summary>
+        /// <remarks>
+        /// Use this, not Application.MessageLoop, to ask that question. Application.MessageLoop is
+        /// per-THREAD: it answers "does the calling thread have a WinForms loop", which is a different
+        /// question and gives the wrong answer for anything raised on a worker thread. That mattered in
+        /// BL-16668: FatalExceptionHandler used it to choose between a graceful ProgramExit.Exit() and a
+        /// bare Environment.Exit(1), so a fatal error surfacing on a worker's thread took the hard-kill
+        /// path — which skips the `finally` in Main that releases Bloom's single-instance token, and so
+        /// could leave Bloom unable to start again.
+        /// </remarks>
+        public static bool MainMessageLoopIsRunning { get; private set; }
 
         private static bool _runningE2eTests;
 
