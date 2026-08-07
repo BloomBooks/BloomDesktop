@@ -90,6 +90,14 @@ namespace Bloom
             // next artifact step died with ObjectDisposedException (BL-16668). Not subscribing is safe
             // because in that flow the container's lifetime is already bounded by the `using` blocks in the
             // CLI command handlers, and the process exits as soon as those unwind.
+            //
+            // One knock-on worth knowing: OnApplicationExit is the only caller of
+            // Program.FinishLocalizationHarvesting(), so a command-line verb no longer runs it. That is
+            // #if DEBUG code which does nothing unless LocalizationManager.IgnoreExistingEnglishTranslationFiles
+            // is set, so release CLI runs are unaffected -- but a DEBUG localization-harvesting run driven
+            // through a CLI verb would no longer merge the English translation files. If we ever want that,
+            // call it from the CLI path explicitly rather than by leaning on a shutdown event that is not
+            // really telling us the application is shutting down.
             if (!Program.RunningInConsoleMode)
                 Application.ApplicationExit += OnApplicationExit;
 
