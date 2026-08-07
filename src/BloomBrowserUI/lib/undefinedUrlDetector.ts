@@ -131,6 +131,10 @@ function guardSrcProperty(
     });
 }
 
+/**
+ * The other way an element's src gets set. Wrapping `setAttribute` on `Element` covers every
+ * element type at once, including any we didn't wrap a `src` property for.
+ */
 function guardSetAttribute(
     check: (url: unknown, whereItWasSet: string) => void,
 ): void {
@@ -164,6 +168,10 @@ function guardFetch(
     };
 }
 
+/**
+ * fetch() accepts a string, a URL, or a Request; pull the url out of whichever we were given so
+ * the check sees the same thing the network will.
+ */
 function urlOfFetchInput(input: RequestInfo | URL): string | undefined {
     if (typeof input === "string") return input;
     if (input instanceof URL) return input.href;
@@ -173,6 +181,10 @@ function urlOfFetchInput(input: RequestInfo | URL): string | undefined {
     return undefined;
 }
 
+/**
+ * Older code (and some libraries) still request through XMLHttpRequest rather than fetch, and
+ * `open` is where the url is named, so that is what we wrap.
+ */
 function guardXmlHttpRequest(
     check: (url: unknown, whereItWasSet: string) => void,
 ): void {

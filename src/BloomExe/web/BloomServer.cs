@@ -1456,11 +1456,7 @@ namespace Bloom.Api
             {
                 if (ShouldReportFailedRequest(info, CurrentBook?.FolderPath))
                 {
-                    ReportMissingFile(
-                        localPath,
-                        path,
-                        GetJavascriptValueDiagnostics(info, localPath)
-                    );
+                    ReportMissingFile(localPath, path, info);
                 }
                 return false; // from here we head off to BloomServer.MakeReply() which now uses the same ShouldReportFailedRequest() method.
             }
@@ -1474,11 +1470,7 @@ namespace Bloom.Api
             return path.EndsWith($".{AudioRecording.kRecordableExtension}");
         }
 
-        private static void ReportMissingFile(
-            string localPath,
-            string path,
-            string extraDiagnostics = ""
-        )
+        private static void ReportMissingFile(string localPath, string path, IRequestInfo info)
         {
             if (path == null)
             {
@@ -1491,8 +1483,13 @@ namespace Bloom.Api
             // un-suppressing them would start showing "Cannot Find File" toasts (and, on beta, a
             // modal) to users on pages that previously failed silently. The distinct message also
             // gives this class its own Sentry issue rather than burying it in the general one.
-            // See BL-16666.
-            if (LooksLikeAJavascriptValueInAUrl(localPath))
+            //
+            // We ask IsJavascriptValueRequest(info) rather than testing localPath, so that this
+            // decision cannot disagree with the one ShouldReportFailedRequest made from the same
+            // request. If they ever diverged, a request it had decided to stop suppressing would
+            // fall through to the loud branch below - which is precisely the toast this exists to
+            // prevent. See BL-16666.
+            if (IsJavascriptValueRequest(info))
             {
                 NonFatalProblem.Report(
                     ModalIf.None,
@@ -1502,7 +1499,7 @@ namespace Bloom.Api
                         "Server could not find the file {0}. LocalPath was {1}{2}{3}",
                         path,
                         localPath,
-                        extraDiagnostics,
+                        GetJavascriptValueDiagnostics(info),
                         // Both kinds of detail, because they answer different questions and this
                         // request can raise both: a bare "undefined" has no directory AND is a
                         // JavaScript value.
@@ -1619,13 +1616,24 @@ namespace Bloom.Api
         }
 
         /// <summary>
+        /// Whether this request is the JavaScript-value bug above. Everything that needs to know
+        /// asks *this*, from the request itself, so that the decision to keep reporting it (in
+        /// ShouldReportFailedRequest) and the decision to report it quietly (in ReportMissingFile)
+        /// can never be made from two separately-derived strings and disagree. See BL-16666.
+        /// </summary>
+        private static bool IsJavascriptValueRequest(IRequestInfo info)
+        {
+            return LooksLikeAJavascriptValueInAUrl(GetLocalPathWithoutQuery(info));
+        }
+
+        /// <summary>
         /// The extra detail we attach when the request looks like the JavaScript-value bug above.
         /// The referrer is the whole point: it names the page that issued the bogus request, which
         /// is what lets us find the code responsible. See BL-16666.
         /// </summary>
-        private static string GetJavascriptValueDiagnostics(IRequestInfo info, string localPath)
+        private static string GetJavascriptValueDiagnostics(IRequestInfo info)
         {
-            if (!LooksLikeAJavascriptValueInAUrl(localPath))
+            if (!IsJavascriptValueRequest(info))
                 return "";
             return String.Format(
                 "{0}Part of this path is a JavaScript value turned into text, so some of our front-end code built a url out of something it did not have yet."
@@ -2301,7 +2309,7 @@ namespace Bloom.Api
                 "**{0}: File Missing: {1}{2}",
                 GetType().Name,
                 localPath,
-                GetJavascriptValueDiagnostics(info, localPath)
+                GetJavascriptValueDiagnostics(info)
             );
         }
 
@@ -2332,7 +2340,7 @@ namespace Bloom.Api
             // user is responsible for, so none of the suppressions below should hide it - and the
             // book-folder one in particular was hiding most of them, since a bogus url built by a
             // book page resolves inside that book's folder. See BL-16666.
-            if (LooksLikeAJavascriptValueInAUrl(localPath))
+            if (IsJavascriptValueRequest(info))
                 return true;
             var localFolderTestPath = localPath;
             // We don't need even a toast for missing files in the book folder. That's the user's problem
