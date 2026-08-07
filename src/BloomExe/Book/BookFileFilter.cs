@@ -375,6 +375,12 @@ namespace Bloom.Book
         /// Get a filename from an optional attribute, and if present, store the normalized form
         /// of the filename in the set.
         /// </summary>
+        /// <remarks>
+        /// The value is used verbatim as a file name: the sound attributes this is called with
+        /// hold a plain, NOT URL-encoded, name -- see the encoding conventions note on
+        /// UrlPathString. Decoding here would mean a sound whose name contains a space no longer
+        /// matched the file on disk, and so was left out of the published book.
+        /// </remarks>
         void AddAttrFilenameValueToSet(SafeXmlElement elt, string attrName, HashSet<string> set)
         {
             var value = elt.GetAttribute(attrName);

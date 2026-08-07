@@ -1212,9 +1212,11 @@ namespace Bloom.Publish
                     .Cast<SafeXmlElement>()
             )
             {
-                var relativePath = UrlPathString
-                    .CreateFromUrlEncodedString(bookSetting.InnerText.Trim())
-                    .PathOnly.NotEncoded;
+                // A bloomDataDiv image entry holds a plain file name, NOT a URL-encoded one --
+                // see the encoding conventions note on UrlPathString. This used to decode the
+                // value, which disagreed with the rewrite below and with Book.cs, which both
+                // writes and normalizes these to the plain name.
+                var relativePath = bookSetting.InnerText.Trim().Split('?')[0];
                 if (
                     string.IsNullOrWhiteSpace(relativePath)
                     || ImageUtils.IsPlaceholderImageFilename(relativePath)
@@ -1226,6 +1228,10 @@ namespace Bloom.Publish
                 yield return new MediaReference
                 {
                     RelativePath = relativePath,
+                    // Written as the plain file name, deliberately not URL-encoded, to match the
+                    // read above and what Book.cs writes and normalizes -- see the encoding
+                    // conventions note on UrlPathString. (The @src it also sets here is the
+                    // data-div's own bookkeeping copy, not an img that the browser ever loads.)
                     RewriteReference = canonicalRelativePath =>
                     {
                         bookSetting.InnerText = canonicalRelativePath;
@@ -1338,7 +1344,10 @@ namespace Bloom.Publish
             if (string.IsNullOrWhiteSpace(rawValue) || rawValue == "none")
                 return null;
 
-            var fileName = UrlPathString.CreateFromUrlEncodedString(rawValue).PathOnly.NotEncoded;
+            // The sound attributes hold a plain file name, NOT a URL-encoded one -- see the
+            // encoding conventions note on UrlPathString. This used to decode the value, which
+            // disagreed with the rewrite below and with every other reader of these attributes.
+            var fileName = rawValue.Split('?')[0];
             var normalizedFileName = BookStorage.GetNormalizedPathForOS(fileName);
             if (talkingBookAudioFileNames.Contains(normalizedFileName))
                 return null;
@@ -1346,6 +1355,9 @@ namespace Bloom.Publish
             return new MediaReference
             {
                 RelativePath = MakeRelativePath("audio", fileName),
+                // Written as the plain file name, deliberately not URL-encoded, to match the read
+                // above and every other consumer -- see the encoding conventions note on
+                // UrlPathString.
                 RewriteReference = canonicalRelativePath =>
                     element.SetAttribute(attributeName, Path.GetFileName(canonicalRelativePath)),
             };

@@ -1287,14 +1287,26 @@ namespace Bloom.Book
                 //also, remove from the doomed list anything referenced in the datadiv that looks like an image
                 //This saves us from deleting, for example, cover page images if this is called before the front-matter
                 //has been applied to the document.
-                pathsToNotDelete.AddRange(
-                    from SafeXmlElement dataDivImage in Dom.RawDom.SafeSelectNodes(
+                // A bloomDataDiv image entry holds a plain file name, NOT a URL-encoded one --
+                // see the encoding conventions note on UrlPathString. We protect the decoded form
+                // as well, because a few old books really do have an encoded value here (BL-3901).
+                // Protecting both is safe precisely because this is a list of files NOT to delete:
+                // a surplus entry at worst leaves an unused file in the folder, whereas a missing
+                // one deletes a file the book is using.
+                foreach (
+                    SafeXmlElement dataDivImage in Dom.RawDom.SafeSelectNodes(
                         "//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]"
                     )
-                    select UrlPathString
-                        .CreateFromUrlEncodedString(dataDivImage.InnerText.Trim())
-                        .PathOnly.NotEncoded
-                );
+                )
+                {
+                    var plainName = dataDivImage.InnerText.Trim().Split('?')[0];
+                    pathsToNotDelete.Add(plainName);
+                    var decodedName = UrlPathString
+                        .CreateFromUrlEncodedString(plainName)
+                        .PathOnly.NotEncoded;
+                    if (decodedName != plainName)
+                        pathsToNotDelete.Add(decodedName);
+                }
                 pathsToNotDelete.AddRange(_brandingImageNames);
             }
 
@@ -1395,6 +1407,10 @@ namespace Bloom.Book
             var activityPages = Dom.SafeSelectNodes("//div[@data-activity]");
             foreach (SafeXmlElement dap in activityPages)
             {
+                // Used verbatim as a file name: these attributes hold a plain, NOT URL-encoded,
+                // name -- see the encoding conventions note on UrlPathString. Decoding here would
+                // mean a sound whose name contains a space no longer matched the file on disk,
+                // and this set is what stops the file below from being deleted.
                 var correctSound = dap.GetAttribute("data-correct-sound");
                 var wrongSound = dap.GetAttribute("data-wrong-sound");
                 if (correctSound != null)
@@ -1406,6 +1422,7 @@ namespace Bloom.Book
             var dataSoundElts = Dom.SafeSelectNodes(".//div[@data-sound]");
             foreach (var ds in dataSoundElts)
             {
+                // Plain file name, not URL-encoded; see the note above.
                 usedAudioFileNames.Add(ds.GetAttribute("data-sound"));
             }
 
