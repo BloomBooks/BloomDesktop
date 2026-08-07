@@ -349,6 +349,7 @@ namespace BloomTests.Spreadsheet
     {
         private HtmlDom _dom;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
         private TemporaryFolder _otherImagesFolder;
         private ProgressSpy _progressSpy;
@@ -882,8 +883,10 @@ namespace BloomTests.Spreadsheet
                     "src/BloomTests/ImageProcessing"
                 );
 
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+
             // A place to put an image that is not in the spreadsheet folder so we can test absolute path import.
-            _otherImagesFolder = new TemporaryFolder("other images folder");
+            _otherImagesFolder = new TemporaryFolder(_testFolder, "other images folder");
 
             // Create an HtmlDom for a template to import into
             var xml = string.Format(
@@ -1025,7 +1028,7 @@ namespace BloomTests.Spreadsheet
             contentRow15.AddCell(InternalSpreadsheet.PageContentRowLabel);
             contentRow15.SetCell(columnForEn, "This will go on a new just-text page at the end");
 
-            _bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportTests");
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // This test class has a test (HasCorrectSideClass) that needs the Importer to have a
             // CollectionSettings object. So we create a basic set of CollectionSettings, but we don't need
@@ -1063,8 +1066,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
-            _otherImagesFolder.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase(0, "tg1", "this is page 1")]
@@ -1322,6 +1325,7 @@ namespace BloomTests.Spreadsheet
     public class SpreadsheetImportIntoLegacyImagePageTests
     {
         private HtmlDom _dom;
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         [OneTimeSetUp]
@@ -1343,7 +1347,8 @@ namespace BloomTests.Spreadsheet
             contentRow.AddCell(InternalSpreadsheet.PageContentRowLabel);
             contentRow.SetCell(columnForImage, "images/shirt.png");
 
-            _bookFolder = new TemporaryFolder("SpreadsheetImportIntoLegacyImagePageTests");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
             var spreadsheetFolder =
                 SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
                     "src/BloomTests/ImageProcessing"
@@ -1361,7 +1366,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [Test]
@@ -1384,6 +1390,7 @@ namespace BloomTests.Spreadsheet
     {
         private HtmlDom _dom;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         public static string PageWithNothing(int pageNumber)
@@ -1454,9 +1461,8 @@ namespace BloomTests.Spreadsheet
             contentRow3.AddCell(InternalSpreadsheet.PageContentRowLabel);
             contentRow3.SetCell(columnForImage, "images/man.png");
 
-            _bookFolder = new TemporaryFolder(
-                "SpreadsheetImageAndTextImportToBookWithEmptyLastPageTests"
-            );
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(
@@ -1485,7 +1491,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase(2, "man.png")]
@@ -1589,6 +1596,7 @@ namespace BloomTests.Spreadsheet
     {
         private HtmlDom _dom;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
         private List<SafeXmlElement> _contentPages;
         private string _spreadsheetFolder;
@@ -1632,7 +1640,8 @@ namespace BloomTests.Spreadsheet
             contentRow2.AddCell(InternalSpreadsheet.PageContentRowLabel);
             contentRow2.SetCell(columnForEn, "this is page 2");
 
-            _bookFolder = new TemporaryFolder("SpreadsheetImportWithNoZLanguageTests");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(
@@ -1656,7 +1665,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase(0)]
@@ -1680,6 +1690,7 @@ namespace BloomTests.Spreadsheet
     {
         private HtmlDom _dom;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         private List<SafeXmlElement> _contentPages;
@@ -1734,9 +1745,8 @@ namespace BloomTests.Spreadsheet
             contentRow3.SetCell(columnForEn, "this is the first block on page 2");
             contentRow3.SetCell(columnForImage, "images/man.png");
 
-            _bookFolder = new TemporaryFolder(
-                "SpreadsheetImageAndTextImportToBookWithComplexLastPageTests"
-            );
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(
@@ -1765,7 +1775,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase(0, "tg1", "this is page 1")]
@@ -1821,6 +1832,7 @@ namespace BloomTests.Spreadsheet
     {
         private HtmlDom _dom;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         private List<SafeXmlElement> _contentPages;
@@ -1864,9 +1876,8 @@ namespace BloomTests.Spreadsheet
             contentRow1.SetCell(columnForImage, "images/lady24b.png");
             contentRow1.SetCell(columnForEn, "this is page 1");
 
-            _bookFolder = new TemporaryFolder(
-                "SpreadsheetImageAndTextImportToBookWithComplexLastPageTests"
-            );
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(
@@ -1895,7 +1906,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         // This is the main point of this test class. The other tests just make sure nothing got broken
@@ -2044,6 +2056,7 @@ namespace BloomTests.Spreadsheet
 </html>
 ";
         private HtmlDom _dom;
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         [OneTimeSetUp]
@@ -2065,7 +2078,8 @@ namespace BloomTests.Spreadsheet
             contentRow1.SetCell(columnForStart, "Copyright C 2021, Someone else");
             contentRow1.SetCell(columnForEn, "This should not be read");
 
-            _bookFolder = new TemporaryFolder("SpreadsheetImportRemovingLicenseTests");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
@@ -2077,7 +2091,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [Test]
@@ -2114,6 +2129,7 @@ namespace BloomTests.Spreadsheet
     public class SpreadsheetImportKeepLicenseUrlandNotesIfNoCopyright
     {
         private HtmlDom _dom;
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         [OneTimeSetUp]
@@ -2133,7 +2149,8 @@ namespace BloomTests.Spreadsheet
             contentRow1.AddCell("[title]");
             contentRow1.SetCell(columnForStar, "Some arbitrary title, just so the SS isn't empty");
 
-            _bookFolder = new TemporaryFolder("SpreadsheetImportRemovingLicenseTests");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
@@ -2145,7 +2162,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase("copyright", "Copyright C 2022 Somone")]
@@ -2165,6 +2183,7 @@ namespace BloomTests.Spreadsheet
     public class SpreadsheetImportModifyLicenseDataEvenIfNoCopyright
     {
         private HtmlDom _dom;
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         [OneTimeSetUp]
@@ -2189,7 +2208,8 @@ namespace BloomTests.Spreadsheet
             contentRow2.AddCell("[licenseNotes]");
             contentRow2.SetCell(columnForStar, "Be very generous to the author");
 
-            _bookFolder = new TemporaryFolder("SpreadsheetImportRemovingLicenseTests");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
@@ -2201,7 +2221,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase("copyright", "Copyright C 2022 Somone")]

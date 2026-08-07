@@ -35,6 +35,26 @@ The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 - Add sanity checks to guard against falsely passing tests. For example, when unit testing a method, sanity check that the test data values are as expected before you call the method, and then after you call the method you can verify that those values have changed as expected.
 - When running C# tests with `dotnet test`, never pass `--no-build`. Always let dotnet build the test project first so the tests run against the latest code. A stale DLL can cause tests to pass or fail against an old version of the code, hiding real regressions.
 
+## The opt-in Reading App Builder real-build test
+
+`BloomTests.Publish.Rab.RabRealBuildTests.SetupAndBuildAsync_RealReadingAppBuilderBuild_CreatesValidApk`
+is the only test that exercises a real Reading App Builder installation end to end: it builds a
+BloomPUB into an actual signed Android APK with RAB and Gradle, and checks the result. **It is worth
+running after any change under `src/BloomExe/Publish/Rab/`** — nothing else covers that path for
+real.
+
+- It needs RAB installed (Bloom's own toolchain under
+  `%LOCALAPPDATA%\SIL\Bloom\ReadingAppBuilder\` counts) and **`BLOOM_RUN_RAB_MANUAL_TESTS=1`** set.
+  Without the variable it calls `Assert.Ignore`.
+- It takes **about 70 seconds**, because it runs a real Gradle build.
+- It is `[Category("SkipOnTeamCity")]` / `[Category("RequiresReadingAppBuilder")]`, so **CI never
+  runs it**. If it breaks, only someone running it deliberately will find out.
+
+```bash
+BLOOM_RUN_RAB_MANUAL_TESTS=1 build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj \
+  --filter "FullyQualifiedName~RabRealBuildTests"
+```
+
 ## Building / testing C# while a Bloom is running
 
 The developer often has a Bloom running (via `./go.sh`) so they can watch your changes
