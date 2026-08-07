@@ -112,10 +112,13 @@ namespace Bloom.Publish
                 }
                 finally
                 {
-                    // Application.Run disposed this thread's windows as its loop ended; since we no longer
-                    // use it, dispose the synchronization context (and so its hidden marshaling control)
-                    // ourselves. We are on the owning thread, the only one allowed to do that, and WM_QUIT
-                    // is only retrieved once the queue is otherwise empty, so all posted work has run.
+                    // As its loop ended, Application.Run's teardown destroyed this thread's window
+                    // HANDLES — it did not Dispose the controls themselves; the browser has always been
+                    // disposed explicitly, from Dispose() below. Since we no longer call it, dispose the
+                    // synchronization context — and with it the hidden marshaling control — ourselves,
+                    // so we don't leave a Control to be finalized on a dead thread. We are on the owning
+                    // thread, the only one allowed to do that, and WM_QUIT is only retrieved once the
+                    // queue is otherwise empty, so everything posted has already run.
                     ctx.Dispose();
                 }
             }
@@ -144,6 +147,11 @@ namespace Bloom.Publish
         /// windows and their async completions — while remaining invisible to WinForms' application-lifetime
         /// bookkeeping. So no non-GUI entry point (the harvester, bulk upload, any future CLI verb) can be
         /// told the application is exiting just because we finished with a browser.
+        ///
+        /// Leaving that bookkeeping cuts both ways, deliberately: WinForms no longer knows about this loop,
+        /// so Application.Exit() no longer ends it either. If the GUI shuts down while a browser is still
+        /// alive, this thread keeps pumping until the process goes away — harmless, because the thread is
+        /// IsBackground (it cannot hold the process open) and the CoreWebView2 process dies with its host.
         /// </remarks>
         private static void RunPrivateMessageLoop()
         {
