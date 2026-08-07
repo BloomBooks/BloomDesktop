@@ -81,11 +81,16 @@ isolated as well.
 
 Two consequences worth knowing:
 
-- **After a failing run the folder is kept**, so you can look at what the failing test wrote —
-  find it under `%TEMP%\BloomTests\`. (The run also reports the path through NUnit's progress
-  channel, but `dotnet test` does not show that at its default verbosity, so go and look rather
-  than expecting it in the output.) Passing runs delete theirs, and anything older than a day is
-  cleared by the next run.
+- **After a failing run the folder is kept**, so you can look at what the failing test wrote; the
+  path is printed on standard error at the end of the run. Passing runs delete theirs, and
+  anything older than a day is cleared by the next run.
+- **If the folder cannot be deleted, the run says so** — again on standard error, naming one file
+  that is still open and the reason the OS gave, without failing the run. That normally means a
+  test finished without disposing something; worth chasing, because a leaked handle can make
+  later runs behave oddly.
+- Note that standard error is the only channel `dotnet test` shows at its default verbosity —
+  `Console.Out`, `TestContext.Out` and `TestContext.Progress` are all swallowed. Use
+  `Console.Error` for anything a developer must see.
 - Every temp path is longer by `BloomTests\<key>-p<pid>\`. Deeply-nested temp paths in tests are
   that much closer to `MAX_PATH`.
 

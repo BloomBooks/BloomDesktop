@@ -90,7 +90,9 @@ public class TestTempDirectory
         // Whatever we leave behind is cleared by a later run once it goes stale.
         if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
         {
-            TestContext.Progress.WriteLine(
+            // Standard error, because it is the only channel `dotnet test` shows at its default
+            // verbosity; Console.Out, TestContext.Out and TestContext.Progress are all swallowed.
+            Console.Error.WriteLine(
                 $"Tests failed, so their temporary files have been left in {_runFolder}"
             );
             return;
@@ -99,6 +101,62 @@ public class TestTempDirectory
         // Failing silently is deliberate: a file some test left open must not turn a green run
         // red at the very last moment.
         TemporaryFolder.DeleteFolderThatMayBeInUseAndIfNotFailSilently(_runFolder);
+
+        // But it should not be *silent* silent. If something is still holding a file, that is
+        // worth knowing: it usually means a test finished without disposing something, which is
+        // a small bug of its own and can make later runs behave oddly.
+        var whatIsLeft = DescribeWhyFolderCouldNotBeDeleted(_runFolder);
+        if (whatIsLeft != null)
+        {
+            Console.Error.WriteLine(
+                $"WARNING: could not delete this test run's temp folder, {_runFolder}. "
+                    + "Something in the run probably did not release a file it opened. "
+                    + whatIsLeft
+            );
+        }
+    }
+
+    /// <summary>
+    /// Describes what is still sitting in a folder we tried and failed to delete, naming one item
+    /// that will not open and the reason the operating system gave for it. Returns null when the
+    /// folder did in fact go, so the caller can use it as "is there anything to complain about?".
+    /// </summary>
+    internal static string DescribeWhyFolderCouldNotBeDeleted(string folder)
+    {
+        if (!Directory.Exists(folder))
+            return null;
+
+        string[] files;
+        try
+        {
+            files = Directory.GetFiles(folder, "*", SearchOption.AllDirectories);
+        }
+        catch (Exception e)
+        {
+            return $"Its contents could not even be listed: {e.Message}";
+        }
+
+        // Whatever refuses to open exclusively is almost always the thing holding the folder, so
+        // report the first one of those along with what the OS said about it.
+        foreach (var file in files)
+        {
+            try
+            {
+                using (File.Open(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { }
+            }
+            catch (Exception e)
+            {
+                return $"{files.Length} file(s) remain; at least this one is still in use: {file} -- {e.Message}";
+            }
+        }
+
+        if (files.Length > 0)
+        {
+            return $"{files.Length} file(s) remain, though each can be opened now, so whatever held them may have just let go. First of them: {files[0]}";
+        }
+
+        return "It contains no files, so something may be holding the folder itself -- a process "
+            + "using it as its current directory, for instance.";
     }
 
     /// <summary>

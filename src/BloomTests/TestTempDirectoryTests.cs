@@ -50,6 +50,71 @@ namespace BloomTests
         }
 
         /// <summary>
+        /// When a test leaves a file open, the end-of-run warning has to say which file and why,
+        /// otherwise "could not delete the temp folder" gives whoever reads it nowhere to start.
+        /// </summary>
+        [Test]
+        public void DescribeWhyFolderCouldNotBeDeleted_FileStillOpen_NamesThatFileAndTheReason()
+        {
+            using (var folder = new TemporaryFolder("DescribeWhyFolderCouldNotBeDeleted"))
+            {
+                var lockedPath = Path.Combine(folder.FolderPath, "someone-left-me-open.txt");
+                File.WriteAllText(lockedPath, "contents");
+                var innocentPath = Path.Combine(folder.FolderPath, "closed-properly.txt");
+                File.WriteAllText(innocentPath, "contents");
+
+                // Sanity check: with nothing holding either file, there is no lock to report.
+                Assert.That(
+                    TestTempDirectory.DescribeWhyFolderCouldNotBeDeleted(folder.FolderPath),
+                    Does.Not.Contain("still in use"),
+                    "Setup sanity check: neither file is open yet, so nothing should be reported as in use."
+                );
+
+                using (File.Open(lockedPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                {
+                    var message = TestTempDirectory.DescribeWhyFolderCouldNotBeDeleted(
+                        folder.FolderPath
+                    );
+
+                    Assert.That(message, Is.Not.Null);
+                    Assert.That(
+                        message,
+                        Does.Contain("someone-left-me-open.txt"),
+                        "The warning should name the file that is actually held."
+                    );
+                    Assert.That(
+                        message,
+                        Does.Not.Contain("closed-properly.txt"),
+                        "It should point at the locked file, not just the first file it happened to find."
+                    );
+                    Assert.That(
+                        message,
+                        Does.Contain("being used by another process").IgnoreCase,
+                        "It should pass on the reason the operating system gave."
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// The same call is how the teardown decides whether there is anything to complain about
+        /// at all, so a folder that really did go must produce nothing.
+        /// </summary>
+        [Test]
+        public void DescribeWhyFolderCouldNotBeDeleted_FolderIsGone_SaysNothing()
+        {
+            string path;
+            using (var folder = new TemporaryFolder("DescribeWhyFolderIsGone"))
+            {
+                path = folder.FolderPath;
+                Assert.That(Directory.Exists(path), Is.True, "Setup sanity check.");
+            }
+
+            Assert.That(Directory.Exists(path), Is.False, "Setup sanity check: it was disposed.");
+            Assert.That(TestTempDirectory.DescribeWhyFolderCouldNotBeDeleted(path), Is.Null);
+        }
+
+        /// <summary>
         /// The redirect reaches the code that matters: an ordinary fixed-name TemporaryFolder,
         /// written exactly as the ~180 existing calls are, is created inside our run folder.
         /// </summary>
