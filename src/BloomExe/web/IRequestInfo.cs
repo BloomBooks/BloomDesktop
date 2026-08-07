@@ -20,6 +20,13 @@ namespace Bloom.Api
         string RequestContentType { get; }
         string ResponseContentType { set; }
         string RawUrl { get; }
+
+        /// <summary>
+        /// The url of the document that asked for this, or null if the browser didn't say.
+        /// Diagnostics only - it tells us which of our pages issued a request we can't satisfy.
+        /// See BL-16577.
+        /// </summary>
+        string Referer { get; }
         bool HaveFullyProcessedRequest { get; }
         void WriteCompleteOutput(string s);
         void ReplyWithFileContent(string path, string originalPath = null);
