@@ -121,14 +121,45 @@ describe("installUndefinedUrlDetector", () => {
         expect(div.getAttribute("title")).toBe("undefined");
     });
 
-    it("reports a repeating bug only once, so a re-rendering component can't flood the server", () => {
-        const image = document.createElement("img");
-
-        image.src = undefined as unknown as string;
-        image.src = undefined as unknown as string;
-        image.src = undefined as unknown as string;
+    it("stops reporting after a handful, so nothing can flood the server", () => {
+        // Two protections: identical repeats collapse (same message and stack), and a hard cap
+        // bounds everything else. The cap is what we can pin down in a test — the collapse depends
+        // on the stack being identical, which a loop here does give us but a caller at a different
+        // line would not, so the cap is what actually guarantees the bound in the wild.
+        for (let i = 0; i < 40; i++) {
+            document.createElement("img").src = undefined as unknown as string;
+        }
 
         expect(report).toHaveBeenCalledTimes(1);
+
+        // ...and distinct problems keep being reported only up to the cap.
+        report.mockClear();
+        resetReportingForTests();
+        const sites = [
+            () => (document.createElement("img").src = undefined as never),
+            () => (document.createElement("img").src = null as never),
+            () => (document.createElement("iframe").src = undefined as never),
+        ];
+        sites.forEach((site) => site());
+        expect(report).toHaveBeenCalledTimes(3);
+    });
+
+    it("still reports a second, different call site with the same message", () => {
+        // Every component that sets an image src to undefined produces the same message, so
+        // keying the once-only rule on the message alone would report whichever ran first and
+        // hide all the others for the rest of the session — the exact blind spot this feature
+        // exists to remove. These two helpers stand in for two unrelated components.
+        const firstComponent = () => {
+            document.createElement("img").src = undefined as unknown as string;
+        };
+        const secondComponent = () => {
+            document.createElement("img").src = undefined as unknown as string;
+        };
+
+        firstComponent();
+        secondComponent();
+
+        expect(report).toHaveBeenCalledTimes(2);
     });
 
     it("reports a fetch of an undefined url, which is how BL-16447 escaped", () => {

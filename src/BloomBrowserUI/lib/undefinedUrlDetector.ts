@@ -69,11 +69,27 @@ let installed = false;
 
 // Each report is an http post to the server, and the bug that triggers it is typically a render
 // that repeats - the Adjust Timings dialog in BL-16447 would have fired on every open. We only
-// need to learn about each site once, so report a given message once and stop altogether after a
+// need to learn about each site once, so report a given problem once and stop altogether after a
 // handful. Losing the repeat count costs us nothing: the point is to identify the code, and the
 // server-side count in Sentry already tells us how often it happens.
+//
+// "A given problem" has to mean the call site, not the message. Every component that sets an
+// image src to undefined produces the *same* message, so keying on that would report whichever
+// one happened to run first and hide every other one for the rest of the session - which is
+// exactly the kind of blind spot this whole feature exists to remove.
 const maxReports = 10;
 const alreadyReported = new Set<string>();
+
+/**
+ * What makes two reports "the same problem": the message plus the whole stack. We use the entire
+ * stack rather than trying to pick out "the caller" — any rule for finding that frame has to guess
+ * which frames are ours, and a wrong guess lands on a frame two different call sites share, which
+ * silently reinstates the blind spot. The stack is stable for repeats from one site, and if two
+ * routes reach the same bug, hearing about both is useful rather than noise.
+ */
+function reportKey(message: string, error: Error): string {
+    return message + "|" + (error.stack ?? "");
+}
 
 /** Exported only so tests can start from a clean slate. */
 export function resetReportingForTests(): void {
@@ -93,11 +109,13 @@ export function installUndefinedUrlDetector(report: Reporter): void {
     const check = (url: unknown, whereItWasSet: string) => {
         if (!isJavascriptValueUrl(url)) return;
         const message = describeBadUrl(url, whereItWasSet);
-        if (alreadyReported.has(message) || alreadyReported.size >= maxReports)
-            return;
-        alreadyReported.add(message);
         // The stack of *this* call is the whole point: it names the line that built the url.
-        report(message, new Error(message));
+        const error = new Error(message);
+        const key = reportKey(message, error);
+        if (alreadyReported.has(key) || alreadyReported.size >= maxReports)
+            return;
+        alreadyReported.add(key);
+        report(message, error);
     };
 
     guardSrcProperty(window.HTMLImageElement, "an image's src", check);
