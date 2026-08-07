@@ -1510,7 +1510,7 @@ namespace Bloom.Api
         /// True if any part of the requested path is literally "undefined", "null" or "NaN" - what a
         /// JavaScript value of that kind becomes when something puts it into a url without checking.
         /// No real file is named any of those, so such a request is always a front-end bug rather
-        /// than a genuinely missing file. See BL-16577, and BL-16447 for one instance we have fixed.
+        /// than a genuinely missing file. See BL-16666 (split from BL-16577), and BL-16447 for one instance we have fixed.
         /// </summary>
         internal static bool LooksLikeAJavascriptValueInAUrl(string localPath)
         {
@@ -1529,7 +1529,7 @@ namespace Bloom.Api
         /// <summary>
         /// The extra detail we attach when the request looks like the JavaScript-value bug above.
         /// The referrer is the whole point: it names the page that issued the bogus request, which
-        /// is what lets us find the code responsible. See BL-16577.
+        /// is what lets us find the code responsible. See BL-16666.
         /// </summary>
         private static string GetJavascriptValueDiagnostics(IRequestInfo info, string localPath)
         {
@@ -2244,7 +2244,7 @@ namespace Bloom.Api
             // A path containing "undefined"/"null"/"NaN" is one of our own bugs, never a file the
             // user is responsible for, so none of the suppressions below should hide it - and the
             // book-folder one in particular was hiding most of them, since a bogus url built by a
-            // book page resolves inside that book's folder. See BL-16577.
+            // book page resolves inside that book's folder. See BL-16666.
             if (LooksLikeAJavascriptValueInAUrl(localPath))
                 return true;
             var localFolderTestPath = localPath;

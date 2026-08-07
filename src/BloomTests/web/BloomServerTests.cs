@@ -193,7 +193,7 @@ namespace BloomTests.web
         /// <summary>
         /// A url containing the literal text "undefined" means some front-end code built it out of a
         /// JavaScript value it did not have yet - always our bug, never a file the user is missing.
-        /// The referrer is what tells us which page did it, so it has to reach the report. BL-16577.
+        /// The referrer is what tells us which page did it, so it has to reach the report. BL-16666.
         /// </summary>
         [Test]
         public void ReportsMissingFile_UndefinedInPath_LogsTheReferringPage()
