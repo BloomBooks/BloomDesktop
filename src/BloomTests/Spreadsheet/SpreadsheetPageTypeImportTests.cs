@@ -31,6 +31,7 @@ namespace BloomTests.Spreadsheet
         private List<SafeXmlElement> _contentPages;
 
         private List<string> _warnings;
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
         private TemporaryFolder _ssFolder;
 
@@ -51,7 +52,8 @@ namespace BloomTests.Spreadsheet
             _imagesFolder = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
                 "src/BloomTests/ImageProcessing/images"
             );
-            _ssFolder = new TemporaryFolder("SpreadsheetPageTypeImportTests_ss");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _ssFolder = new TemporaryFolder(_testFolder, "ss");
             var whereToPutImages = Path.Combine(_ssFolder.FolderPath, "images");
             Directory.CreateDirectory(whereToPutImages);
             var whereToPutVideo = Path.Combine(_ssFolder.FolderPath, "video");
@@ -290,7 +292,7 @@ namespace BloomTests.Spreadsheet
             );
             _dom = new HtmlDom(xml, true);
 
-            _bookFolder = new TemporaryFolder("SpreadsheetPageTypeImportTests");
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             _progressSpy = new ProgressSpy();
 
@@ -315,8 +317,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
-            _ssFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase(0, "1", "lady24b.png")]
