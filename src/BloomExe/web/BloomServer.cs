@@ -1473,10 +1473,14 @@ namespace Bloom.Api
                     PassiveIf.None,
                     "Url built from a JavaScript value",
                     String.Format(
-                        "Server could not find the file {0}. LocalPath was {1}{2}",
+                        "Server could not find the file {0}. LocalPath was {1}{2}{3}",
                         path,
                         localPath,
-                        extraDiagnostics
+                        extraDiagnostics,
+                        // Both kinds of detail, because they answer different questions and this
+                        // request can raise both: a bare "undefined" has no directory AND is a
+                        // JavaScript value.
+                        GetBareNameDiagnostics(localPath)
                     )
                 );
                 return;
@@ -1506,10 +1510,9 @@ namespace Bloom.Api
                     "Cannot Find Image File"
                 );
                 var detailMsg = String.Format(
-                    "Server could not find the image file {0}. LocalPath was {1}{2}{3}",
+                    "Server could not find the image file {0}. LocalPath was {1}{2}",
                     path,
                     localPath,
-                    extraDiagnostics,
                     Environment.NewLine
                 );
                 NonFatalProblem.Report(ModalIf.None, PassiveIf.All, userMsg, detailMsg);
@@ -1525,9 +1528,9 @@ namespace Bloom.Api
                     "Server could not find the file {0}. LocalPath was {1}{2}{3}",
                     path,
                     localPath,
-                    // Both, because they answer different questions and a request can raise both:
-                    // a bare "undefined" has no directory AND is a JavaScript value.
-                    extraDiagnostics + GetBareNameDiagnostics(localPath),
+                    // Not extraDiagnostics: that only ever has content for a JavaScript-value url,
+                    // and those returned above.
+                    GetBareNameDiagnostics(localPath),
                     Environment.NewLine
                 );
                 NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, userMsg, detailMsg);
