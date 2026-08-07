@@ -82,11 +82,13 @@ describe("installUndefinedUrlDetector", () => {
         image.src = notReadyYet as unknown as string;
 
         expect(report).toHaveBeenCalledTimes(1);
-        const [message, stack] = report.mock.calls[0];
+        const [message, error] = report.mock.calls[0];
         expect(message).toContain("an image's src");
-        // The stack is the entire point of this layer: it is what names the offending line.
-        expect(stack).toBeTruthy();
-        expect(stack).toContain("undefinedUrlDetectorSpec");
+        // The stack is the entire point of this layer: it is what names the offending line. We
+        // hand over the Error itself so the caller can source-map it before reporting.
+        expect(error).toBeInstanceOf(Error);
+        expect(error.stack).toBeTruthy();
+        expect(error.stack).toContain("undefinedUrlDetectorSpec");
     });
 
     it("still actually sets the src, so nothing behaves differently", () => {
