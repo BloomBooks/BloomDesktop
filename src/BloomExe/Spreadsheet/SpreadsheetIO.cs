@@ -373,6 +373,7 @@ namespace Bloom.Spreadsheet
                 || key == InternalSpreadsheet.WidgetSourceColumnLabel
                 || key == InternalSpreadsheet.PageTypeColumnLabel
                 || key == InternalSpreadsheet.AttributeColumnLabel
+                || key == InternalSpreadsheet.ImageDetailsColumnLabel
             )
                 return false;
             return !nonWysiwygColumns.Contains(key);

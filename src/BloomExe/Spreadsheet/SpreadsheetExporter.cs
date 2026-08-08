@@ -265,6 +265,12 @@ namespace Bloom.Spreadsheet
                 if (translationGroup != null)
                 {
                     WriteTranslationGroup(translationGroup, row, bookFolderPath);
+                    ExportInlineImageRows(
+                        translationGroup,
+                        pageNumber,
+                        colorForPage,
+                        bookFolderPath
+                    );
                 }
 
                 if (videoContainer != null)
@@ -838,6 +844,131 @@ namespace Bloom.Spreadsheet
                 ExportAudio(dataBookElement, row, bookFolderPath);
                 prevDataBookLabel = dataBookLabel;
             }
+        }
+
+        /// <summary>
+        /// Inline images (.bloom-inlineImage wrappers; see inlineImages.ts) live inside the
+        /// text of a translation group but are language-neutral: the edit-time code keeps an
+        /// identical copy in every editable of the group. The language cells carry only that
+        /// language's text, so each inline image gets its own [inline image] row, immediately
+        /// after the group's row, in stacking order: the image file in the normal
+        /// [image source] column (copied to the spreadsheet's images folder, thumbnail and
+        /// all, like any other image) and the geometry needed to reconstruct the wrapper —
+        /// location, displacement, width, aspect ratio — as readable text in the
+        /// [image details] column.
+        /// </summary>
+        private void ExportInlineImageRows(
+            SafeXmlElement translationGroup,
+            string pageNumber,
+            Color colorForPage,
+            string bookFolderPath
+        )
+        {
+            // Any one editable's copies are canonical, since edit-time sync keeps them
+            // identical; take the first editable that has any.
+            var wrappers = translationGroup
+                .SafeSelectNodes("./*[contains(@class, 'bloom-editable')]")
+                .Cast<SafeXmlElement>()
+                .Select(editable =>
+                    editable
+                        .ChildNodes.OfType<SafeXmlElement>()
+                        .Where(e =>
+                            (" " + e.GetAttribute("class") + " ").Contains(" bloom-inlineImage ")
+                        )
+                        .ToArray()
+                )
+                .FirstOrDefault(w => w.Length > 0);
+            if (wrappers == null)
+                return;
+
+            // Make sure the details column exists even if every detail turns out to be a
+            // default; its presence is what tells the importer this spreadsheet is the
+            // authority on inline images.
+            _spreadsheet.AddColumnForTag(
+                InternalSpreadsheet.ImageDetailsColumnLabel,
+                InternalSpreadsheet.ImageDetailsColumnFriendlyName
+            );
+
+            foreach (var wrapper in wrappers)
+            {
+                var row = new ContentRow(_spreadsheet);
+                row.SetCell(
+                    InternalSpreadsheet.RowTypeColumnLabel,
+                    InternalSpreadsheet.InlineImageRowLabel
+                );
+                row.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
+                row.BackgroundColor = colorForPage;
+
+                var img = wrapper.GetElementsByTagName("img").Cast<SafeXmlElement>().First();
+                var src = img.GetAttribute("src");
+                if (string.IsNullOrEmpty(src) || ImageUtils.IsPlaceholderImageFilename(src))
+                {
+                    row.SetCell(
+                        InternalSpreadsheet.ImageSourceColumnLabel,
+                        InternalSpreadsheet.BlankContentIndicator
+                    );
+                }
+                else
+                {
+                    var fileName = UrlPathString.CreateFromUrlEncodedString(src).NotEncoded;
+                    CopyImageFileToSpreadsheetFolder(Path.Combine(bookFolderPath, fileName));
+                    row.SetCell(
+                        InternalSpreadsheet.ImageSourceColumnLabel,
+                        Path.Combine("images", fileName)
+                    );
+                }
+
+                row.SetCell(
+                    InternalSpreadsheet.ImageDetailsColumnLabel,
+                    GetInlineImageDetails(wrapper)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Reads the geometry off an inline-image wrapper and renders it as the readable
+        /// parameter text the [image details] cell holds, e.g.
+        /// "right, offset 24px, width 40%, aspect 800/600". The offset is omitted when zero.
+        /// SpreadsheetImporter.BuildInlineImageWrapper is the inverse.
+        /// </summary>
+        internal static string GetInlineImageDetails(SafeXmlElement wrapper)
+        {
+            var classes = " " + wrapper.GetAttribute("class") + " ";
+            string location = "right";
+            if (classes.Contains(" bloom-inlineImageLeft "))
+                location = "left";
+            else if (classes.Contains(" bloom-inlineImageMiddle "))
+                location = "middle";
+            else if (classes.Contains(" bloom-inlineImageBottom "))
+                location = "bottom";
+
+            var details = new StringBuilder(location);
+            var offset = GetStyleVariable(wrapper, "--inline-image-offset");
+            if (!string.IsNullOrEmpty(offset) && offset != "0px" && location != "bottom")
+                details.Append($", offset {offset}");
+            var width = GetStyleVariable(wrapper, "--inline-image-width");
+            if (!string.IsNullOrEmpty(width))
+                details.Append($", width {width}");
+            var aspect = GetStyleVariable(wrapper, "--inline-image-aspect-ratio");
+            if (!string.IsNullOrEmpty(aspect))
+                details.Append($", aspect {aspect.Replace(" ", "")}");
+            return details.ToString();
+        }
+
+        /// <summary>
+        /// Gets the value of one custom property (e.g. "--inline-image-width") from an
+        /// element's style attribute, or null if it isn't set.
+        /// </summary>
+        private static string GetStyleVariable(SafeXmlElement element, string variableName)
+        {
+            var style = element.GetAttribute("style") ?? "";
+            foreach (var declaration in style.Split(';'))
+            {
+                var parts = declaration.Split(new[] { ':' }, 2);
+                if (parts.Length == 2 && parts[0].Trim() == variableName)
+                    return parts[1].Trim();
+            }
+            return null;
         }
 
         private void CopyImageFileToSpreadsheetFolder(string imageSourcePath)

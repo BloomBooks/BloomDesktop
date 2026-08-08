@@ -39,6 +39,8 @@ namespace Bloom.Spreadsheet
         public const string WidgetSourceColumnLabel = "[activities source]";
         public const string PageTypeColumnLabel = "[page type]";
         public const string AttributeColumnLabel = "[attribute]";
+        public const string ImageDetailsColumnLabel = "[image details]";
+        public const string ImageDetailsColumnFriendlyName = "Image Details";
         public const string ImageSourceColumnFriendlyName = "Image File Path";
 
         public const string BlankContentIndicator = "[blank]";
@@ -47,6 +49,13 @@ namespace Bloom.Spreadsheet
         public const string CoverImageRowLabel = "[cover image]";
         public const string PageContentRowLabel = "[page content]";
         public const string ImageDescriptionRowLabel = "[image description]";
+
+        // A row for one inline image (a .bloom-inlineImage wrapper in a text block; see
+        // inlineImages.ts). Such rows immediately follow the [page content] row of the
+        // translation group the image belongs to, in stacking order. The image file rides
+        // in the normal [image source] column (and so gets a thumbnail); the geometry
+        // needed to reconstruct the wrapper rides in [image details].
+        public const string InlineImageRowLabel = "[inline image]";
 
         internal static string MapRowLabelToDataBookLabel(string rowTypeLabel)
         {
@@ -350,7 +359,9 @@ namespace Bloom.Spreadsheet
             {
                 GetColumnForTag(PageNumberColumnLabel),
                 GetColumnForTag(ImageSourceColumnLabel),
-            };
+            }
+                .Where(i => i >= 0) // optional columns may be absent
+                .ToList();
 
         public void SortHiddenContentRowsToTheBottom()
         {
