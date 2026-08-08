@@ -1695,6 +1695,55 @@ namespace Bloom.Spreadsheet
                 .Contains(className);
         }
 
+        /// <summary>
+        /// Gets clones of the group's inline-image wrappers: the .bloom-inlineImage children
+        /// of the first bloom-editable that has any. The edit-time code (inlineImages.ts)
+        /// keeps every editable's copies identical, so any one editable's set is canonical.
+        /// The clones preserve document order: floating-dock wrappers first, bottom-docked last.
+        /// </summary>
+        private static SafeXmlElement[] GetInlineImageWrappers(SafeXmlElement group)
+        {
+            foreach (var editable in SafeSelectNodesByClassName(group, "./div", "bloom-editable"))
+            {
+                var wrappers = editable
+                    .ChildNodes.OfType<SafeXmlElement>()
+                    .Where(e => HasExactClassName(e, "bloom-inlineImage"))
+                    .Select(e => (SafeXmlElement)e.CloneNode(true))
+                    .ToArray();
+                if (wrappers.Length > 0)
+                    return wrappers;
+            }
+            return Array.Empty<SafeXmlElement>();
+        }
+
+        /// <summary>
+        /// Puts clones of the given inline-image wrappers back into an editable whose content
+        /// the import has just replaced. Floating-dock wrappers go at the top of the editable
+        /// in their original order; bottom-docked ones go at the end -- the two slots the
+        /// edit-time code maintains. Does nothing if the new content already contains inline
+        /// images (a cell that carried its own markup must not be second-guessed).
+        /// </summary>
+        private static void StampInlineImages(SafeXmlElement editable, SafeXmlElement[] wrappers)
+        {
+            if (wrappers.Length == 0)
+                return;
+            if (
+                editable
+                    .ChildNodes.OfType<SafeXmlElement>()
+                    .Any(e => HasExactClassName(e, "bloom-inlineImage"))
+            )
+                return;
+            var firstChild = editable.FirstChild;
+            foreach (var wrapper in wrappers)
+            {
+                var clone = (SafeXmlElement)wrapper.CloneNode(true);
+                if (HasExactClassName(clone, "bloom-inlineImageBottom"))
+                    editable.AppendChild(clone);
+                else
+                    editable.InsertBefore(clone, firstChild);
+            }
+        }
+
         private List<SafeXmlElement> GetBloomCanvases(SafeXmlElement ancestor)
         {
             return SafeSelectNodesByClassName(ancestor, ".//div", "bloom-canvas").ToList();
@@ -1863,6 +1912,12 @@ namespace Bloom.Spreadsheet
                     }
                 }
             }
+            // Inline images (.bloom-inlineImage wrappers; see inlineImages.ts) are replicated
+            // into every editable of the group, and the spreadsheet cannot represent them: the
+            // xlsx language cells carry only formatted text runs. The book itself is therefore
+            // the source of truth for them. Snapshot the group's copies before we overwrite any
+            // editable, so we can re-stamp them afterwards.
+            var inlineImageWrappers = GetInlineImageWrappers(group);
             var sheetLanguages = _sheet.Languages;
             foreach (var lang in sheetLanguages)
             {
@@ -1882,11 +1937,23 @@ namespace Bloom.Spreadsheet
 
                 if (IsEmptyCell(content))
                 {
-                    editable.ParentNode.RemoveChild(editable);
+                    if (inlineImageWrappers.Length > 0)
+                    {
+                        // An editable whose only content is an inline image exports as a blank
+                        // cell; deleting the editable would delete the image. Keep it, with
+                        // empty text.
+                        editable.InnerXml = "<p></p>";
+                        StampInlineImages(editable, inlineImageWrappers);
+                    }
+                    else
+                    {
+                        editable.ParentNode.RemoveChild(editable);
+                    }
                 }
                 else
                 {
                     editable.InnerXml = content;
+                    StampInlineImages(editable, inlineImageWrappers);
                 }
 
                 await AddAudioAsync(editable, lang, row);
