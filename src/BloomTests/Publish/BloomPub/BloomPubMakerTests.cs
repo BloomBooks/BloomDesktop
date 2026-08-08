@@ -1366,6 +1366,163 @@ namespace BloomTests.Publish.BloomPub
             }
         }
 
+        /// <summary>
+        /// BL-16669: the bloomDataDiv image entries hold a plain file name, not a URL-encoded one.
+        /// This used to be read with CreateFromUrlEncodedString, so a cover image genuinely called
+        /// "photo%41.png" was read as "photoA.png" -- a file that does not exist, so the reference
+        /// was silently skipped and the duplicate never collapsed.
+        /// </summary>
+        [Test]
+        public void DeDuplicateMediaFiles_CoverImageNameLooksUrlEncoded_StillDeDuplicates()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(
+                @"
+<html>
+    <body>
+        <div id='bloomDataDiv'>
+            <div data-book='coverImage' lang='*' src='photo%41.png'>photo%41.png</div>
+        </div>
+        <div class='bloom-page A5Portrait' data-page='required singleton' id='image-dedupe'>
+            <div class='marginBox'>
+                <img src='duplicate-a.png' alt='first'/>
+            </div>
+        </div>
+    </body>
+</html>"
+            );
+
+            using (var folder = new TemporaryFolder("DeDuplicateMediaFiles_PercentCoverImage"))
+            {
+                var source = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    "shirt.png"
+                );
+                File.Copy(source, Path.Combine(folder.Path, "duplicate-a.png"));
+                File.Copy(source, Path.Combine(folder.Path, "photo%41.png"));
+                // Sanity check: the wrongly-decoded name is not present, so a pass below can only
+                // mean the real file was found.
+                Assert.That(
+                    RobustFile.Exists(Path.Combine(folder.Path, "photoA.png")),
+                    Is.False,
+                    "test setup: the wrongly-decoded name must not exist"
+                );
+
+                PublishHelper.DeDuplicateMediaFiles(dom, folder.Path);
+
+                AssertThatXmlIn
+                    .Dom(dom)
+                    .HasSpecifiedNumberOfMatchesForXpath(
+                        "//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @src='duplicate-a.png' and text()='duplicate-a.png']",
+                        1
+                    );
+                Assert.That(
+                    RobustFile.Exists(Path.Combine(folder.Path, "photo%41.png")),
+                    Is.False,
+                    "the duplicate should have been collapsed and removed"
+                );
+            }
+        }
+
+        /// <summary>
+        /// BL-16669: data-backgroundaudio is the odd one out among the sound attributes -- it
+        /// really is URL-encoded (the music tool writes it with encodeURIComponent). So a music
+        /// file whose name contains a space is stored as "Fur%20Elise.mp3", and reading it as a
+        /// plain name would look for a file that isn't there: the reference would be skipped, and
+        /// the file could then be deleted as a duplicate of one named by some other attribute
+        /// while this page still pointed at it.
+        /// </summary>
+        [Test]
+        public void DeDuplicateMediaFiles_BackgroundAudioIsUrlEncoded_StillDeDuplicates()
+        {
+            const string bodyContent =
+                @"
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='music-page-1' data-backgroundaudio='Fur%20Elise.mp3'>
+							<div class='marginBox'><div class='bloom-editable bloom-content1' lang='en'>one</div></div>
+						</div>
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='music-page-2' data-backgroundaudio='duplicate-b.mp3'>
+							<div class='marginBox'><div class='bloom-editable bloom-content1' lang='en'>two</div></div>
+						</div>
+";
+
+            var testBook = CreateBookWithPhysicalFile(
+                bodyContent,
+                kMinimumValidBookHeadContent,
+                bringBookUpToDate: true
+            );
+            testBook.CollectionSettings.Subscription = Subscription.CreateTempSubscriptionForTier(
+                SubscriptionTier.Pro
+            );
+            BookStorageTests.MakeSampleAudioFiles(testBook.FolderPath, "Fur Elise", ".mp3");
+            BookStorageTests.MakeSampleAudioFiles(testBook.FolderPath, "duplicate-b", ".mp3");
+            // Sanity check: the file really is on disk under its decoded name, so a pass below
+            // means we decoded the attribute rather than that we got lucky.
+            Assert.That(
+                RobustFile.Exists(Path.Combine(testBook.FolderPath, "audio", "Fur Elise.mp3")),
+                Is.True,
+                "test setup: the music file should be there under its real, spaced name"
+            );
+
+            PublishHelper.DeDuplicateMediaFiles(testBook.RawDom, testBook.FolderPath);
+
+            // The first one encountered wins, and it must be written back still encoded.
+            AssertThatXmlIn
+                .Dom(testBook.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@data-backgroundaudio='Fur%20Elise.mp3']",
+                    2
+                );
+            AssertThatXmlIn
+                .Dom(testBook.RawDom)
+                .HasNoMatchForXpath("//div[@data-backgroundaudio='duplicate-b.mp3']");
+            Assert.That(
+                RobustFile.Exists(Path.Combine(testBook.FolderPath, "audio", "Fur Elise.mp3")),
+                Is.True,
+                "the surviving music file must not have been deleted"
+            );
+        }
+
+        /// <summary>
+        /// BL-16669: the same for the sound attributes, which likewise hold a plain file name.
+        /// </summary>
+        [Test]
+        public void DeDuplicateMediaFiles_SoundNameLooksUrlEncoded_StillDeDuplicates()
+        {
+            const string bodyContent =
+                @"
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='sound-page-1' data-correct-sound='beep%41.mp3'>
+							<div class='marginBox'><div class='bloom-editable bloom-content1' lang='en'>one</div></div>
+						</div>
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='sound-page-2' data-correct-sound='duplicate-b.mp3'>
+							<div class='marginBox'><div class='bloom-editable bloom-content1' lang='en'>two</div></div>
+						</div>
+";
+
+            var testBook = CreateBookWithPhysicalFile(
+                bodyContent,
+                kMinimumValidBookHeadContent,
+                bringBookUpToDate: true
+            );
+            BookStorageTests.MakeSampleAudioFiles(testBook.FolderPath, "beep%41", ".mp3");
+            BookStorageTests.MakeSampleAudioFiles(testBook.FolderPath, "duplicate-b", ".mp3");
+            // Sanity check: the wrongly-decoded name is not present.
+            Assert.That(
+                RobustFile.Exists(Path.Combine(testBook.FolderPath, "audio", "beepA.mp3")),
+                Is.False,
+                "test setup: the wrongly-decoded name must not exist"
+            );
+
+            PublishHelper.DeDuplicateMediaFiles(testBook.RawDom, testBook.FolderPath);
+
+            // The first one encountered wins, so both pages should now name the '%' file.
+            AssertThatXmlIn
+                .Dom(testBook.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@data-correct-sound='beep%41.mp3']", 2);
+            AssertThatXmlIn
+                .Dom(testBook.RawDom)
+                .HasNoMatchForXpath("//div[@data-correct-sound='duplicate-b.mp3']");
+        }
+
         [Test]
         public void CompressBookForDevice_DeduplicatesDuplicateVideos()
         {

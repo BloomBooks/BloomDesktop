@@ -1090,7 +1090,7 @@ namespace Bloom.Publish
 
         internal static void DeDuplicateMediaFiles(SafeXmlDocument dom, string folderPath)
         {
-            DeDuplicateReferencedMedia(GetImageMediaReferences(dom), folderPath);
+            DeDuplicateReferencedMedia(GetImageMediaReferences(dom, folderPath), folderPath);
             DeDuplicateReferencedMedia(GetVideoMediaReferences(dom), folderPath);
             // Narration files are tied to specific spans, so keep those one-to-one file names stable.
             var talkingBookAudioFileNames = GetTalkingBookAudioFileNames(dom);
@@ -1171,7 +1171,10 @@ namespace Bloom.Publish
             }
         }
 
-        private static IEnumerable<MediaReference> GetImageMediaReferences(SafeXmlDocument dom)
+        private static IEnumerable<MediaReference> GetImageMediaReferences(
+            SafeXmlDocument dom,
+            string folderPath
+        )
         {
             foreach (
                 var imageElement in HtmlDom
@@ -1194,7 +1197,13 @@ namespace Bloom.Publish
                     RewriteReference = canonicalRelativePath =>
                         HtmlDom.SetImageElementUrl(
                             imageElement,
-                            UrlPathString.CreateFromUnencodedString(canonicalRelativePath)
+                            // strictlyTreatAsUnencoded: canonicalRelativePath is a real relative
+                            // path (it came from PathOnly.NotEncoded and we have checked the file
+                            // exists), so a '%' in it is literal (BL-16669).
+                            UrlPathString.CreateFromUnencodedString(
+                                canonicalRelativePath,
+                                strictlyTreatAsUnencoded: true
+                            )
                         ),
                 };
             }
@@ -1206,9 +1215,18 @@ namespace Bloom.Publish
                     .Cast<SafeXmlElement>()
             )
             {
-                var relativePath = UrlPathString
-                    .CreateFromUrlEncodedString(bookSetting.InnerText.Trim())
-                    .PathOnly.NotEncoded;
+                // A bloomDataDiv image entry holds a plain file name, NOT a URL-encoded one --
+                // see the encoding conventions note on UrlPathString. This used to decode the
+                // value unconditionally, which disagreed with the rewrite below and with Book.cs,
+                // which both writes and normalizes these to the plain name.
+                //
+                // A handful of old books do break that rule and store an encoded name (BL-3901),
+                // so decode as far as it takes to actually find the file -- and no further, which
+                // is what leaves a real name like "photo%41.png" alone. Being wrong here means we
+                // don't recognize the reference, so the file it names can be deleted as a
+                // duplicate while this entry still points at it.
+                var relativePath = bookSetting.InnerText.Trim().Split('?')[0];
+                UrlPathString.GetFullyDecodedPath(folderPath, ref relativePath);
                 if (
                     string.IsNullOrWhiteSpace(relativePath)
                     || ImageUtils.IsPlaceholderImageFilename(relativePath)
@@ -1220,6 +1238,10 @@ namespace Bloom.Publish
                 yield return new MediaReference
                 {
                     RelativePath = relativePath,
+                    // Written as the plain file name, deliberately not URL-encoded, to match the
+                    // read above and what Book.cs writes and normalizes -- see the encoding
+                    // conventions note on UrlPathString. (The @src it also sets here is the
+                    // data-div's own bookkeeping copy, not an img that the browser ever loads.)
                     RewriteReference = canonicalRelativePath =>
                     {
                         bookSetting.InnerText = canonicalRelativePath;
@@ -1250,7 +1272,11 @@ namespace Bloom.Publish
                     RewriteReference = canonicalRelativePath =>
                         HtmlDom.SetVideoElementUrl(
                             videoContainer,
-                            UrlPathString.CreateFromUnencodedString(canonicalRelativePath)
+                            // strictlyTreatAsUnencoded: see the image case above (BL-16669).
+                            UrlPathString.CreateFromUnencodedString(
+                                canonicalRelativePath,
+                                strictlyTreatAsUnencoded: true
+                            )
                         ),
                 };
             }
@@ -1318,6 +1344,21 @@ namespace Bloom.Publish
             }
         }
 
+        /// <summary>
+        /// Build a reference to the audio file named by one of the sound attributes.
+        /// </summary>
+        /// <remarks>
+        /// These attributes do NOT agree with each other about encoding, so each has to be read
+        /// and written in its own convention -- see the encoding conventions note on
+        /// UrlPathString. data-backgroundaudio is URL-encoded; data-sound, data-correct-sound and
+        /// data-wrong-sound hold the plain file name.
+        ///
+        /// Getting it wrong is worse than it looks: the name we produce is what
+        /// DeDuplicateReferencedMedia looks for on disk, so a mis-decoded name simply isn't found
+        /// and that reference is skipped -- and if another attribute names the same file under a
+        /// name that IS found, the file can be deleted as a duplicate while this attribute still
+        /// points at it.
+        /// </remarks>
         private static MediaReference MakeAudioAttributeReference(
             SafeXmlElement element,
             string attributeName,
@@ -1328,7 +1369,10 @@ namespace Bloom.Publish
             if (string.IsNullOrWhiteSpace(rawValue) || rawValue == "none")
                 return null;
 
-            var fileName = UrlPathString.CreateFromUrlEncodedString(rawValue).PathOnly.NotEncoded;
+            var isUrlEncoded = attributeName == HtmlDom.musicAttrName;
+            var fileName = isUrlEncoded
+                ? UrlPathString.CreateFromUrlEncodedString(rawValue).PathOnly.NotEncoded
+                : rawValue.Split('?')[0];
             var normalizedFileName = BookStorage.GetNormalizedPathForOS(fileName);
             if (talkingBookAudioFileNames.Contains(normalizedFileName))
                 return null;
@@ -1337,7 +1381,20 @@ namespace Bloom.Publish
             {
                 RelativePath = MakeRelativePath("audio", fileName),
                 RewriteReference = canonicalRelativePath =>
-                    element.SetAttribute(attributeName, Path.GetFileName(canonicalRelativePath)),
+                {
+                    var newFileName = Path.GetFileName(canonicalRelativePath);
+                    element.SetAttribute(
+                        attributeName,
+                        isUrlEncoded
+                            ? UrlPathString
+                                .CreateFromUnencodedString(
+                                    newFileName,
+                                    strictlyTreatAsUnencoded: true
+                                )
+                                .UrlEncoded
+                            : newFileName
+                    );
+                },
             };
         }
 

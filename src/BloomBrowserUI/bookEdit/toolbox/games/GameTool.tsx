@@ -1088,6 +1088,9 @@ const DragActivityControls: React.FunctionComponent<{
         copyBuiltIn: boolean,
     ) => {
         const page = getPage();
+        // The sound attributes hold the plain file name, deliberately NOT URL-encoded (unlike
+        // data-backgroundaudio, which the toolbox does encode). C# reads these straight back as
+        // file names. See the encoding conventions note on UrlPathString.cs.
         const setSoundAttr = (soundAttr: string, newSoundId: string) => {
             if (newSoundId === "default") {
                 page.removeAttribute(soundAttr);

@@ -1500,6 +1500,9 @@ namespace Bloom.Book
             if (string.IsNullOrEmpty(coverImageFileName))
                 return;
             coverImageFileName = coverImageFileName.Trim();
+            // This entry is meant to hold the plain file name, not a URL-encoded one -- see the
+            // encoding conventions note on UrlPathString. A few old books break that rule, hence
+            // the tolerant read below and the write-back that normalizes them to the plain name.
             // The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
             var coverImagePath = UrlPathString.GetFullyDecodedPath(
                 StoragePageFolder,
@@ -2487,6 +2490,9 @@ namespace Bloom.Book
                 // This preserves expectations in BringBookUpToDate_EmbeddedEmptyImgTagRemoved.
                 if (string.IsNullOrWhiteSpace(src))
                     src = "placeHolder.png";
+                // Stored as the plain file name, deliberately not URL-encoded, which is why the
+                // encoded @src has to be decoded on the way in -- see the encoding conventions
+                // note on UrlPathString.
                 coverImageElement.InnerText = HttpUtility.UrlDecode(src);
             }
         }
@@ -3924,6 +3930,8 @@ namespace Bloom.Book
             string templateBookFolderPath
         )
         {
+            // Used verbatim as a file name below: the sound attributes hold a plain, NOT
+            // URL-encoded, name -- see the encoding conventions note on UrlPathString.
             var fileName = sourceElt.GetAttribute(attrName);
             // For some sound attrs (e.g., data-correct-sound), 'none' is a valid value of the
             // attribute but signifies we don't want a default sound. So we don't want to copy.
@@ -4098,8 +4106,13 @@ namespace Bloom.Book
                     source.SetAttribute(
                         "src",
                         "video/"
+                            // strictlyTreatAsUnencoded: this is the name of the file we just
+                            // wrote, so a '%' in it is literal, not an escape (BL-16669).
                             + UrlPathString
-                                .CreateFromUnencodedString(Path.GetFileName(newVideoPath))
+                                .CreateFromUnencodedString(
+                                    Path.GetFileName(newVideoPath),
+                                    strictlyTreatAsUnencoded: true
+                                )
                                 .UrlEncoded
                             + (string.IsNullOrEmpty(timings) ? "" : "#t=" + timings)
                     );
@@ -4651,7 +4664,12 @@ namespace Bloom.Book
 
                         HtmlDom.SetImageElementUrl(
                             img,
-                            UrlPathString.CreateFromUnencodedString(pathRelativeToFolioFolder)
+                            // strictlyTreatAsUnencoded: this is built from a real folder name and
+                            // an already-decoded src, so a '%' in it is literal (BL-16669).
+                            UrlPathString.CreateFromUnencodedString(
+                                pathRelativeToFolioFolder,
+                                strictlyTreatAsUnencoded: true
+                            )
                         );
                     }
                 }

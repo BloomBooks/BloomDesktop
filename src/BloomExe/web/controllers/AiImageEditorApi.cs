@@ -1067,7 +1067,9 @@ namespace Bloom.web.controllers
 
             HtmlDom.SetImageElementUrl(
                 element,
-                UrlPathString.CreateFromUnencodedString(newFileName)
+                // strictlyTreatAsUnencoded: this is the name of the file we just wrote, so a '%'
+                // in it is a literal '%', not the start of an escape (BL-16669).
+                UrlPathString.CreateFromUnencodedString(newFileName, strictlyTreatAsUnencoded: true)
             );
             // Now that the element points at the new file, Bloom's own updater can re-derive
             // the mirrored attributes for us.

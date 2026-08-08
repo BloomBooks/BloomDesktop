@@ -61,7 +61,13 @@ namespace Bloom.Edit
             return new ImageInfoForJavascript()
             {
                 imageId = imageId,
-                src = UrlPathString.CreateFromUnencodedString(imageFileName).UrlEncoded,
+                // imageFileName is the name of the file we just put in the book folder, so it is
+                // certainly not URL-encoded. We have to say so: otherwise a real file name that
+                // merely looks encoded ("photo%41.jpg") gets "helpfully" decoded to "photoA.jpg",
+                // and the src we hand the browser points at a file that doesn't exist (BL-16669).
+                src = UrlPathString
+                    .CreateFromUnencodedString(imageFileName, strictlyTreatAsUnencoded: true)
+                    .UrlEncoded,
                 copyright = imageInfo.Metadata.CopyrightNotice ?? "",
                 creator = imageInfo.Metadata.Creator ?? "",
                 license = imageInfo.Metadata.License?.ToString() ?? "",

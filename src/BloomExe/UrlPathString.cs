@@ -10,6 +10,48 @@ namespace Bloom
     /// A wrapper around string designed to reduced bugs introduced by losing track of the encoded/unencoded state of a string.
     /// It does this by requiring users to specify what they are putting in/getting out, and it keeps track.
     /// </summary>
+    /// <remarks>
+    /// ENCODING CONVENTIONS FOR FILE NAMES STORED IN A BOOK
+    ///
+    /// Search for "encoding conventions" to find the places that depend on this.
+    ///
+    /// Not everything in a book that names a file is URL-encoded, and which is which is not
+    /// guessable, so it is written down here once.
+    ///
+    /// URL-ENCODED (call CreateFromUrlEncodedString to read them):
+    ///   - img @src, video source @src, iframe @src for widgets: these are real URLs. The
+    ///     browser resolves them and asks our server for them, and the server decodes the path
+    ///     exactly once, so they have to arrive encoded.
+    ///   - data-backgroundaudio (the music tool). Surprisingly this one IS encoded, unlike its
+    ///     neighbours below: the toolbox writes it through
+    ///     ToolboxToolReactAdaptor.encodeAndSetPageAttr and reads it back through
+    ///     getBloomPageAttrDecoded, which are encodeURIComponent/decodeURIComponent.
+    ///
+    /// NOT URL-ENCODED -- stored as the plain file name (BL-16669):
+    ///   - data-sound, data-correct-sound, data-wrong-sound. The editor writes these with a
+    ///     bare setAttribute (GameTool.tsx, canvasControlRegistry.ts), and three places in C#
+    ///     use the value directly as a file-system path: the set of audio files still in use
+    ///     (BookStorage, which DELETES anything not in it), the set packaged for publishing
+    ///     (BookFileFilter), and copying a sound in with a template page (Book).
+    ///   - The bloomDataDiv entries that name an image, notably coverImage and licenseImage.
+    ///     Book.cs writes these decoded and actively normalizes them back to the plain name.
+    ///
+    /// Why "not encoded" for something as URL-ish as a sound that ends up in a src: because far
+    /// more of our code treats these as file names than as URLs. Encoding them instead would mean
+    /// the three file-system consumers above no longer find any name containing a space, and the
+    /// first of them would delete the file as unused.
+    ///
+    /// The cost of that choice, which we accept: the consumers that DO build a URL from these
+    /// values just concatenate them, so a sound whose name contains a percent escape
+    /// ("beep%41.mp3") fails to play. That is true both in BloomPlayer and in our own editor
+    /// (GameTool.tsx's playSound does "audio/" + name). Fixing it belongs in those two places, by
+    /// encoding when the URL is built rather than by storing the name encoded.
+    ///
+    /// Note that this is all about URL encoding. XML/HTML encoding is a separate matter and is
+    /// handled for us: SetAttribute and InnerText escape on write and unescape on read, so a '&amp;'
+    /// or an apostrophe in a file name is safe in either convention. The exception is markup or
+    /// XPath built by string concatenation, where nothing escapes anything for you.
+    /// </remarks>
     public class UrlPathString
     {
         private readonly string _notEncoded;
@@ -29,9 +71,14 @@ namespace Bloom
             return new UrlPathString(HttpUtility.UrlDecode(encoded));
         }
 
+        /// <param name="strictlyTreatAsUnencoded">Pass true when you know the string really is
+        /// unencoded -- typically because it is a file name you just read from (or wrote to) the
+        /// file system. Otherwise the guessing described below applies, and a genuine file name
+        /// that happens to contain something shaped like an escape ("photo%41.jpg") is silently
+        /// decoded into a different name ("photoA.jpg"). See BL-16669.</param>
         public static UrlPathString CreateFromUnencodedString(
             string unencoded,
-            bool strictlyTreatAsEncoded = false
+            bool strictlyTreatAsUnencoded = false
         )
         {
             unencoded = unencoded.Trim();
@@ -47,7 +94,7 @@ namespace Bloom
             // the name of the method) but if it's obviously encoded, then
             // decode it.
 
-            if (!strictlyTreatAsEncoded && Regex.IsMatch(unencoded, "%[A-Fa-f0-9]{2}"))
+            if (!strictlyTreatAsUnencoded && Regex.IsMatch(unencoded, "%[A-Fa-f0-9]{2}"))
                 unencoded = HttpUtility.UrlDecode(unencoded.Replace("+", "%2B")); // preserve + as + (as above)
             return new UrlPathString(unencoded);
         }

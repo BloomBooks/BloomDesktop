@@ -123,7 +123,11 @@ namespace Bloom.web.controllers
 
                 var relativePath = BookStorage.GetVideoFolderName + Path.GetFileName(path);
                 request.ReplyWithText(
-                    UrlPathString.CreateFromUnencodedString(relativePath).UrlEncodedForHttpPath
+                    // strictlyTreatAsUnencoded: this is the name of the file we just wrote, so a
+                    // '%' in it is a literal '%', not the start of an escape (BL-16669).
+                    UrlPathString
+                        .CreateFromUnencodedString(relativePath, strictlyTreatAsUnencoded: true)
+                        .UrlEncodedForHttpPath
                 );
             }
         }
@@ -611,8 +615,10 @@ namespace Bloom.web.controllers
                         var relativePath =
                             BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
                         processResult.success = true;
+                        // strictlyTreatAsUnencoded: this is the name of the file we just wrote, so
+                        // a '%' in it is a literal '%', not the start of an escape (BL-16669).
                         processResult.importedPath = UrlPathString
-                            .CreateFromUnencodedString(relativePath)
+                            .CreateFromUnencodedString(relativePath, strictlyTreatAsUnencoded: true)
                             .UrlEncodedForHttpPath;
                         BloomWebSocketServer.Instance?.SendBundle(
                             "signLanguage",
@@ -1048,8 +1054,12 @@ namespace Bloom.web.controllers
                 {
                     foreach (var videoPath in filesModifiedSinceDeactivate)
                     {
+                        // strictlyTreatAsUnencoded: a real file name, so a '%' in it is literal.
+                        // Without this the encoded form we search for would not match the src that
+                        // is actually in the book, and we would skip the video (BL-16669).
                         var expectedSrcAttr = UrlPathString.CreateFromUnencodedString(
-                            BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
+                            BookStorage.GetVideoFolderName + Path.GetFileName(videoPath),
+                            strictlyTreatAsUnencoded: true
                         );
                         var videoElts = CurrentBook.RawDom.SafeSelectNodes(
                             $"//video/source[contains(@src,'{expectedSrcAttr.UrlEncodedForHttpPath}')]"
@@ -1064,7 +1074,8 @@ namespace Bloom.web.controllers
                         // wants all of it.
 
                         var newSrcAttr = UrlPathString.CreateFromUnencodedString(
-                            BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
+                            BookStorage.GetVideoFolderName + Path.GetFileName(videoPath),
+                            strictlyTreatAsUnencoded: true
                         );
                         HtmlDom.SetSrcOfVideoElement(
                             newSrcAttr,
