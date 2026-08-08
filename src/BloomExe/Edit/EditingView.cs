@@ -554,6 +554,16 @@ namespace Bloom.Edit
             UrlPathString.GetFullyDecodedPath(_model.CurrentBook.FolderPath, ref fileName);
 
             // keep a reference to the fileName rather the image to avoid dispose issues
+            //
+            // Note that what we keep is the name as it is ON DISK, which for one of those legacy
+            // doubly-encoded books is not what the page's @src says. EditingModel.UpdateMetaData
+            // re-encodes this once to go looking for the img, so for such a book it will not find
+            // it and the mirrored data-copyright/data-creator attributes won't be refreshed. The
+            // metadata is still written to the image file itself, which is the part that matters,
+            // and this mismatch predates the disk lookup above -- but the lookup does make it
+            // systematic rather than accidental. Fixing it properly means remembering the original
+            // src alongside the disk name; not worth it until someone shows such a book still in
+            // use. (BL-16669)
             _fileNameOfImageBeingModified = fileName;
 
             using (
