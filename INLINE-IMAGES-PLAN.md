@@ -14,6 +14,11 @@ Bloom text blocks (translation groups) currently cannot contain images the way W
 - No book-format structural change; old Bloom / bloom-player / ePub readers render the markup inertly with shipped CSS.
 - Sibling editables are separate block formatting contexts (flex items), so even a TG-level image could never be wrapped by more than one language's text without per-editable spacer injection and baked geometry, which reflow (ePub) breaks. TG-level storage buys no rendering ability; ruled out for v1. Upgrade seam if ever needed: `data-*` attributes on the TG (attributes survive all C# sweeps), and the canonical copy converts mechanically.
 
+## Requirements added 2026-08-08 (John)
+
+- **Spreadsheet round-trip is a requirement, not an option.** A book using inline images must survive export-to-spreadsheet → import-from-spreadsheet with the images and their geometry (dock class, offset, width, wrapper id) intact. The C# spreadsheet code (`src/BloomExe/Spreadsheet/`) processes translation-group content per language, so the per-editable replicated wrappers are exactly the markup it will see; the round-trip work is making sure export carries the wrapper through (or serializes it once and re-stamps on import via the same normalize/sync rules) and that import doesn't strip the `contenteditable="false"` island. Needs its own C# round-trip test.
+- **Contour wrap is a committed future capability**, not a maybe-bonus: text wrapping the alpha silhouette of a transparent image. The full design is below under "Contour wrap"; the v1 requirement is that nothing we ship precludes it — in particular the offset mechanism must be swappable from `padding-top`+`inset()` to `margin-top` (the prerequisite that design identifies) without a book-format migration, which holds because the offset lives in one CSS custom property and the realization is entirely in shipped stylesheet rules.
+
 ## Bilingual / trilingual behavior (designed v1 behavior, not deferred)
 
 Showing the same image in each visible language block looks broken. Rule: the image renders only in the **first visible language block**; the editable showing it contains its float (`display: flow-root` or equivalent) so lower language blocks start cleanly below the image at full width. CSS hook: prefer `.bloom-contentFirst` (maintained by `TranslationGroupManager.AddThemeVisibleOrderClass`), falling back to `.bloom-content1` where contentFirst isn't assigned (same preference logic as `bloomEditing.ts:411`). All copies stay in the DOM in all languages; this is display-only.
@@ -74,7 +79,7 @@ Decision (John): give no weight to the old `imagePusherDowner` two-element trick
 
 - Margin-top can't replace the padding trick (line boxes avoid a float's whole margin box). `translateY` moves paint, not wrap. Anchor positioning is out-of-flow, never wrapped. CSS Exclusions is dead. Floats + shape-outside is the whole design space.
 - **ePub on ancient readers degrades gracefully**: without shape-outside the text runs in a narrower column beside the transparent padding instead of flowing above the image. Readable, accepted (we routinely compromise on ePub). Only if QA on real readers demands it: a contained publish-time transform in `EpubMaker` (insert spacer, drop padding). Not built now.
-- Bonus later: contour wrap via `shape-outside: circle()` etc.
+- Committed later: contour wrap along the image's transparency (see "Contour wrap" under Deferred; a requirement per 2026-08-08, not a bonus).
 - Edit-time rules (drag handles, cursor, wrapper stacking) → `bookEdit/css/editMode.less`. No hover/selected outline on the wrapper: its box includes the transparent offset padding, so an outline runs to the top of the block when the image is dragged down (John, live testing); the corner handles on the image box are the selection indicator. The wrapper needs `position: relative; z-index: 1` at edit time because Bloom's paragraphs are position:relative and would otherwise hit-test above the float, making the image unclickable.
 
 ## Edit UX
@@ -123,7 +128,7 @@ Then one call to `syncInlineImagesFromEditable()` stamps the wrapper into siblin
 
 ## Deferred (later phases)
 
-Captions (bubble-stripping + `StripOutText` interplay); crop (canvas-element crop machinery reuse); contour wrap (see below); Word-style in-text anchoring as an advanced mode for monolingual books; spreadsheet import/export; possible `FeatureVersionRequirement` entry for old-Bloom editing warnings; publish-time ePub spacer fallback only if reader QA demands it.
+Captions (bubble-stripping + `StripOutText` interplay); crop (canvas-element crop machinery reuse); contour wrap (see below — committed requirement, deferred only in build order); Word-style in-text anchoring as an advanced mode for monolingual books; spreadsheet round-trip (committed requirement, see "Requirements added 2026-08-08"); possible `FeatureVersionRequirement` entry for old-Bloom editing warnings; publish-time ePub spacer fallback only if reader QA demands it.
 
 ### Contour wrap (designed 2026-08-05, not built)
 
