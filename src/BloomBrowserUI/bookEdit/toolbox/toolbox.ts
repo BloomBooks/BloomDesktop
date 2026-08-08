@@ -1,12 +1,9 @@
-/// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
-
 import $ from "jquery";
-import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
-import "../../lib/jquery.i18n.custom";
-import "../../lib/jquery.onSafe";
 import axios from "axios";
+// Type-only: ITool.renderPanel() returns a React node, but nothing in this module
+// actually uses React at runtime.
+import type * as React from "react";
 import { get, postString, wrapAxios } from "../../utils/bloomApi";
-import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import {
     ckeditableSelector,
@@ -15,60 +12,93 @@ import {
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
 import { isLongPressEvaluating } from "../longPressShared";
-import { getFeatureStatusAsync } from "../../react_components/featureStatus";
-import { showRequiresSubscriptionDialogInAnyView } from "../../react_components/requiresSubscription";
+import { configurePageEditingHandlers } from "./pageEditingMarkup";
 import {
     callOnBlur,
     setExtraFunctionToHandleBlurTasks,
 } from "../../utils/menuCloseOnBlur";
+import {
+    getCurrentToolId,
+    getFirstOfferedToolId,
+    isToolEnabled,
+    isToolOffered,
+    notePageReady,
+    offerTool,
+    setActiveTool,
+    setCurrentToolId,
+    setEnabledTools,
+    setToolEnabled,
+    setToolboxVisible,
+    subscribeToActiveToolChanges,
+    withdrawTool,
+} from "./toolboxState";
+import {
+    kSettingsToolId,
+    kTalkingBookToolId,
+    toCanonicalToolId,
+    toEnabledSettingName,
+    toPersistedToolName,
+} from "./toolIds";
 export { isLongPressEvaluating };
 export { callOnBlur as registerMenuCloseOnBlur };
 
-const checkLeaveOffTool: string = "Visualizer";
-
-type ToolboxSettings = Record<string, string> & {
+/**
+ * The toolbox settings for the current book, as the server sends them (GET
+ * /bloom/api/toolbox/settings; see ToolboxView.HandleSettings()). Apart from "current" and
+ * "visibility", it has one "<toolId>State" property for each tool that has saved state in
+ * this book; the value is whatever opaque string that tool chose to save, and only that tool
+ * knows how to interpret it (e.g. settings["decodableReaderState"]).
+ */
+export interface IToolboxSettings {
+    // The tool the book was last using, in the historical persisted spelling (e.g.
+    // "talkingBookTool"). Missing or empty for a new book.
     current?: string;
+    // "visible" if the toolbox was open in this book, otherwise an empty string.
     visibility?: string;
-};
-
-let savedSettings: ToolboxSettings = {};
-
-let keypressTimer: ReturnType<typeof setTimeout> | null = null;
-
-// This variable stores all the ids of the enabled tools, so
-// that the React toolbox settings can initially check the
-// checkboxes that correspond to the enabled tools
-let enabledToolIds = new Set<string>();
-
-// checks if the tool is currently enabled by using its
-// name and the enabledToolIds set
-export function isToolEnabledInToolbox(toolName: string): boolean {
-    return enabledToolIds.has(toolName);
+    // The per-tool state properties described above, keyed "<toolId>State".
+    [stateKey: string]: string | undefined;
 }
 
-// a function to update the state of the checkboxes in the toolbox settings,
-// whenever a tool is enabled and activated using setToolEnabledFromSettings(). This
-// function starts out unimplemented, but is later implemented by SettingsToolControls.tsx
-// when it gets mounted.
-let changeToolboxSettingsState:
-    | ((which: string, value: boolean) => void)
-    | undefined;
+let savedSettings: IToolboxSettings = {};
 
-export function setToolboxSettingsChangeHandler(
-    handler: ((which: string, value: boolean) => void) | undefined,
-): void {
-    changeToolboxSettingsState = handler;
+/**
+ * The book's toolbox settings as last fetched from the server. A tool is handed these when
+ * it starts running, so that it can restore whatever it saved in this book; see
+ * ITool.beginRestoreSettings and useToolLifecycle.ts.
+ */
+export function getSavedToolboxSettings(): IToolboxSettings {
+    return savedSettings;
 }
 
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
-// can be asked to do by the rest of the system.
+// can be asked to do by the rest of the system. Everything the toolbox needs to know
+// about a tool, including the metadata it shows in the tool's section header, comes from
+// here (or is derived from id(); see toolIds.ts).
 // See ToolboxView.cs class comment for a summary of how to add a new tool.
+//
+// The lifecycle methods (beginRestoreSettings, showTool, newPageReady, detachFromPage,
+// hideTool) are not called from here. They follow from what the toolbox state store says:
+// the section ToolboxRoot renders for a tool runs them from an effect keyed on whether that
+// tool is the current tool of a showing toolbox, and on which page it is looking at. See
+// useToolLifecycle.ts. The rest are called directly, from the code that raises them:
+// updateMarkup on keystrokes (pageEditingMarkup.ts), configureElements on page setup (for
+// every registered tool, open or not), imageUpdated by the page frame.
 export interface ITool {
-    beginRestoreSettings(settings: string): JQueryPromise<void>;
+    // For tools that require a subscription. This will trigger an indicator communicating that this
+    // featureName requires a subscription.
+    readonly featureName?: string;
+    // Gives the tool a chance to restore whatever it saved in the book's toolbox settings
+    // (its own "<toolId>State" property, if any) before it is shown. Called each time the
+    // tool starts running, so it also serves to make the tool's state track the
+    // current book. The returned promise must resolve when the tool is ready to be shown.
+    beginRestoreSettings(settings: IToolboxSettings): Promise<void>;
     configureElements(container: HTMLElement);
-    showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
-    hideTool(); // called when changing tools or hiding the toolbox.
+    // called when the tool starts running: it has become the current tool of a showing
+    // toolbox, or it was already current and a new page arrived. Not called merely because
+    // its section was expanded or collapsed.
+    showTool();
+    hideTool(); // called when the tool stops running: another tool takes over, or the toolbox is hidden.
     // Note, new implementations of updateMarkup may need to call EditableDivUtils.doCkEditorCleanup() like readerToolsModel.doMarkup() does.
     updateMarkup(); // called on most keypresses (but notably, not on arrow navigation, also not Ctrl+C). It is called on typing letters (obviously), Ctrl+X, Ctrl+V, Ctrl+Z, Ctrl+Y etc... or even just pressing and releasing Ctrl or Shift.
     // like updateMarkup, but expected to be async. Implement instead of updateMarkup if you need to use async functions.
@@ -78,60 +108,45 @@ export interface ITool {
     // Note, new implementations of updateMarkupAsync may need to implement something like cleanUpCkEditorHtml() in audioRecording.ts.
     updateMarkupAsync(): Promise<() => void>;
     isUpdateMarkupAsync(): boolean; // should return true if updateMarkupAsync should be called and awaited instead of updateMarkup.
-    // called when a new page is displayed or tool is activated (called after showTool completes).
+    // called when a new page is displayed or the tool starts running (called after showTool completes).
     // To guard against certain race conditions, we currently call this again after 600ms. Tools should
     // allow for this possibility and not repeat any work that was already done.
     newPageReady();
     detachFromPage(); // called when a page is going away AND before hideTool
-    id(): string; // without trailing "Tool"!
-    hasRestoredSettings: boolean;
+    id(): string; // the canonical id, without trailing "Tool"!
     isAlwaysEnabled(): boolean;
-    isExperimental(): boolean;
     // If this is true, the tool may only be selected on pages that have data-tool-id matching this tool's id.
     requiresToolId(): boolean;
 
-    // Some things were impossible to do i18n on via the jade/pug
-    // This gives us a hook to finish up the more difficult spots
-    finishToolLocalization(pane: HTMLElement);
-
-    // Implement this if the tool uses React.
-    // It should return the main content of the tool, which must be a single div.
-    // (toolbox will construct the h3 element which goes along with it in the accordion
-    // and set its data-toolId attr; this method is however responsible to
-    // localize the content of the div.)
-    // It may be unimplemented for older tools where beginAddTool() already knows
-    // where to find an HTML file for the tool content.
-    makeRootElement(): HTMLDivElement;
+    // Renders this tool's panel. ToolboxRoot renders it inside the tool's accordion
+    // section, in the toolbox's single React tree, so context (e.g. the MUI theme)
+    // reaches it normally.
+    // It should return the main content of the tool, which must be a single element
+    // (ToolboxRoot sizes that element to fill the section).
+    // ToolboxRoot renders the section header (label, icon, subscription badge) around it;
+    // this method is however responsible to localize the content of the panel.
+    renderPanel(): React.ReactNode;
     // notifies the tool that an image has been changed on the page.
     // If the change only affects one image, it may be passed; otherwise, all should be fixed.
     imageUpdated(img: HTMLImageElement | undefined): void;
-}
-
-export interface IReactTool {
-    // For tools that require a subscription. This will trigger an indicator communicating that this
-    // featureName requires a subscription.
-    featureName?: string;
-}
-
-// The toolbox is progressively migrating to React. Recently, in toolboxRoot.tsx, we made
-// the root of the whole toolbox a React component. The code here has not been fully
-// integrated into the new approach, along with several tools that are not yet React.
-// This interface, which is exported by the React component, allows the legacy code
-// to interact with the React component, e.g., to set the active tool,
-// or to be notified when the active tool changes.
-interface IToolboxReactAdapter {
-    isEnabled(): boolean;
-    setActiveToolByToolId(toolId: string): void;
-    getActiveToolId(): string | undefined;
-    onActiveToolChanged(callback: (toolId: string) => void): void;
+    // The URL of the icon to show in this tool's toolbox section header, e.g.
+    // "/bloom/images/microphone-white.svg". Undefined for the few sections that don't
+    // have an icon.
+    iconPath(): string | undefined;
 }
 
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
 export class ToolBox {
-    public toolboxIsShowing() {
-        return (<HTMLInputElement>(
-            $(parent.window.document).find("#pure-toggle-right").get(0)
-        )).checked;
+    // The sidebar is shown and hidden by a checkbox in the workspace frame, not by us, so
+    // this is the truth about whether the toolbox is showing. (It is mirrored into the
+    // toolbox state store, which is how the tools' lifecycle follows it; see
+    // syncToolboxVisibilityFromDom.) Returns false rather than throwing if there is no such
+    // checkbox, which is the case in unit tests and other hosts of the toolbox UI.
+    public toolboxIsShowing(): boolean {
+        const toggle = $(parent.window.document)
+            .find("#pure-toggle-right")
+            .get(0) as HTMLInputElement | undefined;
+        return !!toggle?.checked;
     }
     public toggleToolbox() {
         (<HTMLInputElement>(
@@ -139,6 +154,11 @@ export class ToolBox {
         )).click();
     }
     private builtToolbox: boolean = false;
+    /**
+     * Adds or removes the tools that are only offered on pages that ask for them
+     * (see ITool.requiresToolId()), according to this page's data-tool-id, and makes
+     * the required tool current.
+     */
     public adjustToolListForPage(page: HTMLElement) {
         let requiredToolId = page.getAttribute("data-tool-id");
         // Books made from the Leveled/Decodable Reader templates have pages that carry
@@ -157,8 +177,7 @@ export class ToolBox {
         newToolId = requiredToolId || undefined;
 
         // This function is the main task of adjustToolListForPage. It may have to be postponed
-        // until we've finished otherwise setting up the toolbox; in particular, we can't refresh
-        // the accordion before we first set it up.
+        // until we've finished otherwise setting up the toolbox.
         // It's possible there will be a tiny bit of flicker if the book opens on a page that
         // has a required tool as we first initialize the toolbox without that tool and then
         // add it. But this is fairly rare and I have not found it noticeable.
@@ -167,33 +186,18 @@ export class ToolBox {
                 setTimeout(doAdjustment, 100);
                 return;
             }
-            const toolbox = document.getElementById("toolbox") as HTMLElement;
             let toolsAdjusted = false;
-            for (let i = 0; i < masterToolList.length; i++) {
-                if (masterToolList[i].requiresToolId()) {
-                    // We may need to add or remove the specified tool
-
-                    // Adapt the tool object id to the value used as the ID of the element
-                    // for that tool in the toolbox.
-                    const toolId = ToolBox.addToolToString(
-                        masterToolList[i].id(),
-                    );
-                    // Get the header element that represents the tool in the DOM.
-                    const toolHeader = toolbox.querySelector(
-                        "[data-toolid='" +
-                            ToolBox.addToolToString(toolId) +
-                            "']",
-                    ) as HTMLElement;
-                    const haveTool = !!toolHeader;
-                    const wantTool = requiredToolId === masterToolList[i].id();
-                    if (haveTool !== wantTool) {
-                        // add or remove as needed.
-                        showOrHideTool(
-                            ToolBox.addToolToString(masterToolList[i].id()),
-                            wantTool,
-                        ); // required tools don't have check boxes.
-                        toolsAdjusted = wantTool;
-                    }
+            for (const tool of masterToolList) {
+                if (!tool.requiresToolId()) {
+                    continue;
+                }
+                // We may need to add or remove this tool.
+                const haveTool = isToolOffered(tool.id());
+                const wantTool = requiredToolId === tool.id();
+                if (haveTool !== wantTool) {
+                    // add or remove as needed. (Required tools don't have check boxes.)
+                    showOrHideTool(tool.id(), wantTool);
+                    toolsAdjusted = wantTool;
                 }
             }
             // We haven't called showOrHideTool, so the active tool hasn't changed.
@@ -208,116 +212,7 @@ export class ToolBox {
         for (let i = 0; i < masterToolList.length; i++) {
             masterToolList[i].configureElements(container);
         }
-        // the toolbox itself handles keypresses in order to manage the process
-        // of giving each tool a chance to update things when the user stops typing
-        // (while maintaining the selection if at all possible).
-        /* Note: BL-3900: "Decodable & Talking Book tools delete text after longpress".
-                In that bug, longpress.replacePreviousLetterWithText() would delete back
-                to the start of the current markup span (e.g. a sentence in
-                Talking Book, or a non-decodable word in Decodable Reader).
-                A past fix was to trigger markup on keydown, rather than keyup or keypress.
-                Keeping the comment in case it recurs:
-                ****This is exactly the opposite of what we would expect****
-
-                If we trigger on keyup here, the sequence looks right but longpress will eat up the span.
-                Here's the sequence:
-                        longpress: replacePreviousLetterWithText()
-                        Toolbox: setting timer markup
-                        Toolbox: doing markup
-                        Toolbox: Restoring Selection after markup
-
-                So the mystery in the above case is, what is going on with the dom and longpress.replacePreviousLetterWithText()
-                such that replacePreviousLetterWithText() replaces a bunch of characters instead of 1 character?
-
-                Counterintuitively, if we instead trigger on keydown here, the settimeout()
-                doesn't fire until longpress is all done and all is well:
-                        1) Toolbox: setting timer markup
-                        2) longpress: replacePreviousLetterWithText()
-                        3) Toolbox: doing markup
-                        4) Toolbox: Restoring Selection after markup
-
-                (3) is delayed presumably because (2) is still in the event-handling loop. That's fine. But the
-                mystery then was: why does it help longpress.replacePreviousLetterWithText() to not eat up a whole span?
-
-                It turns out that when longpress goes to get the selection,
-                in the keyup or keypress senarios, the selection's startContainer is the markup span (which has the #text
-                node inside of it). So then a deleteContents() wiped out *all* the text in the span (I've added a check for
-                that scenario so that if it happens again, longpress will fail instead of deleting text).
-                However in the keydown case, we get a #text node for the selection, as expected. My hypothesis is that by doing
-                the work during the keyDown event, some code somewhere runs when the key goes up, restoring a good selection.
-                So when longpress is used, it doesn't trip over the span.
-
-                For now I'm just going to commit the fix and if someday we revisit this, maybe another piece of the
-                puzzle will emerge.
-                ----end of BL-3900 comment
-                Using Keydown had its own problems (BL-12889). If the user holds down a key (e.g., for longpress), it will
-                fire repeatedly. I made various further attempts to get handleKeyboardInput to abort if longpress was
-                doing something, but it was fragile and I never got it entirely right. Keyup is much better, though
-                watch out for a keyup from the extra keystroke that is one way to select a key in longpress. And BL-3900
-                does not seem to have recurred. Not sure whether this is because at some point we got a newer version of
-                CkEditor, or because of improvements we've made to bookmark handling (including in the PR for BL-12889),
-                or because of the switch to WebView2, or something else. But as far as I can tell, using keyup helps
-                solve BL-12889 and does not cause BL-3900 to recur.
-                -----and then as part of dealing with BL-15334, we found that keyup was not enough to catch all ctrl-V events,
-                even when combined with handling paste events as such, so we added a keydown event for that.
-                This should be safe because ctrl-V should not interact with longpress.
-        */
-
-        $(container)
-            .find(".bloom-editable")
-            .keydown((event) => {
-                // Ctrl/Cmd+V doesn't always produce a keyup we can rely on in all environments.
-                // Schedule the same markup-update side effects explicitly when paste is requested.
-                // This should not interact with longpress, which doesn't handle keypresses with ctrl.
-                // In theory, this should be dead code: the keydown should be followed by a keyup
-                // which will cancel the timeout started by this call and then schedule a new one.
-                // However, actual users report that the side effects of pasting sometimes don't happen.
-                // CoPilot suggested that the keydown event might be fired more reliably. For example,
-                // it's possible that a CkEditor event handler intercepts the keyup and stops
-                // propagation. So as a desperation attempt, I'm adding a keydown handler. I can't
-                // reproduce the problem, so the only way to test is to release to testers.
-                const isPasteShortcut =
-                    (event.ctrlKey || event.metaKey) && event.keyCode === 86;
-                if (isPasteShortcut) {
-                    setTimeout(
-                        () => handlePageEditing(maxPasteMarkupUpdateRetries),
-                        0,
-                    );
-                }
-            })
-            .keyup((event) => {
-                //don't do markup on cursor keys
-                if (event.keyCode >= 37 && event.keyCode <= 40) {
-                    // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
-                    // if all they did was move the cursor, we don't need to look at markup.
-                    //console.log("skipping markup on arrow key");
-                    return;
-                }
-                handlePageEditing();
-            })
-            .on("compositionend", (_argument) => {
-                // Keyman (and other IME's?) don't send keydown events, but do send compositionend events
-                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5440.
-                handlePageEditing();
-            })
-            // These next two were added to try to catch paste events that are not caught by the keyup
-            // on Ctrl+V. They don't catch paste caused by the toolbar button, which is caught elsewhere.
-            // I'm not sure how a paste can be triggered in current Bloom without causing a keyup,
-            // but just possibly the paste might take longer than the standard keyup delay to finish
-            // modifying the DOM? AI suggested adding these and I decided it was safest to keep them.
-            .on("input", (event) => {
-                const inputEvent = event.originalEvent as InputEvent;
-                if (
-                    inputEvent?.inputType &&
-                    inputEvent.inputType.startsWith("insertFromPaste")
-                ) {
-                    handlePageEditing();
-                }
-            })
-            .on("paste", () => {
-                // Wait a tick so the DOM reflects the pasted content.
-                setTimeout(() => handlePageEditing(), 0);
-            });
+        configurePageEditingHandlers(container, this);
     }
 
     public getTheOneGameTool(): GameTool | undefined {
@@ -328,13 +223,19 @@ export class ToolBox {
     // In some contexts where we want to detach, we may not be able to get the toolbox instance,
     // and that function has some fallback behavior in that case.
     public detachCurrentTool(): void {
+        this.runTasksForClosingTool();
+        const currentTool = getCurrentTool();
+        if (currentTool && isToolInitialized(currentTool)) {
+            currentTool.detachFromPage();
+        }
+    }
+    // Runs (once) whatever was registered with addWhenClosingToolTask(). Called both by the
+    // explicit detach above and by the tool's own lifecycle cleanup (useToolLifecycle.ts).
+    public runTasksForClosingTool(): void {
         for (const task of this.doWhenClosingTool) {
             task();
         }
         this.doWhenClosingTool = [];
-        if (currentTool && isToolInitialized(currentTool)) {
-            currentTool.detachFromPage();
-        }
     }
     // A list of tasks to do when the current tool is closed. This is currently used to
     // keep track of popups and dialogs that need to be closed when the tool goes away.
@@ -351,65 +252,27 @@ export class ToolBox {
         getTheOneToolbox().doWhenClosingTool.push(task);
     }
 
-    // Append "Tool" to the tool name if it's not already there.
-    // Put a space between the name and "Tool" if addSpace is true.
-    public static addToolToString(
-        toolName: string,
-        addSpace: boolean = false,
-    ): string {
-        if (toolName) {
-            if (
-                toolName.indexOf(checkLeaveOffTool) === -1 &&
-                toolName.indexOf("Tool") === -1
-            ) {
-                if (addSpace) {
-                    return toolName + " Tool";
-                } else {
-                    return toolName + "Tool";
-                }
-            }
-        }
-        return toolName;
-    }
-
-    // In the process of moving this to shared.ts, but a lot of
-    // code still expects to find it here.
-    public static getPageFrame(): HTMLIFrameElement {
-        return getPageIFrame();
-    }
-
-    // In the process of moving this to shared.ts as getPageIframeBody, but a lot of
-    // code still expects to find it here.
-    // The body of the editable page, a root for searching for document content.
-    public static getPage(): HTMLElement | null {
-        return getPageIframeBody();
-    }
-
-    public static isXmatterPage(): boolean {
-        const page = ToolBox.getPage();
-        if (!page) return false;
-        const bloomPage = page.querySelector(".bloom-page");
-        if (!bloomPage) return false;
-        const classes = bloomPage.getAttribute("class");
-        if (!classes) return false;
-        return (
-            // Enhance: when our typescript "groks" string.include(), it would simplify things.
-            classes.indexOf("bloom-frontMatter") > -1 ||
-            classes.indexOf("bloom-backMatter") > -1
-        );
-    }
-
     public static registerTool(tool: ITool) {
         masterToolList.push(tool);
     }
 
+    /**
+     * The tools the book has enabled, as a comma-separated list of tool names. This is the
+     * one place we ask; the answer drives which sections the toolbox offers.
+     */
     private getEnabledTools() {
-        // Using axios directly because api calls for returning the promise.
-        return axios.get("/bloom/api/toolbox/enabledTools");
+        // Using axios directly because we want the promise.
+        return axios.get<string>("/bloom/api/toolbox/enabledTools");
     }
 
     // Called from document.ready, initializes the whole toolbox.
     public initialize(): void {
+        // From here on, whenever the user (or we ourselves) make a different tool the
+        // active one, record it as the current tool. This is the only place we subscribe.
+        subscribeToActiveToolChanges((newlyActiveToolId: string) => {
+            switchTool(newlyActiveToolId);
+        });
+
         // It seems (see BL-5330) that the toolbox code is loaded into the edit document as well as the
         // toolbox one. Nothing outside toolbox imports it directly, so it must be some indirect link.
         // It's important that this function is only hooked up to the real toolbox instance.
@@ -419,217 +282,75 @@ export class ToolBox {
                 .change(function () {
                     showToolboxChanged(!this.checked);
                 });
+            // The checkbox may already be checked, in which case we will never be told it
+            // changed, so take its state now.
+            syncToolboxVisibilityFromDom();
         });
         hookupLinkHandler();
 
-        // Using axios directly because bloomApi doesn't support merging promises with .all
         wrapAxios(
-            axios.all([this.getEnabledTools()]).then(
-                axios.spread((enabledTools) => {
-                    // remove any experimental tools the user doesn't want
-                    // TODO: give each experimental tool it's own setting once we have any experimental tools again.
-                    // Presumably use the tool id as the keyword in the list of experimental features.
-                    const toolsToLoad = enabledTools.data
-                        .split(",")
-                        .map((toolId: string) => toolId.trim())
-                        .filter((toolId: string) => toolId.length > 0)
-                        .map((toolId: string) =>
-                            toolId.endsWith("Tool")
-                                ? toolId.substring(0, toolId.length - 4)
-                                : toolId,
-                        );
-                    // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
-                    for (let i = toolsToLoad.length - 1; i >= 0; i--) {
-                        if (
-                            !masterToolList.some(
-                                (mod) => mod.id() === toolsToLoad[i],
-                            )
-                        ) {
-                            toolsToLoad.splice(i, 1);
-                        }
+            this.getEnabledTools().then((enabledTools) => {
+                // TODO: give each experimental tool its own setting once we have any
+                // experimental tools again. Presumably use the tool id as the keyword in
+                // the list of experimental features.
+                // The names in this list come from the book's meta.json, so they may have
+                // the historical "Tool" suffix; from here on we work in canonical ids.
+                const toolsToLoad = enabledTools.data
+                    .split(",")
+                    .map((toolName: string) => toolName.trim())
+                    .filter((toolName: string) => toolName.length > 0)
+                    .map((toolName: string) => toCanonicalToolId(toolName));
+                // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
+                for (let i = toolsToLoad.length - 1; i >= 0; i--) {
+                    if (
+                        !masterToolList.some(
+                            (mod) => mod.id() === toolsToLoad[i],
+                        )
+                    ) {
+                        toolsToLoad.splice(i, 1);
                     }
+                }
 
-                    enabledToolIds = new Set(toolsToLoad);
+                setEnabledTools(toolsToLoad);
 
-                    for (let j = 0; j < masterToolList.length; j++) {
-                        // add any tools we always show
-                        if (
-                            masterToolList[j].isAlwaysEnabled() &&
-                            !toolsToLoad.includes(masterToolList[j].id())
-                        ) {
-                            toolsToLoad.push(masterToolList[j].id());
-                        }
+                for (let j = 0; j < masterToolList.length; j++) {
+                    // add any tools we always show
+                    if (
+                        masterToolList[j].isAlwaysEnabled() &&
+                        !toolsToLoad.includes(masterToolList[j].id())
+                    ) {
+                        toolsToLoad.push(masterToolList[j].id());
                     }
+                }
 
-                    toolsToLoad.push("settings");
-                    $("#toolbox").hide();
-                    const loadNextTool = () => {
-                        if (toolsToLoad.length === 0) {
-                            $("#toolbox").accordion({
-                                heightStyle: "fill",
-                            });
-                            $("body").find("*[data-i18n]").localize(); // run localization
-
-                            get("currentUiLanguage", (result) => {
-                                const langName = result.data;
-
-                                const nodeList = document.querySelectorAll(
-                                    ':not([data-i18n=""])',
-                                );
-                                for (let i = 0; i < nodeList.length; ++i) {
-                                    const node = nodeList.item(i);
-
-                                    if (!node.hasAttribute("data-i18n")) {
-                                        // Nodes which don't have data-18n will match the selector that it's not equal to "",
-                                        // but we definitely don't want to apply language text-specific markup to those non-leaf nodes.
-                                        continue;
-                                    }
-
-                                    // TODO: This only works when the tool is loaded up for the first time.
-                                    // It doesn't work if you open a new tool after the talking book tool is initialized for the first time.
-                                    // TODO: How to re-translate when UI lang changed.
-                                    const i18nId =
-                                        node.getAttribute("data-i18n");
-                                    if (!i18nId) {
-                                        node.setAttribute("lang", langName);
-                                    } else {
-                                        // Double-check that it's actually in this language and not just using an English fallback
-                                        theOneLocalizationManager
-                                            .asyncGetTextInLang(
-                                                i18nId,
-                                                "",
-                                                langName,
-                                                "",
-                                            )
-                                            .done((result) => {
-                                                if (result) {
-                                                    node.setAttribute(
-                                                        "lang",
-                                                        langName,
-                                                    );
-                                                } else {
-                                                    node.removeAttribute(
-                                                        "lang",
-                                                    ); // Or maybe set to "en" instead?
-                                                }
-                                            });
-                                    }
-                                }
-                            });
-
-                            // Now bind the window's resize function to the toolbox resizer
-                            $(window).bind("resize", () => {
-                                clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
-                                resizeTimer = setTimeout(resizeToolbox, 100);
-                            });
-                            this.builtToolbox = true;
-                            // loaded them all, now we can deal with settings.
-                            restoreToolboxSettings();
-                            $("#toolbox").show();
-                            // I don't know why, but the accordion refresh inside resizeToolbox is needed
-                            // to (at least) make the accordion icons appear, and it has to happen on a later cycle.
-                            setTimeout(resizeToolbox, 0);
-                        } else {
-                            // optimize: maybe we can overlap these?
-                            const nextToolId = toolsToLoad.pop();
-                            const toolId = ToolBox.addToolToString(nextToolId);
-                            beginAddTool(toolId, false, () => loadNextTool());
-                        }
-                    };
-                    loadNextTool();
-                }),
-            ),
+                // The "More..." section, which is how the user enables the other tools,
+                // is always offered.
+                toolsToLoad.push(kSettingsToolId);
+                const loadNextTool = () => {
+                    if (toolsToLoad.length === 0) {
+                        this.builtToolbox = true;
+                        // loaded them all, now we can deal with settings.
+                        restoreToolboxSettings();
+                    } else {
+                        // optimize: maybe we can overlap these?
+                        const nextToolId = toolsToLoad.pop()!;
+                        beginAddTool(nextToolId, false, () => loadNextTool());
+                    }
+                };
+                loadNextTool();
+            }),
         );
     }
 
-    // Adds "lang" attributes into the DOM for toolbox elements which have internationalization. (AKA, have data-i18n)
-    // TODO: This only works with non-React toolbox components. For now, we only need it for talking book tool though.
-    public static insertLangAttributesIntoToolboxElements() {
-        get("currentUiLanguage", (result) => {
-            const langName = result.data;
-
-            const nodeList = document.querySelectorAll(':not([data-i18n=""])');
-            for (let i = 0; i < nodeList.length; ++i) {
-                const node = nodeList.item(i);
-
-                if (!node.hasAttribute("data-i18n")) {
-                    // Nodes which don't have data-18n will match the selector that it's not equal to "",
-                    // but we definitely don't want to apply language text-specific markup to those non-leaf nodes.
-                    continue;
-                }
-
-                const i18nId = node.getAttribute("data-i18n");
-                if (!i18nId) {
-                    node.setAttribute("lang", langName);
-                } else {
-                    // Double-check that it's actually in this language and not just using an English fallback
-                    theOneLocalizationManager
-                        .asyncGetTextInLang(i18nId, "", langName, "")
-                        .done((result) => {
-                            if (result) {
-                                node.setAttribute("lang", langName);
-                            } else {
-                                node.removeAttribute("lang"); // Or maybe set to "en" instead?
-                            }
-                        });
-                }
-            }
-        });
-    }
-
-    //currently just a wrapper around the global, to be enhanced someday when we get rid of all the globals
-    public getToolIfOffered(toolId: string): ITool {
-        return getITool(toolId);
-    }
-
+    /**
+     * Is the toolbox currently offering this tool (canonical id) a section? (Despite the
+     * name, this does not mean the tool is the *current* tool; it never did.)
+     */
     public isToolActive(toolId: string): boolean {
-        const tools = $("*[data-toolId]");
-        const filteredTools = tools.filter(function () {
-            return $(this).attr("data-toolId") === toolId;
-        });
-        return filteredTools.length > 0;
+        return isToolOffered(toolId);
     }
 
-    // Ensure the requested tool is available in the toolbox accordion without changing the
-    // currently-active tool. This supports scenarios like clicking on a canvas background while
-    // another tool is open: we want to make Canvas available, but not steal focus.
-    public ensureToolEnabled(toolId: string): void {
-        const toolIdWithTool = ToolBox.addToolToString(toolId);
-        if (this.isToolActive(toolIdWithTool)) {
-            return;
-        }
-        const toolboxElt = $("#toolbox");
-        const activeToolId = getActiveToolIdFromCurrentToolboxUi();
-        beginAddTool(toolIdWithTool, false, () => {
-            const adapter = getToolboxReactAdapter();
-            if (adapter) {
-                if (activeToolId) {
-                    adapter.setActiveToolByToolId(activeToolId);
-                }
-                return;
-            }
-
-            toolboxElt.accordion("refresh");
-            if (activeToolId) {
-                const activeHeader = toolboxElt
-                    .find("> h3")
-                    .filter(function () {
-                        return $(this).attr("data-toolId") === activeToolId;
-                    })
-                    .first();
-                if (activeHeader.length > 0) {
-                    const activeIndex = toolboxElt
-                        .find("> h3")
-                        .index(activeHeader);
-                    if (activeIndex >= 0) {
-                        toolboxElt.accordion("option", "active", activeIndex);
-                    }
-                }
-            }
-        });
-    }
-
-    // Enables a tool from an in-page action, ensuring the toolbox is visible.
+    // Enables a tool (canonical id) from an in-page action, ensuring the toolbox is visible.
     public enableToolFromPage(toolId: string): void {
         if (!this.toolboxIsShowing()) {
             this.toggleToolbox();
@@ -637,15 +358,16 @@ export class ToolBox {
         setToolEnabledFromSettings(toolId, true);
     }
 
+    /**
+     * Makes the given tool (canonical id) the current tool, enabling it first if
+     * necessary. Called in response to in-page actions, e.g. clicking a video placeholder
+     * to get the Sign Language tool.
+     */
     public activateToolFromId(toolId: string) {
         if (!getITool(toolId)) {
-            // Normally we won't even give a way to see this tool if it's
-            // not available for experimental reasons, but sometimes (e.g.
-            // clicking on a video placeholder, it will help the user to
-            // say why nothing is happening.
-            const msg =
-                "This tool requires that you enable Settings : Advanced Program Settings : Show Experimental Features";
-            alert(msg);
+            // Every tool we know about is registered unconditionally, so this means the
+            // caller asked for a tool that doesn't exist.
+            console.error(`activateToolFromId: there is no tool "${toolId}".`);
             return;
         }
         // Making it visible first allows the simulated click to actually activate the tool.
@@ -657,28 +379,19 @@ export class ToolBox {
             this.toggleToolbox();
         }
 
-        if (isToolEnabledInToolbox(toolId)) {
-            // Already enabled; just make it the active tool.
+        // The tool may be present without being enabled if it is a
+        // required-for-this-page tool (see adjustToolListForPage).
+        if (isToolEnabled(toolId) || this.isToolActive(toolId)) {
             setCurrentTool(toolId);
         } else {
-            // Not a required-for-this-page tool that's already present, and not yet enabled.
-            const toolbox = document.getElementById("toolbox") as HTMLElement;
-            const toolHeader = toolbox.querySelector(
-                "[data-toolid='" + ToolBox.addToolToString(toolId) + "']",
-            ) as HTMLElement;
-            if (toolHeader) {
-                // Present in the accordion (e.g. a required tool) but not in enabledToolIds.
-                setCurrentTool(toolId);
-            } else {
-                // Genuinely disabled: enable it, which persists the state and updates
-                // enabledToolIds, then activates it (showOrHideTool opens it by default).
-                setToolEnabledFromSettings(toolId, true);
-            }
+            // Genuinely disabled: enable it, which persists the state and records it in
+            // the store, then activates it (showOrHideTool opens it by default).
+            setToolEnabledFromSettings(toolId, true);
         }
     }
 
-    public getCurrentTool() {
-        return currentTool;
+    public getCurrentTool(): ITool | undefined {
+        return getCurrentTool();
     }
 
     public setCurrentTool(toolId: string): void {
@@ -699,43 +412,29 @@ export function getMasterToolList() {
 // Array of ITool objects, typically one for each tool. The code for each tool inserts an appropriate ITool
 // into this array in order to interact with the overall toolbox code.
 const masterToolList: ITool[] = [];
-let currentTool: ITool | undefined = undefined;
-let toolboxReactActivationHooked = false;
 
-// The AI decided to create this react adapter object and save in in a window variable.
-// It gets set in a useEffect in the React component that is the root of the toolbox.
-// This function retrieves it. Once the toolbox has started up, it should always
-// successfully return a valid adapter object. AI has built fallback code that tries to
-// do various things in other ways when it is not available. Most of that fallback code
-// is probably already redundant, but it's hard to be sure which. I'm inclined to leave
-// it until we get all the tools migrated to React; then we can do a lot of simplification
-// and probably get rid the adapter and fallbacks entirely; instead, each component
-// will belong to its own accordion section and will be able to manage its own state
-// and lifecycle.
-function getToolboxReactAdapter(): IToolboxReactAdapter | undefined {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const adapter = (window as any).toolboxReactAdapter as
-        | IToolboxReactAdapter
-        | undefined;
-    if (!adapter) {
+/**
+ * The tool that is currently running, or undefined if none is. This is not a variable of
+ * our own: the toolbox state store holds it (see IToolboxUiState.currentToolId), because
+ * that is what ToolboxRoot renders from and what runs each tool's lifecycle. switchTool()
+ * below is the only thing that sets it.
+ */
+function getCurrentTool(): ITool | undefined {
+    const currentToolId = getCurrentToolId();
+    if (!currentToolId) {
         return undefined;
     }
-    if (!adapter.isEnabled()) {
-        return undefined;
-    }
-    return adapter;
+    return masterToolList.find((tool) => tool.id() === currentToolId);
 }
 
-function getActiveToolIdFromCurrentToolboxUi(): string | undefined {
-    const adapter = getToolboxReactAdapter();
-    if (adapter) {
-        return adapter.getActiveToolId();
-    }
-
-    const activeHeader = $("#toolbox")
-        .find("> h3.ui-accordion-header-active")
-        .get(0) as HTMLElement | undefined;
-    return activeHeader?.getAttribute("data-toolId") || undefined;
+/**
+ * Runs whatever was registered with ToolBox.addWhenClosingToolTask(). Exported for the
+ * current tool's lifecycle cleanup (useToolLifecycle.ts), which is where a tool that stops
+ * running gets closed down. It goes through the toolbox instance so that the tasks run are
+ * the ones registered with the toolbox in this iframe.
+ */
+export function runTasksForClosingTool(): void {
+    getTheOneToolbox()?.runTasksForClosingTool();
 }
 
 // This primarily calls the detachFromPage method of the current tool, if any.
@@ -745,6 +444,7 @@ function getActiveToolIdFromCurrentToolboxUi(): string | undefined {
 // that has the valid list of tasks to run when closing the tool.
 function detachCurrentTool() {
     const toolbox = getTheOneToolbox();
+    const currentTool = getCurrentTool();
     if (toolbox) {
         toolbox.detachCurrentTool();
     } else if (currentTool && isToolInitialized(currentTool)) {
@@ -754,9 +454,18 @@ function detachCurrentTool() {
     }
 }
 
+// Mirrors the sidebar's real showing/hidden state into the toolbox state store, which is
+// what makes the current tool run or stop running. Everything that shows or hides the
+// toolbox goes through the workspace's checkbox, so showToolboxChanged() normally keeps
+// this up to date; the other callers are for the times we may never have been told (the
+// state it started in) or may have missed it (a new page or book).
+function syncToolboxVisibilityFromDom(): void {
+    setToolboxVisible(toolbox.toolboxIsShowing());
+}
+
 let newToolId: string | undefined = undefined;
 export function getActiveToolId(): string | undefined {
-    return newToolId ? newToolId : currentTool?.id();
+    return newToolId ? newToolId : getCurrentTool()?.id();
 }
 
 // How long, after a tool is turned on in the "More..." settings section, we wait
@@ -764,7 +473,7 @@ export function getActiveToolId(): string | undefined {
 // it just long enough for the user to see the checkbox they ticked. (BL-16501)
 const kShowToolAfterEnableDelayMs = 300;
 
-// Pending deferred "open this tool" timers, keyed by tool name, so a later toggle
+// Pending deferred "open this tool" timers, keyed by canonical tool id, so a later toggle
 // of the same tool can cancel an open that hasn't fired yet.
 // We deliberately don't clear this map on toolbox teardown/navigation: each timer
 // is ~300ms and removes its own entry when it fires, so at most a couple of very
@@ -774,8 +483,8 @@ const pendingShowToolTimeouts = new Map<
     ReturnType<typeof setTimeout>
 >();
 
-// modifies the enabledToolIds set, the saved active
-// state of the tool in question, and the presence of
+// modifies the store's set of enabled tools, the saved active
+// state of the tool in question (canonical id), and the presence of
 // the tool in the toolbox, whenever the tool is checked
 // or unchecked in the toolbox settings.
 // deferShowToRevealCheckbox is set only by the "More..." settings checkboxes:
@@ -784,38 +493,27 @@ const pendingShowToolTimeouts = new Map<
 // ticked. Other callers (e.g. activating a tool from an in-page action) leave it
 // false so the tool opens immediately. (BL-16501)
 export function setToolEnabledFromSettings(
-    toolName: string,
+    toolId: string,
     turnOn: boolean,
     deferShowToRevealCheckbox: boolean = false,
 ): void {
-    if (turnOn) {
-        enabledToolIds.add(toolName);
-    } else {
-        enabledToolIds.delete(toolName);
-    }
-
-    const toolId =
-        toolName.indexOf(checkLeaveOffTool) === -1
-            ? toolName + "Tool"
-            : toolName;
+    // The "More..." checkboxes render from the store, so this is also what re-ticks the
+    // checkbox when a tool is enabled from somewhere else (e.g. an in-page action).
+    setToolEnabled(toolId, turnOn);
 
     postString(
         "editView/saveToolboxSetting",
-        "active\t" + toolName + "Check\t" + (turnOn ? "1" : "0"),
+        "active\t" + toEnabledSettingName(toolId) + "\t" + (turnOn ? "1" : "0"),
     );
-
-    if (changeToolboxSettingsState !== undefined) {
-        changeToolboxSettingsState(toolName, turnOn);
-    }
 
     // A pending deferred open (below) reflects an earlier state; this call
     // supersedes it, so cancel it. Without this, ticking a tool on and then off
     // again within the delay would let the stale timer re-add the disabled tool
     // (the disable runs synchronously and would otherwise be overtaken).
-    const pendingTimeout = pendingShowToolTimeouts.get(toolName);
+    const pendingTimeout = pendingShowToolTimeouts.get(toolId);
     if (pendingTimeout !== undefined) {
         clearTimeout(pendingTimeout);
-        pendingShowToolTimeouts.delete(toolName);
+        pendingShowToolTimeouts.delete(toolId);
     }
 
     if (turnOn && deferShowToRevealCheckbox) {
@@ -825,44 +523,34 @@ export function setToolEnabledFromSettings(
         // checkbox they just ticked. Briefly delay so the checkmark is visible
         // before the section collapses to reveal the newly-enabled tool. (BL-16501)
         const timeout = setTimeout(() => {
-            pendingShowToolTimeouts.delete(toolName);
+            pendingShowToolTimeouts.delete(toolId);
             // Guard against the tool having been turned off again during the delay.
-            if (enabledToolIds.has(toolName)) {
+            if (isToolEnabled(toolId)) {
                 showOrHideTool(toolId, true);
             }
         }, kShowToolAfterEnableDelayMs);
-        pendingShowToolTimeouts.set(toolName, timeout);
+        pendingShowToolTimeouts.set(toolId, timeout);
     } else {
         showOrHideTool(toolId, turnOn);
     }
 }
 
 function showOrHideTool(
-    tool: string,
+    toolId: string,
     turnOn: boolean,
     openTool: boolean = true,
 ) {
     if (turnOn) {
-        beginAddTool(tool, openTool);
+        beginAddTool(toolId, openTool);
     } else {
-        $("*[data-toolId]")
-            .filter(function () {
-                return $(this).attr("data-toolId") === tool;
-            })
-            .remove();
-        window.dispatchEvent(
-            new CustomEvent("toolbox-tool-removed", {
-                detail: { toolId: tool },
-            }),
-        );
+        withdrawTool(toolId);
     }
-    resizeToolbox();
 }
 
 export function restoreToolboxSettings() {
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
-        const pageFrame = ToolBox.getPageFrame();
+        const pageFrame = getPageIFrame();
         const contentWin = pageFrame.contentWindow;
         if (contentWin && contentWin.document.readyState === "loading") {
             // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
@@ -880,17 +568,16 @@ export function applyToolboxStateToUpdatedPage() {
         savedSettings = result.data;
         // savedSettings["current"] is always set to the last active tool for the book,
         // except for new books where it is null. In that case, the default value
-        // should be talkingBookTool.  (BL-16026)
-        const currentFromBook = ToolBox.addToolToString(
-            (savedSettings && savedSettings["current"]) || "talkingBookTool",
+        // should be the talking book tool.  (BL-16026)
+        const currentFromBook = toCanonicalToolId(
+            (savedSettings && savedSettings["current"]) || kTalkingBookToolId,
         );
-        const currentInToolbox = currentTool
-            ? ToolBox.addToolToString(currentTool.id())
-            : "";
+        const currentInToolbox = getCurrentTool()?.id() ?? "";
         const shouldBeVisible = !!(
             savedSettings && savedSettings["visibility"]
         );
         const isVisible = toolbox.toolboxIsShowing();
+        syncToolboxVisibilityFromDom();
 
         // When switching books, sync visibility/current tool first.
         if (
@@ -901,57 +588,23 @@ export function applyToolboxStateToUpdatedPage() {
             return;
         }
 
-        if (currentTool && toolbox.toolboxIsShowing()) {
-            doWhenPageReady(() => {
-                const activeTool = currentTool;
-                if (activeTool && isToolInitialized(activeTool)) {
-                    activeTool
-                        .beginRestoreSettings(
-                            savedSettings as unknown as string,
-                        )
-                        .then(() => {
-                            if (currentTool !== activeTool) {
-                                return;
-                            }
-
-                            // Re-run tool UI setup on page/book switches. Some tools
-                            // (for example reader toggle controls) are initialized in showTool().
-                            Promise.resolve(activeTool.showTool()).then(() => {
-                                if (
-                                    currentTool === activeTool &&
-                                    isToolInitialized(activeTool)
-                                ) {
-                                    activeTool.newPageReady();
-                                    scheduleDelayedNewPageReady(activeTool);
-                                }
-                            });
-                        });
-                    // We used to call updateMarkup() here
-                    // Now we don't because it would mess up the Talking Book Tool
-                    // if you really need it, add call to updateMarkup to currentTool's implementation of newPageReady.
-                }
-            });
+        if (currentInToolbox && isVisible) {
+            // Say that the page is ready, but not until it really is. That re-runs the
+            // current tool's beginRestoreSettings/showTool/newPageReady for the new page:
+            // some tools do their page-dependent setup in showTool(), and re-reading the
+            // saved settings is how a tool's state follows a switch of book. See
+            // useToolLifecycle.ts.
+            // We used to call updateMarkup() here.
+            // Now we don't because it would mess up the Talking Book Tool
+            // if you really need it, add call to updateMarkup to the tool's implementation of newPageReady.
+            doWhenPageReady(() => notePageReady());
         }
     });
 }
 
-function scheduleDelayedNewPageReady(tool: ITool): void {
-    window.setTimeout(() => {
-        if (
-            currentTool !== tool ||
-            !toolbox.toolboxIsShowing() ||
-            !isToolInitialized(tool)
-        ) {
-            return;
-        }
-
-        Promise.resolve(tool.newPageReady());
-    }, 600);
-}
-
 function doWhenPageReady(action: () => void) {
-    const page = ToolBox.getPage();
-    if (!page || !ToolBox.getPageFrame()) {
+    const page = getPageIframeBody();
+    if (!page || !getPageIFrame()) {
         // Somehow, despite firing this function when the document is supposedly ready,
         // it may not really be ready when this is first called. If it doesn't even have a body yet,
         // we need to try again later.
@@ -989,7 +642,7 @@ function doWhenCkEditorReadyCore(
     },
     page: HTMLElement,
 ): void {
-    const contentWindow = ToolBox.getPageFrame().contentWindow as
+    const contentWindow = getPageIFrame().contentWindow as
         | (Window & { CKEDITOR?: typeof CKEDITOR })
         | null;
     if (contentWindow?.CKEDITOR) {
@@ -1057,19 +710,25 @@ function doWhenCkEditorReadyCore(
     }
 }
 
-function restoreToolboxSettingsWhenPageReady(settings: ToolboxSettings) {
+function restoreToolboxSettingsWhenPageReady(settings: IToolboxSettings) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         const opts = settings;
         // currentTool is always set except for new books. For new books, it is undefined and we want
-        // to treat that the same as if it were set to "talkingBookTool" so that the tool will display
-        // the first time the user opens the toolbox. (BL-16026)
-        const currentTool = opts["current"] || "talkingBookTool";
+        // to treat that the same as if it were set to the talking book tool so that the tool will
+        // display the first time the user opens the toolbox. (BL-16026)
+        const currentTool = opts["current"] || kTalkingBookToolId;
         const shouldBeVisible = !!opts["visibility"];
 
         if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
             toolbox.toggleToolbox();
         }
+        syncToolboxVisibilityFromDom();
+
+        // We only get here when a page has just become ready, so say so. Together with
+        // setCurrentTool() below this is one batch of state changes, hence one run of the
+        // tool's lifecycle, however many of these facts actually changed.
+        notePageReady();
 
         // Before we set stage/level, as it initializes them to 1.
         setCurrentTool(currentTool);
@@ -1085,234 +744,97 @@ export function removeToolboxMarkup() {
     detachCurrentTool();
 }
 
-function switchTool(newToolName: string): void {
-    // Have Bloom remember which tool is active. (Might be none)
-    postString("editView/saveToolboxSetting", "current\t" + newToolName);
-    let newTool: ITool | null = null;
-    if (newToolName) {
-        for (let i = 0; i < masterToolList.length; i++) {
-            // the newToolName comes from meta.json and we've changed our minds a few times about
-            // whether it should end in "Tool" so what's in the meta.json might have it or not.
-            // For robustness we will recognize any tool name that starts with the (no -Tool)
-            // name we're looking for.
-            if (newToolName.startsWith(masterToolList[i].id())) {
-                newTool = masterToolList[i];
-            }
-        }
-    }
-    const canActivateNewTool = !!newTool && isToolInitialized(newTool);
-    const shouldSwitchAwayFromCurrent =
-        currentTool !== newTool || (!!newTool && !canActivateNewTool);
-
-    if (shouldSwitchAwayFromCurrent) {
-        if (currentTool && isToolInitialized(currentTool)) {
-            detachCurrentTool();
-            currentTool.hideTool();
-        }
-        if (canActivateNewTool && newTool) {
-            activateTool(newTool);
-        }
-        // Without recording that currentTool isn't defined, then returning from
-        // More... to the same tool doesn't activate that tool.
-        // See https://issues.bloomlibrary.org/youtrack/issue/BL-6720.
-        currentTool = canActivateNewTool && newTool ? newTool : undefined;
-    }
+/**
+ * Called when the toolbox state reports that a different section is now the active one.
+ * requestedToolId is a canonical tool id (the store only ever holds tools the toolbox is
+ * offering, and they were put there by their canonical ids).
+ *
+ * All this does is persist the choice and record which tool is now the running one.
+ * Running it — restoring its settings, showing it, telling it the page is ready, and
+ * detaching and hiding whatever it replaced — follows from that state; see
+ * useToolLifecycle.ts.
+ *
+ * Note: do not name this parameter newToolId; that is the module-level variable this
+ * function clears at the end, and shadowing it silently breaks getActiveToolId().
+ */
+function switchTool(requestedToolId: string): void {
+    // Have Bloom remember which tool is active. (Might be none.) The book's meta.json
+    // has always stored this with the historical "Tool" suffix. This happens once per
+    // activation because the store only reports a tool *becoming* the active one.
+    postString(
+        "editView/saveToolboxSetting",
+        "current\t" + toPersistedToolName(requestedToolId),
+    );
+    const newTool = requestedToolId
+        ? masterToolList.find((tool) => tool.id() === requestedToolId)
+        : undefined;
+    // A tool the toolbox isn't offering has nowhere to display itself, so it cannot be the
+    // running tool. Recording that as "no current tool", rather than leaving the previous
+    // tool current, is what lets returning from More... to the same tool activate it again.
+    // See https://issues.bloomlibrary.org/youtrack/issue/BL-6720.
+    setCurrentToolId(
+        newTool && isToolInitialized(newTool) ? newTool.id() : undefined,
+    );
     newToolId = undefined;
 }
 
-function activateTool(newTool: ITool) {
-    if (newTool && toolbox.toolboxIsShowing()) {
-        const toolElt = getToolElement(newTool);
-        if (!toolElt) {
-            return;
-        }
-        // Always re-restore settings so tool state tracks the current book.
-        newTool.hasRestoredSettings = true;
-        newTool
-            .beginRestoreSettings(savedSettings as unknown as string)
-            .then(() => {
-                activateToolInternalAsync(newTool, toolElt);
-            });
-    }
-}
-
-function getToolElement(tool: ITool): HTMLElement | null {
-    let toolElement: HTMLElement | null = null;
-    if (tool) {
-        const toolName = ToolBox.addToolToString(tool.id());
-        $("#toolbox")
-            .find("> h3")
-            .each(function () {
-                if ($(this).attr("data-toolId") === toolName) {
-                    // REVIEW: this may in fact be unneeded but I'm just trying to get eslint set up and conceivably it is intentional
-                    // eslint-disable-next-line @typescript-eslint/no-this-alias
-                    toolElement = this;
-                    return false; // break from the each() loop
-                }
-                return true; // continue the each() loop
-            });
-    }
-    return toolElement;
-}
-
+// Does the toolbox have a section for this tool? Only then does it have somewhere to
+// display itself and does it make sense to run its lifecycle methods.
 function isToolInitialized(tool: ITool): boolean {
-    return !!getToolElement(tool);
+    return toolbox.isToolActive(tool.id());
 }
 
-async function activateToolInternalAsync(
-    newTool: ITool,
-    toolElt: HTMLElement | null,
-): Promise<void> {
-    if (!toolElt) {
-        throw new Error(
-            `activateToolInternalAsync called for uninitialized tool: ${newTool.id()}`,
+/**
+ * Attempts to make the given tool the current one (normally the tool the book was last
+ * using). If the toolbox isn't offering that tool, falls back to the first tool it does
+ * offer. Passing an empty id also means "whatever tool is first".
+ * The id may arrive in either spelling, because one caller passes the book's saved
+ * "current" tool name straight from meta.json.
+ */
+function setCurrentTool(toolId: string) {
+    toolId = toCanonicalToolId(toolId);
+
+    // NOTE: the More (settings) section cannot be the "currentTool", so
+    // getFirstOfferedToolId() never returns it.
+    if (!toolId) {
+        toolId = getFirstOfferedToolId() ?? "";
+    }
+
+    if (toolId) {
+        const tool = masterToolList.find(
+            (possibleTool) => possibleTool.id() === toolId,
         );
+        if (tool && !isToolInitialized(tool)) {
+            // The tool we were asked for isn't in the toolbox (e.g., it was disabled
+            // since we saved the setting), so fall back to whatever is first.
+            toolId = getFirstOfferedToolId() ?? "";
+        }
     }
-    newTool.finishToolLocalization(toolElt);
 
-    // Await it so that we can guarantee that newPageReady() and insertLangAttributesIntoToolboxElements()
-    // happen after showTool.
-    await newTool.showTool();
-
-    postString("logger/writeEvent", `Toolbox activated: ${newTool.id()}`);
-
-    // Note: Allowed to begin some async work too, and we will await its result.
-    // (This apparently solves the single flash mentioned in BL-10471.)
-    await newTool.newPageReady();
-    scheduleDelayedNewPageReady(newTool);
-
-    // Note: Begins some async work too, but currently no need to await its result.
-    ToolBox.insertLangAttributesIntoToolboxElements();
+    if (toolId) {
+        setActiveTool(toolId);
+    }
 }
 
-/**
- * This function attempts to activate the tool whose "data-toolId" attribute is equal to the value
- * of "currentTool" (the last tool displayed).
- */
-function setCurrentTool(toolID: string) {
-    // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
-    // For now I'm just making functions work with either form.
-    toolID = ToolBox.addToolToString(toolID);
-
-    const adapter = getToolboxReactAdapter();
-    if (adapter) {
-        if (!toolboxReactActivationHooked) {
-            adapter.onActiveToolChanged((newToolName: string) => {
-                switchTool(newToolName);
-            });
-            toolboxReactActivationHooked = true;
-        }
-
-        if (!toolID) {
-            toolID =
-                ($("#toolbox").find("> h3").first().attr("data-toolId") as
-                    | string
-                    | undefined) ?? "";
-        }
-
-        if (toolID) {
-            const tool = masterToolList.find(
-                (possibleTool) =>
-                    ToolBox.addToolToString(possibleTool.id()) === toolID,
-            );
-            if (tool && !isToolInitialized(tool)) {
-                toolID =
-                    ($("#toolbox").find("> h3").first().attr("data-toolId") as
-                        | string
-                        | undefined) ?? "";
-            }
-        }
-
-        if (toolID) {
-            adapter.setActiveToolByToolId(toolID);
-        }
-        return;
-    }
-
-    // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
-    let idx = 0;
-    const toolbox = $("#toolbox");
-
-    const accordionHeaders = toolbox.find("> h3");
-    if (toolID) {
-        let foundTool = false;
-        // find the index of the tool whose "data-toolId" attribute equals the value of "currentTool"
-        accordionHeaders.each(function () {
-            if ($(this).attr("data-toolId") === toolID) {
-                foundTool = true;
-                // break from the each() loop
-                return false;
-            }
-            idx++;
-            return true; // continue the each() loop
-        });
-        if (!foundTool) {
-            idx = 0;
-            toolID = "";
-        }
-    }
-    if (!toolID) {
-        // Leave idx at 0, and update currentTool to the corresponding ID.
-        toolID = toolbox.find("> h3").first().attr("data-toolId");
-    }
-    if (idx >= accordionHeaders.length - 1) {
-        // don't pick the More... tool, pick whatever happens to be first.
-        idx = 0;
-    }
-
-    // turn off animation
-    const ani = toolbox.accordion("option", "animate");
-    toolbox.accordion("option", "animate", false);
-
-    // the index must be passed as an int, a string will not work.
-    toolbox.accordion("option", "active", idx);
-
-    // turn animation back on
-    toolbox.accordion("option", "animate", ani);
-
-    // when a tool is activated, save its data-toolId so state can be restored when Bloom is restarted.
-    // We do this after we actually set the initial tool, because setting the intial tool may not CHANGE
-    // the active tool (if it's already the one we want, typically the first), so we can't rely on
-    // the activate event happening in the initial call. Instead, we make SURE to call it for the
-    // tool we are making active.
-    toolbox.onSafe("accordionactivate.toolbox", (event, ui) => {
-        let newToolName = "";
-        if (ui.newHeader.attr("data-toolId")) {
-            newToolName = ui.newHeader.attr("data-toolId").toString();
-        }
-        switchTool(newToolName);
-    });
-    //alert("switching to " + currentTool + " which has index " + toolIndex);
-    //setTimeout(e => switchTool(currentTool), 700);
-    switchTool(toolID);
-}
-
-// Parameter 'toolId' is the complete tool id with the 'Tool' suffix
-// Can return undefined in the case of an experimental tool with
-// Advanced Program Settings: Show Experimental Features unchecked.
+// Parameter 'toolId' may be spelled with or without the 'Tool' suffix, since it may have
+// come from persisted data.
+// Returns undefined if we know of no such tool, e.g. because the book's settings were
+// saved by a version of Bloom that had a tool this one doesn't.
 function getITool(toolId: string): ITool {
-    // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
-    // For now I'm just making functions work with either form.
-    const reactToolId =
-        toolId.indexOf("Tool") > -1
-            ? toolId.substring(0, toolId.length - 4)
-            : toolId; // strip off "Tool"
-    return masterToolList.find((tool) => tool.id() === reactToolId)!;
+    const canonicalToolId = toCanonicalToolId(toolId);
+    return masterToolList.find((tool) => tool.id() === canonicalToolId)!;
 }
 
 /**
- * Requests a tool from localhost and loads it into the toolbox.
- * These tools are the tools enabled by the user, tools that are
- * always enabled (like the talking book tool), and the settings
- * "tool".
+ * Records that the toolbox is offering a section for this tool, and optionally opens it.
+ * These tools are the tools enabled by the user, tools that are always enabled
+ * (like the talking book tool), and the settings ("More...") tool.
  */
-// these last three parameters were never used: function requestTool(checkBoxId, toolId, loadNextCallback, tools, currentTool) {
 function beginAddTool(
     toolId: string,
     openTool: boolean,
     whenLoaded?: () => void,
 ): void {
-    // new-style tool implemented in React
     const tool = getITool(toolId);
     if (!tool) {
         console.error(
@@ -1321,634 +843,17 @@ function beginAddTool(
         return;
     }
 
-    if (isToolInitialized(tool)) {
-        if (openTool && toolbox.toolboxIsShowing()) {
-            const toolName = ToolBox.addToolToString(tool.id());
-            const adapter = getToolboxReactAdapter();
-            if (adapter) {
-                adapter.setActiveToolByToolId(toolName);
-            }
-        }
+    // Offering a tool that is already offered does nothing, so it is safe to do this
+    // whether or not the toolbox is already offering it.
+    offerTool(tool.id());
 
-        if (whenLoaded) {
-            whenLoaded();
-        }
-        return;
+    if (openTool && toolbox.toolboxIsShowing()) {
+        setActiveTool(tool.id());
     }
 
-    const content = $(tool.makeRootElement());
-
-    // the settings for the toolbox is React, but
-    // its localization works a little differently
-    // than the other toolbox tools. So, special-case
-    // handling is needed for the settings
-    const isSettingsTool = tool.id() === "settings";
-
-    const toolName = ToolBox.addToolToString(tool.id());
-    // const parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
-    //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
-
-    const toolIdUpper =
-        tool.id()[0].toUpperCase() + tool.id().substring(1, tool.id().length);
-    const i18Id = isSettingsTool
-        ? "EditTab.Toolbox.More"
-        : "EditTab.Toolbox." +
-          toolIdUpper +
-          (toolName.indexOf(checkLeaveOffTool) === -1 ? "Tool" : "");
-    // Not sure this will always work, but we can do something more complicated...maybe a new method
-    // on ITool...if we need it. Note that this is just a way to come up with the English,
-    // we don't do it to localizations. But in English, the code value beats the xlf one.
-    const toolLabel = isSettingsTool
-        ? "More..."
-        : ToolBox.addToolToString(
-              toolIdUpper.replace(/([A-Z])/g, " $1").trim(),
-              true,
-          );
-
-    const reactTool = tool as unknown as IReactTool;
-
-    // Currently, all subscription tools are React, so we haven't implemented a way to add the subscription badge to old-style tools
-    const possibleSubscriptionBadge = reactTool.featureName
-        ? `<span class="subscription-badge"></span>`
-        : "";
-    const header = $(
-        `<h3><div class="toolbox-accordion-header-text" data-i18n=${i18Id}>${toolLabel}</div>${possibleSubscriptionBadge}</span></h3>`,
-    );
-    header.attr("data-toolId", toolName);
-    content.attr("data-toolId", toolName);
-
-    // Check feature status asynchronously and apply subscription requirements if needed
-    if (reactTool.featureName) {
-        header.attr("data-feature", reactTool.featureName);
-        addFeatureStatusMessageTitlesToSubscriptionBadges(header);
-
-        getFeatureStatusAsync(reactTool.featureName).then((featureStatus) => {
-            if (featureStatus && featureStatus.subscriptionTier !== "Basic") {
-                header.addClass("requiresSubscription");
-            }
-        });
-    }
-
-    loadToolboxTool(header, content, toolId, openTool);
     if (whenLoaded) {
         whenLoaded();
     }
-    //}
-}
-
-let keydownEventCounter = 0;
-const retryDelayForPasteMarkupUpdateInMilliseconds = 100;
-const maxPasteMarkupUpdateRetries = 3;
-
-export function scheduleMarkupUpdateAfterPaste(): void {
-    // AI thinks we might need this to "allow the DOM to settle" even before we do the
-    // little bit that handlePageEditing does before setting up its own delay.
-    // I could not understand its explanation and am not convinced we need this.
-    // However, I'm trying to fix a race condition that results in a problem
-    // that is hard to reproduce reliably. I'd rather have a timeout that we don't
-    // need than have the markup occasionally not update, let alone somehow have
-    // the markup update somehow mess up the paste. So I decided to leave it in.
-    setTimeout(() => handlePageEditing(maxPasteMarkupUpdateRetries), 0);
-}
-
-// Handle edits to the page: mainly triggered by key up, but also by paste.
-// For various reasons a single paste may cause this to get called several times, but the 500ms
-// delay should prevent us from doing the markup more than once per paste.
-// Similarly, since updating the markup is fairly costly, it's good not to do it on every keystroke
-// while the user is typing rapidly.
-function handlePageEditing(
-    remainingRetriesForInvalidSelectionState: number = 0,
-): void {
-    // BL-599: "Unresponsive script" while typing in text.
-    // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
-    // function called "clearTimeout." Because of this, the jQuery method $.isFunction(keypressTimer.clearTimeout)
-    // will always return false (since "this.keypressTimer.clearTimeout" is undefined) and the result is a new 500
-    // millisecond timer being created every time the doKeypress method is called, but none of the pre-existing timers
-    // being cleared. The correct way to clear a timeout is to call clearTimeout(), passing it the integer returned by
-    // the function setTimeout().
-
-    //if (this.keypressTimer && $.isFunction(this.keypressTimer.clearTimeout)) {
-    //  this.keypressTimer.clearTimeout();
-    //}
-    const counterValueThatIdentifiesThisKeyDown = ++keydownEventCounter;
-    if (keypressTimer) clearTimeout(keypressTimer);
-    // Not sure we need this now the method is triggered by keyup. If it is triggered by keydown,
-    // we have a problem:
-    // If we don't do this check, then the last keydown from autorepeat during longpress will
-    // start the timer, and by the time the timer goes off, keyup has cleared the flag. Then we can
-    // get unexpected cursor movements that I haven't fully understood.
-    // On the other hand, if we DO this check, the flag gets set by the keydown handler in longpress
-    // even for ordinary keystrokes, and that handler seems to fire first, and so this NEVER executes.
-    // I'm leaving it in for now because the method might get called on a keyup connected with using
-    // a key in longpress to select one of the options, and in that case, we don't want to do the markup
-    // (until the keyup from the original key, of course).
-    if (window?.top?.[isLongPressEvaluating]) {
-        return;
-    }
-    // If this was making DOM changes that we want to save, we would want to try to use
-    // addRequestPageContentDelay and removeRequestPageContentDelay or wrapWithRequestPageContentDelay
-    // to prevent the user from trying to save while we're in the middle of making changes.
-    // Care would be needed to keep the calls matched up: if there's a timer already running, that
-    // would mean we already have a page content delay in place and should not add another.
-    // However, the markup changes that we are making here are stripped out by Save anyway,
-    // so I don't believe we need to worry about suppressing saves while we're doing this.
-    // We'll initially try this mainTask after 500ms. If the user types another key before that,
-    // the code above will cancel that and start a new 500ms timer, so we won't do the mainTask
-    // until 500ms after the user stops typing. Also, if we find that the selection state is
-    // (perhaps temporarily) invalid for doing the markup, we'll try again a few times with a
-    // shorter delay, and if it still isn't valid, we'll just give up until the next keyup or paste.
-    const mainTask = async (remainingRetries: number) => {
-        const page: HTMLIFrameElement = <HTMLIFrameElement>(
-            parent.window.document.getElementById("page")
-        );
-        if (!page || !page.contentWindow) return; // unit testing?
-
-        const selection: Selection | null = page.contentWindow.getSelection();
-        const anchor: Node | null = selection ? selection.anchorNode : null;
-        const active = anchor
-            ? <HTMLDivElement>$(anchor).closest("div").get(0)
-            : null;
-        const selectionStateIsInvalidForMarkup =
-            !active ||
-            (selection &&
-                (selection.rangeCount > 1 ||
-                    (selection.rangeCount === 1 &&
-                        !selection.getRangeAt(0).collapsed)));
-
-        if (selectionStateIsInvalidForMarkup) {
-            // Copilot suggested that there are some cases after a paste where the selection
-            // is only temporarily a range, so it's worth trying again a few times.
-            // This callback can also be canceled by a new keypress etc.
-            if (remainingRetries > 0) {
-                keypressTimer = setTimeout(
-                    () => mainTask(remainingRetries - 1),
-                    retryDelayForPasteMarkupUpdateInMilliseconds,
-                );
-            }
-            return; // don't even try to adjust markup while there is some complex selection
-        }
-
-        // This is improbable, but it prevents Typescript from complaining about the next conditional.
-        if (!window || !window.top) {
-            return;
-        }
-
-        // Now we're triggering this on keyup, I don't think we'll ever find this flag true.
-        // Just possibly it might be following a keyup from a choose-option keypress in longpress.
-        // I'm leaving the previous comment because it captures considerable history that might still be relevant.
-        // If longpress is currently engaged trying to determine what, if anything, it needs
-        // to do, we postpone the markup. Inexplicably, longpress and handleKeyboardInput (formerly handleKeydown)
-        // started interfering again even after the fix for BL-3900 (see comments for
-        // that elsewhere in this file). This code was added for BL-5215.
-        // It would be great if we didn't have settle for using window.top,
-        // but the other player here (jquery.longpress.js) is in a totally different
-        // context currently, so my other attempts to share a boolean failed.
-        if (window.top[isLongPressEvaluating]) {
-            return;
-        }
-
-        // the hard thing about all this is preserving the user's insertion point while we change the actual
-        // html out from under them to add/remove markup.
-        // ckeditor specific discussion: http://stackoverflow.com/questions/16835365/set-cursor-to-specific-position-in-ckeditor
-        // This "bookmark" approach makes that easy:
-        // We insert a dummy element where the insert point is. Later when we do the markup,
-        // we'll find the bookmark again, put the selection there, and remove this element.
-        // The problem with this approach is that when the user is fixing an existing word, the markup
-        // will see our bookmark as a word-breaking element. For example, if I type "houze" and go
-        // to fix that z, the markup routine is going to see "hous"-bookmark-"e". When the user
-        // clicks away, the markup will be redone and fixed. So this is a known tradeoff; we get
-        // more reliable insertion-point-preservation, at the cost of some temporarily inaccurate
-        // markup.
-        const selNode = selection ? selection.anchorNode : null;
-        const editableDiv = selNode
-            ? $(selNode).parents(".bloom-editable")[0]
-            : null;
-        // In 3.9, this is null when you press backspace in an empty box; the selection.anchorNode is itself a .bloom-editable, so
-        // presumably we could adjust the above query to still get the div it's looking for.
-        if (editableDiv) {
-            const ckeditorOfThisBox = (
-                editableDiv as HTMLElement & { bloomCkEditor?: CKEDITOR.editor }
-            ).bloomCkEditor;
-            // Normally every editable box has a ckeditor attached. But some arithmetic template boxes are
-            // intended to contain numbers not needing translation and don't get one...because the logic
-            // that invokes WireToCKEditor is looking for classes like bloom-content1 that are not present
-            // in ArithmeticTemplate. Here we're presuming that if a block didn't get one attached,
-            // it's not true vernacular text and doesn't need markup. So all the code below is skipped
-            // if we don't have one.
-            if (ckeditorOfThisBox) {
-                let ckeditorSelection = ckeditorOfThisBox.getSelection();
-                if (!ckeditorSelection) {
-                    return; // may be changing pages?
-                }
-                // there is also createBookmarks2(), which avoids actually inserting anything. That has the
-                // advantage that changing a character in the middle of a word will allow the entire word to
-                // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
-                // actually go back to where it was: it gets shifted to the right.
-                let bookmarks = ckeditorSelection.createBookmarks(true);
-
-                // For some reason, we have cases, mostly (always?) on paste, where
-                // ckeditor is inserting tons of comments which are messing with our parsing
-                // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
-                removeCommentsFromEditableHtml(editableDiv);
-
-                // If there's no tool active, we don't need to update the markup.
-                const activeTool =
-                    currentTool && toolbox.toolboxIsShowing()
-                        ? currentTool
-                        : undefined;
-                if (activeTool) {
-                    if (activeTool.isUpdateMarkupAsync()) {
-                        // It's possible that removeCommentsFromEditableHtml moved the selection, typically
-                        // to the start of the editableDiv. This doesn't matter on the synchronous branch,
-                        // because we restore it at the end of this method, after the other updates, and no
-                        // keystroke can occur in the meantime.
-                        // But on this branch, with an await, the 'rest of this method' may execute much
-                        // later, possibly after the next keystroke is processed. If we wait till then to fix
-                        // the selection, the selection may be briefly visible in the wrong place. Much worse,
-                        // any intervening keystrokes go to that incorrect position (BL-10133). So fix
-                        // it now, and then again after actually changing the markup, which might move the selection again.
-                        // (This is why we don't allow updateMarkupAsync to modify the DOM, except by means of
-                        // the function it returns, which is executed synchronously with fixing the selection.)
-                        ckeditorOfThisBox
-                            .getSelection()
-                            .selectBookmarks(bookmarks);
-                        ckeditorSelection = ckeditorOfThisBox.getSelection();
-                        bookmarks = ckeditorSelection.createBookmarks(true);
-
-                        const actualUpdateFunc =
-                            await activeTool.updateMarkupAsync();
-                        if (
-                            keydownEventCounter ===
-                            counterValueThatIdentifiesThisKeyDown
-                        ) {
-                            // go ahead and make the change. (If the counts are different,
-                            // we got another keystroke, and initiated a new updatemarkup,
-                            // while processing this one. We don't want to save the results
-                            // of updating for the earlier keystroke.)
-                            actualUpdateFunc();
-                        }
-                    }
-                }
-
-                cleanUpNbsps(editableDiv);
-
-                // The synchronous branch is used only by the decodable and leveled reader tools,
-                // and their markup no longer changes the DOM: it paints violations with
-                // ::highlight() over live Ranges (BL-16558). Those Ranges must therefore be
-                // created AFTER the last thing that rewrites this editable's content.
-                // cleanUpNbsps() ends with an unconditional `editableDiv.innerHTML = ...`, which
-                // replaces every text node in the box, so any Range pointing into them collapses.
-                // While this call came before it, the reader highlights were painted and then
-                // immediately detached on every pause in typing, and nothing reappeared until
-                // some other path redid the markup (e.g. changing the level).
-                //
-                // Not covered by a unit test: the pieces are (cleanUpNbsps in toolboxSpec.ts,
-                // which now checks that it leaves the text nodes alone when it has nothing to
-                // convert; the highlight primitives in textHighlightManagerSpec.ts), but the
-                // *ordering* between them is only exercised by running handlePageEditing, and
-                // that needs a live ckeditor instance on the editable div plus the parent
-                // window's "page" iframe and a real Selection - none of which we can stand up in
-                // jsdom. So if you reorder anything in here, test it by typing in a Leveled
-                // Reader book and watching the over-long sentences stay highlighted.
-                if (activeTool && !activeTool.isUpdateMarkupAsync()) {
-                    // Note, the updateMarkup routine must be sure to use the result of
-                    // ckEditor's getData() method, not the raw HTML of the editableDivs.
-                    // See EditableDivUtils.doCkEditorCleanup() and .restoreSelectionFromCkEditorBookmarks().
-                    // Unfortunately, we can't easily do that in a top-level (general for all tools) way because of
-                    // our current architecture. Namely, the reader tools have a lower-level
-                    // doMarkup() which gets called more than just from here.
-                    activeTool.updateMarkup();
-                }
-
-                //set the selection to wherever our bookmark node ended up
-                //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
-                //restoring the selection, that we got interference with longpress's replacePreviousLetterWithText(),
-                // in some way that is still not understood. This was fixed by changing all this to trigger on
-                // a different event (keydown instead of keypress).
-                // Note: causing the bookmarks to be selected actually removes the bookmark spans.
-                ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
-            }
-        }
-        // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
-        keypressTimer = null;
-    };
-    keypressTimer = setTimeout(
-        () => mainTask(remainingRetriesForInvalidSelectionState),
-        500,
-    );
-}
-
-function RemoveNonPTags(editableDivHtml: string): string {
-    return editableDivHtml
-        .replace(/<[^p\/].*?>/g, "")
-        .replace(/<\/[^p].*?>/g, "");
-}
-
-// Check if the &nbsp; is at the start or end of a paragraph, regardless of any other tags in between (e.g. the empty talking book spans)
-function NbspIsOnEdgeOfParagraph(
-    editableDivHtml: string,
-    nbspIndex: number,
-): boolean {
-    const beforeNbsp = editableDivHtml.substring(0, nbspIndex);
-    const afterNbsp = editableDivHtml.substring(nbspIndex + "&nbsp;".length);
-
-    const beforeNbspWithoutNonPTags = RemoveNonPTags(beforeNbsp).trim();
-    const afterNbspWithoutNonPTags = RemoveNonPTags(afterNbsp).trim();
-
-    return (
-        beforeNbspWithoutNonPTags.match(/<p[^>]*>$/) !== null ||
-        afterNbspWithoutNonPTags.substring(0, 4) === "</p>"
-    );
-}
-
-// Starting with webview2, we were getting scenarios where nbsps were could remain in the div when not wanted.
-// One way to cause this: type two spaces, not at the end of the text box. Then, delete one of them.
-// We want to remove nbsps unless
-// 1. they are at the start or end of the div or paragraph
-// 2. they are adjacent to a regular space (the browser collapses regular spaces but not other whitespace)
-// 3. they are possibly wanted for French-style punctuation
-// See BL-12391.
-// (exported for testing)
-export function cleanUpNbsps(editableDiv: HTMLElement) {
-    // Remove the &nbsp; from the bookmarks so they don't interfere with the algorithm below.
-    // We'll put them back in at the end.
-    const originalBookMarkContent = setCkeditorBookmarkContent(editableDiv, "");
-
-    let editableDivHtml = editableDiv.innerHTML;
-    // innerText does not include hidden text; innerHTML does.
-    // So we use textContent -- which includes hidden text -- to ensure the html and text are in sync.
-    let editableDivText = editableDiv.textContent;
-    if (!editableDivText) return;
-
-    const preserveNbspAfter = [" ", "«", "—"];
-    const preserveNbspBefore = [" ", "»", ":", ";", "!", "?"];
-
-    // Whether we actually converted anything. Assigning innerHTML rebuilds every node in the box
-    // even when the string is unchanged, which loses the selection and collapses any Range
-    // pointing into the old text nodes -- and the reader tools' highlights and the Talking Book
-    // tool's audio highlights are live Ranges. Almost every keystroke leaves nothing to convert,
-    // so only write when there is something to write.
-    let replacedAnNbsp = false;
-
-    let i = -1;
-    let j = -1;
-    // Simultaneously loop through the text and the html, finding each corresponding nbsp.
-    // The text shows us what the adjacent characters are so we can make a replacement decision, but
-    // the actual replacement is done in the html so as to keep the markup.
-    // We also make the replacements in the text as we go so that, for example,
-    // if we change one nbsp to a regular space, that space prevents converting an adjacent nbsp.
-
-    while (true) {
-        i = editableDivHtml.indexOf("&nbsp;", i + 1); // i+1 works whether or not we replaced the previous nbsp
-        if (i === -1) break;
-        j = editableDivText.indexOf("\u00A0", j + 1);
-        if (j === -1) {
-            // Pathological case; nbsp in attribute?
-            // (We do put &nbsp; in a data-original attribute when replacing it with a symbol as part of showing
-            // invisibles, but if it is still there at this point something must have gone wrong)
-            // Follow do no harm principle and just leave the div unaltered.
-            console.error(
-                "Unexpected situation discovered in cleanUpNbsps. Html has nbsp but text doesn't.",
-            );
-            console.error("editableDivHtml: " + editableDivHtml);
-            console.error("editableDivText: " + editableDivText);
-
-            // Restore the bookmarks. See comment above.
-            if (originalBookMarkContent)
-                setCkeditorBookmarkContent(
-                    editableDiv,
-                    originalBookMarkContent,
-                );
-            return;
-        }
-        if (j === 0 || j === editableDivText.length - 1) continue;
-        // If the nbsp is the first or last character in a paragraph, don't replace or the space will get lost in whitespace collapse
-        if (NbspIsOnEdgeOfParagraph(editableDivHtml, i)) continue;
-
-        if (
-            !preserveNbspAfter.includes(editableDivText[j - 1]) &&
-            !preserveNbspBefore.includes(editableDivText[j + 1])
-        ) {
-            editableDivHtml =
-                editableDivHtml.substring(0, i) +
-                " " +
-                editableDivHtml.substring(i + "&nbsp;".length);
-            editableDivText =
-                editableDivText.substring(0, j) +
-                " " +
-                editableDivText.substring(j + 1);
-            replacedAnNbsp = true;
-        }
-    }
-    if (replacedAnNbsp) editableDiv.innerHTML = editableDivHtml;
-
-    // Restore the bookmarks. See comment above.
-    if (originalBookMarkContent)
-        setCkeditorBookmarkContent(editableDiv, originalBookMarkContent);
-}
-
-// For the given div, replace the content of any ckeditor bookmarks with the given content.
-// We actually only expect one bookmark for our case, but we're being safe.
-// Return the original content (of the last one... we have to pick one...) so we can restore it later.
-function setCkeditorBookmarkContent(
-    editableDiv: HTMLElement,
-    content: string,
-): string | undefined {
-    let existingContent: string | undefined = undefined;
-
-    const ckeBookmarks = editableDiv.querySelectorAll("[id^='cke_bm_']");
-    ckeBookmarks.forEach((bm) => {
-        existingContent = bm.innerHTML;
-        bm.innerHTML = content;
-    });
-
-    return existingContent;
-}
-
-// exported for testing
-// Warning: if the current selection is inside the element we're fixing,
-// and there are comments to remove, the selection will contract to an
-// insertion point at the start.
-export function removeCommentsFromEditableHtml(editable: HTMLElement) {
-    // [\s\S] is a hack representing every character (including newline)
-    const fixedHtml = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
-    // This test makes it less likely we will move the selection. But you should still allow for
-    // the possibility.
-    if (fixedHtml !== editable.innerHTML) {
-        editable.innerHTML = fixedHtml;
-    }
-}
-
-let resizeTimer;
-function resizeToolbox() {
-    const windowHeight = $(window).height();
-    const root = $(".toolboxRoot");
-    // Set toolbox container height to fit in new window size
-    // Then toolbox Resize() will adjust it to fit the container
-    root.height(windowHeight - 25); // 25 is the top: value set for div.toolboxRoot in toolbox.less
-    if (!getToolboxReactAdapter()) {
-        $("#toolbox").accordion("refresh");
-    }
-}
-
-/**
- * Gets the localized title text for a feature based on its status
- * @param featureName The name of the feature to get status for
- * @returns A Promise that resolves to the localized title text
- */
-async function getFeatureEnabledAndMessage(
-    featureName: string,
-): Promise<{ enabled: boolean; message: string }> {
-    return new Promise<{ enabled: boolean; message: string }>((resolve) => {
-        get(`features/status?featureName=${featureName}`, (c) => {
-            const featureStatus = c.data;
-            const localizedTier = featureStatus?.localizedTier;
-
-            let titleText: string;
-            if (featureStatus.enabled) {
-                titleText = theOneLocalizationManager.getText(
-                    "Subscription.FeatureIsIncludedSentence",
-                    "This feature is included in your {0} subscription.",
-                    localizedTier,
-                );
-            } else {
-                titleText = theOneLocalizationManager.getText(
-                    "Subscription.RequiredTierForFeatureSentence",
-                    'This feature requires a Bloom subscription tier of at least "{0}".',
-                    localizedTier,
-                );
-            }
-            resolve({ enabled: featureStatus.enabled, message: titleText });
-        });
-    });
-}
-
-function showSubscriptionDialog(featureName: string): void {
-    showRequiresSubscriptionDialogInAnyView(featureName);
-}
-
-/**
- * Adds feature status message titles to subscription badges found in the specified jQuery element
- * @param element The jQuery element containing subscription badges
- */
-async function addFeatureStatusMessageTitlesToSubscriptionBadges(
-    element: JQuery,
-): Promise<void> {
-    const subscriptionBadges = element.find(".subscription-badge");
-    const promises: Promise<void>[] = [];
-    subscriptionBadges.each(function (_i, subscriptionBadge: HTMLElement) {
-        if (subscriptionBadge.hasAttribute("title")) return;
-        const featureName =
-            subscriptionBadge.parentElement?.getAttribute("data-feature");
-        if (!featureName) return;
-
-        const promise = (async () => {
-            const { enabled, message } =
-                await getFeatureEnabledAndMessage(featureName);
-            subscriptionBadge.setAttribute("title", message);
-            if (!enabled) {
-                subscriptionBadge.addEventListener("click", () =>
-                    showSubscriptionDialog(featureName),
-                );
-                subscriptionBadge.style.cursor = "pointer";
-            }
-        })();
-
-        promises.push(promise);
-    });
-
-    // Wait for all the promises to complete
-    await Promise.all(promises);
-}
-
-/**
- * Adds one tool to the toolbox
- * @param {String} newContent
- * @param {String} toolId
- * @param {Boolean} openTool
- */
-function loadToolboxToolText(
-    newContent: string,
-    toolId: string,
-    openTool: boolean,
-) {
-    const parts = $($.parseHTML(newContent, document, true));
-
-    parts.filter("*[data-i18n]").localize();
-    parts.find("*[data-i18n]").localize();
-
-    // expect parts to have 2 items, an h3 and a div
-    if (parts.length < 2) return;
-
-    // get the toolbox tool label
-    const header = parts.filter("h3").first();
-    if (header.length < 1) return; // we used to have a tool that was empty and didn't get added.
-
-    // get the tool content div
-    const content = parts.filter("div").first();
-
-    loadToolboxTool(header, content, toolId, openTool);
-}
-function loadToolboxTool(
-    header: JQuery,
-    content: JQuery,
-    toolId,
-    openTool: boolean,
-) {
-    const toolboxElt = $("#toolbox");
-    const label = header.text();
-
-    // Where to insert the new tool? We want to keep them alphabetical except for More...which is always last,
-    // so insert before the first one with text alphabetically greater than this (if any).
-    if (toolboxElt.children().length === 0) {
-        // none yet...this will be the "more" tool which we insert first.
-        toolboxElt.append(header);
-        toolboxElt.append(content);
-    } else {
-        let insertBefore = toolboxElt
-            .children() // children() includes both the headers and the contents of the tools
-            .filter(".ui-accordion-header") // we only want to sort this into the headers...
-            .filter(function () {
-                // Note that we aren't (as of 4.4) setting the "locale" of the browser to match the
-                // UI language. In my tests, it's stuck at "en-US" (navigator.language). But if we ever do
-                // set this, then this will do a better job of ordering. Meanwhile, no worse.
-                return label.localeCompare($(this).text()) < 0;
-            })
-            .first();
-        if (insertBefore.length === 0) {
-            // Nothing is greater, but still insert before "More". Two children represent "More", so before the second last.
-            insertBefore = $(
-                toolboxElt.children()[toolboxElt.children.length - 2],
-            );
-        }
-        header.insertBefore(insertBefore);
-        content.insertBefore(insertBefore);
-    }
-
-    // if requested, open the tool that was just inserted
-    if (openTool && toolbox.toolboxIsShowing()) {
-        const adapter = getToolboxReactAdapter();
-        if (adapter) {
-            const toolId = header.attr("data-toolId");
-            if (toolId) {
-                adapter.setActiveToolByToolId(toolId);
-            }
-        } else {
-            toolboxElt.accordion("refresh");
-            const id = header.attr("id");
-            const toolNumber = parseInt(
-                id.substring(id.lastIndexOf("-") + 1),
-                10,
-            );
-            toolboxElt.accordion("option", "active", toolNumber); // must pass as integer
-        }
-    }
-
-    window.dispatchEvent(
-        new CustomEvent("toolbox-tool-added", {
-            detail: { toolId: toolId },
-        }),
-    );
 }
 
 function showToolboxChanged(wasShowing: boolean): void {
@@ -1956,38 +861,21 @@ function showToolboxChanged(wasShowing: boolean): void {
         "editView/saveToolboxSetting",
         "visibility\t" + (wasShowing ? "" : "visible"),
     );
-    if (currentTool) {
-        if (wasShowing) {
-            detachCurrentTool();
-            currentTool.hideTool();
-            postString(
-                "logger/writeEvent",
-                `Toolbox deactivating: ${currentTool.id()}`,
-            );
-        } else {
-            activateTool(currentTool);
-        }
-    } else {
+    const currentTool = getCurrentTool();
+    if (currentTool && wasShowing) {
+        postString(
+            "logger/writeEvent",
+            `Toolbox deactivating: ${currentTool.id()}`,
+        );
+    }
+    // Hiding the toolbox detaches and hides the current tool, and showing it again
+    // restores and shows it. Both follow from this; see useToolLifecycle.ts.
+    setToolboxVisible(!wasShowing);
+    if (!currentTool) {
         // starting up for the very first time in this book...no tool is current,
-        // so select and properly initialize the first one.
-        let newToolName = $("#toolbox")
-            .find("> h3")
-            .first()
-            .attr("data-toolId");
-        if (!newToolName) {
-            // This should never happen; we're just being defensive.
-            // At one point (BL-5330) this code could run against the document in the wrong iframe
-            // and fail to find the #toolbox div; then we get a null and end up saving
-            // current tool as "undefined" with various bad results. Just in case it happens again
-            // somehow, we hard code that in this situation we default to
-            // the talking book tool.
-            newToolName = "talkingBookTool";
-        }
-        const adapter = getToolboxReactAdapter();
-        if (adapter) {
-            adapter.setActiveToolByToolId(newToolName);
-            return;
-        }
-        switchTool(newToolName);
+        // so select and properly initialize the first one. If the toolbox somehow has
+        // no tool sections at all, fall back to the talking book tool, which is always
+        // enabled. (This should never happen; we're just being defensive.)
+        setActiveTool(getFirstOfferedToolId() ?? kTalkingBookToolId);
     }
 }

@@ -4,8 +4,8 @@ import {
     getTheOneToolbox,
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
-    scheduleMarkupUpdateAfterPaste,
 } from "./toolbox";
+import { scheduleMarkupUpdateAfterPaste } from "./pageEditingMarkup";
 import { simulateBlurOnPageFrameMouseDown } from "../../utils/menuCloseOnBlur";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
@@ -148,7 +148,6 @@ const toolboxBundle: ToolboxBundleApi = {
     TalkingBookTool,
     canUndo,
     undo,
-    applyToolboxStateToPageLegacy: applyToolboxStateToPage,
     setActiveDragActivityTab,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,

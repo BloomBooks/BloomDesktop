@@ -1,6 +1,5 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { renderForInstance } from "../../../utils/reactRender";
 import $ from "jquery";
 import { Div } from "../../../react_components/l10nComponents";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
@@ -24,9 +23,12 @@ import { getFeatureStatusAsync } from "../../../react_components/featureStatus";
 import { TransformBasedAnimator } from "bloom-player";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
-import { animateStyleName } from "../../../utils/shared";
-import { ThemeProvider } from "@mui/material/styles";
-import { toolboxTheme } from "../../../bloomMaterialUITheme";
+import {
+    animateStyleName,
+    getPageIframeDocument,
+    getPageIFrame,
+    isXmatterPage,
+} from "../../../utils/shared";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
@@ -34,7 +36,15 @@ import { toolboxTheme } from "../../../bloomMaterialUITheme";
 
 /// The motion tool lets you define two rectangles; Bloom Reader will pan & zoom from one to the other
 export class MotionTool extends ToolboxToolReactAdaptor {
-    private rootControl: MotionControl;
+    // The MotionControl the toolbox has mounted for us, or null before our panel has been
+    // rendered (and again if the tool's section is removed). Everything below that drives
+    // the control only runs while the tool is showing, i.e. while it is mounted, so the
+    // null checks are just belt and braces.
+    private rootControl: MotionControl | null = null;
+    // The control instance we have already given its initial state and image observer.
+    // Kept so that we do that work once per mounted control, including if the tool's
+    // section is removed and added again (which mounts a new control).
+    private initializedRootControl: MotionControl | null = null;
     private narrationPlayer: AudioRecording;
     private stopPreviewTimeout: number;
     private scrollXBeforePreview = 0;
@@ -42,30 +52,33 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private hadSavedPreviewScrollPosition = false;
     private animationPreviewAspectRatio = 16 / 9; // width divided by height of desired simulated device screen
 
-    public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-        this.rootControl = renderForInstance<MotionControl>(
-            <MotionControl
-                onPreviewClick={() => this.toggleMotionPreviewPlaying()}
-                onMotionChanged={(checked) => this.motionChanged(checked)}
-            />,
-            root,
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <MotionControl
+                    onPreviewClick={() => this.toggleMotionPreviewPlaying()}
+                    onMotionChanged={(checked) => this.motionChanged(checked)}
+                    ref={this.setRootControl}
+                />
+            </div>
         );
-        const initialState = this.getStateFromHtml();
-        this.rootControl.setState(initialState);
+    }
+
+    // Callback ref for our MotionControl. It is an arrow-function field so that its
+    // identity is stable and React doesn't detach and re-attach it every time the toolbox
+    // re-renders. A control needs two things as soon as it mounts: the state read from
+    // the page, and an observer watching for image changes.
+    private setRootControl = (control: MotionControl | null): void => {
+        this.rootControl = control;
+        if (!control || control === this.initializedRootControl) {
+            return;
+        }
+        this.initializedRootControl = control;
+        control.setState(this.getStateFromHtml());
         this.setupImageObserver();
-        return root as HTMLDivElement;
-    }
-    public beginRestoreSettings(settings: string): JQueryPromise<void> {
-        //Nothing to do, so return an already-resolved promise.
-        const result = $.Deferred<void>();
-        result.resolve();
-        return result;
-    }
+    };
+
     public isAlwaysEnabled(): boolean {
-        return false;
-    }
-    public isExperimental(): boolean {
         return false;
     }
 
@@ -96,18 +109,23 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         }
         if (!this.subscriptionAllowsMotion) {
             return;
-        } // First, abort any preview that's in progress.
-        if (this.rootControl.state.playing) {
+        }
+        const rootControl = this.rootControl;
+        if (!rootControl) {
+            return; // our panel isn't mounted, so there is nothing to show anything in.
+        }
+        // First, abort any preview that's in progress.
+        if (rootControl.state.playing) {
             this.toggleMotionPreviewPlaying();
         }
         const newState = this.getStateFromHtml();
         this.setupImageObserver();
-        this.rootControl.setState(newState);
+        rootControl.setState(newState);
         if (!newState.motionChecked || newState.haveBloomCanvasButNoBgImage) {
             return;
         }
 
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (!page) return; // paranoid
         // enhance: if more than one image...do what??
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
@@ -280,13 +298,14 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        if (this.rootControl.state.playing) {
-            this.rootControl.setState({ playing: false });
+        const rootControl = this.rootControl;
+        if (rootControl && rootControl.state.playing) {
+            rootControl.setState({ playing: false });
             window.clearTimeout(this.stopPreviewTimeout);
             this.cleanupAnimation();
         }
 
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (page) {
             this.removeElt(page.getElementById("animationStart"));
             this.removeElt(page.getElementById("animationEnd"));
@@ -307,7 +326,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private removeCurrentAudioMarkup(): void {
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (!page) return;
         const currentAudioElts = page.getElementsByClassName("ui-audioCurrent");
         if (currentAudioElts.length) {
@@ -319,10 +338,15 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         return kMotionToolId;
     }
 
+    /** The icon for this tool's section header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/bookEdit/toolbox/motion/motion.svg";
+    }
+
     public featureName? = kMotionToolId;
 
     private getBloomCanvasToAnimate(): HTMLElement | null {
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         return page?.getElementsByClassName(
             kBloomCanvasClass,
         )[0] as HTMLElement;
@@ -504,6 +528,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private sizeObserver: ResizeObserver;
 
     private updateMotionRectanglesState(): void {
+        const rootControl = this.rootControl;
+        if (!rootControl) {
+            return; // our panel isn't mounted, so there is no state to update.
+        }
         let haveBgImage = false;
         const bgImage = this.getBackgroundImage();
         if (bgImage) {
@@ -514,12 +542,12 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (haveBgImage) {
             newState.haveBloomCanvasButNoBgImage = false;
             newState.motionPossible = true;
-            this.rootControl.setState(newState);
+            rootControl.setState(newState);
             this.makeRectsVisible();
         } else {
             newState.haveBloomCanvasButNoBgImage = true;
             newState.motionPossible = false;
-            this.rootControl.setState(newState);
+            rootControl.setState(newState);
             this.hideRectangles();
         }
     }
@@ -528,7 +556,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
         bloomCanvasToAnimate?.removeAttribute("data-initialrect");
         bloomCanvasToAnimate?.removeAttribute("data-finalrect");
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (page) {
             this.removeElt(page.getElementById("animationStart"));
             this.removeElt(page.getElementById("animationEnd"));
@@ -644,7 +672,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
     private updateDataAttributes(): void {
         //alert("updating data attributes " + new Error().stack);
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (!page) return; // paranoid
         const startRect = page.getElementById("animationStart");
         const endRect = page.getElementById("animationEnd");
@@ -674,17 +702,21 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     //hide everything on the page, make a copy of the canvas, and move it using the TransformBasedAnimator class from bloom-player
     //Enhance: refactor this method and bloom-player's Animation.setupAnimation() to share more of the code that sets up the HTML structure around the canvas
     private toggleMotionPreviewPlaying() {
+        const rootControl = this.rootControl;
+        if (!rootControl) {
+            return; // our panel isn't mounted, so nothing could have asked for a preview.
+        }
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
         if (
             !bloomCanvasToAnimate ||
-            this.rootControl.state.haveBloomCanvasButNoBgImage
+            rootControl.state.haveBloomCanvasButNoBgImage
         ) {
             return;
         }
-        const wasPlaying: boolean = this.rootControl.state.playing;
+        const wasPlaying: boolean = rootControl.state.playing;
         // A 'functional' mode of using setState is recommended when the new state is a function
         // of the old state, like this:
-        // this.rootControl.setState((oldState) => {
+        // rootControl.setState((oldState) => {
         //     return ({ playing: !oldState.playing });
         // });
         // But then, what do we do to determine whether to turn on or off? If we can't trust the
@@ -693,7 +725,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // There's probably a React function that notifies us of state change that we could
         // use. But it seems unnecessarily complicated. I don't think the user can click fast
         // enough for state not to have updated before the next click.
-        this.rootControl.setState({ playing: !wasPlaying });
+        rootControl.setState({ playing: !wasPlaying });
         if (wasPlaying) {
             // In case we start it again before the old timeout expires, we don't
             // want it to stop in the middle.
@@ -703,9 +735,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         }
         getCanvasElementManager()?.setActiveElement(undefined);
 
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (!page || !page.documentElement) return; // paranoid
-        const contentWindow = this.getPageFrame().contentWindow;
+        const contentWindow = getPageIFrame().contentWindow;
         if (!contentWindow) return; // paranoid
         this.scrollXBeforePreview = contentWindow.scrollX;
         this.scrollYBeforePreview = contentWindow.scrollY;
@@ -835,14 +867,14 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         );
         animationEngine.startAnimation();
 
-        if (this.rootControl.state.previewVoice) {
+        if (rootControl.state.previewVoice) {
             // Play the audio during animation. Don't mess with highlight while constructing
             // the recorder.
             this.narrationPlayer = new AudioRecording(false);
             this.narrationPlayer.setupForListen();
             this.narrationPlayer.listenAsync(bloomCanvasToAnimate);
         }
-        if (this.rootControl.state.previewMusic) {
+        if (rootControl.state.previewMusic) {
             MusicToolControls.previewBackgroundMusic(
                 this.getPlayer(),
                 // Enhance: implement pause, by adding playing to state.
@@ -853,16 +885,16 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         this.stopPreviewTimeout = window.setTimeout(
             () => {
                 this.cleanupAnimation();
-                this.rootControl.setState({ playing: false });
+                rootControl.setState({ playing: false });
             },
             (duration + 1) * 1000,
         );
     }
 
     private cleanupAnimation() {
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (!page) return;
-        const contentWindow = this.getPageFrame().contentWindow;
+        const contentWindow = getPageIFrame().contentWindow;
 
         // stop the animation by removing any elements it added to the page.
         const animationElements = Array.from(
@@ -941,18 +973,6 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private wrapperClassName = "bloom-ui-animationWrapper";
-    private getPageFrame(): HTMLIFrameElement {
-        return parent.window.document.getElementById(
-            "page",
-        ) as HTMLIFrameElement;
-    }
-
-    // The document object of the editable page, a root for searching for document content.
-    private getPage(): HTMLDocument | null {
-        const page = this.getPageFrame();
-        if (!page || !page.contentWindow) return null;
-        return page.contentWindow.document;
-    }
 
     private getStateFromHtml(): IMotionHtmlState {
         // enhance: if more than one image...do what??
@@ -968,7 +988,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
         let motionChecked = true;
         let motionPossible = !doNotHaveAPicture;
-        if (!bloomCanvasToAnimate || ToolboxToolReactAdaptor.isXmatter()) {
+        if (!bloomCanvasToAnimate || isXmatterPage()) {
             // if there's no place to put an image, we can't be enabled.
             // And we don't support Motion in xmatter (BL-5427),
             // in part because we use background-image there and haven't fully supported
@@ -1031,128 +1051,119 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
     public render() {
         return (
             <RequiresSubscriptionOverlayWrapper featureName={kMotionToolId}>
-                <ThemeProvider theme={toolboxTheme}>
-                    <div
-                        className={
-                            "ui-motionBody" +
-                            (this.state.motionPossible ? "" : " disabled")
-                        }
-                    >
-                        <div>
-                            <Div
-                                l10nKey="EditTab.Toolbox.Motion.Intro"
-                                l10nComment="Shown at the top of the 'Motion Tool' in the Edit tab"
-                                className="intro"
-                            >
-                                Motion Books are Bloom Reader books with two
-                                modes. Normally, they are Talking Books. When
-                                you turn the phone sideways, the image fills the
-                                screen. It pans and zooms from rectangle "1" to
-                                rectangle "2".
-                            </Div>
-                            <span
-                                css={css`
-                                    .MuiFormControlLabel-root {
-                                        // The whole tool has a margin, so this is not needed;
-                                        // and the default causes extraneous wrapping.
-                                        margin-right: 0;
+                <div
+                    className={
+                        "ui-motionBody" +
+                        (this.state.motionPossible ? "" : " disabled")
+                    }
+                >
+                    <div>
+                        <Div
+                            l10nKey="EditTab.Toolbox.Motion.Intro"
+                            l10nComment="Shown at the top of the 'Motion Tool' in the Edit tab"
+                            className="intro"
+                        >
+                            Motion Books are Bloom Reader books with two modes.
+                            Normally, they are Talking Books. When you turn the
+                            phone sideways, the image fills the screen. It pans
+                            and zooms from rectangle "1" to rectangle "2".
+                        </Div>
+                        <span
+                            css={css`
+                                .MuiFormControlLabel-root {
+                                    // The whole tool has a margin, so this is not needed;
+                                    // and the default causes extraneous wrapping.
+                                    margin-right: 0;
+                                }
+                            `}
+                        >
+                            <BloomCheckbox
+                                label="Enable motion on this page"
+                                l10nKey="EditTab.Toolbox.Motion.ThisPage"
+                                // tslint:disable-next-line:max-line-length
+                                l10nComment="Motion here refers to panning and zooms image when it is viewed in Bloom Reader. Google 'Ken Burns effect' to see exactly what we mean."
+                                className="enable-checkbox"
+                                onCheckChanged={(checked) =>
+                                    this.onMotionChanged(!!checked)
+                                }
+                                checked={this.state.motionChecked}
+                                size="small"
+                            />
+                        </span>
+                        <div
+                            className={
+                                "button-label-wrapper" +
+                                (this.state.motionChecked ? "" : " disabled")
+                            }
+                            id="motion-play-wrapper"
+                        >
+                            <div className="button-wrapper">
+                                <button
+                                    id="motion-preview"
+                                    className={
+                                        "ui-motion-button ui-button enabled" +
+                                        (this.state.playing ? " playing" : "")
                                     }
-                                `}
-                            >
+                                    onClick={() => this.props.onPreviewClick()}
+                                />
+                                <div className="previewSettingsWrapper">
+                                    <Div
+                                        className="motion-label"
+                                        l10nKey="EditTab.Toolbox.Motion.Preview"
+                                    >
+                                        Preview
+                                    </Div>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            className={
+                                this.state.motionChecked ? "" : " disabled"
+                            }
+                            css={css`
+                                display: flex;
+                                flex-direction: column;
+                                margin-left: 45px;
+                            `}
+                        >
+                            <span className="disabled">
                                 <BloomCheckbox
-                                    label="Enable motion on this page"
-                                    l10nKey="EditTab.Toolbox.Motion.ThisPage"
-                                    // tslint:disable-next-line:max-line-length
-                                    l10nComment="Motion here refers to panning and zooms image when it is viewed in Bloom Reader. Google 'Ken Burns effect' to see exactly what we mean."
-                                    className="enable-checkbox"
-                                    onCheckChanged={(checked) =>
-                                        this.onMotionChanged(!!checked)
-                                    }
-                                    checked={this.state.motionChecked}
+                                    label="Motion"
+                                    l10nKey="EditTab.Toolbox.Motion.Preview.Motion"
+                                    checked={true}
+                                    onCheckChanged={(_checked): void => {
+                                        // do nothing (checkbox is always disabled)
+                                    }}
                                     size="small"
                                 />
                             </span>
-                            <div
-                                className={
-                                    "button-label-wrapper" +
-                                    (this.state.motionChecked
-                                        ? ""
-                                        : " disabled")
+                            <BloomCheckbox
+                                label="Voice"
+                                l10nKey="EditTab.Toolbox.Motion.Preview.Voice"
+                                onCheckChanged={(checked) =>
+                                    this.setState({
+                                        previewVoice: !!checked,
+                                    })
                                 }
-                                id="motion-play-wrapper"
-                            >
-                                <div className="button-wrapper">
-                                    <button
-                                        id="motion-preview"
-                                        className={
-                                            "ui-motion-button ui-button enabled" +
-                                            (this.state.playing
-                                                ? " playing"
-                                                : "")
-                                        }
-                                        onClick={() =>
-                                            this.props.onPreviewClick()
-                                        }
-                                    />
-                                    <div className="previewSettingsWrapper">
-                                        <Div
-                                            className="motion-label"
-                                            l10nKey="EditTab.Toolbox.Motion.Preview"
-                                        >
-                                            Preview
-                                        </Div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div
-                                className={
-                                    this.state.motionChecked ? "" : " disabled"
+                                checked={this.state.previewVoice}
+                                size="small"
+                            />
+                            <BloomCheckbox
+                                label="Music"
+                                l10nKey="EditTab.Toolbox.Motion.Preview.Music"
+                                onCheckChanged={(checked) =>
+                                    this.setState({
+                                        previewMusic: !!checked,
+                                    })
                                 }
-                                css={css`
-                                    display: flex;
-                                    flex-direction: column;
-                                    margin-left: 45px;
-                                `}
-                            >
-                                <span className="disabled">
-                                    <BloomCheckbox
-                                        label="Motion"
-                                        l10nKey="EditTab.Toolbox.Motion.Preview.Motion"
-                                        checked={true}
-                                        onCheckChanged={(_checked): void => {
-                                            // do nothing (checkbox is always disabled)
-                                        }}
-                                        size="small"
-                                    />
-                                </span>
-                                <BloomCheckbox
-                                    label="Voice"
-                                    l10nKey="EditTab.Toolbox.Motion.Preview.Voice"
-                                    onCheckChanged={(checked) =>
-                                        this.setState({
-                                            previewVoice: !!checked,
-                                        })
-                                    }
-                                    checked={this.state.previewVoice}
-                                    size="small"
-                                />
-                                <BloomCheckbox
-                                    label="Music"
-                                    l10nKey="EditTab.Toolbox.Motion.Preview.Music"
-                                    onCheckChanged={(checked) =>
-                                        this.setState({
-                                            previewMusic: !!checked,
-                                        })
-                                    }
-                                    checked={this.state.previewMusic}
-                                    size="small"
-                                />
-                            </div>
+                                checked={this.state.previewMusic}
+                                size="small"
+                            />
                         </div>
-                        <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Motion_Tool/Motion_Tool_overview.htm" />
-                        <audio id="pzMusicPlayer" preload="none" />
                     </div>
-                </ThemeProvider>
+                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Motion_Tool/Motion_Tool_overview.htm" />
+                    <audio id="pzMusicPlayer" preload="none" />
+                </div>
             </RequiresSubscriptionOverlayWrapper>
         );
     }

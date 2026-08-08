@@ -1,7 +1,6 @@
 import { FunctionComponent, useReducer, useRef, useState } from "react";
 import { ReaderToolSwitch } from "../ReaderToolSwitch";
-import { css, ThemeProvider } from "@emotion/react";
-import { toolboxTheme } from "../../../../bloomMaterialUITheme";
+import { css } from "@emotion/react";
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import BloomButton from "../../../../react_components/bloomButton";
@@ -606,113 +605,109 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
         .filter((reminder) => reminder.trim().length > 0);
 
     return (
-        <ThemeProvider theme={toolboxTheme}>
+        <div
+            css={css`
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                min-height: 0;
+                overflow-x: hidden;
+            `}
+        >
             <div
                 css={css`
                     display: flex;
                     flex-direction: column;
-                    height: 100%;
+                    flex: 1 1 auto;
                     min-height: 0;
                     overflow-x: hidden;
+                    // A single horizontal padding on the whole panel keeps
+                    // every row (including "Level x of y") on one left edge,
+                    // instead of each section supplying its own left margin.
+                    padding: 8px 12px 0 12px;
                 `}
             >
+                {showTool && (
+                    <>
+                        <ReaderToolNav
+                            isForLeveled={true}
+                            changeFunction={changeLevel}
+                        />
+                        {/* The over-level warning banner and the within/over
+                            legend only make sense when at least one measure is
+                            actually over the current level's limit. */}
+                        {isBookOverLevel(model, bookStats) && (
+                            <>
+                                <OverLevelBanner
+                                    levelNumber={model.levelNumber}
+                                />
+                                <StatsLegend />
+                            </>
+                        )}
+                        <LeveledReaderStats bookStats={bookStats} />
+                        {levelReminders.length > 0 && (
+                            <LeveledReaderList
+                                l10nKeySuffix="FoThisLevel"
+                                listHeaderText="For this Level"
+                                listItems={levelReminders}
+                            />
+                        )}
+                        <LeveledReaderList
+                            l10nKeySuffix="KeepInMind"
+                            listHeaderText="Keep in mind"
+                            listItems={getKeepInMindLinks()}
+                        />
+                    </>
+                )}
+                {/* Bottom group, top to bottom: Copy Book Stats, the "Book is
+                    Leveled" toggle, then the Set Up Levels button last. When
+                    the tool content is showing, margin-top:auto pushes the
+                    group to the bottom; it scrolls with the content when the
+                    panel overflows. The toggle stays mounted even when the
+                    content is hidden so the user can turn the book back into a
+                    leveled reader. */}
                 <div
                     css={css`
                         display: flex;
                         flex-direction: column;
-                        flex: 1 1 auto;
-                        min-height: 0;
-                        overflow-x: hidden;
-                        // A single horizontal padding on the whole panel keeps
-                        // every row (including "Level x of y") on one left edge,
-                        // instead of each section supplying its own left margin.
-                        padding: 8px 12px 0 12px;
+                        align-items: flex-start;
+                        gap: 8px;
+                        margin-bottom: 10px;
+                        ${showTool
+                            ? "margin-top: auto; padding-top: 12px;"
+                            : ""}
                     `}
                 >
                     {showTool && (
-                        <>
-                            <ReaderToolNav
-                                isForLeveled={true}
-                                changeFunction={changeLevel}
-                            />
-                            {/* The over-level warning banner and the within/over
-                                legend only make sense when at least one measure is
-                                actually over the current level's limit. */}
-                            {isBookOverLevel(model, bookStats) && (
-                                <>
-                                    <OverLevelBanner
-                                        levelNumber={model.levelNumber}
-                                    />
-                                    <StatsLegend />
-                                </>
-                            )}
-                            <LeveledReaderStats bookStats={bookStats} />
-                            {levelReminders.length > 0 && (
-                                <LeveledReaderList
-                                    l10nKeySuffix="FoThisLevel"
-                                    listHeaderText="For this Level"
-                                    listItems={levelReminders}
+                        <BloomButton
+                            l10nKey="EditTab.Toolbox.LeveledReaderTool.CopyBookStatistics"
+                            variant="text"
+                            enabled={true}
+                            hasText={true}
+                            iconBeforeText={
+                                <ContentCopySharp
+                                    css={css`
+                                        // currentColor picks up the button's
+                                        // accent text color.
+                                        color: currentColor;
+                                    `}
                                 />
-                            )}
-                            <LeveledReaderList
-                                l10nKeySuffix="KeepInMind"
-                                listHeaderText="Keep in mind"
-                                listItems={getKeepInMindLinks()}
-                            />
-                        </>
-                    )}
-                    {/* Bottom group, top to bottom: Copy Book Stats, the "Book is
-                        Leveled" toggle, then the Set Up Levels button last. When
-                        the tool content is showing, margin-top:auto pushes the
-                        group to the bottom; it scrolls with the content when the
-                        panel overflows. The toggle stays mounted even when the
-                        content is hidden so the user can turn the book back into a
-                        leveled reader. */}
-                    <div
-                        css={css`
-                            display: flex;
-                            flex-direction: column;
-                            align-items: flex-start;
-                            gap: 8px;
-                            margin-bottom: 10px;
-                            ${showTool
-                                ? "margin-top: auto; padding-top: 12px;"
-                                : ""}
-                        `}
-                    >
-                        {showTool && (
-                            <BloomButton
-                                l10nKey="EditTab.Toolbox.LeveledReaderTool.CopyBookStatistics"
-                                variant="text"
-                                enabled={true}
-                                hasText={true}
-                                iconBeforeText={
-                                    <ContentCopySharp
-                                        css={css`
-                                            // currentColor picks up the button's
-                                            // accent text color.
-                                            color: currentColor;
-                                        `}
-                                    />
-                                }
-                                onClick={() =>
-                                    model.copyLeveledReaderStatsToClipboard()
-                                }
-                                css={readerTextButtonCss}
-                            >
-                                Copy Book Stats
-                            </BloomButton>
-                        )}
-                        <ReaderToolSwitch
-                            isForLeveled={true}
-                            changeDisplayFunc={() =>
-                                setShowTool((prev) => !prev)
                             }
-                        />
-                        {showTool && <ReaderSetupButton isForLeveled={true} />}
-                    </div>
+                            onClick={() =>
+                                model.copyLeveledReaderStatsToClipboard()
+                            }
+                            css={readerTextButtonCss}
+                        >
+                            Copy Book Stats
+                        </BloomButton>
+                    )}
+                    <ReaderToolSwitch
+                        isForLeveled={true}
+                        changeDisplayFunc={() => setShowTool((prev) => !prev)}
+                    />
+                    {showTool && <ReaderSetupButton isForLeveled={true} />}
                 </div>
             </div>
-        </ThemeProvider>
+        </div>
     );
 };

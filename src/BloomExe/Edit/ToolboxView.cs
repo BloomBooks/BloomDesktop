@@ -13,35 +13,39 @@ namespace Bloom.Edit
 {
     /// <summary>
     /// This class supports the Edit Tab Toolbox as a whole. Eventually, all of this should be moved to javascript-land.
-    /// Since the toolbox is mainly implemented in HTML/Javascript, there is no distinct .NET control for it.
+    /// Since the toolbox is implemented in React/Typescript, there is no distinct .NET control for it.
     /// Thus, unlike other View classes in Bloom, ToolboxView does not inherit from a Control class,
     /// nor are there ever any instances; all methods are currently static.
     /// Currently necessary steps to add a new tool:
-    /// - Add the tool's folder to ToolboxView.GetToolboxServerDirectories().
     /// - Create a folder under BloomBrowserUI/bookEdit/toolbox. Its name should match the toolId (see below).
     /// - Create a file in that folder with extension .tsx to contain the React code of the panel
-    ///		- it (or another file) should have a class which implements ITool
-    ///			- minimally this must implement id() to return the tool ID
-    ///			- also beginRestoreSettings should return a (possibly already-resolved) promise.
+    ///		- it (or another file) should have a class which extends ToolboxToolReactAdaptor
+    ///			(which implements ITool, supplying do-nothing defaults for everything the tool
+    ///			doesn't care about, e.g. beginRestoreSettings for a tool that saves no state)
+    ///			- minimally this must implement id() to return the tool ID, and
+    ///				renderPanel() to return the tool's React element. The toolbox renders that
+    ///				element as an ordinary child of its own single React root, so React context
+    ///				(e.g. the MUI theme) reaches it normally.
+    ///			- the lifecycle methods it does implement (beginRestoreSettings, showTool,
+    ///				newPageReady, detachFromPage, hideTool) need no wiring up: the section the
+    ///				toolbox renders for the tool runs them from a React effect for as long as
+    ///				that tool is the current tool of a showing toolbox (useToolLifecycle.ts).
+    ///			- should implement iconPath() to return the URL of the icon for the tool's section
+    ///				header, e.g. "/bloom/bookEdit/toolbox/motion/motion.svg" (create the icon in the
+    ///				tool's own folder, or in BloomBrowserUI/images).
     ///			- create one instance and publish it to get the tool known to the toolbox and include its
     ///				code in the toolbox bundle: in toolboxBootstrap.ts, add a line like
     ///				ToolBox.registerTool(new MyWonderfulTool());
-    ///			- should implement makeRootElement() to create one div, the react root.
-    ///				- the returned root should already have been passed to ReactDOM.render().
-    ///			- Make a new xlf entry with ID EditTab.Toolbox.{UCToolId}.Heading,
-    ///				where UCToolId is the capitalized version of your tool Id, e.g., "Music".
-    ///				We currently assume the default English value of this will be UCToolId Tool, e.g., "Music Tool"
-    ///				(This supports localization of the tool's accordion tab label.)
-    /// - In some toolbox less file (typically a new one for your tool, but could be toolbox.less)
-    ///		you need to create a rule like
-    ///			.ui-accordion h3[data-toolId="motionTool"] span.ui-accordion-header-icon {
-    ///				background-image:url('/bloom/images/motion.svg') !important;
-    ///			}
-    ///		which specifies the icon for your tool. (And create the icon in the BloomBrowserUI/images folder).
-    /// - Usually you will add a line to GetToolboxServerDirectories() in this file
-    /// - Add two lines like this to src\BloomBrowserUI\bookEdit\toolbox\settings\Settings.pug
-    ///		.checkbox.clear#musicCheck(data-tool='musicTool', onclick='workspaceBundle.showOrHideTool_click(this);')
-    ///		.checkbox-label(data-i18n='EditTab.Toolbox.Music.Heading') Music Tool
+    ///		- Make a new xlf entry with ID EditTab.Toolbox.{UCToolId}Tool, where UCToolId is the
+    ///			capitalized version of your tool Id, e.g., "Music", giving the key
+    ///			"EditTab.Toolbox.MusicTool". We currently assume the default English value of this
+    ///			will be UCToolId Tool, e.g., "Music Tool". (This localizes both the tool's section
+    ///			header and its checkbox in the "More..." section. See toolIds.ts, which derives
+    ///			the label and key from the tool id, for the exact convention.)
+    /// That is all: the toolbox derives the section header (label, icon, subscription badge) and
+    /// the tool's checkbox in the "More..." section from the ITool implementation, so there is no
+    /// list of tools to add to anywhere else. In particular you do NOT normally need to add the
+    /// new folder to GetToolboxServerDirectories() below; see the comment there.
     /// </summary>
     public class ToolboxView
     {
@@ -72,18 +76,29 @@ namespace Bloom.Edit
             DecodableReaderToolSettings.CopyRelevantNewReaderSettings(settings);
         }
 
+        /// <summary>
+        /// Toolbox folders to add to BloomFileLocator's factory search path (see
+        /// ProjectContext.GetFactoryFileLocations, its only caller).
+        /// A new tool's folder does NOT normally belong here. This list does not control what
+        /// the server will serve: everything the toolbox fetches uses a full path
+        /// (e.g. "/bloom/bookEdit/toolbox/motion/motion.svg"), which BloomServer resolves
+        /// against the browser root without consulting this search path. Several toolbox
+        /// folders that serve assets (games, impairmentVisualizer, readers) have never been
+        /// listed here and work fine. What the search path is for is lookups by bare
+        /// file name, which for these folders means only their stylesheets
+        /// (BloomServer.ProcessCssFile).
+        /// </summary>
         public static IEnumerable<string> GetToolboxServerDirectories()
         {
+            // toolbox.css is linked by both toolbox.pug and WorkspaceView's injected html.
             yield return BloomFileLocator.GetBrowserDirectory("bookEdit", "toolbox");
+            // audioRecording.css is linked into the page frame; see editablePage.ts.
+            // (The toolbox itself gets those styles from talkingBookTool.tsx's import.)
             yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/talkingBook");
-            yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/motion");
-            yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/music");
+            // readerSetup's dialog fetches ReaderSetup.html and readerSetup.css.
             yield return BloomFileLocator.GetBrowserDirectory(
                 "bookEdit/toolbox/readers/readerSetup"
             );
-            yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/signLanguage");
-            yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/imageDescription");
-            yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/canvas");
         }
 
         public static string MakeToolboxContent(Book.Book book)
