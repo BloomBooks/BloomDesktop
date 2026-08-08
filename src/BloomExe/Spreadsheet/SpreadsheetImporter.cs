@@ -19,6 +19,7 @@ using Bloom.TeamCollection;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
+using Newtonsoft.Json.Linq;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
@@ -1734,9 +1735,9 @@ namespace Bloom.Spreadsheet
         /// Builds inline-image wrappers from the [inline image] rows that followed a
         /// group's row: for each row, copies the image file from the spreadsheet's images
         /// folder into the book folder and reconstructs the wrapper markup from the
-        /// [image details] parameters. Only called when the spreadsheet has the
-        /// [image details] column; the rows (possibly none) are then the authority on what
-        /// inline images the group has.
+        /// [details] JSON. Only called when the spreadsheet has the [details] column;
+        /// the rows (possibly none) are then the authority on what inline images the
+        /// group has.
         /// </summary>
         private SafeXmlElement[] BuildInlineImageWrappers(List<ContentRow> inlineImageRows)
         {
@@ -1748,48 +1749,70 @@ namespace Bloom.Spreadsheet
         /// <summary>
         /// The inverse of SpreadsheetExporter.GetInlineImageDetails plus makeInlineImageWrapper
         /// (inlineImages.ts): reconstructs one .bloom-inlineImage wrapper from an
-        /// [inline image] row's [image source] file and [image details] parameters
-        /// (e.g. "right, offset 24px, width 40%, aspect 800/600"). Everything else about the
-        /// wrapper is constant or freshly minted, notably the id shared by the copies that
-        /// will be stamped into each editable, which only edit-time sync/undo cares about.
+        /// [inline image] row's [image source] file and [details] JSON
+        /// (e.g. {"kind":"inline-image","location":"right","offset":"24px","width":"40%"}).
+        /// The aspect ratio is
+        /// measured from the image file itself (we never stretch images), or left off when
+        /// the file can't be found, since the CSS falls back to the image's natural ratio.
+        /// Everything else about the wrapper is constant or freshly minted, notably the id
+        /// shared by the copies that will be stamped into each editable, which only
+        /// edit-time sync/undo cares about.
         /// </summary>
         private SafeXmlElement BuildInlineImageWrapper(ContentRow row)
         {
             var location = "right";
             string offset = null;
             var width = "40%";
-            var aspect = "4 / 3";
-            var details = row.GetCell(InternalSpreadsheet.ImageDetailsColumnLabel).Content;
-            foreach (var rawToken in details.Split(','))
+            var details = row.GetCell(InternalSpreadsheet.DetailsColumnLabel).Content;
+            if (!string.IsNullOrWhiteSpace(details))
             {
-                var token = rawToken.Trim();
-                if (token == "")
-                    continue;
-                var parts = token.Split(new[] { ' ' }, 2);
-                var value = parts.Length == 2 ? parts[1].Trim() : "";
-                switch (parts[0])
+                try
                 {
-                    case "left":
-                    case "right":
-                    case "middle":
-                    case "bottom":
-                        location = parts[0];
-                        break;
-                    case "offset" when value != "":
-                        offset = value;
-                        break;
-                    case "width" when value != "":
-                        width = value;
-                        break;
-                    case "aspect" when value != "":
-                        aspect = value.Replace(" ", "").Replace("/", " / ");
-                        break;
-                    default:
-                        Warn(
-                            $"Bloom did not understand \"{token}\" in the {InternalSpreadsheet.ImageDetailsColumnLabel} cell of row {CurrentRowIndexForMessages}."
-                        );
-                        break;
+                    foreach (var property in JObject.Parse(details).Properties())
+                    {
+                        switch (property.Name)
+                        {
+                            case "kind":
+                                if (property.Value.ToString() != "inline-image")
+                                    Warn(
+                                        $"Row {CurrentRowIndexForMessages} is an {InternalSpreadsheet.InlineImageRowLabel} row, but its {InternalSpreadsheet.DetailsColumnLabel} cell says its kind is \"{property.Value}\"."
+                                    );
+                                break;
+                            case "location":
+                                location = property.Value.ToString();
+                                break;
+                            case "offset":
+                                offset = property.Value.ToString();
+                                break;
+                            case "width":
+                                width = property.Value.ToString();
+                                break;
+                            default:
+                                Warn(
+                                    $"Bloom did not understand \"{property.Name}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages}."
+                                );
+                                break;
+                        }
+                    }
                 }
+                catch (Newtonsoft.Json.JsonReaderException)
+                {
+                    Warn(
+                        $"Bloom could not read the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages} (\"{details}\"); the image will get a default position and size."
+                    );
+                }
+            }
+            if (
+                location != "left"
+                && location != "right"
+                && location != "middle"
+                && location != "bottom"
+            )
+            {
+                Warn(
+                    $"Bloom did not understand the location \"{location}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages}."
+                );
+                location = "right";
             }
 
             var wrapper = (SafeXmlElement)_destinationDom.RawDom.CreateElement("div");
@@ -1801,13 +1824,19 @@ namespace Bloom.Spreadsheet
                 $"bloom-inlineImage {dockClass} bloom-keepFirstInField bloom-preventRemoval"
             );
             wrapper.SetAttribute("contenteditable", "false");
-            var style = $"--inline-image-width: {width}; --inline-image-aspect-ratio: {aspect};";
+            var src = CopyInlineImageFileToBook(row, out var copiedImagePath);
+            var style = $"--inline-image-width: {width};";
+            if (
+                copiedImagePath != null
+                && ImageUtils.TryGetImageSize(copiedImagePath, out var size)
+            )
+                style += $" --inline-image-aspect-ratio: {size.Width} / {size.Height};";
             if (!string.IsNullOrEmpty(offset) && location != "bottom")
                 style += $" --inline-image-offset: {offset};";
             wrapper.SetAttribute("style", style);
 
             var img = (SafeXmlElement)_destinationDom.RawDom.CreateElement("img");
-            img.SetAttribute("src", CopyInlineImageFileToBook(row));
+            img.SetAttribute("src", src);
             img.SetAttribute("alt", "");
             wrapper.AppendChild(img);
             return wrapper;
@@ -1817,10 +1846,13 @@ namespace Bloom.Spreadsheet
         /// Copies an [inline image] row's image file (its [image source] cell, e.g.
         /// "images/foo.jpg") from the spreadsheet folder into the book folder, and returns
         /// the url-encoded src the book's img element should carry. A blank cell means the
-        /// image was never chosen; it becomes the placeholder src.
+        /// image was never chosen; it becomes the placeholder src. copiedImagePath is the
+        /// full path of the file now in the book folder, or null when nothing was copied
+        /// (blank cell, missing file, or the null folders of unit tests).
         /// </summary>
-        private string CopyInlineImageFileToBook(ContentRow row)
+        private string CopyInlineImageFileToBook(ContentRow row, out string copiedImagePath)
         {
+            copiedImagePath = null;
             var source = row.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Content;
             if (
                 string.IsNullOrWhiteSpace(source)
@@ -1844,11 +1876,9 @@ namespace Bloom.Spreadsheet
                 {
                     try
                     {
-                        RobustFile.Copy(
-                            sourcePath,
-                            Path.Combine(_pathToBookFolder, fileName),
-                            true
-                        );
+                        var destPath = Path.Combine(_pathToBookFolder, fileName);
+                        RobustFile.Copy(sourcePath, destPath, true);
+                        copiedImagePath = destPath;
                     }
                     catch (Exception e)
                         when (e is IOException
@@ -2089,12 +2119,12 @@ namespace Bloom.Spreadsheet
             // Inline images (.bloom-inlineImage wrappers; see inlineImages.ts) are replicated
             // into every editable of the group. The language cells carry only text; the export
             // writes each image to its own [inline image] row after the group's row, and when
-            // the spreadsheet has the [image details] column those rows are the authority. A
+            // the spreadsheet has the [details] column those rows are the authority. A
             // spreadsheet without the column (e.g. made by an older Bloom) can't tell us
             // anything about inline images, so then we preserve whatever the target group
             // already has, snapshotted before we overwrite any editable.
             SafeXmlElement[] inlineImageWrappers;
-            if (_sheet.GetColumnForTag(InternalSpreadsheet.ImageDetailsColumnLabel) >= 0)
+            if (_sheet.GetColumnForTag(InternalSpreadsheet.DetailsColumnLabel) >= 0)
                 inlineImageWrappers = BuildInlineImageWrappers(inlineImageRows);
             else
                 inlineImageWrappers = GetInlineImageWrappers(group);

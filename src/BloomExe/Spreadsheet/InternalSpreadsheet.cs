@@ -39,8 +39,14 @@ namespace Bloom.Spreadsheet
         public const string WidgetSourceColumnLabel = "[activities source]";
         public const string PageTypeColumnLabel = "[page type]";
         public const string AttributeColumnLabel = "[attribute]";
-        public const string ImageDetailsColumnLabel = "[image details]";
-        public const string ImageDetailsColumnFriendlyName = "Image Details";
+
+        // A hidden column holding a JSON object with whatever non-textual state a row's
+        // object needs to be reconstructed on import. Currently used by [inline image]
+        // rows; the plan is for future canvas-element rows to share it. Its presence
+        // anywhere in a spreadsheet marks that spreadsheet as the authority on the
+        // objects whose rows use it.
+        public const string DetailsColumnLabel = "[details]";
+        public const string DetailsColumnFriendlyName = "Details";
         public const string ImageSourceColumnFriendlyName = "Image File Path";
 
         public const string BlankContentIndicator = "[blank]";
@@ -54,7 +60,7 @@ namespace Bloom.Spreadsheet
         // inlineImages.ts). Such rows immediately follow the [page content] row of the
         // translation group the image belongs to, in stacking order. The image file rides
         // in the normal [image source] column (and so gets a thumbnail); the geometry
-        // needed to reconstruct the wrapper rides in [image details].
+        // needed to reconstruct the wrapper rides in [details] as JSON.
         public const string InlineImageRowLabel = "[inline image]";
 
         internal static string MapRowLabelToDataBookLabel(string rowTypeLabel)
@@ -359,6 +365,7 @@ namespace Bloom.Spreadsheet
             {
                 GetColumnForTag(PageNumberColumnLabel),
                 GetColumnForTag(ImageSourceColumnLabel),
+                GetColumnForTag(DetailsColumnLabel),
             }
                 .Where(i => i >= 0) // optional columns may be absent
                 .ToList();

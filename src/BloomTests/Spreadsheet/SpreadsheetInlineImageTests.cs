@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Bloom.Book;
@@ -9,6 +12,7 @@ using Moq;
 using NUnit.Framework;
 using OfficeOpenXml;
 using SIL.IO;
+using SIL.TestUtilities;
 
 namespace BloomTests.Spreadsheet
 {
@@ -17,11 +21,13 @@ namespace BloomTests.Spreadsheet
     /// wrappers replicated into every bloom-editable of a translation group) survive a
     /// spreadsheet export → import round trip. Export gives each inline image its own
     /// [inline image] row right after its group's row: the file in the normal [image source]
-    /// column, and the geometry parameters (location, displacement, width, aspect) as
-    /// readable text in [image details]. Import reconstructs the wrappers from those
-    /// parameters — whether importing over the same book or into a book that has no inline
-    /// images at all. A spreadsheet without the [image details] column (from an older Bloom)
-    /// falls back to preserving whatever the target book already has.
+    /// column, and the geometry (location, displacement, width) as JSON in the hidden
+    /// [details] column, which future canvas-element rows are meant to share. The aspect
+    /// ratio is not in the JSON: the importer measures the image file itself. Import
+    /// reconstructs the wrappers from those parameters — whether importing over the same
+    /// book or into a book that has no inline images at all. A spreadsheet without the
+    /// [details] column (from an older Bloom) falls back to preserving whatever the target
+    /// book already has.
     /// </summary>
     public class SpreadsheetInlineImageTests
     {
@@ -240,8 +246,10 @@ namespace BloomTests.Spreadsheet
                 Is.EqualTo("images/flower.jpg")
             );
             Assert.That(
-                rows[group1Index + 1].GetCell(InternalSpreadsheet.ImageDetailsColumnLabel).Content,
-                Is.EqualTo("right, offset 24px, width 40%, aspect 800/600")
+                rows[group1Index + 1].GetCell(InternalSpreadsheet.DetailsColumnLabel).Content,
+                Is.EqualTo(
+                    "{\"kind\":\"inline-image\",\"location\":\"right\",\"offset\":\"24px\",\"width\":\"40%\"}"
+                )
             );
             Assert.That(
                 rows[group1Index + 2]
@@ -250,8 +258,8 @@ namespace BloomTests.Spreadsheet
                 Is.EqualTo("images/fish.png")
             );
             Assert.That(
-                rows[group1Index + 2].GetCell(InternalSpreadsheet.ImageDetailsColumnLabel).Content,
-                Is.EqualTo("bottom, width 60%, aspect 4/3")
+                rows[group1Index + 2].GetCell(InternalSpreadsheet.DetailsColumnLabel).Content,
+                Is.EqualTo("{\"kind\":\"inline-image\",\"location\":\"bottom\",\"width\":\"60%\"}")
             );
 
             // Second group (image-only): its row follows, then its one inline image.
@@ -264,9 +272,23 @@ namespace BloomTests.Spreadsheet
                 Is.EqualTo(InternalSpreadsheet.InlineImageRowLabel)
             );
             Assert.That(
-                rows[group1Index + 4].GetCell(InternalSpreadsheet.ImageDetailsColumnLabel).Content,
-                Is.EqualTo("right, offset 24px, width 40%, aspect 800/600")
+                rows[group1Index + 4].GetCell(InternalSpreadsheet.DetailsColumnLabel).Content,
+                Is.EqualTo(
+                    "{\"kind\":\"inline-image\",\"location\":\"right\",\"offset\":\"24px\",\"width\":\"40%\"}"
+                )
             );
+        }
+
+        [Test]
+        public void DetailsColumnIsHidden()
+        {
+            // Like [image source], [details] is machinery, not something a translator
+            // should be invited to edit.
+            var detailsColumn = _sheetFromExport.GetColumnForTag(
+                InternalSpreadsheet.DetailsColumnLabel
+            );
+            Assert.That(detailsColumn, Is.GreaterThanOrEqualTo(0), "sanity: column exists");
+            Assert.That(_sheetFromExport.HiddenColumns, Does.Contain(detailsColumn));
         }
 
         [TestCase("roundtrip", "groupWithTextAndImages-es", "Un perro muy valiente.")]
@@ -297,11 +319,11 @@ namespace BloomTests.Spreadsheet
 
             var style = wrapper.GetAttribute("style");
             Assert.That(style, Does.Contain("--inline-image-width: 40%"), "width survives");
-            Assert.That(
-                style,
-                Does.Contain("--inline-image-aspect-ratio: 800 / 600"),
-                "aspect ratio survives"
-            );
+            // The aspect ratio is measured from the image file on import. These imports run
+            // with null folders, so there is no file to measure and the property is omitted;
+            // the CSS then falls back to the image's natural ratio. See
+            // ImportMeasuresAspectRatioFromImageFile for the with-files case.
+            Assert.That(style, Does.Not.Contain("--inline-image-aspect-ratio"));
             Assert.That(
                 style,
                 Does.Contain("--inline-image-offset: 24px"),
@@ -341,7 +363,6 @@ namespace BloomTests.Spreadsheet
             );
             var style = wrapper.GetAttribute("style");
             Assert.That(style, Does.Contain("--inline-image-width: 60%"));
-            Assert.That(style, Does.Contain("--inline-image-aspect-ratio: 4 / 3"));
             Assert.That(
                 style,
                 Does.Not.Contain("--inline-image-offset"),
@@ -419,17 +440,62 @@ namespace BloomTests.Spreadsheet
         }
 
         [Test]
-        public async Task SpreadsheetWithoutImageDetailsColumnPreservesBookImages()
+        public async Task ImportMeasuresAspectRatioFromImageFile()
+        {
+            // The [details] JSON carries no aspect ratio; we never stretch images, so the
+            // file itself is the authority and the importer measures it after copying it
+            // into the book.
+            using (var spreadsheetFolder = new TemporaryFolder("inlineImageSheetFolder"))
+            using (var bookFolder = new TemporaryFolder("inlineImageBookFolder"))
+            {
+                var imagesFolder = Path.Combine(spreadsheetFolder.Path, "images");
+                Directory.CreateDirectory(imagesFolder);
+                using (var bitmap = new Bitmap(100, 50))
+                    bitmap.Save(Path.Combine(imagesFolder, "flower.jpg"), ImageFormat.Jpeg);
+                using (var bitmap = new Bitmap(30, 60))
+                    bitmap.Save(Path.Combine(imagesFolder, "fish.png"), ImageFormat.Png);
+
+                var dom = new HtmlDom(MakeBook("", ""), true);
+                // Like the shared setup, go through a real .xlsx: only the written file has
+                // the language cells flattened to text the way a real import sees them.
+                InternalSpreadsheet sheet;
+                using (var tempFile = TempFile.WithExtension("xlsx"))
+                {
+                    _sheetFromExport.WriteToFile(tempFile.Path);
+                    sheet = InternalSpreadsheet.ReadFromFile(tempFile.Path);
+                }
+                await new TestSpreadsheetImporter(
+                    null,
+                    dom,
+                    spreadsheetFolder.Path,
+                    bookFolder.Path
+                ).ImportAsync(sheet);
+
+                var editable = GetEditable(dom, "groupWithTextAndImages-es");
+                var floatStyle = GetFloatWrapper(editable).GetAttribute("style");
+                Assert.That(floatStyle, Does.Contain("--inline-image-aspect-ratio: 100 / 50"));
+                var bottomStyle = GetWrappers(editable).Last().GetAttribute("style");
+                Assert.That(bottomStyle, Does.Contain("--inline-image-aspect-ratio: 30 / 60"));
+
+                Assert.That(
+                    RobustFile.Exists(Path.Combine(bookFolder.Path, "flower.jpg")),
+                    "the image file lands in the book folder"
+                );
+            }
+        }
+
+        [Test]
+        public async Task SpreadsheetWithoutDetailsColumnPreservesBookImages()
         {
             // A spreadsheet made from a book with no inline images (like any spreadsheet
-            // from an older Bloom) has no [image details] column, so it is not an authority
+            // from an older Bloom) has no [details] column, so it is not an authority
             // on inline images: importing it over a book that has them must not destroy them.
             var targetDom = new HtmlDom(MakeBook(floatWrapper, bottomWrapper), true);
             var sheet = ExportBook(MakeBook("", ""));
             Assert.That(
-                sheet.GetColumnForTag(InternalSpreadsheet.ImageDetailsColumnLabel),
+                sheet.GetColumnForTag(InternalSpreadsheet.DetailsColumnLabel),
                 Is.LessThan(0),
-                "sanity: this sheet should have no image-details column"
+                "sanity: this sheet should have no details column"
             );
             await RoundTripThroughFileAndImportAsync(sheet, targetDom);
 

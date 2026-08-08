@@ -18,6 +18,7 @@ using Bloom.Publish;
 using Bloom.SafeXml;
 using Bloom.web;
 using L10NSharp;
+using Newtonsoft.Json.Linq;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -854,8 +855,7 @@ namespace Bloom.Spreadsheet
         /// after the group's row, in stacking order: the image file in the normal
         /// [image source] column (copied to the spreadsheet's images folder, thumbnail and
         /// all, like any other image) and the geometry needed to reconstruct the wrapper —
-        /// location, displacement, width, aspect ratio — as readable text in the
-        /// [image details] column.
+        /// location, displacement, width — as JSON in the hidden [details] column.
         /// </summary>
         private void ExportInlineImageRows(
             SafeXmlElement translationGroup,
@@ -885,8 +885,8 @@ namespace Bloom.Spreadsheet
             // default; its presence is what tells the importer this spreadsheet is the
             // authority on inline images.
             _spreadsheet.AddColumnForTag(
-                InternalSpreadsheet.ImageDetailsColumnLabel,
-                InternalSpreadsheet.ImageDetailsColumnFriendlyName
+                InternalSpreadsheet.DetailsColumnLabel,
+                InternalSpreadsheet.DetailsColumnFriendlyName
             );
 
             foreach (var wrapper in wrappers)
@@ -918,17 +918,19 @@ namespace Bloom.Spreadsheet
                     );
                 }
 
-                row.SetCell(
-                    InternalSpreadsheet.ImageDetailsColumnLabel,
-                    GetInlineImageDetails(wrapper)
-                );
+                row.SetCell(InternalSpreadsheet.DetailsColumnLabel, GetInlineImageDetails(wrapper));
             }
         }
 
         /// <summary>
-        /// Reads the geometry off an inline-image wrapper and renders it as the readable
-        /// parameter text the [image details] cell holds, e.g.
-        /// "right, offset 24px, width 40%, aspect 800/600". The offset is omitted when zero.
+        /// Reads the geometry off an inline-image wrapper and renders it as the JSON the
+        /// [details] cell holds, e.g.
+        /// {"kind":"inline-image","location":"right","offset":"24px","width":"40%"}.
+        /// The kind comes first so the blob identifies itself even apart from its row;
+        /// other kinds (canvas elements) will share this column.
+        /// The offset is omitted when zero. The aspect ratio is deliberately NOT included:
+        /// we never stretch images, so the image file itself (in the same row's
+        /// [image source]) is the authority, and the importer measures it.
         /// SpreadsheetImporter.BuildInlineImageWrapper is the inverse.
         /// </summary>
         internal static string GetInlineImageDetails(SafeXmlElement wrapper)
@@ -942,17 +944,14 @@ namespace Bloom.Spreadsheet
             else if (classes.Contains(" bloom-inlineImageBottom "))
                 location = "bottom";
 
-            var details = new StringBuilder(location);
+            var details = new JObject { ["kind"] = "inline-image", ["location"] = location };
             var offset = GetStyleVariable(wrapper, "--inline-image-offset");
             if (!string.IsNullOrEmpty(offset) && offset != "0px" && location != "bottom")
-                details.Append($", offset {offset}");
+                details["offset"] = offset;
             var width = GetStyleVariable(wrapper, "--inline-image-width");
             if (!string.IsNullOrEmpty(width))
-                details.Append($", width {width}");
-            var aspect = GetStyleVariable(wrapper, "--inline-image-aspect-ratio");
-            if (!string.IsNullOrEmpty(aspect))
-                details.Append($", aspect {aspect.Replace(" ", "")}");
-            return details.ToString();
+                details["width"] = width;
+            return details.ToString(Newtonsoft.Json.Formatting.None);
         }
 
         /// <summary>
