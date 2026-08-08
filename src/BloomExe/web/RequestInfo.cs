@@ -252,18 +252,21 @@ namespace Bloom.Api
                 else if (fs.Length < 2 * 1024 * 1024)
                 {
                     // This buffer size was picked to be big enough for any of the standard files we load in every page.
-                    // Profiling indicates it is MUCH faster to use Response.Close() rather than writing to the output stream,
-                    // though the gain may be illusory since the final 'false' argument allows our code to proceed without waiting
-                    // for the complete data transfer. At a minimum, it makes this thread available to work on another
-                    // request sooner.
+                    // Profiling indicates it is MUCH faster to send the whole body in one go rather than writing to the
+                    // output stream, though the gain may be illusory since we don't wait for the complete data transfer.
+                    // At a minimum, it makes this thread available to work on another request sooner.
                     var buffer = new byte[fs.Length];
                     fs.Read(buffer, 0, (int)fs.Length);
                     // The client may not read the whole stream (e.g. paused video). I don't know whether that could lead
-                    // to a delay in Close() returning; probably not. But just to be safe, make sure we aren't holding
+                    // to a delay in the send finishing; probably not. But just to be safe, make sure we aren't holding
                     // on to the file.
                     fs.Dispose();
                     fs = null;
-                    _actualContext.Response.Close(buffer, false);
+                    // This used to be Response.Close(buffer, willBlock: false), which does the same thing but finishes
+                    // the send on a framework callback that no catch of ours can reach -- see PendingResponseWrites for
+                    // why that could kill the process (BL-16667). ContentLength64 is already set above, which is the one
+                    // thing that overload would have worked out for itself.
+                    PendingResponseWrites.SendAndClose(_actualContext.Response, buffer);
                 }
                 else
                 {
@@ -349,7 +352,10 @@ namespace Bloom.Api
             }
             else
             {
-                _actualContext.Response.Close(buffer, false);
+                // As in ReplyWithFileContent: we send the body without waiting for it to arrive, but we
+                // finish the send ourselves rather than letting Response.Close(buffer, willBlock: false)
+                // finish it on a callback we cannot guard. See PendingResponseWrites (BL-16667).
+                PendingResponseWrites.SendAndClose(_actualContext.Response, buffer);
             }
 
             HaveFullyProcessedRequest = true;

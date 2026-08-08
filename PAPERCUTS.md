@@ -166,22 +166,6 @@ House rules:
   own suite.
 
 
-## 2026-07-24 — agent-dotnet.sh test exits 0 even when tests fail
-
-- **Cut:** `build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj` returned exit code 0 on a
-  run whose own summary line read `Failed! - Failed: 11, Passed: 2913`. Anything that trusts the
-  exit code instead of parsing the output — an agent, a hook, a CI step, a background-task
-  notification that just reports "completed (exit code 0)" — will conclude the suite passed. During
-  this run the harness reported the failing suite as a success and it was only caught by reading the
-  summary line.
-- **Idea:** Have the wrapper propagate `dotnet test`'s real exit code (it presumably exits on the
-  last command in a pipeline, or swallows the status while redirecting into the private output
-  tree). Until then, treat "did the C# suite pass?" as a question only the output can answer.
-- **Context:** BloomDesktop, found during `/preflight` of PR #7992 (BL-16459 clipboard toast).
-  Distinct from the (now-fixed) cut about *which* tests fail under the wrapper — PR #8107 made
-  the full suite green, so a failure there is real; this entry is about the wrapper reporting
-  failure as success, which still stands.
-
 ## 2026-07-24 — go.sh "succeeds" on a fresh worktree whose output/browser was never built
 - **Cut:** On a never-initialized worktree, after fixing the obvious failures (pnpm install,
   getDependencies for CS0246), `./go.sh` launches and Bloom looks healthy — but opening a book

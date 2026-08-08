@@ -1,0 +1,35 @@
+# Text that means a `dotnet test` run did not finish the tests it was asked to run.
+#
+# Read by BOTH build/agent-dotnet.sh and build/agent-dotnet.ps1 after a test run, so that an
+# aborted run is reported as a failure instead of being judged by its pass/fail summary. It has
+# to live in one file because the two scripts are twins and a marker added to one and not the
+# other would silently only work in one shell.
+#
+# Why this is needed at all: when Bloom's own code kills the test host part way through, VSTest
+# still prints a summary of the tests that had run by then -- and since everything that ran had
+# passed, that summary says "Passed!". A human skimming, a script, or an agent reading the last
+# line will call that green. See BL-16667, which is also the bug that made it happen often.
+#
+# One extended regular expression per line; blank lines and # comments are ignored. Keep them
+# simple enough to mean the same thing to grep -E and to .NET's Select-String: no \s, no
+# [[:space:]], no lazy quantifiers. Anchor the ones that could otherwise match a test's own
+# output (a test about error reporting may well print the words "unhandled exception"); the
+# runtime prints its banners at the start of a line.
+
+# The .NET runtime's own death notices. The second is what Environment.FailFast prints, which is
+# what a failing Debug.Assert or Debug.Fail comes to in a process with no debugger attached.
+^[ \t]*Unhandled exception\.
+^[ \t]*Process terminated\.
+^[ \t]*Fatal error\.
+^[ \t]*Stack overflow\.
+Process is terminating due to StackOverflowException
+
+# VSTest noticing that the host it was driving went away.
+Test Run Aborted
+The active test run was aborted
+[Tt]esthost process exited with error
+test host process crashed
+
+# Nothing ran at all: normally a filter that matches nothing, which is a mistake worth catching
+# rather than a green run of zero tests.
+^[ \t]*No test is available

@@ -301,6 +301,15 @@
     </Exec>
     <Message Condition="$(isOnTeamCity) == true" Importance="high" Text="##teamcity[importData type='nunit' path='$(TestResultsXmlFile)']"/>
     <Error Condition="'$(TestExitCode)' != '0'" Text="C# tests failed (dotnet test returned $(TestExitCode)). Results: $(TestResultsXmlFile)"/>
+    <!-- The exit code is not on its own enough to tell us the run finished. When the test host is
+	     killed part way through — which Bloom's own shutdown used to do about one run in three, see
+	     BL-16667 — the runner still prints a summary of the tests that had passed by then, and we
+	     cannot rely on every such death producing a non-zero exit. But the logger only writes the
+	     results file once the run completes, and we deleted any earlier one above, so a missing
+	     file is proof that the run did not finish. Without this check that case reaches TeamCity as
+	     a green build that ran a fraction of the suite. -->
+    <Error Condition="!Exists('$(TestResultsXmlFile)')"
+		   Text="The C# test run did not finish: it exited $(TestExitCode) but never wrote $(TestResultsXmlFile), which the logger does only on completion. The test host was probably killed part way through, so however many tests the output says passed, the suite did not run."/>
   </Target>
   <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
 		Condition="'$(OS)'=='Windows_NT'">
