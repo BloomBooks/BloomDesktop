@@ -20,6 +20,13 @@
 //     --inline-image-aspect-ratio  natural width/height of the image, so that layout
 //                                  (and therefore the overflow checker) is right even
 //                                  before the image has loaded
+//     --inline-image-contour       the wrap shape, when text is to follow the image's
+//                                  transparent silhouette instead of its rectangle;
+//                                  unset means the rectangle (see CONTOUR WRAP below)
+//     --inline-image-contour-margin  the gap along that contour
+// --inline-image-gap below is not part of that per-image state: it is a constant that
+// happens to be expressed as a custom property so the two places that need the same
+// number (the margin and the contour's gap) cannot drift apart.
 // The width is a custom property rather than a plain `width` because the middle dock
 // needs a full-width wrapper containing a narrower image: with the number in a
 // variable, one declaration serves both cases, with no !important fight and no second
@@ -27,6 +34,11 @@
 // the wrapper, since for the middle dock the wrapper is wider than the image.
 .bloom-editable .bloom-inlineImage {
     box-sizing: border-box;
+
+    // How much space to leave between the picture and the text it displaces. It is
+    // needed twice over -- see the gap note under CONTOUR WRAP below -- so it lives in
+    // one place.
+    --inline-image-gap: 1em;
 
     img {
         display: block;
@@ -56,18 +68,63 @@
         shape-outside: inset(var(--inline-image-offset, 0px) 0 0 0);
     }
 
+    // CONTOUR WRAP
+    // Word-style wrapping along the image's transparent silhouette rather than its
+    // rectangle is a requirement we have not built yet. Nothing here turns it on:
+    // with --inline-image-contour unset these two declarations are exactly the
+    // rectangle above. What they do is make it a one-property switch later, and pin
+    // down the geometry it needs, which was measured in Chromium rather than assumed
+    // (bookEdit/inline-images-e2e locks the four measurements down):
+    //
+    //  - The contour is a polygon(), NOT `url(<the image>)`. For an element that is
+    //    not itself an image, Chromium sizes an <image> shape at the image's NATURAL
+    //    size, anchored top left and clipped to the box -- so a 1200px-wide photo in a
+    //    160px-wide box would contribute only its top left corner as the wrap shape.
+    //    (Chromium does scale such a mask to fit when the float IS an <img>, but the
+    //    float here is the wrapper, and it has to be: the wrapper is what carries the
+    //    offset padding, the dock, and the middle band.) Percentages in a polygon, by
+    //    contrast, resolve against the reference box, so one polygon stays right at
+    //    every width, zoom level and print resolution, and it deforms with the box
+    //    exactly as the picture inside it does.
+    //  - It must name `content-box`. The default reference box is the margin box,
+    //    which here includes the offset padding and the gap margin, so the silhouette
+    //    would be stretched over both. The content box is precisely the picture.
+    //  - The gap has to be stated twice, as the margin AND as shape-margin: a shape
+    //    replaces the margin box for wrapping (so the margin alone stops mattering),
+    //    while the shape once expanded by shape-margin is clipped BACK to the margin
+    //    box (so shape-margin alone has nothing to expand into). With both at
+    //    --inline-image-gap, a contoured image and a rectangular one hold the text off
+    //    by the same distance at the image's widest point.
+    //
+    // So the work left is to derive the silhouette from the image's alpha channel when
+    // the image changes and write `--inline-image-contour: polygon(...) content-box`
+    // and `--inline-image-contour-margin: var(--inline-image-gap)` onto the wrapper.
+    // Nothing in the markup or the rest of this file has to move.
+    //
+    // Only the side docks can take a contour. The middle band's wrapper is wider than
+    // its image, so percentages of that wrapper would not land on the picture -- and a
+    // full-width band has no text beside it to wrap in the first place.
+    &.bloom-inlineImageLeft,
+    &.bloom-inlineImageRight {
+        shape-outside: var(
+            --inline-image-contour,
+            inset(var(--inline-image-offset, 0px) 0 0 0)
+        );
+        shape-margin: var(--inline-image-contour-margin, 0px);
+    }
+
     &.bloom-inlineImageLeft {
         float: left;
         clear: left;
         width: var(--inline-image-width, 40%);
-        margin: 0 1em 0.5em 0;
+        margin: 0 var(--inline-image-gap) 0.5em 0;
     }
 
     &.bloom-inlineImageRight {
         float: right;
         clear: right;
         width: var(--inline-image-width, 40%);
-        margin: 0 0 0.5em 1em;
+        margin: 0 0 0.5em var(--inline-image-gap);
     }
 
     // A band with text above and below: the wrapper spans the whole editable, so no
