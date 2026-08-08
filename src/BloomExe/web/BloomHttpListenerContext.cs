@@ -42,6 +42,13 @@ namespace Bloom.web
         string HttpMethod { get; }
         System.IO.Stream InputStream { get; }
         string RawUrl { get; }
+
+        /// <summary>
+        /// The url of the document that asked for this, or null if the browser didn't say.
+        /// Only diagnostics use this: when a request is obviously bogus, the referrer is what
+        /// tells us which of our pages produced it. See BL-16666.
+        /// </summary>
+        string Referer { get; }
         System.Uri Url { get; }
     }
 
@@ -62,6 +69,11 @@ namespace Bloom.web
         public string ContentType
         {
             get { return _actualRequest.ContentType; }
+        }
+
+        public string Referer
+        {
+            get { return _actualRequest.Headers["Referer"]; }
         }
 
         public bool HasEntityBody
