@@ -130,10 +130,17 @@ namespace Bloom.web.controllers
                                     // Need to make sure to handle exceptions.
                                     // If the worker thread dies with an unhandled exception,
                                     // it causes the whole program to immediately crash without opportunity for error reporting
+                                    // A clipboard failure is not worth a modal problem-report dialog: whatever the
+                                    // cause, all the user can do is try again (BL-16459). So we just toast, which
+                                    // still offers a "Report" link and still tells Sentry.
                                     NonFatalProblem.Report(
-                                        ModalIf.All,
-                                        PassiveIf.None,
-                                        "Error pasting text",
+                                        ModalIf.None,
+                                        PassiveIf.All,
+                                        LocalizationManager.GetDynamicString(
+                                            "BloomLowPriority",
+                                            "EditTab.PasteTextFailed",
+                                            "Bloom was not able to paste."
+                                        ),
                                         exception: e
                                     );
                                 }
@@ -161,10 +168,17 @@ namespace Bloom.web.controllers
                                         // Need to make sure to handle exceptions.
                                         // If the worker thread dies with an unhandled exception,
                                         // it causes the whole program to immediately crash without opportunity for error reporting
+                                        // A clipboard failure is not worth a modal problem-report dialog: whatever the
+                                        // cause, all the user can do is try again (BL-16459). So we just toast, which
+                                        // still offers a "Report" link and still tells Sentry.
                                         NonFatalProblem.Report(
-                                            ModalIf.All,
-                                            PassiveIf.None,
-                                            "Error copying text",
+                                            ModalIf.None,
+                                            PassiveIf.All,
+                                            LocalizationManager.GetDynamicString(
+                                                "BloomLowPriority",
+                                                "EditTab.CopyTextFailed",
+                                                "Bloom was not able to copy that."
+                                            ),
                                             exception: e
                                         );
                                     }
@@ -277,6 +291,9 @@ namespace Bloom.web.controllers
                     cdpPort,
                     vitePort,
                     cdpOrigin = cdpPort.HasValue ? $"http://localhost:{cdpPort.Value}" : null,
+                    // Control port of the dev launcher that started us (null when not
+                    // launched via go.sh); see .github/skills/bloom-automation.
+                    launcherControlPort = Program.StartupLauncherPort,
                 }
             );
         }

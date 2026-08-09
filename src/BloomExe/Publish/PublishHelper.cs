@@ -528,6 +528,11 @@ namespace Bloom.Publish
                 foreach (SafeXmlElement elt in page.SafeSelectNodes(".//div"))
                 {
                     StoreFontUsed(elt);
+                    // Only for ePUB: it is the one output that deletes lang="*" and so needs to
+                    // be told the font beforehand. Doing it unconditionally would leave the
+                    // attribute behind in BloomPub, where nothing consumes it.
+                    if (epubMaker != null)
+                        StoreComputedFontForLanguageIndependentText(elt);
                 }
                 //Debug.WriteLine($"Removing {toBeDeleted.Count} elements from page");
                 RemoveTempIds(page); // don't need temporary IDs any more.
@@ -750,6 +755,39 @@ namespace Bloom.Publish
             var fonts = fontFamily.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             // Fonts whose names contain spaces are quoted: remove the quotes.
             return fonts[0].Replace("\"", "");
+        }
+
+        /// <summary>
+        /// The font an element actually resolved to, recorded on the element itself so a later
+        /// step can use it after the browser is gone. See StoreComputedFontForLanguageIndependentText.
+        /// </summary>
+        internal const string kComputedFontAttr = "data-bloom-computed-font";
+
+        /// <summary>
+        /// ePUB export has to delete lang="*" attributes, because "*" is not a valid BCP 47 tag,
+        /// and it then writes the font inline so the text is not left fontless (BL-16624). Which
+        /// font is not something it can work out for itself: the answer depends on the whole
+        /// cascade, including a user's own choice, which StyleEditor stores as
+        /// `.SomeStyle[lang="*"] { font-family: X !important }` -- a rule that stops matching the
+        /// moment that attribute goes.
+        ///
+        /// We are the only part of publishing with a browser, we run before the attribute is
+        /// removed, and we have already measured this element. So record what it resolved to,
+        /// while its temp id still lets us look it up. EpubMaker.RemoveSpuriousLinks consumes the
+        /// attribute and removes it again.
+        /// </summary>
+        private void StoreComputedFontForLanguageIndependentText(SafeXmlElement elt)
+        {
+            if (elt.GetAttribute("lang") != "*")
+                return;
+            var id = elt.GetAttribute("id");
+            if (string.IsNullOrEmpty(id))
+                return;
+            if (!_mapIdToFontInfo.TryGetValue(id, out var fontInfo))
+                return; // e.g. an empty box, which the browser reports no font for; nothing to carry
+            var font = ExtractFontNameFromFontFamily(fontInfo.fontFamily);
+            if (!string.IsNullOrEmpty(font))
+                elt.SetAttribute(kComputedFontAttr, font);
         }
 
         /// <summary>
@@ -1574,6 +1612,41 @@ namespace Bloom.Publish
         public const string DefaultFont = "Andika";
 
         /// <summary>
+        /// The CSS generic font-family keywords. These are not real fonts that live in a file;
+        /// every browser resolves them to some installed font on its own. So when a book asks for
+        /// one of these (e.g. "font-family: serif") there is nothing for us to find, embed, or
+        /// substitute, and we must leave the keyword alone in the book's CSS so the reader's
+        /// browser can resolve it. See BL-16370.
+        /// </summary>
+        private static readonly HashSet<string> s_genericCssFontFamilies = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase
+        )
+        {
+            "serif",
+            "sans-serif",
+            "monospace",
+            "cursive",
+            "fantasy",
+            "system-ui",
+            "ui-serif",
+            "ui-sans-serif",
+            "ui-monospace",
+            "ui-rounded",
+            "math",
+            "emoji",
+            "fangsong",
+        };
+
+        /// <summary>
+        /// True if the given font-family name is a CSS generic keyword (serif, sans-serif, etc.)
+        /// rather than the name of an actual font that Bloom would need to find and embed.
+        /// </summary>
+        public static bool IsGenericCssFontFamily(string fontFamily)
+        {
+            return fontFamily != null && s_genericCssFontFamilies.Contains(fontFamily.Trim());
+        }
+
+        /// <summary>
         /// Checks the wanted fonts for being valid for  embedding, both for licensing and for the type of file
         /// (based on the filename extension).
         /// The list of rejected fonts is returned in badFonts and the list of files to copy for good fonts is
@@ -1611,6 +1684,13 @@ namespace Bloom.Publish
             var filesAlreadyAdded = new HashSet<string>();
             foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
+                // CSS generic font families (serif, sans-serif, monospace, ...) are not real
+                // fonts on disk; the reader's browser resolves them itself. There's nothing to
+                // find or embed, and we must NOT add them to badFonts, because that would cause
+                // us to rewrite the keyword to the default font in the book's CSS. Just leave
+                // the keyword alone and move on. See BL-16370.
+                if (IsGenericCssFontFamily(font.fontFamily))
+                    continue;
                 var fontFile = fontFileFinder.GetFileForFont(
                     font.fontFamily,
                     font.fontStyle,
@@ -1860,7 +1940,8 @@ namespace Bloom.Publish
         }
 
         /// <summary>
-        /// Fix the userModifiedStyles in the HTML DOM to replace any fonts listed in badFonts with the defaultFont
+        /// Fix the font references in the HTML DOM -- both the userModifiedStyles element and any
+        /// inline style attributes -- replacing any fonts listed in badFonts with the defaultFont
         /// value.  Note that ePUB uses namespaces in its XHTML files while BloomPub does not use namespaces.
         /// </summary>
         /// <returns><c>true</c> if any references for bad fonts were fixed, <c>false</c> otherwise.</returns>
@@ -1872,6 +1953,11 @@ namespace Bloom.Publish
             string nsPrefix = ""
         ) // these two arguments needed for processing ePUB files.
         {
+            var fixedSomething = FixInlineStyleReferencesForBadFonts(
+                bookDoc,
+                defaultFont,
+                badFonts
+            );
             // Now for styles defined in the dom...
             var xpath =
                 $"//{nsPrefix}head/{nsPrefix}style[@type='text/css' and @title='userModifiedStyles']";
@@ -1897,10 +1983,59 @@ namespace Bloom.Publish
                 if (cssText != cssTextOrig)
                 {
                     userStylesNode.InnerXml = cssText;
-                    return true;
+                    fixedSomething = true;
                 }
             }
-            return false;
+            return fixedSomething;
+        }
+
+        /// <summary>
+        /// Replace any badFonts named by an element's own style attribute with defaultFont.
+        /// </summary>
+        /// <remarks>
+        /// ePUB export writes the font for language-independent (lang="*") text straight onto the
+        /// element, because the attribute its css rule keys off cannot survive into an ePUB
+        /// (BL-16624). That declaration has to take part in this substitution like every other font
+        /// reference; otherwise the one bit of text we just gave a font to would go on naming a
+        /// font the book is not allowed to package, and a reader would render it in whatever it
+        /// happened to have. Found by Devin on PR #8122.
+        /// </remarks>
+        private static bool FixInlineStyleReferencesForBadFonts(
+            SafeXmlDocument bookDoc,
+            string defaultFont,
+            HashSet<string> badFonts
+        )
+        {
+            var fixedSomething = false;
+            // No namespace prefix needed: "*" matches an element in any namespace, and an
+            // unprefixed attribute is in none.
+            foreach (var elt in bookDoc.SafeSelectNodes("//*[@style]").Cast<SafeXmlElement>())
+            {
+                var styleOrig = elt.GetAttribute("style");
+                if (string.IsNullOrEmpty(styleOrig) || !styleOrig.Contains("font-family"))
+                    continue;
+                var style = styleOrig;
+                foreach (var font in badFonts)
+                {
+                    var name = System.Text.RegularExpressions.Regex.Escape(font);
+                    // The name may be quoted or bare. When it is bare the match has to end at a
+                    // real boundary, or a bad "Andika" would eat the start of "Andika New Basic"
+                    // and leave `font-family: 'Andika' New Basic` behind. The boundary is a
+                    // semicolon, a comma (the name may head a fallback list), or the end of the
+                    // attribute -- an inline declaration often has no trailing semicolon, which is
+                    // why we cannot simply require one as the stylesheet versions above do.
+                    var regex = new System.Text.RegularExpressions.Regex(
+                        $"font-family:\\s*(?:(['\"]){name}\\1|{name}(?=\\s*(?:[;,]|$)))"
+                    );
+                    style = regex.Replace(style, $"font-family: '{defaultFont}'");
+                }
+                if (style != styleOrig)
+                {
+                    elt.SetAttribute("style", style);
+                    fixedSomething = true;
+                }
+            }
+            return fixedSomething;
         }
 
         public static async Task ReportInvalidFontsAsync(

@@ -84,7 +84,21 @@ namespace Bloom
 
             if (DisplayError(e.Exception))
             {
-                //Are we inside a Application.Run() statement?
+                // Are we inside an Application.Run() statement?
+                //
+                // Application.MessageLoop is per-thread: it answers "does the thread this
+                // exception arrived on have a WinForms message loop?", not "is the GUI app
+                // running?". Today that distinction cannot bite: Application.ThreadException
+                // only fires on a thread that is dispatching WinForms messages, and every such
+                // thread in Bloom (the main UI thread, OffScreenBrowser's thread) pumps via
+                // Application.Run, so MessageLoop is true whenever we get here with the GUI up.
+                // But if you ever add a thread that dispatches WinForms messages through a
+                // private Win32 pump instead of Application.Run, a crash on that thread would
+                // take the Environment.Exit branch below, which skips finally blocks —
+                // including the one in Program.Main that calls ReleaseBloomToken() — and can
+                // leave Bloom unable to restart. In that case replace this check with a
+                // "main message loop is running" flag set around Application.Run in
+                // Program.RunBloom; BL-16670 has the worked-out fix.
                 if (Application.MessageLoop)
                     ProgramExit.Exit();
                 else
@@ -162,6 +176,14 @@ namespace Bloom
 
         protected override bool DisplayError(Exception exception)
         {
+            if (Program.RunningE2eTests)
+            {
+                // No human is present during an e2e/visual-regression run to dismiss a modal, so
+                // showing the fatal-error dialog would hang the whole run. Log it instead and return
+                // true so the caller exits normally; the dead Bloom will fail the test.
+                Logger.WriteError("Fatal error during e2e run (dialog suppressed)", exception);
+                return true;
+            }
             ProblemReportApi.ShowProblemDialog(Form.ActiveForm, exception, "", "fatal");
             return true;
         }

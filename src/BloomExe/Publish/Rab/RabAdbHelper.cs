@@ -68,54 +68,28 @@ namespace Bloom.Publish.Rab
             return ResolveAdbPath(GetEnvironmentVariables());
         }
 
-        internal static RabAdbConnectedDevice GetSingleConnectedDevice(
-            string adbPath,
-            string workingDirectory,
-            IWebSocketProgress progress
-        )
+        /// <summary>
+        /// Parses `adb devices -l` output and returns the single connected device, throwing if none
+        /// or more than one is attached. The adb process itself is launched by the caller through the
+        /// cancellation-aware path, so a Cancel during device detection can kill it — `adb devices`
+        /// can stall while it starts the adb server — instead of only taking effect later (BL-16350).
+        /// </summary>
+        internal static RabAdbConnectedDevice SelectSingleConnectedDevice(string adbDevicesOutput)
         {
-            using (var process = new Process())
+            var devices = ParseConnectedDevices(adbDevicesOutput).ToList();
+
+            if (devices.Count == 0)
+                throw new ApplicationException("No Android device is connected over USB.");
+            if (devices.Count > 1)
             {
-                process.StartInfo = new ProcessStartInfo()
-                {
-                    FileName = adbPath,
-                    Arguments = "devices -l",
-                    WorkingDirectory = workingDirectory,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                };
-
-                if (!process.Start())
-                    throw new ApplicationException("Bloom could not start adb.");
-
-                var output = process.StandardOutput.ReadToEnd();
-                var error = process.StandardError.ReadToEnd();
-                process.WaitForExit();
-
-                if (!string.IsNullOrWhiteSpace(error))
-                    progress?.MessageWithoutLocalizing(error, ProgressKind.Warning);
-                if (process.ExitCode != 0)
-                    throw new ApplicationException(
-                        $"adb devices exited with code {process.ExitCode}."
-                    );
-
-                var devices = ParseConnectedDevices(output).ToList();
-
-                if (devices.Count == 0)
-                    throw new ApplicationException("No Android device is connected over USB.");
-                if (devices.Count > 1)
-                {
-                    throw new ApplicationException(
-                        "More than one Android device is connected: "
-                            + string.Join(", ", devices.Select(device => device.DisplayName))
-                            + ". Disconnect extra devices and try again."
-                    );
-                }
-
-                return devices[0];
+                throw new ApplicationException(
+                    "More than one Android device is connected: "
+                        + string.Join(", ", devices.Select(device => device.DisplayName))
+                        + ". Disconnect extra devices and try again."
+                );
             }
+
+            return devices[0];
         }
 
         internal static IReadOnlyList<string> ParseConnectedDeviceSerials(string adbDevicesOutput)

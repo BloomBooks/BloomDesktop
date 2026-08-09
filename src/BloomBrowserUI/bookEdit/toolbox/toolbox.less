@@ -2,6 +2,10 @@
 //which we're doing for convenience so that we don't have to get it in the installer and then import it explictly
 @import (less) "../../node_modules/toastr/toastr.less";
 @import "../../bloomUI.less";
+// The UI @font-face declarations. toolbox.css is linked in toolbox.pug's <head> (present
+// before first paint), making it the ONE source of these declarations for the toolbox
+// document. See bloomUIFontFaces.css for why they must appear only once per document.
+@import (less) "../../bloomUIFontFaces.css";
 
 @toolboxBackgroundColor: @bloom-panelBackground;
 @helpLinkTopMargin: 45px;
@@ -98,6 +102,15 @@ div.ui-accordion-content:not([data-toolid="leveledReaderTool"]):not(
     padding: 0 !important;
     margin: 0 !important;
     top: 0 !important;
+}
+// Reserve space for the vertical scrollbar on the reader tools, so that when
+// their content grows tall enough to need one, the scrollbar's appearance
+// doesn't shrink the content width and reflow/crowd everything. (The dark
+// scrollbar *styling* now comes from the shared `bloomDarkScrollbars` class on
+// the toolbox root — see bloomUI.less — rather than a rule here.) (BL-16585)
+div.ui-accordion-content[data-toolid="leveledReaderTool"],
+div.ui-accordion-content[data-toolid="decodableReaderTool"] {
+    scrollbar-gutter: stable;
 }
 
 .h1 {

@@ -5,6 +5,17 @@ import { spawn } from "node:child_process";
 const isWindows = process.platform === "win32";
 
 /**
+ * Quote a string as a PowerShell single-quoted literal: wrap it in single quotes and
+ * double any embedded single quote. A single-quoted literal is inert (no $, backtick, or
+ * other expansion), so this is the safe way to interpolate an arbitrary checkout path into
+ * the `-Command` process-scan script below without risking mangling or injection.
+ *
+ * @param {string} value - The raw string (e.g. a filesystem path).
+ * @returns {string} A PowerShell literal, including the surrounding single quotes.
+ */
+const toPowerShellLiteral = (value) => `'${String(value).replace(/'/g, "''")}'`;
+
+/**
  * Force-kill a process and ALL of its descendants.
  *
  * This exists because the dev launcher spawns a deep tree (dev.mjs -> Vite plus

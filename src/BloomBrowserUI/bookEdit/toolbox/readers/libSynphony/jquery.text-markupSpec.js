@@ -8,6 +8,15 @@
  */
 import { theOneLibSynphony } from "./synphony_lib";
 import { removeAllHtmlMarkupFromString } from "./jquery.text-markup.ts";
+import {
+    kSentenceTooLongHighlight,
+    kWordNotDecodableHighlight,
+    kWordTooLongHighlight,
+} from "../readerHighlights";
+import {
+    getHighlightTexts,
+    installHighlightPolyfill,
+} from "../../../test/highlightTestSupport";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import $ from "jquery";
 
@@ -19,12 +28,19 @@ describe("jquery.text-markup", function () {
         return div;
     }
 
+    // The reader tools paint violations with ::highlight() pseudo-elements over Ranges rather
+    // than by inserting spans, so this is how a test sees what got marked.
+    function highlighted(highlightName) {
+        return getHighlightTexts(window, highlightName);
+    }
+
     var divTextEntry1;
     var divTextEntry2;
     var divTextEntry3;
 
     beforeEach(function () {
         document.body.innerHTML = "";
+        installHighlightPolyfill(window);
         divTextEntry1 = addDiv("text_entry1");
         divTextEntry2 = addDiv("text_entry2");
         divTextEntry3 = addDiv("text_entry3");
@@ -35,40 +51,152 @@ describe("jquery.text-markup", function () {
     });
 
     it("checkLeveledReader", function () {
+        // The hidden span is one of CKEditor's selection bookmarks, sitting in the middle of
+        // "Three". The markup must see through it: "Thr" + "ee" is one three-letter word, not two.
         var input =
             'Two-word sentence. Thr<span data-cke-bookmark="1" style="display: none;" id="cke_bm_41C">&nbsp;</span>ee <span class="bold">"word"</span> sentence. "This is a six word sentence."';
-        var out2 =
-            'Two-word sentence. <span class="sentence-too-long" data-segment="sentence">Thr<span data-cke-bookmark="1" style="display: none;" id="cke_bm_41C">&nbsp;</span>ee <span class="bold">"word"</span> sentence.</span> <span class="sentence-too-long" data-segment="sentence">"This is a six word sentence."</span>';
-        var out3 =
-            'Two-word sentence. Thr<span data-cke-bookmark="1" style="display: none;" id="cke_bm_41C">&nbsp;</span>ee <span class="bold">"word"</span> sentence. <span class="sentence-too-long" data-segment="sentence">"This is a six word sentence."</span>';
+        // A Range's text includes anything invisible inside it, so the highlight over the second
+        // sentence reads back with the bookmark's non-breaking space still in the middle of
+        // "Three". Only the visible characters are painted.
+        var nbsp = String.fromCharCode(0xa0);
+        var threeWordSentence = `Thr${nbsp}ee "word" sentence.`;
+        var sixWordSentence = '"This is a six word sentence."';
 
         // check 2 word sentences
         $("#text_entry1")
             .html(input)
             .checkLeveledReader({ maxWordsPerSentence: 2 });
-        var result = $("#text_entry1").html();
-        expect(result).toBe(out2);
+        // The DOM must be left exactly as it was; marking it up is what BL-16558 is about.
+        expect($("#text_entry1").html()).toBe(input);
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([
+            threeWordSentence,
+            sixWordSentence,
+        ]);
 
         // check 3 word sentences
         $("#text_entry1")
             .html(input)
             .checkLeveledReader({ maxWordsPerSentence: 3 });
-        result = $("#text_entry1").html();
-        expect(result).toBe(out3);
+        expect($("#text_entry1").html()).toBe(input);
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([
+            sixWordSentence,
+        ]);
     });
 
     it("checkLeveledReader.handlesDivsWithEmbeddedParas", function () {
         var input =
             '<p>Two-word sentence. Three <span class="bold">"word"</span> sentence.<br></p><p>"This is a six word sentence."</p>';
-        var out2 =
-            '<p>Two-word sentence. <span class="sentence-too-long" data-segment="sentence">Three <span class="bold">"word"</span> sentence.</span><br></p><p><span class="sentence-too-long" data-segment="sentence">"This is a six word sentence."</span></p>';
 
         // check 2 word sentences
         $("#text_entry1")
             .html(input)
             .checkLeveledReader({ maxWordsPerSentence: 2 });
-        var result = $("#text_entry1").html();
-        expect(result).toBe(out2);
+        expect($("#text_entry1").html()).toBe(input);
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([
+            'Three "word" sentence.',
+            '"This is a six word sentence."',
+        ]);
+    });
+
+    it("checkLeveledReader marks words that are too long", function () {
+        $("#text_entry1")
+            .html("<p>Cat elephant. Dog.</p>")
+            .checkLeveledReader({ maxGlyphsPerWord: 5 });
+
+        expect($("#text_entry1").html()).toBe("<p>Cat elephant. Dog.</p>");
+        expect(highlighted(kWordTooLongHighlight)).toEqual(["elephant"]);
+    });
+
+    it("checkLeveledReader marks a long word wherever it appears on the page", function () {
+        // The long-word list is cumulative over the page, so a word first seen in the second
+        // paragraph must still be marked in the first one.
+        $("#text_entry1")
+            .html("<p>An elephant.</p><p>Another elephant.</p>")
+            .checkLeveledReader({ maxGlyphsPerWord: 5 });
+
+        expect(highlighted(kWordTooLongHighlight)).toEqual([
+            "elephant",
+            "Another",
+            "elephant",
+        ]);
+    });
+
+    // The Talking Book tool's phrase markers are invisible, zero-width, and saved in the book,
+    // so the reader tools must see straight through them. Unlike Bloom's transient in-page UI
+    // they carry no bloom-ui class, which is why they need their own exclusion.
+    it("checkLeveledReader sees through a Talking Book phrase marker inside a word", function () {
+        const input =
+            '<p>ele<span class="bloom-audio-split-marker">|</span>phant</p>';
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxGlyphsPerWord: 5 });
+
+        expect($("#text_entry1").html()).toBe(input);
+        // One 8-letter word over the limit, not two short ones under it. (The painted Range
+        // spans the marker, so its text still shows up in the highlight.)
+        expect(highlighted(kWordTooLongHighlight)).toEqual(["ele|phant"]);
+    });
+
+    it("checkLeveledReader stops highlighting once the violation is gone", function () {
+        const editable = $("#text_entry1");
+        editable
+            .html("<p>Cat elephant. Dog.</p>")
+            .checkLeveledReader({ maxGlyphsPerWord: 5 });
+        // sanity check that there is something to stop highlighting
+        expect(highlighted(kWordTooLongHighlight)).toEqual(["elephant"]);
+
+        // Raise the limit, as the user would by choosing a higher level.
+        editable.checkLeveledReader({ maxGlyphsPerWord: 20 });
+        expect(highlighted(kWordTooLongHighlight)).toEqual([]);
+    });
+
+    // A <br> ends a line, so each line of a stanza counts as its own sentence rather than the
+    // whole verse counting as one long one. (When the markup worked on HTML, the sentence
+    // splitter saw <br> as a paragraph-ending placeholder; now mapVisibleText gives it a
+    // newline, which that splitter also counts as paragraph-ending.)
+    it("checkLeveledReader treats each <br> line as its own sentence", function () {
+        const input = "<p>One two three<br>four five six</p>";
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxWordsPerSentence: 4 });
+
+        expect($("#text_entry1").html()).toBe(input);
+        // Both lines are 3 words, so neither exceeds 4. Were the <br> only a space, this would
+        // be one 6-word sentence and would be marked.
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([]);
+
+        // Sanity/positive control: a limit of 2 marks each line separately.
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxWordsPerSentence: 2 });
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([
+            "One two three",
+            "four five six",
+        ]);
+    });
+
+    // Locating sentences relies on the splitter returning the text unchanged. It rewrites a
+    // literal "<br>" the user typed as text, which would shift every following offset, so in
+    // that case we skip sentence marking rather than highlight the wrong words.
+    it("checkLeveledReader does not mis-mark when the text contains a literal <br>", function () {
+        const input =
+            "<p>Type &lt;br&gt; to break. This sentence is far too long.</p>";
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxWordsPerSentence: 2 });
+
+        expect($("#text_entry1").html()).toBe(input);
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([]);
+
+        // Sanity/positive control: the same text without the literal "<br>" IS marked, so the
+        // assertion above is meaningful rather than passing for some unrelated reason.
+        $("#text_entry1")
+            .html("<p>Type to break. This sentence is far too long.</p>")
+            .checkLeveledReader({ maxWordsPerSentence: 2 });
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([
+            "Type to break.",
+            "This sentence is far too long.",
+        ]);
     });
 
     // check the bug reported in BL-10119
@@ -105,31 +233,29 @@ describe("jquery.text-markup", function () {
     });
 
     it("marks up invalid words", function () {
+        // "a" is decodable and "ae" is decodable-but-uncollected (we no longer mark those);
+        // "big" uses graphemes the reader does not know yet.
         var input = "a ae big";
-        var out =
-            'a <span class="possible-word" data-segment="word">ae</span> <span class="word-not-found" data-segment="word">big</span>';
         $("#text_entry1")
             .html(input)
             .checkDecodableReader({
                 focusWords: ["a"],
                 knownGraphemes: ["a", "e", "s"],
             });
-        var result = $("#text_entry1").html();
-        expect(result).toBe(out);
+        expect($("#text_entry1").html()).toBe(input);
+        expect(highlighted(kWordNotDecodableHighlight)).toEqual(["big"]);
     });
 
     it("handles the magic word 'word'", function () {
         var input = "a ae word";
-        var out =
-            'a <span class="possible-word" data-segment="word">ae</span> <span class="word-not-found" data-segment="word">word</span>';
         $("#text_entry1")
             .html(input)
             .checkDecodableReader({
                 focusWords: ["a"],
                 knownGraphemes: ["a", "e", "s"],
             });
-        var result = $("#text_entry1").html();
-        expect(result).toBe(out);
+        expect($("#text_entry1").html()).toBe(input);
+        expect(highlighted(kWordNotDecodableHighlight)).toEqual(["word"]);
     });
 
     it("getMaxSentenceLength", function () {
@@ -248,40 +374,87 @@ describe("jquery.text-markup", function () {
         expect(out5).toBe(" This is a test, this is only a test. ");
     });
 
-    it("checkWrapWordsExtraIgnoresEmptyItems", function () {
-        const cssWordNotFound = "word-not-found";
-        const cssPossibleWord = "possible-word";
-        const html = "<p>This is a test.</p>";
-        const notFound = ["", "test", "", "is", ""];
-        const newHtml = theOneLibSynphony.wrap_words_extra(
-            html,
-            notFound,
-            cssWordNotFound,
-            ' data-segment="word"',
-        );
-        expect(newHtml).toBe(
-            '<p>This <span class="word-not-found" data-segment="word">is</span> a <span class="word-not-found" data-segment="word">test</span>.</p>',
-        );
+    it("removeCkEditorMarkup unwraps spans with background-color in style", function () {
+        const input =
+            '<p>pre <span style="background-color: rgb(255, 255, 155);">new text</span> post</p>';
+
+        $("#text_entry1").html(input).removeCkEditorMarkup();
+
+        expect($("#text_entry1").html()).toBe("<p>pre new text post</p>");
     });
 
-    it("checkWrapWordsExtraHandlesExtraWhitespace", function () {
-        const cssWordNotFound = "word-not-found";
-        const cssPossibleWord = "possible-word";
-        const html = "<p> This<em> is </em>a test.</p>";
-        const notFound = ["this", "is", ""];
-        const newHtml = theOneLibSynphony.wrap_words_extra(
-            html,
-            notFound,
-            cssWordNotFound,
-            ' data-segment="word"',
-        );
-        expect(newHtml).toBe(
-            '<p> <span class="word-not-found" data-segment="word">This</span><em> <span class="word-not-found" data-segment="word">is</span> </em>a test.</p>',
-        );
+    it("removeCkEditorMarkup unwraps spans with rgba() background-color", function () {
+        const input =
+            '<p>pre <span style="background-color: rgba(255, 255, 155, 0.5);">new text</span> post</p>';
+
+        $("#text_entry1").html(input).removeCkEditorMarkup();
+
+        expect($("#text_entry1").html()).toBe("<p>pre new text post</p>");
+    });
+
+    it("removeCkEditorMarkup preserves hidden cke_ spans (BL-16490)", function () {
+        // The hidden cke_ spans are CKEditor bookmarks marking the cursor position.
+        // We must leave them intact so the cursor can be restored after the text is
+        // marked up; removing them here made the cursor jump to the start of the box.
+        const input =
+            '<p>pre <span id="cke_1" style="display: none;">hidden</span> post</p>';
+
+        $("#text_entry1").html(input).removeCkEditorMarkup();
+
+        expect($("#text_entry1").html()).toBe(input);
+    });
+
+    it("checkDecodableReader leaves the selection bookmarks in place", function () {
+        // A bookmark span, holding CKEditor's usual zero-width placeholder, sits in the middle
+        // of the word the reader tool is about to mark.
+        const zwsp = String.fromCharCode(0x200b);
+        const input = `<p>bi<span id="cke_bm_1S" style="display: none;">${zwsp}</span>g</p>`;
+        $("#text_entry1")
+            .html(input)
+            .checkDecodableReader({
+                focusWords: ["a"],
+                knownGraphemes: ["a", "e", "s"],
+            });
+
+        // The bookmark must survive: toolbox.ts needs it to put the caret back afterwards.
+        expect($("#text_entry1").html()).toBe(input);
+        // One highlight, not two: the analysis saw "big" as a single word despite the bookmark
+        // splitting it. (The painted Range spans the bookmark, so its text still contains the
+        // invisible character.)
+        expect(highlighted(kWordNotDecodableHighlight)).toEqual([`bi${zwsp}g`]);
+    });
+
+    // The words find_words_extra located, as substrings of the text it searched, so a test can
+    // read its results without doing offset arithmetic.
+    function foundWords(text, words) {
+        return theOneLibSynphony
+            .find_words_extra(text, words)
+            .map((span) => text.substring(span.start, span.end));
+    }
+
+    it("find_words_extra ignores empty items in the word list", function () {
+        const text = "This is a test.";
+        expect(foundWords(text, ["", "test", "", "is", ""])).toEqual([
+            "is",
+            "test",
+        ]);
+    });
+
+    it("find_words_extra matches case-insensitively and around extra whitespace", function () {
+        const text = " This  is  a test.";
+        expect(foundWords(text, ["this", "is", ""])).toEqual(["This", "is"]);
+    });
+
+    it("find_words_extra reports the offsets of each occurrence", function () {
+        const text = "a cat and a cat";
+        expect(theOneLibSynphony.find_words_extra(text, ["cat"])).toEqual([
+            { start: 2, end: 5 },
+            { start: 12, end: 15 },
+        ]);
     });
 
     // The following three tests lock in that the analyzer (getWordsFromHtmlString) and the
-    // highlighter (wrap_words_extra) agree about ZERO WIDTH SPACE (U+200B) being a word
+    // highlighter (find_words_extra) agree about ZERO WIDTH SPACE (U+200B) being a word
     // boundary. They previously disagreed: the analyzer split words on U+200B while the
     // highlighter's \p{Z}/\p{P} boundaries did not match it (U+200B is Unicode category Cf,
     // not Zs), so a decodable word touching a ZWSP was left unmarked or mis-marked. See
@@ -307,46 +480,32 @@ describe("jquery.text-markup", function () {
         ]);
     });
 
-    it("wrap_words_extra matches words bounded by a ZERO WIDTH SPACE (BL-16490)", function () {
+    it("find_words_extra matches words bounded by a ZERO WIDTH SPACE (BL-16490)", function () {
         const zwsp = String.fromCharCode(0x200b);
         // A stray ZWSP sits between two words. Because the analyzer splits on it, both
-        // "cat" and "dog" end up in the word list, and the highlighter must wrap both,
-        // leaving the ZWSP in place between them.
-        const html = `<p>cat${zwsp}dog</p>`;
+        // "cat" and "dog" end up in the word list, and the highlighter must find both.
+        const text = `cat${zwsp}dog`;
         // sanity check: the invisible ZWSP really is present in the input
-        expect(html.indexOf(zwsp)).toBeGreaterThan(-1);
+        expect(text.indexOf(zwsp)).toBeGreaterThan(-1);
 
-        const newHtml = theOneLibSynphony.wrap_words_extra(
-            html,
-            ["cat", "dog"],
-            "word-not-found",
-            ' data-segment="word"',
-        );
-
-        expect(newHtml).toBe(
-            `<p><span class="word-not-found" data-segment="word">cat</span>${zwsp}` +
-                `<span class="word-not-found" data-segment="word">dog</span></p>`,
-        );
-        // the ZWSP must be preserved, not swallowed
-        expect(newHtml.indexOf(zwsp)).toBeGreaterThan(-1);
+        expect(
+            theOneLibSynphony.find_words_extra(text, ["cat", "dog"]),
+        ).toEqual([
+            { start: 0, end: 3 },
+            // 4, not 3: the highlight must not swallow the ZWSP between the two words.
+            { start: 4, end: 7 },
+        ]);
     });
 
-    it("wrap_words_extra matches a word immediately followed by a ZERO WIDTH SPACE (BL-16490)", function () {
+    it("find_words_extra matches a word immediately followed by a ZERO WIDTH SPACE (BL-16490)", function () {
         const zwsp = String.fromCharCode(0x200b);
         // "cat" is decodable; a stray ZWSP sits right after it, before a normal space.
         // Previously the afterWord boundary (\p{Z}/\p{P} only) did not see the ZWSP, so
         // "cat" was left unmarked.
-        const html = `<p>cat${zwsp} sat</p>`;
+        const text = `cat${zwsp} sat`;
 
-        const newHtml = theOneLibSynphony.wrap_words_extra(
-            html,
-            ["cat"],
-            "word-not-found",
-            ' data-segment="word"',
-        );
-
-        expect(newHtml).toBe(
-            `<p><span class="word-not-found" data-segment="word">cat</span>${zwsp} sat</p>`,
-        );
+        expect(theOneLibSynphony.find_words_extra(text, ["cat"])).toEqual([
+            { start: 0, end: 3 },
+        ]);
     });
 });

@@ -84,6 +84,7 @@ import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
+import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
@@ -674,6 +675,7 @@ export function SetupElements(
             const contentElements = $(this).find(
                 "textarea, div.bloom-editable",
             );
+            const originalOrder = contentElements.toArray();
             contentElements.sort((a, b) => {
                 //using negatives so that something with none of these labels ends up with a > score and at the end
                 //reviewSlog
@@ -693,8 +695,17 @@ export function SetupElements(
                 }
                 return 0;
             });
-            //do the actual rearrangement
-            $(this).append(contentElements);
+            //do the actual rearrangement -- but only if something actually needs to move.
+            // append() detaches and re-inserts every element even when the order is already
+            // correct (the normal case for a saved book), and that churn can cost a visible
+            // frame of blank text after a page loads (BL-15300), besides killing the audio
+            // highlight's Ranges and forcing a repair.
+            const orderChanged = contentElements
+                .toArray()
+                .some((el, index) => originalOrder[index] !== el);
+            if (orderChanged) {
+                $(this).append(contentElements);
+            }
         });
 
     //Convert Standard Format Markers in the pasted text to html spans
@@ -1140,6 +1151,7 @@ function OneTimeSetup() {
     hookupLinkHandler();
     setupDragActivityTabControl();
     setupPageLayoutMenu();
+    setupTextContextMenu();
 }
 
 function isTextSelected(): boolean {
@@ -1556,16 +1568,18 @@ export function captureContentForExternalProcessing(
 ): void {
     window.__bloomExternalPageContent = undefined;
 
-    // Optionally auto-fit simple single-image/single-text origami pages so the grown split persists
-    // into the saved HTML. This currently handles both image-above-text and image-left-of-text when
-    // the image is in the first pane. We do this UP FRONT, before the delay-wait below, for two reasons:
+    // Optionally auto-fit image/text origami pages so the fitted split persists into the saved HTML.
+    // This handles two-pane image-above-text and image-left-of-text (image in the first pane), plus
+    // top-to-bottom STACKS of three or more panes holding one illustration and text in the rest —
+    // text above / picture / text below and the like.
+    // We do this UP FRONT, before the delay-wait below, for two reasons:
     //  - It must run on the fully settled, real browser layout (which it now is: bootstrap() and the
     //    load-time fix-ups have run before C# calls us).
-    //  - Growing the image pane means the background image must be re-fit to the new pane size. That
+    //  - Resizing the image pane means the background image must be re-fit to the new pane size. That
     //    re-fit (adjustBackgroundImageSize) is async and registers a requestPageContent delay, so we
     //    kick it off here and let the waitForDelaysThenFinish loop below wait for it to settle before
-    //    we capture. Otherwise we'd save the new split with the OLD (too-small) image, and the image
-    //    would only get corrected later when a user opened the page in the Edit tab.
+    //    we capture. Otherwise we'd save the new split with the OLD (wrongly-sized) image, and the
+    //    image would only get corrected later when a user opened the page in the Edit tab.
     // Never throws out: a failure to fit must not block capturing/saving the page.
     if (fitImageTextSplits) {
         try {

@@ -2210,37 +2210,48 @@ export default class StyleEditor {
 
     public UpdateControlsToReflectAppliedStyle(oldFontName: string) {
         const current = this.getFormatValues();
+        // While we push the new style's values into the controls, their change handlers
+        // must not treat those updates as user edits. The finally is essential: if any
+        // step here throws, leaving ignoreControlChanges stuck true would silently
+        // disable every control in the dialog from then on (the document would stop
+        // responding to them) for the rest of the page's life.
         this.ignoreControlChanges = true;
-
-        // IF the new style changed fonts, we need to reset the font control
-        if (oldFontName !== current.fontName) {
-            get("fonts/metadata", (result) => {
-                const fontMetadata: IFontMetaData[] = result.data;
-                this.updateFontControl(fontMetadata, current.fontName);
-            });
+        try {
+            // IF the new style changed fonts, we need to reset the font control
+            if (oldFontName !== current.fontName) {
+                get("fonts/metadata", (result) => {
+                    const fontMetadata: IFontMetaData[] = result.data;
+                    this.updateFontControl(fontMetadata, current.fontName);
+                });
+            }
+            this.setValueAndUpdateSelect2Control("size-select", current.ptSize);
+            this.setValueAndUpdateSelect2Control(
+                "line-height-select",
+                current.lineHeight,
+            );
+            this.setValueAndUpdateSelect2Control(
+                "word-space-select",
+                current.wordSpacing,
+            );
+            this.setValueAndUpdateSelect2Control(
+                "para-spacing-select",
+                current.paraSpacing,
+            );
+            const buttonIds = this.getButtonIds();
+            for (let i = 0; i < buttonIds.length; i++) {
+                $("#" + buttonIds[i]).removeClass("selectedIcon");
+            }
+            this.selectButtons(current);
+            this.setColorButtonColor("colorSelectButton", current.color);
+            this.changeHiliteProps(
+                current.hiliteTextColor,
+                current.hiliteBgColor,
+                current.color,
+            );
+            this.changeCanvasElementProps(current.padding);
+        } finally {
+            this.ignoreControlChanges = false;
         }
-        this.setValueAndUpdateSelect2Control("size-select", current.ptSize);
-        this.setValueAndUpdateSelect2Control(
-            "line-height-select",
-            current.lineHeight,
-        );
-        this.setValueAndUpdateSelect2Control(
-            "word-space-select",
-            current.wordSpacing,
-        );
-        this.setValueAndUpdateSelect2Control(
-            "para-spacing-select",
-            current.paraSpacing,
-        );
-        const buttonIds = this.getButtonIds();
-        for (let i = 0; i < buttonIds.length; i++) {
-            $("#" + buttonIds[i]).removeClass("selectedIcon");
-        }
-        this.selectButtons(current);
-        this.setColorButtonColor("colorSelectButton", current.color);
-        this.changeHiliteProps(current.color, current.hiliteBgColor);
-        this.changeCanvasElementProps(current.padding);
-        this.ignoreControlChanges = false;
         this.cleanupAfterStyleChange();
     }
 
@@ -2394,6 +2405,11 @@ export default class StyleEditor {
                     this.textColorTitle = results[2].data.text;
 
                     this.boxBeingEdited = targetBox;
+                    // Make sure a freshly opened dialog never starts with its control
+                    // change handlers disabled (e.g. if some earlier failure left this
+                    // flag set); otherwise the dialog looks fine but nothing the user
+                    // chooses affects the document.
+                    this.ignoreControlChanges = false;
                     const styleName =
                         StyleEditor.GetBaseStyleNameForElement(targetBox);
                     const current = this.getFormatValues();

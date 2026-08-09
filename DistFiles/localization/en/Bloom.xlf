@@ -573,14 +573,18 @@
         <note>The string labeled as Caption here is used in the QR Code badge to let the user know what the badge is used for.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
-        <source xml:lang="en">If your caption contains "{0}", Bloom will fill this in with the name of the language.</source>
+        <source xml:lang="en">Bloom shows the BloomLibrary.org address on its own line beneath this caption, so you don't need to include it here. If your caption contains "{0}", Bloom will fill this in with the name of the language.</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption.Description</note>
         <note>{0} must not be translated but appear verbatim.</note>
+        <note>This appears under the "Caption" box in Collection Settings > Advanced, explaining what the user may type there to replace the default QR-badge caption (CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2). "{0}" is shown to the user literally, as something they can type; it is not filled in here.</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText">
-        <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org.</source>
-        <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText</note>
-        <note>{0} will be replaced by a language name</note>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2">
+        <source xml:lang="en">More books in {0} language:</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2</note>
+        <note>The default caption printed under the "Made with Bloom" QR-code badge on the outside back cover of a book. Please keep it short: the whole badge is only a few centimeters wide.</note>
+        <note>{0} must appear verbatim. Bloom replaces it with the name of the collection's language, and prints that name in bold.</note>
+        <note>Please do NOT put a web address in your translation. Bloom automatically prints "BloomLibrary.org/language:xx" on its own line directly beneath this caption. That is why the English ends with a colon; use whatever punctuation introduces a following line in your language.</note>
+        <note>For example, in a Hindi collection the English renders as two lines: "More books in Hindi language:" and then "BloomLibrary.org/language:hi".</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
         <source xml:lang="en">Special Script Settings</source>
@@ -2101,7 +2105,7 @@
         <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
       </trans-unit>
       <trans-unit id="EditTab.NoImageFoundOnClipboard">
-        <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
+        <source xml:lang="en">Bloom did not find an image on your clipboard. Copy one first, then paste again.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
       </trans-unit>
       <trans-unit id="EditTab.NoValidImageFoundOnClipboard">
@@ -2648,6 +2652,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true">
         <source xml:lang="en">Generate a letter and word list report</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport</note>
+        <note>Obsolete as of 6.5 — shortened to "Generate Report" (DecodableReaderTool.GenerateReport) and moved into an outline button at the bottom of the tool.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Sample words in this stage</source>
@@ -2673,6 +2678,7 @@
         <source xml:lang="en">Stage {0} of {1}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNofM</note>
         <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <note>Obsolete as of 6.5 — split into DecodableReaderTool.StageNumber + ReaderTools.OfCount so the two parts can be styled separately in the toolbox.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
@@ -2781,6 +2787,7 @@
         <source xml:lang="en">Level {0} of {1}</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelNofM</note>
         <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <note>Obsolete as of 6.5 — split into LeveledReaderTool.LevelNumber + ReaderTools.OfCount so the two parts can be styled separately in the toolbox.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
         <source xml:lang="en">Max</source>

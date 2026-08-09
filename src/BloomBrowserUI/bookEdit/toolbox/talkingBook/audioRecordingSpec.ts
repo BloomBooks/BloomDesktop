@@ -23,37 +23,61 @@ import { Status } from "./TalkingBookUiState";
 import {
     currentHighlightName,
     splitHighlightNames,
-} from "./audioTextHighlightManager";
+} from "./audioHighlightManager";
+import {
+    FakeHighlightRegistry,
+    getHighlightRegistry,
+    installHighlightPolyfill,
+} from "../../test/highlightTestSupport";
 
-class FakeHighlight {
-    public ranges: Range[];
-
-    public constructor(...ranges: Range[]) {
-        this.ranges = ranges;
-    }
-}
-
-type FakeHighlightRegistry = Map<string, FakeHighlight>;
-type TestCssWithHighlights = {
-    highlights?: FakeHighlightRegistry;
-};
-
-const installPseudoHighlightPolyfill = (targetWindow: Window) => {
-    const targetWindowWithCss = targetWindow as Window & {
-        CSS?: TestCssWithHighlights;
+// A controllable stand-in for the page-frame CanvasElementManager. By default it is DISABLED,
+// so getCanvasElementManager() returns undefined -- exactly how the real one behaves in tests
+// (there is no editable-page bundle) -- and every existing test is unaffected. A test that
+// needs to exercise the audio code's handling of an active canvas element calls __enable() and
+// __setActiveForTest(...). When enabled it is a Proxy so that any method the production code
+// happens to call (e.g. resumeComicEditing during image-description setup) is a safe no-op,
+// while getActiveElement returns the (possibly stale/detached) element the test supplied.
+const mockCanvasElement = vi.hoisted(() => {
+    let activeElement: HTMLElement | undefined = undefined;
+    let enabled = false;
+    const explicit: Record<string, unknown> = {
+        getActiveElement: () => activeElement,
+        setActiveElement: (element: HTMLElement | undefined) => {
+            activeElement = element;
+        },
     };
-    if (!targetWindowWithCss.CSS) {
-        targetWindowWithCss.CSS = {};
-    }
+    const manager = new Proxy(explicit, {
+        get(target, prop: string) {
+            if (prop in target) return target[prop];
+            // Any other method the production code calls is a harmless no-op in tests.
+            return () => undefined;
+        },
+    });
+    return {
+        getManager: () => (enabled ? manager : undefined),
+        __enable: () => {
+            enabled = true;
+        },
+        __setActiveForTest: (element: HTMLElement | undefined) => {
+            activeElement = element;
+        },
+        __reset: () => {
+            activeElement = undefined;
+            enabled = false;
+        },
+    };
+});
 
-    const cssWithHighlights = targetWindowWithCss.CSS;
-    cssWithHighlights.highlights = new Map<string, FakeHighlight>();
-    (
-        targetWindow as Window & {
-            Highlight?: typeof FakeHighlight;
-        }
-    ).Highlight = FakeHighlight;
-};
+vi.mock("../canvas/canvasElementPageBridge", async (importActual) => {
+    const actual =
+        await importActual<
+            typeof import("../canvas/canvasElementPageBridge")
+        >();
+    return {
+        ...actual,
+        getCanvasElementManager: () => mockCanvasElement.getManager(),
+    };
+});
 
 const getPageWindow = (): Window | undefined => {
     const iframe = parent.window.document.getElementById(
@@ -62,20 +86,9 @@ const getPageWindow = (): Window | undefined => {
     return iframe?.contentWindow ?? undefined;
 };
 
+// The audio highlights are registered in the page iframe's document when there is one.
 const getPseudoHighlightsRegistry = (): FakeHighlightRegistry => {
-    const targetWindow = getPageWindow() ?? globalThis.window;
-    const cssWithHighlights = (
-        targetWindow as Window & {
-            CSS?: TestCssWithHighlights;
-        }
-    ).CSS;
-    if (!cssWithHighlights?.highlights) {
-        throw new Error(
-            "Expected CSS.highlights test polyfill to be installed",
-        );
-    }
-
-    return cssWithHighlights.highlights;
+    return getHighlightRegistry(getPageWindow() ?? globalThis.window);
 };
 
 const getSplitHighlightTexts = (): string[][] => {
@@ -131,13 +144,13 @@ const setHighlightedElementFromDom = (recording: AudioRecording) => {
 
 describe("audio recording tests", () => {
     beforeAll(async () => {
-        installPseudoHighlightPolyfill(globalThis.window);
+        installHighlightPolyfill(globalThis.window);
 
         await setupForAudioRecordingTests();
 
         const pageWindow = getPageWindow();
         if (pageWindow) {
-            installPseudoHighlightPolyfill(pageWindow);
+            installHighlightPolyfill(pageWindow);
         }
     });
 
@@ -146,6 +159,7 @@ describe("audio recording tests", () => {
         // when tests finish before timers fire
         theOneAudioRecorder?.clearTimeouts();
         getPseudoHighlightsRegistry().clear();
+        mockCanvasElement.__reset();
     });
 
     // In an earlier version of our API, checkForAnyRecording was designed to fail (404) if there was no recording.
@@ -472,6 +486,36 @@ describe("audio recording tests", () => {
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
+        });
+        // BL-15300 (flicker): newPageReady is deliberately re-fired ~600ms after the first call
+        // (scheduleDelayedNewPageReady) as a settle-timing safety net, so this markup runs a
+        // second time with identical input. It must be idempotent: the second, identical pass
+        // must NOT rewrite the DOM -- doing so re-creates the sentence spans, repainting the text
+        // and dropping/re-adding the audio ::highlight (the "renders twice, once without the
+        // highlight and then with it" flicker). Verify the span nodes are preserved (same objects).
+        it("does not re-create audio-sentence spans on a repeated identical markup pass", () => {
+            const div = $("<div>One. Two.</div>");
+            const recording = new AudioRecording();
+
+            recording.makeAudioSentenceElementsTest(
+                div,
+                RecordingMode.Sentence,
+            );
+            const firstSpans = div.find("span.audio-sentence").toArray();
+            expect(firstSpans.length).toBe(2);
+            const htmlAfterFirst = div.html();
+
+            recording.makeAudioSentenceElementsTest(
+                div,
+                RecordingMode.Sentence,
+            );
+            const secondSpans = div.find("span.audio-sentence").toArray();
+
+            expect(secondSpans.length).toBe(2);
+            // Same DOM node objects, not rebuilt copies:
+            expect(secondSpans[0]).toBe(firstSpans[0]);
+            expect(secondSpans[1]).toBe(firstSpans[1]);
+            expect(div.html()).toBe(htmlAfterFirst);
         });
         it("retains matching sentence spans with same ids.keeps md5s and adds missing ones", () => {
             const div = $(
@@ -1631,6 +1675,56 @@ describe("audio recording tests", () => {
             const firstDiv = getFrameElementById("page", "div1")!;
             expect(recording.getAudioCurrentElement()).toBe(firstDiv);
         });
+
+        // BL-15300 regression (Problem 1): in a picture book (e.g. Moon and Cap) the recordable
+        // text lives inside a canvas element (text over picture). Highlighting text makes that
+        // canvas element the CanvasElementManager's "active" element, and that reference is not
+        // cleared when you navigate to another page. When the next page loads,
+        // setCurrentAudioElementToDefaultAsync used to see the (now detached) active canvas
+        // element and return without highlighting anything -- so after a couple of page turns no
+        // text was highlighted at all. The new page's own text must still get highlighted even
+        // though a stale active canvas element from the previous page is still hanging around.
+        it("still highlights text on a new page when a stale canvas element from the previous page is still active", async () => {
+            setupDefaultApiResponses();
+            mockCanvasElement.__enable();
+
+            const canvasTextPage = (n: number) =>
+                `<div id="page${n}"><div class="bloom-canvas"><div class="bloom-canvas-element"><div class="bloom-translationGroup"><div id="box${n}" class="bloom-editable bloom-visibility-code-on" data-audiorecordingmode="Sentence"><p><span id="s${n}" class="audio-sentence">Page ${n} text.</span></p></div></div></div></div></div>`;
+
+            // Page 1: opens fine and highlights its text.
+            SetupIFrameFromHtml(canvasTextPage(1));
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.Sentence;
+            await recording.handleNewPageReady();
+            expect(getHighlightTexts(currentHighlightName)).toEqual([
+                "Page 1 text.",
+            ]);
+
+            // Simulate the CanvasElementManager keeping page 1's canvas element active.
+            const page1CanvasElement = getPageWindow()!.document.querySelector(
+                ".bloom-canvas-element",
+            ) as HTMLElement;
+            mockCanvasElement.__setActiveForTest(page1CanvasElement);
+
+            // Navigate to page 2: replacing the body detaches page 1's nodes, so the still-active
+            // canvas element reference is now stale (not part of the current page).
+            SetupIFrameFromHtml(canvasTextPage(2));
+            getPseudoHighlightsRegistry().clear();
+            // Real navigation nulls the current highlight during teardown.
+            (
+                recording as unknown as {
+                    highlightedElement: HTMLElement | null;
+                }
+            ).highlightedElement = null;
+
+            await recording.handleNewPageReady();
+
+            // The regression: page 2's text should still be highlighted.
+            expect(getHighlightTexts(currentHighlightName)).toEqual([
+                "Page 2 text.",
+            ]);
+        });
     });
 
     describe("- initializeAudioRecordingMode()", () => {
@@ -2317,6 +2411,90 @@ describe("audio recording tests", () => {
             expect(getHighlightTexts(currentHighlightName)).toEqual(["One."]);
         });
 
+        // BL-15300 regression: on page change the highlight was often missing. Cause: after the
+        // page frame reloads, highlightedElement can be left pointing at a same-id node from the
+        // previous (now detached) document. refreshHighlights reads the highlight registry from
+        // that node's window (null for a detached document) and silently does nothing, so nothing
+        // paints -- and isVisible()/isConnected don't catch it because the stale node is still
+        // "connected" to its old document. ensureHighlight's reestablishCurrentHighlightIfNeeded
+        // must detect the staleness, re-point at the live node, and re-register the highlight.
+        it("re-registers the current highlight against the live page when highlightedElement is stale", () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-editable" data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence">One.</span></p></div></div>',
+            );
+
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.Sentence;
+
+            // Simulate the stale reference: a same-id element that is NOT in the live page
+            // document (as happens after the page frame reloads to a new document).
+            const pageDoc = (
+                parent.window.document.getElementById(
+                    "page",
+                ) as HTMLIFrameElement
+            ).contentDocument!;
+            const stale = pageDoc.createElement("span");
+            stale.id = "span1";
+            stale.className = "audio-sentence";
+            stale.textContent = "One.";
+            (
+                recording as unknown as { highlightedElement: HTMLElement }
+            ).highlightedElement = stale;
+
+            // Nothing registered yet, and the stale node is a different object than the live one.
+            expect(getHighlightTexts(currentHighlightName)).toEqual([]);
+            const liveSpan = getFrameElementById("page", "span1");
+            expect(stale).not.toBe(liveSpan);
+
+            (
+                recording as unknown as {
+                    reestablishCurrentHighlightIfNeeded(): void;
+                }
+            ).reestablishCurrentHighlightIfNeeded();
+
+            // Healed: highlightedElement now points at the LIVE span, and the highlight paints.
+            expect(recording.getAudioCurrentElement()).toBe(liveSpan);
+            expect(getHighlightTexts(currentHighlightName)).toEqual(["One."]);
+        });
+
+        // BL-15300: the ensureHighlight loop (which reestablishCurrentHighlightIfNeeded drives)
+        // keeps running for a few seconds after a page loads. If the toolbox is closed during that
+        // window, handleToolHiding clears the highlight -- but the loop must NOT put it back. So
+        // reestablish must be a no-op while the tool is not showing (isShowing false). Without this
+        // guard the highlight stays stuck on the page after the toolbox is closed.
+        it("does not re-establish the current highlight while the tool is not showing", () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-editable" data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence">One.</span></p></div></div>',
+            );
+
+            const recording = new AudioRecording();
+            recording.recordingMode = RecordingMode.Sentence;
+            (
+                recording as unknown as {
+                    highlightedElement: HTMLElement | null;
+                }
+            ).highlightedElement = getFrameElementById("page", "span1");
+
+            const reestablish = (
+                recording as unknown as {
+                    reestablishCurrentHighlightIfNeeded(): void;
+                }
+            ).reestablishCurrentHighlightIfNeeded.bind(recording);
+
+            // Tool hidden (e.g., toolbox just closed): reestablish must not re-add the highlight.
+            (recording as unknown as { isShowing: boolean }).isShowing = false;
+            expect(getHighlightTexts(currentHighlightName)).toEqual([]);
+            reestablish();
+            expect(getHighlightTexts(currentHighlightName)).toEqual([]);
+
+            // Sanity/positive control: when the tool IS showing, it does establish the highlight
+            // (so the assertion above is meaningful, not a no-op for some unrelated reason).
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            reestablish();
+            expect(getHighlightTexts(currentHighlightName)).toEqual(["One."]);
+        });
+
         it("clears pseudo-element highlights when entering show playback order mode", async () => {
             SetupIFrameFromHtml(
                 '<div id="page1"><div class="bloom-translationGroup"><div class="bloom-editable" data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence" data-test-preselect="true">One.</span></p></div></div></div>',
@@ -2500,6 +2678,89 @@ describe("audio recording tests", () => {
                 [],
             ]);
         });
+
+        // BL-15300 regression (Problem 2): after recording a whole text box and splitting it,
+        // clearing the recording should return the text box to the yellow current highlight.
+        // The split (blue) highlights must be removed AND the yellow current highlight
+        // re-registered. In the old DOM-class model the yellow reappeared automatically once
+        // bloom-postAudioSplit was removed from the .ui-audioCurrent box; with pseudo-element
+        // highlights nothing re-registers it unless clearRecordingAsync asks for a refresh.
+        it("restores the yellow current highlight when a split text-box recording is cleared", async () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="div1" class="bloom-editable audio-sentence bloom-postAudioSplit" data-test-preselect="true" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0"><p><span id="span1" class="bloom-highlightSegment">One.</span> <span id="span2" class="bloom-highlightSegment">Two.</span></p></div></div></div>',
+            );
+
+            setupDefaultApiResponses();
+            vi.spyOn(axios, "post").mockResolvedValue({});
+
+            const recording = new AudioRecording();
+            setHighlightedElementFromDom(recording);
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.TextBox;
+
+            // Simulate the post-split state: blue segment highlights are showing, no yellow.
+            recording.markAudioSplit();
+            expect(getSplitHighlightTexts()).toEqual([["One."], ["Two."], []]);
+            expect(getHighlightTexts(currentHighlightName)).toEqual([]);
+
+            recording.uiState.buttons.clear = Status.Enabled;
+            await recording.clearRecordingAsync();
+
+            // The blue split highlights should be gone...
+            expect(getSplitHighlightTexts()).toEqual([[], [], []]);
+            // ...and the whole text box should be highlighted yellow again.
+            expect(getHighlightTexts(currentHighlightName).join("")).toContain(
+                "One.",
+            );
+            expect(getHighlightTexts(currentHighlightName).join("")).toContain(
+                "Two.",
+            );
+        });
+
+        // BL-15300 regression (Problem 3): the whole-box-vs-first-sentence decision when
+        // switching to Record by Sentence must be based on the current box's actual mode, not a
+        // mode remembered from an earlier switch elsewhere in the (session-long) recorder. Here
+        // the user first works with a by-sentence box, then navigates to a box recorded By Whole
+        // Text Box, clears it, and switches to by-sentence. Only the FIRST sentence should be
+        // highlighted -- previously the whole box was, because the box was never split into spans.
+        it("highlights only the first sentence when switching a whole-text-box box to by-sentence after an earlier by-sentence switch", async () => {
+            setupDefaultApiResponses();
+            vi.spyOn(axios, "post").mockResolvedValue({});
+
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+
+            // 1) Earlier in the session: a by-sentence text box; end on Sentence mode.
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="boxA" class="bloom-editable" data-test-preselect="true" data-audiorecordingmode="Sentence"><p><span id="a1" class="audio-sentence">Alpha one.</span></p></div></div></div>',
+            );
+            setHighlightedElementFromDom(recording);
+            recording.recordingMode = RecordingMode.Sentence;
+            await recording.setRecordingModeAsync(RecordingMode.Sentence);
+
+            // 2) Navigate to a page whose box was recorded By Whole Text Box, and let the tool
+            //    (re)derive the mode for the current box the way handleNewPageReady does.
+            SetupIFrameFromHtml(
+                '<div id="page2"><div class="bloom-translationGroup"><div id="boxB" class="bloom-editable audio-sentence" data-test-preselect="true" data-audiorecordingmode="TextBox"><p>First sentence. Second sentence.</p></div></div></div>',
+            );
+            getFrameElementById("page", "boxB")!.setAttribute(
+                "recordingmd5",
+                "fakeMd5",
+            );
+            setHighlightedElementFromDom(recording);
+            recording.initializeAudioRecordingMode();
+            // Sanity: the current box's mode is correctly read as TextBox.
+            expect(recording.recordingMode).toBe(RecordingMode.TextBox);
+
+            // 3) Clear the recording, then switch to Record by Sentence.
+            recording.uiState.buttons.clear = Status.Enabled;
+            await recording.clearRecordingAsync();
+            await recording.setRecordingModeAsync(RecordingMode.Sentence);
+
+            expect(getHighlightTexts(currentHighlightName)).toEqual([
+                "First sentence.",
+            ]);
+        });
     });
 });
 
@@ -2644,16 +2905,25 @@ export async function setupForAudioRecordingTests() {
         },
     };
 
-    await initializeTalkingBookToolAsync();
-
     // Mock urlPrefix to return the correct base URL for tests
     // The real implementation constructs from iframe.src, but in tests iframe.src is "about:blank"
     // Real format: "/bloom/api/audio/wavFile?id=" + bookFolderUrl + "audio/"
     // In tests, we simulate the full path as if bookFolderUrl was "http://localhost:63315/bloom/C%23Injection/"
+    //
+    // This must go on the PROTOTYPE and BEFORE initializeTalkingBookToolAsync, not on
+    // theOneAudioRecorder afterwards. theOneAudioRecorder does not exist until that call creates
+    // it, and the call itself already sets the player's src. So a mock installed afterwards left
+    // that first src built by the REAL urlPrefix -- a relative URL, which jsdom resolves against
+    // its own base of http://localhost:3000/. Because setCurrentAudioId only refreshes the player
+    // when the audio id CHANGES, a test whose id was already current never overwrote that stale
+    // value, and then compared localhost:3000 against the mocked localhost:63315. It depended on
+    // which ids earlier work happened to leave behind, so it passed locally and failed in CI.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.spyOn(theOneAudioRecorder as any, "urlPrefix").mockReturnValue(
+    vi.spyOn(AudioRecording.prototype as any, "urlPrefix").mockReturnValue(
         "http://localhost:63315/bloom/api/audio/wavFile?id=audio/",
     );
+
+    await initializeTalkingBookToolAsync();
 }
 
 export function StripPlayerSrcNoCacheSuffix(url: string): string {

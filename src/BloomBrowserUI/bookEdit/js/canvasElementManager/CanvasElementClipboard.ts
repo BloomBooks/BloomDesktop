@@ -10,7 +10,11 @@ import {
     notifyToolOfChangedImage,
     wrapWithRequestPageContentDelay,
 } from "../bloomEditing";
-import { isPlaceHolderImage, kImageContainerClass } from "../bloomImages";
+import {
+    isPlaceHolderImage,
+    kImageContainerClass,
+    SetupMetadataButton,
+} from "../bloomImages";
 import {
     adjustTarget,
     correctTabIndex,
@@ -148,7 +152,7 @@ export class CanvasElementClipboard {
             ) ??
             theOneLocalizationManager.getText(
                 "EditTab.NoImageFoundOnClipboard",
-                "Before you can paste an image, copy one onto your 'clipboard', from another program.",
+                "Bloom did not find an image on your clipboard. Copy one first, then paste again.",
             );
         BloomMessageBoxSupport.CreateAndShowSimpleMessageBoxWithLocalizedText(
             message,
@@ -161,7 +165,9 @@ export class CanvasElementClipboard {
     // Otherwise, if there is a bloom canvas on the page, it will pick the one that has the active element
     // or the first one if none has an active element.
     // (If there is no canvas, it returns false.)
-    // If the canvas is empty (including the background), set the background to the image.
+    // If the canvas holds nothing but a background that is still a placeholder, set that
+    // background to the image. (A background that already holds a real image is left alone;
+    // select it first if you want to replace it.)
     // Else if canvas is allowed by the subscription tier, add the image as a canvas/game item.
     // Make it up to 1/3 width and 1/3 height of the canvas, roughly centered on the canvas.
     // Is it a draggable item? Yes, if we are in the "Start" mode of a game.
@@ -200,12 +206,44 @@ export class CanvasElementClipboard {
         );
     }
 
+    // Put a pasted image into an image that is already on the page, then bring the canvas
+    // element up to date the way the ordinary (non-clipboard) image-change path does.
+    // changeImage() in bloomEditing.ts routes through
+    // CanvasElementManager.updateCanvasElementForChangedImage(), which fixes the geometry and,
+    // for a background image, rebuilds the copyright/metadata button. The clipboard path gets
+    // dispatched here before that happens, so it has to do the equivalent itself; forgetting
+    // the metadata button is what BL-16605 was about.
+    // Only background images have a metadata button (see SetupMetadataButton), so there is
+    // nothing to refresh on the overlay path.
+    private replaceImageInCanvasElement(
+        bloomCanvas: HTMLElement,
+        canvasElement: HTMLElement,
+        img: HTMLImageElement,
+        imageInfo: IImageInfo,
+    ): void {
+        changeImageInfo(img, imageInfo);
+        if (canvasElement.classList.contains(kBackgroundImageClass)) {
+            this.host.adjustBackgroundImageSize(
+                bloomCanvas,
+                canvasElement,
+                true,
+            );
+            // changeImageInfo() has already set src and the data-copyright/creator/license
+            // attributes synchronously, so the button we build now reflects the new image.
+            SetupMetadataButton(canvasElement);
+        } else {
+            this.host.adjustContainerAspectRatio(canvasElement, true);
+            adjustTarget(canvasElement, getTarget(canvasElement));
+        }
+        notifyToolOfChangedImage(img);
+    }
+
     public finishPasteImageFromClipboard(imageInfo: IImageInfo): void {
         const bloomCanvas = this.host.getActiveOrFirstBloomCanvasOnPage()!;
         const canvasElements =
             bloomCanvas.getElementsByClassName(kCanvasElementClass);
-
-        // If it's an empty canvas, make this its background image.
+        // If it's an empty canvas, make this its background image.  An empty canvas may already
+        // have a background placeholder image, but no other content.  See BL-16542.
         // A possible special case is the custom game page, where the only canvas element is the
         // header. But that works out to our advantage, since we think a background is unlikely
         // in games, and would prefer to interpret the pasted image as a game item.
@@ -214,36 +252,43 @@ export class CanvasElementClipboard {
             canvasElements[0].classList.contains(kBackgroundImageClass)
         ) {
             const bgimg = canvasElements[0].getElementsByTagName("img")[0];
-            if (isPlaceHolderImage(bgimg.getAttribute("src"))) {
-                changeImageInfo(bgimg, imageInfo);
-                this.host.adjustBackgroundImageSize(
+            // Use the shared placeholder test rather than an exact match on the src: at
+            // runtime a placeholder src is not always the bare "placeHolder.png" we write
+            // into the templates, and every other place in the code that asks "is this
+            // still empty?" goes through isPlaceHolderImage().
+            const src = bgimg?.getAttribute("src");
+            if (bgimg && (!src?.trim() || isPlaceHolderImage(src))) {
+                this.replaceImageInCanvasElement(
                     bloomCanvas,
                     canvasElements[0] as HTMLElement,
-                    true,
+                    bgimg,
+                    imageInfo,
                 );
-                notifyToolOfChangedImage(bgimg);
                 return;
             }
         }
 
-        // If there is an image canvas element (other than the background one) already selected
-        // and it is a placeholder, just set its image.
+        // If an image canvas element is currently selected, replace its image rather than
+        // creating a new overlay on top of it. This applies whether the selected element is the
+        // background image (as when a Standard Layout cover's picture is selected) or an overlay,
+        // and whether or not it currently holds a placeholder. It matches the behavior of the
+        // image context menu's Paste command and the expectation that pasting onto a selected
+        // image replaces that image. See BL-16542.
         const activeElement = this.host.getActiveElement();
-        if (
-            activeElement &&
-            !activeElement.classList.contains(kBackgroundImageClass)
-        ) {
+        if (activeElement) {
             const img = activeElement
                 .getElementsByClassName(kImageContainerClass)[0]
                 ?.getElementsByTagName("img")[0];
-            if (img && isPlaceHolderImage(img.getAttribute("src"))) {
-                changeImageInfo(img, imageInfo);
-                this.host.adjustContainerAspectRatio(
+            if (img) {
+                // Reuse the shared helper rather than duplicating its geometry sequence, so the
+                // background-image case also rebuilds the copyright/metadata button (BL-16605).
+                // Inlining the geometry-only steps here previously skipped that rebuild.
+                this.replaceImageInCanvasElement(
+                    bloomCanvas,
                     activeElement as HTMLElement,
-                    true,
+                    img,
+                    imageInfo,
                 );
-                adjustTarget(activeElement, getTarget(activeElement));
-                notifyToolOfChangedImage(img);
                 return;
             }
         }

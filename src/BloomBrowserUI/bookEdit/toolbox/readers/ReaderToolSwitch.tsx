@@ -25,6 +25,10 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                 size="small"
                 css={css`
                     margin-left: 2px; // by experimentation. We have to override the default -11px.
+                    // Uppercase the label to match the uppercase button labels in
+                    // the reader tool panels (Set Up, Copy Book Stats, etc.).
+                    // (BL-16585)
+                    text-transform: uppercase;
                 `}
                 l10nKey={
                     props.isForLeveled

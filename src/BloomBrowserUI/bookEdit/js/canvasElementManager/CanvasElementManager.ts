@@ -2631,7 +2631,9 @@ export class CanvasElementManager {
     // Otherwise, if there is a bloom canvas on the page, it will pick the one that has the active element
     // or the first one if none has an active element.
     // (If there is no canvas, it returns false.)
-    // If the canvas is empty (including the background), set the background to the image.
+    // If the canvas holds nothing but a background that is still a placeholder, set that
+    // background to the image. (A background that already holds a real image is left alone;
+    // select it first if you want to replace it.)
     // Else if canvas is allowed by the subscription tier, add the image as a canvas/game item.
     // Make it up to 1/3 width and 1/3 height of the canvas, roughly centered on the canvas.
     // Is it a draggable item? Yes, if we are in the "Start" mode of a game.
@@ -2777,6 +2779,14 @@ export class CanvasElementManager {
         ) {
             Comical.update(containerElement);
         }
+
+        // The qtip bubbles belonging to things inside this canvas element (source bubbles, hint
+        // bubbles, and in particular the "Choose topic" link on a data-derived="topic" field)
+        // are not children of it; they live in the page scaling container. So removing the
+        // canvas element would leave them behind until the page is reloaded. Destroy them now,
+        // while the divs they are attached to still exist. This is scoped to this canvas
+        // element, so other canvas elements (e.g., a second topic field) keep their bubbles.
+        BloomSourceBubbles.removeSourceBubbles(textOverPicDiv);
 
         Comical.deleteBubbleFromFamily(textOverPicDiv, containerElement);
 

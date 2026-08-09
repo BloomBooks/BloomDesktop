@@ -106,6 +106,12 @@ namespace Bloom
         internal static string StartupLabel { get; private set; }
         internal static bool StartupAutomation { get; private set; }
 
+        // Control port of the dev launcher (scripts/watchBloomExe.mjs) that started
+        // this Bloom, passed as --launcher-port. When present, DevLauncher watches for
+        // pending C# changes and offers a dev-only toast that asks the launcher to
+        // rebuild and relaunch us.
+        internal static int? StartupLauncherPort { get; private set; }
+
         internal static string StartupRequestedPortSummary =>
             string.Join(
                 ", ",
@@ -113,6 +119,9 @@ namespace Bloom
                 {
                     StartupAutomation ? "automation=true" : null,
                     StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
+                    StartupLauncherPort.HasValue
+                        ? $"launcherPort={StartupLauncherPort.Value}"
+                        : null,
                 }.Where(value => value != null)
             );
 
@@ -352,12 +361,25 @@ namespace Bloom
                 // by the user.
                 if (!Settings.Default.LicenseAccepted)
                 {
-                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
-                    using (var dlg = new LicenseDialog("license.htm"))
-                        if (dlg.ShowDialog() != DialogResult.OK)
-                            return 1;
-                    Settings.Default.LicenseAccepted = true;
-                    Settings.Default.Save();
+                    if (RunningE2eTests)
+                    {
+                        // e2e / visual-regression runs (--e2e) launch Bloom with a collection
+                        // argument and no human to click Accept. Showing the modal LicenseDialog
+                        // would block startup forever (Bloom never opens the collection or starts
+                        // its server), so treat the license as accepted and proceed. Mirrors the
+                        // debugger-prompt skip below.
+                        Settings.Default.LicenseAccepted = true;
+                        Settings.Default.Save();
+                    }
+                    else
+                    {
+                        using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
+                        using (var dlg = new LicenseDialog("license.htm"))
+                            if (dlg.ShowDialog() != DialogResult.OK)
+                                return 1;
+                        Settings.Default.LicenseAccepted = true;
+                        Settings.Default.Save();
+                    }
                 }
 
 #if DEBUG
@@ -365,9 +387,14 @@ namespace Bloom
                 {
                     if (IsLocalizationHarvestingLaunch(args))
                         LocalizationManager.IgnoreExistingEnglishTranslationFiles = true;
-                    else
-                        // This allows us to debug things like  interpreting a URL.
-                        MessageBox.Show("Attach debugger now");
+                    // Commented out because it fired for ANY argument, not just the URL case it was
+                    // meant for. A Debug Bloom launched on a collection path then blocked forever on
+                    // a modal dialog, which no script or external tool can get past (and which looks
+                    // like a hang: alive, no window, no server). Uncomment if you need to attach
+                    // before Bloom interprets its arguments.
+                    //else
+                    //    // This allows us to debug things like  interpreting a URL.
+                    //    MessageBox.Show("Attach debugger now");
                 }
                 var harvest = Environment.GetEnvironmentVariable("HARVEST_FOR_LOCALIZATION");
                 if (
@@ -755,6 +782,8 @@ namespace Bloom
             StartupVitePort = null;
             StartupLabel = null;
             StartupAutomation = false;
+            StartupLauncherPort = null;
+            RunningE2eTests = false;
 
             var remainingArgs = new List<string>();
 
@@ -767,6 +796,14 @@ namespace Bloom
                         "--vite-port",
                         () => StartupVitePort,
                         value => StartupVitePort = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupPortArgument(
+                        args,
+                        ref i,
+                        "--launcher-port",
+                        () => StartupLauncherPort,
+                        value => StartupLauncherPort = value,
                         out errorMessage
                     )
                     || TryHandleStartupStringArgument(
@@ -784,6 +821,14 @@ namespace Bloom
                         "--automation",
                         () => StartupAutomation,
                         value => StartupAutomation = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupFlagArgument(
+                        args,
+                        ref i,
+                        "--e2e",
+                        () => RunningE2eTests,
+                        value => RunningE2eTests = value,
                         out errorMessage
                     )
                 )
@@ -2136,6 +2181,80 @@ namespace Bloom
         // Only the token owner may release it and run Bloom's global temp cleanup on exit.
         private static bool _ownsSingleInstanceToken;
 
+        /// <summary>
+        /// Decides whether a Sentry event is the benign "unobserved Task socket/IO abort" noise
+        /// that we want to drop rather than report. Used by the BeforeSend filter installed in
+        /// SetUpErrorHandling.
+        ///
+        /// Background: the Sentry .NET SDK auto-subscribes to TaskScheduler.UnobservedTaskException.
+        /// Fleck (our WebSocket library, see BloomWebSocketServer) does fire-and-forget socket.Send()
+        /// calls whose faulted Tasks are never observed; when a socket aborts (mostly at app shutdown)
+        /// the finalizer thread surfaces a benign SocketException/IOException and Sentry reports it.
+        /// An earlier IsAvailable-check mitigation (BL-11124) did not stop it, so tens of thousands of
+        /// these events accumulated with zero user impact (Sentry BLOOM-DESKTOP-EQ4 / -E4J / -E9K).
+        ///
+        /// We drop ONLY this exact pattern - an event carrying the UnobservedTaskException mechanism
+        /// whose exception chain contains a benign socket/IO abort type - so genuine unobserved-Task
+        /// bugs are still reported. The decision is carried by exception TYPE plus the mechanism, never
+        /// by message text: the message ("The I/O operation has been aborted...") is localized by the
+        /// user's OS language, which is why it showed up as several separate Sentry issues.
+        /// </summary>
+        internal static bool IsBenignUnobservedTaskSocketNoise(SentryEvent sentryEvent)
+        {
+            var exceptions = sentryEvent.SentryExceptions?.ToList();
+            if (exceptions == null || exceptions.Count == 0)
+                return false;
+
+            // Must have come through the TaskScheduler.UnobservedTaskException integration.
+            // Any (not All) is required here: Sentry attaches the mechanism only to the outer
+            // AggregateException wrapper, never to the inner exceptions in the chain, so
+            // requiring it on every entry would mean the filter never matched anything.
+            var isUnobservedTask = exceptions.Any(e =>
+                e.Mechanism?.Type == "UnobservedTaskException"
+            );
+            if (!isUnobservedTask)
+                return false;
+
+            // ...and the underlying fault must be a benign socket/IO abort (match on type, not
+            // text). At least one benign abort must be present, and nothing else may be in the
+            // chain except the AggregateException wrapper the unobserved-Task path adds: an
+            // AggregateException can aggregate several faults, and if a real bug is mixed in
+            // with the socket noise we still want the report.
+            if (!exceptions.Any(e => IsBenignSocketAbortExceptionType(e.Type)))
+                return false;
+            return exceptions.All(e =>
+                e.Type == "System.AggregateException" || IsBenignSocketAbortExceptionType(e.Type)
+            );
+        }
+
+        /// <summary>
+        /// True for the exception types that represent a benign socket/IO abort or cancellation
+        /// (as opposed to something we would actually want to know about). Matched by full type
+        /// name so it is independent of the OS-localized exception message.
+        /// </summary>
+        private static bool IsBenignSocketAbortExceptionType(string exceptionTypeName)
+        {
+            switch (exceptionTypeName)
+            {
+                // The observed noise is a SocketException, but the abort surfaces from the socket
+                // stack as an IOException just as often (an IOException frequently wraps the
+                // SocketException), and a shutdown race can instead cancel the send. All three are
+                // benign teardown outcomes of an *unobserved* fire-and-forget socket.Send(); this
+                // predicate only ever runs for events already carrying the UnobservedTaskException
+                // mechanism (see IsBenignUnobservedTaskSocketNoise), which is what keeps it from
+                // suppressing these same types when they arrive through a normal, observed path.
+                // The trade-off is accepted deliberately: an unobserved-Task IOException/cancellation
+                // is treated as noise here rather than reported.
+                case "System.Net.Sockets.SocketException":
+                case "System.IO.IOException":
+                case "System.OperationCanceledException":
+                case "System.Threading.Tasks.TaskCanceledException":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         /// ------------------------------------------------------------------------------------
         internal static void SetUpErrorHandling()
         {
@@ -2146,9 +2265,15 @@ namespace Bloom
             {
                 try
                 {
-                    _sentry = SentrySdk.Init(
-                        "https://bba22972ad6b4c2ab03a056f549cc23d@o1009031.ingest.sentry.io/5983534"
-                    );
+                    _sentry = SentrySdk.Init(options =>
+                    {
+                        options.Dsn =
+                            "https://bba22972ad6b4c2ab03a056f549cc23d@o1009031.ingest.sentry.io/5983534";
+                        // Screen out the benign unobserved-Task socket/IO abort noise
+                        // (Sentry BLOOM-DESKTOP-EQ4/E4J/E9K). See IsBenignUnobservedTaskSocketNoise.
+                        options.BeforeSend = sentryEvent =>
+                            IsBenignUnobservedTaskSocketNoise(sentryEvent) ? null : sentryEvent;
+                    });
                     SentrySdk.ConfigureScope(scope =>
                     {
                         scope.SetExtra("channel", ApplicationUpdateSupport.ChannelName);
@@ -2498,6 +2623,30 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
         // Should be set to true if this is being called by Harvester, false otherwise.
         public static bool RunningHarvesterMode { get; set; }
+
+        private static bool _runningE2eTests;
+
+        // True while the visual-regression / e2e suite (see src/BloomVisualRegressionTests) is
+        // driving Bloom. Set by the --e2e command-line flag, which the suite passes when it launches
+        // its own dedicated Bloom. In this mode we suppress modal error dialogs so that a problem
+        // surfaces as a failed API call / logged error and fails the test, instead of popping a
+        // dialog nobody can dismiss and hanging the whole run. See NonFatalProblem.Report and
+        // FatalExceptionHandler.
+        public static bool RunningE2eTests
+        {
+            get => _runningE2eTests;
+            set
+            {
+                _runningE2eTests = value;
+                // Debug.Assert/Debug.Fail (e.g. BloomServer's request-error guard) otherwise pop a
+                // modal Windows assertion dialog. With no human to dismiss it, that dialog freezes
+                // the request/UI thread and every test times out, while hiding the real error behind
+                // it. Route assertions to the trace/log output instead while in e2e mode, and restore
+                // normal behavior when the suite turns the mode back off.
+                foreach (var listener in Trace.Listeners.OfType<DefaultTraceListener>())
+                    listener.AssertUiEnabled = !value;
+            }
+        }
 
         // Show UI for development and testing which isn't shown to the user.
         // e.g. the gfx/wv2 labels and the experimental feature checkbox for wv2.

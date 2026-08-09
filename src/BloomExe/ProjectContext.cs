@@ -163,6 +163,7 @@ namespace Bloom
                                 typeof(AccessibilityCheckApi),
                                 typeof(CollectionSettingsApi),
                                 typeof(SubscriptionSettingsEditorApi),
+                                typeof(E2eTestingApi),
                                 typeof(FeatureStatusApi),
                                 typeof(CollectionTabView),
                                 typeof(CollectionApi),
@@ -200,6 +201,7 @@ namespace Bloom
                                 typeof(WorkspaceTabSelection),
                                 typeof(CopyrightAndLicenseApi),
                                 typeof(ExternalApi),
+                                typeof(BrandingPreviewApi),
                                 typeof(PublishView),
                             }.Contains(t)
                         );
@@ -429,6 +431,11 @@ namespace Bloom
             _scope
                 .Resolve<SubscriptionSettingsEditorApi>()
                 .RegisterWithApiHandler(server.ApiHandler);
+            // Endpoints that exist only to support end-to-end/visual-regression testing. They let a
+            // caller do things no real user should, so we register them only when Bloom was launched
+            // in e2e test mode (--e2e); a normal run never exposes them, in any build configuration.
+            if (Program.RunningE2eTests)
+                _scope.Resolve<E2eTestingApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<FeatureStatusApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<RegistrationApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -469,6 +476,7 @@ namespace Bloom
             _scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ExternalApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<BrandingPreviewApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<LoggerApi>().RegisterWithApiHandler(server.ApiHandler);
         }
 

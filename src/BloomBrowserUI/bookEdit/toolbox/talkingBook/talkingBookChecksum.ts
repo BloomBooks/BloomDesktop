@@ -13,14 +13,23 @@ export function getChecksum(message: string): string {
         return "undefind";
     }
     // Vertical line character ("|") acts as a phrase delimiter in Talking Books.
-    // To perform phrase-level recording, the user can insert a temporary "|" character where he wants a phrase split to happen.
-    // This is now recognized in the list of sentence delimiters, so it will be broken up as an audio-sentence.
-    // Then the user records the audio.
-    // Then the user deletes the vertical line characters.
-    // Now the text should be the desired final state, and audio recordings are possible at a sub-sentence level.
-    // However, we don't want the sentence markup to be updated because the checksums differ (since a character was deleted).
+    // To perform phrase-level recording, the user inserts a "|" wherever a phrase split should
+    // happen. "|" is in the list of sentence delimiters, so each phrase becomes its own
+    // audio-sentence and can be recorded separately.
     //
-    // Thus, our checksum function needs to ignore the vertical line character when computing the checksum.
-    const adjustedMessage = message.replace("|", "");
+    // The bars then stay in the text; the user does not delete them (much older versions of
+    // Bloom did require that). Instead, closing the Talking Book tool replaces each bar with a
+    // zero-width <span class="bloom-audio-split-marker">, so the bars are invisible outside the
+    // tool, and reopening the tool turns them back into real "|" characters.
+    //
+    // Either way the bars are markup rather than content, so the checksum has to ignore them:
+    // adding, moving or removing a bar does not change the words that were recorded, and we
+    // don't want that to make Bloom think a recording no longer matches its text.
+    //
+    // Note the global replace. A single audio-sentence can hold more than one bar, because a run
+    // of adjacent bars is deliberately collapsed into a single split (so "Delta ||| epsilon."
+    // gives the chunks "Delta |||" and "epsilon."), and every bar in it has to be
+    // stripped (BL-16586).
+    const adjustedMessage = message.replace(/\|/g, "");
     return getMd5(adjustedMessage);
 }

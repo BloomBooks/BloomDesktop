@@ -15,6 +15,13 @@ namespace Bloom.MiscUI
             Multiselect = false;
             CheckFileExists = true;
             CheckPathExists = true;
+            // The Windows file dialog otherwise leaves the process's current working directory
+            // wherever the user last browsed, for the rest of the session. Bloom looks for some of
+            // the files it ships with relative to that directory, so letting a dialog move it can
+            // break those lookups long after the dialog is closed. See BL-16577 and BL-16230.
+            // (This only restores the process directory; the dialog still opens where the shell or
+            // our InitialDirectory says it should.)
+            RestoreDirectory = true;
             _dialog.FileOk += (sender, args) =>
             {
                 // Truly enforce the filter. See BL-12929 and BL-13552.

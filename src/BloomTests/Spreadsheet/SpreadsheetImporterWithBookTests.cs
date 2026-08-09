@@ -32,7 +32,7 @@ namespace BloomTests.Spreadsheet
         [OneTimeSetUp]
         public async Task OneTimeSetup()
         {
-            _testFolder = new TemporaryFolder("SpreadsheetImporterWithBookTests");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
             // We need 2 layers of temp folder because BringBookUpToDate will change the name of the book
             // folder to match an imported title.
             _bookFolder = new TemporaryFolder(_testFolder, "Book");

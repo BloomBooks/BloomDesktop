@@ -7,11 +7,15 @@
 #  - savePrefix "": save exact versions so `pnpm add` keeps installs reproducible.
 minimumReleaseAge: 10080
 # Our own packages are exempt from the age gate: we publish them ourselves and
-# often need to consume a release immediately.
+# often need to consume a release immediately. The whole @ethnolib/* scope is
+# exempt (not just language-chooser-react-mui): its siblings — e.g.
+# @ethnolib/find-language and @ethnolib/language-chooser-react-hook — are
+# published together as transitive deps of that package, so gating them just
+# breaks the nightly's floating-dependency update on the day ethnolib releases.
 minimumReleaseAgeExclude:
     - bloom-player
     - comicaljs
-    - "@ethnolib/language-chooser-react-mui"
+    - "@ethnolib/*"
 savePrefix: ""
 
 # Formerly the yarn "resolutions" block: force a single @types/react across the

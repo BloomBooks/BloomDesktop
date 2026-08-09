@@ -505,6 +505,19 @@ namespace Bloom.web.controllers
             model.DuplicatePageManyTimes((int)requestData.numberOfTimes);
         }
 
+        /// <summary>
+        /// Despite the "editView" name, this is NOT reached only from the Edit tab, and the depth
+        /// counter it drives (EditingView.SetModalState) locks navigation for the whole workspace.
+        /// Most dialogs that post here gate it on their mode being Mode.Edit, but the Copyright and
+        /// License dialog does not, and it is reachable from the Publish tab via Publish > Web's
+        /// "Missing Copyright" link. So a dialog opened from Publish can lock and unlock the shared
+        /// navigation flag, which since BL-16654 also greys out the publish-tool switcher.
+        /// We looked at gating this to the Edit tab and decided against it: locking while a modal
+        /// dialog is up is the behavior we want wherever the dialog was opened from, and the gate is
+        /// in the callers rather than here. It is safe today only because that link appears when the
+        /// copyright is missing, which is itself what stops an upload from being in progress — an
+        /// invariant worth knowing about if you change either end.
+        /// </summary>
         public void HandleSetModalState(ApiRequest request)
         {
             lock (request)

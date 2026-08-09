@@ -735,6 +735,14 @@ window.showWorkspaceInitializationFailure = function(message) {
             tabInfo.tabStates.collection = GetTabStateForUi("collection", activeTabId);
             tabInfo.tabStates.edit = GetTabStateForUi("edit", activeTabId);
             tabInfo.tabStates.publish = GetTabStateForUi("publish", activeTabId);
+            // True while something has locked navigation to make itself modal: a BloomLibrary
+            // upload, a Reading App Builder action, or an Edit-tab modal dialog. The tabStates
+            // above already encode this for the main tabs, but the Publish tab also has its own
+            // switcher between publish tools (in a different browser control, so nothing we do
+            // here disables it for free). Reporting the lock itself, rather than making the
+            // Publish tab infer it from the tab states, lets that switcher lock and unlock in
+            // exact step with the main tabs. See BL-16654.
+            tabInfo.navigationLocked = !_tabsEnabled;
             return tabInfo;
         }
 
@@ -1546,6 +1554,8 @@ window.showWorkspaceInitializationFailure = function(message) {
             );
             // Whether we showed the dialog or not we'll check for a new version in 1 minute.
             _applicationUpdateCheckTimer.Enabled = true;
+            // Dev only: does nothing unless the go.sh launcher started this Bloom.
+            DevLauncher.StartMonitoringForSourceChanges();
             SendTopBarState();
         }
 
@@ -1554,6 +1564,11 @@ window.showWorkspaceInitializationFailure = function(message) {
         private void ShowAutoUpdateDialogIfNeeded()
         {
             if (Platform.IsLinux)
+                return;
+            // An automated run has nobody to dismiss a modal dialog. This one is shown as a startup
+            // action, so it would sit on the UI thread in its own message loop for the whole run --
+            // exactly the "dialog nobody can dismiss" that Program.RunningE2eTests exists to avoid.
+            if (Program.RunningE2eTests)
                 return;
             // If Bloom is newly installed or we only had old versions before, this should be 0.
             var isShown = Settings.Default.AutoUpdateDialogShown;
