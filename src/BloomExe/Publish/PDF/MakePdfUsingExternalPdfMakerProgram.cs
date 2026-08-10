@@ -210,20 +210,13 @@ namespace Bloom.Publish.PDF
                     @"Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character."
                 );
 
-                // This message string is intentionally separate because it was added after the previous string had already been localized in most languages.
-                // It's not useful to add if we're already in save memory mode.
-                var msg2 = specs.SaveMemoryMode
-                    ? ""
-                    : L10NSharp.LocalizationManager.GetString(
-                        @"PublishTab.PDF.Error.TrySinglePage",
-                        "The book's images might have exceeded the amount of RAM memory available. Please turn on the \"Use Less Memory\" option which is slower but uses less memory.",
-                        @"Error message displayed in a message dialog box"
-                    ) + Environment.NewLine;
-
+                // We used to follow this with PublishTab.PDF.Error.TrySinglePage, which told the user
+                // to turn on the "Use Less Memory" option. That option was taken out of the UI back in
+                // 5.5 (BL-11954), so ever since then we have been sending people to hunt for a setting
+                // that isn't there, whatever the real cause of the failure was (BL-16684).
                 var fullMsg =
                     String.Format(msg, specs.OutputPdfPath, Environment.NewLine)
                     + Environment.NewLine
-                    + msg2
                     + res.StandardOutput;
 
                 var except = new ApplicationException(fullMsg);
@@ -421,7 +414,6 @@ namespace Bloom.Publish.PDF
         public PublishModel.BookletLayoutMethod BooketLayoutMethod; // NoBooklet,SideFold,CutAndStack,Calendar
         public PublishModel.BookletPortions BookletPortion; // None,AllPagesNoBooklet,BookletCover,BookletPages,InnerContent
         public bool LayoutPagesForRightToLeft; // true if RTL, false if LTR layout
-        public bool SaveMemoryMode; // true if PDF file is to be produced using less memory (but more time)
         public bool BookIsFullBleed; // True if the book is laid out for full-bleed printing (and Enterprise is enabled)
         public bool PrintWithFullBleed; // True if (BookIsFullBleed and) full bleed is requested in the PdfOptions menu and we're not making a booklet
         public string ColorProfile; // the name of the ICC color profile file to use, empty string if none
