@@ -294,9 +294,14 @@ export const LibraryPublishSteps: React.FunctionComponent<{
         );
     };
 
+    // True from the moment the user clicks Cancel until C# reports what became of the upload.
+    // While it is true, UPLOAD BOOK is greyed out, so every path that ends an upload has to
+    // clear it. Missing one leaves the user with no working button at all and no way back
+    // short of leaving the screen, which is how BL-16340 presented.
     const [isCanceling, setIsCanceling] = useState<boolean>(false);
     const handleUploadError = React.useCallback(() => {
         setIsUploading(false);
+        setIsCanceling(false);
     }, []);
 
     useSubscribeToWebSocketForEvent(
@@ -339,6 +344,10 @@ export const LibraryPublishSteps: React.FunctionComponent<{
         kWebSocketEventId_uploadSuccessful,
         (results) => {
             setIsUploading(false);
+            // The user may have asked to cancel and C# finished anyway -- either the cancel
+            // arrived after the upload was committed, or it was delayed getting to C# at all.
+            // Whatever the reason, the upload is over, so the Cancel state has to end with it.
+            setIsCanceling(false);
             setBookUrl(results.url);
             setIsUploadComplete(true);
         },

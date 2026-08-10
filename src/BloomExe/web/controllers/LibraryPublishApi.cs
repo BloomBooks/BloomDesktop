@@ -103,7 +103,15 @@ namespace Bloom.web.controllers
             );
             apiHandler.RegisterEndpointHandler("libraryPublish/setSummary", HandleSetSummary, true);
             apiHandler.RegisterEndpointHandler("libraryPublish/useSandbox", HandleUseSandbox, true);
-            apiHandler.RegisterEndpointHandler("libraryPublish/cancel", HandleCancel, true);
+            // Deliberately handled off the UI thread and without the api sync lock. All this
+            // handler does is set a flag, but its whole purpose is to interrupt an upload which
+            // may be monopolizing both the UI thread (offscreen-browser thumbnailing) and the
+            // lock for minutes at a time. If the cancel had to queue behind the very work it is
+            // trying to stop, the flag could get set only after the upload had passed its last
+            // cancellation check: the upload would run to completion and the user would be left
+            // with a Cancel that did nothing (BL-16340). Compare progress/cancel and
+            // signLanguage/cancelImportVideo, which are registered this way for the same reason.
+            apiHandler.RegisterEndpointHandler("libraryPublish/cancel", HandleCancel, false, false);
             apiHandler.RegisterEndpointHandler(
                 "libraryPublish/getUploadCollisionInfo",
                 HandleGetUploadCollisionInfo,
@@ -163,10 +171,38 @@ namespace Bloom.web.controllers
             request.ReplyWithBoolean(BookUpload.UseSandbox);
         }
 
+        /// <summary>
+        /// Ask the upload to stop. All we do is set the flag that the upload polls between its
+        /// stages; it can take a while to notice, since we don't interrupt a stage (notably PDF
+        /// creation) that is already under way.
+        /// </summary>
         private void HandleCancel(ApiRequest request)
         {
             _progress.CancelRequested = true;
+
+            // If the user clicked Cancel before the upload itself got under way, no upload is
+            // running to notice the flag and report on it. That window is real and not small:
+            // the client shows Cancel from the moment the user commits, but two API round trips
+            // (the subscription check and the "existing copy on server" query) happen before
+            // libraryPublish/upload even arrives. Nothing else would ever tell the client the
+            // cancel took effect -- and the client only ever leaves its Cancel state on that
+            // report -- so make the report here. HandleUpload checks the same flag and declines
+            // to start. (BL-16340)
+            if (!_uploadInProgress)
+                ReportUploadCanceled();
+
             request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Tell the user, and the publish screen, that the upload was cancelled. Sending the
+        /// event matters as much as showing the message: the screen greys out UPLOAD BOOK as
+        /// soon as the user clicks Cancel, and this event is the only thing that brings it back.
+        /// </summary>
+        private void ReportUploadCanceled()
+        {
+            _webSocketProgress.Message("Cancelled", "Upload was cancelled", ProgressKind.Error);
+            _webSocketServer.SendEvent(kWebSocketContext, kWebSocketEventId_uploadCanceled);
         }
 
         private async Task HandleUpload(ApiRequest request)
@@ -181,14 +217,30 @@ namespace Bloom.web.controllers
 
         private bool _changeUploader = false;
 
+        // True from the moment we take charge of an upload until we have reported its outcome.
+        // HandleCancel uses it to work out whether anyone else is going to report the cancel.
+        // Volatile because it is written here on one thread and read by HandleCancel on another.
+        private volatile bool _uploadInProgress;
+
         private async Task HandleUpload(ApiRequest request, bool changeUploader)
         {
             if (request.HttpMethod == HttpMethods.Get)
                 return;
             _changeUploader = changeUploader;
 
-            _progress.CancelRequested = false;
+            // Note that we deliberately do NOT clear CancelRequested here. The user can click
+            // Cancel before this request arrives (see HandleCancel), and clearing it here would
+            // throw that cancel away and upload the book anyway (BL-16340). It is cleared in
+            // HandleCheckSubscriptionMatch, which the client calls at the start of every attempt.
+            if (_progress.CancelRequested)
+            {
+                // A cancel arrived during the pre-upload handshake. HandleCancel has already
+                // told the user, so all that is left to do is not upload.
+                request.PostSucceeded();
+                return;
+            }
 
+            _uploadInProgress = true;
             try
             {
                 await UploadBookAsync();
@@ -196,6 +248,10 @@ namespace Bloom.web.controllers
             catch (Exception)
             {
                 ReportTryAgainDuringUpload();
+            }
+            finally
+            {
+                _uploadInProgress = false;
             }
             request.PostSucceeded();
         }
@@ -251,10 +307,14 @@ namespace Bloom.web.controllers
                 SetParentControlsState(true); // Re-enable UI
             }
 
-            if (_progress.CancelRequested)
+            // A cancel that arrived too late to stop anything must not be reported as though it
+            // had worked: if we got a book id back, the book really is on BloomLibrary now, and
+            // telling the user it was cancelled is a falsehood they might act on. uploadResult is
+            // empty when the upload was abandoned (including by the cancellation checks inside
+            // BookUpload) or failed, and "quiet" when a message has already been given.
+            if (_progress.CancelRequested && string.IsNullOrEmpty(uploadResult))
             {
-                _webSocketProgress.Message("Cancelled", "Upload was cancelled", ProgressKind.Error);
-                _webSocketServer.SendEvent(kWebSocketContext, kWebSocketEventId_uploadCanceled);
+                ReportUploadCanceled();
                 return;
             }
 
@@ -340,6 +400,11 @@ namespace Bloom.web.controllers
                 return;
             }
 
+            // Bulk upload shares _progress with single-book upload but has no Cancel of its own,
+            // so a cancellation left over from an earlier single-book upload would silently stop
+            // it before it started.
+            _progress.CancelRequested = false;
+
             Model.BulkUpload(Model.Book.CollectionSettings.FolderPath, _progress);
             request.PostSucceeded();
         }
@@ -351,6 +416,9 @@ namespace Bloom.web.controllers
                 request.PostSucceeded();
                 return;
             }
+
+            // See the note in HandleUploadCollection about why this is cleared here.
+            _progress.CancelRequested = false;
 
             var folderPath = request.RequiredPostString();
             if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
@@ -415,6 +483,12 @@ namespace Bloom.web.controllers
 
         private void HandleCheckSubscriptionMatch(ApiRequest request)
         {
+            // This is the first thing the client asks for once the user commits to an upload, so
+            // as far as C# is concerned it is where a new attempt begins -- and therefore where
+            // any cancellation left over from an earlier attempt is cleared. Deliberately not in
+            // HandleUpload, which arrives too late to clear it safely; see the note there.
+            _progress.CancelRequested = false;
+
             var subscriptionMatch = Model.CheckSubscriptionMatchBeforeUpload();
             if (subscriptionMatch != null)
             {
