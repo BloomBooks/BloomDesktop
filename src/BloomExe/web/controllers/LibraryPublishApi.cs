@@ -286,9 +286,10 @@ namespace Bloom.web.controllers
                 request.PostSucceeded();
                 return;
             }
+            var toldClientTheOutcome = false;
             try
             {
-                await UploadBookAsync();
+                toldClientTheOutcome = await UploadBookAsync();
             }
             catch (Exception)
             {
@@ -296,15 +297,35 @@ namespace Bloom.web.controllers
             }
             finally
             {
-                // The attempt is over and its outcome has been reported, so a cancel arriving
-                // from here on is too late to mean anything -- see HandleCancel.
+                // The attempt is over, so a cancel arriving from here on is too late to mean
+                // anything -- see HandleCancel.
+                bool mustStillReleaseTheScreen;
                 lock (_uploadStateLock)
+                {
                     _attemptState = UploadAttemptState.Idle;
+
+                    // A cancel can land after UploadBookAsync has already decided how this
+                    // ended. If the upload then finished in a way that emits only an error line
+                    // -- a failure or an exception -- nothing would ever release the screen from
+                    // its Cancel state, and UPLOAD BOOK would stay greyed out for good: the
+                    // original BL-16340 symptom, just through a narrower window. So make the end
+                    // of every attempt reconcile. Sending the event twice is harmless (the
+                    // client just clears the same state again); not sending it is not.
+                    mustStillReleaseTheScreen = _progress.CancelRequested && !toldClientTheOutcome;
+                }
+                if (mustStillReleaseTheScreen)
+                    ReportUploadCanceled(withMessage: false); // the failure was already reported
             }
             request.PostSucceeded();
         }
 
-        private async Task UploadBookAsync()
+        /// <summary>
+        /// Runs the upload and tells the user how it went.
+        /// </summary>
+        /// <returns>True if we sent the client an outcome EVENT (uploadSuccessful or
+        /// uploadCanceled) rather than only a progress message. The caller needs to know,
+        /// because the screen leaves its Cancel state only on such an event.</returns>
+        private async Task<bool> UploadBookAsync()
         {
             _webSocketProgress.Message("Common.Starting", "Starting...");
             SetParentControlsState(false); // Disable UI
@@ -370,24 +391,26 @@ namespace Bloom.web.controllers
                 // left permanently greyed out -- the whole of BL-16340. For "quiet" a message
                 // has already been given, so send the event without adding a second one.
                 ReportUploadCanceled(withMessage: uploadResult != "quiet");
-                return;
+                return true;
             }
 
             if (caughtException != null)
             {
                 ReportBasicErrorDuringUpload();
                 _webSocketProgress.Exception(caughtException);
-                return;
+                return false;
             }
 
             if (uploadResult == "quiet")
             {
                 // no more reporting, sufficient message already given.
+                return false;
             }
             else if (string.IsNullOrEmpty(uploadResult))
             {
                 // Something went wrong, possibly already reported.
                 ReportTryAgainDuringUpload();
+                return false;
             }
             else
             {
@@ -404,6 +427,7 @@ namespace Bloom.web.controllers
                     kWebSocketEventId_uploadSuccessful,
                     result
                 );
+                return true;
             }
         }
 
