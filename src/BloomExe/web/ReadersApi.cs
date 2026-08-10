@@ -774,26 +774,28 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// Efficiently determines if we should write the language data file by comparing
-        /// file size and content bytes to avoid unnecessary writes.
+        /// Determines whether the language data file actually needs writing, by comparing what
+        /// is already on disk with what we are about to write. See the Note on
+        /// SaveSynphonyLanguageData for why avoiding a pointless write matters.
         /// </summary>
-        private bool ShouldWriteLanguageDataFile(string fileName, string newContent)
+        /// <remarks>
+        /// This compares the decoded text, not raw bytes. It used to compare
+        /// Encoding.UTF8.GetBytes(newContent) against the file, but the file is written with
+        /// Encoding.UTF8, which emits a byte-order mark that GetBytes() does not. The lengths
+        /// therefore always differed by those 3 bytes, so this always returned true and the
+        /// optimization never once skipped a write (found by Devin's review of BL-16209).
+        /// Comparing text also means a file saved without a BOM by some older version still
+        /// compares equal, so we don't rewrite it just to add one.
+        /// </remarks>
+        internal static bool ShouldWriteLanguageDataFile(string fileName, string newContent)
         {
             try
             {
                 if (!RobustFile.Exists(fileName))
                     return true;
 
-                var newContentBytes = Encoding.UTF8.GetBytes(newContent);
-                var fileInfo = new FileInfo(fileName);
-
-                // Quick check: if file size is different, content must be different
-                if (fileInfo.Length != newContentBytes.Length)
-                    return true;
-
-                // File sizes match, so compare the actual byte content
-                var existingContentBytes = RobustFile.ReadAllBytes(fileName);
-                return !newContentBytes.SequenceEqual(existingContentBytes);
+                // ReadAllText detects and strips a byte-order mark, so this is BOM-insensitive.
+                return RobustFile.ReadAllText(fileName, Encoding.UTF8) != newContent;
             }
             catch
             {
