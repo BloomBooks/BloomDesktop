@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+using Bloom.ImageProcessing;
 using Bloom.web.controllers;
 using NUnit.Framework;
 using SIL.Code;
@@ -498,6 +499,86 @@ namespace BloomTests.web.controllers
                 "no conversion when the PNG isn't the problem"
             );
             Assert.That(File.Exists(Path.Combine(_bookFolder.Path, newName)), Is.True);
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_TransparentPng_IsLeftAloneEvenThoughItIsBigger()
+        {
+            // A JPEG has no alpha channel, so converting would flatten the see-through areas
+            // onto a solid background — and since we delete the PNG on success, the
+            // transparency would be gone for good. Size is no excuse for that.
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder(
+                "shirtWithTransparentBg.png",
+                "ai-image1.png"
+            );
+            // Sanity: this is a big PNG that really is transparent, so it would otherwise be
+            // converted and the assertion below would be testing nothing.
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: big enough that only the transparency check can stop the conversion"
+            );
+            using (var image = Image.FromFile(Path.Combine(_bookFolder.Path, newName)))
+            {
+                Assert.That(
+                    ImageUtils.HasTransparency(image),
+                    Is.True,
+                    "setup: the test image must actually have transparency"
+                );
+            }
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                result,
+                Is.EqualTo(newName),
+                "a transparent PNG must be kept as a PNG however big it is"
+            );
+            Assert.That(
+                File.Exists(Path.Combine(_bookFolder.Path, newName)),
+                Is.True,
+                "and the transparent file itself must survive"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_UndecodableFile_LeavesItAloneRatherThanThrowing()
+        {
+            // ImportImageIntoBookFolder copies a file it can't process in verbatim, without
+            // ever decoding it, so a file with a valid PNG header but junk content really can
+            // reach us. Throwing here would abort the whole commit — every replacement in it —
+            // over a missed size saving.
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = "ai-image1.png";
+            var newPath = Path.Combine(_bookFolder.Path, newName);
+            var junk = new byte[20000];
+            new byte[] { 137, 80, 78, 71 }.CopyTo(junk, 0); // a PNG header, then nothing valid
+            File.WriteAllBytes(newPath, junk);
+            // Sanity: it sniffs as a PNG and is big enough, so we really do reach the decode.
+            Assert.That(ImageUtils.IsPngFile(newPath), Is.True, "setup");
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: big enough to be a conversion candidate"
+            );
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(result, Is.EqualTo(newName), "an undecodable file is simply not optimized");
+            Assert.That(
+                File.Exists(newPath),
+                Is.True,
+                "and it must still be there for the page to point at"
+            );
         }
 
         [Test]

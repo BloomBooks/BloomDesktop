@@ -1186,6 +1186,10 @@ namespace Bloom.web.controllers
         /// if the saving is real: <see cref="ImageUtils.TryChangeFormatToJpegIfHelpful"/> insists
         /// on at least 50% smaller and cleans up after itself otherwise.
         ///
+        /// A PNG with any transparency is left alone whatever its size — a JPEG cannot carry an
+        /// alpha channel, so converting one would permanently flatten its see-through areas onto
+        /// a solid background.
+        ///
         /// Returns the name (no path) to use for the new file — the JPEG's if we converted,
         /// otherwise <paramref name="newFileName"/> unchanged. Internal for testing.
         /// </summary>
@@ -1225,10 +1229,34 @@ namespace Bloom.web.controllers
             var jpegFileName = ImageUtils.GetUnusedFilename(bookFolderPath, "ai-image", ".jpg");
             var jpegPath = Path.Combine(bookFolderPath, jpegFileName);
             bool keepTheJpeg;
-            // Dispose before touching the PNG again: PalasoImage owns a decoded copy of it.
-            using (var image = PalasoImage.FromFileRobustly(newPath))
+            try
             {
-                keepTheJpeg = ImageUtils.TryChangeFormatToJpegIfHelpful(image, jpegPath);
+                // Dispose before touching the PNG again: PalasoImage owns a decoded copy of it.
+                using (var image = PalasoImage.FromFileRobustly(newPath))
+                {
+                    // A JPEG has no alpha channel, so re-encoding a PNG that has any
+                    // see-through areas would flatten them onto a solid background — and we
+                    // delete the PNG below, so the transparency would be gone for good. Bloom's
+                    // display pipeline guards this very conversion the same way; see the
+                    // HasTransparency test in ImageUtils.AdjustImageForDisplay.
+                    if (ImageUtils.HasTransparency(image.Image))
+                        return newFileName;
+                    keepTheJpeg = ImageUtils.TryChangeFormatToJpegIfHelpful(image, jpegPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Anything we can't decode simply doesn't get optimized. Note that
+                // ImportImageIntoBookFolder may have copied these bytes in verbatim without
+                // ever decoding them (that is its fallback for a file it can't process), so an
+                // undecodable file really can reach us — and letting that abort the whole
+                // commit, losing every replacement in it, would be a poor trade for a missed
+                // size saving.
+                Logger.WriteError(
+                    $"AiImageEditorApi: could not consider re-encoding {newPath} as a JPEG",
+                    ex
+                );
+                return newFileName;
             }
             if (!keepTheJpeg)
                 return newFileName;
