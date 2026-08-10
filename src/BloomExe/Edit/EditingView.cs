@@ -336,8 +336,11 @@ namespace Bloom.Edit
                 Cursor = Cursors.WaitCursor;
                 if (_model.GetBookHasChanged())
                 {
-                    //even before showing, we need to clear some things so the user doesn't see the old stuff
-                    _pageListView.Clear();
+                    // Even before showing, we need to clear things out so the user doesn't see the
+                    // old stuff. As well as the page list, this blanks the main content browser,
+                    // which otherwise keeps showing a page of the previously edited book until the
+                    // new book finishes navigating (BL-15971).
+                    ClearOutDisplay();
                 }
                 _model.OnBecomeVisible();
                 Logger.WriteEvent("Entered Edit Tab");

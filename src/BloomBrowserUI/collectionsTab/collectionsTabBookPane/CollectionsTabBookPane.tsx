@@ -24,6 +24,7 @@ import {
 } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { BookInfoIndicator } from "../../react_components/BookInfoIndicator";
 import { useGetFeatureStatus } from "../../react_components/featureStatus";
+import { useWorkspaceTabInfo } from "../../react_components/TopBar/TopBar";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
@@ -133,9 +134,13 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         collectionKind,
     ]);
 
+    // While C# has locked workspace navigation (e.g. it is still loading a newly selected
+    // book), this button must be disabled in step with the main tabs (BL-15971).
+    const navigationLocked = useWorkspaceTabInfo().navigationLocked;
+
     // Note: If canMakeBook is true, then saveable is probably false (the source book is likely not in the editable collection),
     // but you still want the button to be enabled
-    const isButtonEnabled = canMakeBook || saveable;
+    const isButtonEnabled = (canMakeBook || saveable) && !navigationLocked;
 
     const editOrMakeButton: JSX.Element | boolean = collectionKind !==
         "error" && (
