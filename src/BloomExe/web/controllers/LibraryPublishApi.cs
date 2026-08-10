@@ -289,12 +289,14 @@ namespace Bloom.web.controllers
             }
             if (alreadyCancelled)
             {
-                // The user cancelled during the pre-upload round trips, yet the client has still
-                // asked us to upload. That is a real path, not a stray request: the "this book is
-                // already on BloomLibrary" dialog can still be on screen after a cancel, and each
-                // of its buttons posts here. Say so rather than declining in silence, which would
-                // leave the user pressing a button that does nothing at all. (BL-16340)
-                ReportUploadCanceled();
+                // The user cancelled and this upload request is what is left of the attempt --
+                // most often one the client had already posted, which then queued behind the UI
+                // thread while the lock-free cancel overtook it. HandleCancel has therefore
+                // already said "Upload was cancelled"; saying it again would put two identical
+                // red lines in the log for a single click. Send the event only: it costs nothing
+                // (the client just clears the same state again) and guarantees the screen is
+                // released even if this request is the last thing to happen. (BL-16340)
+                ReportUploadCanceled(withMessage: false);
                 request.PostSucceeded();
                 return;
             }
@@ -611,10 +613,11 @@ namespace Bloom.web.controllers
             // "already on BloomLibrary" dialog, which can still be on screen after the user
             // cancelled; without this check we would give the book a brand-new instance id on
             // disk and then decline to upload it, leaving its identity permanently changed for
-            // an upload that never happened. (BL-16340)
+            // an upload that never happened. Event only, for the same reason as in HandleUpload:
+            // the cancellation has already been announced. (BL-16340)
             if (_progress.CancelRequested)
             {
-                ReportUploadCanceled();
+                ReportUploadCanceled(withMessage: false);
                 request.PostSucceeded();
                 return;
             }
