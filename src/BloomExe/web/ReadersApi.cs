@@ -741,17 +741,23 @@ namespace Bloom.Api
         /// records of "when things changed" and so forth.</Note>
         private void SaveSynphonyLanguageData(string jsonString)
         {
-            // insert LangName and LangID if missing
+            // insert LangName and LangID if missing.
+            // JsonConvert.ToString() supplies the enclosing quotes and escapes anything in the
+            // value that JSON would otherwise choke on; a display name is arbitrary user text and
+            // may contain a double quote or backslash (BL-16209). A language tag is far more
+            // constrained (it also has to survive being put in a file name just below), but it
+            // goes through the same escaping so this method has no hand-quoted values left.
             if (jsonString.Contains("\"LangName\":\"\""))
                 jsonString = jsonString.Replace(
                     "\"LangName\":\"\"",
-                    "\"LangName\":\"" + CurrentBook.BookData.Language1.Name + "\""
+                    "\"LangName\":"
+                        + JsonConvert.ToString(CurrentBook.BookData.Language1.Name ?? "")
                 );
 
             if (jsonString.Contains("\"LangID\":\"\""))
                 jsonString = jsonString.Replace(
                     "\"LangID\":\"\"",
-                    "\"LangID\":\"" + CurrentBook.BookData.Language1.Tag + "\""
+                    "\"LangID\":" + JsonConvert.ToString(CurrentBook.BookData.Language1.Tag ?? "")
                 );
 
             var fileName = String.Format(
