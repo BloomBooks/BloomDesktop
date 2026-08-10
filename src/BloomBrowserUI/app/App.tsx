@@ -4,13 +4,13 @@ import "App.less";
 import "../bookEdit/workspaceRoot";
 import { CollectionsTabPane } from "../collectionsTab/CollectionsTabPane";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
+import { TopBar } from "../react_components/TopBar/TopBar";
 import {
     defaultWorkspaceTabState,
     getActiveWorkspaceTab,
-    TopBar,
     useWorkspaceTabInfo,
     WorkspaceTabId,
-} from "../react_components/TopBar/TopBar";
+} from "../react_components/TopBar/workspaceTabInfo";
 import { PublishTabPane } from "../publish/PublishTab/PublishTabPane";
 import { kPanelBackground } from "../bloomMaterialUITheme";
 import { EditTabPane } from "./EditTabPane";

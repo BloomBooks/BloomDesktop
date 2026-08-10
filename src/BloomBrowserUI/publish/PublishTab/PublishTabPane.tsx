@@ -30,7 +30,7 @@ import {
 import { AboutDialogLauncher } from "../../react_components/aboutDialog";
 import { RegistrationDialogEventLauncher } from "../../react_components/registration/registrationDialogLauncher";
 import { RequiresSubscriptionOverlayWrapper } from "../../react_components/requiresSubscription";
-import { useWorkspaceTabInfo } from "../../react_components/TopBar/TopBar";
+import { useWorkspaceTabInfo } from "../../react_components/TopBar/workspaceTabInfo";
 
 export const CheckoutNeededScreen: React.FunctionComponent<{
     titleForDisplay: string;
