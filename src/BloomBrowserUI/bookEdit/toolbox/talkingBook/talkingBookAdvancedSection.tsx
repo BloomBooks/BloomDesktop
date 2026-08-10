@@ -41,6 +41,15 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
         props.recordingMode === RecordingMode.TextBox &&
         !!wholeTextBoxAudioFeatureStatus?.enabled &&
         props.hasRecordableDivs;
+    // The "By Sentence" radio and the tooltip wrapped around it must agree about when the
+    // option is unavailable. They used to test different things, so the tooltip could explain
+    // a disabled state the user was not actually in: it went by whether the page had any audio
+    // at all, while the radio went by whether there was a whole-text-box recording in the way.
+    // The radio's rule is the correct one, so both now read it from here (BL-16639).
+    const sentenceModeDisabled =
+        !props.hasRecordableDivs ||
+        // we don't allow you to go from textbox to sentence mode if you have a recording of the whole box
+        props.haveACurrentTextboxModeRecording;
     // The toolbox is currently its own iframe, so we can't spill out to the left yet.
     // Unfortunately, we can't spill out the bottom without bad side effects either (BL-12366), so we go topside.
     const commonTooltipProps = {
@@ -129,11 +138,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                                 l10nKey:
                                     "EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip",
                             }}
-                            showDisabled={
-                                !props.hasRecordableDivs ||
-                                // we don't allow you to go from textbox to sentence mode if you have audio
-                                props.hasAudio
-                            }
+                            showDisabled={sentenceModeDisabled}
                             // When there is nothing recordable on this page, the tooltip around the
                             // whole Recording Mode group already explains that. Adding a tip here too
                             // would leave two tooltips overlapping on the same hover, and this one
@@ -148,12 +153,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             {...commonTooltipProps}
                         >
                             <MuiRadio
-                                disabled={
-                                    !props.hasRecordableDivs ||
-                                    // we don't allow you to go from textbox to sentence mode if you have audio
-                                    //props.hasAudio
-                                    props.haveACurrentTextboxModeRecording
-                                }
+                                disabled={sentenceModeDisabled}
                                 value={RecordingMode.Sentence}
                                 label="By Sentence"
                                 l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeSentence"
