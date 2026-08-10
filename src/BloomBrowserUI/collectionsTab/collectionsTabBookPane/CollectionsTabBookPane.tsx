@@ -24,7 +24,7 @@ import {
 } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { BookInfoIndicator } from "../../react_components/BookInfoIndicator";
 import { useGetFeatureStatus } from "../../react_components/featureStatus";
-import { useWorkspaceTabInfo } from "../../react_components/TopBar/TopBar";
+import { useWorkspaceTabInfo } from "../../react_components/TopBar/workspaceTabInfo";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
