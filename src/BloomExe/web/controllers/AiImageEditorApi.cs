@@ -1186,9 +1186,12 @@ namespace Bloom.web.controllers
         /// if the saving is real: <see cref="ImageUtils.TryChangeFormatToJpegIfHelpful"/> insists
         /// on at least 50% smaller and cleans up after itself otherwise.
         ///
-        /// A PNG with any transparency is left alone whatever its size — a JPEG cannot carry an
-        /// alpha channel, so converting one would permanently flatten its see-through areas onto
-        /// a solid background.
+        /// A PNG we can see is transparent is left alone whatever its size, because a JPEG cannot
+        /// carry an alpha channel and converting one would permanently flatten its see-through
+        /// areas onto a solid background. Note the limit of "can see": for an ordinary bitmap
+        /// <see cref="ImageUtils.HasTransparency"/> samples only the top-left corner, so a PNG
+        /// transparent purely in its interior can still slip through and be flattened. That is a
+        /// known, accepted gap rather than an oversight — see the review thread on PR #8188.
         ///
         /// Returns the name (no path) to use for the new file — the JPEG's if we converted,
         /// otherwise <paramref name="newFileName"/> unchanged. Internal for testing.
@@ -1269,8 +1272,21 @@ namespace Bloom.web.controllers
                 return newFileName;
             }
             // Nothing references the PNG now, and leaving it in the book folder would keep
-            // exactly the bulk we just converted away from.
-            RobustFile.Delete(newPath);
+            // exactly the bulk we just converted away from. But a momentarily locked file (a
+            // virus scanner, the host still serving it) must not abort the commit: we already
+            // have the JPEG, so a PNG we failed to delete is strictly better than discarding
+            // every replacement in the request.
+            try
+            {
+                RobustFile.Delete(newPath);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError(
+                    $"AiImageEditorApi: converted {newPath} to a JPEG but could not delete it",
+                    ex
+                );
+            }
             return jpegFileName;
         }
 
