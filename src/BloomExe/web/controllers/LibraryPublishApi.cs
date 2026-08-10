@@ -178,23 +178,27 @@ namespace Bloom.web.controllers
         /// </summary>
         private void HandleCancel(ApiRequest request)
         {
-            // If the user clicked Cancel before the upload itself got under way, no upload is
-            // running to notice the flag and report on it. That window is real and not small:
-            // the client shows Cancel from the moment the user commits, but two API round trips
-            // (the subscription check and the "existing copy on server" query) happen before
-            // libraryPublish/upload even arrives. Nothing else would ever tell the client the
-            // cancel took effect -- and the client only ever leaves its Cancel state on that
-            // report -- so make the report here. HandleUpload takes the same lock and declines
-            // to start. (BL-16340)
+            // Whether we announce the cancellation ourselves depends on how far the attempt has
+            // got. Only in StartingUp is there nobody else to do it: the client shows Cancel from
+            // the moment the user commits, but two API round trips (the subscription check and
+            // the "existing copy on server" query) happen before libraryPublish/upload arrives,
+            // so during those there is no upload running to notice the flag -- and the screen
+            // only ever leaves its Cancel state on such a report. While Uploading, UploadBookAsync
+            // reports whatever becomes of it. When Idle we must stay SILENT: the attempt is
+            // already over, and announcing a cancellation then would contradict the outcome the
+            // user was just given -- telling someone their upload was cancelled seconds after
+            // being told it succeeded is worse than saying nothing. (BL-16340)
             bool nobodyElseWillReportIt;
             lock (_uploadStateLock)
             {
                 _progress.CancelRequested = true;
-                nobodyElseWillReportIt = !_uploadInProgress;
+                nobodyElseWillReportIt = _attemptState == UploadAttemptState.StartingUp;
+                if (nobodyElseWillReportIt)
+                    _attemptState = UploadAttemptState.Idle; // we are about to report it
             }
 
             // Outside the lock: this sends a websocket message, and the lock exists only to make
-            // the flag pair above indivisible.
+            // the state read/write above indivisible.
             if (nobodyElseWillReportIt)
                 ReportUploadCanceled();
 
@@ -227,15 +231,31 @@ namespace Bloom.web.controllers
 
         private bool _changeUploader = false;
 
-        // True from the moment we take charge of an upload until we have reported its outcome.
-        // HandleCancel uses it to work out whether anyone else is going to report the cancel.
-        private bool _uploadInProgress;
+        /// <summary>
+        /// How far the current upload attempt has got, as C# sees it. It exists so HandleCancel
+        /// can tell whether anyone else is going to report a cancellation -- and, just as
+        /// importantly, whether the attempt is already over and it should say nothing at all.
+        /// </summary>
+        private enum UploadAttemptState
+        {
+            /// No attempt is under way, or the last one's outcome has already been reported.
+            Idle,
 
-        // Makes "is a cancel already pending?" and "an upload is now running" one indivisible
-        // step, shared with HandleCancel. Without it the two could interleave such that
-        // HandleCancel reported the cancel AND the upload started anyway, so the cancel got
-        // reported twice. Only ever held across these two field reads/writes -- never across
-        // the upload, or a websocket send.
+            /// The client has committed to an upload and is making the pre-upload round trips,
+            /// but libraryPublish/upload has not arrived yet.
+            StartingUp,
+
+            /// An upload is running; UploadBookAsync will report whatever becomes of it.
+            Uploading,
+        }
+
+        private UploadAttemptState _attemptState = UploadAttemptState.Idle;
+
+        // Guards _attemptState together with _progress.CancelRequested, so that reading one and
+        // writing the other is a single indivisible step. Without it the two could interleave
+        // such that HandleCancel reported the cancel AND the upload started anyway, so the
+        // cancel got reported twice. Only ever held across those field reads/writes -- never
+        // across the upload, the HTTP response, or a websocket send.
         private readonly object _uploadStateLock = new object();
 
         private async Task HandleUpload(ApiRequest request, bool changeUploader)
@@ -253,12 +273,16 @@ namespace Bloom.web.controllers
             {
                 alreadyCancelled = _progress.CancelRequested;
                 if (!alreadyCancelled)
-                    _uploadInProgress = true;
+                    _attemptState = UploadAttemptState.Uploading;
             }
             if (alreadyCancelled)
             {
-                // A cancel arrived during the pre-upload handshake. HandleCancel has already
-                // told the user, so all that is left to do is not upload.
+                // The user cancelled during the pre-upload round trips, yet the client has still
+                // asked us to upload. That is a real path, not a stray request: the "this book is
+                // already on BloomLibrary" dialog can still be on screen after a cancel, and each
+                // of its buttons posts here. Say so rather than declining in silence, which would
+                // leave the user pressing a button that does nothing at all. (BL-16340)
+                ReportUploadCanceled();
                 request.PostSucceeded();
                 return;
             }
@@ -272,8 +296,10 @@ namespace Bloom.web.controllers
             }
             finally
             {
+                // The attempt is over and its outcome has been reported, so a cancel arriving
+                // from here on is too late to mean anything -- see HandleCancel.
                 lock (_uploadStateLock)
-                    _uploadInProgress = false;
+                    _attemptState = UploadAttemptState.Idle;
             }
             request.PostSucceeded();
         }
@@ -431,8 +457,9 @@ namespace Bloom.web.controllers
 
             // Bulk upload shares _progress with single-book upload but has no Cancel of its own,
             // so a cancellation left over from an earlier single-book upload would silently stop
-            // it before it started.
-            _progress.CancelRequested = false;
+            // it before it started. Taken under the same lock as every other write to this flag.
+            lock (_uploadStateLock)
+                _progress.CancelRequested = false;
 
             Model.BulkUpload(Model.Book.CollectionSettings.FolderPath, _progress);
             request.PostSucceeded();
@@ -447,7 +474,8 @@ namespace Bloom.web.controllers
             }
 
             // See the note in HandleUploadCollection about why this is cleared here.
-            _progress.CancelRequested = false;
+            lock (_uploadStateLock)
+                _progress.CancelRequested = false;
 
             var folderPath = request.RequiredPostString();
             if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
@@ -516,7 +544,11 @@ namespace Bloom.web.controllers
             // as far as C# is concerned it is where a new attempt begins -- and therefore where
             // any cancellation left over from an earlier attempt is cleared. Deliberately not in
             // HandleUpload, which arrives too late to clear it safely; see the note there.
-            _progress.CancelRequested = false;
+            lock (_uploadStateLock)
+            {
+                _progress.CancelRequested = false;
+                _attemptState = UploadAttemptState.StartingUp;
+            }
 
             var subscriptionMatch = Model.CheckSubscriptionMatchBeforeUpload();
             if (subscriptionMatch != null)
@@ -539,6 +571,18 @@ namespace Bloom.web.controllers
 
         private async Task HandleUploadAfterChangingBookId(ApiRequest request)
         {
+            // Check for a pending cancel BEFORE changing anything. This is reached from the
+            // "already on BloomLibrary" dialog, which can still be on screen after the user
+            // cancelled; without this check we would give the book a brand-new instance id on
+            // disk and then decline to upload it, leaving its identity permanently changed for
+            // an upload that never happened. (BL-16340)
+            if (_progress.CancelRequested)
+            {
+                ReportUploadCanceled();
+                request.PostSucceeded();
+                return;
+            }
+
             if (!Model.ChangeBookInstanceId(_progress))
             {
                 request.Failed("Can't fix ID because in TC");

@@ -91,6 +91,11 @@ namespace BloomTests.web
         /// requiresSync false, or it queues behind the very request it exists to interrupt and
         /// the flag it sets arrives too late to stop anything. libraryPublish/cancel is the case
         /// this was written for (BL-16340); progress/cancel relies on the same property.
+        ///
+        /// Parking one request inside the lock needs a second worker to be free to serve the
+        /// interrupting one. BloomServer starts Math.Max(ProcessorCount, 2) of them, so there is
+        /// always at least one spare; were that ever reduced to a single worker this would fail
+        /// for a reason that has nothing to do with the lock.
         /// </summary>
         [Test]
         public void RequestNotRequiringSync_IsServedWhileAnotherRequestHoldsTheSyncLock()
