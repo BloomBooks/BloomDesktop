@@ -384,6 +384,11 @@ namespace Bloom.Edit
         {
             if (details.FromTab == Workspace.WorkspaceTab.edit)
             {
+                // Leaving the tab means no page will load to run whatever was queued for the next
+                // page load (see RunAfterNextPageLoad) — and it was queued for the page we are
+                // leaving, so it must not spring to life if the user comes back to that page later.
+                _doAfterNextPageLoad = null;
+
                 // When an external tool has overwritten the current book on disk (see
                 // ReloadCurrentBookDiscardingEdits), we are leaving the Edit tab specifically to
                 // discard the unsaved page. In that case reload from disk instead of saving, so the
@@ -2128,11 +2133,47 @@ namespace Bloom.Edit
         public void HandlePageDomLoadedEvent(string pageId)
         {
             var nowEditing = _stateMachine.ToEditing(pageId);
+            if (nowEditing)
+            {
+                // Run whatever was queued for "the browser has a page again" (see
+                // RunAfterNextPageLoad). Taken and cleared before invoking, so it fires at most
+                // once even if it throws, and so an action that queues another one works.
+                // Before AdvanceUpdatingAllPages, which may navigate straight off this page.
+                var afterPageLoad = _doAfterNextPageLoad;
+                _doAfterNextPageLoad = null;
+                afterPageLoad?.Invoke(pageId);
+            }
             // If we are in the middle of the "Update Book" per-page pass, a page finishing loading
             // (which means the edit-tab page setup code has run on it) is our cue to save it and
             // move on to the next page. See StartUpdatingAllPages().
             if (nowEditing && _updatingAllPages)
                 AdvanceUpdatingAllPages(pageId);
+        }
+
+        // The one action queued by RunAfterNextPageLoad, or null.
+        private Action<string> _doAfterNextPageLoad;
+
+        /// <summary>
+        /// Arrange for <paramref name="action"/> to run the next time a page finishes loading in
+        /// the browser, passing it that page's id.
+        ///
+        /// This exists for callers that must save the current page before doing something in the
+        /// browser that needs the saved book DOM to be up to date. Saving strips the live page, so
+        /// it always ends by re-navigating to it (see EditingStateMachine) — which means
+        /// SaveThen's own doAfterSaveToDisk is too early for such a caller: it runs before that
+        /// navigation, so the browser code it started would be torn down. Waiting for the page to
+        /// come back is the only safe point. AiImageEditorApi.HandleSaveThenLaunch is the caller
+        /// this was written for (BL-16682).
+        ///
+        /// Only one action is held; queueing a second replaces the first, and passing null cancels.
+        /// The page that loads next is not necessarily the one the caller was on (the user may have
+        /// navigated, or the save may have failed), so callers that care must check the id they are
+        /// given. Leaving the Edit tab drops it (see OnTabAboutToChange), since no page would load
+        /// to run it and the caller's page is no longer on screen.
+        /// </summary>
+        public void RunAfterNextPageLoad(Action<string> action)
+        {
+            _doAfterNextPageLoad = action;
         }
 
         // Fields supporting the "Update Book" per-page pass (see StartUpdatingAllPages()).

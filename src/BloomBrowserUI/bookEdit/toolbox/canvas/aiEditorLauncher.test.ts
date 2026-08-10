@@ -1,9 +1,15 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-// Tests for WHEN the AI Image Editor launcher saves the live page after a commit.
+// Tests for the AI Image Editor launcher's two dealings with SAVING the live page: once
+// before the editor opens, and once after a commit.
 //
-// The launcher swaps current-page images in the LIVE DOM and then has to save, because
-// nothing else persists that (see aiEditorLauncher.ts). The save goes through
+// BEFORE: the menu command doesn't open the editor at all. Everything C# tells the editor
+// about the book is read from the saved book DOM, so an image the user just added — which
+// lives only in the live page — wouldn't be there (BL-16682). So the command asks C# to
+// save the page first, and C# calls openAiImageEditor() back in the reloaded page.
+//
+// AFTER: the launcher swaps current-page images in the LIVE DOM and then has to save,
+// because nothing else persists that (see aiEditorLauncher.ts). That save goes through
 // saveChangesAndRethinkPageEvent, which RELOADS the page frame — and everything that
 // operates the overlay (its message listener, its ✕ handler) is code belonging to that
 // frame, even though the overlay div itself lives in the top window. So saving while the
@@ -11,7 +17,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 // has to restart Bloom to escape. That matters specifically on a PARTIAL failure, where
 // the launcher deliberately keeps the overlay up so the user can read the error.
 //
-// Hence: the save is deferred until the overlay comes down. These tests pin both halves —
+// Hence: that save is deferred until the overlay comes down. These tests pin both halves —
 // that it does not fire while the overlay is up, and that it is not simply lost.
 
 const post = vi.fn();
@@ -38,28 +44,40 @@ vi.mock("../../js/bloomImages", () => ({
     GetRawImageUrl: (element: HTMLElement) => element.getAttribute("src") ?? "",
 }));
 
-import { launchAiImageEditor } from "./aiEditorLauncher";
+import { launchAiImageEditor, openAiImageEditor } from "./aiEditorLauncher";
 
 const kSaveEvent = "common/saveChangesAndRethinkPageEvent";
 const kEditorUrl = "http://localhost:8089/bloom/aiImageEditor/index.html";
 const kPageId = "page1";
+const kImageFile = "old.png";
 
-// Builds a page holding one image, launches the editor against it, and returns the
-// handles a test needs. Leaves the launcher at the point where the overlay is up and the
-// editor has been sent its `init`.
-const launchAgainstAPageWithOneImage = () => {
+// Builds a page holding one image and returns the img the user is to right-click.
+const makePageWithOneImage = () => {
     document.body.innerHTML = `
         <div class="bloom-page" id="${kPageId}">
             <div class="bloom-canvas-element">
-                <img src="old.png" />
+                <img src="${kImageFile}" />
             </div>
         </div>`;
-    const img = document.querySelector("img") as HTMLImageElement;
-    const canvasElement = document.querySelector(
-        ".bloom-canvas-element",
-    ) as HTMLElement;
+    return document.querySelector("img") as HTMLImageElement;
+};
 
-    launchAiImageEditor(img, undefined, canvasElement);
+// Runs the menu command and then stands in for C#, which saves the page (reloading it) and
+// calls openAiImageEditor in the reloaded page. Returns the handles a test needs, with the
+// overlay up and the editor about to be sent its `init`. Pass clickedFileName to stand for
+// a click on an image the saved page does not contain.
+const launchAgainstAPageWithOneImage = (clickedFileName = kImageFile) => {
+    const img = makePageWithOneImage();
+
+    launchAiImageEditor(img, undefined);
+
+    // The command itself only asks for the save; the editor is not opened yet.
+    expect(post).not.toHaveBeenCalled();
+    expect(postJson).toHaveBeenCalledTimes(1);
+    postJson.mockClear();
+
+    // C#, once the saved page has reloaded.
+    openAiImageEditor({ imageFileName: clickedFileName });
 
     // The launcher does everything inside the launch reply's callback.
     expect(post).toHaveBeenCalledTimes(1);
@@ -75,7 +93,7 @@ const launchAgainstAPageWithOneImage = () => {
             bookImages: [
                 {
                     id: `${kPageId}:0`,
-                    src: "http://localhost:8089/bloom/book/old.png",
+                    src: `http://localhost:8089/bloom/book/${kImageFile}`,
                 },
             ],
             history: [],
@@ -99,7 +117,7 @@ const launchAgainstAPageWithOneImage = () => {
         );
     };
 
-    return { closeButton, postFromEditor };
+    return { closeButton, iframe, postFromEditor };
 };
 
 // Sends a commit for the one current-page image and answers it with the host's reply.
@@ -142,16 +160,78 @@ const commitAndReplyFromHost = (
     });
 };
 
-describe("aiEditorLauncher: saving the live page after a commit", () => {
-    beforeEach(() => {
-        post.mockClear();
-        postJson.mockClear();
-        postThatMightNavigate.mockClear();
-        changeImageByElement.mockClear();
-        delete (window as Window & { __bloomAiImageEditorCleanup?: () => void })
-            .__bloomAiImageEditorCleanup;
-        document.body.innerHTML = "";
+// Answers the editor's `ready` and returns the `init` the launcher posts back into its
+// iframe — which is where the edit target ("Image to Edit") is named.
+const getInitPayloadSentToEditor = (
+    iframe: HTMLIFrameElement,
+    postFromEditor: (data: unknown) => void,
+) => {
+    const postMessageToEditor = vi.spyOn(iframe.contentWindow!, "postMessage");
+    postFromEditor({ channel: "bloom-ai-image-tools", type: "ready" });
+
+    expect(postMessageToEditor).toHaveBeenCalledTimes(1);
+    const message = postMessageToEditor.mock.calls[0][0] as {
+        type: string;
+        payload: { selectedBookImageId?: string };
+    };
+    postMessageToEditor.mockRestore();
+    expect(message.type).toBe("init");
+    return message.payload;
+};
+
+const clearMocks = () => {
+    post.mockClear();
+    postJson.mockClear();
+    postThatMightNavigate.mockClear();
+    changeImageByElement.mockClear();
+    delete (window as Window & { __bloomAiImageEditorCleanup?: () => void })
+        .__bloomAiImageEditorCleanup;
+    document.body.innerHTML = "";
+};
+
+describe("aiEditorLauncher: saving the live page before opening the editor", () => {
+    beforeEach(clearMocks);
+
+    test("the menu command asks C# to save the page instead of opening the editor", () => {
+        const img = makePageWithOneImage();
+
+        launchAiImageEditor(img, undefined);
+
+        // Nothing is opened here: C# has to save the page (which reloads it) first, or the
+        // editor would be told about the book as it was before the user's latest image
+        // change (BL-16682).
+        expect(post).not.toHaveBeenCalled();
+        expect(postJson).toHaveBeenCalledTimes(1);
+        expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
+            // Only the file name travels: the save reloads this frame, so a live element
+            // reference could not survive the round trip.
+            imageFileName: kImageFile,
+        });
     });
+
+    test("the reopened editor gets the clicked image as its edit target", () => {
+        const { iframe, postFromEditor } = launchAgainstAPageWithOneImage();
+
+        const payload = getInitPayloadSentToEditor(iframe, postFromEditor);
+
+        // The bug: this was undefined, so the "Image to Edit" slot opened empty.
+        expect(payload.selectedBookImageId).toBe(`${kPageId}:0`);
+    });
+
+    test("an image the saved page doesn't have leaves the edit target unset", () => {
+        // Sanity check on the matching itself: C#'s book image list names old.png, so a
+        // click on some other file must not silently select old.png.
+        const { iframe, postFromEditor } =
+            launchAgainstAPageWithOneImage("somethingElse.png");
+
+        const payload = getInitPayloadSentToEditor(iframe, postFromEditor);
+
+        expect(payload.selectedBookImageId).toBeUndefined();
+    });
+});
+
+describe("aiEditorLauncher: saving the live page after a commit", () => {
+    beforeEach(clearMocks);
 
     test("a partial failure keeps the overlay up and holds the save until it closes", () => {
         const { closeButton, postFromEditor } =
