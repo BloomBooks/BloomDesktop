@@ -12,6 +12,11 @@ namespace BloomTests.Workspace
     /// "Should not be creating bloom book while not in publish tab" (BL-16174).
     /// </summary>
     [TestFixture]
+    // These tests read and write PublishHelper.InPublishTab, which is process-wide. Setup/TearDown
+    // put it back, which is enough while fixtures run one at a time, but say so explicitly so that
+    // turning parallel test execution on later cannot quietly let this fixture and the publish
+    // tests perturb each other.
+    [NonParallelizable]
     public class WorkspaceTabSelectionTests
     {
         private bool _originalInPublishTab;
@@ -66,9 +71,12 @@ namespace BloomTests.Workspace
 
         /// <summary>
         /// Opening a different collection builds a whole new ProjectContext, and so a new
-        /// WorkspaceTabSelection, but InPublishTab is static and survives. The new selection's
-        /// initialization must therefore clear it, or we would carry "we are in the publish tab"
-        /// over into a collection that is sitting on its Collection tab.
+        /// WorkspaceTabSelection, but InPublishTab is static and survives. Note that merely
+        /// constructing the new WorkspaceTabSelection does not clear it -- what clears it is the
+        /// new WorkspaceView constructor's `_tabSelection.ActiveTab = WorkspaceTab.collection`
+        /// (WorkspaceView.cs), which this test stands in for. So the invariant depends on that
+        /// line continuing to exist; without it we would carry "we are in the publish tab" over
+        /// into a collection that is sitting on its Collection tab.
         /// </summary>
         [Test]
         public void ActiveTab_NewSelectionInitializedToCollection_ClearsStaleInPublishTab()
