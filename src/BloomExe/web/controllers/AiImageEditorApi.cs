@@ -47,6 +47,10 @@ namespace Bloom.web.controllers
     ///
     /// TWO COMMUNICATION PLANES
     ///   1. HTTP, AI image editor / front-end JS -> this controller, over Bloom's server:
+    ///        aiImageEditor/saveThenLaunch  what the menu command posts: save the page being
+    ///                                    edited (which reloads it), then call the launcher's
+    ///                                    openAiImageEditor() in the reloaded page. The one
+    ///                                    C#->browser call in this feature; see the method.
     ///        aiImageEditor/launch        mint session, make folders, enumerate book
     ///                                    images + history, return the launch payload.
     ///        aiImageEditor/file          GET/POST/DELETE files under .ai-image-editor/.
@@ -161,6 +165,12 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler(
+                "aiImageEditor/saveThenLaunch",
+                HandleSaveThenLaunch,
+                handleOnUiThread: true,
+                requiresSync: false
+            );
+            apiHandler.RegisterEndpointHandler(
                 "aiImageEditor/launch",
                 HandleLaunch,
                 handleOnUiThread: true,
@@ -213,6 +223,94 @@ namespace Bloom.web.controllers
             if (!string.IsNullOrWhiteSpace(overrideUrl))
                 return overrideUrl;
             return $"{BloomServer.ServerUrl}/bloom/aiImageEditor/index.html";
+        }
+
+        /// <summary>The image the user right-clicked, as the front-end sends it to
+        /// <see cref="HandleSaveThenLaunch"/> and as we hand it back to the browser once the page
+        /// has been saved. Just a file name — see IAiImageEditorTarget in aiEditorLauncher.ts.
+        /// </summary>
+        private class SaveThenLaunchRequest
+        {
+            public string imageFileName { get; set; }
+        }
+
+        /// <summary>
+        /// Saves the page the user is editing, then opens the AI image editor on it.
+        ///
+        /// The save is the point of this endpoint. Everything we tell the AI image editor about
+        /// the book — the image list from <see cref="EnumerateBookImages"/>, and on commit each
+        /// slot's current src — is read from the SAVED book DOM, but an image the user has just
+        /// added exists only in the live page (Bloom deliberately doesn't save on an image change;
+        /// see EditingModel.UpdateImageInBrowser and BL-16330). Launching against the unsaved DOM
+        /// opened the editor with an empty "Image to Edit" slot (BL-16682); it would also have
+        /// made the current page's commit results describe an image the live page no longer shows,
+        /// and left <see cref="DeleteSupersededAiImageFiles"/> blind to a file the live page uses.
+        ///
+        /// Saving reloads the page (it strips the live one), so we cannot simply open the editor
+        /// afterwards from here, nor from SaveThen's doAfterSaveToDisk, which runs before that
+        /// navigation: either way the page frame that hosts the editor would be torn down. Hence
+        /// EditingModel.RunAfterNextPageLoad — we open the editor once the reloaded page reports
+        /// in.
+        /// </summary>
+        private void HandleSaveThenLaunch(ApiRequest request)
+        {
+            // Must be read before SaveThen: by the time our callbacks run the request is complete.
+            SaveThenLaunchRequest payload;
+            try
+            {
+                payload = request.RequiredPostObject<SaveThenLaunchRequest>();
+            }
+            catch (Exception)
+            {
+                request.Failed(HttpStatusCode.BadRequest, "Invalid saveThenLaunch payload");
+                return;
+            }
+
+            var model = View?.Model;
+            var pageIdToSave = model?.CurrentPage?.Id;
+            if (model == null || string.IsNullOrEmpty(pageIdToSave))
+            {
+                request.Failed("No page is open for editing");
+                return;
+            }
+
+            // Queue this BEFORE the save: with no page loaded, SaveThen completes synchronously.
+            model.RunAfterNextPageLoad(loadedPageId =>
+            {
+                // A different page means the user navigated (or the save failed and we went
+                // somewhere else); the image we were asked to edit isn't there to edit.
+                if (loadedPageId == pageIdToSave)
+                    OpenEditorInBrowser(payload);
+            });
+            model.SaveThen(
+                () => pageIdToSave,
+                doIfNotInRightStateToSave: () => {
+                    // Leave the queued launch in place. Every state that refuses a save — a save
+                    // already in flight, mid-navigation, saved-and-stripped — is on its way to a
+                    // page load, and that load will open the editor with a book DOM the other
+                    // save has just brought up to date, which is all we wanted. Opening the
+                    // editor here instead would be actively worse: the in-flight save's reload
+                    // would then arrive with the overlay up and kill the page-frame code that
+                    // runs it, leaving a full-screen overlay the user cannot close.
+                }
+            );
+
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Tells the page frame to open the AI image editor overlay on <paramref name="target"/>.
+        /// The browser owns the overlay (only it can postMessage to the editor's iframe), so all
+        /// this side does is call the launcher's entry point; see openAiImageEditor in
+        /// aiEditorLauncher.ts. Fire-and-forget, like EditingModel.UpdateImageInBrowser's call to
+        /// changeImage: there is nothing here to wait for.
+        /// </summary>
+        private void OpenEditorInBrowser(SaveThenLaunchRequest target)
+        {
+            var arg = JsonConvert.SerializeObject(target);
+            View?.Browser?.RunJavascriptFireAndForget(
+                $"workspaceBundle.getEditablePageBundleExports().openAiImageEditor({arg})"
+            );
         }
 
         /// <summary>

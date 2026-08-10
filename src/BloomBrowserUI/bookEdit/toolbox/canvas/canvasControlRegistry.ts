@@ -524,7 +524,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             if (!img) {
                 return;
             }
-            launchAiImageEditor(img, getImageContainer(ctx), ctx.canvasElement);
+            launchAiImageEditor(img, getImageContainer(ctx));
             runtime.closeMenu(true);
         },
     },

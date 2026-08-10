@@ -61,6 +61,13 @@ Right-click the canvas element → **"Edit with AI…"**. Loading the iframe dir
 `bloom-exe-ai-editor-open.uitest.ts` smoke test does) does **not** register
 `aiEditorLauncher.ts`'s postMessage handler, so the commit + current-page save path wouldn't run.
 
+**The overlay does not appear on the same tick as the click.** The menu command posts
+`aiImageEditor/saveThenLaunch`, which makes C# save the current page — reloading the `page`
+frame — and only then call back into the reloaded page to open the overlay (BL-16682; the saved
+book DOM has to be current or the editor opens with an empty "Image to Edit" slot). So **wait for
+the overlay**, e.g. `await page.waitForSelector("#ai-editor-overlay iframe")`, and don't re-use
+any content-frame handle taken before the click — that frame is gone.
+
 **Gotcha:** a Comical `<canvas class="comical-generated">` overlay sits on top of the image and
 intercepts element-targeted clicks (Playwright reports `<canvas …> intercepts pointer events`).
 Drive with **raw mouse coordinates** from the image's bounding box instead:

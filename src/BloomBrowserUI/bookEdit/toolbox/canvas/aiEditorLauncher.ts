@@ -7,6 +7,10 @@
 // (read that file's header for the full picture). The AI image editor is a SEPARATE web app
 // (the `bloom-ai-image-tools` package); we do not import it — we load it into an
 // <iframe> overlay. The flow:
+//   0. POST aiImageEditor/saveThenLaunch -> C# saves the current page (which RELOADS the
+//      page frame) and then calls openAiImageEditor() below in the reloaded page. See
+//      launchAiImageEditor for why the page has to be saved first, and why C# rather than
+//      this frame is what remembers to carry on afterwards.
 //   1. POST aiImageEditor/launch -> C# mints a session, makes the per-book
 //      .ai-image-editor folder, and returns the AI image editor URL + the whole-book image
 //      list + enumerated history + httpBase/sessionToken.
@@ -32,14 +36,62 @@ import {
 import { changeImageByElement } from "../../js/bloomEditing";
 import { matchReplacementsToElements } from "./aiEditorSlotMatching";
 
-// Opens the AI Image Editor overlay for the given image. `img` is the right-clicked
-// image, `imgContainer` its image container (if any), and `canvasElement` the canvas
-// element the command was invoked on.
+// Pull the file name off an image url. `encoded` says whether the url is percent-encoded:
+// live DOM srcs and host-served URLs are, but oldSrc in commit results arrives from C#
+// already decoded (PathOnly.NotEncoded) — decoding it again corrupts (or throws on)
+// filenames containing a literal '%'. On a failed decode fall back to the raw name rather
+// than "", so an oddly-encoded src degrades to a possible mismatch instead of matching
+// nothing ever.
+const fileNameOf = (url?: string | null, encoded: boolean = true) => {
+    const raw = (url ?? "").split("?")[0].split("/").pop() ?? "";
+    if (!encoded) return raw;
+    try {
+        return decodeURIComponent(raw);
+    } catch {
+        return raw;
+    }
+};
+
+// What openAiImageEditor needs to know about the image the user right-clicked. Just the
+// file name: a page save reloads this frame, so nothing that survives the trip to C# and
+// back can be a live element reference — and the page id is simply whatever page comes
+// back, which we read off the reloaded document.
+export interface IAiImageEditorTarget {
+    imageFileName: string;
+}
+
+// Starts "Edit with AI…" for the given image. `img` is the right-clicked image and
+// `imgContainer` its image container (if any).
+//
+// We do NOT open the editor here. C# enumerates the book's images (and, on commit, reads
+// each slot's current src) from the SAVED book DOM, while an image the user just added
+// lives only in this live page — changeImage/changeImageByElement deliberately do not save
+// (BL-16330). Launching against that stale saved DOM opened the editor with an empty
+// "Image to Edit" slot (BL-16682), and a later commit's oldSrc, read from the same stale
+// DOM, would no longer match the live page. So the page must be saved first.
+//
+// Saving is what makes this a round trip through C#: Bloom's save strips the live page and
+// therefore always ends by re-navigating to it, which tears down this frame — so the code
+// that carries on afterwards cannot live here. C# does the save with EditingModel.SaveThen
+// and calls openAiImageEditor() below once the reloaded page reports in. See
+// AiImageEditorApi.HandleSaveThenLaunch.
 export const launchAiImageEditor = (
     img: HTMLImageElement,
     imgContainer: HTMLElement | undefined,
-    canvasElement: HTMLElement,
 ): void => {
+    const clickedUrl = imgContainer
+        ? getImageUrlFromImageContainer(imgContainer)
+        : img?.getAttribute("src");
+    postJson("aiImageEditor/saveThenLaunch", {
+        imageFileName: fileNameOf(clickedUrl),
+    } as IAiImageEditorTarget);
+};
+
+// Opens the AI Image Editor overlay, with the image named by `target` (the one the user
+// right-clicked, back before the save reloaded this page) in its "Image to Edit" slot.
+// Called from C# — via workspaceBundle.getEditablePageBundleExports() — once the page has
+// been saved and reloaded; see launchAiImageEditor above, which is what asks for that.
+export const openAiImageEditor = (target: IAiImageEditorTarget): void => {
     post("aiImageEditor/launch", (r) => {
         const launchData = r.data as {
             editorUrl: string;
@@ -87,32 +139,14 @@ export const launchAiImageEditor = (
         // applies replacements book-wide in C#, so there is no per-image DOM
         // id wrangling here anymore.
 
-        // Identify the image the user actually right-clicked so the AI image editor can
+        // Identify the image the user right-clicked so the AI image editor can
         // open with it already in the "Image to Edit" slot. We match by page +
         // filename rather than DOM ordinal, because the live page has extra
         // injected UI images that would throw positional indices off.
-        // `encoded` says whether the url is percent-encoded: live DOM srcs and
-        // host-served URLs are, but oldSrc in commit results arrives from C#
-        // already decoded (PathOnly.NotEncoded) — decoding it again corrupts
-        // (or throws on) filenames containing a literal '%'. On a failed decode
-        // fall back to the raw name rather than "", so an oddly-encoded src
-        // degrades to a possible mismatch instead of matching nothing ever.
-        const fileNameOf = (url?: string | null, encoded: boolean = true) => {
-            const raw = (url ?? "").split("?")[0].split("/").pop() ?? "";
-            if (!encoded) return raw;
-            try {
-                return decodeURIComponent(raw);
-            } catch {
-                return raw;
-            }
-        };
-        const clickedUrl = imgContainer
-            ? getImageUrlFromImageContainer(imgContainer as HTMLElement)
-            : (img as HTMLImageElement)?.getAttribute("src");
-        const clickedPageId = canvasElement
-            .closest(".bloom-page")
+        const clickedPageId = document
+            .querySelector(".bloom-page")
             ?.getAttribute("id");
-        const clickedFile = fileNameOf(clickedUrl);
+        const clickedFile = target.imageFileName;
         const clickedMatch =
             clickedPageId && clickedFile
                 ? (launchData.bookImages ?? []).find(
@@ -226,10 +260,11 @@ export const launchAiImageEditor = (
                 (r) => r && r.ok && r.isCurrentPage && r.newSrc && r.oldSrc,
             );
             if (toApply.length === 0) return { applied: 0, expected: 0 };
-            const pageDoc = img.ownerDocument;
+            // This code always runs in the page frame (C# calls openAiImageEditor there),
+            // so the live page is simply this document.
             const pageRoot =
-                (pageDoc.querySelector(".bloom-page") as HTMLElement) ||
-                pageDoc;
+                (document.querySelector(".bloom-page") as HTMLElement) ||
+                document;
             // Look up the page's image-bearing elements once, not per replacement.
             const candidates = Array.from(
                 pageRoot.querySelectorAll('img, [style*="background-image"]'),
