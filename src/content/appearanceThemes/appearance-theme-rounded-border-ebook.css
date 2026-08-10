@@ -122,3 +122,12 @@
     --pageNumber-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
     --pageNumber-always-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
 }
+
+:is(
+        .Ebook7x5Landscape,
+        .Device16x9Landscape
+    ).numberedPage.pictureOnRight.pictureOnRight {
+    /* On these pages the page number moves to the right side (rule above),
+       so the format button has nothing to dodge (BL-14901) */
+    --formatButton-pageNumber-dodge: 0px;
+}
