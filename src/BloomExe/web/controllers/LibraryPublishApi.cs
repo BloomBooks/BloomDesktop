@@ -178,17 +178,24 @@ namespace Bloom.web.controllers
         /// </summary>
         private void HandleCancel(ApiRequest request)
         {
-            _progress.CancelRequested = true;
-
             // If the user clicked Cancel before the upload itself got under way, no upload is
             // running to notice the flag and report on it. That window is real and not small:
             // the client shows Cancel from the moment the user commits, but two API round trips
             // (the subscription check and the "existing copy on server" query) happen before
             // libraryPublish/upload even arrives. Nothing else would ever tell the client the
             // cancel took effect -- and the client only ever leaves its Cancel state on that
-            // report -- so make the report here. HandleUpload checks the same flag and declines
+            // report -- so make the report here. HandleUpload takes the same lock and declines
             // to start. (BL-16340)
-            if (!_uploadInProgress)
+            bool nobodyElseWillReportIt;
+            lock (_uploadStateLock)
+            {
+                _progress.CancelRequested = true;
+                nobodyElseWillReportIt = !_uploadInProgress;
+            }
+
+            // Outside the lock: this sends a websocket message, and the lock exists only to make
+            // the flag pair above indivisible.
+            if (nobodyElseWillReportIt)
                 ReportUploadCanceled();
 
             request.PostSucceeded();
@@ -198,10 +205,13 @@ namespace Bloom.web.controllers
         /// Tell the user, and the publish screen, that the upload was cancelled. Sending the
         /// event matters as much as showing the message: the screen greys out UPLOAD BOOK as
         /// soon as the user clicks Cancel, and this event is the only thing that brings it back.
+        /// Pass false for withMessage when a message has already been given, to avoid a second
+        /// one -- the event still has to go out.
         /// </summary>
-        private void ReportUploadCanceled()
+        private void ReportUploadCanceled(bool withMessage = true)
         {
-            _webSocketProgress.Message("Cancelled", "Upload was cancelled", ProgressKind.Error);
+            if (withMessage)
+                _webSocketProgress.Message("Cancelled", "Upload was cancelled", ProgressKind.Error);
             _webSocketServer.SendEvent(kWebSocketContext, kWebSocketEventId_uploadCanceled);
         }
 
@@ -219,8 +229,14 @@ namespace Bloom.web.controllers
 
         // True from the moment we take charge of an upload until we have reported its outcome.
         // HandleCancel uses it to work out whether anyone else is going to report the cancel.
-        // Volatile because it is written here on one thread and read by HandleCancel on another.
-        private volatile bool _uploadInProgress;
+        private bool _uploadInProgress;
+
+        // Makes "is a cancel already pending?" and "an upload is now running" one indivisible
+        // step, shared with HandleCancel. Without it the two could interleave such that
+        // HandleCancel reported the cancel AND the upload started anyway, so the cancel got
+        // reported twice. Only ever held across these two field reads/writes -- never across
+        // the upload, or a websocket send.
+        private readonly object _uploadStateLock = new object();
 
         private async Task HandleUpload(ApiRequest request, bool changeUploader)
         {
@@ -232,15 +248,20 @@ namespace Bloom.web.controllers
             // Cancel before this request arrives (see HandleCancel), and clearing it here would
             // throw that cancel away and upload the book anyway (BL-16340). It is cleared in
             // HandleCheckSubscriptionMatch, which the client calls at the start of every attempt.
-            if (_progress.CancelRequested)
+            bool alreadyCancelled;
+            lock (_uploadStateLock)
+            {
+                alreadyCancelled = _progress.CancelRequested;
+                if (!alreadyCancelled)
+                    _uploadInProgress = true;
+            }
+            if (alreadyCancelled)
             {
                 // A cancel arrived during the pre-upload handshake. HandleCancel has already
                 // told the user, so all that is left to do is not upload.
                 request.PostSucceeded();
                 return;
             }
-
-            _uploadInProgress = true;
             try
             {
                 await UploadBookAsync();
@@ -251,7 +272,8 @@ namespace Bloom.web.controllers
             }
             finally
             {
-                _uploadInProgress = false;
+                lock (_uploadStateLock)
+                    _uploadInProgress = false;
             }
             request.PostSucceeded();
         }
@@ -312,9 +334,16 @@ namespace Bloom.web.controllers
             // telling the user it was cancelled is a falsehood they might act on. uploadResult is
             // empty when the upload was abandoned (including by the cancellation checks inside
             // BookUpload) or failed, and "quiet" when a message has already been given.
-            if (_progress.CancelRequested && string.IsNullOrEmpty(uploadResult))
+            var uploadActuallyCompleted =
+                !string.IsNullOrEmpty(uploadResult) && uploadResult != "quiet";
+            if (_progress.CancelRequested && !uploadActuallyCompleted)
             {
-                ReportUploadCanceled();
+                // Send the event on EVERY cancelled ending, including the "quiet" one. The
+                // screen's Cancel state is cleared only by this event, and making it depend
+                // instead on some other path happening to emit an error line is how it gets
+                // left permanently greyed out -- the whole of BL-16340. For "quiet" a message
+                // has already been given, so send the event without adding a second one.
+                ReportUploadCanceled(withMessage: uploadResult != "quiet");
                 return;
             }
 

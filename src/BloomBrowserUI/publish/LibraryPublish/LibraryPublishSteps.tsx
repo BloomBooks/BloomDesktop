@@ -297,11 +297,17 @@ export const LibraryPublishSteps: React.FunctionComponent<{
     // True from the moment the user clicks Cancel until C# reports what became of the upload.
     // While it is true, UPLOAD BOOK is greyed out, so every path that ends an upload has to
     // clear it. Missing one leaves the user with no working button at all and no way back
-    // short of leaving the screen, which is how BL-16340 presented.
+    // short of leaving the screen, which is how BL-16340 presented. The two things that clear
+    // it are the uploadCanceled event and uploadSuccessful, and C# now guarantees one of them
+    // on every ending of a cancelled upload.
+    //
+    // Deliberately NOT cleared here on an error line: this fires for ANY Error-kind progress
+    // message, not just a terminal one, so clearing it here would re-enable UPLOAD BOOK while
+    // a cancel-pending upload was still running -- and pressing it would then clear the pending
+    // cancel server-side and start a second upload alongside the first.
     const [isCanceling, setIsCanceling] = useState<boolean>(false);
     const handleUploadError = React.useCallback(() => {
         setIsUploading(false);
-        setIsCanceling(false);
     }, []);
 
     useSubscribeToWebSocketForEvent(
