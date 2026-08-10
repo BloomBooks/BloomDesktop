@@ -134,9 +134,17 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                                 // we don't allow you to go from textbox to sentence mode if you have audio
                                 props.hasAudio
                             }
-                            tipWhenDisabled={{
-                                l10nKey: `EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip`,
-                            }}
+                            // When there is nothing recordable on this page, the tooltip around the
+                            // whole Recording Mode group already explains that. Adding a tip here too
+                            // would leave two tooltips overlapping on the same hover, and this one
+                            // would be telling the user the wrong reason anyway (BL-16639).
+                            tipWhenDisabled={
+                                props.hasRecordableDivs
+                                    ? {
+                                          l10nKey: `EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip`,
+                                      }
+                                    : ""
+                            }
                             {...commonTooltipProps}
                         >
                             <MuiRadio
