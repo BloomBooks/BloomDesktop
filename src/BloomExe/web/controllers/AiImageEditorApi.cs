@@ -1038,6 +1038,16 @@ namespace Bloom.web.controllers
                 // so there would be nothing to put them back.
                 resizeIfNeeded: !string.IsNullOrEmpty(replacement.resultId)
             );
+            // A generated result often arrives as a PNG for a slot the book held as a JPEG,
+            // which can be several times the size; re-encode it as a JPEG when that wins
+            // enough to be worth it (BL-16645). Only for a freshly generated/uploaded result —
+            // see the remarks on the helper for why a reused image is left alone.
+            if (!string.IsNullOrEmpty(replacement.resultId))
+                newFileName = ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                    book.FolderPath,
+                    oldSrc,
+                    newFileName
+                );
             newSrc = newFileName;
 
             // A generated result arrives with no intellectual-property metadata of its own, so
@@ -1160,6 +1170,72 @@ namespace Bloom.web.controllers
             else
                 RobustFile.Copy(sourceBytesPath, newPath, true);
             return newFileName;
+        }
+
+        // How much bigger than the JPEG it supersedes a new PNG has to be before we spend a
+        // GraphicsMagick run (and some lossy re-encoding) trying to shrink it. A PNG merely the
+        // same size as the JPEG it replaces isn't the blow-up BL-16645 is about.
+        private const double PngBloatRatioWorthReencoding = 1.5;
+
+        /// <summary>
+        /// The AI image editor commonly returns a PNG for a slot the book held as a JPEG, and a
+        /// photographic PNG can be several times the size of the JPEG it replaced — the very
+        /// bloat <see cref="ImportImageIntoBookFolder"/> exists to avoid (BL-16645). So when the
+        /// file we just imported is a PNG substantially bigger than the JPEG it supersedes,
+        /// re-encode it as a JPEG and keep that instead, deleting the PNG. We only keep the JPEG
+        /// if the saving is real: <see cref="ImageUtils.TryChangeFormatToJpegIfHelpful"/> insists
+        /// on at least 50% smaller and cleans up after itself otherwise.
+        ///
+        /// Returns the name (no path) to use for the new file — the JPEG's if we converted,
+        /// otherwise <paramref name="newFileName"/> unchanged. Internal for testing.
+        /// </summary>
+        /// <remarks>
+        /// Only call this for a freshly generated/uploaded result, whose credits
+        /// <see cref="EmbedCreditsInNewImageFile"/> writes into whatever file we end up with. A
+        /// REUSED book image instead carries the credits already embedded in its own file and
+        /// nothing re-writes them afterwards, and re-encoding runs the file through
+        /// GraphicsMagick, which can drop them — the same reason the reuse path doesn't resize
+        /// (see <see cref="ImportImageIntoBookFolder"/>'s resizeIfNeeded).
+        /// </remarks>
+        internal static string ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+            string bookFolderPath,
+            string oldSrc,
+            string newFileName
+        )
+        {
+            if (string.IsNullOrEmpty(oldSrc))
+                return newFileName; // nothing was there to compare against
+            var oldPath = Path.Combine(bookFolderPath, oldSrc);
+            var newPath = Path.Combine(bookFolderPath, newFileName);
+            // Judge by the bytes, not the extensions: a book folder can easily hold a file whose
+            // extension misdescribes its content (which is why these helpers sniff the header).
+            if (!ImageUtils.IsJpegFile(oldPath) || !ImageUtils.IsPngFile(newPath))
+                return newFileName;
+            if (
+                new FileInfo(newPath).Length
+                <= PngBloatRatioWorthReencoding * new FileInfo(oldPath).Length
+            )
+                return newFileName;
+
+            // ImportImageIntoBookFolder only reserved the ".png" name, and GetUnusedFilename
+            // checks just that one name — so the same base name with a ".jpg" extension may
+            // well be another slot's live image. Reserve a genuinely unused .jpg name instead
+            // of writing over it; TryChangeFormatToJpegIfHelpful also warns that a
+            // pre-existing destination file can make GraphicsMagick fail outright.
+            var jpegFileName = ImageUtils.GetUnusedFilename(bookFolderPath, "ai-image", ".jpg");
+            var jpegPath = Path.Combine(bookFolderPath, jpegFileName);
+            bool keepTheJpeg;
+            // Dispose before touching the PNG again: PalasoImage owns a decoded copy of it.
+            using (var image = PalasoImage.FromFileRobustly(newPath))
+            {
+                keepTheJpeg = ImageUtils.TryChangeFormatToJpegIfHelpful(image, jpegPath);
+            }
+            if (!keepTheJpeg)
+                return newFileName;
+            // Nothing references the PNG now, and leaving it in the book folder would keep
+            // exactly the bulk we just converted away from.
+            RobustFile.Delete(newPath);
+            return jpegFileName;
         }
 
         /// <summary>

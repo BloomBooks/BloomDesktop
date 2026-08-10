@@ -349,6 +349,182 @@ namespace BloomTests.web.controllers
         }
 
         // ------------------------------------------------------------------
+        // ConvertPngToJpegIfItBloatsTheJpegItReplaces: an AI result often comes back as a PNG
+        // for a slot the book held as a JPEG, and a photographic PNG can be several times the
+        // size (BL-16645). man.png and man.jpg are the same photo in both formats, so together
+        // they stand in for exactly that situation.
+        // ------------------------------------------------------------------
+
+        private const string _pathToTestImages = "src/BloomTests/ImageProcessing/images";
+
+        // Copies one of the images distributed with the application into the book folder under
+        // the given name, and returns that name (which is what the API deals in).
+        private string CopyTestImageIntoBookFolder(string distributedName, string nameInBook)
+        {
+            var source = FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                distributedName
+            );
+            RobustFile.Copy(source, Path.Combine(_bookFolder.Path, nameInBook), true);
+            return nameInBook;
+        }
+
+        private long LengthInBookFolder(string name)
+        {
+            return new FileInfo(Path.Combine(_bookFolder.Path, name)).Length;
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_BigPngReplacingSmallJpeg_KeepsTheJpegAndDeletesThePng()
+        {
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+            var pngLength = LengthInBookFolder(newName);
+            // Sanity: this really is the blow-up case, or the method would rightly do nothing
+            // and the assertions below would pass for the wrong reason.
+            Assert.That(
+                pngLength,
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: the new PNG must be the bloated one"
+            );
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                Path.GetExtension(result),
+                Is.EqualTo(".jpg"),
+                "a photo PNG this much bigger than the JPEG it replaces should be re-encoded"
+            );
+            Assert.That(
+                result,
+                Does.StartWith("ai-image"),
+                "DeleteSupersededAiImageFiles reclaims our files by this prefix"
+            );
+            Assert.That(
+                File.Exists(Path.Combine(_bookFolder.Path, result)),
+                Is.True,
+                "the file we name has to exist"
+            );
+            Assert.That(
+                LengthInBookFolder(result),
+                Is.LessThan(pngLength),
+                "the whole point is a smaller file"
+            );
+            Assert.That(
+                File.Exists(Path.Combine(_bookFolder.Path, newName)),
+                Is.False,
+                "leaving the PNG behind would keep exactly the bulk we converted away from"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_JpegOfTheSameBaseNameExists_DoesNotOverwriteIt()
+        {
+            // ImportImageIntoBookFolder only reserved "ai-image1.png", and GetUnusedFilename
+            // checks just that one name — so "ai-image1.jpg" can be another slot's live image,
+            // and writing the conversion over it would destroy that image.
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+            var otherSlotsImage = Path.Combine(_bookFolder.Path, "ai-image1.jpg");
+            File.WriteAllText(otherSlotsImage, "another slot's image");
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                Path.GetExtension(result),
+                Is.EqualTo(".jpg"),
+                "setup: this case should still convert, or it proves nothing about clobbering"
+            );
+            Assert.That(
+                result,
+                Is.Not.EqualTo("ai-image1.jpg"),
+                "the conversion must claim a name of its own"
+            );
+            Assert.That(
+                File.ReadAllText(otherSlotsImage),
+                Is.EqualTo("another slot's image"),
+                "the other slot's image must come through untouched"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_ReplacingAPng_LeavesTheNewPngAlone()
+        {
+            // Nothing to gain: the book was already paying PNG prices for this slot, and
+            // re-encoding would silently cost quality.
+            var oldSrc = CopyTestImageIntoBookFolder("bird.png", "old-art.png");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(result, Is.EqualTo(newName), "only a superseded JPEG justifies converting");
+            Assert.That(File.Exists(Path.Combine(_bookFolder.Path, newName)), Is.True);
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_PngNoBiggerThanTheJpegItReplaces_LeavesItAlone()
+        {
+            // LakePendOreille.jpg is far bigger than man.png, so there is no blow-up to undo
+            // and the lossy re-encode would buy the book nothing.
+            var oldSrc = CopyTestImageIntoBookFolder("LakePendOreille.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.LessThan(LengthInBookFolder(oldSrc)),
+                "setup: the new PNG is not the bloated one in this case"
+            );
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                result,
+                Is.EqualTo(newName),
+                "no conversion when the PNG isn't the problem"
+            );
+            Assert.That(File.Exists(Path.Combine(_bookFolder.Path, newName)), Is.True);
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_NoOldFile_LeavesTheNewPngAlone()
+        {
+            // A slot can point at a file that isn't there (or at nothing at all); with nothing
+            // to compare against we must still not lose the image we just imported.
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+
+            foreach (var missingOldSrc in new[] { "no-such-file.jpg", "", null })
+            {
+                var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                    _bookFolder.Path,
+                    missingOldSrc,
+                    newName
+                );
+
+                Assert.That(
+                    result,
+                    Is.EqualTo(newName),
+                    $"oldSrc '{missingOldSrc}' gives us nothing to compare against"
+                );
+                Assert.That(File.Exists(Path.Combine(_bookFolder.Path, newName)), Is.True);
+            }
+        }
+
+        // ------------------------------------------------------------------
         // TryResolveServedUrlToBookFile: the path-traversal guard that stops a
         // reused-image URL from resolving to anything outside the book folder.
         // servedUrl is passed as a plain book-folder path (FromLocalhost leaves a
