@@ -1259,7 +1259,15 @@ namespace Bloom.web.controllers
                 return newFileName;
             }
             if (!keepTheJpeg)
+            {
+                // TryChangeFormatToJpegIfHelpful removes a JPEG it merely decided against, but
+                // not one left behind by a GraphicsMagick run that failed partway. Unlike its
+                // other callers, our destination is the book folder itself, so a leftover would
+                // sit unreferenced in the very place this method exists to keep small.
+                if (RobustFile.Exists(jpegPath))
+                    RobustFile.Delete(jpegPath);
                 return newFileName;
+            }
             // Nothing references the PNG now, and leaving it in the book folder would keep
             // exactly the bulk we just converted away from.
             RobustFile.Delete(newPath);

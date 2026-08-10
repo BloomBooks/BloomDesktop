@@ -375,6 +375,23 @@ namespace BloomTests.web.controllers
             return new FileInfo(Path.Combine(_bookFolder.Path, name)).Length;
         }
 
+        // A real (header-sniffable) but tiny JPEG in the book folder, for cases that need the
+        // superseded file to be small enough to make the new PNG look bloated.
+        private string MakeSmallJpegInBookFolder(string name)
+        {
+            var path = Path.Combine(_bookFolder.Path, name);
+            using (var bitmap = new Bitmap(4, 4))
+            {
+                RobustImageIO.SaveImage(bitmap, path, ImageFormat.Jpeg);
+            }
+            Assert.That(
+                ImageUtils.IsJpegFile(path),
+                Is.True,
+                "setup: the stand-in old file must sniff as a real JPEG"
+            );
+            return name;
+        }
+
         [Test]
         public void ConvertPngToJpeg_BigPngReplacingSmallJpeg_KeepsTheJpegAndDeletesThePng()
         {
@@ -499,6 +516,36 @@ namespace BloomTests.web.controllers
                 "no conversion when the PNG isn't the problem"
             );
             Assert.That(File.Exists(Path.Combine(_bookFolder.Path, newName)), Is.True);
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_ConversionDeclined_LeavesNoStrayJpegInTheBookFolder()
+        {
+            // bird.png is line art: converting it gains little, so the conversion is declined
+            // after a name has already been reserved and GraphicsMagick has run. Whatever the
+            // reason for declining, nothing unreferenced may be left behind — a stray file
+            // would sit in the very folder this method exists to keep small.
+            var oldSrc = MakeSmallJpegInBookFolder("old-tiny.jpg");
+            var newName = CopyTestImageIntoBookFolder("bird.png", "ai-image1.png");
+            // Sanity: the ratio gate must pass, so we really do get as far as converting.
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: big enough to be a conversion candidate"
+            );
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(result, Is.EqualTo(newName), "line art is not worth re-encoding");
+            Assert.That(
+                Directory.GetFiles(_bookFolder.Path, "ai-image*.jpg"),
+                Is.Empty,
+                "a declined conversion must not leave an unreferenced file in the book folder"
+            );
         }
 
         [Test]
