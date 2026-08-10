@@ -188,19 +188,31 @@ namespace Bloom.web.controllers
             // already over, and announcing a cancellation then would contradict the outcome the
             // user was just given -- telling someone their upload was cancelled seconds after
             // being told it succeeded is worse than saying nothing. (BL-16340)
-            bool nobodyElseWillReportIt;
+            UploadAttemptState stateWhenCancelled;
             lock (_uploadStateLock)
             {
                 _progress.CancelRequested = true;
-                nobodyElseWillReportIt = _attemptState == UploadAttemptState.StartingUp;
-                if (nobodyElseWillReportIt)
+                stateWhenCancelled = _attemptState;
+                if (stateWhenCancelled == UploadAttemptState.StartingUp)
                     _attemptState = UploadAttemptState.Idle; // we are about to report it
             }
 
-            // Outside the lock: this sends a websocket message, and the lock exists only to make
+            // Outside the lock: these send websocket messages, and the lock exists only to make
             // the state read/write above indivisible.
-            if (nobodyElseWillReportIt)
+            if (stateWhenCancelled == UploadAttemptState.StartingUp)
+            {
                 ReportUploadCanceled();
+            }
+            else if (stateWhenCancelled == UploadAttemptState.Idle)
+            {
+                // Nothing was running, so we have nothing to say about how it went -- but the
+                // screen may still be sitting in its Cancel state (an upload can finish in the
+                // moment between the user's click and this request arriving). Send the event
+                // alone: it releases the screen without claiming an upload was cancelled when
+                // it may in fact have just succeeded.
+                ReportUploadCanceled(withMessage: false);
+            }
+            // Uploading: UploadBookAsync reports whatever becomes of it.
 
             request.PostSucceeded();
         }
