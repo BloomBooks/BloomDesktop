@@ -59,7 +59,29 @@ shell page  (top, url .../bloom/…Temp/bloomXXXX.htm)
 
 Right-click the canvas element → **"Edit with AI…"**. Loading the iframe directly (as the
 `bloom-exe-ai-editor-open.uitest.ts` smoke test does) does **not** register
-`aiEditorLauncher.ts`'s postMessage handler, so the commit + current-page save path wouldn't run.
+`aiEditorOverlay.ts`'s postMessage handler, so the commit + current-page save path wouldn't run.
+
+**The overlay does not appear on the same tick as the click.** The menu command posts
+`aiImageEditor/saveThenLaunch`, which makes C# save the current page — reloading the `page`
+frame — and then, *once the reloaded page reports back*, call
+`workspaceBundle.openAiImageEditor(...)` in the shell (BL-16682; the saved book DOM has to be
+current or the editor opens with an empty "Image to Edit" slot). So the wait spans a whole page
+load: **wait for the overlay**, e.g. `await page.waitForSelector("#ai-editor-overlay iframe")`,
+and don't re-use any content-frame handle taken before the click — that frame is gone.
+
+Note also that the overlay itself belongs to the **shell**, not the `page` frame, so it survives
+page reloads: a commit saves the page immediately and the ✕ keeps working across that reload.
+(It does *not* survive a reload of the whole workspace root, which
+`EditingView.StartNavigationToEditPage` does once `MemoryUtils.SystemIsShortOfMemory()` — Bloom's
+own private bytes past ~2GB, i.e. a long session on a big book. That closes the overlay like any
+other dialog; results already generated are safe on disk under `.ai-image-editor/history/`. To
+exercise that state deliberately, temporarily make `ShouldDoFullReload()` return `true`; note
+that while it is forced on, **every** page click reloads the whole view, which is normal for that
+switch and not a bug in what you're testing.)
+(It does *not* survive a reload of the whole workspace root, which
+`EditingView.StartNavigationToEditPage` does when the UI language just changed or Bloom is past
+~2GB. That closes the overlay like any other dialog; results already generated are safe on disk
+under `.ai-image-editor/history/`.)
 
 **Gotcha:** a Comical `<canvas class="comical-generated">` overlay sits on top of the image and
 intercepts element-targeted clicks (Playwright reports `<canvas …> intercepts pointer events`).
@@ -90,10 +112,10 @@ await ef.getByTestId("bloom-host-commit-current-result").click(); // posts commi
 ```
 
 Commit split: off-page slots are applied + saved in C# (`HandleCommit`); the **current page**
-is returned as `{oldSrc,newSrc,copyright,creator,license}` and applied by `aiEditorLauncher.ts`
-via `changeImageByElement`
-on the live DOM, which then fires `common/saveChangesAndRethinkPageEvent` to persist it (you'll
-see the shell URL gain a `?pageSrc=…` as the page rethinks).
+is returned as `{oldSrc,newSrc,copyright,creator,license}`, which the overlay hands to the page
+frame's `applyAiImageEditorReplacements` to apply via `changeImageByElement` on the live DOM. The
+overlay then fires `common/saveChangesAndRethinkPageEvent` to persist it (you'll see the shell URL
+gain a `?pageSrc=…` as the page rethinks).
 
 ## 5. Verify a commit actually persisted (all three "lost my edit/credits" bugs)
 

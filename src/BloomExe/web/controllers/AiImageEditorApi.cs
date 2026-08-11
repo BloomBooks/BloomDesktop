@@ -47,13 +47,17 @@ namespace Bloom.web.controllers
     ///
     /// TWO COMMUNICATION PLANES
     ///   1. HTTP, AI image editor / front-end JS -> this controller, over Bloom's server:
+    ///        aiImageEditor/saveThenLaunch  what the menu command posts: save the page being
+    ///                                    edited (needed before we can enumerate the book's
+    ///                                    images), then call openAiImageEditor() in the top
+    ///                                    window. The one C#->browser call here; see the method.
     ///        aiImageEditor/launch        mint session, make folders, enumerate book
     ///                                    images + history, return the launch payload.
     ///        aiImageEditor/file          GET/POST/DELETE files under .ai-image-editor/.
     ///        aiImageEditor/commit        apply the chosen replacements to the book.
     ///        aiImageEditor/saveCredentials  persist the user's OpenRouter API key.
     ///   2. window.postMessage on channel "bloom-ai-image-tools", between the overlay JS
-    ///      (CanvasElementContextControls.tsx) and the AI image editor's iframe: ready /
+    ///      (aiEditorOverlay.ts, in the TOP window) and the AI image editor's iframe: ready /
     ///      init / commit / cancel / log / ack. The overlay JS — NOT this class — sends
     ///      `init` (built from the launch reply) and tears the overlay down. Image BYTES
     ///      never cross postMessage; they move only as files via aiImageEditor/file.
@@ -71,8 +75,9 @@ namespace Bloom.web.controllers
     /// COMMIT SPLIT
     ///   Off-page images are edited directly in the whole-book DOM here and saved. The
     ///   currently-open page is owned by the live browser, so those replacements are
-    ///   returned as {oldSrc,newSrc,copyright,creator,license} for the overlay JS to apply via
-    ///   Bloom's changeImage().
+    ///   returned as {oldSrc,newSrc,copyright,creator,license}; the overlay hands them to the
+    ///   page frame's applyAiImageEditorReplacements(), which applies them via Bloom's
+    ///   changeImageByElement() (aiEditorPageCommands.ts).
     ///
     /// AI IMAGE EDITOR REPO: bloom-ai-image-tools — App.tsx (mode=bloom-iframe),
     ///   services/host/BloomHostBridge.ts (createIframeBloomHostBridge),
@@ -161,6 +166,12 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler(
+                "aiImageEditor/saveThenLaunch",
+                HandleSaveThenLaunch,
+                handleOnUiThread: true,
+                requiresSync: false
+            );
+            apiHandler.RegisterEndpointHandler(
                 "aiImageEditor/launch",
                 HandleLaunch,
                 handleOnUiThread: true,
@@ -213,6 +224,112 @@ namespace Bloom.web.controllers
             if (!string.IsNullOrWhiteSpace(overrideUrl))
                 return overrideUrl;
             return $"{BloomServer.ServerUrl}/bloom/aiImageEditor/index.html";
+        }
+
+        /// <summary>The image the user right-clicked, as the page frame sends it to
+        /// <see cref="HandleSaveThenLaunch"/> and as we hand it back to the browser once the page
+        /// has been saved. See IAiImageEditorTarget in aiEditorShared.ts. The page frame sends only
+        /// the file name; we fill in the page id, since we are the ones who know which page we
+        /// saved, and the overlay (in the top window) has no page DOM of its own to read it from.
+        /// </summary>
+        private class SaveThenLaunchRequest
+        {
+            public string imageFileName { get; set; }
+            public string pageId { get; set; }
+        }
+
+        /// <summary>
+        /// Saves the page the user is editing, then opens the AI image editor on it.
+        ///
+        /// The save is the point of this endpoint. Everything we tell the AI image editor about
+        /// the book — the image list from <see cref="EnumerateBookImages"/>, and on commit each
+        /// slot's current src — is read from the SAVED book DOM, but an image the user has just
+        /// added exists only in the live page (Bloom deliberately doesn't save on an image change;
+        /// see EditingModel.UpdateImageInBrowser and BL-16330). Launching against the unsaved DOM
+        /// opened the editor with an empty "Image to Edit" slot (BL-16682); it would also have
+        /// made the current page's commit results describe an image the live page no longer shows,
+        /// and left <see cref="DeleteSupersededAiImageFiles"/> blind to a file the live page uses.
+        ///
+        /// Two separate things follow from the fact that saving always ends in a navigation.
+        ///
+        /// WHERE the overlay lives: not in the page iframe, which that navigation replaces every
+        /// time — hence the top window, like the image-gallery and copyright/license commands (see
+        /// aiEditorOverlay.ts and the comments on those commands in canvasControlRegistry.ts).
+        ///
+        /// WHEN we open it: only once the browser has a page again, via
+        /// EditingModel.RunAfterNextPageLoad. It is tempting to use SaveThen's doAfterSaveToDisk
+        /// instead, since the top window is alive at that moment — but that moment is immediately
+        /// before the navigation, and the navigation is not always confined to the page iframe.
+        /// EditingView.StartNavigationToEditPage reloads the whole workspace root when
+        /// MemoryUtils.SystemIsShortOfMemory(), which is Bloom's own private bytes past ~2GB —
+        /// the ordinary state of a long editing session on a big book. Opening from
+        /// doAfterSaveToDisk there meant the page saved correctly and the editor never appeared,
+        /// with no message: openAiImageEditor doesn't even build the overlay synchronously; it
+        /// POSTs launch first and builds it in the reply, a whole round trip after the reload
+        /// began. Waiting for the page load costs nothing and is immune to all three routes.
+        ///
+        /// To see that failure for yourself, temporarily make ShouldDoFullReload() return true —
+        /// its own comment invites exactly this — rather than trying to grow Bloom past 2GB.
+        /// </summary>
+        private void HandleSaveThenLaunch(ApiRequest request)
+        {
+            // Must be read before SaveThen: by the time our callbacks run the request is complete.
+            SaveThenLaunchRequest payload;
+            try
+            {
+                payload = request.RequiredPostObject<SaveThenLaunchRequest>();
+            }
+            catch (Exception)
+            {
+                request.Failed(HttpStatusCode.BadRequest, "Invalid saveThenLaunch payload");
+                return;
+            }
+
+            var model = View?.Model;
+            var pageId = model?.CurrentPage?.Id;
+            if (model == null || string.IsNullOrEmpty(pageId))
+            {
+                request.Failed("No page is open for editing");
+                return;
+            }
+            payload.pageId = pageId;
+
+            // Queue BEFORE the save: with no page loaded, SaveThen completes synchronously.
+            model.RunAfterNextPageLoad(loadedPageId =>
+            {
+                // A different page means the user navigated, or the save failed and we went
+                // elsewhere; the image we were asked to edit isn't there to edit.
+                if (loadedPageId == pageId)
+                    OpenEditorInBrowser(payload);
+            });
+            model.SaveThen(
+                () => pageId,
+                doIfNotInRightStateToSave: () => {
+                    // Leave the queued launch alone. Every state that refuses a save — one already
+                    // in flight, mid-navigation, saved-and-stripped — is on its way to a page load,
+                    // and that load will open the editor against a book DOM the other save has just
+                    // brought up to date, which is all we wanted.
+                }
+            );
+            // No failureAction is needed, and adding one would open the editor twice: every way a
+            // save can fail still ends in EditingStateMachine navigating back to the page, so the
+            // queued launch fires anyway. That the hook covers the failure paths for free is one of
+            // the reasons for preferring it over doAfterSaveToDisk.
+
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Tells the browser to open the AI image editor overlay on <paramref name="target"/>. The
+        /// browser owns the overlay (only it can postMessage to the editor's iframe), so all this
+        /// side does is call its entry point; see openAiImageEditor in aiEditorOverlay.ts.
+        /// Fire-and-forget, like EditingModel.UpdateImageInBrowser's call to changeImage: there is
+        /// nothing here to wait for.
+        /// </summary>
+        private void OpenEditorInBrowser(SaveThenLaunchRequest target)
+        {
+            var arg = JsonConvert.SerializeObject(target);
+            View?.Browser?.RunJavascriptFireAndForget($"workspaceBundle.openAiImageEditor({arg})");
         }
 
         /// <summary>
