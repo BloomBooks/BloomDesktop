@@ -42,7 +42,7 @@ Process is terminating due to StackOverflowException
 Test Run Aborted
 The active test run was aborted
 [Tt]esthost process exited with error
-test host process crashed
+[Tt]est host process crashed
 
 # Nothing ran at all: normally a filter that matches nothing, which is a mistake worth catching
 # rather than a green run of zero tests.
