@@ -12,15 +12,15 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 const postJson = vi.fn();
 const changeImageByElement = vi.fn();
 
-vi.mock("../../../utils/bloomApi", () => ({
+vi.mock("../../utils/bloomApi", () => ({
     postJson: (...args: unknown[]) => postJson(...args),
 }));
 
-vi.mock("../../js/bloomEditing", () => ({
+vi.mock("../js/bloomEditing", () => ({
     changeImageByElement: (...args: unknown[]) => changeImageByElement(...args),
 }));
 
-vi.mock("../../js/bloomImages", () => ({
+vi.mock("../js/bloomImages", () => ({
     getImageUrlFromImageContainer: (container: HTMLElement) =>
         container.getAttribute("data-url") ?? "",
     // The matcher compares filenames off the live elements; in the real thing this reads
