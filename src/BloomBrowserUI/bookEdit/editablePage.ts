@@ -135,11 +135,11 @@ import {
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 // Called from the AI Image Editor overlay in the top window, which owns the session but
 // cannot touch this page itself; see aiEditorPageCommands.ts and aiEditorOverlay.ts.
-import { applyAiImageEditorReplacements } from "./toolbox/canvas/aiEditorPageCommands";
+import { applyAiImageEditorReplacements } from "./aiImageEditor/aiEditorPageCommands";
 import type {
     IAiImageEditorApplyOutcome,
     IAiImageEditorCommitResult,
-} from "./toolbox/canvas/aiEditorShared";
+} from "./aiImageEditor/aiEditorShared";
 export {
     getBodyContentForSavePage,
     requestPageContent,

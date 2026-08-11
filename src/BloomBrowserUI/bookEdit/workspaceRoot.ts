@@ -86,8 +86,8 @@ import { showImageGalleryDialog as doShowImageGalleryDialog } from "../react_com
 // The AI Image Editor overlay belongs up here, not in the page iframe, because saving the
 // page reloads that iframe and would strand the overlay; C# calls this once it has saved.
 // See aiEditorOverlay.ts.
-import { openAiImageEditor } from "./toolbox/canvas/aiEditorOverlay";
-import type { IAiImageEditorTarget } from "./toolbox/canvas/aiEditorShared";
+import { openAiImageEditor } from "./aiImageEditor/aiEditorOverlay";
+import type { IAiImageEditorTarget } from "./aiImageEditor/aiEditorShared";
 export { openAiImageEditor };
 import { renderRoot } from "../utils/reactRender";
 import { FunctionComponentElement } from "react";

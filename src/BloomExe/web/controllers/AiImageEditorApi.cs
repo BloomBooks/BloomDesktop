@@ -33,6 +33,11 @@ namespace Bloom.web.controllers
     ///   and Bloom does NOT import the AI image editor's code: it is a self-contained web
     ///   app loaded by URL. There is no npm/bundler dependency between the two projects.
     ///
+    /// THE FRONT-END HALF
+    ///   src/BloomBrowserUI/bookEdit/aiImageEditor/ — read its AGENTS.md first: those files are
+    ///   split by which browser frame they run in (overlay in the top window, live-page work in
+    ///   the page iframe), and that split is what the two-plane design below rests on.
+    ///
     /// WHERE THE AI IMAGE EDITOR COMES FROM  (see GetAiImageEditorUrl)
     ///   DEFAULT: {ServerUrl}/bloom/aiImageEditor/index.html — its built app
     ///            ("dist-app"), served same-origin by BloomServer so there's no CORS.

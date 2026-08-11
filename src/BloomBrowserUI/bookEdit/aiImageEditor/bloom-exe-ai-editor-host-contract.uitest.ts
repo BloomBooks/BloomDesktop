@@ -1,5 +1,5 @@
 import { test, expect } from "playwright/test";
-import { connectToBloomExe } from "../../../react_components/component-tester/bloomExeCdp";
+import { connectToBloomExe } from "../../react_components/component-tester/bloomExeCdp";
 
 // End-to-end tests for the AI Image Editor HOST CONTRACT (see AiImageEditorApi.cs). These
 // attach to a real, running Bloom.exe over CDP and exercise the /file persistence endpoint and
