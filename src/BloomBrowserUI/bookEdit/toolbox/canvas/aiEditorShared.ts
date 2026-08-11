@@ -28,6 +28,21 @@ export interface IAiImageEditorCommitResult {
     license?: string;
 }
 
+// Whether this commit result is a swap the page frame has to make on the live page. Shared so
+// the two halves cannot disagree: the overlay uses it to decide whether it needs the page frame
+// at all, and the page frame uses it to pick the results to apply.
+export function isCurrentPageSwap(
+    result?: IAiImageEditorCommitResult,
+): boolean {
+    return !!(
+        result &&
+        result.ok &&
+        result.isCurrentPage &&
+        result.newSrc &&
+        result.oldSrc
+    );
+}
+
 // What the page frame reports back about the current-page swaps it was asked to make.
 // `applied` counts swaps that actually landed in the live DOM; the overlay compares it
 // with `expected` to tell the AI image editor the truth about a partial failure. A swap

@@ -274,16 +274,12 @@ namespace Bloom.web.controllers
         private void HandleSaveThenLaunch(ApiRequest request)
         {
             // Must be read before SaveThen: by the time our callbacks run the request is complete.
-            SaveThenLaunchRequest payload;
-            try
-            {
-                payload = request.RequiredPostObject<SaveThenLaunchRequest>();
-            }
-            catch (Exception)
-            {
-                request.Failed(HttpStatusCode.BadRequest, "Invalid saveThenLaunch payload");
-                return;
-            }
+            // Deliberately unguarded: the only caller is launchAiImageEditor in
+            // aiEditorPageCommands.ts, which always sends {imageFileName}, so a parse failure means
+            // we broke our own contract and we want to hear about it with the real exception rather
+            // than a generic "invalid payload" that says nothing (see AGENTS.md, "Don't be overly
+            // defensive about error handling").
+            var payload = request.RequiredPostObject<SaveThenLaunchRequest>();
 
             var model = View?.Model;
             var pageId = model?.CurrentPage?.Id;

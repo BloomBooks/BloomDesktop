@@ -295,6 +295,58 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         postMessageToEditor.mockRestore();
     });
 
+    test("an all-off-page commit succeeds even if the page frame is unreachable", () => {
+        // The page frame is briefly null while it reloads — which this feature's own
+        // post-commit save causes. Asking for it when the commit has nothing to do on the
+        // open page reported an error for images C# had in fact replaced and saved, and
+        // invited a retry that would redo them and orphan the files.
+        getEditablePageBundleExports.mockReturnValue(null);
+        const { iframe, postFromEditor } = openAgainstABookWithOneImage();
+        const postMessageToEditor = vi.spyOn(
+            iframe.contentWindow!,
+            "postMessage",
+        );
+
+        // C# applied everything itself; nothing is flagged isCurrentPage.
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "commit",
+            requestId: "req1",
+            payload: {
+                replacements: [{ incomingId: "page2:0", resultId: "result1" }],
+            },
+        });
+        const onSuccess = postJson.mock.calls[0][2] as (r: {
+            data: unknown;
+        }) => void;
+        onSuccess({
+            data: {
+                ok: true,
+                appliedCount: 1,
+                results: [
+                    {
+                        incomingId: "page2:0",
+                        ok: true,
+                        isCurrentPage: false,
+                        oldSrc: "other.png",
+                        newSrc: "ai-image1.png",
+                    },
+                ],
+            },
+        });
+
+        const ack = postMessageToEditor.mock.calls[0][0] as {
+            ok: boolean;
+            error?: string;
+        };
+        expect(ack.ok).toBe(true);
+        expect(ack.error).toBeUndefined();
+        // Nothing landed on this page, so nothing to save.
+        expect(postThatMightNavigate).not.toHaveBeenCalled();
+        expect(applyAiImageEditorReplacements).not.toHaveBeenCalled();
+        postMessageToEditor.mockRestore();
+    });
+
     test("acks a failure when the page frame is unreachable", () => {
         // Fail loudly rather than silently reporting success for swaps that never happened.
         getEditablePageBundleExports.mockReturnValue(null);

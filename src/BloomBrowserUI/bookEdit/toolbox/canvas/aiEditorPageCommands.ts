@@ -22,6 +22,7 @@ import {
     fileNameOf,
     IAiImageEditorApplyOutcome,
     IAiImageEditorCommitResult,
+    isCurrentPageSwap,
 } from "./aiEditorShared";
 
 // Starts "Edit with AI…" for the given image. `img` is the right-clicked image and
@@ -62,9 +63,7 @@ function asMessage(e: unknown): string {
 export function applyAiImageEditorReplacements(
     results?: IAiImageEditorCommitResult[],
 ): IAiImageEditorApplyOutcome {
-    const toApply = (results ?? []).filter(
-        (r) => r && r.ok && r.isCurrentPage && r.newSrc && r.oldSrc,
-    );
+    const toApply = (results ?? []).filter(isCurrentPageSwap);
     if (toApply.length === 0) return { applied: 0, expected: 0 };
     const pageRoot =
         (document.querySelector(".bloom-page") as HTMLElement) || document;

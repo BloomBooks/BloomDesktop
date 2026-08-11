@@ -78,10 +78,6 @@ other dialog; results already generated are safe on disk under `.ai-image-editor
 exercise that state deliberately, temporarily make `ShouldDoFullReload()` return `true`; note
 that while it is forced on, **every** page click reloads the whole view, which is normal for that
 switch and not a bug in what you're testing.)
-(It does *not* survive a reload of the whole workspace root, which
-`EditingView.StartNavigationToEditPage` does when the UI language just changed or Bloom is past
-~2GB. That closes the overlay like any other dialog; results already generated are safe on disk
-under `.ai-image-editor/history/`.)
 
 **Gotcha:** a Comical `<canvas class="comical-generated">` overlay sits on top of the image and
 intercepts element-targeted clicks (Playwright reports `<canvas …> intercepts pointer events`).

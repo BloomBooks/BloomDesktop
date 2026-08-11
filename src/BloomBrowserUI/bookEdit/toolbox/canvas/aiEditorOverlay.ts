@@ -33,9 +33,30 @@ import { post, postJson, postThatMightNavigate } from "../../../utils/bloomApi";
 import { getEditablePageBundleExports } from "../../js/workspaceFrames";
 import {
     fileNameOf,
+    IAiImageEditorApplyOutcome,
     IAiImageEditorCommitResult,
     IAiImageEditorTarget,
+    isCurrentPageSwap,
 } from "./aiEditorShared";
+
+// Hand the commit's current-page swaps to the page frame, which owns the live page. Only call
+// this when there is such a swap (see isCurrentPageSwap): the frame is briefly unreachable while
+// it reloads, and a commit with nothing to do on that page must not be failed for that.
+function applyOnThePageBeingEdited(
+    results?: IAiImageEditorCommitResult[],
+): IAiImageEditorApplyOutcome {
+    const pageFrame = getEditablePageBundleExports();
+    if (!pageFrame) {
+        // Say what DID happen as well as what didn't: by now C# has applied and saved every
+        // off-page replacement, so "the commit failed" on its own would invite a blind retry
+        // that redoes those and orphans their files.
+        throw new Error(
+            "the page being edited is not available, so only the replacements on other " +
+                "pages were made (those are saved)",
+        );
+    }
+    return pageFrame.applyAiImageEditorReplacements(results);
+}
 
 // Opens the AI Image Editor overlay, with the image named by `target` (the one the user
 // right-clicked, before the save reloaded the page frame) in its "Image to Edit" slot.
@@ -270,22 +291,17 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                             let message: string | undefined;
                             let currentPageApplied = 0;
                             try {
-                                const pageFrame =
-                                    getEditablePageBundleExports();
-                                if (!pageFrame) {
-                                    // Say what DID happen as well as what didn't: by now C#
-                                    // has applied and saved every off-page replacement, so
-                                    // "the commit failed" on its own would invite a blind
-                                    // retry that redoes those and orphans their files.
-                                    throw new Error(
-                                        "the page being edited is not available, so only the " +
-                                            "replacements on other pages were made (those are saved)",
-                                    );
-                                }
-                                const cp =
-                                    pageFrame.applyAiImageEditorReplacements(
-                                        result?.results,
-                                    );
+                                // Only involve the page frame when this commit actually has a
+                                // swap for the page being edited. Asking for it unconditionally
+                                // failed a wholly successful off-page commit whenever the frame
+                                // happened to be mid-reload — reporting an error for images that
+                                // had in fact been replaced and saved, and inviting a retry that
+                                // would redo them and orphan the files.
+                                const cp = (result?.results ?? []).some(
+                                    isCurrentPageSwap,
+                                )
+                                    ? applyOnThePageBeingEdited(result?.results)
+                                    : { applied: 0, expected: 0 };
                                 currentPageApplied = cp.applied;
                                 const serverOk = result?.ok !== false;
                                 finalOk =
