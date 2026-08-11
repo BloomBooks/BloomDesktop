@@ -1031,7 +1031,12 @@ namespace BloomTests.web
                 server.MakeReply(encTransaction);
                 Assert.That(encTransaction.ReplyContents, Is.EqualTo(testData));
 
-                // double level of Url encoding fed to server
+                // double level of Url encoding fed to server.
+                // This works because ProcessAnyFileContent decodes a second time and keeps that
+                // result only when it is what finds the file. Worth knowing: it is NOT that the
+                // server decodes twice unconditionally -- a file whose name really contains "%41"
+                // relies on the same guard to be left alone. See
+                // FileNameContainingPercentThenHexDigits_IsFound below for the other side of it.
                 var enc2TxtFile = txtFile.Replace(" ", "%20"); // encodes spaces
                 var enc2Url = enc2TxtFile.ToLocalhost(); // double encodes spaces
                 var enc2Transaction = new PretendRequestInfo(enc2Url);
@@ -1041,11 +1046,47 @@ namespace BloomTests.web
             }
         }
 
-        // NB: a test here for a file name containing a literal '%' (BL-16669) would fail for a
-        // reason that has nothing to do with the server: PretendRequestInfo decodes the url twice
-        // (UnescapeFileNameForHttp and then UrlDecode) where the real RequestInfo decodes once.
-        // That case is covered against the real RequestInfo in
-        // RequestInfoTests.LocalPathWithoutQuery_SpecialCharactersDecodedCorrectly.
+        /// <summary>
+        /// BL-16669: a file name may itself contain a '%' followed by two hex digits, which looks
+        /// exactly like an escape. Encoded for the url that '%' becomes "%25", and the server has
+        /// to end up asking the disk for the real name rather than for the name you get by
+        /// decoding one time too many.
+        ///
+        /// Note how this coexists with HandleDoubleEncodedUrls above, which needs the opposite:
+        /// ProcessAnyFileContent decodes a second time but keeps the result ONLY if that is what
+        /// finds the file (BloomServer.cs, "if (RobustFileExistsWithCaseCheck(tempPath))"). So the
+        /// two cases are distinguished by what is actually on disk, not by guessing -- which is
+        /// the same approach this branch adopted elsewhere.
+        /// </summary>
+        [Test]
+        public void FileNameContainingPercentThenHexDigits_IsFound()
+        {
+            using (var server = CreateBloomServer())
+            {
+                Directory.CreateDirectory(_collectionPath);
+                var txtFile = Path.Combine(_collectionPath, "photo%41.txt");
+                const string testData = @"This is a test!\r\n";
+                File.WriteAllText(txtFile, testData);
+                // Sanity check: nothing exists under the wrongly-decoded name, so a pass here can
+                // only mean the server found the file we actually made.
+                Assert.That(
+                    File.Exists(Path.Combine(_collectionPath, "photoA.txt")),
+                    Is.False,
+                    "test setup: the wrongly-decoded name must not exist"
+                );
+
+                var transaction = new PretendRequestInfo(txtFile.ToLocalhost());
+                Assert.That(
+                    transaction.RawUrl.Contains("photo%2541.txt"),
+                    Is.True,
+                    "test setup: the '%' in the name should have been encoded as %25"
+                );
+
+                server.MakeReply(transaction);
+
+                Assert.That(transaction.ReplyContents, Is.EqualTo(testData));
+            }
+        }
 
         [Test]
         public void GetLocalPathRoot_UrlToFileInRoot_ReturnsDirectoryAsRoot()
