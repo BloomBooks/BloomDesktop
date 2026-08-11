@@ -20,14 +20,14 @@ const postThatMightNavigate = vi.fn();
 const applyAiImageEditorReplacements = vi.fn();
 const getEditablePageBundleExports = vi.fn();
 
-vi.mock("../../../utils/bloomApi", () => ({
+vi.mock("../../utils/bloomApi", () => ({
     post: (...args: unknown[]) => post(...args),
     postJson: (...args: unknown[]) => postJson(...args),
     postThatMightNavigate: (...args: unknown[]) =>
         postThatMightNavigate(...args),
 }));
 
-vi.mock("../../js/workspaceFrames", () => ({
+vi.mock("../js/workspaceFrames", () => ({
     getEditablePageBundleExports: () => getEditablePageBundleExports(),
 }));
 

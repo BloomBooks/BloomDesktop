@@ -1,5 +1,5 @@
 import { test, expect } from "playwright/test";
-import { connectToBloomExe } from "../../../react_components/component-tester/bloomExeCdp";
+import { connectToBloomExe } from "../../react_components/component-tester/bloomExeCdp";
 
 // End-to-end smoke test for the "Edit with AI..." integration (see
 // canvasControlRegistry.ts `editWithAi` and AiImageEditorApi.cs). It attaches to a
