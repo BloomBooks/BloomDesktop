@@ -45,8 +45,13 @@ namespace BloomTests
             // Decode EXACTLY ONCE, and drop the query string first, because that is what the real
             // RequestInfo.LocalPathWithoutQuery does. This used to decode twice -- once here via
             // UnescapeFileNameForHttp and again via UrlDecode -- which made the tests a poor model
-            // of the server: a doubly-encoded url resolved here but not in production, and a file
-            // whose name genuinely contains "%41" resolved in production but not here. (BL-16669)
+            // of the server, so a file whose name genuinely contains "%41" resolved in production
+            // but not here. (BL-16669)
+            //
+            // Production does decode a second time, in BloomServer.ProcessAnyFileContent, which is
+            // why HandleDoubleEncodedUrls still passes. The difference is that production's second
+            // decode is kept only when it finds the file, where this one was unconditional -- so
+            // the old divergence showed up on any name that merely looked doubly encoded.
             var queryStart = path.IndexOf("?", StringComparison.Ordinal);
             var urlToDecode = queryStart == -1 ? path : path.Substring(0, queryStart);
             var pathWithoutLiteralPlusSigns = urlToDecode.Replace("+", "%2B");

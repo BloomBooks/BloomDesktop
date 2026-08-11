@@ -1024,8 +1024,13 @@ namespace BloomTests.web
                 server.MakeReply(transaction);
                 Assert.That(transaction.ReplyContents, Is.EqualTo(testData));
 
-                // single level of Url encoding fed to server
-                var encUrl = txtFile.ToLocalhost().Replace(" ", "%20"); // ToLocalHost() does partial encoding, but not for spaces.
+                // single level of Url encoding fed to server.
+                // The Replace is a no-op and the comment that used to be here ("ToLocalHost() does
+                // partial encoding, but not for spaces") was wrong: ToLocalhost escapes each path
+                // component with Uri.EscapeDataString, which does encode a space, so by this point
+                // there is no literal space left to replace. That makes this case identical to the
+                // one above; kept because it costs nothing and states the intent explicitly.
+                var encUrl = txtFile.ToLocalhost().Replace(" ", "%20");
                 var encTransaction = new PretendRequestInfo(encUrl);
                 Assert.That(encTransaction.RawUrl.Contains("%20"), Is.True);
                 server.MakeReply(encTransaction);

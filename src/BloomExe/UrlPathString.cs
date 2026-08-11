@@ -41,11 +41,11 @@ namespace Bloom
     /// the three file-system consumers above no longer find any name containing a space, and the
     /// first of them would delete the file as unused.
     ///
-    /// The cost of that choice, which we accept: the consumers that DO build a URL from these
-    /// values just concatenate them, so a sound whose name contains a percent escape
-    /// ("beep%41.mp3") fails to play. That is true both in BloomPlayer and in our own editor
-    /// (GameTool.tsx's playSound does "audio/" + name). Fixing it belongs in those two places, by
-    /// encoding when the URL is built rather than by storing the name encoded.
+    /// The consequence: whoever turns one of these names INTO a url has to encode it at that
+    /// point, or a sound whose name contains a percent escape ("beep%41.mp3") is asked for as
+    /// "beepA.mp3" and silently never plays. GameTool.tsx's playSound does that encoding. Bloom
+    /// Player, which reads the same attributes in a published book, does not yet -- that is
+    /// BL-16688, and it is the reason such a sound still fails there.
     ///
     /// Note that this is all about URL encoding. XML/HTML encoding is a separate matter and is
     /// handled for us: SetAttribute and InnerText escape on write and unescape on read, so a '&amp;'
