@@ -84,7 +84,8 @@ if [ ! -f "$MARKERS" ]; then
 fi
 
 LOG="$(mktemp -t agent-dotnet-test-XXXXXX)"
-trap 'rm -f "$LOG"' EXIT
+TRIMMED="$LOG.trimmed"
+trap 'rm -f "$LOG" "$TRIMMED"' EXIT
 
 # stderr is merged in because that is where the runtime prints the crash banners we are
 # looking for. PIPESTATUS[0] rather than $? because $? here would be tee's.
@@ -93,6 +94,12 @@ BLOOM_AGENT_BUILD_DIR="$SCRATCH" dotnet "$@" -p:OutDir="$SCRATCH/bin/" 2>&1 | te
 STATUS=${PIPESTATUS[0]}
 set -e
 
+# Match against a copy with the indentation taken off the front of every line. That is what lets
+# the markers file anchor its patterns with a plain ^ and mean the same thing here as it does to
+# Select-String in the PowerShell twin -- writing "start of line, then optional whitespace" is the
+# one thing the two regex engines cannot be made to agree on (see the note in the markers file).
+sed 's/^[[:space:]]*//' "$LOG" >"$TRIMMED"
+
 ABORT_EVIDENCE=""
 while IFS= read -r pattern || [ -n "$pattern" ]; do
     # The repo is text=auto and Windows checkouts are autocrlf, so the markers file may well
@@ -100,14 +107,14 @@ while IFS= read -r pattern || [ -n "$pattern" ]; do
     # would silently stop it ever matching, which is the one failure this file must not have.
     pattern="${pattern%$'\r'}"
     case "$pattern" in '' | '#'*) continue ;; esac
-    match="$(grep -m1 -E "$pattern" "$LOG" || true)"
+    match="$(grep -m1 -E "$pattern" "$TRIMMED" || true)"
     if [ -n "$match" ]; then
         ABORT_EVIDENCE="$match"
         break
     fi
 done <"$MARKERS"
 
-SUMMARY="$(grep -E '^[ \t]*(Passed|Failed)!' "$LOG" | tail -1 || true)"
+SUMMARY="$(grep -E "^(Passed|Failed)!" "$TRIMMED" | tail -1 || true)"
 
 echo ""
 if [ -n "$ABORT_EVIDENCE" ]; then

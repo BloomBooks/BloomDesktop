@@ -57,15 +57,22 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// Sends the whole of <paramref name="buffer"/> as the body of <paramref name="response"/>
-        /// and then closes the response, without waiting for any of that to finish. The caller is
-        /// responsible for having set ContentLength64 (which is the one thing
-        /// HttpListenerResponse.Close(buffer, ...) would have worked out for itself).
+        /// Sends the first <paramref name="count"/> bytes of <paramref name="buffer"/> as the body
+        /// of <paramref name="response"/> and then closes the response, without waiting for any of
+        /// that to finish.
         /// </summary>
-        internal static void SendAndClose(HttpListenerResponse response, byte[] buffer)
+        /// <remarks>
+        /// Sets ContentLength64 from <paramref name="count"/> rather than trusting the caller to
+        /// have got it right, because the two disagreeing is not a small mistake: http.sys refuses
+        /// a body longer than the declared length, so the client would get a dead connection and
+        /// the only trace would be a line in the log. A caller that set it already is setting it to
+        /// the same number.
+        /// </remarks>
+        internal static void SendAndClose(HttpListenerResponse response, byte[] buffer, int count)
         {
+            response.ContentLength64 = count;
             Track(
-                () => response.OutputStream.WriteAsync(buffer, 0, buffer.Length),
+                () => response.OutputStream.WriteAsync(buffer, 0, count),
                 // Closes the output stream and releases the request context, which is what the
                 // "Close" in Response.Close(buffer, ...) did for us before.
                 () => response.Close()

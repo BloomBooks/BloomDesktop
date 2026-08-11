@@ -12,16 +12,22 @@
 #
 # One extended regular expression per line; blank lines and # comments are ignored. Keep them
 # simple enough to mean the same thing to grep -E and to .NET's Select-String: no \s, no
-# [[:space:]], no lazy quantifiers. Anchor the ones that could otherwise match a test's own
-# output (a test about error reporting may well print the words "unhandled exception"); the
-# runtime prints its banners at the start of a line.
+# [[:space:]], no lazy quantifiers, and in particular no [ \t] -- inside a bracket expression
+# grep -E reads that as a literal backslash and letter t, while .NET reads it as a tab, so a
+# pattern using it would quietly mean different things in the two scripts this file exists to
+# keep in step. Both scripts strip leading whitespace from each line of output before matching,
+# so an anchored pattern here needs no allowance for indentation.
+#
+# Anchor the ones that could otherwise match a test's own output (a test about error reporting
+# may well print the words "unhandled exception"); the runtime prints its banners at the start
+# of a line.
 
 # The .NET runtime's own death notices. The second is what Environment.FailFast prints, which is
 # what a failing Debug.Assert or Debug.Fail comes to in a process with no debugger attached.
-^[ \t]*Unhandled exception\.
-^[ \t]*Process terminated\.
-^[ \t]*Fatal error\.
-^[ \t]*Stack overflow\.
+^Unhandled exception\.
+^Process terminated\.
+^Fatal error\.
+^Stack overflow\.
 Process is terminating due to StackOverflowException
 
 # VSTest noticing that the host it was driving went away.
@@ -32,4 +38,4 @@ test host process crashed
 
 # Nothing ran at all: normally a filter that matches nothing, which is a mistake worth catching
 # rather than a green run of zero tests.
-^[ \t]*No test is available
+^No test is available

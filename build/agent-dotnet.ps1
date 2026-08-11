@@ -68,14 +68,20 @@ $status = $LASTEXITCODE
 $ErrorActionPreference = 'Stop'
 
 try {
+    # Match against the output with the indentation taken off the front of every line. That is what
+    # lets the markers file anchor its patterns with a plain ^ and mean the same thing here as it
+    # does to grep -E in the bash twin -- writing "start of line, then optional whitespace" is the
+    # one thing the two regex engines cannot be made to agree on (see the note in the markers file).
+    $trimmedOutput = Get-Content $log | ForEach-Object { $_.TrimStart() }
+
     $abortEvidence = $null
     foreach ($pattern in Get-Content $markersFile) {
         if ($pattern.Trim() -eq '' -or $pattern.TrimStart().StartsWith('#')) { continue }
-        $hit = Select-String -Path $log -Pattern $pattern -List
+        $hit = $trimmedOutput | Select-String -Pattern $pattern -List
         if ($hit) { $abortEvidence = $hit.Line.Trim(); break }
     }
 
-    $summaryHit = Select-String -Path $log -Pattern '^[ \t]*(Passed|Failed)!'
+    $summaryHit = $trimmedOutput | Select-String -Pattern '^(Passed|Failed)!'
     $summary = if ($summaryHit) { $summaryHit[-1].Line.Trim() } else { $null }
 
     Write-Host ""

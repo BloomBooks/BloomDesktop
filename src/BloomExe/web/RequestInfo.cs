@@ -264,9 +264,12 @@ namespace Bloom.Api
                     fs = null;
                     // This used to be Response.Close(buffer, willBlock: false), which does the same thing but finishes
                     // the send on a framework callback that no catch of ours can reach -- see PendingResponseWrites for
-                    // why that could kill the process (BL-16667). ContentLength64 is already set above, which is the one
-                    // thing that overload would have worked out for itself.
-                    PendingResponseWrites.SendAndClose(_actualContext.Response, buffer);
+                    // why that could kill the process (BL-16667).
+                    PendingResponseWrites.SendAndClose(
+                        _actualContext.Response,
+                        buffer,
+                        buffer.Length
+                    );
                 }
                 else
                 {
@@ -355,7 +358,12 @@ namespace Bloom.Api
                 // As in ReplyWithFileContent: we send the body without waiting for it to arrive, but we
                 // finish the send ourselves rather than letting Response.Close(buffer, willBlock: false)
                 // finish it on a callback we cannot guard. See PendingResponseWrites (BL-16667).
-                PendingResponseWrites.SendAndClose(_actualContext.Response, buffer);
+                // Note actualLength, not buffer.Length: a short read leaves the tail of the buffer
+                // unwritten, and sending it would exceed the Content-Length set just above, which
+                // http.sys rejects. Every caller in Bloom passes an exact length over a MemoryStream,
+                // so today the two are the same number; the overload that defaults the length to 2MB
+                // is what makes them able to differ.
+                PendingResponseWrites.SendAndClose(_actualContext.Response, buffer, actualLength);
             }
 
             HaveFullyProcessedRequest = true;
@@ -457,9 +465,19 @@ namespace Bloom.Api
             // http.sys throws ProtocolViolationException if we try, which would leave the
             // client hanging without a response.
             if (_actualContext.Request.HttpMethod == "HEAD")
+            {
                 _actualContext.Response.Close();
+            }
             else
-                _actualContext.Response.Close(Encoding.UTF8.GetBytes(errorDescription), false);
+            {
+                // Same treatment as the other two bodies we send without waiting: the framework
+                // would finish this one on a callback we cannot guard, and closing the listener
+                // underneath it killed the process (BL-16667). This path matters most of all,
+                // because it is the one that fires as Bloom closes -- the browser goes on asking
+                // for things the server is no longer there to give.
+                var body = Encoding.UTF8.GetBytes(errorDescription);
+                PendingResponseWrites.SendAndClose(_actualContext.Response, body, body.Length);
+            }
             HaveFullyProcessedRequest = true;
         }
 

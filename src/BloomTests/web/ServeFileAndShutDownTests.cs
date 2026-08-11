@@ -4,7 +4,9 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using Bloom.Api;
 using Bloom.Book;
@@ -90,6 +92,44 @@ namespace BloomTests.web
             // PendingResponseWrites), so it is worth checking that the client got every byte and
             // the right ones.
             Assert.That(received, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void MissingFileRequest_OverRealHttp_Returns404WithTheMessageAsTheBody()
+        {
+            // The error path sends its body the same way the success paths do, and it is the one
+            // most likely to be in flight when Bloom shuts down, because the browser goes on asking
+            // for things while the server is going away. Worth its own test because it is also the
+            // one path where nothing else had set ContentLength64 first.
+            var missing = Path.Combine(_folder.Path, "notThere.txt");
+            Assert.That(
+                File.Exists(missing),
+                Is.False,
+                "sanity check: this test is about a file that is not there"
+            );
+
+            using (var server = new BloomServer(new BookSelection()))
+            {
+                server.EnsureListening();
+                using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) })
+                using (var response = client.GetAsync(UrlFor(missing)).Result)
+                {
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+                    // Reading the body to the end is the point: if the declared length and the bytes
+                    // sent disagreed, this would hang or come up short rather than fail loudly.
+                    var body = response.Content.ReadAsStringAsync().Result;
+                    Assert.That(
+                        body,
+                        Is.Not.Empty,
+                        "the 404 should carry its message as the body, which is what client code reads"
+                    );
+                    Assert.That(
+                        response.Content.Headers.ContentLength,
+                        Is.EqualTo(Encoding.UTF8.GetByteCount(body)),
+                        "the length the server declared and the body it actually sent must agree"
+                    );
+                }
+            }
         }
 
         [Test]
