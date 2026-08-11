@@ -15,7 +15,6 @@ import {
 } from "../../bloomMaterialUITheme";
 import { ScopedCssBaseline } from "@mui/material";
 import { TopBarContextMenu } from "./TopBarContextMenu";
-import { whenBookSelectionSettled } from "../../utils/bookSelectionIntent";
 
 export type WorkspaceTabId = "collection" | "edit" | "publish";
 
@@ -98,7 +97,7 @@ export const TopBar: React.FunctionComponent = () => {
     }, [tabStates]);
 
     const handleSelectTab = React.useCallback(
-        async (tab: WorkspaceTabId) => {
+        (tab: WorkspaceTabId) => {
             const tabState = tabStates[tab];
 
             if (
@@ -108,10 +107,6 @@ export const TopBar: React.FunctionComponent = () => {
             ) {
                 return;
             }
-            // The Edit and Publish tabs act on whichever book is selected, so if the user clicked
-            // a book just before this we must let that selection take effect first; otherwise this
-            // request can win the server's API lock and we open the previous book (BL-15971).
-            await whenBookSelectionSettled();
             postJson("workspace/selectTab", { tab });
         },
         [tabStates],

@@ -24,7 +24,6 @@ import {
 } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { BookInfoIndicator } from "../../react_components/BookInfoIndicator";
 import { useGetFeatureStatus } from "../../react_components/featureStatus";
-import { whenBookSelectionSettled } from "../../utils/bookSelectionIntent";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
@@ -153,9 +152,6 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     setProgressOpen(true);
                 }, 5000); // Wait 5 seconds before showing this.
 
-                // This acts on whatever book is selected, so let any book click the user made
-                // just beforehand take effect first, rather than racing it (BL-15971).
-                await whenBookSelectionSettled();
                 await postThatMightNavigate("app/makeOrEditBook");
 
                 clearTimeout(timeoutId); // If the async op completes quickly, make sure not to show the progress dialog after we "close" it

@@ -30,7 +30,6 @@ import { useL10n } from "../react_components/l10nHooks";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { showBookSettingsDialog } from "../bookEdit/bookAndPageSettings/BookAndPageSettingsDialog";
 import { BookOnBlorgBadge } from "../react_components/BookOnBlorgBadge";
-import { postBookSelection } from "../utils/bookSelectionIntent";
 
 export const bookButtonHeight = 120;
 export const bookButtonWidth = 90;
@@ -117,12 +116,8 @@ export const BookButton: React.FunctionComponent<{
 
     // Don't use useApiStringState to get this function because it does an unnecessary server query
     // to get the value, which we are not using, and this hurts performance.
-    // Goes through postBookSelection so that a tab or Edit click made right afterwards can't
-    // overtake it and act on the book we are selecting away from (BL-15971).
     const setSelectedBookIdWithApi = (value) =>
-        postBookSelection(() =>
-            postString(`collections/selected-book?${collectionQuery}`, value),
-        );
+        postString(`collections/selected-book?${collectionQuery}`, value);
 
     const renameDiv = useRef<HTMLElement | null>();
 
@@ -417,13 +412,9 @@ export const BookButton: React.FunctionComponent<{
     // that is not selected and we get another click that we think should be treated as a double.)
     const handleDoubleClick = () => {
         awaitingDoubleClick.current = false; // the next click is definitely a first-click
-        // This both selects and edits, so it belongs in the same queue as plain selections:
-        // it must not overtake one, and a tab click after it must wait for it (BL-15971).
-        postBookSelection(() =>
-            postString(
-                `collections/selectAndEditBook?${collectionQuery}`,
-                props.book.id,
-            ),
+        postString(
+            `collections/selectAndEditBook?${collectionQuery}`,
+            props.book.id,
         );
     };
 
