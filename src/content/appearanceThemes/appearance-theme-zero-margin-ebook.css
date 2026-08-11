@@ -82,3 +82,9 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     /* move so that page number doesn't it hide it if the text box is in the lower left */
     --formatButton-pageNumber-dodge: 20px;
 }
+.Ebook7x5Landscape.numberedPage.pictureOnRight.pictureOnRight,
+.Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight {
+    /* On these pages the page number moves to the right side (rule above),
+       so the format button has nothing to dodge (BL-14901) */
+    --formatButton-pageNumber-dodge: 0px;
+}
