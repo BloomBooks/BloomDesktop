@@ -291,6 +291,13 @@ export const openAiImageEditor = (target: IAiImageEditorTarget): void => {
                                     message = serverOk
                                         ? `Only ${cp.applied} of ${cp.expected} image(s) on the current page could be updated.`
                                         : "Some images could not be replaced.";
+                                    // The page frame reports a failed swap as a return value
+                                    // rather than an exception (it has to, so we still learn
+                                    // how many landed and therefore need saving). Append its
+                                    // reason, or the count would be all the user ever saw.
+                                    if (cp.error) {
+                                        message += " " + cp.error;
+                                    }
                                 }
                             } catch (e) {
                                 finalOk = false;

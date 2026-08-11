@@ -267,6 +267,34 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         expect(postThatMightNavigate).not.toHaveBeenCalled();
     });
 
+    test("a failed swap's reason reaches the editor, not just the count", () => {
+        // The page frame reports a throw as a return value, so the overlay has to append
+        // its reason itself or the user only ever sees "Only 1 of 2 …".
+        applyAiImageEditorReplacements.mockReturnValue({
+            applied: 1,
+            expected: 2,
+            error: "kaboom",
+        });
+        const { iframe, postFromEditor } = openAgainstABookWithOneImage();
+        const postMessageToEditor = vi.spyOn(
+            iframe.contentWindow!,
+            "postMessage",
+        );
+
+        commitAndReplyFromHost(postFromEditor, true);
+
+        const ack = postMessageToEditor.mock.calls[0][0] as {
+            ok: boolean;
+            error?: string;
+        };
+        expect(ack.ok).toBe(false);
+        expect(ack.error).toContain("Only 1 of 2");
+        expect(ack.error).toContain("kaboom");
+        // What did land still gets saved.
+        expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
+        postMessageToEditor.mockRestore();
+    });
+
     test("acks a failure when the page frame is unreachable", () => {
         // Fail loudly rather than silently reporting success for swaps that never happened.
         getEditablePageBundleExports.mockReturnValue(null);
