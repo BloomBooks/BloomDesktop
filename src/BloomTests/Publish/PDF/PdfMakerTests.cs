@@ -239,6 +239,56 @@ namespace BloomTests.Publish.PDF
         }
 
         /// <summary>
+        /// If we ever again offer a page size BloomPdfMaker can't render (which is what BL-16684
+        /// was), the user should be told that in so many words, naming the size, rather than being
+        /// shown the generic failure plus the child process's developer output.  "NoSuchSize" is a
+        /// stand-in for the next page size someone adds to Bloom and forgets to add to
+        /// BloomPdfMaker.
+        /// </summary>
+        [Test]
+        public void MakePdf_PageSizeBloomPdfMakerDoesNotKnow_SaysSoAndNamesTheSize()
+        {
+            var maker = new PdfMaker();
+            using (var input = TempFile.WithExtension("html"))
+            using (var output = new TempFile())
+            {
+                File.WriteAllText(input.Path, "<html><body>Hello</body></html>");
+                File.Delete(output.Path);
+
+                var error = RunMakePdf(
+                    maker,
+                    input.Path,
+                    output.Path,
+                    "NoSuchSize",
+                    false,
+                    false,
+                    PublishModel.BookletLayoutMethod.SideFold,
+                    PublishModel.BookletPortions.AllPagesNoBooklet
+                );
+
+                Assert.IsNotNull(
+                    error,
+                    "Setup failure: making a PDF at an unknown page size should have failed"
+                );
+                Assert.That(
+                    error.Message,
+                    Does.Contain("NoSuchSize"),
+                    "The message should name the offending page size so the user (and we) know which one it is"
+                );
+                Assert.That(
+                    error.Message,
+                    Does.Not.Contain("did not produce the expected document"),
+                    "This should be the specific page-size message, not the generic PDF failure"
+                );
+                Assert.That(
+                    error.Message,
+                    Does.Not.Contain("UNSUPPORTED-PAGE-SIZE"),
+                    "The marker we grep for is internal and should not reach the user"
+                );
+            }
+        }
+
+        /// <summary>
         /// Runs PdfMaker.MakePdf() with the desired arguments.  Note that the implementation (as of March 2015)
         /// uses an external program to generate the PDF from the HTML file, so it doesn't need to be run on
         /// a background thread.  The process includes a (possibly overgenerous) timeout, so we don't try to

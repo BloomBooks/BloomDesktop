@@ -242,6 +242,12 @@ namespace WebView2PdfMaker
             }
         }
 
+        /// <summary>
+        /// Prefixes the error we report when asked for a page size we don't know. Bloom looks for
+        /// this exact text on our standard error; see MakePdfUsingExternalPdfMakerProgram.
+        /// </summary>
+        internal const string kUnsupportedPageSizeMarker = "UNSUPPORTED-PAGE-SIZE";
+
         private PaperSize GetPaperSize(string name)
         {
             name = name.ToLowerInvariant();
@@ -283,8 +289,13 @@ namespace WebView2PdfMaker
             if (match != null)
                 return match;
 
+            // Bloom greps stderr for this marker so it can tell this specific failure apart from
+            // every other reason PDF making can fail, and say something useful about it rather
+            // than showing the user this developer-facing sentence (BL-16684). Keep the marker
+            // and the ": <name>" that follows it in step with kUnsupportedPageSizeMarker in
+            // MakePdfUsingExternalPdfMakerProgram.
             throw new ApplicationException(
-                "Sorry, currently WebView2PdfMaker has a very limited set of paper sizes it knows about. Consider using the page-height and page-width arguments instead"
+                $"{kUnsupportedPageSizeMarker}: {name}. WebView2PdfMaker has a very limited set of paper sizes it knows about. Consider using the page-height and page-width arguments instead"
             );
         }
 
