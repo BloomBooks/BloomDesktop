@@ -29,8 +29,8 @@
 //      overlay down. (There is intentionally no C#->iframe message channel; init flows from
 //      here, because only the browser can postMessage to the iframe.)
 
-import { post, postJson, postThatMightNavigate } from "../../../utils/bloomApi";
-import { getEditablePageBundleExports } from "../../js/workspaceFrames";
+import { post, postJson, postThatMightNavigate } from "../../utils/bloomApi";
+import { getEditablePageBundleExports } from "../js/workspaceFrames";
 import {
     fileNameOf,
     IAiImageEditorApplyOutcome,

@@ -11,12 +11,12 @@
 // second from the overlay in the top window, via
 // getEditablePageBundleExports().applyAiImageEditorReplacements().
 
-import { postJson } from "../../../utils/bloomApi";
+import { postJson } from "../../utils/bloomApi";
 import {
     getImageUrlFromImageContainer,
     GetRawImageUrl,
-} from "../../js/bloomImages";
-import { changeImageByElement } from "../../js/bloomEditing";
+} from "../js/bloomImages";
+import { changeImageByElement } from "../js/bloomEditing";
 import { matchReplacementsToElements } from "./aiEditorSlotMatching";
 import {
     fileNameOf,
