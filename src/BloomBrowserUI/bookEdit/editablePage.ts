@@ -104,7 +104,9 @@ export interface IPageFrameExports {
         imageInfo: Omit<IImageInfo, "imageId">,
     ): void;
     removeImageId(imageId: string): void;
-    openAiImageEditor(target: IAiImageEditorTarget): void;
+    applyAiImageEditorReplacements(
+        results?: IAiImageEditorCommitResult[],
+    ): IAiImageEditorApplyOutcome;
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
@@ -131,12 +133,13 @@ import {
     removeRequestPageContentDelay,
 } from "./js/bloomEditing";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
-// Called from C# once it has saved and reloaded the page, to open the AI Image Editor
-// overlay; see AiImageEditorApi.HandleSaveThenLaunch and aiEditorLauncher.ts.
-import {
-    openAiImageEditor,
-    IAiImageEditorTarget,
-} from "./toolbox/canvas/aiEditorLauncher";
+// Called from the AI Image Editor overlay in the top window, which owns the session but
+// cannot touch this page itself; see aiEditorPageCommands.ts and aiEditorOverlay.ts.
+import { applyAiImageEditorReplacements } from "./toolbox/canvas/aiEditorPageCommands";
+import type {
+    IAiImageEditorApplyOutcome,
+    IAiImageEditorCommitResult,
+} from "./toolbox/canvas/aiEditorShared";
 export {
     getBodyContentForSavePage,
     requestPageContent,
@@ -160,7 +163,7 @@ export {
     renderDragActivityTabControl,
     getTheOneCanvasElementManager,
     showGamePromptDialog,
-    openAiImageEditor,
+    applyAiImageEditorReplacements,
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
@@ -436,7 +439,7 @@ interface EditablePageBundleApi {
     SayHello: typeof SayHello;
     renderDragActivityTabControl: typeof renderDragActivityTabControl;
     showGamePromptDialog: typeof showGamePromptDialog;
-    openAiImageEditor: typeof openAiImageEditor;
+    applyAiImageEditorReplacements: typeof applyAiImageEditorReplacements;
 }
 
 declare global {
@@ -515,5 +518,5 @@ window.editablePageBundle = {
     SayHello,
     renderDragActivityTabControl,
     showGamePromptDialog,
-    openAiImageEditor,
+    applyAiImageEditorReplacements,
 };
