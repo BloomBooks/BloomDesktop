@@ -65,6 +65,12 @@ $ErrorActionPreference = 'Continue'
         if ($_ -is [System.Management.Automation.ErrorRecord]) { $_.Exception.Message } else { [string]$_ }
     } | Tee-Object -FilePath $log
 $status = $LASTEXITCODE
+# $LASTEXITCODE is never assigned if dotnet could not be launched at all -- not on PATH in this
+# terminal, say -- because then nothing ran to set it. That leaves $status $null, and PowerShell
+# turns `exit $null` into exit code 0: this script would announce a failed run and hand its caller
+# a success. Which is the exact hazard it exists to remove. (The bash twin cannot have this hole;
+# PIPESTATUS[0] is always a number.)
+if ($null -eq $status) { $status = 1 }
 $ErrorActionPreference = 'Stop'
 
 try {

@@ -2874,14 +2874,22 @@ namespace Bloom.Api
                         // so that it can get back to work. So having joined all the workers we still
                         // have to wait for those sends, because closing the listener underneath one
                         // makes it fail -- which used to kill the process (BL-16667).
+                        //
+                        // Deliberately NOT secondsToWait, which the loop above halves for every worker
+                        // that would not stop. Sends are most likely to still be in flight exactly when
+                        // workers are stuck, so inheriting the impatience would shorten this wait to a
+                        // fraction of a second in the one case it is most needed. A fixed budget it is;
+                        // the worst it costs is a couple of seconds added to a shutdown that is already
+                        // going badly, and ProgramExit's own timer is 20 seconds.
+                        const double secondsToWaitForSends = 2.0;
                         if (
                             !PendingResponseWrites.WaitUntilAllHaveFinished(
-                                TimeSpan.FromSeconds(secondsToWait)
+                                TimeSpan.FromSeconds(secondsToWaitForSends)
                             )
                         )
                         {
                             Logger.WriteEvent(
-                                $"BloomServer.Dispose: gave up after {secondsToWait} seconds waiting for "
+                                $"BloomServer.Dispose: gave up after {secondsToWaitForSends} seconds waiting for "
                                     + $"{PendingResponseWrites.InFlightCount} response(s) still being sent; "
                                     + "closing the listener will abandon them."
                             );
