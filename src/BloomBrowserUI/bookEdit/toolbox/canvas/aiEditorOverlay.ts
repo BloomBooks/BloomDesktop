@@ -40,7 +40,7 @@ import {
 // Opens the AI Image Editor overlay, with the image named by `target` (the one the user
 // right-clicked, before the save reloaded the page frame) in its "Image to Edit" slot.
 // Called from C# — via workspaceBundle.openAiImageEditor — once the page has been saved.
-export const openAiImageEditor = (target: IAiImageEditorTarget): void => {
+export function openAiImageEditor(target: IAiImageEditorTarget): void {
     post("aiImageEditor/launch", (r) => {
         const launchData = r.data as {
             editorUrl: string;
@@ -273,8 +273,13 @@ export const openAiImageEditor = (target: IAiImageEditorTarget): void => {
                                 const pageFrame =
                                     getEditablePageBundleExports();
                                 if (!pageFrame) {
+                                    // Say what DID happen as well as what didn't: by now C#
+                                    // has applied and saved every off-page replacement, so
+                                    // "the commit failed" on its own would invite a blind
+                                    // retry that redoes those and orphans their files.
                                     throw new Error(
-                                        "the page being edited is not available",
+                                        "the page being edited is not available, so only the " +
+                                            "replacements on other pages were made (those are saved)",
                                     );
                                 }
                                 const cp =
@@ -366,4 +371,4 @@ export const openAiImageEditor = (target: IAiImageEditorTarget): void => {
         hostWindow.__bloomAiImageEditorCleanup = cleanup;
         hostDocument.body.appendChild(overlay);
     });
-};
+}

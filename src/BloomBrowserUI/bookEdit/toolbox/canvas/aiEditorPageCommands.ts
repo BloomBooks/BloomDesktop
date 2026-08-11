@@ -35,19 +35,21 @@ import {
 // hand the clicked image to C#, which saves the page and then opens the overlay itself
 // (AiImageEditorApi.HandleSaveThenLaunch). Only the file name travels: saving reloads this
 // frame, so a live element reference would not survive.
-export const launchAiImageEditor = (
+export function launchAiImageEditor(
     img: HTMLImageElement,
     imgContainer: HTMLElement | undefined,
-): void => {
+): void {
     const clickedUrl = imgContainer
         ? getImageUrlFromImageContainer(imgContainer)
         : img?.getAttribute("src");
     postJson("aiImageEditor/saveThenLaunch", {
         imageFileName: fileNameOf(clickedUrl),
     });
-};
+}
 
-const asMessage = (e: unknown) => (e instanceof Error ? e.message : String(e));
+function asMessage(e: unknown): string {
+    return e instanceof Error ? e.message : String(e);
+}
 
 // Applies the replacements C# flagged as being on the currently-edited page. It cannot
 // change that page itself (this live browser owns it), so it returns oldSrc/newSrc and we
@@ -57,9 +59,9 @@ const asMessage = (e: unknown) => (e instanceof Error ? e.message : String(e));
 // Called from the top window, so it must not assume anything about who is calling: `results`
 // has crossed a frame boundary but is plain data, and everything it touches is this
 // document.
-export const applyAiImageEditorReplacements = (
+export function applyAiImageEditorReplacements(
     results?: IAiImageEditorCommitResult[],
-): IAiImageEditorApplyOutcome => {
+): IAiImageEditorApplyOutcome {
     const toApply = (results ?? []).filter(
         (r) => r && r.ok && r.isCurrentPage && r.newSrc && r.oldSrc,
     );
@@ -113,4 +115,4 @@ export const applyAiImageEditorReplacements = (
         return { applied, expected: toApply.length, error: asMessage(e) };
     }
     return { applied, expected: toApply.length };
-};
+}

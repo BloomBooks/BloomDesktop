@@ -45,10 +45,10 @@ export interface IAiImageEditorApplyOutcome {
 // filenames containing a literal '%'. On a failed decode fall back to the raw name rather
 // than "", so an oddly-encoded src degrades to a possible mismatch instead of matching
 // nothing ever.
-export const fileNameOf = (
+export function fileNameOf(
     url?: string | null,
     encoded: boolean = true,
-): string => {
+): string {
     const raw = (url ?? "").split("?")[0].split("/").pop() ?? "";
     if (!encoded) return raw;
     try {
@@ -56,4 +56,4 @@ export const fileNameOf = (
     } catch {
         return raw;
     }
-};
+}

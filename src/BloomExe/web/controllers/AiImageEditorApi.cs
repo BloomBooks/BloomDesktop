@@ -291,6 +291,11 @@ namespace Bloom.web.controllers
                     // already in flight or a navigation under way, so it is rare.
                     OpenEditorInBrowser(payload);
                 },
+                // Same reasoning for a save that is attempted and fails: doAfterSaveToDisk is
+                // only reached on success, so without this the user would click "Edit with AI…"
+                // and get nothing at all — no editor and no message naming it. They have already
+                // been told the save failed by the time we get here.
+                failureAction: () => OpenEditorInBrowser(payload),
                 doAfterSaveToDisk: () => OpenEditorInBrowser(payload)
             );
 

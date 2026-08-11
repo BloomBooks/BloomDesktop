@@ -314,6 +314,7 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         expect(ack.type).toBe("ack");
         expect(ack.ok).toBe(false);
         expect(ack.error).toContain("not available");
+        expect(ack.error).toContain("other pages were made");
         // Nothing landed, so nothing to save.
         expect(postThatMightNavigate).not.toHaveBeenCalled();
         postMessageToEditor.mockRestore();
