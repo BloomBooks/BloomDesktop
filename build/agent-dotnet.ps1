@@ -77,11 +77,15 @@ try {
     $abortEvidence = $null
     foreach ($pattern in Get-Content $markersFile) {
         if ($pattern.Trim() -eq '' -or $pattern.TrimStart().StartsWith('#')) { continue }
-        $hit = $trimmedOutput | Select-String -Pattern $pattern -List
+        # -CaseSensitive because grep -E in the bash twin is, and Select-String is not unless told.
+        # Without it the same output could be judged aborted here and passing there -- and the
+        # markers file spells "[Tt]esthost" out precisely because it expects to be matched with
+        # case respected.
+        $hit = $trimmedOutput | Select-String -Pattern $pattern -List -CaseSensitive
         if ($hit) { $abortEvidence = $hit.Line.Trim(); break }
     }
 
-    $summaryHit = $trimmedOutput | Select-String -Pattern '^(Passed|Failed)!'
+    $summaryHit = $trimmedOutput | Select-String -Pattern '^(Passed|Failed)!' -CaseSensitive
     $summary = if ($summaryHit) { $summaryHit[-1].Line.Trim() } else { $null }
 
     Write-Host ""

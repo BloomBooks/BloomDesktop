@@ -19,8 +19,16 @@
 # so an anchored pattern here needs no allowance for indentation.
 #
 # Anchor the ones that could otherwise match a test's own output (a test about error reporting
-# may well print the words "unhandled exception"); the runtime prints its banners at the start
-# of a line.
+# may well print the words "unhandled exception"); the runtime prints its banners at the start of
+# a line. Note what the anchor does and does not buy, since the lines are trimmed first: it still
+# rules out the words appearing mid-sentence, which is the common case, but not a test whose own
+# output begins with them on an indented line. That would cost a false "aborted" on a run that
+# actually finished -- annoying, but the safe direction to be wrong in, and the verdict prints the
+# line it matched on, so it takes one look to see what happened.
+#
+# Case matters: the bash twin matches with grep -E, which is case-sensitive, so the PowerShell one
+# passes -CaseSensitive to Select-String, which is not by default. Write patterns accordingly --
+# hence "[Tt]esthost" below rather than relying on either engine to be lenient.
 
 # The .NET runtime's own death notices. The second is what Environment.FailFast prints, which is
 # what a failing Debug.Assert or Debug.Fail comes to in a process with no debugger attached.
