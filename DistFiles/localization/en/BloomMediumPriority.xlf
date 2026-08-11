@@ -167,11 +167,6 @@
         <source xml:lang="en">Part of the right answer</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswer</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore">
-        <source xml:lang="en">Untick this item if it is not part of the right answer</source>
-        <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore</note>
-        <note>Obsolete as of 6.3</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2">
         <source xml:lang="en">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2</note>
@@ -348,11 +343,6 @@
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.OrderWordsInstructions">
         <source>Drag the words where they go</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.OrderInstructions</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions">
-        <source>Put instructions here</source>
-        <note>ID: EditTab.Toolbox.Games.Placeholder.CustomGameInstructions</note>
-        <note>Obsolete as of Bloom 6.3, though we might reinstate it</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
         <source xml:lang="en">Game Tool</source>
@@ -660,24 +650,6 @@
         <note>ID: PublishTab.AudioLanguage.Disabled</note>
         <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether the Talking Book audio for this language will be included in the published book. In this case, the user is not allowed to change the value.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Activities.None">
-        <source xml:lang="en">This book does not have any interactive activities.</source>
-        <note>ID: PublishTab.Feature.Activities.None</note>
-        <note>This is a tooltip.</note>
-        <note>Obsolete as of 6.2</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Feature.Activities.Present">
-        <source xml:lang="en">This book has interactive activities.</source>
-        <note>ID: PublishTab.Feature.Activities.Present</note>
-        <note>This is a tooltip.</note>
-        <note>Obsolete as of 6.2</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
-        <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
-        <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
-        <note>This is a tooltip.</note>
-        <note>Obsolete as of 6.2</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Feature.Games.None">
         <source xml:lang="en">This book does not have any games.</source>
         <note>ID: PublishTab.Feature.Games.None</note>
@@ -689,18 +661,6 @@
         <note>ID: PublishTab.Feature.Games.Present</note>
         <note>This is a tooltip.</note>
         <note>Obsolete as of 6.2</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Feature.Comic.None">
-        <source xml:lang="en">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</source>
-        <note>ID: PublishTab.Feature.Comic.None</note>
-        <note>This is a tooltip.</note>
-        <note>Obsolete as of Bloom 6.3</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Feature.Comic.Possible">
-        <source xml:lang="en">Select this if you want to list this book as a Comic Book. This only affects how the book is categorized, it does not affect the content of the book.</source>
-        <note>ID: PublishTab.Feature.Comic.Possible</note>
-        <note>This is a tooltip.</note>
-        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Motion.None">
         <source xml:lang="en">This is disabled because this book does not have any pages with motion enabled.</source>
@@ -983,11 +943,6 @@
         <note>BookSettings.CoverIsImage</note>
         <note>Obsolete as of Bloom 6.4</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage.Description" sil:dynamic="true">
-        <source xml:lang="en">Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
-        <note>BookSettings.CoverIsImage.Description</note>
-        <note>obsolete as of Bloom 6.3</note>
-      </trans-unit>
       <trans-unit id="BookSettings.CoverIsImage.Description.V2" sil:dynamic="true">
         <source xml:lang="en">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
         <note>BookSettings.CoverIsImage.Description.V2</note>
@@ -1063,11 +1018,6 @@
       <trans-unit id="BookSettings.PageNumbers" sil:dynamic="true">
         <source xml:lang="en">Page Numbers</source>
         <note>BookSettings.PageNumbers</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.ShowPageNumbers" sil:dynamic="true">
-        <source xml:lang="en">Show Page Numbers</source>
-        <note>BookSettings.ShowPageNumbers</note>
-        <note>Obsolete as of 6.3</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers.Automatic" sil:dynamic="true">
         <source xml:lang="en">(Automatic)</source>
@@ -1253,11 +1203,6 @@
       <trans-unit id="AppearanceTheme.legacy-5-6" sil:dynamic="true">
         <source xml:lang="en">Legacy (Bloom 5.6)</source>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
-      </trans-unit>
-      <trans-unit id="EditTab.PasteHyperlink">
-        <source xml:lang="en">Paste Hyperlink</source>
-        <note>ID: EditTab.PasteHyperlink</note>
-        <note>obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="EditTab.SetupHyperlink">
         <source xml:lang="en">Set Up Hyperlink</source>
