@@ -339,39 +339,44 @@ namespace Bloom.Api
         {
             Exception handlerException = null;
 
-            BloomServer._theOneInstance.RegisterThreadBlocking();
-
-            try
+            // The scope is what ends the reported block, and it has to be, for two reasons that both used
+            // to bite here (BL-16612). First, the await below can resume on a different thread than the one
+            // that reported the block -- a server worker has no synchronization context, so the
+            // continuation lands on the thread pool -- and the old code decided whether to decrement by
+            // looking at the thread it happened to be running on, so it silently skipped it and left the
+            // count permanently high. Second, disposal covers every exit: previously an exception out of
+            // Invoke other than ObjectDisposedException left the block reported forever.
+            using (BloomServer._theOneInstance.ReportThreadBlocking())
             {
-                // This will block until the UI thread is done invoking this.
-                await (Task)
-                    formForSynchronizing.Invoke(
-                        new Func<ApiRequest, Task>(
-                            async (req) =>
-                            {
-                                try
+                try
+                {
+                    // This will block until the UI thread is done invoking this.
+                    await (Task)
+                        formForSynchronizing.Invoke(
+                            new Func<ApiRequest, Task>(
+                                async (req) =>
                                 {
-                                    await endpointRegistration.Handle(req);
+                                    try
+                                    {
+                                        await endpointRegistration.Handle(req);
+                                    }
+                                    catch (Exception error)
+                                    {
+                                        handlerException = error;
+                                    }
                                 }
-                                catch (Exception error)
-                                {
-                                    handlerException = error;
-                                }
-                            }
-                        ),
-                        request
-                    );
+                            ),
+                            request
+                        );
+                }
+                catch (ObjectDisposedException)
+                {
+                    // The form was disposed between the IsDisposed check and the actual Invoke call.
+                    // This can happen when Bloom reloads after a UI language change. Fail silently.
+                    request.Failed("Shell disposed during API request handling");
+                    return false;
+                }
             }
-            catch (ObjectDisposedException)
-            {
-                // The form was disposed between the IsDisposed check and the actual Invoke call.
-                // This can happen when Bloom reloads after a UI language change. Fail silently.
-                BloomServer._theOneInstance.RegisterThreadUnblocked();
-                request.Failed("Shell disposed during API request handling");
-                return false;
-            }
-
-            BloomServer._theOneInstance.RegisterThreadUnblocked();
 
             if (handlerException != null)
             {
