@@ -92,7 +92,7 @@ import {
 import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { isDraggable, kDraggableIdAttribute } from "./canvasElementDraggables";
 import { setGeneratedDraggableId } from "./CanvasElementItem";
-import { launchAiImageEditor } from "./aiEditorPageCommands";
+import { launchAiImageEditor } from "../../aiImageEditor/aiEditorPageCommands";
 import {
     makeFieldTypeMenuItem,
     makeLanguageMenuItem,
