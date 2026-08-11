@@ -487,6 +487,20 @@ namespace Bloom.Api
             return $"contains(concat(' ', @class, ' '), ' {className} ')";
         }
 
+        /// <remarks>
+        /// Reviewed during BL-16209 (which was caused by a display name with a double quote in it
+        /// breaking hand-built JSON elsewhere). This escaper handles the backslash and the double
+        /// quote — and note it must escape the backslash FIRST, or it would re-escape the
+        /// backslash the quote rule just added — plus carriage return and newline. It does not
+        /// escape the other JSON control characters, e.g. a literal tab or anything else below
+        /// U+0020, which RFC 8259 also requires to be escaped.
+        ///
+        /// We decided deliberately to leave that as it is rather than switch to JsonConvert: the
+        /// text through here is book page content, so a stray tab is far less likely than the
+        /// quote mark that caused BL-16209, and changing it would alter the exact bytes of other
+        /// reader-tool JSON for no known symptom. Revisit if page text ever turns out to carry
+        /// control characters through this path.
+        /// </remarks>
         private static string EscapeJsonValue(string value)
         {
             // As http://stackoverflow.com/questions/42068/how-do-i-handle-newlines-in-json attempts to explain,
@@ -741,17 +755,23 @@ namespace Bloom.Api
         /// records of "when things changed" and so forth.</Note>
         private void SaveSynphonyLanguageData(string jsonString)
         {
-            // insert LangName and LangID if missing
+            // insert LangName and LangID if missing.
+            // JsonConvert.ToString() supplies the enclosing quotes and escapes anything in the
+            // value that JSON would otherwise choke on; a display name is arbitrary user text and
+            // may contain a double quote or backslash (BL-16209). A language tag is far more
+            // constrained (it also has to survive being put in a file name just below), but it
+            // goes through the same escaping so this method has no hand-quoted values left.
             if (jsonString.Contains("\"LangName\":\"\""))
                 jsonString = jsonString.Replace(
                     "\"LangName\":\"\"",
-                    "\"LangName\":\"" + CurrentBook.BookData.Language1.Name + "\""
+                    "\"LangName\":"
+                        + JsonConvert.ToString(CurrentBook.BookData.Language1.Name ?? "")
                 );
 
             if (jsonString.Contains("\"LangID\":\"\""))
                 jsonString = jsonString.Replace(
                     "\"LangID\":\"\"",
-                    "\"LangID\":\"" + CurrentBook.BookData.Language1.Tag + "\""
+                    "\"LangID\":" + JsonConvert.ToString(CurrentBook.BookData.Language1.Tag ?? "")
                 );
 
             var fileName = String.Format(
@@ -768,26 +788,28 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// Efficiently determines if we should write the language data file by comparing
-        /// file size and content bytes to avoid unnecessary writes.
+        /// Determines whether the language data file actually needs writing, by comparing what
+        /// is already on disk with what we are about to write. See the Note on
+        /// SaveSynphonyLanguageData for why avoiding a pointless write matters.
         /// </summary>
-        private bool ShouldWriteLanguageDataFile(string fileName, string newContent)
+        /// <remarks>
+        /// This compares the decoded text, not raw bytes. It used to compare
+        /// Encoding.UTF8.GetBytes(newContent) against the file, but the file is written with
+        /// Encoding.UTF8, which emits a byte-order mark that GetBytes() does not. The lengths
+        /// therefore always differed by those 3 bytes, so this always returned true and the
+        /// optimization never once skipped a write (found by Devin's review of BL-16209).
+        /// Comparing text also means a file saved without a BOM by some older version still
+        /// compares equal, so we don't rewrite it just to add one.
+        /// </remarks>
+        internal static bool ShouldWriteLanguageDataFile(string fileName, string newContent)
         {
             try
             {
                 if (!RobustFile.Exists(fileName))
                     return true;
 
-                var newContentBytes = Encoding.UTF8.GetBytes(newContent);
-                var fileInfo = new FileInfo(fileName);
-
-                // Quick check: if file size is different, content must be different
-                if (fileInfo.Length != newContentBytes.Length)
-                    return true;
-
-                // File sizes match, so compare the actual byte content
-                var existingContentBytes = RobustFile.ReadAllBytes(fileName);
-                return !newContentBytes.SequenceEqual(existingContentBytes);
+                // ReadAllText detects and strips a byte-order mark, so this is BOM-insensitive.
+                return RobustFile.ReadAllText(fileName, Encoding.UTF8) != newContent;
             }
             catch
             {
