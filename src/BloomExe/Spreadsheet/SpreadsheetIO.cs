@@ -299,6 +299,10 @@ namespace Bloom.Spreadsheet
         /// bitmap deliberately marked 192dpi, which is something no test can arrange by exporting on
         /// a machine whose display is at 100% (where the bitmap already arrives at 96dpi, so a missing
         /// stamp looks identical to a working one). Our build machines are all at 100%.
+        ///
+        /// Note this alters the bitmap you pass in: SetResolution works in place, and Bitmap.Save
+        /// offers no way to override the resolution as it writes. Harmless for the thumbnails we
+        /// create and dispose here, but don't hand this a bitmap that is shared or cached.
         /// </summary>
         internal static void SaveThumbnailForEmbedding(Bitmap thumbnail, Stream destination)
         {
