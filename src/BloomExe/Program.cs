@@ -1634,6 +1634,24 @@ namespace Bloom
                     return false;
                 }
 
+                // The collection may declare a minimum Bloom version. Check that before we go to the
+                // trouble of building a ProjectContext around it. This is the one place all the ways of
+                // opening a collection funnel through, and every caller already responds to a false
+                // return by putting up the collection chooser, which is one of the two choices we offer
+                // the user here. See BL-16690.
+                if (MinimumBloomVersionCheck.IsThisBloomTooOld(path, out var minimumBloomVersion))
+                {
+                    // We're normally still showing the splash screen at this point, and it would sit on
+                    // top of our dialog. Also, the dialog is a ReactDialog, so it needs the server.
+                    StartupScreenManager.CloseSplashScreen();
+                    _applicationContainer.BloomServer.EnsureListening();
+                    MinimumBloomVersionCheck.ReportCollectionNeedsNewerBloom(
+                        Path.GetFileNameWithoutExtension(path),
+                        minimumBloomVersion
+                    );
+                    return false;
+                }
+
                 //NB: initially, you could have multiple blooms, if they were different projects.
                 //however, then we switched to the embedded http image server, which can't share
                 //a port. So we could fix that (get different ports), but for now, I'm just going
