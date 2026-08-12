@@ -1270,8 +1270,21 @@ namespace Bloom.web.controllers
                 // not one left behind by a GraphicsMagick run that failed partway. Unlike its
                 // other callers, our destination is the book folder itself, so a leftover would
                 // sit unreferenced in the very place this method exists to keep small.
-                if (RobustFile.Exists(jpegPath))
-                    RobustFile.Delete(jpegPath);
+                // Guarded for the same reason as the delete below, and even more plainly: this is
+                // the branch where we gained nothing at all, so a locked leftover file is the last
+                // thing that should be allowed to throw away the user's whole commit.
+                try
+                {
+                    if (RobustFile.Exists(jpegPath))
+                        RobustFile.Delete(jpegPath);
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteError(
+                        $"AiImageEditorApi: could not clean up the unused {jpegPath}",
+                        ex
+                    );
+                }
                 return newFileName;
             }
             // Nothing references the PNG now, and leaving it in the book folder would keep
