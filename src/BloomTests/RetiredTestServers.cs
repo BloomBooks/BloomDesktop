@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Bloom.Api;
-using NUnit.Framework;
 
 namespace BloomTests
 {
@@ -46,7 +45,7 @@ namespace BloomTests
     public static class RetiredTestServers
     {
         /// <summary>Matches kNumberOfPortsToTry in BloomServer.EnsureListening.</summary>
-        private const int kPortsEnsureListeningTries = 20;
+        internal const int kPortsEnsureListeningTries = 20;
 
         /// <summary>
         /// How many retired servers keep their listener open at once. Every one of these holds a
@@ -56,11 +55,46 @@ namespace BloomTests
         /// </summary>
         internal const int kMaxAwaitingClose = 5;
 
-        private static readonly object _lock = new object();
-        private static readonly Queue<BloomServer> _awaitingClose = new Queue<BloomServer>();
+        private static readonly RetiredServerQueue _theQueue = new RetiredServerQueue(
+            kMaxAwaitingClose
+        );
 
-        /// <summary>For the tests of this class, and for diagnosing a port shortage.</summary>
-        internal static int CountAwaitingClose
+        /// <summary>
+        /// Call this instead of server.Dispose() when a test or fixture has finished with a server
+        /// it made listen. Safe to call with null, and safe to call on a server that never
+        /// listened (there is simply nothing to wait for).
+        /// </summary>
+        public static void Retire(BloomServer server) => _theQueue.Retire(server);
+
+        /// <summary>
+        /// Closes every listener still waiting. Called once, after the whole run, by
+        /// <see cref="SetupFixture"/> -- and nowhere else. Calling it mid-run would close listeners
+        /// that only just finished serving, which is exactly the timing this class exists to avoid;
+        /// that is why the tests of this scheme drive their own <see cref="RetiredServerQueue"/>
+        /// rather than this one.
+        /// </summary>
+        internal static void CloseAllNow() => _theQueue.CloseAllNow();
+
+        /// <summary>For diagnosing a port shortage.</summary>
+        internal static int CountAwaitingClose => _theQueue.CountAwaitingClose;
+    }
+
+    /// <summary>
+    /// The bookkeeping behind <see cref="RetiredTestServers"/>, as an instance so that its own
+    /// tests can exercise it without touching the queue the run is using.
+    /// </summary>
+    internal sealed class RetiredServerQueue
+    {
+        private readonly int _maxAwaitingClose;
+        private readonly object _lock = new object();
+        private readonly Queue<BloomServer> _awaitingClose = new Queue<BloomServer>();
+
+        internal RetiredServerQueue(int maxAwaitingClose)
+        {
+            _maxAwaitingClose = maxAwaitingClose;
+        }
+
+        internal int CountAwaitingClose
         {
             get
             {
@@ -69,12 +103,7 @@ namespace BloomTests
             }
         }
 
-        /// <summary>
-        /// Call this instead of server.Dispose() when a test or fixture has finished with a server
-        /// it made listen. Safe to call with null, and safe to call on a server that never
-        /// listened (there is simply nothing to wait for).
-        /// </summary>
-        public static void Retire(BloomServer server)
+        internal void Retire(BloomServer server)
         {
             if (server == null)
                 return;
@@ -85,7 +114,7 @@ namespace BloomTests
             lock (_lock)
             {
                 _awaitingClose.Enqueue(server);
-                if (_awaitingClose.Count > kMaxAwaitingClose)
+                if (_awaitingClose.Count > _maxAwaitingClose)
                     readyToClose = _awaitingClose.Dequeue();
             }
 
@@ -93,11 +122,7 @@ namespace BloomTests
             CloseFully(readyToClose);
         }
 
-        /// <summary>
-        /// Closes every listener still waiting. Called once, after the whole run, by
-        /// <see cref="SetupFixture"/>.
-        /// </summary>
-        internal static void CloseAllNow()
+        internal void CloseAllNow()
         {
             while (true)
             {
