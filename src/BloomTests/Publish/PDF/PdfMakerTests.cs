@@ -30,7 +30,6 @@ namespace BloomTests.Publish.PDF
                     "A5",
                     false,
                     false,
-                    false,
                     PublishModel.BookletLayoutMethod.SideFold,
                     PublishModel.BookletPortions.AllPagesNoBooklet
                 );
@@ -69,7 +68,6 @@ namespace BloomTests.Publish.PDF
                     input.Path,
                     output.Path,
                     "A5",
-                    false,
                     false,
                     false,
                     PublishModel.BookletLayoutMethod.SideFold,
@@ -115,7 +113,6 @@ namespace BloomTests.Publish.PDF
                     "A5",
                     false,
                     false,
-                    false,
                     PublishModel.BookletLayoutMethod.SideFold,
                     PublishModel.BookletPortions.BookletPages
                 );
@@ -159,7 +156,6 @@ namespace BloomTests.Publish.PDF
                     "A5",
                     false,
                     false,
-                    false,
                     PublishModel.BookletLayoutMethod.SideFold,
                     PublishModel.BookletPortions.BookletPages
                 );
@@ -185,6 +181,114 @@ namespace BloomTests.Publish.PDF
         }
 
         /// <summary>
+        /// Every page size Bloom offers has to be one BloomPdfMaker also knows about, or the book
+        /// can't be turned into a PDF at all -- which blocks uploading too, since that makes a PDF
+        /// preview.  The StoryWeaver ebook sizes were added to Bloom's list of page sizes without
+        /// being added to BloomPdfMaker's, so they failed outright until BL-16684.  Device16x9 is
+        /// here as a control: it is the screen size that always worked.
+        /// </summary>
+        [TestCase("Ebook2x3", false)]
+        [TestCase("Ebook7x5", true)]
+        [TestCase("Device16x9", true)]
+        public void MakePdf_ScreenPageSize_OutputsPdf(string paperSize, bool landscape)
+        {
+            var maker = new PdfMaker();
+            using (var input = TempFile.WithExtension("html"))
+            using (var output = new TempFile())
+            {
+                File.WriteAllText(input.Path, "<html><body>Hello</body></html>");
+                File.Delete(output.Path);
+                Assert.IsFalse(
+                    File.Exists(output.Path),
+                    $"Setup failure: the output file should not exist before we make the PDF ({paperSize})"
+                );
+
+                var error = RunMakePdf(
+                    maker,
+                    input.Path,
+                    output.Path,
+                    paperSize,
+                    landscape,
+                    false,
+                    PublishModel.BookletLayoutMethod.SideFold,
+                    PublishModel.BookletPortions.AllPagesNoBooklet
+                );
+
+                Assert.IsNull(
+                    error,
+                    $"Making a PDF at page size {paperSize} reported an error: {error?.Message}"
+                );
+                Assert.IsTrue(
+                    File.Exists(output.Path),
+                    $"Failed to convert trivial HTML file to PDF at page size {paperSize}"
+                );
+                var bytes = File.ReadAllBytes(output.Path);
+                Assert.Less(
+                    1000,
+                    bytes.Length,
+                    $"Generated PDF file is way too small! ({paperSize})"
+                );
+                Assert.IsTrue(
+                    bytes[0] == (byte)'%'
+                        && bytes[1] == (byte)'P'
+                        && bytes[2] == (byte)'D'
+                        && bytes[3] == (byte)'F',
+                    $"Generated PDF file started with the wrong 4-byte signature ({paperSize})"
+                );
+            }
+        }
+
+        /// <summary>
+        /// If we ever again offer a page size BloomPdfMaker can't render (which is what BL-16684
+        /// was), the user should be told that in so many words, naming the size, rather than being
+        /// shown the generic failure plus the child process's developer output.  "NoSuchSize" is a
+        /// stand-in for the next page size someone adds to Bloom and forgets to add to
+        /// BloomPdfMaker.
+        /// </summary>
+        [Test]
+        public void MakePdf_PageSizeBloomPdfMakerDoesNotKnow_SaysSoAndNamesTheSize()
+        {
+            var maker = new PdfMaker();
+            using (var input = TempFile.WithExtension("html"))
+            using (var output = new TempFile())
+            {
+                File.WriteAllText(input.Path, "<html><body>Hello</body></html>");
+                File.Delete(output.Path);
+
+                var error = RunMakePdf(
+                    maker,
+                    input.Path,
+                    output.Path,
+                    "NoSuchSize",
+                    false,
+                    false,
+                    PublishModel.BookletLayoutMethod.SideFold,
+                    PublishModel.BookletPortions.AllPagesNoBooklet
+                );
+
+                Assert.IsNotNull(
+                    error,
+                    "Setup failure: making a PDF at an unknown page size should have failed"
+                );
+                Assert.That(
+                    error.Message,
+                    Does.Contain("NoSuchSize"),
+                    "The message should name the offending page size so the user (and we) know which one it is"
+                );
+                Assert.That(
+                    error.Message,
+                    Does.Not.Contain("did not produce the expected document"),
+                    "This should be the specific page-size message, not the generic PDF failure"
+                );
+                Assert.That(
+                    error.Message,
+                    Does.Not.Contain("UNSUPPORTED-PAGE-SIZE"),
+                    "The marker we grep for is internal and should not reach the user"
+                );
+            }
+        }
+
+        /// <summary>
         /// Runs PdfMaker.MakePdf() with the desired arguments.  Note that the implementation (as of March 2015)
         /// uses an external program to generate the PDF from the HTML file, so it doesn't need to be run on
         /// a background thread.  The process includes a (possibly overgenerous) timeout, so we don't try to
@@ -197,13 +301,17 @@ namespace BloomTests.Publish.PDF
         /// almost certainly an obscure bug in Mono.  Running the method directly as we do here sidesteps that
         /// problem.  (See https://jira.sil.org/browse/BL-831.)
         /// </remarks>
-        void RunMakePdf(
+        /// <returns>
+        /// The exception MakePdf passed back through the DoWorkEventArgs, or null if it succeeded.
+        /// A test that only checks for the output file reports "no PDF" when what the caller really
+        /// wants to know is why, and the exception carries BloomPdfMaker's own explanation.
+        /// </returns>
+        System.Exception RunMakePdf(
             PdfMaker maker,
             string input,
             string output,
             string paperSize,
             bool landscape,
-            bool saveMemoryMode,
             bool rightToLeft,
             PublishModel.BookletLayoutMethod layout,
             PublishModel.BookletPortions portion
@@ -220,7 +328,6 @@ namespace BloomTests.Publish.PDF
                     OutputPdfPath = output,
                     PaperSizeName = paperSize,
                     Landscape = landscape,
-                    SaveMemoryMode = saveMemoryMode,
                     LayoutPagesForRightToLeft = rightToLeft,
                     BooketLayoutMethod = layout,
                     BookletPortion = portion,
@@ -229,6 +336,7 @@ namespace BloomTests.Publish.PDF
                 eventArgs,
                 null
             );
+            return eventArgs.Result as System.Exception;
         }
     }
 }
