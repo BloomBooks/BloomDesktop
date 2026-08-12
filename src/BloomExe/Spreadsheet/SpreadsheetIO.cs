@@ -38,7 +38,10 @@ namespace Bloom.Spreadsheet
 
         // The resolution we stamp on every thumbnail we embed, so that the spreadsheet does not
         // depend on the display of the machine that exported it. See SaveThumbnailForEmbedding.
-        private const float standardImageDpi = 96f;
+        // Row heights are converted from thumbnail pixels to points against this same value, so the
+        // two must agree: use this constant rather than writing 96 again, or a change here would
+        // leave the rows sized for a resolution the images no longer have.
+        private const int standardImageDpi = 96;
 
         static SpreadsheetIO()
         {
@@ -157,7 +160,7 @@ namespace Bloom.Spreadsheet
                                 //Images show up in the cell 1 row greater and 1 column greater than assigned
                                 //So this will put them in row r, column imageThumbnailColumn+1 like we want
                                 var rowHeight = embedImage(imagePath, r - 1, imageThumbnailColumn);
-                                worksheet.Row(r).Height = rowHeight * 72 / 96 + 3; //so the image is visible; height seems to be points
+                                worksheet.Row(r).Height = rowHeight * 72 / standardImageDpi + 3; //so the image is visible; height seems to be points
                             }
                         }
                     }
