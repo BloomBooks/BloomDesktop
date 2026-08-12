@@ -157,6 +157,14 @@ namespace Bloom.Api
         private readonly ManualResetEvent _stop;
 
         /// <summary>
+        /// True from the moment Dispose tells our threads to stop. After that the listener and the
+        /// handles it owns can be closed while a request is still being finished, so failures in
+        /// the request path are the expected cost of quitting rather than a sign of a bug, and code
+        /// that would otherwise make a fuss about them should keep quiet. See BL-16667.
+        /// </summary>
+        private bool IsShuttingDown => IsDisposed || _stop.WaitOne(0);
+
+        /// <summary>
         /// Notifies threads in the _workers pool that there is a request in the _queue
         /// </summary>
         private readonly ManualResetEvent _ready;
@@ -1964,27 +1972,48 @@ namespace Bloom.Api
         /// <param name="ar"></param>
         private void QueueRequest(IAsyncResult ar)
         {
-            // this can happen when shutting down
-            // BL-2207 indicates it may be possible for the thread to be alive and the listener closed,
-            // although the only way I know it gets closed happens after joining with that thread.
-            // Still, one more check seems worthwhile...if we're far enough along in shutting down
-            // to have closed the listener we certainly can't respond to any more requests.
-            if (!_listenerThread.IsAlive || !_listener.IsListening)
-                return;
-
-            lock (_queue)
+            // This runs on a thread pool thread, as the completion of the BeginGetContext in
+            // EnqueueIncomingRequests, so nothing we do here is inside any try/catch of ours: an
+            // exception that got out would be unhandled and would kill the process (BL-16667).
+            // Everything below can throw during shutdown -- closing the listener is what completes
+            // the pending BeginGetContext in the first place, and it nulls out _listener -- so the
+            // whole thing has to be guarded, not just the parts we can think of a reason for.
+            try
             {
-                _queue.Enqueue(_listener.EndGetContext(ar));
+                // this can happen when shutting down
+                // BL-2207 indicates it may be possible for the thread to be alive and the listener closed,
+                // although the only way I know it gets closed happens after joining with that thread.
+                // Still, one more check seems worthwhile...if we're far enough along in shutting down
+                // to have closed the listener we certainly can't respond to any more requests.
+                if (!_listenerThread.IsAlive || _listener?.IsListening != true)
+                    return;
 
-                // Deal with a situation where all the workers are blocked,
-                // but there is a request in the queue that would unblock the current workers
-                // but that request can't run because it's stuck in queue
-                // and none of the existing worker threads are able to make progress anymore.
-                // Any worker added here is added before the _ready.Set() below, so it receives it.
-                // (Monitor is reentrant, so it is fine that we already hold this lock.)
-                EnsureAWorkerCanStillTakeWork();
+                lock (_queue)
+                {
+                    _queue.Enqueue(_listener.EndGetContext(ar));
 
-                _ready.Set();
+                    // Deal with a situation where all the workers are blocked,
+                    // but there is a request in the queue that would unblock the current workers
+                    // but that request can't run because it's stuck in queue
+                    // and none of the existing worker threads are able to make progress anymore.
+                    // Any worker added here is added before the _ready.Set() below, so it receives it.
+                    // (Monitor is reentrant, so it is fine that we already hold this lock.)
+                    EnsureAWorkerCanStillTakeWork();
+
+                    _ready.Set();
+                }
+            }
+            catch (Exception error)
+            {
+                // Losing an incoming request while we are shutting down is the expected case and is
+                // no loss at all. Losing one at any other time is worth knowing about, but still not
+                // worth killing Bloom over: the client will time out and can ask again.
+                Logger.WriteEvent(
+                    "At BloomServer: QueueRequest() could not accept a request"
+                        + (IsShuttingDown ? " (shutting down)" : "")
+                        + ": "
+                        + error.Message
+                );
             }
         }
 
@@ -2112,7 +2141,16 @@ namespace Bloom.Api
                         Logger.WriteEvent(error.StackTrace);
 #if DEBUG
                         //NB: "throw" here makes it impossible for even the programmer to continue and try to see how it happens
-                        Debug.Fail("(Debug Only) " + error.Message);
+                        // Two cases where stopping here does harm and no good (BL-16667):
+                        // - While we are shutting down. The listener and its handles get closed out from under
+                        //   requests that are still finishing, so exceptions here are the expected consequence of
+                        //   quitting, not a bug to investigate.
+                        // - Under unit tests. There is no developer at a debugger to stop, so all Debug.Fail can do
+                        //   is terminate the test host, which truncates the run -- and, because everything that had
+                        //   already run had passed, the run then reports itself green. The error is logged either
+                        //   way, and the request still fails, so a real server bug still shows up as a failing test.
+                        if (!IsShuttingDown && !Program.RunningUnitTests)
+                            Debug.Fail("(Debug Only) " + error.Message);
 #endif
                     }
                 }
@@ -2831,6 +2869,12 @@ namespace Bloom.Api
                             }
                         }
 
+                        // Joining the workers above is what makes closing the listener safe. A worker
+                        // does not finish with a request until the response body has actually gone out
+                        // (RequestInfo sends with willBlock: true for exactly this reason), so once
+                        // they have all stopped there is nothing left in flight for CloseListener to
+                        // pull the ground out from under. See BL-16667 for what happened when the
+                        // sends outlived the workers.
                         CloseListener();
                     }
                     if (_cache != null)
@@ -2863,8 +2907,10 @@ namespace Bloom.Api
         {
             if (_listener == null)
                 return; // probably called from shutdown timer, and normal shutdown got this far
-            // stop listening for incoming http requests
-            Debug.Assert(_listener.IsListening);
+            // stop listening for incoming http requests.
+            // (There used to be a Debug.Assert(_listener.IsListening) here. It told us nothing the
+            // next line does not handle, and a failing Debug.Assert terminates a test host, which
+            // is how a run gets truncated -- see BL-16667.)
             if (_listener.IsListening)
             {
                 //In BL-3290, a user quitely failed here each time he exited Bloom, with a Cannot access a disposed object.
