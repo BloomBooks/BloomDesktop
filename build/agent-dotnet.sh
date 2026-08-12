@@ -114,7 +114,7 @@ while IFS= read -r pattern || [ -n "$pattern" ]; do
     fi
 done <"$MARKERS"
 
-SUMMARY="$(grep -E "^(Passed|Failed)!" "$TRIMMED" | tail -1 || true)"
+SUMMARY="$(grep -E "^(Passed|Failed|Skipped)!" "$TRIMMED" | tail -1 || true)"
 
 echo ""
 if [ -n "$ABORT_EVIDENCE" ]; then
@@ -143,6 +143,13 @@ case "$SUMMARY" in
         # dotnet said 0 but its own summary says otherwise; believe the summary.
         echo "[agent-dotnet] *** TEST RUN FAILED. *** $SUMMARY"
         exit 1
+        ;;
+    Skipped!*)
+        # A healthy run in which every matched test was skipped -- e.g. the RAB test without
+        # BLOOM_RUN_RAB_MANUAL_TESTS. Not a failure, but say so plainly: "completed" on its own
+        # would read as "the tests passed", and nothing ran.
+        echo "[agent-dotnet] test run completed, but every test was skipped. $SUMMARY"
+        exit 0
         ;;
 esac
 echo "[agent-dotnet] test run completed. $SUMMARY"

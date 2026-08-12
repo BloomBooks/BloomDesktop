@@ -91,7 +91,7 @@ try {
         if ($hit) { $abortEvidence = $hit.Line.Trim(); break }
     }
 
-    $summaryHit = $trimmedOutput | Select-String -Pattern '^(Passed|Failed)!' -CaseSensitive
+    $summaryHit = $trimmedOutput | Select-String -Pattern '^(Passed|Failed|Skipped)!' -CaseSensitive
     $summary = if ($summaryHit) { $summaryHit[-1].Line.Trim() } else { $null }
 
     Write-Host ""
@@ -119,6 +119,13 @@ try {
         # dotnet said 0 but its own summary says otherwise; believe the summary.
         Write-Host "[agent-dotnet] *** TEST RUN FAILED. *** $summary"
         exit 1
+    }
+    if ($summary -like 'Skipped!*') {
+        # A healthy run in which every matched test was skipped -- e.g. the RAB test without
+        # BLOOM_RUN_RAB_MANUAL_TESTS. Not a failure, but say so plainly: "completed" on its own
+        # would read as "the tests passed", and nothing ran.
+        Write-Host "[agent-dotnet] test run completed, but every test was skipped. $summary"
+        exit 0
     }
     Write-Host "[agent-dotnet] test run completed. $summary"
 }
