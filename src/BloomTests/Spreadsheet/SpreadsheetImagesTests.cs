@@ -892,6 +892,58 @@ namespace BloomTests.Spreadsheet
         }
 
         /// <summary>
+        /// Regression test for BL-16529, and the one that actually protects the fix on our build
+        /// machines. The export-level tests above cannot: on a display at 100% scaling a GDI+ bitmap
+        /// already carries 96dpi, so they pass whether or not the exporter stamps the resolution, and
+        /// every build machine is at 100%. Here we hand the save step a bitmap deliberately marked
+        /// 192dpi -- what it would really receive on a 200%-scaled display -- so the assertion has the
+        /// same force everywhere, and deleting the stamping would fail this test.
+        /// </summary>
+        [Test]
+        public void SaveThumbnailForEmbedding_StampsStandard96Dpi_WhateverResolutionItWasGiven()
+        {
+            using (var thumbnail = new Bitmap(150, 100))
+            {
+                thumbnail.SetResolution(192f, 192f);
+                // Sanity check: the bitmap really starts at the wrong resolution, so a pass below
+                // means the save step changed it rather than it having been right all along.
+                Assert.That(
+                    thumbnail.HorizontalResolution,
+                    Is.EqualTo(192f).Within(0.01f),
+                    "Setup sanity check: the test bitmap should start at 192dpi."
+                );
+
+                using (var stream = new MemoryStream())
+                {
+                    SpreadsheetIO.SaveThumbnailForEmbedding(thumbnail, stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    using (var saved = Image.FromStream(stream))
+                    {
+                        Assert.That(
+                            saved.HorizontalResolution,
+                            Is.EqualTo(96f).Within(0.01f),
+                            "The embedded thumbnail must be stamped 96dpi regardless of the resolution "
+                                + "the bitmap arrived with. At 192dpi the spreadsheet library lays the "
+                                + "picture out at half its intended size (BL-16529)."
+                        );
+                        Assert.That(
+                            saved.VerticalResolution,
+                            Is.EqualTo(96f).Within(0.01f),
+                            "The embedded thumbnail must be stamped 96dpi vertically too (BL-16529)."
+                        );
+                        // The stamping must not have resampled the picture; only its claimed
+                        // resolution changes, never its pixels.
+                        Assert.That(
+                            new Size(saved.Width, saved.Height),
+                            Is.EqualTo(new Size(150, 100)),
+                            "Stamping the resolution should not change the thumbnail's pixel size."
+                        );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// The width, in pixels at the standard 96dpi, that the first picture in the spreadsheet is
         /// laid out over. We read this from the raw drawing XML because that is what a spreadsheet
         /// viewer reads: the extent is stored in EMUs (914400 per inch, so 9525 per pixel at 96dpi),
