@@ -317,20 +317,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
         true,
     );
 
-    // Like the other TeamCollection strings above, this one's XLF entry is inside the
-    // commented-out block ("Don't want these actually translated until things stabilize"),
-    // so we must look it up with the i18n warning suppressed. That is also why we can't let
-    // NoteBox do its own useL10n: NoteBox has no way to pass temporarilyDisableI18nWarning,
-    // and an unregistered id makes the C# side report a missing-l10n string. See BL-16691.
-    const checkoutsPausedNotice = useL10n(
-        "The administrator of this collection has paused checkouts.",
-        "TeamCollection.CheckoutsPaused",
-        "",
-        undefined,
-        undefined,
-        true,
-    );
-
     const menuItems: (SimpleMenuItem | "-")[] = [
         {
             text: "About my Avatar...",
@@ -470,7 +456,14 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         )}
                         belowButton={
                             props.checkoutsArePaused ? (
-                                <NoteBox>{checkoutsPausedNotice}</NoteBox>
+                                // Deliberately not localized yet: this is an
+                                // unreleased admin-only setting with no UI, so
+                                // per AGENTS.md we ship the English and add an
+                                // XLF entry once the feature stabilizes.
+                                <NoteBox>
+                                    The administrator of this collection has
+                                    paused checkouts.
+                                </NoteBox>
                             ) : undefined
                         }
                         menu={menu}

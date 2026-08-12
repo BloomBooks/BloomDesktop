@@ -5679,11 +5679,6 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TeamCollection.Checkout</note>
         <note>On button to check out a book</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.CheckoutsPaused" sil:dynamic="true" translate="no">
-        <source xml:lang="en">The administrator of this collection has paused checkouts.</source>
-        <note>ID: TeamCollection.CheckoutsPaused</note>
-        <note>Shown under the disabled "Check out book" button when the collection's AllowCheckouts setting is False</note>
-      </trans-unit>
       <trans-unit id="TeamCollection.CheckedOutOn" sil:dynamic="true">
         <source xml:lang="en">%0 checked out this book on %1.</source>
         <note>ID: TeamCollection.CheckedOutOn</note>
