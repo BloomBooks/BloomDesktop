@@ -101,19 +101,29 @@ namespace BloomTests.web
         }
 
         /// <summary>
-        /// The cap and the port budget are declared in different files — this one and
+        /// The cap and the port budget are declared in different files — RetiredTestServers and
         /// BloomServer.EnsureListening — so nothing but a test keeps them in a sensible relation.
-        /// Raising the cap towards the budget would leave no room for the server actually in use,
-        /// and the failure would arrive as EnsureListening giving up, which calls ProgramExit.Exit.
+        ///
+        /// And the relation that matters is not this run's, it is the machine's: ports are
+        /// machine-wide, we habitually run suites in several worktrees at once, and a run that
+        /// cannot find a port does not fail a test — EnsureListening gives up and calls
+        /// ProgramExit.Exit, with nothing in the output to say it was about ports. Devin raised
+        /// exactly this, and it is why the cap came down from 5 to 3.
         /// </summary>
         [Test]
-        public void TheRealCapLeavesPlentyOfPortsForTheServerInUse()
+        public void TheRealCapLeavesRoomForSeveralConcurrentTestRuns()
         {
+            const int concurrentRunsToAllowFor = 4;
+            // The ones waiting to be closed, plus the one the run is actually using.
+            var portsHeldPerRun = RetiredTestServers.kMaxAwaitingClose + 1;
+
             Assert.That(
-                RetiredTestServers.kMaxAwaitingClose,
-                Is.LessThan(RetiredTestServers.kPortsEnsureListeningTries / 2),
-                "the number of listeners we hold open must stay well under the number of ports "
-                    + "EnsureListening is willing to try"
+                portsHeldPerRun * concurrentRunsToAllowFor,
+                Is.LessThanOrEqualTo(RetiredTestServers.kPortsEnsureListeningTries),
+                $"holding {portsHeldPerRun} ports per run leaves room for fewer than "
+                    + $"{concurrentRunsToAllowFor} concurrent runs in EnsureListening's "
+                    + $"{RetiredTestServers.kPortsEnsureListeningTries} candidates; the run that "
+                    + "loses does not fail a test, it calls ProgramExit.Exit"
             );
         }
     }

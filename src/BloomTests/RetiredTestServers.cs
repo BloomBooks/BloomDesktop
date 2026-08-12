@@ -48,12 +48,21 @@ namespace BloomTests
         internal const int kPortsEnsureListeningTries = 20;
 
         /// <summary>
-        /// How many retired servers keep their listener open at once. Every one of these holds a
-        /// port, so this has to stay well under the number of ports EnsureListening will try;
-        /// bigger also means longer between a server's last request and its listener closing,
-        /// which is the safety this class is buying.
+        /// How many retired servers keep their listener open at once. Bigger means longer between
+        /// a server's last request and its listener closing, which is the safety this class buys.
+        ///
+        /// What limits it is not this run but the others: each held listener is a port, so a run
+        /// occupies this many plus the one it is actually using, out of the
+        /// <see cref="kPortsEnsureListeningTries"/> EnsureListening will try — machine-wide. We
+        /// habitually run suites in several worktrees at once, and the failure when a run cannot
+        /// find a port is not a failing test but ProgramExit.Exit, with nothing to say it was
+        /// about ports. At 3 a run holds 4, so four concurrent runs still fit; at 5 they would
+        /// not. TheRealCapLeavesRoomForSeveralConcurrentTestRuns holds us to that.
+        ///
+        /// The delay this buys is generous even so: retirements happen at fixture boundaries,
+        /// seconds apart, against a window of danger measured in milliseconds.
         /// </summary>
-        internal const int kMaxAwaitingClose = 5;
+        internal const int kMaxAwaitingClose = 3;
 
         private static readonly RetiredServerQueue _theQueue = new RetiredServerQueue(
             kMaxAwaitingClose
