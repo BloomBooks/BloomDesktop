@@ -36,6 +36,10 @@ namespace Bloom.Spreadsheet
         private const int languageColumnWidth = 30;
         private const int defaultImageWidth = 150; //width of images in pixels.
 
+        // The resolution we stamp on every thumbnail we embed. See the comment where it is used:
+        // the spreadsheet must not depend on the display of the machine that exported it.
+        private const float standardImageDpi = 96f;
+
         static SpreadsheetIO()
         {
             // The package requires us to do this as a way of acknowledging that we
@@ -50,12 +54,6 @@ namespace Bloom.Spreadsheet
             IWebSocketProgress progress = null
         )
         {
-            // The spreadsheet-export library sizes its columns using the primary monitor's scaling factor,
-            // so we read that same factor and use it to size the thumbnail images we store inside the
-            // spreadsheet. We read it here, once per export, so a change to the display configuration during
-            // the session is reflected the next time the user exports. See BL-16529.
-            int scaleFactor = WindowsMonitorScaling.GetScalingFactorForPrimaryMonitor();
-
             using (var package = new ExcelPackage())
             {
                 var worksheet = package.Workbook.Worksheets.Add("BloomBook");
@@ -217,30 +215,31 @@ namespace Bloom.Spreadsheet
                             var origImageHeight = image.Size.Height;
                             var origImageWidth = image.Size.Width;
                             int finalWidth = defaultImageWidth;
-                            if (scaleFactor > 100)
-                                finalWidth = defaultImageWidth * scaleFactor / 100;
                             finalHeight = (int)(finalWidth * origImageHeight / origImageWidth);
                             var size = new Size(finalWidth, finalHeight);
                             using (
-                                Image thumbnail = ImageUtils.ResizeImageIfNecessary(
-                                    size,
-                                    image,
-                                    false
-                                )
+                                var thumbnail = (Bitmap)
+                                    ImageUtils.ResizeImageIfNecessary(size, image, false)
                             )
                             {
-                                // Size the row from the thumbnail we actually embedded (which, since
-                                // ResizeImageIfNecessary never enlarges, may be smaller than the target
-                                // computed above), not from that target. The row's height is in points,
-                                // which the spreadsheet viewer does NOT scale for a high-DPI display even
-                                // though it scales the columns; so at >100% we divide the height back down
-                                // by the same factor so the displayed row matches the image. See BL-16529.
-                                if (scaleFactor > 100)
-                                    finalHeight = thumbnail.Height * 100 / scaleFactor;
-                                else
-                                    finalHeight = thumbnail.Height;
+                                // Size the row from the thumbnail we actually embedded, not from the target
+                                // computed above: ResizeImageIfNecessary never enlarges, so a source
+                                // narrower than defaultImageWidth is embedded at its original, smaller
+                                // size, and sizing the row from the target would leave dead space below
+                                // the image. See BL-16529.
+                                finalHeight = thumbnail.Height;
                                 using (var ms = new MemoryStream())
                                 {
+                                    // ResizeImageIfNecessary hands back a GDI+ bitmap, which inherits the
+                                    // screen's DPI -- and since Bloom became PerMonitorV2 DPI aware (see
+                                    // Program.cs), that is 192 on a 200%-scaled display rather than 96.
+                                    // EPPlus converts the image's pixel size into the drawing's physical
+                                    // extent using the image's own resolution, so a 192dpi thumbnail got
+                                    // laid out at half its intended size: the "images only take up half the
+                                    // column width" symptom. Stamp every thumbnail with the standard 96dpi
+                                    // so the spreadsheet we write is the same whatever display the
+                                    // exporting machine has. See BL-16529.
+                                    thumbnail.SetResolution(standardImageDpi, standardImageDpi);
                                     thumbnail.Save(ms, ImageFormat.Jpeg);
                                     ms.Seek(0, SeekOrigin.Begin);
                                     var excelImage = worksheet.Drawings.AddPicture(imageName, ms);

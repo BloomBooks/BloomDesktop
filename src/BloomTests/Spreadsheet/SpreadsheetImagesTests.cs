@@ -658,9 +658,11 @@ namespace BloomTests.Spreadsheet
             }
         }
 
-        // A minimal book with a single small image (smaller than the thumbnail target width).
-        private const string smallImageBook =
-            @"
+        /// <summary>
+        /// A minimal book holding a single image, so a test can inspect exactly one thumbnail.
+        /// </summary>
+        private static string MinimalImageBook(string imageFileName) =>
+            $@"
 <html><head></head>
 <body data-l1=""en"" data-l2="""" data-l3="""">
     <div id=""bloomDataDiv""></div>
@@ -671,7 +673,7 @@ namespace BloomTests.Spreadsheet
             <div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"">
                 <div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
                     <div class=""bloom-imageContainer"">
-                        <img src=""man.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+                        <img src=""{imageFileName}"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
                     </div>
                 </div>
             </div>
@@ -680,17 +682,53 @@ namespace BloomTests.Spreadsheet
 </body></html>";
 
         /// <summary>
+        /// Export a book containing just the one named test image, and return the path of the
+        /// spreadsheet written. The caller owns the two temporary folders.
+        /// </summary>
+        private string ExportBookWithOneImage(
+            string imageFileName,
+            TemporaryFolder bookFolder,
+            TemporaryFolder outputFolder
+        )
+        {
+            RobustFile.Copy(
+                Path.Combine(
+                    SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                        _pathToTestImages
+                    ),
+                    imageFileName
+                ),
+                Path.Combine(bookFolder.FolderPath, imageFileName)
+            );
+
+            var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+            mockLangDisplayNameResolver
+                .Setup(x => x.GetLanguageDisplayName("en"))
+                .Returns("English");
+            var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+
+            exporter.ExportToFolder(
+                new HtmlDom(MinimalImageBook(imageFileName), true),
+                bookFolder.FolderPath,
+                outputFolder.FolderPath,
+                out string outputPath,
+                new ProgressSpy(),
+                OverwriteOptions.Overwrite
+            );
+            return outputPath;
+        }
+
+        /// <summary>
         /// Regression test for BL-16529 (image cells too high). ResizeImageIfNecessary never
-        /// enlarges an image, so a source smaller than the (possibly DPI-scaled) thumbnail target is
-        /// embedded at its original size. The row must be sized from the thumbnail we actually embed,
-        /// not from the larger target; otherwise small images get a row that is much too tall.
+        /// enlarges an image, so a source smaller than the thumbnail target is embedded at its
+        /// original size. The row must be sized from the thumbnail we actually embed, not from the
+        /// larger target; otherwise small images get a row that is much too tall, leaving dead space
+        /// below the image.
         ///
-        /// Note we assert only an upper bound (the row is not sized from the oversized target), not a
-        /// lower bound: the row height is in points, which the spreadsheet viewer does not scale for a
-        /// high-DPI display even though it scales the columns, so on a >100% display the exporter
-        /// deliberately makes the row's nominal height *smaller* than the embedded image (it is scaled
-        /// back up when displayed). A "row must be at least as tall as the image" assertion would be
-        /// wrong there. The upper bound holds regardless of the exporting machine's display scaling.
+        /// The row height no longer depends on the exporting machine's display scaling (the exporter
+        /// stamps every thumbnail with 96dpi instead of compensating for the display -- see
+        /// Export_Thumbnail_IsStamped96Dpi_SoLayoutDoesNotDependOnTheDisplay), so this can assert
+        /// both bounds: the row hugs the image.
         /// </summary>
         [Test]
         public void Export_SmallImage_RowNotSizedFromOversizedTarget()
@@ -704,7 +742,6 @@ namespace BloomTests.Spreadsheet
                     ),
                     "man.jpg"
                 );
-                RobustFile.Copy(sourceImage, Path.Combine(bookFolder.FolderPath, "man.jpg"));
 
                 int sourceImageHeightPx;
                 using (var img = Image.FromFile(sourceImage))
@@ -720,20 +757,7 @@ namespace BloomTests.Spreadsheet
                     sourceImageHeightPx = img.Height;
                 }
 
-                var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
-                mockLangDisplayNameResolver
-                    .Setup(x => x.GetLanguageDisplayName("en"))
-                    .Returns("English");
-                var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
-
-                exporter.ExportToFolder(
-                    new HtmlDom(smallImageBook, true),
-                    bookFolder.FolderPath,
-                    outputFolder.FolderPath,
-                    out string outputPath,
-                    new ProgressSpy(),
-                    OverwriteOptions.Overwrite
-                );
+                var outputPath = ExportBookWithOneImage("man.jpg", bookFolder, outputFolder);
 
                 using (var package = new ExcelPackage(new FileInfo(outputPath)))
                 {
@@ -766,7 +790,139 @@ namespace BloomTests.Spreadsheet
                             + $"({sourceImageHeightPx}px), so it was sized from the oversized target "
                             + "rather than the image actually embedded (BL-16529)."
                     );
+                    // ...and the row must still be tall enough to show the whole image.
+                    Assert.That(
+                        rowHeightPx,
+                        Is.GreaterThanOrEqualTo(sourceImageHeightPx),
+                        $"Row height ({rowHeightPx:0}px) is shorter than the embedded image "
+                            + $"({sourceImageHeightPx}px), so the image is clipped by its row (BL-16529)."
+                    );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Regression test for BL-16529 ("images in spreadsheet export display smaller"). Bloom is
+        /// PerMonitorV2 DPI aware (see Program.cs), so the GDI+ bitmaps ImageUtils produces carry the
+        /// screen's DPI -- 192 on a 200%-scaled display rather than 96. EPPlus turns a picture's pixel
+        /// size into its physical extent in the sheet using the image's own resolution, so a 192dpi
+        /// thumbnail was laid out at half its intended size: exactly the reported symptom. The
+        /// exporter must therefore stamp 96dpi on every thumbnail, so that a given book always
+        /// exports to the same spreadsheet whatever display the exporting machine has, and the sheet
+        /// looks the same wherever it is opened.
+        ///
+        /// Note this assertion can only *fail* on a machine whose display scaling is above 100%; at
+        /// 100% the screen DPI is 96 and the old code happened to be right. It is worth asserting
+        /// anyway: it pins the intent, and it fails on precisely the high-DPI machines where the bug
+        /// was reported.
+        /// </summary>
+        [Test]
+        public void Export_Thumbnail_IsStamped96Dpi_SoLayoutDoesNotDependOnTheDisplay()
+        {
+            const string imageFileName = "bird.png";
+            using (var bookFolder = new TemporaryFolder(_testFolder, "ThumbnailDpi_Book"))
+            using (var outputFolder = new TemporaryFolder(_testFolder, "ThumbnailDpi_Out"))
+            {
+                using (
+                    var img = Image.FromFile(
+                        Path.Combine(
+                            SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                                _pathToTestImages
+                            ),
+                            imageFileName
+                        )
+                    )
+                )
+                {
+                    // Sanity check: the source must be wider than the thumbnail target, so that it is
+                    // really scaled down to that target and we are asserting on the exporter's own
+                    // sizing rather than on a source image passed through untouched.
+                    Assert.That(
+                        img.Width,
+                        Is.GreaterThan(150),
+                        "Setup sanity check: the test image must be wider than the 150px thumbnail "
+                            + "target so that the exporter resizes it."
+                    );
+                }
+
+                var outputPath = ExportBookWithOneImage(imageFileName, bookFolder, outputFolder);
+
+                using (var package = new ExcelPackage(new FileInfo(outputPath)))
+                {
+                    var worksheet = package.Workbook.Worksheets[0];
+                    var picture = worksheet.Drawings.OfType<ExcelPicture>().Single();
+                    using (var stream = new MemoryStream(picture.Image.ImageBytes))
+                    using (var thumbnail = Image.FromStream(stream))
+                    {
+                        // Sanity check: we are looking at the thumbnail the exporter made, scaled to
+                        // the 150px target, not at the original image.
+                        Assert.That(
+                            thumbnail.Width,
+                            Is.EqualTo(150),
+                            "The embedded thumbnail should have been scaled to the 150px target width."
+                        );
+                        Assert.That(
+                            thumbnail.HorizontalResolution,
+                            Is.EqualTo(96f).Within(0.01f),
+                            "The embedded thumbnail must be stamped 96dpi. At any other resolution "
+                                + "EPPlus computes a different physical extent from the same pixels, so "
+                                + "the image is laid out at the wrong size -- at 192dpi (a 200%-scaled "
+                                + "display) it comes out half size (BL-16529)."
+                        );
+                        Assert.That(
+                            thumbnail.VerticalResolution,
+                            Is.EqualTo(96f).Within(0.01f),
+                            "The embedded thumbnail must be stamped 96dpi vertically too (BL-16529)."
+                        );
+                    }
+                }
+
+                // And the payoff: the extent the picture actually occupies in the sheet must match the
+                // thumbnail's pixels one for one. This is the number the reporter saw go wrong -- in the
+                // reported 6.5 export a 150px thumbnail was laid out over just 75px, which is the
+                // "images only take up half the column width" symptom.
+                Assert.That(
+                    GetFirstDrawingWidthInPixels(outputPath),
+                    Is.EqualTo(150).Within(1),
+                    "The picture should occupy the full 150px thumbnail width in the sheet. A smaller "
+                        + "extent for the same pixels means the thumbnail's resolution made the "
+                        + "spreadsheet library lay it out too small (BL-16529)."
+                );
+            }
+        }
+
+        /// <summary>
+        /// The width, in pixels at the standard 96dpi, that the first picture in the spreadsheet is
+        /// laid out over. We read this from the raw drawing XML because that is what a spreadsheet
+        /// viewer reads: the extent is stored in EMUs (914400 per inch, so 9525 per pixel at 96dpi),
+        /// and the library derives it from the embedded image's pixel size and its resolution.
+        /// </summary>
+        private static double GetFirstDrawingWidthInPixels(string xlsxPath)
+        {
+            using (var xlsx = System.IO.Compression.ZipFile.OpenRead(xlsxPath))
+            {
+                var drawingEntry = xlsx
+                    .Entries.Where(e =>
+                        e.FullName.StartsWith("xl/drawings/drawing") && e.FullName.EndsWith(".xml")
+                    )
+                    .OrderBy(e => e.FullName)
+                    .First();
+                string drawingXml;
+                using (var reader = new StreamReader(drawingEntry.Open()))
+                    drawingXml = reader.ReadToEnd();
+
+                var match = System.Text.RegularExpressions.Regex.Match(
+                    drawingXml,
+                    @"<xdr:ext\s+cx=""(\d+)""\s+cy=""(\d+)"""
+                );
+                Assert.That(
+                    match.Success,
+                    Is.True,
+                    "Setup sanity check: could not find a picture extent (xdr:ext) in the exported "
+                        + "spreadsheet's drawing XML, so there is nothing to measure."
+                );
+                const double emusPerPixelAt96Dpi = 914400.0 / 96.0;
+                return int.Parse(match.Groups[1].Value) / emusPerPixelAt96Dpi;
             }
         }
     }
