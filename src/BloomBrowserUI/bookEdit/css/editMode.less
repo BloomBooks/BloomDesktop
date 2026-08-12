@@ -923,17 +923,23 @@ div.textWholePage ul {
 // Now sometimes, the format button lands under the page number.
 // Changing the z-index did not help. So we allow themes to "dodge" it.
 // Kind of a hack, I know. See BL-13206.
+// The dodge only makes sense when the page number actually sits at the bottom left,
+// which depends on two things (BL-14901):
+//  - the theme's automatic placement, expressed as --formatButton-pageNumber-dodge on
+//    the page (themes set it to 0 on pages where they move the number elsewhere,
+//    e.g. pictureOnRight);
+//  - the user's Book Settings > Page Numbers choice, which beats the theme. It reaches
+//    CSS as the pageNumber margin overrides (see AppearanceSettings.SetPageNumberProperties):
+//    Center sets both overrides to 50%; Right sets the left override to deliberately-invalid;
+//    Left sets the right override to deliberately-invalid; Automatic/Hidden set neither.
+// The rules below fold all of that into --formatButton-pageNumber-dodge-effective,
+// which is what the margin actually uses.
 @container style(--pageNumber-show-multiplicand:1) {
-    .split-pane-component.position-right
-        .split-pane-component-inner
-        > .bloom-translationGroup
-        > #formatButton,
-    .split-pane-component.position-top
-        .split-pane-component-inner
-        > .bloom-translationGroup
-        > #formatButton {
-        // don't need this dodge if the page number can't be in this text area
-        --formatButton-pageNumber-dodge: 0px;
+    #formatButton {
+        // Default: the theme's automatic-placement decision.
+        --formatButton-pageNumber-dodge-effective: var(
+            --formatButton-pageNumber-dodge
+        );
     }
     .split-pane-component.position-left
         > .split-pane-component-inner
@@ -949,7 +955,44 @@ div.textWholePage ul {
         > .bloom-translationGroup
         > #formatButton {
         // this "3px" is there from long ago, nothing to do with this nudging
-        margin-left: calc(3px + var(--formatButton-pageNumber-dodge));
+        margin-left: calc(3px + var(--formatButton-pageNumber-dodge-effective));
+    }
+}
+// The user put the page number at the center or the right: nothing to dodge,
+// whatever the theme wanted.
+@container style(--pageNumber-left-margin-override: 50%) or
+    style(--pageNumber-left-margin-override: deliberately-invalid) {
+    #formatButton {
+        --formatButton-pageNumber-dodge-effective: 0px;
+    }
+}
+// The user forced the page number to the left: dodge, even on pages where the theme's
+// automatic placement would have moved the number away (e.g. pictureOnRight). Themes
+// that waive the dodge per-page publish the distance to use in this situation as
+// --formatButton-pageNumber-dodge-when-forced-left; stylesheets that never waive it
+// per-page (e.g. the EFL migration books' customBookStyles.css) don't define it, so
+// fall back to their ordinary dodge value.
+@container style(--pageNumber-right-margin-override: deliberately-invalid) {
+    #formatButton {
+        --formatButton-pageNumber-dodge-effective: var(
+            --formatButton-pageNumber-dodge-when-forced-left,
+            var(--formatButton-pageNumber-dodge)
+        );
+    }
+}
+// These selectors are more specific than the plain #formatButton rules above, so this
+// wins regardless of the page-number position: a text pane in the right/top half of the
+// page can never sit over a bottom-left page number, so it never needs the dodge.
+@container style(--pageNumber-show-multiplicand:1) {
+    .split-pane-component.position-right
+        .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton,
+    .split-pane-component.position-top
+        .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton {
+        --formatButton-pageNumber-dodge-effective: 0px;
     }
 }
 
