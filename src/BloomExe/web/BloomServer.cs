@@ -2779,6 +2779,13 @@ namespace Bloom.Api
         /// the listener be closed later, once the requests it served are long finished --
         /// see BloomTests' RetiredTestServers.
         /// </summary>
+        /// <remarks>
+        /// Note the seam, since it is invisible: this goes straight to the private overload, so a
+        /// subclass that overrode the protected virtual Dispose(bool) would be called on the real
+        /// Dispose path but NOT on this one. Nothing derives from BloomServer today. If something
+        /// ever does, make the two-argument overload the virtual one rather than leaving a subclass
+        /// silently half-invoked.
+        /// </remarks>
         public void PreDispose()
         {
             Dispose(true, closeListener: false);
