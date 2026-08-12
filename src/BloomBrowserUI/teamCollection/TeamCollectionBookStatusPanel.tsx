@@ -25,6 +25,7 @@ import { IBookTeamCollectionStatus } from "./teamCollectionApi";
 import { ForceUnlockDialog } from "./ForceUnlockDialog";
 import { kBloomRed } from "../utils/colorUtils";
 import { showRegistrationDialog } from "../react_components/registration/registrationDialog";
+import { NoteBox } from "../react_components/boxes";
 
 interface CheckInProgressEvent extends IBloomWebSocketEvent {
     fraction: number;
@@ -451,7 +452,16 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                             "checkout-button",
                             "/bloom/teamCollection/Check Out.svg",
                             checkoutHandler,
+                            props.checkoutsArePaused,
                         )}
+                        belowButton={
+                            props.checkoutsArePaused ? (
+                                <NoteBox l10nKey="TeamCollection.CheckoutsPaused">
+                                    The administrator of this collection has
+                                    paused checkouts.
+                                </NoteBox>
+                            ) : undefined
+                        }
                         menu={menu}
                     />
                 );

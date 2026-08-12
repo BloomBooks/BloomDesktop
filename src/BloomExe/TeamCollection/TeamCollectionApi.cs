@@ -534,6 +534,7 @@ namespace Bloom.TeamCollection
                         isNewLocalBook = true,
                         checkinMessage = "",
                         isUserAdmin = _tcManager.OkToEditCollectionSettings,
+                        checkoutsArePaused = !_settings.AllowCheckouts,
                     }
                 );
             }
@@ -620,6 +621,7 @@ namespace Bloom.TeamCollection
                     isNewLocalBook,
                     checkinMessage,
                     isUserAdmin = _tcManager.OkToEditCollectionSettings,
+                    checkoutsArePaused = !_settings.AllowCheckouts,
                 }
             );
         }
@@ -685,6 +687,15 @@ namespace Bloom.TeamCollection
             if (!_tcManager.CheckConnection())
             {
                 request.Failed();
+                return;
+            }
+
+            // The UI disables the checkout button when checkouts are paused, but the status it is
+            // working from can be stale (the setting arrives from the repo whenever collection files
+            // sync), so refuse here too rather than let a checkout slip through. See BL-16691.
+            if (!_settings.AllowCheckouts)
+            {
+                request.Failed("checkouts are paused for this collection");
                 return;
             }
 

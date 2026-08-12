@@ -194,6 +194,7 @@ namespace Bloom.Collection
             XMatterPackName = kDefaultXmatterName;
             Language2Tag = "en";
             AllowNewBooks = true;
+            AllowCheckouts = true;
             CollectionName = "dummy collection";
             AudioRecordingMode = TalkingBookApi.AudioRecordingMode.Sentence;
             AudioRecordingTrimEndMilliseconds = kDefaultAudioRecordingTrimEndMilliseconds;
@@ -394,6 +395,7 @@ namespace Bloom.Collection
             xml.Add(new XElement("Province", Province));
             xml.Add(new XElement("District", District));
             xml.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
+            xml.Add(new XElement("AllowCheckouts", AllowCheckouts.ToString()));
             xml.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
             xml.Add(
                 new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds)
@@ -644,6 +646,7 @@ namespace Bloom.Collection
                 Province = ReadString(xml, "Province", "");
                 District = ReadString(xml, "District", "");
                 AllowNewBooks = ReadBoolean(xml, "AllowNewBooks", true);
+                AllowCheckouts = ReadBoolean(xml, "AllowCheckouts", true);
                 IsSourceCollection = ReadBoolean(xml, "IsSourceCollection", false);
 
                 string audioRecordingModeStr = ReadString(xml, "AudioRecordingMode", "Unknown");
@@ -981,6 +984,14 @@ namespace Bloom.Collection
         public int OneTimeCheckVersionNumber { get; set; }
 
         public bool AllowNewBooks { get; set; }
+
+        /// <summary>
+        /// When false, no one may check out a book in this (Team) collection. There is deliberately
+        /// no UI for this; a collection administrator pauses checkouts by hand-editing the
+        /// AllowCheckouts element of the .bloomCollection file, which then syncs to the whole team.
+        /// See BL-16691.
+        /// </summary>
+        public bool AllowCheckouts { get; set; }
 
         public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
 
