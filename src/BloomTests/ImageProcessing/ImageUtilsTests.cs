@@ -255,6 +255,116 @@ namespace BloomTests.ImageProcessing
             }
         }
 
+        // ------------------------------------------------------------------
+        // HasTransparency. It samples rather than proving opacity: the top-left corner, plus a
+        // handful of pixels scattered over the rest of the image. The scattered part was added for
+        // BL-16645, where a "no" makes the AI image editor re-encode the picture as a JPEG and
+        // delete the original — so a picture the corner check alone called opaque was flattened
+        // for good.
+        // ------------------------------------------------------------------
+
+        // A 32-bit bitmap with an opaque border and a fully transparent middle: the shape of a
+        // subject knocked out of an otherwise solid canvas. The border is wider than the 15-pixel
+        // corner scan, so the corner alone sees nothing but opaque pixels.
+        private static Bitmap MakeBitmapTransparentOnlyInTheMiddle(int size, int borderWidth)
+        {
+            var bitmap = new Bitmap(size, size, PixelFormat.Format32bppArgb);
+            for (int y = 0; y < size; ++y)
+            for (int x = 0; x < size; ++x)
+            {
+                var inBorder =
+                    x < borderWidth
+                    || y < borderWidth
+                    || x >= size - borderWidth
+                    || y >= size - borderWidth;
+                // Vary the border colors so the PNG of this can't compress away to nothing.
+                bitmap.SetPixel(
+                    x,
+                    y,
+                    inBorder
+                        ? Color.FromArgb(255, (x * 7) % 256, (y * 13) % 256, (x + y) % 256)
+                        : Color.FromArgb(0, 0, 0, 0)
+                );
+            }
+            return bitmap;
+        }
+
+        [Test]
+        public void HasTransparency_TransparentOnlyInTheMiddle_IsDetected()
+        {
+            using (var bitmap = MakeBitmapTransparentOnlyInTheMiddle(200, 20))
+            {
+                // Sanity: the corner scan really is blind here, so this test is exercising the
+                // scattered sampling and not just re-testing the corner.
+                Assert.That(
+                    bitmap.GetPixel(0, 0).A,
+                    Is.EqualTo(255),
+                    "setup: the corner must be opaque"
+                );
+                Assert.That(
+                    bitmap.GetPixel(14, 14).A,
+                    Is.EqualTo(255),
+                    "setup: the whole 15x15 corner scan must be opaque"
+                );
+                Assert.That(
+                    bitmap.GetPixel(100, 100).A,
+                    Is.EqualTo(0),
+                    "setup: the middle really is transparent"
+                );
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap),
+                    Is.True,
+                    "an interior-only cutout must be found, or the AI editor would flatten it"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_FullyOpaqueRgbaImage_IsFalse()
+        {
+            // The other direction matters just as much: AI tools routinely emit fully opaque RGBA
+            // PNGs, and a false positive here would silently switch off the size optimization
+            // BL-16645 added for them.
+            using (var bitmap = new Bitmap(200, 200, PixelFormat.Format32bppArgb))
+            {
+                for (int y = 0; y < 200; ++y)
+                for (int x = 0; x < 200; ++x)
+                    bitmap.SetPixel(x, y, Color.FromArgb(255, (x * 3) % 256, (y * 5) % 256, 128));
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap),
+                    Is.False,
+                    "an opaque image must not be reported as transparent"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_SameImageTwice_GivesTheSameAnswer()
+        {
+            // Callers delete the original on a "no", so the answer has to be reproducible rather
+            // than varying from run to run. A tiny transparent patch is the case where a sampled
+            // answer could differ if the sample positions were not fixed.
+            using (var bitmap = new Bitmap(400, 400, PixelFormat.Format32bppArgb))
+            {
+                for (int y = 0; y < 400; ++y)
+                for (int x = 0; x < 400; ++x)
+                    bitmap.SetPixel(x, y, Color.FromArgb(255, 10, 20, 30));
+                bitmap.SetPixel(390, 390, Color.FromArgb(0, 0, 0, 0));
+
+                var first = ImageUtils.HasTransparency(bitmap);
+                for (int i = 0; i < 5; ++i)
+                {
+                    Assert.That(
+                        ImageUtils.HasTransparency(bitmap),
+                        Is.EqualTo(first),
+                        "the same picture must get the same answer every time"
+                    );
+                }
+            }
+        }
+
         [Test]
         [TestCase("box", "box1")]
         [TestCase("box1", "box2")]

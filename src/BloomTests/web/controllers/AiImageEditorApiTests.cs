@@ -594,6 +594,74 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
+        public void ConvertPngToJpeg_PngTransparentOnlyInTheMiddle_IsLeftAlone()
+        {
+            // The case the corner-only check used to miss (BL-16645): a subject knocked out of an
+            // otherwise solid canvas, so the corners are opaque but the middle is see-through.
+            // Converting it would flatten the cutout and delete the original.
+            var oldSrc = MakeSmallJpegInBookFolder("old-tiny.jpg");
+            var newName = "ai-image1.png";
+            var newPath = Path.Combine(_bookFolder.Path, newName);
+            using (var bitmap = new Bitmap(300, 300, PixelFormat.Format32bppArgb))
+            {
+                for (int y = 0; y < 300; ++y)
+                for (int x = 0; x < 300; ++x)
+                {
+                    var inBorder = x < 30 || y < 30 || x >= 270 || y >= 270;
+                    // Varied border colors, so the PNG doesn't compress down below the size gate.
+                    bitmap.SetPixel(
+                        x,
+                        y,
+                        inBorder
+                            ? Color.FromArgb(255, (x * 7) % 256, (y * 13) % 256, (x + y) % 256)
+                            : Color.FromArgb(0, 0, 0, 0)
+                    );
+                }
+                RobustImageIO.SaveImage(bitmap, newPath, ImageFormat.Png);
+            }
+            // Sanity checks, so this can't pass for the wrong reason: it sniffs as a PNG, it is
+            // big enough to be a conversion candidate, and the transparency really is invisible to
+            // the corner scan yet visible to HasTransparency.
+            Assert.That(ImageUtils.IsPngFile(newPath), Is.True, "setup");
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: big enough that only the transparency check can stop the conversion"
+            );
+            using (var check = Image.FromFile(newPath))
+            {
+                Assert.That(
+                    ((Bitmap)check).GetPixel(5, 5).A,
+                    Is.EqualTo(255),
+                    "setup: the corner must be opaque, or the old corner-only check would have caught it"
+                );
+                Assert.That(
+                    ImageUtils.HasTransparency(check),
+                    Is.True,
+                    "setup: the scattered sampling must see the interior cutout"
+                );
+            }
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                result,
+                Is.EqualTo(newName),
+                "a picture see-through only in its middle must still be kept as a PNG"
+            );
+            Assert.That(File.Exists(newPath), Is.True, "and the original must survive");
+            Assert.That(
+                Directory.GetFiles(_bookFolder.Path, "ai-image*.jpg"),
+                Is.Empty,
+                "no JPEG should have been produced at all"
+            );
+        }
+
+        [Test]
         public void ConvertPngToJpeg_UndecodableFile_LeavesItAloneRatherThanThrowing()
         {
             // ImportImageIntoBookFolder copies a file it can't process in verbatim, without

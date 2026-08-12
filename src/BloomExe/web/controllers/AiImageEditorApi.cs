@@ -1188,10 +1188,13 @@ namespace Bloom.web.controllers
         ///
         /// A PNG we can see is transparent is left alone whatever its size, because a JPEG cannot
         /// carry an alpha channel and converting one would permanently flatten its see-through
-        /// areas onto a solid background. Note the limit of "can see": for an ordinary bitmap
-        /// <see cref="ImageUtils.HasTransparency"/> samples only the top-left corner, so a PNG
-        /// transparent purely in its interior can still slip through and be flattened. That is a
-        /// known, accepted gap rather than an oversight — see the review thread on PR #8188.
+        /// areas onto a solid background. Note the limit of "can see":
+        /// <see cref="ImageUtils.HasTransparency"/> samples an ordinary bitmap rather than proving
+        /// it opaque — the top-left corner plus a handful of pixels scattered over the rest — so a
+        /// PNG with a small transparent patch away from those points can still slip through and be
+        /// flattened. That residual gap is known and accepted; the scattered sampling was added
+        /// (BL-16645) precisely because the corner alone missed an interior-only cutout, which is
+        /// the case this path would otherwise destroy. See the review thread on PR #8188.
         ///
         /// Returns the name (no path) to use for the new file — the JPEG's if we converted,
         /// otherwise <paramref name="newFileName"/> unchanged. Internal for testing.

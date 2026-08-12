@@ -1852,12 +1852,34 @@ namespace Bloom.ImageProcessing
             return false;
         }
 
+        // After the corner check comes up empty we sample this many further pixels, scattered over
+        // the whole image. The corner shortcut below is blind to a picture that is transparent only
+        // in its interior, and at least one caller acts destructively on a "no": the AI image
+        // editor re-encodes the picture as a JPEG and deletes the original, so a wrong answer there
+        // cannot be undone (BL-16645). Ten is deliberately small — a cheap extra net thrown over
+        // the rest of the image, not an exhaustive search, and negligible beside the 225 pixels the
+        // corner check already reads.
+        private const int ExtraScatteredPixelsToCheckForTransparency = 10;
+
         /// <summary>
         /// Check whether the image has any transparency.
         /// If it becomes too difficult or expensive to determine, we punt and return false.
         /// </summary>
+        /// <remarks>
+        /// For a non-indexed bitmap this is a sample, not a proof: it reads the top-left corner and
+        /// then <see cref="ExtraScatteredPixelsToCheckForTransparency"/> further pixels spread over
+        /// the image. So a "true" is certain, while a "false" means "none of the pixels we looked at
+        /// was transparent" — a picture with a small transparent patch away from the corner can
+        /// still be missed. Callers that do something irreversible on a "false" should know that.
+        /// </remarks>
         public static bool HasTransparency(Image image)
         {
+            // If there is no alpha channel, there cannot be any transparency.
+            if (
+                (image.PixelFormat & PixelFormat.Alpha) != PixelFormat.Alpha
+                && (image.PixelFormat & PixelFormat.PAlpha) != PixelFormat.PAlpha
+            )
+                return false;
             if ((image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
             {
                 foreach (var color in image.Palette.Entries)
@@ -1878,6 +1900,23 @@ namespace Bloom.ImageProcessing
                 for (int x = 0; x < bitmapImage.Width && x < maxPixelsFromCorner; ++x)
                     if (bitmapImage.GetPixel(x, y).A != 255)
                         return true;
+
+                // The corner said nothing, but a picture can be transparent only in its interior —
+                // a subject knocked out of an otherwise opaque canvas, for instance. Spend a few
+                // more pixels scattered across the whole image before calling it opaque.
+                // The seed is fixed on purpose. The positions still need to be scattered rather
+                // than clustered like the corner scan, but a caller that deletes the original on a
+                // "no" must get the same answer for the same picture every time; an answer that
+                // varied from run to run would be harder to trust, and to reproduce, than one that
+                // is merely a bit narrow.
+                var scatter = new Random(1234);
+                for (int i = 0; i < ExtraScatteredPixelsToCheckForTransparency; ++i)
+                {
+                    var x = scatter.Next(bitmapImage.Width);
+                    var y = scatter.Next(bitmapImage.Height);
+                    if (bitmapImage.GetPixel(x, y).A != 255)
+                        return true;
+                }
 
                 return false;
             }
