@@ -2760,7 +2760,36 @@ namespace Bloom.Api
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Frees everything this server can free WITHOUT closing its HttpListener: it stops
+        /// accepting requests, stops and joins its threads (which are foreground threads, so
+        /// releasing them is what lets a process exit), and releases the image cache. Afterwards
+        /// the only thing the server still holds is the listener, and therefore its port.
+        ///
+        /// Why this is separable from Dispose (BL-16667): closing the listener is the one step
+        /// that can crash. A response body can still be going out after the worker that produced
+        /// it has finished -- RequestInfo hands the tail of the send to the framework, which
+        /// completes it on a callback whose only handler is `catch (Win32Exception)` -- and
+        /// closing the listener underneath that makes it throw ObjectDisposedException on a thread
+        /// none of our try/catch blocks cover, which kills the process. Everything in this method
+        /// is safe to do at any time; only CloseListener has to wait until nothing is in flight.
+        ///
+        /// Production still calls Dispose, which is PreDispose followed immediately by
+        /// CloseListener, so nothing about Bloom's behaviour changes. The tests use this to let
+        /// the listener be closed later, once the requests it served are long finished --
+        /// see BloomTests' RetiredTestServers.
+        /// </summary>
+        public void PreDispose()
+        {
+            Dispose(true, closeListener: false);
+        }
+
         protected virtual void Dispose(bool fDisposing)
+        {
+            Dispose(fDisposing, closeListener: true);
+        }
+
+        private void Dispose(bool fDisposing, bool closeListener)
         {
             Debug.WriteLineIf(
                 !fDisposing,
@@ -2831,7 +2860,9 @@ namespace Bloom.Api
                             }
                         }
 
-                        CloseListener();
+                        // The one step PreDispose leaves undone; see its comment.
+                        if (closeListener)
+                            CloseListener();
                     }
                     if (_cache != null)
                     {
@@ -2852,7 +2883,12 @@ namespace Bloom.Api
 #endif
                 }
             }
-            IsDisposed = true;
+            // Deliberately NOT set by PreDispose: the server still owns its listener, so a later
+            // real Dispose has to be allowed to run and close it. Everything above is safe to
+            // repeat -- _stop is already set, the threads are already joined, the cache is already
+            // gone -- so the second pass does nothing but the CloseListener that was skipped.
+            if (closeListener)
+                IsDisposed = true;
         }
 
         /// <summary>
