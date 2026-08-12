@@ -321,6 +321,61 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
+        public void HasTransparency_PaletteBasedTransparency_IsDetected()
+        {
+            // A PNG-8 (or GIF-style) picture keeps its transparency in its palette, and GDI+ loads
+            // it as Format8bppIndexed — a pixel format that does NOT carry the Alpha flag. So the
+            // "no alpha channel, therefore opaque" shortcut must not be allowed to answer for an
+            // indexed image; the palette is the only place its transparency lives.
+            using (var bitmap = new Bitmap(50, 50, PixelFormat.Format8bppIndexed))
+            {
+                var palette = bitmap.Palette;
+                palette.Entries[0] = Color.FromArgb(0, 0, 0, 0); // a transparent palette entry
+                for (int i = 1; i < palette.Entries.Length; ++i)
+                    palette.Entries[i] = Color.FromArgb(255, i % 256, 128, 64);
+                bitmap.Palette = palette;
+
+                // Sanity: this really is the shape described above, so the assertion below is
+                // testing the indexed path and not something else.
+                Assert.That(
+                    (bitmap.PixelFormat & PixelFormat.Indexed),
+                    Is.EqualTo(PixelFormat.Indexed),
+                    "setup: must be an indexed image"
+                );
+                Assert.That(
+                    (bitmap.PixelFormat & PixelFormat.Alpha),
+                    Is.Not.EqualTo(PixelFormat.Alpha),
+                    "setup: an indexed format carries no Alpha flag — that's the trap"
+                );
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap),
+                    Is.True,
+                    "a transparent palette entry means the picture has transparency"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_PaletteWithNoTransparentEntry_IsFalse()
+        {
+            // The other direction, so the indexed path isn't just answering "true" for everything.
+            using (var bitmap = new Bitmap(50, 50, PixelFormat.Format8bppIndexed))
+            {
+                var palette = bitmap.Palette;
+                for (int i = 0; i < palette.Entries.Length; ++i)
+                    palette.Entries[i] = Color.FromArgb(255, i % 256, 128, 64);
+                bitmap.Palette = palette;
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap),
+                    Is.False,
+                    "an all-opaque palette means no transparency"
+                );
+            }
+        }
+
+        [Test]
         public void HasTransparency_FullyOpaqueRgbaImage_IsFalse()
         {
             // The other direction matters just as much: AI tools routinely emit fully opaque RGBA

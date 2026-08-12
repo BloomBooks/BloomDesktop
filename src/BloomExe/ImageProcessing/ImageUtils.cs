@@ -1874,12 +1874,14 @@ namespace Bloom.ImageProcessing
         /// </remarks>
         public static bool HasTransparency(Image image)
         {
-            // If there is no alpha channel, there cannot be any transparency.
-            if (
-                (image.PixelFormat & PixelFormat.Alpha) != PixelFormat.Alpha
-                && (image.PixelFormat & PixelFormat.PAlpha) != PixelFormat.PAlpha
-            )
-                return false;
+            // An indexed image keeps its transparency in its palette, not in an alpha channel, and
+            // it has to be asked about FIRST. Every indexed pixel format (Format8bppIndexed and
+            // friends, which is how GDI+ loads a PNG-8 or a GIF) leaves the Alpha and PAlpha flags
+            // clear, so the "no alpha channel" shortcut below would answer "opaque" for all of them
+            // and this palette check would never run at all. That was harmless while the answer
+            // only chose a display format, but the AI image editor now deletes the original when
+            // told a picture is opaque, so a palette-transparent picture would have been flattened
+            // for good (BL-16645).
             if ((image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
             {
                 foreach (var color in image.Palette.Entries)
@@ -1889,6 +1891,12 @@ namespace Bloom.ImageProcessing
                 }
                 return false;
             }
+            // If there is no alpha channel, there cannot be any transparency.
+            if (
+                (image.PixelFormat & PixelFormat.Alpha) != PixelFormat.Alpha
+                && (image.PixelFormat & PixelFormat.PAlpha) != PixelFormat.PAlpha
+            )
+                return false;
 
             if (image is Bitmap bitmapImage)
             {
