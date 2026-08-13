@@ -86,7 +86,11 @@ namespace Bloom.CollectionCreating
             {
                 return false;
             }
-            if (effectiveName.IndexOfAny(Path.GetInvalidFileNameChars()) > -1)
+            // Check the raw text for characters a folder name can't contain. Not the trimmed name:
+            // tab, newline and the other control characters are both invalid in a file name and
+            // stripped by Trim(), so checking the trimmed name would pass a pasted "Foo<tab>" that
+            // then fails when we try to create the folder -- the folder is built from the raw text.
+            if (_collectionNameControl.Text.IndexOfAny(Path.GetInvalidFileNameChars()) > -1)
             {
                 return false;
             }
