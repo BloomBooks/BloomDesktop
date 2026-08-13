@@ -2049,14 +2049,16 @@ namespace Bloom
                 );
 
                 Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
-                // Saves this and the UserInterfaceLanguageSetExplicitly set above; GetDesiredUiLanguage
-                // reads both on the next launch. But not before Main has migrated the previous
-                // version's settings: we run well before its "if (NeedUpgrade) { Upgrade();
-                // Reload(); }" block, and Reload() would throw away what we wrote anyway, so saving
-                // now would gain nothing while writing the new version's settings file earlier than
-                // the migration expects.
-                if (!Settings.Default.NeedUpgrade)
-                    Settings.Default.Save();
+                // Deliberately NOT saved here, unlike the other settings this branch made save
+                // promptly. This runs on every startup path, and very early: before Main sets
+                // RunningInConsoleMode and dispatches the command-line verbs, so saving would make
+                // `bloom upload`, `hydrate` and friends rewrite the user's settings file - a smaller
+                // version of the very problem BL-16660 is about - and would risk failing an
+                // unattended run at startup. It is also before Main migrates the previous version's
+                // settings, whose Reload() would discard whatever we wrote anyway.
+                // Nothing is lost: this is a value derived at startup, not a user's choice, and
+                // GetDesiredUiLanguage derives it again next launch. When the user actually picks a
+                // language, WorkspaceView.ApplyUiLanguageChange saves both settings immediately.
 
                 // Per BL-6449, these two languages should try Spanish before English if a localization is missing.
                 // (If they ever get localized enough to show up in our list.)
