@@ -194,6 +194,7 @@ namespace Bloom.Collection
             XMatterPackName = kDefaultXmatterName;
             Language2Tag = "en";
             AllowNewBooks = true;
+            AllowCheckouts = true;
             CollectionName = "dummy collection";
             AudioRecordingMode = TalkingBookApi.AudioRecordingMode.Sentence;
             AudioRecordingTrimEndMilliseconds = kDefaultAudioRecordingTrimEndMilliseconds;
@@ -394,6 +395,15 @@ namespace Bloom.Collection
             xml.Add(new XElement("Province", Province));
             xml.Add(new XElement("District", District));
             xml.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
+            // Unlike the settings around it, this one is written only when it is turned on.
+            // Save() rebuilds the whole file, so writing it unconditionally would add a line to
+            // every .bloomCollection in existence the first time its settings were saved -- and in
+            // a Team Collection that edit gets pushed to the shared folder, so the churn would
+            // spread to the whole team for a setting almost nobody uses. Omitting it is safe
+            // because a missing element already reads back as true (see Load), so a paused
+            // collection still round-trips correctly. See BL-16691.
+            if (!AllowCheckouts)
+                xml.Add(new XElement("AllowCheckouts", AllowCheckouts.ToString()));
             xml.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
             xml.Add(
                 new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds)
@@ -644,6 +654,15 @@ namespace Bloom.Collection
                 Province = ReadString(xml, "Province", "");
                 District = ReadString(xml, "District", "");
                 AllowNewBooks = ReadBoolean(xml, "AllowNewBooks", true);
+                // A missing element reads back as true, which is what we want: checkouts are
+                // allowed unless someone deliberately turns them off. Note that a *malformed*
+                // value does not fall back to that default -- ReadBoolean returns whatever
+                // bool.TryParse produced, which is false -- so "no" or a typo pauses checkouts for
+                // the whole team rather than being ignored. We considered special-casing this
+                // setting to be strict and decided against it: every other boolean in this file
+                // behaves the same way, and making this the one exception would be more surprising
+                // than the behavior itself. See BL-16691.
+                AllowCheckouts = ReadBoolean(xml, "AllowCheckouts", true);
                 IsSourceCollection = ReadBoolean(xml, "IsSourceCollection", false);
 
                 string audioRecordingModeStr = ReadString(xml, "AudioRecordingMode", "Unknown");
@@ -981,6 +1000,14 @@ namespace Bloom.Collection
         public int OneTimeCheckVersionNumber { get; set; }
 
         public bool AllowNewBooks { get; set; }
+
+        /// <summary>
+        /// When false, no one may check out a book in this (Team) collection. There is deliberately
+        /// no UI for this; a collection administrator pauses checkouts by hand-editing the
+        /// AllowCheckouts element of the .bloomCollection file, which then syncs to the whole team.
+        /// See BL-16691.
+        /// </summary>
+        public bool AllowCheckouts { get; set; }
 
         public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
 

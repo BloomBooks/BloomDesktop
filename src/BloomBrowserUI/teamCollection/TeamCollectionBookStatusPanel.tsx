@@ -25,6 +25,7 @@ import { IBookTeamCollectionStatus } from "./teamCollectionApi";
 import { ForceUnlockDialog } from "./ForceUnlockDialog";
 import { kBloomRed } from "../utils/colorUtils";
 import { showRegistrationDialog } from "../react_components/registration/registrationDialog";
+import { NoteBox } from "../react_components/boxes";
 
 interface CheckInProgressEvent extends IBloomWebSocketEvent {
     fraction: number;
@@ -412,6 +413,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                                     setBusy(false);
                                 },
                                 () => {
+                                    // Likewise on failure: when the server refuses because an
+                                    // administrator paused checkouts, it pushes a status refresh,
+                                    // so the panel will redraw and explain itself. We just need to
+                                    // stop looking busy, and not report an error. See BL-16691.
                                     setBusy(false);
                                 },
                             );
@@ -421,6 +426,15 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                                     if (hasValidEmail)
                                         post(
                                             "teamCollection/attemptLockOfCurrentBook",
+                                            undefined,
+                                            // This needs a failure handler even though it has
+                                            // nothing to do. Without one, post() rethrows, and a
+                                            // refused checkout surfaces as Bloom's "something went
+                                            // wrong" problem report -- blaming Bloom when in fact
+                                            // an administrator paused checkouts. The server pushes
+                                            // a status refresh when it refuses, so the panel
+                                            // explains itself. See BL-16691.
+                                            () => {},
                                         );
                                 },
                             });
@@ -451,7 +465,20 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                             "checkout-button",
                             "/bloom/teamCollection/Check Out.svg",
                             checkoutHandler,
+                            props.checkoutsArePaused,
                         )}
+                        belowButton={
+                            props.checkoutsArePaused ? (
+                                // Deliberately not localized yet: this is an
+                                // unreleased admin-only setting with no UI, so
+                                // per AGENTS.md we ship the English and add an
+                                // XLF entry once the feature stabilizes.
+                                <NoteBox>
+                                    The administrator of this collection has
+                                    paused checkouts.
+                                </NoteBox>
+                            ) : undefined
+                        }
                         menu={menu}
                     />
                 );
