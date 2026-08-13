@@ -86,6 +86,25 @@ directly.
 about to be navigated out from under it, so the network error has to be swallowed. Calls that stop
 navigating can use plain `post`/`postString` and get their errors reported again.
 
+### Before converting any of these: the reload may be doing a second job
+
+Check what the caller has just done to the live DOM, because a reload does not only recover from
+the old destructive save — it also re-runs the page's whole setup (`SetupElements`, re-attaching
+CKEditor to every editable, the toolbox's `newPageReady`, image sizing, scroll bars). A caller that
+restructured the page may be relying on that without saying so.
+
+This is not hypothetical. `customXmatterPage.tsx` posts `editView/jumpToPage` with its **own**
+page id — asking to "jump" to where it already is, purely to get a save — right after
+`convertXmatterPageToCustom()` rebuilds the cover into canvas elements. Converting it to
+`savePageWithoutReloading()` looked ideal on paper (it even fixes a real bug: that handler replies
+before the save has happened, so the `await` does not mean what it appears to). But driven live,
+the converted cover came back with CKEditor attached to **0 of its 12** editables, where the
+standard cover has 9: `convertXmatterPageToCustom()` never attaches editors to the elements it
+creates, and the reload had been quietly covering for that. Reverted.
+
+So: convert, then *drive the real UI* and check the page is still fully alive — editors attached,
+tool markup present, images sized. Neither the unit tests nor the typecheck will tell you.
+
 ## 2. The `requestPageContent` delay machinery
 
 `addRequestPageContentDelay` / `removeRequestPageContentDelay` /
