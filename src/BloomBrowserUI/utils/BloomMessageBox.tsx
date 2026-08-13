@@ -26,8 +26,8 @@ export interface IMessageBoxButton {
     id: string;
     default: boolean; // Only one button should have this true
     // Effectively an enumeration, which we will add to as needed.
-    // "launch" is the same icon the Help menu uses on its "website" item, to warn the
-    // user that clicking will take them out to a web page.
+    // "launch" is the same icon, in the same leading position, that the Help menu uses on
+    // its "website" item, to warn the user that clicking will take them out to a web page.
     icon?: "launch";
 }
 
@@ -79,7 +79,7 @@ export const BloomMessageBox: React.FunctionComponent<{
             alreadyLocalized={true}
             hasText={true}
             variant={button.default ? "contained" : "outlined"}
-            endIcon={
+            iconBeforeText={
                 button.icon === "launch" ? (
                     <LaunchIcon fontSize="small" />
                 ) : undefined
