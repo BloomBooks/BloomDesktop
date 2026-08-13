@@ -1479,7 +1479,7 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
     // the very update the undo just asked for. These two put the choice in one place so the
     // rest of the method doesn't have to care which timer it is. Replacing whatever that same
     // timer was already waiting for is what makes a burst of events do the markup just once.
-    const cancelPendingUpdate = (): void => {
+    function cancelPendingUpdate(): void {
         if (isUndoOrRedo) {
             if (undoRedoMarkupTimer) clearTimeout(undoRedoMarkupTimer);
             undoRedoMarkupTimer = null;
@@ -1487,18 +1487,18 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
         }
         if (keypressTimer) clearTimeout(keypressTimer);
         keypressTimer = null;
-    };
-    const scheduleMainTask = (
+    }
+    function scheduleMainTask(
         task: () => void,
         delayMilliseconds: number,
-    ): void => {
+    ): void {
         cancelPendingUpdate();
         if (isUndoOrRedo) {
             undoRedoMarkupTimer = setTimeout(task, delayMilliseconds);
         } else {
             keypressTimer = setTimeout(task, delayMilliseconds);
         }
-    };
+    }
     cancelPendingUpdate();
     // Not sure we need this now the method is triggered by keyup. If it is triggered by keydown,
     // we have a problem:
