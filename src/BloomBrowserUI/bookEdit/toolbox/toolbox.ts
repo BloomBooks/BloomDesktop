@@ -1588,13 +1588,6 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
             return;
         }
 
-        // Past every reason to give up, so this pass is really going to do the markup. That is
-        // what the next undo/redo has to wait behind; an attempt that bailed above (and each of
-        // its retries) did no work and must not make one wait.
-        if (isUndoOrRedo) {
-            lastUndoRedoMarkupStartTime = Date.now();
-        }
-
         // the hard thing about all this is preserving the user's insertion point while we change the actual
         // html out from under them to add/remove markup.
         // ckeditor specific discussion: http://stackoverflow.com/questions/16835365/set-cursor-to-specific-position-in-ckeditor
@@ -1627,6 +1620,13 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 let ckeditorSelection = ckeditorOfThisBox.getSelection();
                 if (!ckeditorSelection) {
                     return; // may be changing pages?
+                }
+                // We are now certainly going to do the markup, which is the work the next
+                // undo/redo has to wait behind. Anything that gave up before this point - an
+                // unusable selection and each of its retries, no editable under the caret, a
+                // box with no ckeditor - did none of that work and must not make one wait.
+                if (isUndoOrRedo) {
+                    lastUndoRedoMarkupStartTime = Date.now();
                 }
                 // there is also createBookmarks2(), which avoids actually inserting anything. That has the
                 // advantage that changing a character in the middle of a word will allow the entire word to
