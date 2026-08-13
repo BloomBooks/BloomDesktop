@@ -125,7 +125,15 @@ namespace Bloom.web.controllers
             var collections = new List<dynamic>();
 
             const int maxMruItems = 10;
-            var collectionsToShow = Settings.Default.MruProjects.Paths.Take(maxMruItems).ToList();
+            // Normalize the remembered paths: one saved by an older Bloom can have a trailing period
+            // on the folder name that the folder itself doesn't have (BL-16679). Left as-is, such a
+            // path neither matches the same collection found by the folder scan below nor another
+            // spelling of itself, so the collection would be listed twice.
+            var collectionsToShow = Settings
+                .Default.MruProjects.Paths.Select(MiscUtils.GetPathAsOnDisk)
+                .Distinct()
+                .Take(maxMruItems)
+                .ToList();
 
             // Always include the MRU items first.
             collections.AddRange(collectionsToShow.Select(path => MakeCollectionInfoObject(path)));
@@ -141,17 +149,7 @@ namespace Bloom.web.controllers
                 collections.AddRange(
                     Directory
                         .GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
-                        .Select(d =>
-                            // TryGetSettingsFilePath, rather than just GetSettingsFilePath, because the
-                            // settings file is not always named after the folder that holds it: renaming
-                            // a collection folder leaves the old file name, and a collection whose name
-                            // ends with a period gets a folder without it (BL-16679). Such a collection
-                            // is perfectly usable, so it belongs in this list; looking only for the
-                            // name-matching file silently hid it.
-                            CollectionSettings.TryGetSettingsFilePath(d, out var settingsPath)
-                                ? settingsPath
-                                : null
-                        )
+                        .Select(d => FindCollectionFileIn(d))
                         .Where(path => path != null && !collectionsToShow.Contains(path))
                         .OrderByDescending(path =>
                             Directory.GetLastWriteTime(Path.GetDirectoryName(path))
@@ -162,6 +160,37 @@ namespace Bloom.web.controllers
             }
 
             request.ReplyWithJson(collections);
+        }
+
+        /// <summary>
+        /// The path of the .bloomCollection file in this folder, or null if there isn't one (or we
+        /// can't look).
+        /// </summary>
+        /// <remarks>
+        /// We ask what is really in the folder rather than just looking for a file named after it,
+        /// because the two don't always agree: renaming a collection folder leaves the old file name,
+        /// and a collection whose name ends with a period gets a folder without it (BL-16679). Such a
+        /// collection is perfectly usable, so it belongs in this list; looking only for the
+        /// name-matching file silently hid it.
+        /// Unlike the file-exists check this replaced, listing a folder can throw -- it is one folder
+        /// among many in a list, and one unreadable or just-deleted folder must not cost the user the
+        /// whole Open/Create dialog.
+        /// </remarks>
+        private static string FindCollectionFileIn(string folder)
+        {
+            try
+            {
+                return CollectionSettings.TryGetSettingsFilePath(folder, out var settingsPath)
+                    ? settingsPath
+                    : null;
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                SIL.Reporting.Logger.WriteMinorEvent(
+                    $"Collection chooser could not look inside {folder}: {e.Message}"
+                );
+                return null;
+            }
         }
 
         /// <summary>

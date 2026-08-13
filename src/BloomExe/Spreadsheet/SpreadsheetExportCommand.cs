@@ -59,13 +59,22 @@ namespace Bloom.CLI
         {
             string bookFolder = Path.GetDirectoryName(bookPath);
             string collectionFolder = Directory.GetParent(bookFolder).FullName;
-            var collectionSettingsFile = CollectionSettings.GetSettingsFilePath(collectionFolder);
-            // Not just "new CollectionSettings(collectionSettingsFile)": the settings file is not
-            // always named after its folder, so the name we just derived may not exist. That happens
-            // with a renamed collection folder, and with a collection whose name ends with a period,
-            // which Windows drops from the folder name (BL-16679). ProjectContext.GetCollectionSettings
-            // falls back to whatever .bloomCollection file is actually in the folder.
-            return ProjectContext.GetCollectionSettings(collectionSettingsFile);
+            // The settings file is not always named after its folder, so look for whatever is really
+            // there rather than assuming the name: a renamed collection folder, or a collection whose
+            // name ends with a period (which Windows drops from the folder name), leaves the two
+            // disagreeing. See BL-16679.
+            if (
+                !CollectionSettings.TryGetSettingsFilePath(
+                    collectionFolder,
+                    out var collectionSettingsFile
+                )
+            )
+            {
+                // No collection here at all -- the book may not be in one. Carry on with the derived
+                // name, which gives us default settings, as this command has always done.
+                collectionSettingsFile = CollectionSettings.GetSettingsFilePath(collectionFolder);
+            }
+            return new CollectionSettings(collectionSettingsFile);
         }
     }
 
