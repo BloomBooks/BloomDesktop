@@ -73,26 +73,56 @@ namespace Bloom
             _collectionLock = new CollectionLock(SettingsPath);
             _collectionLock.Lock();
 
-            // BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.
-            // While we are starting (or restarting, in the case of switching collections) BloomServer we need to use
-            // the WinFormsExceptionHandler mechanism, which doesn't use a browser.
-            // The ProblemReportApi, which uses the browser (and therefore BloomServer) isn't available to us
-            // while BloomServer is starting up. By the time WorkspaceView comes online and sets the error reporting
-            // to the ProblemReportApi mechanism, BloomServer will be up and running again.
-            ErrorReport.OnShowDetails = null;
-            FatalExceptionHandler.UseFallback = true;
+            try
+            {
+                // BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.
+                // While we are starting (or restarting, in the case of switching collections) BloomServer we need to use
+                // the WinFormsExceptionHandler mechanism, which doesn't use a browser.
+                // The ProblemReportApi, which uses the browser (and therefore BloomServer) isn't available to us
+                // while BloomServer is starting up. By the time WorkspaceView comes online and sets the error reporting
+                // to the ProblemReportApi mechanism, BloomServer will be up and running again.
+                ErrorReport.OnShowDetails = null;
+                FatalExceptionHandler.UseFallback = true;
 
-            BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
+                BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
 
-            _scope
-                .Resolve<CollectionSettings>()
-                .CheckAndFixDependencies(_scope.Resolve<BloomFileLocator>());
+                _scope
+                    .Resolve<CollectionSettings>()
+                    .CheckAndFixDependencies(_scope.Resolve<BloomFileLocator>());
 
-            if (!justEnoughForHtmlDialog)
-                ProjectWindow = _scope.Resolve<Shell>();
+                if (!justEnoughForHtmlDialog)
+                    ProjectWindow = _scope.Resolve<Shell>();
 
-            ToolboxView.SetupToolboxForCollection(Settings);
-            _scope.Resolve<TeamCollectionManager>().Settings = Settings;
+                ToolboxView.SetupToolboxForCollection(Settings);
+                _scope.Resolve<TeamCollectionManager>().Settings = Settings;
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError(ex);
+                // If we fail to build the subcontainer, we have to clean up after ourselves: Program
+                // assigns _projectContext only once this constructor returns, so on this path nobody
+                // else has a reference to us and nobody else can dispose us. Dispose unlocks the
+                // collection, so the user can try again (or at least not be locked out of the
+                // collection), and also shuts down whatever we did manage to build -- BloomServer
+                // (and its port), the websocket server, and any WebView2. Left running, those keep
+                // Bloom from ever exiting, which is what left it lingering as a zombie process.
+                // (BL-16679)
+                try
+                {
+                    Dispose();
+                }
+                catch (Exception disposeError)
+                {
+                    // Tearing down a half-built project can fail in its own right. If we let that
+                    // exception out, it would replace the one that actually explains what went
+                    // wrong, both for the user's problem report and for the log entry above.
+                    Logger.WriteError(
+                        "Error disposing a ProjectContext that failed to build",
+                        disposeError
+                    );
+                }
+                throw;
+            }
         }
 
         /// ------------------------------------------------------------------------------------
@@ -495,10 +525,16 @@ namespace Bloom
         {
             if (!RobustFile.Exists(projectSettingsPath))
             {
-                // TCManager constructor may have deleted it in the process of syncing TC settings
+                // TCManager constructor may have deleted it in the process of syncing TC settings.
+                // Another way to get here is a settings file that isn't named after its folder, so a
+                // caller that derived the expected path from the folder name got a path that doesn't
+                // exist: a renamed collection folder, or a collection whose name ends with a period,
+                // which Windows drops from the folder name (BL-16679).
+                // Note that TryGetSettingsFilePath wants the FOLDER; passing it the settings file path
+                // threw DirectoryNotFoundException, so this repair never actually worked.
                 if (
                     CollectionSettings.TryGetSettingsFilePath(
-                        projectSettingsPath,
+                        Path.GetDirectoryName(projectSettingsPath),
                         out var settingsFilePath
                     )
                 )
@@ -889,6 +925,15 @@ namespace Bloom
             // Disposing ProjectContext disables api functionality and disposes WorkspaceModel/View, BloomServer, et al.,
             // so we need to resort to our fallback error handler.
             ResetToFallbackHandler();
+
+            // We can be disposed without a scope: our constructor disposes us if it fails, and it can
+            // fail in (or even before) BuildSubContainerForThisProject. Unlocking the collection above
+            // is then all there is to do. This also makes Dispose safe to call twice. (BL-16679)
+            if (_scope == null)
+            {
+                GC.SuppressFinalize(this);
+                return;
+            }
 
             // We now keep BloomApiHandler alive for the application lifetime, but many endpoints are project-scoped.
             // Disposing the ProjectContext should fully shut down the project (including webviews) before we clear

@@ -1675,7 +1675,12 @@ namespace Bloom
             try
             {
                 //// See BL-10012.
-                var path = Bloom.Utils.LongPathAware.GetLongPath(collectionPath);
+                // GetPathAsOnDisk: a collection name ending in a period or space leaves us with a
+                // path whose folder part doesn't literally exist, which breaks the FileSystemWatchers
+                // that TeamCollection and BookCollection set up on the collection folder. See BL-16679.
+                var path = MiscUtils.GetPathAsOnDisk(
+                    Bloom.Utils.LongPathAware.GetLongPath(collectionPath)
+                );
                 if (Utils.LongPathAware.GetExceedsMaxPath(path))
                 {
                     Utils.LongPathAware.ReportLongPath(path);
@@ -1872,7 +1877,10 @@ namespace Bloom
         {
             if (OpenProjectWindow(path))
             {
-                Settings.Default.MruProjects.AddNewPath(path);
+                // Remember the collection by the path that really exists on disk, so that a path saved
+                // by an older Bloom with trailing periods or spaces on the folder name heals rather
+                // than being handed back to us on every launch. See BL-16679.
+                Settings.Default.MruProjects.AddNewPath(MiscUtils.GetPathAsOnDisk(path));
                 Settings.Default.Save();
                 return true;
             }

@@ -1028,6 +1028,12 @@ namespace Bloom.Collection
             string newCollectionName
         )
         {
+            // Windows drops trailing periods and spaces when it creates a folder, so if we let them
+            // through here, the path we hand out and remember would never match the folder that
+            // actually gets created, and the settings file name would no longer match its folder name
+            // (which GetSettingsFilePath assumes). Trailing periods also break the FileSystemWatchers
+            // we set up on the collection folder. See BL-16679.
+            newCollectionName = newCollectionName.TrimEnd('.', ' ');
             return parentFolderPath.CombineForPath(
                 newCollectionName,
                 CollectionSettings.GetFileName(newCollectionName)

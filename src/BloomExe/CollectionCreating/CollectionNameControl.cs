@@ -77,7 +77,9 @@ namespace Bloom.CollectionCreating
 
         private bool GetNameIsOk()
         {
-            if (_collectionNameControl.Text.Trim().Length < 1)
+            // GetPathForNewSettings drops trailing periods and spaces (see BL-16679), so a name made
+            // up of nothing else would leave us with no folder name at all.
+            if (_collectionNameControl.Text.Trim().TrimEnd('.', ' ').Length < 1)
             {
                 return false;
             }

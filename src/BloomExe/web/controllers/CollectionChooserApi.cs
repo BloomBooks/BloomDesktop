@@ -142,10 +142,17 @@ namespace Bloom.web.controllers
                     Directory
                         .GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
                         .Select(d =>
-                            //Avoiding use of Path.ChangeExtension as it's just possible the collectionName could have a period.
-                            CollectionSettings.GetSettingsFilePath(d)
+                            // TryGetSettingsFilePath, rather than just GetSettingsFilePath, because the
+                            // settings file is not always named after the folder that holds it: renaming
+                            // a collection folder leaves the old file name, and a collection whose name
+                            // ends with a period gets a folder without it (BL-16679). Such a collection
+                            // is perfectly usable, so it belongs in this list; looking only for the
+                            // name-matching file silently hid it.
+                            CollectionSettings.TryGetSettingsFilePath(d, out var settingsPath)
+                                ? settingsPath
+                                : null
                         )
-                        .Where(path => RobustFile.Exists(path) && !collectionsToShow.Contains(path))
+                        .Where(path => path != null && !collectionsToShow.Contains(path))
                         .OrderByDescending(path =>
                             Directory.GetLastWriteTime(Path.GetDirectoryName(path))
                         )

@@ -410,6 +410,27 @@ namespace Bloom.Utils
         }
 
         /// <summary>
+        /// Get the spelling of a path that matches what is really on disk.
+        /// </summary>
+        /// <remarks>
+        /// Windows silently drops trailing periods and spaces when it creates a folder, so a
+        /// collection whose name ends with one (BL-16679) leaves us holding a path string that no
+        /// folder literally matches: the name lives on in the .bloomCollection file name, but the
+        /// folder lost it. Ordinary File/Directory APIs hide this from us because they normalize the
+        /// path before using it, but FileSystemWatcher does not: .NET prefixes a path ending in a
+        /// period or space with \\?\, which turns Windows normalization OFF, so StartRaisingEvents
+        /// fails with "Error reading the ... directory". Normalizing at the few places where a
+        /// collection path enters Bloom keeps every later consumer (the watchers included) working
+        /// with the folder that exists.
+        /// Note that GetFullPath also resolves relative paths, which is a no-op for the absolute
+        /// collection paths we pass it.
+        /// </remarks>
+        public static string GetPathAsOnDisk(string path)
+        {
+            return string.IsNullOrEmpty(path) ? path : Path.GetFullPath(path);
+        }
+
+        /// <summary>
         /// Check whether the path is inside either the installed collection folder or inside the folder
         /// containing factory template books.  If either condition is true, the collection cannot be edited.
         /// </summary>
