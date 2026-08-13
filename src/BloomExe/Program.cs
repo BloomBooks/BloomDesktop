@@ -1639,6 +1639,13 @@ namespace Bloom
                 // of opening a collection funnel through, and each caller responds to a false return
                 // by putting up the collection chooser, which is one of the two choices we offer the
                 // user here. See BL-16690.
+                //
+                // Deliberately, this gates only the interactive ways of opening a collection. The
+                // command-line commands and BulkUploader build a ProjectContext directly and so are
+                // not stopped by a minimum version. We decided to leave it that way: those tools have
+                // no user to read a dialog or choose another collection, and failing an overnight
+                // upload job is its own kind of damage. If the flag ever needs to protect the files
+                // themselves rather than warn a person, this is the decision to revisit.
                 if (MinimumBloomVersionCheck.IsThisBloomTooOld(path, out var minimumBloomVersion))
                 {
                     // We're normally still showing the splash screen at this point, and it would sit on
