@@ -537,14 +537,31 @@ namespace Bloom.Edit
             }
 
             // The fileName comes straight from the html src attribute, so it may carry a query
-            // string (e.g. "image1.png?transparent=yes") and/or still be URL-encoded. Reduce it
-            // to the actual file name on disk before we try to load the image; otherwise
-            // PalasoImage fails to find the file and we wrongly report it as corrupt. (BL-16446)
-            // CreateFromUnencodedString only decodes if the string still looks encoded (the
-            // server already decodes query parameters once), and PathOnly drops the query string.
+            // string (e.g. "image1.png?transparent=yes"). Reduce it to the actual file name on
+            // disk before we try to load the image; otherwise PalasoImage fails to find the file
+            // and we wrongly report it as corrupt. (BL-16446)
+            //
+            // The server already decoded the query parameter once, so normally what we have here
+            // is the real file name and we must NOT decode again, or a name that merely looks
+            // encoded ("photo%41.jpg") becomes one that isn't there ("photoA.jpg"). (BL-16669)
+            // But some old books have srcs that were encoded more than once (BL-3835), and for
+            // those one more decode is exactly what finds the file. The two are indistinguishable
+            // by inspection, so let the disk decide: GetFullyDecodedPath keeps the name it is
+            // given when that file exists, and only decodes further when that is what finds it.
             fileName = UrlPathString.CreateFromUnencodedString(fileName).PathOnly.NotEncoded;
+            UrlPathString.GetFullyDecodedPath(_model.CurrentBook.FolderPath, ref fileName);
 
             // keep a reference to the fileName rather the image to avoid dispose issues
+            //
+            // Note that what we keep is the name as it is ON DISK, which for one of those legacy
+            // doubly-encoded books is not what the page's @src says. EditingModel.UpdateMetaData
+            // re-encodes this once to go looking for the img, so for such a book it will not find
+            // it and the mirrored data-copyright/data-creator attributes won't be refreshed. The
+            // metadata is still written to the image file itself, which is the part that matters,
+            // and this mismatch predates the disk lookup above -- but the lookup does make it
+            // systematic rather than accidental. Fixing it properly means remembering the original
+            // src alongside the disk name; not worth it until someone shows such a book still in
+            // use. (BL-16669)
             _fileNameOfImageBeingModified = fileName;
 
             using (
@@ -1020,6 +1037,8 @@ namespace Bloom.Edit
             var args = new PageEditingModel.ImageInfoForJavascript()
             {
                 imageId = imageId,
+                // destName is the name of the file we just copied into the book folder, so it is
+                // certainly not URL-encoded; see the same call in PageEditingModel.ChangePicture.
                 src = UrlPathString.CreateFromUnencodedString(destName).UrlEncoded,
                 // Enhance: can we provide any of this for a GIF?
                 copyright = "",

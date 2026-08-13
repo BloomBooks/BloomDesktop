@@ -2226,7 +2226,7 @@ namespace Bloom.Publish.Epub
                     var newSrc = dstPath.Substring(_contentFolder.Length + 1).Replace('\\', '/');
                     HtmlDom.SetImageElementUrl(
                         img,
-                        UrlPathString.CreateFromUnencodedString(newSrc, true),
+                        UrlPathString.CreateFromUnencodedString(newSrc),
                         false
                     );
                 }
@@ -2252,7 +2252,7 @@ namespace Bloom.Publish.Epub
                 var newSrc = dstPath.Substring(_contentFolder.Length + 1).Replace('\\', '/');
                 HtmlDom.SetVideoElementUrl(
                     videoContainerElement,
-                    UrlPathString.CreateFromUnencodedString(newSrc, true),
+                    UrlPathString.CreateFromUnencodedString(newSrc),
                     false
                 );
             }

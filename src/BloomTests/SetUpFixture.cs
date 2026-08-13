@@ -14,5 +14,15 @@ namespace BloomTests
         {
             L10NSharp.LocalizationManager.StrictInitializationMode = false;
         }
+
+        /// <summary>
+        /// Close the listeners of any servers still waiting to be closed. Everything they were
+        /// serving finished long ago, so this is the safe moment; see RetiredTestServers.
+        /// </summary>
+        [OneTimeTearDown]
+        public void CloseRetiredServers()
+        {
+            RetiredTestServers.CloseAllNow();
+        }
     }
 }

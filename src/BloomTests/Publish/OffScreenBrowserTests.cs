@@ -38,7 +38,7 @@ namespace BloomTests.Publish
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            s_bloomServer.Dispose();
+            RetiredTestServers.Retire(s_bloomServer);
         }
 
         [Test]

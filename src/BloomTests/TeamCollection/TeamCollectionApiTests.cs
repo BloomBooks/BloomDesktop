@@ -251,7 +251,7 @@ namespace BloomTests.TeamCollection
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _server?.Dispose();
+            RetiredTestServers.Retire(_server);
             _server = null;
         }
 

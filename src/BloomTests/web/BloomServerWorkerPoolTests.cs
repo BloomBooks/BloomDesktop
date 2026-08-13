@@ -29,7 +29,8 @@ namespace BloomTests.web
         [Test]
         public void ReportThreadBlocking_WhenTheLastFreeWorkerBlocks_AddsAWorker()
         {
-            using (var server = new BloomServer(new BookSelection()))
+            var server = new BloomServer(new BookSelection());
+            try
             {
                 server.EnsureListening();
                 var workersAtStart = server.WorkerCount;
@@ -70,6 +71,12 @@ namespace BloomTests.web
                     }
                 });
             }
+            finally
+            {
+                // Retired, not disposed: its listener is closed later, once whatever it was
+                // serving has certainly finished. See RetiredTestServers (BL-16667).
+                RetiredTestServers.Retire(server);
+            }
         }
 
         /// <summary>
@@ -80,7 +87,8 @@ namespace BloomTests.web
         [Test]
         public void ReportThreadBlocking_FromAThreadThatIsNotAWorker_DoesNotAddAWorker()
         {
-            using (var server = new BloomServer(new BookSelection()))
+            var server = new BloomServer(new BookSelection());
+            try
             {
                 server.EnsureListening();
                 var workersAtStart = server.WorkerCount;
@@ -100,6 +108,12 @@ namespace BloomTests.web
                     "blocks reported by a non-worker thread should not be counted at all"
                 );
             }
+            finally
+            {
+                // Retired, not disposed: its listener is closed later, once whatever it was
+                // serving has certainly finished. See RetiredTestServers (BL-16667).
+                RetiredTestServers.Retire(server);
+            }
         }
 
         /// <summary>
@@ -113,7 +127,8 @@ namespace BloomTests.web
         [Test]
         public void ReportThreadBlocking_WhenTheScopeIsDisposedOnAnotherThread_StillUndoesTheBlock()
         {
-            using (var server = new BloomServer(new BookSelection()))
+            var server = new BloomServer(new BookSelection());
+            try
             {
                 server.EnsureListening();
                 Assert.That(
@@ -143,6 +158,12 @@ namespace BloomTests.web
                     "disposing the scope on a different thread must still undo the block"
                 );
             }
+            finally
+            {
+                // Retired, not disposed: its listener is closed later, once whatever it was
+                // serving has certainly finished. See RetiredTestServers (BL-16667).
+                RetiredTestServers.Retire(server);
+            }
         }
 
         /// <summary>
@@ -153,7 +174,8 @@ namespace BloomTests.web
         [Test]
         public void ReportThreadBlocking_WhenTheScopeIsDisposedTwice_OnlyUndoesTheBlockOnce()
         {
-            using (var server = new BloomServer(new BookSelection()))
+            var server = new BloomServer(new BookSelection());
+            try
             {
                 server.EnsureListening();
                 IDisposable first = null,
@@ -179,6 +201,12 @@ namespace BloomTests.web
                 );
                 second.Dispose();
             }
+            finally
+            {
+                // Retired, not disposed: its listener is closed later, once whatever it was
+                // serving has certainly finished. See RetiredTestServers (BL-16667).
+                RetiredTestServers.Retire(server);
+            }
         }
 
         /// <summary>
@@ -194,7 +222,8 @@ namespace BloomTests.web
         [Test]
         public void ReportThreadBlocking_WhenAnEntryIsForADeadThread_StillAddsAWorker()
         {
-            using (var server = new BloomServer(new BookSelection()))
+            var server = new BloomServer(new BookSelection());
+            try
             {
                 server.EnsureListening();
                 var liveWorkers = server.WorkerCount;
@@ -252,6 +281,12 @@ namespace BloomTests.web
                             scope.Dispose();
                     }
                 });
+            }
+            finally
+            {
+                // Retired, not disposed: its listener is closed later, once whatever it was
+                // serving has certainly finished. See RetiredTestServers (BL-16667).
+                RetiredTestServers.Retire(server);
             }
         }
 
