@@ -198,8 +198,11 @@ namespace Bloom.Collection
         /// <summary>
         /// The version of Bloom we are running. We use the assembly version rather than
         /// Application.ProductVersion because the latter can carry a non-numeric suffix.
+        /// A loaded assembly always has a version, so we don't guard against it being missing:
+        /// any fallback we picked would be a lie, and a low one would lock the user out of every
+        /// collection that declares a minimum -- the opposite of what this class is careful to do.
         /// </summary>
         private static Version RunningBloomVersion =>
-            typeof(MinimumBloomVersionCheck).Assembly?.GetName()?.Version ?? new Version(1, 0, 0);
+            typeof(MinimumBloomVersionCheck).Assembly.GetName().Version;
     }
 }
