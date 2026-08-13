@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -406,8 +407,17 @@ namespace Bloom.Workspace
                 SaveCurrentBookPath(book.FolderPath);
             }
             catch (Exception error)
-                when (error is IOException || error is UnauthorizedAccessException)
+                when (error is IOException
+                    || error is UnauthorizedAccessException
+                    || error is ArgumentException
+                    || error is COMException
+                )
             {
+                // ArgumentException because IsSelectedBookObsoleteOrInvalid calls
+                // Path.GetDirectoryName, and COMException because listing the source collections
+                // resolves .lnk shortcuts. Note this is belt-and-braces rather than the thing
+                // standing between the user and a crash: HandleBookSelectionChanged is on the
+                // high-priority list, so it calls the same predicate, unguarded, before we run.
                 Logger.WriteError("Unable to work out which book to remember.", error);
             }
         }

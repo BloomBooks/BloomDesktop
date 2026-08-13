@@ -2050,8 +2050,13 @@ namespace Bloom
 
                 Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
                 // Saves this and the UserInterfaceLanguageSetExplicitly set above; GetDesiredUiLanguage
-                // reads both on the next launch.
-                Settings.Default.Save();
+                // reads both on the next launch. But not before Main has migrated the previous
+                // version's settings: we run well before its "if (NeedUpgrade) { Upgrade();
+                // Reload(); }" block, and Reload() would throw away what we wrote anyway, so saving
+                // now would gain nothing while writing the new version's settings file earlier than
+                // the migration expects.
+                if (!Settings.Default.NeedUpgrade)
+                    Settings.Default.Save();
 
                 // Per BL-6449, these two languages should try Spanish before English if a localization is missing.
                 // (If they ever get localized enough to show up in our list.)
