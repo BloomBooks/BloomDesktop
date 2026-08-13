@@ -1663,6 +1663,8 @@ namespace Bloom
                         // Bloom to quit. Claim success, not because we opened anything, but so that
                         // no caller puts up the collection chooser while we are shutting down. Doing
                         // so would start a fresh modal message loop and could keep Bloom alive.
+                        // The flag lets OpenCollection tell this apart from a real open.
+                        _quittingBecauseBloomIsTooOld = true;
                         return true;
                     }
                     return false;
@@ -1871,10 +1873,24 @@ namespace Bloom
             }
         }
 
+        /// <summary>
+        /// Set when we told Bloom to quit instead of opening a collection, because the user chose to
+        /// go and upgrade. OpenProjectWindow reports success in that case so that nobody puts up the
+        /// collection chooser during shutdown, but it is not a real open, so anything that records a
+        /// successful open has to know the difference.
+        /// </summary>
+        private static bool _quittingBecauseBloomIsTooOld;
+
         private static bool OpenCollection(string path)
         {
             if (OpenProjectWindow(path))
             {
+                // Don't remember a collection we never actually opened. Otherwise, choosing a
+                // too-new collection and then clicking "Upgrade Bloom" would leave it as the
+                // most-recently-used one, and a user who abandoned the download would come back to
+                // the blocked collection instead of the one they were really working in.
+                if (_quittingBecauseBloomIsTooOld)
+                    return true;
                 Settings.Default.MruProjects.AddNewPath(path);
                 Settings.Default.Save();
                 return true;
