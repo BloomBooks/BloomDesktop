@@ -107,9 +107,9 @@ namespace Bloom.Collection
         /// upgrade, or open some other collection. If they choose to upgrade we send them to the
         /// downloads page and quit, since they can't install over a running Bloom anyway.
         /// </summary>
-        /// <remarks>If we return, the caller should abandon opening this collection; its callers
-        /// already fall back to showing the collection chooser.</remarks>
-        public static void ReportCollectionNeedsNewerBloom(
+        /// <returns>true if the user chose to upgrade, in which case we have already asked Bloom to
+        /// quit and the caller must not start any more UI.</returns>
+        public static bool ReportCollectionNeedsNewerBloom(
             string collectionName,
             string minimumVersion
         )
@@ -165,8 +165,10 @@ namespace Bloom.Collection
             {
                 ShowDownloadsPage();
                 ProgramExit.Exit();
+                return true;
             }
-            // Otherwise just return; the caller will put the collection chooser back up.
+            // Otherwise the caller will put the collection chooser back up.
+            return false;
         }
 
         private const string kUpgradeButtonId = "upgrade";

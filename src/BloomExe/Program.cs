@@ -1635,20 +1635,29 @@ namespace Bloom
                 }
 
                 // The collection may declare a minimum Bloom version. Check that before we go to the
-                // trouble of building a ProjectContext around it. This is the one place all the ways of
-                // opening a collection funnel through, and every caller already responds to a false
-                // return by putting up the collection chooser, which is one of the two choices we offer
-                // the user here. See BL-16690.
+                // trouble of building a ProjectContext around it. This is the one place all the ways
+                // of opening a collection funnel through, and each caller responds to a false return
+                // by putting up the collection chooser, which is one of the two choices we offer the
+                // user here. See BL-16690.
                 if (MinimumBloomVersionCheck.IsThisBloomTooOld(path, out var minimumBloomVersion))
                 {
                     // We're normally still showing the splash screen at this point, and it would sit on
                     // top of our dialog. Also, the dialog is a ReactDialog, so it needs the server.
                     StartupScreenManager.HideSplashScreenForDialog();
                     _applicationContainer.BloomServer.EnsureListening();
-                    MinimumBloomVersionCheck.ReportCollectionNeedsNewerBloom(
-                        Path.GetFileNameWithoutExtension(path),
-                        minimumBloomVersion
-                    );
+                    if (
+                        MinimumBloomVersionCheck.ReportCollectionNeedsNewerBloom(
+                            Path.GetFileNameWithoutExtension(path),
+                            minimumBloomVersion
+                        )
+                    )
+                    {
+                        // The user chose to upgrade, so we've opened the downloads page and asked
+                        // Bloom to quit. Claim success, not because we opened anything, but so that
+                        // no caller puts up the collection chooser while we are shutting down. Doing
+                        // so would start a fresh modal message loop and could keep Bloom alive.
+                        return true;
+                    }
                     return false;
                 }
 
@@ -1902,7 +1911,14 @@ namespace Bloom
         private static void ReopenProject(object sender, EventArgs e)
         {
             Application.Idle -= ReopenProject;
-            OpenCollection(Settings.Default.MruProjects.Latest);
+            if (!OpenCollection(Settings.Default.MruProjects.Latest))
+            {
+                // The shell is already closed by the time we get here, so if the re-open failed
+                // we must put the chooser up or the user is left with no window at all. This can
+                // happen now that a collection can refuse to open: a Team Collection member on a
+                // newer Bloom can add a MinimumBloomVersion that syncs down mid-session.
+                ChooseACollection();
+            }
         }
 
         private static void OpenCollectionChosenInDialog(object sender, EventArgs e)
