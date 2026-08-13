@@ -7,7 +7,7 @@ using SIL.Progress;
 namespace Bloom.web
 {
     /// <summary>
-    /// Class that allows code expecting an SIL.Progress.IProgress object to use a WebSocketProgress instead.
+    /// Class that allows code expecting an SIL.Progress.IProgress object to use an IWebSocketProgress instead.
     /// </summary>
     public class WebProgressAdapter : IProgress
     {
@@ -32,9 +32,9 @@ namespace Bloom.web
             public void Initialize() { }
         }
 
-        private readonly WebSocketProgress _webProgress;
+        private readonly IWebSocketProgress _webProgress;
 
-        public WebProgressAdapter(WebSocketProgress progress)
+        public WebProgressAdapter(IWebSocketProgress progress)
         {
             _webProgress = progress;
         }

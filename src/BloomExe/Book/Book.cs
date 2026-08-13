@@ -1107,7 +1107,7 @@ namespace Bloom.Book
             EnsureUpToDateMemory(progress);
             UpdateSupportFiles();
 
-            Storage.MigrateToMediaLevel1ShrinkLargeImages();
+            Storage.MigrateToMediaLevel1ShrinkLargeImages(progress);
 
             Storage.CleanupUnusedSupportFiles(forCopyOfUpToDateBook);
 
@@ -1898,7 +1898,7 @@ namespace Bloom.Book
             // already been done, so they must be called in exactly this order.
             Storage.RestoreStuffBeforeMigration();
             Storage.MigrateMaintenanceLevels();
-            Storage.MigrateToMediaLevel1ShrinkLargeImages();
+            Storage.MigrateToMediaLevel1ShrinkLargeImages(progress);
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();

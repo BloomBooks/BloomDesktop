@@ -154,6 +154,20 @@ Like the C# wrapper it is **build-only**: it confirms the bundle compiles; it do
 running Bloom load those bundles (Bloom reads the fixed `output\browser` / dev server). It
 skips the pug/LESS/markdown/static-copy steps, so it is a fast pure-bundle check.
 
+## If the front-end test suite seems to hang, re-run it with `--no-file-parallelism`
+
+On some machines `yarn test` (`vitest run`) gets through roughly fifteen test files and then
+stops dead — no error, no failing test, no summary — until something kills it. That is vitest's
+worker pool wedging, **not** a broken test and not the branch you are on: run the files one at a
+time and the whole suite completes green.
+
+```bash
+cd src/BloomBrowserUI && yarn vitest run --no-file-parallelism
+```
+
+So before reporting the suite as hanging or failing, re-run it that way and report *that* result.
+Do not go hunting for the "test that hangs" — it moves. Excluding whichever file it stopped after
+just relocates the stall to a different one.
 
 # Terminal
 The vscode terminal often loses the first character sent from copilot agents. So if you send "cd" it might just say "bash: d: command not found". Try prefixing commands with a space.
