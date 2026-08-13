@@ -20,12 +20,14 @@ namespace Bloom.Workspace
 			if (disposing)
 			{
 				// _bookSelection outlives us (it is application-level, and we are recreated when
-				// the user switches collections), so stop it calling us. It matters for this
-				// subscriber in particular: deciding whether a selection is worth remembering
-				// depends on _collectionSettings, which for a disposed view describes the
-				// collection we have just left. See BL-16660.
+				// the user switches collections), so stop it calling us. Both handlers depend on
+				// _collectionSettings and _model, which for a disposed view describe the collection
+				// we have just left, so neither should still be answering. See BL-16660.
 				if (_bookSelection != null)
+				{
 					_bookSelection.SelectionChanged -= PersistSelectedBookPath;
+					_bookSelection.SelectionChangedHighPriority -= HandleBookSelectionChanged;
+				}
 
 				Current = null;
 				_editingView?.Dispose();

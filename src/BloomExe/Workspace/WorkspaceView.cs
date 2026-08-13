@@ -380,31 +380,49 @@ namespace Bloom.Workspace
         /// </remarks>
         private void PersistSelectedBookPath(object sender, BookSelectionChangedEventArgs e)
         {
-            var book = _bookSelection.CurrentSelection;
-            if (book == null)
+            // We are one link in the SelectionChanged chain, so anything that escapes from here
+            // escapes from SelectBook() to whoever selected the book. Deciding whether the book is
+            // worth remembering reads the collection folders from disk, so it can fail for reasons
+            // that have nothing to do with the user's actual task; and failing to remember the
+            // book is not worth interrupting that task over.
+            try
             {
-                // Nothing is selected (e.g. the selected book was just deleted), so there is
-                // nothing to restore next time.
-                SaveCurrentBookPath("");
-                return;
+                var book = _bookSelection.CurrentSelection;
+                if (book == null)
+                {
+                    // Nothing is selected (e.g. the selected book was just deleted), so there is
+                    // nothing to restore next time.
+                    SaveCurrentBookPath(null);
+                    return;
+                }
+                // SelectBookAtStartup applies this same test and refuses to restore a book that
+                // fails it, so storing such a path could only do harm: a path we can't use is a
+                // known source of trouble (BL-11678, BL-16327). We leave any good value already
+                // stored alone rather than clearing it, because the main way to get here is the
+                // stale selection left over from the previous collection while we are switching
+                // collections (BL-14313).
+                if (IsSelectedBookObsoleteOrInvalid(book.FolderPath))
+                    return;
+                SaveCurrentBookPath(book.FolderPath);
             }
-            // SelectBookAtStartup applies this same test and refuses to restore a book that fails
-            // it, so storing such a path could only do harm: a path we can't use is a known source
-            // of trouble (BL-11678, BL-16327). We leave any good value already stored alone rather
-            // than clearing it, because the main way to get here is the stale selection left over
-            // from the previous collection while we are switching collections (BL-14313).
-            if (IsSelectedBookObsoleteOrInvalid(book.FolderPath))
-                return;
-            SaveCurrentBookPath(book.FolderPath);
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                Logger.WriteError("Unable to work out which book to remember.", error);
+            }
         }
 
         /// <summary>
         /// Store a new value for the remembered book path, doing nothing if it is already correct.
+        /// Pass null or "" to mean "nothing to restore"; they are stored identically, so that
+        /// callers using one don't cause a pointless rewrite for callers using the other.
         /// </summary>
         private static void SaveCurrentBookPath(string path)
         {
-            if (Settings.Default.CurrentBookPath == path)
+            path = path ?? "";
+            if ((Settings.Default.CurrentBookPath ?? "") == path)
                 return; // no change, so no need to rewrite the settings file
+            var previous = Settings.Default.CurrentBookPath;
             try
             {
                 Settings.Default.CurrentBookPath = path;
@@ -420,6 +438,12 @@ namespace Bloom.Workspace
                 // shutdown code at the end of Program.Run has to cope with the same thing. Without
                 // this, selecting such a book would throw out of SelectBook to whoever called it,
                 // and the recovery path in SelectBookAtStartup below could not do its job.
+                // Put the old value back: Save() writes the whole settings object, so leaving the
+                // value we could not save in it would make every later Settings.Default.Save()
+                // anywhere in Bloom fail the same way, turning this into a broken Collection
+                // Settings dialog, publish tab, or rename. The old value saved before, so it is
+                // safe to go back to.
+                Settings.Default.CurrentBookPath = previous;
                 Logger.WriteError("Unable to save the current book path.", e);
             }
         }
