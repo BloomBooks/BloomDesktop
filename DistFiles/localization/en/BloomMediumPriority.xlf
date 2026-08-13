@@ -1606,6 +1606,31 @@
         <note>ID: ImageLibrary.ThisPage</note>
         <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
       </trans-unit>
+      <trans-unit id="SignInInvitationDialog.Title" translate="no">
+        <source xml:lang="en">Please sign in to Bloom</source>
+        <note>ID: SignInInvitationDialog.Title</note>
+        <note>Title of the dialog that invites a Team Collection user to sign in to their BloomLibrary.org account. It appears when Bloom opens a Team Collection and nobody is signed in. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="SignInInvitationDialog.Message" translate="no">
+        <source xml:lang="en">We're simplifying how teams work together in Bloom. Nothing changes for your collection yet, but signing in now will get you ready.</source>
+        <note>ID: SignInInvitationDialog.Message</note>
+        <note>The body text of the dialog that invites a Team Collection user to sign in. It reassures them that nothing about their collection is changing today. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="SignInInvitationDialog.LearnAboutCollaboration" translate="no">
+        <source xml:lang="en">Learn about Bloom Collaboration</source>
+        <note>ID: SignInInvitationDialog.LearnAboutCollaboration</note>
+        <note>Text of a link, next to a question-mark icon, in the dialog that invites a Team Collection user to sign in. Clicking it opens a documentation web page. "Bloom Collaboration" is a feature name and should probably not be translated.</note>
+      </trans-unit>
+      <trans-unit id="SignInInvitationDialog.NotAbleYet" translate="no">
+        <source xml:lang="en">I'm not able to yet</source>
+        <note>ID: SignInInvitationDialog.NotAbleYet</note>
+        <note>Label of the button that dismisses the dialog inviting a Team Collection user to sign in, without signing in. The user is saying they cannot sign in at the moment. Shown in capital letters by the button itself, so do not capitalize it here.</note>
+      </trans-unit>
+      <trans-unit id="SignInInvitationDialog.SignIn" translate="no">
+        <source xml:lang="en">Sign in to BloomLibrary.org</source>
+        <note>ID: SignInInvitationDialog.SignIn</note>
+        <note>Label of the main button in the dialog inviting a Team Collection user to sign in; it opens the BloomLibrary.org login page in the user's web browser. "BloomLibrary.org" is a web address and must not be translated. Shown in capital letters by the button itself, so do not capitalize it here.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
