@@ -92,6 +92,47 @@ namespace BloomTests.Collection
         }
 
         /// <summary>
+        /// Renaming is the other way into the trailing-period mess: Windows would drop the period from
+        /// the folder it created while we named the settings file after the period-ful name we asked
+        /// for, leaving the two disagreeing again. See BL-16679.
+        /// </summary>
+        [Test]
+        public void RenameCollection_NewNameEndsWithPeriod_FolderAndFileNamesAgree()
+        {
+            var fromDirectory = Path.Combine(_folder.Path, "Before Rename");
+            Directory.CreateDirectory(fromDirectory);
+            RobustFile.WriteAllText(
+                Path.Combine(fromDirectory, "Before Rename.bloomCollection"),
+                "<Collection version=\"0.2\"/>"
+            );
+            var toDirectory = Path.Combine(_folder.Path, "After Rename.");
+            try
+            {
+                var settingsPath = CollectionSettings.RenameCollection(fromDirectory, toDirectory);
+
+                Assert.That(
+                    Path.GetFileName(Path.GetDirectoryName(settingsPath)),
+                    Is.EqualTo("After Rename"),
+                    "the folder name should be the one Windows really creates"
+                );
+                Assert.That(
+                    Path.GetFileName(settingsPath),
+                    Is.EqualTo("After Rename.bloomCollection"),
+                    "the settings file name should match its folder name"
+                );
+                Assert.That(RobustFile.Exists(settingsPath), Is.True);
+            }
+            finally
+            {
+                foreach (
+                    var d in new[] { fromDirectory, Path.Combine(_folder.Path, "After Rename") }
+                )
+                    if (Directory.Exists(d))
+                        SIL.IO.RobustIO.DeleteDirectoryAndContents(d);
+            }
+        }
+
+        /// <summary>
         /// The settings file is not always named after the folder that holds it: renaming a collection
         /// folder leaves the old file name behind, and a collection whose name ends with a period gets
         /// a folder without it (BL-16679). Such collections are perfectly usable, so anything looking

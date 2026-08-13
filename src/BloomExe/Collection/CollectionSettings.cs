@@ -1042,6 +1042,11 @@ namespace Bloom.Collection
 
         public static string RenameCollection(string fromDirectory, string toDirectory)
         {
+            // Windows drops trailing periods and spaces when it creates a folder, so asking it for
+            // one leaves us naming the settings file after a folder that doesn't exist -- the
+            // mismatch that BL-16679 is about. Rename to the folder we will really get.
+            toDirectory = toDirectory.TrimEnd('.', ' ');
+
             if (!Directory.Exists(fromDirectory))
             {
                 throw new ApplicationException(
