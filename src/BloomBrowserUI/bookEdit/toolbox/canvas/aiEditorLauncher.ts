@@ -24,12 +24,15 @@
 //      down. (There is intentionally no C#->iframe message channel; init flows from
 //      here, the overlay JS, because only the browser can postMessage to the iframe.)
 
-import { post, postJson, postThatMightNavigate } from "../../../utils/bloomApi";
+import { post, postJson } from "../../../utils/bloomApi";
 import {
     getImageUrlFromImageContainer,
     GetRawImageUrl,
 } from "../../js/bloomImages";
-import { changeImageByElement } from "../../js/bloomEditing";
+import {
+    changeImageByElement,
+    savePageWithoutReloading,
+} from "../../js/bloomEditing";
 import { matchReplacementsToElements } from "./aiEditorSlotMatching";
 
 // Opens the AI Image Editor overlay for the given image. `img` is the right-clicked
@@ -138,15 +141,19 @@ export const launchAiImageEditor = (
         hostWindow.__bloomAiImageEditorCleanup?.();
 
         // Set once a current-page swap has landed in the live DOM and so needs saving
-        // (see the commit handler, which explains why). The save is DEFERRED to
-        // cleanup() because saveChangesAndRethinkPageEvent reloads the page frame, and
-        // everything that operates this overlay — the message listener, the ✕ button's
-        // handler, this cleanup function itself — is code belonging to that frame, even
-        // though the overlay div lives in the top window. Saving while the overlay is
-        // still up therefore kills its controls and leaves a full-screen overlay the
-        // user can't close without restarting Bloom. That matters because on a partial
-        // failure we deliberately keep the overlay up for the user to read the error,
-        // so the save has to wait until they close it.
+        // (see the commit handler, which explains why). We still save from cleanup() rather
+        // than at commit time, so that one save covers however many commits the user makes,
+        // and so a partial failure — where we deliberately keep the overlay up for the user
+        // to read the error — is not saved halfway through.
+        //
+        // This used to post saveChangesAndRethinkPageEvent, which RELOADED the page frame.
+        // That was actively dangerous here: everything that operates this overlay — the
+        // message listener, the ✕ button's handler, this cleanup function itself — is code
+        // belonging to that frame, even though the overlay div lives in the top window, so
+        // saving while the overlay was up killed its controls and left a full-screen overlay
+        // the user could not close without restarting Bloom. savePageWithoutReloading()
+        // leaves the frame alone (BL-13502), so that hazard is gone and the deferral is now
+        // only about the two reasons above.
         let livePageNeedsSaving = false;
 
         const cleanup = () => {
@@ -155,7 +162,7 @@ export const launchAiImageEditor = (
             delete hostWindow.__bloomAiImageEditorCleanup;
             if (livePageNeedsSaving) {
                 livePageNeedsSaving = false;
-                postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+                void savePageWithoutReloading();
             }
         };
 

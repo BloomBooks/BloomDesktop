@@ -3,31 +3,33 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 // Tests for WHEN the AI Image Editor launcher saves the live page after a commit.
 //
 // The launcher swaps current-page images in the LIVE DOM and then has to save, because
-// nothing else persists that (see aiEditorLauncher.ts). The save goes through
-// saveChangesAndRethinkPageEvent, which RELOADS the page frame — and everything that
-// operates the overlay (its message listener, its ✕ handler) is code belonging to that
-// frame, even though the overlay div itself lives in the top window. So saving while the
-// overlay is still up leaves a full-screen overlay that nothing can close, and the user
-// has to restart Bloom to escape. That matters specifically on a PARTIAL failure, where
-// the launcher deliberately keeps the overlay up so the user can read the error.
+// nothing else persists that (see aiEditorLauncher.ts). The save is deferred until the
+// overlay comes down, so that one save covers however many commits the user makes, and so
+// a PARTIAL failure — where the launcher deliberately keeps the overlay up for the user to
+// read the error — is not saved halfway through. These tests pin both halves: that it does
+// not fire while the overlay is up, and that it is not simply lost.
 //
-// Hence: the save is deferred until the overlay comes down. These tests pin both halves —
-// that it does not fire while the overlay is up, and that it is not simply lost.
+// It saves via savePageWithoutReloading(). It used to post saveChangesAndRethinkPageEvent,
+// which RELOADED the page frame; since everything operating the overlay (its message
+// listener, its ✕ handler) is code belonging to that frame even though the overlay div
+// lives in the top window, saving while the overlay was up left a full-screen overlay that
+// nothing could close. Saving without reloading removes that hazard (BL-13502).
 
 const post = vi.fn();
 const postJson = vi.fn();
-const postThatMightNavigate = vi.fn();
+const savePageWithoutReloading = vi.fn();
 const changeImageByElement = vi.fn();
 
 vi.mock("../../../utils/bloomApi", () => ({
     post: (...args: unknown[]) => post(...args),
     postJson: (...args: unknown[]) => postJson(...args),
-    postThatMightNavigate: (...args: unknown[]) =>
-        postThatMightNavigate(...args),
+    postThatMightNavigate: vi.fn(),
 }));
 
 vi.mock("../../js/bloomEditing", () => ({
     changeImageByElement: (...args: unknown[]) => changeImageByElement(...args),
+    savePageWithoutReloading: (...args: unknown[]) =>
+        savePageWithoutReloading(...args),
 }));
 
 vi.mock("../../js/bloomImages", () => ({
@@ -40,7 +42,6 @@ vi.mock("../../js/bloomImages", () => ({
 
 import { launchAiImageEditor } from "./aiEditorLauncher";
 
-const kSaveEvent = "common/saveChangesAndRethinkPageEvent";
 const kEditorUrl = "http://localhost:8089/bloom/aiImageEditor/index.html";
 const kPageId = "page1";
 
@@ -146,7 +147,7 @@ describe("aiEditorLauncher: saving the live page after a commit", () => {
     beforeEach(() => {
         post.mockClear();
         postJson.mockClear();
-        postThatMightNavigate.mockClear();
+        savePageWithoutReloading.mockClear();
         changeImageByElement.mockClear();
         delete (window as Window & { __bloomAiImageEditorCleanup?: () => void })
             .__bloomAiImageEditorCleanup;
@@ -167,13 +168,12 @@ describe("aiEditorLauncher: saving the live page after a commit", () => {
         expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
         // ...and therefore the save must NOT have fired: reloading the page frame now
         // would kill the ✕ below and trap the user behind the overlay.
-        expect(postThatMightNavigate).not.toHaveBeenCalled();
+        expect(savePageWithoutReloading).not.toHaveBeenCalled();
 
         closeButton.click();
 
         expect(document.getElementById("ai-editor-overlay")).toBeNull();
-        expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
-        expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
+        expect(savePageWithoutReloading).toHaveBeenCalledTimes(1);
     });
 
     test("a fully successful commit closes the overlay and saves", () => {
@@ -183,8 +183,7 @@ describe("aiEditorLauncher: saving the live page after a commit", () => {
 
         expect(changeImageByElement).toHaveBeenCalledTimes(1);
         expect(document.getElementById("ai-editor-overlay")).toBeNull();
-        expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
-        expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
+        expect(savePageWithoutReloading).toHaveBeenCalledTimes(1);
     });
 
     test("a commit that changed nothing on this page never saves", () => {
@@ -221,11 +220,11 @@ describe("aiEditorLauncher: saving the live page after a commit", () => {
         });
 
         expect(changeImageByElement).not.toHaveBeenCalled();
-        expect(postThatMightNavigate).not.toHaveBeenCalled();
+        expect(savePageWithoutReloading).not.toHaveBeenCalled();
 
         // Closing must not conjure a save either — there was nothing to save, and an
         // unnecessary page reload would discard the user's unsaved text edits.
         closeButton.click();
-        expect(postThatMightNavigate).not.toHaveBeenCalled();
+        expect(savePageWithoutReloading).not.toHaveBeenCalled();
     });
 });
