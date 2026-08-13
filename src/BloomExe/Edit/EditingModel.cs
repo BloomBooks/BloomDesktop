@@ -1182,12 +1182,34 @@ namespace Bloom.Edit
             _view.GoToPage(_pageSelection.CurrentSelection, changingUiLanguage);
         }
 
+        /// <summary>
+        /// XPath for the img on a page whose src is the given (URL-encoded) file name.
+        /// </summary>
+        /// <remarks>
+        /// A src often carries a query string as well as the file name -- "?transparent=yes" from
+        /// the transparency handling, "?thumbnail=1" from the page list, or the old cache-busting
+        /// "?12345". Matching the src exactly therefore found nothing on exactly the pages that
+        /// use those, and the caller's only response to finding nothing is to give up silently.
+        /// So we accept either the bare name or the name followed by '?'. Requiring the '?' is
+        /// what keeps this from also matching a different file that merely starts with the same
+        /// characters ("cat.png" must not match "cat2.png"). (BL-16669)
+        ///
+        /// The name is safe to embed in the XPath string literal: it is URL-encoded, and
+        /// UrlEncoded escapes an apostrophe as %27, so it cannot terminate the literal.
+        /// </remarks>
+        internal static string MakeImgWithSrcXPath(string urlEncodedFileName)
+        {
+            return $".//img[@src='{urlEncodedFileName}' or starts-with(@src, '{urlEncodedFileName}?')]";
+        }
+
         public void UpdateMetaData(string url)
         {
+            // url is a file name (EditingView._fileNameOfImageBeingModified), which we re-encode
+            // here so it matches what is in the src attribute.
             var match = UrlPathString.CreateFromUnencodedString(url).UrlEncoded;
             var imgElt = _pageSelection
                 .CurrentSelection.GetDivNodeForThisPage()
-                .SafeSelectNodes($".//img[@src='{match}']")
+                .SafeSelectNodes(MakeImgWithSrcXPath(match))
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             if (imgElt == null)
@@ -1460,7 +1482,9 @@ namespace Bloom.Edit
                 false,
                 InMemoryHtmlFileSource.Pagelist
             );
-            var urlPath = UrlPathString.CreateFromUnencodedString(url);
+            // PossiblyEncoded because CreateSimulatedFile returns a localhost url whose path
+            // components are already escaped; see the note on CreateFromPossiblyEncodedString.
+            var urlPath = UrlPathString.CreateFromPossiblyEncodedString(url);
             var encodedUrl = urlPath.UrlEncodedForHttpPath;
             BloomServer.SetCurrentPageListUrlForDebugging(encodedUrl);
             return encodedUrl;

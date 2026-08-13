@@ -286,8 +286,11 @@ namespace Bloom.TeamCollection
         /// </remarks>
         private void HandleReportBadZip(ApiRequest request)
         {
-            var fileEncoded = request.Parameters["file"];
-            var file = UrlPathString.CreateFromUrlEncodedString(fileEncoded).NotEncoded;
+            // No decoding here: ApiRequest.Parameters comes from RequestInfo.GetQueryParameters(),
+            // i.e. HttpUtility.ParseQueryString, which has already decoded the value once.
+            // Decoding again turned a path that genuinely contains a '%' ("photo%41.bloom") into a
+            // different one ("photoA.bloom"). (BL-16669)
+            var file = request.Parameters["file"];
             request.PostSucceeded(); // this should come before a modal dialog
             NonFatalProblem.Report(
                 ModalIf.All,

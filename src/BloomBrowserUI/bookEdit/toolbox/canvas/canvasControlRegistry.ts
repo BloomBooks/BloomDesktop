@@ -404,6 +404,8 @@ const makeChooseAudioMenuItemForImage = (
                         return;
                     }
 
+                    // The plain file name, deliberately NOT URL-encoded; C# reads it straight
+                    // back as a file name. See the encoding conventions note on UrlPathString.cs.
                     ctx.canvasElement.setAttribute("data-sound", selectedSound);
                     void copyAndPlaySoundAsync(selectedSound, ctx.page, false);
                 },
