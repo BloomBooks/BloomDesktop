@@ -55,6 +55,36 @@ namespace BloomTests
             }
         }
 
+        /// <summary>
+        /// The CollectionSettings constructor treats a path that doesn't exist as "make me a new
+        /// collection there", so once GetCollectionSettings started looking in the right folder it
+        /// would have silently written a default .bloomCollection into any folder that had none --
+        /// e.g. under a book being exported to a spreadsheet from outside a collection.
+        /// </summary>
+        [Test]
+        public void GetCollectionSettings_NoCollectionInFolder_ThrowsRatherThanCreatingOne()
+        {
+            using (var collectionFolder = new TemporaryFolder("ProjectContextTests"))
+            {
+                var expectedSettingsPath = CollectionSettings.GetSettingsFilePath(
+                    collectionFolder.FolderPath
+                );
+                // Sanity check: nothing in the folder to find, and nothing to overwrite.
+                Assert.That(Directory.EnumerateFiles(collectionFolder.FolderPath), Is.Empty);
+
+                Assert.That(
+                    () => ProjectContext.GetCollectionSettings(expectedSettingsPath),
+                    Throws.InstanceOf<FileNotFoundException>()
+                );
+
+                Assert.That(
+                    Directory.EnumerateFiles(collectionFolder.FolderPath),
+                    Is.Empty,
+                    "must not have written a new default collection settings file"
+                );
+            }
+        }
+
         [Test]
         public void GetCollectionSettings_ExpectedNameIsOnDisk_UsesIt()
         {

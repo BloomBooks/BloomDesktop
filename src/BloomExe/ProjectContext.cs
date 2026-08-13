@@ -103,10 +103,11 @@ namespace Bloom
                 // assigns _projectContext only once this constructor returns, so on this path nobody
                 // else has a reference to us and nobody else can dispose us. Dispose unlocks the
                 // collection, so the user can try again (or at least not be locked out of the
-                // collection), and also shuts down whatever we did manage to build -- BloomServer
-                // (and its port), the websocket server, and any WebView2. Left running, those keep
-                // Bloom from ever exiting, which is what left it lingering as a zombie process.
-                // (BL-16679)
+                // collection), and disposes whatever project-scoped objects we did manage to build --
+                // the Shell and its WebView2 browsers, the file watchers, and the rest of the scope.
+                // Left running, those can keep Bloom from ever exiting, which is part of what left it
+                // lingering as a zombie process. (BloomServer itself is application-level, resolved
+                // from the parent container, so it is not ours to shut down.) (BL-16679)
                 try
                 {
                     Dispose();
@@ -541,6 +542,17 @@ namespace Bloom
                 {
                     // Hopefully this repairs things.
                     projectSettingsPath = settingsFilePath;
+                }
+                else
+                {
+                    // There is no collection here to load. Say so, rather than falling through: the
+                    // CollectionSettings constructor treats a path that doesn't exist as "make me a
+                    // new collection there", so we would silently write a default .bloomCollection
+                    // into the folder (and create the folder) instead of reporting the problem.
+                    throw new FileNotFoundException(
+                        $"Bloom could not find a .bloomCollection file in {Path.GetDirectoryName(projectSettingsPath)}",
+                        projectSettingsPath
+                    );
                 }
             }
 

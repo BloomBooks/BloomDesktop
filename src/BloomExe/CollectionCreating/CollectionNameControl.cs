@@ -77,13 +77,16 @@ namespace Bloom.CollectionCreating
 
         private bool GetNameIsOk()
         {
-            // GetPathForNewSettings drops trailing periods and spaces (see BL-16679), so a name made
-            // up of nothing else would leave us with no folder name at all.
-            if (_collectionNameControl.Text.Trim().TrimEnd('.', ' ').Length < 1)
+            // Judge the name we will really use: GetPathForNewSettings drops trailing periods and
+            // spaces, because Windows drops them when it creates the folder (see BL-16679). A name
+            // made up of nothing else would leave us with no folder name at all, and checking the
+            // untrimmed text would let "templates." through to create the reserved "templates" folder.
+            var effectiveName = _collectionNameControl.Text.Trim().TrimEnd('.', ' ');
+            if (effectiveName.Length < 1)
             {
                 return false;
             }
-            if (_collectionNameControl.Text.IndexOfAny(Path.GetInvalidFileNameChars()) > -1)
+            if (effectiveName.IndexOfAny(Path.GetInvalidFileNameChars()) > -1)
             {
                 return false;
             }
@@ -92,8 +95,7 @@ namespace Bloom.CollectionCreating
                 _destinationDirectory,
                 _collectionNameControl.Text
             );
-            return !DestinationAlreadyExists
-                && _collectionNameControl.Text.ToLowerInvariant() != "templates";
+            return !DestinationAlreadyExists && effectiveName.ToLowerInvariant() != "templates";
         }
 
         private bool DestinationAlreadyExists

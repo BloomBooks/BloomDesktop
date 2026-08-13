@@ -1880,7 +1880,14 @@ namespace Bloom
                 // Remember the collection by the path that really exists on disk, so that a path saved
                 // by an older Bloom with trailing periods or spaces on the folder name heals rather
                 // than being handed back to us on every launch. See BL-16679.
-                Settings.Default.MruProjects.AddNewPath(MiscUtils.GetPathAsOnDisk(path));
+                var pathAsOnDisk = MiscUtils.GetPathAsOnDisk(path);
+                if (pathAsOnDisk != path)
+                {
+                    // The list matches paths as exact strings, so without this the old spelling stays
+                    // in it and the collection is listed twice in the Open/Create Collections dialog.
+                    Settings.Default.MruProjects.RemovePath(path);
+                }
+                Settings.Default.MruProjects.AddNewPath(pathAsOnDisk);
                 Settings.Default.Save();
                 return true;
             }
