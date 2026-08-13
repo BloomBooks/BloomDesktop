@@ -70,6 +70,48 @@ namespace BloomTests.Collection
             );
         }
 
+        /// <summary>
+        /// We compare major.minor only, so that is what the user should be shown. Reporting a build
+        /// number we don't actually enforce would misrepresent the rule. Version 99 is used so these
+        /// stay true however far Bloom's real version advances.
+        /// </summary>
+        [TestCase("99.0", "99.0")]
+        [TestCase("99.0.132", "99.0", Description = "build number dropped, since we ignore it")]
+        [TestCase("  99.0  ", "99.0", Description = "surrounding whitespace tolerated")]
+        public void IsThisBloomTooOld_TooOld_ReportsRequirementAsMajorMinor(
+            string declaredVersion,
+            string expectedReported
+        )
+        {
+            var path = WriteSettingsFile(
+                "Reported" + declaredVersion.Trim().Replace('.', '_'),
+                $"<MinimumBloomVersion>{declaredVersion}</MinimumBloomVersion>"
+            );
+
+            Assert.That(
+                MinimumBloomVersionCheck.IsThisBloomTooOld(path, out var minimumVersion),
+                Is.True,
+                "No conceivable Bloom version satisfies a requirement of 99.x."
+            );
+            Assert.That(minimumVersion, Is.EqualTo(expectedReported));
+        }
+
+        [Test]
+        public void IsThisBloomTooOld_RequirementSatisfied_ReturnsFalse()
+        {
+            var path = WriteSettingsFile(
+                "AncientRequirement",
+                "<MinimumBloomVersion>0.1</MinimumBloomVersion>"
+            );
+
+            Assert.That(
+                MinimumBloomVersionCheck.IsThisBloomTooOld(path, out var minimumVersion),
+                Is.False,
+                "Every Bloom that has ever shipped is newer than 0.1."
+            );
+            Assert.That(minimumVersion, Is.Empty);
+        }
+
         [Test]
         public void ReadMinimumBloomVersion_ElementPresent_ReturnsIt()
         {

@@ -1643,7 +1643,7 @@ namespace Bloom
                 {
                     // We're normally still showing the splash screen at this point, and it would sit on
                     // top of our dialog. Also, the dialog is a ReactDialog, so it needs the server.
-                    StartupScreenManager.CloseSplashScreen();
+                    StartupScreenManager.HideSplashScreenForDialog();
                     _applicationContainer.BloomServer.EnsureListening();
                     MinimumBloomVersionCheck.ReportCollectionNeedsNewerBloom(
                         Path.GetFileNameWithoutExtension(path),

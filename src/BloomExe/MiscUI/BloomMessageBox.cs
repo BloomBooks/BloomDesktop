@@ -137,5 +137,13 @@ namespace Bloom.MiscUI
 
         [JsonProperty("default")]
         public bool Default;
+
+        /// <summary>
+        /// Optional icon for the button. Currently the only value the Typescript side knows is
+        /// "launch", which shows the same icon the Help menu uses on its "website" item, to warn
+        /// the user that clicking will take them out to a web page.
+        /// </summary>
+        [JsonProperty("icon")]
+        public string Icon;
     }
 }

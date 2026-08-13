@@ -26,12 +26,19 @@ namespace Bloom.Collection
         /// Decide whether this Bloom is allowed to open the given collection.
         /// </summary>
         /// <param name="settingsFilePath">Path to the .bloomCollection file</param>
-        /// <param name="minimumVersion">What the collection asked for, when we say no</param>
+        /// <param name="minimumVersion">What the collection asked for, as major.minor, when we say no</param>
         /// <returns>true if the collection demands a newer Bloom than we are</returns>
         public static bool IsThisBloomTooOld(string settingsFilePath, out string minimumVersion)
         {
-            minimumVersion = ReadMinimumBloomVersion(settingsFilePath);
-            return !IsVersionSufficient(minimumVersion, RunningBloomVersion);
+            var declaredVersion = ReadMinimumBloomVersion(settingsFilePath);
+            if (IsVersionSufficient(declaredVersion, RunningBloomVersion))
+            {
+                minimumVersion = "";
+                return false;
+            }
+            // We can only get here if it parsed, since anything we can't parse counts as satisfied.
+            minimumVersion = ToMajorMinor(Version.Parse(declaredVersion.Trim()));
+            return true;
         }
 
         /// <summary>
@@ -119,8 +126,8 @@ namespace Bloom.Collection
                 ),
                 // The message is HTML, and a collection name can perfectly well contain an ampersand.
                 System.Net.WebUtility.HtmlEncode(collectionName),
-                System.Net.WebUtility.HtmlEncode(minimumVersion),
-                RunningBloomVersion.ToString(3)
+                minimumVersion,
+                ToMajorMinor(RunningBloomVersion)
             );
             var upgradeButtonText = LocalizationManager.GetString(
                 "Collection.UpgradeBloom",
@@ -133,7 +140,13 @@ namespace Bloom.Collection
 
             var buttons = new[]
             {
-                new MessageBoxButton() { Text = upgradeButtonText, Id = kUpgradeButtonId },
+                new MessageBoxButton()
+                {
+                    Text = upgradeButtonText,
+                    Id = kUpgradeButtonId,
+                    // Warn the user that this takes them out to a web page.
+                    Icon = "launch",
+                },
                 new MessageBoxButton()
                 {
                     Text = chooseOtherButtonText,
@@ -172,6 +185,13 @@ namespace Bloom.Collection
             else
                 ProcessExtra.SafeStartInFront("xdg-open", Uri.EscapeUriString(url));
         }
+
+        /// <summary>
+        /// Format a version the way we actually compare it: major and minor only. Showing the user a
+        /// build number we don't look at would misrepresent the rule, and invites them to compare
+        /// the wrong digits ("6.5 required, but I have 6.4.900, and 900 is more than 5").
+        /// </summary>
+        private static string ToMajorMinor(Version version) => $"{version.Major}.{version.Minor}";
 
         /// <summary>
         /// The version of Bloom we are running. We use the assembly version rather than

@@ -6,6 +6,7 @@ import BloomButton from "../react_components/bloomButton";
 import { postString } from "./bloomApi";
 import WarningOutlinedIcon from "@mui/icons-material/WarningOutlined";
 import InfoIcon from "@mui/icons-material/Info";
+import LaunchIcon from "@mui/icons-material/Launch";
 import {
     BloomDialog,
     DialogBottomButtons,
@@ -24,6 +25,10 @@ export interface IMessageBoxButton {
     text: string;
     id: string;
     default: boolean; // Only one button should have this true
+    // Effectively an enumeration, which we will add to as needed.
+    // "launch" is the same icon the Help menu uses on its "website" item, to warn the
+    // user that clicking will take them out to a web page.
+    icon?: "launch";
 }
 
 // This function is only used from Typescript-land to give us control over repeated opening and closing.
@@ -74,6 +79,11 @@ export const BloomMessageBox: React.FunctionComponent<{
             alreadyLocalized={true}
             hasText={true}
             variant={button.default ? "contained" : "outlined"}
+            endIcon={
+                button.icon === "launch" ? (
+                    <LaunchIcon fontSize="small" />
+                ) : undefined
+            }
             onClick={() => closeDialogForButton(button.id)}
             // I have nothing against ripple, but when a default button shows with a ripple even though
             // you're not clicking or even pointing at it... it looks dumb.

@@ -301,6 +301,29 @@ namespace Bloom.MiscUI
             ConsiderCurrentTaskDone();
         }
 
+        /// <summary>
+        /// Get the splash screen out of the way of a dialog we are about to show, without doing the
+        /// things that belong to startup actually being over. In particular
+        /// DoLastOfAllAfterClosingSplashScreen brings the main window to the front, which is both
+        /// wrong here (there may not be one yet) and wasteful, since it is a one-shot: consuming it
+        /// now means the main window doesn't come to the front when it finally does open.
+        /// This does the same thing DoStartupAction does for a task with ShouldHideSplashScreen.
+        /// </summary>
+        public static void HideSplashScreenForDialog()
+        {
+            if (_splashForm != null)
+            {
+                _splashForm.Hide();
+                _splashForm = null; // it's gone, not needed again
+            }
+
+            if (_doWhenSplashScreenShouldClose != null)
+            {
+                _doWhenSplashScreenShouldClose();
+                _doWhenSplashScreenShouldClose = null;
+            }
+        }
+
         public static void PutSplashAbove(Form aboveThis)
         {
             if (_splashForm != null)
