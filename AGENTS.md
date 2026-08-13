@@ -76,6 +76,17 @@ under `output/agent/<key>/` so your build/test never touches the locked shared o
 means you do **not** need to stop the developer's Bloom to build or run unit tests, and
 multiple terminals can build/test at once. See `Directory.Build.props` for how it works.
 
+- For `test`, the wrapper **judges the run and prints a verdict as its last line**, so
+  `[agent-dotnet] test run completed. Passed! ...` is the only thing you need to read (and it
+  survives `| tail`). Do not judge a run by the `Passed!`/`Failed!` summary above it: a run whose
+  test host is killed part way through still prints a passing summary of however many tests got to
+  run. The wrapper catches that and says `*** TEST RUN ABORTED ***`, and exits non-zero, as it
+  does for ordinary failures. The text it looks for lives in `build/test-abort-markers.txt`.
+- **Tests retire their BloomServers, they do not dispose them.** A fixture that made a server
+  listen calls `RetiredTestServers.Retire(server)`; the listener is closed a few fixtures later,
+  once whatever it was serving has certainly finished. Disposing on the spot is what used to kill
+  the test host (BL-16667). If you add a fixture that calls `EnsureListening`, retire it the same
+  way rather than calling `Dispose`.
 - This wrapper is for **building and running tests only**. To *run* Bloom, still use
   `./go.sh` (see "Running Bloom" below) — the wrapper builds no `Bloom.exe` apphost.
   (`BloomPdfMaker.exe` is the one apphost it does build, because Bloom's PDF code shells

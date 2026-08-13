@@ -43,7 +43,7 @@ namespace BloomTests.web.controllers
         {
             if (_server != null)
             {
-                _server.Dispose();
+                RetiredTestServers.Retire(_server);
                 _server = null;
             }
         }

@@ -33,7 +33,7 @@ namespace BloomTests.web
         [TearDown]
         public void TearDown()
         {
-            _server.Dispose();
+            RetiredTestServers.Retire(_server);
             _server = null;
         }
 

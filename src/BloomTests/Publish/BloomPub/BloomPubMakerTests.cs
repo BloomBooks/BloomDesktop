@@ -69,7 +69,7 @@ namespace BloomTests.Publish.BloomPub
             PublishHelper.ExternalPageChecksBrowserForTests = null;
             s_pageChecksBrowser.Dispose();
             s_pageChecksBrowser = null;
-            s_bloomServer.Dispose();
+            RetiredTestServers.Retire(s_bloomServer);
         }
 
         [SetUp]

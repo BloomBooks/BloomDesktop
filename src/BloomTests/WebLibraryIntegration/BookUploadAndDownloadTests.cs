@@ -135,7 +135,7 @@ namespace BloomTests.WebLibraryIntegration
         {
             _htmlThumbNailer.Dispose();
             _workFolder.Dispose();
-            s_bloomServer.Dispose();
+            RetiredTestServers.Retire(s_bloomServer);
         }
 
         private string MakeBook(
