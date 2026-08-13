@@ -42,6 +42,7 @@ namespace Bloom
             if (Settings.Default.MruProjects == null)
             {
                 Settings.Default.MruProjects = new MostRecentPathsList();
+                Settings.Default.Save();
             }
             builder.RegisterInstance(Settings.Default.MruProjects).SingleInstance();
 

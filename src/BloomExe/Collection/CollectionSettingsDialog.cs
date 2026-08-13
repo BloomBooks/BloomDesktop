@@ -417,6 +417,7 @@ namespace Bloom.Collection
 
             Settings.Default.AutoUpdate =
                 PendingAutomaticallyUpdate && AutoUpdateSupportedOnThisPlatform;
+            Settings.Default.Save();
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
             UpdateAppBuilderAllowed();

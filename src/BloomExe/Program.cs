@@ -569,6 +569,7 @@ namespace Bloom
                             Settings.Default.MruProjects = new MostRecentPathsList();
                         }
 
+                        // The Save() below covers both this and the list we may just have created.
                         Settings.Default.MruProjects.AddNewPath(newCollection);
                         Settings.Default.Save();
 
@@ -2048,6 +2049,9 @@ namespace Bloom
                 );
 
                 Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
+                // Saves this and the UserInterfaceLanguageSetExplicitly set above; GetDesiredUiLanguage
+                // reads both on the next launch.
+                Settings.Default.Save();
 
                 // Per BL-6449, these two languages should try Spanish before English if a localization is missing.
                 // (If they ever get localized enough to show up in our list.)

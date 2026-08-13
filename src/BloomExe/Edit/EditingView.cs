@@ -157,6 +157,9 @@ namespace Bloom.Edit
                 (oldToNewPath) =>
                 {
                     // If the selected book is renamed, we should update our saved CurrentBookPath.
+                    // Each branch below saves the settings itself: it used to be enough to change
+                    // the value in memory, because the next SelectBook() would flush it, but
+                    // SelectBook() no longer writes settings at all (BL-16660).
                     if (model.CurrentBook == null)
                     {
                         // Note: possibly all we need is this branch, which doesn't actually depend
@@ -168,12 +171,14 @@ namespace Bloom.Edit
                         if (oldToNewPath.Key == Settings.Default.CurrentBookPath)
                         {
                             Settings.Default.CurrentBookPath = oldToNewPath.Value;
+                            Settings.Default.Save();
                         }
                     }
                     else if (oldToNewPath.Value == _model.CurrentBook?.FolderPath)
                     {
                         // This is the usual path, updating the settings to match the model's current book.
                         Settings.Default.CurrentBookPath = oldToNewPath.Value;
+                        Settings.Default.Save();
                     }
                     UpdatePageList(true);
                     if (_model.CurrentBook != null)
