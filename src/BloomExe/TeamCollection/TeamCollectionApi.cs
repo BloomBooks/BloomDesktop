@@ -690,9 +690,12 @@ namespace Bloom.TeamCollection
                 return;
             }
 
-            // The UI disables the checkout button when checkouts are paused, but the status it is
-            // working from can be stale (the setting arrives from the repo whenever collection files
-            // sync), so refuse here too rather than let a checkout slip through. See BL-16691.
+            // The UI disables the checkout button when checkouts are paused, but it decides that
+            // from a status snapshot it fetched earlier, and not every path back here re-checks it
+            // -- the post issued after the registration dialog, for one, doesn't. This is the
+            // authoritative copy of the setting, so refuse here rather than rely on the browser
+            // having current status. (The setting itself can't change mid-session: collection
+            // settings are only read as the collection opens.) See BL-16691.
             if (!_settings.AllowCheckouts)
             {
                 request.Failed("checkouts are paused for this collection");
