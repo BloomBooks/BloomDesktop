@@ -96,9 +96,12 @@ namespace Bloom.web.controllers
                 "common/clickHereForHelp",
                 request =>
                 {
-                    var problemFilePath = UrlPathString
-                        .CreateFromUrlEncodedString(request.RequiredParam("problem"))
-                        .NotEncoded;
+                    // No decoding here: ApiRequest.Parameters comes from
+                    // RequestInfo.GetQueryParameters(), i.e. HttpUtility.ParseQueryString, which
+                    // has already decoded the value once. Decoding again turned a path that
+                    // genuinely contains a '%' ("photo%41.bloom") into a different one
+                    // ("photoA.bloom"). (BL-16669)
+                    var problemFilePath = request.RequiredParam("problem");
                     request.ReplyWithText(
                         CommonMessages.GetPleaseClickHereForHelpMessage(problemFilePath)
                     );

@@ -33,6 +33,11 @@ namespace Bloom.web.controllers
     ///   and Bloom does NOT import the AI image editor's code: it is a self-contained web
     ///   app loaded by URL. There is no npm/bundler dependency between the two projects.
     ///
+    /// THE FRONT-END HALF
+    ///   src/BloomBrowserUI/bookEdit/aiImageEditor/ — read its AGENTS.md first: those files are
+    ///   split by which browser frame they run in (overlay in the top window, live-page work in
+    ///   the page iframe), and that split is what the two-plane design below rests on.
+    ///
     /// WHERE THE AI IMAGE EDITOR COMES FROM  (see GetAiImageEditorUrl)
     ///   DEFAULT: {ServerUrl}/bloom/aiImageEditor/index.html — its built app
     ///            ("dist-app"), served same-origin by BloomServer so there's no CORS.
@@ -47,13 +52,17 @@ namespace Bloom.web.controllers
     ///
     /// TWO COMMUNICATION PLANES
     ///   1. HTTP, AI image editor / front-end JS -> this controller, over Bloom's server:
+    ///        aiImageEditor/saveThenLaunch  what the menu command posts: save the page being
+    ///                                    edited (needed before we can enumerate the book's
+    ///                                    images), then call openAiImageEditor() in the top
+    ///                                    window. The one C#->browser call here; see the method.
     ///        aiImageEditor/launch        mint session, make folders, enumerate book
     ///                                    images + history, return the launch payload.
     ///        aiImageEditor/file          GET/POST/DELETE files under .ai-image-editor/.
     ///        aiImageEditor/commit        apply the chosen replacements to the book.
     ///        aiImageEditor/saveCredentials  persist the user's OpenRouter API key.
     ///   2. window.postMessage on channel "bloom-ai-image-tools", between the overlay JS
-    ///      (CanvasElementContextControls.tsx) and the AI image editor's iframe: ready /
+    ///      (aiEditorOverlay.ts, in the TOP window) and the AI image editor's iframe: ready /
     ///      init / commit / cancel / log / ack. The overlay JS — NOT this class — sends
     ///      `init` (built from the launch reply) and tears the overlay down. Image BYTES
     ///      never cross postMessage; they move only as files via aiImageEditor/file.
@@ -71,8 +80,9 @@ namespace Bloom.web.controllers
     /// COMMIT SPLIT
     ///   Off-page images are edited directly in the whole-book DOM here and saved. The
     ///   currently-open page is owned by the live browser, so those replacements are
-    ///   returned as {oldSrc,newSrc,copyright,creator,license} for the overlay JS to apply via
-    ///   Bloom's changeImage().
+    ///   returned as {oldSrc,newSrc,copyright,creator,license}; the overlay hands them to the
+    ///   page frame's applyAiImageEditorReplacements(), which applies them via Bloom's
+    ///   changeImageByElement() (aiEditorPageCommands.ts).
     ///
     /// AI IMAGE EDITOR REPO: bloom-ai-image-tools — App.tsx (mode=bloom-iframe),
     ///   services/host/BloomHostBridge.ts (createIframeBloomHostBridge),
@@ -161,6 +171,12 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler(
+                "aiImageEditor/saveThenLaunch",
+                HandleSaveThenLaunch,
+                handleOnUiThread: true,
+                requiresSync: false
+            );
+            apiHandler.RegisterEndpointHandler(
                 "aiImageEditor/launch",
                 HandleLaunch,
                 handleOnUiThread: true,
@@ -213,6 +229,158 @@ namespace Bloom.web.controllers
             if (!string.IsNullOrWhiteSpace(overrideUrl))
                 return overrideUrl;
             return $"{BloomServer.ServerUrl}/bloom/aiImageEditor/index.html";
+        }
+
+        /// <summary>The image the user right-clicked, as the page frame sends it to
+        /// <see cref="HandleSaveThenLaunch"/> and as we hand it back to the browser once the page
+        /// has been saved. See IAiImageEditorTarget in aiEditorShared.ts. The page frame sends only
+        /// the file name; we fill in the page id, since we are the ones who know which page we
+        /// saved, and the overlay (in the top window) has no page DOM of its own to read it from.
+        /// </summary>
+        private class SaveThenLaunchRequest
+        {
+            public string imageFileName { get; set; }
+            public string pageId { get; set; }
+        }
+
+        /// <summary>
+        /// Saves the page the user is editing, then opens the AI image editor on it.
+        ///
+        /// The save is the point of this endpoint. Everything we tell the AI image editor about
+        /// the book — the image list from <see cref="EnumerateBookImages"/>, and on commit each
+        /// slot's current src — is read from the SAVED book DOM, but an image the user has just
+        /// added exists only in the live page (Bloom deliberately doesn't save on an image change;
+        /// see EditingModel.UpdateImageInBrowser and BL-16330). Launching against the unsaved DOM
+        /// opened the editor with an empty "Image to Edit" slot (BL-16682); it would also have
+        /// made the current page's commit results describe an image the live page no longer shows,
+        /// and left <see cref="DeleteSupersededAiImageFiles"/> blind to a file the live page uses.
+        ///
+        /// Two separate things follow from the fact that saving always ends in a navigation.
+        ///
+        /// WHERE the overlay lives: not in the page iframe, which that navigation replaces every
+        /// time — hence the top window, like the image-gallery and copyright/license commands (see
+        /// aiEditorOverlay.ts and the comments on those commands in canvasControlRegistry.ts).
+        ///
+        /// WHEN we open it: once the browser has a page again, via
+        /// EditingModel.RunAfterNextPageLoad. Opening from SaveThen's doAfterSaveToDisk directly is
+        /// tempting, since the top window is alive at that moment — but that moment is immediately
+        /// before the navigation, and the navigation is not always confined to the page iframe.
+        /// EditingView.StartNavigationToEditPage reloads the whole workspace root when
+        /// MemoryUtils.SystemIsShortOfMemory(), which is Bloom's own private bytes past ~2GB —
+        /// the ordinary state of a long editing session on a big book. Opening from
+        /// doAfterSaveToDisk there meant the page saved correctly and the editor never appeared,
+        /// with no message: openAiImageEditor doesn't even build the overlay synchronously; it
+        /// POSTs launch first and builds it in the reply, a whole round trip after the reload
+        /// began. Waiting for the page load costs nothing and is immune to all three routes.
+        /// doAfterSaveToDisk is still where we ASK for that, though — see the body — because it
+        /// only runs when the save actually reached disk, which is how a failed save leaves the
+        /// editor closed instead of opening it on a book DOM we know to be stale.
+        ///
+        /// To see that failure for yourself, temporarily make ShouldDoFullReload() return true —
+        /// its own comment invites exactly this — rather than trying to grow Bloom past 2GB.
+        /// </summary>
+        private void HandleSaveThenLaunch(ApiRequest request)
+        {
+            // Must be read before SaveThen: by the time our callbacks run the request is complete.
+            // Deliberately unguarded: the only caller is launchAiImageEditor in
+            // aiEditorPageCommands.ts, which always sends {imageFileName}, so a parse failure means
+            // we broke our own contract and we want to hear about it with the real exception rather
+            // than a generic "invalid payload" that says nothing (see AGENTS.md, "Don't be overly
+            // defensive about error handling").
+            var payload = request.RequiredPostObject<SaveThenLaunchRequest>();
+
+            var model = View?.Model;
+            var pageId = model?.CurrentPage?.Id;
+            if (model == null || string.IsNullOrEmpty(pageId))
+            {
+                request.Failed("No page is open for editing");
+                return;
+            }
+            payload.pageId = pageId;
+
+            // Ask NOW to be opened on the next page load, and record separately whether the book
+            // DOM turned out to be sound. Both halves matter, for different reasons.
+            //
+            // Asking now, rather than from the callbacks below: OnTabAboutToChange discards the
+            // queued request when the user leaves the Edit tab. If we only queued it later, from
+            // doAfterSaveToDisk, that discard could run first — on a save still in flight — and we
+            // would then re-arm behind it, so the editor sprang open when the user came back to
+            // that page. (Devin caught that; queueing up front puts the discard reliably after us.)
+            var bookDomIsSound = false;
+            model.RunAfterNextPageLoad(loadedPageId =>
+            {
+                // Not the page we saved: the user navigated meanwhile, so the image we were asked
+                // to edit isn't there to edit.
+                if (loadedPageId != pageId)
+                    return;
+                // The save was attempted and failed. Leave the editor closed: the book DOM is
+                // still stale, so we would be opening it on exactly the out-of-date data this
+                // endpoint exists to prevent, and a commit from there would call book.Save() again
+                // on top of whatever went wrong (disk full, a corrupt image, out of memory). The
+                // user is not left wondering — EditingStateMachine has already shown them "Bloom
+                // had trouble saving a page...". (JohnThomson raised this in review.)
+                if (!bookDomIsSound)
+                    return;
+                OpenEditorInBrowser(payload);
+            });
+
+            model.SaveThen(
+                () => pageId,
+                doIfNotInRightStateToSave: () =>
+                {
+                    // No save was attempted and nothing failed. Every state that refuses one — a
+                    // save already in flight, mid-navigation, saved-and-stripped — is on its way to
+                    // a page load, and by then that other save will have brought the DOM up to date.
+                    bookDomIsSound = true;
+                },
+                // Reached only when the save actually got to disk. Checking it this way, rather
+                // than cancelling from failureAction, covers more: failureAction is not called when
+                // _saveBook() itself throws, which is precisely the disk-full case, nor on the
+                // deliberate _discardInFlightSave path.
+                doAfterSaveToDisk: () => bookDomIsSound = true
+            );
+
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Tells the browser to open the AI image editor overlay on <paramref name="target"/>. The
+        /// browser owns the overlay (only it can postMessage to the editor's iframe), so all this
+        /// side does is call its entry point; see openAiImageEditor in aiEditorOverlay.ts.
+        /// Fire-and-forget, like EditingModel.UpdateImageInBrowser's call to changeImage: there is
+        /// nothing here to wait for.
+        ///
+        /// It does wait for workspaceBundle to exist, though. We are called the instant the PAGE
+        /// iframe reports loaded, and on the whole-workspace-reload route (see
+        /// HandleSaveThenLaunch) the root document and that iframe load in parallel, with
+        /// window.workspaceBundle assigned at the very end of workspaceRoot.ts. If the iframe wins
+        /// that race, calling straight in would throw inside a fire-and-forget script — silently
+        /// doing nothing on exactly the route this design exists to survive. So poll for it, as
+        /// workspaceFrames.doWhenWorkspaceBundleLoaded does, bounded so a genuinely absent bundle
+        /// says so once instead of polling forever.
+        /// </summary>
+        private void OpenEditorInBrowser(SaveThenLaunchRequest target)
+        {
+            var arg = JsonConvert.SerializeObject(target);
+            var script =
+                $@"(function () {{
+    var tries = 0;
+    (function open() {{
+        var bundle = window.workspaceBundle;
+        if (bundle && bundle.openAiImageEditor) {{
+            bundle.openAiImageEditor({arg});
+            return;
+        }}
+        if (++tries < 100) {{
+            window.setTimeout(open, 50);
+        }} else {{
+            console.error(
+                'Bloom: workspaceBundle never appeared, so the AI image editor could not be opened.'
+            );
+        }}
+    }})();
+}})();";
+            View?.Browser?.RunJavascriptFireAndForget(script);
         }
 
         /// <summary>
