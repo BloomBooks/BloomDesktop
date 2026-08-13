@@ -24,6 +24,7 @@ declare global {
     interface ToolboxBundleApi {
         getTheOneToolbox: () => ToolboxApi | undefined;
         scheduleMarkupUpdateAfterPaste: unknown;
+        updateMarkupAfterUndoOrRedo: unknown;
         applyToolboxStateToPage: unknown;
         removeToolboxMarkup: unknown;
         showSetupDialog: unknown;
