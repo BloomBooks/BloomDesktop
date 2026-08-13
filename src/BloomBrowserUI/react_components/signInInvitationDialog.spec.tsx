@@ -116,7 +116,7 @@ describe("SignInInvitationDialog", () => {
 
         expect(mockPostString).toHaveBeenCalledWith(
             "link",
-            "https://docs.bloomlibrary.org/collaboration",
+            "https://docs.bloomlibrary.org/team-collections",
         );
     });
 

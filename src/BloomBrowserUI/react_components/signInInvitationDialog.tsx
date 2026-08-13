@@ -17,8 +17,9 @@ import { Div } from "./l10nComponents";
 import { Link } from "./link";
 import { useLoginState } from "./useLoginState";
 
-// Where "Learn about Bloom Collaboration" takes the user.
-const kCollaborationDocsUrl = "https://docs.bloomlibrary.org/collaboration";
+// Where "Learn about Bloom Collaboration" takes the user. This is the closest page we have today;
+// point it at a page about Bloom Collaboration itself once one is written.
+const kCollaborationDocsUrl = "https://docs.bloomlibrary.org/team-collections";
 
 // Asks the server, as the collection tab mounts, whether the user should be invited to sign in --
 // which is the case when we have just opened a Team Collection and nobody is signed in to
