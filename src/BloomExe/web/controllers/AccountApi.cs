@@ -59,7 +59,8 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Register the account/* endpoints: status (GET), login (POST), logout (POST).
+        /// Register the account/* endpoints: status (GET), login (POST), logout (POST),
+        /// signInInvitationNeeded (GET), signInInvitationShown (POST).
         /// </summary>
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -161,7 +162,7 @@ namespace Bloom.web.controllers
             _signInInvitationStillOwed
             // Only members of a team need an account. A disconnected or disabled Team Collection
             // still counts: the user is part of a team, and signing in is what gets them ready.
-            && _tcManager?.CurrentCollectionEvenIfDisconnected != null
+            && _tcManager.CurrentCollectionEvenIfDisconnected != null
             && !_client.LoggedIn
             // An automated run has nobody to dismiss a modal dialog, and this one would sit on
             // top of the collection tab for the whole run.
