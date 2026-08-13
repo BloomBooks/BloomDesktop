@@ -110,6 +110,9 @@ export interface IPageFrameExports {
         imageInfo: Omit<IImageInfo, "imageId">,
     ): void;
     removeImageId(imageId: string): void;
+    applyAiImageEditorReplacements(
+        results?: IAiImageEditorCommitResult[],
+    ): IAiImageEditorApplyOutcome;
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
@@ -138,6 +141,13 @@ import {
     removeRequestPageContentDelay,
 } from "./js/bloomEditing";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
+// Called from the AI Image Editor overlay in the top window, which owns the session but
+// cannot touch this page itself; see aiEditorPageCommands.ts and aiEditorOverlay.ts.
+import { applyAiImageEditorReplacements } from "./aiImageEditor/aiEditorPageCommands";
+import type {
+    IAiImageEditorApplyOutcome,
+    IAiImageEditorCommitResult,
+} from "./aiImageEditor/aiEditorShared";
 export {
     getBodyContentForSavePage,
     getPageContentForSave,
@@ -163,6 +173,7 @@ export {
     renderDragActivityTabControl,
     getTheOneCanvasElementManager,
     showGamePromptDialog,
+    applyAiImageEditorReplacements,
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
@@ -440,6 +451,7 @@ interface EditablePageBundleApi {
     SayHello: typeof SayHello;
     renderDragActivityTabControl: typeof renderDragActivityTabControl;
     showGamePromptDialog: typeof showGamePromptDialog;
+    applyAiImageEditorReplacements: typeof applyAiImageEditorReplacements;
 }
 
 declare global {
@@ -520,4 +532,5 @@ window.editablePageBundle = {
     SayHello,
     renderDragActivityTabControl,
     showGamePromptDialog,
+    applyAiImageEditorReplacements,
 };
