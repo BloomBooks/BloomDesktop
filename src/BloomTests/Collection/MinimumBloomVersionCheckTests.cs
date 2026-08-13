@@ -75,16 +75,29 @@ namespace BloomTests.Collection
         /// number we don't actually enforce would misrepresent the rule. Version 99 is used so these
         /// stay true however far Bloom's real version advances.
         /// </summary>
-        [TestCase("99.0", "99.0")]
-        [TestCase("99.0.132", "99.0", Description = "build number dropped, since we ignore it")]
-        [TestCase("  99.0  ", "99.0", Description = "surrounding whitespace tolerated")]
+        // Each case needs its own collection name: two of these differ only by whitespace, so
+        // deriving the name from the value would have them share a folder and overwrite each other.
+        [TestCase("99.0", "99.0", "ReportedPlain")]
+        [TestCase(
+            "99.0.132",
+            "99.0",
+            "ReportedWithBuild",
+            Description = "build number dropped, since we ignore it"
+        )]
+        [TestCase(
+            "  99.0  ",
+            "99.0",
+            "ReportedPadded",
+            Description = "surrounding whitespace tolerated"
+        )]
         public void IsThisBloomTooOld_TooOld_ReportsRequirementAsMajorMinor(
             string declaredVersion,
-            string expectedReported
+            string expectedReported,
+            string collectionName
         )
         {
             var path = WriteSettingsFile(
-                "Reported" + declaredVersion.Trim().Replace('.', '_'),
+                collectionName,
                 $"<MinimumBloomVersion>{declaredVersion}</MinimumBloomVersion>"
             );
 
