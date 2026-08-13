@@ -44,8 +44,12 @@ namespace BloomTests
     /// </summary>
     public static class RetiredTestServers
     {
-        /// <summary>Matches kNumberOfPortsToTry in BloomServer.EnsureListening.</summary>
-        internal const int kPortsEnsureListeningTries = 20;
+        /// <summary>
+        /// The real budget, referenced rather than copied. A hand-copied 20 would let someone lower
+        /// BloomServer's number while the test below went on passing — and what that test guards
+        /// against is ProgramExit.Exit, which says nothing about ports on its way out.
+        /// </summary>
+        internal const int kPortsEnsureListeningTries = BloomServer.kNumberOfPortsToTry;
 
         /// <summary>
         /// How many retired servers keep their listener open at once. Bigger means longer between
@@ -92,6 +96,16 @@ namespace BloomTests
     /// The bookkeeping behind <see cref="RetiredTestServers"/>, as an instance so that its own
     /// tests can exercise it without touching the queue the run is using.
     /// </summary>
+    /// <remarks>
+    /// Assumes the suite runs fixtures one at a time, which it does today: BloomTests.runsettings
+    /// sets no parallelism. The assumption matters because retiring a server also evicts an older
+    /// one, and both of those set BloomServer.ServerIsListening — a *static* — to false. Serially
+    /// that is harmless, since no other server is live to care. Turn assembly-level parallelism on
+    /// and an eviction during one fixture's teardown would clear that flag out from under another
+    /// fixture's live server. Devin raised it; recorded here rather than defended against, because
+    /// the defence would be pointless until the day parallelism is actually switched on, and on
+    /// that day this note is what says where to look.
+    /// </remarks>
     internal sealed class RetiredServerQueue
     {
         private readonly int _maxAwaitingClose;

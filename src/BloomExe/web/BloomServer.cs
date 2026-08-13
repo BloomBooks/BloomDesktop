@@ -64,6 +64,15 @@ namespace Bloom.Api
         public static int portForHttp;
         public const int kNumberOfConsecutivePortsToReserve = 3;
 
+        /// <summary>
+        /// How many ports EnsureListening will try before giving up — and giving up means
+        /// ProgramExit.Exit, not an exception someone can catch. Class-level and internal rather
+        /// than a local, so that the tests can assert against the real number: they hold listeners
+        /// open deliberately (see BloomTests' RetiredTestServers) and their budget has to be
+        /// checked against this, not against a copy of it that could silently fall out of step.
+        /// </summary>
+        internal const int kNumberOfPortsToTry = 20;
+
         public static int WebSocketPort => portForHttp + 1;
 
         public static int RemoteDebuggingPort => portForHttp + 2;
@@ -1662,7 +1671,6 @@ namespace Bloom.Api
             if (_listener?.IsListening == true)
                 return;
             const int kStartingPort = 8089;
-            const int kNumberOfPortsToTry = 20;
             bool success = false;
 
             // Note: this now checks whether the following ports in the block are available,
