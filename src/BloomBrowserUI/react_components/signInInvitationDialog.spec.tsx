@@ -56,10 +56,7 @@ describe("SignInInvitationDialog", () => {
     const render = async () => {
         await act(async () => {
             renderRoot(
-                <SignInInvitationDialog
-                    closeDialog={mockCloseDialog}
-                    propsForBloomDialog={{ open: true }}
-                />,
+                <SignInInvitationDialog closeDialog={mockCloseDialog} />,
                 container,
             );
         });
@@ -150,6 +147,7 @@ describe("SignInInvitationDialogLauncher", () => {
         document.body.appendChild(container);
         loginState.current = { email: "" };
         invitation.current = { needed: false };
+        mockPost.mockReset();
     });
 
     afterEach(() => {
@@ -161,14 +159,19 @@ describe("SignInInvitationDialogLauncher", () => {
         await render();
 
         expect(dialogIsShowing()).toBe(false);
+        // Nothing was shown, so the run's one invitation must not be used up.
+        expect(mockPost).not.toHaveBeenCalledWith(
+            "account/signInInvitationShown",
+        );
     });
 
-    it("shows the invitation when the server says one is needed", async () => {
+    it("shows the invitation when the server says one is needed, and reports that it did", async () => {
         invitation.current = { needed: true };
 
         await render();
 
         expect(dialogIsShowing()).toBe(true);
+        expect(mockPost).toHaveBeenCalledWith("account/signInInvitationShown");
     });
 
     it("stays closed once dismissed, even though the server still says one was needed", async () => {

@@ -27,8 +27,8 @@ namespace Bloom.web.controllers
         private readonly ITeamCollectionManager _tcManager;
 
         // Whether we still owe the user the "please sign in" invitation described in
-        // HandleSignInInvitationNeeded. Answering the front end that the invitation is needed
-        // consumes it, so we ask at most once per Bloom run.
+        // HandleSignInInvitationNeeded. It is used up once the front end reports having shown the
+        // dialog, so we invite the user at most once per Bloom run.
         private bool _signInInvitationStillOwed = true;
 
         /// <summary>
@@ -83,6 +83,11 @@ namespace Bloom.web.controllers
                 HandleSignInInvitationNeeded,
                 handleOnUiThread: false
             );
+            apiHandler.RegisterEndpointHandler(
+                "account/signInInvitationShown",
+                HandleSignInInvitationShown,
+                handleOnUiThread: false
+            );
         }
 
         // GET account/status: report whether we are logged in, and to whom (the email, or empty).
@@ -125,31 +130,50 @@ namespace Bloom.web.controllers
         /// actions run -- especially in a Team Collection, whose sync comes first -- and a pushed
         /// event with nobody listening yet is simply lost.
         ///
-        /// Answering "yes" consumes the invitation so that a page reload does not nag again.
+        /// Asking does NOT use up the invitation; the front end reports back to
+        /// HandleSignInInvitationShown once it has actually put the dialog on screen. Otherwise a
+        /// page reload in the moment between the two would silently swallow the invitation for the
+        /// rest of the run.
         /// </summary>
         private void HandleSignInInvitationNeeded(ApiRequest request)
         {
-            request.ReplyWithJson(new { needed = TakeSignInInvitation() });
+            request.ReplyWithJson(new { needed = SignInInvitationNeeded });
         }
 
         /// <summary>
-        /// Whether the user should be invited to sign in right now; saying yes consumes the one
-        /// invitation this run has to give. See HandleSignInInvitationNeeded, whose answer this is.
+        /// POST account/signInInvitationShown: the front end has shown the invitation, so this run
+        /// has delivered it. We remember that here rather than in the front end because the
+        /// collection tab is unmounted whenever the user visits the Edit or Publish tab, which would
+        /// lose any memory it kept -- and coming back to the collection tab is not opening the
+        /// collection again, so it must not bring the dialog back.
         /// </summary>
-        internal bool TakeSignInInvitation()
+        private void HandleSignInInvitationShown(ApiRequest request)
         {
-            var needed =
-                _signInInvitationStillOwed
-                // Only members of a team need an account. A disconnected or disabled Team Collection
-                // still counts: the user is part of a team, and signing in is what gets them ready.
-                && _tcManager?.CurrentCollectionEvenIfDisconnected != null
-                && !_client.LoggedIn
-                // An automated run has nobody to dismiss a modal dialog, and this one would sit on
-                // top of the collection tab for the whole run.
-                && !Program.RunningE2eTests;
-            if (needed)
-                _signInInvitationStillOwed = false;
-            return needed;
+            NoteSignInInvitationShown();
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Whether the user should be invited to sign in right now. See
+        /// HandleSignInInvitationNeeded, whose answer this is.
+        /// </summary>
+        internal bool SignInInvitationNeeded =>
+            _signInInvitationStillOwed
+            // Only members of a team need an account. A disconnected or disabled Team Collection
+            // still counts: the user is part of a team, and signing in is what gets them ready.
+            && _tcManager?.CurrentCollectionEvenIfDisconnected != null
+            && !_client.LoggedIn
+            // An automated run has nobody to dismiss a modal dialog, and this one would sit on
+            // top of the collection tab for the whole run.
+            && !Program.RunningE2eTests;
+
+        /// <summary>
+        /// Record that this run's invitation has been delivered. Called when the front end reports
+        /// it showed the dialog (and directly by tests).
+        /// </summary>
+        internal void NoteSignInInvitationShown()
+        {
+            _signInInvitationStillOwed = false;
         }
 
         // The email of the logged-in user, or empty when not logged in.

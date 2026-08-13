@@ -102,12 +102,7 @@ export const SignInInvitationDialogStory: Story = {
     name: "SignInInvitationDialog",
     // Unlike the other dialogs here, this one is not launched by an event; it shows itself when the
     // server says a Team Collection user needs to be invited to sign in. So just render it open.
-    render: () => (
-        <SignInInvitationDialog
-            closeDialog={() => undefined}
-            propsForBloomDialog={{ open: true }}
-        />
-    ),
+    render: () => <SignInInvitationDialog closeDialog={() => undefined} />,
 };
 
 const numberChooserDialogProps: INumberChooserDialogProps = {

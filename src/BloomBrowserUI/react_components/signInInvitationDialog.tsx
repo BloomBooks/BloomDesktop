@@ -9,10 +9,9 @@ import {
     DialogBottomLeftButtons,
     DialogMiddle,
     DialogTitle,
-    IBloomDialogProps,
 } from "./BloomDialog/BloomDialog";
 import BloomButton from "./bloomButton";
-import { postString, useApiObject } from "../utils/bloomApi";
+import { post, postString, useApiObject } from "../utils/bloomApi";
 import { useL10n } from "./l10nHooks";
 import { Div } from "./l10nComponents";
 import { Link } from "./link";
@@ -34,12 +33,17 @@ export const SignInInvitationDialogLauncher: React.FunctionComponent = () => {
     // the server's answer.
     const [closed, setClosed] = useState(false);
     const closeDialog = useCallback(() => setClosed(true), []);
+    const showing = invitation.needed && !closed;
 
-    return invitation.needed && !closed ? (
-        <SignInInvitationDialog
-            closeDialog={closeDialog}
-            propsForBloomDialog={{ open: true, onClose: closeDialog }}
-        />
+    // Tell the server the invitation has been delivered, so this run is done inviting. We report it
+    // now rather than letting the question itself count, so that a page reload between asking and
+    // showing doesn't swallow the invitation.
+    useEffect(() => {
+        if (showing) post("account/signInInvitationShown");
+    }, [showing]);
+
+    return showing ? (
+        <SignInInvitationDialog closeDialog={closeDialog} />
     ) : null;
 };
 
@@ -47,7 +51,6 @@ export const SignInInvitationDialogLauncher: React.FunctionComponent = () => {
 // moving to the web and an account is what will get them ready for it (BL-16692).
 export const SignInInvitationDialog: React.FunctionComponent<{
     closeDialog: () => void;
-    propsForBloomDialog: IBloomDialogProps;
 }> = (props) => {
     const dialogTitle = useL10n(
         "Please sign in to Bloom",
@@ -63,7 +66,7 @@ export const SignInInvitationDialog: React.FunctionComponent<{
     }, [email, closeDialog]);
 
     return (
-        <BloomDialog {...props.propsForBloomDialog}>
+        <BloomDialog open={true} onClose={closeDialog}>
             <DialogTitle title={dialogTitle} />
             <DialogMiddle
                 css={css`

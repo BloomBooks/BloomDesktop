@@ -1,5 +1,4 @@
 using Bloom.Api;
-using Bloom.Properties;
 using Bloom.TeamCollection;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
@@ -10,59 +9,37 @@ namespace BloomTests.web.controllers
 {
     /// <summary>
     /// Tests for the "please sign in" invitation that AccountApi offers a Team Collection user who
-    /// is not signed in to BloomLibrary.org (BL-16692). The front end asks for this once, as the
-    /// collection tab mounts; see AccountApi.HandleSignInInvitationNeeded.
-    ///
-    /// These tests construct a real BloomLibraryBookApiClient, whose login state lives in
-    /// Bloom.Properties.Settings.Default -- the developer's actual persisted configuration -- so we
-    /// save the original values in Setup and restore them in TearDown.
+    /// is not signed in to BloomLibrary.org (BL-16692). The front end asks for this as the
+    /// collection tab mounts and reports back once it has shown the dialog; see
+    /// AccountApi.HandleSignInInvitationNeeded.
     /// </summary>
     [TestFixture]
     public class AccountApiTests
     {
-        private string _origWebUserId;
-        private string _origLastLoginSessionToken;
-        private string _origLastLoginUserId;
-        private string _origLastLoginDest;
-
-        [SetUp]
-        public void Setup()
+        /// <summary>
+        /// A client that reports being signed in without touching the real login settings (which
+        /// live in the developer's persisted configuration). The session token is all
+        /// BloomLibraryBookApiClient.LoggedIn looks at.
+        /// </summary>
+        private class SignedInClient : BloomLibraryBookApiClient
         {
-            _origWebUserId = Settings.Default.WebUserId;
-            _origLastLoginSessionToken = Settings.Default.LastLoginSessionToken;
-            _origLastLoginUserId = Settings.Default.LastLoginUserId;
-            _origLastLoginDest = Settings.Default.LastLoginDest;
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            Settings.Default.WebUserId = _origWebUserId;
-            Settings.Default.LastLoginSessionToken = _origLastLoginSessionToken;
-            Settings.Default.LastLoginUserId = _origLastLoginUserId;
-            Settings.Default.LastLoginDest = _origLastLoginDest;
-            Settings.Default.Save();
+            public SignedInClient()
+            {
+                _authenticationToken = "someSessionToken";
+            }
         }
 
         /// <summary>
         /// Makes an AccountApi whose collection is (or is not) a Team Collection and whose user is
-        /// (or is not) signed in. The login data, when wanted, is set BEFORE we construct the API so
-        /// that no LoginDataChanged broadcast goes to the websocket server, which is not listening.
+        /// (or is not) signed in.
         /// </summary>
         private AccountApi MakeApi(bool isTeamCollection, bool loggedIn)
         {
-            var client = new BloomLibraryBookApiClient();
-            if (loggedIn)
-                client.SetLoginData(
-                    "someone@example.com",
-                    "someUserId",
-                    "someSessionToken",
-                    "production"
-                );
+            var client = loggedIn ? new SignedInClient() : new BloomLibraryBookApiClient();
             Assert.That(
                 client.LoggedIn,
                 Is.EqualTo(loggedIn),
-                "test setup failed to set login state"
+                "test setup failed to set the login state"
             );
 
             var tcManager = new Mock<ITeamCollectionManager>();
@@ -84,36 +61,41 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
-        public void TakeSignInInvitation_TeamCollectionAndNotSignedIn_OffersItOnlyOnce()
+        public void SignInInvitationNeeded_TeamCollectionAndNotSignedIn_IsTrueUntilTheDialogIsShown()
         {
             var api = MakeApi(isTeamCollection: true, loggedIn: false);
 
+            Assert.That(api.SignInInvitationNeeded, Is.True, "should invite the user");
             Assert.That(
-                api.TakeSignInInvitation(),
+                api.SignInInvitationNeeded,
                 Is.True,
-                "should invite the user the first time"
+                "merely asking must not use up the invitation: the page could reload before the "
+                    + "dialog appears"
             );
+
+            api.NoteSignInInvitationShown();
+
             Assert.That(
-                api.TakeSignInInvitation(),
+                api.SignInInvitationNeeded,
                 Is.False,
-                "asking again in the same run should not invite the user again"
+                "once the user has seen it, this run is done inviting"
             );
         }
 
         [Test]
-        public void TakeSignInInvitation_NotATeamCollection_DoesNotOfferIt()
+        public void SignInInvitationNeeded_NotATeamCollection_IsFalse()
         {
             var api = MakeApi(isTeamCollection: false, loggedIn: false);
 
-            Assert.That(api.TakeSignInInvitation(), Is.False);
+            Assert.That(api.SignInInvitationNeeded, Is.False);
         }
 
         [Test]
-        public void TakeSignInInvitation_AlreadySignedIn_DoesNotOfferIt()
+        public void SignInInvitationNeeded_AlreadySignedIn_IsFalse()
         {
             var api = MakeApi(isTeamCollection: true, loggedIn: true);
 
-            Assert.That(api.TakeSignInInvitation(), Is.False);
+            Assert.That(api.SignInInvitationNeeded, Is.False);
         }
     }
 }
