@@ -1,8 +1,11 @@
 ﻿using System.IO;
+using System.Linq;
+using System.Text;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SafeXml;
+using Bloom.web;
 using Moq;
 using NUnit.Framework;
 using SIL.IO;
@@ -283,6 +286,104 @@ namespace BloomTests.web
                     }
                 );
             return storage;
+        }
+    }
+
+    /// <summary>
+    /// Tests for ReadersApi.ShouldWriteLanguageDataFile. Deliberately a separate fixture
+    /// from ReadersApiTests: these exercise a pure static method and need no BloomServer,
+    /// and standing up (and tearing down) a real HttpListener per test for no reason is
+    /// both wasteful and a source of teardown races in the shared test host.
+    /// </summary>
+    [TestFixture]
+    public class ReadersApiLanguageDataFileTests
+    {
+        /// <summary>
+        /// BL-16209 (found by Devin reviewing that fix): the file is written with Encoding.UTF8,
+        /// which emits a byte-order mark, but this check used to compare against
+        /// Encoding.UTF8.GetBytes(newContent), which has none. The lengths always differed by
+        /// those 3 bytes, so it always said "write", and the whole point of the check — not
+        /// touching the file, and so not setting off a Team Collection sync — never worked.
+        /// </summary>
+        [Test]
+        public void ShouldWriteLanguageDataFile_ContentUnchangedAndFileHasBom_ReturnsFalse()
+        {
+            using (var tempFile = new TempFile())
+            {
+                var content = "{\"LangName\":\"Kaqchikel\",\"LangID\":\"cak\"}";
+                // Exactly how SaveSynphonyLanguageData writes it: UTF8 *with* a BOM.
+                RobustFile.WriteAllText(tempFile.Path, content, Encoding.UTF8);
+
+                // Sanity check the test data: the file really does start with a BOM, which is
+                // the whole reason the old byte comparison could never match.
+                var bytes = RobustFile.ReadAllBytes(tempFile.Path);
+                Assert.That(
+                    bytes.Take(3),
+                    Is.EqualTo(Encoding.UTF8.GetPreamble()),
+                    "Test setup should have written a byte-order mark"
+                );
+                Assert.That(
+                    bytes.Length,
+                    Is.EqualTo(Encoding.UTF8.GetBytes(content).Length + 3),
+                    "The on-disk length should differ from GetBytes() by exactly the BOM"
+                );
+
+                Assert.That(
+                    ReadersApi.ShouldWriteLanguageDataFile(tempFile.Path, content),
+                    Is.False,
+                    "Identical content should not need rewriting"
+                );
+            }
+        }
+
+        [Test]
+        public void ShouldWriteLanguageDataFile_ContentUnchangedButFileHasNoBom_ReturnsFalse()
+        {
+            using (var tempFile = new TempFile())
+            {
+                var content = "{\"LangName\":\"Kaqchikel\",\"LangID\":\"cak\"}";
+                // A file an older Bloom could have left behind, with no BOM.
+                RobustFile.WriteAllText(tempFile.Path, content, new UTF8Encoding(false));
+                Assert.That(
+                    RobustFile.ReadAllBytes(tempFile.Path).Take(3),
+                    Is.Not.EqualTo(Encoding.UTF8.GetPreamble()),
+                    "Test setup should have written no byte-order mark"
+                );
+
+                Assert.That(
+                    ReadersApi.ShouldWriteLanguageDataFile(tempFile.Path, content),
+                    Is.False,
+                    "We should not rewrite an unchanged file just to add a BOM"
+                );
+            }
+        }
+
+        [Test]
+        public void ShouldWriteLanguageDataFile_ContentDiffers_ReturnsTrue()
+        {
+            using (var tempFile = new TempFile())
+            {
+                RobustFile.WriteAllText(
+                    tempFile.Path,
+                    "{\"LangName\":\"Kaqchikel\"}",
+                    Encoding.UTF8
+                );
+                Assert.That(
+                    ReadersApi.ShouldWriteLanguageDataFile(
+                        tempFile.Path,
+                        "{\"LangName\":\"Q'eqchi'\"}"
+                    ),
+                    Is.True
+                );
+            }
+        }
+
+        [Test]
+        public void ShouldWriteLanguageDataFile_FileDoesNotExist_ReturnsTrue()
+        {
+            var missing = Path.Combine(Path.GetTempPath(), "BL16209-no-such-file.json");
+            Assert.That(RobustFile.Exists(missing), Is.False, "Test precondition");
+            Assert.That(ReadersApi.ShouldWriteLanguageDataFile(missing, "{}"), Is.True);
         }
     }
 }
