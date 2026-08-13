@@ -49,6 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
 // and then it will bring this along, with disastrous results.
 export interface IPageFrameExports {
     requestPageContent(): void;
+    // Gather the current page's content and have C# save it, without the page being reloaded
+    // afterwards. Unlike requestPageContent(), this is initiated from the Javascript side.
+    savePageWithoutReloading(): Promise<void>;
+    // The combined "body <SPLIT-DATA> userCss" string that a save needs, gathered without
+    // disturbing the live page.
+    getPageContentForSave(): string;
     pageUnloading(): void;
     copySelection(): void;
     cutSelection(): void;
@@ -110,7 +116,9 @@ export interface IPageFrameExports {
 // For example, workspaceBundle.getEditablePageBundleExports().requestPageContent() can be called.
 import {
     getBodyContentForSavePage,
+    getPageContentForSave,
     requestPageContent,
+    savePageWithoutReloading,
     captureContentForExternalProcessing,
     userStylesheetContent,
     pageUnloading,
@@ -132,7 +140,9 @@ import {
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 export {
     getBodyContentForSavePage,
+    getPageContentForSave,
     requestPageContent,
+    savePageWithoutReloading,
     captureContentForExternalProcessing,
     userStylesheetContent,
     pageUnloading,
@@ -390,8 +400,10 @@ export function SayHello() {
 // NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
 interface EditablePageBundleApi {
     requestPageContent: typeof requestPageContent;
+    savePageWithoutReloading: typeof savePageWithoutReloading;
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
     getBodyContentForSavePage: typeof getBodyContentForSavePage;
+    getPageContentForSave: typeof getPageContentForSave;
     userStylesheetContent: typeof userStylesheetContent;
     pageUnloading: typeof pageUnloading;
     copySelection: typeof copySelection;
@@ -468,8 +480,10 @@ declare global {
 
 window.editablePageBundle = {
     requestPageContent,
+    savePageWithoutReloading,
     captureContentForExternalProcessing,
     getBodyContentForSavePage,
+    getPageContentForSave,
     userStylesheetContent,
     pageUnloading,
     copySelection,

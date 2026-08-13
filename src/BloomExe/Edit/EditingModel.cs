@@ -130,16 +130,7 @@ namespace Bloom.Edit
                 (string pageId, string pageContentData) =>
                     UpdateBookDomFromBrowserPageContent(pageContentData),
                 // saveBook
-                () =>
-                {
-                    if (_modifiedPageElement == null)
-                        return;
-
-                    CurrentBook.SavePageToDisk(_modifiedPageElement, _nextSaveMustBeFull);
-                    _nextSaveMustBeFull = false;
-                    _pageHasUnsavedDataDerivedChange = false;
-                    PageTemplatesApi.LastSaveTime = DateTime.Now;
-                },
+                SaveBookToDisk,
                 // hidePage
                 () =>
                 {
@@ -1708,6 +1699,78 @@ namespace Bloom.Edit
         public void ReceivePageContent(string pageContentData)
         {
             _stateMachine.ToSavedAndStripped(pageContentData);
+        }
+
+        /// <summary>
+        /// Write out whatever UpdateBookDomFromBrowserPageContent() put into the book DOM: either just
+        /// the one page that changed, or the whole book if something shared changed.
+        /// This is the state machine's saveBook action, and also the second half of SavePageInPlace,
+        /// so both routes make exactly the same decisions.
+        /// </summary>
+        private void SaveBookToDisk()
+        {
+            if (_modifiedPageElement == null)
+                return;
+
+            CurrentBook.SavePageToDisk(_modifiedPageElement, _nextSaveMustBeFull);
+            _nextSaveMustBeFull = false;
+            _pageHasUnsavedDataDerivedChange = false;
+            PageTemplatesApi.LastSaveTime = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Save the current page from content the browser has ALREADY gathered — the combined
+        /// "body &lt;SPLIT-DATA&gt; userCss" string that getPageContentForSave() produces — and leave the
+        /// browser showing that same page, still editable.
+        ///
+        /// This is the Javascript-initiated counterpart of SaveThen(). SaveThen has to ask the browser
+        /// for the page content and wait for it to arrive through an API, and it always finishes by
+        /// navigating, because the way it made the browser gather that content stripped the live page
+        /// of the markup that makes it editable (BL-13502). The browser now gathers the content from a
+        /// clone without touching the live page, so when Javascript hands us the content we can do the
+        /// entire save here and now and simply return.
+        ///
+        /// It deliberately goes through the same two steps as the SaveThen path — first
+        /// UpdateBookDomFromBrowserPageContent(), then SaveBookToDisk() — so the same logic decides
+        /// whether the change is confined to this page or has to be propagated across the book
+        /// (see NeedToDoFullSave and Book.UpdateDomFromEditedPage).
+        ///
+        /// Returns false, having done nothing, if we are not in a position to save. That is a normal
+        /// outcome, not an error: the user may have started changing pages, or an external process may
+        /// have replaced the book on disk.
+        /// </summary>
+        public bool SavePageInPlace(string pageContentData)
+        {
+            if (CannotSavePage() || !_havePageToSave)
+                return false;
+            // An external process has overwritten the book on disk and we are about to discard this
+            // page in favor of what it wrote; saving now would clobber that. (Same reasoning as
+            // EditingStateMachine.DiscardInFlightSave, which covers the SaveThen path.)
+            if (_reloadFromDiskOnLeavingEditTab)
+                return false;
+
+            if (
+                !_stateMachine.ToSavedInPlace(
+                    pageContentData,
+                    e =>
+                        ErrorReport.NotifyUserOfProblem(
+                            e,
+                            LocalizationManager.GetString(
+                                "Errors.CouldNotSavePage",
+                                "Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!"
+                            )
+                        )
+                )
+            )
+                return false;
+
+            // What we just saved is the new baseline for deciding whether the NEXT save has changed
+            // anything the rest of the book shares. (For the SaveThen path, the navigation that
+            // follows a save does this, in EditingView.StartNavigationToEditPage.)
+            SaveStateForFullSaveDecision();
+            // Likewise, the page list would normally be refreshed as part of navigating.
+            _view?.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+            return true;
         }
 
         private SafeXmlElement _modifiedPageElement;

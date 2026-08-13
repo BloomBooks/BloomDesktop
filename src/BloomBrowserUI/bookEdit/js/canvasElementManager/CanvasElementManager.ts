@@ -2355,6 +2355,54 @@ export class CanvasElementManager {
         );
     }
 
+    // The save-a-page-without-reloading counterpart of turnOffCanvasElementEditing(): put into
+    // 'cloneOfBody' -- a detached copy of the live document.body -- everything that turning canvas
+    // element editing off would have put into the page, and leave the live page still being edited.
+    //
+    // Only three of the things turnOffCanvasElementEditing() does affect what gets saved:
+    //  * Comical converts its editing <canvas> into the <svg> that draws the bubble tails without
+    //    Javascript. exportSvgToCopiesOfParents does that into the copy while leaving the live
+    //    paper projects alone (comicaljs 0.4.1; before that there was only the destructive
+    //    stopEditing()).
+    //  * The current canvas element positions are recorded as the alternate for the current
+    //    language. That is pure attribute manipulation -- it reads style and data-bubble and
+    //    writes data-bubble-alternate -- so it works on a detached clone, which has no layout.
+    //  * The bloom-focusedCanvasElement class comes off. Nothing else strips it: it is not a
+    //    bloom-ui element, so the C# save pipeline would keep it.
+    // The rest is live-only: the control frame is a bloom-ui element (so C# discards it anyway),
+    // EnableAllImageEditing only adds bloom-ui buttons back to the live page, and the listener
+    // removal has no bearing on the HTML.
+    public prepareCloneOfBodyForSave(cloneOfBody: HTMLElement): void {
+        const liveBloomCanvases = this.getAllBloomCanvasesOnPage();
+        const clonedBloomCanvases = Array.from(
+            cloneOfBody.getElementsByClassName(kBloomCanvasClass),
+        ) as HTMLElement[];
+        if (liveBloomCanvases.length !== clonedBloomCanvases.length) {
+            throw new Error(
+                `prepareCloneOfBodyForSave(): the clone has ${clonedBloomCanvases.length} bloom-canvases but the live page has ${liveBloomCanvases.length}. The clone must be an untouched copy of the live page.`,
+            );
+        }
+
+        Comical.exportSvgToCopiesOfParents(
+            liveBloomCanvases.map((liveBloomCanvas, index) => [
+                liveBloomCanvas,
+                clonedBloomCanvases[index],
+            ]),
+        );
+
+        clonedBloomCanvases.forEach((clonedBloomCanvas) =>
+            this.saveCurrentCanvasElementStateAsCurrentLangAlternate(
+                clonedBloomCanvas,
+            ),
+        );
+
+        Array.from(
+            cloneOfBody.getElementsByClassName("bloom-focusedCanvasElement"),
+        ).forEach((element) =>
+            element.classList.remove("bloom-focusedCanvasElement"),
+        );
+    }
+
     public cleanUp(): void {
         // We used to close a WebSocket here; saving the hook in case we need it someday.
     }

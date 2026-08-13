@@ -5057,12 +5057,16 @@ export default class AudioRecording implements IAudioRecorder {
     private nodesToRestoreAfterPlayEnded = new Map<string, string>();
 
     /**
-     * This function will undo in BloomDesktop the modifications made by fixHighlighting()
+     * Put back, under 'pageOrClone', the text that fixHighlighting() replaced with its temporary
+     * highlight-segment markup. The caller chooses what to apply it to: the live page (when the
+     * page is going away, via revertFixHighlighting) or a clone of it (when we are saving the page
+     * the user is still working on).
+     * Purely DOM: it does not clear nodesToRestoreAfterPlayEnded, because the live page may still
+     * have the modifications and need undoing again for the next save. See ITool.removeToolMarkup.
      */
-    public revertFixHighlighting() {
+    public undoHighlightingFixes(pageOrClone: ParentNode) {
         this.nodesToRestoreAfterPlayEnded.forEach((htmlToRestore, id) => {
-            const pageDocBody = this.getPageDocBody();
-            const element = pageDocBody?.querySelector(`#${id}`);
+            const element = pageOrClone.querySelector(`#${id}`);
             if (element) {
                 element.innerHTML = htmlToRestore;
                 element.classList.remove(kDisableHighlightClass);
@@ -5070,6 +5074,16 @@ export default class AudioRecording implements IAudioRecorder {
                 console.warn("Can't find element " + id);
             }
         });
+    }
+
+    /**
+     * This function will undo in BloomDesktop the modifications made by fixHighlighting()
+     */
+    public revertFixHighlighting() {
+        const pageDocBody = this.getPageDocBody();
+        if (pageDocBody) {
+            this.undoHighlightingFixes(pageDocBody);
+        }
         this.nodesToRestoreAfterPlayEnded.clear();
         this.refreshAudioTextHighlights();
     }

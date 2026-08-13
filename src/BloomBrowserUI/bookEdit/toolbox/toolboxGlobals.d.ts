@@ -26,6 +26,7 @@ declare global {
         scheduleMarkupUpdateAfterPaste: unknown;
         applyToolboxStateToPage: unknown;
         removeToolboxMarkup: unknown;
+        removeToolMarkupFromPageClone: unknown;
         showSetupDialog: unknown;
         initializeReaderSetupDialog: unknown;
         closeSetupDialog: unknown;

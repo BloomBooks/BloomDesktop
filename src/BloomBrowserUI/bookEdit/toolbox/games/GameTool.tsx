@@ -1834,11 +1834,12 @@ export class GameTool extends ToolboxToolReactAdaptor {
         }
     }
 
-    public detachFromPage() {
-        const page = GameTool.getBloomPage();
-        if (page) {
-            undoPrepareActivity(page);
-        }
+    // While the user is on the Play tab, prepareActivity() has put the page into play mode; that
+    // markup must not be saved. undoPrepareActivity() is pure DOM surgery on the page element it is
+    // given, so the save path can run it on a clone and leave the live page in play mode, while
+    // detachFromPage (inherited) runs the very same thing on the live page.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        undoPrepareActivity(pageOrClone);
     }
 }
 export function playSound(

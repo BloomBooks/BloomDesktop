@@ -373,6 +373,66 @@ public class EditingStateMachine
     }
 
     /// <summary>
+    /// Save the current page from content the browser gathered on its own initiative, and stay in
+    /// Editing.
+    ///
+    /// This is the transition that exists because the browser can now produce the page content
+    /// WITHOUT wrecking the live page (it cleans a clone: see getPageContentForSave() in
+    /// bloomEditing.ts). So, unlike the ToSavePending/ToSavedAndStripped pair, there is no stripped
+    /// page to recover from, nothing to wait for, and no navigation to do afterwards: the user is
+    /// still editing the same page when we return.
+    ///
+    /// Only legal while Editing. In every other state either there is nothing to save (NoPage), or
+    /// a save/navigation is already under way and this one would race with it; we return false so
+    /// the caller can decide what to do about that.
+    /// </summary>
+    public bool ToSavedInPlace(string pageContentData, Action<Exception> reportFailure)
+    {
+        try
+        {
+            switch (_currentState)
+            {
+                case State.Editing:
+                    LogTransition("saved in place", _pageId);
+                    if (pageContentData.StartsWith("ERROR:"))
+                        throw new ApplicationException(pageContentData);
+                    _updateBookWithPageContents(_pageId, pageContentData);
+                    _pageIdWeFailedToSave = null;
+                    _saveBook();
+                    return true;
+                case State.NoPage:
+                case State.Navigating:
+                case State.SavePending:
+                case State.SavedAndStripped:
+                    LogIgnore("save in place");
+                    return false;
+                default:
+                    throw new InvalidOperationException(
+                        "Unknown state In ToSavedInPlace(): " + _currentState.ToString()
+                    );
+            }
+        }
+        catch (Exception e)
+        {
+            // Unlike the ToSavedAndStripped path we don't have to navigate to get out of an
+            // invalid state: we never left Editing, and the browser still has the intact page. So
+            // all we owe the user is the report, and the caller a 'false'.
+            // As there, we only report once per page, so that a page that fails every time doesn't
+            // lock the user out of Bloom.
+            if (_pageId != _pageIdWeFailedToSave)
+            {
+                _pageIdWeFailedToSave = _pageId;
+                reportFailure(e);
+            }
+            return false;
+        }
+        finally
+        {
+            UpdateUI();
+        }
+    }
+
+    /// <summary>
     /// Source: API call providing content of current page will request this after saving and before executing pending action
     /// (e.g. changing pages)
     /// </summary>

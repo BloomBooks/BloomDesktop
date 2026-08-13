@@ -53,6 +53,22 @@ namespace Bloom.web.controllers
                 true,
                 true // review.
             );
+            // Save the current page from content the browser gathered on its own initiative, without
+            // reloading the page. Unlike editView/pageContent (which is the browser answering a save
+            // that C# started, and always ends in a navigation), this lets Javascript save whenever it
+            // needs the book on disk to be current and then simply carry on editing the same page.
+            // The reply is not sent until the save is finished, so Javascript can await it.
+            apiHandler.RegisterEndpointHandler(
+                "editView/savePageInPlace",
+                request =>
+                {
+                    var pageContentData = request.RequiredPostString(unescape: false);
+                    View.Model.SavePageInPlace(pageContentData);
+                    request.PostSucceeded();
+                },
+                true, // updates the book DOM, writes files, and refreshes the page list: UI thread
+                true
+            );
             apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
             apiHandler.RegisterEndpointHandler(
                 "editView/isTextSelected",
