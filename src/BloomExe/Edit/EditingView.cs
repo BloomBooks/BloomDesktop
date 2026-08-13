@@ -548,9 +548,7 @@ namespace Bloom.Edit
             // those one more decode is exactly what finds the file. The two are indistinguishable
             // by inspection, so let the disk decide: GetFullyDecodedPath keeps the name it is
             // given when that file exists, and only decodes further when that is what finds it.
-            fileName = UrlPathString
-                .CreateFromUnencodedString(fileName, strictlyTreatAsUnencoded: true)
-                .PathOnly.NotEncoded;
+            fileName = UrlPathString.CreateFromUnencodedString(fileName).PathOnly.NotEncoded;
             UrlPathString.GetFullyDecodedPath(_model.CurrentBook.FolderPath, ref fileName);
 
             // keep a reference to the fileName rather the image to avoid dispose issues
@@ -1041,9 +1039,7 @@ namespace Bloom.Edit
                 imageId = imageId,
                 // destName is the name of the file we just copied into the book folder, so it is
                 // certainly not URL-encoded; see the same call in PageEditingModel.ChangePicture.
-                src = UrlPathString
-                    .CreateFromUnencodedString(destName, strictlyTreatAsUnencoded: true)
-                    .UrlEncoded,
+                src = UrlPathString.CreateFromUnencodedString(destName).UrlEncoded,
                 // Enhance: can we provide any of this for a GIF?
                 copyright = "",
                 license = "",

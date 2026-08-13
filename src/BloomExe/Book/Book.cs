@@ -4106,13 +4106,8 @@ namespace Bloom.Book
                     source.SetAttribute(
                         "src",
                         "video/"
-                            // strictlyTreatAsUnencoded: this is the name of the file we just
-                            // wrote, so a '%' in it is literal, not an escape (BL-16669).
                             + UrlPathString
-                                .CreateFromUnencodedString(
-                                    Path.GetFileName(newVideoPath),
-                                    strictlyTreatAsUnencoded: true
-                                )
+                                .CreateFromUnencodedString(Path.GetFileName(newVideoPath))
                                 .UrlEncoded
                             + (string.IsNullOrEmpty(timings) ? "" : "#t=" + timings)
                     );
@@ -4664,12 +4659,7 @@ namespace Bloom.Book
 
                         HtmlDom.SetImageElementUrl(
                             img,
-                            // strictlyTreatAsUnencoded: this is built from a real folder name and
-                            // an already-decoded src, so a '%' in it is literal (BL-16669).
-                            UrlPathString.CreateFromUnencodedString(
-                                pathRelativeToFolioFolder,
-                                strictlyTreatAsUnencoded: true
-                            )
+                            UrlPathString.CreateFromUnencodedString(pathRelativeToFolioFolder)
                         );
                     }
                 }

@@ -34,9 +34,7 @@ namespace Bloom
             pathToProblemFile = pathToProblemFile.Replace("\\", "/");
             var part2 = pattern.Replace(
                 template2,
-                // strictlyTreatAsUnencoded: this is a real path, so a '%' in it is a literal
-                // '%' and must not be read as the start of an escape (BL-16669).
-                $"<a href='/bloom/api/teamCollection/reportBadZip?file={UrlPathString.CreateFromUnencodedString(pathToProblemFile, strictlyTreatAsUnencoded: true).UrlEncoded}'>$1</a>"
+                $"<a href='/bloom/api/teamCollection/reportBadZip?file={UrlPathString.CreateFromUnencodedString(pathToProblemFile).UrlEncoded}'>$1</a>"
             );
             return part2;
         }

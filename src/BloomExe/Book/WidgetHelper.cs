@@ -78,11 +78,8 @@ namespace Bloom.Book
                     );
             }
 
-            // strictlyTreatAsUnencoded: these are real folder and file names, so a '%' in one of
-            // them is a literal '%', not the start of an escape (BL-16669).
             return UrlPathString.CreateFromUnencodedString(
-                $"activities/{newWidgetFolderName}/{rootFileName}",
-                strictlyTreatAsUnencoded: true
+                $"activities/{newWidgetFolderName}/{rootFileName}"
             );
         }
 

@@ -11,6 +11,11 @@ namespace Bloom
     /// It does this by requiring users to specify what they are putting in/getting out, and it keeps track.
     /// </summary>
     /// <remarks>
+    /// So: pick the Create method that matches what you KNOW you are holding, then the property
+    /// that matches what you need. CreateFromPossiblyEncodedString exists for the few callers that
+    /// genuinely cannot know, and should be a last resort -- it guesses, and its guess is wrong
+    /// for a file name containing a '%' followed by two hex digits.
+    ///
     /// ENCODING CONVENTIONS FOR FILE NAMES STORED IN A BOOK
     ///
     /// Search for "encoding conventions" to find the places that depend on this.
@@ -71,32 +76,41 @@ namespace Bloom
             return new UrlPathString(HttpUtility.UrlDecode(encoded));
         }
 
-        /// <param name="strictlyTreatAsUnencoded">Pass true when you know the string really is
-        /// unencoded -- typically because it is a file name you just read from (or wrote to) the
-        /// file system. Otherwise the guessing described below applies, and a genuine file name
-        /// that happens to contain something shaped like an escape ("photo%41.jpg") is silently
-        /// decoded into a different name ("photoA.jpg"). See BL-16669.</param>
-        public static UrlPathString CreateFromUnencodedString(
-            string unencoded,
-            bool strictlyTreatAsUnencoded = false
-        )
+        /// <summary>
+        /// For a string you know is NOT URL-encoded -- typically a file name you just read from,
+        /// or wrote to, the file system. The string is taken entirely at its word: a '%' in it is
+        /// a literal '%'.
+        /// </summary>
+        public static UrlPathString CreateFromUnencodedString(string unencoded)
         {
-            unencoded = unencoded.Trim();
+            return new UrlPathString(unencoded.Trim());
+        }
 
-            // During the refactoring that lead to this class, one code path
-            // essentially didn't trust that the string was already decoded.
-            // Assuming that was done for a good reason, that behavior is
-            // formalized here. It would seem to be a small risk (makes it
-            // impossible to have, say "%20" in your actual file name).
-            // However, a '+' in the name is much more likely, and so blindly
-            // re-encoding is a problem. So the algorithm is that if the
-            // symbol is ambiguous (like '+'), assume it is unencoded (because that's
-            // the name of the method) but if it's obviously encoded, then
-            // decode it.
-
-            if (!strictlyTreatAsUnencoded && Regex.IsMatch(unencoded, "%[A-Fa-f0-9]{2}"))
-                unencoded = HttpUtility.UrlDecode(unencoded.Replace("+", "%2B")); // preserve + as + (as above)
-            return new UrlPathString(unencoded);
+        /// <summary>
+        /// For the rare string whose encoding you genuinely cannot know: if it contains something
+        /// shaped like an escape ("%41"), assume it is encoded and decode it; otherwise take it as
+        /// it stands.
+        /// </summary>
+        /// <remarks>
+        /// PREFER CreateFromUnencodedString OR CreateFromUrlEncodedString. Nearly every caller
+        /// does know which it holds, and saying so is both clearer and safer. This method guesses,
+        /// and its guess is wrong for any genuine file name that happens to contain a '%' followed
+        /// by two hex digits: "photo%41.jpg" quietly becomes "photoA.jpg", which was BL-16669.
+        ///
+        /// It exists because a few callers are handed a string that has already been through
+        /// ToLocalhost(), and others sit behind a public entry point that different callers feed
+        /// differently. For those, guessing beats the alternatives. Each such call site says why.
+        ///
+        /// Note the asymmetry with '+', which is why the guess can't simply be "decode": a '+' is
+        /// far more likely to be a real character in a file name than an encoded space, so it is
+        /// always treated as literal (BL-3259), even when the rest of the string is decoded.
+        /// </remarks>
+        public static UrlPathString CreateFromPossiblyEncodedString(string possiblyEncoded)
+        {
+            var s = possiblyEncoded.Trim();
+            if (Regex.IsMatch(s, "%[A-Fa-f0-9]{2}"))
+                s = HttpUtility.UrlDecode(s.Replace("+", "%2B")); // preserve + as + (as above)
+            return new UrlPathString(s);
         }
 
         /// <summary>
@@ -155,10 +169,9 @@ namespace Bloom
         {
             get
             {
-                //the 'true' here is to prevent us from getting a string with the instruction
-                //to be strict about assuming it is unencoded, and then accidentally re-unencoding
-                //it against that previous instruction, when we spil out the paths.
-                return CreateFromUnencodedString(_notEncoded.Split('?')[0], true);
+                // _notEncoded is by definition already decoded, so this is a straight split; the
+                // point of using the unencoded factory is that we must not decode it again.
+                return CreateFromUnencodedString(_notEncoded.Split('?')[0]);
             }
         }
 
@@ -169,6 +182,11 @@ namespace Bloom
         {
             get
             {
+                // As with PathOnly: we are splitting a string that is already decoded, so it must
+                // not be decoded again. (Before BL-16669 this one went through the guessing path
+                // while PathOnly did not, so a query that happened to contain something shaped
+                // like an escape was decoded a second time. That looks like an oversight rather
+                // than intent -- both are slices of the same already-decoded string.)
                 var startQuery = _notEncoded.IndexOf("?");
                 if (startQuery < 0)
                     return CreateFromUnencodedString("");

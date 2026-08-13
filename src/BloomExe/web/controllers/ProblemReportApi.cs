@@ -80,13 +80,8 @@ namespace Bloom.web.controllers
                 }
                 else
                 {
-                    // All we want here is the HTML encoding. strictlyTreatAsUnencoded because a
-                    // heading is prose, never a url: URL-decoding it could only corrupt it, e.g.
-                    // turning a heading that names "photo%41.jpg" into one naming "photoA.jpg".
-                    // (BL-16669)
-                    HeadingHtml = UrlPathString
-                        .CreateFromUnencodedString(heading, strictlyTreatAsUnencoded: true)
-                        .HtmlXmlEncoded;
+                    // All we want here is the HTML encoding; a heading is prose, never a url.
+                    HeadingHtml = UrlPathString.CreateFromUnencodedString(heading).HtmlXmlEncoded;
                 }
 
                 this.DetailedMessage = detailMessage;

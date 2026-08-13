@@ -1197,13 +1197,7 @@ namespace Bloom.Publish
                     RewriteReference = canonicalRelativePath =>
                         HtmlDom.SetImageElementUrl(
                             imageElement,
-                            // strictlyTreatAsUnencoded: canonicalRelativePath is a real relative
-                            // path (it came from PathOnly.NotEncoded and we have checked the file
-                            // exists), so a '%' in it is literal (BL-16669).
-                            UrlPathString.CreateFromUnencodedString(
-                                canonicalRelativePath,
-                                strictlyTreatAsUnencoded: true
-                            )
+                            UrlPathString.CreateFromUnencodedString(canonicalRelativePath)
                         ),
                 };
             }
@@ -1272,11 +1266,7 @@ namespace Bloom.Publish
                     RewriteReference = canonicalRelativePath =>
                         HtmlDom.SetVideoElementUrl(
                             videoContainer,
-                            // strictlyTreatAsUnencoded: see the image case above (BL-16669).
-                            UrlPathString.CreateFromUnencodedString(
-                                canonicalRelativePath,
-                                strictlyTreatAsUnencoded: true
-                            )
+                            UrlPathString.CreateFromUnencodedString(canonicalRelativePath)
                         ),
                 };
             }
@@ -1386,12 +1376,7 @@ namespace Bloom.Publish
                     element.SetAttribute(
                         attributeName,
                         isUrlEncoded
-                            ? UrlPathString
-                                .CreateFromUnencodedString(
-                                    newFileName,
-                                    strictlyTreatAsUnencoded: true
-                                )
-                                .UrlEncoded
+                            ? UrlPathString.CreateFromUnencodedString(newFileName).UrlEncoded
                             : newFileName
                     );
                 },

@@ -505,13 +505,8 @@ namespace Bloom.TeamCollection
             var folderTC = _tcManager.CurrentCollection as FolderTeamCollection;
             if (folderTC != null && bookFolderName != null)
             {
-                // strictlyTreatAsUnencoded: this is a real path, so a '%' in it is a literal '%',
-                // not the start of an escape (BL-16669).
                 clickHereArg = UrlPathString
-                    .CreateFromUnencodedString(
-                        folderTC.GetPathToBookFileInRepo(bookFolderName),
-                        strictlyTreatAsUnencoded: true
-                    )
+                    .CreateFromUnencodedString(folderTC.GetPathToBookFileInRepo(bookFolderName))
                     .UrlEncoded;
             }
 

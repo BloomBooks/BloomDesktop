@@ -29,9 +29,7 @@ namespace BloomTests.Edit
                 "test setup: expected every img to be in the page"
             );
 
-            var match = UrlPathString
-                .CreateFromUnencodedString(wantedFileName, strictlyTreatAsUnencoded: true)
-                .UrlEncoded;
+            var match = UrlPathString.CreateFromUnencodedString(wantedFileName).UrlEncoded;
             var found = doc
                 .DocumentElement.SafeSelectNodes(EditingModel.MakeImgWithSrcXPath(match))
                 .Cast<SafeXmlElement>()

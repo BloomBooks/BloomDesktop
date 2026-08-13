@@ -65,9 +65,7 @@ namespace Bloom.Edit
                 // certainly not URL-encoded. We have to say so: otherwise a real file name that
                 // merely looks encoded ("photo%41.jpg") gets "helpfully" decoded to "photoA.jpg",
                 // and the src we hand the browser points at a file that doesn't exist (BL-16669).
-                src = UrlPathString
-                    .CreateFromUnencodedString(imageFileName, strictlyTreatAsUnencoded: true)
-                    .UrlEncoded,
+                src = UrlPathString.CreateFromUnencodedString(imageFileName).UrlEncoded,
                 copyright = imageInfo.Metadata.CopyrightNotice ?? "",
                 creator = imageInfo.Metadata.Creator ?? "",
                 license = imageInfo.Metadata.License?.ToString() ?? "",

@@ -4640,11 +4640,8 @@ namespace Bloom.Book
                     suffix++;
                 }
                 RobustIO.MoveDirectory(originalFolderPath, truncatedFolderPath);
-                // strictlyTreatAsUnencoded: these are real folder and file names, so a '%' in one
-                // of them is a literal '%', not the start of an escape (BL-16669).
                 var newEncodedSrc = UrlPathString.CreateFromUnencodedString(
-                    $"activities/{Path.GetFileName(truncatedFolderPath)}/{originalFileName}",
-                    strictlyTreatAsUnencoded: true
+                    $"activities/{Path.GetFileName(truncatedFolderPath)}/{originalFileName}"
                 );
                 var newRawSrc = newEncodedSrc.UrlEncodedForHttpPath;
                 iframe.SetAttribute("src", newRawSrc);

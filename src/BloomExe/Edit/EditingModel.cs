@@ -1204,13 +1204,9 @@ namespace Bloom.Edit
 
         public void UpdateMetaData(string url)
         {
-            // url is a file name (from EditingView._fileNameOfImageBeingModified), which we
-            // re-encode here to match what is in the src attribute. strictlyTreatAsUnencoded so
-            // that a name like "photo%41.jpg" doesn't get decoded to "photoA.jpg" and then fail
-            // to match the img we are looking for. (BL-16669)
-            var match = UrlPathString
-                .CreateFromUnencodedString(url, strictlyTreatAsUnencoded: true)
-                .UrlEncoded;
+            // url is a file name (EditingView._fileNameOfImageBeingModified), which we re-encode
+            // here so it matches what is in the src attribute.
+            var match = UrlPathString.CreateFromUnencodedString(url).UrlEncoded;
             var imgElt = _pageSelection
                 .CurrentSelection.GetDivNodeForThisPage()
                 .SafeSelectNodes(MakeImgWithSrcXPath(match))
@@ -1486,7 +1482,9 @@ namespace Bloom.Edit
                 false,
                 InMemoryHtmlFileSource.Pagelist
             );
-            var urlPath = UrlPathString.CreateFromUnencodedString(url);
+            // PossiblyEncoded because CreateSimulatedFile returns a localhost url whose path
+            // components are already escaped; see the note on CreateFromPossiblyEncodedString.
+            var urlPath = UrlPathString.CreateFromPossiblyEncodedString(url);
             var encodedUrl = urlPath.UrlEncodedForHttpPath;
             BloomServer.SetCurrentPageListUrlForDebugging(encodedUrl);
             return encodedUrl;

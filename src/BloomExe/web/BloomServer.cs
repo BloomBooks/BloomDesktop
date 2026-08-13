@@ -442,7 +442,11 @@ namespace Bloom.Api
             {
                 // We need to UrlEncode the single and double quote characters, and the space character,
                 // so they will play nicely with HTML.
-                var urlPath = UrlPathString.CreateFromUnencodedString(url);
+                // PossiblyEncoded, not Unencoded: ToLocalhost() above has already escaped each
+                // path component, so we hand this an ENCODED string and rely on it being decoded
+                // before UrlEncodedForHttpPath re-encodes it. Saying "unencoded" here would
+                // double-encode the whole url.
+                var urlPath = UrlPathString.CreateFromPossiblyEncodedString(url);
                 url = urlPath.UrlEncodedForHttpPath;
             }
             if (setAsCurrentPageForDebugging)
@@ -566,7 +570,9 @@ namespace Bloom.Api
             string pageId
         )
         {
-            var urlPath = UrlPathString.CreateFromUnencodedString(
+            // PossiblyEncoded because UrlForCurrentBookPage ends in ToLocalhost(), which has
+            // already escaped the path components; see the note on CreateFromPossiblyEncodedString.
+            var urlPath = UrlPathString.CreateFromPossiblyEncodedString(
                 UrlForCurrentBookPage(bookFolderPath, pageId)
             );
             return urlPath.UrlEncodedForHttpPath;
