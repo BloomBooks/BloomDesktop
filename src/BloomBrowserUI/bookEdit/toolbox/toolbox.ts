@@ -40,7 +40,8 @@ let keypressTimer: ReturnType<typeof setTimeout> | null = null;
 // would therefore throw away the very update the undo just asked for.
 let undoRedoMarkupTimer: ReturnType<typeof setTimeout> | null = null;
 
-// When the last undo/redo markup pass began, and how close together we will let them be.
+// When the last undo/redo markup pass that actually got as far as doing the markup began, and
+// how close together we will let them be.
 // A single undo asks for its markup at once, because the whole point is to repaint the
 // highlights it just detached before anyone sees them missing. But holding Ctrl+Z down
 // auto-repeats the undo, and each repeat asks for another pass; with no delay to coalesce
@@ -1529,9 +1530,6 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
     // (perhaps temporarily) invalid for doing the markup, we'll try again a few times with a
     // shorter delay, and if it still isn't valid, we'll just give up until the next keyup or paste.
     const mainTask = async (remainingRetries: number) => {
-        if (isUndoOrRedo) {
-            lastUndoRedoMarkupStartTime = Date.now();
-        }
         const page: HTMLIFrameElement = <HTMLIFrameElement>(
             parent.window.document.getElementById("page")
         );
@@ -1588,6 +1586,13 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
         // (Undo/redo is exempt, for the reason given where this flag is tested above.)
         if (!isUndoOrRedo && window.top[isLongPressEvaluating]) {
             return;
+        }
+
+        // Past every reason to give up, so this pass is really going to do the markup. That is
+        // what the next undo/redo has to wait behind; an attempt that bailed above (and each of
+        // its retries) did no work and must not make one wait.
+        if (isUndoOrRedo) {
+            lastUndoRedoMarkupStartTime = Date.now();
         }
 
         // the hard thing about all this is preserving the user's insertion point while we change the actual
