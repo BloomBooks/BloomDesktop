@@ -664,7 +664,8 @@ namespace Bloom.web.controllers
         /// empty file, not a no-op: the AI image editor must never be told "saved" while stale
         /// content survives on disk.
         ///
-        /// Writes to a given file are SERIALIZED, because two of them for the same file are
+        /// Writes to a given file are SERIALIZED within this process (which is all Bloom needs:
+        /// one Bloom has a given collection open), because two of them for the same file are
         /// ordinary traffic from the AI image editor, not a pathological case (BL-16702): one
         /// generated image assigned to two book-image slots makes its commit call putFile once
         /// per slot, concurrently (Promise.all), and both calls name the same
@@ -685,7 +686,7 @@ namespace Bloom.web.controllers
             lock (GetFileLock(fullPath))
             {
                 var tempPath = fullPath + ".tmp";
-                var swapped = false;
+                var reachedTheSwap = false;
                 try
                 {
                     using (body)
@@ -696,19 +697,25 @@ namespace Bloom.web.controllers
                         // created temp file empty rather than copying.
                         body?.CopyTo(output);
                     }
+                    reachedTheSwap = true;
                     RobustFile.Move(tempPath, fullPath, true); // true: overwrite
-                    swapped = true;
                 }
                 finally
                 {
-                    // A write that dies partway (the client goes away, the disk fills up) must
-                    // not leave its half-written temp behind. Nothing would ever serve or
+                    // An upload that died partway (the client went away, the disk filled up)
+                    // must not leave its half-written temp behind. Nothing would ever serve or
                     // enumerate it — the name is neither allow-listed nor an image extension —
                     // but it can be multi-MB, and it would sit in the book's folder for the
-                    // life of the book. Whatever file it was going to replace is untouched,
-                    // which is the whole point of writing through a temp, so the temp is all
-                    // there is to clean up.
-                    if (!swapped)
+                    // life of the book. The file it was going to replace is untouched, so the
+                    // temp is all there is to clean up.
+                    //
+                    // A failure in the SWAP is the one case we leave alone, because there the
+                    // temp may be the only copy of the bytes left: Move(overWrite) deletes the
+                    // destination and then moves, so a failure between those two steps has
+                    // already taken the old file with it. A stray temp is much the lesser evil
+                    // — and the next write of this file overwrites it anyway. (Devin spotted
+                    // that tidying up unconditionally could throw away both copies.)
+                    if (!reachedTheSwap)
                         DeleteTempFileIgnoringErrors(tempPath);
                 }
             }

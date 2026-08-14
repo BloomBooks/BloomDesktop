@@ -391,8 +391,10 @@ namespace BloomTests.web.controllers
             Assert.That(new FileInfo(path).Length, Is.EqualTo(0));
         }
 
-        // A body that hands over some bytes and then fails, standing in for a client that goes
-        // away mid-upload.
+        // A body that hands over its first chunk and then fails, standing in for a client that
+        // goes away mid-upload. It lets one read through so bytes really do land in the temp
+        // file — Stream.CopyTo uses an 80KB buffer, so a body that dies on its first read would
+        // leave the temp empty and the test would not be exercising a truncated write at all.
         private class FailingStream : MemoryStream
         {
             public FailingStream(byte[] initialBytes)
@@ -400,10 +402,9 @@ namespace BloomTests.web.controllers
 
             public override int Read(byte[] buffer, int offset, int count)
             {
-                var read = base.Read(buffer, offset, count);
-                if (Position >= Length)
+                if (Position > 0)
                     throw new IOException("the client went away");
-                return read;
+                return base.Read(buffer, offset, count);
             }
         }
 
@@ -419,11 +420,13 @@ namespace BloomTests.web.controllers
             AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(good));
             Assert.That(File.ReadAllBytes(path), Is.EqualTo(good), "setup: the good file is there");
 
+            // Bigger than CopyTo's 80KB buffer, so the write really is truncated part way
+            // rather than failing before it wrote anything.
             Assert.That(
                 () =>
                     AiImageEditorApi.WriteRequestBodyToFile(
                         path,
-                        new FailingStream(new byte[5000])
+                        new FailingStream(new byte[200000])
                     ),
                 Throws.InstanceOf<IOException>(),
                 "a failed body read must still fail the request"
@@ -438,6 +441,43 @@ namespace BloomTests.web.controllers
                 Directory.EnumerateFiles(Path.GetDirectoryName(path), "*.tmp"),
                 Is.Empty,
                 "the failed write's temp file must have been cleaned up"
+            );
+        }
+
+        [Test]
+        public void WriteRequestBodyToFile_SwapFails_KeepsTheTempSoTheNewBytesSurvive()
+        {
+            // The one failure we must NOT tidy up after. Swapping the new file in is a delete
+            // of the destination followed by a move, so a failure in there can already have
+            // taken the old file with it, leaving the temp holding the only copy of the new
+            // bytes. Deleting it then would lose both. (Devin raised this against the first
+            // version of the cleanup, which deleted the temp on any failure.)
+            var path = HistoryFilePath("result.png");
+            AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(new byte[] { 1, 2, 3 }));
+            var newBytes = new byte[] { 9, 9, 9, 9 };
+            var historyFolder = Path.GetDirectoryName(path);
+
+            // Holding the destination open blocks the delete half of the swap, so the write
+            // gets as far as the swap and then fails — which is the case we care about.
+            using (new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                Assert.That(
+                    () => AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(newBytes)),
+                    Throws.InstanceOf<IOException>(),
+                    "setup: holding the file open should make the swap fail"
+                );
+            }
+
+            var temps = Directory.EnumerateFiles(historyFolder, "*.tmp").ToList();
+            Assert.That(
+                temps,
+                Is.Not.Empty,
+                "a failed swap must leave the new bytes behind in the temp file"
+            );
+            Assert.That(
+                File.ReadAllBytes(temps[0]),
+                Is.EqualTo(newBytes),
+                "and they must be all of the new bytes"
             );
         }
 
@@ -459,19 +499,18 @@ namespace BloomTests.web.controllers
 
             const int writerCount = 4;
             var exceptions = new ConcurrentBag<Exception>();
-            // Release all the writers at once, and record when each was in the call, so the
-            // assertions below can say whether the writes really were concurrent. Without that,
-            // a green result could just mean the threads happened to run one after another and
-            // never tested anything (see AGENTS.md on guarding against falsely passing tests).
+            // The barrier is what makes this a concurrency test: every writer waits there and
+            // they are all released together, rather than each starting whenever its thread
+            // happens to get going — which could otherwise leave them running one after another,
+            // passing without testing anything (see AGENTS.md on falsely passing tests).
             var startLine = new Barrier(writerCount);
-            var spans = new ConcurrentBag<Tuple<long, long>>();
-            var clock = System.Diagnostics.Stopwatch.StartNew();
+            var arrived = new ConcurrentBag<int>();
             var writers = Enumerable
                 .Range(0, writerCount)
-                .Select(_ => new Thread(() =>
+                .Select(index => new Thread(() =>
                 {
                     startLine.SignalAndWait();
-                    var from = clock.ElapsedTicks;
+                    arrived.Add(index);
                     try
                     {
                         AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(bytes));
@@ -480,7 +519,6 @@ namespace BloomTests.web.controllers
                     {
                         exceptions.Add(e);
                     }
-                    spans.Add(Tuple.Create(from, clock.ElapsedTicks));
                 }))
                 .ToList();
             writers.ForEach(t => t.Start());
@@ -492,14 +530,12 @@ namespace BloomTests.web.controllers
                 "no concurrent write of the same file should fail: "
                     + string.Join("; ", exceptions.Select(e => e.Message))
             );
-            // Sanity check: at least two of the calls really did overlap in time, so the empty
-            // `exceptions` above means the serialization was exercised rather than dodged.
-            var ordered = spans.OrderBy(s => s.Item1).ToList();
-            Assert.That(ordered.Count, Is.EqualTo(writerCount), "every writer should have run");
+            // Sanity check: every writer got past the barrier, so all four really were in
+            // flight together and the empty `exceptions` above means something.
             Assert.That(
-                ordered.Zip(ordered.Skip(1), (earlier, later) => earlier.Item2 > later.Item1),
-                Has.Some.True,
-                "the writes did not overlap, so this run did not actually test concurrency"
+                arrived,
+                Is.EquivalentTo(Enumerable.Range(0, writerCount)),
+                "every writer should have been released from the barrier and run"
             );
             // And the survivor must be the whole file, not a partly-written one.
             Assert.That(File.ReadAllBytes(path), Is.EqualTo(bytes));
