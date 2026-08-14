@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -439,7 +440,10 @@ namespace Bloom.Workspace
                 Settings.Default.Save();
             }
             catch (Exception e)
-                when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException
+                when (e is IOException
+                    || e is UnauthorizedAccessException
+                    || e is ArgumentException
+                    || e is ConfigurationErrorsException
                 )
             {
                 // Failing to remember the book is not worth interrupting the user's work over.
