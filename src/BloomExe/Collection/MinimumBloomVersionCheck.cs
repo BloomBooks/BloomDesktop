@@ -179,7 +179,7 @@ namespace Bloom.Collection
         /// </summary>
         private static void ShowDownloadsPage()
         {
-            var url = UrlLookup.LookupUrl(UrlType.LibrarySite, null) + "/installers";
+            var url = UrlLookup.LookupUrl(UrlType.LibrarySite, null) + "/downloads";
             if (SIL.PlatformUtilities.Platform.IsWindows)
                 // Let the default browser open the link.
                 ProcessExtra.SafeStartInFront(url);
