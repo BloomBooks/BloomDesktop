@@ -28,10 +28,12 @@ const res = await frame().evaluate(async () => {
     const save = [];
     let size = 0;
     // warm up
-    ex.getPageContentForSave();
+    await ex.getPageContentForSaveWhenReady();
     for (let i = 0; i < 15; i++) {
         const t = performance.now();
-        const s = ex.getPageContentForSave();
+        // Includes the (normally zero) wait for in-flight page changes to settle, because that
+        // is what a real save pays: see whenNoActiveDelays in bookEdit/js/pageContentDelays.ts.
+        const s = await ex.getPageContentForSaveWhenReady();
         gather.push(performance.now() - t);
         size = s.length;
     }

@@ -414,7 +414,7 @@ public class EditingStateMachine
     /// Editing.
     ///
     /// This is the transition that exists because the browser can now produce the page content
-    /// WITHOUT wrecking the live page (it cleans a clone: see getPageContentForSave() in
+    /// WITHOUT wrecking the live page (it cleans a clone: see getPageContentForSaveWhenReady() in
     /// bloomEditing.ts). So, unlike the ToSavePending/ToSavedAndStripped pair, there is no stripped
     /// page to recover from, nothing to wait for, and no navigation to do afterwards: the user is
     /// still editing the same page when we return.

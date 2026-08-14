@@ -1876,7 +1876,7 @@ namespace Bloom.Edit
         /// SaveThen has to do the same work spread over two API calls and three states, because it
         /// must ask the browser for the content and wait for it to come back on another API. Every
         /// caller that can hand us the content up front (anything posting from a frame that can
-        /// reach the editable page: see getPageContentForSave() in bloomEditing.ts) can use this
+        /// reach the editable page: see getPageContentForSaveWhenReady() in bloomEditing.ts) can use this
         /// instead and be a plain, straight-line method — including one that can report a failure
         /// in its own reply, which SaveThen cannot, since by the time it knows, the request is long
         /// since completed.

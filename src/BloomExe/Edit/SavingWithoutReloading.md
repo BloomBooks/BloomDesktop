@@ -260,20 +260,22 @@ There are 20 call sites. Several are pure "save, then go to this page":
 - `EditingViewApi.cs:299` — `SaveThen(() => pageId, () => { })`
 - `EditingModel.SavePageAndReloadIt` — `SaveThen(() => CurrentSelection.Id, () => { })`
 
-If the browser sends the page content **with** the request that needs a save, the API handler can
-be a plain synchronous method: save, do the thing, reply. Suggested shape for the handlers that
-currently take no useful body:
+If the browser sends the page content **with** the request that needs a save, the handler no longer
+has to be chopped up around an asynchronous wait. The shape the converted ones use:
 
 ```
 // TS
-postString("editView/duplicatePage", getPageContentForSave());
+postThatMightNavigate("edit/pageControls/duplicatePage",
+                      await collectCurrentPageContent("the duplicate command"));
 // C#
-View.Model.SavePageInPlace(request.RequiredPostString(unescape: false));
-DuplicatePage(...);
+_editingModel.OnDuplicatePage(request.GetPageContentFromBrowserOrNull());
+// ...which ends up at SaveThen(..., pageContentFromBrowser: content)
 ```
 
-That removes the `doIfNotInRightStateToSave` callback (the handler can just check the return
-value), the `doAfterSaveToDisk` callback, and the "don't touch the request afterwards" hazard.
+For a handler that has no reason to navigate at all, `SavePageInPlace` is even plainer — save,
+do the thing, reply — which is what removes the `doIfNotInRightStateToSave` callback (the handler
+can just check the return value), the `doAfterSaveToDisk` callback, and the "don't touch the
+request afterwards" hazard.
 
 Two of the six parameters are there for one caller each and would go away with them:
 `skipSaveToDisk` (`collectionClosingEvent` and `OnTabAboutToChange`, which both want to do their own

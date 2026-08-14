@@ -195,7 +195,7 @@ namespace BloomTests.Edit
         }
 
         // ToSavedInPlaceThenNavigating: what a page click does when the click brought the outgoing
-        // page's content with it. See EditingModel.SavePageInPlaceThenGoToPage.
+        // page's content with it. See EditingModel.SaveThen's pageContentFromBrowser.
 
         [Test]
         public void ToSavedInPlaceThenNavigating_WhileEditing_SavesThenGoesToTheOtherPage()
