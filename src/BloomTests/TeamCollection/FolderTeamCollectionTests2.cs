@@ -1420,5 +1420,62 @@ namespace BloomTests.TeamCollection
                 }
             );
         }
+
+        /// <summary>
+        /// Picking up the repo's minimum version matters even when this Bloom is new enough to carry
+        /// on working. CollectionSettings.Save() rebuilds the file from memory, so if we were still
+        /// holding the empty value we loaded at startup, the next ordinary save would drop the
+        /// element and the Team Collection would push that up -- removing the administrator's
+        /// protection for everybody. See BL-16690.
+        /// </summary>
+        [Test]
+        public void HandleCollectionSettingsChange_RepoDeclaresAMinimumWeMeet_RemembersIt()
+        {
+            WithRepoSettingsFile(
+                "RememberMinimumVersion",
+                "<Collection version=\"0.2\"><MinimumBloomVersion>1.0</MinimumBloomVersion></Collection>",
+                (tc, settings) =>
+                {
+                    // Sanity check: we must start out not knowing about it, or the test proves nothing.
+                    Assert.That(
+                        settings.MinimumBloomVersion,
+                        Is.Empty,
+                        "setup failed: should have started with no minimum version"
+                    );
+
+                    // 1.0 is old enough that this cannot try to lock anyone out (which would want a dialog).
+                    var lockedOut = tc.HandleCollectionSettingsChange(new RepoChangeEventArgs());
+
+                    Assert.That(
+                        lockedOut,
+                        Is.False,
+                        "should not shut anyone out over a minimum this Bloom easily meets"
+                    );
+                    Assert.That(settings.MinimumBloomVersion, Is.EqualTo("1.0"));
+                }
+            );
+        }
+
+        /// <summary>
+        /// Not being able to read the repo copy is quite different from the repo saying there is no
+        /// minimum, and only the second should clear what we are holding. Getting this wrong would
+        /// turn a transient read failure into the loss of the setting. See BL-16690.
+        /// </summary>
+        [Test]
+        public void HandleCollectionSettingsChange_NoRepoSettings_LeavesMinimumVersionAlone()
+        {
+            WithRepoSettingsFile(
+                "RememberMinimumVersionNoRepo",
+                null,
+                (tc, settings) =>
+                {
+                    settings.MinimumBloomVersion = "1.0";
+
+                    tc.HandleCollectionSettingsChange(new RepoChangeEventArgs());
+
+                    Assert.That(settings.MinimumBloomVersion, Is.EqualTo("1.0"));
+                }
+            );
+        }
     }
 }

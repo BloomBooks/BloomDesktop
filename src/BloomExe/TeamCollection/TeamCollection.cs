@@ -1413,6 +1413,8 @@ namespace Bloom.TeamCollection
                 return false;
             }
 
+            RememberRepoMinimumBloomVersion(repoSettings);
+
             if (
                 !MinimumBloomVersionCheck.IsThisBloomTooOldForSettings(
                     repoSettings,
@@ -1433,6 +1435,48 @@ namespace Bloom.TeamCollection
                 Path.GetFileNameWithoutExtension(CollectionPath(_localCollectionFolder)),
                 minimumVersion
             );
+        }
+
+        /// <summary>
+        /// Copy the repository's minimum version into the settings we are holding in memory. This
+        /// matters even when this Bloom is new enough to carry on: CollectionSettings.Save() rebuilds
+        /// the file from scratch and writes MinimumBloomVersion out of memory, and plenty of ordinary
+        /// actions save mid-session. If our copy were still the empty value we loaded before the
+        /// administrator's change arrived, the next save would drop the element from the local file,
+        /// and the Team Collection would push that up -- quietly removing the protection for the
+        /// whole team, from the very Bloom it was meant to keep out.
+        /// </summary>
+        private void RememberRepoMinimumBloomVersion(string repoSettings)
+        {
+            var settings = _tcManager?.Settings;
+            if (settings == null)
+                return; // no settings to update (unit tests)
+
+            // Not knowing what the repo says is quite different from the repo saying "no minimum".
+            // Only the second of those should clear what we are holding.
+            if (string.IsNullOrWhiteSpace(repoSettings))
+                return;
+
+            string repoValue;
+            try
+            {
+                repoValue = MinimumBloomVersionCheck.ParseMinimumBloomVersion(repoSettings);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError(
+                    "TeamCollection could not parse the repo collection settings to read its minimum Bloom version",
+                    e
+                );
+                return;
+            }
+
+            if (repoValue == settings.MinimumBloomVersion)
+                return;
+            Logger.WriteEvent(
+                $"TeamCollection: MinimumBloomVersion changed remotely to '{repoValue}'."
+            );
+            settings.MinimumBloomVersion = repoValue;
         }
 
         /// <summary>
