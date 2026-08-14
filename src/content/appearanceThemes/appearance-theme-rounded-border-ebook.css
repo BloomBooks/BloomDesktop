@@ -28,8 +28,14 @@
        This has the effect of increasing the text padding on the edges. */
     --page-and-marginBox-are-same-color-multiplicand: 0;
 
-    /* move so that page number doesn't it hide it if the text box is in the lower left */
+    /* move so that page number doesn't it hide it if the text box is in the lower left
+       (this theme puts the number at the bottom left in both orientations, except the
+       pictureOnRight pages below) */
     --formatButton-pageNumber-dodge: 20px;
+    /* how far the format button moves when the user's Page Numbers setting forces the
+       number to the bottom left; editMode.less applies it in that situation whatever
+       the per-page rules decide (BL-14901) */
+    --formatButton-pageNumber-dodge-when-forced-left: 20px;
 }
 
 /* using "where:" so that the user's custom appearance can override the theme if specified */
