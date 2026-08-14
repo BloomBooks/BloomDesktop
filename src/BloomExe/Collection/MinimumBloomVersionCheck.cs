@@ -138,19 +138,18 @@ namespace Bloom.Collection
                 "Open a Different Collection"
             );
 
+            // Order matters: the buttons appear left to right in this order, and the default one is
+            // drawn filled and takes the initial focus. Upgrading is what we actually want the user
+            // to do, so it goes last (the rightmost, primary position) and is the default.
             var buttons = new[]
             {
+                new MessageBoxButton() { Text = chooseOtherButtonText, Id = "chooseOther" },
                 new MessageBoxButton()
                 {
                     Text = upgradeButtonText,
                     Id = kUpgradeButtonId,
                     // Warn the user that this takes them out to a web page.
                     Icon = "launch",
-                },
-                new MessageBoxButton()
-                {
-                    Text = chooseOtherButtonText,
-                    Id = "chooseOther",
                     Default = true,
                 },
             };
