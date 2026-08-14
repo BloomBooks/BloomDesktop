@@ -457,11 +457,21 @@ namespace BloomTests.web.controllers
             for (var i = 0; i < bytes.Length; i++)
                 bytes[i] = (byte)i;
 
+            const int writerCount = 4;
             var exceptions = new ConcurrentBag<Exception>();
+            // Release all the writers at once, and record when each was in the call, so the
+            // assertions below can say whether the writes really were concurrent. Without that,
+            // a green result could just mean the threads happened to run one after another and
+            // never tested anything (see AGENTS.md on guarding against falsely passing tests).
+            var startLine = new Barrier(writerCount);
+            var spans = new ConcurrentBag<Tuple<long, long>>();
+            var clock = System.Diagnostics.Stopwatch.StartNew();
             var writers = Enumerable
-                .Range(0, 4)
+                .Range(0, writerCount)
                 .Select(_ => new Thread(() =>
                 {
+                    startLine.SignalAndWait();
+                    var from = clock.ElapsedTicks;
                     try
                     {
                         AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(bytes));
@@ -470,6 +480,7 @@ namespace BloomTests.web.controllers
                     {
                         exceptions.Add(e);
                     }
+                    spans.Add(Tuple.Create(from, clock.ElapsedTicks));
                 }))
                 .ToList();
             writers.ForEach(t => t.Start());
@@ -480,6 +491,15 @@ namespace BloomTests.web.controllers
                 Is.Empty,
                 "no concurrent write of the same file should fail: "
                     + string.Join("; ", exceptions.Select(e => e.Message))
+            );
+            // Sanity check: at least two of the calls really did overlap in time, so the empty
+            // `exceptions` above means the serialization was exercised rather than dodged.
+            var ordered = spans.OrderBy(s => s.Item1).ToList();
+            Assert.That(ordered.Count, Is.EqualTo(writerCount), "every writer should have run");
+            Assert.That(
+                ordered.Zip(ordered.Skip(1), (earlier, later) => earlier.Item2 > later.Item1),
+                Has.Some.True,
+                "the writes did not overlap, so this run did not actually test concurrency"
             );
             // And the survivor must be the whole file, not a partly-written one.
             Assert.That(File.ReadAllBytes(path), Is.EqualTo(bytes));
