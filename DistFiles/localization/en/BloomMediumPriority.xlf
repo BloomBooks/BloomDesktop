@@ -667,7 +667,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Motion.Possible">
         <source xml:lang="en">Select this if you want to show motion when the book is read in landscape mode.</source>
-        <note>ID: PublishTab.Feature.Motion.None</note>
+        <note>ID: PublishTab.Feature.Motion.Possible</note>
         <note>This is a tooltip.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Music">
