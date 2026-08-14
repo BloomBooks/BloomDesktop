@@ -244,11 +244,20 @@ Three cases end at the website rather than an install:
   and what the collection needs, rather than the bare "you are up to date" that the normal path
   would produce — which would be a baffling thing to hear seconds after being told this Bloom is
   too old.
-- **Something newer, but still not new enough.** Downloaded and then judged insufficient. We
-  deliberately do *not* install it: the user asked to be able to open this collection, and quietly
-  applying an update that won't achieve that is not what they agreed to.
 - **This Bloom can't update itself** — a developer build, one an administrator manages, or one
   under the debugger. The same three conditions `WorkspaceView` refuses on.
+
+There is a fourth case that does **not** end at the website: an update that is newer than what the
+user has but still short of what the collection needs. We install it anyway. Getting as far as the
+channel allows is real progress, and the situation resolves itself — the upgraded Bloom reopens the
+same collection, meets this same dialog, and the user decides again from a better starting point.
+The message says so plainly ("that is newer than what you have, but this collection needs 6.6, so
+you will need to upgrade again after this"), because the one thing that would be genuinely
+confusing is upgrading, coming back, and meeting the same complaint with no explanation.
+
+(An earlier draft of this branch refused to install in that case, on the grounds that we shouldn't
+apply an update that doesn't achieve what the user asked for. That was wrong: it left them exactly
+where they started, having declined an upgrade they could have had.)
 
 ## Smaller decisions
 
@@ -258,6 +267,10 @@ Three cases end at the website rather than an install:
 - **Bloom does not restart itself** (`WaitExitThenApplyUpdates(null, true, false)`). The user was
   trying to open a collection this Bloom can't handle, so there is nothing useful to return to
   until the new version is installed.
+- **No external-link icon on the Upgrade button here.** The PR-branch version always leaves Bloom
+  for the website, so it carries the same marker the Help menu uses for that. This one normally
+  upgrades Bloom itself and only falls back to the web when it can't, so marking it as leaving
+  Bloom would be wrong most of the time.
 - **The blocked collection is remembered after a successful download.** BL-16690 deliberately does
   *not* record a collection it refused to open, so that abandoning the upgrade doesn't strand the
   user on it. But once the upgrade is downloaded, the next Bloom to start really can open it, and

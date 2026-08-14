@@ -142,6 +142,9 @@ namespace Bloom.Collection
             // Order matters: the buttons appear left to right in this order, and the default one is
             // drawn filled and takes the initial focus. Upgrading is what we actually want the user
             // to do, so it goes last (the rightmost, primary position) and is the default.
+            // No external-link icon on this button here: unlike the version that always sends people
+            // to the website, this one normally upgrades Bloom itself and only falls back to the web
+            // when it can't. Marking it as leaving Bloom would be wrong most of the time.
             var buttons = new[]
             {
                 new MessageBoxButton() { Text = chooseOtherButtonText, Id = "chooseOther" },
@@ -149,8 +152,6 @@ namespace Bloom.Collection
                 {
                     Text = upgradeButtonText,
                     Id = kUpgradeButtonId,
-                    // Warn the user that this takes them out to a web page.
-                    Icon = "launch",
                     Default = true,
                 },
             };
@@ -197,28 +198,25 @@ namespace Bloom.Collection
 
             if (outcome == ApplicationUpdateSupport.SilentUpdateOutcome.Downloaded)
             {
+                // Install it whatever version it turns out to be. Velopack can only offer the newest
+                // build on this user's channel -- it has no notion of "at least version X" -- so what
+                // we have may still be short of what this collection needs. Take it anyway: getting
+                // as far as the channel allows is real progress, and if it isn't far enough the user
+                // meets this same dialog on the next launch and can decide again from there.
+                ApplicationUpdateSupport.ArrangeToInstallDownloadedUpdateOnExit();
+                // Remember the collection, so the upgraded Bloom comes back to it -- either to open
+                // it, or to tell them they still need to go further.
+                DownloadedAnUpgrade = true;
+
                 var downloaded = ApplicationUpdateSupport.DownloadedVersion;
-                // Velopack only knows how to offer the newest build on this user's channel. It has no
-                // notion of "at least version X", so it can hand us something that is newer than what
-                // we are running and still not new enough for this collection. Check before we tell
-                // the user this has been solved.
                 var downloadedVersion = ParseOrNull(downloaded);
                 if (
                     downloadedVersion != null
                     && IsVersionSufficient(minimumVersion, downloadedVersion)
                 )
-                {
-                    ApplicationUpdateSupport.ArrangeToInstallDownloadedUpdateOnExit();
-                    DownloadedAnUpgrade = true;
                     ReportUpgradeDownloaded(downloaded);
-                    return;
-                }
-
-                // Downloaded, but still short of what this collection needs. Don't install it behind
-                // the user's back on the strength of a request we couldn't actually fulfil; send
-                // them to the website instead.
-                ReportNoUpgradeFarEnough(minimumVersion, downloaded);
-                ShowDownloadsPage();
+                else
+                    ReportUpgradeIsAStepButNotEnough(downloaded, minimumVersion);
                 return;
             }
 
@@ -252,8 +250,30 @@ namespace Bloom.Collection
         }
 
         /// <summary>
-        /// Tell the user that updating in place can't get them far enough, so they are about to be
-        /// sent to the website. Being specific matters: "you are up to date" on its own would be a
+        /// Tell the user we are installing an upgrade that gets them closer but not all the way.
+        /// Saying so plainly is the point: otherwise they would upgrade, come back, and meet the same
+        /// "too old" dialog with no idea why the upgrade they just did hadn't solved it.
+        /// </summary>
+        private static void ReportUpgradeIsAStepButNotEnough(
+            string downloadedVersion,
+            string minimumVersion
+        )
+        {
+            var message = string.Format(
+                LocalizationManager.GetString(
+                    "Collection.UpgradeIsAStepButNotEnough",
+                    "Bloom {0} has been downloaded. That is newer than what you have, but this collection needs {1}, so you will need to upgrade again after this. Bloom will now close in order to install it. Please start Bloom again when it is finished.",
+                    "{0} is the version number that was downloaded, {1} is the version the collection requires."
+                ),
+                downloadedVersion,
+                minimumVersion
+            );
+            BloomMessageBox.ShowInfo(System.Net.WebUtility.HtmlEncode(message));
+        }
+
+        /// <summary>
+        /// Tell the user that updating in place can't get them anywhere at all, so they are about to
+        /// be sent to the website. Being specific matters: "you are up to date" on its own would be a
         /// baffling thing to hear right after being told this Bloom is too old.
         /// </summary>
         private static void ReportNoUpgradeFarEnough(string minimumVersion, string newestAvailable)
