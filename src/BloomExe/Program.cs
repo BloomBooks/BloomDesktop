@@ -1889,7 +1889,10 @@ namespace Bloom
                 // too-new collection and then clicking "Upgrade Bloom" would leave it as the
                 // most-recently-used one, and a user who abandoned the download would come back to
                 // the blocked collection instead of the one they were really working in.
-                if (_quittingBecauseBloomIsTooOld)
+                // The exception is when we actually downloaded the upgrade: then the next Bloom to
+                // start really can open this collection, and landing straight back in it is exactly
+                // what the user was trying to do.
+                if (_quittingBecauseBloomIsTooOld && !MinimumBloomVersionCheck.DownloadedAnUpgrade)
                     return true;
                 Settings.Default.MruProjects.AddNewPath(path);
                 Settings.Default.Save();

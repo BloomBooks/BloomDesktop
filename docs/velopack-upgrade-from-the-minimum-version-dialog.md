@@ -1,10 +1,12 @@
 # Upgrading in place from the "needs a newer Bloom" dialog
 
-**Status:** investigation only — nothing here is implemented. Spike branch for BL-16690.
+**Status:** implemented on this spike branch, not on the BL-16690 PR. The analysis below was
+written first; see "What was actually built" at the end for how it turned out and where the
+implementation differs from the plan.
 
 BL-16690 added a dialog that appears when a collection declares a `MinimumBloomVersion` newer
 than the Bloom being run. It offers two ways forward: open a different collection, or **Upgrade
-Bloom** — which today opens `bloomlibrary.org/installers` in the browser and quits.
+Bloom** — which on the PR branch opens `bloomlibrary.org/downloads` in the browser and quits.
 
 The obvious question is why it doesn't just use the updater Bloom already has. This is what that
 would take.
@@ -181,3 +183,104 @@ Most of the benefit for a fraction of the work: keep sending the user to the web
 somewhere better. Pass the required version to the downloads page, or pick the URL by channel, so
 they land on *the version this collection needs* rather than a generic installers list. That is a
 URL change, and it fixes the "which of these do I click?" problem that is the actual friction.
+
+---
+
+# What was actually built
+
+Implemented on this branch after the analysis above. The shape is smaller than the plan expected,
+because two of the five obstacles turned out not to need the work they looked like they needed.
+
+## The flow
+
+Clicking **Upgrade Bloom** now:
+
+1. Tries to update in place — find the update, download it, install it when Bloom exits.
+2. Tells the user what happened, in a plain message box.
+3. Quits.
+
+If the in-place route can't deliver, it opens the download page on the way out, so the user still
+has somewhere to go.
+
+## What it does *not* need
+
+**No toast host, and no toast.** Rather than route the existing toast-driven code through a new
+progress UI, `ApplicationUpdateSupport.TryDownloadUpdateWithoutToasts` does the update work and
+*returns what happened*, saying nothing itself. The caller decides what to show. Bloom's ordinary
+message box is enough, and that already works before a collection is open.
+
+The one place the old code would still have spoken up on its own is `GetUpdateUrl`, which reports
+connection failures by toast — but only when asked to be `Verbose`. Calling it `Quiet` makes it
+return a plain false instead, which is what we want.
+
+**No awaitable refactor of the existing path.** The plan assumed `CheckForAVelopackUpdate` would
+have to be split into an awaitable core with the toast version as a wrapper. In the event the new
+method simply uses the same Velopack calls directly (`CheckForUpdatesAsync`, `DownloadUpdatesAsync`,
+`WaitExitThenApplyUpdates`) and shares the class's existing state. The workspace's update path is
+untouched, which is the safer outcome: nothing that works today was rearranged.
+
+## The part that did matter: Velopack cannot be asked for a *particular* version
+
+This is item 4 in the analysis, and it survived contact with the code exactly as described.
+`CheckForUpdatesAsync` answers "is there anything newer on this channel", not "is there something
+at least this new". So the implementation checks the answer itself:
+
+```csharp
+// MinimumBloomVersionCheck.UpgradeBloom
+if (downloadedVersion != null && IsVersionSufficient(minimumVersion, downloadedVersion))
+{
+    ArrangeToInstallDownloadedUpdateOnExit();
+    ...
+}
+// otherwise: say so plainly, and open the website instead
+```
+
+It reuses `IsVersionSufficient` — the same comparison that decided the collection was off-limits in
+the first place — so the two can never disagree about what "new enough" means.
+
+Three cases end at the website rather than an install:
+
+- **Nothing newer on this channel.** The user is told what the newest version available to them is
+  and what the collection needs, rather than the bare "you are up to date" that the normal path
+  would produce — which would be a baffling thing to hear seconds after being told this Bloom is
+  too old.
+- **Something newer, but still not new enough.** Downloaded and then judged insufficient. We
+  deliberately do *not* install it: the user asked to be able to open this collection, and quietly
+  applying an update that won't achieve that is not what they agreed to.
+- **This Bloom can't update itself** — a developer build, one an administrator manages, or one
+  under the debugger. The same three conditions `WorkspaceView` refuses on.
+
+## Smaller decisions
+
+- **The user is told before the window disappears.** A downloaded upgrade ends with "Bloom X has
+  been downloaded. Bloom will now close in order to install it." Without it, choosing Upgrade would
+  simply make Bloom vanish, which reads as a crash.
+- **Bloom does not restart itself** (`WaitExitThenApplyUpdates(null, true, false)`). The user was
+  trying to open a collection this Bloom can't handle, so there is nothing useful to return to
+  until the new version is installed.
+- **The blocked collection is remembered after a successful download.** BL-16690 deliberately does
+  *not* record a collection it refused to open, so that abandoning the upgrade doesn't strand the
+  user on it. But once the upgrade is downloaded, the next Bloom to start really can open it, and
+  landing straight back in it is what the user was trying to do — so `Program.OpenCollection` makes
+  that one exception.
+- **`Task.Run(...).GetAwaiter().GetResult()`.** The update work awaits network calls, and the
+  caller is a synchronous method on the UI thread. Awaiting directly and blocking would deadlock;
+  running it off the UI thread does not.
+
+## What is not covered
+
+- **No progress while downloading.** Bloom sits with no window for the length of the download.
+  Acceptable for a spike; a real version wants at least a busy indicator.
+- **Linux keeps the website route**, since the whole updater is inside `#if !__MonoCS__`.
+- **Not tested against a live update feed.** The logic is exercised by reading; nobody has watched
+  this actually download and install a newer Bloom. That is the first thing to do before taking it
+  seriously.
+
+## Does this change the recommendation?
+
+Not really. It is less work than expected, and the code is contained. But the reasoning in the
+analysis still holds: the case where an in-place upgrade helps is the case where the user would
+have been fine anyway, and the case the dialog exists for — a collection that has moved ahead of
+what the user's channel offers — still ends at the website. What this branch buys is that the
+website is now the *fallback* rather than the only answer, and that when it is the fallback the
+user is told why.

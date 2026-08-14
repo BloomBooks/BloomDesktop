@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Bloom.MiscUI;
@@ -162,7 +163,7 @@ namespace Bloom.Collection
 
             if (result == kUpgradeButtonId)
             {
-                ShowDownloadsPage();
+                UpgradeBloom(minimumVersion);
                 ProgramExit.Exit();
                 return true;
             }
@@ -171,6 +172,103 @@ namespace Bloom.Collection
         }
 
         private const string kUpgradeButtonId = "upgrade";
+
+        /// <summary>
+        /// True when the user chose to upgrade and we downloaded a new Bloom, so the collection they
+        /// were blocked from should be waiting for them after the update. Program uses this to decide
+        /// whether to remember the collection.
+        /// </summary>
+        public static bool DownloadedAnUpgrade { get; private set; }
+
+        /// <summary>
+        /// Get the user onto a newer Bloom. We prefer to update in place, because it means they
+        /// don't have to find the right installer among several channels and versions. If we can't --
+        /// this Bloom can't update itself, or the newest build on their channel is still too old for
+        /// this collection -- we fall back to the website, where they can at least go looking for a
+        /// beta or another channel that is far enough along.
+        /// </summary>
+        private static void UpgradeBloom(string minimumVersion)
+        {
+            // Task.Run because this awaits network work: awaiting it directly on the UI thread and
+            // blocking would deadlock.
+            var outcome = Task.Run(() => ApplicationUpdateSupport.TryDownloadUpdateWithoutToasts())
+                .GetAwaiter()
+                .GetResult();
+
+            if (outcome == ApplicationUpdateSupport.SilentUpdateOutcome.Downloaded)
+            {
+                var downloaded = ApplicationUpdateSupport.DownloadedVersion;
+                // Velopack only knows how to offer the newest build on this user's channel. It has no
+                // notion of "at least version X", so it can hand us something that is newer than what
+                // we are running and still not new enough for this collection. Check before we tell
+                // the user this has been solved.
+                var downloadedVersion = ParseOrNull(downloaded);
+                if (
+                    downloadedVersion != null
+                    && IsVersionSufficient(minimumVersion, downloadedVersion)
+                )
+                {
+                    ApplicationUpdateSupport.ArrangeToInstallDownloadedUpdateOnExit();
+                    DownloadedAnUpgrade = true;
+                    ReportUpgradeDownloaded(downloaded);
+                    return;
+                }
+
+                // Downloaded, but still short of what this collection needs. Don't install it behind
+                // the user's back on the strength of a request we couldn't actually fulfil; send
+                // them to the website instead.
+                ReportNoUpgradeFarEnough(minimumVersion, downloaded);
+                ShowDownloadsPage();
+                return;
+            }
+
+            if (outcome == ApplicationUpdateSupport.SilentUpdateOutcome.NothingNewer)
+                ReportNoUpgradeFarEnough(minimumVersion, ToMajorMinor(RunningBloomVersion));
+            // For CannotUpdateThisBloom and Failed we say nothing extra: a developer build or an
+            // administrator-managed one is not the user's problem to solve, and a failure to reach
+            // the update server is about to be self-evident when the browser opens.
+
+            ShowDownloadsPage();
+        }
+
+        private static Version ParseOrNull(string version) =>
+            Version.TryParse(version ?? "", out var v) ? v : null;
+
+        /// <summary>
+        /// Tell the user we have their new Bloom and are closing to install it. Without this the
+        /// window would simply vanish, which looks like a crash rather than an upgrade.
+        /// </summary>
+        private static void ReportUpgradeDownloaded(string downloadedVersion)
+        {
+            var message = string.Format(
+                LocalizationManager.GetString(
+                    "Collection.UpgradeDownloaded",
+                    "Bloom {0} has been downloaded. Bloom will now close in order to install it. Please start Bloom again when it is finished.",
+                    "{0} is the version number of the Bloom that was downloaded."
+                ),
+                downloadedVersion
+            );
+            BloomMessageBox.ShowInfo(System.Net.WebUtility.HtmlEncode(message));
+        }
+
+        /// <summary>
+        /// Tell the user that updating in place can't get them far enough, so they are about to be
+        /// sent to the website. Being specific matters: "you are up to date" on its own would be a
+        /// baffling thing to hear right after being told this Bloom is too old.
+        /// </summary>
+        private static void ReportNoUpgradeFarEnough(string minimumVersion, string newestAvailable)
+        {
+            var message = string.Format(
+                LocalizationManager.GetString(
+                    "Collection.NoUpgradeFarEnough",
+                    "The newest Bloom available to you right now is {0}, but this collection needs {1}. We will take you to the Bloom download page, where you may be able to find a version that is far enough along.",
+                    "{0} is the newest version number available to this user, {1} is the version the collection requires."
+                ),
+                newestAvailable,
+                minimumVersion
+            );
+            BloomMessageBox.ShowInfo(System.Net.WebUtility.HtmlEncode(message));
+        }
 
         /// <summary>
         /// Send the user to the page where they can get a newer Bloom. This is the same thing the
