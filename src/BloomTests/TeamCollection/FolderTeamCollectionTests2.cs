@@ -1267,5 +1267,158 @@ namespace BloomTests.TeamCollection
                 }
             }
         }
+
+        /// <summary>
+        /// Sets up a team collection whose repo holds a settings file with the given content, and
+        /// runs the given check against it. See BL-16691.
+        /// </summary>
+        private void WithRepoSettingsFile(
+            string testName,
+            string settingsFileContent,
+            Action<TestFolderTeamCollection, CollectionSettings> check
+        )
+        {
+            using (var collectionFolder = new TemporaryFolder(testName + "_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder(testName + "_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var settings = new CollectionSettings();
+                    mockTcManager.Setup(m => m.Settings).Returns(settings);
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.GetDirectoryName(settingsPath));
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    if (settingsFileContent != null)
+                    {
+                        File.WriteAllText(settingsPath, settingsFileContent);
+                        tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+                    }
+                    check(tc, settings);
+                }
+            }
+        }
+
+        [TestCase("False", false)]
+        [TestCase("True", true)]
+        public void GetAllowCheckoutsFromRepo_ReadsTheRepoCopy(string valueInFile, bool expected)
+        {
+            WithRepoSettingsFile(
+                "GetAllowCheckouts" + valueInFile,
+                $"<Collection version=\"0.2\"><AllowCheckouts>{valueInFile}</AllowCheckouts></Collection>",
+                (tc, settings) => Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.EqualTo(expected))
+            );
+        }
+
+        /// <summary>
+        /// Reading the repo copy has to cope with what Bloom actually writes, and Bloom writes the
+        /// settings file with a UTF-8 BOM. The other tests here write the file themselves without
+        /// one, so they would not notice if the BOM reached the XML parser. See BL-16691.
+        /// </summary>
+        [Test]
+        public void GetAllowCheckoutsFromRepo_FileWrittenByBloomWithBom_IsRead()
+        {
+            using (var collectionFolder = new TemporaryFolder("GetAllowCheckoutsBom_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder("GetAllowCheckoutsBom_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+
+                    // Write it the way Bloom really does, rather than by hand.
+                    var settings = new CollectionSettings(settingsPath) { AllowCheckouts = false };
+                    settings.Save();
+
+                    // Sanity check: the whole point of this test is that Bloom emits a BOM.
+                    Assert.That(
+                        File.ReadAllBytes(settingsPath).Take(3).ToArray(),
+                        Is.EqualTo(new byte[] { 0xEF, 0xBB, 0xBF }),
+                        "setup failed: expected Bloom to write a UTF-8 BOM"
+                    );
+                    tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+
+                    Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.False);
+                }
+            }
+        }
+
+        [Test]
+        public void GetAllowCheckoutsFromRepo_ElementMissing_IsTrue()
+        {
+            WithRepoSettingsFile(
+                "GetAllowCheckoutsMissing",
+                "<Collection version=\"0.2\"><AllowNewBooks>True</AllowNewBooks></Collection>",
+                (tc, settings) => Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.True)
+            );
+        }
+
+        /// <summary>
+        /// If we can't read the repo copy we must leave the setting alone rather than guess.
+        /// </summary>
+        [Test]
+        public void GetAllowCheckoutsFromRepo_NoRepoSettings_IsNull()
+        {
+            WithRepoSettingsFile(
+                "GetAllowCheckoutsNoRepo",
+                null,
+                (tc, settings) => Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.Null)
+            );
+        }
+
+        /// <summary>
+        /// The point of the whole exercise: an administrator pausing checkouts must take effect
+        /// on a machine that is already running, without waiting for a restart. See BL-16691.
+        /// </summary>
+        [Test]
+        public void UpdateAllowCheckoutsFromRepo_RepoSaysPaused_UpdatesLiveSettings()
+        {
+            WithRepoSettingsFile(
+                "UpdateAllowCheckoutsPaused",
+                "<Collection version=\"0.2\"><AllowCheckouts>False</AllowCheckouts></Collection>",
+                (tc, settings) =>
+                {
+                    // Sanity check: the running Bloom starts out allowing checkouts, which is what
+                    // makes the change below meaningful.
+                    Assert.That(
+                        settings.AllowCheckouts,
+                        Is.True,
+                        "setup failed: should have started out allowing checkouts"
+                    );
+
+                    tc.UpdateAllowCheckoutsFromRepo();
+
+                    Assert.That(settings.AllowCheckouts, Is.False);
+                }
+            );
+        }
+
+        [Test]
+        public void UpdateAllowCheckoutsFromRepo_NoRepoSettings_LeavesSettingAlone()
+        {
+            WithRepoSettingsFile(
+                "UpdateAllowCheckoutsNoRepo",
+                null,
+                (tc, settings) =>
+                {
+                    settings.AllowCheckouts = false;
+                    tc.UpdateAllowCheckoutsFromRepo();
+                    Assert.That(settings.AllowCheckouts, Is.False);
+                }
+            );
+        }
     }
 }

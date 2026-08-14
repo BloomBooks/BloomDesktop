@@ -1345,6 +1345,46 @@ namespace Bloom.TeamCollection
                 null,
                 null
             );
+            UpdateAllowCheckoutsFromRepo();
+        }
+
+        /// <summary>
+        /// Read the AllowCheckouts setting from the repo's copy of the collection settings, which
+        /// may be newer than the copy we read when the collection was opened. Returns null if we
+        /// can't tell (disconnected, no repo copy yet, or the file is unreadable right now).
+        /// </summary>
+        public virtual bool? GetAllowCheckoutsFromRepo()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Collection settings otherwise take effect only when Bloom next opens the collection, but
+        /// pausing checkouts must not wait for that: Bloom may stay open for days, so an
+        /// administrator who pauses checkouts would have no effect on anyone still running. Here we
+        /// pick up that one setting whenever the repo's collection files change. Deliberately only
+        /// this one -- reloading all collection settings mid-session is not safe. See BL-16691.
+        ///
+        /// This is best-effort by nature: the change has to reach this machine through the shared
+        /// folder first, and the user may be offline. The aim is that anyone with a working
+        /// connection stops being able to check out within a few minutes of the switch being
+        /// flipped, not that it is instant.
+        /// </summary>
+        internal void UpdateAllowCheckoutsFromRepo()
+        {
+            var settings = _tcManager?.Settings;
+            if (settings == null)
+                return; // no settings to update (unit tests)
+            var repoValue = GetAllowCheckoutsFromRepo();
+            if (repoValue == null || repoValue.Value == settings.AllowCheckouts)
+                return;
+            settings.AllowCheckouts = repoValue.Value;
+            Logger.WriteEvent(
+                $"TeamCollection: AllowCheckouts changed remotely to {repoValue.Value}."
+            );
+            // The caller (HandleRemoteBookChangesOnIdle) tells the browser to re-read book status
+            // immediately after this, which is what makes the checkout button and its explanation
+            // update without a restart.
         }
 
         /// <summary>
