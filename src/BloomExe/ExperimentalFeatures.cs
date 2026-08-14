@@ -35,6 +35,10 @@ namespace Bloom
             // I'm actually leaving the code as much like it previously was as possible
             // so we can reinstate it easily if we want to.
             SetValue(kExperimentalSourceBooks, false);
+
+            // The two settings we changed directly above (rather than through SetValue) need
+            // saving, or the "once and once only" migration would run again next time.
+            Settings.Default.Save();
         }
 
         public static void SetValue(string featureName, bool isEnabled)
@@ -53,6 +57,7 @@ namespace Bloom
             }
             Settings.Default.EnabledExperimentalFeatures =
                 Settings.Default.EnabledExperimentalFeatures.Trim(',');
+            Settings.Default.Save();
         }
 
         public static bool IsFeatureEnabled(string featureName)

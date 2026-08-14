@@ -41,6 +41,12 @@ namespace Bloom
 
             if (Settings.Default.MruProjects == null)
             {
+                // Deliberately not saved: every CLI verb constructs an ApplicationContainer too
+                // (see the RunningInConsoleMode test below), so saving here would let `bloom
+                // upload`, `hydrate` and friends rewrite the user's settings file on any machine
+                // whose profile has no MRU list yet - a harvester or service account, say - which
+                // is the very thing BL-16660 is about. Nothing needs it: the list is registered
+                // with the container either way, and the GUI saves it when it adds a path.
                 Settings.Default.MruProjects = new MostRecentPathsList();
             }
             builder.RegisterInstance(Settings.Default.MruProjects).SingleInstance();
