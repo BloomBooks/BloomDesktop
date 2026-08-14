@@ -1,5 +1,19 @@
 # Saving a page without reloading it — what it enables
 
+## A note on shape: this branch has to survive a long wait
+
+It will not merge for a while (it is too big a change to risk in the current release), so it is
+written to be cheap to merge later rather than to be the most direct expression of each change.
+Two rules follow from that, and they are worth keeping if you add to it:
+
+- **New behaviour goes in new files.** `pageContentDelays.ts`, `niceScrollCleanup.ts`,
+  `currentPageContent.ts`, `EditingStateMachine`'s new transitions, and the tests for all of them
+  are additions rather than edits. A new file cannot conflict with anything.
+- **Don't reshape existing code to add to it.** What conflicts is a *changed* line, not an added
+  one — so an extra argument on a call beats hoisting its lambda into a named local, even when the
+  named local reads a little better on its own. That single choice took `EditingModel.cs` from 130
+  changed lines to 37 and removed every reindentation.
+
 ## What changed
 
 Historically, gathering the current page's content for a save **wrecked the live page**. The
@@ -53,12 +67,15 @@ On top of that:
   after the browser's content is in the book DOM and before the book is written to disk, and
   returns the page to go to. So the whole `SavePending → SavedAndStripped → Navigating` sequence
   collapses into one `Editing → Navigating` step.
-- `EditingModel.SavePageInPlace(pageContentData)` and `SavePageInPlaceThen(pageContentData,
-  doBeforeSaveToDisk)` — the Javascript-initiated counterparts of `SaveThen`. They reuse
-  `UpdateBookDomFromBrowserPageContent()` and `SaveBookToDisk()`, so they make exactly the same
-  "just this page vs. full book save" decision as the old path. Each returns false, having done
-  nothing at all (the action has NOT run), if we were not in a position to save, so the caller can
-  fall back to `SaveThen`.
+- **`EditingModel.SaveThen(..., pageContentFromBrowser)`** — the way in. Given the content it does
+  the whole save here and now (privately, via `SavePageInPlaceThen`); without it, or if we turn out
+  not to be in a state to save, it asks the browser exactly as it always did. So a caller opts in
+  by passing one more argument and needs to know nothing else: in particular it does not have to
+  know that only a `Declined` outcome may fall back, which is the rule that, got wrong, deletes a
+  page twice. Both routes reuse `UpdateBookDomFromBrowserPageContent()` and `SaveBookToDisk()`, so
+  they make exactly the same "just this page vs. full book save" decision.
+- `EditingModel.SavePageInPlace(pageContentData)` — save and stay put, for the one caller that
+  wants no navigation at all (Copy Page).
 - API `editView/savePageInPlace`, called by `savePageWithoutReloading()` in `bloomEditing.ts`. The
   reply is not sent until the save has finished, so Javascript can `await` it.
 
@@ -71,11 +88,12 @@ its request:
 
 | Command | Was | Is now |
 | --- | --- | --- |
-| clicking a page thumbnail | `SaveThen` round trip, then navigate | `SavePageInPlaceThenGoToPage` |
-| Duplicate Page (button and context menu) | `SaveThen` round trip, then duplicate, then navigate | `SavePageInPlaceThen(duplicate)` |
-| Delete Page (button and context menu) | ditto | `SavePageInPlaceThen(delete)` |
-| Paste Page (context menu) | ditto | `SavePageInPlaceThen(insert)` |
-| dragging a page to a new position | ditto | `SavePageInPlaceThen(relocate)` |
+| clicking a page thumbnail | `SaveThen` round trip, then navigate | same `SaveThen`, given the content |
+| Duplicate Page (button and context menu) | `SaveThen` round trip, then duplicate, then navigate | ditto |
+| Delete Page (button and context menu) | ditto | ditto |
+| Paste Page (context menu) | ditto | ditto |
+| dragging a page to a new position | ditto | ditto |
+| Change Layout, import a video, convert a field to a derived one | `SaveThen` round trip, then reload the page | ditto — and they keep the reload, which is doing a second job for them (§1) |
 | **Copy Page** (context menu) | `SaveThen` round trip **and a reload of the page being copied** | `SavePageInPlace` — no navigation at all |
 
 Copy Page is the first of these to lose its reload entirely: copying doesn't change the page you
@@ -322,10 +340,12 @@ start a save from C# — but each converted caller shrinks the surface.
   has no `spec` member, so that comparison is always true and a Comical update is forced every time.
 - **"We didn't save" and "we tried and failed" are different answers, and the difference is a
   page.** `SavePageInPlaceThen` returns `InPlaceSaveOutcome`, and only `Declined` — which
-  guarantees `doBeforeSaveToDisk` never ran — permits the caller's fall back to `SaveThen`. This
-  is not hypothetical: the first version returned a plain bool, and when relocating a page threw
-  part way through, the caller read it as "not saved" and relocated the page a **second** time.
-  `EditingStateMachineTests` pins all three outcomes.
+  guarantees `doBeforeSaveToDisk` never ran — permits falling back to asking the browser. This is
+  not hypothetical: the first version returned a plain bool, and when relocating a page threw part
+  way through, the caller read it as "not saved" and relocated the page a **second** time.
+  `EditingStateMachineTests` pins all three outcomes. That rule now lives in exactly one place,
+  inside `SaveThen`, which is the main reason `SavePageInPlaceThen` is private: no caller can get
+  it wrong because no caller has to know about it.
 - **The action is allowed to navigate.** Under `SaveThen` it ran in `SavedAndStripped`, where
   `ToNavigating` is legal; it now runs in `Editing`, where `ToNavigating` throws. Relocating a page
   does navigate (`OnRelocatePage` refreshes the page whose side and number just changed), so
