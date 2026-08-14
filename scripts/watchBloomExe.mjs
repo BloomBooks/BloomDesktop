@@ -30,10 +30,16 @@ const parseArgs = () => {
             "..",
         ),
         vitePort: undefined,
+        noWatch: false,
     };
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
+
+        if (arg === "--no-watch") {
+            options.noWatch = true;
+            continue;
+        }
 
         if (arg === "--repo-root") {
             options.repoRoot = requireOptionValue(args, i, "--repo-root");
@@ -60,7 +66,7 @@ const parseArgs = () => {
 
         if (arg.startsWith("--")) {
             throw new Error(
-                "Unsupported option. Supported options are --repo-root and --vite-port.",
+                "Unsupported option. Supported options are --repo-root, --vite-port and --no-watch.",
             );
         }
     }
@@ -97,7 +103,12 @@ const launchTimeoutMs = (() => {
 })();
 const bloomMonitorPollMs = 500;
 const shortLivedBloomMs = 5000;
-const launchesUnderWatch = true;
+// Under `dotnet watch` (the default), the watch child outlives each Bloom and rebuilds/relaunches
+// on a source change. Under --no-watch we use plain `dotnet run`: one build, one Bloom, and a
+// source change is picked up only when you restart. That costs you hot reload, but it also skips
+// the most expensive part of starting up -- dotnet watch spends longer working out which files to
+// watch (a full project evaluation) than MSBuild spends compiling. See the launch phase timings.
+const launchesUnderWatch = !options.noWatch;
 const projectPath = path.join(
     options.repoRoot,
     "src",
@@ -148,14 +159,17 @@ const tryInferVitePortFromRunningBloom = async () => {
 const effectiveVitePort =
     options.vitePort ?? (await tryInferVitePortFromRunningBloom());
 
-const dotnetArgs = [
-    "watch",
-    "run",
-    "--project",
-    projectPath,
-    "--",
-    "--automation",
-];
+const dotnetArgs = launchesUnderWatch
+    ? ["watch", "run", "--project", projectPath, "--", "--automation"]
+    : ["run", "--project", projectPath, "--", "--automation"];
+
+if (!launchesUnderWatch) {
+    console.log(
+        "Starting Bloom WITHOUT dotnet watch. C# changes will not be picked up until you " +
+            "restart (POST /restart, or the launcherControl --restart helper), and Bloom's " +
+            "restart toast will not appear because nothing is watching for changes.",
+    );
+}
 
 const startupLabel = getHelpfulStartupLabel(options.repoRoot);
 
