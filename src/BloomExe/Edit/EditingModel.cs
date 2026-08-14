@@ -1668,15 +1668,36 @@ namespace Bloom.Edit
         //				var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
         //				if (AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook))
         /// <summary>
-        /// Save all the changes to the current page, then reload it (thus restoring any UI stuff that
-        /// was stripped out by the Save).
+        /// Save all the changes to the current page, then reload it.
+        ///
+        /// The reload used to be needed just to restore the UI markup the Save stripped out. That
+        /// is no longer true (BL-13502), but it is still doing a second job for these callers, and
+        /// that is why it stays: the page has to be rebuilt from the book DOM either because C#
+        /// just changed it (a new topic in the data div, new book settings) or because the browser
+        /// created elements that have never been through SetupElements (a new origami layout, an
+        /// imported video, a translation group replaced by a derived field).
+        ///
+        /// pageContentFromBrowser, when the caller was able to send it, removes the round trip:
+        /// we save and navigate in one step rather than asking the browser for the content and
+        /// waiting for it on another API. Callers that have no browser request to carry it (the
+        /// PageRefreshEvent handlers) leave it null and get the old path.
         /// </summary>
-        internal void SavePageAndReloadIt(bool forceFullSave = false)
+        internal void SavePageAndReloadIt(
+            bool forceFullSave = false,
+            string pageContentFromBrowser = null
+        )
         {
             if (CannotSavePage())
                 return;
             _nextSaveMustBeFull |= forceFullSave;
-            SaveThen(() => _pageSelection.CurrentSelection.Id, () => { });
+            Func<string> stayOnThisPage = () => _pageSelection.CurrentSelection.Id;
+            if (
+                pageContentFromBrowser != null
+                && SavePageInPlaceThen(pageContentFromBrowser, stayOnThisPage)
+                    != InPlaceSaveOutcome.Declined
+            )
+                return;
+            SaveThen(stayOnThisPage, () => { });
         }
 
         //invoked from TopicChooserDialog.tsx via API
@@ -1691,7 +1712,9 @@ namespace Bloom.Edit
 
         internal void SavePageAndReloadIt(ApiRequest request)
         {
-            SavePageAndReloadIt();
+            // The browser sends the current page's content with this request when it can; see
+            // saveChangesAndRethinkPage() in bloomEditing.ts.
+            SavePageAndReloadIt(pageContentFromBrowser: request.GetPageContentFromBrowserOrNull());
             request.PostSucceeded();
         }
 

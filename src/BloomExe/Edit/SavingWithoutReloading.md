@@ -113,9 +113,24 @@ directly.
 
 | Caller | Today | Could become |
 | --- | --- | --- |
-| `origami.ts:193`, `bloomVideo.ts:199`, `canvasControlTextMenuItems.ts:392`, `aiEditorLauncher.ts:158` — all four `postThatMightNavigate("common/saveChangesAndRethinkPageEvent")` | Save, then reload the page frame purely to get the DOM re-set-up | `await savePageWithoutReloading()`, then whatever local re-setup the change actually needs. Some of these want the reload for a genuine reason (a new stylesheet); most want it only because the save destroyed the page. |
-| `EditingViewApi` `editView/setTopic` → `SavePageAndReloadIt()` | Save + full reload to show a changed data-div value | Save in place, then update the one element in the DOM |
-| `EditingModel.SavePageAndReloadIt` generally (`PageRefreshEvent.SaveBeforeRefresh`) | Save + reload | Needs case-by-case review: some callers change the page HTML in C# and genuinely need the new HTML; those still need the reload. Others only needed it because of the stripping. |
+| ~~`origami.ts`, `bloomVideo.ts`, `canvasControlTextMenuItems.ts`~~ | — | **Done**: all three now call `saveChangesAndRethinkPage()` (`bloomEditing.ts`), which sends the content with the post. They **keep** the reload — see below; what went is the round trip. |
+| `EditingViewApi` `editView/setTopic` → `SavePageAndReloadIt()` | Save + full reload to show a changed data-div value | Could carry the content too — the topic chooser runs in the workspace root, so it can reach the page frame. It would have to change from a plain post string to JSON, and it is also used from the Publish tab where there is no editable page at all (the collect just returns nothing and it falls back, which is fine). Small win, so not done yet. |
+| `EditingModel.SavePageAndReloadIt` from `PageRefreshEvent` | Save + reload | Stays on `SaveThen`: these are raised inside C# (book settings, and `EditingModel` itself), so there is no browser request to carry the content. |
+
+### The three converted ones keep their reload, and that is right
+
+`common/saveChangesAndRethinkPageEvent` reads as "save this page, then show it again", and the
+original reason for showing it again — restoring the UI markup the save stripped — is gone. But the
+reload is doing a **second** job for these three callers, which is why they keep it: each has just
+restructured the page into a state that has never been through `SetupElements` (a new origami
+layout, an imported video, a translation group replaced by a derived field), and the reload is what
+runs the page's setup over the result. This is the `customXmatterPage` lesson (below) applied
+before making the mistake rather than after.
+
+So what they lost is the four-hop round trip, not the reload. Verified by driving Change Layout
+mode on and off in a real book: `editView/pageContent` never fires, the page reloads and comes back
+fully alive (CKEditor attached, canvas elements present), and text typed but not saved before the
+toggle is in the file on disk afterwards.
 
 `postThatMightNavigate` itself exists (`utils/bloomApi.ts`) only because the post's own page is
 about to be navigated out from under it, so the network error has to be swallowed. Calls that stop

@@ -5,7 +5,8 @@
 
 import * as React from "react";
 import { default as CheckIcon } from "@mui/icons-material/Check";
-import { get, postThatMightNavigate } from "../../../utils/bloomApi";
+import { get } from "../../../utils/bloomApi";
+import { saveChangesAndRethinkPage } from "../../js/bloomEditing";
 import { wrapWithRequestPageContentDelay } from "../../js/pageContentDelays";
 import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { IControlContext, IControlMenuCommandRow } from "./canvasControlTypes";
@@ -388,9 +389,7 @@ export function makeFieldTypeMenuItem(
                         translationGroup,
                     );
                     translationGroup.remove();
-                    postThatMightNavigate(
-                        "common/saveChangesAndRethinkPageEvent",
-                    );
+                    void saveChangesAndRethinkPage();
                     return;
                 }
 

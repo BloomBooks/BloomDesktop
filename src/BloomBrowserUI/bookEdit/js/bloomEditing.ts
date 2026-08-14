@@ -1401,6 +1401,24 @@ export async function savePageWithoutReloading(): Promise<void> {
     await postString("editView/savePageInPlace", content);
 }
 
+// Save the page and have C# rebuild it from the updated book DOM. Unlike
+// savePageWithoutReloading(), the page IS reloaded, and for these callers that is the point rather
+// than a cost: they have restructured the page in ways that have never been through SetupElements
+// (a new origami layout, an imported video, a translation group replaced by a derived field), and
+// the reload is what runs the page's setup over the result.
+//
+// What has gone is the round trip. Sending the content with the request means C# no longer has to
+// ask us for it and wait for the answer on a separate API before it can do anything. See
+// EditingModel.SavePageAndReloadIt.
+//
+// The post itself might navigate this very frame out from under us, hence postThatMightNavigate.
+export async function saveChangesAndRethinkPage(): Promise<void> {
+    await postThatMightNavigate(
+        "common/saveChangesAndRethinkPageEvent",
+        await getPageContentForSaveWhenReady(),
+    );
+}
+
 function requestPageContentInternal() {
     try {
         postString("editView/pageContent", getPageContentForSave());
