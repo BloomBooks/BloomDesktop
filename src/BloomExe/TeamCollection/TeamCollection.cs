@@ -870,6 +870,13 @@ namespace Bloom.TeamCollection
                     else
                     {
                         CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
+                        // Pick up AllowCheckouts from what we just pushed. Our own repo watcher is
+                        // deliberately suppressed while we write (see CopyRepoCollectionFilesFromLocal),
+                        // so without this the machine that made the change is the one machine that
+                        // does NOT act on it. Worse, our in-memory copy would still say checkouts are
+                        // allowed, and the next Save() would write that back over the change and
+                        // un-pause the whole team. See BL-16691.
+                        UpdateAllowCheckoutsFromRepo();
                     }
                 }
             }
