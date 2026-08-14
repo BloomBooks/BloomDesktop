@@ -28,6 +28,10 @@ import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import {
+    whenNoActiveDelays,
+    wrapWithRequestPageContentDelay,
+} from "./pageContentDelays";
+import {
     CanvasElementManager,
     initializeCanvasElementManager,
     theOneCanvasElementManager,
@@ -1343,83 +1347,16 @@ function removeEditingDebrisFromClone(cloneOfBody: HTMLElement) {
     removeTransientVideoTimestampParams(cloneOfBody);
 }
 
-// Delay notification management for requestPageContent
-const activeDelays: string[] = [];
-// Upper bound (not a fixed wait) on how long we wait for in-flight async DOM work
-// (image sizing, canvas-element layout, etc.) to finish before capturing anyway. The
-// wait ends as soon as activeDelays empties, so simple pages are unaffected by this value;
-// it only gives slower computers with complex pages more headroom before we give up.
-const kMaxWaitTimeMs = 4000;
-let requestPageContentTimeout: number | null = null;
-
-// Add a delay notification that will prevent requestPageContent from running immediately.
-// The caller must provide a string ID and pass it to removeRequestPageContentDelay when done.
-// IDs do not need to be unique; the same ID can be added multiple times.
-export function addRequestPageContentDelay(id: string): void {
-    activeDelays.push(id);
-}
-
-// Remove a delay notification, allowing requestPageContent to proceed if no other delays are active.
-// If this was the last delay, proceed with requesting page content.
-export function removeRequestPageContentDelay(id: string): void {
-    const index = activeDelays.indexOf(id);
-    if (index === -1) {
-        console.error(
-            `removeRequestPageContentDelay: ID "${id}" not found in active delays. Active delays: [${activeDelays.join(
-                ", ",
-            )}]`,
-        );
-        return;
-    }
-    activeDelays.splice(index, 1);
-
-    // If there are no more delays, go on and request page content.
-    if (activeDelays.length === 0 && requestPageContentTimeout) {
-        requestPageContentInternal();
-    }
-}
-
-// Wrap a function that returns a promise with delay management.
-// The delay is added before the function is called, and removed when the promise settles (resolves or rejects).
-// This ensures that requestPageContent waits for the async operation to complete before saving the page.
-export async function wrapWithRequestPageContentDelay<T>(
-    fn: () => Promise<T>,
-    delayId: string,
-): Promise<T> {
-    addRequestPageContentDelay(delayId);
-    try {
-        const result = await fn();
-        removeRequestPageContentDelay(delayId);
-        return result;
-    } catch (error) {
-        removeRequestPageContentDelay(delayId);
-        throw error;
-    }
-}
-
 // This is invoked from C# to get the current page content when we want to save it. It removes markup we don't want to save.
 // Then it calls an API with the information we need to save. This works around the lack of a
 // non-async runJavascript API in WebView2.
 //
-// When other javascript code is doing something that will change the page DOM asynchronously and will also cause the
-// document to be saved, race conditions are possible. In such cases the delay functions above
-// (preferably wrapWithRequestPageContentDelay) should be used to wrap the asynchronous DOM changes to ensure that this
-// function does not return the page content for saving until after the changes have been completed.
-// The current delay mechanism is not designed to handle multiple concurrent requests.
+// C# picks the moment, so any asynchronous DOM work in flight has to have registered itself with
+// the delay functions above (preferably wrapWithRequestPageContentDelay) for us to wait for it.
+// That is the whole reason those functions exist; Javascript-initiated saves can simply await their
+// own work before calling getPageContentForSaveWhenReady().
 export function requestPageContent() {
-    // Check if there are active delay requests.
-    if (activeDelays.length > 0) {
-        requestPageContentTimeout = window.setTimeout(() => {
-            console.warn(
-                `requestPageContent: Maximum wait time (${kMaxWaitTimeMs}ms) exceeded with active delay(s): [${activeDelays.join(
-                    ", ",
-                )}]. Proceeding anyway.`,
-            );
-            requestPageContentInternal();
-        }, kMaxWaitTimeMs);
-    } else {
-        requestPageContentInternal();
-    }
+    void whenNoActiveDelays().then(requestPageContentInternal);
 }
 
 // Return the page body + user stylesheet combined with the <SPLIT-DATA> delimiter that C# splits
@@ -1427,13 +1364,30 @@ export function requestPageContent() {
 // (savePageWithoutReloading), and the off-screen capture path (captureContentForExternalProcessing),
 // so the cleanup steps and the delimiter can't drift between them.
 //
+// Deliberately NOT exported: every caller should come through getPageContentForSaveWhenReady() (or
+// one of the two paths above, which do their own waiting), so that nobody can gather the page while
+// asynchronous work that belongs in it is still running. It is also deliberately synchronous, so
+// that no other event handler can run part way through capturing the page.
+//
 // This leaves the live page fully editable: see getBodyContentForSavePage.
-export function getPageContentForSave(): string {
+function getPageContentForSave(): string {
     const content = getBodyContentForSavePage();
     const userStylesheet = userStylesheetContent();
     // (We tossed up whether to use a JSON object instead of a delimiter, but combining two strings is
     // simpler: HTML needs escaping to live in JSON, which we'd then have to undo in C#.)
     return content + "<SPLIT-DATA>" + userStylesheet;
+}
+
+// The way anything outside this file gets the current page's content: wait for any in-flight async
+// DOM work that belongs in the saved page, then gather. This is what the page list's commands use
+// (see collectCurrentPageContent in pageThumbnailList/currentPageContent.ts) to send the content
+// along with a request that will make C# save it.
+//
+// Note the gather happens in the continuation of the await, with nothing awaited in between, so no
+// timer can start new work between our finding the register empty and our reading the page.
+export async function getPageContentForSaveWhenReady(): Promise<string> {
+    await whenNoActiveDelays();
+    return getPageContentForSave();
 }
 
 // Gather the current page's content and ask C# to save it into the book, WITHOUT the page being
@@ -1443,18 +1397,11 @@ export function getPageContentForSave(): string {
 // disk to be up to date) and simply carry on editing the same page.
 // Returns a promise that resolves when the book DOM has been updated and written to disk.
 export async function savePageWithoutReloading(): Promise<void> {
-    // Note that we gather the content synchronously, before the first await, for the same reason
-    // getBodyContentForSavePage() is not async: we don't want other event handlers running in the
-    // middle of capturing the page.
-    const content = getPageContentForSave();
+    const content = await getPageContentForSaveWhenReady();
     await postString("editView/savePageInPlace", content);
 }
 
 function requestPageContentInternal() {
-    if (requestPageContentTimeout !== null) {
-        clearTimeout(requestPageContentTimeout);
-    }
-    requestPageContentTimeout = null;
     try {
         postString("editView/pageContent", getPageContentForSave());
     } catch (e) {
@@ -1594,10 +1541,10 @@ function resizeCanvasElementsToFitContent(): void {
 // external/process-book API). It gathers the same page content that requestPageContent() would save
 // (via the shared extractAndStripPageContentForSave()), but instead of posting it to the editView/pageContent
 // API (which feeds the LIVE EditingModel and would corrupt the live editor's state), it stashes the
-// combined result on window.__bloomExternalPageContent for the C# caller to poll. Like
-// requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, up to
-// kMaxWaitTimeMs, so browser-based measurements (image sizing, canvas-element layout, etc.) are complete
-// before we capture the page. It also resizes text canvas elements to fit their content (see
+// combined result on window.__bloomExternalPageContent for the C# caller to poll. Like every other
+// gathering path it goes through whenNoActiveDelays() first, so browser-based measurements (image
+// sizing, canvas-element layout, etc.) are complete before we capture the page. It also resizes
+// text canvas elements to fit their content (see
 // resizeCanvasElementsToFitContent), since that auto-height adjustment is otherwise deferred on a
 // timer the wait loop does not track.
 export function captureContentForExternalProcessing(
@@ -1631,8 +1578,7 @@ export function captureContentForExternalProcessing(
         }
     }
 
-    const start = Date.now();
-    const finish = () => {
+    void whenNoActiveDelays().then(() => {
         try {
             resizeCanvasElementsToFitContent();
             window.__bloomExternalPageContent = getPageContentForSave();
@@ -1640,15 +1586,7 @@ export function captureContentForExternalProcessing(
             window.__bloomExternalPageContent =
                 "ERROR: " + (e && e.message) + "\n" + (e && e.stack);
         }
-    };
-    const waitForDelaysThenFinish = () => {
-        if (activeDelays.length === 0 || Date.now() - start > kMaxWaitTimeMs) {
-            finish();
-        } else {
-            setTimeout(waitForDelaysThenFinish, 50);
-        }
-    };
-    waitForDelaysThenFinish();
+    });
 }
 
 // The user-defined styles, which travel to C# as the second half of what

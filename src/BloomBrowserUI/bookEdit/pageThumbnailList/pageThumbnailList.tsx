@@ -817,11 +817,11 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
         const pageId = contextMenuPoint.pageId;
         // Most of these commands (duplicate, copy, paste, remove) have to save the current page
         // first, so send its content along. See collectCurrentPageContent().
-        const postCommand = () =>
+        const postCommand = async () =>
             postJson("pageList/contextMenuItemClicked", {
                 pageId,
                 commandId,
-                pageContent: collectCurrentPageContent(
+                pageContent: await collectCurrentPageContent(
                     `the ${commandId} command`,
                 ),
             });
@@ -1067,27 +1067,26 @@ function onDragStop(
     const newIndex = newItem.y * 2 + newItem.x;
 
     // Moving a page saves the current one first; see collectCurrentPageContent().
-    postJson("pageList/pageMoved", {
-        movedPageId,
-        newIndex,
-        pageContent: collectCurrentPageContent("the page move"),
-    });
+    void collectCurrentPageContent("the page move").then((pageContent) =>
+        postJson("pageList/pageMoved", {
+            movedPageId,
+            newIndex,
+            pageContent,
+        }),
+    );
 }
 
 // Tell C# the user picked a page, sending the CURRENT page's content along with the click so it
 // can save the page we are leaving in the same step. See collectCurrentPageContent().
-function postPageClicked(
+async function postPageClicked(
     pageId: string,
     detail: string,
     onSuccess?: () => void,
-): void {
+): Promise<void> {
+    const pageContent = await collectCurrentPageContent("the page change");
     postJson(
         "pageList/pageClicked",
-        {
-            pageId,
-            detail,
-            pageContent: collectCurrentPageContent("the page change"),
-        },
+        { pageId, detail, pageContent },
         onSuccess,
     );
 }

@@ -22,9 +22,11 @@ import "errorHandler";
 const kPageControlsContext = "pageThumbnailList-pageControls";
 
 // Duplicating or deleting a page makes C# save the current page first, so send its content along
-// and save it the round trip of asking us for it. See collectCurrentPageContent().
-function postPageControlCommand(endpoint: string) {
-    postThatMightNavigate(endpoint, collectCurrentPageContent(endpoint));
+// and save it the round trip of asking us for it. Note this waits for any in-flight change to the
+// page to settle before it posts, so the command does not start mid-change either. See
+// collectCurrentPageContent().
+async function postPageControlCommand(endpoint: string) {
+    postThatMightNavigate(endpoint, await collectCurrentPageContent(endpoint));
 }
 
 interface IPageControlsState {

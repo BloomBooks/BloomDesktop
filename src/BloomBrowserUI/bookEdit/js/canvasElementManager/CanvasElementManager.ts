@@ -21,11 +21,13 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../../utils/colorUtils
 import {
     IImageInfo,
     SetupElements,
-    addRequestPageContentDelay,
     attachToCkEditor,
     notifyToolOfChangedImage,
-    removeRequestPageContentDelay,
 } from "../bloomEditing";
+import {
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
+} from "../pageContentDelays";
 import {
     EnableAllImageEditing,
     getImageFromCanvasElement,

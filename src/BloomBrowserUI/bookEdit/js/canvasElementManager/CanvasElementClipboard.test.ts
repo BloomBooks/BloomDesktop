@@ -30,6 +30,9 @@ vi.mock("../bloomEditing", () => ({
         },
     ),
     notifyToolOfChangedImage: vi.fn(),
+}));
+
+vi.mock("../pageContentDelays", () => ({
     wrapWithRequestPageContentDelay: vi.fn(),
 }));
 
@@ -59,10 +62,8 @@ vi.mock("../../toolbox/canvas/CanvasElementItem", () => ({
 }));
 
 import { SetupMetadataButton } from "../bloomImages";
-import {
-    changeImageInfo,
-    wrapWithRequestPageContentDelay,
-} from "../bloomEditing";
+import { changeImageInfo } from "../bloomEditing";
+import { wrapWithRequestPageContentDelay } from "../pageContentDelays";
 import {
     CanvasElementClipboard,
     ICanvasElementClipboardHost,

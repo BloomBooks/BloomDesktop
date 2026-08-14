@@ -8,7 +8,7 @@ import {
     isPlaceHolderImage,
     SetupMetadataButton,
 } from "../bloomImages";
-import { wrapWithRequestPageContentDelay } from "../bloomEditing";
+import { wrapWithRequestPageContentDelay } from "../pageContentDelays";
 import { getExactClientSize } from "../../../utils/elementUtils";
 import type { IImageCropInfo } from "../ImageUndoManager";
 import {

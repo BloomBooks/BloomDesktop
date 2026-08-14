@@ -8,8 +8,8 @@ import {
     kMakeNewCanvasElement,
     changeImageInfo,
     notifyToolOfChangedImage,
-    wrapWithRequestPageContentDelay,
 } from "../bloomEditing";
+import { wrapWithRequestPageContentDelay } from "../pageContentDelays";
 import {
     isPlaceHolderImage,
     kImageContainerClass,

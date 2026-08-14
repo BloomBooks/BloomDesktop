@@ -54,7 +54,7 @@ export interface IPageFrameExports {
     savePageWithoutReloading(): Promise<void>;
     // The combined "body <SPLIT-DATA> userCss" string that a save needs, gathered without
     // disturbing the live page.
-    getPageContentForSave(): string;
+    getPageContentForSaveWhenReady(): Promise<string>;
     pageUnloading(): void;
     copySelection(): void;
     cutSelection(): void;
@@ -118,7 +118,7 @@ export interface IPageFrameExports {
 // This exports the functions that should be accessible from other IFrames or from C#.
 // For example, workspaceBundle.getEditablePageBundleExports().requestPageContent() can be called.
 import {
-    getPageContentForSave,
+    getPageContentForSaveWhenReady,
     requestPageContent,
     savePageWithoutReloading,
     captureContentForExternalProcessing,
@@ -135,9 +135,11 @@ import {
     changeImageByElement,
     imageOperationCanUndo,
     imageOperationUndo,
+} from "./js/bloomEditing";
+import {
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
-} from "./js/bloomEditing";
+} from "./js/pageContentDelays";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 // Called from the AI Image Editor overlay in the top window, which owns the session but
 // cannot touch this page itself; see aiEditorPageCommands.ts and aiEditorOverlay.ts.
@@ -147,7 +149,7 @@ import type {
     IAiImageEditorCommitResult,
 } from "./aiImageEditor/aiEditorShared";
 export {
-    getPageContentForSave,
+    getPageContentForSaveWhenReady,
     requestPageContent,
     savePageWithoutReloading,
     captureContentForExternalProcessing,
@@ -409,7 +411,7 @@ interface EditablePageBundleApi {
     requestPageContent: typeof requestPageContent;
     savePageWithoutReloading: typeof savePageWithoutReloading;
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
-    getPageContentForSave: typeof getPageContentForSave;
+    getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
@@ -488,7 +490,7 @@ window.editablePageBundle = {
     requestPageContent,
     savePageWithoutReloading,
     captureContentForExternalProcessing,
-    getPageContentForSave,
+    getPageContentForSaveWhenReady,
     pageUnloading,
     copySelection,
     cutSelection,

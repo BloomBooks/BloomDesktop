@@ -173,20 +173,44 @@ Note the existing `PerformanceMeasurement.Measure("Select Page")` in `HandlePage
 cannot answer this: it wraps only the *initiation* (`SaveThen` returns as soon as the browser has
 been asked), and it ignores nested measurements, so it cannot be subdivided either.
 
-## 2. The `requestPageContent` delay machinery
+## 2. The delay register — now the one gate, not a `requestPageContent` detail
 
 `addRequestPageContentDelay` / `removeRequestPageContentDelay` /
-`wrapWithRequestPageContentDelay` (`bloomEditing.ts`) exist because **C# picks the moment to
-capture the page**, so any asynchronous DOM work in flight has to register itself and hold the
-capture off — with a 4-second timeout after which we capture anyway and hope. There are ~10 call
-sites (image sizing, canvas background image fitting, clipboard paste, custom xmatter pages, the
-image gallery dialog…), plus a rule in `src/BloomBrowserUI/AGENTS.md` telling reviewers to check for
-it.
+`wrapWithRequestPageContentDelay` exist because **C# picks the moment to capture the page**, so any
+asynchronous DOM work in flight has to register itself and hold the capture off — with a 4-second
+cap after which we capture anyway and warn. There are ~10 call sites (image sizing, canvas
+background image fitting, clipboard paste, custom xmatter pages, the image gallery dialog…), plus a
+rule in `src/BloomBrowserUI/AGENTS.md` telling reviewers to check for it.
 
-When Javascript initiates the save, it can simply `await` its own async work first and then call
-`savePageWithoutReloading()`. The delay registry can't be deleted while C#-initiated saves exist,
-but every converted call site is one fewer place that has to remember the rule, and one fewer
-opportunity for the "proceeded anyway after 4s" warning to save a half-finished DOM.
+None of that can go while C# still initiates saves. What has changed is that a
+**browser**-initiated save is just as capable of catching the page mid-change, and the first
+version of this work did exactly that: `collectCurrentPageContent()` gathered synchronously,
+straight past the register. A page click landing while an image was still being sized would have
+written the half-sized page into the book.
+
+So the register moved out of `bloomEditing.ts` into its own module,
+`bookEdit/js/pageContentDelays.ts`, and gained `whenNoActiveDelays()` — the single gate that
+**every** route now waits on:
+
+| Route | Used by |
+| --- | --- |
+| `requestPageContent()` | the C#-initiated save; the reason the register exists |
+| `getPageContentForSaveWhenReady()` | `savePageWithoutReloading()`, and the page list's commands via `collectCurrentPageContent()` |
+| `captureContentForExternalProcessing()` | the off-screen book processor |
+
+The synchronous `getPageContentForSave()` is no longer exported from the module or across frames,
+so there is no longer a way to gather the page without passing the gate. And because the page
+list's commands await it, the *command* does not start either: C# is not asked to duplicate,
+delete or reorder anything until the page has settled. `pageContentDelays.spec.ts` covers the
+waiting, the release, the cap, and that a failed operation cannot leave the gate stuck shut.
+
+The gate also stopped polling. It used to be two mechanisms — a timeout that `requestPageContent`
+armed and `removeRequestPageContentDelay` fired early, plus a separate 50ms poll loop in the
+off-screen path. Now removing the last delay releases the waiters directly.
+
+Javascript-initiated saves could in principle just `await` their own async work instead of using
+the register at all — but they cannot know about work someone *else* started, so they wait here
+too. Each converted caller is still one fewer place that has to remember the rule.
 
 ## 3. `SaveThen`'s awkward shape
 
