@@ -995,8 +995,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     bubbleStyle: {
         kind: "panel",
         id: "bubbleStyle",
-        l10nId: "EditTab.Toolbox.ComicTool.Options.Style",
-        englishLabel: "Style",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.ElementType",
+        englishLabel: "Element Type",
         canvasToolsControl: BubbleStylePanelControl,
     },
     showTail: {
