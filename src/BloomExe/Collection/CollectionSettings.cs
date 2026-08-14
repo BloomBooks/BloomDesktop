@@ -395,7 +395,8 @@ namespace Bloom.Collection
             xml.Add(new XElement("Province", Province));
             xml.Add(new XElement("District", District));
             xml.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
-            // Unlike the settings around it, this one is written only when it is turned on.
+            // Unlike the settings around it, this one is written only when it has been set false
+            // to prevent checkouts.
             // Save() rebuilds the whole file, so writing it unconditionally would add a line to
             // every .bloomCollection in existence the first time its settings were saved -- and in
             // a Team Collection that edit gets pushed to the shared folder, so the churn would
@@ -1002,10 +1003,7 @@ namespace Bloom.Collection
         public bool AllowNewBooks { get; set; }
 
         /// <summary>
-        /// When false, no one may check out a book in this (Team) collection. There is deliberately
-        /// no UI for this; a collection administrator pauses checkouts by hand-editing the
-        /// AllowCheckouts element of the .bloomCollection file, which then syncs to the whole team.
-        /// See BL-16691.
+        /// When false, no one may check out a book in this (Team) collection. See BL-16691.
         /// </summary>
         public bool AllowCheckouts { get; set; }
 

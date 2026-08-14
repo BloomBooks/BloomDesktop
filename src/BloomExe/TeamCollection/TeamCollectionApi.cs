@@ -692,10 +692,11 @@ namespace Bloom.TeamCollection
 
             // The UI disables the checkout button when checkouts are paused, but it decides that
             // from a status snapshot it fetched earlier, and not every path back here re-checks it
-            // -- the post issued after the registration dialog, for one, doesn't. This is the
-            // authoritative copy of the setting, so refuse here rather than rely on the browser
-            // having current status. (The setting itself can't change mid-session: collection
-            // settings are only read as the collection opens.) See BL-16691.
+            // -- the post issued after the registration dialog, for one, doesn't. This is also the
+            // side that notices an administrator pausing checkouts part way through a session (see
+            // TeamCollection.UpdateAllowCheckoutsFromRepo), so it can know before the browser does.
+            // Either way, refuse here rather than rely on the browser having current status.
+            // See BL-16691.
             if (!_settings.AllowCheckouts)
             {
                 // Tell the browser to re-read book status, so the panel redraws itself into the
