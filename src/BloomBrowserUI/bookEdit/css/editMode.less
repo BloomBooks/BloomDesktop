@@ -936,9 +936,13 @@ div.textWholePage ul {
 // which is what the margin actually uses.
 @container style(--pageNumber-show-multiplicand:1) {
     #formatButton {
-        // Default: the theme's automatic-placement decision.
+        // Default: the theme's automatic-placement decision. The 0px fallback matters:
+        // legacy-theme books get no appearance-theme-default.css block (see
+        // AppearanceSettings.ToCss), so nothing defines the variable there, and an
+        // undefined var() would invalidate the margin calc() below entirely.
         --formatButton-pageNumber-dodge-effective: var(
-            --formatButton-pageNumber-dodge
+            --formatButton-pageNumber-dodge,
+            0px
         );
     }
     .split-pane-component.position-left
@@ -976,22 +980,21 @@ div.textWholePage ul {
     #formatButton {
         --formatButton-pageNumber-dodge-effective: var(
             --formatButton-pageNumber-dodge-when-forced-left,
-            var(--formatButton-pageNumber-dodge)
+            var(--formatButton-pageNumber-dodge, 0px)
         );
     }
 }
-// These selectors are more specific than the plain #formatButton rules above, so this
-// wins regardless of the page-number position: a text pane in the right/top half of the
-// page can never sit over a bottom-left page number, so it never needs the dodge.
+// A text box with any position-right or position-top split among its ancestors sits
+// somewhere in the right or top portion of the page, so it can never be over a
+// bottom-left page number and never needs the dodge — whatever the rules above decided.
+// Deliberately no child combinators: however deep the origami nesting, one top/right
+// ancestor is enough. (The margin rule above does use child combinators, and there they
+// matter: they anchor the dodge to a pane's own immediate text box and keep
+// canvas-element text boxes out of it.) These selectors still out-rank the plain
+// #formatButton rules above.
 @container style(--pageNumber-show-multiplicand:1) {
-    .split-pane-component.position-right
-        .split-pane-component-inner
-        > .bloom-translationGroup
-        > #formatButton,
-    .split-pane-component.position-top
-        .split-pane-component-inner
-        > .bloom-translationGroup
-        > #formatButton {
+    .split-pane-component.position-right #formatButton,
+    .split-pane-component.position-top #formatButton {
         --formatButton-pageNumber-dodge-effective: 0px;
     }
 }
