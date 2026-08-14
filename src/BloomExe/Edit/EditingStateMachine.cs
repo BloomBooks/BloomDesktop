@@ -433,6 +433,71 @@ public class EditingStateMachine
     }
 
     /// <summary>
+    /// Save the current page from content the browser sent WITH its request, then go to another
+    /// page. This is the page-change form of ToSavedInPlace, and it is the reason SavePending can
+    /// eventually go away: when the browser hands us the content up front there is nothing to wait
+    /// for, so a page change is Editing -> Navigating in one step, rather than
+    /// Editing -> SavePending (ask the browser, wait) -> SavedAndStripped -> Navigating.
+    ///
+    /// Note it deliberately does NOT go via ToNavigating(), which throws when called while
+    /// Editing. That guard exists because leaving a page with unsaved changes loses them; here we
+    /// have just saved, so going straight on is exactly right.
+    ///
+    /// If the save fails we report it and stay put, returning false. Navigating anyway would throw
+    /// away the edits we failed to save, and unlike the ToSavedAndStripped path we are not in a
+    /// broken state we have to escape: the browser still has the page, intact and editable.
+    /// </summary>
+    public bool ToSavedInPlaceThenNavigating(
+        string pageContentData,
+        string pageIdToGoTo,
+        Action<Exception> reportFailure
+    )
+    {
+        try
+        {
+            switch (_currentState)
+            {
+                case State.Editing:
+                    LogTransition("saved in place, then navigating", pageIdToGoTo);
+                    if (pageContentData.StartsWith("ERROR:"))
+                        throw new ApplicationException(pageContentData);
+                    _updateBookWithPageContents(_pageId, pageContentData);
+                    _pageIdWeFailedToSave = null;
+                    _saveBook();
+                    StartNavigating(pageIdToGoTo);
+                    return true;
+                case State.NoPage:
+                    // Nothing to save, but going to a page is still meaningful.
+                    StartNavigating(pageIdToGoTo);
+                    return true;
+                case State.Navigating:
+                case State.SavePending:
+                case State.SavedAndStripped:
+                    LogIgnore("save in place then navigate", pageIdToGoTo);
+                    return false;
+                default:
+                    throw new InvalidOperationException(
+                        "Unknown state In ToSavedInPlaceThenNavigating(): "
+                            + _currentState.ToString()
+                    );
+            }
+        }
+        catch (Exception e)
+        {
+            if (_pageId != _pageIdWeFailedToSave)
+            {
+                _pageIdWeFailedToSave = _pageId;
+                reportFailure(e);
+            }
+            return false;
+        }
+        finally
+        {
+            UpdateUI();
+        }
+    }
+
+    /// <summary>
     /// Source: API call providing content of current page will request this after saving and before executing pending action
     /// (e.g. changing pages)
     /// </summary>

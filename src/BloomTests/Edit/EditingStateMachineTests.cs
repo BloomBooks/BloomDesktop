@@ -55,6 +55,15 @@ namespace BloomTests.Edit
             return _stateMachine.ToSavedInPlace(content, e => _reportedFailures.Add(e));
         }
 
+        private bool SaveInPlaceThenGoTo(string content, string pageId)
+        {
+            return _stateMachine.ToSavedInPlaceThenNavigating(
+                content,
+                pageId,
+                e => _reportedFailures.Add(e)
+            );
+        }
+
         [Test]
         public void ToSavedInPlace_WhileEditing_UpdatesDomAndSavesWithoutNavigating()
         {
@@ -174,6 +183,100 @@ namespace BloomTests.Edit
                 _reportedFailures.Count,
                 Is.EqualTo(2),
                 "a successful save should clear the 'already reported' memory"
+            );
+        }
+
+        // ToSavedInPlaceThenNavigating: what a page click does when the click brought the outgoing
+        // page's content with it. See EditingModel.SavePageInPlaceThenGoToPage.
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_WhileEditing_SavesThenGoesToTheOtherPage()
+        {
+            GoToEditing("page1");
+            _navigatedTo.Clear();
+
+            Assert.That(SaveInPlaceThenGoTo("body<SPLIT-DATA>css", "page2"), Is.True);
+
+            Assert.That(_updatedWith, Is.EqualTo(new[] { "body<SPLIT-DATA>css" }));
+            Assert.That(_saveBookCount, Is.EqualTo(1));
+            Assert.That(
+                _navigatedTo,
+                Is.EqualTo(new[] { "page2" }),
+                "should have gone to the clicked page, in the same step"
+            );
+            Assert.That(_reportedFailures, Is.Empty);
+        }
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_NeverEntersSavePending()
+        {
+            GoToEditing("page1");
+
+            Assert.That(SaveInPlaceThenGoTo("content", "page2"), Is.True);
+
+            Assert.That(
+                _stateMachine.SavePending,
+                Is.False,
+                "the whole point is that we never wait on the browser, so we never sit in SavePending"
+            );
+            Assert.That(_stateMachine.Navigating, Is.True);
+        }
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_LandsInAStateThatCanAcceptTheNextPageClick()
+        {
+            // The bug this avoids: while in SavePending, a further page click is silently dropped.
+            GoToEditing("page1");
+            Assert.That(SaveInPlaceThenGoTo("content", "page2"), Is.True);
+
+            // Finish arriving, then click again, as an impatient user would.
+            Assert.That(_stateMachine.ToEditing("page2"), Is.True);
+            _navigatedTo.Clear();
+
+            Assert.That(SaveInPlaceThenGoTo("more content", "page3"), Is.True);
+            Assert.That(_navigatedTo, Is.EqualTo(new[] { "page3" }));
+        }
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_WhileNavigating_DoesNothing()
+        {
+            Assert.That(_stateMachine.ToNavigating("page1"), Is.True);
+            _navigatedTo.Clear();
+
+            Assert.That(SaveInPlaceThenGoTo("content", "page2"), Is.False);
+
+            Assert.That(_updatedWith, Is.Empty);
+            Assert.That(_saveBookCount, Is.EqualTo(0));
+            Assert.That(_navigatedTo, Is.Empty);
+        }
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_FromNoPage_JustGoesThere()
+        {
+            // Nothing to save, but the click still means "show me that page".
+            Assert.That(SaveInPlaceThenGoTo("content", "page2"), Is.True);
+
+            Assert.That(_updatedWith, Is.Empty, "there was no page to save");
+            Assert.That(_navigatedTo, Is.EqualTo(new[] { "page2" }));
+        }
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_SaveFails_ReportsAndStaysPut()
+        {
+            GoToEditing("page1");
+            _navigatedTo.Clear();
+
+            Assert.That(
+                SaveInPlaceThenGoTo("ERROR: the browser could not gather it", "page2"),
+                Is.False
+            );
+
+            Assert.That(_saveBookCount, Is.EqualTo(0));
+            Assert.That(_reportedFailures.Count, Is.EqualTo(1));
+            Assert.That(
+                _navigatedTo,
+                Is.Empty,
+                "going on to the clicked page would silently discard the edits we failed to save"
             );
         }
     }

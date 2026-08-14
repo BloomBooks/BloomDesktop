@@ -105,19 +105,30 @@ namespace Bloom.web
         {
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
+            // The page list sends the current page's content with the click when it can, so we can
+            // save it without asking the browser and waiting. It is absent when there is no page
+            // to collect from, or collecting threw; then we fall back to asking (see
+            // PageListController.OnPageSelectedChanged).
+            string pageContent = requestData.IsDefined("pageContent")
+                ? requestData.pageContent
+                : null;
 
             var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
             var label = shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
 
-            using (PerformanceMeasurement.Global?.Measure(label, requestData.detail ?? ""))
+            // Note this only measures getting the change under way; with the content in hand that
+            // is now most of the work, but the new page still has to be built and displayed.
+            using (
+                PerformanceMeasurement.Global?.Measure(
+                    label,
+                    requestData.IsDefined("detail") ? requestData.detail : ""
+                )
+            )
             {
-                //using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
-                //{
                 IPage page = PageFromId(pageId);
-                //}
 
                 if (page != null)
-                    PageList.PageClicked(page);
+                    PageList.PageClicked(page, pageContent);
             }
 
             request.PostSucceeded();

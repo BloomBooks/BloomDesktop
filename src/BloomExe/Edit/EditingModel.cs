@@ -1802,6 +1802,51 @@ namespace Bloom.Edit
             return true;
         }
 
+        /// <summary>
+        /// Go to another page, saving the current one from content the browser sent with the
+        /// request rather than asking for it and waiting.
+        ///
+        /// This is what a page click does when the page list was able to collect the content (see
+        /// pageThumbnailList.tsx). It replaces the SaveThen dance -- ask the browser, wait for it
+        /// to answer on a different API, run a pending action, then navigate -- with a
+        /// straight line, and so removes the window in which the editor sits in SavePending. That
+        /// window is not theoretical: a page click that arrives during it is silently dropped,
+        /// because SaveThen's "not in a state to save" callback for a page click does nothing.
+        ///
+        /// Returns false if we were not in a position to save, in which case we have not
+        /// navigated either and the caller should fall back to the SaveThen path.
+        /// </summary>
+        public bool SavePageInPlaceThenGoToPage(string pageContentData, string pageIdToGoTo)
+        {
+            if (CannotSavePage() || !_havePageToSave)
+                return false;
+            // See SavePageInPlace: an external process has replaced the book on disk, so this
+            // page's content must not be written over what it wrote.
+            if (_reloadFromDiskOnLeavingEditTab)
+                return false;
+
+            if (
+                !_stateMachine.ToSavedInPlaceThenNavigating(
+                    pageContentData,
+                    pageIdToGoTo,
+                    e =>
+                        ErrorReport.NotifyUserOfProblem(
+                            e,
+                            LocalizationManager.GetString(
+                                "Errors.CouldNotSavePage",
+                                "Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!"
+                            )
+                        )
+                )
+            )
+                return false;
+
+            // Unlike SavePageInPlace we do NOT refresh the full-save baseline or the thumbnail
+            // here: navigating does both for us, in EditingView.StartNavigationToEditPage, which
+            // the transition above has already started.
+            return true;
+        }
+
         private SafeXmlElement _modifiedPageElement;
 
         /// <summary>
