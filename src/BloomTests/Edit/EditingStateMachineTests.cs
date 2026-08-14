@@ -496,6 +496,39 @@ namespace BloomTests.Edit
         }
 
         [Test]
+        public void ToSavedInPlaceThenNavigating_ActionReturnsNull_LeavesTheEditorBlank()
+        {
+            // SaveThen's contract: returning null from the action means "show a blank screen",
+            // which is how leaving the edit tab saves. DoPostSaveAction honours it, so this must
+            // too -- trying to navigate to no page would leave a broken editor.
+            GoToEditing("page1");
+            _navigatedTo.Clear();
+
+            var result = SaveInPlaceThenDoAndGoTo("good content", () => null);
+
+            Assert.That(result, Is.EqualTo(InPlaceSaveOutcome.Saved));
+            Assert.That(_saveBookCount, Is.EqualTo(1), "it must still write the book");
+            Assert.That(_navigatedTo, Is.Empty, "there is no page to go to");
+            Assert.That(
+                _stateMachine.ToNavigating("page2"),
+                Is.True,
+                "we should be in NoPage, from which navigating is allowed again"
+            );
+        }
+
+        [Test]
+        public void ToNoPage_WhileEditingAndNoSaveInPlaceUnderWay_StillThrows()
+        {
+            // As with ToNavigating, the relaxation must be scoped to the action.
+            GoToEditing("page1");
+
+            Assert.Throws<InvalidOperationException>(
+                () => _stateMachine.ToNoPage(),
+                "emptying an unsaved page must still be refused"
+            );
+        }
+
+        [Test]
         public void ToNavigating_WhileEditingAndNoSaveInPlaceUnderWay_StillThrows()
         {
             // The relaxation above must be scoped to the action; the ordinary guard against

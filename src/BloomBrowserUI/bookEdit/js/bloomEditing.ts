@@ -1498,7 +1498,15 @@ function cleanCloneOfBodyForSave(cloneOfBody: HTMLElement) {
     // The bubble tails Comical draws, and the canvas element state that goes with them. Like
     // CKEditor, Comical can only produce this from the live editing state, so this reads from the
     // live page and writes into the clone.
-    theOneCanvasElementManager.prepareCloneOfBodyForSave(cloneOfBody);
+    //
+    // Only when canvas-element editing is actually on, which is the guard the old destructive code
+    // had: it reached this work through `if (canvasElementEditingOn) turnOffCanvasElementEditing()`.
+    // Doing it unconditionally would write balloon position and tail data on pages where editing is
+    // suspended (the Image Description and Motion tools, a game page in Play mode) -- pages whose
+    // balloon data a save used to leave exactly as it found it.
+    if (theOneCanvasElementManager.isCanvasElementEditingOn) {
+        theOneCanvasElementManager.prepareCloneOfBodyForSave(cloneOfBody);
+    }
 
     // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports(). (Off-screen,
     // e.g. process-book, there is no toolbox iframe, so this is a no-op there.)

@@ -132,6 +132,16 @@ public class EditingStateMachine
                     _currentState = State.NoPage;
                     return true;
                 case State.Editing:
+                    if (_runningSaveInPlaceAction)
+                    {
+                        // See _runningSaveInPlaceAction: we have just saved, so the guard below
+                        // (which is about losing unsaved edits) has nothing to protect. This is
+                        // the "action returned null, leave the editor blank" case.
+                        LogTransition("empty page", null);
+                        _hidePage();
+                        _currentState = State.NoPage;
+                        return true;
+                    }
                     LogError("empty page");
                     throw new InvalidOperationException("Cannot empty page while editing.");
                 case State.SavePending:
@@ -557,6 +567,14 @@ public class EditingStateMachine
         {
             var pageIdToGoTo = doBeforeSaveToDisk();
             _saveBook();
+            if (pageIdToGoTo == null)
+            {
+                // SaveThen's contract: the action returns null to say "leave the editor blank"
+                // (which is how leaving the edit tab saves). DoPostSaveAction honours that, so we
+                // must too -- trying to navigate to no page would just leave a broken editor.
+                ToNoPage();
+                return;
+            }
             // Via ToNavigating rather than StartNavigating so that an action which already
             // navigated to this very page (as relocating one does) is not made to do it twice.
             // While _runningSaveInPlaceAction is set, ToNavigating accepts being called from
