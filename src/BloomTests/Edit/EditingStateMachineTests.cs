@@ -55,12 +55,15 @@ namespace BloomTests.Edit
             return _stateMachine.ToSavedInPlace(content, e => _reportedFailures.Add(e));
         }
 
-        private bool SaveInPlaceThenGoTo(string content, string pageId)
+        private InPlaceSaveOutcome SaveInPlaceThenGoTo(string content, string pageId)
         {
             return SaveInPlaceThenDoAndGoTo(content, () => pageId);
         }
 
-        private bool SaveInPlaceThenDoAndGoTo(string content, Func<string> doBeforeSaveToDisk)
+        private InPlaceSaveOutcome SaveInPlaceThenDoAndGoTo(
+            string content,
+            Func<string> doBeforeSaveToDisk
+        )
         {
             return _stateMachine.ToSavedInPlaceThenNavigating(
                 content,
@@ -200,7 +203,10 @@ namespace BloomTests.Edit
             GoToEditing("page1");
             _navigatedTo.Clear();
 
-            Assert.That(SaveInPlaceThenGoTo("body<SPLIT-DATA>css", "page2"), Is.True);
+            Assert.That(
+                SaveInPlaceThenGoTo("body<SPLIT-DATA>css", "page2"),
+                Is.EqualTo(InPlaceSaveOutcome.Saved)
+            );
 
             Assert.That(_updatedWith, Is.EqualTo(new[] { "body<SPLIT-DATA>css" }));
             Assert.That(_saveBookCount, Is.EqualTo(1));
@@ -217,7 +223,10 @@ namespace BloomTests.Edit
         {
             GoToEditing("page1");
 
-            Assert.That(SaveInPlaceThenGoTo("content", "page2"), Is.True);
+            Assert.That(
+                SaveInPlaceThenGoTo("content", "page2"),
+                Is.EqualTo(InPlaceSaveOutcome.Saved)
+            );
 
             Assert.That(
                 _stateMachine.SavePending,
@@ -232,13 +241,19 @@ namespace BloomTests.Edit
         {
             // The bug this avoids: while in SavePending, a further page click is silently dropped.
             GoToEditing("page1");
-            Assert.That(SaveInPlaceThenGoTo("content", "page2"), Is.True);
+            Assert.That(
+                SaveInPlaceThenGoTo("content", "page2"),
+                Is.EqualTo(InPlaceSaveOutcome.Saved)
+            );
 
             // Finish arriving, then click again, as an impatient user would.
             Assert.That(_stateMachine.ToEditing("page2"), Is.True);
             _navigatedTo.Clear();
 
-            Assert.That(SaveInPlaceThenGoTo("more content", "page3"), Is.True);
+            Assert.That(
+                SaveInPlaceThenGoTo("more content", "page3"),
+                Is.EqualTo(InPlaceSaveOutcome.Saved)
+            );
             Assert.That(_navigatedTo, Is.EqualTo(new[] { "page3" }));
         }
 
@@ -248,7 +263,10 @@ namespace BloomTests.Edit
             Assert.That(_stateMachine.ToNavigating("page1"), Is.True);
             _navigatedTo.Clear();
 
-            Assert.That(SaveInPlaceThenGoTo("content", "page2"), Is.False);
+            Assert.That(
+                SaveInPlaceThenGoTo("content", "page2"),
+                Is.EqualTo(InPlaceSaveOutcome.Declined)
+            );
 
             Assert.That(_updatedWith, Is.Empty);
             Assert.That(_saveBookCount, Is.EqualTo(0));
@@ -259,7 +277,10 @@ namespace BloomTests.Edit
         public void ToSavedInPlaceThenNavigating_FromNoPage_JustGoesThere()
         {
             // Nothing to save, but the click still means "show me that page".
-            Assert.That(SaveInPlaceThenGoTo("content", "page2"), Is.True);
+            Assert.That(
+                SaveInPlaceThenGoTo("content", "page2"),
+                Is.EqualTo(InPlaceSaveOutcome.Saved)
+            );
 
             Assert.That(_updatedWith, Is.Empty, "there was no page to save");
             Assert.That(_navigatedTo, Is.EqualTo(new[] { "page2" }));
@@ -273,7 +294,8 @@ namespace BloomTests.Edit
 
             Assert.That(
                 SaveInPlaceThenGoTo("ERROR: the browser could not gather it", "page2"),
-                Is.False
+                Is.EqualTo(InPlaceSaveOutcome.Failed),
+                "Failed, not Declined: the caller must not fall back and run the action again"
             );
 
             Assert.That(_saveBookCount, Is.EqualTo(0));
@@ -309,7 +331,7 @@ namespace BloomTests.Edit
                 }
             );
 
-            Assert.That(result, Is.True);
+            Assert.That(result, Is.EqualTo(InPlaceSaveOutcome.Saved));
             Assert.That(
                 domUpdatesWhenActionRan,
                 Is.EqualTo(1),
@@ -339,12 +361,12 @@ namespace BloomTests.Edit
                 }
             );
 
-            Assert.That(result, Is.False);
+            Assert.That(result, Is.EqualTo(InPlaceSaveOutcome.Declined));
             Assert.That(
                 actionRan,
                 Is.False,
-                "the caller falls back to SaveThen when we return false, so the action must not "
-                    + "have happened already -- it would then happen twice"
+                "the caller falls back to SaveThen when we Decline, so the action must not have "
+                    + "happened already -- it would then happen twice"
             );
         }
 
@@ -363,11 +385,108 @@ namespace BloomTests.Edit
                 }
             );
 
-            Assert.That(result, Is.False);
+            Assert.That(
+                result,
+                Is.EqualTo(InPlaceSaveOutcome.Failed),
+                "Failed, not Declined -- see the next test for why the difference matters"
+            );
             Assert.That(
                 actionRan,
                 Is.False,
                 "deleting or duplicating a page we failed to save would act on stale content"
+            );
+        }
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_ActionThrows_ReportsFailedSoTheCallerWillNotRetry()
+        {
+            // Found live: relocating a page threw part way through, the caller read the result as
+            // "not saved, fall back to SaveThen", and the page got relocated a SECOND time. An
+            // action that has already changed the book must never be offered to the fallback.
+            GoToEditing("page1");
+            var timesActionRan = 0;
+
+            var result = SaveInPlaceThenDoAndGoTo(
+                "good content",
+                () =>
+                {
+                    timesActionRan++;
+                    throw new ApplicationException("the action blew up after changing the book");
+                }
+            );
+
+            Assert.That(timesActionRan, Is.EqualTo(1), "test setup: the action should have run");
+            Assert.That(
+                result,
+                Is.EqualTo(InPlaceSaveOutcome.Failed),
+                "Declined here would invite the caller to run the action a second time"
+            );
+            Assert.That(_reportedFailures.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_ActionNavigatesToTheSamePage_DoesNotNavigateTwice()
+        {
+            // Found live: relocating a page raises RelocatePageEvent, and OnRelocatePage refreshes
+            // the display of the page whose HTML just changed -- i.e. the action navigates. That
+            // used to throw "Cannot navigate while editing", because unlike the old SaveThen flow
+            // (which ran the action in SavedAndStripped) we are still in Editing. It is safe here:
+            // the browser's content is already in the book DOM, so there is nothing left to lose.
+            GoToEditing("page1");
+            _navigatedTo.Clear();
+
+            var result = SaveInPlaceThenDoAndGoTo(
+                "good content",
+                () =>
+                {
+                    _stateMachine.ToNavigating("theMovedPage");
+                    return "theMovedPage";
+                }
+            );
+
+            Assert.That(result, Is.EqualTo(InPlaceSaveOutcome.Saved));
+            Assert.That(_reportedFailures, Is.Empty, "an action that navigates is legal here");
+            Assert.That(_saveBookCount, Is.EqualTo(1));
+            Assert.That(
+                _navigatedTo,
+                Is.EqualTo(new[] { "theMovedPage" }),
+                "the action's navigation and ours are to the same page, so it should happen once"
+            );
+        }
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_ActionNavigatesElsewhere_OurTargetWins()
+        {
+            GoToEditing("page1");
+            _navigatedTo.Clear();
+
+            var result = SaveInPlaceThenDoAndGoTo(
+                "good content",
+                () =>
+                {
+                    _stateMachine.ToNavigating("somewhereTheActionWanted");
+                    return "whereWeSaidToGo";
+                }
+            );
+
+            Assert.That(result, Is.EqualTo(InPlaceSaveOutcome.Saved));
+            Assert.That(
+                _navigatedTo,
+                Is.EqualTo(new[] { "somewhereTheActionWanted", "whereWeSaidToGo" }),
+                "the page the action named is where we must end up"
+            );
+        }
+
+        [Test]
+        public void ToNavigating_WhileEditingAndNoSaveInPlaceUnderWay_StillThrows()
+        {
+            // The relaxation above must be scoped to the action; the ordinary guard against
+            // leaving a page with unsaved edits has to stay.
+            GoToEditing("page1");
+
+            Assert.Throws<InvalidOperationException>(
+                () => _stateMachine.ToNavigating("page2"),
+                "navigating away from an unsaved page must still be refused"
             );
         }
     }

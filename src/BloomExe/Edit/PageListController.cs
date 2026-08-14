@@ -52,6 +52,7 @@ namespace Bloom.Edit
             if (
                 contentFromBrowser != null
                 && _model.SavePageInPlaceThenGoToPage(contentFromBrowser, pageId)
+                    != InPlaceSaveOutcome.Declined
             )
                 return;
 

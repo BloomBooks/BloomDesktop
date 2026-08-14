@@ -581,7 +581,7 @@ namespace Bloom.Edit
                     pageContentFromBrowser,
                     duplicateThePage,
                     forceFullSave: true
-                )
+                ) != InPlaceSaveOutcome.Declined
             )
                 return;
             SaveThen(
@@ -631,6 +631,7 @@ namespace Bloom.Edit
             if (
                 pageContentFromBrowser != null
                 && SavePageInPlaceThen(pageContentFromBrowser, deleteThePage, forceFullSave: true)
+                    != InPlaceSaveOutcome.Declined
             )
                 return;
             SaveThen(
@@ -743,6 +744,7 @@ namespace Bloom.Edit
             if (
                 pageContentFromBrowser != null
                 && SavePageInPlaceThen(pageContentFromBrowser, insertThePage, forceFullSave: true)
+                    != InPlaceSaveOutcome.Declined
             )
                 return;
             SaveThen(
@@ -1854,7 +1856,10 @@ namespace Bloom.Edit
         /// Returns false if we were not in a position to save, in which case we have not
         /// navigated either and the caller should fall back to the SaveThen path.
         /// </summary>
-        public bool SavePageInPlaceThenGoToPage(string pageContentData, string pageIdToGoTo)
+        public InPlaceSaveOutcome SavePageInPlaceThenGoToPage(
+            string pageContentData,
+            string pageIdToGoTo
+        )
         {
             return SavePageInPlaceThen(pageContentData, () => pageIdToGoTo);
         }
@@ -1873,44 +1878,40 @@ namespace Bloom.Edit
         /// in its own reply, which SaveThen cannot, since by the time it knows, the request is long
         /// since completed.
         ///
-        /// Returns false, having done nothing, if we were not in a position to save; the caller
-        /// should then fall back to SaveThen. Note that this means doBeforeSaveToDisk has NOT run,
-        /// so it must not be something the caller has already committed to.
+        /// Returns Declined, having done nothing at all, if we were not in a position to save; only
+        /// then may the caller fall back to SaveThen. If it returns Failed, doBeforeSaveToDisk may
+        /// already have run and changed the book, so falling back would do it a second time -- see
+        /// InPlaceSaveOutcome.
         /// </summary>
-        public bool SavePageInPlaceThen(
+        public InPlaceSaveOutcome SavePageInPlaceThen(
             string pageContentData,
             Func<string> doBeforeSaveToDisk,
             bool forceFullSave = false
         )
         {
             if (CannotSavePage() || !_havePageToSave)
-                return false;
+                return InPlaceSaveOutcome.Declined;
             // See SavePageInPlace: an external process has replaced the book on disk, so this
             // page's content must not be written over what it wrote.
             if (_reloadFromDiskOnLeavingEditTab)
-                return false;
+                return InPlaceSaveOutcome.Declined;
 
             _nextSaveMustBeFull |= forceFullSave;
-            if (
-                !_stateMachine.ToSavedInPlaceThenNavigating(
-                    pageContentData,
-                    doBeforeSaveToDisk,
-                    e =>
-                        ErrorReport.NotifyUserOfProblem(
-                            e,
-                            LocalizationManager.GetString(
-                                "Errors.CouldNotSavePage",
-                                "Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!"
-                            )
+            // Unlike SavePageInPlace there is nothing to do afterwards on success: we do NOT
+            // refresh the full-save baseline or the thumbnail, because navigating does both for
+            // us, in EditingView.StartNavigationToEditPage, which this has already started.
+            return _stateMachine.ToSavedInPlaceThenNavigating(
+                pageContentData,
+                doBeforeSaveToDisk,
+                e =>
+                    ErrorReport.NotifyUserOfProblem(
+                        e,
+                        LocalizationManager.GetString(
+                            "Errors.CouldNotSavePage",
+                            "Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!"
                         )
-                )
-            )
-                return false;
-
-            // Unlike SavePageInPlace we do NOT refresh the full-save baseline or the thumbnail
-            // here: navigating does both for us, in EditingView.StartNavigationToEditPage, which
-            // the transition above has already started.
-            return true;
+                    )
+            );
         }
 
         private SafeXmlElement _modifiedPageElement;

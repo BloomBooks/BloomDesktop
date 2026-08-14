@@ -347,7 +347,7 @@ namespace Bloom.Edit
                     pageContentFromBrowser,
                     relocateThePage,
                     forceFullSave: true
-                )
+                ) != InPlaceSaveOutcome.Declined
             )
                 return;
             Model.SaveThen(

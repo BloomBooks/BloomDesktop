@@ -281,11 +281,18 @@ start a save from C# — but each converted caller shrinks the surface.
   types finally apply. They are unrelated to this work but must be fixed to pin 0.4.1. The most
   interesting is `CanvasElementResizeAdjustments.ts:161`, `bubbleSpec.spec !== "none"` — `BubbleSpec`
   has no `spec` member, so that comparison is always true and a Comical update is forced every time.
-- **A command that carries content must be a no-op when we decline to save.** `SavePageInPlace*`
-  returns false *before running doBeforeSaveToDisk* when we are not in a state to save, precisely
-  so the caller can fall back to `SaveThen` without the page being duplicated (or deleted!) twice.
-  `EditingStateMachineTests` pins that, because it is the kind of thing a later refactor could
-  quietly break with no visible symptom until a user loses a page.
+- **"We didn't save" and "we tried and failed" are different answers, and the difference is a
+  page.** `SavePageInPlaceThen` returns `InPlaceSaveOutcome`, and only `Declined` — which
+  guarantees `doBeforeSaveToDisk` never ran — permits the caller's fall back to `SaveThen`. This
+  is not hypothetical: the first version returned a plain bool, and when relocating a page threw
+  part way through, the caller read it as "not saved" and relocated the page a **second** time.
+  `EditingStateMachineTests` pins all three outcomes.
+- **The action is allowed to navigate.** Under `SaveThen` it ran in `SavedAndStripped`, where
+  `ToNavigating` is legal; it now runs in `Editing`, where `ToNavigating` throws. Relocating a page
+  does navigate (`OnRelocatePage` refreshes the page whose side and number just changed), so
+  `_runningSaveInPlaceAction` relaxes that guard for the duration of the action — safely, because
+  by then the browser's content is already in the book DOM and there is nothing left to lose. Our
+  own navigation afterwards supersedes the action's, or is ignored when it is to the same page.
 - **The context menu runs its command ~100ms after the click** (`HandleContextMenuItemClickedRequest`
   defers it so the menu can close). The content we save is therefore gathered slightly *earlier*
   than the old path gathered it — at click time rather than 100ms later. Nothing a user can type
