@@ -1316,6 +1316,46 @@ namespace BloomTests.TeamCollection
             );
         }
 
+        /// <summary>
+        /// Reading the repo copy has to cope with what Bloom actually writes, and Bloom writes the
+        /// settings file with a UTF-8 BOM. The other tests here write the file themselves without
+        /// one, so they would not notice if the BOM reached the XML parser. See BL-16691.
+        /// </summary>
+        [Test]
+        public void GetAllowCheckoutsFromRepo_FileWrittenByBloomWithBom_IsRead()
+        {
+            using (var collectionFolder = new TemporaryFolder("GetAllowCheckoutsBom_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder("GetAllowCheckoutsBom_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+
+                    // Write it the way Bloom really does, rather than by hand.
+                    var settings = new CollectionSettings(settingsPath) { AllowCheckouts = false };
+                    settings.Save();
+
+                    // Sanity check: the whole point of this test is that Bloom emits a BOM.
+                    Assert.That(
+                        File.ReadAllBytes(settingsPath).Take(3).ToArray(),
+                        Is.EqualTo(new byte[] { 0xEF, 0xBB, 0xBF }),
+                        "setup failed: expected Bloom to write a UTF-8 BOM"
+                    );
+                    tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+
+                    Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.False);
+                }
+            }
+        }
+
         [Test]
         public void GetAllowCheckoutsFromRepo_ElementMissing_IsTrue()
         {
