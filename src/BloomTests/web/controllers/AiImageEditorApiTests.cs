@@ -391,6 +391,56 @@ namespace BloomTests.web.controllers
             Assert.That(new FileInfo(path).Length, Is.EqualTo(0));
         }
 
+        // A body that hands over some bytes and then fails, standing in for a client that goes
+        // away mid-upload.
+        private class FailingStream : MemoryStream
+        {
+            public FailingStream(byte[] initialBytes)
+                : base(initialBytes) { }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                var read = base.Read(buffer, offset, count);
+                if (Position >= Length)
+                    throw new IOException("the client went away");
+                return read;
+            }
+        }
+
+        [Test]
+        public void WriteRequestBodyToFile_WriteFails_KeepsTheOldFileAndLeavesNoTempBehind()
+        {
+            // Writing through a temp file exists so a half-finished upload can't destroy the
+            // good file that was there. The temp itself must not survive either: nothing would
+            // serve or enumerate it, but it can be multi-MB and would sit in the book's folder
+            // for the life of the book.
+            var path = HistoryFilePath("result.png");
+            var good = new byte[] { 1, 2, 3 };
+            AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(good));
+            Assert.That(File.ReadAllBytes(path), Is.EqualTo(good), "setup: the good file is there");
+
+            Assert.That(
+                () =>
+                    AiImageEditorApi.WriteRequestBodyToFile(
+                        path,
+                        new FailingStream(new byte[5000])
+                    ),
+                Throws.InstanceOf<IOException>(),
+                "a failed body read must still fail the request"
+            );
+
+            Assert.That(
+                File.ReadAllBytes(path),
+                Is.EqualTo(good),
+                "the file that was there must be untouched"
+            );
+            Assert.That(
+                Directory.EnumerateFiles(Path.GetDirectoryName(path), "*.tmp"),
+                Is.Empty,
+                "the failed write's temp file must have been cleaned up"
+            );
+        }
+
         [Test]
         public void WriteRequestBodyToFile_ConcurrentWritesOfTheSameFile_AllSucceed()
         {

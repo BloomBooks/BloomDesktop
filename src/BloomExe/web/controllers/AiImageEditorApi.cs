@@ -632,7 +632,12 @@ namespace Bloom.web.controllers
         /// The lock object that serializes CHANGES to one file of the AI image editor's folder
         /// (see <see cref="WriteRequestBodyToFile"/> for why they have to be serialized). A GET
         /// deliberately doesn't take it: a read can't corrupt anything, and making a response
-        /// stream wait behind a multi-MB upload would cost more than it saves.
+        /// stream wait behind a multi-MB upload would cost more than it saves. What a read can
+        /// hit is the moment of the swap — RobustFile.Move(overWrite) is a delete followed by a
+        /// move, not an atomic replace, so a GET landing in that window can 404 — but that
+        /// window is as old as this endpoint, and nothing reads a file while writing it: the AI
+        /// image editor GETs history files when it starts, and writes them when it generates or
+        /// commits.
         /// </summary>
         private static object GetFileLock(string fullPath)
         {
@@ -680,15 +685,54 @@ namespace Bloom.web.controllers
             lock (GetFileLock(fullPath))
             {
                 var tempPath = fullPath + ".tmp";
-                using (body)
-                using (var output = RobustFile.Create(tempPath))
+                var swapped = false;
+                try
                 {
-                    // The body stream is null for an empty body (no entity body); that still
-                    // means "save an empty file" here, so just leave the freshly created temp
-                    // file empty rather than copying.
-                    body?.CopyTo(output);
+                    using (body)
+                    using (var output = RobustFile.Create(tempPath))
+                    {
+                        // The body stream is null for an empty body (no entity body); that
+                        // still means "save an empty file" here, so just leave the freshly
+                        // created temp file empty rather than copying.
+                        body?.CopyTo(output);
+                    }
+                    RobustFile.Move(tempPath, fullPath, true); // true: overwrite
+                    swapped = true;
                 }
-                RobustFile.Move(tempPath, fullPath, true); // true: overwrite
+                finally
+                {
+                    // A write that dies partway (the client goes away, the disk fills up) must
+                    // not leave its half-written temp behind. Nothing would ever serve or
+                    // enumerate it — the name is neither allow-listed nor an image extension —
+                    // but it can be multi-MB, and it would sit in the book's folder for the
+                    // life of the book. Whatever file it was going to replace is untouched,
+                    // which is the whole point of writing through a temp, so the temp is all
+                    // there is to clean up.
+                    if (!swapped)
+                        DeleteTempFileIgnoringErrors(tempPath);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes the temp file left by a failed write. Deliberately swallows anything that
+        /// goes wrong: we are already on our way out with the real exception — the one the
+        /// caller needs and the one that becomes the request's error — and failing to tidy up
+        /// must not replace it with a less informative one.
+        /// </summary>
+        private static void DeleteTempFileIgnoringErrors(string tempPath)
+        {
+            try
+            {
+                if (RobustFile.Exists(tempPath))
+                    RobustFile.Delete(tempPath);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError(
+                    $"AiImageEditorApi: could not remove the temp file {tempPath} left behind by a failed write",
+                    e
+                );
             }
         }
 
