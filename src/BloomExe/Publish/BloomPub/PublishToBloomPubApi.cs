@@ -87,6 +87,7 @@ namespace Bloom.Publish.BloomPub
                     else // post
                     {
                         Settings.Default.PublishAndroidMethod = request.RequiredPostString();
+                        Settings.Default.Save();
 #if __MonoCS__
                         if (Settings.Default.PublishAndroidMethod == "usb")
                         {

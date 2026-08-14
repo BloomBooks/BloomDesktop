@@ -1,4 +1,5 @@
 ﻿using Bloom;
+using Bloom.Properties;
 using NUnit.Framework;
 
 namespace BloomTests
@@ -6,6 +7,31 @@ namespace BloomTests
     [TestFixture]
     public class ExperimentalFeaturesTests
     {
+        private string _originalEnabledFeatures;
+
+        /// <summary>
+        /// SetValue() saves the settings, so this fixture writes state that outlives the test.
+        /// Establish the starting value rather than assuming it: relying on it being empty meant
+        /// that a run which died part way through (see "*** TEST RUN ABORTED ***" in AGENTS.md)
+        /// left a value behind that failed this fixture on every later run.
+        /// </summary>
+        [SetUp]
+        public void SetUp()
+        {
+            _originalEnabledFeatures = Settings.Default.EnabledExperimentalFeatures;
+            Settings.Default.EnabledExperimentalFeatures = "";
+        }
+
+        /// <summary>
+        /// Put back whatever we found, on disk as well as in memory, so we don't affect anything else.
+        /// </summary>
+        [TearDown]
+        public void TearDown()
+        {
+            Settings.Default.EnabledExperimentalFeatures = _originalEnabledFeatures;
+            Settings.Default.Save();
+        }
+
         /// <summary>
         /// Test the SetValue and IsFeatureEnabled methods as well as the
         /// TokensOfEnabledFeatures property.
@@ -13,7 +39,7 @@ namespace BloomTests
         [Test]
         public void SetValueWorksProperly()
         {
-            // In the test setup, this setting always starts out empty (the default value).
+            // Sanity check that SetUp has put us in the state the rest of the test assumes.
             Assert.AreEqual("", ExperimentalFeatures.TokensOfEnabledFeatures);
             Assert.IsFalse(ExperimentalFeatures.IsFeatureEnabled("testing"));
 
