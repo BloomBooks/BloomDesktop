@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
@@ -304,6 +305,66 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
+        /// Read AllowCheckouts straight out of the repo's copy of the collection settings file,
+        /// which lives inside "Other Collection Files.zip". We deliberately do not go through the
+        /// local copy: that is only refreshed from the repo when the collection is opened, and the
+        /// whole point is to notice a change made while Bloom is running. See BL-16691.
+        /// </summary>
+        public override bool? GetAllowCheckoutsFromRepo()
+        {
+            try
+            {
+                var zipPath = GetRepoProjectFilesZipPath(_repoFolderPath);
+                if (!RobustFile.Exists(zipPath))
+                    return null;
+                var entryName = GetCollectionSettingsEntryName(zipPath);
+                if (entryName == null)
+                    return null;
+                var content = RobustZip.GetZipEntryContent(zipPath, entryName);
+                if (string.IsNullOrWhiteSpace(content))
+                    return null;
+                return CollectionSettings.ReadBoolean(
+                    XElement.Parse(content),
+                    "AllowCheckouts",
+                    true
+                );
+            }
+            catch (Exception e)
+            {
+                // The zip may be part-written, or Dropbox may be midway through syncing it. There
+                // is nothing to do about it now: we'll get another notification when the file
+                // settles, and failing that we read it again at startup. Leaving the setting alone
+                // is the safe outcome either way.
+                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// The name of the .bloomCollection entry within the given zip, or null if there isn't one.
+        /// Found by extension rather than by building the name, because the collection may have
+        /// been renamed locally.
+        /// </summary>
+        private static string GetCollectionSettingsEntryName(string zipPath)
+        {
+            using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(zipPath))
+            {
+                foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in zipFile)
+                {
+                    if (
+                        entry.IsFile
+                        && entry.Name.EndsWith(
+                            CollectionSettings.kFileExtension,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                        return entry.Name;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Return a list of all the books currently in the repo. (It will not update as changes are made,
         /// either locally or remotely. Beware that conceivably a book in the list might be removed
         /// before you get around to processing it.)
@@ -420,9 +481,13 @@ namespace Bloom.TeamCollection
             var zipPath = GetRepoProjectFilesZipPath(_repoFolderPath);
             if (!RobustFile.Exists(zipPath))
                 return null;
-            // The zip stores root-level collection files under their bare names; see
-            // RootLevelCollectionFilesIn, which is what decides what goes in.
-            var entryName = Path.GetFileName(CollectionPath(_localCollectionFolder));
+            // Find the entry by its extension rather than building the name from the local
+            // collection path: the collection may have been renamed locally, in which case the
+            // name we would build is not the one in the repo. (Shared with BL-16691, which reads
+            // AllowCheckouts out of the same file.)
+            var entryName = GetCollectionSettingsEntryName(zipPath);
+            if (entryName == null)
+                return null;
             return RobustZip.GetZipEntryContent(zipPath, entryName);
         }
 
