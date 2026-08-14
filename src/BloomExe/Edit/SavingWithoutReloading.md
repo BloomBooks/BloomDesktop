@@ -105,6 +105,39 @@ creates, and the reload had been quietly covering for that. Reverted.
 So: convert, then *drive the real UI* and check the page is still fully alive — editors attached,
 tool markup present, images sized. Neither the unit tests nor the typecheck will tell you.
 
+### What the round trip actually costs — measured, before changing anything
+
+Do not do this work for speed. Measured on a running Bloom (7-page book, 25 KB page), driving real
+thumbnail clicks and watching the API traffic from outside:
+`.claude/skills/run-bloom/benchPageChange.mjs` and `benchSaveGather.mjs`.
+
+| Phase of a page change | median ms from click |
+| --- | --- |
+| `pageList/pageClicked` acked | 19 |
+| `editView/pageContent` complete (old page saved, navigation kicked off) | 167 |
+| new page's DOM loaded | 748 |
+| new page **editable** | 793 |
+
+And separately: **gathering the page content in the browser takes 0.7 ms** (median of 15, on 25 KB
+of HTML), while a *complete* direct save — `savePageWithoutReloading()`, i.e. gather + POST + merge
++ write to disk + reply — takes **92 ms**.
+
+So the round trip's whole purpose is to fetch something that costs 0.7 ms to produce. Its window
+(19→167 ms) is at most ~56 ms more than doing the same save directly, and even that overstates it,
+because the `editView/pageContent` handler also kicks off the navigation before it replies. The
+genuinely removable part is the C#→WebView2 dispatch and scheduling: **30–50 ms out of ~790, i.e.
+4–6%**. Roughly 80% of a page change is building and setting up the NEW page, which none of this
+touches; deleting the save phase entirely would still cap the win at ~21%. The overhead is also
+roughly constant while the disk write and page setup grow with the book, so it gets relatively
+smaller on real books, not larger.
+
+The reason to make these changes is the simplification below — fewer hops, fewer states, fewer
+things that can interleave — with a small speed bonus, not the other way round.
+
+Note the existing `PerformanceMeasurement.Measure("Select Page")` in `HandlePageClickedRequest`
+cannot answer this: it wraps only the *initiation* (`SaveThen` returns as soon as the browser has
+been asked), and it ignores nested measurements, so it cannot be subdivided either.
+
 ## 2. The `requestPageContent` delay machinery
 
 `addRequestPageContentDelay` / `removeRequestPageContentDelay` /
