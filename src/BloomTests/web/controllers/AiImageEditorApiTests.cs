@@ -1,8 +1,11 @@
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Bloom.Book;
 using Bloom.web.controllers;
 using NUnit.Framework;
@@ -345,6 +348,95 @@ namespace BloomTests.web.controllers
                 File.Exists(Path.Combine(_bookFolder.Path, newName)),
                 Is.True,
                 "a corrupt image must still be copied rather than silently dropped"
+            );
+        }
+
+        // ------------------------------------------------------------------
+        // WriteRequestBodyToFile: the /file POST endpoint's save. Two saves of the SAME file
+        // at once are ordinary traffic from the AI image editor (BL-16702) — one generated
+        // image assigned to two book-image slots makes its commit call putFile once per slot,
+        // concurrently — so they must not be able to trip over each other's temp file.
+        // ------------------------------------------------------------------
+
+        // The path a history image would be written to, under a fresh .ai-image-editor folder
+        // that does not exist yet (so these also cover creating it).
+        private string HistoryFilePath(string fileName) =>
+            Path.Combine(_bookFolder.Path, ".ai-image-editor", "history", fileName);
+
+        [Test]
+        public void WriteRequestBodyToFile_WritesTheBodyAndCreatesTheFolder()
+        {
+            var path = HistoryFilePath("result.png");
+            // Sanity: neither the file nor its folder exists yet, so what we find afterwards
+            // was made by the call.
+            Assert.That(Directory.Exists(Path.GetDirectoryName(path)), Is.False, "setup");
+            var bytes = new byte[] { 1, 2, 3, 4, 5 };
+
+            AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(bytes));
+
+            Assert.That(File.ReadAllBytes(path), Is.EqualTo(bytes));
+        }
+
+        [Test]
+        public void WriteRequestBodyToFile_NoBody_SavesAnEmptyFile()
+        {
+            // An empty body means "save an empty file", not "leave what's there": the AI image
+            // editor must never be told "saved" while stale content survives on disk.
+            var path = HistoryFilePath("result.png");
+            AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(new byte[] { 1, 2 }));
+            Assert.That(new FileInfo(path).Length, Is.EqualTo(2), "setup: the file has content");
+
+            AiImageEditorApi.WriteRequestBodyToFile(path, null);
+
+            Assert.That(new FileInfo(path).Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void WriteRequestBodyToFile_ConcurrentWritesOfTheSameFile_AllSucceed()
+        {
+            // BL-16702: the AI image editor POSTs history/<resultId>.png once per slot the
+            // result was assigned to, all at the same time. Before this was serialized, the
+            // writes collided on the shared "<file>.tmp" path (RobustFile.Create opens with
+            // FileShare.None and does not retry), so all but one threw IOException — which the
+            // API layer turns into a 503, and which made the AI image editor abandon the whole
+            // commit before it ever asked Bloom to replace anything.
+            var path = HistoryFilePath("result.png");
+            // Big enough that the writes really do overlap rather than finishing one after
+            // another, like the multi-MB PNG an AI service returns.
+            var bytes = new byte[4 * 1024 * 1024];
+            for (var i = 0; i < bytes.Length; i++)
+                bytes[i] = (byte)i;
+
+            var exceptions = new ConcurrentBag<Exception>();
+            var writers = Enumerable
+                .Range(0, 4)
+                .Select(_ => new Thread(() =>
+                {
+                    try
+                    {
+                        AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(bytes));
+                    }
+                    catch (Exception e)
+                    {
+                        exceptions.Add(e);
+                    }
+                }))
+                .ToList();
+            writers.ForEach(t => t.Start());
+            writers.ForEach(t => t.Join());
+
+            Assert.That(
+                exceptions,
+                Is.Empty,
+                "no concurrent write of the same file should fail: "
+                    + string.Join("; ", exceptions.Select(e => e.Message))
+            );
+            // And the survivor must be the whole file, not a partly-written one.
+            Assert.That(File.ReadAllBytes(path), Is.EqualTo(bytes));
+            Assert.That(
+                Directory.EnumerateFiles(Path.GetDirectoryName(path), "*.tmp"),
+                Is.Empty,
+                "no temp file should be left behind"
             );
         }
 

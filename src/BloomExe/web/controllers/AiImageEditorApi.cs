@@ -595,31 +595,18 @@ namespace Bloom.web.controllers
                     break;
 
                 case HttpMethods.Post:
-                    var dir = Path.GetDirectoryName(fullPath);
-                    if (!Directory.Exists(dir))
-                        Directory.CreateDirectory(dir);
-                    // Stream the body straight to disk: history images are multi-MB, so don't
-                    // buffer them whole in memory (RawPostData would). Land the bytes in a
-                    // temp file and swap it in, so an upload that dies partway can't leave a
-                    // truncated file where a previous good one was. An empty body is a valid
-                    // save of an empty file, not a no-op: the AI image editor must never be
-                    // told "saved" while stale content survives on disk.
-                    var tempPath = fullPath + ".tmp";
-                    using (var input = request.RawPostStream)
-                    using (var output = RobustFile.Create(tempPath))
-                    {
-                        // RawPostStream is null for an empty body (no entity body); that
-                        // still means "save an empty file" here, so just leave the freshly
-                        // created temp file empty rather than copying.
-                        input?.CopyTo(output);
-                    }
-                    RobustFile.Move(tempPath, fullPath, true); // true: overwrite
+                    WriteRequestBodyToFile(fullPath, request.RawPostStream);
                     request.PostSucceeded();
                     break;
 
                 case HttpMethods.Delete:
-                    if (RobustFile.Exists(fullPath))
-                        RobustFile.Delete(fullPath);
+                    // Under the file's lock like the write, so a delete can't land in the
+                    // middle of one (see WriteRequestBodyToFile).
+                    lock (GetFileLock(fullPath))
+                    {
+                        if (RobustFile.Exists(fullPath))
+                            RobustFile.Delete(fullPath);
+                    }
                     request.PostSucceeded();
                     break;
 
@@ -629,6 +616,79 @@ namespace Bloom.web.controllers
                         "Method not allowed"
                     );
                     break;
+            }
+        }
+
+        // One lock object per file this session has written or deleted under
+        // .ai-image-editor. Tiny (a handful of history files per book) and never cleaned up,
+        // deliberately: a lock we discarded while a request still held it would be no lock at
+        // all. Case-insensitive because the keys are Windows paths.
+        private static readonly Dictionary<string, object> _locksByFilePath = new Dictionary<
+            string,
+            object
+        >(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// The lock object that serializes CHANGES to one file of the AI image editor's folder
+        /// (see <see cref="WriteRequestBodyToFile"/> for why they have to be serialized). A GET
+        /// deliberately doesn't take it: a read can't corrupt anything, and making a response
+        /// stream wait behind a multi-MB upload would cost more than it saves.
+        /// </summary>
+        private static object GetFileLock(string fullPath)
+        {
+            lock (_locksByFilePath)
+            {
+                if (!_locksByFilePath.TryGetValue(fullPath, out var fileLock))
+                {
+                    fileLock = new object();
+                    _locksByFilePath[fullPath] = fileLock;
+                }
+                return fileLock;
+            }
+        }
+
+        /// <summary>
+        /// Saves a POST to <see cref="HandleFile"/> at <paramref name="fullPath"/>, creating
+        /// its folder if needed. Takes ownership of <paramref name="body"/> (the request's post
+        /// stream) and disposes it.
+        ///
+        /// The body is streamed straight to disk, because history images are multi-MB and we
+        /// don't want to buffer them whole in memory (RawPostData would). It lands in a temp
+        /// file which is then swapped in, so an upload that dies partway can't leave a
+        /// truncated file where a previous good one was. An empty body is a valid save of an
+        /// empty file, not a no-op: the AI image editor must never be told "saved" while stale
+        /// content survives on disk.
+        ///
+        /// Writes to a given file are SERIALIZED, because two of them for the same file are
+        /// ordinary traffic from the AI image editor, not a pathological case (BL-16702): one
+        /// generated image assigned to two book-image slots makes its commit call putFile once
+        /// per slot, concurrently (Promise.all), and both calls name the same
+        /// history/&lt;resultId&gt;.png. Unserialized, the two collided on the shared temp path
+        /// — RobustFile.Create opens with FileShare.None and, unlike most of RobustFile, does
+        /// not retry — so the loser threw IOException, which the API layer turns into a 503
+        /// "Cannot access ..." plus a yellow box. The AI image editor reports that as "Failed
+        /// to write host file", and since it writes all the files before posting the commit,
+        /// ONE such failure abandoned the whole commit: the user's Replace did nothing at all.
+        ///
+        /// Internal for testing.
+        /// </summary>
+        internal static void WriteRequestBodyToFile(string fullPath, Stream body)
+        {
+            var directory = Path.GetDirectoryName(fullPath);
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+            lock (GetFileLock(fullPath))
+            {
+                var tempPath = fullPath + ".tmp";
+                using (body)
+                using (var output = RobustFile.Create(tempPath))
+                {
+                    // The body stream is null for an empty body (no entity body); that still
+                    // means "save an empty file" here, so just leave the freshly created temp
+                    // file empty rather than copying.
+                    body?.CopyTo(output);
+                }
+                RobustFile.Move(tempPath, fullPath, true); // true: overwrite
             }
         }
 
