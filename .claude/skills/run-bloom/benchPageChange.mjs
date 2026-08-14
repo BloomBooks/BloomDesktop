@@ -90,14 +90,31 @@ const clickPage = async (id) => {
     }, id);
 };
 
-// settle on the first page before timing anything
-await clickPage(PAGES[0].id);
-await waitForPage(PAGES[0].id);
+const currentPageId = async () => {
+    const f = pageFrame();
+    if (!f) return null;
+    try {
+        return await f.evaluate(
+            () =>
+                document.querySelector(".bloom-page")?.getAttribute("id") ??
+                null,
+        );
+    } catch {
+        return null;
+    }
+};
+
+// Settle before timing anything. Never assume which page Bloom starts on: each iteration below
+// targets whichever of the two we are NOT currently on, so every timed click is a real change.
+// (Clicking the page we are already on is not a no-op we can wait for -- and a click that lands
+// while a navigation is still in flight is silently dropped, because SaveThen's "not in a state
+// to save" fallback for pageClicked does nothing at all.)
 await sleep(1500);
 
 const rows = [];
 for (let i = 0; i < ITERATIONS; i++) {
-    const target = PAGES[(i + 1) % PAGES.length];
+    const from = await currentPageId();
+    const target = PAGES.find((p) => p.id !== from) ?? PAGES[0];
     marks = {};
     const t0 = Date.now();
     const clicked = await clickPage(target.id);

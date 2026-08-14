@@ -118,12 +118,10 @@ export interface IPageFrameExports {
 // This exports the functions that should be accessible from other IFrames or from C#.
 // For example, workspaceBundle.getEditablePageBundleExports().requestPageContent() can be called.
 import {
-    getBodyContentForSavePage,
     getPageContentForSave,
     requestPageContent,
     savePageWithoutReloading,
     captureContentForExternalProcessing,
-    userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
     copySelection,
@@ -149,12 +147,10 @@ import type {
     IAiImageEditorCommitResult,
 } from "./aiImageEditor/aiEditorShared";
 export {
-    getBodyContentForSavePage,
     getPageContentForSave,
     requestPageContent,
     savePageWithoutReloading,
     captureContentForExternalProcessing,
-    userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
     copySelection,
@@ -413,9 +409,7 @@ interface EditablePageBundleApi {
     requestPageContent: typeof requestPageContent;
     savePageWithoutReloading: typeof savePageWithoutReloading;
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
-    getBodyContentForSavePage: typeof getBodyContentForSavePage;
     getPageContentForSave: typeof getPageContentForSave;
-    userStylesheetContent: typeof userStylesheetContent;
     pageUnloading: typeof pageUnloading;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
@@ -494,9 +488,7 @@ window.editablePageBundle = {
     requestPageContent,
     savePageWithoutReloading,
     captureContentForExternalProcessing,
-    getBodyContentForSavePage,
     getPageContentForSave,
-    userStylesheetContent,
     pageUnloading,
     copySelection,
     cutSelection,

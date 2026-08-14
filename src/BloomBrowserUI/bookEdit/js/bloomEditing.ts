@@ -1483,7 +1483,7 @@ function requestPageContentInternal() {
 // Caution: We don't want this to become an async method because we don't want any other event
 // handlers running between cleaning up the page and getting the content to save. (Or think hard
 // before changing that.)
-export function getBodyContentForSavePage() {
+function getBodyContentForSavePage() {
     if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(document.body)) {
         throw new Error(
             "getBodyContentForSavePage(): The page had origami when it loaded, but it doesn't now (check before cleanup). BL-13120",
@@ -1651,9 +1651,11 @@ export function captureContentForExternalProcessing(
     waitForDelaysThenFinish();
 }
 
-// Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
-// workspaceBundle.getEditablePageBundleExports().
-export const userStylesheetContent = () => {
+// The user-defined styles, which travel to C# as the second half of what
+// getPageContentForSave() returns. (This used to say it was called from C# by a RunJavaScript in
+// EditingView.CleanHtmlAndCopyToPageDom; that method is long gone, and nothing outside this file
+// calls this now.)
+const userStylesheetContent = () => {
     const ss = Array.from(document.styleSheets).find(
         (s) => s.title === "userModifiedStyles",
     ) as CSSStyleSheet | undefined;
