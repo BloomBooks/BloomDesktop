@@ -1030,8 +1030,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     outlineColor: {
         kind: "panel",
         id: "outlineColor",
-        l10nId: "EditTab.Toolbox.ComicTool.Options.OutlineColor",
-        englishLabel: "Outline Color",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.OuterOutlineColor",
+        englishLabel: "Outer Outline Color",
         canvasToolsControl: OutlineColorPanelControl,
     },
     setDestination: {
