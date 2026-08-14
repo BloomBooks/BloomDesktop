@@ -1,8 +1,12 @@
 # Upgrading in place from the "needs a newer Bloom" dialog
 
-**Status:** implemented on this spike branch, not on the BL-16690 PR. The analysis below was
-written first; see "What was actually built" at the end for how it turned out and where the
-implementation differs from the plan.
+**Status:** implemented on this branch, not on the BL-16690 PR.
+
+The analysis below was written **before** the implementation, and parts of it were overtaken. In
+particular it proposes falling back to the website in the cases we can't upgrade; that was dropped —
+we never open a browser now. Read "What was actually built" at the end for the behavior as it
+stands; the analysis is kept because its reasoning about *why* this is awkward is still the best
+account of the problem.
 
 BL-16690 added a dialog that appears when a collection declares a `MinimumBloomVersion` newer
 than the Bloom being run. It offers two ways forward: open a different collection, or **Upgrade
@@ -227,37 +231,68 @@ at least this new". So the implementation checks the answer itself:
 
 ```csharp
 // MinimumBloomVersionCheck.UpgradeBloom
+ArrangeToInstallDownloadedUpdateOnExit();      // take it, whatever version it is
+DownloadedAnUpgrade = true;
 if (downloadedVersion != null && IsVersionSufficient(minimumVersion, downloadedVersion))
-{
-    ArrangeToInstallDownloadedUpdateOnExit();
-    ...
-}
-// otherwise: say so plainly, and open the website instead
+    ReportUpgradeDownloaded(...);              // this one will do it
+else
+    ReportUpgradeIsAStepButNotEnough(...);     // closer, but you'll be asked again
 ```
 
 It reuses `IsVersionSufficient` — the same comparison that decided the collection was off-limits in
 the first place — so the two can never disagree about what "new enough" means.
 
-Three cases end at the website rather than an install:
+**An update that doesn't go far enough is still installed.** Getting as far as the channel allows is
+real progress, and the situation resolves itself: the upgraded Bloom reopens the same collection,
+meets this same dialog, and the user decides again from a better starting point. The message says so
+plainly ("that is newer than what you have, but this collection needs 6.6, so you will need to
+upgrade again after this"), because the one genuinely confusing outcome would be upgrading, coming
+back, and meeting the same complaint with no explanation.
 
-- **Nothing newer on this channel.** The user is told what the newest version available to them is
-  and what the collection needs, rather than the bare "you are up to date" that the normal path
-  would produce — which would be a baffling thing to hear seconds after being told this Bloom is
-  too old.
-- **This Bloom can't update itself** — a developer build, one an administrator manages, or one
-  under the debugger. The same three conditions `WorkspaceView` refuses on.
+(An earlier draft refused to install in that case, reasoning that we shouldn't apply an update that
+doesn't achieve what the user asked for. That was wrong: it left them exactly where they started,
+having declined an upgrade they could have had.)
 
-There is a fourth case that does **not** end at the website: an update that is newer than what the
-user has but still short of what the collection needs. We install it anyway. Getting as far as the
-channel allows is real progress, and the situation resolves itself — the upgraded Bloom reopens the
-same collection, meets this same dialog, and the user decides again from a better starting point.
-The message says so plainly ("that is newer than what you have, but this collection needs 6.6, so
-you will need to upgrade again after this"), because the one thing that would be genuinely
-confusing is upgrading, coming back, and meeting the same complaint with no explanation.
+## We never send the user to the website
 
-(An earlier draft of this branch refused to install in that case, on the grounds that we shouldn't
-apply an update that doesn't achieve what the user asked for. That was wrong: it left them exactly
-where they started, having declined an upgrade they could have had.)
+The cases where we can't upgrade no longer open a browser. The user is told what happened, in a
+message box, and left to pick a different collection:
+
+- **Nothing newer on this channel.** "This collection needs Bloom 6.6, but there is no newer Bloom
+  available to you yet." Not the bare "your Bloom is up to date" that the normal update path would
+  produce, which would be a baffling thing to hear seconds after being told this Bloom is too old.
+- **Something went wrong, or this Bloom can't update itself.** The message is *the same wording the
+  toast would have used* — the connection-failure text, the "unable to check" / "unable to download"
+  text, or the administrator / developer-build / debugger explanations `WorkspaceView` gives. The
+  update code already works out what to say; it simply had no way to say it, since its toast has
+  nowhere to appear before a collection is open. That is what `SilentUpdateResult.Message` carries.
+
+Because an upgrade can now fail without Bloom quitting, `ReportCollectionNeedsNewerBloom` returns
+true only when an upgrade was actually downloaded. Otherwise the caller carries on exactly as if the
+user had asked for a different collection, so a failed upgrade lands them in the chooser rather than
+nowhere.
+
+## Team Collections: locking someone out mid-session
+
+If the administrator sets a minimum version while a teammate is working in the collection, that
+teammate is shut out immediately rather than at some future restart. The whole point of the flag is
+to stop an older Bloom touching the collection, and they are in it right now.
+
+`TeamCollection.HandleCollectionSettingsChange` already fires when the repository's collection files
+change; it now also checks the incoming minimum version and, if this Bloom falls short, shows the
+same dialog — modal, and with no close box, so the only ways out are to upgrade or to switch
+collections. Choosing another collection goes through `Program.ChooseACollection`, the same route as
+Open/Create Collection on the toolbar.
+
+Two details worth knowing:
+
+- **It reads the repository's copy, not the local one.** Bloom deliberately doesn't overwrite local
+  collection settings mid-session, so the local file still says what it said at startup. The repo
+  keeps its collection files in a zip, so `FolderTeamCollection` pulls just that one entry out with
+  the existing `RobustZip.GetZipEntryContent` — nothing is unpacked and nothing local is disturbed.
+- **A read failure never locks anyone out.** If the repo copy can't be read or parsed we log it and
+  leave the user alone. Being shut out of your work by a transient file error would be far worse
+  than finding out at the next restart.
 
 ## Smaller decisions
 
@@ -268,9 +303,8 @@ where they started, having declined an upgrade they could have had.)
   trying to open a collection this Bloom can't handle, so there is nothing useful to return to
   until the new version is installed.
 - **No external-link icon on the Upgrade button here.** The PR-branch version always leaves Bloom
-  for the website, so it carries the same marker the Help menu uses for that. This one normally
-  upgrades Bloom itself and only falls back to the web when it can't, so marking it as leaving
-  Bloom would be wrong most of the time.
+  for the website, so it carries the same marker the Help menu uses for that. This one never opens
+  a browser at all, so the marker would simply be wrong.
 - **The blocked collection is remembered after a successful download.** BL-16690 deliberately does
   *not* record a collection it refused to open, so that abandoning the upgrade doesn't strand the
   user on it. But once the upgrade is downloaded, the next Bloom to start really can open it, and
@@ -284,16 +318,19 @@ where they started, having declined an upgrade they could have had.)
 
 - **No progress while downloading.** Bloom sits with no window for the length of the download.
   Acceptable for a spike; a real version wants at least a busy indicator.
-- **Linux keeps the website route**, since the whole updater is inside `#if !__MonoCS__`.
+- **Linux can't upgrade in place at all**, since the whole updater is inside `#if !__MonoCS__`.
+  There it reports that and the user picks another collection.
 - **Not tested against a live update feed.** The logic is exercised by reading; nobody has watched
   this actually download and install a newer Bloom. That is the first thing to do before taking it
   seriously.
 
-## Does this change the recommendation?
+## Where this leaves the recommendation
 
-Not really. It is less work than expected, and the code is contained. But the reasoning in the
-analysis still holds: the case where an in-place upgrade helps is the case where the user would
-have been fine anyway, and the case the dialog exists for — a collection that has moved ahead of
-what the user's channel offers — still ends at the website. What this branch buys is that the
-website is now the *fallback* rather than the only answer, and that when it is the fallback the
-user is told why.
+The recommendation in the analysis above has been overtaken: this is now the intended approach
+rather than a spike to weigh against the website. What the analysis got right is preserved in the
+code — chiefly that Velopack cannot be asked for a *particular* version, so its answer has to be
+checked against what the collection demands rather than trusted.
+
+What remains is the honest caveat: **none of this has been run against a live update feed.** Nobody
+has watched it download and install a real Bloom, or watched a Team Collection lock-out happen for
+real. That is the first thing to do before trusting it.

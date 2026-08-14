@@ -61,6 +61,34 @@ namespace Bloom
             Failed,
         }
 
+        /// <summary>
+        /// What happened, plus the words to say about it. Since this path has no toasts, the caller
+        /// shows Message in a message box; it is already the same wording the toast would have used,
+        /// so the user hears the same thing either way.
+        /// </summary>
+        internal class SilentUpdateResult
+        {
+            public readonly SilentUpdateOutcome Outcome;
+
+            /// Ready to show, or null when the outcome speaks for itself and the caller has
+            /// something better to say (Downloaded, NothingNewer).
+            public readonly string Message;
+
+            /// The version we downloaded; only set for Downloaded.
+            public readonly string DownloadedVersion;
+
+            public SilentUpdateResult(
+                SilentUpdateOutcome outcome,
+                string message,
+                string downloadedVersion = null
+            )
+            {
+                Outcome = outcome;
+                Message = message;
+                DownloadedVersion = downloadedVersion;
+            }
+        }
+
         enum UploadStatus
         {
             // First call this session, or previous call(s) completed and found no updates
@@ -290,61 +318,117 @@ namespace Bloom
         /// Do not call this on the UI thread without wrapping it in Task.Run: it awaits network
         /// work, and blocking the UI thread on that would deadlock.
         /// </summary>
-        internal static async Task<SilentUpdateOutcome> TryDownloadUpdateWithoutToasts()
+        internal static async Task<SilentUpdateResult> TryDownloadUpdateWithoutToasts()
         {
 #if __MonoCS__
-            return SilentUpdateOutcome.CannotUpdateThisBloom;
+            // Nothing in this class works off Windows.
+            return new SilentUpdateResult(
+                SilentUpdateOutcome.CannotUpdateThisBloom,
+                "Bloom can only update itself on Windows."
+            );
 #else
-            // The same situations WorkspaceView.CheckForUpdatesImpl refuses to update in. There we
-            // can explain in a message box; here the caller turns this into a trip to the website.
-            if (Debugger.IsAttached || IsDev || InstallerSupport.SharedByAllUsers())
-                return SilentUpdateOutcome.CannotUpdateThisBloom;
+            // The same three situations WorkspaceView.CheckForUpdatesImpl refuses to update in, with
+            // the same explanations, since the user is owed the same information either way.
+            if (Debugger.IsAttached)
+                return new SilentUpdateResult(
+                    SilentUpdateOutcome.CannotUpdateThisBloom,
+                    "Sorry, you cannot check for updates from the debugger."
+                );
+            if (InstallerSupport.SharedByAllUsers())
+                return new SilentUpdateResult(
+                    SilentUpdateOutcome.CannotUpdateThisBloom,
+                    LocalizationManager.GetString(
+                        "CollectionTab.AdminManagesUpdates",
+                        "Your system administrator manages Bloom updates for this computer."
+                    )
+                );
+            if (IsDev)
+                return new SilentUpdateResult(
+                    SilentUpdateOutcome.CannotUpdateThisBloom,
+                    "Checking for updates is disabled on developer builds. No relevant channel."
+                );
 
             try
             {
                 // Quiet matters: with Verbose, GetUpdateUrl reports failures by toast.
                 if (!GetUpdateUrl(BloomUpdateMessageVerbosity.Quiet, out var updateUrl))
-                    return SilentUpdateOutcome.Failed;
+                {
+                    // Overwhelmingly the reason we can't work out where to look is that we can't
+                    // reach the server, which is what the normal path says here too.
+                    return new SilentUpdateResult(
+                        SilentUpdateOutcome.Failed,
+                        LocalizationManager.GetString(
+                            "CollectionTab.UnableToCheckForUpdate",
+                            "Could not connect to the server to check for an update. Are you connected to the internet?",
+                            "Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc."
+                        )
+                    );
+                }
 
                 _status = UploadStatus.LookingForUpdates;
                 _bloomUpdateManager = new UpdateManager(
                     updateUrl,
                     new UpdateOptions { MaximumDeltasBeforeFallback = 2 }
                 );
-                _newVersion = await _bloomUpdateManager.CheckForUpdatesAsync();
+
+                try
+                {
+                    _newVersion = await _bloomUpdateManager.CheckForUpdatesAsync();
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteError("Could not check for a Velopack update without toasts", e);
+                    _status = UploadStatus.Failed;
+                    // The same words the "check failed" toast uses.
+                    return new SilentUpdateResult(
+                        SilentUpdateOutcome.Failed,
+                        "Bloom was unable to check for updates. Restart to try again."
+                    );
+                }
+
                 if (_newVersion == null)
                 {
                     // Nothing newer on this channel. That is a real outcome here rather than good
                     // news: the caller only asked because this Bloom is too old for the collection.
                     _bloomUpdateManager = null;
                     _status = UploadStatus.NothingKnown;
-                    return SilentUpdateOutcome.NothingNewer;
+                    return new SilentUpdateResult(SilentUpdateOutcome.NothingNewer, null);
                 }
 
-                _status = UploadStatus.Downloading;
-                await _bloomUpdateManager.DownloadUpdatesAsync(_newVersion);
+                try
+                {
+                    _status = UploadStatus.Downloading;
+                    await _bloomUpdateManager.DownloadUpdatesAsync(_newVersion);
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteError("Could not download a Velopack update without toasts", e);
+                    _status = UploadStatus.Failed;
+                    // The same words the "download failed" toast uses.
+                    return new SilentUpdateResult(
+                        SilentUpdateOutcome.Failed,
+                        "Bloom was unable to download and install updates. Restart to try again."
+                    );
+                }
+
                 _status = UploadStatus.DownloadedWaitingForRestart;
-                return SilentUpdateOutcome.Downloaded;
+                return new SilentUpdateResult(
+                    SilentUpdateOutcome.Downloaded,
+                    null,
+                    _newVersion.TargetFullRelease?.Version?.ToString()
+                );
             }
             catch (Exception e)
             {
-                Logger.WriteError("Could not download a Velopack update without toasts", e);
+                Logger.WriteError("Velopack update without toasts failed unexpectedly", e);
                 _status = UploadStatus.Failed;
-                return SilentUpdateOutcome.Failed;
+                return new SilentUpdateResult(
+                    SilentUpdateOutcome.Failed,
+                    "Bloom was unable to check for updates. Restart to try again."
+                );
             }
 #endif
         }
-
-        /// <summary>
-        /// The version we downloaded, for telling the user what they are about to get. Only
-        /// meaningful after TryDownloadUpdateWithoutToasts returned Downloaded.
-        /// </summary>
-        internal static string DownloadedVersion =>
-#if __MonoCS__
-            null;
-#else
-            _newVersion?.TargetFullRelease?.Version?.ToString();
-#endif
 
         /// <summary>
         /// Arrange for an update downloaded by TryDownloadUpdateWithoutToasts to be installed when

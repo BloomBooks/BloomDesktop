@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Bloom.MiscUI;
-using Bloom.ToPalaso;
-using Bloom.web;
 using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
@@ -84,12 +82,8 @@ namespace Bloom.Collection
             {
                 if (!RobustFile.Exists(settingsFilePath))
                     return "";
-                var settingsContent = RobustFile.ReadAllText(settingsFilePath, Encoding.UTF8);
-                var xml = XElement.Parse(settingsContent);
-                return CollectionSettings.ReadString(
-                    xml,
-                    CollectionSettings.kMinimumBloomVersionElementName,
-                    ""
+                return ParseMinimumBloomVersion(
+                    RobustFile.ReadAllText(settingsFilePath, Encoding.UTF8)
                 );
             }
             catch (Exception ex)
@@ -104,12 +98,56 @@ namespace Bloom.Collection
         }
 
         /// <summary>
-        /// Tell the user that this collection needs a newer Bloom, and give them the two ways forward:
-        /// upgrade, or open some other collection. If they choose to upgrade we send them to the
-        /// downloads page and quit, since they can't install over a running Bloom anyway.
+        /// Pull the minimum version out of the text of a collection settings file. Separate from
+        /// reading the file so that a Team Collection can ask about the copy in the repository, which
+        /// lives inside a zip and has never been written to this computer.
         /// </summary>
-        /// <returns>true if the user chose to upgrade, in which case we have already asked Bloom to
-        /// quit and the caller must not start any more UI.</returns>
+        internal static string ParseMinimumBloomVersion(string settingsXml)
+        {
+            if (string.IsNullOrEmpty(settingsXml))
+                return "";
+            return CollectionSettings.ReadString(
+                XElement.Parse(settingsXml),
+                CollectionSettings.kMinimumBloomVersionElementName,
+                ""
+            );
+        }
+
+        /// <summary>
+        /// Like IsThisBloomTooOld, but for settings we have in hand rather than in a file.
+        /// </summary>
+        public static bool IsThisBloomTooOldForSettings(
+            string settingsXml,
+            out string minimumVersion
+        )
+        {
+            minimumVersion = "";
+            string declaredVersion;
+            try
+            {
+                declaredVersion = ParseMinimumBloomVersion(settingsXml);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteEvent(
+                    $"Could not read {CollectionSettings.kMinimumBloomVersionElementName} from settings content: {ex.Message}"
+                );
+                return false;
+            }
+            if (IsVersionSufficient(declaredVersion, RunningBloomVersion))
+                return false;
+            minimumVersion = ToMajorMinor(Version.Parse(declaredVersion.Trim()));
+            return true;
+        }
+
+        /// <summary>
+        /// Tell the user that this collection needs a newer Bloom, and give them the two ways forward:
+        /// upgrade, or open some other collection. Upgrading happens in place; if we can't manage it
+        /// we say why and they are left to choose a different collection instead. We never send them
+        /// off to the website.
+        /// </summary>
+        /// <returns>true if we downloaded an upgrade, in which case we have already asked Bloom to
+        /// quit so it can be installed, and the caller must not start any more UI.</returns>
         public static bool ReportCollectionNeedsNewerBloom(
             string collectionName,
             string minimumVersion
@@ -162,17 +200,51 @@ namespace Bloom.Collection
                 MessageBoxIcon.Warning
             );
 
-            if (result == kUpgradeButtonId)
+            if (result == kUpgradeButtonId && UpgradeBloom(minimumVersion))
             {
-                UpgradeBloom(minimumVersion);
                 ProgramExit.Exit();
                 return true;
             }
-            // Otherwise the caller will put the collection chooser back up.
+            // Either they asked for a different collection, or they wanted to upgrade and we could
+            // not manage it -- in which case we have already explained why. Either way the caller
+            // takes over, and puts the collection chooser up.
             return false;
         }
 
         private const string kUpgradeButtonId = "upgrade";
+
+        private static bool _alreadyLockingOut;
+
+        /// <summary>
+        /// Shut the user out of a collection they already have open, because a minimum version they
+        /// don't meet has just arrived -- in practice, a Team Collection administrator set one while
+        /// they were working. They get the same dialog as at startup, and the same two ways out:
+        /// upgrade, or go to a different collection. There is no third option; the dialog has no
+        /// close box, so they have to choose.
+        /// </summary>
+        public static void LockUserOutOfOpenCollection(string collectionName, string minimumVersion)
+        {
+            // The repository can report the same change more than once, and we may still be sitting
+            // in the dialog from the first one.
+            if (_alreadyLockingOut)
+                return;
+            _alreadyLockingOut = true;
+            try
+            {
+                if (ReportCollectionNeedsNewerBloom(collectionName, minimumVersion))
+                    return; // upgrading; Bloom is already on its way down
+
+                // They want a different collection. This is the same route as Open/Create Collection
+                // on the toolbar: it closes the current one and puts up the chooser.
+                Program.ChooseACollection(Shell.GetShellOrOtherOpenForm() as Shell);
+            }
+            finally
+            {
+                // If they are still here, the switch didn't happen (they cancelled the chooser, say),
+                // so let the next notification ask again rather than leaving them silently locked in.
+                _alreadyLockingOut = false;
+            }
+        }
 
         /// <summary>
         /// True when the user chose to upgrade and we downloaded a new Bloom, so the collection they
@@ -182,21 +254,21 @@ namespace Bloom.Collection
         public static bool DownloadedAnUpgrade { get; private set; }
 
         /// <summary>
-        /// Get the user onto a newer Bloom. We prefer to update in place, because it means they
-        /// don't have to find the right installer among several channels and versions. If we can't --
-        /// this Bloom can't update itself, or the newest build on their channel is still too old for
-        /// this collection -- we fall back to the website, where they can at least go looking for a
-        /// beta or another channel that is far enough along.
+        /// Get the user onto a newer Bloom, in place. We never send them to the website: if we can't
+        /// upgrade them we say why, in the same words the update toast would have used, and let them
+        /// pick a different collection instead.
         /// </summary>
-        private static void UpgradeBloom(string minimumVersion)
+        /// <returns>true if a new Bloom was downloaded and the caller should now shut Bloom down so
+        /// it can be installed.</returns>
+        private static bool UpgradeBloom(string minimumVersion)
         {
             // Task.Run because this awaits network work: awaiting it directly on the UI thread and
             // blocking would deadlock.
-            var outcome = Task.Run(() => ApplicationUpdateSupport.TryDownloadUpdateWithoutToasts())
+            var result = Task.Run(() => ApplicationUpdateSupport.TryDownloadUpdateWithoutToasts())
                 .GetAwaiter()
                 .GetResult();
 
-            if (outcome == ApplicationUpdateSupport.SilentUpdateOutcome.Downloaded)
+            if (result.Outcome == ApplicationUpdateSupport.SilentUpdateOutcome.Downloaded)
             {
                 // Install it whatever version it turns out to be. Velopack can only offer the newest
                 // build on this user's channel -- it has no notion of "at least version X" -- so what
@@ -208,25 +280,26 @@ namespace Bloom.Collection
                 // it, or to tell them they still need to go further.
                 DownloadedAnUpgrade = true;
 
-                var downloaded = ApplicationUpdateSupport.DownloadedVersion;
-                var downloadedVersion = ParseOrNull(downloaded);
+                var downloadedVersion = ParseOrNull(result.DownloadedVersion);
                 if (
                     downloadedVersion != null
                     && IsVersionSufficient(minimumVersion, downloadedVersion)
                 )
-                    ReportUpgradeDownloaded(downloaded);
+                    ReportUpgradeDownloaded(result.DownloadedVersion);
                 else
-                    ReportUpgradeIsAStepButNotEnough(downloaded, minimumVersion);
-                return;
+                    ReportUpgradeIsAStepButNotEnough(result.DownloadedVersion, minimumVersion);
+                return true;
             }
 
-            if (outcome == ApplicationUpdateSupport.SilentUpdateOutcome.NothingNewer)
-                ReportNoUpgradeFarEnough(minimumVersion, ToMajorMinor(RunningBloomVersion));
-            // For CannotUpdateThisBloom and Failed we say nothing extra: a developer build or an
-            // administrator-managed one is not the user's problem to solve, and a failure to reach
-            // the update server is about to be self-evident when the browser opens.
+            if (result.Outcome == ApplicationUpdateSupport.SilentUpdateOutcome.NothingNewer)
+                ReportNothingNewerAvailable(minimumVersion);
+            else
+                // A developer/administered build, or something went wrong. The update code already
+                // worked out what to say; it just had no way to say it, since its usual toast has
+                // nowhere to appear before a collection is open.
+                BloomMessageBox.ShowWarning(System.Net.WebUtility.HtmlEncode(result.Message));
 
-            ShowDownloadsPage();
+            return false;
         }
 
         private static Version ParseOrNull(string version) =>
@@ -272,37 +345,21 @@ namespace Bloom.Collection
         }
 
         /// <summary>
-        /// Tell the user that updating in place can't get them anywhere at all, so they are about to
-        /// be sent to the website. Being specific matters: "you are up to date" on its own would be a
+        /// Tell the user there is simply nothing newer for them to have. Being specific matters:
+        /// "your Bloom is up to date", which is what the normal update path would say, would be a
         /// baffling thing to hear right after being told this Bloom is too old.
         /// </summary>
-        private static void ReportNoUpgradeFarEnough(string minimumVersion, string newestAvailable)
+        private static void ReportNothingNewerAvailable(string minimumVersion)
         {
             var message = string.Format(
                 LocalizationManager.GetString(
-                    "Collection.NoUpgradeFarEnough",
-                    "The newest Bloom available to you right now is {0}, but this collection needs {1}. We will take you to the Bloom download page, where you may be able to find a version that is far enough along.",
-                    "{0} is the newest version number available to this user, {1} is the version the collection requires."
+                    "Collection.NothingNewerAvailable",
+                    "This collection needs Bloom {0}, but there is no newer Bloom available to you yet. You are already on the newest one for the kind of Bloom you have installed.",
+                    "{0} is the version the collection requires."
                 ),
-                newestAvailable,
                 minimumVersion
             );
-            BloomMessageBox.ShowInfo(System.Net.WebUtility.HtmlEncode(message));
-        }
-
-        /// <summary>
-        /// Send the user to the page where they can get a newer Bloom. This is the same thing the
-        /// app/showDownloadsPage API does for the equivalent message about a book, but we can't use
-        /// that API here because we have no book preview browser to put the link in.
-        /// </summary>
-        private static void ShowDownloadsPage()
-        {
-            var url = UrlLookup.LookupUrl(UrlType.LibrarySite, null) + "/downloads";
-            if (SIL.PlatformUtilities.Platform.IsWindows)
-                // Let the default browser open the link.
-                ProcessExtra.SafeStartInFront(url);
-            else
-                ProcessExtra.SafeStartInFront("xdg-open", Uri.EscapeUriString(url));
+            BloomMessageBox.ShowWarning(System.Net.WebUtility.HtmlEncode(message));
         }
 
         /// <summary>

@@ -1345,6 +1345,67 @@ namespace Bloom.TeamCollection
                 null,
                 null
             );
+            CheckWhetherRepoNowRequiresANewerBloom();
+        }
+
+        /// <summary>
+        /// The change a teammate just made may have been to set a minimum Bloom version that this
+        /// Bloom doesn't meet. Unlike other collection settings, that one can't wait until the next
+        /// restart to take effect: the whole point of it is to stop this Bloom touching the
+        /// collection, and the user is in it right now. So we shut them out immediately.
+        ///
+        /// Note that we read the repository's copy of the settings, not the local one. Bloom
+        /// deliberately doesn't overwrite local collection settings mid-session, so the local file
+        /// still says what it said when the collection was opened.
+        /// </summary>
+        private void CheckWhetherRepoNowRequiresANewerBloom()
+        {
+            string repoSettings;
+            try
+            {
+                repoSettings = GetRepoCollectionSettingsContent();
+            }
+            catch (Exception e)
+            {
+                // Failing to read the repo copy is not a good enough reason to interrupt someone's
+                // work. If it really does require a newer Bloom, we will find out at the next start.
+                Logger.WriteError(
+                    "TeamCollection could not read the repo collection settings to check its minimum Bloom version",
+                    e
+                );
+                return;
+            }
+
+            if (
+                !MinimumBloomVersionCheck.IsThisBloomTooOldForSettings(
+                    repoSettings,
+                    out var minimumVersion
+                )
+            )
+                return;
+
+            _tcLog.WriteMessage(
+                MessageAndMilestoneType.Error,
+                "TeamCollection.MinimumVersionSetRemotely",
+                "This collection now requires a newer version of Bloom than the one you are running.",
+                null,
+                null
+            );
+
+            MinimumBloomVersionCheck.LockUserOutOfOpenCollection(
+                Path.GetFileNameWithoutExtension(CollectionPath(_localCollectionFolder)),
+                minimumVersion
+            );
+        }
+
+        /// <summary>
+        /// The text of the collection settings file as it stands in the repository right now, or
+        /// null if we have no way to get at it. Subclasses that keep the collection files somewhere
+        /// we can read should override this.
+        /// </summary>
+        protected virtual string GetRepoCollectionSettingsContent()
+        {
+            return null;
         }
 
         /// <summary>

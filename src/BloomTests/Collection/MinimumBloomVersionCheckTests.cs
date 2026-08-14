@@ -125,6 +125,62 @@ namespace BloomTests.Collection
             Assert.That(minimumVersion, Is.Empty);
         }
 
+        /// <summary>
+        /// A Team Collection has to judge the settings sitting in the repository, which it reads out
+        /// of a zip and never writes to disk, so the same check has to work on content in hand.
+        /// </summary>
+        [Test]
+        public void IsThisBloomTooOldForSettings_RequirementNoBloomCanMeet_SaysSoAndReportsIt()
+        {
+            var xml = SettingsXml("<MinimumBloomVersion>99.0</MinimumBloomVersion>");
+
+            Assert.That(
+                MinimumBloomVersionCheck.IsThisBloomTooOldForSettings(xml, out var minimumVersion),
+                Is.True,
+                "No conceivable Bloom version satisfies a requirement of 99.x."
+            );
+            Assert.That(minimumVersion, Is.EqualTo("99.0"));
+        }
+
+        [Test]
+        public void IsThisBloomTooOldForSettings_NoRequirement_LetsUsIn()
+        {
+            Assert.That(
+                MinimumBloomVersionCheck.IsThisBloomTooOldForSettings(SettingsXml(""), out _),
+                Is.False
+            );
+        }
+
+        /// <summary>
+        /// Nothing to read means we know nothing, which must not be mistaken for "you are locked
+        /// out" -- that would shut a Team Collection user out of their work over a read failure.
+        /// </summary>
+        [TestCase(null)]
+        [TestCase("")]
+        public void IsThisBloomTooOldForSettings_NothingToRead_LetsUsIn(string xml)
+        {
+            Assert.That(
+                MinimumBloomVersionCheck.IsThisBloomTooOldForSettings(xml, out _),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsThisBloomTooOldForSettings_UnparseableXml_LetsUsInRatherThanThrowing()
+        {
+            Assert.That(
+                MinimumBloomVersionCheck.IsThisBloomTooOldForSettings("not xml at all", out _),
+                Is.False
+            );
+        }
+
+        private static string SettingsXml(string extraElements) =>
+            $@"<?xml version='1.0' encoding='utf-8'?>
+<Collection version='0.2'>
+  <Language1Iso639Code>xyz</Language1Iso639Code>
+  {extraElements}
+</Collection>";
+
         [Test]
         public void ReadMinimumBloomVersion_ElementPresent_ReturnsIt()
         {
