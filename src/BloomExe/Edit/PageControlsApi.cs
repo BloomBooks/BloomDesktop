@@ -66,7 +66,7 @@ namespace Bloom.Edit
                     kApiUrlPart + "duplicatePage",
                     request =>
                     {
-                        _editingModel.OnDuplicatePage();
+                        _editingModel.OnDuplicatePage(PageContentFromBrowser(request));
                         request.PostSucceeded();
                     },
                     true
@@ -79,7 +79,7 @@ namespace Bloom.Edit
                     request =>
                     {
                         // The browser side has already confirmed with the user (BL-16421).
-                        _editingModel.OnDeletePage();
+                        _editingModel.OnDeletePage(PageContentFromBrowser(request));
                         request.PostSucceeded();
                     },
                     true
@@ -125,6 +125,20 @@ namespace Bloom.Edit
                 },
                 true
             );
+        }
+
+        /// <summary>
+        /// The current page's content, if the button that posted this request was able to collect
+        /// it from the editable page (see postPageControlCommand in pageControls.tsx), otherwise
+        /// null. Given it, the command can save the current page without the round trip of asking
+        /// the browser for its content and waiting (see EditingModel.SavePageInPlaceThen).
+        /// Not unescaped, for the same reason as editView/savePageInPlace: this is page HTML, and
+        /// unescaping it would corrupt it.
+        /// </summary>
+        private static string PageContentFromBrowser(ApiRequest request)
+        {
+            var content = request.GetPostStringOrNull(unescape: false);
+            return string.IsNullOrEmpty(content) ? null : content;
         }
 
         private void UpdateState()

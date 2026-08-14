@@ -433,11 +433,18 @@ public class EditingStateMachine
     }
 
     /// <summary>
-    /// Save the current page from content the browser sent WITH its request, then go to another
-    /// page. This is the page-change form of ToSavedInPlace, and it is the reason SavePending can
-    /// eventually go away: when the browser hands us the content up front there is nothing to wait
-    /// for, so a page change is Editing -> Navigating in one step, rather than
+    /// Save the current page from content the browser sent WITH its request, optionally change the
+    /// book in some way, then go to whichever page doBeforeSaveToDisk names. This is the
+    /// straight-line form of the whole ToSavePending/ToSavedAndStripped sequence, and it is the
+    /// reason SavePending can eventually go away: when the browser hands us the content up front
+    /// there is nothing to wait for, so this is Editing -> Navigating in one step rather than
     /// Editing -> SavePending (ask the browser, wait) -> SavedAndStripped -> Navigating.
+    ///
+    /// doBeforeSaveToDisk plays exactly the role it plays in ToSavePending: it runs after the
+    /// browser's content has been merged into the book DOM and before the book is written to disk
+    /// (so a page it duplicates or deletes already reflects the user's latest edits), and it
+    /// returns the id of the page to show afterwards. For a caller that only wants to change pages
+    /// it is simply () => theNewPageId.
     ///
     /// Note it deliberately does NOT go via ToNavigating(), which throws when called while
     /// Editing. That guard exists because leaving a page with unsaved changes loses them; here we
@@ -449,7 +456,7 @@ public class EditingStateMachine
     /// </summary>
     public bool ToSavedInPlaceThenNavigating(
         string pageContentData,
-        string pageIdToGoTo,
+        Func<string> doBeforeSaveToDisk,
         Action<Exception> reportFailure
     )
     {
@@ -458,22 +465,24 @@ public class EditingStateMachine
             switch (_currentState)
             {
                 case State.Editing:
-                    LogTransition("saved in place, then navigating", pageIdToGoTo);
+                    LogTransition("saved in place, then navigating", _pageId);
                     if (pageContentData.StartsWith("ERROR:"))
                         throw new ApplicationException(pageContentData);
                     _updateBookWithPageContents(_pageId, pageContentData);
                     _pageIdWeFailedToSave = null;
+                    var pageIdToGoTo = doBeforeSaveToDisk();
                     _saveBook();
                     StartNavigating(pageIdToGoTo);
                     return true;
                 case State.NoPage:
-                    // Nothing to save, but going to a page is still meaningful.
-                    StartNavigating(pageIdToGoTo);
+                    // Nothing to save, but the action and going to a page are still meaningful.
+                    // (ToSavePending treats NoPage the same way.)
+                    StartNavigating(doBeforeSaveToDisk());
                     return true;
                 case State.Navigating:
                 case State.SavePending:
                 case State.SavedAndStripped:
-                    LogIgnore("save in place then navigate", pageIdToGoTo);
+                    LogIgnore("save in place then navigate");
                     return false;
                 default:
                     throw new InvalidOperationException(

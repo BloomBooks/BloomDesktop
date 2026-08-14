@@ -57,9 +57,14 @@ namespace BloomTests.Edit
 
         private bool SaveInPlaceThenGoTo(string content, string pageId)
         {
+            return SaveInPlaceThenDoAndGoTo(content, () => pageId);
+        }
+
+        private bool SaveInPlaceThenDoAndGoTo(string content, Func<string> doBeforeSaveToDisk)
+        {
             return _stateMachine.ToSavedInPlaceThenNavigating(
                 content,
-                pageId,
+                doBeforeSaveToDisk,
                 e => _reportedFailures.Add(e)
             );
         }
@@ -277,6 +282,92 @@ namespace BloomTests.Edit
                 _navigatedTo,
                 Is.Empty,
                 "going on to the clicked page would silently discard the edits we failed to save"
+            );
+        }
+
+        // The doBeforeSaveToDisk form: what duplicate/delete/paste/move page do, now that the page
+        // list sends the current page's content with the command. The action has to see the user's
+        // latest edits (so it must run AFTER the browser's content goes into the book DOM) and its
+        // work has to reach disk (so it must run BEFORE the book is written).
+        // See EditingModel.SavePageInPlaceThen.
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_RunsTheActionBetweenTheDomUpdateAndTheDiskSave()
+        {
+            GoToEditing("page1");
+            _navigatedTo.Clear();
+            var domUpdatesWhenActionRan = -1;
+            var saveBookCountWhenActionRan = -1;
+
+            var result = SaveInPlaceThenDoAndGoTo(
+                "body<SPLIT-DATA>css",
+                () =>
+                {
+                    domUpdatesWhenActionRan = _updatedWith.Count;
+                    saveBookCountWhenActionRan = _saveBookCount;
+                    return "theDuplicatedPage";
+                }
+            );
+
+            Assert.That(result, Is.True);
+            Assert.That(
+                domUpdatesWhenActionRan,
+                Is.EqualTo(1),
+                "the action must see the edits the browser just sent us"
+            );
+            Assert.That(
+                saveBookCountWhenActionRan,
+                Is.EqualTo(0),
+                "the action must run before the disk save, so what it does gets written too"
+            );
+            Assert.That(_saveBookCount, Is.EqualTo(1), "and the disk save must still happen");
+            Assert.That(_navigatedTo, Is.EqualTo(new[] { "theDuplicatedPage" }));
+        }
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_WrongState_DoesNotRunTheAction()
+        {
+            Assert.That(_stateMachine.ToNavigating("page1"), Is.True, "test setup");
+            var actionRan = false;
+
+            var result = SaveInPlaceThenDoAndGoTo(
+                "content",
+                () =>
+                {
+                    actionRan = true;
+                    return "page2";
+                }
+            );
+
+            Assert.That(result, Is.False);
+            Assert.That(
+                actionRan,
+                Is.False,
+                "the caller falls back to SaveThen when we return false, so the action must not "
+                    + "have happened already -- it would then happen twice"
+            );
+        }
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_SaveFails_DoesNotRunTheAction()
+        {
+            GoToEditing("page1");
+            var actionRan = false;
+
+            var result = SaveInPlaceThenDoAndGoTo(
+                "ERROR: the browser could not gather it",
+                () =>
+                {
+                    actionRan = true;
+                    return "page2";
+                }
+            );
+
+            Assert.That(result, Is.False);
+            Assert.That(
+                actionRan,
+                Is.False,
+                "deleting or duplicating a page we failed to save would act on stale content"
             );
         }
     }

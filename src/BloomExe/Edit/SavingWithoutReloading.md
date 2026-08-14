@@ -47,14 +47,49 @@ On top of that:
 
 - `EditingStateMachine.ToSavedInPlace(pageContentData, reportFailure)` — a save that begins and ends
   in `Editing`. No `SavePending` wait, no `SavedAndStripped`, no navigation.
-- `EditingModel.SavePageInPlace(pageContentData)` — the Javascript-initiated counterpart of
-  `SaveThen`. It reuses `UpdateBookDomFromBrowserPageContent()` and `SaveBookToDisk()`, so it makes
-  exactly the same "just this page vs. full book save" decision as the old path.
+- `EditingStateMachine.ToSavedInPlaceThenNavigating(pageContentData, doBeforeSaveToDisk,
+  reportFailure)` — the same thing for a request that also has to *change* something and then show
+  another page. `doBeforeSaveToDisk` plays exactly the role it plays in `ToSavePending`: it runs
+  after the browser's content is in the book DOM and before the book is written to disk, and
+  returns the page to go to. So the whole `SavePending → SavedAndStripped → Navigating` sequence
+  collapses into one `Editing → Navigating` step.
+- `EditingModel.SavePageInPlace(pageContentData)` and `SavePageInPlaceThen(pageContentData,
+  doBeforeSaveToDisk)` — the Javascript-initiated counterparts of `SaveThen`. They reuse
+  `UpdateBookDomFromBrowserPageContent()` and `SaveBookToDisk()`, so they make exactly the same
+  "just this page vs. full book save" decision as the old path. Each returns false, having done
+  nothing at all (the action has NOT run), if we were not in a position to save, so the caller can
+  fall back to `SaveThen`.
 - API `editView/savePageInPlace`, called by `savePageWithoutReloading()` in `bloomEditing.ts`. The
   reply is not sent until the save has finished, so Javascript can `await` it.
 
-Nothing yet *uses* `savePageWithoutReloading()`. Everything below is the inventory of what could,
-and what that would let us delete. Nothing in this document has been done.
+### What has been converted so far
+
+Everything the **page list frame** initiates. `collectCurrentPageContent()`
+(`pageThumbnailList/currentPageContent.ts`) gathers the editable page's content — it can, because
+`getEditablePageBundleExports()` reaches across frames — and every one of these sends it along with
+its request:
+
+| Command | Was | Is now |
+| --- | --- | --- |
+| clicking a page thumbnail | `SaveThen` round trip, then navigate | `SavePageInPlaceThenGoToPage` |
+| Duplicate Page (button and context menu) | `SaveThen` round trip, then duplicate, then navigate | `SavePageInPlaceThen(duplicate)` |
+| Delete Page (button and context menu) | ditto | `SavePageInPlaceThen(delete)` |
+| Paste Page (context menu) | ditto | `SavePageInPlaceThen(insert)` |
+| dragging a page to a new position | ditto | `SavePageInPlaceThen(relocate)` |
+| **Copy Page** (context menu) | `SaveThen` round trip **and a reload of the page being copied** | `SavePageInPlace` — no navigation at all |
+
+Copy Page is the first of these to lose its reload entirely: copying doesn't change the page you
+are looking at, so with the content in hand there is nothing left to navigate to. The others still
+navigate, because they are *going somewhere* (the new page, the next page, the moved page); what
+they lose is the round trip, and with it the `SavePending` window in which a second command is
+silently dropped.
+
+Not converted, because the request comes from a separate dialog window that cannot reach the page
+frame: Add Page (`AddPageDialog`) and Duplicate Many Times (`duplicateManyDlgBundle`). Both still
+use `SaveThen`, which is why it has to stay.
+
+Everything below is the inventory of what else could be converted, and what that would let us
+delete.
 
 ## Why the reload was expensive, not just ugly
 
@@ -218,10 +253,10 @@ start a save from C# — but each converted caller shrinks the surface.
 
 ## 6. Smaller things
 
-- **`getBodyContentForSavePage` is exported cross-frame but nothing calls it.** Same for
-  `userStylesheetContent`, whose comment still claims it is *"Called from C# by a RunJavaScript() in
-  EditingView.CleanHtmlAndCopyToPageDom"* — a method that no longer exists. Both could be dropped
-  from `IPageFrameExports` / `EditablePageBundleApi`.
+- ~~**`getBodyContentForSavePage` is exported cross-frame but nothing calls it.**~~ Done: both it
+  and `userStylesheetContent` (whose comment still claimed it was *"Called from C# by a
+  RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom"*, a method that no longer exists) are
+  now private to `bloomEditing.ts`.
 - **The off-screen book processor** (`BookProcessor.cs`) polls `window.__bloomExternalPageContent`
   because there is no live `EditingModel` for the callback API. Now that content-gathering is
   side-effect-free, `getPageContentForSave()` can be called directly and its value returned by
@@ -246,6 +281,15 @@ start a save from C# — but each converted caller shrinks the surface.
   types finally apply. They are unrelated to this work but must be fixed to pin 0.4.1. The most
   interesting is `CanvasElementResizeAdjustments.ts:161`, `bubbleSpec.spec !== "none"` — `BubbleSpec`
   has no `spec` member, so that comparison is always true and a Comical update is forced every time.
+- **A command that carries content must be a no-op when we decline to save.** `SavePageInPlace*`
+  returns false *before running doBeforeSaveToDisk* when we are not in a state to save, precisely
+  so the caller can fall back to `SaveThen` without the page being duplicated (or deleted!) twice.
+  `EditingStateMachineTests` pins that, because it is the kind of thing a later refactor could
+  quietly break with no visible symptom until a user loses a page.
+- **The context menu runs its command ~100ms after the click** (`HandleContextMenuItemClickedRequest`
+  defers it so the menu can close). The content we save is therefore gathered slightly *earlier*
+  than the old path gathered it — at click time rather than 100ms later. Nothing a user can type
+  into fits in that window, but it is a real difference.
 - **Not blurring.** The old code blurred the active element before capturing. If any code relies on
   a blur handler to normalize text before it is saved, that normalization no longer happens on save.
   CKEditor's `getData()` gives us current text either way, so this is about side effects, not text.

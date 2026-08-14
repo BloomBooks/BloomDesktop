@@ -28,7 +28,7 @@ import {
     postString,
     useApiData,
 } from "../../utils/bloomApi";
-import { getEditablePageBundleExports } from "../js/workspaceFrames";
+import { collectCurrentPageContent } from "./currentPageContent";
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -815,10 +815,15 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
         closeContextMenuOnBlurCleanupRef.current = undefined;
 
         const pageId = contextMenuPoint.pageId;
+        // Most of these commands (duplicate, copy, paste, remove) have to save the current page
+        // first, so send its content along. See collectCurrentPageContent().
         const postCommand = () =>
             postJson("pageList/contextMenuItemClicked", {
                 pageId,
                 commandId,
+                pageContent: collectCurrentPageContent(
+                    `the ${commandId} command`,
+                ),
             });
         if (commandId === "removePage") {
             confirmRemovePage(postCommand);
@@ -1061,40 +1066,28 @@ function onDragStop(
     // Needs more smarts if we ever do other than two columns.
     const newIndex = newItem.y * 2 + newItem.x;
 
-    postJson("pageList/pageMoved", { movedPageId, newIndex });
+    // Moving a page saves the current one first; see collectCurrentPageContent().
+    postJson("pageList/pageMoved", {
+        movedPageId,
+        newIndex,
+        pageContent: collectCurrentPageContent("the page move"),
+    });
 }
 
-// Tell C# the user picked a page, sending the CURRENT page's content along with the click.
-//
-// C# has to save the page we are leaving before it can show another. Sending the content with the
-// click lets it do that in one step. Otherwise it has to ask the browser for the content and wait
-// for the answer to arrive on a separate API, and while it waits it is in a state where a further
-// page click is silently thrown away. (See EditingModel.SavePageInPlaceThenGoToPage.)
-//
-// Collecting the content is cheap -- well under a millisecond, since getPageContentForSave() works
-// on a clone and does no layout -- so there is no reason not to do it on every click.
-//
-// If we cannot collect it we simply leave it out and C# falls back to asking. That is the honest
-// thing to do for the cases where there is nothing to collect (no page loaded yet) or where the
-// page is in a state we should not be reading (mid-navigation), rather than sending something
-// half-formed: this content is about to be written into the user's book.
+// Tell C# the user picked a page, sending the CURRENT page's content along with the click so it
+// can save the page we are leaving in the same step. See collectCurrentPageContent().
 function postPageClicked(
     pageId: string,
     detail: string,
     onSuccess?: () => void,
 ): void {
-    let pageContent: string | undefined;
-    try {
-        pageContent = getEditablePageBundleExports()?.getPageContentForSave();
-    } catch (error) {
-        console.warn(
-            "pageThumbnailList: could not collect the current page's content for the page change; C# will ask the page frame for it instead.",
-            error,
-        );
-    }
     postJson(
         "pageList/pageClicked",
-        { pageId, detail, pageContent },
+        {
+            pageId,
+            detail,
+            pageContent: collectCurrentPageContent("the page change"),
+        },
         onSuccess,
     );
 }

@@ -266,7 +266,17 @@ namespace Bloom.Edit
             }
         }
 
-        internal void ExecuteContextMenuCommand(IPage page, string commandId)
+        /// <summary>
+        /// Run one of the thumbnail context menu's commands. pageContentFromBrowser, when the page
+        /// list was able to collect it, is the current page's content; the commands that have to
+        /// save the current page first can then do so without asking the browser for it and waiting
+        /// (see EditingModel.SavePageInPlaceThen).
+        /// </summary>
+        internal void ExecuteContextMenuCommand(
+            IPage page,
+            string commandId,
+            string pageContentFromBrowser = null
+        )
         {
             if (!IsContextMenuCommandEnabled(page, commandId))
                 return;
@@ -274,20 +284,20 @@ namespace Bloom.Edit
             switch (commandId)
             {
                 case "duplicatePage":
-                    Model.DuplicatePage(page);
+                    Model.DuplicatePage(page, pageContentFromBrowser);
                     break;
                 case "duplicatePageManyTimes":
                     Model.DuplicateManyPages(page);
                     break;
                 case "copyPage":
-                    Model.CopyPage(page);
+                    Model.CopyPage(page, pageContentFromBrowser);
                     break;
                 case "pastePage":
-                    Model.PastePage(page);
+                    Model.PastePage(page, pageContentFromBrowser);
                     break;
                 case "removePage":
                     // The browser side has already confirmed with the user (BL-16421).
-                    Model.DeletePage(page);
+                    Model.DeletePage(page, pageContentFromBrowser);
                     break;
                 case "chooseDifferentLayout":
                     Model.GetEditingBrowser().Focus();
@@ -302,7 +312,11 @@ namespace Bloom.Edit
         // This gets invoked by Javascript (via the PageListApi) when it determines that a particular page has been moved.
         // newIndex is the (zero-based) index that the page is moving to
         // in the whole list of pages, including the placeholder.
-        internal void PageMoved(IPage movedPage, int newPageIndex)
+        internal void PageMoved(
+            IPage movedPage,
+            int newPageIndex,
+            string pageContentFromBrowser = null
+        )
         {
             // accounts for placeholder.
             // Enhance: may not be needed in single-column mode, if we ever restore that.
@@ -318,15 +332,26 @@ namespace Bloom.Edit
                 WebSocketServer.SendString("pageThumbnailList", "pageListNeedsReset", "");
                 return;
             }
+            Func<string> relocateThePage = () =>
+            {
+                var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
+                RelocatePageEvent.Raise(relocatePageInfo);
+                UpdateItems(movedPage.Book.GetPages());
+                PageSelectedChanged(movedPage, new EventArgs());
+                return movedPage.Id;
+            };
+
+            if (
+                pageContentFromBrowser != null
+                && Model.SavePageInPlaceThen(
+                    pageContentFromBrowser,
+                    relocateThePage,
+                    forceFullSave: true
+                )
+            )
+                return;
             Model.SaveThen(
-                () =>
-                {
-                    var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
-                    RelocatePageEvent.Raise(relocatePageInfo);
-                    UpdateItems(movedPage.Book.GetPages());
-                    PageSelectedChanged(movedPage, new EventArgs());
-                    return movedPage.Id;
-                },
+                relocateThePage,
                 () => { }, // wrong state, do nothing
                 forceFullSave: true
             );

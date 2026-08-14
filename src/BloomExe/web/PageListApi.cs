@@ -150,6 +150,11 @@ namespace Bloom.web
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
             string commandId = requestData.commandId;
+            // See HandlePageClickedRequest: sent when the page list could collect it, so that the
+            // commands which save the current page first need not ask the browser and wait.
+            string pageContent = requestData.IsDefined("pageContent")
+                ? requestData.pageContent
+                : null;
             IPage page = PageFromId(pageId);
 
             if (page != null)
@@ -169,7 +174,11 @@ namespace Bloom.web
                             {
                                 try
                                 {
-                                    PageList.ExecuteContextMenuCommand(page, commandId);
+                                    PageList.ExecuteContextMenuCommand(
+                                        page,
+                                        commandId,
+                                        pageContent
+                                    );
                                 }
                                 catch (Exception ex)
                                 {
@@ -195,7 +204,11 @@ namespace Bloom.web
             string newPageId = requestData.movedPageId;
             IPage movedPage = PageFromId(newPageId);
             int newIndex = Convert.ToInt32(requestData.newIndex); // Should come as int, but automatic JSON parsing doesn't know this
-            PageList.PageMoved(movedPage, newIndex);
+            // See HandlePageClickedRequest.
+            string pageContent = requestData.IsDefined("pageContent")
+                ? requestData.pageContent
+                : null;
+            PageList.PageMoved(movedPage, newIndex, pageContent);
             request.PostSucceeded();
         }
 
