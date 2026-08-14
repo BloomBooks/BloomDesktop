@@ -23,11 +23,37 @@ import { getEditablePageBundleExports } from "../js/workspaceFrames";
 // page loaded yet) or where the page is in a state we should not be reading (mid-navigation),
 // rather than sending something half-formed: this content is about to be written into the user's
 // book.
+//
+// The promise we await belongs to the PAGE frame. If that frame navigates while we are waiting,
+// its timers and microtask queue go with it and the promise simply never settles -- and since the
+// whole command is waiting on us, the command would be dropped without a trace, which is worse
+// than doing it without the content. So we give up after a while and let C# ask for the content
+// the old way. The timer is ours, in this frame, precisely so that it survives the page frame
+// going away.
+const kGiveUpWaitingMs = 6000; // comfortably past the page frame's own 4s cap
+
 export async function collectCurrentPageContent(
     whatFor: string,
 ): Promise<string | undefined> {
     try {
-        return await getEditablePageBundleExports()?.getPageContentForSaveWhenReady();
+        const content =
+            getEditablePageBundleExports()?.getPageContentForSaveWhenReady();
+        if (!content) return undefined;
+        let giveUp: number | undefined;
+        const abandoned = new Promise<undefined>((resolve) => {
+            giveUp = window.setTimeout(() => {
+                console.warn(
+                    `gave up waiting for the current page's content for ${whatFor} (the page frame ` +
+                        `may have navigated away mid-wait); C# will ask the page frame for it instead.`,
+                );
+                resolve(undefined);
+            }, kGiveUpWaitingMs);
+        });
+        try {
+            return await Promise.race([content, abandoned]);
+        } finally {
+            if (giveUp !== undefined) window.clearTimeout(giveUp);
+        }
     } catch (error) {
         console.warn(
             `could not collect the current page's content for ${whatFor}; C# will ask the page frame for it instead.`,
