@@ -1406,6 +1406,61 @@ namespace BloomTests.TeamCollection
             );
         }
 
+        /// <summary>
+        /// The administrator pauses checkouts by editing their own local settings file while Bloom
+        /// runs, and Bloom pushes that up to the repo. Their own repo watcher is suppressed while
+        /// we write, so without help the machine that made the change is the one machine that
+        /// doesn't act on it -- and its stale in-memory "allowed" would be written back over the
+        /// change by the next Save(), un-pausing the whole team. See BL-16691.
+        /// </summary>
+        [Test]
+        public void SyncLocalAndRepoCollectionFiles_LocalPausePushedUp_UpdatesLiveSettings()
+        {
+            using (var collectionFolder = new TemporaryFolder("LocalPausePushedUp_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder("LocalPausePushedUp_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var settings = new CollectionSettings();
+                    mockTcManager.Setup(m => m.Settings).Returns(settings);
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+
+                    // The administrator's hand-edit: the file says paused...
+                    File.WriteAllText(
+                        settingsPath,
+                        "<Collection version=\"0.2\"><AllowCheckouts>False</AllowCheckouts></Collection>"
+                    );
+                    // ...while this running Bloom still has the value it loaded at startup.
+                    Assert.That(
+                        settings.AllowCheckouts,
+                        Is.True,
+                        "setup failed: the running Bloom should still think checkouts are allowed"
+                    );
+
+                    tc.SyncLocalAndRepoCollectionFiles(false);
+
+                    Assert.That(
+                        settings.AllowCheckouts,
+                        Is.False,
+                        "the machine that made the change should be paused too"
+                    );
+                    Assert.That(
+                        tc.GetAllowCheckoutsFromRepo(),
+                        Is.False,
+                        "and the pause should have reached the repo"
+                    );
+                }
+            }
+        }
+
         [Test]
         public void UpdateAllowCheckoutsFromRepo_NoRepoSettings_LeavesSettingAlone()
         {
