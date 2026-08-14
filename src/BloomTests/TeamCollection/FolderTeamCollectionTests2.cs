@@ -1461,6 +1461,57 @@ namespace BloomTests.TeamCollection
             }
         }
 
+        /// <summary>
+        /// The same workflow, and the same trap, for MinimumBloomVersion: the administrator adds it
+        /// to their own local settings file while Bloom runs. Their in-memory copy is still empty,
+        /// so the next Save() would rewrite the file without it and push that up, erasing the
+        /// requirement for the whole team. We deliberately only take the value here -- locking the
+        /// administrator out mid-sync is not this method's job. See BL-16690.
+        /// </summary>
+        [Test]
+        public void SyncLocalAndRepoCollectionFiles_LocalMinimumVersionPushedUp_UpdatesLiveSettings()
+        {
+            using (var collectionFolder = new TemporaryFolder("LocalMinVersionPushedUp_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder("LocalMinVersionPushedUp_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var settings = new CollectionSettings();
+                    mockTcManager.Setup(m => m.Settings).Returns(settings);
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+
+                    // The administrator's hand-edit. 1.0 is old enough that nothing here will try to
+                    // shut them out, which would want a dialog we cannot show from a unit test.
+                    File.WriteAllText(
+                        settingsPath,
+                        "<Collection version=\"0.2\"><MinimumBloomVersion>1.0</MinimumBloomVersion></Collection>"
+                    );
+                    // ...while this running Bloom still has the value it loaded at startup.
+                    Assert.That(
+                        settings.MinimumBloomVersion,
+                        Is.Empty,
+                        "setup failed: the running Bloom should not know about the minimum version yet"
+                    );
+
+                    tc.SyncLocalAndRepoCollectionFiles(false);
+
+                    Assert.That(
+                        settings.MinimumBloomVersion,
+                        Is.EqualTo("1.0"),
+                        "the machine that made the change should know about it too, or its next save will erase it"
+                    );
+                }
+            }
+        }
+
         [Test]
         public void UpdateAllowCheckoutsFromRepo_NoRepoSettings_LeavesSettingAlone()
         {
@@ -1472,6 +1523,72 @@ namespace BloomTests.TeamCollection
                     settings.AllowCheckouts = false;
                     tc.UpdateAllowCheckoutsFromRepo();
                     Assert.That(settings.AllowCheckouts, Is.False);
+                }
+            );
+        }
+
+        /// <summary>
+        /// Picking up the repo's minimum version matters even when this Bloom is new enough to carry
+        /// on working. CollectionSettings.Save() rebuilds the file from memory, so if we were still
+        /// holding the empty value we loaded at startup, the next ordinary save would drop the
+        /// element and the Team Collection would push that up -- removing the administrator's
+        /// protection for everybody. See BL-16690.
+        /// </summary>
+        [Test]
+        public void HandleCollectionSettingsChange_RepoDeclaresAMinimumWeMeet_RemembersIt()
+        {
+            WithRepoSettingsFile(
+                "RememberMinimumVersion",
+                "<Collection version=\"0.2\"><MinimumBloomVersion>1.0</MinimumBloomVersion></Collection>",
+                (tc, settings) =>
+                {
+                    // Sanity check: we must start out not knowing about it, or the test proves nothing.
+                    Assert.That(
+                        settings.MinimumBloomVersion,
+                        Is.Empty,
+                        "setup failed: should have started with no minimum version"
+                    );
+                    // And this Bloom really must satisfy the 1.0 below. On a build where the
+                    // version was never stamped in (0.0.x) it would not, and the code under test
+                    // would try to lock the user out -- which from a unit test means a dialog and a
+                    // hang rather than a failure. Better to say so plainly here.
+                    Assert.That(
+                        typeof(CollectionSettings).Assembly.GetName().Version,
+                        Is.GreaterThanOrEqualTo(new Version(1, 0)),
+                        "setup failed: this Bloom's assembly version is not stamped, so the test cannot tell a met minimum from an unmet one"
+                    );
+
+                    // 1.0 is old enough that this cannot try to lock anyone out (which would want a dialog).
+                    var lockedOut = tc.HandleCollectionSettingsChange(new RepoChangeEventArgs());
+
+                    Assert.That(
+                        lockedOut,
+                        Is.False,
+                        "should not shut anyone out over a minimum this Bloom easily meets"
+                    );
+                    Assert.That(settings.MinimumBloomVersion, Is.EqualTo("1.0"));
+                }
+            );
+        }
+
+        /// <summary>
+        /// Not being able to read the repo copy is quite different from the repo saying there is no
+        /// minimum, and only the second should clear what we are holding. Getting this wrong would
+        /// turn a transient read failure into the loss of the setting. See BL-16690.
+        /// </summary>
+        [Test]
+        public void HandleCollectionSettingsChange_NoRepoSettings_LeavesMinimumVersionAlone()
+        {
+            WithRepoSettingsFile(
+                "RememberMinimumVersionNoRepo",
+                null,
+                (tc, settings) =>
+                {
+                    settings.MinimumBloomVersion = "1.0";
+
+                    tc.HandleCollectionSettingsChange(new RepoChangeEventArgs());
+
+                    Assert.That(settings.MinimumBloomVersion, Is.EqualTo("1.0"));
                 }
             );
         }

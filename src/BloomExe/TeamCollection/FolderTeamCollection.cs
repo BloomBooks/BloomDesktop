@@ -471,6 +471,26 @@ namespace Bloom.TeamCollection
             RobustZip.WriteFilesToZip(names, _localCollectionFolder, destPath);
         }
 
+        /// <summary>
+        /// Read the collection settings straight out of the repo's zip of collection files, without
+        /// unpacking anything or disturbing the local copy. Used to notice a minimum Bloom version
+        /// arriving from an administrator while the user has the collection open.
+        /// </summary>
+        protected override string GetRepoCollectionSettingsContent()
+        {
+            var zipPath = GetRepoProjectFilesZipPath(_repoFolderPath);
+            if (!RobustFile.Exists(zipPath))
+                return null;
+            // Find the entry by its extension rather than building the name from the local
+            // collection path: the collection may have been renamed locally, in which case the
+            // name we would build is not the one in the repo. (Shared with BL-16691, which reads
+            // AllowCheckouts out of the same file.)
+            var entryName = GetCollectionSettingsEntryName(zipPath);
+            if (entryName == null)
+                return null;
+            return RobustZip.GetZipEntryContent(zipPath, entryName);
+        }
+
         protected override DateTime LastRepoCollectionFileModifyTime
         {
             get
