@@ -676,6 +676,14 @@ namespace Bloom.web.controllers
         /// to write host file", and since it writes all the files before posting the commit,
         /// ONE such failure abandoned the whole commit: the user's Replace did nothing at all.
         ///
+        /// Note that serializing those duplicate writes is all we do about them: the AI image
+        /// editor still sends the same bytes once per slot, so one image in four slots posts the
+        /// same few MB four times. We are deliberately not asking it to send each result only
+        /// once (JohnThomson's call, BL-16702): using one picture in several places is expected
+        /// to be rare, and when it happens the picture is likely to be a small decorative one,
+        /// so the wasted bandwidth isn't worth optimizing — especially as it is bandwidth to
+        /// localhost.
+        ///
         /// Internal for testing.
         /// </summary>
         internal static void WriteRequestBodyToFile(string fullPath, Stream body)
