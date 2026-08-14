@@ -877,6 +877,14 @@ namespace Bloom.TeamCollection
                         // allowed, and the next Save() would write that back over the change and
                         // un-pause the whole team. See BL-16691.
                         UpdateAllowCheckoutsFromRepo();
+                        // MinimumBloomVersion is hand-edited into the local file by exactly the same
+                        // administrator workflow, and would be erased by exactly the same next Save().
+                        // We only take the value; we deliberately do NOT lock the administrator out
+                        // from here. This runs while the collection is still being opened, with no
+                        // Shell to own a dialog and nowhere sensible to send them. Their own gate
+                        // catches it at the next launch, by which time the local file says so. See
+                        // BL-16690.
+                        RememberRepoMinimumBloomVersion(TryGetRepoCollectionSettingsContent());
                     }
                 }
             }
@@ -1404,21 +1412,7 @@ namespace Bloom.TeamCollection
         /// <returns>true if we shut the user out of the collection.</returns>
         private bool CheckWhetherRepoNowRequiresANewerBloom()
         {
-            string repoSettings;
-            try
-            {
-                repoSettings = GetRepoCollectionSettingsContent();
-            }
-            catch (Exception e)
-            {
-                // Failing to read the repo copy is not a good enough reason to interrupt someone's
-                // work. If it really does require a newer Bloom, we will find out at the next start.
-                Logger.WriteError(
-                    "TeamCollection could not read the repo collection settings to check its minimum Bloom version",
-                    e
-                );
-                return false;
-            }
+            var repoSettings = TryGetRepoCollectionSettingsContent();
 
             RememberRepoMinimumBloomVersion(repoSettings);
 
@@ -1442,6 +1436,26 @@ namespace Bloom.TeamCollection
                 Path.GetFileNameWithoutExtension(CollectionPath(_localCollectionFolder)),
                 minimumVersion
             );
+        }
+
+        /// <summary>
+        /// The repository's copy of the collection settings, or null if we cannot get at it just
+        /// now -- there is no repo copy yet, the zip is part-written, Dropbox is mid-sync. Never
+        /// throws: failing to read it is a normal transient condition, and no caller should
+        /// interrupt someone's work over it. If the collection really does require a newer Bloom,
+        /// we find out at the next start.
+        /// </summary>
+        private string TryGetRepoCollectionSettingsContent()
+        {
+            try
+            {
+                return GetRepoCollectionSettingsContent();
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("TeamCollection could not read the repo collection settings", e);
+                return null;
+            }
         }
 
         /// <summary>
