@@ -1659,12 +1659,11 @@ namespace Bloom
                         )
                     )
                     {
-                        // The user chose to upgrade, so we've opened the downloads page and asked
-                        // Bloom to quit. Claim success, not because we opened anything, but so that
-                        // no caller puts up the collection chooser while we are shutting down. Doing
-                        // so would start a fresh modal message loop and could keep Bloom alive.
-                        // The flag lets OpenCollection tell this apart from a real open.
-                        _quittingBecauseBloomIsTooOld = true;
+                        // The user chose to upgrade: a newer Bloom has been downloaded and we have
+                        // asked Bloom to quit so it can be installed. Claim success, not because we
+                        // opened anything, but so that no caller puts up the collection chooser
+                        // while we are shutting down -- that would start a fresh modal message loop
+                        // and could keep Bloom alive.
                         return true;
                     }
                     return false;
@@ -1873,27 +1872,15 @@ namespace Bloom
             }
         }
 
-        /// <summary>
-        /// Set when we told Bloom to quit instead of opening a collection, because the user chose to
-        /// go and upgrade. OpenProjectWindow reports success in that case so that nobody puts up the
-        /// collection chooser during shutdown, but it is not a real open, so anything that records a
-        /// successful open has to know the difference.
-        /// </summary>
-        private static bool _quittingBecauseBloomIsTooOld;
-
         private static bool OpenCollection(string path)
         {
             if (OpenProjectWindow(path))
             {
-                // Don't remember a collection we never actually opened. Otherwise, choosing a
-                // too-new collection and then clicking "Upgrade Bloom" would leave it as the
-                // most-recently-used one, and a user who abandoned the download would come back to
-                // the blocked collection instead of the one they were really working in.
-                // The exception is when we actually downloaded the upgrade: then the next Bloom to
-                // start really can open this collection, and landing straight back in it is exactly
-                // what the user was trying to do.
-                if (_quittingBecauseBloomIsTooOld && !MinimumBloomVersionCheck.DownloadedAnUpgrade)
-                    return true;
+                // Note that OpenProjectWindow also reports success when the user chose to upgrade
+                // rather than open anything. Recording the collection is right in that case too: an
+                // upgrade has been downloaded and will be installed as Bloom closes, so the next
+                // Bloom to start really can open this collection, and landing straight back in it is
+                // exactly what the user was trying to do.
                 Settings.Default.MruProjects.AddNewPath(path);
                 Settings.Default.Save();
                 return true;

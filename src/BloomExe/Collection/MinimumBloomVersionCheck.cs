@@ -180,9 +180,8 @@ namespace Bloom.Collection
             // Order matters: the buttons appear left to right in this order, and the default one is
             // drawn filled and takes the initial focus. Upgrading is what we actually want the user
             // to do, so it goes last (the rightmost, primary position) and is the default.
-            // No external-link icon on this button here: unlike the version that always sends people
-            // to the website, this one normally upgrades Bloom itself and only falls back to the web
-            // when it can't. Marking it as leaving Bloom would be wrong most of the time.
+            // No external-link icon on this button: this upgrades Bloom in place and never opens a
+            // browser, so marking it as leaving Bloom would simply be wrong.
             var buttons = new[]
             {
                 new MessageBoxButton() { Text = chooseOtherButtonText, Id = "chooseOther" },
@@ -213,45 +212,42 @@ namespace Bloom.Collection
 
         private const string kUpgradeButtonId = "upgrade";
 
-        private static bool _alreadyLockingOut;
+        /// <summary>
+        /// The collection we are in the middle of shutting someone out of, if any. Keyed by name
+        /// rather than a plain flag for two reasons: the repository can report the same change more
+        /// than once, including while Bloom is shutting down, and we must not stack up dialogs; but
+        /// if the user moves on to a *different* collection in the same session, that one deserves
+        /// its own lock-out.
+        /// </summary>
+        private static string _collectionBeingLockedOut;
 
         /// <summary>
         /// Shut the user out of a collection they already have open, because a minimum version they
         /// don't meet has just arrived -- in practice, a Team Collection administrator set one while
         /// they were working. They get the same dialog as at startup, and the same two ways out:
-        /// upgrade, or go to a different collection. There is no third option; the dialog has no
-        /// close box, so they have to choose.
+        /// upgrade, or go to a different collection. There is deliberately no third option: the
+        /// dialog has no close box, and cancelling the collection chooser brings the dialog back
+        /// rather than dropping them into a collection this Bloom is not allowed to touch.
         /// </summary>
         public static void LockUserOutOfOpenCollection(string collectionName, string minimumVersion)
         {
-            // The repository can report the same change more than once, and we may still be sitting
-            // in the dialog from the first one.
-            if (_alreadyLockingOut)
+            if (_collectionBeingLockedOut == collectionName)
                 return;
-            _alreadyLockingOut = true;
-            try
+            _collectionBeingLockedOut = collectionName;
+
+            while (true)
             {
                 if (ReportCollectionNeedsNewerBloom(collectionName, minimumVersion))
                     return; // upgrading; Bloom is already on its way down
 
                 // They want a different collection. This is the same route as Open/Create Collection
                 // on the toolbar: it closes the current one and puts up the chooser.
-                Program.ChooseACollection(Shell.GetShellOrOtherOpenForm() as Shell);
-            }
-            finally
-            {
-                // If they are still here, the switch didn't happen (they cancelled the chooser, say),
-                // so let the next notification ask again rather than leaving them silently locked in.
-                _alreadyLockingOut = false;
+                if (Program.ChooseACollection(Shell.GetShellOrOtherOpenForm() as Shell))
+                    return;
+
+                // They cancelled the chooser. Staying is the one thing they can't do, so ask again.
             }
         }
-
-        /// <summary>
-        /// True when the user chose to upgrade and we downloaded a new Bloom, so the collection they
-        /// were blocked from should be waiting for them after the update. Program uses this to decide
-        /// whether to remember the collection.
-        /// </summary>
-        public static bool DownloadedAnUpgrade { get; private set; }
 
         /// <summary>
         /// Get the user onto a newer Bloom, in place. We never send them to the website: if we can't
@@ -264,9 +260,22 @@ namespace Bloom.Collection
         {
             // Task.Run because this awaits network work: awaiting it directly on the UI thread and
             // blocking would deadlock.
-            var result = Task.Run(() => ApplicationUpdateSupport.TryDownloadUpdateWithoutToasts())
-                .GetAwaiter()
-                .GetResult();
+            // Blocking does mean Bloom stops responding for the length of the download. That is
+            // invisible at startup, where there is no window yet, but not when we are locking
+            // someone out of a collection they already have open. The wait cursor is the least we
+            // can do; a real progress window is still wanted here.
+            ApplicationUpdateSupport.SilentUpdateResult result;
+            Application.UseWaitCursor = true;
+            try
+            {
+                result = Task.Run(() => ApplicationUpdateSupport.TryDownloadUpdateWithoutToasts())
+                    .GetAwaiter()
+                    .GetResult();
+            }
+            finally
+            {
+                Application.UseWaitCursor = false;
+            }
 
             if (result.Outcome == ApplicationUpdateSupport.SilentUpdateOutcome.Downloaded)
             {
@@ -276,9 +285,6 @@ namespace Bloom.Collection
                 // as far as the channel allows is real progress, and if it isn't far enough the user
                 // meets this same dialog on the next launch and can decide again from there.
                 ApplicationUpdateSupport.ArrangeToInstallDownloadedUpdateOnExit();
-                // Remember the collection, so the upgraded Bloom comes back to it -- either to open
-                // it, or to tell them they still need to go further.
-                DownloadedAnUpgrade = true;
 
                 var downloadedVersion = ParseOrNull(result.DownloadedVersion);
                 if (

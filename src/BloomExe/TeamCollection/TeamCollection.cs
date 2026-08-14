@@ -1218,8 +1218,13 @@ namespace Bloom.TeamCollection
                     HandleDeletedRepoFileAfterPause(delArgs);
                 else if (args is BookRepoChangeEventArgs changeArgs)
                     HandleModifiedFile(changeArgs);
-                else
-                    HandleCollectionSettingsChange(args);
+                else if (HandleCollectionSettingsChange(args))
+                {
+                    // We just shut the user out of this collection, so Bloom is either quitting or
+                    // closing the collection down. Don't go on to poke at the book selection of a
+                    // collection that is being torn down.
+                    return;
+                }
                 // These "HandleX" methods above send a C# event, which is helpful for the C# end of things.
                 // Unfortunately, a websocket message is needed to make sure that javascript-land is up-to-date
                 // with any remote changes, for example, that the TeamCollection button updates (See BL-10270).
@@ -1336,7 +1341,9 @@ namespace Bloom.TeamCollection
             UpdateBookStatus(bookBaseName, true);
         }
 
-        internal void HandleCollectionSettingsChange(RepoChangeEventArgs result)
+        /// <returns>true if we are shutting the user out of this collection, so the caller should
+        /// stop working with it.</returns>
+        internal bool HandleCollectionSettingsChange(RepoChangeEventArgs result)
         {
             _tcLog.WriteMessage(
                 MessageAndMilestoneType.NewStuff,
@@ -1345,7 +1352,7 @@ namespace Bloom.TeamCollection
                 null,
                 null
             );
-            CheckWhetherRepoNowRequiresANewerBloom();
+            return CheckWhetherRepoNowRequiresANewerBloom();
         }
 
         /// <summary>
@@ -1358,7 +1365,8 @@ namespace Bloom.TeamCollection
         /// deliberately doesn't overwrite local collection settings mid-session, so the local file
         /// still says what it said when the collection was opened.
         /// </summary>
-        private void CheckWhetherRepoNowRequiresANewerBloom()
+        /// <returns>true if we shut the user out of the collection.</returns>
+        private bool CheckWhetherRepoNowRequiresANewerBloom()
         {
             string repoSettings;
             try
@@ -1373,7 +1381,7 @@ namespace Bloom.TeamCollection
                     "TeamCollection could not read the repo collection settings to check its minimum Bloom version",
                     e
                 );
-                return;
+                return false;
             }
 
             if (
@@ -1382,7 +1390,7 @@ namespace Bloom.TeamCollection
                     out var minimumVersion
                 )
             )
-                return;
+                return false;
 
             _tcLog.WriteMessage(
                 MessageAndMilestoneType.Error,
@@ -1396,6 +1404,7 @@ namespace Bloom.TeamCollection
                 Path.GetFileNameWithoutExtension(CollectionPath(_localCollectionFolder)),
                 minimumVersion
             );
+            return true;
         }
 
         /// <summary>
