@@ -237,18 +237,22 @@ namespace Bloom.Collection
                 return false;
             _collectionBeingLockedOut = collectionName;
 
-            while (true)
-            {
-                if (ReportCollectionNeedsNewerBloom(collectionName, minimumVersion))
-                    return true; // upgrading; Bloom is already on its way down
+            if (ReportCollectionNeedsNewerBloom(collectionName, minimumVersion))
+                return true; // upgrading; Bloom is already on its way down
 
-                // They want a different collection. This is the same route as Open/Create Collection
-                // on the toolbar: it closes the current one and puts up the chooser.
-                if (Program.ChooseACollection(Shell.GetShellOrOtherOpenForm() as Shell))
-                    return true;
+            // They want a different collection -- or they wanted to upgrade and we couldn't manage
+            // it, and have already been told why. This is the same route as Open/Create Collection
+            // on the toolbar: it closes the current one and puts up the chooser.
+            if (Program.ChooseACollection(Shell.GetShellOrOtherOpenForm() as Shell))
+                return true;
 
-                // They cancelled the chooser. Staying is the one thing they can't do, so ask again.
-            }
+            // They cancelled the chooser. Staying in this collection is the one thing they can't
+            // do -- but quitting must stay possible. Someone with nothing newer to upgrade to and
+            // no other collection to open would otherwise have no way out of Bloom at all except
+            // Task Manager, since this dialog deliberately has no close box. Cancelling here means
+            // "none of the above", which is exactly how the startup path reads it too.
+            ProgramExit.Exit();
+            return true;
         }
 
         /// <summary>

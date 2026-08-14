@@ -512,6 +512,13 @@ namespace Bloom
                 // So that a failed install (e.g. a running process got in the way) can be spotted
                 // and reported on the next launch, exactly as the normal update path does.
                 WriteUpdateAttemptFile(_newVersion.TargetFullRelease.Version.ToString());
+                // Shutting down is not instant -- Shell.OnClosing cancels the first close while it
+                // saves -- so the restart toast can appear and be clicked in the meantime, and that
+                // has already asked for the install. Applying the same update twice is how an
+                // upgrade fails or restarts Bloom when nobody asked it to. Same guard, same reason,
+                // as the normal update path above.
+                if (_restartingAfterToastClicked)
+                    return;
                 // false = don't restart Bloom for us. The user was trying to open a collection this
                 // Bloom can't handle, so there is nothing useful to come back to until the new
                 // version is in place; they start Bloom again themselves.

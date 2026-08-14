@@ -1442,6 +1442,15 @@ namespace BloomTests.TeamCollection
                         Is.Empty,
                         "setup failed: should have started with no minimum version"
                     );
+                    // And this Bloom really must satisfy the 1.0 below. On a build where the
+                    // version was never stamped in (0.0.x) it would not, and the code under test
+                    // would try to lock the user out -- which from a unit test means a dialog and a
+                    // hang rather than a failure. Better to say so plainly here.
+                    Assert.That(
+                        typeof(CollectionSettings).Assembly.GetName().Version,
+                        Is.GreaterThanOrEqualTo(new Version(1, 0)),
+                        "setup failed: this Bloom's assembly version is not stamped, so the test cannot tell a met minimum from an unmet one"
+                    );
 
                     // 1.0 is old enough that this cannot try to lock anyone out (which would want a dialog).
                     var lockedOut = tc.HandleCollectionSettingsChange(new RepoChangeEventArgs());
