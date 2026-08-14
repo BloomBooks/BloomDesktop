@@ -41,6 +41,54 @@ namespace Bloom
             Verbose,
         }
 
+        /// <summary>
+        /// What came of an attempt to update Bloom without any toast UI. See
+        /// TryDownloadUpdateWithoutToasts.
+        /// </summary>
+        internal enum SilentUpdateOutcome
+        {
+            /// A newer Bloom was downloaded and will be installed when Bloom exits.
+            Downloaded,
+
+            /// We reached the update feed, and there is nothing newer on this channel.
+            NothingNewer,
+
+            /// We can't update this copy of Bloom at all: a developer build, one an administrator
+            /// manages, or one running under the debugger.
+            CannotUpdateThisBloom,
+
+            /// We tried and something went wrong -- most likely we couldn't reach the feed.
+            Failed,
+        }
+
+        /// <summary>
+        /// What happened, plus the words to say about it. Since this path has no toasts, the caller
+        /// shows Message in a message box; it is already the same wording the toast would have used,
+        /// so the user hears the same thing either way.
+        /// </summary>
+        internal class SilentUpdateResult
+        {
+            public readonly SilentUpdateOutcome Outcome;
+
+            /// Ready to show, or null when the outcome speaks for itself and the caller has
+            /// something better to say (Downloaded, NothingNewer).
+            public readonly string Message;
+
+            /// The version we downloaded; only set for Downloaded.
+            public readonly string DownloadedVersion;
+
+            public SilentUpdateResult(
+                SilentUpdateOutcome outcome,
+                string message,
+                string downloadedVersion = null
+            )
+            {
+                Outcome = outcome;
+                Message = message;
+                DownloadedVersion = downloadedVersion;
+            }
+        }
+
         enum UploadStatus
         {
             // First call this session, or previous call(s) completed and found no updates
@@ -228,6 +276,11 @@ namespace Bloom
                 // When we exit, apply the updates. (If autoupdate is false, this is still appropriate,
                 // because the user responded to the message about updates available by clicking "Update Now",
                 // so we're just completing something already approved).
+                // Check the flag as well as setting it, so the "only one exit handler" rule holds
+                // whichever path got here first.
+                if (_willInstallUpdateOnExit)
+                    return;
+                _willInstallUpdateOnExit = true;
                 Application.ApplicationExit += (sender, args) =>
                 {
                     // Write a file so that if the update fails (e.g., a running process prevents it),
@@ -252,6 +305,225 @@ namespace Bloom
                     e
                 );
             }
+#endif
+        }
+
+        /// <summary>
+        /// Download an update, if there is one, without using any toast UI.
+        ///
+        /// Everything else in this class talks to the user through toasts, and those are only
+        /// rendered by ToastHost, which lives in the main workspace. This method exists for callers
+        /// that run before a collection is open -- notably the "this collection needs a newer Bloom"
+        /// dialog -- where there is no workspace and so a toast would go nowhere at all.
+        ///
+        /// It behaves as if the user had clicked the "Update Now" toast: it finds the update and
+        /// downloads it, and the caller is expected to shut Bloom down afterwards, at which point
+        /// Velopack installs it (see ArrangeToInstallDownloadedUpdateOnExit).
+        ///
+        /// Do not call this on the UI thread without wrapping it in Task.Run: it awaits network
+        /// work, and blocking the UI thread on that would deadlock.
+        /// </summary>
+        internal static async Task<SilentUpdateResult> TryDownloadUpdateWithoutToasts()
+        {
+#if __MonoCS__
+            // Nothing in this class works off Windows.
+            return new SilentUpdateResult(
+                SilentUpdateOutcome.CannotUpdateThisBloom,
+                "Bloom can only update itself on Windows."
+            );
+#else
+            // The same three situations WorkspaceView.CheckForUpdatesImpl refuses to update in, with
+            // the same explanations, since the user is owed the same information either way.
+            if (Debugger.IsAttached)
+                return new SilentUpdateResult(
+                    SilentUpdateOutcome.CannotUpdateThisBloom,
+                    "Sorry, you cannot check for updates from the debugger."
+                );
+            if (InstallerSupport.SharedByAllUsers())
+                return new SilentUpdateResult(
+                    SilentUpdateOutcome.CannotUpdateThisBloom,
+                    LocalizationManager.GetString(
+                        "CollectionTab.AdminManagesUpdates",
+                        "Your system administrator manages Bloom updates for this computer."
+                    )
+                );
+            if (IsDev)
+                return new SilentUpdateResult(
+                    SilentUpdateOutcome.CannotUpdateThisBloom,
+                    "Checking for updates is disabled on developer builds. No relevant channel."
+                );
+
+            // Another part of Bloom may already be partway through an update effort of its own,
+            // using the very statics we are about to write. (The workspace checks for updates on a
+            // timer, so in the Team Collection lock-out case it has had a whole session to get
+            // going.) CheckForAVelopackUpdate has a switch just like this one, and for the same
+            // reason: whoever got here first owns _bloomUpdateManager and _newVersion, and
+            // overwriting them behind their back would strand the update they had already lined up.
+            switch (_status)
+            {
+                case UploadStatus.NothingKnown:
+                    break; // nothing else is going on, so do the whole job ourselves
+                case UploadStatus.FoundUpdates:
+                    // The timer already found an update and is waiting for the user to accept it.
+                    // They just have, in our dialog, so download the one it found.
+                    return await DownloadTheUpdateWeAlreadyKnowAbout();
+                case UploadStatus.DownloadedWaitingForRestart:
+                    // Already downloaded, and installing-on-exit is already arranged. Telling the
+                    // caller it is Downloaded is exactly right: quitting will install it.
+                    return new SilentUpdateResult(
+                        SilentUpdateOutcome.Downloaded,
+                        null,
+                        _newVersion?.TargetFullRelease?.Version?.ToString()
+                    );
+                case UploadStatus.LookingForUpdates:
+                case UploadStatus.Downloading:
+                    // Joining in would mean two downloads of the same thing.
+                    return new SilentUpdateResult(
+                        SilentUpdateOutcome.Failed,
+                        LocalizationManager.GetString(
+                            "CollectionTab.UpdateCheckInProgress",
+                            "Bloom is already working on checking for updates."
+                        )
+                    );
+                case UploadStatus.Failed:
+                    // The same words the normal path's error toast uses.
+                    return new SilentUpdateResult(
+                        SilentUpdateOutcome.Failed,
+                        "Restart Bloom to try checking for updates again"
+                    );
+            }
+
+            try
+            {
+                // Quiet matters: with Verbose, GetUpdateUrl reports failures by toast.
+                if (!GetUpdateUrl(BloomUpdateMessageVerbosity.Quiet, out var updateUrl))
+                {
+                    // Overwhelmingly the reason we can't work out where to look is that we can't
+                    // reach the server, which is what the normal path says here too.
+                    return new SilentUpdateResult(
+                        SilentUpdateOutcome.Failed,
+                        LocalizationManager.GetString(
+                            "CollectionTab.UnableToCheckForUpdate",
+                            "Could not connect to the server to check for an update. Are you connected to the internet?",
+                            "Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc."
+                        )
+                    );
+                }
+
+                _status = UploadStatus.LookingForUpdates;
+                _bloomUpdateManager = new UpdateManager(
+                    updateUrl,
+                    new UpdateOptions { MaximumDeltasBeforeFallback = 2 }
+                );
+
+                try
+                {
+                    _newVersion = await _bloomUpdateManager.CheckForUpdatesAsync();
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteError("Could not check for a Velopack update without toasts", e);
+                    _status = UploadStatus.Failed;
+                    // The same words the "check failed" toast uses.
+                    return new SilentUpdateResult(
+                        SilentUpdateOutcome.Failed,
+                        "Bloom was unable to check for updates. Restart to try again."
+                    );
+                }
+
+                if (_newVersion == null)
+                {
+                    // Nothing newer on this channel. That is a real outcome here rather than good
+                    // news: the caller only asked because this Bloom is too old for the collection.
+                    // Clearing these is safe only because the switch above established that nobody
+                    // else had an update in hand when we started.
+                    _bloomUpdateManager = null;
+                    _status = UploadStatus.NothingKnown;
+                    return new SilentUpdateResult(SilentUpdateOutcome.NothingNewer, null);
+                }
+
+                return await DownloadTheUpdateWeAlreadyKnowAbout();
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("Velopack update without toasts failed unexpectedly", e);
+                _status = UploadStatus.Failed;
+                return new SilentUpdateResult(
+                    SilentUpdateOutcome.Failed,
+                    "Bloom was unable to check for updates. Restart to try again."
+                );
+            }
+#endif
+        }
+
+#if !__MonoCS__
+        /// <summary>
+        /// Download the update we have already found (_newVersion), reporting the outcome the way
+        /// TryDownloadUpdateWithoutToasts does. Shared by the case where we found it ourselves and
+        /// the case where the workspace's timer found it and was waiting for the user to accept.
+        /// </summary>
+        private static async Task<SilentUpdateResult> DownloadTheUpdateWeAlreadyKnowAbout()
+        {
+            try
+            {
+                _status = UploadStatus.Downloading;
+                await _bloomUpdateManager.DownloadUpdatesAsync(_newVersion);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("Could not download a Velopack update without toasts", e);
+                _status = UploadStatus.Failed;
+                // The same words the "download failed" toast uses.
+                return new SilentUpdateResult(
+                    SilentUpdateOutcome.Failed,
+                    "Bloom was unable to download and install updates. Restart to try again."
+                );
+            }
+
+            _status = UploadStatus.DownloadedWaitingForRestart;
+            return new SilentUpdateResult(
+                SilentUpdateOutcome.Downloaded,
+                null,
+                _newVersion.TargetFullRelease?.Version?.ToString()
+            );
+        }
+#endif
+
+        /// <summary>
+        /// True once something has arranged to install a downloaded update as Bloom exits. Both
+        /// the toast path and the silent path do that, and they must not both do it, or Bloom
+        /// would try to apply the same update twice on the way out.
+        /// </summary>
+        private static bool _willInstallUpdateOnExit;
+
+        /// <summary>
+        /// Arrange for an update downloaded by TryDownloadUpdateWithoutToasts to be installed when
+        /// Bloom exits. Call this on the UI thread, then shut Bloom down. Does nothing if the
+        /// normal update path has already arranged it.
+        /// </summary>
+        internal static void ArrangeToInstallDownloadedUpdateOnExit()
+        {
+#if !__MonoCS__
+            if (_willInstallUpdateOnExit)
+                return;
+            _willInstallUpdateOnExit = true;
+            Application.ApplicationExit += (sender, args) =>
+            {
+                // So that a failed install (e.g. a running process got in the way) can be spotted
+                // and reported on the next launch, exactly as the normal update path does.
+                WriteUpdateAttemptFile(_newVersion.TargetFullRelease.Version.ToString());
+                // Shutting down is not instant -- Shell.OnClosing cancels the first close while it
+                // saves -- so the restart toast can appear and be clicked in the meantime, and that
+                // has already asked for the install. Applying the same update twice is how an
+                // upgrade fails or restarts Bloom when nobody asked it to. Same guard, same reason,
+                // as the normal update path above.
+                if (_restartingAfterToastClicked)
+                    return;
+                // false = don't restart Bloom for us. The user was trying to open a collection this
+                // Bloom can't handle, so there is nothing useful to come back to until the new
+                // version is in place; they start Bloom again themselves.
+                _bloomUpdateManager.WaitExitThenApplyUpdates(null, true, false);
+            };
 #endif
         }
 
