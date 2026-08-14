@@ -276,6 +276,10 @@ namespace Bloom
                 // When we exit, apply the updates. (If autoupdate is false, this is still appropriate,
                 // because the user responded to the message about updates available by clicking "Update Now",
                 // so we're just completing something already approved).
+                // Check the flag as well as setting it, so the "only one exit handler" rule holds
+                // whichever path got here first.
+                if (_willInstallUpdateOnExit)
+                    return;
                 _willInstallUpdateOnExit = true;
                 Application.ApplicationExit += (sender, args) =>
                 {

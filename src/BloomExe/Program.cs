@@ -1699,6 +1699,11 @@ namespace Bloom
                     BloomThreadCancelService.Dispose();
                 BloomThreadCancelService = new CancellationTokenSource();
 
+                // We have a collection open, so no lock-out is in progress any more. Without this,
+                // a user locked out of collection A who moved to B and later came back to A would
+                // find that A could never lock them out again this session. See BL-16690.
+                MinimumBloomVersionCheck.NoteCollectionOpened();
+
                 return true;
             }
             catch (Exception e)

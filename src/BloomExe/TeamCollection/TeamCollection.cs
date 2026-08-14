@@ -1429,11 +1429,10 @@ namespace Bloom.TeamCollection
                 null
             );
 
-            MinimumBloomVersionCheck.LockUserOutOfOpenCollection(
+            return MinimumBloomVersionCheck.LockUserOutOfOpenCollection(
                 Path.GetFileNameWithoutExtension(CollectionPath(_localCollectionFolder)),
                 minimumVersion
             );
-            return true;
         }
 
         /// <summary>

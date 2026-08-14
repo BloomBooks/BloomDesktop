@@ -229,24 +229,37 @@ namespace Bloom.Collection
         /// dialog has no close box, and cancelling the collection chooser brings the dialog back
         /// rather than dropping them into a collection this Bloom is not allowed to touch.
         /// </summary>
-        public static void LockUserOutOfOpenCollection(string collectionName, string minimumVersion)
+        /// <returns>false if a lock-out for this collection is already under way, so the caller
+        /// should carry on as usual rather than assume the collection is being torn down.</returns>
+        public static bool LockUserOutOfOpenCollection(string collectionName, string minimumVersion)
         {
             if (_collectionBeingLockedOut == collectionName)
-                return;
+                return false;
             _collectionBeingLockedOut = collectionName;
 
             while (true)
             {
                 if (ReportCollectionNeedsNewerBloom(collectionName, minimumVersion))
-                    return; // upgrading; Bloom is already on its way down
+                    return true; // upgrading; Bloom is already on its way down
 
                 // They want a different collection. This is the same route as Open/Create Collection
                 // on the toolbar: it closes the current one and puts up the chooser.
                 if (Program.ChooseACollection(Shell.GetShellOrOtherOpenForm() as Shell))
-                    return;
+                    return true;
 
                 // They cancelled the chooser. Staying is the one thing they can't do, so ask again.
             }
+        }
+
+        /// <summary>
+        /// Called when a collection has actually been opened, which ends any lock-out we were in
+        /// the middle of. The flag has to be cleared by something outside the lock-out itself:
+        /// clearing it on the way out would let a repeat notification (they arrive during shutdown)
+        /// put the dialog straight back up.
+        /// </summary>
+        public static void NoteCollectionOpened()
+        {
+            _collectionBeingLockedOut = null;
         }
 
         /// <summary>

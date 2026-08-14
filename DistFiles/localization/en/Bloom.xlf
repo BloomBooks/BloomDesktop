@@ -5735,11 +5735,6 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">The book '{0}' is checked out to someone else. Your changes are saved to Lost-and-found.</source>
         <note>ID: TeamCollection.ConflictingCheckout</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.MinimumVersionSetRemotely" sil:dynamic="true" translate="no">
-        <source xml:lang="en">This collection now requires a newer version of Bloom than the one you are running.</source>
-        <note>ID: TeamCollection.MinimumVersionSetRemotely</note>
-        <note>Shown in the Team Collection message log when the administrator sets a minimum Bloom version that this Bloom does not meet.</note>
-      </trans-unit>
       <trans-unit id="TeamCollection.ConflictingEdit" sil:dynamic="true">
         <source xml:lang="en">The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.</source>
         <note>ID: TeamCollection.ConflictingEdit</note>
@@ -5845,6 +5840,11 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TeamCollection.ConflictingEdit</note>
       </trans-unit>
 -->
+      <trans-unit id="TeamCollection.MinimumVersionSetRemotely" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This collection now requires a newer version of Bloom than the one you are running.</source>
+        <note>ID: TeamCollection.MinimumVersionSetRemotely</note>
+        <note>Shown in the Team Collection message log when the administrator sets a minimum Bloom version that this Bloom does not meet.</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Activity" sil:dynamic="true">
         <source xml:lang="en">Activity</source>
         <note>ID: TemplateBooks.BookName.Activity</note>
