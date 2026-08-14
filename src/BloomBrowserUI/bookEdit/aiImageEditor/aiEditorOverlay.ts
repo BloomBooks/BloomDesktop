@@ -343,8 +343,24 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                 // a reload happening beneath it.
                                 // (currentPageApplied is what the page frame says landed,
                                 // so a failure part way through still saves the rest.)
+                                //
+                                // C# can decline the save (the user may have started changing
+                                // pages), and then the file still shows the pre-edit image --
+                                // exactly the state this save exists to avoid. We can't undo
+                                // that here, but we can make sure it isn't silent.
                                 if (currentPageApplied > 0) {
-                                    void getEditablePageBundleExports()?.savePageWithoutReloading();
+                                    void getEditablePageBundleExports()
+                                        ?.savePageWithoutReloading()
+                                        .then((saved) => {
+                                            if (!saved)
+                                                console.error(
+                                                    "AI image editor: Bloom declined to save the page after applying " +
+                                                        currentPageApplied +
+                                                        " replacement(s) to it. The book on disk still has the old " +
+                                                        "image(s), so editing these again in this session may report " +
+                                                        "that nothing matched.",
+                                                );
+                                        });
                                 }
                                 if (finalOk) {
                                     cleanup();

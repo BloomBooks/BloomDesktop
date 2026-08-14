@@ -51,7 +51,8 @@ export interface IPageFrameExports {
     requestPageContent(): void;
     // Gather the current page's content and have C# save it, without the page being reloaded
     // afterwards. Unlike requestPageContent(), this is initiated from the Javascript side.
-    savePageWithoutReloading(): Promise<void>;
+    // Resolves false if C# declined to save; see savePageWithoutReloading in bloomEditing.ts.
+    savePageWithoutReloading(): Promise<boolean>;
     // The combined "body <SPLIT-DATA> userCss" string that a save needs, gathered without
     // disturbing the live page.
     getPageContentForSaveWhenReady(): Promise<string>;

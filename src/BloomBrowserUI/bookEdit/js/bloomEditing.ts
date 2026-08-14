@@ -62,7 +62,7 @@ import { showInvisibles, hideInvisibles } from "./showInvisibles";
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import {
     postBoolean,
     postJson,
@@ -1395,10 +1395,16 @@ export async function getPageContentForSaveWhenReady(): Promise<string> {
 // initiated the save and drives its own state machine through the reply; this one lets Javascript
 // initiate a save at a point of its own choosing (e.g. before some operation that needs the book on
 // disk to be up to date) and simply carry on editing the same page.
-// Returns a promise that resolves when the book DOM has been updated and written to disk.
-export async function savePageWithoutReloading(): Promise<void> {
+//
+// Resolves TRUE once the book DOM has been updated and written to disk, and FALSE if C# declined
+// to save -- the user may have started changing pages, or an external process may have replaced
+// the book on disk. Callers that save so that the file will match the page they are about to work
+// from must check: carrying on after a refused save means reading a file that does not say what
+// they think it says.
+export async function savePageWithoutReloading(): Promise<boolean> {
     const content = await getPageContentForSaveWhenReady();
-    await postString("editView/savePageInPlace", content);
+    const response = await postString("editView/savePageInPlace", content);
+    return (response as AxiosResponse<boolean> | void)?.data === true;
 }
 
 // Save the page and have C# rebuild it from the updated book DOM. Unlike

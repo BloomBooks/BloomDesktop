@@ -144,6 +144,8 @@ beforeEach(() => {
     post.mockClear();
     postJson.mockClear();
     savePageWithoutReloading.mockClear();
+    // It answers whether C# actually saved; the overlay chains onto that to complain if not.
+    savePageWithoutReloading.mockResolvedValue(true);
     applyAiImageEditorReplacements.mockClear();
     applyAiImageEditorReplacements.mockReturnValue({
         applied: 1,
@@ -227,6 +229,21 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         expect(applyAiImageEditorReplacements).toHaveBeenCalledTimes(1);
         expect(document.getElementById("ai-editor-overlay")).toBeNull();
         expect(savePageWithoutReloading).toHaveBeenCalledTimes(1);
+    });
+
+    test("a save Bloom refuses is complained about, not swallowed", async () => {
+        // Bloom can decline (the user may have started changing pages). The book on disk then
+        // still has the old image, which is exactly what this save exists to prevent, so the
+        // least we can do is say so rather than let it look like it worked.
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+        savePageWithoutReloading.mockResolvedValue(false);
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        commitAndReplyFromHost(postFromEditor, true);
+        await vi.waitFor(() => expect(error).toHaveBeenCalled());
+
+        expect(error.mock.calls[0][0]).toContain("declined to save");
+        error.mockRestore();
     });
 
     test("a partial failure keeps the overlay up AND still saves what landed", () => {
