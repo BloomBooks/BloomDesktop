@@ -511,9 +511,11 @@ public class EditingStateMachine
                     RunActionThenSaveAndNavigate(doBeforeSaveToDisk);
                     return InPlaceSaveOutcome.Saved;
                 case State.NoPage:
-                    // Nothing to save, but the action and going to a page are still meaningful.
-                    // (ToSavePending treats NoPage the same way.)
-                    StartNavigating(doBeforeSaveToDisk());
+                    // There is no browser content to merge, but the action can still change the
+                    // book (it may duplicate or delete a page), and that has to reach disk just
+                    // the same. ToSavePending's NoPage branch goes through DoPostSaveAction, which
+                    // runs the action, saves the book, and then navigates -- so we do the same.
+                    RunActionThenSaveAndNavigate(doBeforeSaveToDisk);
                     return InPlaceSaveOutcome.Saved;
                 case State.Navigating:
                 case State.SavePending:

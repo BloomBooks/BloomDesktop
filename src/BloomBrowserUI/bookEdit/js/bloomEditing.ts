@@ -1404,7 +1404,11 @@ export async function getPageContentForSaveWhenReady(): Promise<string> {
 export async function savePageWithoutReloading(): Promise<boolean> {
     const content = await getPageContentForSaveWhenReady();
     const response = await postString("editView/savePageInPlace", content);
-    return (response as AxiosResponse<boolean> | void)?.data === true;
+    // C# sends this as JSON, so axios normally hands us a real boolean. Accept the string too:
+    // "did we save?" is not worth making dependent on the reply's content type, and getting it
+    // wrong the other way would have the AI image editor cry failure after every good save.
+    const data = (response as AxiosResponse<boolean | string> | void)?.data;
+    return data === true || data === "true";
 }
 
 // Save the page and have C# rebuild it from the updated book DOM. Unlike
@@ -1633,11 +1637,17 @@ export const pageUnloading = () => {
     if (theOneCanvasElementManager) {
         theOneCanvasElementManager.cleanUp();
     }
+    // Shut the open toolbox tool down. This releases whatever it was holding on the page we are
+    // leaving -- observers, listeners, and any UI it had opened such as a colour picker -- and it
+    // is the counterpart of the newPageReady() the tool gets for the page we are going to.
+    //
+    // Like resetAbovePageControls() below, this used to happen as a side effect of saving, because
+    // gathering the page content began by detaching the tool from the live page. A save no longer
+    // touches the live page, so without this nothing detaches the tool at all, and every page
+    // change leaks another page's worth of the tool's hooks.
+    getToolboxBundleExports()?.removeToolboxMarkup();
     // Unmount the React root for the controls above the page and re-enable the toolbox (the
-    // Change Layout toggle disables it). This used to happen as a side effect of saving, back when
-    // saving always stripped the live page and was always followed by a navigation. Now that a
-    // save leaves the page alone, this belongs here, in the code that runs when we really are
-    // leaving the page.
+    // Change Layout toggle disables it). Same story as above: it used to ride along with the save.
     resetAbovePageControls();
 };
 

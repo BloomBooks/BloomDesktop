@@ -287,6 +287,24 @@ namespace BloomTests.Edit
         }
 
         [Test]
+        public void ToSavedInPlaceThenNavigating_FromNoPage_StillWritesWhatTheActionDid()
+        {
+            // There is no browser content to merge here, but the action can still change the book
+            // -- deleting a page, say -- and that has to reach disk. The request-the-content path
+            // (ToSavePending -> DoPostSaveAction) saves in this case, so this must too.
+            Assert.That(
+                SaveInPlaceThenDoAndGoTo("content", () => "page2"),
+                Is.EqualTo(InPlaceSaveOutcome.Saved)
+            );
+
+            Assert.That(
+                _saveBookCount,
+                Is.EqualTo(1),
+                "whatever the action changed must still be written to disk"
+            );
+        }
+
+        [Test]
         public void ToSavedInPlaceThenNavigating_SaveFails_ReportsAndStaysPut()
         {
             GoToEditing("page1");
