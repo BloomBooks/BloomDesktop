@@ -29,7 +29,9 @@ namespace Bloom.Collection
         /// <returns>true if the collection demands a newer Bloom than we are</returns>
         public static bool IsThisBloomTooOld(string settingsFilePath, out string minimumVersion)
         {
-            var declaredVersion = ReadMinimumBloomVersion(settingsFilePath);
+            var declaredVersion =
+                MinimumVersionLearnedFromRepo(settingsFilePath)
+                ?? ReadMinimumBloomVersion(settingsFilePath);
             if (IsVersionSufficient(declaredVersion, RunningBloomVersion))
             {
                 minimumVersion = "";
@@ -69,6 +71,72 @@ namespace Bloom.Collection
             if (runningVersion.Major != requiredVersion.Major)
                 return runningVersion.Major > requiredVersion.Major;
             return runningVersion.Minor >= requiredVersion.Minor;
+        }
+
+        /// <summary>
+        /// Minimum versions we have learned from a Team Collection repository during this run, keyed
+        /// by the collection's settings file path.
+        ///
+        /// Bloom deliberately does not rewrite local collection settings mid-session, so once an
+        /// administrator sets a minimum version the file on this computer goes on saying nothing
+        /// about it until the next startup sync. Without this record, someone we had just shut out
+        /// could walk straight back in by choosing the same collection from the chooser: the gate
+        /// would read the stale file, see no requirement, and open it. See BL-16690.
+        /// </summary>
+        private static readonly System.Collections.Generic.Dictionary<
+            string,
+            string
+        > _minimumVersionsFromRepo = new System.Collections.Generic.Dictionary<string, string>(
+            StringComparer.OrdinalIgnoreCase
+        );
+
+        /// <summary>
+        /// Record what the repository says this collection's minimum version is, which may be newer
+        /// than what its file on this computer says. Pass the empty string if the repository has no
+        /// requirement -- that is a real answer too, and must be able to clear an earlier one.
+        /// </summary>
+        public static void RememberMinimumVersionFromRepo(
+            string settingsFilePath,
+            string minimumVersion
+        )
+        {
+            if (string.IsNullOrEmpty(settingsFilePath))
+                return;
+            _minimumVersionsFromRepo[NormalizePath(settingsFilePath)] = minimumVersion ?? "";
+        }
+
+        /// <summary>
+        /// What the repository told us about this collection during this run, or null if it never
+        /// did. Null and "" mean different things here: "" is the repository saying there is no
+        /// requirement, which should still win over a stale file that claims one.
+        /// </summary>
+        private static string MinimumVersionLearnedFromRepo(string settingsFilePath)
+        {
+            if (string.IsNullOrEmpty(settingsFilePath))
+                return null;
+            return _minimumVersionsFromRepo.TryGetValue(
+                NormalizePath(settingsFilePath),
+                out var version
+            )
+                ? version
+                : null;
+        }
+
+        /// <summary>
+        /// So that the same collection reached by two spellings of its path -- the short form and
+        /// the long form, say -- lands on one entry.
+        /// </summary>
+        private static string NormalizePath(string path)
+        {
+            try
+            {
+                return System.IO.Path.GetFullPath(path);
+            }
+            catch (Exception)
+            {
+                // A path we can't even canonicalize is not going to match anything either way.
+                return path;
+            }
         }
 
         /// <summary>

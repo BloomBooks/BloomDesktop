@@ -279,6 +279,58 @@ namespace BloomTests.Collection
         }
 
         /// <summary>
+        /// When a Team Collection administrator sets a minimum version mid-session, the copy of the
+        /// settings on this computer deliberately isn't rewritten, so it goes on saying nothing about
+        /// it. Someone we had just shut out could otherwise walk straight back in by choosing the same
+        /// collection from the chooser -- the gate would read the stale file and see no requirement.
+        /// See BL-16690.
+        /// </summary>
+        [Test]
+        public void IsThisBloomTooOld_RepoSaidNewerThanTheLocalFileDoes_StillSaysTooOld()
+        {
+            var path = WriteSettingsFile("RepoBeatsStaleFile", "");
+
+            // Sanity check: on the file alone, this collection is wide open.
+            Assert.That(
+                MinimumBloomVersionCheck.IsThisBloomTooOld(path, out _),
+                Is.False,
+                "Test setup problem: the file itself should demand nothing."
+            );
+
+            MinimumBloomVersionCheck.RememberMinimumVersionFromRepo(path, "99.0");
+
+            Assert.That(
+                MinimumBloomVersionCheck.IsThisBloomTooOld(path, out var minimumVersion),
+                Is.True
+            );
+            Assert.That(minimumVersion, Is.EqualTo("99.0"));
+        }
+
+        /// <summary>
+        /// The repository removing a requirement is just as real an answer as adding one, and must
+        /// be able to override a local file that still carries the old value.
+        /// </summary>
+        [Test]
+        public void IsThisBloomTooOld_RepoSaysNoRequirement_OverridesTheFile()
+        {
+            var path = WriteSettingsFile(
+                "RepoClearsRequirement",
+                "<MinimumBloomVersion>99.0</MinimumBloomVersion>"
+            );
+
+            // Sanity check: the file on its own shuts us out.
+            Assert.That(
+                MinimumBloomVersionCheck.IsThisBloomTooOld(path, out _),
+                Is.True,
+                "Test setup problem: the file should demand a version no Bloom has."
+            );
+
+            MinimumBloomVersionCheck.RememberMinimumVersionFromRepo(path, "");
+
+            Assert.That(MinimumBloomVersionCheck.IsThisBloomTooOld(path, out _), Is.False);
+        }
+
+        /// <summary>
         /// Writes a minimal .bloomCollection file in its own folder, since CollectionSettings
         /// expects the folder to be named after the collection.
         /// </summary>

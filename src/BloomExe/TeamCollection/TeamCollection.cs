@@ -1492,6 +1492,15 @@ namespace Bloom.TeamCollection
                 return;
             }
 
+            // Record it against the collection as well as in the settings object. The local
+            // .bloomCollection is deliberately not rewritten mid-session, so without this the
+            // startup gate would read the stale file and let someone we had just shut out back in
+            // by picking the same collection from the chooser. See BL-16690.
+            MinimumBloomVersionCheck.RememberMinimumVersionFromRepo(
+                CollectionPath(_localCollectionFolder),
+                repoValue
+            );
+
             if (repoValue == settings.MinimumBloomVersion)
                 return;
             Logger.WriteEvent(
