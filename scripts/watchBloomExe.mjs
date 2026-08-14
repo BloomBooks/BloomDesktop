@@ -30,16 +30,10 @@ const parseArgs = () => {
             "..",
         ),
         vitePort: undefined,
-        noWatch: false,
     };
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
-
-        if (arg === "--no-watch") {
-            options.noWatch = true;
-            continue;
-        }
 
         if (arg === "--repo-root") {
             options.repoRoot = requireOptionValue(args, i, "--repo-root");
@@ -66,7 +60,7 @@ const parseArgs = () => {
 
         if (arg.startsWith("--")) {
             throw new Error(
-                "Unsupported option. Supported options are --repo-root, --vite-port and --no-watch.",
+                "Unsupported option. Supported options are --repo-root and --vite-port.",
             );
         }
     }
@@ -83,32 +77,10 @@ try {
     process.exit(1);
 }
 
-// How long we give a launch to reach BLOOM_AUTOMATION_READY. Note this clock starts when we
-// spawn `dotnet watch run` (see startLaunchTimeout), so it covers dotnet watch's own startup, a
-// NuGet restore if one is needed, the MSBuild build, AND Bloom's initialization -- not just
-// "Bloom starting". On a cold tree, or a machine short of memory and paging, the build alone can
-// eat most of it. Set BLOOM_LAUNCH_TIMEOUT_MS to override (0 disables the timeout entirely).
-// The phase timings we log (see stampLaunchPhase) tell you where the time actually went.
-const launchTimeoutMs = (() => {
-    const fromEnv = process.env.BLOOM_LAUNCH_TIMEOUT_MS;
-    if (fromEnv === undefined || fromEnv.trim() === "") return 120000;
-    const parsed = Number.parseInt(fromEnv, 10);
-    if (!Number.isFinite(parsed) || parsed < 0) {
-        console.error(
-            `Ignoring BLOOM_LAUNCH_TIMEOUT_MS="${fromEnv}": expected a non-negative whole number of milliseconds.`,
-        );
-        return 120000;
-    }
-    return parsed;
-})();
+const launchTimeoutMs = 120000;
 const bloomMonitorPollMs = 500;
 const shortLivedBloomMs = 5000;
-// Under `dotnet watch` (the default), the watch child outlives each Bloom and rebuilds/relaunches
-// on a source change. Under --no-watch we use plain `dotnet run`: one build, one Bloom, and a
-// source change is picked up only when you restart. That costs you hot reload, but it also skips
-// the most expensive part of starting up -- dotnet watch spends longer working out which files to
-// watch (a full project evaluation) than MSBuild spends compiling. See the launch phase timings.
-const launchesUnderWatch = !options.noWatch;
+const launchesUnderWatch = true;
 const projectPath = path.join(
     options.repoRoot,
     "src",
@@ -159,17 +131,14 @@ const tryInferVitePortFromRunningBloom = async () => {
 const effectiveVitePort =
     options.vitePort ?? (await tryInferVitePortFromRunningBloom());
 
-const dotnetArgs = launchesUnderWatch
-    ? ["watch", "run", "--project", projectPath, "--", "--automation"]
-    : ["run", "--project", projectPath, "--", "--automation"];
-
-if (!launchesUnderWatch) {
-    console.log(
-        "Starting Bloom WITHOUT dotnet watch. C# changes will not be picked up until you " +
-            "restart (POST /restart, or the launcherControl --restart helper), and Bloom's " +
-            "restart toast will not appear because nothing is watching for changes.",
-    );
-}
+const dotnetArgs = [
+    "watch",
+    "run",
+    "--project",
+    projectPath,
+    "--",
+    "--automation",
+];
 
 const startupLabel = getHelpfulStartupLabel(options.repoRoot);
 
@@ -508,7 +477,6 @@ const reportAutomationReady = (rawAutomationInfo) => {
         return;
     }
 
-    stampLaunchPhase("Bloom reported automation-ready");
     launchCompleted = true;
     clearLaunchTimeout();
     bloomProcessId = automationInfo.processId;
@@ -532,44 +500,9 @@ const reportAutomationReady = (rawAutomationInfo) => {
     startBloomMonitor();
 };
 
-// Phase timings for a launch, so "it timed out" can be answered with "doing what?".
-// Elapsed is measured from the moment we spawn dotnet, which is also when the launch timeout
-// starts, so these numbers add up to the budget that timeout is policing.
-let launchStartedAt;
-let lastPhaseAt;
-const stampLaunchPhase = (label) => {
-    const now = Date.now();
-    if (launchStartedAt === undefined) {
-        launchStartedAt = now;
-        lastPhaseAt = now;
-    }
-    const sinceStart = ((now - launchStartedAt) / 1000).toFixed(1);
-    const sinceLast = ((now - lastPhaseAt) / 1000).toFixed(1);
-    lastPhaseAt = now;
-    console.log(
-        `launch phase: ${label} (+${sinceLast}s, ${sinceStart}s total)`,
-    );
-};
-
-// The lines dotnet watch prints as it works through a build. We only want the timings, so match
-// loosely on the distinctive words rather than the emoji, which vary by console encoding.
-const buildPhaseOfWatchLine = (line) => {
-    if (/dotnet watch.*Building\b/.test(line)) return "msbuild started";
-    if (/Build succeeded/.test(line)) return "msbuild succeeded";
-    if (/Determining projects to restore|Restored .*\.csproj/.test(line))
-        return "nuget restore";
-    if (/Hot reload enabled/.test(line)) return "dotnet watch ready";
-    return undefined;
-};
-
 const handleOutputLine = (launchToken, line) => {
     if (launchToken !== activeLaunchToken) {
         return;
-    }
-
-    const buildPhase = buildPhaseOfWatchLine(line);
-    if (buildPhase) {
-        stampLaunchPhase(buildPhase);
     }
 
     if (isDotnetWatchRestartSignal(line)) {
@@ -660,24 +593,14 @@ const terminateChild = (targetChild) =>
     });
 
 const startLaunchTimeout = () => {
-    if (launchTimeoutMs === 0) {
-        // Explicitly disabled via BLOOM_LAUNCH_TIMEOUT_MS=0: wait indefinitely. Useful on a
-        // machine where the build time is wildly variable, and when measuring what a launch
-        // actually costs without the launcher pulling the stack down mid-build.
-        return;
-    }
     launchTimeout = setTimeout(() => {
         if (launchCompleted || launchFailed) {
             return;
         }
 
         launchFailed = true;
-        stampLaunchPhase("GAVE UP");
         console.error(
-            `Bloom did not emit ${automationReadyPrefix.trim()} within ${launchTimeoutMs} ms. ` +
-                `The phase timings above show how far it got; that clock covers dotnet watch's ` +
-                `startup, any restore, the build, and Bloom's own initialization. If the build ` +
-                `simply needs longer on this machine, set BLOOM_LAUNCH_TIMEOUT_MS.`,
+            `Bloom did not emit ${automationReadyPrefix.trim()} within ${launchTimeoutMs} ms.`,
         );
         exitForFinishedLaunch(childExitCode || 1);
     }, launchTimeoutMs);
@@ -708,8 +631,6 @@ const spawnWatchChild = () => {
     child.stdout.on("end", stdoutWriter.flush);
     child.stderr.on("end", stderrWriter.flush);
 
-    launchStartedAt = undefined; // restart the phase clock with the launch timeout
-    stampLaunchPhase("dotnet spawned");
     startLaunchTimeout();
 
     child.on("error", (error) => {

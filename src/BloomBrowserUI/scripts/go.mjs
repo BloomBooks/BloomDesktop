@@ -145,19 +145,10 @@ const parseArgs = () => {
         vitePort: undefined,
         // Libraries to serve live from a local checkout: [{ name, checkoutPath? }, ...].
         withLibs: [],
-        // Start Bloom with plain `dotnet run` instead of `dotnet watch run`: much faster to get
-        // going, at the cost of C# hot reload / change detection. Passed straight through to
-        // watchBloomExe.mjs, which explains the trade-off.
-        noWatch: false,
     };
 
     for (let index = 0; index < args.length; index++) {
         const arg = args[index];
-
-        if (arg === "--no-watch") {
-            options.noWatch = true;
-            continue;
-        }
 
         if (arg === "--vite-port") {
             options.vitePort = parseRequiredPortValue(
@@ -800,10 +791,6 @@ const startBloomExe = (vitePort) => {
         "--vite-port",
         String(vitePort),
     ];
-
-    if (options.noWatch) {
-        args.push("--no-watch");
-    }
 
     const child = spawn(process.execPath, args, {
         cwd: browserUIRoot,
