@@ -325,7 +325,6 @@ namespace Bloom.Publish
                             OutputPdfPath = PdfFilePath,
                             PaperSizeName = PageLayout.SizeAndOrientation.PageSizeName,
                             Landscape = PageLayout.SizeAndOrientation.IsLandScape,
-                            SaveMemoryMode = _currentlyLoadedBook.UserPrefs.ReducePdfMemoryUse,
                             LayoutPagesForRightToLeft = LayoutPagesForRightToLeft,
                             BooketLayoutMethod = layoutMethod,
                             BookletPortion = BookletPortion,
