@@ -543,51 +543,43 @@ namespace Bloom.Edit
             // NB: though there is an api call to do this, it isn't currently used, so we have to measure here.
             var countString = numberOfTimesToDuplicate.ToString();
             var newPageId = page.Id; // error fallback
-            Func<string> duplicateThePage = () =>
-            {
-                using (PerformanceMeasurement.Global.Measure("Duplicate page"))
-                {
-                    try
-                    {
-                        newPageId = _currentlyDisplayedBook.DuplicatePage(
-                            page,
-                            numberOfTimesToDuplicate
-                        );
-                        // Book.DuplicatePage() updates the page list so we don't need to do it here.
-                        // (See http://issues.bloomlibrary.org/youtrack/issue/BL-3715.)
-                        //_view.UpdatePageList(false);
-                        Logger.WriteEvent(
-                            "Duplicate Page"
-                                + (numberOfTimesToDuplicate > 0 ? " " + countString + " times" : "")
-                        );
-                        Analytics.Track("Duplicate Page");
-                    }
-                    catch (Exception error)
-                    {
-                        ErrorReport.NotifyUserOfProblem(
-                            error,
-                            "Could not duplicate that page. Try quiting Bloom, run it again, and then attempt to duplicate the page again. And please click 'details' below and report this to us."
-                        );
-                    }
-                }
-                return newPageId;
-            };
-
-            // If the browser sent us the current page's content, we can do the whole thing now
-            // (see SavePageInPlaceThen); otherwise we have to ask for it and finish later.
-            if (
-                pageContentFromBrowser != null
-                && SavePageInPlaceThen(
-                    pageContentFromBrowser,
-                    duplicateThePage,
-                    forceFullSave: true
-                ) != InPlaceSaveOutcome.Declined
-            )
-                return;
             SaveThen(
-                duplicateThePage,
+                () =>
+                {
+                    using (PerformanceMeasurement.Global.Measure("Duplicate page"))
+                    {
+                        try
+                        {
+                            newPageId = _currentlyDisplayedBook.DuplicatePage(
+                                page,
+                                numberOfTimesToDuplicate
+                            );
+                            // Book.DuplicatePage() updates the page list so we don't need to do it here.
+                            // (See http://issues.bloomlibrary.org/youtrack/issue/BL-3715.)
+                            //_view.UpdatePageList(false);
+                            Logger.WriteEvent(
+                                "Duplicate Page"
+                                    + (
+                                        numberOfTimesToDuplicate > 0
+                                            ? " " + countString + " times"
+                                            : ""
+                                    )
+                            );
+                            Analytics.Track("Duplicate Page");
+                        }
+                        catch (Exception error)
+                        {
+                            ErrorReport.NotifyUserOfProblem(
+                                error,
+                                "Could not duplicate that page. Try quiting Bloom, run it again, and then attempt to duplicate the page again. And please click 'details' below and report this to us."
+                            );
+                        }
+                    }
+                    return newPageId;
+                },
                 () => { }, // wrong state, do nothing
-                forceFullSave: true
+                forceFullSave: true,
+                pageContentFromBrowser: pageContentFromBrowser
             );
         }
 
@@ -607,37 +599,30 @@ namespace Bloom.Edit
                 // If this happens, just abort the delete.
                 return;
             }
-            Func<string> deleteThePage = () =>
-            {
-                try
-                {
-                    var pageToShowNext = GetPageToShowAfterDeletion(page);
-                    _currentlyDisplayedBook.DeletePage(page);
-                    //_view.UpdatePageList(false);  DeletePage calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
-                    Logger.WriteEvent("Delete Page");
-                    Analytics.Track("Delete Page");
-                    return pageToShowNext.Id;
-                }
-                catch (Exception error)
-                {
-                    ErrorReport.NotifyUserOfProblem(
-                        error,
-                        "Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us."
-                    );
-                    return page.Id; // stay on this page.
-                }
-            };
-
-            if (
-                pageContentFromBrowser != null
-                && SavePageInPlaceThen(pageContentFromBrowser, deleteThePage, forceFullSave: true)
-                    != InPlaceSaveOutcome.Declined
-            )
-                return;
             SaveThen(
-                deleteThePage,
+                () =>
+                {
+                    try
+                    {
+                        var pageToShowNext = GetPageToShowAfterDeletion(page);
+                        _currentlyDisplayedBook.DeletePage(page);
+                        //_view.UpdatePageList(false);  DeletePage calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
+                        Logger.WriteEvent("Delete Page");
+                        Analytics.Track("Delete Page");
+                        return pageToShowNext.Id;
+                    }
+                    catch (Exception error)
+                    {
+                        ErrorReport.NotifyUserOfProblem(
+                            error,
+                            "Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us."
+                        );
+                        return page.Id; // stay on this page.
+                    }
+                },
                 () => { }, // wrong state, do nothing
-                forceFullSave: true
+                forceFullSave: true,
+                pageContentFromBrowser: pageContentFromBrowser
             );
         }
 
@@ -693,64 +678,57 @@ namespace Bloom.Edit
         /// </summary>
         private void InsertPage(object page, PageInsertEventArgs e, string pageContentFromBrowser)
         {
-            Func<string> insertThePage = () =>
-            { // there might be unsaved changes in the current page from before we clicked Add Page
-                var newPageId = CurrentBook.InsertPageAfter(
-                    DeterminePageWhichWouldPrecedeNextInsertion(),
-                    page as Page,
-                    e.NumberToAdd
-                );
-                // We deliberately do NOT force the page-list iframe to reload here.
-                // InsertPageAfter raises pageListChangedEvent (deferred until idle), which
-                // leads to UpdatePageList(); that either sends pageListNeedsRefresh over the
-                // websocket (a cheap, incremental update in the React page list) or, if the
-                // new page brought new stylesheets, regenerates the page-list document and
-                // navigates the iframe to it. We used to also do a hard location.reload of
-                // the iframe here, but that repainted the entire thumbnail list on every
-                // insert and raced with those deferred notifications: a websocket message
-                // arriving while the iframe was mid-reload was silently dropped, leaving the
-                // list permanently stale.
-                //
-                // The stylesheet-change path still navigates the iframe, which does repaint
-                // the whole list and does have a brief window during load where websocket
-                // messages are ignored. The difference is that this navigation is no longer a
-                // blind reload racing a separate notification: it is triggered by the deferred
-                // event itself and loads a freshly regenerated document that already contains
-                // the new page (and its stylesheet), so it is correct on its own. And when the
-                // reloaded iframe's socket opens, the React code re-fetches the page list (see
-                // the websocket/open handler in pageThumbnailList.tsx), recovering anything
-                // missed during the load. So no stale-list race remains.
-                //_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
-                //_pageSelection.SelectPage(newPage);
-                if (e.FromTemplate)
-                {
-                    try
-                    {
-                        Analytics.Track(
-                            "Insert Template Page",
-                            new Dictionary<string, string>
-                            {
-                                { "template-source", (page as IPage).Book.Title },
-                                { "page", (page as IPage).Caption },
-                            }
-                        );
-                    }
-                    catch (Exception) { }
-                }
-                Logger.WriteEvent("InsertTemplatePage");
-                return newPageId;
-            };
-
-            if (
-                pageContentFromBrowser != null
-                && SavePageInPlaceThen(pageContentFromBrowser, insertThePage, forceFullSave: true)
-                    != InPlaceSaveOutcome.Declined
-            )
-                return;
             SaveThen(
-                insertThePage,
+                () =>
+                { // there might be unsaved changes in the current page from before we clicked Add Page
+                    var newPageId = CurrentBook.InsertPageAfter(
+                        DeterminePageWhichWouldPrecedeNextInsertion(),
+                        page as Page,
+                        e.NumberToAdd
+                    );
+                    // We deliberately do NOT force the page-list iframe to reload here.
+                    // InsertPageAfter raises pageListChangedEvent (deferred until idle), which
+                    // leads to UpdatePageList(); that either sends pageListNeedsRefresh over the
+                    // websocket (a cheap, incremental update in the React page list) or, if the
+                    // new page brought new stylesheets, regenerates the page-list document and
+                    // navigates the iframe to it. We used to also do a hard location.reload of
+                    // the iframe here, but that repainted the entire thumbnail list on every
+                    // insert and raced with those deferred notifications: a websocket message
+                    // arriving while the iframe was mid-reload was silently dropped, leaving the
+                    // list permanently stale.
+                    //
+                    // The stylesheet-change path still navigates the iframe, which does repaint
+                    // the whole list and does have a brief window during load where websocket
+                    // messages are ignored. The difference is that this navigation is no longer a
+                    // blind reload racing a separate notification: it is triggered by the deferred
+                    // event itself and loads a freshly regenerated document that already contains
+                    // the new page (and its stylesheet), so it is correct on its own. And when the
+                    // reloaded iframe's socket opens, the React code re-fetches the page list (see
+                    // the websocket/open handler in pageThumbnailList.tsx), recovering anything
+                    // missed during the load. So no stale-list race remains.
+                    //_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
+                    //_pageSelection.SelectPage(newPage);
+                    if (e.FromTemplate)
+                    {
+                        try
+                        {
+                            Analytics.Track(
+                                "Insert Template Page",
+                                new Dictionary<string, string>
+                                {
+                                    { "template-source", (page as IPage).Book.Title },
+                                    { "page", (page as IPage).Caption },
+                                }
+                            );
+                        }
+                        catch (Exception) { }
+                    }
+                    Logger.WriteEvent("InsertTemplatePage");
+                    return newPageId;
+                },
                 () => { }, // wrong state, do nothing
-                forceFullSave: true
+                forceFullSave: true,
+                pageContentFromBrowser: pageContentFromBrowser
             );
         }
 
@@ -1690,14 +1668,11 @@ namespace Bloom.Edit
             if (CannotSavePage())
                 return;
             _nextSaveMustBeFull |= forceFullSave;
-            Func<string> stayOnThisPage = () => _pageSelection.CurrentSelection.Id;
-            if (
-                pageContentFromBrowser != null
-                && SavePageInPlaceThen(pageContentFromBrowser, stayOnThisPage)
-                    != InPlaceSaveOutcome.Declined
-            )
-                return;
-            SaveThen(stayOnThisPage, () => { });
+            SaveThen(
+                () => _pageSelection.CurrentSelection.Id,
+                () => { },
+                pageContentFromBrowser: pageContentFromBrowser
+            );
         }
 
         //invoked from TopicChooserDialog.tsx via API
@@ -1748,15 +1723,42 @@ namespace Bloom.Edit
         /// <remarks>If you are doing this in an API handler, remember that you must retrieve any data in
         /// the request before calling SaveThen. The Request object can't be used inside doBeforeSaveToDisk,
         /// since by then the request has been marked completed.</remarks>
+        /// <param name="pageContentFromBrowser">The current page's content, when the request that
+        /// got us here brought it along (see getPageContentForSaveWhenReady() in the browser). Given
+        /// it, we do the whole thing here and now instead of asking the browser and waiting -- see
+        /// SavePageInPlaceThen. Everything above still describes what happens; only the number of
+        /// hops changes. If we turn out not to be in a state to save, we fall back to asking, so
+        /// passing this is always safe.</param>
         public void SaveThen(
             Func<string> doBeforeSaveToDisk,
             Action doIfNotInRightStateToSave,
             bool forceFullSave = false,
             bool skipSaveToDisk = false,
             Action failureAction = null,
-            Action doAfterSaveToDisk = null
+            Action doAfterSaveToDisk = null,
+            string pageContentFromBrowser = null
         )
         {
+            if (pageContentFromBrowser != null)
+            {
+                // The in-place route does the save itself, in one go, so it has nowhere to put
+                // these three: they all describe things that happen around a save spread over two
+                // API calls. No caller combines them with sending content, and quietly ignoring
+                // them would be a nasty way to find that out.
+                Guard.Against(
+                    skipSaveToDisk || failureAction != null || doAfterSaveToDisk != null,
+                    "SaveThen: skipSaveToDisk, failureAction and doAfterSaveToDisk are not supported"
+                        + " together with pageContentFromBrowser"
+                );
+                if (
+                    SavePageInPlaceThen(pageContentFromBrowser, doBeforeSaveToDisk, forceFullSave)
+                    != InPlaceSaveOutcome.Declined
+                )
+                    return;
+                // Declined means nothing at all happened -- doBeforeSaveToDisk has NOT run -- so it
+                // is safe to go on and do it the long way.
+            }
+
             _nextSaveMustBeFull |= forceFullSave;
             if (
                 !_stateMachine.ToSavePending(
@@ -1866,28 +1868,6 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Go to another page, saving the current one from content the browser sent with the
-        /// request rather than asking for it and waiting.
-        ///
-        /// This is what a page click does when the page list was able to collect the content (see
-        /// pageThumbnailList.tsx). It replaces the SaveThen dance -- ask the browser, wait for it
-        /// to answer on a different API, run a pending action, then navigate -- with a
-        /// straight line, and so removes the window in which the editor sits in SavePending. That
-        /// window is not theoretical: a page click that arrives during it is silently dropped,
-        /// because SaveThen's "not in a state to save" callback for a page click does nothing.
-        ///
-        /// Returns false if we were not in a position to save, in which case we have not
-        /// navigated either and the caller should fall back to the SaveThen path.
-        /// </summary>
-        public InPlaceSaveOutcome SavePageInPlaceThenGoToPage(
-            string pageContentData,
-            string pageIdToGoTo
-        )
-        {
-            return SavePageInPlaceThen(pageContentData, () => pageIdToGoTo);
-        }
-
-        /// <summary>
         /// The direct counterpart of SaveThen for a request that arrived from the browser WITH the
         /// current page's content: save that content, run doBeforeSaveToDisk (which may change the
         /// book, and returns the id of the page to show next), write the book to disk, and navigate
@@ -1902,11 +1882,14 @@ namespace Bloom.Edit
         /// since completed.
         ///
         /// Returns Declined, having done nothing at all, if we were not in a position to save; only
-        /// then may the caller fall back to SaveThen. If it returns Failed, doBeforeSaveToDisk may
-        /// already have run and changed the book, so falling back would do it a second time -- see
-        /// InPlaceSaveOutcome.
+        /// then may the caller fall back to asking the browser. If it returns Failed,
+        /// doBeforeSaveToDisk may already have run and changed the book, so falling back would do it
+        /// a second time -- see InPlaceSaveOutcome.
+        ///
+        /// Private because SaveThen is the way in: pass it pageContentFromBrowser and it comes here
+        /// when it can and falls back on its own when it can't, so no caller has to get that right.
         /// </summary>
-        public InPlaceSaveOutcome SavePageInPlaceThen(
+        private InPlaceSaveOutcome SavePageInPlaceThen(
             string pageContentData,
             Func<string> doBeforeSaveToDisk,
             bool forceFullSave = false

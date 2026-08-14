@@ -45,22 +45,18 @@ namespace Bloom.Edit
 
             var pageId = (page as Page).Id;
 
-            // When the click brought the outgoing page's content with it, save it and go, in one
-            // step. Nothing has to be asked of the browser, so we never enter SavePending -- the
-            // state in which a further page click would be silently discarded.
-            var contentFromBrowser = (e as PageSelectedChangedEventArgs)?.PageContentFromBrowser;
-            if (
-                contentFromBrowser != null
-                && _model.SavePageInPlaceThenGoToPage(contentFromBrowser, pageId)
-                    != InPlaceSaveOutcome.Declined
-            )
-                return;
-
-            // No content came with the click (the page list could not collect it), or we were not
-            // in a state where we could use it. Ask the browser for the content and let the state
-            // machine navigate once it arrives. The only necessary action after saving is to go to
-            // the desired page, which is what returning its ID from the first argument achieves.
-            _model.SaveThen(() => pageId, () => { });
+            // The only necessary action after saving is to go to the desired page, which is what
+            // returning its ID from the first argument achieves.
+            //
+            // When the click brought the outgoing page's content with it, SaveThen saves and goes
+            // in one step, so we never enter SavePending -- the state in which a further page click
+            // would be silently discarded. When it didn't, SaveThen asks the browser as it always
+            // did.
+            _model.SaveThen(
+                () => pageId,
+                () => { },
+                pageContentFromBrowser: (e as PageSelectedChangedEventArgs)?.PageContentFromBrowser
+            );
         }
 
         public void SetBook(Book.Book book) //review: could do this instead by giving this class the bookselection object

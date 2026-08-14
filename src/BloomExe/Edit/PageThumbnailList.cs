@@ -332,28 +332,18 @@ namespace Bloom.Edit
                 WebSocketServer.SendString("pageThumbnailList", "pageListNeedsReset", "");
                 return;
             }
-            Func<string> relocateThePage = () =>
-            {
-                var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
-                RelocatePageEvent.Raise(relocatePageInfo);
-                UpdateItems(movedPage.Book.GetPages());
-                PageSelectedChanged(movedPage, new EventArgs());
-                return movedPage.Id;
-            };
-
-            if (
-                pageContentFromBrowser != null
-                && Model.SavePageInPlaceThen(
-                    pageContentFromBrowser,
-                    relocateThePage,
-                    forceFullSave: true
-                ) != InPlaceSaveOutcome.Declined
-            )
-                return;
             Model.SaveThen(
-                relocateThePage,
+                () =>
+                {
+                    var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
+                    RelocatePageEvent.Raise(relocatePageInfo);
+                    UpdateItems(movedPage.Book.GetPages());
+                    PageSelectedChanged(movedPage, new EventArgs());
+                    return movedPage.Id;
+                },
                 () => { }, // wrong state, do nothing
-                forceFullSave: true
+                forceFullSave: true,
+                pageContentFromBrowser: pageContentFromBrowser
             );
         }
 
