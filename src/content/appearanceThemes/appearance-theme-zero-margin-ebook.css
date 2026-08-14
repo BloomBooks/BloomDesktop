@@ -79,7 +79,16 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
 }
 [class*="Ebook"].numberedPage:not(.bloom-interactive-page),
 [class*="Device"].numberedPage:not(.bloom-interactive-page) {
-    /* move so that page number doesn't it hide it if the text box is in the lower left */
+    /* how far the format button moves to clear this theme's page number when the user's
+       Page Numbers setting forces the number to the bottom left; editMode.less applies
+       it in that situation whatever the rules below decide (BL-14901) */
+    --formatButton-pageNumber-dodge-when-forced-left: 20px;
+}
+.Ebook7x5Landscape.numberedPage:not(.bloom-interactive-page),
+.Device16x9Landscape.numberedPage:not(.bloom-interactive-page) {
+    /* move so that page number doesn't hide it if the text box is in the lower left.
+       Landscape only: on portrait pages this theme leaves the page number centered
+       (the default for these page sizes), so there is nothing to dodge (BL-14901) */
     --formatButton-pageNumber-dodge: 20px;
 }
 .Ebook7x5Landscape.numberedPage.pictureOnRight.pictureOnRight,

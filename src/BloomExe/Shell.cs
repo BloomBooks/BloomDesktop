@@ -534,6 +534,7 @@ namespace Bloom
         public void SetAlwaysMeasurePerformance(bool value)
         {
             Settings.Default.AlwaysMeasurePerformance = value;
+            Settings.Default.Save();
             UpdatePerformanceMeasurementStatus();
         }
 
