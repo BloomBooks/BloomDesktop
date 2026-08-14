@@ -314,6 +314,38 @@
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
+      <trans-unit id="Collection.CollectionRequiresNewerVersion" translate="no">
+        <source xml:lang="en">The collection "{0}" requires Bloom {1} or greater. You are running Bloom {2}.</source>
+        <note>ID: Collection.CollectionRequiresNewerVersion</note>
+        <note>{0} is the name of the collection, {1} is the version it requires, {2} is the version of Bloom that is running.</note>
+      </trans-unit>
+      <trans-unit id="Collection.NewerVersionNeededHeader" translate="no">
+        <source xml:lang="en">This collection needs a newer version of Bloom.</source>
+        <note>ID: Collection.NewerVersionNeededHeader</note>
+      </trans-unit>
+      <trans-unit id="Collection.NothingNewerAvailable" translate="no">
+        <source xml:lang="en">This collection needs Bloom {0}, but there is no newer Bloom available to you yet. You are already on the newest one for the kind of Bloom you have installed.</source>
+        <note>ID: Collection.NothingNewerAvailable</note>
+        <note>{0} is the version the collection requires.</note>
+      </trans-unit>
+      <trans-unit id="Collection.OpenDifferentCollection" translate="no">
+        <source xml:lang="en">Open a Different Collection</source>
+        <note>ID: Collection.OpenDifferentCollection</note>
+      </trans-unit>
+      <trans-unit id="Collection.UpgradeBloom" translate="no">
+        <source xml:lang="en">Upgrade Bloom</source>
+        <note>ID: Collection.UpgradeBloom</note>
+      </trans-unit>
+      <trans-unit id="Collection.UpgradeDownloaded" translate="no">
+        <source xml:lang="en">Bloom {0} has been downloaded. Bloom will now close to install it; please start it again.</source>
+        <note>ID: Collection.UpgradeDownloaded</note>
+        <note>{0} is the version number of the Bloom that was downloaded.</note>
+      </trans-unit>
+      <trans-unit id="Collection.UpgradeIsAStepButNotEnough" translate="no">
+        <source xml:lang="en">Bloom {0} has been downloaded, but this collection needs {1}, so you will need to upgrade again later. Bloom will now close to install it; please start it again.</source>
+        <note>ID: Collection.UpgradeIsAStepButNotEnough</note>
+        <note>{0} is the version number that was downloaded, {1} is the version the collection requires.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
         <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>
@@ -5808,6 +5840,11 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TeamCollection.ConflictingEdit</note>
       </trans-unit>
 -->
+      <trans-unit id="TeamCollection.MinimumVersionSetRemotely" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This collection now requires a newer version of Bloom than the one you are running.</source>
+        <note>ID: TeamCollection.MinimumVersionSetRemotely</note>
+        <note>Shown in the Team Collection message log when the administrator sets a minimum Bloom version that this Bloom does not meet.</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Activity" sil:dynamic="true">
         <source xml:lang="en">Activity</source>
         <note>ID: TemplateBooks.BookName.Activity</note>
