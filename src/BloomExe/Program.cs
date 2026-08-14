@@ -1664,6 +1664,13 @@ namespace Bloom
                         // opened anything, but so that no caller puts up the collection chooser
                         // while we are shutting down -- that would start a fresh modal message loop
                         // and could keep Bloom alive.
+                        //
+                        // NOTE for anyone adding a caller: this is the one path where we return true
+                        // with _projectContext still null. It suits today's callers, which only use
+                        // the result to decide whether to offer the chooser (and recording this
+                        // collection as most-recently-used is right, since the upgraded Bloom should
+                        // reopen it). A caller that goes on to use _projectContext would need a
+                        // three-way result -- opened / refused / quitting -- instead of this bool.
                         return true;
                     }
                     return false;

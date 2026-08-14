@@ -1204,7 +1204,29 @@ namespace Bloom.TeamCollection
             _pendingRepoChanges.Enqueue(args);
         }
 
+        private bool _handlingRepoChangeOnIdle;
+
         internal void HandleRemoteBookChangesOnIdle(object sender, EventArgs e)
+        {
+            // Handling a change can put up a modal dialog (a lock-out, for one), and while that
+            // dialog is up the message pump keeps delivering Idle events, so we would re-enter and
+            // start processing further repo changes on top of the one we are still in the middle
+            // of -- against a collection we may be busy closing. Whatever is left in the queue can
+            // wait for the next Idle after we return.
+            if (_handlingRepoChangeOnIdle)
+                return;
+            _handlingRepoChangeOnIdle = true;
+            try
+            {
+                HandleOneRemoteBookChange();
+            }
+            finally
+            {
+                _handlingRepoChangeOnIdle = false;
+            }
+        }
+
+        private void HandleOneRemoteBookChange()
         {
             if (_pendingRepoChanges.TryDequeue(out RepoChangeEventArgs args))
             {
