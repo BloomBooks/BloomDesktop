@@ -513,9 +513,14 @@ export class EditableDivUtils {
     // second "f" before the "f", pause for the markup timer, then type any other letter: the
     // "fl" vanishes (BL-16717).
     // So whenever we take bookmarks out again, put the text back the way we found it.
-    // The DOM spec says normalize() must keep live ranges - including the selection - on the
-    // same characters, but we don't want the user's insertion point to depend on the browser
-    // getting that right, so we save and restore it ourselves.
+    // Note that repairing the DOM is not on its own enough to repair the display: see
+    // mergeAdjacentTextNodeRuns() for why we rebuild the text rather than call normalize().
+    // Preserving the insertion point is our job too. The DOM spec does require text-node
+    // merging to keep live ranges - including the selection - on the same characters, but we
+    // don't want the user's cursor to depend on the browser getting that right, so we save and
+    // restore it ourselves.
+    // Callers should avoid making bookmarks at all when nothing is going to rewrite the box;
+    // this is the repair for when we genuinely needed one.
     public static mergeTextNodesSplitByBookmarks(element: HTMLElement): void {
         if (!EditableDivUtils.hasAdjacentTextNodes(element)) {
             return; // nothing to merge; leave the selection strictly alone
@@ -541,7 +546,7 @@ export class EditableDivUtils {
               )
             : undefined;
 
-        element.normalize();
+        EditableDivUtils.mergeAdjacentTextNodeRuns(element);
 
         if (!selection || !anchor || !focus) {
             return;
@@ -555,7 +560,7 @@ export class EditableDivUtils {
             focus.characterOffset,
         );
         if (!restoredAnchor || !restoredFocus) {
-            return; // no text to put it in; better to leave whatever normalize() decided
+            return; // no text to put it in; better to leave the selection where it landed
         }
         // setBaseAndExtent rather than a Range, so a backwards selection stays backwards.
         selection.setBaseAndExtent(
@@ -566,8 +571,54 @@ export class EditableDivUtils {
         );
     }
 
+    // Replace each run of adjacent sibling text nodes with a single, brand-new text node.
+    // This is what normalize() does, and normalize() is NOT a substitute for it. normalize()
+    // keeps the first node of the run and appends the rest onto it, and Chromium then goes on
+    // painting that node's stale glyphs: the DOM ends up correct - the inspector shows one
+    // string, and the layout measures correctly - while the screen keeps showing the old,
+    // glyph-dropped text until something else forces a repaint. Verified in a running Bloom:
+    // with normalize() the box still showed "overfow" for a DOM reading "overfflow"; building
+    // a fresh node, which has nothing cached against it, paints correctly.
+    private static mergeAdjacentTextNodeRuns(element: HTMLElement): void {
+        const doc = element.ownerDocument;
+        const parentsWithRuns = new Set<Node>();
+        const walker = doc.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            if (
+                node.nextSibling?.nodeType === Node.TEXT_NODE &&
+                node.parentNode
+            ) {
+                parentsWithRuns.add(node.parentNode);
+            }
+        }
+
+        parentsWithRuns.forEach((parent) => {
+            let child = parent.firstChild;
+            while (child) {
+                if (
+                    child.nodeType !== Node.TEXT_NODE ||
+                    child.nextSibling?.nodeType !== Node.TEXT_NODE
+                ) {
+                    child = child.nextSibling;
+                    continue;
+                }
+                let data = (child as Text).data;
+                let next = child.nextSibling;
+                while (next && next.nodeType === Node.TEXT_NODE) {
+                    data += (next as Text).data;
+                    const following = next.nextSibling;
+                    parent.removeChild(next);
+                    next = following;
+                }
+                const merged = doc.createTextNode(data);
+                parent.replaceChild(merged, child);
+                child = merged.nextSibling;
+            }
+        });
+    }
+
     // Does element contain two text nodes that are siblings, as removing a bookmark leaves
-    // behind? (An empty text node next to another one counts: normalize() merges it away.)
+    // behind? (An empty text node next to another one counts: merging folds it away.)
     private static hasAdjacentTextNodes(element: HTMLElement): boolean {
         const walker = element.ownerDocument.createTreeWalker(
             element,

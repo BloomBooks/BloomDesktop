@@ -267,6 +267,55 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
+    it("mergeTextNodesSplitByBookmarks builds a NEW text node rather than growing the old one", () => {
+        // Not a detail: normalize() would keep the first node and append to it, and Chromium
+        // then goes on painting that node's stale glyphs even though the DOM is now correct.
+        const div = makeParagraphSplitByABookmark("overfflow", 5);
+        const p = div.firstChild as HTMLParagraphElement;
+        const originalFirstNode = p.childNodes[0];
+        // sanity check: that node is the one that would survive a normalize()
+        expect(originalFirstNode.textContent).toBe("overf");
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        expect(p.childNodes.length).toBe(1);
+        expect(p.childNodes[0].textContent).toBe("overfflow");
+        expect(p.childNodes[0]).not.toBe(originalFirstNode);
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks merges only within a parent, and merges every run", () => {
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode("over"));
+        p.appendChild(document.createTextNode("f"));
+        const em = document.createElement("em");
+        em.appendChild(document.createTextNode("fl"));
+        em.appendChild(document.createTextNode("ow"));
+        p.appendChild(em);
+        p.appendChild(document.createTextNode(" and"));
+        p.appendChild(document.createTextNode(" more"));
+        div.appendChild(p);
+        document.body.appendChild(div);
+        // sanity check the setup: two runs in the p, one inside the em
+        expect(p.childNodes.length).toBe(5);
+        expect(em.childNodes.length).toBe(2);
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        // "over"+"f" merged, " and"+" more" merged, the <em> still between them
+        expect(p.childNodes.length).toBe(3);
+        expect(p.childNodes[0].textContent).toBe("overf");
+        expect(p.childNodes[1]).toBe(em);
+        expect(p.childNodes[2].textContent).toBe(" and more");
+        expect(em.childNodes.length).toBe(1);
+        expect(em.childNodes[0].textContent).toBe("flow");
+        expect(div.textContent).toBe("overfflow and more");
+
+        div.remove();
+    });
+
     it("mergeTextNodesSplitByBookmarks keeps the insertion point on the same characters", () => {
         const div = makeParagraphSplitByABookmark("overfflow", 5);
         const p = div.firstChild as HTMLParagraphElement;

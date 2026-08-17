@@ -1,7 +1,36 @@
 import { describe, it, expect } from "vitest";
-import { cleanUpNbsps, removeCommentsFromEditableHtml } from "./toolbox";
+import {
+    cleanUpNbsps,
+    editableMightBeRewritten,
+    removeCommentsFromEditableHtml,
+} from "./toolbox";
 
 describe("toolbox tests", () => {
+    // This gate decides whether we take a ckeditor bookmark, which splits the text node the
+    // user is typing in. Saying "no" when one of the clean-ups would in fact rewrite the box
+    // would lose the user's insertion point, so it must catch everything they act on.
+    it("editableMightBeRewritten says no for ordinary text", () => {
+        const div = document.createElement("div");
+        div.innerHTML = "<p>overflow</p><p>plain text, nothing to clean up</p>";
+
+        expect(editableMightBeRewritten(div)).toBe(false);
+    });
+
+    it("editableMightBeRewritten says yes for anything the clean-ups act on", () => {
+        const withComment = document.createElement("div");
+        withComment.innerHTML = "<p>text</p>";
+        withComment.firstChild!.appendChild(document.createComment("x"));
+        // sanity check: this is the case removeCommentsFromEditableHtml rewrites
+        expect(withComment.innerHTML).toContain("<!--");
+        expect(editableMightBeRewritten(withComment)).toBe(true);
+
+        const withNbsp = document.createElement("div");
+        withNbsp.innerHTML = "<p>a&nbsp;b</p>";
+        // sanity check: the nbsp really did survive into the html cleanUpNbsps scans
+        expect(withNbsp.innerHTML).toContain("&nbsp;");
+        expect(editableMightBeRewritten(withNbsp)).toBe(true);
+    });
+
     it("removeCommentsFromEditableHtml removes comments correctly including ones with new lines", () => {
         const p = document.createElement("p");
         const span1 = document.createElement("span");
