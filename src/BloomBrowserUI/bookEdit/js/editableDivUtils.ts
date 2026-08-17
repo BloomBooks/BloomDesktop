@@ -548,11 +548,9 @@ export class EditableDivUtils {
     // textHighlightManager.hasDeadRanges() exists to detect).
     //
     // So: merge with normalize(), which the DOM spec requires to keep live ranges on the same
-    // characters, and then make Chromium re-shape the merged node by writing its own text back
-    // into it - appending a character and immediately removing it again. Both edits are at the
-    // very end of the node, and per the spec only boundaries strictly beyond the edit point
-    // move, so no live range is disturbed; and because it happens inside one synchronous task,
-    // the extra character is never painted.
+    // characters, and then make Chromium re-shape the merged node by making a real change to it
+    // and undoing that change - appending a space at the end and immediately deleting it. See
+    // the comment at that edit for why it has to be done in exactly that way.
     //
     // Deliberately NOT done by toggling the element's display: the parent of a bare text node
     // can be the .bloom-editable itself, and hiding a focused contenteditable blurs it - the
@@ -595,7 +593,20 @@ export class EditableDivUtils {
             if (!survivor.isConnected) {
                 return; // the whole run was empty nodes; normalize() removed them all
             }
-            // Write the node's own text back into it, which is what makes Chromium re-shape.
+            // Now make Chromium re-shape this node, by making a real change to it and undoing
+            // that change. Every part of this is load-bearing:
+            // - It has to be a REAL edit. Assigning the same string back (data = data) is the
+            //   obvious thing to try, but it can be optimized away as a no-op, and then nothing
+            //   is re-shaped and the letters stay missing.
+            // - It must not disturb any EXISTING character. Deleting the text and re-inserting
+            //   it, or replacing the whole string in one assignment, would do the job, but per
+            //   the DOM spec an edit at offset N moves every live range boundary beyond N - so
+            //   either of those would drag, or collapse, the highlight ranges that the reader
+            //   tools and Talking Book have registered over this very node, and the caret with
+            //   them. Appending at the end and deleting only what we appended edits at
+            //   offset === length, and no boundary can lie beyond the end, so nothing moves.
+            // - The two edits must both happen here, synchronously. Nothing is painted between
+            //   them, so the space we add is never seen and never saved.
             survivor.insertData(survivor.length, " ");
             survivor.deleteData(survivor.length - 1, 1);
         });
