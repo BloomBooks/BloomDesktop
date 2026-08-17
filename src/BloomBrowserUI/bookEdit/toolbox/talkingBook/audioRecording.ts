@@ -1810,7 +1810,9 @@ export default class AudioRecording implements IAudioRecorder {
      * we RECORD rather than on whichever sub-segment was being played, the temporary
      * highlighting markup reverted, and the buttons no longer showing play as active.
      * Callers that need the page to be in a settled state before they do something else
-     * (e.g. opening the Adjust Timings dialog, BL-16276) should await this.
+     * (e.g. opening the Adjust Timings dialog, BL-16276) should await this. What the returned
+     * promise guarantees is that the PAGE has settled; refreshing the toolbox buttons is
+     * deliberately left to finish on its own (see the last line).
      */
     public async stopPlaybackAsync(): Promise<void> {
         this.stopListen();
@@ -1841,7 +1843,12 @@ export default class AudioRecording implements IAudioRecorder {
 
         // As in playEndedAsync(), Split is the natural next step. ("next" is automatically
         // substituted for "split" if we're in a mode where "split" does not apply.)
-        return this.changeStateAndSetExpectedAsync("split");
+        // Deliberately NOT awaited. This only refreshes the toolbox buttons, but it does so via
+        // API calls; if we made the returned promise wait on those, a single failed request would
+        // reject it, and our caller would never get as far as opening the Adjust Timings dialog --
+        // the click would appear to do nothing. Firing it un-awaited is also what the other
+        // callers in this file do, including this method's own caller in the #audio-split handler.
+        this.changeStateAndSetExpectedAsync("split");
     }
 
     private async playEndedAsync(): Promise<void> {
