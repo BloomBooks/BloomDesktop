@@ -572,48 +572,44 @@ export class EditableDivUtils {
     }
 
     // Replace each run of adjacent sibling text nodes with a single, brand-new text node.
-    // This is what normalize() does, and normalize() is NOT a substitute for it. normalize()
-    // keeps the first node of the run and appends the rest onto it, and Chromium then goes on
-    // painting that node's stale glyphs: the DOM ends up correct - the inspector shows one
-    // string, and the layout measures correctly - while the screen keeps showing the old,
-    // glyph-dropped text until something else forces a repaint. Verified in a running Bloom:
-    // with normalize() the box still showed "overfow" for a DOM reading "overfflow"; building
-    // a fresh node, which has nothing cached against it, paints correctly.
+    // Merging the DOM back together is only half the repair: Chromium goes on painting the
+    // paragraph's old, glyph-dropped text afterwards. The DOM ends up correct - the inspector
+    // shows one string, and the layout even measures correctly - while the screen still shows
+    // "overfow" for a paragraph reading "overfflow", until something else forces a repaint.
+    //
+    // The obvious cure, rebuilding each run as a brand-new text node (nothing stale is cached
+    // against a node that didn't exist a moment ago), is NOT usable here: replacing a text node
+    // collapses any live Range whose boundaries were inside it, and Bloom's reader-tool and
+    // Talking Book highlights are exactly that - live Ranges over these text nodes, registered
+    // by the markup pass just before we run. Destroying them makes the highlighting silently
+    // disappear from the paragraph the user is typing in (the failure mode
+    // textHighlightManager.hasDeadRanges() exists to detect).
+    //
+    // So we merge with normalize(), which the DOM spec requires to keep live ranges on the same
+    // characters, and then force the affected paragraphs to lay out again to shake off the
+    // stale painting. Toggling display is heavy-handed, but it happens at most once per pause
+    // in typing, only in paragraphs we actually merged, and only when a bookmark was needed.
     private static mergeAdjacentTextNodeRuns(element: HTMLElement): void {
         const doc = element.ownerDocument;
-        const parentsWithRuns = new Set<Node>();
+        const parentsWithRuns = new Set<HTMLElement>();
         const walker = doc.createTreeWalker(element, NodeFilter.SHOW_TEXT);
         for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-            if (
-                node.nextSibling?.nodeType === Node.TEXT_NODE &&
-                node.parentNode
-            ) {
-                parentsWithRuns.add(node.parentNode);
+            if (node.nextSibling?.nodeType === Node.TEXT_NODE) {
+                // The nearest element is what has to be re-laid-out; for a bare text node in
+                // the editable itself that is the editable.
+                const parent = node.parentElement;
+                if (parent) {
+                    parentsWithRuns.add(parent as HTMLElement);
+                }
             }
         }
 
         parentsWithRuns.forEach((parent) => {
-            let child = parent.firstChild;
-            while (child) {
-                if (
-                    child.nodeType !== Node.TEXT_NODE ||
-                    child.nextSibling?.nodeType !== Node.TEXT_NODE
-                ) {
-                    child = child.nextSibling;
-                    continue;
-                }
-                let data = (child as Text).data;
-                let next = child.nextSibling;
-                while (next && next.nodeType === Node.TEXT_NODE) {
-                    data += (next as Text).data;
-                    const following = next.nextSibling;
-                    parent.removeChild(next);
-                    next = following;
-                }
-                const merged = doc.createTextNode(data);
-                parent.replaceChild(merged, child);
-                child = merged.nextSibling;
-            }
+            parent.normalize();
+            const previousDisplay = parent.style.display;
+            parent.style.display = "none";
+            void parent.offsetHeight; // force the "gone" state to take effect
+            parent.style.display = previousDisplay;
         });
     }
 
@@ -657,7 +653,7 @@ export class EditableDivUtils {
         return { element, characterOffset: range.toString().length };
     }
 
-    // The inverse of characterOffsetWithin(): the text node and offset within it that
+    // The inverse of saveablePosition(): the text node and offset within it that
     // characterOffset characters of text into root land on.
     private static positionForCharacterOffset(
         root: Node,

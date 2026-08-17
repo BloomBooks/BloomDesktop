@@ -231,10 +231,10 @@ describe("EditableDivUtils Tests", () => {
     // two adjacent text nodes the way ckeditor's createBookmarks() followed by
     // selectBookmarks() splits it: a hidden span is inserted at the insertion point, then
     // removed again.
-    const makeParagraphSplitByABookmark = (
+    function makeParagraphSplitByABookmark(
         text: string,
         offsetOfBookmark: number,
-    ): HTMLDivElement => {
+    ): HTMLDivElement {
         const div = document.createElement("div");
         const p = document.createElement("p");
         p.appendChild(document.createTextNode(text));
@@ -249,7 +249,7 @@ describe("EditableDivUtils Tests", () => {
         bookmark.remove();
 
         return div;
-    };
+    }
 
     it("mergeTextNodesSplitByBookmarks rejoins the text a removed bookmark split", () => {
         const div = makeParagraphSplitByABookmark("overfflow", 5);
@@ -267,20 +267,38 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
-    it("mergeTextNodesSplitByBookmarks builds a NEW text node rather than growing the old one", () => {
-        // Not a detail: normalize() would keep the first node and append to it, and Chromium
-        // then goes on painting that node's stale glyphs even though the DOM is now correct.
+    it("mergeTextNodesSplitByBookmarks keeps the original text node rather than replacing it", () => {
+        // Not a detail. Replacing the text node would collapse any live Range whose boundaries
+        // were inside it, and the reader tools' and Talking Book's highlights are exactly that:
+        // live Ranges over these text nodes, registered by the markup pass moments before this
+        // runs. Replacing them makes the highlighting silently vanish from the paragraph the
+        // user is typing in.
         const div = makeParagraphSplitByABookmark("overfflow", 5);
         const p = div.firstChild as HTMLParagraphElement;
         const originalFirstNode = p.childNodes[0];
-        // sanity check: that node is the one that would survive a normalize()
+        // sanity check the setup
         expect(originalFirstNode.textContent).toBe("overf");
 
         EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
 
         expect(p.childNodes.length).toBe(1);
         expect(p.childNodes[0].textContent).toBe("overfflow");
-        expect(p.childNodes[0]).not.toBe(originalFirstNode);
+        expect(p.childNodes[0]).toBe(originalFirstNode);
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks leaves the paragraph's display style as it found it", () => {
+        // It toggles display to force Chromium to repaint; that must not be observable
+        // afterwards, including on a paragraph with a display of its own.
+        const div = makeParagraphSplitByABookmark("overfflow", 5);
+        const p = div.firstChild as HTMLParagraphElement;
+        p.style.display = "inline-block";
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        expect(p.style.display).toBe("inline-block");
+        expect(p.childNodes[0].textContent).toBe("overfflow");
 
         div.remove();
     });
@@ -302,9 +320,12 @@ describe("EditableDivUtils Tests", () => {
         expect(p.childNodes.length).toBe(5);
         expect(em.childNodes.length).toBe(2);
 
+        const originalEmFirstNode = em.childNodes[0];
+
         EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
 
         // "over"+"f" merged, " and"+" more" merged, the <em> still between them
+        expect(em.childNodes[0]).toBe(originalEmFirstNode); // ranges must survive here too
         expect(p.childNodes.length).toBe(3);
         expect(p.childNodes[0].textContent).toBe("overf");
         expect(p.childNodes[1]).toBe(em);

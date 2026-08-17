@@ -1793,11 +1793,13 @@ function setCkeditorBookmarkContent(
 
 // Could the clean-up steps in handlePageEditing's mainTask (removeCommentsFromEditableHtml and
 // cleanUpNbsps) actually change this box? Both rewrite innerHTML only when they find something
-// to fix, so this looks for the two things they look for. It deliberately over-estimates - an
-// nbsp that cleanUpNbsps would decide to keep still counts - because the only cost of a false
-// yes is that we take a ckeditor bookmark we didn't need, which is what the code did
-// unconditionally before. A false NO would be a bug: we'd lose the user's insertion point when
-// one of them did rewrite the box.
+// to fix, so this looks for the two things they look for, in the same place and the same way
+// they look for them: their own searches are over innerHTML too, so this cannot miss an nbsp
+// that cleanUpNbsps would go on to find, whatever the serializer does with U+00A0. It
+// deliberately over-estimates - an nbsp that cleanUpNbsps would decide to keep still counts -
+// because the only cost of a false yes is that we take a ckeditor bookmark we didn't need,
+// which is what the code did unconditionally before. A false NO would be a bug: we'd lose the
+// user's insertion point when one of them did rewrite the box.
 // (exported for testing)
 export function editableMightBeRewritten(editable: HTMLElement): boolean {
     const html = editable.innerHTML;
