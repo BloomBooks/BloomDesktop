@@ -56,6 +56,70 @@ namespace BloomTests
         }
 
         /// <summary>
+        /// The collection-file lock is taken on this path before anything else happens, so it has to be
+        /// the file that really exists: locking a file that isn't there protects nothing (and throws in
+        /// a DEBUG build). See BL-16679.
+        /// </summary>
+        [Test]
+        public void GetRealSettingsPath_ExpectedNameNotOnDisk_ReturnsTheFileThatIs()
+        {
+            using (var collectionFolder = new TemporaryFolder("ProjectContextTests"))
+            {
+                var folderName = Path.GetFileName(collectionFolder.FolderPath);
+                var realSettingsPath = Path.Combine(
+                    collectionFolder.FolderPath,
+                    folderName + "..bloomCollection"
+                );
+                RobustFile.WriteAllText(realSettingsPath, "<Collection version=\"0.2\"/>");
+                var derivedPath = CollectionSettings.GetSettingsFilePath(
+                    collectionFolder.FolderPath
+                );
+                // Sanity check: the name a caller would derive from the folder is not on disk.
+                Assert.That(RobustFile.Exists(derivedPath), Is.False);
+
+                Assert.That(
+                    ProjectContext.GetRealSettingsPath(derivedPath),
+                    Is.EqualTo(realSettingsPath)
+                );
+            }
+        }
+
+        [Test]
+        public void GetRealSettingsPath_ExpectedNameIsOnDisk_ReturnsItUnchanged()
+        {
+            using (var collectionFolder = new TemporaryFolder("ProjectContextTests"))
+            {
+                var path = CollectionSettings.GetSettingsFilePath(collectionFolder.FolderPath);
+                RobustFile.WriteAllText(path, "<Collection version=\"0.2\"/>");
+
+                Assert.That(ProjectContext.GetRealSettingsPath(path), Is.EqualTo(path));
+            }
+        }
+
+        /// <summary>
+        /// Callers that had no collection to open must keep whatever behaviour they had; this is not
+        /// the place to start reporting the problem, because the lock deliberately tolerates it.
+        /// </summary>
+        [Test]
+        public void GetRealSettingsPath_NothingToFind_ReturnsWhatItWasGiven()
+        {
+            using (var collectionFolder = new TemporaryFolder("ProjectContextTests"))
+            {
+                var path = CollectionSettings.GetSettingsFilePath(collectionFolder.FolderPath);
+
+                Assert.That(ProjectContext.GetRealSettingsPath(path), Is.EqualTo(path));
+
+                // And a folder that isn't there at all must not throw.
+                var missing = Path.Combine(
+                    collectionFolder.FolderPath,
+                    "No Such Folder",
+                    "No Such Folder.bloomCollection"
+                );
+                Assert.That(ProjectContext.GetRealSettingsPath(missing), Is.EqualTo(missing));
+            }
+        }
+
+        /// <summary>
         /// The CollectionSettings constructor treats a path that doesn't exist as "make me a new
         /// collection there", so once GetCollectionSettings started looking in the right folder it
         /// would have silently written a default .bloomCollection into any folder that had none --

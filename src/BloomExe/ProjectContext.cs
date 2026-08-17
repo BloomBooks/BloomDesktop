@@ -68,7 +68,11 @@ namespace Bloom
         )
         {
             Logger.WriteMinorEvent("starting to construct the project context");
-            SettingsPath = projectSettingsPath;
+            // Settle which settings file we are really opening before anything uses the path. The
+            // caller's may not exist: the name is not always the folder's (BL-16679), and the lock
+            // below would then be aimed at a file that isn't there -- silently protecting nothing in
+            // a release build, and throwing in a DEBUG one.
+            SettingsPath = GetRealSettingsPath(projectSettingsPath);
 
             _collectionLock = new CollectionLock(SettingsPath);
             _collectionLock.Lock();
@@ -84,7 +88,7 @@ namespace Bloom
                 ErrorReport.OnShowDetails = null;
                 FatalExceptionHandler.UseFallback = true;
 
-                BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
+                BuildSubContainerForThisProject(SettingsPath, parentContainer);
 
                 _scope
                     .Resolve<CollectionSettings>()
@@ -520,40 +524,51 @@ namespace Bloom
             };
         }
 
+        /// <summary>
+        /// The settings file we should really open: the one asked for, or, when that isn't there, the
+        /// .bloomCollection that actually is in the same folder. Returns the path it was given when
+        /// there is nothing better to offer.
+        /// </summary>
+        /// <remarks>
+        /// The two differ whenever a caller worked the file name out from the folder name, which is not
+        /// always what the settings file is called: renaming a collection folder leaves the old file
+        /// name behind, and a collection whose name ends with a period gets a folder without it,
+        /// because Windows drops trailing periods when it creates a folder (BL-16679). Also, the
+        /// TeamCollection manager may have deleted the file while syncing settings.
+        /// </remarks>
+        internal static string GetRealSettingsPath(string projectSettingsPath)
+        {
+            if (RobustFile.Exists(projectSettingsPath))
+                return projectSettingsPath;
+            var folder = Path.GetDirectoryName(projectSettingsPath);
+            // Note that TryGetSettingsFilePath wants the FOLDER; it was once passed the settings file
+            // path here, which just threw DirectoryNotFoundException, so this repair never worked.
+            if (
+                !string.IsNullOrEmpty(folder)
+                && Directory.Exists(folder)
+                && CollectionSettings.TryGetSettingsFilePath(folder, out var realPath)
+            )
+            {
+                return realPath;
+            }
+            return projectSettingsPath;
+        }
+
         // Get the collection settings. Passed the expected path, but if not found,
         // will look for any other bloomCollection file in the folder.
         public static CollectionSettings GetCollectionSettings(string projectSettingsPath)
         {
+            projectSettingsPath = GetRealSettingsPath(projectSettingsPath);
             if (!RobustFile.Exists(projectSettingsPath))
             {
-                // TCManager constructor may have deleted it in the process of syncing TC settings.
-                // Another way to get here is a settings file that isn't named after its folder, so a
-                // caller that derived the expected path from the folder name got a path that doesn't
-                // exist: a renamed collection folder, or a collection whose name ends with a period,
-                // which Windows drops from the folder name (BL-16679).
-                // Note that TryGetSettingsFilePath wants the FOLDER; passing it the settings file path
-                // threw DirectoryNotFoundException, so this repair never actually worked.
-                if (
-                    CollectionSettings.TryGetSettingsFilePath(
-                        Path.GetDirectoryName(projectSettingsPath),
-                        out var settingsFilePath
-                    )
-                )
-                {
-                    // Hopefully this repairs things.
-                    projectSettingsPath = settingsFilePath;
-                }
-                else
-                {
-                    // There is no collection here to load. Say so, rather than falling through: the
-                    // CollectionSettings constructor treats a path that doesn't exist as "make me a
-                    // new collection there", so we would silently write a default .bloomCollection
-                    // into the folder (and create the folder) instead of reporting the problem.
-                    throw new FileNotFoundException(
-                        $"Bloom could not find a .bloomCollection file in {Path.GetDirectoryName(projectSettingsPath)}",
-                        projectSettingsPath
-                    );
-                }
+                // There is no collection here to load. Say so, rather than carrying on: the
+                // CollectionSettings constructor treats a path that doesn't exist as "make me a new
+                // collection there", so we would silently write a default .bloomCollection into the
+                // folder (and create the folder) instead of reporting the problem.
+                throw new FileNotFoundException(
+                    $"Bloom could not find a .bloomCollection file in {Path.GetDirectoryName(projectSettingsPath)}",
+                    projectSettingsPath
+                );
             }
 
             return new CollectionSettings(projectSettingsPath);
