@@ -500,6 +500,144 @@ export class EditableDivUtils {
         });
     }
 
+    // A ckeditor bookmark is a hidden span inserted at the insertion point, so creating one
+    // SPLITS the text node the user is typing in, and removing it again (which is what
+    // selectBookmarks does) leaves the two halves as separate, adjacent text nodes.
+    // The characters are all still there, and the DOM inspector's text view looks right, but
+    // Chromium shapes the paragraph's text as a single run and then hands out the resulting
+    // glyphs per text node. When a ligature straddles the boundary - very easy in SIL fonts
+    // such as Andika and Charis, which ligate ff, fl and ffl - that split lands in the middle
+    // of a glyph cluster and Chromium loses glyphs: letters the user typed simply stop being
+    // painted (and the caret draws in the wrong place) until something re-renders the
+    // paragraph, e.g. changing the font or reloading the page. Type "overflow", then insert a
+    // second "f" before the "f", pause for the markup timer, then type any other letter: the
+    // "fl" vanishes (BL-16717).
+    // So whenever we take bookmarks out again, put the text back the way we found it.
+    // The DOM spec says normalize() must keep live ranges - including the selection - on the
+    // same characters, but we don't want the user's insertion point to depend on the browser
+    // getting that right, so we save and restore it ourselves.
+    public static mergeTextNodesSplitByBookmarks(element: HTMLElement): void {
+        if (!EditableDivUtils.hasAdjacentTextNodes(element)) {
+            return; // nothing to merge; leave the selection strictly alone
+        }
+
+        const selection = element.ownerDocument.defaultView?.getSelection();
+        // Only our own box's selection is ours to restore.
+        const isOurs =
+            selection?.anchorNode &&
+            selection.focusNode &&
+            element.contains(selection.anchorNode) &&
+            element.contains(selection.focusNode);
+        const anchor = isOurs
+            ? EditableDivUtils.saveablePosition(
+                  selection!.anchorNode!,
+                  selection!.anchorOffset,
+              )
+            : undefined;
+        const focus = isOurs
+            ? EditableDivUtils.saveablePosition(
+                  selection!.focusNode!,
+                  selection!.focusOffset,
+              )
+            : undefined;
+
+        element.normalize();
+
+        if (!selection || !anchor || !focus) {
+            return;
+        }
+        const restoredAnchor = EditableDivUtils.positionForCharacterOffset(
+            anchor.element,
+            anchor.characterOffset,
+        );
+        const restoredFocus = EditableDivUtils.positionForCharacterOffset(
+            focus.element,
+            focus.characterOffset,
+        );
+        if (!restoredAnchor || !restoredFocus) {
+            return; // no text to put it in; better to leave whatever normalize() decided
+        }
+        // setBaseAndExtent rather than a Range, so a backwards selection stays backwards.
+        selection.setBaseAndExtent(
+            restoredAnchor.node,
+            restoredAnchor.offset,
+            restoredFocus.node,
+            restoredFocus.offset,
+        );
+    }
+
+    // Does element contain two text nodes that are siblings, as removing a bookmark leaves
+    // behind? (An empty text node next to another one counts: normalize() merges it away.)
+    private static hasAdjacentTextNodes(element: HTMLElement): boolean {
+        const walker = element.ownerDocument.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+        );
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            if (node.nextSibling?.nodeType === Node.TEXT_NODE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Express the DOM position (container, offset) in a way that survives merging text nodes:
+    // the element it is in, plus how many characters of that element's text precede it.
+    // A (node, offset) pair does not survive, and a character offset within the whole box
+    // does not identify the position uniquely - the end of one paragraph and the start of the
+    // next are the same number of characters in, but they are different places to be typing.
+    // normalize() never moves text out of the element it is in, so this stays exact.
+    private static saveablePosition(
+        container: Node,
+        offset: number,
+    ): { element: Element; characterOffset: number } | undefined {
+        const element =
+            container.nodeType === Node.ELEMENT_NODE
+                ? (container as Element)
+                : container.parentElement;
+        if (!element) {
+            return undefined;
+        }
+        const range = element.ownerDocument.createRange();
+        range.setStart(element, 0);
+        range.setEnd(container, offset);
+        // toString() gives just the characters of the text nodes in the range, which is
+        // exactly what positionForCharacterOffset() counts back through.
+        return { element, characterOffset: range.toString().length };
+    }
+
+    // The inverse of characterOffsetWithin(): the text node and offset within it that
+    // characterOffset characters of text into root land on.
+    private static positionForCharacterOffset(
+        root: Node,
+        characterOffset: number,
+    ): { node: Text; offset: number } | undefined {
+        const walker = root.ownerDocument!.createTreeWalker(
+            root,
+            NodeFilter.SHOW_TEXT,
+        );
+        let remaining = characterOffset;
+        let lastTextNode: Text | undefined;
+        for (
+            let node = walker.nextNode() as Text | null;
+            node;
+            node = walker.nextNode() as Text | null
+        ) {
+            // <= so that an offset at the very end of a text node stays in that node rather
+            // than falling through to the start of the next one.
+            if (remaining <= node.length) {
+                return { node, offset: remaining };
+            }
+            remaining -= node.length;
+            lastTextNode = node;
+        }
+        // Shouldn't happen: we counted these same characters a moment ago. But if something
+        // did change, the end of the text is the least surprising place to be.
+        return lastTextNode
+            ? { node: lastTextNode, offset: lastTextNode.length }
+            : undefined;
+    }
+
     public static restoreSelectionFromCkEditorBookmarks(
         editableDivs: HTMLDivElement[],
         ckEditorBookmarks: object[],
@@ -527,6 +665,7 @@ export class EditableDivUtils {
                             },
                         );
                     }
+                    EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
                 }
             });
         }

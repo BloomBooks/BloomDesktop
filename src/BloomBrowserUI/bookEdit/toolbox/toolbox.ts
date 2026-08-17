@@ -15,6 +15,7 @@ import {
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
 import { isLongPressEvaluating } from "../longPressShared";
+import { EditableDivUtils } from "../js/editableDivUtils";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import { showRequiresSubscriptionDialogInAnyView } from "../../react_components/requiresSubscription";
 import {
@@ -1627,6 +1628,11 @@ function handlePageEditing(
                 // a different event (keydown instead of keypress).
                 // Note: causing the bookmarks to be selected actually removes the bookmark spans.
                 ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
+
+                // ...but removing them leaves the text that was on either side of each bookmark
+                // as two adjacent text nodes, which makes Chromium drop glyphs from ligatures
+                // that straddle the join (BL-16717). See mergeTextNodesSplitByBookmarks().
+                EditableDivUtils.mergeTextNodesSplitByBookmarks(editableDiv);
             }
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.

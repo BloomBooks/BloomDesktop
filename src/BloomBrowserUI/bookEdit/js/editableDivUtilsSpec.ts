@@ -226,4 +226,142 @@ describe("EditableDivUtils Tests", () => {
         expect(div.innerHTML.indexOf(zwsp)).toEqual(-1);
         expect(div.innerHTML).toEqual("<p>cat</p>");
     });
+
+    // Build a div (attached, so it has a real selection) whose paragraph has been split into
+    // two adjacent text nodes the way ckeditor's createBookmarks() followed by
+    // selectBookmarks() splits it: a hidden span is inserted at the insertion point, then
+    // removed again.
+    const makeParagraphSplitByABookmark = (
+        text: string,
+        offsetOfBookmark: number,
+    ): HTMLDivElement => {
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode(text));
+        div.appendChild(p);
+        document.body.appendChild(div);
+
+        const secondHalf = (p.firstChild as Text).splitText(offsetOfBookmark);
+        const bookmark = document.createElement("span");
+        bookmark.id = "cke_bm_1S";
+        bookmark.setAttribute("style", "display: none;");
+        p.insertBefore(bookmark, secondHalf);
+        bookmark.remove();
+
+        return div;
+    };
+
+    it("mergeTextNodesSplitByBookmarks rejoins the text a removed bookmark split", () => {
+        const div = makeParagraphSplitByABookmark("overfflow", 5);
+        const p = div.firstChild as HTMLParagraphElement;
+        // sanity check: the removed bookmark really did leave two text nodes.
+        expect(p.childNodes.length).toBe(2);
+        expect(p.childNodes[0].textContent).toBe("overf");
+        expect(p.childNodes[1].textContent).toBe("flow");
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        expect(p.childNodes.length).toBe(1);
+        expect(p.childNodes[0].textContent).toBe("overfflow");
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks keeps the insertion point on the same characters", () => {
+        const div = makeParagraphSplitByABookmark("overfflow", 5);
+        const p = div.firstChild as HTMLParagraphElement;
+        // Where ckeditor leaves the insertion point: the start of the second text node,
+        // which the user sees as being between the "ff" and the "low".
+        const selection = window.getSelection();
+        if (!selection) {
+            throw new Error("no selection available; cannot run this test");
+        }
+        selection.removeAllRanges();
+        const range = document.createRange();
+        range.setStart(p.childNodes[1], 0);
+        range.collapse(true);
+        selection.addRange(range);
+        // sanity check the setup
+        expect(selection.anchorNode).toBe(p.childNodes[1]);
+        expect(selection.anchorOffset).toBe(0);
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        // Now there is only one text node, so the same insertion point is offset 5 in it.
+        expect(selection.rangeCount).toBe(1);
+        expect(selection.anchorNode).toBe(p.childNodes[0]);
+        expect(selection.anchorOffset).toBe(5);
+        expect(selection.isCollapsed).toBe(true);
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks keeps a selected range on the same characters", () => {
+        const div = makeParagraphSplitByABookmark("overfflow", 5);
+        const p = div.firstChild as HTMLParagraphElement;
+        const selection = window.getSelection();
+        if (!selection) {
+            throw new Error("no selection available; cannot run this test");
+        }
+        selection.removeAllRanges();
+        const range = document.createRange();
+        // "rffl", which straddles the two text nodes.
+        range.setStart(p.childNodes[0], 3);
+        range.setEnd(p.childNodes[1], 2);
+        selection.addRange(range);
+        // sanity check the setup
+        expect(selection.toString()).toBe("rffl");
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        expect(selection.toString()).toBe("rffl");
+        expect(selection.anchorNode).toBe(p.childNodes[0]);
+        expect(selection.anchorOffset).toBe(3);
+        expect(selection.focusOffset).toBe(7);
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks does not move the insertion point across a paragraph boundary", () => {
+        // A split left in the first paragraph, but the user is now typing at the start of the
+        // second one. Counting characters over the whole box would put the caret at the end of
+        // the first paragraph, which is the same number of characters in but a different place.
+        const div = makeParagraphSplitByABookmark("overfflow", 5);
+        const secondParagraph = document.createElement("p");
+        secondParagraph.appendChild(document.createTextNode("def"));
+        div.appendChild(secondParagraph);
+
+        const selection = window.getSelection();
+        if (!selection) {
+            throw new Error("no selection available; cannot run this test");
+        }
+        selection.removeAllRanges();
+        const range = document.createRange();
+        range.setStart(secondParagraph.firstChild!, 0);
+        range.collapse(true);
+        selection.addRange(range);
+        // sanity check the setup
+        expect(selection.anchorNode).toBe(secondParagraph.firstChild);
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        // the merge still happened in the first paragraph...
+        expect(div.firstChild!.childNodes.length).toBe(1);
+        // ...and the caret is still at the start of the second one.
+        expect(selection.anchorNode).toBe(secondParagraph.firstChild);
+        expect(selection.anchorOffset).toBe(0);
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks leaves an already-normal paragraph alone", () => {
+        const div = document.createElement("div");
+        div.innerHTML = "<p>over<em>ff</em>low</p>";
+        const before = div.innerHTML;
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        // In particular, it must not merge text across an element boundary.
+        expect(div.innerHTML).toBe(before);
+    });
 });
