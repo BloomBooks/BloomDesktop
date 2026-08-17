@@ -1727,6 +1727,183 @@ describe("audio recording tests", () => {
         });
     });
 
+    // BL-16632: The Recording Mode radio buttons are driven by uiState.hasAudio and
+    // uiState.haveACurrentTextboxModeRecording, which are derived from this.haveAudio. The
+    // button-state refresh recomputes this.haveAudio from the server whenever the current
+    // element changes, so anything that refreshes the buttons must also refresh those derived
+    // flags. Otherwise "By Sentence" keeps saying 'first use the "Clear" button to remove your
+    // recording' about a box that has no recording (and whose Clear button is disabled).
+    describe("- recording mode enablement when the current box changes (BL-16632)", () => {
+        // Only box1 has a recording.
+        function setupApiResponsesWithRecordingForBox1() {
+            vi.spyOn(axios, "get").mockImplementation((url: string) => {
+                if (url.includes(kAnyRecordingApiUrl)) {
+                    return Promise.resolve({ data: url.includes("box1") });
+                } else {
+                    return Promise.reject("Fake 404 error 16632.");
+                }
+            });
+        }
+
+        // A page where box1 has been recorded By Whole Text Box and box2 has text the user
+        // just typed but has never recorded. Both are marked up for TextBox recording, which
+        // is what the tool does to a newly typed box while that mode is selected.
+        function setupPageWithRecordedBox1AndUnrecordedBox2() {
+            const box1 =
+                '<div id="box1" class="bloom-editable audio-sentence bloom-visibility-code-on" data-test-preselect="true" lang="en" data-audiorecordingmode="TextBox"><p>This box has been recorded.</p></div>';
+            const box2 =
+                '<div id="box2" class="bloom-editable audio-sentence bloom-visibility-code-on" lang="en" data-audiorecordingmode="TextBox"><p>This box has never been recorded.</p></div>';
+            SetupIFrameFromHtml(
+                `<div id="page1"><div class="bloom-translationGroup">${box1}</div><div class="bloom-translationGroup">${box2}</div></div>`,
+            );
+        }
+
+        it("stops claiming a whole-text-box recording after the highlight moves to a box with no recording", async () => {
+            setupApiResponsesWithRecordingForBox1();
+            setupPageWithRecordedBox1AndUnrecordedBox2();
+
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.TextBox;
+
+            // Arrive on the page with box1 (which has a whole-text-box recording) current.
+            await recording.handleNewPageReady();
+
+            // Sanity check the starting state: with box1 current we really do have a
+            // whole-text-box recording, so "By Sentence" is correctly disabled here.
+            expect(
+                recording.uiState.buttons.clear,
+                "Setup problem: Clear should be enabled for the recorded box",
+            ).toBe(Status.Enabled);
+            expect(recording.uiState.hasAudio).toBe(true);
+            expect(recording.uiState.haveACurrentTextboxModeRecording).toBe(
+                true,
+            );
+
+            // The user clicks in box2, which has text but no recording.
+            const moveRecordingHighlightToElement = (
+                recording as unknown as {
+                    moveRecordingHighlightToElement(
+                        target: HTMLElement,
+                    ): Promise<boolean>;
+                }
+            ).moveRecordingHighlightToElement.bind(recording);
+            await moveRecordingHighlightToElement(
+                getFrameElementById("page", "box2")!,
+            );
+
+            // Sanity check that the engine did notice box2 has no recording.
+            expect(
+                recording.uiState.buttons.clear,
+                "Setup problem: Clear should be disabled for the unrecorded box",
+            ).toBe(Status.Disabled);
+            // ...so the radio buttons must agree: no audio, no whole-text-box recording,
+            // hence "By Sentence" is available again.
+            expect(recording.uiState.hasAudio).toBe(false);
+            expect(recording.uiState.haveACurrentTextboxModeRecording).toBe(
+                false,
+            );
+        });
+
+        // The other half of BL-16632: add a page and type into its empty text box. Nothing
+        // recomputed hasRecordableDivs after the page was found to be empty, so both Recording
+        // Mode radio buttons stayed disabled even though the box now had text to record.
+        it("enables the recording modes once text is typed into a page that started out empty", async () => {
+            setupDefaultApiResponses();
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on" lang="en" data-audiorecordingmode="TextBox"><p></p></div></div></div>',
+            );
+
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.TextBox;
+
+            // A newly added page: it has a text box, but no text yet, so there is nothing to record.
+            await recording.handleNewPageReady();
+            expect(recording.uiState.hasRecordableDivs).toBe(false);
+
+            // The user types. The markup update that follows ends by refreshing the button state.
+            const box1 = getFrameElementById("page", "box1")!;
+            box1.innerHTML = "<p>Text the user just typed.</p>";
+            box1.classList.add("audio-sentence");
+            (
+                recording as unknown as { highlightedElement: HTMLElement }
+            ).highlightedElement = box1;
+
+            await recording.changeStateAndSetExpectedAsync("record");
+
+            expect(recording.uiState.hasRecordableDivs).toBe(true);
+        });
+
+        // The mirror image: when the last of the text goes away, the tool disables every button
+        // (the empty expected verb), and the Advanced section's controls have to follow. They used
+        // to stay enabled, still describing the text that had just been deleted.
+        it("disables the recording modes once the last of the text is deleted", async () => {
+            setupDefaultApiResponses();
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable audio-sentence bloom-visibility-code-on" data-test-preselect="true" lang="en" data-audiorecordingmode="TextBox"><p>Text that is about to be deleted.</p></div></div></div>',
+            );
+
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.TextBox;
+
+            await recording.handleNewPageReady();
+            expect(
+                recording.uiState.hasRecordableDivs,
+                "Setup problem: the box starts out with text to record",
+            ).toBe(true);
+
+            // The user deletes all of it. The markup update that follows finds nothing recordable
+            // left on the page, which disables the buttons with the empty expected verb.
+            getFrameElementById("page", "box1")!.innerHTML = "<p></p>";
+
+            await recording.changeStateAndSetExpectedAsync("");
+
+            expect(recording.uiState.hasRecordableDivs).toBe(false);
+        });
+
+        // Clicking something that can't be recorded (a picture, say) deselects everything and
+        // disables all the buttons. The Advanced section has to stop claiming the recording of the
+        // box we were on, or we are back to "By Sentence" disabled telling you to press a Clear
+        // button that is itself disabled.
+        it("stops claiming a recording when the click lands on something that cannot be recorded", async () => {
+            setupApiResponsesWithRecordingForBox1();
+            const box1 =
+                '<div id="box1" class="bloom-editable audio-sentence bloom-visibility-code-on" data-test-preselect="true" lang="en" data-audiorecordingmode="TextBox"><p>This box has been recorded.</p></div>';
+            SetupIFrameFromHtml(
+                `<div id="page1"><div class="bloom-translationGroup">${box1}</div><div id="justAPicture"><img src="picture.png" /></div></div>`,
+            );
+
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.TextBox;
+            await recording.handleNewPageReady();
+            expect(
+                recording.uiState.hasAudio,
+                "Setup problem: box1's recording should have been found",
+            ).toBe(true);
+
+            const moveRecordingHighlightToElement = (
+                recording as unknown as {
+                    moveRecordingHighlightToElement(
+                        target: HTMLElement,
+                    ): Promise<boolean>;
+                }
+            ).moveRecordingHighlightToElement.bind(recording);
+            await moveRecordingHighlightToElement(
+                getFrameElementById("page", "justAPicture")!,
+            );
+
+            // Sanity check: nothing is selected, so every button is disabled.
+            expect(recording.uiState.buttons.clear).toBe(Status.Disabled);
+            expect(recording.uiState.hasAudio).toBe(false);
+            expect(recording.uiState.haveACurrentTextboxModeRecording).toBe(
+                false,
+            );
+        });
+    });
+
     describe("- initializeAudioRecordingMode()", () => {
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Text Box)", () => {
             SetupIFrameFromHtml(
