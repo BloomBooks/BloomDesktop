@@ -222,6 +222,22 @@ namespace Bloom.web.controllers
                 requiresSync: false
             );
 
+            // A message box button that deliberately does NOT dismiss the dialog reports its click
+            // here instead. Like closeReactDialog above, this must not require the lock: the api
+            // call that put the dialog up is still on the stack holding it.
+            apiHandler.RegisterEndpointHandler(
+                "common/messageBoxButtonClicked",
+                request =>
+                {
+                    MiscUI.BloomMessageBox.HandleKeepOpenButtonClicked(
+                        request.GetPostStringOrNull()
+                    );
+                    request.PostSucceeded();
+                },
+                true,
+                requiresSync: false
+            );
+
             // TODO: move to the new App API (BL-9635)
             apiHandler.RegisterEndpointHandler(
                 "common/reloadCollection",

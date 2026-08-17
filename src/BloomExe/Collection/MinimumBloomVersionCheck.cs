@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -365,16 +366,28 @@ namespace Bloom.Collection
                     Text = upgradeButtonText,
                     Id = kUpgradeButtonId,
                     Default = true,
+                    // Stay up while the download runs. This dialog is the only window there is at
+                    // startup, so dismissing it would leave the user watching an empty screen with
+                    // no sign that anything is happening -- and with nothing for the wait cursor to
+                    // appear on either.
+                    KeepDialogOpen = true,
                 },
             };
+
+            _upgradeOutcome = null;
             var result = BloomMessageBox.Show(
                 null,
                 $"<strong>{header}</strong><br/><br/>{explanation}",
                 buttons,
-                MessageBoxIcon.Warning
+                MessageBoxIcon.Warning,
+                onKeepOpenButtonClicked: buttonId =>
+                {
+                    if (buttonId == kUpgradeButtonId)
+                        StartUpgrade();
+                }
             );
 
-            if (result == kUpgradeButtonId && UpgradeBloom(minimumVersion))
+            if (result == kUpgradeButtonId && ReportUpgradeOutcome(minimumVersion))
             {
                 ProgramExit.Exit();
                 return true;
@@ -442,60 +455,125 @@ namespace Bloom.Collection
         }
 
         /// <summary>
-        /// Get the user onto a newer Bloom, in place. We never send them to the website: if we can't
-        /// upgrade them we say why, in the same words the update toast would have used, and let them
-        /// pick a different collection instead.
+        /// How the upgrade turned out, filled in by the update code's callback while our dialog is
+        /// still up, and read once it comes down. Only one of these dialogs can be open at a time.
+        /// </summary>
+        private static (
+            ApplicationUpdateSupport.SilentUpdateOutcome Outcome,
+            string Version,
+            string Message
+        )? _upgradeOutcome;
+
+        /// <summary>
+        /// Start getting the user onto a newer Bloom, using exactly the machinery the "an update is
+        /// available" toast drives. It is asynchronous, so Bloom keeps responding and the dialog we
+        /// leave up keeps painting; when it finishes we close the dialog and the caller says what
+        /// happened.
+        ///
+        /// The toasts that path shows go nowhere, because ToastHost is only mounted in the main
+        /// workspace and no collection is open. That is exactly what already happens today, and it
+        /// is why we ask to be told the outcome instead.
+        /// </summary>
+        private static void StartUpgrade()
+        {
+            // The same three refusals, in the same words, that WorkspaceView.CheckForUpdatesImpl
+            // applies before it drives this machinery from the menu. They belong to the caller
+            // rather than to the update code, so we have to repeat them, and the user is owed the
+            // same explanation whichever route they came by.
+            if (Debugger.IsAttached)
+            {
+                FinishUpgrade(
+                    ApplicationUpdateSupport.SilentUpdateOutcome.CannotUpdateThisBloom,
+                    null,
+                    "Sorry, you cannot check for updates from the debugger."
+                );
+                return;
+            }
+            if (InstallerSupport.SharedByAllUsers())
+            {
+                FinishUpgrade(
+                    ApplicationUpdateSupport.SilentUpdateOutcome.CannotUpdateThisBloom,
+                    null,
+                    LocalizationManager.GetString(
+                        "CollectionTab.AdminManagesUpdates",
+                        "Your system administrator manages Bloom updates for this computer."
+                    )
+                );
+                return;
+            }
+            if (ApplicationUpdateSupport.IsDev)
+            {
+                FinishUpgrade(
+                    ApplicationUpdateSupport.SilentUpdateOutcome.CannotUpdateThisBloom,
+                    null,
+                    "Checking for updates is disabled on developer builds. No relevant channel."
+                );
+                return;
+            }
+
+            // Something to look at while it downloads. There is a window to show it on now, because
+            // the dialog deliberately stays up.
+            Application.UseWaitCursor = true;
+
+            ApplicationUpdateSupport.CheckForAVelopackUpdate(
+                ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet,
+                restartBloom: null, // the restart toast has nowhere to appear, and we quit ourselves
+                onFinished: FinishUpgrade,
+                userHasAlreadyAgreedToUpdate: true // they clicked Upgrade Bloom
+            );
+        }
+
+        /// <summary>
+        /// Record how it went and let the dialog go, now that there is something to say.
+        /// </summary>
+        private static void FinishUpgrade(
+            ApplicationUpdateSupport.SilentUpdateOutcome outcome,
+            string version,
+            string message
+        )
+        {
+            Application.UseWaitCursor = false;
+            _upgradeOutcome = (outcome, version, message);
+            ReactDialog.CloseCurrentModal(kUpgradeButtonId);
+        }
+
+        /// <summary>
+        /// Say how the upgrade went, once the dialog has closed.
         /// </summary>
         /// <returns>true if a new Bloom was downloaded and the caller should now shut Bloom down so
         /// it can be installed.</returns>
-        private static bool UpgradeBloom(string minimumVersion)
+        private static bool ReportUpgradeOutcome(string minimumVersion)
         {
-            // Task.Run because this awaits network work: awaiting it directly on the UI thread and
-            // blocking would deadlock.
-            // Blocking does mean Bloom stops responding for the length of the download. That is
-            // invisible at startup, where there is no window yet, but not when we are locking
-            // someone out of a collection they already have open. The wait cursor is the least we
-            // can do; a real progress window is still wanted here.
-            ApplicationUpdateSupport.SilentUpdateResult result;
-            Application.UseWaitCursor = true;
-            try
-            {
-                result = Task.Run(() => ApplicationUpdateSupport.TryDownloadUpdateWithoutToasts())
-                    .GetAwaiter()
-                    .GetResult();
-            }
-            finally
-            {
-                Application.UseWaitCursor = false;
-            }
+            if (_upgradeOutcome == null)
+                return false; // the dialog closed some other way; nothing to report
+            var (outcome, version, message) = _upgradeOutcome.Value;
+            _upgradeOutcome = null;
 
-            if (result.Outcome == ApplicationUpdateSupport.SilentUpdateOutcome.Downloaded)
+            if (outcome == ApplicationUpdateSupport.SilentUpdateOutcome.Downloaded)
             {
-                // Install it whatever version it turns out to be. Velopack can only offer the newest
-                // build on this user's channel -- it has no notion of "at least version X" -- so what
-                // we have may still be short of what this collection needs. Take it anyway: getting
-                // as far as the channel allows is real progress, and if it isn't far enough the user
-                // meets this same dialog on the next launch and can decide again from there.
-                ApplicationUpdateSupport.ArrangeToInstallDownloadedUpdateOnExit();
-
-                var downloadedVersion = ParseOrNull(result.DownloadedVersion);
+                // It installs whatever version it turns out to be. Velopack can only offer the
+                // newest build on this user's channel -- it has no notion of "at least version X" --
+                // so what we have may still be short of what this collection needs. Take it anyway:
+                // getting as far as the channel allows is real progress, and if it isn't far enough
+                // the user meets this same dialog next launch and can decide again from there.
+                var downloadedVersion = ParseOrNull(version);
                 if (
                     downloadedVersion != null
                     && IsVersionSufficient(minimumVersion, downloadedVersion)
                 )
-                    ReportUpgradeDownloaded(result.DownloadedVersion);
+                    ReportUpgradeDownloaded(version);
                 else
-                    ReportUpgradeIsAStepButNotEnough(result.DownloadedVersion, minimumVersion);
+                    ReportUpgradeIsAStepButNotEnough(version, minimumVersion);
                 return true;
             }
 
-            if (result.Outcome == ApplicationUpdateSupport.SilentUpdateOutcome.NothingNewer)
+            if (outcome == ApplicationUpdateSupport.SilentUpdateOutcome.NothingNewer)
                 ReportNothingNewerAvailable(minimumVersion);
             else
-                // A developer/administered build, or something went wrong. The update code already
+                // Something went wrong, or this Bloom can't update itself. The update code already
                 // worked out what to say; it just had no way to say it, since its usual toast has
                 // nowhere to appear before a collection is open.
-                BloomMessageBox.ShowWarning(System.Net.WebUtility.HtmlEncode(result.Message));
+                BloomMessageBox.ShowWarning(System.Net.WebUtility.HtmlEncode(message));
 
             return false;
         }

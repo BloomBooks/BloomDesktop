@@ -24,6 +24,9 @@ export interface IMessageBoxButton {
     text: string;
     id: string;
     default: boolean; // Only one button should have this true
+    // Leave the dialog up when this button is clicked, and just tell C# about it. For a button
+    // that starts something the user should be able to watch; C# closes the dialog when done.
+    keepDialogOpen?: boolean;
 }
 
 // This function is only used from Typescript-land to give us control over repeated opening and closing.
@@ -65,6 +68,16 @@ export const BloomMessageBox: React.FunctionComponent<{
         }
     };
 
+    const handleButtonClick = (button: IMessageBoxButton) => {
+        // A keepDialogOpen button starts something the user should be able to watch, so we just
+        // report the click and leave the dialog up; C# closes it when the work is done.
+        if (button.keepDialogOpen) {
+            postString("common/messageBoxButtonClicked", button.id);
+            return;
+        }
+        closeDialogForButton(button.id);
+    };
+
     const rightButtons = (props.rightButtonDefinitions ?? []).map((button) => (
         <BloomButton
             className={button.default ? "initialFocus" : ""}
@@ -74,7 +87,7 @@ export const BloomMessageBox: React.FunctionComponent<{
             alreadyLocalized={true}
             hasText={true}
             variant={button.default ? "contained" : "outlined"}
-            onClick={() => closeDialogForButton(button.id)}
+            onClick={() => handleButtonClick(button)}
             // I have nothing against ripple, but when a default button shows with a ripple even though
             // you're not clicking or even pointing at it... it looks dumb.
             disableRipple

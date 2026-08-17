@@ -17,11 +17,31 @@ namespace Bloom.MiscUI
         private static bool s_justRecordMessageBoxMessagesForTesting = false;
         private static string s_previousMessageBoxMessage;
 
+        /// <summary>
+        /// Called when the user clicks a button marked KeepDialogOpen, while the dialog is still up.
+        /// Only one message box can be showing at a time, so a single static is enough.
+        /// </summary>
+        private static Action<string> s_onKeepOpenButtonClicked;
+
+        /// <summary>
+        /// Routed here from the api when the Typescript side reports a click on a button that is
+        /// not supposed to dismiss the dialog.
+        /// </summary>
+        public static void HandleKeepOpenButtonClicked(string buttonId)
+        {
+            s_onKeepOpenButtonClicked?.Invoke(buttonId);
+        }
+
+        /// <param name="onKeepOpenButtonClicked">Called when the user clicks a button whose
+        /// KeepDialogOpen is set. The dialog stays up, so the handler can start something and let
+        /// the user watch, then close the dialog with ReactDialog.CloseCurrentModal when it is
+        /// done.</param>
         public static string Show(
             IWin32Window owner,
             string messageHtml,
             MessageBoxButton[] rightButtons,
-            MessageBoxIcon icon = MessageBoxIcon.None
+            MessageBoxIcon icon = MessageBoxIcon.None,
+            Action<string> onKeepOpenButtonClicked = null
         )
         {
             if (s_justRecordMessageBoxMessagesForTesting)
@@ -50,7 +70,15 @@ namespace Bloom.MiscUI
                 dlg.ControlBox = false;
                 if (owner == null)
                     dlg.StartPosition = FormStartPosition.CenterScreen;
-                dlg.ShowDialog(owner);
+                s_onKeepOpenButtonClicked = onKeepOpenButtonClicked;
+                try
+                {
+                    dlg.ShowDialog(owner);
+                }
+                finally
+                {
+                    s_onKeepOpenButtonClicked = null;
+                }
                 return dlg.CloseSource;
             }
         }
@@ -137,5 +165,13 @@ namespace Bloom.MiscUI
 
         [JsonProperty("default")]
         public bool Default;
+
+        /// <summary>
+        /// Leave the dialog up when this button is clicked, instead of dismissing it. For a button
+        /// that starts something the user should be able to watch happen -- the dialog is then
+        /// closed from C# with ReactDialog.CloseCurrentModal when the work is done.
+        /// </summary>
+        [JsonProperty("keepDialogOpen")]
+        public bool KeepDialogOpen;
     }
 }
