@@ -114,6 +114,11 @@ export function handleUndo(): void {
     const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow && toolboxWindow.canUndo()) {
         toolboxWindow.undo();
+        // The reader tools' undo restores a saved innerHTML, which replaces the text nodes
+        // their highlights are painted over. Nothing else will notice: unlike Ctrl+Z, a click
+        // on this button produces no keystroke in the page, so the usual keyup markup update
+        // never happens and the highlights would stay dead. (BL-16558)
+        toolboxWindow.updateMarkupAfterUndoOrRedo();
         return;
     }
     // In an ideal world, we would have all undo information stored in the order of the operations.
@@ -128,6 +133,11 @@ export function handleUndo(): void {
         contentWindow.imageOperationUndo();
     } else if (contentWindow && contentWindow.ckeditorCanUndo()) {
         contentWindow.ckeditorUndo();
+        // As above: this undo replaces the content of an editable, and there is no keystroke
+        // to trigger the markup update that repaints the tools' highlights over the new text
+        // nodes. (We call ckeditor's undoManager directly rather than its undo command, so the
+        // afterCommandExec handler in attachToCkEditor doesn't see this one.)
+        toolboxWindow?.updateMarkupAfterUndoOrRedo();
     }
     // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
 }
