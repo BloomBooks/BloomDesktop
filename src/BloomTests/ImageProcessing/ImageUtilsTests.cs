@@ -420,6 +420,149 @@ namespace BloomTests.ImageProcessing
             }
         }
 
+        // An opaque bitmap of the given format, with one transparent pixel at (x, y).
+        private static Bitmap MakeOpaqueBitmapWithOneClearPixel(
+            int width,
+            int height,
+            int x,
+            int y,
+            PixelFormat format
+        )
+        {
+            var bitmap = new Bitmap(width, height, format);
+            using (var g = Graphics.FromImage(bitmap))
+                g.Clear(Color.FromArgb(255, 10, 20, 30));
+            bitmap.SetPixel(x, y, Color.FromArgb(0, 0, 0, 0));
+            return bitmap;
+        }
+
+        [Test]
+        public void HasTransparency_Exhaustive_FindsTheOnePixelSamplingMisses()
+        {
+            // The whole point of samplePixels:false. This is also the test that would catch the
+            // exhaustive scan reading the wrong byte or the wrong rows: if it did, it would report
+            // this image opaque, and its caller would flatten the transparency and delete the
+            // original.
+            using (
+                var bitmap = MakeOpaqueBitmapWithOneClearPixel(
+                    900,
+                    700,
+                    613,
+                    417,
+                    PixelFormat.Format32bppArgb
+                )
+            )
+            {
+                // Sanity: the sampled answer really does miss it, so the two modes are being
+                // distinguished rather than both trivially succeeding.
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: true),
+                    Is.False,
+                    "setup: one stray pixel is exactly what sampling cannot see"
+                );
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: false),
+                    Is.True,
+                    "reading every pixel must find it"
+                );
+            }
+        }
+
+        [Test]
+        // The corners of the buffer are where an off-by-one in the row arithmetic or the alpha
+        // offset shows up: first pixel, last pixel of the first row, first of the last row, and
+        // the very last pixel. A stride mistake typically loses the last row or the last column.
+        [TestCase(0, 0)]
+        [TestCase(899, 0)]
+        [TestCase(0, 699)]
+        [TestCase(899, 699)]
+        [TestCase(898, 698)]
+        public void HasTransparency_Exhaustive_FindsTransparencyAtTheEdges(int x, int y)
+        {
+            using (
+                var bitmap = MakeOpaqueBitmapWithOneClearPixel(
+                    900,
+                    700,
+                    x,
+                    y,
+                    PixelFormat.Format32bppArgb
+                )
+            )
+            {
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: false),
+                    Is.True,
+                    $"a transparent pixel at ({x},{y}) must be found"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_Exhaustive_PremultipliedFormat_IsStillRead()
+        {
+            // We ask LockBits for Format32bppArgb whatever the bitmap really is, so GDI+ converts
+            // a premultiplied image for us. If that ever stopped working we would read nonsense.
+            using (
+                var bitmap = MakeOpaqueBitmapWithOneClearPixel(
+                    500,
+                    400,
+                    321,
+                    222,
+                    PixelFormat.Format32bppPArgb
+                )
+            )
+            {
+                Assert.That(
+                    bitmap.PixelFormat,
+                    Is.EqualTo(PixelFormat.Format32bppPArgb),
+                    "setup: the bitmap really is premultiplied"
+                );
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: false),
+                    Is.True,
+                    "transparency in a premultiplied image must still be found"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_Exhaustive_FullyOpaque_IsFalse()
+        {
+            // The other direction, and the one that matters for the size optimization: a false
+            // positive here would stop an opaque photo ever being re-encoded.
+            using (var bitmap = new Bitmap(900, 700, PixelFormat.Format32bppArgb))
+            {
+                using (var g = Graphics.FromImage(bitmap))
+                    g.Clear(Color.FromArgb(255, 10, 20, 30));
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: false),
+                    Is.False,
+                    "an opaque image must not be reported as transparent"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_Exhaustive_IndexedImage_StillUsesThePalette()
+        {
+            // samplePixels only governs the non-indexed path; an indexed image is exact either way,
+            // and must not fall through to the pixel scan.
+            using (var bitmap = new Bitmap(50, 50, PixelFormat.Format8bppIndexed))
+            {
+                var palette = bitmap.Palette;
+                palette.Entries[0] = Color.FromArgb(0, 0, 0, 0);
+                for (int i = 1; i < palette.Entries.Length; ++i)
+                    palette.Entries[i] = Color.FromArgb(255, i % 256, 128, 64);
+                bitmap.Palette = palette;
+
+                Assert.That(ImageUtils.HasTransparency(bitmap, samplePixels: false), Is.True);
+                Assert.That(ImageUtils.HasTransparency(bitmap, samplePixels: true), Is.True);
+            }
+        }
+
         [Test]
         [TestCase("box", "box1")]
         [TestCase("box1", "box2")]

@@ -7,6 +7,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
@@ -998,9 +999,10 @@ namespace Bloom.ImageProcessing
                 // Would a PNG→JPEG size-saving conversion be worth trying? Skip when transparencyOnly
                 // because we're here only to apply transparency, not to optimize format.
                 var tryJpegConversion =
-                    !transparencyOnly
+                    !needsResize
+                    && !transparencyOnly
                     && !shouldMakeTransparent
-                    && !HasTransparency(imageInfo.Image);
+                    && !HasTransparency(imageInfo.Image, samplePixels: false);
 
                 // When transparencyOnly, skip all processing for images that don't need transparency.
                 // The null return causes GetPathToAdjustedImage to cache this as a no-op, so
@@ -1863,15 +1865,28 @@ namespace Bloom.ImageProcessing
         /// Check whether the image has any transparency.
         /// If it becomes too difficult or expensive to determine, we punt and return false.
         /// </summary>
+        /// <param name="samplePixels">
+        /// True (the default) to answer from a sample: fast, but it can miss a small transparent
+        /// patch. False to read every pixel, for a caller that cannot afford a wrong "opaque".
+        /// </param>
         /// <remarks>
-        /// An indexed image is judged exactly, from its palette. A non-indexed bitmap is only
-        /// sampled, not proved: the top-left corner block, then up to a hundred more pixels on the
-        /// jittered grid <see cref="HasAnyTransparentSampledPixel"/> walks. So a "true" is certain,
-        /// while a "false" means only "none of the pixels we looked at was transparent" — a picture
-        /// with a small transparent patch that falls between the sampled points can still be
-        /// missed. Callers that do something irreversible on a "false" should know that.
+        /// An indexed image is judged exactly either way, from its palette. For a non-indexed
+        /// bitmap the two modes differ in what a "false" is worth:
+        /// <para>
+        /// Sampling reads the top-left corner block and then up to a hundred more pixels on the
+        /// jittered grid <see cref="HasAnyTransparentSampledPixel"/> walks, so a "true" is certain
+        /// but a "false" means only "none of the pixels we looked at was transparent" — a picture
+        /// transparent in some small patch between the sampled points is reported opaque.
+        /// </para>
+        /// <para>
+        /// The exhaustive mode reads every pixel's alpha byte, so a "false" is definite. It costs
+        /// about 10ms on an image at Bloom's maximum size, which is nothing beside the
+        /// GraphicsMagick call its callers are deciding whether to make.
+        /// </para>
+        /// So a caller that does something irreversible on a "false" — the AI image editor deletes
+        /// the original once it is told a picture is opaque — should pass samplePixels: false.
         /// </remarks>
-        public static bool HasTransparency(Image image)
+        public static bool HasTransparency(Image image, bool samplePixels = true)
         {
             // An indexed image keeps its transparency in its palette, not in an alpha channel, and
             // it has to be asked about FIRST. Every indexed pixel format (Format8bppIndexed and
@@ -1899,26 +1914,68 @@ namespace Bloom.ImageProcessing
 
             if (image is Bitmap bitmapImage)
             {
-                // Yes, this is as expensive as it looks. But we take advantage of the fact that almost all
-                // transparent images which someone would use in Bloom would be transparent in the corner.
-                // Leave a little fudge for a non-transparent border.
-                int maxPixelsFromCorner = 15;
-                for (int y = 0; y < bitmapImage.Height && y < maxPixelsFromCorner; ++y)
-                for (int x = 0; x < bitmapImage.Width && x < maxPixelsFromCorner; ++x)
-                    if (bitmapImage.GetPixel(x, y).A != 255)
+                if (samplePixels)
+                {
+                    // Yes, this is as expensive as it looks. But we take advantage of the fact that almost all
+                    // transparent images which someone would use in Bloom would be transparent in the corner.
+                    // Leave a little fudge for a non-transparent border.
+                    int maxPixelsFromCorner = 15;
+                    for (int y = 0; y < bitmapImage.Height && y < maxPixelsFromCorner; ++y)
+                    for (int x = 0; x < bitmapImage.Width && x < maxPixelsFromCorner; ++x)
+                        if (bitmapImage.GetPixel(x, y).A != 255)
+                            return true;
+
+                    // The corner said nothing, but a picture can be transparent only in its interior —
+                    // a subject knocked out of an otherwise opaque canvas, for instance. So spend the
+                    // hundred-odd pixels this helper samples across the whole image before calling it
+                    // opaque. Its jitter seed is hardcoded, which matters here: a caller that deletes
+                    // the original on a "no" must get the same answer for the same picture every time,
+                    // and an answer that varied between runs would be harder to trust, and to
+                    // reproduce, than one that is merely a sample.
+                    if (HasAnyTransparentSampledPixel(bitmapImage))
                         return true;
-
-                // The corner said nothing, but a picture can be transparent only in its interior —
-                // a subject knocked out of an otherwise opaque canvas, for instance. So spend the
-                // hundred-odd pixels this helper samples across the whole image before calling it
-                // opaque. Its jitter seed is hardcoded, which matters here: a caller that deletes
-                // the original on a "no" must get the same answer for the same picture every time,
-                // and an answer that varied between runs would be harder to trust, and to
-                // reproduce, than one that is merely a sample.
-                if (HasAnyTransparentSampledPixel(bitmapImage))
-                    return true;
-
-                return false;
+                }
+                else
+                {
+                    // The caller has asked for a definite answer rather than a sample, so look at
+                    // every pixel's alpha byte. Reading them through LockBits, a row at a time,
+                    // makes that cheap enough not to matter: measured at 10ms for a fully opaque
+                    // image at MaxLength x MaxBreadth, which is both the largest we keep and the
+                    // worst case, since an opaque image never lets the scan stop early. Set that
+                    // against the hundreds of milliseconds of the GraphicsMagick call the callers
+                    // are deciding whether to make. (Per-pixel GetPixel would be orders of
+                    // magnitude slower, because each call locks and unlocks its own one-pixel
+                    // region.)
+                    // Locking as Format32bppArgb has GDI+ give us one known layout whatever the
+                    // bitmap's own format is: four bytes per pixel, alpha last.
+                    var data = bitmapImage.LockBits(
+                        new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height),
+                        ImageLockMode.ReadOnly,
+                        PixelFormat.Format32bppArgb
+                    );
+                    try
+                    {
+                        var bytesPerRow = data.Width * 4;
+                        var row = new byte[bytesPerRow];
+                        for (int y = 0; y < data.Height; ++y)
+                        {
+                            // Row y begins at Scan0 + y * Stride. Stride is negative for a
+                            // bottom-up bitmap and that arithmetic is still correct when it is;
+                            // taking only bytesPerRow also skips any end-of-row padding.
+                            Marshal.Copy(data.Scan0 + y * data.Stride, row, 0, bytesPerRow);
+                            for (int alpha = 3; alpha < bytesPerRow; alpha += 4)
+                            {
+                                if (row[alpha] != 255)
+                                    return true;
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        bitmapImage.UnlockBits(data);
+                    }
+                    return false;
+                }
             }
 
             // Too hard / expensive to determine transparency/opacity

@@ -1534,7 +1534,7 @@ namespace Bloom.web.controllers
                     // delete the PNG below, so the transparency would be gone for good. Bloom's
                     // display pipeline guards this very conversion the same way; see the
                     // HasTransparency test in ImageUtils.AdjustImageForDisplay.
-                    if (ImageUtils.HasTransparency(image.Image))
+                    if (ImageUtils.HasTransparency(image.Image, samplePixels: false))
                         return newFileName;
                     keepTheJpeg = ImageUtils.TryChangeFormatToJpegIfHelpful(image, jpegPath);
                 }
