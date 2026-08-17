@@ -998,9 +998,13 @@ namespace Bloom.ImageProcessing
                         && ShouldMakeBackgroundTransparent(imageInfo);
                 // Would a PNG→JPEG size-saving conversion be worth trying? Skip when transparencyOnly
                 // because we're here only to apply transparency, not to optimize format.
+                // Deliberately NOT gated on needsResize: an oversized photo needs both treatments,
+                // and the conversion attempt below the resize is the only one it can reach (the
+                // early-return version a few lines down requires !needsResize). Excluding resized
+                // images here publishes every large photo as a resized PNG instead of a JPEG,
+                // several times bigger than it needs to be, in every ebook and BloomPUB.
                 var tryJpegConversion =
-                    !needsResize
-                    && !transparencyOnly
+                    !transparencyOnly
                     && !shouldMakeTransparent
                     && !HasTransparency(imageInfo.Image, samplePixels: false);
 

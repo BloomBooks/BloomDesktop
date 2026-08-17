@@ -71,6 +71,47 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
+        public void AdjustImageForDisplay_PhotoPngThatAlsoNeedsResizing_StillConvertsToJpeg()
+        {
+            // The publication paths (BloomPubMaker, EpubMaker) pass maxShortSide/maxLongSide, so a
+            // large photo hits resize AND format conversion together. Shrinking it must not cost us
+            // the JPEG re-encoding: a photo published as a resized PNG is several times bigger than
+            // it needs to be. The sibling test above uses a 118x154 image, which never resizes, so
+            // it cannot catch a regression on this path (BL-16645).
+            var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "man.png"
+            );
+            using (var destFolder = new TemporaryFolder("AdjustImageForDisplay_PhotoPngResized"))
+            {
+                // Ask for a size smaller than the source, which is what makes needsResize true.
+                var result = ImageUtils.AdjustImageForDisplay(
+                    inputPath,
+                    destFolder.Path,
+                    maxShortSide: 60,
+                    maxLongSide: 80
+                );
+
+                Assert.That(result, Is.Not.Null, "Expected a processed version to be created");
+                using (var img = Image.FromFile(result))
+                {
+                    // Sanity: it really did take the resize path, so this is the combined case.
+                    Assert.That(
+                        img.Width,
+                        Is.LessThan(118),
+                        "setup: the image should have been shrunk"
+                    );
+                    Assert.That(
+                        img.RawFormat,
+                        Is.EqualTo(ImageFormat.Jpeg),
+                        "a resized photo must still be re-encoded as a JPEG"
+                    );
+                }
+                Assert.That(Path.GetExtension(result), Is.EqualTo(".jpg"));
+            }
+        }
+
+        [Test]
         public void AdjustImageForDisplay_PhotoButPNGFile_ConvertsToJpeg()
         {
             var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
