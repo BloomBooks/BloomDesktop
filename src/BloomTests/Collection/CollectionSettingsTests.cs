@@ -53,6 +53,9 @@ namespace BloomTests.Collection
         [TestCase("Foo.", "Foo")]
         [TestCase("Foo...", "Foo")]
         [TestCase("Foo. ", "Foo")]
+        [TestCase("Foo .", "Foo")]
+        [TestCase("Foo . . ", "Foo")]
+        [TestCase("Foo . . .", "Foo")]
         [TestCase("Foo. Bar.", "Foo. Bar")]
         public void GetPathForNewSettings_NameEndsWithPeriodOrSpace_TrimmedFromFolderAndFileName(
             string collectionName,
