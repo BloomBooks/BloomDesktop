@@ -8,7 +8,14 @@
 @buttonColumnWidth: 40px;
 @splitAnimationTime: 300ms;
 @textOnLightBackground: black;
-@disablingOverlayZindex: 1001; // higher than #audio-devlist
+// higher than #audio-devlist; cf kDisablingOverlayZIndex in bookEdit/toolbox/ToolboxRoot.tsx
+@disablingOverlayZindex: 1001;
+// Keeps #disablingOverlay clear of the toolbox scrollbar, so the scrollbar stays undimmed
+// and draggable while the tool is disabled. This is the scrollbar's actual width, which is
+// also @toolboxContentPadding -- so when there is no scrollbar, the strip the overlay
+// leaves uncovered falls on the tool's right-hand padding instead of clipping the ends of
+// the full-width controls, which used to leave them slightly undimmed and still clickable.
+@disablingOverlayScrollbarAllowance: 15px;
 
 // See BL-7442: When low line height causes lines to overlap, the highlighting overlaps and
 // can over up the bottom of the characters in the line above. For Chrome/Safari we have
@@ -496,6 +503,9 @@ body .cursor-progress {
     display: none;
 }
 
+// Dims and blocks clicks on the toolbox while in Show Playback Order mode.
+// Anything that must remain usable (the tool headers, the Help link, the Show Playback
+// Order switch itself) gives itself a z-index above @disablingOverlayZindex.
 #disablingOverlay {
     z-index: @disablingOverlayZindex;
     opacity: 0.7;
@@ -503,5 +513,5 @@ body .cursor-progress {
     top: inherit;
     background-color: @toolboxBackgroundColor;
     height: 100%;
-    width: calc(100% - 20px);
+    width: calc(100% - @disablingOverlayScrollbarAllowance);
 }

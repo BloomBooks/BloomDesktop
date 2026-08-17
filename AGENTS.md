@@ -32,6 +32,20 @@ The front-end uses yarn 1.22.22. Never ever use npm.
 - Try to make it so that test failures indicate what went wrong. For example, `fail("An error occurred in setup; we should not have gotten here")` would be better than `expect(false).toBeTruthy();` and `expect(foo).toBe(3);` would be better than `expect(foo === 3).toBe(true);`.
 - Add sanity checks to guard against falsely passing tests. For example, when unit testing a method, sanity check that the test data values are as expected before you call the method, and then after you call the method you can verify that those values have changed as expected.
 
+## If the front-end test suite seems to hang, re-run it with `--no-file-parallelism`
+
+On some machines `yarn test` (`vitest run`) gets through roughly fifteen test files and then
+stops dead — no error, no failing test, no summary — until something kills it. That is vitest's
+worker pool wedging, **not** a broken test and not the branch you are on: run the files one at a
+time and the whole suite completes green.
+
+```bash
+cd src/BloomBrowserUI && yarn vitest run --no-file-parallelism
+```
+
+So before reporting the suite as hanging or failing, re-run it that way and report *that* result.
+Do not go hunting for the "test that hangs" — it moves. Excluding whichever file it stopped after
+just relocates the stall to a different one.
 
 # Terminal
 The vscode terminal often loses the first character sent from copilot agents. So if you send "cd" it might just say "bash: d: command not found". Try prefixing commands with a space.
@@ -60,6 +74,17 @@ All public methods should have a comment. So should most private ones!
 
 # Git Committing
 Always include a good description when creating a git commit.
+
+# Issue tracker
+This project tracks work in **YouTrack**, at https://issues.bloomlibrary.org/youtrack (Kanban
+boards). Ticket ids look like **`BL-16572`** (`BL-` plus a number). The skill that talks to it is
+**`youtrack-api`** — use it for any tracker operation (read an issue, find the id for the current
+work, list/post comments, set an issue's State); the higher-level `youtrack-*` skills build on it.
+
+To find the ticket id for the branch you are on, look for a `BL-XXXXX` token in the branch name,
+then the PR title, then recent commit messages. Not every branch has a card — some work (small
+cleanups, branding tweaks, tooling) is done without one, so finding no id is a normal outcome, not
+a reason to go hunting.
 
 # Skills
 Reusable, task-specific procedures for this repo live in `.github/skills/<name>/SKILL.md`.
