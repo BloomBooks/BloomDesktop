@@ -359,6 +359,38 @@ describe("EditableDivUtils Tests", () => {
     // the caret both at the split itself and immediately after a <strong>. jsdom does not
     // implement those range fixups, so a test here would fail on correct code and, worse, pass
     // on the hand-rolled save/restore this code used to have - which was itself the bug.
+    it("mergeTextNodesSplitByBookmarks leaves the text byte-for-byte unchanged, whatever it ends with", () => {
+        // It forces a repaint by appending a space and immediately deleting it. A text node's
+        // data is an exact string - html whitespace collapsing is a rendering rule, not a data
+        // one - so that has to round-trip exactly even when the text already ends in
+        // whitespace, and the appended space must never survive into what Bloom saves.
+        const endings = [
+            "flow", // ordinary
+            "flow ", // already ends with a space
+            "flow  ", // ...with two
+            "flow ", // ...with a non-breaking space
+            "flow\n", // ...with a newline
+            "flow\t", // ...with a tab
+            "   ", // nothing but spaces
+        ];
+        for (const ending of endings) {
+            const div = document.createElement("div");
+            const p = document.createElement("p");
+            p.appendChild(document.createTextNode("overf"));
+            p.appendChild(document.createTextNode(ending));
+            div.appendChild(p);
+            document.body.appendChild(div);
+            // sanity check the setup
+            expect(p.childNodes.length).toBe(2);
+
+            EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+            expect(p.childNodes.length).toBe(1);
+            expect((p.firstChild as Text).data).toBe("overf" + ending);
+            div.remove();
+        }
+    });
+
     it("mergeTextNodesSplitByBookmarks copes with an empty text node at the head of a run", () => {
         // normalize() deletes empty text nodes outright, so the node a run collapses into is
         // its first NON-empty node. Getting that wrong would leave us holding a detached node

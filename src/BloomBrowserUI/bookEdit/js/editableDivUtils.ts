@@ -607,6 +607,12 @@ export class EditableDivUtils {
             //   offset === length, and no boundary can lie beyond the end, so nothing moves.
             // - The two edits must both happen here, synchronously. Nothing is painted between
             //   them, so the space we add is never seen and never saved.
+            // A space is a safe thing to append even when the text already ends in whitespace:
+            // html's whitespace collapsing is a rule about RENDERING, and a text node's data is
+            // an exact string, so "flow " briefly becomes "flow  " and comes back "flow " -
+            // nothing merges. A space is also the most harmless character to be caught holding
+            // if this were ever interrupted between the two calls (it cannot be - deleteData
+            // here can't throw), which a printable character would not be.
             survivor.insertData(survivor.length, " ");
             survivor.deleteData(survivor.length - 1, 1);
         });
