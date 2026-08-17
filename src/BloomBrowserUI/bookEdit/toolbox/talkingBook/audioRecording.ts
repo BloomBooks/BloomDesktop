@@ -5076,7 +5076,14 @@ export default class AudioRecording implements IAudioRecorder {
      */
     public undoHighlightingFixes(pageOrClone: ParentNode) {
         this.elementsWeFixedHighlightingIn.forEach((id) => {
-            const element = pageOrClone.querySelector(`#${id}`);
+            // Deliberately NOT `querySelector(\`#${id}\`)`. An id that is not a valid CSS
+            // identifier -- a legacy one starting with a digit, say -- makes that form THROW, and
+            // this now runs during every save's clone cleanup, where a throw would abort the whole
+            // page gather and we would post an error string instead of the user's page. Comparing
+            // the property cannot throw whatever the id looks like.
+            const element = Array.from(
+                pageOrClone.querySelectorAll("[id]"),
+            ).find((candidate) => candidate.id === id);
             if (!element) {
                 console.warn("Can't find element " + id);
                 return;

@@ -246,6 +246,36 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         error.mockRestore();
     });
 
+    test("a save that errors is complained about too", async () => {
+        // Not just the refusal: the request itself can fail, and the consequence for the user is
+        // the same -- the book still has the old image.
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+        savePageWithoutReloading.mockRejectedValue(new Error("network gone"));
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        commitAndReplyFromHost(postFromEditor, true);
+        await vi.waitFor(() => expect(error).toHaveBeenCalled());
+
+        expect(error.mock.calls[0][0]).toContain("saving the page failed");
+        error.mockRestore();
+    });
+
+    test("a page frame that has gone away is complained about too", () => {
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+        const { postFromEditor } = openAgainstABookWithOneImage();
+        // The commit applies through the exports we already handed out, then the frame goes.
+        applyAiImageEditorReplacements.mockImplementation(() => {
+            getEditablePageBundleExports.mockReturnValue(undefined);
+            return { applied: 1, failures: [] };
+        });
+
+        commitAndReplyFromHost(postFromEditor, true);
+
+        expect(error).toHaveBeenCalled();
+        expect(error.mock.calls[0][0]).toContain("not available to save");
+        error.mockRestore();
+    });
+
     test("a partial failure keeps the overlay up AND still saves what landed", () => {
         const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
 
@@ -305,6 +335,7 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         expect(ack.error).toContain("Only 1 of 2");
         expect(ack.error).toContain("kaboom");
         // What did land still gets saved.
+        expect(savePageWithoutReloading).toHaveBeenCalledTimes(1);
         postMessageToEditor.mockRestore();
     });
 

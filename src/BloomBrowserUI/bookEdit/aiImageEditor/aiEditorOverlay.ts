@@ -349,18 +349,36 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                 // exactly the state this save exists to avoid. We can't undo
                                 // that here, but we can make sure it isn't silent.
                                 if (currentPageApplied > 0) {
-                                    void getEditablePageBundleExports()
-                                        ?.savePageWithoutReloading()
-                                        .then((saved) => {
-                                            if (!saved)
-                                                console.error(
-                                                    "AI image editor: Bloom declined to save the page after applying " +
-                                                        currentPageApplied +
-                                                        " replacement(s) to it. The book on disk still has the old " +
-                                                        "image(s), so editing these again in this session may report " +
-                                                        "that nothing matched.",
-                                                );
-                                        });
+                                    const complain = (why: string) =>
+                                        console.error(
+                                            `AI image editor: ${why} after applying ${currentPageApplied} ` +
+                                                "replacement(s) to the open page. The book on disk still has the " +
+                                                "old image(s), so editing these again in this session may report " +
+                                                "that nothing matched.",
+                                        );
+                                    // All three ways this can go wrong have to say so, not just
+                                    // the refusal: the page frame may be gone (the optional call
+                                    // then yields nothing at all), and the request itself can fail.
+                                    const save =
+                                        getEditablePageBundleExports()?.savePageWithoutReloading();
+                                    if (!save) {
+                                        complain(
+                                            "the page frame was not available to save",
+                                        );
+                                    } else {
+                                        void save.then(
+                                            (saved) => {
+                                                if (!saved)
+                                                    complain(
+                                                        "Bloom declined to save the page",
+                                                    );
+                                            },
+                                            (error) =>
+                                                complain(
+                                                    `saving the page failed (${error})`,
+                                                ),
+                                        );
+                                    }
                                 }
                                 if (finalOk) {
                                     cleanup();
