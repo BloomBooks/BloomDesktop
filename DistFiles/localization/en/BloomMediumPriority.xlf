@@ -654,13 +654,11 @@
         <source xml:lang="en">This book does not have any games.</source>
         <note>ID: PublishTab.Feature.Games.None</note>
         <note>This is a tooltip.</note>
-        <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Games.Present">
         <source xml:lang="en">This book has games.</source>
         <note>ID: PublishTab.Feature.Games.Present</note>
         <note>This is a tooltip.</note>
-        <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Motion.None">
         <source xml:lang="en">This is disabled because this book does not have any pages with motion enabled.</source>
@@ -669,7 +667,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Motion.Possible">
         <source xml:lang="en">Select this if you want to show motion when the book is read in landscape mode.</source>
-        <note>ID: PublishTab.Feature.Motion.None</note>
+        <note>ID: PublishTab.Feature.Motion.Possible</note>
         <note>This is a tooltip.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Music">
