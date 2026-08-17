@@ -288,9 +288,25 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
-    it("mergeTextNodesSplitByBookmarks leaves the paragraph's display style as it found it", () => {
-        // It toggles display to force Chromium to repaint; that must not be observable
-        // afterwards, including on a paragraph with a display of its own.
+    it("mergeTextNodesSplitByBookmarks leaves no trace in the markup that gets saved", () => {
+        // It has to make Chromium re-shape the merged text, but whatever it does to achieve
+        // that must not survive into the html: this runs on every pause in typing, and the
+        // box's innerHTML is what Bloom saves into the book. Checking the serialized markup
+        // rather than a property, because an emptied-out attribute still serializes.
+        const div = makeParagraphSplitByABookmark("overfflow", 5);
+        const p = div.firstChild as HTMLParagraphElement;
+        // sanity check the setup
+        expect(p.hasAttribute("style")).toBe(false);
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        expect(div.innerHTML).toBe("<p>overfflow</p>");
+        expect(p.hasAttribute("style")).toBe(false);
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks keeps a paragraph's own inline style", () => {
         const div = makeParagraphSplitByABookmark("overfflow", 5);
         const p = div.firstChild as HTMLParagraphElement;
         p.style.display = "inline-block";

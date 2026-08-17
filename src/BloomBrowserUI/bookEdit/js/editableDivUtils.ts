@@ -571,7 +571,8 @@ export class EditableDivUtils {
         );
     }
 
-    // Replace each run of adjacent sibling text nodes with a single, brand-new text node.
+    // Merge each run of adjacent sibling text nodes back into one.
+    //
     // Merging the DOM back together is only half the repair: Chromium goes on painting the
     // paragraph's old, glyph-dropped text afterwards. The DOM ends up correct - the inspector
     // shows one string, and the layout even measures correctly - while the screen still shows
@@ -585,31 +586,41 @@ export class EditableDivUtils {
     // disappear from the paragraph the user is typing in (the failure mode
     // textHighlightManager.hasDeadRanges() exists to detect).
     //
-    // So we merge with normalize(), which the DOM spec requires to keep live ranges on the same
-    // characters, and then force the affected paragraphs to lay out again to shake off the
-    // stale painting. Toggling display is heavy-handed, but it happens at most once per pause
-    // in typing, only in paragraphs we actually merged, and only when a bookmark was needed.
+    // So: merge with normalize(), which the DOM spec requires to keep live ranges on the same
+    // characters, and then make Chromium re-shape the merged node by writing its own text back
+    // into it - appending a character and immediately removing it again. Both edits are at the
+    // very end of the node, and per the spec only boundaries strictly beyond the edit point
+    // move, so no live range is disturbed; and because it happens inside one synchronous task,
+    // the extra character is never painted.
+    //
+    // Deliberately NOT done by toggling the element's display: the parent of a bare text node
+    // can be the .bloom-editable itself, and hiding a focused contenteditable blurs it - the
+    // user's next keystrokes would go nowhere - besides leaving a stray style="" attribute
+    // behind in the saved book.
     private static mergeAdjacentTextNodeRuns(element: HTMLElement): void {
         const doc = element.ownerDocument;
-        const parentsWithRuns = new Set<HTMLElement>();
+        const parentsWithRuns = new Set<Element>();
         const walker = doc.createTreeWalker(element, NodeFilter.SHOW_TEXT);
         for (let node = walker.nextNode(); node; node = walker.nextNode()) {
             if (node.nextSibling?.nodeType === Node.TEXT_NODE) {
-                // The nearest element is what has to be re-laid-out; for a bare text node in
-                // the editable itself that is the editable.
-                const parent = node.parentElement;
-                if (parent) {
-                    parentsWithRuns.add(parent as HTMLElement);
-                }
+                // A text node always has a parent element here: we are walking inside element.
+                parentsWithRuns.add(node.parentElement!);
             }
         }
 
         parentsWithRuns.forEach((parent) => {
             parent.normalize();
-            const previousDisplay = parent.style.display;
-            parent.style.display = "none";
-            void parent.offsetHeight; // force the "gone" state to take effect
-            parent.style.display = previousDisplay;
+            for (
+                let child = parent.firstChild;
+                child;
+                child = child.nextSibling
+            ) {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    const text = child as Text;
+                    text.insertData(text.length, " ");
+                    text.deleteData(text.length - 1, 1);
+                }
+            }
         });
     }
 
