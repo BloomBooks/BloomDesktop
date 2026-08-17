@@ -242,6 +242,12 @@ namespace WebView2PdfMaker
             }
         }
 
+        /// <summary>
+        /// Prefixes the error we report when asked for a page size we don't know. Bloom looks for
+        /// this exact text on our standard error; see MakePdfUsingExternalPdfMakerProgram.
+        /// </summary>
+        internal const string kUnsupportedPageSizeMarker = "UNSUPPORTED-PAGE-SIZE";
+
         private PaperSize GetPaperSize(string name)
         {
             name = name.ToLowerInvariant();
@@ -261,18 +267,43 @@ namespace WebView2PdfMaker
                 new PaperSize("legal", 215.9, 355.6),
                 new PaperSize("halflegal", 177.8, 215.9),
                 new PaperSize("device16x9", 100, 1600d / 9d),
+                // The two StoryWeaver ebook sizes are the only ones Bloom defines in CSS pixels
+                // rather than a physical unit (see @Ebook2x3Portrait-* and @Ebook7x5Landscape-*
+                // in paperDimensions.less), so convert at the CSS standard 96px per inch.
+                // Note that, like every other entry in this list, these are the *portrait*
+                // dimensions. Ebook7x5 is only ever offered as landscape, so Bloom passes
+                // "-O landscape" with it and WebView2 swaps the two for us.
+                new PaperSize(
+                    "ebook2x3",
+                    475 * kMillimetersPerCssPixel,
+                    700 * kMillimetersPerCssPixel
+                ),
+                new PaperSize(
+                    "ebook7x5",
+                    690 * kMillimetersPerCssPixel,
+                    959 * kMillimetersPerCssPixel
+                ),
             };
 
             var match = sizes.Find(s => s.Name == name);
             if (match != null)
                 return match;
 
+            // Bloom greps stderr for this marker so it can tell this specific failure apart from
+            // every other reason PDF making can fail, and say something useful about it rather
+            // than showing the user this developer-facing sentence (BL-16684). Keep the marker
+            // and the ": <name>" that follows it in step with kUnsupportedPageSizeMarker in
+            // MakePdfUsingExternalPdfMakerProgram.
             throw new ApplicationException(
-                "Sorry, currently WebView2PdfMaker has a very limited set of paper sizes it knows about. Consider using the page-height and page-width arguments instead"
+                $"{kUnsupportedPageSizeMarker}: {name}. WebView2PdfMaker has a very limited set of paper sizes it knows about. Consider using the page-height and page-width arguments instead"
             );
         }
 
         const double kMillimetersPerInch = 25.4; // (or more precisely, 25.3999999999726)
+
+        // CSS defines a pixel as exactly 1/96 inch, which is how the browser interprets the
+        // px-based page dimensions in paperDimensions.less.
+        const double kMillimetersPerCssPixel = kMillimetersPerInch / 96;
 
         internal double GetWebView2PageWidth()
         {
