@@ -1,8 +1,11 @@
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.web.controllers;
@@ -775,6 +778,201 @@ namespace BloomTests.web.controllers
                 );
                 Assert.That(File.Exists(Path.Combine(_bookFolder.Path, newName)), Is.True);
             }
+        }
+
+        // ------------------------------------------------------------------
+        // WriteRequestBodyToFile: the /file POST endpoint's save. Two saves of the SAME file
+        // at once are ordinary traffic from the AI image editor (BL-16702) — one generated
+        // image assigned to two book-image slots makes its commit call putFile once per slot,
+        // concurrently — so they must not be able to trip over each other's temp file.
+        // ------------------------------------------------------------------
+
+        // The path a history image would be written to, under a fresh .ai-image-editor folder
+        // that does not exist yet (so these also cover creating it).
+        private string HistoryFilePath(string fileName) =>
+            Path.Combine(_bookFolder.Path, ".ai-image-editor", "history", fileName);
+
+        [Test]
+        public void WriteRequestBodyToFile_WritesTheBodyAndCreatesTheFolder()
+        {
+            var path = HistoryFilePath("result.png");
+            // Sanity: neither the file nor its folder exists yet, so what we find afterwards
+            // was made by the call.
+            Assert.That(Directory.Exists(Path.GetDirectoryName(path)), Is.False, "setup");
+            var bytes = new byte[] { 1, 2, 3, 4, 5 };
+
+            AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(bytes));
+
+            Assert.That(File.ReadAllBytes(path), Is.EqualTo(bytes));
+        }
+
+        [Test]
+        public void WriteRequestBodyToFile_NoBody_SavesAnEmptyFile()
+        {
+            // An empty body means "save an empty file", not "leave what's there": the AI image
+            // editor must never be told "saved" while stale content survives on disk.
+            var path = HistoryFilePath("result.png");
+            AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(new byte[] { 1, 2 }));
+            Assert.That(new FileInfo(path).Length, Is.EqualTo(2), "setup: the file has content");
+
+            AiImageEditorApi.WriteRequestBodyToFile(path, null);
+
+            Assert.That(new FileInfo(path).Length, Is.EqualTo(0));
+        }
+
+        // A body that hands over its first chunk and then fails, standing in for a client that
+        // goes away mid-upload. It lets one read through so bytes really do land in the temp
+        // file — Stream.CopyTo uses an 80KB buffer, so a body that dies on its first read would
+        // leave the temp empty and the test would not be exercising a truncated write at all.
+        private class FailingStream : MemoryStream
+        {
+            public FailingStream(byte[] initialBytes)
+                : base(initialBytes) { }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                if (Position > 0)
+                    throw new IOException("the client went away");
+                return base.Read(buffer, offset, count);
+            }
+        }
+
+        [Test]
+        public void WriteRequestBodyToFile_WriteFails_KeepsTheOldFileAndLeavesNoTempBehind()
+        {
+            // Writing through a temp file exists so a half-finished upload can't destroy the
+            // good file that was there. The temp itself must not survive either: nothing would
+            // serve or enumerate it, but it can be multi-MB and would sit in the book's folder
+            // for the life of the book.
+            var path = HistoryFilePath("result.png");
+            var good = new byte[] { 1, 2, 3 };
+            AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(good));
+            Assert.That(File.ReadAllBytes(path), Is.EqualTo(good), "setup: the good file is there");
+
+            // Bigger than CopyTo's 80KB buffer, so the write really is truncated part way
+            // rather than failing before it wrote anything.
+            Assert.That(
+                () =>
+                    AiImageEditorApi.WriteRequestBodyToFile(
+                        path,
+                        new FailingStream(new byte[200000])
+                    ),
+                Throws.InstanceOf<IOException>(),
+                "a failed body read must still fail the request"
+            );
+
+            Assert.That(
+                File.ReadAllBytes(path),
+                Is.EqualTo(good),
+                "the file that was there must be untouched"
+            );
+            Assert.That(
+                Directory.EnumerateFiles(Path.GetDirectoryName(path), "*.tmp"),
+                Is.Empty,
+                "the failed write's temp file must have been cleaned up"
+            );
+        }
+
+        [Test]
+        public void WriteRequestBodyToFile_SwapFails_KeepsTheTempSoTheNewBytesSurvive()
+        {
+            // The one failure we must NOT tidy up after. Swapping the new file in is a delete
+            // of the destination followed by a move, so a failure in there can already have
+            // taken the old file with it, leaving the temp holding the only copy of the new
+            // bytes. Deleting it then would lose both. (Devin raised this against the first
+            // version of the cleanup, which deleted the temp on any failure.)
+            var path = HistoryFilePath("result.png");
+            AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(new byte[] { 1, 2, 3 }));
+            var newBytes = new byte[] { 9, 9, 9, 9 };
+            var historyFolder = Path.GetDirectoryName(path);
+
+            // Holding the destination open blocks the delete half of the swap, so the write
+            // gets as far as the swap and then fails — which is the case we care about.
+            using (new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                Assert.That(
+                    () => AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(newBytes)),
+                    Throws.InstanceOf<IOException>(),
+                    "setup: holding the file open should make the swap fail"
+                );
+            }
+
+            var temps = Directory.EnumerateFiles(historyFolder, "*.tmp").ToList();
+            Assert.That(
+                temps,
+                Is.Not.Empty,
+                "a failed swap must leave the new bytes behind in the temp file"
+            );
+            Assert.That(
+                File.ReadAllBytes(temps[0]),
+                Is.EqualTo(newBytes),
+                "and they must be all of the new bytes"
+            );
+        }
+
+        [Test]
+        public void WriteRequestBodyToFile_ConcurrentWritesOfTheSameFile_AllSucceed()
+        {
+            // BL-16702: the AI image editor POSTs history/<resultId>.png once per slot the
+            // result was assigned to, all at the same time. Before this was serialized, the
+            // writes collided on the shared "<file>.tmp" path (RobustFile.Create opens with
+            // FileShare.None and does not retry), so all but one threw IOException — which the
+            // API layer turns into a 503, and which made the AI image editor abandon the whole
+            // commit before it ever asked Bloom to replace anything.
+            var path = HistoryFilePath("result.png");
+            // Big enough that the writes really do overlap rather than finishing one after
+            // another, like the multi-MB PNG an AI service returns.
+            var bytes = new byte[4 * 1024 * 1024];
+            for (var i = 0; i < bytes.Length; i++)
+                bytes[i] = (byte)i;
+
+            const int writerCount = 4;
+            var exceptions = new ConcurrentBag<Exception>();
+            // The barrier is what makes this a concurrency test: every writer waits there and
+            // they are all released together, rather than each starting whenever its thread
+            // happens to get going — which could otherwise leave them running one after another,
+            // passing without testing anything (see AGENTS.md on falsely passing tests).
+            var startLine = new Barrier(writerCount);
+            var arrived = new ConcurrentBag<int>();
+            var writers = Enumerable
+                .Range(0, writerCount)
+                .Select(index => new Thread(() =>
+                {
+                    startLine.SignalAndWait();
+                    arrived.Add(index);
+                    try
+                    {
+                        AiImageEditorApi.WriteRequestBodyToFile(path, new MemoryStream(bytes));
+                    }
+                    catch (Exception e)
+                    {
+                        exceptions.Add(e);
+                    }
+                }))
+                .ToList();
+            writers.ForEach(t => t.Start());
+            writers.ForEach(t => t.Join());
+
+            Assert.That(
+                exceptions,
+                Is.Empty,
+                "no concurrent write of the same file should fail: "
+                    + string.Join("; ", exceptions.Select(e => e.Message))
+            );
+            // Sanity check: every writer got past the barrier, so all four really were in
+            // flight together and the empty `exceptions` above means something.
+            Assert.That(
+                arrived,
+                Is.EquivalentTo(Enumerable.Range(0, writerCount)),
+                "every writer should have been released from the barrier and run"
+            );
+            // And the survivor must be the whole file, not a partly-written one.
+            Assert.That(File.ReadAllBytes(path), Is.EqualTo(bytes));
+            Assert.That(
+                Directory.EnumerateFiles(Path.GetDirectoryName(path), "*.tmp"),
+                Is.Empty,
+                "no temp file should be left behind"
+            );
         }
 
         // ------------------------------------------------------------------

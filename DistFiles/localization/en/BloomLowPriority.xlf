@@ -383,6 +383,11 @@
         <note>ID: EditTab.CustomCover.FieldType.CoverCredits</note>
         <note>One choice in the "Field Type:" menu of a text block on a custom layout page. Choosing it makes that block hold the credits (author, illustrator, etc.) that are shown on the cover.</note>
       </trans-unit>
+      <trans-unit id="ImageUtils.ShrinkingImagesFailed" translate="no">
+        <source xml:lang="en">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</source>
+        <note>ID: ImageUtils.ShrinkingImagesFailed</note>
+        <note>Shown as a toast when the one-time shrinking of an old book's oversized pictures fails. The book still works; the pictures are just left large, and Bloom retries later. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

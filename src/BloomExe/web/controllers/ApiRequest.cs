@@ -411,6 +411,11 @@ namespace Bloom.Api
 
         public string RequestContentType => _requestInfo.RequestContentType;
 
+        /// <remarks>
+        /// Unencoded, because Parameters comes from HttpUtility.ParseQueryString, which has
+        /// already decoded the value once. (Nothing calls this at present; the two handlers that
+        /// used to decode a second time here were fixed for BL-16669.)
+        /// </remarks>
         public UrlPathString RequiredFileNameOrPath(string name)
         {
             if (Parameters.AllKeys.Contains(name))

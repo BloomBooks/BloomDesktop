@@ -1,7 +1,6 @@
 ﻿using System;
 using Bloom.Api;
 using Bloom.Collection;
-using Bloom.Properties;
 using SIL.Progress;
 
 namespace Bloom.Book
@@ -15,6 +14,17 @@ namespace Bloom.Book
         public event EventHandler<BookSelectionChangedEventArgs> SelectionChanged;
         public event EventHandler<BookSelectionChangedEventArgs> SelectionChangedHighPriority;
 
+        /// <summary>
+        /// Make this the selected book, and notify subscribers.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately has no other side effects outside this object. In particular, it does NOT
+        /// remember the book for the next launch: that is WorkspaceView's job (see
+        /// PersistSelectedBookPath there), because only a selection made in the running UI, of a
+        /// book we could actually restore, is worth persisting. This method used to write
+        /// Settings.Default.CurrentBookPath itself, which meant every caller wrote global settings
+        /// whether that made sense or not (BL-16660). Please don't put it back.
+        /// </remarks>
         public void SelectBook(Book book, bool aboutToEdit = false)
         {
             if (_currentSelection == book)
@@ -38,8 +48,6 @@ namespace Bloom.Book
             _currentSelection = book;
 
             InvokeSelectionChanged(aboutToEdit);
-            Settings.Default.CurrentBookPath = book?.FolderPath ?? "";
-            Settings.Default.Save();
         }
 
         public void ClearSelectionWithoutNotifications()

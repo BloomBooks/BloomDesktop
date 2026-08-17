@@ -33,6 +33,11 @@ namespace Bloom.web.controllers
     ///   and Bloom does NOT import the AI image editor's code: it is a self-contained web
     ///   app loaded by URL. There is no npm/bundler dependency between the two projects.
     ///
+    /// THE FRONT-END HALF
+    ///   src/BloomBrowserUI/bookEdit/aiImageEditor/ — read its AGENTS.md first: those files are
+    ///   split by which browser frame they run in (overlay in the top window, live-page work in
+    ///   the page iframe), and that split is what the two-plane design below rests on.
+    ///
     /// WHERE THE AI IMAGE EDITOR COMES FROM  (see GetAiImageEditorUrl)
     ///   DEFAULT: {ServerUrl}/bloom/aiImageEditor/index.html — its built app
     ///            ("dist-app"), served same-origin by BloomServer so there's no CORS.
@@ -47,13 +52,17 @@ namespace Bloom.web.controllers
     ///
     /// TWO COMMUNICATION PLANES
     ///   1. HTTP, AI image editor / front-end JS -> this controller, over Bloom's server:
+    ///        aiImageEditor/saveThenLaunch  what the menu command posts: save the page being
+    ///                                    edited (needed before we can enumerate the book's
+    ///                                    images), then call openAiImageEditor() in the top
+    ///                                    window. The one C#->browser call here; see the method.
     ///        aiImageEditor/launch        mint session, make folders, enumerate book
     ///                                    images + history, return the launch payload.
     ///        aiImageEditor/file          GET/POST/DELETE files under .ai-image-editor/.
     ///        aiImageEditor/commit        apply the chosen replacements to the book.
     ///        aiImageEditor/saveCredentials  persist the user's OpenRouter API key.
     ///   2. window.postMessage on channel "bloom-ai-image-tools", between the overlay JS
-    ///      (CanvasElementContextControls.tsx) and the AI image editor's iframe: ready /
+    ///      (aiEditorOverlay.ts, in the TOP window) and the AI image editor's iframe: ready /
     ///      init / commit / cancel / log / ack. The overlay JS — NOT this class — sends
     ///      `init` (built from the launch reply) and tears the overlay down. Image BYTES
     ///      never cross postMessage; they move only as files via aiImageEditor/file.
@@ -71,8 +80,9 @@ namespace Bloom.web.controllers
     /// COMMIT SPLIT
     ///   Off-page images are edited directly in the whole-book DOM here and saved. The
     ///   currently-open page is owned by the live browser, so those replacements are
-    ///   returned as {oldSrc,newSrc,copyright,creator,license} for the overlay JS to apply via
-    ///   Bloom's changeImage().
+    ///   returned as {oldSrc,newSrc,copyright,creator,license}; the overlay hands them to the
+    ///   page frame's applyAiImageEditorReplacements(), which applies them via Bloom's
+    ///   changeImageByElement() (aiEditorPageCommands.ts).
     ///
     /// AI IMAGE EDITOR REPO: bloom-ai-image-tools — App.tsx (mode=bloom-iframe),
     ///   services/host/BloomHostBridge.ts (createIframeBloomHostBridge),
@@ -161,6 +171,12 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler(
+                "aiImageEditor/saveThenLaunch",
+                HandleSaveThenLaunch,
+                handleOnUiThread: true,
+                requiresSync: false
+            );
+            apiHandler.RegisterEndpointHandler(
                 "aiImageEditor/launch",
                 HandleLaunch,
                 handleOnUiThread: true,
@@ -213,6 +229,158 @@ namespace Bloom.web.controllers
             if (!string.IsNullOrWhiteSpace(overrideUrl))
                 return overrideUrl;
             return $"{BloomServer.ServerUrl}/bloom/aiImageEditor/index.html";
+        }
+
+        /// <summary>The image the user right-clicked, as the page frame sends it to
+        /// <see cref="HandleSaveThenLaunch"/> and as we hand it back to the browser once the page
+        /// has been saved. See IAiImageEditorTarget in aiEditorShared.ts. The page frame sends only
+        /// the file name; we fill in the page id, since we are the ones who know which page we
+        /// saved, and the overlay (in the top window) has no page DOM of its own to read it from.
+        /// </summary>
+        private class SaveThenLaunchRequest
+        {
+            public string imageFileName { get; set; }
+            public string pageId { get; set; }
+        }
+
+        /// <summary>
+        /// Saves the page the user is editing, then opens the AI image editor on it.
+        ///
+        /// The save is the point of this endpoint. Everything we tell the AI image editor about
+        /// the book — the image list from <see cref="EnumerateBookImages"/>, and on commit each
+        /// slot's current src — is read from the SAVED book DOM, but an image the user has just
+        /// added exists only in the live page (Bloom deliberately doesn't save on an image change;
+        /// see EditingModel.UpdateImageInBrowser and BL-16330). Launching against the unsaved DOM
+        /// opened the editor with an empty "Image to Edit" slot (BL-16682); it would also have
+        /// made the current page's commit results describe an image the live page no longer shows,
+        /// and left <see cref="DeleteSupersededAiImageFiles"/> blind to a file the live page uses.
+        ///
+        /// Two separate things follow from the fact that saving always ends in a navigation.
+        ///
+        /// WHERE the overlay lives: not in the page iframe, which that navigation replaces every
+        /// time — hence the top window, like the image-gallery and copyright/license commands (see
+        /// aiEditorOverlay.ts and the comments on those commands in canvasControlRegistry.ts).
+        ///
+        /// WHEN we open it: once the browser has a page again, via
+        /// EditingModel.RunAfterNextPageLoad. Opening from SaveThen's doAfterSaveToDisk directly is
+        /// tempting, since the top window is alive at that moment — but that moment is immediately
+        /// before the navigation, and the navigation is not always confined to the page iframe.
+        /// EditingView.StartNavigationToEditPage reloads the whole workspace root when
+        /// MemoryUtils.SystemIsShortOfMemory(), which is Bloom's own private bytes past ~2GB —
+        /// the ordinary state of a long editing session on a big book. Opening from
+        /// doAfterSaveToDisk there meant the page saved correctly and the editor never appeared,
+        /// with no message: openAiImageEditor doesn't even build the overlay synchronously; it
+        /// POSTs launch first and builds it in the reply, a whole round trip after the reload
+        /// began. Waiting for the page load costs nothing and is immune to all three routes.
+        /// doAfterSaveToDisk is still where we ASK for that, though — see the body — because it
+        /// only runs when the save actually reached disk, which is how a failed save leaves the
+        /// editor closed instead of opening it on a book DOM we know to be stale.
+        ///
+        /// To see that failure for yourself, temporarily make ShouldDoFullReload() return true —
+        /// its own comment invites exactly this — rather than trying to grow Bloom past 2GB.
+        /// </summary>
+        private void HandleSaveThenLaunch(ApiRequest request)
+        {
+            // Must be read before SaveThen: by the time our callbacks run the request is complete.
+            // Deliberately unguarded: the only caller is launchAiImageEditor in
+            // aiEditorPageCommands.ts, which always sends {imageFileName}, so a parse failure means
+            // we broke our own contract and we want to hear about it with the real exception rather
+            // than a generic "invalid payload" that says nothing (see AGENTS.md, "Don't be overly
+            // defensive about error handling").
+            var payload = request.RequiredPostObject<SaveThenLaunchRequest>();
+
+            var model = View?.Model;
+            var pageId = model?.CurrentPage?.Id;
+            if (model == null || string.IsNullOrEmpty(pageId))
+            {
+                request.Failed("No page is open for editing");
+                return;
+            }
+            payload.pageId = pageId;
+
+            // Ask NOW to be opened on the next page load, and record separately whether the book
+            // DOM turned out to be sound. Both halves matter, for different reasons.
+            //
+            // Asking now, rather than from the callbacks below: OnTabAboutToChange discards the
+            // queued request when the user leaves the Edit tab. If we only queued it later, from
+            // doAfterSaveToDisk, that discard could run first — on a save still in flight — and we
+            // would then re-arm behind it, so the editor sprang open when the user came back to
+            // that page. (Devin caught that; queueing up front puts the discard reliably after us.)
+            var bookDomIsSound = false;
+            model.RunAfterNextPageLoad(loadedPageId =>
+            {
+                // Not the page we saved: the user navigated meanwhile, so the image we were asked
+                // to edit isn't there to edit.
+                if (loadedPageId != pageId)
+                    return;
+                // The save was attempted and failed. Leave the editor closed: the book DOM is
+                // still stale, so we would be opening it on exactly the out-of-date data this
+                // endpoint exists to prevent, and a commit from there would call book.Save() again
+                // on top of whatever went wrong (disk full, a corrupt image, out of memory). The
+                // user is not left wondering — EditingStateMachine has already shown them "Bloom
+                // had trouble saving a page...". (JohnThomson raised this in review.)
+                if (!bookDomIsSound)
+                    return;
+                OpenEditorInBrowser(payload);
+            });
+
+            model.SaveThen(
+                () => pageId,
+                doIfNotInRightStateToSave: () =>
+                {
+                    // No save was attempted and nothing failed. Every state that refuses one — a
+                    // save already in flight, mid-navigation, saved-and-stripped — is on its way to
+                    // a page load, and by then that other save will have brought the DOM up to date.
+                    bookDomIsSound = true;
+                },
+                // Reached only when the save actually got to disk. Checking it this way, rather
+                // than cancelling from failureAction, covers more: failureAction is not called when
+                // _saveBook() itself throws, which is precisely the disk-full case, nor on the
+                // deliberate _discardInFlightSave path.
+                doAfterSaveToDisk: () => bookDomIsSound = true
+            );
+
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Tells the browser to open the AI image editor overlay on <paramref name="target"/>. The
+        /// browser owns the overlay (only it can postMessage to the editor's iframe), so all this
+        /// side does is call its entry point; see openAiImageEditor in aiEditorOverlay.ts.
+        /// Fire-and-forget, like EditingModel.UpdateImageInBrowser's call to changeImage: there is
+        /// nothing here to wait for.
+        ///
+        /// It does wait for workspaceBundle to exist, though. We are called the instant the PAGE
+        /// iframe reports loaded, and on the whole-workspace-reload route (see
+        /// HandleSaveThenLaunch) the root document and that iframe load in parallel, with
+        /// window.workspaceBundle assigned at the very end of workspaceRoot.ts. If the iframe wins
+        /// that race, calling straight in would throw inside a fire-and-forget script — silently
+        /// doing nothing on exactly the route this design exists to survive. So poll for it, as
+        /// workspaceFrames.doWhenWorkspaceBundleLoaded does, bounded so a genuinely absent bundle
+        /// says so once instead of polling forever.
+        /// </summary>
+        private void OpenEditorInBrowser(SaveThenLaunchRequest target)
+        {
+            var arg = JsonConvert.SerializeObject(target);
+            var script =
+                $@"(function () {{
+    var tries = 0;
+    (function open() {{
+        var bundle = window.workspaceBundle;
+        if (bundle && bundle.openAiImageEditor) {{
+            bundle.openAiImageEditor({arg});
+            return;
+        }}
+        if (++tries < 100) {{
+            window.setTimeout(open, 50);
+        }} else {{
+            console.error(
+                'Bloom: workspaceBundle never appeared, so the AI image editor could not be opened.'
+            );
+        }}
+    }})();
+}})();";
+            View?.Browser?.RunJavascriptFireAndForget(script);
         }
 
         /// <summary>
@@ -427,31 +595,18 @@ namespace Bloom.web.controllers
                     break;
 
                 case HttpMethods.Post:
-                    var dir = Path.GetDirectoryName(fullPath);
-                    if (!Directory.Exists(dir))
-                        Directory.CreateDirectory(dir);
-                    // Stream the body straight to disk: history images are multi-MB, so don't
-                    // buffer them whole in memory (RawPostData would). Land the bytes in a
-                    // temp file and swap it in, so an upload that dies partway can't leave a
-                    // truncated file where a previous good one was. An empty body is a valid
-                    // save of an empty file, not a no-op: the AI image editor must never be
-                    // told "saved" while stale content survives on disk.
-                    var tempPath = fullPath + ".tmp";
-                    using (var input = request.RawPostStream)
-                    using (var output = RobustFile.Create(tempPath))
-                    {
-                        // RawPostStream is null for an empty body (no entity body); that
-                        // still means "save an empty file" here, so just leave the freshly
-                        // created temp file empty rather than copying.
-                        input?.CopyTo(output);
-                    }
-                    RobustFile.Move(tempPath, fullPath, true); // true: overwrite
+                    WriteRequestBodyToFile(fullPath, request.RawPostStream);
                     request.PostSucceeded();
                     break;
 
                 case HttpMethods.Delete:
-                    if (RobustFile.Exists(fullPath))
-                        RobustFile.Delete(fullPath);
+                    // Under the file's lock like the write, so a delete can't land in the
+                    // middle of one (see WriteRequestBodyToFile).
+                    lock (GetFileLock(fullPath))
+                    {
+                        if (RobustFile.Exists(fullPath))
+                            RobustFile.Delete(fullPath);
+                    }
                     request.PostSucceeded();
                     break;
 
@@ -461,6 +616,138 @@ namespace Bloom.web.controllers
                         "Method not allowed"
                     );
                     break;
+            }
+        }
+
+        // One lock object per file this session has written or deleted under
+        // .ai-image-editor. Tiny (a handful of history files per book) and never cleaned up,
+        // deliberately: a lock we discarded while a request still held it would be no lock at
+        // all. Case-insensitive because the keys are Windows paths.
+        private static readonly Dictionary<string, object> _locksByFilePath = new Dictionary<
+            string,
+            object
+        >(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// The lock object that serializes CHANGES to one file of the AI image editor's folder
+        /// (see <see cref="WriteRequestBodyToFile"/> for why they have to be serialized). A GET
+        /// deliberately doesn't take it: a read can't corrupt anything, and making a response
+        /// stream wait behind a multi-MB upload would cost more than it saves. What a read can
+        /// hit is the moment of the swap — RobustFile.Move(overWrite) is a delete followed by a
+        /// move, not an atomic replace, so a GET landing in that window can 404 — but that
+        /// window is as old as this endpoint, and nothing reads a file while writing it: the AI
+        /// image editor GETs history files when it starts, and writes them when it generates or
+        /// commits.
+        /// </summary>
+        private static object GetFileLock(string fullPath)
+        {
+            lock (_locksByFilePath)
+            {
+                if (!_locksByFilePath.TryGetValue(fullPath, out var fileLock))
+                {
+                    fileLock = new object();
+                    _locksByFilePath[fullPath] = fileLock;
+                }
+                return fileLock;
+            }
+        }
+
+        /// <summary>
+        /// Saves a POST to <see cref="HandleFile"/> at <paramref name="fullPath"/>, creating
+        /// its folder if needed. Takes ownership of <paramref name="body"/> (the request's post
+        /// stream) and disposes it.
+        ///
+        /// The body is streamed straight to disk, because history images are multi-MB and we
+        /// don't want to buffer them whole in memory (RawPostData would). It lands in a temp
+        /// file which is then swapped in, so an upload that dies partway can't leave a
+        /// truncated file where a previous good one was. An empty body is a valid save of an
+        /// empty file, not a no-op: the AI image editor must never be told "saved" while stale
+        /// content survives on disk.
+        ///
+        /// Writes to a given file are SERIALIZED within this process (which is all Bloom needs:
+        /// one Bloom has a given collection open), because two of them for the same file are
+        /// ordinary traffic from the AI image editor, not a pathological case (BL-16702): one
+        /// generated image assigned to two book-image slots makes its commit call putFile once
+        /// per slot, concurrently (Promise.all), and both calls name the same
+        /// history/&lt;resultId&gt;.png. Unserialized, the two collided on the shared temp path
+        /// — RobustFile.Create opens with FileShare.None and, unlike most of RobustFile, does
+        /// not retry — so the loser threw IOException, which the API layer turns into a 503
+        /// "Cannot access ..." plus a yellow box. The AI image editor reports that as "Failed
+        /// to write host file", and since it writes all the files before posting the commit,
+        /// ONE such failure abandoned the whole commit: the user's Replace did nothing at all.
+        ///
+        /// Note that serializing those duplicate writes is all we do about them: the AI image
+        /// editor still sends the same bytes once per slot, so one image in four slots posts the
+        /// same few MB four times. We are deliberately not asking it to send each result only
+        /// once (JohnThomson's call, BL-16702): using one picture in several places is expected
+        /// to be rare, and when it happens the picture is likely to be a small decorative one,
+        /// so the wasted bandwidth isn't worth optimizing — especially as it is bandwidth to
+        /// localhost.
+        ///
+        /// Internal for testing.
+        /// </summary>
+        internal static void WriteRequestBodyToFile(string fullPath, Stream body)
+        {
+            var directory = Path.GetDirectoryName(fullPath);
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+            lock (GetFileLock(fullPath))
+            {
+                var tempPath = fullPath + ".tmp";
+                var reachedTheSwap = false;
+                try
+                {
+                    using (body)
+                    using (var output = RobustFile.Create(tempPath))
+                    {
+                        // The body stream is null for an empty body (no entity body); that
+                        // still means "save an empty file" here, so just leave the freshly
+                        // created temp file empty rather than copying.
+                        body?.CopyTo(output);
+                    }
+                    reachedTheSwap = true;
+                    RobustFile.Move(tempPath, fullPath, true); // true: overwrite
+                }
+                finally
+                {
+                    // An upload that died partway (the client went away, the disk filled up)
+                    // must not leave its half-written temp behind. Nothing would ever serve or
+                    // enumerate it — the name is neither allow-listed nor an image extension —
+                    // but it can be multi-MB, and it would sit in the book's folder for the
+                    // life of the book. The file it was going to replace is untouched, so the
+                    // temp is all there is to clean up.
+                    //
+                    // A failure in the SWAP is the one case we leave alone, because there the
+                    // temp may be the only copy of the bytes left: Move(overWrite) deletes the
+                    // destination and then moves, so a failure between those two steps has
+                    // already taken the old file with it. A stray temp is much the lesser evil
+                    // — and the next write of this file overwrites it anyway. (Devin spotted
+                    // that tidying up unconditionally could throw away both copies.)
+                    if (!reachedTheSwap)
+                        DeleteTempFileIgnoringErrors(tempPath);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes the temp file left by a failed write. Deliberately swallows anything that
+        /// goes wrong: we are already on our way out with the real exception — the one the
+        /// caller needs and the one that becomes the request's error — and failing to tidy up
+        /// must not replace it with a less informative one.
+        /// </summary>
+        private static void DeleteTempFileIgnoringErrors(string tempPath)
+        {
+            try
+            {
+                if (RobustFile.Exists(tempPath))
+                    RobustFile.Delete(tempPath);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError(
+                    $"AiImageEditorApi: could not remove the temp file {tempPath} left behind by a failed write",
+                    e
+                );
             }
         }
 

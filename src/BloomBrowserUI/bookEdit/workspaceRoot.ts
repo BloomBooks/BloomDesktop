@@ -52,6 +52,7 @@ export interface IWorkspaceExports {
     showAboutDialogFromWorkspaceRoot(): void;
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
     showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
+    openAiImageEditor(target: IAiImageEditorTarget): void;
 }
 
 export function SayHello() {
@@ -82,6 +83,12 @@ import type { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import { showImageGalleryDialog as doShowImageGalleryDialog } from "../react_components/image-gallery/ImageGalleryDialog";
+// The AI Image Editor overlay belongs up here, not in the page iframe, because saving the
+// page reloads that iframe and would strand the overlay; C# calls this once it has saved.
+// See aiEditorOverlay.ts.
+import { openAiImageEditor } from "./aiImageEditor/aiEditorOverlay";
+import type { IAiImageEditorTarget } from "./aiImageEditor/aiEditorShared";
+export { openAiImageEditor };
 import { renderRoot } from "../utils/reactRender";
 import { FunctionComponentElement } from "react";
 import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
@@ -427,6 +434,7 @@ interface WorkspaceBundleApi {
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
     showAdjustTimingsDialogFromWorkspaceRoot: typeof showAdjustTimingsDialogFromWorkspaceRoot;
     showImageGalleryDialog: typeof showImageGalleryDialog;
+    openAiImageEditor: typeof openAiImageEditor;
     setZoom: typeof setZoom;
     getToolboxBundleExports: typeof getToolboxBundleExports;
     getEditablePageBundleExports: typeof getEditablePageBundleExports;
@@ -471,6 +479,7 @@ window.workspaceBundle = {
     showAdjustTimingsDialogFromWorkspaceRoot:
         showAdjustTimingsDialogFromWorkspaceRoot,
     showImageGalleryDialog,
+    openAiImageEditor,
     setZoom,
     // re-exported cross-frame helpers
     getToolboxBundleExports,

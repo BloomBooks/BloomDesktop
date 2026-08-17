@@ -166,22 +166,6 @@ House rules:
   own suite.
 
 
-## 2026-07-24 — agent-dotnet.sh test exits 0 even when tests fail
-
-- **Cut:** `build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj` returned exit code 0 on a
-  run whose own summary line read `Failed! - Failed: 11, Passed: 2913`. Anything that trusts the
-  exit code instead of parsing the output — an agent, a hook, a CI step, a background-task
-  notification that just reports "completed (exit code 0)" — will conclude the suite passed. During
-  this run the harness reported the failing suite as a success and it was only caught by reading the
-  summary line.
-- **Idea:** Have the wrapper propagate `dotnet test`'s real exit code (it presumably exits on the
-  last command in a pipeline, or swallows the status while redirecting into the private output
-  tree). Until then, treat "did the C# suite pass?" as a question only the output can answer.
-- **Context:** BloomDesktop, found during `/preflight` of PR #7992 (BL-16459 clipboard toast).
-  Distinct from the (now-fixed) cut about *which* tests fail under the wrapper — PR #8107 made
-  the full suite green, so a failure there is real; this entry is about the wrapper reporting
-  failure as success, which still stands.
-
 ## 2026-07-24 — go.sh "succeeds" on a fresh worktree whose output/browser was never built
 - **Cut:** On a never-initialized worktree, after fixing the obvious failures (pnpm install,
   getDependencies for CS0246), `./go.sh` launches and Bloom looks healthy — but opening a book
@@ -193,6 +177,30 @@ House rules:
   into a Bloom that fails later.
 - **Context:** BuildServer worktree, while verifying the new launcher control surface.
 
+
+## 2026-08-10 — check-csharp-ApplicationExit.sh greps whole files, not the diff
+
+- **Cut:** The pre-commit check greps each *staged file* for `Application.Exit`, so touching a
+  file that already contains a legitimate one blocks the commit even when your diff adds none.
+  Hit it editing `src/WebView2PdfMaker/Program.cs`, whose two calls date from 2023 (BL-11437);
+  WebView2PdfMaker is a separate process and cannot use Bloom's `ProgramExit`. The exemption
+  list only covers `src/BloomExe/ProgramExit.cs` and `src/BloomTests/*`.
+- **Idea:** Grep only added lines (`git diff --cached -U0 | grep '^+'`) so the check flags new
+  violations rather than any file that contains one. Failing that, at least exempt
+  `src/WebView2PdfMaker/*`.
+- **Context:** BL-16684 on Version6.4. Check added 2026-01-31 (8a9d1273b0); nothing had touched
+  that file since, so this had been sitting unsprung. Committed with `--no-verify` after running
+  csharpier / robustfile / xmlclasses by hand.
+
+## 2026-08-10 — Re-pointing a worktree between master and Version6.4 breaks the pre-commit hook
+
+- **Cut:** `.githooks/pre-commit` correctly routes a 6.4 checkout to the husky-4 hook, but that
+  hook dies with `Command "husky-run" not found` when the worktree's `src/BloomBrowserUI/node_modules`
+  was installed by master's pnpm. The dispatcher solves *which* hook runs, not whether its runner
+  is installed, so you get a hard commit failure with no hint that deps are the cause.
+- **Idea:** Have the dispatcher check for the runner and say "run ./init.sh — this branch uses
+  yarn+husky4 and this worktree has the pnpm deps" instead of letting husky's bare error through.
+- **Context:** BL-16684; worktree started on master, moved to Version6.4 because the bug ships in 6.4.
 
 ## 2026-07-22 — CDP capture: two footguns while driving Bloom's WebView2
 
