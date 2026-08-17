@@ -514,61 +514,22 @@ export class EditableDivUtils {
     // "fl" vanishes (BL-16717).
     // So whenever we take bookmarks out again, put the text back the way we found it.
     // Note that repairing the DOM is not on its own enough to repair the display: see
-    // mergeAdjacentTextNodeRuns() for why we rebuild the text rather than call normalize().
-    // Preserving the insertion point is our job too. The DOM spec does require text-node
-    // merging to keep live ranges - including the selection - on the same characters, but we
-    // don't want the user's cursor to depend on the browser getting that right, so we save and
-    // restore it ourselves.
+    // mergeAdjacentTextNodeRuns().
+    // We deliberately do NOT save and restore the insertion point around this. The DOM spec
+    // requires text-node merging to keep live ranges - including the selection - on the same
+    // characters, and Chromium does: checked in a running Bloom, with the caret both at the
+    // split itself and immediately after a <strong>, it comes out on exactly the character it
+    // went in on. An earlier version here did its own save/restore out of caution, and that
+    // hand-rolled restore was itself the bug - a character offset cannot tell the end of a
+    // bold run from the start of the plain text after it, so the caret could hop back inside
+    // the bold text and the user's next letters would come out bold.
     // Callers should avoid making bookmarks at all when nothing is going to rewrite the box;
     // this is the repair for when we genuinely needed one.
     public static mergeTextNodesSplitByBookmarks(element: HTMLElement): void {
         if (!EditableDivUtils.hasAdjacentTextNodes(element)) {
-            return; // nothing to merge; leave the selection strictly alone
+            return; // nothing to merge; leave the box, and the selection, strictly alone
         }
-
-        const selection = element.ownerDocument.defaultView?.getSelection();
-        // Only our own box's selection is ours to restore.
-        const isOurs =
-            selection?.anchorNode &&
-            selection.focusNode &&
-            element.contains(selection.anchorNode) &&
-            element.contains(selection.focusNode);
-        const anchor = isOurs
-            ? EditableDivUtils.saveablePosition(
-                  selection!.anchorNode!,
-                  selection!.anchorOffset,
-              )
-            : undefined;
-        const focus = isOurs
-            ? EditableDivUtils.saveablePosition(
-                  selection!.focusNode!,
-                  selection!.focusOffset,
-              )
-            : undefined;
-
         EditableDivUtils.mergeAdjacentTextNodeRuns(element);
-
-        if (!selection || !anchor || !focus) {
-            return;
-        }
-        const restoredAnchor = EditableDivUtils.positionForCharacterOffset(
-            anchor.element,
-            anchor.characterOffset,
-        );
-        const restoredFocus = EditableDivUtils.positionForCharacterOffset(
-            focus.element,
-            focus.characterOffset,
-        );
-        if (!restoredAnchor || !restoredFocus) {
-            return; // no text to put it in; better to leave the selection where it landed
-        }
-        // setBaseAndExtent rather than a Range, so a backwards selection stays backwards.
-        selection.setBaseAndExtent(
-            restoredAnchor.node,
-            restoredAnchor.offset,
-            restoredFocus.node,
-            restoredFocus.offset,
-        );
     }
 
     // Merge each run of adjacent sibling text nodes back into one.
@@ -599,28 +560,29 @@ export class EditableDivUtils {
     // behind in the saved book.
     private static mergeAdjacentTextNodeRuns(element: HTMLElement): void {
         const doc = element.ownerDocument;
-        const parentsWithRuns = new Set<Element>();
+        // The first node of each run. normalize() merges the rest of a run into this one, so
+        // it is the node that survives - and so the only one whose painting can be stale.
+        // Collecting them lets us leave every other text node in the box completely untouched.
+        const startsOfRuns: Text[] = [];
         const walker = doc.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let previousWasInSameRun = false;
         for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-            if (node.nextSibling?.nodeType === Node.TEXT_NODE) {
-                // A text node always has a parent element here: we are walking inside element.
-                parentsWithRuns.add(node.parentElement!);
+            const startsARun =
+                !previousWasInSameRun &&
+                node.nextSibling?.nodeType === Node.TEXT_NODE;
+            if (startsARun) {
+                startsOfRuns.push(node as Text);
             }
+            previousWasInSameRun =
+                node.nextSibling?.nodeType === Node.TEXT_NODE;
         }
 
-        parentsWithRuns.forEach((parent) => {
-            parent.normalize();
-            for (
-                let child = parent.firstChild;
-                child;
-                child = child.nextSibling
-            ) {
-                if (child.nodeType === Node.TEXT_NODE) {
-                    const text = child as Text;
-                    text.insertData(text.length, " ");
-                    text.deleteData(text.length - 1, 1);
-                }
-            }
+        startsOfRuns.forEach((runStart) => {
+            // A text node always has a parent element here: we are walking inside element.
+            runStart.parentElement!.normalize();
+            // Write the node's own text back into it, which is what makes Chromium re-shape.
+            runStart.insertData(runStart.length, " ");
+            runStart.deleteData(runStart.length - 1, 1);
         });
     }
 
@@ -637,63 +599,6 @@ export class EditableDivUtils {
             }
         }
         return false;
-    }
-
-    // Express the DOM position (container, offset) in a way that survives merging text nodes:
-    // the element it is in, plus how many characters of that element's text precede it.
-    // A (node, offset) pair does not survive, and a character offset within the whole box
-    // does not identify the position uniquely - the end of one paragraph and the start of the
-    // next are the same number of characters in, but they are different places to be typing.
-    // normalize() never moves text out of the element it is in, so this stays exact.
-    private static saveablePosition(
-        container: Node,
-        offset: number,
-    ): { element: Element; characterOffset: number } | undefined {
-        const element =
-            container.nodeType === Node.ELEMENT_NODE
-                ? (container as Element)
-                : container.parentElement;
-        if (!element) {
-            return undefined;
-        }
-        const range = element.ownerDocument.createRange();
-        range.setStart(element, 0);
-        range.setEnd(container, offset);
-        // toString() gives just the characters of the text nodes in the range, which is
-        // exactly what positionForCharacterOffset() counts back through.
-        return { element, characterOffset: range.toString().length };
-    }
-
-    // The inverse of saveablePosition(): the text node and offset within it that
-    // characterOffset characters of text into root land on.
-    private static positionForCharacterOffset(
-        root: Node,
-        characterOffset: number,
-    ): { node: Text; offset: number } | undefined {
-        const walker = root.ownerDocument!.createTreeWalker(
-            root,
-            NodeFilter.SHOW_TEXT,
-        );
-        let remaining = characterOffset;
-        let lastTextNode: Text | undefined;
-        for (
-            let node = walker.nextNode() as Text | null;
-            node;
-            node = walker.nextNode() as Text | null
-        ) {
-            // <= so that an offset at the very end of a text node stays in that node rather
-            // than falling through to the start of the next one.
-            if (remaining <= node.length) {
-                return { node, offset: remaining };
-            }
-            remaining -= node.length;
-            lastTextNode = node;
-        }
-        // Shouldn't happen: we counted these same characters a moment ago. But if something
-        // did change, the end of the text is the least surprising place to be.
-        return lastTextNode
-            ? { node: lastTextNode, offset: lastTextNode.length }
-            : undefined;
     }
 
     public static restoreSelectionFromCkEditorBookmarks(

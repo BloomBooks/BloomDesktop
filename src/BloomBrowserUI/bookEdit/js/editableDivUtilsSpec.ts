@@ -353,89 +353,30 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
-    it("mergeTextNodesSplitByBookmarks keeps the insertion point on the same characters", () => {
+    // Where the user's cursor ends up is NOT asserted here, deliberately. Keeping live ranges
+    // (which includes the selection) on the same characters across a text-node merge is the
+    // browser's job per the DOM spec, and Chromium does it: verified in a running Bloom, with
+    // the caret both at the split itself and immediately after a <strong>. jsdom does not
+    // implement those range fixups, so a test here would fail on correct code and, worse, pass
+    // on the hand-rolled save/restore this code used to have - which was itself the bug.
+    it("mergeTextNodesSplitByBookmarks only touches parents that actually have a run to merge", () => {
+        // What we can assert is scope: every other node in the box comes out untouched, so
+        // there is nothing for the browser to have to fix up in the first place.
         const div = makeParagraphSplitByABookmark("overfflow", 5);
-        const p = div.firstChild as HTMLParagraphElement;
-        // Where ckeditor leaves the insertion point: the start of the second text node,
-        // which the user sees as being between the "ff" and the "low".
-        const selection = window.getSelection();
-        if (!selection) {
-            throw new Error("no selection available; cannot run this test");
-        }
-        selection.removeAllRanges();
-        const range = document.createRange();
-        range.setStart(p.childNodes[1], 0);
-        range.collapse(true);
-        selection.addRange(range);
-        // sanity check the setup
-        expect(selection.anchorNode).toBe(p.childNodes[1]);
-        expect(selection.anchorOffset).toBe(0);
+        const untouched = document.createElement("p");
+        untouched.appendChild(document.createTextNode("def"));
+        div.appendChild(untouched);
+        const untouchedTextNode = untouched.firstChild;
 
         EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
 
-        // Now there is only one text node, so the same insertion point is offset 5 in it.
-        expect(selection.rangeCount).toBe(1);
-        expect(selection.anchorNode).toBe(p.childNodes[0]);
-        expect(selection.anchorOffset).toBe(5);
-        expect(selection.isCollapsed).toBe(true);
-
-        div.remove();
-    });
-
-    it("mergeTextNodesSplitByBookmarks keeps a selected range on the same characters", () => {
-        const div = makeParagraphSplitByABookmark("overfflow", 5);
-        const p = div.firstChild as HTMLParagraphElement;
-        const selection = window.getSelection();
-        if (!selection) {
-            throw new Error("no selection available; cannot run this test");
-        }
-        selection.removeAllRanges();
-        const range = document.createRange();
-        // "rffl", which straddles the two text nodes.
-        range.setStart(p.childNodes[0], 3);
-        range.setEnd(p.childNodes[1], 2);
-        selection.addRange(range);
-        // sanity check the setup
-        expect(selection.toString()).toBe("rffl");
-
-        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
-
-        expect(selection.toString()).toBe("rffl");
-        expect(selection.anchorNode).toBe(p.childNodes[0]);
-        expect(selection.anchorOffset).toBe(3);
-        expect(selection.focusOffset).toBe(7);
-
-        div.remove();
-    });
-
-    it("mergeTextNodesSplitByBookmarks does not move the insertion point across a paragraph boundary", () => {
-        // A split left in the first paragraph, but the user is now typing at the start of the
-        // second one. Counting characters over the whole box would put the caret at the end of
-        // the first paragraph, which is the same number of characters in but a different place.
-        const div = makeParagraphSplitByABookmark("overfflow", 5);
-        const secondParagraph = document.createElement("p");
-        secondParagraph.appendChild(document.createTextNode("def"));
-        div.appendChild(secondParagraph);
-
-        const selection = window.getSelection();
-        if (!selection) {
-            throw new Error("no selection available; cannot run this test");
-        }
-        selection.removeAllRanges();
-        const range = document.createRange();
-        range.setStart(secondParagraph.firstChild!, 0);
-        range.collapse(true);
-        selection.addRange(range);
-        // sanity check the setup
-        expect(selection.anchorNode).toBe(secondParagraph.firstChild);
-
-        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
-
-        // the merge still happened in the first paragraph...
+        // the merge happened in the first paragraph...
         expect(div.firstChild!.childNodes.length).toBe(1);
-        // ...and the caret is still at the start of the second one.
-        expect(selection.anchorNode).toBe(secondParagraph.firstChild);
-        expect(selection.anchorOffset).toBe(0);
+        expect(div.firstChild!.textContent).toBe("overfflow");
+        // ...and the second paragraph still holds the very same text node object.
+        expect(untouched.childNodes.length).toBe(1);
+        expect(untouched.firstChild).toBe(untouchedTextNode);
+        expect(untouched.textContent).toBe("def");
 
         div.remove();
     });
