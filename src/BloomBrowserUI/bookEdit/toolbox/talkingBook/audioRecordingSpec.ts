@@ -1592,6 +1592,64 @@ describe("audio recording tests", () => {
         });
     });
 
+    describe("- canAdjustTimingsForCurrentTextBox()", () => {
+        // BL-16276: "Listen to the whole page" walks through every text box, but the Adjust
+        // Timings button's enabled state is not recalculated as it goes. So on a page mixing
+        // recording modes the button can still be clicked while a by-sentence box is current,
+        // and opening the dialog on such a box reproduces the very blank dialog we fixed.
+        const mixedModePage = (whichBoxIsCurrent: "textBox" | "sentence") => {
+            const textBoxCurrent =
+                whichBoxIsCurrent === "textBox" ? " ui-audioCurrent" : "";
+            const sentenceCurrent =
+                whichBoxIsCurrent === "sentence" ? " ui-audioCurrent" : "";
+            // Recorded by whole text box, soft split into highlight segments.
+            const wholeBox = `<div id="wholeBox" class="bloom-editable bloom-visibility-code-on audio-sentence bloom-postAudioSplit${textBoxCurrent}" lang="es" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0"><p><span id="seg1" class="bloom-highlightSegment">Uno.</span> <span id="seg2" class="bloom-highlightSegment">Dos.</span></p></div>`;
+            // Recorded sentence by sentence: one audio file per sentence, no box timings.
+            const sentenceBox = `<div id="sentenceBox" class="bloom-editable bloom-visibility-code-on" lang="en" data-audiorecordingmode="Sentence"><p><span id="sent1" class="audio-sentence${sentenceCurrent}">One.</span> <span id="sent2" class="audio-sentence">Two.</span></p></div>`;
+            return `<div class="bloom-translationGroup">${wholeBox}</div><div class="bloom-translationGroup">${sentenceBox}</div>`;
+        };
+
+        const makeRecorder = (mode: RecordingMode) => {
+            const recording = new AudioRecording();
+            recording.recordingMode = mode;
+            // Simulate the tool being visible so doesCurrentToolPlayAudio() returns true.
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            return recording;
+        };
+
+        it("says no when the current box is recorded by sentence", () => {
+            setupDefaultApiResponses();
+            SetupIFrameFromHtml(mixedModePage("sentence"));
+
+            // Sanity check the mid-Listen state: the highlight is inside the by-sentence box.
+            const current = getFrameElementById("page", "sent1")!;
+            expect(current, "test setup problem").toHaveClass(
+                "ui-audioCurrent",
+            );
+
+            // recordingMode is TextBox here on purpose: that is exactly the stale value left
+            // over from the box the user had selected before pressing Listen, which is why we
+            // must ask the box itself rather than trust the field.
+            const recording = makeRecorder(RecordingMode.TextBox);
+
+            expect(recording.canAdjustTimingsForCurrentTextBox()).toBe(false);
+        });
+
+        it("says yes when the current box is recorded by whole text box", () => {
+            setupDefaultApiResponses();
+            SetupIFrameFromHtml(mixedModePage("textBox"));
+
+            const current = getFrameElementById("page", "wholeBox")!;
+            expect(current, "test setup problem").toHaveClass(
+                "ui-audioCurrent",
+            );
+
+            const recording = makeRecorder(RecordingMode.TextBox);
+
+            expect(recording.canAdjustTimingsForCurrentTextBox()).toBe(true);
+        });
+    });
+
     describe("- initializeAudioRecordingMode()", () => {
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Text Box)", () => {
             SetupIFrameFromHtml(

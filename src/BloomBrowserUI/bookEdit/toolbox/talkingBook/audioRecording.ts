@@ -293,6 +293,18 @@ export default class AudioRecording implements IAudioRecorder {
                 // (BL-16276). Stopping properly also puts back the text we temporarily
                 // restructured for highlighting.
                 await this.stopPlaybackAsync();
+
+                // Which text box we end up on is not necessarily the one that was current when
+                // the user pressed Listen: "Listen to the whole page" walks through every box,
+                // and this button's enabled state is not recalculated as it goes. So on a page
+                // that mixes recording modes we can arrive here with a by-sentence box current,
+                // which would give us the very empty dialog this bug is about. The button-state
+                // refresh kicked off by stopPlaybackAsync() disables this button a moment
+                // later, so the user can see why nothing opened. (BL-16276)
+                if (!this.canAdjustTimingsForCurrentTextBox()) {
+                    return;
+                }
+
                 getWorkspaceBundleExports().showAdjustTimingsDialogFromWorkspaceRoot(
                     this.split,
                     this.editTimingsFileAsync,
@@ -1801,6 +1813,22 @@ export default class AudioRecording implements IAudioRecorder {
         this.listening = false;
         this.clearSubElementHighlightTimeout();
         this.getMediaPlayer().pause();
+    }
+
+    /**
+     * Does the Adjust Timings dialog apply to the text box that currently has the recording
+     * highlight? It only makes sense for a whole-text-box recording: a by-sentence box has one
+     * audio file per sentence and no whole-box timings, so the dialog would have no waveform
+     * and no segments to show. We ask the box itself rather than trusting the recordingMode
+     * field, which is re-derived as playback moves from box to box. (BL-16276)
+     */
+    public canAdjustTimingsForCurrentTextBox(): boolean {
+        const currentTextBox = this.getCurrentTextBox();
+        return (
+            !!currentTextBox &&
+            this.getRecordingModeOfTextBox(currentTextBox) ===
+                RecordingMode.TextBox
+        );
     }
 
     /**
