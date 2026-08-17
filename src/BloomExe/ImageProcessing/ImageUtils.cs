@@ -137,8 +137,8 @@ namespace Bloom.ImageProcessing
             if (!(imageInfo.Image is Bitmap bitmapImage))
                 return false;
 
-            // If the image already has partially transparent pixels, leave it alone.
-            if (HasAnyTransparentSampledPixel(bitmapImage))
+            // If the image already has any even partially transparent pixels, leave it alone.
+            if (HasTransparency(bitmapImage))
                 return false;
 
             // Summarize the image as a handful of dominant colors and check whether they
@@ -297,6 +297,13 @@ namespace Bloom.ImageProcessing
                 && (max - min) <= LineArtBackgroundMaxChroma;
         }
 
+        /// <summary>
+        /// Sample 100 pixels scattered across the image and return true iff any of them
+        /// are not fully opaque.  This isn't foolproof, but it is much faster than looking
+        /// at the whole image and good enough for our purposes in practice.  The transparent
+        /// images we care about are usually line art with a transparent background, so they
+        /// are more than 50% transparent and should be detected by this sampling.
+        /// </summary>
         private static bool HasAnyTransparentSampledPixel(Bitmap bitmap)
         {
             int yDelta = Math.Max(bitmap.Height / 10, 2);
@@ -1852,25 +1859,17 @@ namespace Bloom.ImageProcessing
             return false;
         }
 
-        // After the corner check comes up empty we sample this many further pixels, scattered over
-        // the whole image. The corner shortcut below is blind to a picture that is transparent only
-        // in its interior, and at least one caller acts destructively on a "no": the AI image
-        // editor re-encodes the picture as a JPEG and deletes the original, so a wrong answer there
-        // cannot be undone (BL-16645). Ten is deliberately small — a cheap extra net thrown over
-        // the rest of the image, not an exhaustive search, and negligible beside the 225 pixels the
-        // corner check already reads.
-        private const int ExtraScatteredPixelsToCheckForTransparency = 10;
-
         /// <summary>
         /// Check whether the image has any transparency.
         /// If it becomes too difficult or expensive to determine, we punt and return false.
         /// </summary>
         /// <remarks>
-        /// For a non-indexed bitmap this is a sample, not a proof: it reads the top-left corner and
-        /// then <see cref="ExtraScatteredPixelsToCheckForTransparency"/> further pixels spread over
-        /// the image. So a "true" is certain, while a "false" means "none of the pixels we looked at
-        /// was transparent" — a picture with a small transparent patch away from the corner can
-        /// still be missed. Callers that do something irreversible on a "false" should know that.
+        /// An indexed image is judged exactly, from its palette. A non-indexed bitmap is only
+        /// sampled, not proved: the top-left corner block, then up to a hundred more pixels on the
+        /// jittered grid <see cref="HasAnyTransparentSampledPixel"/> walks. So a "true" is certain,
+        /// while a "false" means only "none of the pixels we looked at was transparent" — a picture
+        /// with a small transparent patch that falls between the sampled points can still be
+        /// missed. Callers that do something irreversible on a "false" should know that.
         /// </remarks>
         public static bool HasTransparency(Image image)
         {
@@ -1910,21 +1909,14 @@ namespace Bloom.ImageProcessing
                         return true;
 
                 // The corner said nothing, but a picture can be transparent only in its interior —
-                // a subject knocked out of an otherwise opaque canvas, for instance. Spend a few
-                // more pixels scattered across the whole image before calling it opaque.
-                // The seed is fixed on purpose. The positions still need to be scattered rather
-                // than clustered like the corner scan, but a caller that deletes the original on a
-                // "no" must get the same answer for the same picture every time; an answer that
-                // varied from run to run would be harder to trust, and to reproduce, than one that
-                // is merely a bit narrow.
-                var scatter = new Random(1234);
-                for (int i = 0; i < ExtraScatteredPixelsToCheckForTransparency; ++i)
-                {
-                    var x = scatter.Next(bitmapImage.Width);
-                    var y = scatter.Next(bitmapImage.Height);
-                    if (bitmapImage.GetPixel(x, y).A != 255)
-                        return true;
-                }
+                // a subject knocked out of an otherwise opaque canvas, for instance. So spend the
+                // hundred-odd pixels this helper samples across the whole image before calling it
+                // opaque. Its jitter seed is hardcoded, which matters here: a caller that deletes
+                // the original on a "no" must get the same answer for the same picture every time,
+                // and an answer that varied between runs would be harder to trust, and to
+                // reproduce, than one that is merely a sample.
+                if (HasAnyTransparentSampledPixel(bitmapImage))
+                    return true;
 
                 return false;
             }
@@ -3070,7 +3062,18 @@ namespace Bloom.ImageProcessing
             return width > 0;
         }
 
-        private static string TrimMetadataInImage(string srcPath, string destPath)
+        /// <summary>
+        /// Copy the handful of intellectual-property and collection fields Bloom cares about from
+        /// one image file onto another, discarding everything else the source carried. Used both
+        /// when trimming an image on its way into a publication and to carry an image's credits
+        /// across a re-encode that would otherwise lose them — GraphicsMagick does not preserve
+        /// them when it rewrites a PNG as a JPEG (BL-16645).
+        /// </summary>
+        /// <remarks>
+        /// Never throws: whatever goes wrong is logged, because losing the credits is bad but
+        /// failing the operation that was copying them is worse.
+        /// </remarks>
+        internal static string TrimMetadataInImage(string srcPath, string destPath)
         {
             // Try to reduce the metadata to just what we want for intellectual property and
             // collection information.

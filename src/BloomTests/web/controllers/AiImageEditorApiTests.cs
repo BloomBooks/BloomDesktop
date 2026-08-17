@@ -594,6 +594,63 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
+        public void ConvertPngToJpeg_Converted_CarriesTheCreditsOntoTheJpeg()
+        {
+            // GraphicsMagick does not preserve credits when it rewrites a PNG as a JPEG, and an
+            // uploaded result can arrive with the user's own credits embedded in it. Nothing
+            // downstream would put them back — EmbedCreditsInNewImageFile writes only the credits
+            // the AI editor explicitly sent — so losing them here would quietly strip a
+            // photographer's copyright.
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+            var newPath = Path.Combine(_bookFolder.Path, newName);
+            using (var img = PalasoImage.FromFileRobustly(newPath))
+            {
+                img.Metadata.Creator = "Jane Doe";
+                img.Metadata.CopyrightNotice = "Copyright 2020 Jane Doe";
+                img.Metadata.License = new CreativeCommonsLicense(
+                    true,
+                    true,
+                    CreativeCommonsLicense.DerivativeRules.Derivatives
+                );
+                RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
+            }
+            // Sanity: the credits really are in the PNG, so a match below isn't two blanks agreeing.
+            var before = Metadata.FromFile(newPath);
+            Assert.That(before.Creator, Is.EqualTo("Jane Doe"), "setup");
+            Assert.That(before.CopyrightNotice, Is.EqualTo("Copyright 2020 Jane Doe"), "setup");
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            // Sanity: it really did convert, or there would be no re-encode to lose anything.
+            Assert.That(
+                Path.GetExtension(result),
+                Is.EqualTo(".jpg"),
+                "setup: this case must convert for the test to mean anything"
+            );
+            var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, result));
+            Assert.That(
+                after.Creator,
+                Is.EqualTo("Jane Doe"),
+                "the creator must survive the re-encode"
+            );
+            Assert.That(
+                after.CopyrightNotice,
+                Is.EqualTo("Copyright 2020 Jane Doe"),
+                "the copyright must survive the re-encode"
+            );
+            Assert.That(
+                after.License?.Token,
+                Is.EqualTo("cc-by"),
+                "and so must the licence, which otherwise degrades to 'ask permission'"
+            );
+        }
+
+        [Test]
         public void ConvertPngToJpeg_PngTransparentOnlyInTheMiddle_IsLeftAlone()
         {
             // The case the corner-only check used to miss (BL-16645): a subject knocked out of an

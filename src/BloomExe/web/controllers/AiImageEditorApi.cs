@@ -1200,12 +1200,14 @@ namespace Bloom.web.controllers
         /// otherwise <paramref name="newFileName"/> unchanged. Internal for testing.
         /// </summary>
         /// <remarks>
-        /// Only call this for a freshly generated/uploaded result, whose credits
-        /// <see cref="EmbedCreditsInNewImageFile"/> writes into whatever file we end up with. A
-        /// REUSED book image instead carries the credits already embedded in its own file and
-        /// nothing re-writes them afterwards, and re-encoding runs the file through
-        /// GraphicsMagick, which can drop them — the same reason the reuse path doesn't resize
-        /// (see <see cref="ImportImageIntoBookFolder"/>'s resizeIfNeeded).
+        /// Only called for a freshly generated or uploaded result; a REUSED book image is left
+        /// alone. That is a deliberate scope line rather than a technical necessity, and the
+        /// original reason for it — that re-encoding would lose the credits embedded in a reused
+        /// image, which nothing on that path re-writes — no longer applies now that we carry the
+        /// credits across the conversion ourselves. What is left is simply that the bug this fixes
+        /// is about a generated result bloating a book, and a reused image was already
+        /// import-processed on its own way in. Widening it is a judgement call for a human, not an
+        /// oversight: see the review thread on PR #8188.
         /// </remarks>
         internal static string ConvertPngToJpegIfItBloatsTheJpegItReplaces(
             string bookFolderPath,
@@ -1287,6 +1289,14 @@ namespace Bloom.web.controllers
                 }
                 return newFileName;
             }
+            // Carry the credits across before the PNG goes away. GraphicsMagick does not preserve
+            // them when it rewrites a PNG as a JPEG — measured, not assumed: creator, copyright and
+            // licence all come back empty. That matters because an UPLOADED result can arrive with
+            // the user's own credits embedded in it, and nothing downstream would put them back:
+            // EmbedCreditsInNewImageFile writes only the credits the AI editor explicitly sent, and
+            // only when it sent any. So without this, uploading a credited photo and having it
+            // re-encoded would quietly strip its copyright (BL-16645, and John's review of #8188).
+            ImageUtils.TrimMetadataInImage(newPath, jpegPath);
             // Nothing references the PNG now, and leaving it in the book folder would keep
             // exactly the bulk we just converted away from. But a momentarily locked file (a
             // virus scanner, the host still serving it) must not abort the commit: we already
