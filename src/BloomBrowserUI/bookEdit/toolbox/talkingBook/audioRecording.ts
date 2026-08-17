@@ -287,8 +287,12 @@ export default class AudioRecording implements IAudioRecorder {
         delegationRoot
             .off("click" + ns, "#audio-split")
             .on("click" + ns, "#audio-split", async () => {
-                const mediaPlayer = this.getMediaPlayer();
-                mediaPlayer.pause();
+                // Merely pausing the audio is not enough: while playback is in progress the
+                // highlight sits on the sentence being played rather than on the text box,
+                // and the dialog would then have no segments and no audio file to show
+                // (BL-16276). Stopping properly also puts back the text we temporarily
+                // restructured for highlighting.
+                await this.stopPlaybackAsync();
                 getWorkspaceBundleExports().showAdjustTimingsDialogFromWorkspaceRoot(
                     this.split,
                     this.editTimingsFileAsync,
@@ -1792,11 +1796,43 @@ export default class AudioRecording implements IAudioRecorder {
 
     // This is currently used in Motion, which removes all the current
     // audio markup afterwards. If we use it in this tool, we need to do more,
-    // such as setting the current state of controls.
+    // such as setting the current state of controls. See stopPlaybackAsync().
     public stopListen(): void {
         this.listening = false;
         this.clearSubElementHighlightTimeout();
         this.getMediaPlayer().pause();
+    }
+
+    /**
+     * Fully stops any playback in progress (Play/Check or Listen to the Whole Page),
+     * leaving things in the state they would be in had the playback finished normally:
+     * no pending highlight timeouts, empty play queues, the highlight back on the element
+     * we RECORD rather than on whichever sub-segment was being played, the temporary
+     * highlighting markup reverted, and the buttons no longer showing play as active.
+     * Callers that need the page to be in a settled state before they do something else
+     * (e.g. opening the Adjust Timings dialog, BL-16276) should await this.
+     */
+    public async stopPlaybackAsync(): Promise<void> {
+        this.stopListen();
+        // Rewind and empty the play queues, so that a later Play starts over rather than
+        // trying to resume something we have now discarded.
+        this.resetAudioIfPaused();
+
+        // While playing in text box mode we move ui-audioCurrent onto each sub-segment
+        // (sentence) in turn. Put it back on the recording element, since that is what the
+        // rest of the tool, and the Adjust Timings dialog, expect to find it on.
+        const currentTextBox = this.getCurrentTextBox();
+        if (currentTextBox) {
+            await this.setCurrentAudioElementBasedOnRecordingModeAsync(
+                currentTextBox,
+            );
+        }
+
+        this.revertFixHighlighting();
+
+        // As in playEndedAsync(), Split is the natural next step. ("next" is automatically
+        // substituted for "split" if we're in a mode where "split" does not apply.)
+        return this.changeStateAndSetExpectedAsync("split");
     }
 
     private async playEndedAsync(): Promise<void> {

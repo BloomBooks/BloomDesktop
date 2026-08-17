@@ -1522,6 +1522,43 @@ describe("audio recording tests", () => {
         });
     });
 
+    describe("- stopPlaybackAsync()", () => {
+        // BL-16276: clicking Adjust Timings while the audio was playing produced an empty
+        // dialog, because while playing we put ui-audioCurrent on the sentence being played
+        // instead of on the text box that the dialog needs to work from.
+        it("stopPlaybackAsync moves the highlight from the playing sentence back to the text box", async () => {
+            setupDefaultApiResponses();
+            const segments =
+                '<p><span id="seg1" class="bloom-highlightSegment">Sentence 1.</span> <span id="seg2" class="bloom-highlightSegment ui-audioCurrent">Sentence 2.</span></p>';
+            const textBox = `<div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence bloom-postAudioSplit" lang="es" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0">${segments}</div>`;
+            SetupIFrameFromHtml(
+                `<div class="bloom-translationGroup">${textBox}</div>`,
+            );
+
+            const recording = new AudioRecording();
+            recording.recordingMode = RecordingMode.TextBox;
+            // Simulate the tool being visible so doesCurrentToolPlayAudio() returns true.
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+
+            const box = getFrameElementById("page", "box1")!;
+            const playingSegment = getFrameElementById("page", "seg2")!;
+            // Sanity checks that we really start out in the mid-playback state this is about.
+            expect(playingSegment, "test setup problem").toHaveClass(
+                "ui-audioCurrent",
+            );
+            expect(box, "test setup problem").not.toHaveClass(
+                "ui-audioCurrent",
+            );
+
+            // System under test
+            await recording.stopPlaybackAsync();
+
+            // Verification
+            expect(box).toHaveClass("ui-audioCurrent");
+            expect(playingSegment).not.toHaveClass("ui-audioCurrent");
+        });
+    });
+
     describe("- initializeAudioRecordingMode()", () => {
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Text Box)", () => {
             SetupIFrameFromHtml(
