@@ -158,26 +158,41 @@ namespace Bloom.web
 
             if (page != null)
             {
-                // Run it here and now. We are already on the UI thread (this endpoint is
-                // registered with handleOnUiThread), so there is nothing to marshal.
+                // Queue the command to run once we have replied, rather than running it inline.
+                // That is not politeness: "Duplicate Many Times" and "Choose Different Layout" open
+                // MODAL dialogs whose content this same server has to serve, and this handler holds
+                // the API sync lock until it returns. Running them inline would deadlock.
                 //
-                // This used to be deferred 100ms "to let the UI respond", from back when the
-                // command's first act was to ask the browser for the page content and wait for it.
-                // It no longer does: the content arrived with this request. The delay had become a
-                // window in which the user could type something that the snapshot we are about to
-                // save does not contain, so it costs rather than helps (BL-13502). The menu closes
-                // on the browser side the moment it posts, so it does not need us to wait either.
-                try
+                // We are already on the UI thread (this endpoint is registered with
+                // handleOnUiThread), so BeginInvoke simply puts this after the current message --
+                // it returns at once, we reply, the lock is released, and then the command runs.
+                //
+                // There used to be an extra `await Task.Delay(100)` here "to let the UI respond".
+                // That dated from when the command's first act was to ask the browser for the page
+                // content and wait for it. The content now arrives with this request, so all the
+                // delay did was widen the window in which the user could type something the
+                // snapshot does not contain (BL-13502). The menu closes on the browser side the
+                // moment it posts, so it never needed us to wait either.
+                var form = Shell.GetShellOrOtherOpenForm();
+                if (form != null && !form.IsDisposed)
                 {
-                    PageList.ExecuteContextMenuCommand(page, commandId, pageContent);
-                }
-                catch (Exception ex)
-                {
-                    // Log the error.  Should we notify the user as well?
-                    Logger.WriteEvent(
-                        $"Error executing content menu command for {commandId} on page {pageId}"
+                    form.BeginInvoke(
+                        new Action(() =>
+                        {
+                            try
+                            {
+                                PageList.ExecuteContextMenuCommand(page, commandId, pageContent);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Log the error.  Should we notify the user as well?
+                                Logger.WriteEvent(
+                                    $"Error executing content menu command for {commandId} on page {pageId}"
+                                );
+                                Logger.WriteError(ex);
+                            }
+                        })
                     );
-                    Logger.WriteError(ex);
                 }
             }
 
