@@ -242,7 +242,7 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         commitAndReplyFromHost(postFromEditor, true);
         await vi.waitFor(() => expect(error).toHaveBeenCalled());
 
-        expect(error.mock.calls[0][0]).toContain("declined to save");
+        expect(error.mock.calls[0][0]).toContain("was not saved");
         error.mockRestore();
     });
 

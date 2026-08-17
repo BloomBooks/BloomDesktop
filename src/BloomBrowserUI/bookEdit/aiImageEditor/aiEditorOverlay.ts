@@ -356,9 +356,16 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                                 "old image(s), so editing these again in this session may report " +
                                                 "that nothing matched.",
                                         );
-                                    // All three ways this can go wrong have to say so, not just
-                                    // the refusal: the page frame may be gone (the optional call
-                                    // then yields nothing at all), and the request itself can fail.
+                                    // Every way this can go wrong has to say so, not just the
+                                    // refusal: the page frame may be gone (the optional call then
+                                    // yields nothing at all), and the request itself can fail.
+                                    //
+                                    // Note we deliberately do NOT claim which of those happened
+                                    // when we simply get back "not saved". A failed request does
+                                    // not reject: bloomApi's wrapAxios catches it (and reports the
+                                    // network error itself), so it arrives here as a false exactly
+                                    // like a refusal does. The rejection handler below is kept for
+                                    // the day that changes, but it is not what fires today.
                                     const save =
                                         getEditablePageBundleExports()?.savePageWithoutReloading();
                                     if (!save) {
@@ -370,7 +377,8 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                             (saved) => {
                                                 if (!saved)
                                                     complain(
-                                                        "Bloom declined to save the page",
+                                                        "the page was not saved (Bloom declined, " +
+                                                            "or the request failed)",
                                                     );
                                             },
                                             (error) =>
