@@ -1325,10 +1325,10 @@ namespace Bloom.web.controllers
                 // so there would be nothing to put them back.
                 resizeIfNeeded: !string.IsNullOrEmpty(replacement.resultId)
             );
-            // A generated result often arrives as a PNG for a slot the book held as a JPEG,
+            // A generated result can arrive as a PNG for a slot the book held as a JPEG,
             // which can be several times the size; re-encode it as a JPEG when that wins
-            // enough to be worth it (BL-16645). Only for a freshly generated/uploaded result —
-            // see the remarks on the helper for why a reused image is left alone.
+            // enough to be worth it (BL-16645).  A REUSED image is already in the book
+            // folder in the appropriate format, so we don't touch it.
             if (!string.IsNullOrEmpty(replacement.resultId))
                 newFileName = ConvertPngToJpegIfItBloatsTheJpegItReplaces(
                     book.FolderPath,
@@ -1465,7 +1465,7 @@ namespace Bloom.web.controllers
         private const double PngBloatRatioWorthReencoding = 1.5;
 
         /// <summary>
-        /// The AI image editor commonly returns a PNG for a slot the book held as a JPEG, and a
+        /// The AI image editor can return a PNG for a slot the book held as a JPEG, and a
         /// photographic PNG can be several times the size of the JPEG it replaced — the very
         /// bloat <see cref="ImportImageIntoBookFolder"/> exists to avoid (BL-16645). So when the
         /// file we just imported is a PNG substantially bigger than the JPEG it supersedes,
@@ -1475,26 +1475,20 @@ namespace Bloom.web.controllers
         ///
         /// A PNG we can see is transparent is left alone whatever its size, because a JPEG cannot
         /// carry an alpha channel and converting one would permanently flatten its see-through
-        /// areas onto a solid background. Note the limit of "can see":
-        /// <see cref="ImageUtils.HasTransparency"/> samples an ordinary bitmap rather than proving
-        /// it opaque — the top-left corner plus a handful of pixels scattered over the rest — so a
-        /// PNG with a small transparent patch away from those points can still slip through and be
-        /// flattened. That residual gap is known and accepted; the scattered sampling was added
-        /// (BL-16645) precisely because the corner alone missed an interior-only cutout, which is
-        /// the case this path would otherwise destroy. See the review thread on PR #8188.
+        /// areas onto a solid background.  Note that checking the image for transparency does
+        /// an exhaustive scan of its pixels, which can take about 10 msec for the largest images
+        /// we store that are fully opaque (on a fast machine).  Any pixel that is less than fully
+        /// opaque makes the image "transparent" for our purposes, so we don't have to check every
+        /// pixel if we find one that is not fully opaque.  Checking for transparency is done only
+        /// when needed, and is still much faster than re-encoding a large PNG as a JPEG.
         ///
         /// Returns the name (no path) to use for the new file — the JPEG's if we converted,
         /// otherwise <paramref name="newFileName"/> unchanged. Internal for testing.
         /// </summary>
         /// <remarks>
-        /// Only called for a freshly generated or uploaded result; a REUSED book image is left
-        /// alone. That is a deliberate scope line rather than a technical necessity, and the
-        /// original reason for it — that re-encoding would lose the credits embedded in a reused
-        /// image, which nothing on that path re-writes — no longer applies now that we carry the
-        /// credits across the conversion ourselves. What is left is simply that the bug this fixes
-        /// is about a generated result bloating a book, and a reused image was already
-        /// import-processed on its own way in. Widening it is a judgement call for a human, not an
-        /// oversight: see the review thread on PR #8188.
+        /// Only called for a freshly generated or uploaded result; a REUSED book image is left alone.
+        /// The problem this method fixes is about a generated result bloating a book, and a reused
+        /// image is already in the book folder in the appropriate format.
         /// </remarks>
         internal static string ConvertPngToJpegIfItBloatsTheJpegItReplaces(
             string bookFolderPath,
