@@ -1821,11 +1821,20 @@ export default class AudioRecording implements IAudioRecorder {
         // While playing in text box mode we move ui-audioCurrent onto each sub-segment
         // (sentence) in turn. Put it back on the recording element, since that is what the
         // rest of the tool, and the Adjust Timings dialog, expect to find it on.
-        const currentTextBox = this.getCurrentTextBox();
-        if (currentTextBox) {
-            await this.setCurrentAudioElementBasedOnRecordingModeAsync(
-                currentTextBox,
-            );
+        // The conditions here are the same ones playEndedAsync() uses: in sentence mode the
+        // highlight is already on the element we record, so leave it wherever it was, and
+        // don't reset (and thereby activate) an element in a motion preview.
+        if (this.recordingMode === RecordingMode.TextBox) {
+            const currentTextBox = this.getCurrentTextBox();
+            if (
+                currentTextBox &&
+                !currentTextBox.closest("." + animateStyleName)
+            ) {
+                await this.setCurrentAudioElementBasedOnRecordingModeAsync(
+                    currentTextBox,
+                    false,
+                );
+            }
         }
 
         this.revertFixHighlighting();

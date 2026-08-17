@@ -1557,6 +1557,39 @@ describe("audio recording tests", () => {
             expect(box).toHaveClass("ui-audioCurrent");
             expect(playingSegment).not.toHaveClass("ui-audioCurrent");
         });
+
+        // In sentence mode the highlight is already on the element we record, so there is
+        // nothing to move it back to; dragging it to the first sentence would lose the
+        // user's place. (playEndedAsync() skips the same work for the same reason.)
+        it("stopPlaybackAsync leaves the highlight alone in sentence mode", async () => {
+            setupDefaultApiResponses();
+            const sentences =
+                '<p><span id="sent1" class="audio-sentence">Sentence 1.</span> <span id="sent2" class="audio-sentence ui-audioCurrent">Sentence 2.</span></p>';
+            const textBox = `<div id="box1" class="bloom-editable bloom-visibility-code-on" lang="es" data-audiorecordingmode="Sentence">${sentences}</div>`;
+            SetupIFrameFromHtml(
+                `<div class="bloom-translationGroup">${textBox}</div>`,
+            );
+
+            const recording = new AudioRecording();
+            recording.recordingMode = RecordingMode.Sentence;
+            // Simulate the tool being visible so doesCurrentToolPlayAudio() returns true.
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+
+            const first = getFrameElementById("page", "sent1")!;
+            const second = getFrameElementById("page", "sent2")!;
+            // Sanity check: the highlight starts on the second sentence, not the first.
+            expect(second, "test setup problem").toHaveClass("ui-audioCurrent");
+            expect(first, "test setup problem").not.toHaveClass(
+                "ui-audioCurrent",
+            );
+
+            // System under test
+            await recording.stopPlaybackAsync();
+
+            // Verification: still on the second sentence.
+            expect(second).toHaveClass("ui-audioCurrent");
+            expect(first).not.toHaveClass("ui-audioCurrent");
+        });
     });
 
     describe("- initializeAudioRecordingMode()", () => {
