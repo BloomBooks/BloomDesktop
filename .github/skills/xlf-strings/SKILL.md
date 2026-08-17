@@ -61,6 +61,13 @@ Example with context note:
 - **Never change the source text** of a translated entry unless you are certain it won't invalidate existing translations.
 - If you need to change the text or ID: mark the old entry with a `<note>` saying `obsolete as of <version>` and create a **new entry** with a new ID and the updated text. Find the current version in the `Version` property in `build/Bloom.proj`. Avoid this when possible.
 
+## Marking an entry obsolete, and when it may be deleted
+
+BL-16686 found four entries marked obsolete that were all still in use, so be careful with both halves of this:
+
+- **Only add the obsolete note once nothing references the entry.** Search before you write it: code (`l10nKey`, `l10nId`, `useL10n`, `GetString`), shipped content under `src/content` — note that sample shells are `.htm`, not `.html` — and the XLF files themselves. Page label ids in particular are composed at runtime (`"TemplateBooks.PageLabel." + label`), so a page's visible label text is what to grep for, not just the id. A wrong note is actively harmful: it tells the next cleanup pass to delete a string we still use.
+- **Do not delete an obsolete entry unless the developer explicitly asks you to.** Deleting drops the translations, and an entry is only safe to remove once the version in which it became obsolete has been promoted to Release — otherwise a shipped update to that older version loses the string. Determining that is a human judgment, so an agent should mark and leave, never tidy up on its own. When you are explicitly asked to delete the entries for a given version, delete only from `DistFiles/localization/en/`; leaving the translated files intact means re-adding an id later recovers its translations.
+
 ## Reviewing XLF changes in a PR
 
 When reviewing a PR that touches XLF files:

@@ -2366,12 +2366,6 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.ShowTail</note>
         <note>This checkbox indicates if a line tail should be shown or not.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style" sil:dynamic="true">
-        <source xml:lang="en">Style</source>
-        <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
-        <note>Refers to the STYLE of bubble used by the callout</note>
-        <note>obsolete as of 6.3, replaced by following</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ElementType" sil:dynamic="true">
         <source xml:lang="en">Element Type</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ElementType</note>
@@ -6451,11 +6445,6 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Quiz</source>
         <note>ID: TemplateBooks.PageLabel.Quiz</note>
         <note>Used in page preview for Comprehension Question pages. Should be short.</note>
-      </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Quiz Page" sil:dynamic="true">
-        <source xml:lang="en">Quiz Page</source>
-        <note>ID: TemplateBooks.PageLabel.Quiz Page</note>
-        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
         <source xml:lang="en">SIL-Cameroon</source>
