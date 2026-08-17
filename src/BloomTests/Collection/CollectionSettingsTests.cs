@@ -133,6 +133,39 @@ namespace BloomTests.Collection
         }
 
         /// <summary>
+        /// Renaming a collection by only adding a trailing period asks for the folder we already have.
+        /// There is nothing to do on disk, and saying "there is already a directory with the new name"
+        /// would stop Bloom reopening. See BL-16679.
+        /// </summary>
+        [Test]
+        public void RenameCollection_NewNameOnlyAddsAPeriod_IsANoOpAndReturnsTheExistingSettings()
+        {
+            var fromDirectory = Path.Combine(_folder.Path, "Same Name");
+            Directory.CreateDirectory(fromDirectory);
+            var settingsPath = Path.Combine(fromDirectory, "Same Name.bloomCollection");
+            RobustFile.WriteAllText(settingsPath, "<Collection version=\"0.2\"/>");
+            try
+            {
+                var result = CollectionSettings.RenameCollection(
+                    fromDirectory,
+                    fromDirectory + "."
+                );
+
+                Assert.That(result, Is.EqualTo(settingsPath));
+                Assert.That(
+                    Directory.Exists(fromDirectory),
+                    Is.True,
+                    "the folder should still be there, untouched"
+                );
+            }
+            finally
+            {
+                if (Directory.Exists(fromDirectory))
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(fromDirectory);
+            }
+        }
+
+        /// <summary>
         /// The settings file is not always named after the folder that holds it: renaming a collection
         /// folder leaves the old file name behind, and a collection whose name ends with a period gets
         /// a folder without it (BL-16679). Such collections are perfectly usable, so anything looking

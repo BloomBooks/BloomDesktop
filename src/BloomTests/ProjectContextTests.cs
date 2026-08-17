@@ -84,6 +84,46 @@ namespace BloomTests
             }
         }
 
+        /// <summary>
+        /// The trailing period has to come off here, not only in the desktop startup path: this is the
+        /// one place every caller passes through, including the command-line ones (creating artifacts,
+        /// bulk upload, font analytics). File APIs happily open the un-normalized spelling, so nothing
+        /// else notices — until a FileSystemWatcher gets it, which is the original bug. See BL-16679.
+        /// </summary>
+        [Test]
+        public void GetRealSettingsPath_FolderSpelledWithTrailingPeriod_ReturnsTheFolderOnDisk()
+        {
+            using (var parent = new TemporaryFolder("ProjectContextTests_CliPath"))
+            {
+                var realFolder = Path.Combine(parent.FolderPath, "Collection Name");
+                Directory.CreateDirectory(realFolder);
+                var realSettingsPath = Path.Combine(realFolder, "Collection Name..bloomCollection");
+                RobustFile.WriteAllText(realSettingsPath, "<Collection version=\"0.2\"/>");
+
+                // What a command-line caller is handed: the folder spelled with the period Windows
+                // dropped. Sanity check that file APIs are happy with it, which is why it survives.
+                var dottedPath = Path.Combine(
+                    parent.FolderPath,
+                    "Collection Name.",
+                    "Collection Name..bloomCollection"
+                );
+                Assert.That(
+                    RobustFile.Exists(dottedPath),
+                    Is.True,
+                    "file APIs normalize, which is exactly why the bad spelling goes unnoticed"
+                );
+
+                var result = ProjectContext.GetRealSettingsPath(dottedPath);
+
+                Assert.That(Path.GetDirectoryName(result), Is.EqualTo(realFolder));
+                Assert.That(
+                    Path.GetFileName(result),
+                    Is.EqualTo("Collection Name..bloomCollection"),
+                    "the settings file's own doubled period must survive"
+                );
+            }
+        }
+
         [Test]
         public void GetRealSettingsPath_ExpectedNameIsOnDisk_ReturnsItUnchanged()
         {

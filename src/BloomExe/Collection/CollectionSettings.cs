@@ -1055,6 +1055,13 @@ namespace Bloom.Collection
                 );
             }
 
+            // A rename that only adds a trailing period or space asks for the folder we already have,
+            // so there is nothing to do on disk. Say that, rather than falling into the "there is
+            // already a directory with the new name" complaint below, which would stop Bloom from
+            // reopening. Compared exactly, so that a change of letter case is still a real rename.
+            if (toDirectory == fromDirectory)
+                return FindSettingsFileInFolder(fromDirectory);
+
             if (Directory.Exists(toDirectory)) //there's already a folder taking this name
             {
                 throw new ApplicationException(
