@@ -68,10 +68,21 @@ export const BloomMessageBox: React.FunctionComponent<{
         }
     };
 
+    // Set once a keepDialogOpen button has been clicked. Every button then goes dead: the dialog
+    // is staying up only so the user can watch something finish, and clicking anything else at
+    // that point -- including the same button again -- would start a second attempt or walk away
+    // from one already running. Greying them out is also the only sign, so far, that the click
+    // registered at all.
+    const [waitingForSomething, setWaitingForSomething] = React.useState(false);
+
     const handleButtonClick = (button: IMessageBoxButton) => {
+        if (waitingForSomething) {
+            return;
+        }
         // A keepDialogOpen button starts something the user should be able to watch, so we just
         // report the click and leave the dialog up; C# closes it when the work is done.
         if (button.keepDialogOpen) {
+            setWaitingForSomething(true);
             postString("common/messageBoxButtonClicked", button.id);
             return;
         }
@@ -82,7 +93,7 @@ export const BloomMessageBox: React.FunctionComponent<{
         <BloomButton
             className={button.default ? "initialFocus" : ""}
             key={button.id}
-            enabled={true}
+            enabled={!waitingForSomething}
             l10nKey=""
             alreadyLocalized={true}
             hasText={true}

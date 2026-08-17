@@ -559,6 +559,11 @@ namespace Bloom.Collection
                 // this same dialog next launch, still asking for the same version, and the user can
                 // decide again from there. That is a little confusing and much simpler than a second
                 // message explaining a case most people will never be in.
+                //
+                // Ask for the restarting flavour of the install: the user asked to be upgraded, so
+                // leaving them at a closed program to start again themselves would be a poor end to
+                // it. This also gets Velopack's own progress bar while it installs.
+                ApplicationUpdateSupport.ArrangeToApplyUpdateAndRestart();
                 ReportUpgradeDownloaded(version);
                 return true;
             }
@@ -586,7 +591,7 @@ namespace Bloom.Collection
             var message = string.Format(
                 LocalizationManager.GetString(
                     "Collection.UpgradeDownloaded",
-                    "Bloom {0} has been downloaded. Bloom will now close to install it; please start it again.",
+                    "Bloom {0} has been downloaded. Bloom will now close, install it, and start up again.",
                     "{0} is the version number of the Bloom that was downloaded."
                 ),
                 downloadedVersion

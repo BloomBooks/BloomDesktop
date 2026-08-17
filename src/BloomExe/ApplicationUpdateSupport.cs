@@ -514,13 +514,30 @@ namespace Bloom
                     Label = action,
                     Callback = () =>
                     {
-                        _restartingAfterToastClicked = true;
-                        _bloomUpdateManager?.WaitExitThenApplyUpdates(null);
-                        Logger.WriteMinorEvent("shutting Bloom down in order to apply updates");
+                        ArrangeToApplyUpdateAndRestart();
                         restartBloom();
                     },
                 }
             );
+        }
+
+        /// <summary>
+        /// Hand the downloaded update to Velopack the way the "Restart Bloom to Update" toast does:
+        /// with the arguments that show Velopack's own progress bar while it installs and then bring
+        /// Bloom back by itself. The caller shuts Bloom down straight afterwards.
+        ///
+        /// The alternative, which the exit handler uses, applies the update quietly and does NOT
+        /// relaunch. That is right when the user was quitting anyway and wrong when they have just
+        /// asked to be upgraded, because it leaves them looking at a closed program having to start
+        /// it again themselves.
+        /// </summary>
+        internal static void ArrangeToApplyUpdateAndRestart()
+        {
+#if !__MonoCS__
+            _restartingAfterToastClicked = true;
+            _bloomUpdateManager?.WaitExitThenApplyUpdates(null);
+            Logger.WriteMinorEvent("shutting Bloom down in order to apply updates");
+#endif
         }
 
         // returns true if we should proceed with the update check.

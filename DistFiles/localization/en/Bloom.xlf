@@ -337,7 +337,7 @@
         <note>ID: Collection.UpgradeBloom</note>
       </trans-unit>
       <trans-unit id="Collection.UpgradeDownloaded" translate="no">
-        <source xml:lang="en">Bloom {0} has been downloaded. Bloom will now close to install it; please start it again.</source>
+        <source xml:lang="en">Bloom {0} has been downloaded. Bloom will now close, install it, and start up again.</source>
         <note>ID: Collection.UpgradeDownloaded</note>
         <note>{0} is the version number of the Bloom that was downloaded.</note>
       </trans-unit>
