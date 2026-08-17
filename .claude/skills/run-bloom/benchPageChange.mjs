@@ -10,9 +10,17 @@
 //   editable     -> the new page reports its id with CKEditor attached (usable)
 import { createRequire } from "node:module";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+// Find playwright through the repo's own copy, locating the repo from where THIS script lives
+// (.claude/skills/run-bloom/) rather than a hard-coded path -- otherwise it only runs on the
+// machine it was written on.
+const repoRoot = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../../..",
+);
 const r = createRequire(
     path.join(
-        "C:/github/BloomDesktop",
+        repoRoot,
         "src/BloomBrowserUI/react_components/component-tester/package.json",
     ),
 );
@@ -25,7 +33,9 @@ const PAGES = [
 ];
 const ITERATIONS = Number(process.argv[2] ?? 8);
 
-const b = await chromium.connectOverCDP("http://127.0.0.1:8091");
+// The launcher picks the CDP port; pass it in when it is not the usual one.
+const cdpPort = process.env.BLOOM_CDP_PORT ?? 8091;
+const b = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
 const shell = b
     .contexts()
     .flatMap((c) => c.pages())
