@@ -70,7 +70,12 @@ namespace Bloom
                 // containers, which is what we want for all the application singletons.
                 .SingleInstance()
                 .Where(t =>
-                    new[] { typeof(CommonApi), typeof(NewCollectionWizardApi) }.Contains(t)
+                    new[]
+                    {
+                        typeof(CommonApi),
+                        typeof(NewCollectionWizardApi),
+                        typeof(ProgressDialogApi),
+                    }.Contains(t)
                 );
 
             _container = builder.Build();
@@ -87,6 +92,12 @@ namespace Bloom
             var server = _container.Resolve<BloomServer>();
             _container.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
             _container.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(server.ApiHandler);
+            // A progress dialog has to be possible before any collection is open: the "this
+            // collection needs a newer Bloom" dialog upgrades Bloom right there, and the dialog it
+            // shows while doing so talks over these endpoints. ProjectContext registers this one
+            // again later, which simply overwrites these registrations with identical ones -- all
+            // of ProgressDialogApi's handlers are static and know nothing about a project.
+            _container.Resolve<ProgressDialogApi>().RegisterWithApiHandler(server.ApiHandler);
             server.ApiHandler.RecordApplicationLevelHandlers();
         }
 
