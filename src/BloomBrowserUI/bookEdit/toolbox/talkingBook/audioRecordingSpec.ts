@@ -1627,9 +1627,12 @@ describe("audio recording tests", () => {
                 "ui-audioCurrent",
             );
 
-            // recordingMode is TextBox here on purpose: that is exactly the stale value left
-            // over from the box the user had selected before pressing Listen, which is why we
-            // must ask the box itself rather than trust the field.
+            // recordingMode is set to TextBox on purpose, disagreeing with the box the
+            // highlight is actually in. In the running app the field would normally have been
+            // refreshed to Sentence by now (setSoundFrom re-derives it as playback moves from
+            // box to box), so this is a deliberately contrived state: it pins the contract that
+            // the helper answers about the CURRENT BOX and does not depend on that refresh
+            // having happened.
             const recording = makeRecorder(RecordingMode.TextBox);
 
             expect(recording.canAdjustTimingsForCurrentTextBox()).toBe(false);
