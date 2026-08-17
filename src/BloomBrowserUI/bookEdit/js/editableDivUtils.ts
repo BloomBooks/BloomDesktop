@@ -560,29 +560,44 @@ export class EditableDivUtils {
     // behind in the saved book.
     private static mergeAdjacentTextNodeRuns(element: HTMLElement): void {
         const doc = element.ownerDocument;
-        // The first node of each run. normalize() merges the rest of a run into this one, so
-        // it is the node that survives - and so the only one whose painting can be stale.
-        // Collecting them lets us leave every other text node in the box completely untouched.
-        const startsOfRuns: Text[] = [];
+        // The node each run will collapse into: normalize() appends a run's text onto its
+        // first non-empty node and removes the others, so that is the node that survives, and
+        // the only one whose painting can be stale. Picking it now lets us leave every other
+        // text node in the box completely untouched.
+        // It must be the first NON-EMPTY one: normalize() deletes empty text nodes outright,
+        // so a run headed by one would leave us holding a detached node and poking it would
+        // repaint nothing.
+        const survivorOfEachRun: Text[] = [];
         const walker = doc.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-        let previousWasInSameRun = false;
+        let runInProgress = false;
         for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-            const startsARun =
-                !previousWasInSameRun &&
+            const text = node as Text;
+            const hasTextNodeAfterIt =
                 node.nextSibling?.nodeType === Node.TEXT_NODE;
-            if (startsARun) {
-                startsOfRuns.push(node as Text);
+            if (!runInProgress && !hasTextNodeAfterIt) {
+                continue; // a lone text node: nothing to merge it with
             }
-            previousWasInSameRun =
-                node.nextSibling?.nodeType === Node.TEXT_NODE;
+            if (!runInProgress || survivorOfEachRun.length === 0) {
+                // starting a run
+                survivorOfEachRun.push(text);
+            }
+            const survivorIndex = survivorOfEachRun.length - 1;
+            if (survivorOfEachRun[survivorIndex].length === 0 && text.length) {
+                // the run so far was empty nodes; this is the one that will survive
+                survivorOfEachRun[survivorIndex] = text;
+            }
+            runInProgress = hasTextNodeAfterIt;
         }
 
-        startsOfRuns.forEach((runStart) => {
+        survivorOfEachRun.forEach((survivor) => {
             // A text node always has a parent element here: we are walking inside element.
-            runStart.parentElement!.normalize();
+            survivor.parentElement!.normalize();
+            if (!survivor.isConnected) {
+                return; // the whole run was empty nodes; normalize() removed them all
+            }
             // Write the node's own text back into it, which is what makes Chromium re-shape.
-            runStart.insertData(runStart.length, " ");
-            runStart.deleteData(runStart.length - 1, 1);
+            survivor.insertData(survivor.length, " ");
+            survivor.deleteData(survivor.length - 1, 1);
         });
     }
 

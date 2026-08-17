@@ -359,6 +359,48 @@ describe("EditableDivUtils Tests", () => {
     // the caret both at the split itself and immediately after a <strong>. jsdom does not
     // implement those range fixups, so a test here would fail on correct code and, worse, pass
     // on the hand-rolled save/restore this code used to have - which was itself the bug.
+    it("mergeTextNodesSplitByBookmarks copes with an empty text node at the head of a run", () => {
+        // normalize() deletes empty text nodes outright, so the node a run collapses into is
+        // its first NON-empty node. Getting that wrong would leave us holding a detached node
+        // and the repaint would silently do nothing - the original bug all over again.
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode("")); // empty node heads the run
+        p.appendChild(document.createTextNode("overf"));
+        p.appendChild(document.createTextNode("flow"));
+        div.appendChild(p);
+        document.body.appendChild(div);
+        // sanity check the setup
+        expect(p.childNodes.length).toBe(3);
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        expect(p.childNodes.length).toBe(1);
+        expect(p.childNodes[0].textContent).toBe("overfflow");
+        // the surviving node is the first non-empty one, still attached
+        expect((p.childNodes[0] as Text).isConnected).toBe(true);
+        expect(div.innerHTML).toBe("<p>overfflow</p>");
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks copes with a run that is entirely empty nodes", () => {
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode(""));
+        p.appendChild(document.createTextNode(""));
+        div.appendChild(p);
+        document.body.appendChild(div);
+        expect(p.childNodes.length).toBe(2);
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        // normalize() removes them all; we must not throw trying to poke a detached node.
+        expect(p.childNodes.length).toBe(0);
+
+        div.remove();
+    });
+
     it("mergeTextNodesSplitByBookmarks only touches parents that actually have a run to merge", () => {
         // What we can assert is scope: every other node in the box comes out untouched, so
         // there is nothing for the browser to have to fix up in the first place.
