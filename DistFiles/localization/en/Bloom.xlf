@@ -341,11 +341,6 @@
         <note>ID: Collection.UpgradeDownloaded</note>
         <note>{0} is the version number of the Bloom that was downloaded.</note>
       </trans-unit>
-      <trans-unit id="Collection.UpgradeIsAStepButNotEnough" translate="no">
-        <source xml:lang="en">Bloom {0} has been downloaded, but this collection needs {1}, so you will need to upgrade again later. Bloom will now close to install it; please start it again.</source>
-        <note>ID: Collection.UpgradeIsAStepButNotEnough</note>
-        <note>{0} is the version number that was downloaded, {1} is the version the collection requires.</note>
-      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
         <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>

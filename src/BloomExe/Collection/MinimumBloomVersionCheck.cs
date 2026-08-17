@@ -554,16 +554,12 @@ namespace Bloom.Collection
                 // It installs whatever version it turns out to be. Velopack can only offer the
                 // newest build on this user's channel -- it has no notion of "at least version X" --
                 // so what we have may still be short of what this collection needs. Take it anyway:
-                // getting as far as the channel allows is real progress, and if it isn't far enough
-                // the user meets this same dialog next launch and can decide again from there.
-                var downloadedVersion = ParseOrNull(version);
-                if (
-                    downloadedVersion != null
-                    && IsVersionSufficient(minimumVersion, downloadedVersion)
-                )
-                    ReportUpgradeDownloaded(version);
-                else
-                    ReportUpgradeIsAStepButNotEnough(version, minimumVersion);
+                // getting as far as the channel allows is real progress. We deliberately do not say
+                // anything about whether it went far enough. If it didn't, the upgraded Bloom meets
+                // this same dialog next launch, still asking for the same version, and the user can
+                // decide again from there. That is a little confusing and much simpler than a second
+                // message explaining a case most people will never be in.
+                ReportUpgradeDownloaded(version);
                 return true;
             }
 
@@ -594,30 +590,6 @@ namespace Bloom.Collection
                     "{0} is the version number of the Bloom that was downloaded."
                 ),
                 downloadedVersion
-            );
-            BloomMessageBox.ShowInfo(System.Net.WebUtility.HtmlEncode(message));
-        }
-
-        /// <summary>
-        /// Tell the user we are installing an upgrade that gets them closer but not all the way.
-        /// Saying so plainly is the point: otherwise they would upgrade, come back, and meet the same
-        /// "too old" dialog with no idea why the upgrade they just did hadn't solved it.
-        /// </summary>
-        private static void ReportUpgradeIsAStepButNotEnough(
-            string downloadedVersion,
-            string minimumVersion
-        )
-        {
-            var message = string.Format(
-                LocalizationManager.GetString(
-                    // Kept short on purpose: every Bloom message box is a fixed 500x200, and this is
-                    // the longest thing we ask it to hold. See BL-16690.
-                    "Collection.UpgradeIsAStepButNotEnough",
-                    "Bloom {0} has been downloaded, but this collection needs {1}, so you will need to upgrade again later. Bloom will now close to install it; please start it again.",
-                    "{0} is the version number that was downloaded, {1} is the version the collection requires."
-                ),
-                downloadedVersion,
-                minimumVersion
             );
             BloomMessageBox.ShowInfo(System.Net.WebUtility.HtmlEncode(message));
         }
