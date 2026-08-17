@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -105,19 +104,30 @@ namespace Bloom.web
         {
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
+            // The page list sends the current page's content with the click when it can, so we can
+            // save it without asking the browser and waiting. It is absent when there is no page
+            // to collect from, or collecting threw; then we fall back to asking (see
+            // PageListController.OnPageSelectedChanged).
+            string pageContent = requestData.IsDefined("pageContent")
+                ? requestData.pageContent
+                : null;
 
             var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
             var label = shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
 
-            using (PerformanceMeasurement.Global?.Measure(label, requestData.detail ?? ""))
+            // Note this only measures getting the change under way; with the content in hand that
+            // is now most of the work, but the new page still has to be built and displayed.
+            using (
+                PerformanceMeasurement.Global?.Measure(
+                    label,
+                    requestData.IsDefined("detail") ? requestData.detail : ""
+                )
+            )
             {
-                //using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
-                //{
                 IPage page = PageFromId(pageId);
-                //}
 
                 if (page != null)
-                    PageList.PageClicked(page);
+                    PageList.PageClicked(page, pageContent);
             }
 
             request.PostSucceeded();
@@ -139,42 +149,38 @@ namespace Bloom.web
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
             string commandId = requestData.commandId;
+            // See HandlePageClickedRequest: sent when the page list could collect it, so that the
+            // commands which save the current page first need not ask the browser and wait.
+            string pageContent = requestData.IsDefined("pageContent")
+                ? requestData.pageContent
+                : null;
             IPage page = PageFromId(pageId);
 
             if (page != null)
             {
-                // Execute the command asynchronously after a short delay
-                // The discard operator _ indicates we're intentionally not awaiting this
-                _ = Task.Run(async () =>
+                // Run it here and now. We are already on the UI thread (this endpoint is
+                // registered with handleOnUiThread), so there is nothing to marshal.
+                //
+                // This used to be deferred 100ms "to let the UI respond", from back when the
+                // command's first act was to ask the browser for the page content and wait for it.
+                // It no longer does: the content arrived with this request. The delay had become a
+                // window in which the user could type something that the snapshot we are about to
+                // save does not contain, so it costs rather than helps (BL-13502). The menu closes
+                // on the browser side the moment it posts, so it does not need us to wait either.
+                try
                 {
-                    await Task.Delay(100); // 100ms delay to let the UI respond
-
-                    // Execute on the UI thread using the form's synchronization context
-                    var form = Shell.GetShellOrOtherOpenForm();
-                    if (form != null && !form.IsDisposed)
-                    {
-                        form.BeginInvoke(
-                            new Action(() =>
-                            {
-                                try
-                                {
-                                    PageList.ExecuteContextMenuCommand(page, commandId);
-                                }
-                                catch (Exception ex)
-                                {
-                                    // Log the error.  Should we notify the user as well?
-                                    Logger.WriteEvent(
-                                        $"Error executing content menu command for {commandId} on page {pageId}"
-                                    );
-                                    Logger.WriteError(ex);
-                                }
-                            })
-                        );
-                    }
-                });
+                    PageList.ExecuteContextMenuCommand(page, commandId, pageContent);
+                }
+                catch (Exception ex)
+                {
+                    // Log the error.  Should we notify the user as well?
+                    Logger.WriteEvent(
+                        $"Error executing content menu command for {commandId} on page {pageId}"
+                    );
+                    Logger.WriteError(ex);
+                }
             }
 
-            // Return success immediately without waiting for the command to execute
             request.PostSucceeded();
         }
 
@@ -184,7 +190,11 @@ namespace Bloom.web
             string newPageId = requestData.movedPageId;
             IPage movedPage = PageFromId(newPageId);
             int newIndex = Convert.ToInt32(requestData.newIndex); // Should come as int, but automatic JSON parsing doesn't know this
-            PageList.PageMoved(movedPage, newIndex);
+            // See HandlePageClickedRequest.
+            string pageContent = requestData.IsDefined("pageContent")
+                ? requestData.pageContent
+                : null;
+            PageList.PageMoved(movedPage, newIndex, pageContent);
             request.PostSucceeded();
         }
 

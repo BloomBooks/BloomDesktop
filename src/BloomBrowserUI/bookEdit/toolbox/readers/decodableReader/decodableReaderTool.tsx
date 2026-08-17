@@ -2,6 +2,7 @@ import ToolboxToolReactAdaptor from "../../toolboxToolReactAdaptor";
 import { DecodableReaderToolControls } from "./DecodableReaderToolControls";
 import { beginInitializeDecodableReaderTool } from "../readerTools";
 import { getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
+import { removeReaderMarkup } from "../removeReaderMarkup";
 import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { renderRoot } from "../../../../utils/reactRender";
@@ -33,7 +34,16 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
         // usually updateMarkup will do this, unless we are coming from showTool
         model.doMarkup();
     }
+    // Take our markup off the page we are about to save (a clone), or off the live page when we
+    // are being detached from it. See removeReaderMarkup.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        removeReaderMarkup(pageOrClone);
+    }
+
     public detachFromPage(): void {
+        super.detachFromPage(); // takes the markup off the live page
+        // ...and this stops it coming back: it also resets the model so that further typing is
+        // not marked up.
         getTheOneReaderToolsModel().setMarkupType(0);
     }
     public updateMarkup() {

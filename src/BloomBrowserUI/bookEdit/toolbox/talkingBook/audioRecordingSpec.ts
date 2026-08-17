@@ -1,4 +1,4 @@
-﻿import {
+import {
     describe,
     it,
     expect,
@@ -2203,6 +2203,133 @@ describe("audio recording tests", () => {
         expect(colorSpans[0].innerText).toBe("One.");
         expect(colorSpans[2].innerText).toBe("Two.");
         expect(colorSpans[4].innerText).toBe("Three");
+    });
+
+    describe("- undoHighlightingFixes()", () => {
+        // It takes fixHighlighting()'s temporary markup back out -- off the live page when the page
+        // is going away, and off the CLONE we are about to save while the user goes on editing.
+        // It undoes the transformation rather than restoring a snapshot of what the element held
+        // before, and that is the point: a save can happen while audio is playing, which is exactly
+        // when these fixes are in place, so by then the user may have typed. A snapshot would throw
+        // that typing away, silently, into the saved book (BL-13502).
+        const fixedUpBox = () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence" data-test-preselect="true" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp;&nbsp;&nbsp; Three</span></p></div></div></div>',
+            );
+            const box1 = getFrameElementById("page", "box1")!;
+            // The SAME recorder must do the fixing and the undoing, as in production (both go
+            // through the one theOneAudioRecorder): it only undoes in elements it knows it fixed.
+            const recording = new AudioRecording();
+            recording.fixHighlighting(box1);
+            const span = box1.querySelector("span")!;
+            // Sanity: the fix really did happen, so the assertions below aren't watching a no-op.
+            expect(
+                span.classList.contains("ui-disableHighlight"),
+                "test setup: fixHighlighting should have marked the span",
+            ).toBe(true);
+            expect(
+                span.querySelectorAll("span.ui-enableHighlight").length,
+                "test setup: fixHighlighting should have wrapped the text runs",
+            ).toBeGreaterThan(0);
+            // fixHighlighting only re-wraps; it does not change the text. So this is what the
+            // text should still read after the undo. (Captured rather than written out, because
+            // the fixture's runs of &nbsp; are not the plain spaces they look like.)
+            const textBefore = span.textContent;
+            return { box1, span, recording, textBefore };
+        };
+
+        // Every test below asserts the undo actually happened, not merely that something survived
+        // it -- otherwise an undo that did nothing at all would pass most of them.
+        const expectUndone = (span: Element) => {
+            expect(
+                span.querySelectorAll("span.ui-enableHighlight").length,
+                "the highlight-run spans should be gone",
+            ).toBe(0);
+            expect(
+                span.classList.contains("ui-disableHighlight"),
+                "the no-highlight marking should be gone",
+            ).toBe(false);
+        };
+
+        it("puts the text back the way it was", () => {
+            const { box1, span, recording, textBefore } = fixedUpBox();
+
+            recording.undoHighlightingFixes(box1);
+
+            expectUndone(span);
+            expect(span.textContent).toBe(textBefore);
+            // Rejoined, not left as the several adjacent text nodes unwrapping produces.
+            expect(span.childNodes.length).toBe(1);
+        });
+
+        it("keeps text typed while the audio was playing", () => {
+            const { box1, span, recording } = fixedUpBox();
+            span.appendChild(document.createTextNode(" typed later"));
+
+            recording.undoHighlightingFixes(box1);
+
+            expectUndone(span);
+            expect(span.textContent).toContain("typed later");
+        });
+
+        it("keeps text typed inside one of the highlight runs", () => {
+            const { box1, span, recording } = fixedUpBox();
+            const firstRun = span.querySelector("span.ui-enableHighlight")!;
+            firstRun.textContent = firstRun.textContent + " inserted";
+
+            recording.undoHighlightingFixes(box1);
+
+            expectUndone(span);
+            expect(span.textContent).toContain("inserted");
+        });
+
+        it("leaves the phrase-delimiter spans alone", () => {
+            // removeToolMarkup enshrouds the vertical bars BEFORE calling us, so its work has to
+            // survive -- restoring a snapshot would have wiped it out and the bars would show.
+            const { box1, span, recording } = fixedUpBox();
+            const marker = document.createElement("span");
+            marker.classList.add("bloom-audio-split-marker");
+            marker.textContent = "|";
+            span.appendChild(marker);
+
+            recording.undoHighlightingFixes(box1);
+
+            expectUndone(span);
+            expect(
+                span.querySelectorAll("span.bloom-audio-split-marker").length,
+            ).toBe(1);
+        });
+
+        it("leaves alone highlight spans it did not put there", () => {
+            // An older book can legitimately carry ui-enableHighlight spans of its own (HtmlDom.cs
+            // even generates user-style rules targeting them); a save must not quietly strip those
+            // just because the Talking Book tool happens to be open.
+            const { box1, recording } = fixedUpBox();
+            const other = box1.ownerDocument.createElement("span");
+            other.id = "notOneOfOurs";
+            other.innerHTML =
+                '<span class="ui-enableHighlight">from the book</span>';
+            box1.appendChild(other);
+
+            recording.undoHighlightingFixes(box1);
+
+            expect(
+                other.querySelectorAll("span.ui-enableHighlight").length,
+                "a span we never fixed should be left alone",
+            ).toBe(1);
+        });
+
+        it("can be run more than once", () => {
+            // Every save undoes on a clone; the live page's fixes stay, to be undone again later.
+            const { box1, span, recording } = fixedUpBox();
+
+            recording.undoHighlightingFixes(box1);
+            const afterFirst = span.textContent;
+            recording.undoHighlightingFixes(box1);
+
+            expectUndone(span);
+            expect(span.textContent).toBe(afterFirst);
+        });
     });
 
     describe("- fixHighlighting()", () => {

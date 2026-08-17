@@ -4,6 +4,7 @@ import {
     getTheOneToolbox,
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
+    removeToolMarkupFromPageClone,
     scheduleMarkupUpdateAfterPaste,
 } from "./toolbox";
 import { simulateBlurOnPageFrameMouseDown } from "../../utils/menuCloseOnBlur";
@@ -50,13 +51,18 @@ export interface IToolboxFrameExports {
     applyToolboxStateToPage(): void;
 
     removeToolboxMarkup(): void;
+    removeToolMarkupFromPageClone(pageClone: HTMLElement): void;
     setActiveDragActivityTab(tab: number): void;
     getTheOneAudioRecorderForExportOnly(): IAudioRecorder;
     simulateBlurOnPageFrameMouseDown(): void;
 }
 
 // each of these exports shows up under this window's toolboxBundle object (see workspaceFrames.ts)
-export { removeToolboxMarkup, setActiveDragActivityTab };
+export {
+    removeToolboxMarkup,
+    removeToolMarkupFromPageClone,
+    setActiveDragActivityTab,
+};
 export {
     showSetupDialog,
     initializeReaderSetupDialog,
@@ -138,6 +144,7 @@ const toolboxBundle: ToolboxBundleApi = {
     scheduleMarkupUpdateAfterPaste,
     applyToolboxStateToPage,
     removeToolboxMarkup,
+    removeToolMarkupFromPageClone,
     showSetupDialog,
     initializeReaderSetupDialog,
     closeSetupDialog,

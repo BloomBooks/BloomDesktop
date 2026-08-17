@@ -364,6 +364,21 @@ namespace Bloom.Edit
         /// </summary>
         public void OnHideEditTab()
         {
+            // Shut the open toolbox tool down. Changing pages does this through pageUnloading() in
+            // bloomEditing.ts, but leaving the tab does not unload the page frame, so nothing there
+            // fires. Without this the tool keeps its hooks on the page we are leaving, and anything
+            // it had opened (a colour picker, a pop-up) stays on screen behind the new tab.
+            //
+            // This used to happen for free: leaving the tab performs a save, and every save used to
+            // begin by detaching the tool. That coupling is what BL-13502 removed.
+            //
+            // Note we are called from the state machine's transition to NoPage, i.e. AFTER the page
+            // content has been captured and saved. That matters, because detaching does change the
+            // live page, and doing it earlier would put tool cleanup back into the save path.
+            _mainBrowser?.RunJavascriptFireAndForget(
+                "workspaceBundle.getToolboxBundleExports()?.removeToolboxMarkup();"
+            );
+
             // Tells the model to prepare for possibly changing the current book, which
             // currently requires reloading the toolbox.
             _model.ClearBookForToolboxContent();

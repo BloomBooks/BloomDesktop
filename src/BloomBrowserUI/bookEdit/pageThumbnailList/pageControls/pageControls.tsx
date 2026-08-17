@@ -4,6 +4,7 @@ import { renderRoot } from "../../../utils/reactRender";
 import BloomButton from "../../../react_components/bloomButton";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import { confirmRemovePage } from "../confirmRemovePage";
+import { collectCurrentPageContent } from "../currentPageContent";
 import "./pageControls.less";
 import "errorHandler";
 
@@ -19,6 +20,14 @@ import "errorHandler";
 // for its exports.
 
 const kPageControlsContext = "pageThumbnailList-pageControls";
+
+// Duplicating or deleting a page makes C# save the current page first, so send its content along
+// and save it the round trip of asking us for it. Note this waits for any in-flight change to the
+// page to settle before it posts, so the command does not start mid-change either. See
+// collectCurrentPageContent().
+async function postPageControlCommand(endpoint: string) {
+    postThatMightNavigate(endpoint, await collectCurrentPageContent(endpoint));
+}
 
 interface IPageControlsState {
     canAddState: boolean;
@@ -112,8 +121,11 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
                         enabled={this.state.canDuplicateState}
                         l10nKey="EditTab.DuplicatePageButton"
                         l10nComment="Button that tells Bloom to duplicate the currently selected page."
-                        clickApiEndpoint="edit/pageControls/duplicatePage"
-                        mightNavigate={true}
+                        onClick={() =>
+                            postPageControlCommand(
+                                "edit/pageControls/duplicatePage",
+                            )
+                        }
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/duplicatePage.svg"
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/duplicatePageDisabled.svg"
                         hasText={false}
@@ -127,7 +139,7 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
                         enabled={this.state.canDeleteState}
                         onClick={() =>
                             confirmRemovePage(() =>
-                                postThatMightNavigate(
+                                postPageControlCommand(
                                     "edit/pageControls/deletePage",
                                 ),
                             )

@@ -40,13 +40,23 @@ namespace Bloom.Edit
         {
             if (page == null)
                 return;
-            if (!_dontForwardSelectionEvent)
-            {
-                // The only necessary action after saving is to navigate to the desired page.
-                // This is achieved by returning the right ID in the trivial doAfterSaving function
-                // passed as the first argument to SaveThen.
-                _model.SaveThen(() => (page as Page).Id, () => { });
-            }
+            if (_dontForwardSelectionEvent)
+                return;
+
+            var pageId = (page as Page).Id;
+
+            // The only necessary action after saving is to go to the desired page, which is what
+            // returning its ID from the first argument achieves.
+            //
+            // When the click brought the outgoing page's content with it, SaveThen saves and goes
+            // in one step, so we never enter SavePending -- the state in which a further page click
+            // would be silently discarded. When it didn't, SaveThen asks the browser as it always
+            // did.
+            _model.SaveThen(
+                () => pageId,
+                () => { },
+                pageContentFromBrowser: (e as PageSelectedChangedEventArgs)?.PageContentFromBrowser
+            );
         }
 
         public void SetBook(Book.Book book) //review: could do this instead by giving this class the bookselection object

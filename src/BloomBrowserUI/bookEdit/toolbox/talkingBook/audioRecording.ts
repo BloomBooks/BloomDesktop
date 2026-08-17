@@ -4913,16 +4913,11 @@ export default class AudioRecording implements IAudioRecorder {
                 );
 
                 if (containsNonHighlightText) {
-                    if (!this.nodesToRestoreAfterPlayEnded.has(element.id)) {
-                        // Note: The map could already have the id if you do Play -> Pause -> Play
-                        // We want the modifications to exist during the Pause period,
-                        // and we want the original innerHTML to win, so that's why we need to check
-                        // if the ID exists already and avoid overwriting it.
-                        this.nodesToRestoreAfterPlayEnded.set(
-                            element.id,
-                            element.innerHTML,
-                        );
-                    }
+                    // Remember that we touched this one, so undoHighlightingFixes knows which
+                    // elements are ours. (Recording it twice, e.g. Play -> Pause -> Play, is
+                    // harmless: it is a set, and fixHighlightingInNode returns immediately for
+                    // anything already carrying kDisableHighlightClass.)
+                    this.elementsWeFixedHighlightingIn.add(element.id);
 
                     this.fixHighlightingInNode(element, element);
                 }
@@ -5054,23 +5049,66 @@ export default class AudioRecording implements IAudioRecorder {
         return newSpan;
     }
 
-    private nodesToRestoreAfterPlayEnded = new Map<string, string>();
+    // The ids of the audio spans fixHighlighting() has modified in this session. Deliberately just
+    // which elements, not a snapshot of what was in them -- see undoHighlightingFixes.
+    private elementsWeFixedHighlightingIn = new Set<string>();
+
+    /**
+     * Take the temporary highlight-segment markup fixHighlighting() added back out, under
+     * 'pageOrClone'. The caller chooses what to apply it to: the live page (when the page is going
+     * away, via revertFixHighlighting) or a clone of it (when we are saving the page the user is
+     * still working on).
+     *
+     * This UNDOES the transformation rather than restoring a snapshot of what the element held
+     * beforehand, and that distinction matters: the user can type into a text box while its audio
+     * is playing, and playback is exactly when these fixes are in place. Replaying a snapshot taken
+     * when playback started would throw that typing away -- silently, and into the saved book
+     * (BL-13502). Unwrapping only what we added cannot: anything else in the element is left where
+     * it is, including text that arrived after the fix, and including the phrase-delimiter spans
+     * that removeToolMarkup wraps around a "|" just before calling us.
+     *
+     * Scoped to the elements we actually fixed, for the same reason the snapshot version was: an
+     * older book can legitimately contain ui-enableHighlight spans of its own (HtmlDom.cs even
+     * generates user-style rules targeting them), and a save must not quietly strip those.
+     *
+     * Purely DOM, and idempotent: undoing on a clone leaves the live page's fixes in place, ready
+     * to be undone again for the next save. See ITool.removeToolMarkup.
+     */
+    public undoHighlightingFixes(pageOrClone: ParentNode) {
+        this.elementsWeFixedHighlightingIn.forEach((id) => {
+            const element = pageOrClone.querySelector(`#${id}`);
+            if (!element) {
+                console.warn("Can't find element " + id);
+                return;
+            }
+            // Unwrap the spans we wrapped runs of text in: put each one's children back where it
+            // was and drop it.
+            for (const span of Array.from(
+                element.querySelectorAll("span." + kEnableHighlightClass),
+            )) {
+                const parent = span.parentNode;
+                if (!parent) continue;
+                while (span.firstChild)
+                    parent.insertBefore(span.firstChild, span);
+                parent.removeChild(span);
+                // Rejoin the text nodes that leaves adjacent, so the result has the shape the text
+                // had before rather than a run of separate nodes.
+                parent.normalize();
+            }
+            // And the class we put on the audio span itself to stop the whole thing highlighting.
+            element.classList.remove(kDisableHighlightClass);
+        });
+    }
 
     /**
      * This function will undo in BloomDesktop the modifications made by fixHighlighting()
      */
     public revertFixHighlighting() {
-        this.nodesToRestoreAfterPlayEnded.forEach((htmlToRestore, id) => {
-            const pageDocBody = this.getPageDocBody();
-            const element = pageDocBody?.querySelector(`#${id}`);
-            if (element) {
-                element.innerHTML = htmlToRestore;
-                element.classList.remove(kDisableHighlightClass);
-            } else {
-                console.warn("Can't find element " + id);
-            }
-        });
-        this.nodesToRestoreAfterPlayEnded.clear();
+        const pageDocBody = this.getPageDocBody();
+        if (pageDocBody) {
+            this.undoHighlightingFixes(pageDocBody);
+        }
+        this.elementsWeFixedHighlightingIn.clear();
         this.refreshAudioTextHighlights();
     }
 }

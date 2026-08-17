@@ -130,16 +130,7 @@ namespace Bloom.Edit
                 (string pageId, string pageContentData) =>
                     UpdateBookDomFromBrowserPageContent(pageContentData),
                 // saveBook
-                () =>
-                {
-                    if (_modifiedPageElement == null)
-                        return;
-
-                    CurrentBook.SavePageToDisk(_modifiedPageElement, _nextSaveMustBeFull);
-                    _nextSaveMustBeFull = false;
-                    _pageHasUnsavedDataDerivedChange = false;
-                    PageTemplatesApi.LastSaveTime = DateTime.Now;
-                },
+                SaveBookToDisk,
                 // hidePage
                 () =>
                 {
@@ -505,9 +496,9 @@ namespace Bloom.Edit
             }
         }
 
-        internal void OnDuplicatePage()
+        internal void OnDuplicatePage(string pageContentFromBrowser = null)
         {
-            DuplicatePage(_pageSelection.CurrentSelection);
+            DuplicatePage(_pageSelection.CurrentSelection, pageContentFromBrowser);
         }
 
         internal void DuplicateManyPages(IPage page)
@@ -523,9 +514,9 @@ namespace Bloom.Edit
             }
         }
 
-        internal void DuplicatePage(IPage page)
+        internal void DuplicatePage(IPage page, string pageContentFromBrowser = null)
         {
-            DuplicatePageInternal(page);
+            DuplicatePageInternal(page, 1, pageContentFromBrowser);
         }
 
         /// <summary>
@@ -543,7 +534,11 @@ namespace Bloom.Edit
             DuplicatePageInternal(_pageSelection.CurrentSelection, numberOfTimes);
         }
 
-        private void DuplicatePageInternal(IPage page, int numberOfTimesToDuplicate = 1)
+        private void DuplicatePageInternal(
+            IPage page,
+            int numberOfTimesToDuplicate = 1,
+            string pageContentFromBrowser = null
+        )
         {
             // NB: though there is an api call to do this, it isn't currently used, so we have to measure here.
             var countString = numberOfTimesToDuplicate.ToString();
@@ -583,16 +578,17 @@ namespace Bloom.Edit
                     return newPageId;
                 },
                 () => { }, // wrong state, do nothing
-                forceFullSave: true
+                forceFullSave: true,
+                pageContentFromBrowser: pageContentFromBrowser
             );
         }
 
-        internal void OnDeletePage()
+        internal void OnDeletePage(string pageContentFromBrowser = null)
         {
-            DeletePage(_pageSelection.CurrentSelection);
+            DeletePage(_pageSelection.CurrentSelection, pageContentFromBrowser);
         }
 
-        internal void DeletePage(IPage page)
+        internal void DeletePage(IPage page, string pageContentFromBrowser = null)
         {
             // This can only be called on the UI thread in response to a user button click.
             // If that ever changed we might need to arrange locking for access to InProcessOfSaving and _tasksToDoAfterSaving.
@@ -625,7 +621,8 @@ namespace Bloom.Edit
                     }
                 },
                 () => { }, // wrong state, do nothing
-                forceFullSave: true
+                forceFullSave: true,
+                pageContentFromBrowser: pageContentFromBrowser
             );
         }
 
@@ -667,9 +664,19 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// This is used both to insert pages from the AddPageDialog, and also "paste page"
+        /// The event handler form of InsertPage, for the AddPageDialog's InsertPage event. The
+        /// dialog is a separate window, so it has no way to hand us the current page's content;
+        /// "paste page" calls InsertPage directly and can.
         /// </summary>
         private void OnInsertPage(object page, PageInsertEventArgs e)
+        {
+            InsertPage(page, e, null);
+        }
+
+        /// <summary>
+        /// This is used both to insert pages from the AddPageDialog, and also "paste page"
+        /// </summary>
+        private void InsertPage(object page, PageInsertEventArgs e, string pageContentFromBrowser)
         {
             SaveThen(
                 () =>
@@ -720,7 +727,8 @@ namespace Bloom.Edit
                     return newPageId;
                 },
                 () => { }, // wrong state, do nothing
-                forceFullSave: true
+                forceFullSave: true,
+                pageContentFromBrowser: pageContentFromBrowser
             );
         }
 
@@ -1638,15 +1646,33 @@ namespace Bloom.Edit
         //				var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
         //				if (AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook))
         /// <summary>
-        /// Save all the changes to the current page, then reload it (thus restoring any UI stuff that
-        /// was stripped out by the Save).
+        /// Save all the changes to the current page, then reload it.
+        ///
+        /// The reload used to be needed just to restore the UI markup the Save stripped out. That
+        /// is no longer true (BL-13502), but it is still doing a second job for these callers, and
+        /// that is why it stays: the page has to be rebuilt from the book DOM either because C#
+        /// just changed it (a new topic in the data div, new book settings) or because the browser
+        /// created elements that have never been through SetupElements (a new origami layout, an
+        /// imported video, a translation group replaced by a derived field).
+        ///
+        /// pageContentFromBrowser, when the caller was able to send it, removes the round trip:
+        /// we save and navigate in one step rather than asking the browser for the content and
+        /// waiting for it on another API. Callers that have no browser request to carry it (the
+        /// PageRefreshEvent handlers) leave it null and get the old path.
         /// </summary>
-        internal void SavePageAndReloadIt(bool forceFullSave = false)
+        internal void SavePageAndReloadIt(
+            bool forceFullSave = false,
+            string pageContentFromBrowser = null
+        )
         {
             if (CannotSavePage())
                 return;
             _nextSaveMustBeFull |= forceFullSave;
-            SaveThen(() => _pageSelection.CurrentSelection.Id, () => { });
+            SaveThen(
+                () => _pageSelection.CurrentSelection.Id,
+                () => { },
+                pageContentFromBrowser: pageContentFromBrowser
+            );
         }
 
         //invoked from TopicChooserDialog.tsx via API
@@ -1661,7 +1687,9 @@ namespace Bloom.Edit
 
         internal void SavePageAndReloadIt(ApiRequest request)
         {
-            SavePageAndReloadIt();
+            // The browser sends the current page's content with this request when it can; see
+            // saveChangesAndRethinkPage() in bloomEditing.ts.
+            SavePageAndReloadIt(pageContentFromBrowser: request.GetPageContentFromBrowserOrNull());
             request.PostSucceeded();
         }
 
@@ -1695,15 +1723,42 @@ namespace Bloom.Edit
         /// <remarks>If you are doing this in an API handler, remember that you must retrieve any data in
         /// the request before calling SaveThen. The Request object can't be used inside doBeforeSaveToDisk,
         /// since by then the request has been marked completed.</remarks>
+        /// <param name="pageContentFromBrowser">The current page's content, when the request that
+        /// got us here brought it along (see getPageContentForSaveWhenReady() in the browser). Given
+        /// it, we do the whole thing here and now instead of asking the browser and waiting -- see
+        /// SavePageInPlaceThen. Everything above still describes what happens; only the number of
+        /// hops changes. If we turn out not to be in a state to save, we fall back to asking, so
+        /// passing this is always safe.</param>
         public void SaveThen(
             Func<string> doBeforeSaveToDisk,
             Action doIfNotInRightStateToSave,
             bool forceFullSave = false,
             bool skipSaveToDisk = false,
             Action failureAction = null,
-            Action doAfterSaveToDisk = null
+            Action doAfterSaveToDisk = null,
+            string pageContentFromBrowser = null
         )
         {
+            if (pageContentFromBrowser != null)
+            {
+                // The in-place route does the save itself, in one go, so it has nowhere to put
+                // these three: they all describe things that happen around a save spread over two
+                // API calls. No caller combines them with sending content, and quietly ignoring
+                // them would be a nasty way to find that out.
+                Guard.Against(
+                    skipSaveToDisk || failureAction != null || doAfterSaveToDisk != null,
+                    "SaveThen: skipSaveToDisk, failureAction and doAfterSaveToDisk are not supported"
+                        + " together with pageContentFromBrowser"
+                );
+                if (
+                    SavePageInPlaceThen(pageContentFromBrowser, doBeforeSaveToDisk, forceFullSave)
+                    != InPlaceSaveOutcome.Declined
+                )
+                    return;
+                // Declined means nothing at all happened -- doBeforeSaveToDisk has NOT run -- so it
+                // is safe to go on and do it the long way.
+            }
+
             _nextSaveMustBeFull |= forceFullSave;
             if (
                 !_stateMachine.ToSavePending(
@@ -1737,6 +1792,132 @@ namespace Bloom.Edit
         public void ReceivePageContent(string pageContentData)
         {
             _stateMachine.ToSavedAndStripped(pageContentData);
+        }
+
+        /// <summary>
+        /// Write out whatever UpdateBookDomFromBrowserPageContent() put into the book DOM: either just
+        /// the one page that changed, or the whole book if something shared changed.
+        /// This is the state machine's saveBook action, and also the second half of SavePageInPlace,
+        /// so both routes make exactly the same decisions.
+        /// </summary>
+        private void SaveBookToDisk()
+        {
+            if (_modifiedPageElement == null)
+                return;
+
+            CurrentBook.SavePageToDisk(_modifiedPageElement, _nextSaveMustBeFull);
+            _nextSaveMustBeFull = false;
+            _pageHasUnsavedDataDerivedChange = false;
+            PageTemplatesApi.LastSaveTime = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Save the current page from content the browser has ALREADY gathered — the combined
+        /// "body &lt;SPLIT-DATA&gt; userCss" string that getPageContentForSave() produces — and leave the
+        /// browser showing that same page, still editable.
+        ///
+        /// This is the Javascript-initiated counterpart of SaveThen(). SaveThen has to ask the browser
+        /// for the page content and wait for it to arrive through an API, and it always finishes by
+        /// navigating, because the way it made the browser gather that content stripped the live page
+        /// of the markup that makes it editable (BL-13502). The browser now gathers the content from a
+        /// clone without touching the live page, so when Javascript hands us the content we can do the
+        /// entire save here and now and simply return.
+        ///
+        /// It deliberately goes through the same two steps as the SaveThen path — first
+        /// UpdateBookDomFromBrowserPageContent(), then SaveBookToDisk() — so the same logic decides
+        /// whether the change is confined to this page or has to be propagated across the book
+        /// (see NeedToDoFullSave and Book.UpdateDomFromEditedPage).
+        ///
+        /// Returns false, having done nothing, if we are not in a position to save. That is a normal
+        /// outcome, not an error: the user may have started changing pages, or an external process may
+        /// have replaced the book on disk.
+        /// </summary>
+        public bool SavePageInPlace(string pageContentData, bool forceFullSave = false)
+        {
+            if (CannotSavePage() || !_havePageToSave)
+                return false;
+            // An external process has overwritten the book on disk and we are about to discard this
+            // page in favor of what it wrote; saving now would clobber that. (Same reasoning as
+            // EditingStateMachine.DiscardInFlightSave, which covers the SaveThen path.)
+            if (_reloadFromDiskOnLeavingEditTab)
+                return false;
+
+            _nextSaveMustBeFull |= forceFullSave;
+            if (
+                !_stateMachine.ToSavedInPlace(
+                    pageContentData,
+                    e =>
+                        ErrorReport.NotifyUserOfProblem(
+                            e,
+                            LocalizationManager.GetString(
+                                "Errors.CouldNotSavePage",
+                                "Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!"
+                            )
+                        )
+                )
+            )
+                return false;
+
+            // What we just saved is the new baseline for deciding whether the NEXT save has changed
+            // anything the rest of the book shares. (For the SaveThen path, the navigation that
+            // follows a save does this, in EditingView.StartNavigationToEditPage.)
+            SaveStateForFullSaveDecision();
+            // Likewise, the page list would normally be refreshed as part of navigating.
+            _view?.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+            return true;
+        }
+
+        /// <summary>
+        /// The direct counterpart of SaveThen for a request that arrived from the browser WITH the
+        /// current page's content: save that content, run doBeforeSaveToDisk (which may change the
+        /// book, and returns the id of the page to show next), write the book to disk, and navigate
+        /// there — all synchronously, before we return.
+        ///
+        /// SaveThen has to do the same work spread over two API calls and three states, because it
+        /// must ask the browser for the content and wait for it to come back on another API. Every
+        /// caller that can hand us the content up front (anything posting from a frame that can
+        /// reach the editable page: see getPageContentForSaveWhenReady() in bloomEditing.ts) can use this
+        /// instead and be a plain, straight-line method — including one that can report a failure
+        /// in its own reply, which SaveThen cannot, since by the time it knows, the request is long
+        /// since completed.
+        ///
+        /// Returns Declined, having done nothing at all, if we were not in a position to save; only
+        /// then may the caller fall back to asking the browser. If it returns Failed,
+        /// doBeforeSaveToDisk may already have run and changed the book, so falling back would do it
+        /// a second time -- see InPlaceSaveOutcome.
+        ///
+        /// Private because SaveThen is the way in: pass it pageContentFromBrowser and it comes here
+        /// when it can and falls back on its own when it can't, so no caller has to get that right.
+        /// </summary>
+        private InPlaceSaveOutcome SavePageInPlaceThen(
+            string pageContentData,
+            Func<string> doBeforeSaveToDisk,
+            bool forceFullSave = false
+        )
+        {
+            if (CannotSavePage() || !_havePageToSave)
+                return InPlaceSaveOutcome.Declined;
+            // See SavePageInPlace: an external process has replaced the book on disk, so this
+            // page's content must not be written over what it wrote.
+            if (_reloadFromDiskOnLeavingEditTab)
+                return InPlaceSaveOutcome.Declined;
+
+            _nextSaveMustBeFull |= forceFullSave;
+            // Unlike SavePageInPlace there is nothing to do afterwards on success: we do NOT
+            // refresh the full-save baseline or the thumbnail, because navigating does both for
+            // us, in EditingView.StartNavigationToEditPage, which this has already started.
+            return _stateMachine.ToSavedInPlaceThenNavigating(
+                pageContentData,
+                doBeforeSaveToDisk,
+                e =>
+                    ErrorReport.NotifyUserOfProblem(
+                        e,
+                        LocalizationManager.GetString(
+                            "Errors.CouldNotSavePage",
+                            "Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!"
+                        )
+                    )
+            );
         }
 
         private SafeXmlElement _modifiedPageElement;
@@ -2077,17 +2258,33 @@ namespace Bloom.Edit
             return _pageDivFromCopyPage != null;
         }
 
-        public void CopyPage(IPage page)
+        public void CopyPage(IPage page, string pageContentFromBrowser = null)
         {
-            // need to preserve any typing they've done but not yet saved (BL-4512)
+            // We have to clone the page div so that if the user changes the page after doing the
+            // copy, when they paste they get the page as it was, not as it is now. And we have to
+            // save first, or the clone would miss any typing they have done but not yet saved
+            // (BL-4512).
+            Action takeTheSnapshot = () =>
+            {
+                _pageDivFromCopyPage = (SafeXmlElement)page.GetDivNodeForThisPage().CloneNode(true);
+                _bookPathFromCopyPage = page.Book.GetPathHtmlFile();
+            };
+
+            // Copying doesn't change the page the user is looking at, so given the content there is
+            // nothing to navigate to afterwards: this is the one page-list command that can now
+            // leave the page alone entirely.
+            if (
+                pageContentFromBrowser != null
+                && SavePageInPlace(pageContentFromBrowser, forceFullSave: true)
+            )
+            {
+                takeTheSnapshot();
+                return;
+            }
             SaveThen(
                 () =>
                 {
-                    // We have to clone this so that if the user changes the page after doing the copy,
-                    // when they paste they get the page as it was, not as it is now.
-                    _pageDivFromCopyPage = (SafeXmlElement)
-                        page.GetDivNodeForThisPage().CloneNode(true);
-                    _bookPathFromCopyPage = page.Book.GetPathHtmlFile();
+                    takeTheSnapshot();
                     return page.Id;
                 },
                 () => { }, // wrong state, do nothing
@@ -2099,7 +2296,7 @@ namespace Bloom.Edit
         /// Paste the previously saved _pageDivFromCopyPage as a new page.
         /// </summary>
         /// <param name="pageToPasteAfter">This is NOT the page we are to paste!</param>
-        public void PastePage(IPage pageToPasteAfter)
+        public void PastePage(IPage pageToPasteAfter, string pageContentFromBrowser = null)
         {
             var templateBook = pageToPasteAfter.Book; // default is to assume it's from the same book
             bool fromAnotherBook = templateBook.GetPathHtmlFile() != _bookPathFromCopyPage;
@@ -2122,7 +2319,8 @@ namespace Bloom.Edit
                 "not used",
                 x => _pageDivFromCopyPage
             );
-            OnInsertPage(pageForPasting, new PageInsertEventArgs(false)); // false => don't need analytics on use of template pages
+            // false => don't need analytics on use of template pages
+            InsertPage(pageForPasting, new PageInsertEventArgs(false), pageContentFromBrowser);
         }
 
         public void AdjustPageZoom(int delta)

@@ -22,11 +22,8 @@ import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
-import {
-    changeImage,
-    IImageInfo,
-    wrapWithRequestPageContentDelay,
-} from "./bloomEditing";
+import { changeImage, IImageInfo } from "./bloomEditing";
+import { wrapWithRequestPageContentDelay } from "./pageContentDelays";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import $ from "jquery";
