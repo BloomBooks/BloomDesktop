@@ -1290,7 +1290,7 @@ namespace BloomTests.TeamCollection
                         collectionFolder.FolderPath,
                         repoFolder.FolderPath
                     );
-                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     Directory.CreateDirectory(Path.GetDirectoryName(settingsPath));
@@ -1335,7 +1335,7 @@ namespace BloomTests.TeamCollection
                         repoFolder.FolderPath
                     );
                     Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
-                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
 
@@ -1429,7 +1429,7 @@ namespace BloomTests.TeamCollection
                         repoFolder.FolderPath
                     );
                     Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
-                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
 
