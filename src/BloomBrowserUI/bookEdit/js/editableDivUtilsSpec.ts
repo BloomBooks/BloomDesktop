@@ -226,4 +226,243 @@ describe("EditableDivUtils Tests", () => {
         expect(div.innerHTML.indexOf(zwsp)).toEqual(-1);
         expect(div.innerHTML).toEqual("<p>cat</p>");
     });
+
+    // Build a div (attached, so it has a real selection) whose paragraph has been split into
+    // two adjacent text nodes the way ckeditor's createBookmarks() followed by
+    // selectBookmarks() splits it: a hidden span is inserted at the insertion point, then
+    // removed again.
+    function makeParagraphSplitByABookmark(
+        text: string,
+        offsetOfBookmark: number,
+    ): HTMLDivElement {
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode(text));
+        div.appendChild(p);
+        document.body.appendChild(div);
+
+        const secondHalf = (p.firstChild as Text).splitText(offsetOfBookmark);
+        const bookmark = document.createElement("span");
+        bookmark.id = "cke_bm_1S";
+        bookmark.setAttribute("style", "display: none;");
+        p.insertBefore(bookmark, secondHalf);
+        bookmark.remove();
+
+        return div;
+    }
+
+    it("mergeTextNodesSplitByBookmarks rejoins the text a removed bookmark split", () => {
+        const div = makeParagraphSplitByABookmark("overfflow", 5);
+        const p = div.firstChild as HTMLParagraphElement;
+        // sanity check: the removed bookmark really did leave two text nodes.
+        expect(p.childNodes.length).toBe(2);
+        expect(p.childNodes[0].textContent).toBe("overf");
+        expect(p.childNodes[1].textContent).toBe("flow");
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        expect(p.childNodes.length).toBe(1);
+        expect(p.childNodes[0].textContent).toBe("overfflow");
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks keeps the original text node rather than replacing it", () => {
+        // Not a detail. Replacing the text node would collapse any live Range whose boundaries
+        // were inside it, and the reader tools' and Talking Book's highlights are exactly that:
+        // live Ranges over these text nodes, registered by the markup pass moments before this
+        // runs. Replacing them makes the highlighting silently vanish from the paragraph the
+        // user is typing in.
+        const div = makeParagraphSplitByABookmark("overfflow", 5);
+        const p = div.firstChild as HTMLParagraphElement;
+        const originalFirstNode = p.childNodes[0];
+        // sanity check the setup
+        expect(originalFirstNode.textContent).toBe("overf");
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        expect(p.childNodes.length).toBe(1);
+        expect(p.childNodes[0].textContent).toBe("overfflow");
+        expect(p.childNodes[0]).toBe(originalFirstNode);
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks leaves no trace in the markup that gets saved", () => {
+        // It has to make Chromium re-shape the merged text, but whatever it does to achieve
+        // that must not survive into the html: this runs on every pause in typing, and the
+        // box's innerHTML is what Bloom saves into the book. Checking the serialized markup
+        // rather than a property, because an emptied-out attribute still serializes.
+        const div = makeParagraphSplitByABookmark("overfflow", 5);
+        const p = div.firstChild as HTMLParagraphElement;
+        // sanity check the setup
+        expect(p.hasAttribute("style")).toBe(false);
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        expect(div.innerHTML).toBe("<p>overfflow</p>");
+        expect(p.hasAttribute("style")).toBe(false);
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks keeps a paragraph's own inline style", () => {
+        const div = makeParagraphSplitByABookmark("overfflow", 5);
+        const p = div.firstChild as HTMLParagraphElement;
+        p.style.display = "inline-block";
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        expect(p.style.display).toBe("inline-block");
+        expect(p.childNodes[0].textContent).toBe("overfflow");
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks merges only within a parent, and merges every run", () => {
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode("over"));
+        p.appendChild(document.createTextNode("f"));
+        const em = document.createElement("em");
+        em.appendChild(document.createTextNode("fl"));
+        em.appendChild(document.createTextNode("ow"));
+        p.appendChild(em);
+        p.appendChild(document.createTextNode(" and"));
+        p.appendChild(document.createTextNode(" more"));
+        div.appendChild(p);
+        document.body.appendChild(div);
+        // sanity check the setup: two runs in the p, one inside the em
+        expect(p.childNodes.length).toBe(5);
+        expect(em.childNodes.length).toBe(2);
+
+        const originalEmFirstNode = em.childNodes[0];
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        // "over"+"f" merged, " and"+" more" merged, the <em> still between them
+        expect(em.childNodes[0]).toBe(originalEmFirstNode); // ranges must survive here too
+        expect(p.childNodes.length).toBe(3);
+        expect(p.childNodes[0].textContent).toBe("overf");
+        expect(p.childNodes[1]).toBe(em);
+        expect(p.childNodes[2].textContent).toBe(" and more");
+        expect(em.childNodes.length).toBe(1);
+        expect(em.childNodes[0].textContent).toBe("flow");
+        expect(div.textContent).toBe("overfflow and more");
+
+        div.remove();
+    });
+
+    // Where the user's cursor ends up is NOT asserted here, deliberately. Keeping live ranges
+    // (which includes the selection) on the same characters across a text-node merge is the
+    // browser's job per the DOM spec, and Chromium does it: verified in a running Bloom, with
+    // the caret both at the split itself and immediately after a <strong>. jsdom does not
+    // implement those range fixups, so a test here would fail on correct code and, worse, pass
+    // on the hand-rolled save/restore this code used to have - which was itself the bug.
+    it("mergeTextNodesSplitByBookmarks leaves the text byte-for-byte unchanged, whatever it ends with", () => {
+        // It forces a repaint by appending a space and immediately deleting it. A text node's
+        // data is an exact string - html whitespace collapsing is a rendering rule, not a data
+        // one - so that has to round-trip exactly even when the text already ends in
+        // whitespace, and the appended space must never survive into what Bloom saves.
+        const endings = [
+            "flow", // ordinary
+            "flow ", // already ends with a space
+            "flow  ", // ...with two
+            "flow ", // ...with a non-breaking space
+            "flow\n", // ...with a newline
+            "flow\t", // ...with a tab
+            "   ", // nothing but spaces
+        ];
+        for (const ending of endings) {
+            const div = document.createElement("div");
+            const p = document.createElement("p");
+            p.appendChild(document.createTextNode("overf"));
+            p.appendChild(document.createTextNode(ending));
+            div.appendChild(p);
+            document.body.appendChild(div);
+            // sanity check the setup
+            expect(p.childNodes.length).toBe(2);
+
+            EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+            expect(p.childNodes.length).toBe(1);
+            expect((p.firstChild as Text).data).toBe("overf" + ending);
+            div.remove();
+        }
+    });
+
+    it("mergeTextNodesSplitByBookmarks copes with an empty text node at the head of a run", () => {
+        // normalize() deletes empty text nodes outright, so the node a run collapses into is
+        // its first NON-empty node. Getting that wrong would leave us holding a detached node
+        // and the repaint would silently do nothing - the original bug all over again.
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode("")); // empty node heads the run
+        p.appendChild(document.createTextNode("overf"));
+        p.appendChild(document.createTextNode("flow"));
+        div.appendChild(p);
+        document.body.appendChild(div);
+        // sanity check the setup
+        expect(p.childNodes.length).toBe(3);
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        expect(p.childNodes.length).toBe(1);
+        expect(p.childNodes[0].textContent).toBe("overfflow");
+        // the surviving node is the first non-empty one, still attached
+        expect((p.childNodes[0] as Text).isConnected).toBe(true);
+        expect(div.innerHTML).toBe("<p>overfflow</p>");
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks copes with a run that is entirely empty nodes", () => {
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode(""));
+        p.appendChild(document.createTextNode(""));
+        div.appendChild(p);
+        document.body.appendChild(div);
+        expect(p.childNodes.length).toBe(2);
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        // normalize() removes them all; we must not throw trying to poke a detached node.
+        expect(p.childNodes.length).toBe(0);
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks only touches parents that actually have a run to merge", () => {
+        // What we can assert is scope: every other node in the box comes out untouched, so
+        // there is nothing for the browser to have to fix up in the first place.
+        const div = makeParagraphSplitByABookmark("overfflow", 5);
+        const untouched = document.createElement("p");
+        untouched.appendChild(document.createTextNode("def"));
+        div.appendChild(untouched);
+        const untouchedTextNode = untouched.firstChild;
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        // the merge happened in the first paragraph...
+        expect(div.firstChild!.childNodes.length).toBe(1);
+        expect(div.firstChild!.textContent).toBe("overfflow");
+        // ...and the second paragraph still holds the very same text node object.
+        expect(untouched.childNodes.length).toBe(1);
+        expect(untouched.firstChild).toBe(untouchedTextNode);
+        expect(untouched.textContent).toBe("def");
+
+        div.remove();
+    });
+
+    it("mergeTextNodesSplitByBookmarks leaves an already-normal paragraph alone", () => {
+        const div = document.createElement("div");
+        div.innerHTML = "<p>over<em>ff</em>low</p>";
+        const before = div.innerHTML;
+
+        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+
+        // In particular, it must not merge text across an element boundary.
+        expect(div.innerHTML).toBe(before);
+    });
 });

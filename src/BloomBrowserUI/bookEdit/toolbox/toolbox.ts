@@ -15,6 +15,7 @@ import {
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
 import { isLongPressEvaluating } from "../longPressShared";
+import { EditableDivUtils } from "../js/editableDivUtils";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import { showRequiresSubscriptionDialogInAnyView } from "../../react_components/requiresSubscription";
 import {
@@ -1625,25 +1626,43 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // undo/redo has to wait behind. Anything that gave up before this point - an
                 // unusable selection and each of its retries, no editable under the caret, a
                 // box with no ckeditor - did none of that work and must not make one wait.
+                // (Below this point we always at least remove comments and clean up nbsps,
+                // whether or not a tool is active, so the work is real either way.)
                 if (isUndoOrRedo) {
                     lastUndoRedoMarkupStartTime = Date.now();
                 }
-                // there is also createBookmarks2(), which avoids actually inserting anything. That has the
-                // advantage that changing a character in the middle of a word will allow the entire word to
-                // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
-                // actually go back to where it was: it gets shifted to the right.
-                let bookmarks = ckeditorSelection.createBookmarks(true);
-
-                // For some reason, we have cases, mostly (always?) on paste, where
-                // ckeditor is inserting tons of comments which are messing with our parsing
-                // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
-                removeCommentsFromEditableHtml(editableDiv);
 
                 // If there's no tool active, we don't need to update the markup.
                 const activeTool =
                     currentTool && toolbox.toolboxIsShowing()
                         ? currentTool
                         : undefined;
+
+                // Creating a bookmark inserts a hidden span at the insertion point, which SPLITS
+                // the text node the user is typing in. That is destructive enough to be worth
+                // avoiding: even though removing the bookmark and rejoining the text leaves the
+                // DOM exactly as it was, Chromium goes on painting the paragraph's old glyphs
+                // where a ligature straddled the split, so letters the user typed stop being
+                // drawn until something else forces a repaint (BL-16717).
+                // Nothing below rewrites this box unless a tool is active, or there is actually
+                // a comment or an nbsp to clean up - and if nothing rewrites the box, there is no
+                // selection to preserve. So only pay for a bookmark when one of those is true,
+                // which for ordinary typing is never.
+                const needsBookmarks =
+                    !!activeTool || editableMightBeRewritten(editableDiv);
+
+                // there is also createBookmarks2(), which avoids actually inserting anything. That has the
+                // advantage that changing a character in the middle of a word will allow the entire word to
+                // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
+                // actually go back to where it was: it gets shifted to the right.
+                let bookmarks = needsBookmarks
+                    ? ckeditorSelection.createBookmarks(true)
+                    : undefined;
+
+                // For some reason, we have cases, mostly (always?) on paste, where
+                // ckeditor is inserting tons of comments which are messing with our parsing
+                // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
+                removeCommentsFromEditableHtml(editableDiv);
                 if (activeTool) {
                     if (activeTool.isUpdateMarkupAsync()) {
                         // It's possible that removeCommentsFromEditableHtml moved the selection, typically
@@ -1714,7 +1733,17 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // in some way that is still not understood. This was fixed by changing all this to trigger on
                 // a different event (keydown instead of keypress).
                 // Note: causing the bookmarks to be selected actually removes the bookmark spans.
-                ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
+                if (bookmarks) {
+                    ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
+
+                    // ...but removing them leaves the text that was on either side of each
+                    // bookmark as two adjacent text nodes, which makes Chromium drop glyphs from
+                    // ligatures that straddle the join (BL-16717). See
+                    // mergeTextNodesSplitByBookmarks().
+                    EditableDivUtils.mergeTextNodesSplitByBookmarks(
+                        editableDiv,
+                    );
+                }
             }
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
@@ -1866,6 +1895,21 @@ function setCkeditorBookmarkContent(
     });
 
     return existingContent;
+}
+
+// Could the clean-up steps in handlePageEditing's mainTask (removeCommentsFromEditableHtml and
+// cleanUpNbsps) actually change this box? Both rewrite innerHTML only when they find something
+// to fix, so this looks for the two things they look for, in the same place and the same way
+// they look for them: their own searches are over innerHTML too, so this cannot miss an nbsp
+// that cleanUpNbsps would go on to find, whatever the serializer does with U+00A0. It
+// deliberately over-estimates - an nbsp that cleanUpNbsps would decide to keep still counts -
+// because the only cost of a false yes is that we take a ckeditor bookmark we didn't need,
+// which is what the code did unconditionally before. A false NO would be a bug: we'd lose the
+// user's insertion point when one of them did rewrite the box.
+// (exported for testing)
+export function editableMightBeRewritten(editable: HTMLElement): boolean {
+    const html = editable.innerHTML;
+    return html.includes("<!--") || html.includes("&nbsp;");
 }
 
 // exported for testing
