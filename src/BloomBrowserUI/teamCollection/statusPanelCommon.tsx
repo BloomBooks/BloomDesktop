@@ -26,6 +26,7 @@ export interface IStatusPanelProps {
     useWarningColorForButton?: boolean;
     children?: JSX.Element;
     menu?: JSX.Element; // when book is checked out, About my Avatar... and Forget Changes and Check in Book
+    belowButton?: JSX.Element; // spans the full panel width underneath the button row
     className?: string; // additional class for  root div; enables emotion CSS.
 }
 
@@ -43,9 +44,12 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
                     main: buttonColor,
                 },
                 action: {
-                    // Yagni: currently the only time we disable a button is when using the warning color
-                    // If we ever disable the other version, we probably want primary.dark here.
-                    disabledBackground: outerTheme.palette.warning.dark,
+                    // Keep the disabled background in the same family as the button's own color.
+                    // The check-in button uses the warning color; the check-out button uses primary,
+                    // and gets disabled when an administrator has paused checkouts (BL-16691).
+                    disabledBackground: props.useWarningColorForButton
+                        ? outerTheme.palette.warning.dark
+                        : outerTheme.palette.primary.dark,
                 },
             },
         }),
@@ -94,6 +98,7 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
                     </ThemeProvider>
                 </StyledEngineProvider>
             </div>
+            {props.belowButton}
         </div>
     );
 };

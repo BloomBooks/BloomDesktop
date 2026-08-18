@@ -431,6 +431,125 @@ namespace BloomTests.Collection
             Assert.That(settings.Subscription.Code, Is.EqualTo("Foobar-123456-1234"));
         }
 
+        /// <summary>
+        /// AllowCheckouts (BL-16691) has no UI; an administrator hand-edits it into the file.
+        /// Collections that predate it, and the overwhelming majority that will never have it,
+        /// must keep allowing checkouts.
+        /// </summary>
+        [Test]
+        public void AllowCheckouts_ElementMissing_DefaultsToTrue()
+        {
+            var settings = CreateSettingsFromFileContents(
+                "allowCheckoutsMissing",
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowNewBooks>True</AllowNewBooks>
+</Collection>"
+            );
+            Assert.That(settings.AllowCheckouts, Is.True);
+        }
+
+        [TestCase("False", false)]
+        [TestCase("True", true)]
+        public void AllowCheckouts_ElementPresent_IsRead(string valueInFile, bool expected)
+        {
+            var settings = CreateSettingsFromFileContents(
+                "allowCheckoutsRead" + valueInFile,
+                $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowCheckouts>{valueInFile}</AllowCheckouts>
+</Collection>"
+            );
+            Assert.That(settings.AllowCheckouts, Is.EqualTo(expected));
+        }
+
+        /// <summary>
+        /// Save() rebuilds the whole settings file from scratch, so a setting we don't write out
+        /// would be silently erased the next time anything saves collection settings. That would
+        /// quietly un-pause checkouts for the whole team, so guard against it.
+        /// </summary>
+        [Test]
+        public void AllowCheckouts_False_SurvivesSaveAndReload()
+        {
+            const string collectionName = "allowCheckoutsRoundTrip";
+            var settings = CreateSettingsFromFileContents(
+                collectionName,
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowCheckouts>False</AllowCheckouts>
+</Collection>"
+            );
+            // Sanity check: we only learn anything from the round trip if it started out false.
+            Assert.That(
+                settings.AllowCheckouts,
+                Is.False,
+                "setup failed: AllowCheckouts should have been read as false"
+            );
+
+            settings.Save();
+
+            var reloaded = CreateCollectionSettings(_folder.Path, collectionName);
+            Assert.That(reloaded.AllowCheckouts, Is.False);
+        }
+
+        /// <summary>
+        /// The setting is written only when checkouts are paused, so that the overwhelming
+        /// majority of collections -- which will never use it -- don't all gain a line the first
+        /// time their settings are saved. See BL-16691.
+        /// </summary>
+        [Test]
+        public void AllowCheckouts_True_IsNotWrittenToTheFile()
+        {
+            const string collectionName = "allowCheckoutsNotWritten";
+            var settings = CreateSettingsFromFileContents(
+                collectionName,
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowCheckouts>False</AllowCheckouts>
+</Collection>"
+            );
+            // Sanity check: start from the value that IS written, so we can watch it disappear.
+            Assert.That(
+                settings.AllowCheckouts,
+                Is.False,
+                "setup failed: AllowCheckouts should have been read as false"
+            );
+            settings.Save();
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Contain("AllowCheckouts"),
+                "setup failed: a paused collection should write the element"
+            );
+
+            settings.AllowCheckouts = true;
+            settings.Save();
+
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Not.Contain("AllowCheckouts")
+            );
+            // ...and the collection still reads back as allowing checkouts.
+            var reloaded = CreateCollectionSettings(_folder.Path, collectionName);
+            Assert.That(reloaded.AllowCheckouts, Is.True);
+        }
+
+        /// <summary>
+        /// Writes the given .bloomCollection contents into a fresh collection folder and loads it.
+        /// </summary>
+        private CollectionSettings CreateSettingsFromFileContents(
+            string collectionName,
+            string fileContents
+        )
+        {
+            var collectionPath = CollectionSettings.GetPathForNewSettings(
+                _folder.Path,
+                collectionName
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+            RobustFile.WriteAllText(collectionPath, fileContents);
+            return CreateCollectionSettings(_folder.Path, collectionName);
+        }
+
         // I'm not clear why this needs a test, but I split it off from another test to clarify the intent.
         [Test]
         public void Writing_InvalidSubscription_StillWritesBookshelf()

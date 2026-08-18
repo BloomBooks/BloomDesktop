@@ -35,6 +35,14 @@ namespace Bloom.TeamCollection
         /// </summary>
         void SendBookContentReload();
 
+        /// <summary>
+        /// Sends the bookTeamCollectionStatus/reload websocket event so the book status panel
+        /// re-reads status. Call this after changing something the panel displays without the
+        /// book's own checkout status having changed -- a book-status-changed event would be the
+        /// wrong signal for that. See BL-16691.
+        /// </summary>
+        void SendBookStatusReload();
+
         // ENHANCE: Add other properties and methods as needed
     }
 
@@ -563,6 +571,12 @@ namespace Bloom.TeamCollection
         public void SendBookContentReload()
         {
             _webSocketServer.SendEvent("bookContent", "reload");
+        }
+
+        /// <inheritdoc />
+        public void SendBookStatusReload()
+        {
+            _webSocketServer.SendEvent("bookTeamCollectionStatus", "reload");
         }
 
         /// <summary>
