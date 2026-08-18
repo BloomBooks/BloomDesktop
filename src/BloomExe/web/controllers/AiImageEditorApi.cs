@@ -1432,15 +1432,19 @@ namespace Bloom.web.controllers
                             isSameFile: false,
                             resizeFileIfNeeded: resizeIfNeeded
                         );
-                        // Only re-attach metadata we actually managed to read. If libpalaso choked
-                        // on the source's tags, imageInfo.Metadata is effectively empty, and writing
-                        // it would STRIP whatever ProcessAndSaveImageIntoFolder had preserved by
-                        // copying the file verbatim — turning a metadata read failure into metadata
-                        // loss. ImageUtils.CopyCoreMetadata guards the same way; this used to be the
-                        // odd one out (Devin's review of #8188).
+                        // Only re-attach metadata we actually read something from. Writing an empty
+                        // model over the processed file could STRIP what
+                        // ProcessAndSaveImageIntoFolder had preserved by copying the file verbatim —
+                        // turning "we found no metadata" into "there is now no metadata" — and there
+                        // is nothing to restore in that case anyway. Two ways to end up empty: the
+                        // read failed (ImageUtils.CopyCoreMetadata guards on the same flag), or it
+                        // succeeded and the source simply had none, which is the normal case for a
+                        // freshly generated AI result. Both of Devin's reviews of #8188 on this line.
                         if (
                             processedName != null
-                            && imageInfo.Metadata?.ExceptionCaughtWhileLoading == null
+                            && imageInfo.Metadata != null
+                            && imageInfo.Metadata.ExceptionCaughtWhileLoading == null
+                            && !imageInfo.Metadata.IsEmpty
                         )
                         {
                             // Put the credits back on whatever was just written, exactly as
