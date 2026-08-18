@@ -35,7 +35,7 @@ namespace BloomTests
                     "<?xml version=\"1.0\" encoding=\"utf-8\"?><Collection version=\"0.2\"><Language1Iso639Code>de</Language1Iso639Code></Collection>"
                 );
                 // This is what a caller gets by deriving the name from the folder, and it does not exist.
-                var expectedSettingsPath = CollectionSettings.GetSettingsFilePath(
+                var expectedSettingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                     collectionFolder.FolderPath
                 );
                 Assert.That(
@@ -71,7 +71,7 @@ namespace BloomTests
                     folderName + "..bloomCollection"
                 );
                 RobustFile.WriteAllText(realSettingsPath, "<Collection version=\"0.2\"/>");
-                var derivedPath = CollectionSettings.GetSettingsFilePath(
+                var derivedPath = CollectionSettings.GetDefaultSettingsFilePath(
                     collectionFolder.FolderPath
                 );
                 // Sanity check: the name a caller would derive from the folder is not on disk.
@@ -129,7 +129,9 @@ namespace BloomTests
         {
             using (var collectionFolder = new TemporaryFolder("ProjectContextTests"))
             {
-                var path = CollectionSettings.GetSettingsFilePath(collectionFolder.FolderPath);
+                var path = CollectionSettings.GetDefaultSettingsFilePath(
+                    collectionFolder.FolderPath
+                );
                 RobustFile.WriteAllText(path, "<Collection version=\"0.2\"/>");
 
                 Assert.That(ProjectContext.GetRealSettingsPath(path), Is.EqualTo(path));
@@ -145,7 +147,9 @@ namespace BloomTests
         {
             using (var collectionFolder = new TemporaryFolder("ProjectContextTests"))
             {
-                var path = CollectionSettings.GetSettingsFilePath(collectionFolder.FolderPath);
+                var path = CollectionSettings.GetDefaultSettingsFilePath(
+                    collectionFolder.FolderPath
+                );
 
                 Assert.That(ProjectContext.GetRealSettingsPath(path), Is.EqualTo(path));
 
@@ -170,7 +174,7 @@ namespace BloomTests
         {
             using (var collectionFolder = new TemporaryFolder("ProjectContextTests"))
             {
-                var expectedSettingsPath = CollectionSettings.GetSettingsFilePath(
+                var expectedSettingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                     collectionFolder.FolderPath
                 );
                 // Sanity check: nothing in the folder to find, and nothing to overwrite.
@@ -194,7 +198,7 @@ namespace BloomTests
         {
             using (var collectionFolder = new TemporaryFolder("ProjectContextTests"))
             {
-                var expectedSettingsPath = CollectionSettings.GetSettingsFilePath(
+                var expectedSettingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                     collectionFolder.FolderPath
                 );
                 RobustFile.WriteAllText(

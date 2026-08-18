@@ -29,11 +29,11 @@ namespace BloomTests.Utils
         /// <summary>
         /// A collection whose name ends with a period (BL-16679) gives us a path whose folder part
         /// Windows never actually created, which breaks the FileSystemWatchers we put on the
-        /// collection folder. GetPathAsOnDisk must give us back the folder that really exists,
+        /// collection folder. GetFullPath must give us back the folder that really exists,
         /// without disturbing the file name, which legitimately keeps the period.
         /// </summary>
         [Test]
-        public void GetPathAsOnDisk_FolderNameEndsWithPeriod_ReturnsFolderWindowsActuallyCreated()
+        public void GetFullPath_FolderNameEndsWithPeriod_ReturnsFolderWindowsActuallyCreated()
         {
             using (var parent = new TemporaryFolder("MiscUtilsTests_PathAsOnDisk_Period"))
             {
@@ -55,7 +55,7 @@ namespace BloomTests.Utils
                     "Collection Name..bloomCollection"
                 );
 
-                var result = MiscUtils.GetPathAsOnDisk(settingsPath);
+                var result = MiscUtils.GetFullPath(settingsPath);
 
                 Assert.That(
                     Path.GetDirectoryName(result),
@@ -71,7 +71,7 @@ namespace BloomTests.Utils
         }
 
         [Test]
-        public void GetPathAsOnDisk_OrdinaryPath_Unchanged()
+        public void GetFullPath_OrdinaryPath_Unchanged()
         {
             using (var parent = new TemporaryFolder("MiscUtilsTests_PathAsOnDisk_Ordinary"))
             {
@@ -81,15 +81,15 @@ namespace BloomTests.Utils
                     "Collection Name.bloomCollection"
                 );
 
-                Assert.That(MiscUtils.GetPathAsOnDisk(path), Is.EqualTo(path));
+                Assert.That(MiscUtils.GetFullPath(path), Is.EqualTo(path));
             }
         }
 
         [TestCase(null)]
         [TestCase("")]
-        public void GetPathAsOnDisk_NullOrEmpty_ReturnedAsIs(string path)
+        public void GetFullPath_NullOrEmpty_ReturnedAsIs(string path)
         {
-            Assert.That(MiscUtils.GetPathAsOnDisk(path), Is.EqualTo(path));
+            Assert.That(MiscUtils.GetFullPath(path), Is.EqualTo(path));
         }
 
         [Test]

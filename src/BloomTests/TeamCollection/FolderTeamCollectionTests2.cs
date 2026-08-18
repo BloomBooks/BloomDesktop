@@ -46,7 +46,7 @@ namespace BloomTests.TeamCollection
                         "Strange book content",
                         bookFolderName2
                     );
-                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
 
@@ -103,7 +103,7 @@ namespace BloomTests.TeamCollection
                     Assert.That(File.Exists(teamCollectionLinkPath));
                     var collectionFileContent = RobustFile.ReadAllText(teamCollectionLinkPath);
                     Assert.That(collectionFileContent, Is.EqualTo(sharedFolder.FolderPath));
-                    var sharedSettingsPath = CollectionSettings.GetSettingsFilePath(
+                    var sharedSettingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     Assert.That(
@@ -242,7 +242,7 @@ namespace BloomTests.TeamCollection
                     )
                 )
                 {
-                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     var tcManager = new TeamCollectionManager(
@@ -781,7 +781,7 @@ namespace BloomTests.TeamCollection
                         collectionFolder.FolderPath,
                         repoFolder.FolderPath
                     );
-                    var otherPath = CollectionSettings.GetSettingsFilePath(
+                    var otherPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     Directory.CreateDirectory(Path.GetDirectoryName(otherPath));
@@ -875,7 +875,7 @@ namespace BloomTests.TeamCollection
                         collectionFolder.FolderPath,
                         repoFolder.FolderPath
                     );
-                    var otherPath = CollectionSettings.GetSettingsFilePath(
+                    var otherPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     // this test doesn't need this folder except that StartMonitoring does.

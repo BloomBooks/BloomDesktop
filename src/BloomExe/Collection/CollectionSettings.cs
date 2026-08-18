@@ -137,7 +137,7 @@ namespace Bloom.Collection
         /// <summary>
         /// Generate the path to the collection settings file given the collection folder.
         /// </summary>
-        public static string GetSettingsFilePath(string collectionFolder)
+        public static string GetDefaultSettingsFilePath(string collectionFolder)
         {
             return Path.Combine(collectionFolder, CollectionSettings.GetFileName(collectionFolder));
         }
@@ -157,26 +157,75 @@ namespace Bloom.Collection
         /// <returns>
         /// true if the file exists, false otherwise.
         /// </returns>
+        /// <remarks>
+        /// Listing a folder can throw, and callers are often working through a list of them, so an
+        /// unreadable or just-deleted folder is reported as "no collection here" rather than thrown:
+        /// one bad folder must not cost the user the whole Open/Create dialog.
+        /// </remarks>
         public static bool TryGetSettingsFilePath(
             string collectionFolder,
             out string settingsFilePath
         )
         {
-            // Return the path to the standard collection settings file if it exists.
-            // Otherwise, return the path to the first file that matches the wild search pattern or null
-            // if no files match.
-            settingsFilePath = GetSettingsFilePath(collectionFolder);
-            if (!RobustFile.Exists(settingsFilePath))
+            try
             {
-                // If the collection folder is not the same as the settings file, we may have a problem.
-                // But we can try to find it by searching for the file with the wild search pattern.
-                // This is used, for example, when joining a Team Collection, where the settings file is
-                // in a different place.
-                settingsFilePath = Directory
-                    .EnumerateFiles(collectionFolder, CollectionSettings.kWildSearchPattern)
-                    .FirstOrDefault();
+                // Return the path to the standard collection settings file if it exists.
+                // Otherwise, return the path to the first file that matches the wild search pattern or null
+                // if no files match.
+                settingsFilePath = GetDefaultSettingsFilePath(collectionFolder);
+                if (!RobustFile.Exists(settingsFilePath))
+                {
+                    // If the collection folder is not the same as the settings file, we may have a problem.
+                    // But we can try to find it by searching for the file with the wild search pattern.
+                    // This is used, for example, when joining a Team Collection, where the settings file is
+                    // in a different place.
+                    settingsFilePath = Directory
+                        .EnumerateFiles(collectionFolder, CollectionSettings.kWildSearchPattern)
+                        .FirstOrDefault();
+                }
+                return settingsFilePath != null;
             }
-            return settingsFilePath != null;
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                SIL.Reporting.Logger.WriteMinorEvent(
+                    $"TryGetSettingsFilePath could not look inside {collectionFolder}: {e.Message}"
+                );
+                settingsFilePath = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The path of the .bloomCollection file in this folder, or null if there isn't one (or we
+        /// can't look).
+        /// </summary>
+        /// <remarks>
+        /// We ask what is really in the folder rather than just looking for a file named after it,
+        /// because the two don't always agree: renaming a collection folder leaves the old file name,
+        /// and a collection whose name ends with a period gets a folder without it (BL-16679). Such a
+        /// collection is perfectly usable, so it belongs in this list; looking only for the
+        /// name-matching file silently hid it.
+        /// </remarks>
+        public static string GetSettingsFilePath(string folder)
+        {
+            return TryGetSettingsFilePath(folder, out var settingsPath) ? settingsPath : null;
+        }
+
+        public static string GetSettingsFilePathOrThrow(string folderPath)
+        {
+            if (TryGetSettingsFilePath(folderPath, out string settingsFilePath))
+            {
+                return settingsFilePath;
+            }
+            else
+            {
+                throw new ApplicationException(
+                    string.Format(
+                        "Bloom expected to find a .bloomCollectionFile in {0}, but there isn't one.",
+                        folderPath
+                    )
+                );
+            }
         }
 
         public CollectionSettings()
@@ -1031,7 +1080,7 @@ namespace Bloom.Collection
             // Windows drops trailing periods and spaces when it creates a folder, so if we let them
             // through here, the path we hand out and remember would never match the folder that
             // actually gets created, and the settings file name would no longer match its folder name
-            // (which GetSettingsFilePath assumes). Trailing periods also break the FileSystemWatchers
+            // (which GetDefaultSettingsFilePath assumes). Trailing periods also break the FileSystemWatchers
             // we set up on the collection folder. See BL-16679.
             newCollectionName = newCollectionName.TrimEnd('.', ' ');
             return parentFolderPath.CombineForPath(
@@ -1060,7 +1109,7 @@ namespace Bloom.Collection
             // already a directory with the new name" complaint below, which would stop Bloom from
             // reopening. Compared exactly, so that a change of letter case is still a real rename.
             if (toDirectory == fromDirectory)
-                return FindSettingsFileInFolder(fromDirectory);
+                return GetSettingsFilePathOrThrow(fromDirectory);
 
             if (Directory.Exists(toDirectory)) //there's already a folder taking this name
             {
@@ -1071,14 +1120,14 @@ namespace Bloom.Collection
             }
 
             //this is just a sanity check, it will throw if the existing directory doesn't have a collection
-            FindSettingsFileInFolder(fromDirectory);
+            GetSettingsFilePathOrThrow(fromDirectory);
 
             //first rename the directory, as that is the part more likely to fail (because *any* locked file in there will cause a failure)
             SIL.IO.RobustIO.MoveDirectory(fromDirectory, toDirectory);
             string collectionSettingsPath;
             try
             {
-                collectionSettingsPath = FindSettingsFileInFolder(toDirectory);
+                collectionSettingsPath = GetSettingsFilePathOrThrow(toDirectory);
             }
             catch (Exception)
             {
@@ -1088,7 +1137,7 @@ namespace Bloom.Collection
             try
             {
                 //we now make a default name based on the name of the directory
-                string destinationPath = CollectionSettings.GetSettingsFilePath(toDirectory);
+                string destinationPath = CollectionSettings.GetDefaultSettingsFilePath(toDirectory);
                 if (!RobustFile.Exists(destinationPath))
                     RobustFile.Move(collectionSettingsPath, destinationPath);
 
@@ -1105,23 +1154,6 @@ namespace Bloom.Collection
                         toDirectory
                     ),
                     error
-                );
-            }
-        }
-
-        public static string FindSettingsFileInFolder(string folderPath)
-        {
-            if (TryGetSettingsFilePath(folderPath, out string settingsFilePath))
-            {
-                return settingsFilePath;
-            }
-            else
-            {
-                throw new ApplicationException(
-                    string.Format(
-                        "Bloom expected to find a .bloomCollectionFile in {0}, but there isn't one.",
-                        folderPath
-                    )
                 );
             }
         }

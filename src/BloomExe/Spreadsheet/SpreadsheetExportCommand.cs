@@ -72,7 +72,9 @@ namespace Bloom.CLI
             {
                 // No collection here at all -- the book may not be in one. Carry on with the derived
                 // name, which gives us default settings, as this command has always done.
-                collectionSettingsFile = CollectionSettings.GetSettingsFilePath(collectionFolder);
+                collectionSettingsFile = CollectionSettings.GetDefaultSettingsFilePath(
+                    collectionFolder
+                );
             }
             return new CollectionSettings(collectionSettingsFile);
         }

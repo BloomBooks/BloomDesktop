@@ -410,7 +410,7 @@ namespace Bloom.Utils
         }
 
         /// <summary>
-        /// Get the spelling of a path that matches what is really on disk.
+        /// Get the spelling of a path that matches what is really on disk. (but case insensitive on Windows)
         /// </summary>
         /// <remarks>
         /// Windows silently drops trailing periods and spaces when it creates a folder, so a
@@ -422,13 +422,13 @@ namespace Bloom.Utils
         /// fails with "Error reading the ... directory". Normalizing at the few places where a
         /// collection path enters Bloom keeps every later consumer (the watchers included) working
         /// with the folder that exists.
-        /// Note that GetFullPath also resolves relative paths, which is a no-op for the absolute
+        /// Note that Path.GetFullPath also resolves relative paths, which is a no-op for the absolute
         /// collection paths we pass it. This is about trailing periods and spaces only -- it is not a
         /// general "spelling on disk" fixer: it does not correct the case of a name, or expand a short
         /// (8.3) name. It is also effectively a no-op on Linux, where such folder names are legal and
         /// are therefore what is really on disk, and where FileSystemWatcher has no trouble with them.
         /// </remarks>
-        public static string GetPathAsOnDisk(string path)
+        public static string GetFullPath(string path)
         {
             return string.IsNullOrEmpty(path) ? path : Path.GetFullPath(path);
         }

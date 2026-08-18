@@ -1676,10 +1676,10 @@ namespace Bloom
             try
             {
                 //// See BL-10012.
-                // GetPathAsOnDisk: a collection name ending in a period or space leaves us with a
+                // GetFullPath: a collection name ending in a period or space leaves us with a
                 // path whose folder part doesn't literally exist, which breaks the FileSystemWatchers
                 // that TeamCollection and BookCollection set up on the collection folder. See BL-16679.
-                var path = MiscUtils.GetPathAsOnDisk(
+                var path = MiscUtils.GetFullPath(
                     Bloom.Utils.LongPathAware.GetLongPath(collectionPath)
                 );
                 if (Utils.LongPathAware.GetExceedsMaxPath(path))
@@ -1881,7 +1881,7 @@ namespace Bloom
                 // Remember the collection by the path that really exists on disk, so that a path saved
                 // by an older Bloom with trailing periods or spaces on the folder name heals rather
                 // than being handed back to us on every launch. See BL-16679.
-                var pathAsOnDisk = MiscUtils.GetPathAsOnDisk(path);
+                var pathAsOnDisk = MiscUtils.GetFullPath(path);
                 if (pathAsOnDisk != path)
                 {
                     // The list matches paths as exact strings, so without this the old spelling stays

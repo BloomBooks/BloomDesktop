@@ -544,7 +544,7 @@ namespace Bloom
             // Program's normalization. A folder name with a trailing period opens files perfectly well
             // -- Windows normalizes for file APIs -- so without this the un-normalized spelling
             // survives into the FileSystemWatchers, which is the original bug. (BL-16679)
-            projectSettingsPath = MiscUtils.GetPathAsOnDisk(projectSettingsPath);
+            projectSettingsPath = MiscUtils.GetFullPath(projectSettingsPath);
             if (RobustFile.Exists(projectSettingsPath))
                 return projectSettingsPath;
             var folder = Path.GetDirectoryName(projectSettingsPath);
