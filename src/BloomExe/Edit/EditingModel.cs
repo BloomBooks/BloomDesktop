@@ -1,4 +1,4 @@
-//#define MEMORYCHECK
+﻿//#define MEMORYCHECK
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -2270,11 +2270,20 @@ namespace Bloom.Edit
                 _bookPathFromCopyPage = page.Book.GetPathHtmlFile();
             };
 
-            // Copying doesn't change the page the user is looking at, so given the content there is
-            // nothing to navigate to afterwards: this is the one page-list command that can now
-            // leave the page alone entirely.
+            // The copied page has to end up SELECTED, which is why this navigates at all: a
+            // later Paste inserts after the current selection (see
+            // DeterminePageWhichWouldPrecedeNextInsertion), so if copying left the selection
+            // elsewhere, the pasted copy would land somewhere the user did not ask for.
+            //
+            // Almost always it is already selected -- the user right-clicked the page they are on
+            // -- and then there is nothing to navigate to and we can leave the page completely
+            // alone, which is the win here: copying a page no longer reloads it. Only the rarer
+            // case of right-clicking some OTHER thumbnail (a right-click does not select) still
+            // has to move, exactly as it did before.
+            var copyingTheSelectedPage = _pageSelection.CurrentSelection?.Id == page.Id;
             if (
-                pageContentFromBrowser != null
+                copyingTheSelectedPage
+                && pageContentFromBrowser != null
                 && SavePageInPlace(pageContentFromBrowser, forceFullSave: true)
             )
             {
