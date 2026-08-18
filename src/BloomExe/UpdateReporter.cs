@@ -157,18 +157,26 @@ namespace Bloom
         /// </summary>
         public string FailureMessage { get; private set; }
 
+        /// <summary>
+        /// The last thing we told the user, so that Finished does not repeat it.
+        /// </summary>
+        private string _lastSaid;
+
         public override void Say(string message)
         {
+            _lastSaid = message;
             _progress.MessageWithoutLocalizing(message);
         }
 
         public override void SayWarning(string message)
         {
+            _lastSaid = message;
             _progress.MessageWithoutLocalizing(message, ProgressKind.Warning);
         }
 
         public override void SayProblem(string message, Exception exception)
         {
+            _lastSaid = message;
             _progress.MessageWithoutLocalizing(message, ProgressKind.Error);
             if (exception != null)
                 Logger.WriteError("Bloom was unable to update itself", exception);
@@ -210,6 +218,23 @@ namespace Bloom
             Outcome = outcome;
             DownloadedVersion = downloadedVersion;
             FailureMessage = message;
+
+            // Say it if nobody has. The update code decides what to show from `verbosity`, and we
+            // ask for Quiet -- so on the paths where it stays quiet (it cannot reach the update
+            // server, or another attempt is already running) the explanation reaches us here and
+            // nowhere else. Without this, someone with no internet clicks Upgrade Bloom and gets
+            // an empty dialog. Toasts have no equivalent gap: there, staying quiet IS the answer,
+            // because the user did not ask for anything.
+            if (!string.IsNullOrEmpty(message) && message != _lastSaid)
+            {
+                _progress.MessageWithoutLocalizing(
+                    message,
+                    outcome == UpdateAttemptOutcome.NothingNewer
+                        ? ProgressKind.Progress
+                        : ProgressKind.Error
+                );
+            }
+
             _finished.Set();
         }
 
