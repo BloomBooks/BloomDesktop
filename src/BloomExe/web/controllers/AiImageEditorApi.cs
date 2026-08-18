@@ -1546,6 +1546,22 @@ namespace Bloom.web.controllers
                     $"AiImageEditorApi: could not consider re-encoding {newPath} as a JPEG",
                     ex
                 );
+                // GraphicsMagick may already have written the JPEG before we got here — the throw
+                // can come from disposing the PalasoImage, after the conversion itself succeeded —
+                // and we are about to walk away from it, so clean it up like the declined case
+                // below rather than leaving it unreferenced in the book folder.
+                try
+                {
+                    if (RobustFile.Exists(jpegPath))
+                        RobustFile.Delete(jpegPath);
+                }
+                catch (Exception cleanupEx)
+                {
+                    Logger.WriteError(
+                        $"AiImageEditorApi: could not clean up the abandoned {jpegPath}",
+                        cleanupEx
+                    );
+                }
                 return newFileName;
             }
             if (!keepTheJpeg)

@@ -112,6 +112,89 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
+        public void AdjustImageForDisplay_PhotoPngWithOneStrayTransparentPixel_StillConvertsToJpeg()
+        {
+            // The publish path settles for a sampled transparency check deliberately: a photograph
+            // carrying a stray non-opaque pixel — a common artifact of editing and AI tools — must
+            // still get the JPEG re-encoding that keeps published books small. Nothing pinned that,
+            // which is how an exhaustive per-pixel scan reached this call site unnoticed and blocked
+            // the conversion for any such photo (BL-16645). The AI image editor keeps the exhaustive
+            // scan, because it deletes the original; that is covered by its own tests.
+            var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "man.png"
+            );
+            using (var sourceFolder = new TemporaryFolder("AdjustImageForDisplay_StrayAlphaSource"))
+            using (var destFolder = new TemporaryFolder("AdjustImageForDisplay_StrayAlphaDest"))
+            {
+                var strayPath = Path.Combine(sourceFolder.Path, "stray.png");
+                using (var source = new Bitmap(inputPath))
+                using (
+                    var photo = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppArgb)
+                )
+                {
+                    using (var g = Graphics.FromImage(photo))
+                        g.DrawImage(source, 0, 0, source.Width, source.Height);
+
+                    // Find a pixel the sampler doesn't look at rather than assuming which one that
+                    // is, so this test doesn't quietly stop testing anything if the sample pattern
+                    // changes.
+                    var strayX = -1;
+                    for (var y = source.Height / 2; y < source.Height && strayX < 0; ++y)
+                    {
+                        for (var x = source.Width / 2; x < source.Width; ++x)
+                        {
+                            var wasOpaque = photo.GetPixel(x, y);
+                            photo.SetPixel(x, y, Color.FromArgb(254, wasOpaque));
+                            if (!ImageUtils.HasTransparency(photo))
+                            {
+                                strayX = x;
+                                break;
+                            }
+                            photo.SetPixel(x, y, wasOpaque);
+                        }
+                    }
+                    Assert.That(
+                        strayX,
+                        Is.GreaterThanOrEqualTo(0),
+                        "setup: could not find a pixel the sampling misses"
+                    );
+                    // Sanity: the transparency really is in the image, and only the exhaustive scan
+                    // sees it — otherwise this test would pass without exercising the choice at all.
+                    Assert.That(
+                        ImageUtils.HasTransparency(photo),
+                        Is.False,
+                        "setup: sampling should miss a single stray pixel"
+                    );
+                    Assert.That(
+                        ImageUtils.HasTransparency(photo, samplePixels: false),
+                        Is.True,
+                        "setup: the stray pixel should really be there"
+                    );
+                    photo.Save(strayPath, ImageFormat.Png);
+                }
+
+                // Ask for a size smaller than the source, the way the publication code calls in.
+                var result = ImageUtils.AdjustImageForDisplay(
+                    strayPath,
+                    destFolder.Path,
+                    maxShortSide: 60,
+                    maxLongSide: 80
+                );
+
+                Assert.That(result, Is.Not.Null, "Expected a processed version to be created");
+                using (var img = Image.FromFile(result))
+                {
+                    Assert.That(
+                        img.RawFormat,
+                        Is.EqualTo(ImageFormat.Jpeg),
+                        "a stray transparent pixel must not cost a photo its JPEG conversion"
+                    );
+                }
+            }
+        }
+
+        [Test]
         public void AdjustImageForDisplay_PhotoButPNGFile_ConvertsToJpeg()
         {
             var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
@@ -475,6 +558,28 @@ namespace BloomTests.ImageProcessing
                 g.Clear(Color.FromArgb(255, 10, 20, 30));
             bitmap.SetPixel(x, y, Color.FromArgb(0, 0, 0, 0));
             return bitmap;
+        }
+
+        [Test]
+        public void HasTransparency_TruecolorPngWithTrnsChunk_IsDetected()
+        {
+            // A PNG can be truecolour with no alpha channel and still be transparent, by naming one
+            // colour transparent in a tRNS chunk. If GDI+ handed us that as a plain 24-bit bitmap,
+            // the "no alpha channel" shortcut would call it opaque — and the AI image editor deletes
+            // the original once told that, so it would be flattened for good. This is the same shape
+            // as the palette bug (BL-16645), so it is worth pinning rather than assuming.
+            var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "truecolor-trns.png"
+            );
+            using (var image = Image.FromFile(path))
+            {
+                Assert.That(
+                    ImageUtils.HasTransparency(image, samplePixels: false),
+                    Is.True,
+                    $"a tRNS truecolour PNG must not be called opaque (GDI+ gave us {image.PixelFormat})"
+                );
+            }
         }
 
         [Test]

@@ -1956,7 +1956,11 @@ namespace Bloom.ImageProcessing
                     // magnitude slower, because each call locks and unlocks its own one-pixel
                     // region.)
                     // Locking as Format32bppArgb has GDI+ give us one known layout whatever the
-                    // bitmap's own format is: four bytes per pixel, alpha last.
+                    // bitmap's own format is: four bytes per pixel, alpha last. Note that asking
+                    // for a format the bitmap isn't already in makes GDI+ build a whole converted
+                    // copy in unmanaged memory (~43MB at MaxLength x MaxBreadth), so the row buffer
+                    // below keeps the *managed* cost to one row, not the total cost. That copy is
+                    // transient and GetDominantColors above already does the same thing.
                     var data = bitmapImage.LockBits(
                         new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height),
                         ImageLockMode.ReadOnly,
