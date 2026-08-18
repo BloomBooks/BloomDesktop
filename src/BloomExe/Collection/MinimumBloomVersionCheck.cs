@@ -586,38 +586,34 @@ namespace Bloom.Collection
             // collection chooser rather than on a null reference.
             var reporter = new ProgressUpdateReporter();
 
-            // The startup path has no websocket server yet -- BloomWebSocketServer.Instance is set
-            // by the ProjectContext of a collection we have refused to open -- so we make one for
-            // the duration, as WorkspaceView does for the language chooser (BL-15230).
+            // This dialog is reached from two quite different places, and they differ in whether a
+            // websocket server already exists.
             //
-            // But this same dialog is also reached mid-session, when a Team Collection's repository
-            // starts demanding a newer Bloom than the member is running. There a collection IS
-            // open, so the server exists and its port is bound; a second Fleck listener on that
-            // port throws, and BloomWebSocketServer.Init answers a SocketException by telling the
-            // user Bloom "cannot start properly" and quitting. So when there is already a server,
-            // use it.
+            // At startup there is none: Instance is set by the ProjectContext of a collection, and
+            // this gate runs before we build one. So we make a server for the duration, as
+            // WorkspaceView does for the language chooser (BL-15230).
+            //
+            // Mid-session there is, because a Team Collection's repository has started demanding a
+            // newer Bloom while the member has the collection open. Standing up a second listener
+            // on the port the first one holds throws, and BloomWebSocketServer.Init answers a
+            // SocketException by telling the user Bloom "cannot start properly" and quitting -- so
+            // there we use the server that is already running.
+            //
+            // Instance being non-null is a trustworthy test of that only because Dispose now clears
+            // it; otherwise a collection the user had closed would leave it pointing at a dead
+            // server, and this dialog would wait forever for a reply that could never come.
             if (BloomWebSocketServer.Instance != null)
             {
                 ShowTheDialog(BloomWebSocketServer.Instance, reporter, minimumVersion);
                 return reporter;
             }
 
-            var previousInstance = BloomWebSocketServer.Instance;
             using (var socketServer = new BloomWebSocketServer())
             {
                 socketServer.Init(BloomServer.WebSocketPort.ToString(CultureInfo.InvariantCulture));
-                try
-                {
-                    ShowTheDialog(socketServer, reporter, minimumVersion);
-                }
-                finally
-                {
-                    // Don't leave the static pointing at the server we are about to dispose. The
-                    // next thing to set it is the ProjectContext of whatever collection they open.
-                    if (ReferenceEquals(BloomWebSocketServer.Instance, socketServer))
-                        BloomWebSocketServer.Instance = previousInstance;
-                }
+                ShowTheDialog(socketServer, reporter, minimumVersion);
             }
+            // Disposing it clears Instance, so the next collection's ProjectContext starts clean.
 
             return reporter;
         }

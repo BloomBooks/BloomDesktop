@@ -345,6 +345,10 @@ namespace Bloom
             _status = UploadStatus.Failed;
             if (e != null)
                 _updateException = e;
+            // _updateException rather than e, deliberately. The one caller that passes no exception
+            // is the "restart Bloom to try again" case, which only happens BECAUSE an earlier
+            // attempt failed -- so the exception already on file is exactly the one a problem
+            // report should carry.
             reporter.SayProblem(message, _updateException);
             reporter.Finished(UpdateAttemptOutcome.Failed, null, message);
         }
@@ -465,6 +469,12 @@ namespace Bloom
         internal static void ArrangeToApplyUpdateAndRestart()
         {
 #if !__MonoCS__
+            // Only once. On the mid-session path both routes to this exist at the same time -- the
+            // restart toast the workspace can show, and the upgrade dialog -- and handing the same
+            // update to Velopack twice is how an install fails or Bloom relaunches when nobody
+            // asked it to.
+            if (_restartingAfterToastClicked)
+                return;
             _restartingAfterToastClicked = true;
             _bloomUpdateManager?.WaitExitThenApplyUpdates(null);
             Logger.WriteMinorEvent("shutting Bloom down in order to apply updates");
