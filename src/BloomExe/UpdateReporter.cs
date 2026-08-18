@@ -144,7 +144,7 @@ namespace Bloom
     /// It also collects the outcome, because the caller has to know what to do next -- and, unlike
     /// the toasts, has to do it itself.
     /// </summary>
-    internal class ProgressUpdateReporter : UpdateReporter
+    internal class ProgressUpdateReporter : UpdateReporter, IDisposable
     {
         // Until the progress dialog is up there is nowhere to write, and a reporter that exists
         // before its dialog is what lets the caller always have one to ask about.
@@ -174,6 +174,11 @@ namespace Bloom
         /// </summary>
         public bool UserCancelled { get; private set; }
 
+        /// <summary>
+        /// Record that the user asked to stop watching. Call this when the dialog's Cancel is seen,
+        /// before reading the outcome, so that a download which finishes in the same instant cannot
+        /// be acted on as though the user had waited for it.
+        /// </summary>
         public void NoteUserCancelled()
         {
             UserCancelled = true;
@@ -257,6 +262,7 @@ namespace Bloom
                 );
             }
 
+            HasReported = true;
             _finished.Set();
         }
 
@@ -267,6 +273,28 @@ namespace Bloom
         public bool WaitForFinish(TimeSpan timeout)
         {
             return _finished.Wait(timeout);
+        }
+
+        /// <summary>
+        /// True once the update attempt has reported back, after which nothing will touch this
+        /// object again and it is safe to release.
+        /// </summary>
+        public bool HasReported { get; private set; }
+
+        /// <summary>
+        /// Release the wait handle. Waiting with a timeout makes ManualResetEventSlim fall back to a
+        /// real kernel event once it has spun for a while, and we wait in quarter-second slices for
+        /// as long as the download takes, so there is always one to release.
+        ///
+        /// Deliberately does nothing until the attempt has reported back. If the user cancelled, the
+        /// download is still running and will still call Finished when it lands -- on a thread-pool
+        /// thread, where setting a disposed event would take Bloom down. One handle outliving a
+        /// cancelled upgrade is the better trade.
+        /// </summary>
+        public void Dispose()
+        {
+            if (HasReported)
+                _finished.Dispose();
         }
     }
 }
