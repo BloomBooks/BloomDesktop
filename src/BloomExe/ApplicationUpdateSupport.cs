@@ -383,9 +383,13 @@ namespace Bloom
             // but this should be good enough to give the user an idea.
             var fullSize = _newVersion.TargetFullRelease.Size;
             var deltasSize = _newVersion.DeltasToTarget.Sum(d => d.Size);
-            var downloadSize = deltasSize;
-            if (_newVersion.DeltasToTarget.Length > 0 && fullSize < deltasSize)
-                downloadSize = fullSize;
+            // With no deltas to add up we have to quote the full release, or we claim the download
+            // is 0K. That is what happened for every full download, and Bloom asks for a full one
+            // whenever the user is more than MaximumDeltasBeforeFallback builds behind -- so an
+            // ordinary two-releases-behind user saw "(0K)". It only ever flashed past in a
+            // five-second toast before; now it is what they read while they wait.
+            var downloadSize =
+                _newVersion.DeltasToTarget.Length == 0 ? fullSize : Math.Min(deltasSize, fullSize);
             return DownloadingMessage(
                 _newVersion.TargetFullRelease.Version.ToString(),
                 downloadSize / 1024

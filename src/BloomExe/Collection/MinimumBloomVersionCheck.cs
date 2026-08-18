@@ -616,7 +616,10 @@ namespace Bloom.Collection
                             )
                             {
                                 Width = 620,
-                                Height = 400,
+                                // Only a few lines ever appear here, and 400 left half the dialog
+                                // empty. The message area scrolls, so a failure with more to say
+                                // still fits.
+                                Height = 260,
                             },
                         (progress, worker) =>
                         {

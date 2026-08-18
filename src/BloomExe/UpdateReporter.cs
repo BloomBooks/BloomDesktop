@@ -174,14 +174,19 @@ namespace Bloom
                 Logger.WriteError("Bloom was unable to update itself", exception);
         }
 
-        // There are no buttons here, so an offer can only be reported. Whether to take it up is the
-        // caller's decision, made from what Finished tells it -- which is also why neither of these
-        // quietly accepts on the user's behalf.
+        // There are no buttons here, so an offer cannot be made. Whether to take one up is the
+        // caller's decision, made from what Finished tells it, which is why neither of these
+        // quietly accepts on the user's behalf either.
         public override void OfferToDownload(string message, string acceptLabel, Action accept) =>
             Say(message);
 
-        public override void OfferToRestart(string message, string acceptLabel, Action accept) =>
-            Say(message);
+        /// <summary>
+        /// Deliberately silent. "Update for 6.4.108 is ready" is a fine thing for a toast to say,
+        /// because a toast is all the user gets; here the caller says what is actually about to
+        /// happen ("Bloom will now close, install it, and start up again") on the very next line,
+        /// and having both read like the same news told twice.
+        /// </summary>
+        public override void OfferToRestart(string message, string acceptLabel, Action accept) { }
 
         private int _lastPercentReported = -1;
 
