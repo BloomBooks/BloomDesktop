@@ -6,7 +6,10 @@ import { removeReaderMarkup } from "../removeReaderMarkup";
 import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { renderRoot } from "../../../../utils/reactRender";
-import { isLongPressEvaluating } from "../../toolbox";
+import {
+    isLongPressEvaluating,
+    updateMarkupAfterUndoOrRedo,
+} from "../../toolbox";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
 import $ from "jquery";
 
@@ -181,6 +184,10 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
                         } else {
                             getTheOneReaderToolsModel().undo();
                         }
+                        // Both of those restore a saved innerHTML, which replaces the text
+                        // nodes our highlights are painted over, so the markup has to be
+                        // redone before they can paint anything again (BL-16558).
+                        updateMarkupAfterUndoOrRedo();
                         return false;
                     }
                 }

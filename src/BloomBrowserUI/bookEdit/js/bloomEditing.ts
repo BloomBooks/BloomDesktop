@@ -2060,6 +2060,18 @@ export function attachToCkEditor(element) {
         updateCkEditorButtonStatus(editor);
     });
 
+    // Ctrl+Z and Ctrl+Y (and Ctrl+Shift+Z) are handled by ckeditor's own undo plugin, which
+    // runs them as the "undo" and "redo" commands. Undo writes a whole saved snapshot over the
+    // editable, so the active tool's markup no longer matches the text and, worse, the tools'
+    // ::highlight() Ranges are left pointing at text nodes that no longer exist. Tell the
+    // toolbox, which knows how to put both right. See updateMarkupAfterUndoOrRedo().
+    ckedit.on("afterCommandExec", (evt) => {
+        const commandName = evt.data.name;
+        if (commandName === "undo" || commandName === "redo") {
+            getToolboxBundleExports()?.updateMarkupAfterUndoOrRedo();
+        }
+    });
+
     // hide the toolbar when ckeditor starts
     ckedit.on("instanceReady", (evt) => {
         const editor = evt["editor"];

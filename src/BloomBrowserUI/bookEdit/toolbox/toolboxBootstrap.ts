@@ -6,6 +6,7 @@ import {
     removeToolboxMarkup,
     removeToolMarkupFromPageClone,
     scheduleMarkupUpdateAfterPaste,
+    updateMarkupAfterUndoOrRedo,
 } from "./toolbox";
 import { simulateBlurOnPageFrameMouseDown } from "../../utils/menuCloseOnBlur";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
@@ -44,6 +45,7 @@ export interface IToolboxFrameExports {
     getTheOneToolbox(): ToolBox;
 
     scheduleMarkupUpdateAfterPaste(): void;
+    updateMarkupAfterUndoOrRedo(): void;
 
     canUndo(): boolean;
     undo(): void;
@@ -77,7 +79,7 @@ export { activateLongPressFor } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.
 
 export { getTheOneToolbox };
-export { scheduleMarkupUpdateAfterPaste };
+export { scheduleMarkupUpdateAfterPaste, updateMarkupAfterUndoOrRedo };
 
 // Import the functions we're re-exporting so we can use them in the bundle
 import {
@@ -142,6 +144,7 @@ ToolBox.registerTool(new SettingsTool());
 const toolboxBundle: ToolboxBundleApi = {
     getTheOneToolbox,
     scheduleMarkupUpdateAfterPaste,
+    updateMarkupAfterUndoOrRedo,
     applyToolboxStateToPage,
     removeToolboxMarkup,
     removeToolMarkupFromPageClone,
