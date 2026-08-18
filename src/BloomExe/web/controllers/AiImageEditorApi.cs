@@ -1432,7 +1432,16 @@ namespace Bloom.web.controllers
                             isSameFile: false,
                             resizeFileIfNeeded: resizeIfNeeded
                         );
-                        if (processedName != null)
+                        // Only re-attach metadata we actually managed to read. If libpalaso choked
+                        // on the source's tags, imageInfo.Metadata is effectively empty, and writing
+                        // it would STRIP whatever ProcessAndSaveImageIntoFolder had preserved by
+                        // copying the file verbatim — turning a metadata read failure into metadata
+                        // loss. ImageUtils.CopyCoreMetadata guards the same way; this used to be the
+                        // odd one out (Devin's review of #8188).
+                        if (
+                            processedName != null
+                            && imageInfo.Metadata?.ExceptionCaughtWhileLoading == null
+                        )
                         {
                             // Put the credits back on whatever was just written, exactly as
                             // PageEditingModel.ChangePicture does after the same call — and for the
