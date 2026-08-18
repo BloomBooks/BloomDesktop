@@ -76,6 +76,7 @@ import {
 import { showTalkingBookTool } from "../talkingBook/showTalkingBookTool";
 import { showLinkTargetChooserDialog } from "../../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
+import { trackEvent } from "../../../utils/bloomApi";
 import {
     IControlContext,
     IControlDefinition,
@@ -126,6 +127,34 @@ const getImage = (ctx: IControlContext): HTMLImageElement | undefined => {
     }
     return getImageFromContainer(imageContainer) ?? undefined;
 };
+
+// Analytics support for the Transparency menu (BL-16716). Keyed by image URL rather than by
+// element, because saving the page rebuilds the DOM and we want the whole sequence of choices
+// the user made on one picture, not one entry per surviving element. Session-scoped on purpose:
+// what we are after is the person still guessing a minute later, not a history across runs.
+const transparencyChoicesByImage = new Map<string, string[]>();
+
+// Append this choice to the image's sequence and return the whole path, e.g.
+// "auto > transparent > opaque".
+function recordTransparencyChoice(
+    img: HTMLImageElement,
+    from: string,
+    to: string,
+): string {
+    const key = img.getAttribute("src") ?? "";
+    const choices = transparencyChoicesByImage.get(key) ?? [from];
+    choices.push(to);
+    transparencyChoicesByImage.set(key, choices);
+    return choices.join(" > ");
+}
+
+// The image's file type, lower case and without the dot ("png", "jpg", ...). Tells us whether
+// the detection failures cluster on photos or on line art.
+function imageFormatOf(img: HTMLImageElement): string {
+    const src = (img.getAttribute("src") ?? "").split("?")[0];
+    const dot = src.lastIndexOf(".");
+    return dot < 0 ? "" : src.substring(dot + 1).toLowerCase();
+}
 
 const getVideoContainer = (ctx: IControlContext): HTMLElement | undefined => {
     return ctx.canvasElement.getElementsByClassName(
@@ -756,6 +785,41 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     );
                 }
 
+                // Every explicit choice here is a user telling us our line-art detection got
+                // it wrong -- and which way. Opaque means Auto fired when it should not have
+                // and Bloom was eating parts of their picture (forcing transparency "can also
+                // erase very light-colored parts of an image"); Transparent means the detector
+                // failed to recognise line art that plainly is line art. There is no other way
+                // to evaluate that heuristic in the field, and this gives us a continuous read
+                // on it. Call this BEFORE mutating the classes, so "from" is the mode we chose.
+                function reportTransparencyChoice(to: string) {
+                    if (!img) return;
+                    let from = "auto";
+                    if (isTransparent) {
+                        from = "transparent";
+                    } else if (isOpaque) {
+                        from = "opaque";
+                    }
+                    if (from === to) return; // re-picking what is already ticked says nothing
+                    const path = recordTransparencyChoice(img, from, to);
+                    trackEvent("Image Transparency Set", {
+                        from,
+                        to,
+                        // What gates Auto in the first place, so failures can be read against it.
+                        pageBackgroundIsColored:
+                            pageBackgroundNeedsTransparency(
+                                getOwningPageBackgroundColor(img),
+                            ),
+                        imageFormat: imageFormatOf(img),
+                        // The whole sequence of choices made on this image, so we can see the
+                        // person who cycled through the options -- someone who did not like what
+                        // they saw and was guessing. A lot of those means the three labels do not
+                        // predict the result well enough, which is a UI problem rather than an
+                        // algorithm one.
+                        path,
+                    });
+                }
+
                 return {
                     id: "imageBackground",
                     l10nId: "EditTab.Image.Transparency",
@@ -770,6 +834,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                                 : undefined,
                             onSelect: () => {
                                 if (!img) return;
+                                reportTransparencyChoice("auto");
                                 img.classList.remove(
                                     "bloom-transparent",
                                     "bloom-opaque",
@@ -785,6 +850,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                                 : undefined,
                             onSelect: () => {
                                 if (!img) return;
+                                reportTransparencyChoice("transparent");
                                 img.classList.add("bloom-transparent");
                                 img.classList.remove("bloom-opaque");
                                 applyTransparencyParam();
@@ -798,6 +864,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                                 : undefined,
                             onSelect: () => {
                                 if (!img) return;
+                                reportTransparencyChoice("opaque");
                                 img.classList.add("bloom-opaque");
                                 img.classList.remove("bloom-transparent");
                                 // bloom-opaque always means "none" regardless of page background.

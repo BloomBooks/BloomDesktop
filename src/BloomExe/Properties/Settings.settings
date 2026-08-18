@@ -29,6 +29,9 @@
     <Setting Name="ImageGalleryProviderKeys" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="ImageChooserSessionCount" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
     <Setting Name="ShowSendReceive" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>

@@ -121,7 +121,9 @@ namespace Bloom.Book
         /// </summary>
         /// <param name="folderPath"></param>
         /// <returns></returns>
-        private static IEnumerable<string> GetImagePaths(string folderPath)
+        /// Internal rather than private so that a caller can count the images this would
+        /// work through before starting -- see EditingModel.CopyImageMetadataToWholeBook.
+        internal static IEnumerable<string> GetImagePaths(string folderPath)
         {
             foreach (var path in Directory.EnumerateFiles(folderPath).Where(IsNormalImagePath))
             {

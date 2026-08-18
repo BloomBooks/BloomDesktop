@@ -88,8 +88,8 @@ importers:
                 specifier: github:BloomBooks/bloom-ai-image-tools#dist-v0.1.3
                 version: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/c6df5ff386b2c23c6cd86492b3a11836a05cdc34
             bloom-image-gallery:
-                specifier: github:BloomBooks/bloom-image-gallery
-                version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/7be5548b663124d5e7544afb66167035b154c5f7(@types/react@18.3.31)(supports-color@5.5.0)
+                specifier: github:BloomBooks/bloom-image-gallery#BL-16716-analytics-hooks
+                version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e7129b740de8c3f74c6716a45a0f2c30da29eb5e(@types/react@18.3.31)
             bloom-player:
                 specifier: 2.20.1
                 version: 2.20.1
@@ -252,7 +252,7 @@ importers:
                 version: 7.18.5(supports-color@5.5.0)
             "@babel/preset-env":
                 specifier: 7.18.2
-                version: 7.18.2(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
+                version: 7.18.2(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/preset-react":
                 specifier: 7.17.12
                 version: 7.17.12(@babel/core@7.18.5(supports-color@5.5.0))
@@ -4058,14 +4058,14 @@ packages:
             }
         version: 0.1.3
 
-    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/7be5548b663124d5e7544afb66167035b154c5f7:
+    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e7129b740de8c3f74c6716a45a0f2c30da29eb5e:
         resolution:
             {
                 gitHosted: true,
-                integrity: sha512-oXHVUCsRpnrfU6r4ai+NrtpxJVpPS5MEdfSVQW0Sbk+BCP7mLB5+t/+Jhqg/3CxSi+QXd5Zu7AhPwVGvLq2dQw==,
-                tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/7be5548b663124d5e7544afb66167035b154c5f7,
+                integrity: sha512-aYeMuIXaGK+OsyIV6RZIRsz+HYpyEkPn23ekkHF93VegEkhF+/5/k08iWRuqmJIMlhVssmfg0840wd+tiCM1eQ==,
+                tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e7129b740de8c3f74c6716a45a0f2c30da29eb5e,
             }
-        version: 0.0.3
+        version: 0.0.4
 
     bloom-player@2.20.1:
         resolution:
@@ -11123,7 +11123,7 @@ snapshots:
             regexpu-core: 6.4.0
             semver: 6.3.1
 
-    "@babel/helper-define-polyfill-provider@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)":
+    "@babel/helper-define-polyfill-provider@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))":
         dependencies:
             "@babel/core": 7.18.5(supports-color@5.5.0)
             "@babel/helper-compilation-targets": 7.29.7
@@ -11684,7 +11684,7 @@ snapshots:
             "@babel/helper-create-regexp-features-plugin": 7.29.7(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/helper-plugin-utils": 7.29.7
 
-    "@babel/preset-env@7.18.2(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)":
+    "@babel/preset-env@7.18.2(@babel/core@7.18.5(supports-color@5.5.0))":
         dependencies:
             "@babel/compat-data": 7.29.7
             "@babel/core": 7.18.5(supports-color@5.5.0)
@@ -11757,7 +11757,7 @@ snapshots:
             "@babel/plugin-transform-unicode-regex": 7.29.7(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/preset-modules": 0.1.6(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/types": 7.29.7
-            babel-plugin-polyfill-corejs2: 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
+            babel-plugin-polyfill-corejs2: 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
             babel-plugin-polyfill-corejs3: 0.5.3(@babel/core@7.18.5(supports-color@5.5.0))
             babel-plugin-polyfill-regenerator: 0.3.1(@babel/core@7.18.5(supports-color@5.5.0))
             core-js-compat: 3.49.0
@@ -13204,7 +13204,7 @@ snapshots:
         dependencies:
             object-assign: 4.1.1
 
-    agent-base@6.0.2(supports-color@5.5.0):
+    agent-base@6.0.2:
         dependencies:
             debug: 4.4.3(supports-color@5.5.0)
         transitivePeerDependencies:
@@ -13433,11 +13433,11 @@ snapshots:
         transitivePeerDependencies:
             - debug
 
-    axios@1.18.1(supports-color@5.5.0):
+    axios@1.18.1:
         dependencies:
             follow-redirects: 1.16.0
             form-data: 4.0.6
-            https-proxy-agent: 5.0.1(supports-color@5.5.0)
+            https-proxy-agent: 5.0.1
             proxy-from-env: 2.1.0
         transitivePeerDependencies:
             - debug
@@ -13449,11 +13449,11 @@ snapshots:
             cosmiconfig: 7.1.0
             resolve: 1.22.12
 
-    babel-plugin-polyfill-corejs2@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0):
+    babel-plugin-polyfill-corejs2@0.3.3(@babel/core@7.18.5(supports-color@5.5.0)):
         dependencies:
             "@babel/compat-data": 7.29.7
             "@babel/core": 7.18.5(supports-color@5.5.0)
-            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
+            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
             semver: 6.3.1
         transitivePeerDependencies:
             - supports-color
@@ -13461,7 +13461,7 @@ snapshots:
     babel-plugin-polyfill-corejs3@0.5.3(@babel/core@7.18.5(supports-color@5.5.0)):
         dependencies:
             "@babel/core": 7.18.5(supports-color@5.5.0)
-            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
+            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
             core-js-compat: 3.49.0
         transitivePeerDependencies:
             - supports-color
@@ -13469,7 +13469,7 @@ snapshots:
     babel-plugin-polyfill-regenerator@0.3.1(@babel/core@7.18.5(supports-color@5.5.0)):
         dependencies:
             "@babel/core": 7.18.5(supports-color@5.5.0)
-            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
+            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
         transitivePeerDependencies:
             - supports-color
 
@@ -13535,13 +13535,13 @@ snapshots:
     bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/c6df5ff386b2c23c6cd86492b3a11836a05cdc34:
         {}
 
-    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/7be5548b663124d5e7544afb66167035b154c5f7(@types/react@18.3.31)(supports-color@5.5.0):
+    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e7129b740de8c3f74c6716a45a0f2c30da29eb5e(@types/react@18.3.31):
         dependencies:
             "@emotion/react": 11.14.0(@types/react@18.3.31)(react@18.3.1)
             "@emotion/styled": 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
             "@mui/icons-material": 5.18.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
             "@mui/material": 5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-            axios: 1.18.1(supports-color@5.5.0)
+            axios: 1.18.1
             concurrently: 7.6.0
             cors: 2.8.6
             express: 4.22.2
@@ -15067,9 +15067,9 @@ snapshots:
             sshpk: 1.18.0
         optional: true
 
-    https-proxy-agent@5.0.1(supports-color@5.5.0):
+    https-proxy-agent@5.0.1:
         dependencies:
-            agent-base: 6.0.2(supports-color@5.5.0)
+            agent-base: 6.0.2
             debug: 4.4.3(supports-color@5.5.0)
         transitivePeerDependencies:
             - supports-color

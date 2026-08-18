@@ -29,7 +29,12 @@
 //      overlay down. (There is intentionally no C#->iframe message channel; init flows from
 //      here, because only the browser can postMessage to the iframe.)
 
-import { post, postJson, postThatMightNavigate } from "../../utils/bloomApi";
+import {
+    post,
+    postJson,
+    postThatMightNavigate,
+    trackEvent,
+} from "../../utils/bloomApi";
 import { getEditablePageBundleExports } from "../js/workspaceFrames";
 import {
     fileNameOf,
@@ -137,7 +142,26 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
 
         hostWindow.__bloomAiImageEditorCleanup?.();
 
+        // ----- Analytics for this editor session (BL-16716) -----
+        // Generation happens inside the editor app, which reports each attempt to us over the
+        // bridge (the "analytics" message below); we count those so that a session the user
+        // abandons can say how much AI work was thrown away. That is the clearest signal we
+        // have that the output was not good enough -- much better than a count of generations,
+        // which goes up whether people liked what they got or not.
+        // The matching "AI Editor Open"/"Commit" events come from C# (AiImageEditorApi), which
+        // has the book, the key and the history to hand.
+        let generationsThisSession = 0;
+        let commitSucceeded = false;
+
         const cleanup = () => {
+            // Every way of ending the session without committing lands here: the editor's own
+            // Cancel button, our close box, and a relaunch superseding this session.
+            if (!commitSucceeded) {
+                trackEvent("AI Editor Cancel", {
+                    generatedThisSession: generationsThisSession,
+                    historyCount: (launchData.history ?? []).length,
+                });
+            }
             hostWindow.removeEventListener("message", handleMessage);
             hostDocument.getElementById("ai-editor-overlay")?.remove();
             delete hostWindow.__bloomAiImageEditorCleanup;
@@ -220,6 +244,14 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                               } | null;
                           }>;
                           apiKey?: string | null;
+                          // For the "analytics" message: an event the editor wants recorded.
+                          // Its own code guarantees no prompt text or other user content is in
+                          // here -- see IBloomHostControl.trackEvent in bloom-ai-image-tools.
+                          event?: string;
+                          properties?: Record<
+                              string,
+                              string | number | boolean
+                          >;
                       };
                   }
                 | undefined;
@@ -350,6 +382,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                     );
                                 }
                                 if (finalOk) {
+                                    commitSucceeded = true;
                                     cleanup();
                                 }
                             }
@@ -358,6 +391,20 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                             ackEditor(false, "Failed to apply replacements.");
                         },
                     );
+                    break;
+                }
+                case "analytics": {
+                    // The editor has no analytics service of its own; it hands events to
+                    // whatever host it is running in. Pass them straight through -- C# adds
+                    // BookId -- but keep our own count of generations for the cancel event.
+                    const event = data.payload?.event;
+                    if (!event) {
+                        break;
+                    }
+                    if (event === "AI Editor Generate") {
+                        generationsThisSession++;
+                    }
+                    trackEvent(event, data.payload?.properties);
                     break;
                 }
                 case "log":

@@ -801,7 +801,22 @@ namespace Bloom.Collection
                 pendingLanguage.LineHeight = frm.LanguageLineSpacing;
                 pendingLanguage.BreaksLinesOnlyAtSpaces = frm.BreakLinesOnlyAtSpaces;
                 pendingLanguage.BaseUIFontSizeInPoints = frm.UIFontSize;
+                var rtlBefore = pendingLanguage.IsRightToLeft;
                 pendingLanguage.IsRightToLeft = frm.LanguageRightToLeft;
+                if (pendingLanguage.IsRightToLeft != rtlBefore)
+                {
+                    // The user is correcting the reading direction BL-16593 chose from their
+                    // script. Pair this with "Collection Language Set" (CollectionSettingsApi) to
+                    // see which scripts ethnolib gets wrong.
+                    BloomAnalytics.Track(
+                        "Collection Language Rtl Overridden",
+                        new Dictionary<string, string>
+                        {
+                            { "Language", pendingLanguage.Tag ?? "" },
+                            { "rtl", pendingLanguage.IsRightToLeft ? "true" : "false" },
+                        }
+                    );
+                }
                 return pendingLanguage.IsRightToLeft
                     != _collectionSettings.AllLanguages[zeroBasedLanguageNumber].IsRightToLeft;
             }

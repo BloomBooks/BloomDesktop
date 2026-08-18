@@ -768,6 +768,20 @@ export async function postJsonAsync(
     });
 }
 
+// Report an analytics event to Segment, by way of C#'s Analytics.Track (see AnalyticsApi.cs).
+// The current book's id arrives as BookId, and the collection's branding as branding, both
+// added by C#; do not pass those yourself unless you mean a different book.
+// Property values may be strings, numbers or booleans; they all arrive as strings. Omit a
+// property (or pass undefined) when you don't have a value for it, rather than sending "".
+// Note that DEBUG builds initialize DesktopAnalytics with allowTracking:false, so nothing sent
+// from a developer machine reaches Segment; new events have to be verified on alpha.
+export function trackEvent(
+    event: string,
+    properties?: Record<string, string | number | boolean | undefined>,
+): void {
+    postJson("analytics/track", { event, properties: properties ?? {} });
+}
+
 let debugMessageCount = 0; // used to serialize debug messages
 // This is useful for debugging TypeScript code, especially on Linux.  I wouldn't necessarily expect
 // to see it used anywhere in code that gets submitted and merged.

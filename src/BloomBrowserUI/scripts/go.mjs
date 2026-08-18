@@ -1062,7 +1062,7 @@ const main = async () => {
             `[go] Linking bundled libraries: ${process.env.BLOOM_LINKED_LIBS}`,
         );
         for (const { entry, dir } of bundled) {
-            for (const command of entry.watchCommands) {
+            for (const command of entry.watchCommands ?? []) {
                 startManagedCommand(command, dir, `[${entry.name}] `);
             }
             if (entry.extraCopy) {

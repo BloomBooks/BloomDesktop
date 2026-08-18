@@ -14,7 +14,6 @@ using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
@@ -221,7 +220,7 @@ namespace Bloom.TeamCollection
 
                 UpdateUiForBook();
 
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "TeamCollectionRevertOtherCheckout",
                     new Dictionary<string, string>()
                     {
@@ -398,7 +397,7 @@ namespace Bloom.TeamCollection
                 // But we may as well handle the situation properly.
                 if (!string.IsNullOrEmpty(joinType))
                 {
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "TeamCollectionJoin",
                         new Dictionary<string, string>()
                         {
@@ -700,7 +699,7 @@ namespace Bloom.TeamCollection
                 {
                     UpdateUiForBook();
 
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "TeamCollectionCheckoutBook",
                         new Dictionary<string, string>()
                         {
@@ -997,7 +996,7 @@ namespace Bloom.TeamCollection
 
                     reportProgressFraction(0); // hides the progress bar (important if a different book has been selected that is still checked out)
 
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "TeamCollectionCheckinBook",
                         new Dictionary<string, string>()
                         {
@@ -1037,7 +1036,7 @@ namespace Bloom.TeamCollection
 
                     progress.MessageWithoutLocalizing($"{msgFmt}", ProgressKind.Error);
 
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "TeamCollectionConflictingEditOrCheckout",
                         new Dictionary<string, string>()
                         {
@@ -1235,7 +1234,7 @@ namespace Bloom.TeamCollection
                 _tcManager.ConnectToTeamCollection(repoFolderParentPath, _settings.CollectionId);
                 _callbackToReopenCollection?.Invoke();
 
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "TeamCollectionCreate",
                     new Dictionary<string, string>()
                     {

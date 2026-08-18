@@ -2351,9 +2351,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
                 versionNumber + " " + ApplicationUpdateSupport.ChannelName;
             SIL.Reporting.ExceptionHandler.Init(new FatalExceptionHandler());
 
-            ExceptionHandler.AddDelegate(
-                (w, e) => DesktopAnalytics.Analytics.ReportException(e.Exception)
-            );
+            ExceptionHandler.AddDelegate((w, e) => BloomAnalytics.ReportException(e.Exception));
             if (!ApplicationUpdateSupport.IsDev)
             {
                 ExceptionHandler.AddDelegate(

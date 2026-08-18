@@ -524,6 +524,11 @@ function renderPageLayoutMenu(page: HTMLElement): void {
         showPageLayoutMenu: true,
         isCustomPageLayout: isCustomPage,
         disableCustomPage: usingLegacyTheme,
+        // Which xmatter page this menu belongs to ("outsideFrontCover", "insideBackCover",
+        // ...). Only used for analytics, to tell the long-standing front-cover case apart
+        // from the recent inside-back-cover extension.
+        customLayoutPageId:
+            page.getAttribute("data-custom-layout-id") ?? undefined,
         onSetCustom: async (
             selection,
             keepCustomLayoutDataWhenSwitchingToStandard,

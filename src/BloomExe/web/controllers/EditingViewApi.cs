@@ -207,6 +207,29 @@ namespace Bloom.web.controllers
             var shouldRemoveCustomLayoutDataWhenSwitchingToStandard =
                 !switchingToCustom && !keepCustomLayoutDataWhenSwitchingToStandard;
             var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
+            // The baseline nobody has: how much custom-cover use there is at all, and on
+            // which page. The capability has been subscription-gated across two releases
+            // (BL-15902 added it, BL-15976 put it behind Pro) with no usage data at all,
+            // which is a weak position in any pricing or renewal conversation. "page"
+            // separates the long-standing front-cover case from BL-16648's inside-back-cover
+            // extension, and "branding" says whether that extension generalised past the one
+            // project it was built for. Reported before the early return below, because that
+            // path is a switch to custom too -- the front end builds the first custom layout
+            // itself when we tell it there is no saved state yet.
+            // "layout" is the state being switched TO, which is what actually happened -- but
+            // note this endpoint is a toggle and the menu does not guard against re-picking the
+            // option already ticked, so a "standard" event can come from someone who clicked
+            // Custom. Worth knowing before reading much into the ratio.
+            BloomAnalytics.Track(
+                "Cover Layout Changed",
+                new Dictionary<string, string>
+                {
+                    { "layout", switchingToCustom ? "custom" : "standard" },
+                    { "page", customLayoutId ?? "" },
+                    { "branding", book.CollectionSettings.Subscription.BrandingKey },
+                    { "BookId", book.ID },
+                }
+            );
             if (switchingToCustom)
             {
                 var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");

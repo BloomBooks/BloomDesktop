@@ -755,6 +755,8 @@ namespace Bloom.Edit
                             imageId,
                             priorImageSrc,
                             clipboardImage,
+                            "paste",
+                            "clipboard",
                             pageBackgroundColor
                         );
                         pictureChanged = true;
@@ -771,6 +773,8 @@ namespace Bloom.Edit
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
+                                "paste",
+                                "clipboard",
                                 pageBackgroundColor
                             );
                             pictureChanged = true;
@@ -789,6 +793,8 @@ namespace Bloom.Edit
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
+                                "paste",
+                                "clipboard",
                                 pageBackgroundColor
                             );
                             pictureChanged = true;
@@ -824,6 +830,8 @@ namespace Bloom.Edit
                                         imageId,
                                         priorImageSrc,
                                         palasoImage,
+                                        "paste",
+                                        "clipboard",
                                         pageBackgroundColor
                                     );
                                     pictureChanged = true;
@@ -1051,7 +1059,7 @@ namespace Bloom.Edit
                 creator = "",
                 undoable = "true",
             };
-            _model.UpdateImageInBrowser(args);
+            _model.UpdateImageInBrowser(args, "paste", "clipboard");
         }
 
         /// <summary>
@@ -1193,7 +1201,14 @@ namespace Bloom.Edit
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
                     return;
-                _model.ChangePicture(imageId, priorImageSrc, imageInfo, pageBackgroundColor);
+                _model.ChangePicture(
+                    imageId,
+                    priorImageSrc,
+                    imageInfo,
+                    "paste",
+                    "clipboard",
+                    pageBackgroundColor
+                );
                 imageChanged = true;
             }
             catch (System.IO.IOException error)

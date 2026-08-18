@@ -17,6 +17,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 const post = vi.fn();
 const postJson = vi.fn();
 const postThatMightNavigate = vi.fn();
+const trackEvent = vi.fn();
 const applyAiImageEditorReplacements = vi.fn();
 const getEditablePageBundleExports = vi.fn();
 
@@ -25,6 +26,7 @@ vi.mock("../../utils/bloomApi", () => ({
     postJson: (...args: unknown[]) => postJson(...args),
     postThatMightNavigate: (...args: unknown[]) =>
         postThatMightNavigate(...args),
+    trackEvent: (...args: unknown[]) => trackEvent(...args),
 }));
 
 vi.mock("../js/workspaceFrames", () => ({
@@ -146,6 +148,7 @@ beforeEach(() => {
     post.mockClear();
     postJson.mockClear();
     postThatMightNavigate.mockClear();
+    trackEvent.mockClear();
     applyAiImageEditorReplacements.mockClear();
     applyAiImageEditorReplacements.mockReturnValue({
         applied: 1,
@@ -370,5 +373,48 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         // Nothing landed, so nothing to save.
         expect(postThatMightNavigate).not.toHaveBeenCalled();
         postMessageToEditor.mockRestore();
+    });
+});
+
+describe("aiEditorOverlay: analytics", () => {
+    // The value of the cancel event is that it says how much AI work was thrown away, so it
+    // must fire when a session ends without committing -- and must NOT fire when the session
+    // ended because the work was accepted.
+    const cancelEvents = () =>
+        trackEvent.mock.calls.filter((call) => call[0] === "AI Editor Cancel");
+
+    test("closing without committing reports a cancel, with what was generated", () => {
+        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "analytics",
+            payload: {
+                event: "AI Editor Generate",
+                properties: { model: "some-model", result: "success" },
+            },
+        });
+
+        // Sanity: the editor's own event was passed straight through.
+        expect(trackEvent).toHaveBeenCalledWith("AI Editor Generate", {
+            model: "some-model",
+            result: "success",
+        });
+        expect(cancelEvents()).toHaveLength(0);
+
+        closeButton.click();
+
+        expect(cancelEvents()).toHaveLength(1);
+        expect(cancelEvents()[0][1]).toMatchObject({ generatedThisSession: 1 });
+    });
+
+    test("a successful commit is not reported as a cancel", () => {
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        commitAndReplyFromHost(postFromEditor, true);
+
+        // Sanity: the commit really did close the overlay, so this is not just a session
+        // that never ended.
+        expect(document.getElementById("ai-editor-overlay")).toBeNull();
+        expect(cancelEvents()).toHaveLength(0);
     });
 });

@@ -133,17 +133,40 @@ namespace Bloom.web.controllers
                         // User clicked cancel. Clear all listeners for this dialog
                         UnsubscribeAllLanguageChangeListeners();
                     }
-                    LanguageChange?.Invoke(
-                        this,
-                        new LanguageChangeEventArgs()
-                        {
-                            LanguageTag = data.LanguageTag,
-                            DesiredName = data.DesiredName,
-                            DefaultName = data.DefaultName,
-                            IsRtl = data.IsRtl,
-                            Country = data.Country,
-                        }
-                    );
+                    var args = new LanguageChangeEventArgs()
+                    {
+                        LanguageTag = data.LanguageTag,
+                        DesiredName = data.DesiredName,
+                        DefaultName = data.DefaultName,
+                        IsRtl = data.IsRtl,
+                        Country = data.Country,
+                        Script = data.Script,
+                    };
+                    // BL-16593 made the reading direction follow the script the user picked,
+                    // using ethnolib's data. That is a correctness feature, so what is worth
+                    // knowing is not whether it was used but whether it was right: record what
+                    // ethnolib said here, and CollectionSettingsDialog records it when a user
+                    // overrides it. If overrides cluster on a script, ethnolib is wrong for that
+                    // script -- and we would otherwise never hear about it, because flipping a
+                    // checkbox back is not worth filing a bug over.
+                    if (!string.IsNullOrEmpty(args.LanguageTag))
+                    {
+                        BloomAnalytics.Track(
+                            "Collection Language Set",
+                            new Dictionary<string, string>
+                            {
+                                { "Language", args.LanguageTag },
+                                { "script", args.Script ?? "" },
+                                {
+                                    "rtlFromEthnolib",
+                                    args.IsRtl.HasValue
+                                        ? (args.IsRtl.Value ? "true" : "false")
+                                        : "unknown"
+                                },
+                            }
+                        );
+                    }
+                    LanguageChange?.Invoke(this, args);
                     request.PostSucceeded();
                 },
                 true

@@ -410,6 +410,9 @@ namespace Bloom.web.controllers
                     == null
             )
             {
+                // Should never happen in the field. If it does, our packaging is broken and we
+                // would otherwise only hear about it from a confused user.
+                BloomAnalytics.Track("AI Editor Unavailable");
                 request.Failed("The AI Image Editor is not included in this build of Bloom.");
                 return;
             }
@@ -426,6 +429,29 @@ namespace Bloom.web.controllers
 
             var httpBase = $"{BloomServer.ServerUrlWithBloomPrefixEndingInSlash}api/aiImageEditor";
 
+            // Enumerated here rather than inline in the reply below so that the analytics can
+            // count them without doing the work twice.
+            var bookImages = EnumerateBookImages(book);
+            var historyImages = EnumerateHistoryImages(book);
+            var apiKey = OpenRouterCredentialStore.GetApiKey();
+
+            // The top of the funnel. Every generation spends real OpenRouter credit, and there
+            // are several places to fall out before that happens -- finding the menu item,
+            // getting past the API key, generating something, committing it -- so we record each
+            // stage. hasApiKey is the one that matters most here: if people open the editor and
+            // stop, the key is where we should look.
+            BloomAnalytics.Track(
+                "AI Editor Open",
+                new Dictionary<string, string>
+                {
+                    { "BookId", book.BookInfo.Id },
+                    { "hasApiKey", string.IsNullOrEmpty(apiKey) ? "false" : "true" },
+                    { "demoOnly", book.IsPlayground ? "true" : "false" },
+                    { "bookImageCount", bookImages.Count.ToString() },
+                    { "historyCount", historyImages.Count.ToString() },
+                }
+            );
+
             // Return the data the JS needs to create the iframe overlay. The AI image editor
             // runs in iframe mode and gets its `init` from the overlay JS (which builds it
             // from this reply and posts it to the iframe), so the whole-book image list must
@@ -437,15 +463,15 @@ namespace Bloom.web.controllers
                     httpBase,
                     sessionToken = _sessionToken,
                     book = new { id = book.BookInfo.Id, title = book.BookInfo.Title },
-                    bookImages = EnumerateBookImages(book),
+                    bookImages,
                     // The history folder is the source of truth; enumerate it so images
                     // (and their sidecars) appear even when state.json doesn't list them.
-                    history = EnumerateHistoryImages(book),
+                    history = historyImages,
                     references = Array.Empty<object>(),
                     // Bloom owns the OpenRouter key: supply the per-user stored key so the AI
                     // image editor doesn't have to ask for it again. It hands any newly
                     // obtained key back via aiImageEditor/saveCredentials.
-                    apiKey = OpenRouterCredentialStore.GetApiKey(),
+                    apiKey,
                     // In a Playground template book all features are unlocked for
                     // "try it out", so the AI image editor opens — but it's a shared demo
                     // context, so it must not let the user set/save an OpenRouter API key.
@@ -500,6 +526,15 @@ namespace Bloom.web.controllers
             }
 
             OpenRouterCredentialStore.Save(payload.apiKey);
+            // How many users get as far as supplying a key at all -- the far end of the obstacle
+            // that "hasApiKey" on AI Editor Open measures the near end of.
+            BloomAnalytics.Track(
+                "AI Editor Key Saved",
+                new Dictionary<string, string>
+                {
+                    { "cleared", string.IsNullOrEmpty(payload.apiKey) ? "true" : "false" },
+                }
+            );
             request.PostSucceeded();
         }
 
@@ -1179,6 +1214,37 @@ namespace Bloom.web.controllers
             // slot — or by the current page (which the front-end has yet to repoint) —
             // survives.
             DeleteSupersededAiImageFiles(book.FolderPath, book.OurHtmlDom, supersededOffPageFiles);
+
+            // Does anything actually reach the book? A non-zero failed rate is exactly the class
+            // of bug BL-16702 was: a commit that silently did nothing. Generated vs reused says
+            // whether people are paying for new images or re-using ones they already have.
+            BloomAnalytics.Track(
+                "AI Editor Commit",
+                new Dictionary<string, string>
+                {
+                    { "BookId", book.BookInfo.Id },
+                    { "replacementCount", replacements.Count.ToString() },
+                    { "appliedCount", appliedCount.ToString() },
+                    { "failedCount", (replacements.Count - appliedCount).ToString() },
+                    {
+                        "generatedCount",
+                        replacements.Count(r => !string.IsNullOrEmpty(r?.resultId)).ToString()
+                    },
+                    {
+                        "reusedCount",
+                        replacements
+                            .Count(r =>
+                                string.IsNullOrEmpty(r?.resultId)
+                                && !string.IsNullOrEmpty(r?.sourceUrl)
+                            )
+                            .ToString()
+                    },
+                }
+            );
+            // Also count each replaced picture the same way a pasted or chooser-chosen one is
+            // counted, so the source breakdown covers every route a picture can enter a book by.
+            for (var i = 0; i < appliedCount; i++)
+                AnalyticsApi.TrackChangePicture("AI editor", "ai-editor", book.BookInfo.Id);
 
             request.ReplyWithJson(
                 new
