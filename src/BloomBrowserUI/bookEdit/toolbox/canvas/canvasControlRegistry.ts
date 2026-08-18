@@ -134,13 +134,25 @@ const getImage = (ctx: IControlContext): HTMLImageElement | undefined => {
 // what we are after is the person still guessing a minute later, not a history across runs.
 const transparencyChoicesByImage = new Map<string, string[]>();
 
-// The src with any query string removed. It has to be the file rather than the raw src,
-// because setImgTransparentParam adds and removes a "?transparent=yes" parameter -- so keying
-// on the src would file each choice under a different key from the one before it, and the path
-// would restart (or merge with an unrelated one) on the very first change. That would lose
-// exactly the users this measurement exists to find: the ones who cycled through the options.
-function imageFileKeyOf(img: HTMLImageElement): string {
+// The image file, with any query string removed.
+function imageFileOf(img: HTMLImageElement): string {
     return (img.getAttribute("src") ?? "").split("?")[0];
+}
+
+// The key the choice history is filed under. Two things it must NOT be:
+//
+//  - the raw src, because setImgTransparentParam adds and removes a "?transparent=yes"
+//    parameter, so each choice would be filed under a different key from the one before it and
+//    the path would restart on the very first change;
+//  - the file alone, because a page image's src is just its bare name relative to the book
+//    folder ("placeholder.png", "aor_AOR_ABC.png"). This map is module-level and lives for the
+//    whole run of Bloom, so two books -- or two pages -- using the same file would append to
+//    one another's history and produce a sequence no single picture ever went through.
+//
+// Page id and file together, then: unique across books, since page ids are GUIDs.
+function imageHistoryKeyOf(img: HTMLImageElement): string {
+    const pageId = img.closest(".bloom-page")?.getAttribute("id") ?? "";
+    return `${pageId}/${imageFileOf(img)}`;
 }
 
 // Append this choice to the image's sequence and return the whole path, e.g.
@@ -150,7 +162,7 @@ function recordTransparencyChoice(
     from: string,
     to: string,
 ): string {
-    const key = imageFileKeyOf(img);
+    const key = imageHistoryKeyOf(img);
     const choices = transparencyChoicesByImage.get(key) ?? [from];
     choices.push(to);
     transparencyChoicesByImage.set(key, choices);
@@ -169,7 +181,7 @@ function transparencyModeOf(img: HTMLImageElement): string {
 // The image's file type, lower case and without the dot ("png", "jpg", ...). Tells us whether
 // the detection failures cluster on photos or on line art.
 function imageFormatOf(img: HTMLImageElement): string {
-    const src = imageFileKeyOf(img);
+    const src = imageFileOf(img);
     const dot = src.lastIndexOf(".");
     return dot < 0 ? "" : src.substring(dot + 1).toLowerCase();
 }
