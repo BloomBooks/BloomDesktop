@@ -257,12 +257,69 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
+        public void ImportImageIntoBookFolder_OversizedCreditedImage_KeepsItsCredits()
+        {
+            // An uploaded result big enough to need resizing is rewritten by GraphicsMagick on the
+            // way in, and that drops the iTXt/XMP chunk libpalaso keeps IP metadata in (measured:
+            // a plain gm resize loses it, and asking it not to strip profiles doesn't help). The
+            // ordinary import path is safe because PageEditingModel.ChangePicture re-writes the
+            // metadata straight after ProcessAndSaveImageIntoFolder; this path has to do the same,
+            // or an uploaded photo quietly loses its copyright (BL-16645).
+            var source = MakeSourcePng("credited-huge.png", 4200, 1000);
+            using (var img = PalasoImage.FromFileRobustly(source))
+            {
+                img.Metadata.Creator = "Jane Doe";
+                img.Metadata.CopyrightNotice = "Copyright 2020 Jane Doe";
+                img.Metadata.License = new CreativeCommonsLicense(
+                    true,
+                    true,
+                    CreativeCommonsLicense.DerivativeRules.Derivatives
+                );
+                RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
+            }
+            // Sanity: the credits really are in the source, so a match below isn't two blanks
+            // agreeing with each other.
+            var before = Metadata.FromFile(source);
+            Assert.That(before.Creator, Is.EqualTo("Jane Doe"), "setup");
+            Assert.That(before.CopyrightNotice, Is.EqualTo("Copyright 2020 Jane Doe"), "setup");
+
+            var newName = AiImageEditorApi.ImportImageIntoBookFolder(source, _bookFolder.Path);
+
+            var newPath = Path.Combine(_bookFolder.Path, newName);
+            using (var after = Image.FromFile(newPath))
+            {
+                // Sanity: it really took the resize path, which is the one that loses metadata.
+                Assert.That(
+                    after.Width,
+                    Is.LessThan(4200),
+                    "setup: this image should have been downscaled on the way in"
+                );
+            }
+            var kept = Metadata.FromFile(newPath);
+            Assert.That(
+                kept.Creator,
+                Is.EqualTo("Jane Doe"),
+                "the creator must survive the import resize"
+            );
+            Assert.That(
+                kept.CopyrightNotice,
+                Is.EqualTo("Copyright 2020 Jane Doe"),
+                "the copyright must survive the import resize"
+            );
+            Assert.That(
+                kept.License,
+                Is.Not.Null.And.Not.InstanceOf<NullLicense>(),
+                "the licence must survive the import resize too"
+            );
+        }
+
+        [Test]
         public void ImportImageIntoBookFolder_ReusedImage_IsNotResized()
         {
             // A reused book image was already import-processed on its own way in, so we
-            // deliberately don't resize it again: resizing rewrites the file through
-            // GraphicsMagick, and the reuse path doesn't re-write credits afterwards, so
-            // anything embedded in the original would simply be lost.
+            // deliberately don't resize it again: it would gain nothing and would cost the image
+            // a generation of quality. (Credits used to be part of that reasoning; they no longer
+            // are, now that the import re-attaches metadata whichever path it took.)
             var source = MakeSourcePng("already-in-book.png", 5000, 4000);
 
             var newName = AiImageEditorApi.ImportImageIntoBookFolder(

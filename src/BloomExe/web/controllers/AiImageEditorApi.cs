@@ -1317,12 +1317,13 @@ namespace Bloom.web.controllers
             var newFileName = ImportImageIntoBookFolder(
                 sourceBytesPath,
                 book.FolderPath,
-                // Only a freshly generated/uploaded result needs resizing. A reused book image
-                // was already import-processed on its own way in, so there is nothing to gain
-                // by shrinking it again — and resizing rewrites the file through
-                // GraphicsMagick, which can drop the credits embedded in it. This path
-                // deliberately doesn't re-write credits (see EmbedCreditsInNewImageFile below),
-                // so there would be nothing to put them back.
+                // Only a freshly generated/uploaded result needs resizing: a reused book image was
+                // already import-processed on its own way in, so shrinking it again would gain
+                // nothing and would cost it a generation of quality.
+                // This used to cite credits as the reason too — resizing rewrites the file through
+                // GraphicsMagick, which drops the XMP packet the licence lives in. That no longer
+                // applies: ImportImageIntoBookFolder now re-attaches the metadata after processing,
+                // whichever path it took. So scope is the whole justification for this argument.
                 resizeIfNeeded: !string.IsNullOrEmpty(replacement.resultId)
             );
             // A generated result can arrive as a PNG for a slot the book held as a JPEG,
@@ -1403,10 +1404,10 @@ namespace Bloom.web.controllers
         /// an image that fails to process at all. Internal for testing.
         /// </summary>
         /// <param name="resizeIfNeeded">
-        /// False for a reused book image, which was already import-processed on its own way in.
-        /// Resizing it again would gain nothing and would rewrite the file through
-        /// GraphicsMagick, which can drop the credits embedded in it — and the reuse path
-        /// deliberately doesn't re-write credits, so they would simply be lost.
+        /// False for a reused book image, which was already import-processed on its own way in, so
+        /// resizing it again would gain nothing and would cost it a generation of quality. (It used
+        /// to matter for credits as well; it no longer does, since this method re-attaches the
+        /// metadata after processing whichever path it took.)
         /// </param>
         /// <returns>The name (no path) of the new file in the book folder.</returns>
         internal static string ImportImageIntoBookFolder(
@@ -1431,6 +1432,36 @@ namespace Bloom.web.controllers
                             isSameFile: false,
                             resizeFileIfNeeded: resizeIfNeeded
                         );
+                        if (processedName != null)
+                        {
+                            // Put the credits back on whatever was just written, exactly as
+                            // PageEditingModel.ChangePicture does after the same call — and for the
+                            // same reason. Processing can rewrite the bytes (a GraphicsMagick
+                            // resize, or a save through GDI+ for a non-web format), and libpalaso
+                            // keeps the licence only in the XMP packet, which a GraphicsMagick
+                            // rewrite drops. Creator and copyright happen to survive, because they
+                            // are also written as PNG tEXt keys, so the symptom is narrow and easy
+                            // to miss: an uploaded photo keeps its copyright line but arrives with
+                            // no licence at all (BL-16645).
+                            try
+                            {
+                                ImageUtils.SaveImageMetadata(
+                                    imageInfo,
+                                    Path.Combine(bookFolderPath, processedName)
+                                );
+                            }
+                            catch (Exception metadataEx)
+                            {
+                                // Deliberately not rethrown: the outer catch would fall back to
+                                // copying the source in verbatim, throwing away a perfectly good
+                                // processed image over a metadata problem. Unprocessed bulk is a
+                                // worse outcome than metadata we failed to re-attach.
+                                Logger.WriteError(
+                                    $"AiImageEditorApi: imported {sourceBytesPath} but could not re-attach its metadata",
+                                    metadataEx
+                                );
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
