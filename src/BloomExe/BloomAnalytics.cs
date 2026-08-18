@@ -61,14 +61,24 @@ namespace Bloom
         /// </summary>
         public static void ReportException(Exception exception)
         {
-            Log(
-                FormatForLog(
-                    $"(exception) {exception?.GetType().Name}",
-                    null,
-                    Analytics.AllowTracking
-                )
-            );
-            Analytics.ReportException(exception);
+            // Guarded for the same reason as Track, and more urgently: one caller is Program's
+            // global unhandled-exception handler, so a throw from in here would be a failure while
+            // reporting a failure.
+            try
+            {
+                Log(
+                    FormatForLog(
+                        $"(exception) {exception?.GetType().Name}",
+                        null,
+                        Analytics.AllowTracking
+                    )
+                );
+                Analytics.ReportException(exception);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent($"[analytics] FAILED to report an exception: {e.Message}");
+            }
         }
 
         /// <summary>

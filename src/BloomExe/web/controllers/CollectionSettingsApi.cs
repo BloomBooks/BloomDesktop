@@ -149,6 +149,12 @@ namespace Bloom.web.controllers
                     // overrides it. If overrides cluster on a script, ethnolib is wrong for that
                     // script -- and we would otherwise never hear about it, because flipping a
                     // checkbox back is not worth filing a bug over.
+                    // Spelled out rather than nested ternaries, per AGENTS.md. "unknown" is a
+                    // real answer here: it means the language chooser offered no script-derived
+                    // direction at all, which is different from it saying left-to-right.
+                    var rtlFromEthnolib = "unknown";
+                    if (args.IsRtl.HasValue)
+                        rtlFromEthnolib = args.IsRtl.Value ? "true" : "false";
                     if (!string.IsNullOrEmpty(args.LanguageTag))
                     {
                         BloomAnalytics.Track(
@@ -157,12 +163,7 @@ namespace Bloom.web.controllers
                             {
                                 { "Language", args.LanguageTag },
                                 { "script", args.Script ?? "" },
-                                {
-                                    "rtlFromEthnolib",
-                                    args.IsRtl.HasValue
-                                        ? (args.IsRtl.Value ? "true" : "false")
-                                        : "unknown"
-                                },
+                                { "rtlFromEthnolib", rtlFromEthnolib },
                             }
                         );
                     }

@@ -200,6 +200,11 @@ namespace Bloom.web.controllers
                 requestJson != null
                 && request.RequiredPostString("keepCustomLayoutDataWhenSwitchingToStandard")
                     == "true";
+            // False only for the revert Bloom performs for itself when a legacy theme cannot
+            // support a custom layout (see setupPageLayoutMenu). Analytics only -- the toggle
+            // behaves identically either way.
+            var userInitiated =
+                requestJson == null || request.RequiredPostString("userInitiated") != "false";
             var book = View.Model.CurrentBook;
             var page = book.GetPage(pageId);
             var pageElt = page.GetDivNodeForThisPage();
@@ -220,16 +225,19 @@ namespace Bloom.web.controllers
             // note this endpoint is a toggle and the menu does not guard against re-picking the
             // option already ticked, so a "standard" event can come from someone who clicked
             // Custom. Worth knowing before reading much into the ratio.
-            BloomAnalytics.Track(
-                "Cover Layout Changed",
-                new Dictionary<string, string>
-                {
-                    { "layout", switchingToCustom ? "custom" : "standard" },
-                    { "page", customLayoutId ?? "" },
-                    { "branding", book.CollectionSettings.Subscription.BrandingKey },
-                    { "BookId", book.ID },
-                }
-            );
+            if (userInitiated)
+            {
+                BloomAnalytics.Track(
+                    "Cover Layout Changed",
+                    new Dictionary<string, string>
+                    {
+                        { "layout", switchingToCustom ? "custom" : "standard" },
+                        { "page", customLayoutId ?? "" },
+                        { "branding", book.CollectionSettings.Subscription.BrandingKey },
+                        { "BookId", book.ID },
+                    }
+                );
+            }
             if (switchingToCustom)
             {
                 var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");

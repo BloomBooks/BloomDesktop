@@ -494,7 +494,8 @@ export function setupPageLayoutMenu(): void {
 
     const usingLegacyTheme = isLegacyThemeCssLoaded();
     if (usingLegacyTheme && page.classList.contains("bloom-customLayout")) {
-        toggleCustomPageLayout(page.getAttribute("id")!, true);
+        // Bloom forcing the page back to standard as it opens, not a choice anyone made.
+        toggleCustomPageLayout(page.getAttribute("id")!, true, false);
         return;
     }
 
@@ -506,14 +507,20 @@ export function setupPageLayoutMenu(): void {
     }
 }
 
+// userInitiated distinguishes a choice the user made from the revert Bloom performs for itself
+// when a legacy theme cannot support a custom layout. Only the former is a decision, and only
+// the former is reported to analytics -- otherwise the figures count switches nobody made, and
+// over-count "standard" precisely on the books where custom was wanted.
 function toggleCustomPageLayout(
     pageId: string,
     keepCustomLayoutDataWhenSwitchingToStandard: boolean,
+    userInitiated: boolean,
 ) {
     return postData("editView/toggleCustomPageLayout", {
         pageId,
         keepCustomLayoutDataWhenSwitchingToStandard:
             keepCustomLayoutDataWhenSwitchingToStandard ? "true" : "false",
+        userInitiated: userInitiated ? "true" : "false",
     });
 }
 
@@ -539,6 +546,7 @@ function renderPageLayoutMenu(page: HTMLElement): void {
             const response = await toggleCustomPageLayout(
                 page.getAttribute("id")!,
                 keepCustomLayoutDataWhenSwitchingToStandard,
+                true,
             );
             if (
                 selection === "custom" &&

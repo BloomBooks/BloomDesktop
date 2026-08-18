@@ -44,10 +44,42 @@ import {
     isCurrentPageSwap,
 } from "./aiEditorShared";
 
-// The analytics events we accept from the editor iframe and pass on to Segment. Adding one here
-// is a deliberate act: see the "analytics" case below for why the vocabulary is pinned on this
-// side of the bridge rather than trusted from the other.
-const kEventsTheEditorMaySend = ["AI Editor Generate"];
+// The analytics the editor iframe is allowed to send us: event names, and for each the exact
+// property names that may ride along. Both halves are pinned on Bloom's side of the bridge,
+// because Bloom is what actually posts to Segment -- see the "analytics" case below. Adding
+// anything here is a deliberate act, which is the point: the editor's promise not to include
+// prompt text is a promise made in another repository, and a property allow-list is what makes
+// it true here regardless.
+const kAnalyticsTheEditorMaySend: Record<string, string[]> = {
+    "AI Editor Generate": [
+        "tool",
+        "model",
+        "sourceKind",
+        "referenceCount",
+        "batch",
+        "runsLocally",
+        "attemptNumber",
+        "result",
+        "durationSeconds",
+        "costUSD",
+        "spentCredits",
+    ],
+};
+
+// Keep only the properties that event is allowed to carry, dropping anything unrecognized.
+function allowedProperties(
+    event: string,
+    properties?: Record<string, string | number | boolean>,
+): Record<string, string | number | boolean> {
+    const allowed = kAnalyticsTheEditorMaySend[event] ?? [];
+    const result: Record<string, string | number | boolean> = {};
+    for (const name of allowed) {
+        if (properties && name in properties) {
+            result[name] = properties[name];
+        }
+    }
+    return result;
+}
 
 // Hand the commit's current-page swaps to the page frame, which owns the live page. Only call
 // this when there is such a swap (see isCurrentPageSwap): the frame is briefly unreachable while
@@ -402,13 +434,13 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     // The editor has no analytics service of its own; it hands events to
                     // whatever host it is running in. C# adds BookId and branding.
                     //
-                    // Only event names we know are forwarded. Bloom is the party that actually
-                    // sends to Segment, so Bloom enforces its own privacy line rather than
-                    // trusting a sibling repository not to regress: without this, a future
-                    // change over there could push arbitrary event names -- and whatever
-                    // properties came with them -- straight out of here.
+                    // Only known event names, carrying only known properties, are forwarded.
+                    // Bloom is the party that actually sends to Segment, so Bloom enforces its
+                    // own privacy line rather than trusting a sibling repository not to regress:
+                    // without this, a change over there could push an arbitrary event name, or a
+                    // new property holding prompt text, straight out of here.
                     const event = data.payload?.event;
-                    if (!event || !kEventsTheEditorMaySend.includes(event)) {
+                    if (!event || !(event in kAnalyticsTheEditorMaySend)) {
                         if (event) {
                             console.warn(
                                 `[AI Image Editor] not forwarding unrecognized analytics event "${event}"`,
@@ -419,7 +451,10 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     if (event === "AI Editor Generate") {
                         generationsThisSession++;
                     }
-                    trackEvent(event, data.payload?.properties);
+                    trackEvent(
+                        event,
+                        allowedProperties(event, data.payload?.properties),
+                    );
                     break;
                 }
                 case "log":
