@@ -454,24 +454,22 @@ namespace Bloom.Collection
         /// it can be installed.</returns>
         private static bool UpgradeBloom(string minimumVersion)
         {
-            using (var reporter = RunTheUpdateBehindAProgressDialog(minimumVersion))
-            {
-                if (reporter.Outcome != UpdateAttemptOutcome.Downloaded)
-                    return false;
+            var reporter = RunTheUpdateBehindAProgressDialog(minimumVersion);
+            if (reporter.Outcome != UpdateAttemptOutcome.Downloaded)
+                return false;
 
-                // Someone who pressed Cancel does not get restarted, even if the download turned
-                // out to have finished in the same moment. Without this the two race: the wait
-                // gives up on a cancel, and by the time we look at the outcome it says Downloaded,
-                // so Bloom would quit and reinstall itself under a user who had just said no.
-                if (reporter.UserCancelled)
-                    return false;
+            // Someone who pressed Cancel does not get restarted, even if the download turned out to
+            // have finished in the same moment. Without this the two race: the wait gives up on a
+            // cancel, and by the time we look at the outcome it says Downloaded, so Bloom would
+            // quit and reinstall itself under a user who had just said no.
+            if (reporter.UserCancelled)
+                return false;
 
-                // Ask for the restarting flavour of the install: the user asked to be upgraded, so
-                // leaving them at a closed program to start again themselves would be a poor end to
-                // it. This also gets Velopack's own progress bar while it installs.
-                ApplicationUpdateSupport.ArrangeToApplyUpdateAndRestart();
-                return true;
-            }
+            // Ask for the restarting flavour of the install: the user asked to be upgraded, so
+            // leaving them at a closed program to start again themselves would be a poor end to it.
+            // This also gets Velopack's own progress bar while it installs.
+            ApplicationUpdateSupport.ArrangeToApplyUpdateAndRestart();
+            return true;
         }
 
         /// <summary>
