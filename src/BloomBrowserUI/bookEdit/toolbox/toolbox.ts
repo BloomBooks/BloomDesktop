@@ -36,6 +36,23 @@ let savedSettings: ToolboxSettings = {};
 
 let keypressTimer: ReturnType<typeof setTimeout> | null = null;
 
+// The pending markup update asked for by an undo or redo, if any. It deliberately does NOT
+// share keypressTimer: every keystroke cancels that one, and Ctrl+Z ends with a keyup, which
+// would therefore throw away the very update the undo just asked for.
+let undoRedoMarkupTimer: ReturnType<typeof setTimeout> | null = null;
+
+// When the last undo/redo markup pass that actually got as far as doing the markup began, and
+// how close together we will let them be.
+// A single undo asks for its markup at once, because the whole point is to repaint the
+// highlights it just detached before anyone sees them missing. But holding Ctrl+Z down
+// auto-repeats the undo, and each repeat asks for another pass; with no delay to coalesce
+// them, that is a full re-markup of the page per repeat, which is what the 500ms typing
+// throttle exists to avoid. So the first one runs immediately and any that pile in behind it
+// wait their turn. (A burst is bounded anyway - ckeditor's undo stack is 20 deep - but 20
+// re-markups in half a second while ckeditor is mid-burst is still worth not doing.)
+let lastUndoRedoMarkupStartTime = 0;
+const minMillisecondsBetweenUndoRedoMarkups = 150;
+
 // This variable stores all the ids of the enabled tools, so
 // that the React toolbox settings can initially check the
 // checkboxes that correspond to the enabled tools
@@ -280,10 +297,7 @@ export class ToolBox {
                 const isPasteShortcut =
                     (event.ctrlKey || event.metaKey) && event.keyCode === 86;
                 if (isPasteShortcut) {
-                    setTimeout(
-                        () => handlePageEditing(maxPasteMarkupUpdateRetries),
-                        0,
-                    );
+                    setTimeout(() => handlePageEditing("paste"), 0);
                 }
             })
             .keyup((event) => {
@@ -1398,8 +1412,8 @@ function beginAddTool(
 }
 
 let keydownEventCounter = 0;
-const retryDelayForPasteMarkupUpdateInMilliseconds = 100;
-const maxPasteMarkupUpdateRetries = 3;
+const retryDelayForMarkupUpdateInMilliseconds = 100;
+const maxMarkupUpdateRetries = 3;
 
 export function scheduleMarkupUpdateAfterPaste(): void {
     // AI thinks we might need this to "allow the DOM to settle" even before we do the
@@ -1409,17 +1423,46 @@ export function scheduleMarkupUpdateAfterPaste(): void {
     // that is hard to reproduce reliably. I'd rather have a timeout that we don't
     // need than have the markup occasionally not update, let alone somehow have
     // the markup update somehow mess up the paste. So I decided to leave it in.
-    setTimeout(() => handlePageEditing(maxPasteMarkupUpdateRetries), 0);
+    setTimeout(() => handlePageEditing("paste"), 0);
 }
 
-// Handle edits to the page: mainly triggered by key up, but also by paste.
+// Call this whenever an Undo or Redo has replaced the content of an editable, from wherever
+// that Undo was initiated (Ctrl+Z in the text, the Undo button in the top bar, the reader
+// tools' own undo stack).
+//
+// It matters more than it looks. Undo does not edit the text in place: it writes a whole
+// saved snapshot over the editable, which builds new text nodes for everything in the box.
+// The tools' highlights are ::highlight() pseudo-elements painted over live Ranges into
+// those text nodes (see textHighlightManager.ts), so every highlight in that box dies at
+// that moment - it stays in the registry but paints nothing, and only a markup pass can put
+// it back. Left to itself, the markup pass either doesn't happen at all (a click on the top
+// bar's Undo button produces no keystroke) or happens and gives up (see the three places
+// below where "undoOrRedo" is treated differently), which is why the Leveled and Decodable
+// Reader highlights could stay gone until the user typed something (BL-16558).
+export function updateMarkupAfterUndoOrRedo(): void {
+    handlePageEditing("undoOrRedo");
+}
+
+// What asked for a markup update. It decides several things below, because an undo is not
+// just another edit: it is a single deliberate action, and it can leave the page in states
+// that we would rather not do the markup in but have no choice about.
+type MarkupUpdateTrigger = "editing" | "paste" | "undoOrRedo";
+
+// Handle edits to the page: mainly triggered by key up, but also by paste and by undo/redo.
 // For various reasons a single paste may cause this to get called several times, but the 500ms
 // delay should prevent us from doing the markup more than once per paste.
 // Similarly, since updating the markup is fairly costly, it's good not to do it on every keystroke
 // while the user is typing rapidly.
-function handlePageEditing(
-    remainingRetriesForInvalidSelectionState: number = 0,
-): void {
+function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
+    const isUndoOrRedo = trigger === "undoOrRedo";
+    // Typing gets no retries because the next keystroke brings another update along anyway.
+    // The other two have no such fallback: a paste can leave the selection temporarily in a
+    // state we can't mark up in, and an undo can leave it with no selection at all (e.g.
+    // readerToolsModel.undo() restores the html but returns before makeSelectionIn() when it
+    // has no saved offset). An undo from the top bar button has no keystroke behind it, so
+    // giving up on the first look would leave the highlights dead with no second chance.
+    const remainingRetriesForInvalidSelectionState =
+        trigger === "editing" ? 0 : maxMarkupUpdateRetries;
     // BL-599: "Unresponsive script" while typing in text.
     // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
     // function called "clearTimeout." Because of this, the jQuery method $.isFunction(keypressTimer.clearTimeout)
@@ -1432,7 +1475,32 @@ function handlePageEditing(
     //  this.keypressTimer.clearTimeout();
     //}
     const counterValueThatIdentifiesThisKeyDown = ++keydownEventCounter;
-    if (keypressTimer) clearTimeout(keypressTimer);
+    // An undo waits on its own timer rather than the shared one, because every keystroke
+    // cancels the shared one - and Ctrl+Z ends with a keyup, which would therefore throw away
+    // the very update the undo just asked for. These two put the choice in one place so the
+    // rest of the method doesn't have to care which timer it is. Replacing whatever that same
+    // timer was already waiting for is what makes a burst of events do the markup just once.
+    function cancelPendingUpdate(): void {
+        if (isUndoOrRedo) {
+            if (undoRedoMarkupTimer) clearTimeout(undoRedoMarkupTimer);
+            undoRedoMarkupTimer = null;
+            return;
+        }
+        if (keypressTimer) clearTimeout(keypressTimer);
+        keypressTimer = null;
+    }
+    function scheduleMainTask(
+        task: () => void,
+        delayMilliseconds: number,
+    ): void {
+        cancelPendingUpdate();
+        if (isUndoOrRedo) {
+            undoRedoMarkupTimer = setTimeout(task, delayMilliseconds);
+        } else {
+            keypressTimer = setTimeout(task, delayMilliseconds);
+        }
+    }
+    cancelPendingUpdate();
     // Not sure we need this now the method is triggered by keyup. If it is triggered by keydown,
     // we have a problem:
     // If we don't do this check, then the last keydown from autorepeat during longpress will
@@ -1443,7 +1511,11 @@ function handlePageEditing(
     // I'm leaving it in for now because the method might get called on a keyup connected with using
     // a key in longpress to select one of the options, and in that case, we don't want to do the markup
     // (until the keyup from the original key, of course).
-    if (window?.top?.[isLongPressEvaluating]) {
+    // Undo/redo is exempt: longpress sets that flag on EVERY keydown (see its onKeyDown) and
+    // clears it on keyup, so Ctrl+Z, which does its work on the keydown, always finds it set,
+    // and honoring it here meant the undo never got its markup update at all. Ctrl+Z can't be
+    // a longpress in any case: longpress is about holding down a letter key on its own.
+    if (!isUndoOrRedo && window?.top?.[isLongPressEvaluating]) {
         return;
     }
     // If this was making DOM changes that we want to save, we would want to try to use
@@ -1469,21 +1541,29 @@ function handlePageEditing(
         const active = anchor
             ? <HTMLDivElement>$(anchor).closest("div").get(0)
             : null;
+        // A selection that covers a range of text, rather than being a simple insertion point,
+        // normally makes us leave the markup alone until the user does something simpler.
+        // Undo/redo is the exception: it restores whatever selection its snapshot was taken
+        // with, and the markup (and with it the highlights) has to be brought up to date
+        // regardless. The bookmark machinery below preserves a range just as it does an
+        // insertion point.
+        const selectionIsRange = !!(
+            selection &&
+            (selection.rangeCount > 1 ||
+                (selection.rangeCount === 1 &&
+                    !selection.getRangeAt(0).collapsed))
+        );
         const selectionStateIsInvalidForMarkup =
-            !active ||
-            (selection &&
-                (selection.rangeCount > 1 ||
-                    (selection.rangeCount === 1 &&
-                        !selection.getRangeAt(0).collapsed)));
+            !active || (selectionIsRange && !isUndoOrRedo);
 
         if (selectionStateIsInvalidForMarkup) {
             // Copilot suggested that there are some cases after a paste where the selection
             // is only temporarily a range, so it's worth trying again a few times.
             // This callback can also be canceled by a new keypress etc.
             if (remainingRetries > 0) {
-                keypressTimer = setTimeout(
+                scheduleMainTask(
                     () => mainTask(remainingRetries - 1),
-                    retryDelayForPasteMarkupUpdateInMilliseconds,
+                    retryDelayForMarkupUpdateInMilliseconds,
                 );
             }
             return; // don't even try to adjust markup while there is some complex selection
@@ -1504,7 +1584,8 @@ function handlePageEditing(
         // It would be great if we didn't have settle for using window.top,
         // but the other player here (jquery.longpress.js) is in a totally different
         // context currently, so my other attempts to share a boolean failed.
-        if (window.top[isLongPressEvaluating]) {
+        // (Undo/redo is exempt, for the reason given where this flag is tested above.)
+        if (!isUndoOrRedo && window.top[isLongPressEvaluating]) {
             return;
         }
 
@@ -1541,6 +1622,16 @@ function handlePageEditing(
                 if (!ckeditorSelection) {
                     return; // may be changing pages?
                 }
+                // We are now certainly going to do the markup, which is the work the next
+                // undo/redo has to wait behind. Anything that gave up before this point - an
+                // unusable selection and each of its retries, no editable under the caret, a
+                // box with no ckeditor - did none of that work and must not make one wait.
+                // (Below this point we always at least remove comments and clean up nbsps,
+                // whether or not a tool is active, so the work is real either way.)
+                if (isUndoOrRedo) {
+                    lastUndoRedoMarkupStartTime = Date.now();
+                }
+
                 // If there's no tool active, we don't need to update the markup.
                 const activeTool =
                     currentTool && toolbox.toolboxIsShowing()
@@ -1656,11 +1747,26 @@ function handlePageEditing(
             }
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
-        keypressTimer = null;
+        if (isUndoOrRedo) {
+            undoRedoMarkupTimer = null;
+        } else {
+            keypressTimer = null;
+        }
     };
-    keypressTimer = setTimeout(
+    scheduleMainTask(
         () => mainTask(remainingRetriesForInvalidSelectionState),
-        500,
+        // An undo has already put the restored text in the DOM, and unlike typing it is a
+        // single deliberate action, so there is nothing to wait for. Doing it at once (rather
+        // than after the usual 500ms of quiet) keeps the highlights, which the undo has just
+        // detached from the text, from visibly blinking off. The only reason to wait at all is
+        // to keep an auto-repeating Ctrl+Z from re-marking the page on every repeat.
+        isUndoOrRedo
+            ? Math.max(
+                  0,
+                  minMillisecondsBetweenUndoRedoMarkups -
+                      (Date.now() - lastUndoRedoMarkupStartTime),
+              )
+            : 500,
     );
 }
 
