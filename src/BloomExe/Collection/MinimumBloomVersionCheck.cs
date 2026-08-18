@@ -716,7 +716,19 @@ namespace Bloom.Collection
             while (DateTime.UtcNow < deadline)
             {
                 if (reporter.WaitForFinish(TimeSpan.FromMilliseconds(250)))
+                {
+                    // A cancel that arrived while we were in that wait still counts. The user
+                    // pressed it before they could possibly know the download had just landed, and
+                    // taking the download's word for it here is what would restart Bloom under
+                    // someone who had said no. Report it as a cancel, so they are not told we are
+                    // about to close and restart either.
+                    if (worker.CancellationPending)
+                    {
+                        reporter.NoteUserCancelled();
+                        return false;
+                    }
                     return true;
+                }
                 if (worker.CancellationPending)
                 {
                     reporter.NoteUserCancelled();
