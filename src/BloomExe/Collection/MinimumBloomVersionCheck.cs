@@ -454,46 +454,67 @@ namespace Bloom.Collection
         /// it can be installed.</returns>
         private static bool UpgradeBloom(string minimumVersion)
         {
-            if (!CanThisBloomUpdateItself(out var whyNot))
-            {
-                BloomMessageBox.ShowWarning(System.Net.WebUtility.HtmlEncode(whyNot));
+            var reporter = RunTheUpdateBehindAProgressDialog(minimumVersion);
+            if (reporter.Outcome != UpdateAttemptOutcome.Downloaded)
                 return false;
-            }
 
-            var reporter = RunTheUpdateBehindAProgressDialog();
+            // Ask for the restarting flavour of the install: the user asked to be upgraded, so
+            // leaving them at a closed program to start again themselves would be a poor end to it.
+            // This also gets Velopack's own progress bar while it installs.
+            ApplicationUpdateSupport.ArrangeToApplyUpdateAndRestart();
+            return true;
+        }
 
-            if (reporter.Outcome == UpdateAttemptOutcome.Downloaded)
+        /// <summary>
+        /// The last thing the progress dialog says before the user closes it. Everything else it
+        /// has to say the update code has already said through the reporter, including how any
+        /// failure was explained -- these are the two endings the update code has no words for,
+        /// because only we know what this collection was asking for.
+        /// </summary>
+        private static void SayHowTheUpgradeEnded(
+            ProgressUpdateReporter reporter,
+            string minimumVersion
+        )
+        {
+            switch (reporter.Outcome)
             {
-                // It installs whatever version it turns out to be. Velopack can only offer the
-                // newest build on this user's channel -- it has no notion of "at least version X" --
-                // so what we have may still be short of what this collection needs. Take it anyway:
-                // getting as far as the channel allows is real progress. We deliberately do not say
-                // anything about whether it went far enough. If it didn't, the upgraded Bloom meets
-                // this same dialog next launch, still asking for the same version, and the user can
-                // decide again from there. That is a little confusing and much simpler than a second
-                // message explaining a case most people will never be in.
-                //
-                // Ask for the restarting flavour of the install: the user asked to be upgraded, so
-                // leaving them at a closed program to start again themselves would be a poor end to
-                // it. This also gets Velopack's own progress bar while it installs.
-                ApplicationUpdateSupport.ArrangeToApplyUpdateAndRestart();
-                ReportUpgradeDownloaded(reporter.DownloadedVersion);
-                return true;
+                case UpdateAttemptOutcome.Downloaded:
+                    // It installs whatever version it turns out to be. Velopack can only offer the
+                    // newest build on this user's channel -- it has no notion of "at least version
+                    // X" -- so what we have may still be short of what this collection needs. Take
+                    // it anyway: getting as far as the channel allows is real progress. We
+                    // deliberately do not say anything about whether it went far enough. If it
+                    // didn't, the upgraded Bloom meets this same dialog next launch, still asking
+                    // for the same version, and the user can decide again from there. That is a
+                    // little confusing and much simpler than a second message explaining a case
+                    // most people will never be in.
+                    reporter.Say(
+                        string.Format(
+                            LocalizationManager.GetString(
+                                "Collection.UpgradeDownloaded",
+                                "Bloom {0} has been downloaded. Bloom will now close, install it, and start up again.",
+                                "{0} is the version number of the Bloom that was downloaded."
+                            ),
+                            reporter.DownloadedVersion
+                        )
+                    );
+                    break;
+                case UpdateAttemptOutcome.NothingNewer:
+                    // Being specific matters: "your Bloom is up to date", which is what the update
+                    // code says here, would be a baffling thing to read right after being told this
+                    // Bloom is too old.
+                    reporter.Say(
+                        string.Format(
+                            LocalizationManager.GetString(
+                                "Collection.NothingNewerAvailable",
+                                "This collection needs Bloom {0}, but there is no newer Bloom available to you yet. You are already on the newest one for the kind of Bloom you have installed.",
+                                "{0} is the version the collection requires."
+                            ),
+                            minimumVersion
+                        )
+                    );
+                    break;
             }
-
-            if (reporter.Outcome == UpdateAttemptOutcome.NothingNewer)
-                ReportNothingNewerAvailable(minimumVersion);
-            else if (!string.IsNullOrEmpty(reporter.FailureMessage))
-                // Something went wrong. The update code already worked out what to say; we just
-                // repeat it here, where the user is looking, now that its progress dialog has gone.
-                BloomMessageBox.ShowWarning(
-                    System.Net.WebUtility.HtmlEncode(reporter.FailureMessage)
-                );
-            // The remaining case is that the user cancelled, or we gave up waiting. Neither wants a
-            // message: cancelling is not a failure, and someone who has just waited two hours does
-            // not need to be told that it took too long.
-
-            return false;
         }
 
         /// <summary>
@@ -545,8 +566,19 @@ namespace Bloom.Collection
         /// watch an empty screen for the length of a large download. Handing the update code a
         /// ProgressUpdateReporter instead puts those very same sentences, plus Velopack's
         /// percentage, into a dialog.
+        ///
+        /// It is also the only window we get. A second one -- a message box afterwards to say how it
+        /// went -- does not come to the front and has no taskbar button of its own (ReactDialog sets
+        /// ShowInTaskbar false, which is right for a dialog with a parent window and leaves an
+        /// orphan at startup with nowhere to be). By the time it opens, this dialog has closed and
+        /// Bloom has no foreground window left to hand the activation on from, so the message ends
+        /// up behind whatever the user was doing and Bloom looks like it has hung. So everything
+        /// gets said here, in the window that is already in front, and the user closes it when they
+        /// have read it.
         /// </summary>
-        private static ProgressUpdateReporter RunTheUpdateBehindAProgressDialog()
+        private static ProgressUpdateReporter RunTheUpdateBehindAProgressDialog(
+            string minimumVersion
+        )
         {
             ProgressUpdateReporter reporter = null;
 
@@ -589,17 +621,34 @@ namespace Bloom.Collection
                         (progress, worker) =>
                         {
                             reporter = new ProgressUpdateReporter(progress);
+                            if (!CanThisBloomUpdateItself(out var whyNot))
+                            {
+                                reporter.SayProblem(whyNot, null);
+                                reporter.Finished(
+                                    UpdateAttemptOutcome.CannotUpdateThisBloom,
+                                    null,
+                                    whyNot
+                                );
+                                return true;
+                            }
+
                             ApplicationUpdateSupport.CheckForAVelopackUpdate(
                                 ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet,
-                                restartBloom: null, // nothing here to click, and we quit ourselves
+                                restartBloom: null, // nothing to click here, and we quit ourselves
                                 reporter: reporter,
                                 userHasAlreadyAgreedToUpdate: true // they clicked Upgrade Bloom
                             );
-                            WaitForTheUpdate(reporter, worker);
-                            // Never true: this dialog is pure progress, and whatever there is to
-                            // say afterwards our caller says in a message box. Leaving it up would
-                            // mean the user reading the same news twice, in two windows.
-                            return false;
+                            if (!WaitForTheUpdate(reporter, worker))
+                            {
+                                // The user clicked Cancel, or we gave up waiting. Either way they
+                                // want to be rid of this window, not asked to close it again.
+                                return false;
+                            }
+
+                            SayHowTheUpgradeEnded(reporter, minimumVersion);
+                            // Leave the dialog up, with a Close button, so the user can read how it
+                            // went. It is the only window we have that is reliably in front.
+                            return true;
                         }
                     );
                 }
@@ -623,7 +672,8 @@ namespace Bloom.Collection
         /// in the background and applies when Bloom exits. That is exactly what an ordinary
         /// background update does, so there is nothing here to undo.
         /// </summary>
-        private static void WaitForTheUpdate(
+        /// <returns>true if the update reported back; false if the user cancelled or we gave up</returns>
+        private static bool WaitForTheUpdate(
             ProgressUpdateReporter reporter,
             BackgroundWorker worker
         )
@@ -632,52 +682,18 @@ namespace Bloom.Collection
             while (DateTime.UtcNow < deadline)
             {
                 if (reporter.WaitForFinish(TimeSpan.FromMilliseconds(250)))
-                    return;
+                    return true;
                 if (worker.CancellationPending)
-                    return;
+                    return false;
             }
             Logger.WriteEvent(
                 "Gave up waiting for the Velopack update started from the minimum version dialog."
             );
+            return false;
         }
 
         private static Version ParseOrNull(string version) =>
             Version.TryParse(version ?? "", out var v) ? v : null;
-
-        /// <summary>
-        /// Tell the user we have their new Bloom and are closing to install it. Without this the
-        /// window would simply vanish, which looks like a crash rather than an upgrade.
-        /// </summary>
-        private static void ReportUpgradeDownloaded(string downloadedVersion)
-        {
-            var message = string.Format(
-                LocalizationManager.GetString(
-                    "Collection.UpgradeDownloaded",
-                    "Bloom {0} has been downloaded. Bloom will now close, install it, and start up again.",
-                    "{0} is the version number of the Bloom that was downloaded."
-                ),
-                downloadedVersion
-            );
-            BloomMessageBox.ShowInfo(System.Net.WebUtility.HtmlEncode(message));
-        }
-
-        /// <summary>
-        /// Tell the user there is simply nothing newer for them to have. Being specific matters:
-        /// "your Bloom is up to date", which is what the normal update path would say, would be a
-        /// baffling thing to hear right after being told this Bloom is too old.
-        /// </summary>
-        private static void ReportNothingNewerAvailable(string minimumVersion)
-        {
-            var message = string.Format(
-                LocalizationManager.GetString(
-                    "Collection.NothingNewerAvailable",
-                    "This collection needs Bloom {0}, but there is no newer Bloom available to you yet. You are already on the newest one for the kind of Bloom you have installed.",
-                    "{0} is the version the collection requires."
-                ),
-                minimumVersion
-            );
-            BloomMessageBox.ShowWarning(System.Net.WebUtility.HtmlEncode(message));
-        }
 
         /// <summary>
         /// Format a version the way we actually compare it: major and minor only. Showing the user a
