@@ -1577,7 +1577,7 @@ namespace Bloom.web.controllers
             // EmbedCreditsInNewImageFile writes only the credits the AI editor explicitly sent, and
             // only when it sent any. So without this, uploading a credited photo and having it
             // re-encoded would quietly strip its copyright (BL-16645, and John's review of #8188).
-            ImageUtils.TrimMetadataInImage(newPath, jpegPath);
+            ImageUtils.CopyCoreMetadata(newPath, jpegPath);
             // Nothing references the PNG now, and leaving it in the book folder would keep
             // exactly the bulk we just converted away from. But a momentarily locked file (a
             // virus scanner, the host still serving it) must not abort the commit: we already

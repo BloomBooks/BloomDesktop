@@ -2221,7 +2221,7 @@ namespace Bloom.ImageProcessing
                 LogGraphicsMagickFailure(result);
                 return result;
             }
-            TrimMetadataInImage(sourcePath, destPath);
+            CopyCoreMetadata(sourcePath, destPath);
             return result;
         }
 
@@ -3134,7 +3134,7 @@ namespace Bloom.ImageProcessing
         /// Never throws: whatever goes wrong is logged, because losing the credits is bad but
         /// failing the operation that was copying them is worse.
         /// </remarks>
-        internal static string TrimMetadataInImage(string srcPath, string destPath)
+        public static string CopyCoreMetadata(string srcPath, string destPath)
         {
             // Try to reduce the metadata to just what we want for intellectual property and
             // collection information.
@@ -3177,7 +3177,7 @@ namespace Bloom.ImageProcessing
             {
                 // This can happen in unit tests that have fake data.
                 Debug.WriteLine(
-                    $"Exception caught while trying to trim metadata from {srcPath} to {destPath}.",
+                    $"Exception caught while trying to copy metadata from {srcPath} to {destPath}.",
                     e
                 );
             }
@@ -3209,7 +3209,7 @@ namespace Bloom.ImageProcessing
             // We need an output file even if it's an identical copy.
             RobustFile.Copy(srcPath, trimmedFilePath, true);
 
-            TrimMetadataInImage(srcPath, trimmedFilePath);
+            CopyCoreMetadata(srcPath, trimmedFilePath);
             // Capture this before we unencode, since it wants
             // to be a value we can put in a src attribute (if it doesn't get changed)
             // to lead to the file we may put at an unchanged file name.
