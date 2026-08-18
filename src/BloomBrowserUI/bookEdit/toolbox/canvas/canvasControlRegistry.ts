@@ -128,11 +128,20 @@ const getImage = (ctx: IControlContext): HTMLImageElement | undefined => {
     return getImageFromContainer(imageContainer) ?? undefined;
 };
 
-// Analytics support for the Transparency menu (BL-16716). Keyed by image URL rather than by
+// Analytics support for the Transparency menu (BL-16716). Keyed by image FILE rather than by
 // element, because saving the page rebuilds the DOM and we want the whole sequence of choices
 // the user made on one picture, not one entry per surviving element. Session-scoped on purpose:
 // what we are after is the person still guessing a minute later, not a history across runs.
 const transparencyChoicesByImage = new Map<string, string[]>();
+
+// The src with any query string removed. It has to be the file rather than the raw src,
+// because setImgTransparentParam adds and removes a "?transparent=yes" parameter -- so keying
+// on the src would file each choice under a different key from the one before it, and the path
+// would restart (or merge with an unrelated one) on the very first change. That would lose
+// exactly the users this measurement exists to find: the ones who cycled through the options.
+function imageFileKeyOf(img: HTMLImageElement): string {
+    return (img.getAttribute("src") ?? "").split("?")[0];
+}
 
 // Append this choice to the image's sequence and return the whole path, e.g.
 // "auto > transparent > opaque".
@@ -141,17 +150,26 @@ function recordTransparencyChoice(
     from: string,
     to: string,
 ): string {
-    const key = img.getAttribute("src") ?? "";
+    const key = imageFileKeyOf(img);
     const choices = transparencyChoicesByImage.get(key) ?? [from];
     choices.push(to);
     transparencyChoicesByImage.set(key, choices);
     return choices.join(" > ");
 }
 
+// The current transparency mode of an image, read from its classes. Read at click time rather
+// than captured when the menu was built, so that two choices from one open submenu still
+// report the mode each was actually made from.
+function transparencyModeOf(img: HTMLImageElement): string {
+    if (img.classList.contains("bloom-transparent")) return "transparent";
+    if (img.classList.contains("bloom-opaque")) return "opaque";
+    return "auto";
+}
+
 // The image's file type, lower case and without the dot ("png", "jpg", ...). Tells us whether
 // the detection failures cluster on photos or on line art.
 function imageFormatOf(img: HTMLImageElement): string {
-    const src = (img.getAttribute("src") ?? "").split("?")[0];
+    const src = imageFileKeyOf(img);
     const dot = src.lastIndexOf(".");
     return dot < 0 ? "" : src.substring(dot + 1).toLowerCase();
 }
@@ -794,12 +812,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 // on it. Call this BEFORE mutating the classes, so "from" is the mode we chose.
                 function reportTransparencyChoice(to: string) {
                     if (!img) return;
-                    let from = "auto";
-                    if (isTransparent) {
-                        from = "transparent";
-                    } else if (isOpaque) {
-                        from = "opaque";
-                    }
+                    const from = transparencyModeOf(img);
                     if (from === to) return; // re-picking what is already ticked says nothing
                     const path = recordTransparencyChoice(img, from, to);
                     trackEvent("Image Transparency Set", {

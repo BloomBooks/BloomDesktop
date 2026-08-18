@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using Bloom.Api;
+using SIL.Reporting;
 
 namespace Bloom.Publish.Rab
 {
@@ -70,28 +71,45 @@ namespace Bloom.Publish.Rab
             Exception error = null
         )
         {
-            var properties = new Dictionary<string, string>
+            // Everything here is wrapped, not just the send. Gathering the properties calls
+            // GetStatus(), which reads and parses files, and this method is called from inside the
+            // try/catch that decides whether the action succeeded -- so an I/O hiccup here would
+            // have written "the build failed" to the log of a build that finished fine.
+            // (BloomAnalytics.Track guards its own send; this covers the gathering above it.)
+            try
             {
-                { "result", result },
+                var properties = new Dictionary<string, string>
                 {
-                    "elapsedSeconds",
-                    Math.Round(stopwatch.Elapsed.TotalSeconds, 1)
-                        .ToString(CultureInfo.InvariantCulture)
-                },
-            };
-            if (error != null)
-                properties["errorKind"] = error.GetType().Name;
-            // A status read costs a little file poking, which is nothing next to the action that
-            // just finished, and it is the only place the book count and artifact size live.
-            var status = _rabProjectService.GetStatus();
-            if (status != null)
-            {
-                properties["bookCount"] = (status.TrackedBooks?.Length ?? 0).ToString();
-                if (status.ApkSizeBytes > 0)
-                    properties["apkSizeMB"] = Math.Round(status.ApkSizeBytes / 1024.0 / 1024.0, 1)
-                        .ToString(CultureInfo.InvariantCulture);
+                    { "result", result },
+                    {
+                        "elapsedSeconds",
+                        Math.Round(stopwatch.Elapsed.TotalSeconds, 1)
+                            .ToString(CultureInfo.InvariantCulture)
+                    },
+                };
+                if (error != null)
+                    properties["errorKind"] = error.GetType().Name;
+                // A status read costs a little file poking, which is nothing next to the action that
+                // just finished, and it is the only place the book count and artifact size live.
+                var status = _rabProjectService.GetStatus();
+                if (status != null)
+                {
+                    properties["bookCount"] = (status.TrackedBooks?.Length ?? 0).ToString();
+                    if (status.ApkSizeBytes > 0)
+                        properties["apkSizeMB"] = Math.Round(
+                                status.ApkSizeBytes / 1024.0 / 1024.0,
+                                1
+                            )
+                            .ToString(CultureInfo.InvariantCulture);
+                }
+                BloomAnalytics.Track("Publish App " + action, properties);
             }
-            BloomAnalytics.Track("Publish App " + action, properties);
+            catch (Exception e)
+            {
+                Logger.WriteEvent(
+                    $"[analytics] FAILED to report the App Builder {action} outcome: {e.Message}"
+                );
+            }
         }
 
         /// <summary>

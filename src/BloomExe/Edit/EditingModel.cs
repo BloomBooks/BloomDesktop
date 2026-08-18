@@ -1982,12 +1982,18 @@ namespace Bloom.Edit
             // "I tested one with 400". Whether real users have books like that, and how long they
             // are made to wait, is a measurable thing we would act on. (How often the feature gets
             // used is not, which is why that is not what this reports.)
-            var imageCount = ImageUpdater.GetImagePaths(CurrentBook.FolderPath).Count();
+            //
+            // The count comes back from the work itself. Counting the images up front instead would
+            // have made the very command we are measuring slower: GetImagePaths reads embedded
+            // metadata from every file, so on a 400-image book that was a second full scan, and it
+            // ran before the progress dialog appeared -- a longer silent freeze, added in order to
+            // measure the wait.
+            var imageCount = 0;
             var stopwatch = Stopwatch.StartNew();
             using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
             {
                 dlg.ShowAndDoWork(progress =>
-                    CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress)
+                    imageCount = CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress)
                 );
             }
             stopwatch.Stop();

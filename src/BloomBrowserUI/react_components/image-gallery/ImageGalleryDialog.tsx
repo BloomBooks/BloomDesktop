@@ -20,6 +20,7 @@ import {
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { getEditablePageBundleExports } from "../../bookEdit/js/workspaceFrames";
+import { useMountEffect } from "../../utils/useMountEffect";
 import { ShowEditViewDialog } from "../../bookEdit/workspaceRoot";
 
 // The shape of what C# returns from imageGallery/imageGalleryResult
@@ -90,9 +91,14 @@ const ImageGalleryDialog: React.FunctionComponent<{
             .finally(() => setKeysLoaded(true));
     }, []);
 
-    // useEffect justified: same one-time-fetch-after-mount reason as the keys above, and it
-    // also writes, so it must happen exactly once per dialog.
-    useEffect(() => {
+    // Unlike the fetch above, this one WRITES, so it has to happen exactly once per dialog.
+    // React StrictMode runs mount effects twice in development, which would bump the durable
+    // counter by two on every visit -- skewing the very number this exists to provide, and
+    // doing it precisely when a developer is checking the feature.
+    const sessionCountedRef = useRef(false);
+    useMountEffect(() => {
+        if (sessionCountedRef.current) return;
+        sessionCountedRef.current = true;
         getAsync("app/userSetting?settingName=ImageChooserSessionCount").then(
             (r) => {
                 const priorSessions = (r?.data?.settingValue as number) ?? 0;
@@ -103,7 +109,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 });
             },
         );
-    }, []);
+    });
 
     // One event per search, recording what was asked for, where it was sent, and what came
     // back. The term is what makes the rest of the data mean anything: with it we can tell a
@@ -219,6 +225,11 @@ const ImageGalleryDialog: React.FunctionComponent<{
             thumbnailUrl: previewUrl,
             reasonableSizeUrl: previewUrl,
             localPath: filePath,
+            // Set here as well as by the gallery, so that the "local disk" outcome and the
+            // Change Picture provider do not silently depend on the package continuing to stamp
+            // it. If it ever stopped, every disk-opened picture would be recorded as an ordinary
+            // chooser accept from an unknown provider -- the exact split this event exists for.
+            providerId: kLocalDiskProviderId,
             // C# reports the original file's dimensions and byte count. These matter because
             // previewUrl may serve a downscaled stand-in for an image too large for the
             // browser to display, and we want to report what the user actually chose.

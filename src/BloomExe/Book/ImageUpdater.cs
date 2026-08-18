@@ -17,7 +17,10 @@ namespace Bloom.Book
 {
     public class ImageUpdater
     {
-        public static void CopyImageMetadataToWholeBook(
+        /// <returns>How many image files it worked through. Returned from here rather than
+        /// counted by the caller because this method has already enumerated them, and doing it
+        /// again is not cheap: GetImagePaths reads embedded metadata from every file.</returns>
+        public static int CopyImageMetadataToWholeBook(
             string folderPath,
             HtmlDom dom,
             Metadata metadata,
@@ -94,6 +97,8 @@ namespace Bloom.Book
             {
                 UpdateImgMetadataAttributesToMatchImage(folderPath, img, progress, metadata);
             }
+
+            return completed;
         }
 
         private static readonly string[] _imagesThatShouldBeSingletons = new string[]
@@ -121,9 +126,7 @@ namespace Bloom.Book
         /// </summary>
         /// <param name="folderPath"></param>
         /// <returns></returns>
-        /// Internal rather than private so that a caller can count the images this would
-        /// work through before starting -- see EditingModel.CopyImageMetadataToWholeBook.
-        internal static IEnumerable<string> GetImagePaths(string folderPath)
+        private static IEnumerable<string> GetImagePaths(string folderPath)
         {
             foreach (var path in Directory.EnumerateFiles(folderPath).Where(IsNormalImagePath))
             {

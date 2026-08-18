@@ -42,6 +42,9 @@ if [ -s $filesToCheck ]; then
       src/BloomExe/BloomAnalytics.cs) continue;;
     esac
     if awk '
+      # A commented-out call is not a call, and this repo has explanatory comments that name the
+      # very API this script bans -- flagging those would block a commit for no reason.
+      /^[[:space:]]*(\/\/|\*|\/\*)/ { next }
       /(^|[^A-Za-z0-9_])Analytics\.(Track|ReportException)[[:space:]]*\(/ {
         print FILENAME ":" FNR ": " $0;
         found = 1;

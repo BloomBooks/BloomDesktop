@@ -44,6 +44,11 @@ import {
     isCurrentPageSwap,
 } from "./aiEditorShared";
 
+// The analytics events we accept from the editor iframe and pass on to Segment. Adding one here
+// is a deliberate act: see the "analytics" case below for why the vocabulary is pinned on this
+// side of the bridge rather than trusted from the other.
+const kEventsTheEditorMaySend = ["AI Editor Generate"];
+
 // Hand the commit's current-page swaps to the page frame, which owns the live page. Only call
 // this when there is such a swap (see isCurrentPageSwap): the frame is briefly unreachable while
 // it reloads, and a commit with nothing to do on that page must not be failed for that.
@@ -395,10 +400,20 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 }
                 case "analytics": {
                     // The editor has no analytics service of its own; it hands events to
-                    // whatever host it is running in. Pass them straight through -- C# adds
-                    // BookId -- but keep our own count of generations for the cancel event.
+                    // whatever host it is running in. C# adds BookId and branding.
+                    //
+                    // Only event names we know are forwarded. Bloom is the party that actually
+                    // sends to Segment, so Bloom enforces its own privacy line rather than
+                    // trusting a sibling repository not to regress: without this, a future
+                    // change over there could push arbitrary event names -- and whatever
+                    // properties came with them -- straight out of here.
                     const event = data.payload?.event;
-                    if (!event) {
+                    if (!event || !kEventsTheEditorMaySend.includes(event)) {
+                        if (event) {
+                            console.warn(
+                                `[AI Image Editor] not forwarding unrecognized analytics event "${event}"`,
+                            );
+                        }
                         break;
                     }
                     if (event === "AI Editor Generate") {

@@ -35,11 +35,23 @@ namespace Bloom
         /// </summary>
         public static void Track(string eventName, Dictionary<string, string> properties = null)
         {
-            Log(FormatForLog(eventName, properties, Analytics.AllowTracking));
-            if (properties == null)
-                Analytics.Track(eventName);
-            else
-                Analytics.Track(eventName, properties);
+            // Recording an event must never be able to affect what it is observing. Callers sit
+            // inside try/catch blocks that mean something else entirely -- one of them turns any
+            // exception into "the app build failed" on the user's screen -- so an exception raised
+            // here would be attributed to their operation, not to analytics. A lost event is a far
+            // smaller problem, and the log line below still records that we meant to send it.
+            try
+            {
+                Log(FormatForLog(eventName, properties, Analytics.AllowTracking));
+                if (properties == null)
+                    Analytics.Track(eventName);
+                else
+                    Analytics.Track(eventName, properties);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent($"[analytics] FAILED to send \"{eventName}\": {e.Message}");
+            }
         }
 
         /// <summary>
