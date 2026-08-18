@@ -1525,9 +1525,10 @@ namespace Bloom.web.controllers
                 {
                     // A JPEG has no alpha channel, so re-encoding a PNG that has any
                     // see-through areas would flatten them onto a solid background — and we
-                    // delete the PNG below, so the transparency would be gone for good. Bloom's
-                    // display pipeline guards this very conversion the same way; see the
-                    // HasTransparency test in ImageUtils.AdjustImageForDisplay.
+                    // delete the PNG below, so the transparency would be gone for good. That is
+                    // why we scan every pixel here, while the same conversion in
+                    // ImageUtils.AdjustImageForDisplay settles for a sample: there the original
+                    // survives, so a missed patch costs a display copy rather than the picture.
                     if (ImageUtils.HasTransparency(image.Image, samplePixels: false))
                         return newFileName;
                     keepTheJpeg = ImageUtils.TryChangeFormatToJpegIfHelpful(image, jpegPath);

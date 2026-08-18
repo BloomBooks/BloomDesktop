@@ -1006,7 +1006,12 @@ namespace Bloom.ImageProcessing
                 var tryJpegConversion =
                     !transparencyOnly
                     && !shouldMakeTransparent
-                    && !HasTransparency(imageInfo.Image, samplePixels: false);
+                    // One or two stray pixels of transparency in a photographic image can be ignored;
+                    // the random sampling will usually miss them and allow the image to be converted
+                    // to the smaller JPEG format.  The random sampling is fine grained enough to almost
+                    // always encounter any major patch of transparency.  (This code has been used for
+                    // some time without any user complaints.)
+                    && !HasTransparency(imageInfo.Image);
 
                 // When transparencyOnly, skip all processing for images that don't need transparency.
                 // The null return causes GetPathToAdjustedImage to cache this as a no-op, so
