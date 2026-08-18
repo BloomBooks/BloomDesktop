@@ -168,6 +168,18 @@ namespace Bloom
         public string FailureMessage { get; private set; }
 
         /// <summary>
+        /// The user pressed Cancel. Worth knowing separately from the outcome, because the download
+        /// may finish in the very moment they cancel, and a caller that acted on the outcome alone
+        /// would restart Bloom under someone who had just said no.
+        /// </summary>
+        public bool UserCancelled { get; private set; }
+
+        public void NoteUserCancelled()
+        {
+            UserCancelled = true;
+        }
+
+        /// <summary>
         /// The last thing we told the user, so that Finished does not repeat it.
         /// </summary>
         private string _lastSaid;

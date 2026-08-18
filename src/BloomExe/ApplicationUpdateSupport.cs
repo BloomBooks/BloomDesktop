@@ -273,6 +273,21 @@ namespace Bloom
         )
         {
 #if !__MonoCS__
+            // One download at a time. The switch in CheckForAVelopackUpdate guards the way in, but
+            // not this method, which the "Update Now" toast also calls straight from its click. A
+            // toast left on screen from an earlier check plus the upgrade dialog -- which skips the
+            // asking step -- can now both arrive here, and two DownloadUpdatesAsync calls on one
+            // UpdateManager is not something we want to find out about in the field.
+            if (
+                _status == UploadStatus.Downloading
+                || _status == UploadStatus.DownloadedWaitingForRestart
+            )
+            {
+                reporter.Say(DownloadingMessage());
+                reporter.Finished(UpdateAttemptOutcome.Failed, null, AlreadyCheckingMessage());
+                return;
+            }
+
             try
             {
                 _status = UploadStatus.Downloading;

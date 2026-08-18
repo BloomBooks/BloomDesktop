@@ -458,6 +458,13 @@ namespace Bloom.Collection
             if (reporter.Outcome != UpdateAttemptOutcome.Downloaded)
                 return false;
 
+            // Someone who pressed Cancel does not get restarted, even if the download turned out to
+            // have finished in the same moment. Without this the two race: the wait gives up on a
+            // cancel, and by the time we look at the outcome it says Downloaded, so Bloom would
+            // quit and reinstall itself under a user who had just said no.
+            if (reporter.UserCancelled)
+                return false;
+
             // Ask for the restarting flavour of the install: the user asked to be upgraded, so
             // leaving them at a closed program to start again themselves would be a poor end to it.
             // This also gets Velopack's own progress bar while it installs.
@@ -709,7 +716,10 @@ namespace Bloom.Collection
                 if (reporter.WaitForFinish(TimeSpan.FromMilliseconds(250)))
                     return true;
                 if (worker.CancellationPending)
+                {
+                    reporter.NoteUserCancelled();
                     return false;
+                }
             }
             Logger.WriteEvent(
                 "Gave up waiting for the Velopack update started from the minimum version dialog."
