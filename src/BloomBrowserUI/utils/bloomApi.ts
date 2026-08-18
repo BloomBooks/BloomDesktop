@@ -775,11 +775,34 @@ export async function postJsonAsync(
 // property (or pass undefined) when you don't have a value for it, rather than sending "".
 // Note that DEBUG builds initialize DesktopAnalytics with allowTracking:false, so nothing sent
 // from a developer machine reaches Segment; new events have to be verified on alpha.
+//
+// Recording an event must never break -- or appear to break -- whatever the user was doing.
+// Two ways it otherwise could, both closed here deliberately:
+//   - Callers report events from inside try/catch blocks that mean something else entirely
+//     ("Sorry, there was a problem adding the image"), so anything thrown from here would be
+//     caught there and blamed on that instead.
+//   - A failed request would go through wrapAxios's default error reporting and raise a problem
+//     report about analytics, which is never worth interrupting anyone for. Passing an
+//     errorCallback is what suppresses that -- compare postThatMightNavigate's `report: false`.
+// Both failures still reach the browser console, so a genuinely broken endpoint is findable;
+// an event that goes missing is a far smaller problem than either alternative.
 export function trackEvent(
     event: string,
     properties?: Record<string, string | number | boolean | undefined>,
 ): void {
-    postJson("analytics/track", { event, properties: properties ?? {} });
+    try {
+        postJson(
+            "analytics/track",
+            { event, properties: properties ?? {} },
+            undefined,
+            (r) => console.error(`analytics/track failed for "${event}"`, r),
+        );
+    } catch (error) {
+        console.error(
+            `analytics/track could not be sent for "${event}"`,
+            error,
+        );
+    }
 }
 
 let debugMessageCount = 0; // used to serialize debug messages
