@@ -500,6 +500,139 @@ export class EditableDivUtils {
         });
     }
 
+    // A ckeditor bookmark is a hidden span inserted at the insertion point, so creating one
+    // SPLITS the text node the user is typing in, and removing it again (which is what
+    // selectBookmarks does) leaves the two halves as separate, adjacent text nodes.
+    // The characters are all still there, and the DOM inspector's text view looks right, but
+    // Chromium shapes the paragraph's text as a single run and then hands out the resulting
+    // glyphs per text node. When a ligature straddles the boundary - very easy in SIL fonts
+    // such as Andika and Charis, which ligate ff, fl and ffl - that split lands in the middle
+    // of a glyph cluster and Chromium loses glyphs: letters the user typed simply stop being
+    // painted (and the caret draws in the wrong place) until something re-renders the
+    // paragraph, e.g. changing the font or reloading the page. Type "overflow", then insert a
+    // second "f" before the "f", pause for the markup timer, then type any other letter: the
+    // "fl" vanishes (BL-16717).
+    // So whenever we take bookmarks out again, put the text back the way we found it.
+    // Note that repairing the DOM is not on its own enough to repair the display: see
+    // mergeAdjacentTextNodeRuns().
+    // We deliberately do NOT save and restore the insertion point around this. The DOM spec
+    // requires text-node merging to keep live ranges - including the selection - on the same
+    // characters, and Chromium does: checked in a running Bloom, with the caret both at the
+    // split itself and immediately after a <strong>, it comes out on exactly the character it
+    // went in on. An earlier version here did its own save/restore out of caution, and that
+    // hand-rolled restore was itself the bug - a character offset cannot tell the end of a
+    // bold run from the start of the plain text after it, so the caret could hop back inside
+    // the bold text and the user's next letters would come out bold.
+    // Callers should avoid making bookmarks at all when nothing is going to rewrite the box;
+    // this is the repair for when we genuinely needed one.
+    public static mergeTextNodesSplitByBookmarks(element: HTMLElement): void {
+        if (!EditableDivUtils.hasAdjacentTextNodes(element)) {
+            return; // nothing to merge; leave the box, and the selection, strictly alone
+        }
+        EditableDivUtils.mergeAdjacentTextNodeRuns(element);
+    }
+
+    // Merge each run of adjacent sibling text nodes back into one.
+    //
+    // Merging the DOM back together is only half the repair: Chromium goes on painting the
+    // paragraph's old, glyph-dropped text afterwards. The DOM ends up correct - the inspector
+    // shows one string, and the layout even measures correctly - while the screen still shows
+    // "overfow" for a paragraph reading "overfflow", until something else forces a repaint.
+    //
+    // The obvious cure, rebuilding each run as a brand-new text node (nothing stale is cached
+    // against a node that didn't exist a moment ago), is NOT usable here: replacing a text node
+    // collapses any live Range whose boundaries were inside it, and Bloom's reader-tool and
+    // Talking Book highlights are exactly that - live Ranges over these text nodes, registered
+    // by the markup pass just before we run. Destroying them makes the highlighting silently
+    // disappear from the paragraph the user is typing in (the failure mode
+    // textHighlightManager.hasDeadRanges() exists to detect).
+    //
+    // So: merge with normalize(), which the DOM spec requires to keep live ranges on the same
+    // characters, and then make Chromium re-shape the merged node by making a real change to it
+    // and undoing that change - appending a space at the end and immediately deleting it. See
+    // the comment at that edit for why it has to be done in exactly that way.
+    //
+    // Deliberately NOT done by toggling the element's display: the parent of a bare text node
+    // can be the .bloom-editable itself, and hiding a focused contenteditable blurs it - the
+    // user's next keystrokes would go nowhere - besides leaving a stray style="" attribute
+    // behind in the saved book.
+    private static mergeAdjacentTextNodeRuns(element: HTMLElement): void {
+        const doc = element.ownerDocument;
+        // The node each run will collapse into: normalize() appends a run's text onto its
+        // first non-empty node and removes the others, so that is the node that survives, and
+        // the only one whose painting can be stale. Picking it now lets us leave every other
+        // text node in the box completely untouched.
+        // It must be the first NON-EMPTY one: normalize() deletes empty text nodes outright,
+        // so a run headed by one would leave us holding a detached node and poking it would
+        // repaint nothing.
+        const survivorOfEachRun: Text[] = [];
+        const walker = doc.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let runInProgress = false;
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            const text = node as Text;
+            const hasTextNodeAfterIt =
+                node.nextSibling?.nodeType === Node.TEXT_NODE;
+            if (!runInProgress && !hasTextNodeAfterIt) {
+                continue; // a lone text node: nothing to merge it with
+            }
+            if (!runInProgress || survivorOfEachRun.length === 0) {
+                // starting a run
+                survivorOfEachRun.push(text);
+            }
+            const survivorIndex = survivorOfEachRun.length - 1;
+            if (survivorOfEachRun[survivorIndex].length === 0 && text.length) {
+                // the run so far was empty nodes; this is the one that will survive
+                survivorOfEachRun[survivorIndex] = text;
+            }
+            runInProgress = hasTextNodeAfterIt;
+        }
+
+        survivorOfEachRun.forEach((survivor) => {
+            // A text node always has a parent element here: we are walking inside element.
+            survivor.parentElement!.normalize();
+            if (!survivor.isConnected) {
+                return; // the whole run was empty nodes; normalize() removed them all
+            }
+            // Now make Chromium re-shape this node, by making a real change to it and undoing
+            // that change. Every part of this is load-bearing:
+            // - It has to be a REAL edit. Assigning the same string back (data = data) is the
+            //   obvious thing to try, but it can be optimized away as a no-op, and then nothing
+            //   is re-shaped and the letters stay missing.
+            // - It must not disturb any EXISTING character. Deleting the text and re-inserting
+            //   it, or replacing the whole string in one assignment, would do the job, but per
+            //   the DOM spec an edit at offset N moves every live range boundary beyond N - so
+            //   either of those would drag, or collapse, the highlight ranges that the reader
+            //   tools and Talking Book have registered over this very node, and the caret with
+            //   them. Appending at the end and deleting only what we appended edits at
+            //   offset === length, and no boundary can lie beyond the end, so nothing moves.
+            // - The two edits must both happen here, synchronously. Nothing is painted between
+            //   them, so the space we add is never seen and never saved.
+            // A space is a safe thing to append even when the text already ends in whitespace:
+            // html's whitespace collapsing is a rule about RENDERING, and a text node's data is
+            // an exact string, so "flow " briefly becomes "flow  " and comes back "flow " -
+            // nothing merges. A space is also the most harmless character to be caught holding
+            // if this were ever interrupted between the two calls (it cannot be - deleteData
+            // here can't throw), which a printable character would not be.
+            survivor.insertData(survivor.length, " ");
+            survivor.deleteData(survivor.length - 1, 1);
+        });
+    }
+
+    // Does element contain two text nodes that are siblings, as removing a bookmark leaves
+    // behind? (An empty text node next to another one counts: merging folds it away.)
+    private static hasAdjacentTextNodes(element: HTMLElement): boolean {
+        const walker = element.ownerDocument.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+        );
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            if (node.nextSibling?.nodeType === Node.TEXT_NODE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static restoreSelectionFromCkEditorBookmarks(
         editableDivs: HTMLDivElement[],
         ckEditorBookmarks: object[],
@@ -527,6 +660,7 @@ export class EditableDivUtils {
                             },
                         );
                     }
+                    EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
                 }
             });
         }
