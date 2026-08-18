@@ -50,28 +50,35 @@ import {
 // anything here is a deliberate act, which is the point: the editor's promise not to include
 // prompt text is a promise made in another repository, and a property allow-list is what makes
 // it true here regardless.
-const kAnalyticsTheEditorMaySend: Record<string, string[]> = {
-    "AI Editor Generate": [
-        "tool",
-        "model",
-        "sourceKind",
-        "referenceCount",
-        "batch",
-        "runsLocally",
-        "attemptNumber",
-        "result",
-        "durationSeconds",
-        "costUSD",
-        "spentCredits",
+// A Map, not an object literal: with an object, `event in obj` is also true for inherited
+// members, so an event named "toString" or "constructor" would be treated as permitted and then
+// blow up while its properties were filtered -- taking down the handling of that message, which
+// is the same handler that processes commit and cancel. Map.has() only sees real entries.
+const kAnalyticsTheEditorMaySend = new Map<string, string[]>([
+    [
+        "AI Editor Generate",
+        [
+            "tool",
+            "model",
+            "sourceKind",
+            "referenceCount",
+            "batch",
+            "runsLocally",
+            "attemptNumber",
+            "result",
+            "durationSeconds",
+            "costUSD",
+            "spentCredits",
+        ],
     ],
-};
+]);
 
 // Keep only the properties that event is allowed to carry, dropping anything unrecognized.
 function allowedProperties(
     event: string,
     properties?: Record<string, string | number | boolean>,
 ): Record<string, string | number | boolean> {
-    const allowed = kAnalyticsTheEditorMaySend[event] ?? [];
+    const allowed = kAnalyticsTheEditorMaySend.get(event) ?? [];
     const result: Record<string, string | number | boolean> = {};
     for (const name of allowed) {
         if (properties && name in properties) {
@@ -440,7 +447,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     // without this, a change over there could push an arbitrary event name, or a
                     // new property holding prompt text, straight out of here.
                     const event = data.payload?.event;
-                    if (!event || !(event in kAnalyticsTheEditorMaySend)) {
+                    if (!event || !kAnalyticsTheEditorMaySend.has(event)) {
                         if (event) {
                             console.warn(
                                 `[AI Image Editor] not forwarding unrecognized analytics event "${event}"`,

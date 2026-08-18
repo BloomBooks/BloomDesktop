@@ -407,6 +407,51 @@ describe("aiEditorOverlay: analytics", () => {
         expect(cancelEvents()[0][1]).toMatchObject({ generatedThisSession: 1 });
     });
 
+    test("an event name we do not know is ignored, and does not break the session", () => {
+        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+
+        // "toString" is the interesting case rather than a random word: an object-literal
+        // allow-list would answer `"toString" in list` with true, let it through, and then throw
+        // while filtering its properties -- killing this handler, which is also the one that
+        // processes commit and cancel.
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "analytics",
+            payload: {
+                event: "toString",
+                properties: { prompt: "leaked book text" },
+            },
+        });
+
+        expect(trackEvent).not.toHaveBeenCalled();
+
+        // The session must still be alive: closing still reports the cancel.
+        closeButton.click();
+        expect(cancelEvents()).toHaveLength(1);
+    });
+
+    test("only the properties an event is allowed to carry are passed on", () => {
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "analytics",
+            payload: {
+                event: "AI Editor Generate",
+                properties: {
+                    model: "some-model",
+                    // Not on the allow-list. The editor promises never to send anything like
+                    // this; the point of the list is that Bloom does not have to rely on that.
+                    promptUsed: "a sentence lifted out of the book",
+                },
+            },
+        });
+
+        expect(trackEvent).toHaveBeenCalledWith("AI Editor Generate", {
+            model: "some-model",
+        });
+    });
+
     test("a successful commit is not reported as a cancel", () => {
         const { postFromEditor } = openAgainstABookWithOneImage();
 
