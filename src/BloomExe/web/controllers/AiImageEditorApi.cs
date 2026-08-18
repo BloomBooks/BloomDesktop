@@ -1317,7 +1317,7 @@ namespace Bloom.web.controllers
             var newFileName = ImportImageIntoBookFolder(
                 sourceBytesPath,
                 book.FolderPath,
-                // Only a freshly generated/uploaded result needs resizing. A REUSED book image
+                // Only a freshly generated/uploaded result needs resizing. A reused book image
                 // was already import-processed on its own way in, so there is nothing to gain
                 // by shrinking it again — and resizing rewrites the file through
                 // GraphicsMagick, which can drop the credits embedded in it. This path
@@ -1327,8 +1327,8 @@ namespace Bloom.web.controllers
             );
             // A generated result can arrive as a PNG for a slot the book held as a JPEG,
             // which can be several times the size; re-encode it as a JPEG when that wins
-            // enough to be worth it (BL-16645).  A REUSED image is already in the book
-            // folder in the appropriate format, so we don't touch it.
+            // enough to be worth it (BL-16645).  A reused image is already in the book
+            // folder in the appropriate format, so we don't need to process it again.
             if (!string.IsNullOrEmpty(replacement.resultId))
                 newFileName = ConvertPngToJpegIfItBloatsTheJpegItReplaces(
                     book.FolderPath,
