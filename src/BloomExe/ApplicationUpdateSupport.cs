@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -178,7 +178,7 @@ namespace Bloom
                         return;
                     }
                     OfferFoundUpdates(reporter, restartBloom);
-                    reporter.Finished(UpdateAttemptOutcome.NothingNewer, null, null);
+                    reporter.Finished(UpdateAttemptOutcome.Offered, null, null);
                     return;
                 case UploadStatus.Downloading:
                     reporter.Say(DownloadingMessage());
@@ -248,7 +248,7 @@ namespace Bloom
                 {
                     _status = UploadStatus.FoundUpdates;
                     OfferFoundUpdates(reporter, restartBloom);
-                    reporter.Finished(UpdateAttemptOutcome.NothingNewer, null, null);
+                    reporter.Finished(UpdateAttemptOutcome.Offered, null, null);
                     return;
                 }
             }
@@ -601,7 +601,7 @@ namespace Bloom
                 Logger.WriteError("Could not read Velopack update attempt file", e);
             }
 
-            // Always delete the file â€” whether the update succeeded or not we only want to
+            // Always delete the file — whether the update succeeded or not we only want to
             // check once per recorded attempt.
             try
             {

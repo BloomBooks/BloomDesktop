@@ -17,6 +17,11 @@ namespace Bloom
         /// We reached the update feed, and there is nothing newer on this channel.
         NothingNewer,
 
+        /// There IS something newer and the user has been offered it, but has not said yes yet.
+        /// Distinct from NothingNewer because a caller that reports the outcome to the user would
+        /// otherwise tell them the exact opposite of the truth.
+        Offered,
+
         /// We can't update this copy of Bloom at all: a developer build, one an administrator
         /// manages, or one running under the debugger.
         CannotUpdateThisBloom,
@@ -141,10 +146,15 @@ namespace Bloom
     /// </summary>
     internal class ProgressUpdateReporter : UpdateReporter
     {
-        private readonly IWebSocketProgress _progress;
+        // Until the progress dialog is up there is nowhere to write, and a reporter that exists
+        // before its dialog is what lets the caller always have one to ask about.
+        private IWebSocketProgress _progress = new NullWebSocketProgress();
         private readonly ManualResetEventSlim _finished = new ManualResetEventSlim(false);
 
-        public ProgressUpdateReporter(IWebSocketProgress progress)
+        /// <summary>
+        /// Start writing to the progress dialog, once there is one.
+        /// </summary>
+        public void WriteTo(IWebSocketProgress progress)
         {
             _progress = progress;
         }

@@ -580,80 +580,35 @@ namespace Bloom.Collection
             string minimumVersion
         )
         {
-            ProgressUpdateReporter reporter = null;
+            // Built before the dialog, not inside its worker, so that the caller always gets a
+            // reporter to ask about. If the dialog never runs its worker body, this one still
+            // answers -- as a failure with nothing to say, which lands the user back at the
+            // collection chooser rather than on a null reference.
+            var reporter = new ProgressUpdateReporter();
 
-            // BloomWebSocketServer.Instance is only set while a collection is loading, and we are
-            // deliberately earlier than that, so we make one for the duration. WorkspaceView does
-            // the same thing for the language chooser (BL-15230).
+            // The startup path has no websocket server yet -- BloomWebSocketServer.Instance is set
+            // by the ProjectContext of a collection we have refused to open -- so we make one for
+            // the duration, as WorkspaceView does for the language chooser (BL-15230).
+            //
+            // But this same dialog is also reached mid-session, when a Team Collection's repository
+            // starts demanding a newer Bloom than the member is running. There a collection IS
+            // open, so the server exists and its port is bound; a second Fleck listener on that
+            // port throws, and BloomWebSocketServer.Init answers a SocketException by telling the
+            // user Bloom "cannot start properly" and quitting. So when there is already a server,
+            // use it.
+            if (BloomWebSocketServer.Instance != null)
+            {
+                ShowTheDialog(BloomWebSocketServer.Instance, reporter, minimumVersion);
+                return reporter;
+            }
+
             var previousInstance = BloomWebSocketServer.Instance;
             using (var socketServer = new BloomWebSocketServer())
             {
                 socketServer.Init(BloomServer.WebSocketPort.ToString(CultureInfo.InvariantCulture));
                 try
                 {
-                    BrowserProgressDialog.DoWorkWithProgressDialog(
-                        socketServer,
-                        () =>
-                            new ReactDialog(
-                                "progressDialogBundle",
-                                new
-                                {
-                                    // The same words as the button they just clicked.
-                                    title = LocalizationManager.GetString(
-                                        "Collection.UpgradeBloom",
-                                        "Upgrade Bloom"
-                                    ),
-                                    titleColor = "white",
-                                    titleBackgroundColor = Palette.kBloomBlueHex,
-                                    showReportButton = "never",
-                                    showCancelButton = true,
-                                    // Velopack tells us how far along the download is, so show a
-                                    // real bar rather than a spinner that says nothing.
-                                    determinate = true,
-                                    linearProgress = true,
-                                },
-                                "Upgrade Bloom"
-                            )
-                            {
-                                Width = 620,
-                                // Only a few lines ever appear here, and 400 left half the dialog
-                                // empty. The message area scrolls, so a failure with more to say
-                                // still fits.
-                                Height = 260,
-                            },
-                        (progress, worker) =>
-                        {
-                            reporter = new ProgressUpdateReporter(progress);
-                            if (!CanThisBloomUpdateItself(out var whyNot))
-                            {
-                                reporter.SayProblem(whyNot, null);
-                                reporter.Finished(
-                                    UpdateAttemptOutcome.CannotUpdateThisBloom,
-                                    null,
-                                    whyNot
-                                );
-                                return true;
-                            }
-
-                            ApplicationUpdateSupport.CheckForAVelopackUpdate(
-                                ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet,
-                                restartBloom: null, // nothing to click here, and we quit ourselves
-                                reporter: reporter,
-                                userHasAlreadyAgreedToUpdate: true // they clicked Upgrade Bloom
-                            );
-                            if (!WaitForTheUpdate(reporter, worker))
-                            {
-                                // The user clicked Cancel, or we gave up waiting. Either way they
-                                // want to be rid of this window, not asked to close it again.
-                                return false;
-                            }
-
-                            SayHowTheUpgradeEnded(reporter, minimumVersion);
-                            // Leave the dialog up, with a Close button, so the user can read how it
-                            // went. It is the only window we have that is reliably in front.
-                            return true;
-                        }
-                    );
+                    ShowTheDialog(socketServer, reporter, minimumVersion);
                 }
                 finally
                 {
@@ -665,6 +620,77 @@ namespace Bloom.Collection
             }
 
             return reporter;
+        }
+
+        /// <summary>
+        /// Put up the progress dialog and run the update inside it, reporting through
+        /// <paramref name="reporter"/>. Returns when the dialog has closed.
+        /// </summary>
+        private static void ShowTheDialog(
+            Bloom.web.IBloomWebSocketServer socketServer,
+            ProgressUpdateReporter reporter,
+            string minimumVersion
+        )
+        {
+            BrowserProgressDialog.DoWorkWithProgressDialog(
+                socketServer,
+                () =>
+                    new ReactDialog(
+                        "progressDialogBundle",
+                        new
+                        {
+                            // The same words as the button they just clicked.
+                            title = LocalizationManager.GetString(
+                                "Collection.UpgradeBloom",
+                                "Upgrade Bloom"
+                            ),
+                            titleColor = "white",
+                            titleBackgroundColor = Palette.kBloomBlueHex,
+                            showReportButton = "never",
+                            showCancelButton = true,
+                            // Velopack tells us how far along the download is, so show a
+                            // real bar rather than a spinner that says nothing.
+                            determinate = true,
+                            linearProgress = true,
+                        },
+                        "Upgrade Bloom"
+                    )
+                    {
+                        Width = 620,
+                        // Only a few lines ever appear here, and 400 left half the dialog
+                        // empty. The message area scrolls, so a failure with more to say
+                        // still fits.
+                        Height = 260,
+                    },
+                (progress, worker) =>
+                {
+                    reporter.WriteTo(progress);
+                    if (!CanThisBloomUpdateItself(out var whyNot))
+                    {
+                        reporter.SayProblem(whyNot, null);
+                        reporter.Finished(UpdateAttemptOutcome.CannotUpdateThisBloom, null, whyNot);
+                        return true;
+                    }
+
+                    ApplicationUpdateSupport.CheckForAVelopackUpdate(
+                        ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet,
+                        restartBloom: null, // nothing to click here, and we quit ourselves
+                        reporter: reporter,
+                        userHasAlreadyAgreedToUpdate: true // they clicked Upgrade Bloom
+                    );
+                    if (!WaitForTheUpdate(reporter, worker))
+                    {
+                        // The user clicked Cancel, or we gave up waiting. Either way they want to be
+                        // rid of this window, not asked to close it again.
+                        return false;
+                    }
+
+                    SayHowTheUpgradeEnded(reporter, minimumVersion);
+                    // Leave the dialog up, with a Close button, so the user can read how it went. It
+                    // is the only window we have that is reliably in front.
+                    return true;
+                }
+            );
         }
 
         /// <summary>
