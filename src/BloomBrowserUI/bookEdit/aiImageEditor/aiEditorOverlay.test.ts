@@ -734,6 +734,41 @@ describe("aiEditorOverlay: reporting what a commit achieved", () => {
         });
     });
 
+    test("a session that got some pictures into the book is not also counted as thrown away", () => {
+        // A commit can succeed for one picture and fail for another. The overlay stays open, and
+        // the user closes it -- but their AI work was not thrown away, so a cancel here would count
+        // the same session as both saved and discarded.
+        applyAiImageEditorReplacements.mockReturnValue({
+            applied: 0,
+            expected: 1,
+        });
+        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+
+        commitAndReply(
+            postFromEditor,
+            [
+                { incomingId: `${kPageId}:0`, resultId: "result1" },
+                { incomingId: "page2:0", resultId: "result2" },
+            ],
+            [
+                // The page frame could not swap this one in...
+                currentPageResult(0),
+                // ...but C# applied and saved this one itself.
+                { incomingId: "page2:0", ok: true, isCurrentPage: false },
+            ],
+        );
+        // Sanity: one picture did reach the book, and the overlay is still up.
+        expect(commitEvents()[0][1]).toMatchObject({ appliedCount: 1 });
+        expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
+
+        closeButton.click();
+
+        expect(
+            trackEvent.mock.calls.filter(
+                (call) => call[0] === "AI Editor Cancel",
+            ),
+        ).toHaveLength(0);
+    });
     test("a commit whose request fails reports that nothing landed", () => {
         const { postFromEditor } = openAgainstABookWithOneImage();
 

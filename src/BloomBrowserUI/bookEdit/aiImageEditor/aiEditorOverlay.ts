@@ -204,11 +204,17 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // Set by cleanup. Asking the DOM whether the overlay is still there would not do: a
         // relaunch tears this session down and immediately puts up a new overlay with the same id.
         let sessionEnded = false;
+        // Whether any picture from this session reached the book. Not the same as
+        // commitSucceeded, which means every replacement in a commit worked: a commit can put one
+        // picture in the book and fail on another, and that session is not one whose AI work was
+        // thrown away, however it ends afterwards.
+        let anythingReachedTheBook = false;
 
         // The session ended with nothing kept. Called from cleanup, and again from the commit
         // reply when a commit that was still in flight at that moment turns out to have failed.
         const reportCancel = () => {
-            if (cancelReported || commitSucceeded) return;
+            if (cancelReported || commitSucceeded || anythingReachedTheBook)
+                return;
             cancelReported = true;
             trackEvent("AI Editor Cancel", {
                 generatedThisSession: generationsThisSession,
@@ -407,6 +413,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                         currentPageApplied: number,
                     ) => {
                         const applied = offPageApplied + currentPageApplied;
+                        if (applied > 0) anythingReachedTheBook = true;
                         // Does anything actually reach the book? A non-zero failed rate is exactly
                         // the class of bug BL-16702 was: a commit that silently did nothing.
                         // Generated vs reused says whether people are paying for new images or
