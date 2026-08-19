@@ -56,6 +56,12 @@ namespace Bloom.FreezeDoctor
         private static DoctorSession _session;
 
         /// <summary>
+        /// True once we have exited because the Doctor asked us to. Stops the ProcessExit handler recording
+        /// that as an orderly shutdown, which it very much was not.
+        /// </summary>
+        private static bool _endedAtDoctorsRequest;
+
+        /// <summary>
         /// How often the session file is rewritten. It carries facts that barely change, so this is not
         /// about freshness — it is so that a Doctor installed *after* Bloom started, or one that had not
         /// yet been running when Bloom did, still finds a file describing the Bloom in front of it.
@@ -196,7 +202,11 @@ namespace Bloom.FreezeDoctor
             try
             {
                 _channel?.SetShutdownPhase(_shutdownPhase);
-                _channel?.RecordCleanExit();
+                // Only claim a clean exit when it was one. A Doctor-requested exit reaches here too, via
+                // Environment.Exit, and recording it as orderly would tell the next reader the opposite of
+                // the truth about a Bloom we had to end.
+                if (!_endedAtDoctorsRequest)
+                    _channel?.RecordCleanExit();
                 // Also on disk, because the shared-memory page vanishes once the last handle closes and a
                 // Doctor may not have been watching. The file is what a Doctor started tomorrow will read.
                 WriteSessionExit();
@@ -263,11 +273,10 @@ namespace Bloom.FreezeDoctor
                     CollectionName = SafeCollectionName(),
                 };
                 DoctorSessionStore.TryWrite(_session);
-
-                // Tidy up after previous runs, so a machine does not accumulate these for ever. An
-                // unexplained session is kept until it ages out — that is exactly the evidence a Doctor
-                // installed after a crash comes looking for.
-                DoctorSessionStore.Prune(ProcessIsAlive, SessionRetention);
+                // Note what is NOT done here: pruning old session files. This method runs on the UI thread
+                // during startup, and enumerating and deleting a directory's worth of files is exactly the
+                // sort of synchronous I/O that has no business on Bloom's startup path. The watchdog thread
+                // does it instead, on its first beat.
             }
             catch (Exception e)
             {
@@ -357,6 +366,17 @@ namespace Bloom.FreezeDoctor
             var quitRequest = DoctorSignals.TryCreate(
                 DoctorSignals.QuitRequestName(Process.GetCurrentProcess().Id)
             );
+
+            // Tidy up previous runs' session files here rather than at startup: this is file enumeration and
+            // deletion, and it belongs on a background thread rather than on Bloom's startup path. An
+            // unexplained session survives until it ages out, since that is precisely the evidence a Doctor
+            // installed after a crash comes looking for.
+            try
+            {
+                DoctorSessionStore.Prune(ProcessIsAlive, SessionRetention);
+            }
+            catch (Exception) { }
+
             while (true)
             {
                 try
@@ -473,6 +493,13 @@ namespace Bloom.FreezeDoctor
                 );
             }
             catch (Exception) { }
+
+            // Mark this as what it is BEFORE exiting. Environment.Exit runs the ProcessExit handler, which
+            // writes the clean-exit proof — and this was emphatically not a clean exit. Without this flag a
+            // zombie we had to end would be recorded as having shut down properly, which is exactly the
+            // conclusion the proof exists to prevent anyone drawing.
+            _endedAtDoctorsRequest = true;
+
             try
             {
                 // 1 rather than 0: this was not a normal exit, and the exit code should say so.
