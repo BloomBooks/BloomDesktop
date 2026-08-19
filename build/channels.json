@@ -1,0 +1,41 @@
+{
+    "//": [
+        "The catalogue of Bloom release channels, read by .github/workflows/release-installer.yml.",
+        "",
+        "This file is repo-wide and identical on every branch: it says what a channel IS, never",
+        "which branch publishes to it. That lives in each branch's copy of the workflow, as",
+        "CONTINUOUS_CHANNEL and the workflow_dispatch channel dropdown. Keeping this file the same",
+        "everywhere means merging between branches never changes anyone's channels.",
+        "",
+        "A channel's range is the band of patch numbers its versions are drawn from. Each channel",
+        "restarts at the bottom of its own band for every new release line, which is what makes a",
+        "version legible at a glance: 6.4.108 is a Beta, 6.4.1281 an Alpha, 6.3.2 a stable release.",
+        "The workflow refuses to publish a version outside its channel's band, and refuses to",
+        "publish to a channel that is not listed here at all.",
+        "",
+        "'Release' is the stable channel. Bloom.proj wants that one spelled as an empty string (it",
+        "is what produces Bloom.exe rather than BloomAlpha.exe, and the installers/ and deltas/",
+        "folders rather than installersAlpha/), and it ERRORS if handed the literal 'Release'. The",
+        "workflow does that translation at the msbuild boundary. Everywhere a person looks -- this",
+        "file, the dropdown, the logs, latest.Release.json -- the channel is called Release.",
+        "",
+        "mustBeSigned says whether an unsigned build may go out on this channel. It is a property",
+        "of the channel and not of how the run was started: Beta and Release reach people who did",
+        "not choose to be guinea pigs, so an unsigned build there is refused rather than shipped.",
+        "The others would rather have a build than a gap, so a signing failure is reported and the",
+        "build goes out anyway. Every run signs what it can and reports what it got, whichever",
+        "channel it is for.",
+        "",
+        "Adding a temporary channel: give it its own band. Bands from 4000 up are free;",
+        "temporary channels typically take 7000-7999 or 8000-8999. When one has served its",
+        "purpose its entry can stay here for reference, or be removed -- nothing depends on",
+        "it once nothing is publishing to it."
+    ],
+    "channels": {
+        "Release": { "range": [0, 99], "mustBeSigned": true },
+        "Beta": { "range": [100, 499], "mustBeSigned": true },
+        "ReleaseInternal": { "range": [500, 999], "mustBeSigned": false },
+        "Alpha": { "range": [1000, 2999], "mustBeSigned": false },
+        "BetaInternal": { "range": [3000, 3999], "mustBeSigned": false }
+    }
+}
