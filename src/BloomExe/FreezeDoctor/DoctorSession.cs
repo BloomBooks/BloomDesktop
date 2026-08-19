@@ -243,7 +243,10 @@ public static class DoctorSessionStore
                 if (processIsAlive(session.ProcessId))
                     continue;
                 var tooOld = DateTimeOffset.UtcNow - session.StartedAtUtc > maxAge;
-                var explained = session.Exit != null;
+                // "Explained" means an ORDERLY exit. An exit that was forced — a hard failure, or the Doctor
+                // ending a zombie — is not an explanation, it is the evidence; deleting it early would throw
+                // away the record of the very thing we exist to report.
+                var explained = session.Exit != null && !session.Exit.ForcedByDoctor;
                 if (tooOld || explained)
                     File.Delete(PathFor(session.ProcessId, directory));
             }

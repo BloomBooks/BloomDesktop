@@ -73,6 +73,12 @@ namespace Bloom.FreezeDoctor
         private static readonly object _sessionLock = new object();
 
         /// <summary>
+        /// What Bloom's own code last said it was doing, via <see cref="SetActivity"/>. Kept separately from
+        /// the request-derived text so the watchdog can combine the two rather than one erasing the other.
+        /// </summary>
+        private static string _statedActivity = "";
+
+        /// <summary>
         /// How often the session file is rewritten. It carries facts that barely change, so this is not
         /// about freshness — it is so that a Doctor installed *after* Bloom started, or one that had not
         /// yet been running when Bloom did, still finds a file describing the Bloom in front of it.
@@ -175,6 +181,10 @@ namespace Bloom.FreezeDoctor
         {
             try
             {
+                // Remembered rather than published directly, because the watchdog thread rewrites the same
+                // slot once a second; if this wrote straight through, the message would survive less than a
+                // second. The watchdog composes this with the in-flight request text instead.
+                Volatile.Write(ref _statedActivity, activity ?? "");
                 _channel?.SetActivity(activity);
             }
             catch (Exception) { }
@@ -218,10 +228,15 @@ namespace Bloom.FreezeDoctor
             try
             {
                 _channel?.SetShutdownPhase(_shutdownPhase);
-                // Only claim a clean exit when it was one. A Doctor-requested exit reaches here too, via
-                // Environment.Exit, and recording it as orderly would tell the next reader the opposite of
-                // the truth about a Bloom we had to end.
-                if (!_endedAtDoctorsRequest)
+                // Only claim a clean exit when the shutdown sequence actually ran.
+                //
+                // ProcessExit fires for EVERY Environment.Exit, and Bloom has several that are hard failures
+                // rather than shutdowns — WebView2 failing to initialise, the non-message-loop branch of the
+                // fatal exception handler, and the Doctor asking a zombie to go. None of those reach
+                // Program.Run's phase markers, so a phase of 0 means the orderly path was never walked. Using
+                // that as the test needs no cooperation from each exit site, which matters because the next
+                // hard-failure exit somebody adds will be covered automatically.
+                if (_shutdownPhase > 0 && !_endedAtDoctorsRequest)
                     _channel?.RecordCleanExit();
                 // Also on disk, because the shared-memory page vanishes once the last handle closes and a
                 // Doctor may not have been watching. The file is what a Doctor started tomorrow will read.
@@ -271,7 +286,10 @@ namespace Bloom.FreezeDoctor
             {
                 var process = Process.GetCurrentProcess();
                 var httpPort = Api.BloomServer.portForHttp;
-                _session = new DoctorSession
+                // Under the same lock as every other mutation. This one runs before the watchdog thread
+                // exists, so nothing can race it today — but a rule with an exception in it is a rule
+                // somebody will follow into a bug later.
+                var session = new DoctorSession
                 {
                     ProcessId = process.Id,
                     StartedAtUtc = process.StartTime.ToUniversalTime(),
@@ -289,7 +307,11 @@ namespace Bloom.FreezeDoctor
                     CdpPort = httpPort > 0 ? Api.BloomServer.RemoteDebuggingPort : 0,
                     CollectionName = SafeCollectionName(),
                 };
-                DoctorSessionStore.TryWrite(_session);
+                lock (_sessionLock)
+                {
+                    _session = session;
+                    DoctorSessionStore.TryWrite(_session);
+                }
                 // Note what is NOT done here: pruning old session files. This method runs on the UI thread
                 // during startup, and enumerating and deleting a directory's worth of files is exactly the
                 // sort of synchronous I/O that has no business on Bloom's startup path. The watchdog thread
@@ -323,7 +345,10 @@ namespace Bloom.FreezeDoctor
                         {
                             AtUtc = DateTimeOffset.UtcNow,
                             ShutdownPhase = _shutdownPhase,
-                            ForcedByDoctor = _endedAtDoctorsRequest,
+                            // Anything that did not walk the orderly path is marked as forced, by the same
+                            // phase test as the shared-memory flag above — so a WebView2 startup failure is
+                            // not filed away as a tidy shutdown.
+                            ForcedByDoctor = _endedAtDoctorsRequest || _shutdownPhase == 0,
                         },
                     };
                     DoctorSessionStore.TryWrite(_session);
@@ -453,11 +478,25 @@ namespace Bloom.FreezeDoctor
         {
             try
             {
-                // Publish "idle" rather than leaving the last interesting value in place. Otherwise the
-                // field keeps naming a request that finished minutes ago, and a freeze report blames work
-                // that had already completed — a wrong lead is worse than no lead.
-                var activity = ApiActivityTracker.DescribeCurrentActivity();
-                _channel?.SetActivity(activity ?? "no request in flight");
+                // Compose what Bloom's own code said it was doing with what the request table says, rather
+                // than letting either clobber the other.
+                //
+                // Two mistakes to avoid, one on each side. Leaving the last interesting value in place means
+                // the field keeps naming a request that finished minutes ago, and a freeze report blames work
+                // that had already completed. But overwriting it every second makes the public SetActivity
+                // entry point useless — "starting up" would survive less than a second, so a Bloom that
+                // wedged during startup would report "no request in flight", which is both wrong and the
+                // least helpful thing it could say.
+                var request = ApiActivityTracker.DescribeCurrentActivity();
+                var stated = Volatile.Read(ref _statedActivity);
+                var activity = (string.IsNullOrEmpty(stated), request == null) switch
+                {
+                    (false, false) => stated + " | " + request,
+                    (false, true) => stated,
+                    (true, false) => request,
+                    _ => "no request in flight",
+                };
+                _channel?.SetActivity(activity);
 
                 var server = Api.BloomServer._theOneInstance;
                 if (server != null)
