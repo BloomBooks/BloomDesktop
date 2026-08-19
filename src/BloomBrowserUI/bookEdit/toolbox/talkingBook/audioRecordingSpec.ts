@@ -1,4 +1,4 @@
-import {
+﻿import {
     describe,
     it,
     expect,
@@ -2436,6 +2436,43 @@ describe("audio recording tests", () => {
             ).toBe(1);
         });
 
+        it("leaves alone a book's own highlight span nested inside a sentence it fixed", () => {
+            // The tighter version of the test below. Scoping by element is not enough: a book can
+            // carry ui-enableHighlight markup of its own INSIDE a sentence the tool has touched,
+            // and a save must not quietly strip that out of the file.
+            const { box1, span, recording } = fixedUpBox();
+            const fromTheBook = box1.ownerDocument.createElement("span");
+            fromTheBook.classList.add("ui-enableHighlight");
+            fromTheBook.textContent = "the book's own";
+            span.appendChild(fromTheBook);
+
+            recording.undoHighlightingFixes(box1);
+
+            expect(
+                span.querySelectorAll("span.ui-enableHighlight").length,
+                "the book's own span should survive",
+            ).toBe(1);
+            expect(span.textContent).toContain("the book's own");
+        });
+
+        it("leaves the no-highlight class alone when the book already had it", () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence" data-test-preselect="true" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment ui-disableHighlight">One Two&nbsp;&nbsp;&nbsp; Three</span></p></div></div></div>',
+            );
+            const box1 = getFrameElementById("page", "box1")!;
+            const recording = new AudioRecording();
+            recording.fixHighlighting(box1);
+
+            recording.undoHighlightingFixes(box1);
+
+            expect(
+                box1
+                    .querySelector("span")!
+                    .classList.contains("ui-disableHighlight"),
+                "a class the book brought is not ours to remove",
+            ).toBe(true);
+        });
+
         it("leaves alone highlight spans it did not put there", () => {
             // An older book can legitimately carry ui-enableHighlight spans of its own (HtmlDom.cs
             // even generates user-style rules targeting them); a save must not quietly strip those
@@ -2509,7 +2546,7 @@ describe("audio recording tests", () => {
                 ).toBe(true);
 
                 expect(childSpan.innerHTML).toBe(
-                    '<span class="ui-enableHighlight">One Two&nbsp; Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">End</span>',
+                    '<span class="ui-enableHighlight" data-bloom-temp-highlight="true">One Two&nbsp; Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">End</span>',
                 );
             });
 
@@ -2528,8 +2565,8 @@ describe("audio recording tests", () => {
                 expect(box1.innerHTML).toBe(
                     "<p>" +
                         '<span id="span1" class="bloom-highlightSegment">One Two&nbsp; End1.</span>' +
-                        '<span id="span2" class="bloom-highlightSegment ui-disableHighlight"><span class="ui-enableHighlight">Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight">End2.</span></span>' +
-                        '<span id="span3" class="bloom-highlightSegment ui-disableHighlight"><span class="ui-enableHighlight">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">Five</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">End3.</span></span>' +
+                        '<span id="span2" class="bloom-highlightSegment ui-disableHighlight"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">End2.</span></span>' +
+                        '<span id="span3" class="bloom-highlightSegment ui-disableHighlight"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">Five</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">End3.</span></span>' +
                         "</p>",
                 );
             });
@@ -2566,8 +2603,8 @@ describe("audio recording tests", () => {
                 expect(box1.innerHTML).toBe(
                     "<p>" +
                         '<span id="span1" class="audio-sentence" data-test-preselect="true">One Two&nbsp; End1.</span>' +
-                        '<span id="span2" class="audio-sentence ui-disableHighlight"><span class="ui-enableHighlight">Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight">End2.</span></span>' +
-                        '<span id="span3" class="audio-sentence ui-disableHighlight"><span class="ui-enableHighlight">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">Five</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">End3.</span></span>' +
+                        '<span id="span2" class="audio-sentence ui-disableHighlight"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">End2.</span></span>' +
+                        '<span id="span3" class="audio-sentence ui-disableHighlight"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">Five</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">End3.</span></span>' +
                         "</p>",
                 );
             });
@@ -2586,7 +2623,7 @@ describe("audio recording tests", () => {
                 // Verification
                 expect(box1.innerHTML).toBe(
                     "<p>" +
-                        '<span id="span1" class="audio-sentence ui-disableHighlight" data-test-preselect="true"><span class="ui-enableHighlight">T</span><em><span class="ui-enableHighlight">hree</span>&nbsp;&nbsp; <span class="ui-enableHighlight">End2.</span></em></span>' +
+                        '<span id="span1" class="audio-sentence ui-disableHighlight" data-test-preselect="true"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">T</span><em><span class="ui-enableHighlight" data-bloom-temp-highlight="true">hree</span>&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">End2.</span></em></span>' +
                         "</p>",
                 );
             });
@@ -2607,7 +2644,7 @@ describe("audio recording tests", () => {
                 // Verification
                 expect(box1.innerHTML).toBe(
                     "<p>" +
-                        '<span id="span1" class="audio-sentence ui-disableHighlight" data-test-preselect="true"><span class="ui-enableHighlight">T</span><em><span class="ui-enableHighlight">hree</span>\u200B \u200B<span class="ui-enableHighlight">End2.</span></em></span>' +
+                        '<span id="span1" class="audio-sentence ui-disableHighlight" data-test-preselect="true"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">T</span><em><span class="ui-enableHighlight" data-bloom-temp-highlight="true">hree</span>\u200B \u200B<span class="ui-enableHighlight" data-bloom-temp-highlight="true">End2.</span></em></span>' +
                         "</p>",
                 );
             });
@@ -3248,7 +3285,7 @@ function getExpectedResultForComplexHtmlFromUser() {
     <p></p>
     <p></p>
     <p></p>
-    <p><span id="i9da9787c-53f9-4e22-831a-9a427cd8b928" class="audio-sentence ui-disableHighlight" recordingmd5="64aaf12b2d884f144a6708b77b4d61cc" data-duration="4.388571">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="color:#FFFFFF;">&nbsp; &nbsp; <strong><span class="ui-enableHighlight">&nbsp;Mientras navegaban,</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</strong></span><strong><span style="color:#FFFFFF;"><span class="ui-enableHighlight">Jesús se quedó</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></strong><strong><span style="color:#FFFFFF;"><span class="ui-enableHighlight">profundamente dormido.</span><span class="bloom-audio-split-marker"></span></span></strong></span></p>
-    <p><span id="i2bff1986-70df-4539-8fbd-be90babc9057" class="audio-sentence ui-disableHighlight" recordingmd5="f9f36fe0a9162025c3a64a8a8bf703e5" data-duration="3.291429"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;​ ​&nbsp; &nbsp;​ <span style="color:#FFFFFF;"><span class="ui-enableHighlight">De pronto, una gran</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span></strong><strong><span style="color:#FFFFFF;"><span class="ui-enableHighlight">tormenta se desató.</span></span></strong></span><strong><span style="color:#FFFFFF;">&nbsp;</span></strong></p>
+    <p><span id="i9da9787c-53f9-4e22-831a-9a427cd8b928" class="audio-sentence ui-disableHighlight" recordingmd5="64aaf12b2d884f144a6708b77b4d61cc" data-duration="4.388571">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="color:#FFFFFF;">&nbsp; &nbsp; <strong><span class="ui-enableHighlight" data-bloom-temp-highlight="true">&nbsp;Mientras navegaban,</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</strong></span><strong><span style="color:#FFFFFF;"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">Jesús se quedó</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></strong><strong><span style="color:#FFFFFF;"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">profundamente dormido.</span><span class="bloom-audio-split-marker"></span></span></strong></span></p>
+    <p><span id="i2bff1986-70df-4539-8fbd-be90babc9057" class="audio-sentence ui-disableHighlight" recordingmd5="f9f36fe0a9162025c3a64a8a8bf703e5" data-duration="3.291429"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;​ ​&nbsp; &nbsp;​ <span style="color:#FFFFFF;"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">De pronto, una gran</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span></strong><strong><span style="color:#FFFFFF;"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">tormenta se desató.</span></span></strong></span><strong><span style="color:#FFFFFF;">&nbsp;</span></strong></p>
 `;
 }

@@ -105,6 +105,11 @@ const kEnableHighlightClass = "ui-enableHighlight";
 // For example, some elements have highlighting prevented at this level
 // because its content has been broken into child elements, only some of which show the highlight
 const kDisableHighlightClass = "ui-disableHighlight";
+// Stamped on the ui-enableHighlight spans that fixHighlighting() creates, so undoHighlightingFixes
+// can take out OUR spans and leave alone any the book itself contains. An attribute, not a
+// JS-side record of the elements, because the undo also has to work on a CLONE of the page, whose
+// elements are different objects.
+const kTempHighlightAttr = "data-bloom-temp-highlight";
 const kAudioSentence = "audio-sentence"; // Even though these can now encompass more than strict sentences, we continue to use this class name for backwards compatability reasons
 const kAudioSentenceClassSelector = "." + kAudioSentence;
 const kBloomEditableTextBoxClass = "bloom-editable";
@@ -4997,11 +5002,16 @@ export default class AudioRecording implements IAudioRecorder {
                 );
 
                 if (containsNonHighlightText) {
-                    // Remember that we touched this one, so undoHighlightingFixes knows which
-                    // elements are ours. (Recording it twice, e.g. Play -> Pause -> Play, is
-                    // harmless: it is a set, and fixHighlightingInNode returns immediately for
-                    // anything already carrying kDisableHighlightClass.)
-                    this.elementsWeFixedHighlightingIn.add(element.id);
+                    // Remember that we touched this one, and whether the no-highlight class was
+                    // ours to remove -- a book can carry that class itself, and then it is not
+                    // ours to take off. Keep the FIRST answer: on Play -> Pause -> Play the class
+                    // is present the second time round because WE added it.
+                    if (!this.elementsWeFixedHighlightingIn.has(element.id)) {
+                        this.elementsWeFixedHighlightingIn.set(
+                            element.id,
+                            !element.classList.contains(kDisableHighlightClass),
+                        );
+                    }
 
                     this.fixHighlightingInNode(element, element);
                 }
@@ -5129,13 +5139,15 @@ export default class AudioRecording implements IAudioRecorder {
     private makeHighlightedSpan(textContent: string) {
         const newSpan = document.createElement("span");
         newSpan.classList.add(kEnableHighlightClass);
+        newSpan.setAttribute(kTempHighlightAttr, "true");
         newSpan.appendChild(document.createTextNode(textContent));
         return newSpan;
     }
 
-    // The ids of the audio spans fixHighlighting() has modified in this session. Deliberately just
-    // which elements, not a snapshot of what was in them -- see undoHighlightingFixes.
-    private elementsWeFixedHighlightingIn = new Set<string>();
+    // The audio spans fixHighlighting() has modified in this session, by id, each mapped to
+    // whether WE added kDisableHighlightClass to it (as opposed to the book already having it).
+    // Deliberately not a snapshot of what was in them -- see undoHighlightingFixes.
+    private elementsWeFixedHighlightingIn = new Map<string, boolean>();
 
     /**
      * Take the temporary highlight-segment markup fixHighlighting() added back out, under
@@ -5159,36 +5171,44 @@ export default class AudioRecording implements IAudioRecorder {
      * to be undone again for the next save. See ITool.removeToolMarkup.
      */
     public undoHighlightingFixes(pageOrClone: ParentNode) {
-        this.elementsWeFixedHighlightingIn.forEach((id) => {
-            // Deliberately NOT `querySelector(\`#${id}\`)`. An id that is not a valid CSS
-            // identifier -- a legacy one starting with a digit, say -- makes that form THROW, and
-            // this now runs during every save's clone cleanup, where a throw would abort the whole
-            // page gather and we would post an error string instead of the user's page. Comparing
-            // the property cannot throw whatever the id looks like.
-            const element = Array.from(
-                pageOrClone.querySelectorAll("[id]"),
-            ).find((candidate) => candidate.id === id);
-            if (!element) {
-                console.warn("Can't find element " + id);
-                return;
-            }
-            // Unwrap the spans we wrapped runs of text in: put each one's children back where it
-            // was and drop it.
-            for (const span of Array.from(
-                element.querySelectorAll("span." + kEnableHighlightClass),
-            )) {
-                const parent = span.parentNode;
-                if (!parent) continue;
-                while (span.firstChild)
-                    parent.insertBefore(span.firstChild, span);
-                parent.removeChild(span);
-                // Rejoin the text nodes that leaves adjacent, so the result has the shape the text
-                // had before rather than a run of separate nodes.
-                parent.normalize();
-            }
-            // And the class we put on the audio span itself to stop the whole thing highlighting.
-            element.classList.remove(kDisableHighlightClass);
-        });
+        this.elementsWeFixedHighlightingIn.forEach(
+            (weAddedTheNoHighlightClass, id) => {
+                // Deliberately NOT `querySelector(\`#${id}\`)`. An id that is not a valid CSS
+                // identifier -- a legacy one starting with a digit, say -- makes that form THROW, and
+                // this now runs during every save's clone cleanup, where a throw would abort the whole
+                // page gather and we would post an error string instead of the user's page. Comparing
+                // the property cannot throw whatever the id looks like.
+                const element = Array.from(
+                    pageOrClone.querySelectorAll("[id]"),
+                ).find((candidate) => candidate.id === id);
+                if (!element) {
+                    console.warn("Can't find element " + id);
+                    return;
+                }
+                // Unwrap the spans we wrapped runs of text in: put each one's children back where it
+                // was and drop it. Only OURS -- selected by the marker fixHighlighting stamps on them
+                // -- because a book can legitimately contain ui-enableHighlight spans of its own, even
+                // nested inside a sentence the tool has touched, and a save must not strip those.
+                for (const span of Array.from(
+                    element.querySelectorAll(
+                        `span.${kEnableHighlightClass}[${kTempHighlightAttr}]`,
+                    ),
+                )) {
+                    const parent = span.parentNode;
+                    if (!parent) continue;
+                    while (span.firstChild)
+                        parent.insertBefore(span.firstChild, span);
+                    parent.removeChild(span);
+                    // Rejoin the text nodes that leaves adjacent, so the result has the shape the text
+                    // had before rather than a run of separate nodes.
+                    parent.normalize();
+                }
+                // And the class we put on the audio span itself to stop the whole thing highlighting
+                // -- but only if it was ours to put there.
+                if (weAddedTheNoHighlightClass)
+                    element.classList.remove(kDisableHighlightClass);
+            },
+        );
     }
 
     /**

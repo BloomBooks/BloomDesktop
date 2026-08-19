@@ -41,6 +41,14 @@ public enum InPlaceSaveOutcome
     // doBeforeSaveToDisk may have run and changed the book. The failure has been reported to the
     // user; the caller must NOT fall back, or the action happens twice.
     Failed,
+
+    // We MUST not write this page at all -- an external process has replaced the book on disk and
+    // the user's page is about to be discarded in favour of what it wrote. Nothing was written and
+    // doBeforeSaveToDisk did NOT run, exactly as for Declined; the difference is that the caller
+    // must NOT fall back to asking the browser, because that path would go ahead and save and so
+    // clobber the other program's work. Refused and Declined look alike and mean opposite things,
+    // which is why they are separate values rather than one "didn't save".
+    Refused,
 }
 
 /// <summary>

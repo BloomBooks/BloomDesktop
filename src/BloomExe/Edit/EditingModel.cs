@@ -1755,8 +1755,11 @@ namespace Bloom.Edit
                     != InPlaceSaveOutcome.Declined
                 )
                     return;
-                // Declined means nothing at all happened -- doBeforeSaveToDisk has NOT run -- so it
-                // is safe to go on and do it the long way.
+                // ONLY Declined may fall through. It means nothing at all happened --
+                // doBeforeSaveToDisk has NOT run -- so doing it the long way is safe. Failed means
+                // the action may already have run (doing it again would duplicate or delete a
+                // second page), and Refused means this page must not be written at all because an
+                // external process has replaced the book; the long way would happily write it.
             }
 
             _nextSaveMustBeFull |= forceFullSave;
@@ -1898,9 +1901,11 @@ namespace Bloom.Edit
             if (CannotSavePage() || !_havePageToSave)
                 return InPlaceSaveOutcome.Declined;
             // See SavePageInPlace: an external process has replaced the book on disk, so this
-            // page's content must not be written over what it wrote.
+            // page's content must not be written over what it wrote. Refused, NOT Declined --
+            // Declined would send the caller to the ask-the-browser path, which has no such guard
+            // and would write the page anyway.
             if (_reloadFromDiskOnLeavingEditTab)
-                return InPlaceSaveOutcome.Declined;
+                return InPlaceSaveOutcome.Refused;
 
             _nextSaveMustBeFull |= forceFullSave;
             // Unlike SavePageInPlace there is nothing to do afterwards on success: we do NOT
