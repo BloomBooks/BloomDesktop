@@ -71,10 +71,11 @@ function getMenuItem(label: "Standard" | "Custom"): HTMLElement {
     return item;
 }
 
-// The tick is a CheckIcon <svg>, and with no feature status there is no other svg in an item
-// (the subscription badge, which is an <img>, is not rendered in this state).
+// The tick is specifically MUI's CheckIcon, which it labels with data-testid. Matching that
+// rather than "any svg in the item" keeps these assertions meaningful if the item ever gains
+// another inline icon.
 function isTicked(item: HTMLElement): boolean {
-    return !!item.querySelector("svg");
+    return !!item.querySelector('svg[data-testid="CheckIcon"]');
 }
 
 function clickMenuItem(label: "Standard" | "Custom") {
