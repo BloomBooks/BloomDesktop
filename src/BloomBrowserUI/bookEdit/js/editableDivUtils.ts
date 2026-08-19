@@ -500,19 +500,32 @@ export class EditableDivUtils {
         });
     }
 
-    // A ckeditor bookmark is a hidden span inserted at the insertion point, so creating one
-    // SPLITS the text node the user is typing in, and removing it again (which is what
-    // selectBookmarks does) leaves the two halves as separate, adjacent text nodes.
-    // The characters are all still there, and the DOM inspector's text view looks right, but
-    // Chromium shapes the paragraph's text as a single run and then hands out the resulting
-    // glyphs per text node. When a ligature straddles the boundary - very easy in SIL fonts
-    // such as Andika and Charis, which ligate ff, fl and ffl - that split lands in the middle
-    // of a glyph cluster and Chromium loses glyphs: letters the user typed simply stop being
-    // painted (and the caret draws in the wrong place) until something re-renders the
-    // paragraph, e.g. changing the font or reloading the page. Type "overflow", then insert a
-    // second "f" before the "f", pause for the markup timer, then type any other letter: the
-    // "fl" vanishes (BL-16717).
-    // So whenever we take bookmarks out again, put the text back the way we found it.
+    // Chromium drops glyphs from a paragraph whose text is split into two (or more) adjacent
+    // text nodes. It shapes the paragraph's text as a single run and then hands out the
+    // resulting glyphs per text node, and when a ligature straddles the boundary - very easy
+    // in SIL fonts such as Andika and Charis, which ligate ff, fl and ffl - the split lands in
+    // the middle of a glyph cluster. The characters are all still there, and the DOM
+    // inspector's text view looks right, but letters the user typed stop being painted, and the
+    // caret stops moving when they arrow through the affected letters, until something
+    // re-renders the paragraph (changing the font, reloading the page). Type "overflow", insert
+    // a second "f" before the "f", pause, then type any other letter: the "fl" vanishes
+    // (BL-16717).
+    //
+    // A great many things split a paragraph's text, and only some of them are ours:
+    //  - a ckeditor bookmark is a hidden span inserted AT the insertion point, so creating one
+    //    splits the text node the user is typing in and removing it again (which is what
+    //    selectBookmarks does) leaves the two halves as separate, adjacent text nodes;
+    //  - ckeditor makes bookmarks of its own for Enter, paste and the style commands, and
+    //    inserts a "filling char" text node next to inline elements (see below);
+    //  - long-press inserts the character it composes as a NEW text node
+    //    (jquery.longpress.js: insertPointRange.insertNode(textNode));
+    //  - Chromium's own editing commands split the node too: backspacing in the middle of a
+    //    word leaves the paragraph in two pieces.
+    // Splitting does not itself paint anything wrong: the damage appears at the NEXT edit,
+    // which for the user is simply the next letter they type. So the rule this enforces is
+    // that a .bloom-editable never sits holding adjacent text nodes, whoever split it - which
+    // means calling this without knowing, or caring, what did.
+    //
     // Note that repairing the DOM is not on its own enough to repair the display: see
     // mergeAdjacentTextNodeRuns().
     // We deliberately do NOT save and restore the insertion point around this. The DOM spec
@@ -523,11 +536,23 @@ export class EditableDivUtils {
     // hand-rolled restore was itself the bug - a character offset cannot tell the end of a
     // bold run from the start of the plain text after it, so the caret could hop back inside
     // the bold text and the user's next letters would come out bold.
-    // Callers should avoid making bookmarks at all when nothing is going to rewrite the box;
-    // this is the repair for when we genuinely needed one.
-    public static mergeTextNodesSplitByBookmarks(element: HTMLElement): void {
+    // Callers should still avoid making bookmarks at all when nothing is going to rewrite the
+    // box; this is the repair for the splits that do happen anyway.
+    public static mergeAdjacentTextNodes(element: HTMLElement): void {
         if (!EditableDivUtils.hasAdjacentTextNodes(element)) {
             return; // nothing to merge; leave the box, and the selection, strictly alone
+        }
+        if (EditableDivUtils.hasCkEditorFillingChar(element)) {
+            // Leave the box strictly alone while ckeditor is holding a filling char.
+            // That char is a zero-width space in a text node of its own, which ckeditor
+            // inserts at a collapsed selection next to an inline element so the caret shows,
+            // and it remembers THAT NODE (setCustomData("cke-fillingChar", ...)) to take the
+            // char out again later. normalize() would fold the node into its neighbour, so
+            // ckeditor would be left writing to a detached node and the zero-width space
+            // would stay in the text and get saved into the book - the BL-16490 hazard.
+            // Skipping costs us nothing lasting: the filling char is transient, and the next
+            // keystroke brings us back here to do the repair.
+            return;
         }
         EditableDivUtils.mergeAdjacentTextNodeRuns(element);
     }
@@ -633,6 +658,15 @@ export class EditableDivUtils {
         return false;
     }
 
+    // Is ckeditor currently holding a filling char (a zero-width space) in this box?
+    // See mergeAdjacentTextNodes(), which must not merge while one is there. We look for
+    // the character itself rather than asking ckeditor for the node it remembers, so that
+    // an orphaned one - which is what BL-16490 was about - counts too.
+    private static hasCkEditorFillingChar(element: HTMLElement): boolean {
+        const fillingChar = String.fromCharCode(0x200b); // U+200B ZERO WIDTH SPACE
+        return element.textContent?.includes(fillingChar) ?? false;
+    }
+
     public static restoreSelectionFromCkEditorBookmarks(
         editableDivs: HTMLDivElement[],
         ckEditorBookmarks: object[],
@@ -660,7 +694,7 @@ export class EditableDivUtils {
                             },
                         );
                     }
-                    EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+                    EditableDivUtils.mergeAdjacentTextNodes(div);
                 }
             });
         }

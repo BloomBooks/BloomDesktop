@@ -284,6 +284,41 @@ export class ToolBox {
         $(container)
             .find(".bloom-editable")
             .keydown((event) => {
+                // Repair a split paragraph BEFORE this keystroke lands in it. Chromium drops
+                // glyphs from a ligature when the paragraph's text is in two adjacent text
+                // nodes and something then edits one of them - and that "something" is normally
+                // just this keystroke, so by the time we hear the keyup the letters have already
+                // stopped being painted, and the caret has stopped moving through them
+                // (BL-16717). Doing it here means the character arrives in a box whose paragraph
+                // is one whole text node again, which Chromium shapes correctly.
+                // The splits get there without our help: backspacing in the middle of a word
+                // leaves the paragraph in two pieces, and so does long-press inserting the
+                // character it composed. So the sweep at the end of handlePageEditing's mainTask
+                // is not enough on its own: it runs half a second after the box goes quiet, and
+                // the damaging keystroke is the one that comes BEFORE that.
+                // NB: do NOT gate this on window.top[isLongPressEvaluating] the way mainTask
+                // does. Long-press sets that flag in its own keydown handler, so it is true
+                // during every keydown, and gating on it here does nothing but turn the repair
+                // off completely (measured: it never ran). What we actually have to stay out of
+                // is the window while the long-press popup is up and the user is choosing a
+                // character, because long-press composes into a text node of its own and takes
+                // that character out again if they choose another one. Its own test for "the
+                // popup is showing" is the presence of .long-press-popup in the page, so we use
+                // that. An IME composition is the same kind of hazard, hence isComposing.
+                const editableBeingTypedIn = event.currentTarget as HTMLElement;
+                const longPressPopupIsUp =
+                    !!editableBeingTypedIn.ownerDocument.querySelector(
+                        ".long-press-popup",
+                    );
+                if (
+                    !longPressPopupIsUp &&
+                    !(event.originalEvent as KeyboardEvent)?.isComposing
+                ) {
+                    EditableDivUtils.mergeAdjacentTextNodes(
+                        editableBeingTypedIn,
+                    );
+                }
+
                 // Ctrl/Cmd+V doesn't always produce a keyup we can rely on in all environments.
                 // Schedule the same markup-update side effects explicitly when paste is requested.
                 // This should not interact with longpress, which doesn't handle keypresses with ctrl.
@@ -1735,15 +1770,18 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // Note: causing the bookmarks to be selected actually removes the bookmark spans.
                 if (bookmarks) {
                     ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
-
-                    // ...but removing them leaves the text that was on either side of each
-                    // bookmark as two adjacent text nodes, which makes Chromium drop glyphs from
-                    // ligatures that straddle the join (BL-16717). See
-                    // mergeTextNodesSplitByBookmarks().
-                    EditableDivUtils.mergeTextNodesSplitByBookmarks(
-                        editableDiv,
-                    );
                 }
+
+                // Removing a bookmark leaves the text that was on either side of it as two
+                // adjacent text nodes, which makes Chromium drop glyphs from ligatures near the
+                // join (BL-16717). But bookmarks are only one of the things that split a
+                // paragraph's text - Chromium's own backspace and long-press's inserted
+                // character do it too - so this is not conditional on our having made one. It
+                // is the box-is-quiet sweep that catches whatever the per-keystroke repair in
+                // ToolBox's keydown handler could not (a paste from the menu, an IME, an undo).
+                // It costs a walk of the box's text nodes and does nothing at all unless it
+                // finds a split. See mergeAdjacentTextNodes().
+                EditableDivUtils.mergeAdjacentTextNodes(editableDiv);
             }
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
