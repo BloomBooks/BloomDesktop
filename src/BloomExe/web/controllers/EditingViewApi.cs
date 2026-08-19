@@ -224,7 +224,9 @@ namespace Bloom.web.controllers
             // "layout" is the state being switched TO, which is what actually happened -- but
             // note this endpoint is a toggle and the menu does not guard against re-picking the
             // option already ticked, so a "standard" event can come from someone who clicked
-            // Custom. Worth knowing before reading much into the ratio.
+            // Custom. Worth knowing before reading much into the ratio. That menu behaviour is a
+            // real bug in its own right -- it silently discards a custom cover layout -- and is
+            // filed as BL-16725; when that is fixed this caveat goes away.
             if (userInitiated)
             {
                 BloomAnalytics.Track(
