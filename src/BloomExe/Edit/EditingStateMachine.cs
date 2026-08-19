@@ -384,6 +384,21 @@ public class EditingStateMachine
                     DoPostSaveAction(null, doBeforeSaveToDisk, failureAction, doAfterSaveToDisk);
                     return true;
                 case State.Editing:
+                    if (_runningSaveInPlaceAction)
+                    {
+                        // We are inside a save-in-place action: the browser's content is already
+                        // merged into the book DOM and _saveBook() is about to run, so there is
+                        // nothing for another save to do. Ignoring it is also what the old flow
+                        // did for free -- the action used to run in SavedAndStripped, where this
+                        // method returns false. Accepting it would be actively harmful: it would
+                        // put us in SavePending, and the ToNavigating that follows the action is
+                        // ignored from there, so the page the action promised to go to would
+                        // never be shown (and the browser's eventual reply would save a second
+                        // time). Reachable from an action that changes the page selection, e.g.
+                        // PageThumbnailList.PageMoved when the relocation is refused.
+                        LogIgnore("save");
+                        return false;
+                    }
                     _saveActionHandlesSaveBook = saveActionHandlesSaveBook;
                     _doBeforeSaveToDisk = doBeforeSaveToDisk;
                     _failureAction = failureAction;

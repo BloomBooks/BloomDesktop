@@ -16,6 +16,7 @@ namespace BloomTests.Edit
         private List<string> _navigatedTo;
         private List<string> _updatedWith;
         private int _saveBookCount;
+        private int _pageSavesRequested;
         private List<Exception> _reportedFailures;
         private EditingStateMachine _stateMachine;
 
@@ -25,10 +26,11 @@ namespace BloomTests.Edit
             _navigatedTo = new List<string>();
             _updatedWith = new List<string>();
             _saveBookCount = 0;
+            _pageSavesRequested = 0;
             _reportedFailures = new List<Exception>();
             _stateMachine = new EditingStateMachine(
                 navigate: pageId => _navigatedTo.Add(pageId),
-                requestPageSave: _ => { },
+                requestPageSave: _ => _pageSavesRequested++,
                 updateBookWithPageContents: (_, data) => _updatedWith.Add(data),
                 saveBook: () => _saveBookCount++,
                 hidePage: () => { },
@@ -492,6 +494,49 @@ namespace BloomTests.Edit
                 _navigatedTo,
                 Is.EqualTo(new[] { "somewhereTheActionWanted", "whereWeSaidToGo" }),
                 "the page the action named is where we must end up"
+            );
+        }
+
+        [Test]
+        public void ToSavedInPlaceThenNavigating_ActionAsksForAnotherSave_IgnoresItAndStillNavigates()
+        {
+            // An action is allowed to do things that would normally start a save -- changing the
+            // page selection does, via PageListController.OnPageSelectedChanged. There is nothing
+            // for that save to do (we have already merged the content and are about to write the
+            // book), and accepting it would strand us in SavePending, from which the navigation
+            // this method promises is silently dropped. The old flow got this for free by running
+            // the action in SavedAndStripped.
+            GoToEditing("page1");
+            _navigatedTo.Clear();
+            var nestedSaveAccepted = true;
+
+            var result = SaveInPlaceThenDoAndGoTo(
+                "good content",
+                () =>
+                {
+                    nestedSaveAccepted = _stateMachine.ToSavePending(() =>
+                        "pageTheNestedSaveWanted"
+                    );
+                    return "whereWeSaidToGo";
+                }
+            );
+
+            Assert.That(
+                nestedSaveAccepted,
+                Is.False,
+                "a save requested from inside the action should be refused"
+            );
+            Assert.That(
+                _pageSavesRequested,
+                Is.EqualTo(0),
+                "and it must not have asked the browser for the page again"
+            );
+            Assert.That(result, Is.EqualTo(InPlaceSaveOutcome.Saved));
+            Assert.That(_saveBookCount, Is.EqualTo(1), "the book is written exactly once");
+            Assert.That(
+                _navigatedTo,
+                Is.EqualTo(new[] { "whereWeSaidToGo" }),
+                "the page we promised to go to must still be shown"
             );
         }
 
