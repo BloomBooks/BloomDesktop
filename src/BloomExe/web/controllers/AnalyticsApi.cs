@@ -77,8 +77,13 @@ namespace Bloom.web.controllers
         /// The count on its own is not the interesting part -- choosing a picture is an essential
         /// thing to do and we already know people do it. These two properties are: they turn a number
         /// we don't need into the breakdown of picture sources that we do. Which is also why this
-        /// lives in one place: the event has several call sites (paste, the image chooser, the AI
-        /// image editor) and would be worthless if they disagreed about the vocabulary.
+        /// lives in one place: the event has several call sites and would be worthless if they
+        /// disagreed about the vocabulary. This is the one place for the routes that report from
+        /// here -- a paste, the image chooser, a file from disk. The AI image editor route reports
+        /// from the browser instead, because only the browser knows whether a picture on the page
+        /// being edited actually landed (see AiImageEditorApi.HandleCommit), so it uses the mirror
+        /// of this method: trackChangePicture in bloomApi.ts. Change the words here, change them
+        /// there.
         /// </summary>
         /// <param name="source">The route the user took: "image chooser", "local disk", "paste" or
         /// "AI editor". These categories all existed before 6.5, so the split stays comparable

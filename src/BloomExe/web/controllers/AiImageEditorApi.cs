@@ -1215,37 +1215,21 @@ namespace Bloom.web.controllers
             // survives.
             DeleteSupersededAiImageFiles(book.FolderPath, book.OurHtmlDom, supersededOffPageFiles);
 
-            // Does anything actually reach the book? A non-zero failed rate is exactly the class
-            // of bug BL-16702 was: a commit that silently did nothing. Generated vs reused says
-            // whether people are paying for new images or re-using ones they already have.
-            BloomAnalytics.Track(
-                "AI Editor Commit",
-                new Dictionary<string, string>
-                {
-                    { "BookId", book.BookInfo.Id },
-                    { "replacementCount", replacements.Count.ToString() },
-                    { "appliedCount", appliedCount.ToString() },
-                    { "failedCount", (replacements.Count - appliedCount).ToString() },
-                    {
-                        "generatedCount",
-                        replacements.Count(r => !string.IsNullOrEmpty(r?.resultId)).ToString()
-                    },
-                    {
-                        "reusedCount",
-                        replacements
-                            .Count(r =>
-                                string.IsNullOrEmpty(r?.resultId)
-                                && !string.IsNullOrEmpty(r?.sourceUrl)
-                            )
-                            .ToString()
-                    },
-                }
-            );
-            // Also count each replaced picture the same way a pasted or chooser-chosen one is
-            // counted, so the source breakdown covers every route a picture can enter a book by.
-            for (var i = 0; i < appliedCount; i++)
-                AnalyticsApi.TrackChangePicture("AI editor", "ai-editor", book.BookInfo.Id);
-
+            // "AI Editor Commit" and the per-picture "Change Picture" events are deliberately NOT
+            // reported here; aiEditorOverlay.ts reports both once this reply reaches it.
+            //
+            // The reason is appliedCount. For a slot on the page the user has open we only stage the
+            // replacement -- import the file, work out the credits -- and hand it back for the
+            // browser to swap into the live DOM, which can fail (see the comment above this method).
+            // So counting a staged slot as applied overstates, in exactly the case the event exists
+            // to catch: BL-16702 was a commit that silently did nothing. And it overstates in the
+            // ORDINARY case, not a rare one -- the picture the user right-clicked to open the editor
+            // is by definition on the page they have open, so a single-picture commit was always
+            // reported as "1 applied, 0 failed" whatever became of it.
+            //
+            // Everything those events carry is available to the overlay: it sent the replacements,
+            // it gets our per-slot results below, the page frame tells it how many current-page
+            // swaps landed, and the analytics/track endpoint fills in BookId and branding.
             request.ReplyWithJson(
                 new
                 {

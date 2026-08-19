@@ -33,6 +33,7 @@ import {
     post,
     postJson,
     postThatMightNavigate,
+    trackChangePicture,
     trackEvent,
 } from "../../utils/bloomApi";
 import { getEditablePageBundleExports } from "../js/workspaceFrames";
@@ -293,11 +294,13 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                           level?: string;
                           message?: string;
                           // We relay this array to C# as-is, so every field the AI
-                          // image editor sends is declared here even though nothing
-                          // on this side reads them. Rebuilding the array field by
-                          // field instead of passing it through would silently drop
-                          // `credits`, and the result would lose its credits — the
-                          // bug this whole feature exists to prevent.
+                          // image editor sends is declared here even though this side
+                          // reads only resultId and sourceUrl (to say how many pictures
+                          // were generated rather than reused — see reportCommit).
+                          // Rebuilding the array field by field instead of passing it
+                          // through would silently drop `credits`, and the result would
+                          // lose its credits — the bug this whole feature exists to
+                          // prevent.
                           replacements?: Array<{
                               incomingId?: string;
                               resultId?: string;
@@ -389,6 +392,44 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                         break;
                     }
 
+                    // Reported from here rather than from C# (AiImageEditorApi.HandleCommit, which
+                    // has the matching comment) because this is the only side that ever learns
+                    // whether the pictures on the page being edited really got swapped in. C# can
+                    // only stage those and hand them back, so counting a staged one as applied
+                    // overstated success in exactly the case the event exists to catch -- and in the
+                    // ordinary case at that, since the picture the user right-clicked to open the
+                    // editor is by definition on the page they have open.
+                    //
+                    // offPageApplied comes from C#, which did those itself and knows;
+                    // currentPageApplied is what the page frame says it managed.
+                    const reportCommit = (
+                        offPageApplied: number,
+                        currentPageApplied: number,
+                    ) => {
+                        const applied = offPageApplied + currentPageApplied;
+                        // Does anything actually reach the book? A non-zero failed rate is exactly
+                        // the class of bug BL-16702 was: a commit that silently did nothing.
+                        // Generated vs reused says whether people are paying for new images or
+                        // re-using ones they already have.
+                        trackEvent("AI Editor Commit", {
+                            replacementCount: replacements.length,
+                            appliedCount: applied,
+                            failedCount: replacements.length - applied,
+                            generatedCount: replacements.filter(
+                                (r) => !!r?.resultId,
+                            ).length,
+                            reusedCount: replacements.filter(
+                                (r) => !r?.resultId && !!r?.sourceUrl,
+                            ).length,
+                        });
+                        // Also count each picture that reached the book the same way a pasted or
+                        // chooser-chosen one is counted, so the source breakdown covers every route
+                        // a picture can enter a book by. One per picture, as those routes do.
+                        for (let i = 0; i < applied; i++) {
+                            trackChangePicture("AI editor", "ai-editor");
+                        }
+                    };
+
                     commitInFlight = true;
                     postJson(
                         "aiImageEditor/commit?session=" +
@@ -470,6 +511,15 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                     );
                                 }
                                 commitInFlight = false;
+                                // Now, and only now, is the applied count a fact. Counted from
+                                // C#'s own results for the other pages, plus what the page frame
+                                // reported for this one (0 if we never got that far).
+                                reportCommit(
+                                    (result?.results ?? []).filter(
+                                        (r) => r?.ok && !r.isCurrentPage,
+                                    ).length,
+                                    currentPageApplied,
+                                );
                                 if (finalOk) {
                                     commitSucceeded = true;
                                     cleanup();
@@ -483,6 +533,12 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                         },
                         () => {
                             commitInFlight = false;
+                            // The request failed, so we know nothing landed as far as anyone can
+                            // tell -- which is also what the editor is about to tell the user.
+                            // Reporting the attempt matters more than the small chance that C#
+                            // did the work and only the reply went missing: a commit that reaches
+                            // nobody is the failure this event was added to make visible.
+                            reportCommit(0, 0);
                             ackEditor(false, "Failed to apply replacements.");
                             if (sessionEnded) {
                                 // As above: closed while in flight, and the request itself failed.

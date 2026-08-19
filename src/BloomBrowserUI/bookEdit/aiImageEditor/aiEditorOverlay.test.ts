@@ -18,6 +18,7 @@ const post = vi.fn();
 const postJson = vi.fn();
 const postThatMightNavigate = vi.fn();
 const trackEvent = vi.fn();
+const trackChangePicture = vi.fn();
 const applyAiImageEditorReplacements = vi.fn();
 const getEditablePageBundleExports = vi.fn();
 
@@ -27,6 +28,7 @@ vi.mock("../../utils/bloomApi", () => ({
     postThatMightNavigate: (...args: unknown[]) =>
         postThatMightNavigate(...args),
     trackEvent: (...args: unknown[]) => trackEvent(...args),
+    trackChangePicture: (...args: unknown[]) => trackChangePicture(...args),
 }));
 
 vi.mock("../js/workspaceFrames", () => ({
@@ -149,6 +151,7 @@ beforeEach(() => {
     postJson.mockClear();
     postThatMightNavigate.mockClear();
     trackEvent.mockClear();
+    trackChangePicture.mockClear();
     applyAiImageEditorReplacements.mockClear();
     applyAiImageEditorReplacements.mockReturnValue({
         applied: 1,
@@ -598,5 +601,163 @@ describe("aiEditorOverlay: analytics", () => {
         // that never ended.
         expect(document.getElementById("ai-editor-overlay")).toBeNull();
         expect(cancelEvents()).toHaveLength(0);
+    });
+});
+
+// "AI Editor Commit" and the per-picture "Change Picture" events are reported from the overlay
+// rather than from C#, because C# cannot know whether a picture on the page being edited actually
+// got swapped in -- it only stages those. These tests are what makes that worth having: they pin
+// that a swap the page frame failed to make is NOT counted as a picture that reached the book.
+describe("aiEditorOverlay: reporting what a commit achieved", () => {
+    const commitEvents = () =>
+        trackEvent.mock.calls.filter((call) => call[0] === "AI Editor Commit");
+
+    // Sends a commit for the given replacements and answers it with C#'s reply.
+    const commitAndReply = (
+        postFromEditor: (data: unknown) => void,
+        replacements: Array<{
+            incomingId: string;
+            resultId?: string;
+            sourceUrl?: string;
+        }>,
+        results: Array<Record<string, unknown>>,
+    ) => {
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "commit",
+            requestId: "req1",
+            payload: { replacements },
+        });
+        expect(postJson).toHaveBeenCalledTimes(1);
+        const onSuccess = postJson.mock.calls[0][2] as (r: {
+            data: unknown;
+        }) => void;
+        onSuccess({ data: { ok: true, results } });
+    };
+
+    const currentPageResult = (ordinal: number) => ({
+        incomingId: `${kPageId}:${ordinal}`,
+        ok: true,
+        isCurrentPage: true,
+        oldSrc: kImageFile,
+        newSrc: `ai-image${ordinal}.png`,
+    });
+
+    test("a picture the page frame could not swap in is not counted as applied", () => {
+        // The case the move exists for. C# staged this replacement and would have called it
+        // applied; the live page is where it actually failed.
+        applyAiImageEditorReplacements.mockReturnValue({
+            applied: 0,
+            expected: 1,
+        });
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        commitAndReply(
+            postFromEditor,
+            [{ incomingId: `${kPageId}:0`, resultId: "result1" }],
+            [currentPageResult(0)],
+        );
+
+        expect(commitEvents()).toHaveLength(1);
+        expect(commitEvents()[0][1]).toMatchObject({
+            replacementCount: 1,
+            appliedCount: 0,
+            failedCount: 1,
+        });
+        // And no picture is added to the where-do-pictures-come-from breakdown.
+        expect(trackChangePicture).not.toHaveBeenCalled();
+    });
+
+    test("applied adds up C#'s off-page successes and what the page frame landed", () => {
+        applyAiImageEditorReplacements.mockReturnValue({
+            applied: 1,
+            expected: 1,
+        });
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        commitAndReply(
+            postFromEditor,
+            [
+                { incomingId: `${kPageId}:0`, resultId: "result1" },
+                { incomingId: "page2:0", resultId: "result2" },
+                { incomingId: "page3:0", resultId: "result3" },
+            ],
+            [
+                currentPageResult(0),
+                // C# applied and saved this one itself.
+                { incomingId: "page2:0", ok: true, isCurrentPage: false },
+                // And could not do this one at all.
+                { incomingId: "page3:0", ok: false, isCurrentPage: false },
+            ],
+        );
+
+        expect(commitEvents()[0][1]).toMatchObject({
+            replacementCount: 3,
+            appliedCount: 2,
+            failedCount: 1,
+        });
+        // One per picture that reached the book, in the same vocabulary as the other routes.
+        expect(trackChangePicture).toHaveBeenCalledTimes(2);
+        expect(trackChangePicture).toHaveBeenCalledWith(
+            "AI editor",
+            "ai-editor",
+        );
+    });
+
+    test("generated and reused come from what the editor sent", () => {
+        applyAiImageEditorReplacements.mockReturnValue({
+            applied: 1,
+            expected: 1,
+        });
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        commitAndReply(
+            postFromEditor,
+            [
+                // A newly generated image: the editor gives it a result id.
+                { incomingId: `${kPageId}:0`, resultId: "result1" },
+                // One the user reused from an image already in the book.
+                {
+                    incomingId: "page2:0",
+                    sourceUrl: "http://host/book/existing.png",
+                },
+            ],
+            [
+                currentPageResult(0),
+                { incomingId: "page2:0", ok: true, isCurrentPage: false },
+            ],
+        );
+
+        expect(commitEvents()[0][1]).toMatchObject({
+            generatedCount: 1,
+            reusedCount: 1,
+        });
+    });
+
+    test("a commit whose request fails reports that nothing landed", () => {
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "commit",
+            requestId: "req1",
+            payload: {
+                replacements: [
+                    { incomingId: `${kPageId}:0`, resultId: "result1" },
+                ],
+            },
+        });
+        // Sanity: nothing reported until the request is answered one way or the other.
+        expect(commitEvents()).toHaveLength(0);
+
+        const onError = postJson.mock.calls[0][3] as () => void;
+        onError();
+
+        expect(commitEvents()[0][1]).toMatchObject({
+            replacementCount: 1,
+            appliedCount: 0,
+            failedCount: 1,
+        });
+        expect(trackChangePicture).not.toHaveBeenCalled();
     });
 });

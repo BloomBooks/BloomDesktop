@@ -805,6 +805,21 @@ export function trackEvent(
     }
 }
 
+// The "Change Picture" vocabulary for front-end callers, mirroring
+// AnalyticsApi.TrackChangePicture, which does the same job for the routes that report from C#
+// (the image chooser, a file from disk, a paste). One event covers every way a picture gets into
+// a book, so it is worthless if the routes disagree about the words -- hence one spelling of them
+// per side rather than one per call site.
+//
+// source: the route the user took -- "image chooser", "local disk", "paste" or "AI editor".
+// provider: where the bytes came from -- an image-gallery provider id ("pixabay", "openverse", a
+// local collection slug), "local-disk", "clipboard", or "ai-editor".
+//
+// BookId is filled in by the analytics/track endpoint, which has the selected book.
+export function trackChangePicture(source: string, provider: string): void {
+    trackEvent("Change Picture", { source, provider });
+}
+
 let debugMessageCount = 0; // used to serialize debug messages
 // This is useful for debugging TypeScript code, especially on Linux.  I wouldn't necessarily expect
 // to see it used anywhere in code that gets submitted and merged.
