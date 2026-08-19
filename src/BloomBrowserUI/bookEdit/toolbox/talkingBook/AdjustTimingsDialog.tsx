@@ -20,7 +20,6 @@ import {
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { getAsync, postBoolean, postJsonAsync } from "../../../utils/bloomApi";
-import { kAudioCurrent } from "./audioRecording";
 import { AdjustTimingsControl, TimedTextSegment } from "./AdjustTimingsControl";
 import {
     getUrlPrefixFromWindowHref,
@@ -440,14 +439,12 @@ function getModalContainer(): HTMLElement {
     return modalDialogContainer;
 }
 
+// The text box whose timings this dialog adjusts: the one that has the audio recording
+// highlight. We delegate to the audio recorder's method of the same name rather than just
+// taking the element that has ui-audioCurrent, because during playback the highlight is on
+// a sentence within the text box, and that method knows to walk up to the box (BL-16276).
 function getCurrentTextBox(): HTMLElement {
-    const page = parent.window.document.getElementById(
-        "page",
-    ) as HTMLIFrameElement;
-    const pageBody = page.contentWindow!.document.body;
-    const audioCurrentElements = pageBody.getElementsByClassName(kAudioCurrent);
-    const currentTextBox = audioCurrentElements.item(0) as HTMLElement;
-    return currentTextBox;
+    return getAudioRecorder().getCurrentTextBox()!;
 }
 
 // Existing code wants to be passed the actual path (not a BloomServer url) to the timings file.
