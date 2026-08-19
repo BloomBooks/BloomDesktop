@@ -305,6 +305,13 @@ export class ToolBox {
                 // that character out again if they choose another one. Its own test for "the
                 // popup is showing" is the presence of .long-press-popup in the page, so we use
                 // that. An IME composition is the same kind of hazard, hence isComposing.
+                // This deliberately runs for EVERY key, not just the ones that insert text.
+                // Skipping the arrow keys the way the keyup handler below does would look like
+                // a free saving and would quietly give back half the bug: a split paragraph is
+                // also what makes the caret stop moving, so it is the arrow key's own keydown
+                // that has to repair it. Measured in a running Bloom: with "waffle" split as
+                // "waf"|"fle", three consecutive ArrowLefts left the caret drawn at the same x;
+                // repairing on the first of them restores one-character-per-press exactly.
                 const editableBeingTypedIn = event.currentTarget as HTMLElement;
                 const longPressPopupIsUp =
                     !!editableBeingTypedIn.ownerDocument.querySelector(
