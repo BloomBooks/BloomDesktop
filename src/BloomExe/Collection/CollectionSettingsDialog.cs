@@ -91,6 +91,38 @@ namespace Bloom.Collection
 
         private readonly RtlBaseline[] _rtlAsDerived = new RtlBaseline[3];
 
+        /// <summary>
+        /// What the language chooser answered for one language slot: the language the user picked,
+        /// and the reading direction ethnolib derived from its script. Held rather than reported
+        /// on the spot, because the chooser only writes to the pending languages -- see
+        /// GetLanguageChoicesToReport.
+        /// </summary>
+        internal class LanguageChoice
+        {
+            public LanguageChoice(string tag, string script, bool? rtlFromEthnolib)
+            {
+                Tag = tag;
+                Script = script;
+                RtlFromEthnolib = rtlFromEthnolib;
+            }
+
+            public string Tag { get; }
+            public string Script { get; }
+
+            /// <summary>Null when the chooser offered no script-derived direction at all, which
+            /// is a different answer from it saying left-to-right.</summary>
+            public bool? RtlFromEthnolib { get; }
+        }
+
+        // Index 3 is the sign language, which is not one of the PendingLanguages.
+        private readonly LanguageChoice[] _languagesChosen = new LanguageChoice[4];
+
+        /// <summary>Remembers what the language chooser said, for reporting on OK.</summary>
+        private void RememberLanguageChoice(int slot, LanguageChangeEventArgs args)
+        {
+            _languagesChosen[slot] = new LanguageChoice(args.LanguageTag, args.Script, args.IsRtl);
+        }
+
         public CollectionSettingsDialog(
             CollectionSettings collectionSettings,
             QueueRenameOfCollection queueRenameOfCollection,
@@ -304,6 +336,7 @@ namespace Bloom.Collection
                 if (args.IsRtl.HasValue)
                     PendingLanguage1.IsRightToLeft = args.IsRtl.Value;
                 PendingLanguage1.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                RememberLanguageChoice(0, args);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage1.Tag, potentiallyCustomName);
@@ -321,6 +354,7 @@ namespace Bloom.Collection
                 if (args.IsRtl.HasValue)
                     PendingLanguage2.IsRightToLeft = args.IsRtl.Value;
                 PendingLanguage2.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                RememberLanguageChoice(1, args);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage2.Tag, potentiallyCustomName);
@@ -338,6 +372,7 @@ namespace Bloom.Collection
                 if (args.IsRtl.HasValue)
                     PendingLanguage3.IsRightToLeft = args.IsRtl.Value;
                 PendingLanguage3.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                RememberLanguageChoice(2, args);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage3.Tag, potentiallyCustomName);
@@ -364,6 +399,7 @@ namespace Bloom.Collection
                 PendingSignLanguage.Tag = args.LanguageTag;
                 var slIsCustom = args.DefaultName != args.DesiredName;
                 PendingSignLanguage.SetName(args.DesiredName, slIsCustom);
+                RememberLanguageChoice(3, args);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingSignLanguage.Tag, potentiallyCustomName);
@@ -509,6 +545,42 @@ namespace Bloom.Collection
                 PendingLanguage3.SetName(String.Empty, false);
             }
 
+            // BL-16593 made the reading direction follow the script the user picked, using
+            // ethnolib's data. That is a correctness feature, so what is worth knowing is not
+            // whether it was used but whether it was right: this records what ethnolib said, and
+            // the loop below records it when the user overrode it. If overrides cluster on a
+            // script, ethnolib is wrong for that script -- and we would otherwise never hear
+            // about it, because flipping a checkbox back is not worth filing a bug over.
+            foreach (
+                var choice in GetLanguageChoicesToReport(
+                    new[]
+                    {
+                        PendingLanguage1.Tag,
+                        PendingLanguage2.Tag,
+                        PendingLanguage3.Tag,
+                        PendingSignLanguage.Tag,
+                    },
+                    _languagesChosen
+                )
+            )
+            {
+                // Spelled out rather than nested ternaries, per AGENTS.md. "unknown" is a real
+                // answer: it means the chooser offered no script-derived direction at all, which
+                // is different from it saying left-to-right.
+                var rtlFromEthnolib = "unknown";
+                if (choice.RtlFromEthnolib.HasValue)
+                    rtlFromEthnolib = choice.RtlFromEthnolib.Value ? "true" : "false";
+                BloomAnalytics.Track(
+                    "Collection Language Set",
+                    new Dictionary<string, string>
+                    {
+                        { "Language", choice.Tag },
+                        { "script", choice.Script ?? "" },
+                        { "rtlFromEthnolib", rtlFromEthnolib },
+                    }
+                );
+            }
+
             // Now, not when the Script Settings sub-dialog closed: only reaching this point means
             // the user actually kept the correction. Reporting at the earlier moment counted
             // corrections that Cancel threw away, and counted a value set and set back as two --
@@ -637,6 +709,33 @@ namespace Bloom.Collection
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// The language choices worth reporting: ones the user made in the chooser and still has
+        /// when the dialog is accepted. A slot the chooser was never opened for has nothing to
+        /// report; a choice whose tag no longer matches was replaced by a later choice or removed,
+        /// and reporting it would count a language the collection does not end up with.
+        ///
+        /// pendingTags is language 1, 2, 3 and then the sign language, matching _languagesChosen.
+        ///
+        /// Static, like UpdateLanguageSettings below, so it can be tested without a dialog.
+        /// </summary>
+        internal static IEnumerable<LanguageChoice> GetLanguageChoicesToReport(
+            string[] pendingTags,
+            LanguageChoice[] chosen
+        )
+        {
+            Debug.Assert(chosen.Length == pendingTags.Length);
+
+            for (var i = 0; i < pendingTags.Length; i++)
+            {
+                var choice = chosen[i];
+                if (choice == null || string.IsNullOrEmpty(choice.Tag))
+                    continue;
+                if (choice.Tag == pendingTags[i])
+                    yield return choice;
+            }
         }
 
         /// <summary>

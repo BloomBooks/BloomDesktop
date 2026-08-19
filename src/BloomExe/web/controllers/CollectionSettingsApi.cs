@@ -142,31 +142,12 @@ namespace Bloom.web.controllers
                         Country = data.Country,
                         Script = data.Script,
                     };
-                    // BL-16593 made the reading direction follow the script the user picked,
-                    // using ethnolib's data. That is a correctness feature, so what is worth
-                    // knowing is not whether it was used but whether it was right: record what
-                    // ethnolib said here, and CollectionSettingsDialog records it when a user
-                    // overrides it. If overrides cluster on a script, ethnolib is wrong for that
-                    // script -- and we would otherwise never hear about it, because flipping a
-                    // checkbox back is not worth filing a bug over.
-                    // Spelled out rather than nested ternaries, per AGENTS.md. "unknown" is a
-                    // real answer here: it means the language chooser offered no script-derived
-                    // direction at all, which is different from it saying left-to-right.
-                    var rtlFromEthnolib = "unknown";
-                    if (args.IsRtl.HasValue)
-                        rtlFromEthnolib = args.IsRtl.Value ? "true" : "false";
-                    if (!string.IsNullOrEmpty(args.LanguageTag))
-                    {
-                        BloomAnalytics.Track(
-                            "Collection Language Set",
-                            new Dictionary<string, string>
-                            {
-                                { "Language", args.LanguageTag },
-                                { "script", args.Script ?? "" },
-                                { "rtlFromEthnolib", rtlFromEthnolib },
-                            }
-                        );
-                    }
+                    // Deliberately not reported here. The chooser only updates the Collection
+                    // Settings dialog's PENDING languages, which Cancel throws away, so a report
+                    // sent now would count languages nobody ended up with. The dialog remembers
+                    // what the chooser said (see RememberLanguageChoice) and reports it from OK,
+                    // the same point at which it reports a reading direction the user overrode --
+                    // which matters, because those two events are meant to be read as a ratio.
                     LanguageChange?.Invoke(this, args);
                     request.PostSucceeded();
                 },

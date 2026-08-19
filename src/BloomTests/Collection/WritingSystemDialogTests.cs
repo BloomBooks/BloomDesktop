@@ -500,5 +500,98 @@ namespace BloomTests.Collection
             Assert.AreEqual(2, reported.Count);
             Assert.AreEqual(new[] { "ar", "en" }, reported.Select(r => r.tag).ToArray());
         }
+
+        // "Collection Language Set" is the denominator of the ratio the reading-direction event is
+        // the numerator of, so it must be counted at the same moment: when the user accepts the
+        // Collection Settings dialog, not when the language chooser closes.
+
+        private static CollectionSettingsDialog.LanguageChoice Chose(
+            string tag,
+            string script = "Arab",
+            bool? rtlFromEthnolib = true
+        )
+        {
+            return new CollectionSettingsDialog.LanguageChoice(tag, script, rtlFromEthnolib);
+        }
+
+        [Test]
+        public void GetLanguageChoicesToReport_ChoiceStillInPlace_Reports()
+        {
+            var chosen = new CollectionSettingsDialog.LanguageChoice[4];
+            chosen[0] = Chose("ar");
+
+            var reported = CollectionSettingsDialog
+                .GetLanguageChoicesToReport(new[] { "ar", "en", "", "" }, chosen)
+                .ToList();
+
+            Assert.AreEqual(1, reported.Count);
+            Assert.AreEqual("ar", reported[0].Tag);
+            Assert.AreEqual("Arab", reported[0].Script);
+            Assert.AreEqual(true, reported[0].RtlFromEthnolib);
+        }
+
+        [Test]
+        public void GetLanguageChoicesToReport_ChooserNeverOpened_ReportsNothing()
+        {
+            // The languages the collection already had are not choices anyone made here.
+            Assert.IsEmpty(
+                CollectionSettingsDialog
+                    .GetLanguageChoicesToReport(
+                        new[] { "ar", "en", "fr", "ase" },
+                        new CollectionSettingsDialog.LanguageChoice[4]
+                    )
+                    .ToList()
+            );
+        }
+
+        [Test]
+        public void GetLanguageChoicesToReport_UserPickedAgainAfterwards_ReportsOnlyTheOneKept()
+        {
+            // RememberLanguageChoice overwrites the slot, so only the final visit is held. This
+            // checks the other half: a held choice whose language is no longer in that slot -- the
+            // user removed it, or something else replaced it -- is not reported.
+            var chosen = new CollectionSettingsDialog.LanguageChoice[4];
+            chosen[0] = Chose("fr");
+            chosen[2] = Chose("de");
+
+            var reported = CollectionSettingsDialog
+                .GetLanguageChoicesToReport(new[] { "fr", "en", "", "" }, chosen)
+                .ToList();
+
+            Assert.AreEqual(1, reported.Count, "the removed third language should not be reported");
+            Assert.AreEqual("fr", reported[0].Tag);
+        }
+
+        [Test]
+        public void GetLanguageChoicesToReport_SignLanguage_IsReportedToo()
+        {
+            var chosen = new CollectionSettingsDialog.LanguageChoice[4];
+            chosen[3] = Chose("ase", "Sgnw", null);
+
+            var reported = CollectionSettingsDialog
+                .GetLanguageChoicesToReport(new[] { "en", "en", "", "ase" }, chosen)
+                .ToList();
+
+            Assert.AreEqual(1, reported.Count);
+            Assert.AreEqual("ase", reported[0].Tag);
+            Assert.IsNull(
+                reported[0].RtlFromEthnolib,
+                "no script-derived direction is a different answer from left-to-right"
+            );
+        }
+
+        [Test]
+        public void GetLanguageChoicesToReport_EmptyTag_ReportsNothing()
+        {
+            // The chooser was cancelled, which posts an empty tag.
+            var chosen = new CollectionSettingsDialog.LanguageChoice[4];
+            chosen[0] = Chose("");
+
+            Assert.IsEmpty(
+                CollectionSettingsDialog
+                    .GetLanguageChoicesToReport(new[] { "", "en", "", "" }, chosen)
+                    .ToList()
+            );
+        }
     }
 }
