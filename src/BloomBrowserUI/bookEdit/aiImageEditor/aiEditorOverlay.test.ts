@@ -565,6 +565,56 @@ describe("aiEditorOverlay: analytics", () => {
         (postJson.mock.calls[1][3] as () => void)();
         expect(cancelEvents()).toHaveLength(1);
     });
+
+    test("a reply path that throws still leaves the session reportable as abandoned", () => {
+        // postJson chains .then(success).catch(error), so a throw inside the success callback runs
+        // the error callback for the SAME request -- which is why both are exercised here. If the
+        // outstanding-commit count were decremented by both, it would sit at -1 and "no commit
+        // outstanding" would never be true again, so a session the user threw away would never be
+        // counted.
+        applyAiImageEditorReplacements.mockReturnValue({
+            applied: 0,
+            expected: 0,
+        });
+        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "commit",
+            requestId: "req1",
+            payload: {
+                replacements: [{ incomingId: "page2:0", resultId: "r1" }],
+            },
+        });
+
+        // Make the commit report throw, which is what escapes the success callback.
+        trackEvent.mockImplementationOnce(() => {
+            throw new Error("analytics blew up");
+        });
+        const onSuccess = postJson.mock.calls[0][2] as (r: {
+            data: unknown;
+        }) => void;
+        expect(() =>
+            onSuccess({
+                data: {
+                    ok: false,
+                    results: [
+                        {
+                            incomingId: "page2:0",
+                            ok: false,
+                            isCurrentPage: false,
+                        },
+                    ],
+                },
+            }),
+        ).toThrow();
+        // ...so the error callback runs for the same request, as postJson would do.
+        (postJson.mock.calls[0][3] as () => void)();
+
+        closeButton.click();
+
+        expect(cancelEvents()).toHaveLength(1);
+    });
     test("a commit answered after the editor was reopened leaves the new overlay alone", () => {
         // The old session's success path calls its own cleanup, which tears down "the" overlay by
         // id and deletes the cleanup hook on the window -- both of which belong to the NEW session

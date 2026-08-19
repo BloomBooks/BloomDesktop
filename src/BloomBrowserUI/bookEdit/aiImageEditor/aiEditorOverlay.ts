@@ -411,11 +411,20 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     //
                     // offPageApplied comes from C#, which did those itself and knows;
                     // currentPageApplied is what the page frame says it managed.
-                    // At most once per commit. postJson chains .then(success).catch(error), so
-                    // anything that escapes the success callback lands in the error callback -- which
-                    // reports too. Without this, one commit could be counted twice, and its pictures
-                    // added twice to the picture-source breakdown.
+                    // Both of these exist because postJson chains .then(success).catch(error): if
+                    // anything escapes the success callback, the error callback runs for the SAME
+                    // request, and everything either of them does would otherwise happen twice.
+                    // Reporting twice would count one commit as two, and its pictures twice in the
+                    // picture-source breakdown; decrementing twice would leave commitsInFlight at -1,
+                    // after which "no commit outstanding" is never true again and the session could
+                    // never be reported as abandoned.
                     let commitReported = false;
+                    let commitSettled = false;
+                    const noteCommitSettled = () => {
+                        if (commitSettled) return;
+                        commitSettled = true;
+                        commitsInFlight--;
+                    };
                     const reportCommit = (
                         offPageApplied: number,
                         currentPageApplied: number,
@@ -527,7 +536,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                         "common/saveChangesAndRethinkPageEvent",
                                     );
                                 }
-                                commitsInFlight--;
+                                noteCommitSettled();
                                 // Now, and only now, is the applied count a fact. Counted from
                                 // C#'s own results for the other pages, plus what the page frame
                                 // reported for this one (0 if we never got that far).
@@ -549,7 +558,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                             }
                         },
                         () => {
-                            commitsInFlight--;
+                            noteCommitSettled();
                             // The request failed, so we know nothing landed as far as anyone can
                             // tell -- which is also what the editor is about to tell the user.
                             // Reporting the attempt matters more than the small chance that C#
