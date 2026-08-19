@@ -1437,8 +1437,9 @@ namespace Bloom.TeamCollection
             // lock-out is skipped because one is already under way for this collection.
             _tcLog.WriteMessage(
                 MessageAndMilestoneType.ErrorNoReload,
-                "TeamCollection.MinimumVersionSetRemotely",
-                "This collection now requires a newer version of Bloom than the one you are running.",
+                // The same words, and so the same XLF entry, as the lock-out dialog's header.
+                "Collection.NewerVersionNeededHeader",
+                "This collection needs a newer version of Bloom.",
                 null,
                 null
             );

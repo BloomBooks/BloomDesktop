@@ -921,7 +921,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             if (
                 !Debugger.IsAttached
                 && Platform.IsWindows
-                && !InstallerSupport.SharedByAllUsers()
+                && !InstallerSupport.SharedByAllUsers() // currently always false; see its comment
                 && !ApplicationUpdateSupport.IsDev
             )
             {
@@ -1644,6 +1644,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             {
                 MessageBox.Show(this, "Sorry, you cannot check for updates from the debugger.");
             }
+            // Currently dead: SharedByAllUsers is always false now (see its comment).
             else if (InstallerSupport.SharedByAllUsers())
             {
                 MessageBox.Show(
