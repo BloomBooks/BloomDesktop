@@ -1,0 +1,815 @@
+# Builds the Bloom Windows installer with Velopack and publishes it to the right channel.
+#
+# One workflow replaces the per-channel TeamCity configs. FOUR THINGS in this file differ
+# between branches, and they must agree with each other:
+#
+#   the push trigger's branch      the one branch whose commits build here
+#   EXPECTED_BRANCH                the same branch, named again where the job can read it
+#   ALLOWED_CHANNELS               every channel this branch may ever publish to
+#   the `channel` dropdown         the same list again, because GitHub cannot read a
+#                                  dropdown's options from anywhere but this file
+#
+# CONTINUOUS_CHANNEL, the one of those channels that every commit publishes to, is the fifth
+# and the only one with nothing to agree with. Everything else about a channel — above all the
+# band of patch numbers its versions come from — lives in build/channels.json, which is
+# identical on every branch.
+#
+# So, today (2026-08-28, read off the live feeds -- 6.5 has been cut and each branch has
+# moved up a stage since this table was first written):
+#
+#   branch        EXPECTED_BRANCH  CONTINUOUS_CHANNEL  ALLOWED_CHANNELS (= the dropdown)
+#   master        master           Alpha               Alpha
+#   Version6.5    Version6.5       BetaInternal        Beta, BetaInternal
+#   Version6.4    Version6.4       ReleaseInternal     Release, Beta, ReleaseInternal
+#
+# (Version6.4 keeps Beta in its list for the catch-up practice: it shipped Beta 6.4.110 on
+# the day this was checked, with its continuous channel already ReleaseInternal. Version6.3
+# still owns the published stable, 6.3.2, and retires when 6.4 ships.)
+#
+# A branch retires by emptying ALLOWED_CHANNELS and CONTINUOUS_CHANNEL and deleting the
+# `channel` input below — a dropdown cannot have nothing in it, so the input goes rather than
+# its options. Pushes to it then reach a green no-op, and a dispatch has nothing to ask for.
+#
+# That repetition is forced on us — GitHub will not populate a dropdown or a branch filter
+# from a file — so the plan job READS THIS FILE AND CHECKS THAT ALL FOUR AGREE before it does
+# anything else. A merge that brings another branch's copy in, or takes one half of a
+# hand-edit and not the other, fails in about fifteen seconds with a message naming the two
+# things that disagree. It cannot quietly publish to the wrong channel.
+#
+# The one merge accident this file cannot catch is the reverse: if a copy naming ANOTHER
+# branch lands here, its push trigger names that other branch, so pushes here trigger nothing
+# at all and there is no run to fail. Nothing inside a workflow can notice a workflow that
+# never ran. After any merge into a release branch, check the trigger still names that branch.
+#
+# Continuous runs publish automatically when tests pass. A manual run publishes only with
+# publish=true. Note that "continuous" governs only what happens automatically: any channel in
+# the dropdown can be run by hand with publish=false, to build it without touching the feed.
+#
+# Getting a copy of the installer out of a run is a separate, opt-in choice: tick
+# keep_installer when dispatching. It is off by default, and unavailable to a push, because
+# artifact storage is a shared repository quota and one installer is over 100 MB.
+#
+# Signing: every run signs everything it can and reports what it got, whatever the channel and
+# whether or not it is publishing. Whether an UNSIGNED result may go out is a property of the
+# channel (mustBeSigned in build/channels.json), not of how the run was started. Beta and
+# Release reach people who did not choose to be guinea pigs, so an unsigned build is refused
+# there; Alpha and the Internal channels would rather have a build than a gap, so it is
+# reported and shipped. A publish to a must-be-signed channel with no credentials at all fails
+# in the first few seconds rather than after an hour of building.
+#
+# Promotion is a small commit on each affected branch — its continuous channel and its
+# dropdown — rather than a build-server change. The 6.5 cut is the worked example, done on
+# TeamCity but the same shape here: the new Version6.5 branch took Beta/BetaInternal,
+# Version6.4 moved to Release/ReleaseInternal, and Version6.3 empties both settings and stops
+# building once 6.4 ships. Each branch carries its own copy of this workflow file, so
+# per-branch build differences need no central configuration.
+#
+# Velopack delta handling: TeamCity keeps the release history on a persistent Z: drive, but
+# GHA runners are ephemeral. Instead, we hydrate the release directory from the existing
+# public S3 feed (bloomlibrary.org/deltas<channel>) with `vpk download` before packing, so
+# vpk can generate a delta against the previous release. S3 remains the source of truth.
+# Version numbers: each channel owns a band of patch numbers (build/channels.json) and
+# restarts at the bottom of it for every new release line, which is what makes a version
+# legible at a glance — 6.4.108 is a Beta, 6.4.1281 an Alpha, 6.3.2 a stable release. The
+# counter is the highest this channel has published within its own band for this same
+# major.minor, plus one, or the bottom of the band when the line is new. Restarting cannot
+# strand an installed copy: Velopack compares versions semantically, so 6.5.100 supersedes
+# 6.4.108. A run that would leave its band stops instead of publishing.
+#
+# Code signing uses Microsoft Trusted Signing with the same secret as
+# BloomBooks/bloompub-viewer (sillsdev/codesign/trusted-signing-action). We can't use that
+# action directly because Bloom.proj must sign mid-build: Bloom.exe and BloomPdfMaker.exe
+# before vpk packs them into the nupkg, and the installer exe after packing. Instead we
+# decode the same credentials secret and put a `sign` command (build/gha/sign.cmd) on PATH,
+# which is exactly what Bloom.proj's signing targets invoke on TeamCity.
+#
+# Required repo configuration:
+#   secrets.TRUSTED_SIGNING_CREDENTIALS
+#       Base64-encoded JSON with tenant-id, client-id, client-secret, endpoint, account-name
+#       (same secret sillsdev/codesign/trusted-signing-action consumes). Required for manual
+#       publishes; continuous/dry runs proceed unsigned without it.
+#   secrets.SIL_BLOOM_UPLOADER_AWS_ACCESS_KEY_ID
+#   secrets.SIL_BLOOM_UPLOADER_AWS_SECRET_ACCESS_KEY
+#       The BloomLibrary identity: write access to the bloomlibrary.org bucket, for the
+#       installer, the packages and the feed.
+#   secrets.SIL_LEAD_BLOOM_LIBRARY_DEPLOY_AWS_ACCESS_KEY_ID
+#   secrets.SIL_LEAD_BLOOM_LIBRARY_DEPLOY_AWS_SECRET_ACCESS_KEY
+#       The bloom-library-deploy identity, a different account: write access to the
+#       versions.bloomlibrary.org bucket, for the latest.<channel>.json the website reads.
+#
+# CUTOVER, one channel at a time. A branch's push trigger stays pointed away from it until
+# the TeamCity continuous config for its channel is switched off. For each channel:
+#
+#   1. Disable the TeamCity config for that channel FIRST. Order matters: while both systems
+#      publish one channel they race the per-channel version counter and each overwrites the
+#      other's releases.win.json.
+#   2. Then set the push trigger below to that branch's own name, so its commits start
+#      building here. (It publishes to whatever CONTINUOUS_CHANNEL says.)
+#   3. For a release branch (Version6.4, Version6.3...), backporting is a real port, not a
+#      cherry-pick of this file alone: it also needs build/gha/ and build/channels.json, and
+#      its EXPECTED_BRANCH, CONTINUOUS_CHANNEL and dropdown set for that branch. PIN THE
+#      RUNNER IMAGE on those branches (windows-2025 rather than windows-latest), so an old
+#      branch does not break the day GitHub moves windows-latest on.
+#
+# Alpha goes first (decided 2026-08). It is the busiest channel, which is what builds up
+# SmartScreen reputation for the new signing identity fastest — Trusted Signing's certificate
+# subject differs from the old one, and reputation starts from zero on it, so expect
+# "unrecognised app" warnings on whichever channel leads until it accumulates.
+#
+# Sibling workflows from the same migration: nightly.yml (build + both test suites, no
+# publish) and harvester-artifacts.yml (harvester bundles). Both are on master and green.
+
+name: Release Installer
+
+on:
+    push:
+        branches:
+            # This names the same single branch as EXPECTED_BRANCH below — master on master,
+            # Version6.4 on Version6.4, and so on. Never a wildcard: a copy of this file is
+            # only ever meant to act for one branch.
+            #
+            # TEMPORARY - CHANGE TO master WHEN MERGING: exercises the workflow from the
+            # feature branch. Pushes here run the whole pipeline but stay dry, because
+            # DRY_RUN_ONLY is set below.
+            - GhaReleaseInstaller
+            # CUTOVER: this line becomes the branch's own name when the TeamCity continuous
+            # config for that branch's channel is retired.
+    workflow_dispatch:
+        inputs:
+            # The options are this branch's channels, and only this branch's: GitHub cannot
+            # populate a dropdown from a file, so the list is maintained here alongside
+            # CONTINUOUS_CHANNEL. The plan job still checks the choice against
+            # build/channels.json, so a channel that exists only here fails loudly.
+            channel:
+                description: "Which channel this run targets."
+                type: choice
+                default: Alpha
+                options:
+                    - Alpha
+            publish:
+                description: "Publish to S3 (installers, deltas, RELEASES, releases.win.json, download pointers). If false, just build."
+                type: boolean
+                default: false
+            keep_installer:
+                description: "Keep the installer as a workflow artifact. Off by default because it is large; see the note on the upload step."
+                type: boolean
+                default: false
+
+# The per-branch configuration. See the header: these must agree with the push trigger and
+# the `channel` dropdown above, and the plan job checks that they do.
+env:
+    # TEMPORARY - CHANGE TO master WHEN MERGING: which branch this copy of the file serves.
+    EXPECTED_BRANCH: GhaReleaseInstaller
+    # Every channel this branch may publish to, space separated, and the gate that the
+    # dropdown alone should not have to be. Blank means this branch publishes nothing at all.
+    ALLOWED_CHANNELS: Alpha
+    # Which of those channels every commit publishes to. Blank means nothing publishes
+    # automatically: a retired branch, or one that only ever builds by hand.
+    CONTINUOUS_CHANNEL: Alpha
+    # TEMPORARY - REMOVE BEFORE MERGING TO MASTER: while the workflow is developed on its own
+    # branch, force every run dry, whatever it was asked to do. Without this the branch would
+    # publish real Alpha builds as soon as it starts naming itself in EXPECTED_BRANCH.
+    DRY_RUN_ONLY: "true"
+
+jobs:
+    # Works out what this run should do: which channel, and whether to publish to it. Kept as
+    # its own tiny job so that a push to a branch with nothing to publish is a green no-op,
+    # and so the build job's per-channel concurrency group can be computed from the answer.
+    #
+    # It is written in Python rather than pwsh because its first job is to read this very file
+    # and check that its four per-branch settings agree (see the header), and approximating a
+    # YAML parser with regular expressions is exactly the sort of thing that works until the
+    # day it quietly does not.
+    plan:
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            contents: read
+        outputs:
+            should_run: ${{ steps.resolve.outputs.should_run }}
+            # The channel as people say it ("Release", "Alpha"), used for the concurrency
+            # group, the artifact name and latest.<channel>.json.
+            channel_name: ${{ steps.resolve.outputs.channel_name }}
+            # The same channel as Bloom.proj wants it: empty string for Release.
+            channel: ${{ steps.resolve.outputs.channel }}
+            publish: ${{ steps.resolve.outputs.publish }}
+            require_signatures: ${{ steps.resolve.outputs.require_signatures }}
+            range_base: ${{ steps.resolve.outputs.range_base }}
+            range_max: ${{ steps.resolve.outputs.range_max }}
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            - name: Resolve the channel for this run
+              id: resolve
+              shell: bash
+              env:
+                  EVENT_NAME: ${{ github.event_name }}
+                  REF: ${{ github.ref }}
+                  CHANNEL_INPUT: ${{ inputs.channel }}
+                  PUBLISH_INPUT: ${{ inputs.publish }}
+              run: |
+                  python3 -c 'import yaml' 2>/dev/null || pip install --quiet --disable-pip-version-check pyyaml
+                  python3 .github/workflows/resolve-channel.py
+
+    build-installer:
+        needs: plan
+        if: ${{ needs.plan.outputs.should_run == 'true' }}
+        runs-on: windows-latest
+        timeout-minutes: 120
+
+        # Never build the same channel concurrently: two builds would both delta against the
+        # same "previous" release and one would clobber the other's releases.win.json on S3.
+        # No cancel-in-progress: every commit's continuous build publishes, in order.
+        concurrency:
+            group: release-installer-${{ needs.plan.outputs.channel_name }}
+            cancel-in-progress: false
+
+        # checks: write lets the publish-test-results step create a check run with the
+        # readable test report; specifying permissions at all drops everything else to none,
+        # so contents: read must be restored for checkout.
+        permissions:
+            contents: read
+            checks: write
+
+        env:
+            CHANNEL: ${{ needs.plan.outputs.channel }}
+            CHANNEL_NAME: ${{ needs.plan.outputs.channel_name }}
+            RANGE_BASE: ${{ needs.plan.outputs.range_base }}
+            RANGE_MAX: ${{ needs.plan.outputs.range_max }}
+            PUBLISH: ${{ needs.plan.outputs.publish }}
+            REQUIRE_SIGNATURES: ${{ needs.plan.outputs.require_signatures }}
+            INSTALLER_RESULT_DIR: ${{ github.workspace }}\output\installer\result
+            # Secrets are not allowed in step `if:` expressions, so surface presence as a boolean here.
+            HAS_SIGNING_CREDENTIALS: ${{ secrets.TRUSTED_SIGNING_CREDENTIALS != '' }}
+
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            # Fail in seconds rather than after an hour of building: this run is publishing to a
+            # channel that may not carry unsigned binaries, and there is nothing to sign with.
+            - name: Fail if publishing without signing credentials
+              if: ${{ needs.plan.outputs.require_signatures == 'true' && env.HAS_SIGNING_CREDENTIALS == 'false' }}
+              shell: pwsh
+              run: throw "Publishing to ${{ needs.plan.outputs.channel_name }} requires valid signatures, but the TRUSTED_SIGNING_CREDENTIALS secret (the same one bloompub-viewer uses) is not available to this repository."
+
+            # ----- Toolchains -----
+
+            - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+              with:
+                  dotnet-version: 8.0.x
+
+            - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
+
+            - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+              with:
+                  package_json_file: src/BloomBrowserUI/package.json
+
+            - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+              with:
+                  node-version: 22
+                  cache: pnpm
+                  cache-dependency-path: |
+                      src/BloomBrowserUI/pnpm-lock.yaml
+                      src/content/pnpm-lock.yaml
+
+            # ----- Dependencies (mirrors init.sh) -----
+
+            - name: Get binary dependencies (TeamCity artifacts, chm, ffmpeg, etc.)
+              shell: bash
+              run: ./build/getDependencies-windows.sh
+
+            - name: pnpm install
+              shell: bash
+              run: |
+                  (cd src/content && pnpm install --frozen-lockfile) &
+                  (cd src/BloomBrowserUI && pnpm install --frozen-lockfile) &
+                  wait
+
+            # Master/alpha builds always take the newest floating front-end deps rather
+            # than the lockfile-pinned versions (bloom-player from its alpha channel,
+            # latest comicaljs / language-chooser / image-gallery), matching the TeamCity
+            # master build.
+            - name: Update floating front-end dependencies
+              working-directory: src/BloomBrowserUI
+              shell: bash
+              run: pnpm update bloom-player@alpha comicaljs@latest "@ethnolib/language-chooser-react-mui@latest" bloom-image-gallery
+
+            # ----- Front-end production build + tests -----
+
+            - name: Build browser UI (production)
+              working-directory: src/BloomBrowserUI
+              run: pnpm run build-prod
+
+            # The junit file feeds the "Publish test results" step at the end of the job.
+            # NB: no `--` before the reporter flags (pnpm forwards it literally and vitest
+            # then ignores every flag), and --outputFile= not --outputFile.junit= (the dotted
+            # form does not override vite.config.mts's string outputFile). Both were learned
+            # the hard way on the nightly workflow — see its comments.
+            - name: Run browser UI tests
+              id: frontend_tests
+              working-directory: src/BloomBrowserUI
+              run: pnpm run test:ci --reporter=default --reporter=junit --outputFile=../../output/Tests/vitest-junit.xml
+
+            # ----- Velopack CLI -----
+            # Install the exact version from Directory.Build.props up front. (Bloom.proj's
+            # EnsureVelopackCli target would otherwise take its install path, which runs
+            # `dotnet tool uninstall --global vpk` and fails on a machine that never had it.)
+            - name: Install Velopack CLI (our fork)
+              shell: pwsh
+              run: |
+                  $props = Get-Content Directory.Build.props -Raw
+                  $vpkVersion = [regex]::Match($props, '<VelopackVersion>([^<]+)</VelopackVersion>').Groups[1].Value
+                  if (-not $vpkVersion) { throw "Could not parse VelopackVersion from Directory.Build.props" }
+                  Write-Host "Installing BloomBooks.Velopack.Cli $vpkVersion"
+                  dotnet tool install --global BloomBooks.Velopack.Cli --version $vpkVersion
+                  vpk --version
+
+            # ----- Hydrate release history from the existing S3 feed -----
+            # Downloads releases.win.json and the latest full nupkg for this channel into the
+            # output dir, which is all vpk pack needs to generate a delta against the previous
+            # release. The feed is public-read, so no credentials are needed here.
+            - name: Download previous release (for delta generation)
+              shell: pwsh
+              run: |
+                  New-Item -ItemType Directory -Force $env:INSTALLER_RESULT_DIR | Out-Null
+                  $url = "https://s3.amazonaws.com/bloomlibrary.org/deltas$env:CHANNEL"
+                  Write-Host "Hydrating release dir from $url"
+                  vpk download http --url $url --outputDir $env:INSTALLER_RESULT_DIR
+                  if ($LASTEXITCODE -ne 0) {
+                    if ($env:PUBLISH -eq 'true') {
+                      throw "Could not download previous release state from $url. Refusing to publish without it: packing would produce no delta and overwrite the channel's releases.win.json with a single-entry file."
+                    }
+                    Write-Warning "Could not download previous release state from $url. Continuing without it (no delta will be generated). This is expected only for a brand-new channel."
+                  }
+
+            # ----- Version number -----
+            # Bloom.proj's VersionNumbers target parses BUILD_NUMBER as
+            # <ignored>.<ignored>.<counter>.<hash> and produces Version = <line>.<counter>
+            # (the major.minor release line lives in Bloom.proj, not here).
+            #
+            # The counter is per channel AND per release line: it continues from the highest
+            # this channel has published inside its own band for this same major.minor, and
+            # restarts at the band's base for a new line. The details, and the no-downgrade
+            # guard, are commented inline below.
+            - name: Compute BUILD_NUMBER from the channel feed
+              shell: pwsh
+              run: |
+                  # The release line (e.g. "6.5") is declared once, in Bloom.proj's
+                  # VersionNumbers target, which is what actually stamps the version.
+                  $proj = Get-Content build/Bloom.proj -Raw
+                  $line = [regex]::Match($proj, '<CreateProperty Value="(\d+\.\d+)\.\$\(BuildCounter\)">').Groups[1].Value
+                  if (-not $line) { throw "Could not parse the major.minor version from build/Bloom.proj" }
+                  Write-Host "Release line: $line"
+
+                  # The channel's band of patch numbers, resolved by the plan job from
+                  # build/channels.json. Each channel restarts at the bottom of its own band for
+                  # every new release line, which is what makes a version legible at a glance:
+                  # 6.4.108 is a Beta, 6.4.1281 an Alpha, 6.3.2 a stable release. A run that
+                  # would leave its band is a bug -- it would mint versions that read as another
+                  # channel's -- so stop rather than publish one. (The BetaInternal feed still
+                  # carries one 6.2.1001 from before any of this was enforced.)
+                  $range = @{ Base = [int]$env:RANGE_BASE; Max = [int]$env:RANGE_MAX }
+                  Write-Host "Channel '$env:CHANNEL_NAME' owns $($range.Base)-$($range.Max)."
+
+                  # Everything this channel has already published, as far as the hydrated
+                  # release directory knows. Package file names are read as well as the feed,
+                  # in case the directory has packages but no feed file.
+                  $published = @()
+                  $feed = Join-Path $env:INSTALLER_RESULT_DIR 'releases.win.json'
+                  if (Test-Path $feed) {
+                    $published += (Get-Content $feed -Raw | ConvertFrom-Json).Assets | ForEach-Object {
+                      if ($_.Version -match '^(\d+)\.(\d+)\.(\d+)') { [version]"$($Matches[1]).$($Matches[2]).$($Matches[3])" }
+                    }
+                  }
+                  $published += Get-ChildItem $env:INSTALLER_RESULT_DIR -Filter *.nupkg | ForEach-Object {
+                    if ($_.Name -match '-(\d+)\.(\d+)\.(\d+)(?:-[^-]*)?-(?:full|delta)\.nupkg$') { [version]"$($Matches[1]).$($Matches[2]).$($Matches[3])" }
+                  }
+
+                  # Only this line's counters, and only ones inside this channel's band: a
+                  # stray out-of-band version in the feed must not drag the next one after it.
+                  $counters = @($published |
+                    Where-Object { "$($_.Major).$($_.Minor)" -eq $line -and $_.Build -ge $range.Base -and $_.Build -le $range.Max } |
+                    ForEach-Object { $_.Build })
+                  if ($counters) {
+                    $counter = ($counters | Measure-Object -Maximum).Maximum + 1
+                    Write-Host "Highest $line counter published on channel '$env:CHANNEL_NAME' is $($counter - 1); using $counter."
+                  } else {
+                    $counter = $range.Base
+                    Write-Host "Channel '$env:CHANNEL_NAME' has published no $line build yet; starting this release line at its base, $counter."
+                  }
+                  if ($counter -gt $range.Max) {
+                    throw "Channel '$env:CHANNEL_NAME' has exhausted its patch band ($($range.Base)-$($range.Max)) for $line; $counter would read as another channel's build."
+                  }
+
+                  # ---- Never move a channel backwards ----
+                  # The band check above says the number belongs to this channel; this says it
+                  # is not older than what the channel has already shipped. It is the guard
+                  # that does not care what anyone typed: publishing Beta from the 6.3 branch
+                  # computes 6.3.101 against a Beta feed sitting at 6.4.108, and stops. It
+                  # equally catches a stale branch, a mis-set release line in Bloom.proj, or a
+                  # band edited into the wrong channel. Dry runs only warn, so that building an
+                  # older line to look at stays possible; a publish is refused.
+                  $version = [version]"$line.$counter"
+                  if ($published) {
+                    $highest = ($published | Sort-Object -Descending | Select-Object -First 1)
+                    if ($version -lt $highest) {
+                      $complaint = "This run would publish $version to '$env:CHANNEL_NAME', which is already at $highest. Users on that channel would be sent backwards."
+                      if ($env:PUBLISH -eq 'true') { throw $complaint }
+                      Write-Warning "$complaint (Not publishing, so continuing.)"
+                    }
+                  }
+
+                  $hash = (git rev-parse --short HEAD).Trim()
+                  $buildNumber = "0.0.$counter.$hash"
+                  Write-Host "BUILD_NUMBER: $buildNumber"
+
+                  # dotChannel is how the channel appears inside a file name: ".Alpha", and
+                  # nothing at all for Release. Same rule Bloom.proj uses, so the names match.
+                  $dotChannel = if ($env:CHANNEL) { ".$env:CHANNEL" } else { "" }
+                  @(
+                    "BUILD_NUMBER=$buildNumber"
+                    "BLOOM_VERSION=$line.$counter"
+                    "VERSION_DOT_CHANNEL=$line.$counter$dotChannel"
+                  ) | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+            # ----- Code signing (Microsoft Trusted Signing) -----
+            # Decodes the same base64 credentials JSON that sillsdev/codesign/trusted-signing-action
+            # consumes in bloompub-viewer, installs the TrustedSigning PowerShell module that
+            # azure/trusted-signing-action@v0.5.1 uses under the hood, and puts build/gha (which
+            # contains a `sign` shim) on PATH so Bloom.proj's existing `sign "<file>"` Exec calls
+            # work here just like on TeamCity.
+            - name: Set up code signing
+              if: ${{ env.HAS_SIGNING_CREDENTIALS == 'true' }}
+              shell: pwsh
+              env:
+                  TRUSTED_SIGNING_CREDENTIALS: ${{ secrets.TRUSTED_SIGNING_CREDENTIALS }}
+              run: |
+                  $creds = [System.Text.Encoding]::UTF8.GetString(
+                    [Convert]::FromBase64String($env:TRUSTED_SIGNING_CREDENTIALS)) | ConvertFrom-Json
+                  foreach ($key in 'tenant-id', 'client-id', 'client-secret') {
+                    Write-Host "::add-mask::$($creds.$key)"
+                  }
+                  @(
+                    "AZURE_TENANT_ID=$($creds.'tenant-id')"
+                    "AZURE_CLIENT_ID=$($creds.'client-id')"
+                    "AZURE_CLIENT_SECRET=$($creds.'client-secret')"
+                    "TRUSTED_SIGNING_ENDPOINT=$($creds.endpoint)"
+                    "TRUSTED_SIGNING_ACCOUNT=$($creds.'account-name')"
+                  ) | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+                  # Same module version azure/trusted-signing-action@v0.5.1 installs.
+                  Install-Module TrustedSigning -RequiredVersion 0.5.3 -Force -Scope CurrentUser
+                  Add-Content $env:GITHUB_PATH "$env:GITHUB_WORKSPACE\build\gha"
+
+            # ----- AWS credential profiles -----
+            # Two profiles, because these are two genuinely different identities, exactly as on
+            # TeamCity:
+            #   BloomLibrary         writes the installer, packages and feed to bloomlibrary.org.
+            #                        Bloom.proj's UploadCore names it explicitly, through the
+            #                        SIL.BuildTasks.AWS S3BuildPublisher task's
+            #                        CredentialStoreProfileName, so the name must match.
+            #   bloom-library-deploy writes latest.<channel>.json to versions.bloomlibrary.org.
+            # Registering both in the shared credentials file is what lets the AWS SDK's profile
+            # chain (S3BuildPublisher) and the AWS CLI (--profile) each find its own.
+            # Written on every run, including dry ones: the step below uses them to prove the
+            # credentials are real and reach their buckets, which is the only part of
+            # publishing a dry run can honestly rehearse. They live on an ephemeral
+            # single-tenant runner for the length of the job.
+            - name: Configure AWS credential profiles
+              shell: pwsh
+              run: |
+                  New-Item -ItemType Directory -Force "$env:USERPROFILE\.aws" | Out-Null
+                  @"
+                  [BloomLibrary]
+                  aws_access_key_id=${{ secrets.SIL_BLOOM_UPLOADER_AWS_ACCESS_KEY_ID }}
+                  aws_secret_access_key=${{ secrets.SIL_BLOOM_UPLOADER_AWS_SECRET_ACCESS_KEY }}
+
+                  [bloom-library-deploy]
+                  aws_access_key_id=${{ secrets.SIL_LEAD_BLOOM_LIBRARY_DEPLOY_AWS_ACCESS_KEY_ID }}
+                  aws_secret_access_key=${{ secrets.SIL_LEAD_BLOOM_LIBRARY_DEPLOY_AWS_SECRET_ACCESS_KEY }}
+                  "@ | Out-File "$env:USERPROFILE\.aws\credentials" -Encoding ascii
+
+            # Read-only rehearsal of the publish credentials, early enough to save an hour.
+            # get-caller-identity proves a key pair is valid and says which account it belongs
+            # to -- it needs no S3 permission at all -- and then one read per bucket shows the
+            # profile reaches the place it will later write to. Neither call writes anything,
+            # so this runs on dry runs too, which is the point: it is what lets a dry run tell
+            # us the credentials are wired up correctly.
+            #
+            # What it cannot prove is WRITE permission; only a write proves that, and this
+            # deliberately does not. So it reports rather than gates on a dry run, and fails
+            # only when the run is actually going to publish -- the same shape as the signature
+            # rule. Account ids are masked because this repository is public and its logs are
+            # readable by anyone.
+            - name: Check the AWS identities
+              shell: pwsh
+              run: |
+                  $problems = @()
+
+                  function Show-Identity($profileName) {
+                      $json = aws sts get-caller-identity --profile $profileName --output json 2>&1
+                      if ($LASTEXITCODE -ne 0) {
+                          Write-Host "$profileName : cannot authenticate. $json"
+                          return $false
+                      }
+                      # arn:aws:iam::123456789012:user/someone -> arn:aws:iam::***:user/someone
+                      $arn = ($json | ConvertFrom-Json).Arn -replace '::\d{12}:', '::***:'
+                      Write-Host "$profileName : $arn"
+                      return $true
+                  }
+
+                  function Test-Read($profileName, $what, $command) {
+                      $output = & $command 2>&1
+                      if ($LASTEXITCODE -eq 0) {
+                          Write-Host "$profileName : can read $what"
+                          return $true
+                      }
+                      Write-Host "$profileName : CANNOT read $what. $output"
+                      return $false
+                  }
+
+                  # The identity Bloom.proj hands to S3BuildPublisher for the installer, the
+                  # packages and the feed. It resolves the profile through the same shared
+                  # credentials file this reads.
+                  if (-not (Show-Identity 'BloomLibrary')) { $problems += 'BloomLibrary credentials' }
+                  if (-not (Test-Read 'BloomLibrary' "bloomlibrary.org/deltas$env:CHANNEL" {
+                      aws s3api list-objects-v2 --bucket bloomlibrary.org --prefix "deltas$env:CHANNEL/" --max-keys 1 --profile BloomLibrary
+                  })) { $problems += 'BloomLibrary read of bloomlibrary.org' }
+
+                  # The identity the version.json step uses, through this same AWS CLI, so this
+                  # is as close a rehearsal as a read can be.
+                  if (-not (Show-Identity 'bloom-library-deploy')) { $problems += 'bloom-library-deploy credentials' }
+                  if (-not (Test-Read 'bloom-library-deploy' "versions.bloomlibrary.org/latest.$env:CHANNEL_NAME.json" {
+                      aws s3api head-object --bucket versions.bloomlibrary.org --key "latest.$env:CHANNEL_NAME.json" --profile bloom-library-deploy
+                  })) { $problems += 'bloom-library-deploy read of versions.bloomlibrary.org' }
+
+                  Write-Host "Note: this proves the credentials are valid and reach their buckets. It does not prove write permission; only publishing does."
+                  if (-not $problems) {
+                      Write-Host "Both AWS identities check out."
+                  } elseif ($env:PUBLISH -eq 'true') {
+                      throw "Refusing to build a publish run that cannot use its credentials: $($problems -join '; ')."
+                  } else {
+                      Write-Warning "Not publishing, so continuing, but: $($problems -join '; ')."
+                  }
+                  # A failed probe leaves $LASTEXITCODE non-zero, and GitHub's pwsh wrapper
+                  # exits with it -- which would fail the step we just decided to tolerate.
+                  exit 0
+
+            # ----- Restore MSBuild build tasks -----
+            # VersionNumbers and the S3 upload need SIL.BuildTasks(.AWS), which the UsingTask
+            # declarations only load if the dlls already exist, so this must be a separate msbuild
+            # invocation (on TeamCity it is a separate build step too). RestartBuild=false stops
+            # RestoreBuildTasks from also running BuildInternal (it does that when the dlls were
+            # missing); without it the C# build would run twice, once here and once in the
+            # Build step below.
+            - name: Restore MSBuild build tasks
+              working-directory: build
+              shell: pwsh
+              run: msbuild Bloom.proj /t:RestoreBuildTasks /p:RestartBuild=false
+
+            # ----- Build -----
+            # Build the app and the test assembly, and nothing else, so the suites below can
+            # run before we spend time (and signing quota) packing an installer nobody wants.
+            # The installer step's own Build is then a no-op-ish incremental rebuild. Same
+            # shape as nightly.yml and harvester-artifacts.yml. Pass the channel here too, so
+            # both invocations see identical properties.
+            - name: Build
+              working-directory: build
+              shell: pwsh
+              run: msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER /p:channel=$env:CHANNEL
+
+            # ----- C# tests -----
+            # TestOnly runs NUnit against BloomTests.dll, which BuildInternal built alongside
+            # the app in the step above. A failure here blocks the publish steps below.
+            # Excluded here, the same three the harvester workflow leaves out:
+            #   - Integration: the WebLibraryIntegration tests talk to the live S3 bucket, so
+            #     they are slow, need internet access, and need credentials for that bucket.
+            #   - Nightly: reserved for the long tests only the nightly should pay for.
+            #   - SkipOnTeamCity: tests that cannot run on a build agent.
+            # The nightly workflow is where Integration and Nightly do run; don't "align" its
+            # shorter list with this one, or nothing would run them at all.
+            #
+            # The %3B are escaped semicolons and they are load-bearing; the harvester workflow
+            # uses the same form. A raw semicolon cannot work from pwsh, which reads it as a
+            # statement separator, and MSBuild would split an intact one into separate /p:
+            # assignments ("MSB1006: Property is not valid"). RunNUnit unescapes it back into a
+            # real separator. See the comment on CategoriesToExclude in Bloom.proj.
+            - name: Run C# tests
+              id: csharp_tests
+              working-directory: build
+              shell: pwsh
+              run: |
+                  msbuild Bloom.proj /t:TestOnly `
+                    /p:BUILD_NUMBER=$env:BUILD_NUMBER `
+                    /p:channel=$env:CHANNEL `
+                    /p:excludedCategories=Integration%3BNightly%3BSkipOnTeamCity
+
+            # ----- Pack + sign the installer -----
+            # Runs only if both suites above passed: no `always()` here or on any step
+            # after it, so a red test skips packing, signing and publishing.
+            # SignIfPossible = Installer (build, sign exes, assemble content, vpk pack) + signing
+            # the installer exe, with all sign failures tolerated (we're not on TeamCity, so
+            # Bloom.proj's sign steps are ContinueOnError). That tolerance is why the separate
+            # verification step below gates manual publishes.
+            - name: Pack and sign installer
+              working-directory: build
+              shell: pwsh
+              run: |
+                  msbuild Bloom.proj /t:SignIfPossible /m `
+                    /p:BUILD_NUMBER=$env:BUILD_NUMBER `
+                    /p:channel=$env:CHANNEL `
+                    /p:InstallerOutputFolder=$env:INSTALLER_RESULT_DIR `
+                    /p:OkIfSigningFails=true
+
+            # Each suite gets its OWN invocation of the publish action, and therefore its own
+            # check run on the commit and its own section in the job summary: pass/fail/skip
+            # counts plus per-test annotations for failures. Same arrangement as nightly.yml.
+            #
+            # Why not one combined report (what this workflow used to do)? A merged total
+            # hides which stack broke and, worse, hides a suite that contributed NOTHING: when
+            # the vitest junit file silently stopped being written on the nightly, the combined
+            # report still said "All 2 882 tests pass", because the C# suite alone accounts for
+            # that. Per-suite reports make a missing suite obvious and let a red check name the
+            # guilty stack.
+            #
+            # Conventions shared by both reports:
+            #   - !cancelled() plus a check that the suite's step was not skipped. Without the
+            #     first, a failing test step would skip its own report — exactly the run we
+            #     care about; without the second we would publish an empty report for a suite
+            #     that never ran because something earlier failed.
+            #   - check_name must be unique per invocation or the reports overwrite each other.
+            #   - comment_mode: off — this build runs on push/dispatch, and the default
+            #     (comment: always) tries to POST a PR comment when the branch has an open PR
+            #     and 403s ("Resource not accessible by integration"). This is not a PR gate.
+            #   - action_fail_on_inconclusive: true — a missing/empty results file (a suite
+            #     that silently reported nothing) turns the job red instead of passing quietly.
+            #   - files uses the unified input (junit_files/nunit_files are deprecated); the
+            #     action auto-detects each file's format (JUnit for vitest, NUnit3 for C#).
+            - name: Publish front-end test results
+              if: ${{ !cancelled() && steps.frontend_tests.outcome != 'skipped' }}
+              uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+              with:
+                  # Quoted: an unquoted YAML scalar cannot contain ": ".
+                  check_name: "Installer tests: front-end (vitest)"
+                  comment_mode: "off"
+                  action_fail_on_inconclusive: true
+                  files: output/Tests/vitest-junit.xml
+
+            - name: Publish C# test results
+              if: ${{ !cancelled() && steps.csharp_tests.outcome != 'skipped' }}
+              uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+              with:
+                  check_name: "Installer tests: C# (NUnit)"
+                  comment_mode: "off"
+                  action_fail_on_inconclusive: true
+                  files: output/Tests/Release/x64/TestResults.xml
+
+            - name: Upload test results
+              if: ${{ always() }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: test-results
+                  path: |
+                      output\Tests\Release\x64\TestResults.xml
+                      output\Tests\vitest-junit.xml
+                  retention-days: 7
+
+            # Bloom.proj signs with ContinueOnError, so a signing failure does not stop the build
+            # and would otherwise pass unnoticed. This step always runs and always reports what
+            # each file actually got, so every run's log answers "did signing work?" -- which is
+            # the only way a channel that tolerates unsigned builds ever finds out it is
+            # shipping them. Whether an unsigned result STOPS the run is the channel's call
+            # (mustBeSigned in build/channels.json), resolved into REQUIRE_SIGNATURES.
+            - name: Verify signatures
+              shell: pwsh
+              run: |
+                  $files = @(
+                    "output\Release\x64\Bloom$env:CHANNEL.exe",
+                    "output\Release\x64\BloomPdfMaker.exe"
+                  ) + (Get-ChildItem "$env:INSTALLER_RESULT_DIR\BloomInstaller.*.exe").FullName
+                  $bad = @()
+                  foreach ($file in $files) {
+                    $sig = Get-AuthenticodeSignature $file
+                    Write-Host "$($sig.Status): $file"
+                    if ($sig.Status -ne 'Valid') { $bad += (Split-Path $file -Leaf) }
+                  }
+                  if (-not $bad) {
+                    Write-Host "All $($files.Count) signed files verified."
+                  } elseif ($env:REQUIRE_SIGNATURES -eq 'true') {
+                    throw "Refusing to publish to $env:CHANNEL_NAME; unsigned or invalidly signed: $($bad -join ', ')"
+                  } else {
+                    Write-Warning "Unsigned or invalidly signed: $($bad -join ', '). $env:CHANNEL_NAME tolerates that, so continuing."
+                  }
+
+            # ----- Publish to S3 -----
+            # UploadCore uploads the installer exe, delta/full nupkgs, RELEASES, and
+            # releases.win.json, regenerates the download pointers, and cleans up obsolete local
+            # files. VersionNumbers must run in the same invocation to define the properties
+            # (Version, package names) UploadCore uses.
+            - name: Publish to S3
+              if: ${{ needs.plan.outputs.publish == 'true' }}
+              working-directory: build
+              shell: pwsh
+              run: |
+                  msbuild Bloom.proj "/t:VersionNumbers;UploadCore" `
+                    /p:BUILD_NUMBER=$env:BUILD_NUMBER `
+                    /p:channel=$env:CHANNEL `
+                    /p:InstallerOutputFolder=$env:INSTALLER_RESULT_DIR
+
+            # ----- Latest-version pointer (Alpha and the public channels) -----
+            # The website reads versions.bloomlibrary.org/latest.<channel>.json to know what the
+            # current build is and where to download it. TeamCity writes it from a cmd script at
+            # the end of the public and Alpha configs; this reproduces that file, byte for byte
+            # in the fields that matter.
+            #
+            # Note the three spellings of the channel in one small file, all of them load-bearing
+            # because that is what the existing objects contain (compare latest.Release.json):
+            #   key/channel/label use "Release" for stable, not the empty string
+            #   version          carries the dotted suffix — 6.4.1322.Alpha, but plain 6.3.2
+            #   url              uses the raw channel — installersAlpha, but plain installers
+            #
+            # Deliberate deviations from the TeamCity script: the date is written without its
+            # stray trailing space (a cmd `echo` artifact), and it is UTC rather than the build
+            # agent's local date. Also, put-object replaces the whole object, which would drop
+            # the releaseNotes key that latest.Beta.json and latest.Release.json carry and this
+            # script never writes — so we read the current file first and carry that key over.
+            #
+            # Internal channels are skipped: latest.BetaInternal.json exists but has not been
+            # updated since 2024, so nothing is reading it.
+            - name: Publish version.json
+              if: ${{ needs.plan.outputs.publish == 'true' && !endsWith(needs.plan.outputs.channel_name, 'Internal') }}
+              shell: pwsh
+              run: |
+                  $key = "latest.$env:CHANNEL_NAME.json"
+                  $version = [ordered]@{
+                    channel = $env:CHANNEL_NAME
+                    version = $env:VERSION_DOT_CHANNEL
+                    date    = (Get-Date -Format 'yyyy-MM-dd')
+                    url     = "https://bloomlibrary.org/installers$env:CHANNEL/BloomInstaller.$env:VERSION_DOT_CHANNEL.x64.exe"
+                    label   = "$env:CHANNEL_NAME Version"
+                  }
+                  $current = try {
+                    Invoke-RestMethod "https://s3.amazonaws.com/versions.bloomlibrary.org/$key"
+                  } catch {
+                    Write-Host "No current $key to read (or it is unreadable): $($_.Exception.Message)"
+                    $null
+                  }
+                  if ($current.releaseNotes) { $version.releaseNotes = $current.releaseNotes }
+
+                  $file = Join-Path $env:RUNNER_TEMP 'version.json'
+                  $version | ConvertTo-Json -Compress | Out-File $file -Encoding ascii -NoNewline
+                  Write-Host "$key => $(Get-Content $file -Raw)"
+                  aws s3api put-object --bucket versions.bloomlibrary.org --key $key --body $file `
+                    --cache-control no-cache --content-type "application/json" --profile bloom-library-deploy
+                  if ($LASTEXITCODE -ne 0) { throw "Failed to upload $key to versions.bloomlibrary.org." }
+
+            # ----- Workflow artifact (opt in) -----
+            # Nothing is uploaded unless a run is deliberately asked for it, by ticking
+            # keep_installer when dispatching. A push never uploads: `inputs` is empty outside a
+            # workflow_dispatch, so the condition is simply false there.
+            #
+            # That default is the way round it is because of storage, not principle. This step
+            # used to run on every push and take everything in the result directory, and it grew
+            # to 92% of everything the repository stores in Actions artifact storage - which was
+            # at 90% of quota with half the billing month to go. One installer is 100+ MB, so a
+            # few pushes is a meaningful fraction of the whole budget.
+            #
+            # Ticking the box on a publishing run is allowed but rarely worth it: those bits go
+            # to S3 anyway, and are downloadable from bloomlibrary.org/installers<channel>.
+            #
+            # What it uploads is also cut down. Two thirds of the old 325 MB was redundant,
+            # measured rather than guessed (run 32308176109):
+            #
+            #   BloomInstaller.6.5.1326.Alpha.x64.exe   109.5 MB   what a person actually wants
+            #   BloomAlpha-6.5.1326-full.nupkg          106.8 MB   the same payload again
+            #   BloomAlpha-6.5.1325-full.nupkg          106.8 MB   not built by this run at all
+            #   BloomAlpha-6.5.1326-delta.nupkg           2.4 MB
+            #   releases.win.json, RELEASES               <1 KB
+            #
+            # The full nupkg is the installer's payload in a different wrapper, so one of the
+            # two is enough and the runnable one is more use. The 1325 nupkg was never produced
+            # here: `vpk download` hydrates the channel's previous release into this same folder
+            # so a delta can be generated against it, and that file is already permanently on
+            # S3 -- it was fetched FROM there minutes earlier.
+            #
+            # So: the installer, the delta (small, and the only evidence that delta generation
+            # worked at all), and the two metadata files. Both globs are pinned to the version
+            # this run built, so nothing hydrated or left over from an earlier build creeps in.
+            #
+            # The `if` uses no status function, so the implicit success() still applies: a build
+            # that failed before producing an installer skips this step rather than warning
+            # about missing files. That is what makes if-no-files-found: error safe, and worth
+            # having -- if we reach this step at all, packing succeeded and an installer exists.
+            - name: Upload installer as workflow artifact
+              if: ${{ inputs.keep_installer }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: bloom-installer-${{ needs.plan.outputs.channel_name }}-${{ env.BUILD_NUMBER }}
+                  path: |
+                      ${{ env.INSTALLER_RESULT_DIR }}\BloomInstaller.${{ env.VERSION_DOT_CHANNEL }}.*.exe
+                      ${{ env.INSTALLER_RESULT_DIR }}\*-${{ env.BLOOM_VERSION }}-delta.nupkg
+                      ${{ env.INSTALLER_RESULT_DIR }}\releases.win.json
+                      ${{ env.INSTALLER_RESULT_DIR }}\RELEASES
+                  if-no-files-found: error
+                  # Nobody goes back to a week-old dry-run installer; there is a fresher one
+                  # within a day or two, and this is the largest thing the repo stores.
+                  retention-days: 2
