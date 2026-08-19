@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Bloom.ErrorReporter;
 using Bloom.web;
@@ -95,6 +96,176 @@ namespace Bloom
         /// stops rather than carrying on unwatched. Never cancelled for a route with no way to ask.
         /// </summary>
         public virtual CancellationToken CancellationToken => CancellationToken.None;
+
+        /// <summary>
+        /// Whether to be told what an attempt already said, when joining one late.
+        ///
+        /// A window that has just opened needs it, or it sits there empty. Toasts do not: they are
+        /// for news, and replaying a backlog of them would put messages on screen about a check the
+        /// user never asked for.
+        /// </summary>
+        public virtual bool WantsCatchingUp => false;
+    }
+
+    /// <summary>
+    /// Everyone watching one update attempt.
+    ///
+    /// There is normally one watcher, but two can want the same attempt: Bloom checks for updates by
+    /// itself a minute after a collection opens, and if a Team Collection then starts demanding a
+    /// newer Bloom in that same minute, the user clicks Upgrade Bloom on top of a check that is
+    /// already running. Turning them away is what we used to do, and it reads as a refusal even
+    /// though the upgrade they asked for is under way. So instead they join it, and everything the
+    /// update code says reaches both.
+    ///
+    /// A late joiner is replayed what has been said so far, so a progress dialog opening halfway
+    /// through a download shows the download rather than an empty box.
+    /// </summary>
+    internal class AttemptWatchers : UpdateReporter
+    {
+        private readonly object _lock = new object();
+        private readonly List<UpdateReporter> _watchers = new List<UpdateReporter>();
+
+        // One list, one attempt, one stop-signal for its whole life. Registrations capture this
+        // source explicitly rather than reading the field, so the rule stays true if that ever
+        // changes.
+        private readonly CancellationTokenSource _anyoneCancelled = new CancellationTokenSource();
+
+        // What to replay to someone who joins late.
+        private readonly List<Action<UpdateReporter>> _saidSoFar =
+            new List<Action<UpdateReporter>>();
+        private int? _lastPercent;
+        private bool _finished;
+
+        public AttemptWatchers(UpdateReporter first)
+        {
+            Add(first);
+        }
+
+        /// <summary>
+        /// Start telling this reporter what happens too, and catch it up on what it missed.
+        /// </summary>
+        /// <returns>false if the attempt is already over, in which case there is nothing to join
+        /// and the caller should deal with the finished state instead.</returns>
+        public bool Add(UpdateReporter watcher)
+        {
+            // Adding this list to itself would make every message recurse until the stack ran out,
+            // and a silent hang is a poor way to find out about a wiring mistake.
+            if (ReferenceEquals(watcher, this))
+                throw new ArgumentException("An attempt's watcher list cannot watch itself.");
+
+            List<Action<UpdateReporter>> replay;
+            int? percent;
+            CancellationTokenSource cancelThisAttempt;
+            lock (_lock)
+            {
+                if (_finished)
+                    return false;
+                // Already watching: say yes, but do not sign them up twice and hear everything
+                // double. Callers legitimately cannot always tell whether they are in the list.
+                if (_watchers.Contains(watcher))
+                    return true;
+                _watchers.Add(watcher);
+                replay = new List<Action<UpdateReporter>>(_saidSoFar);
+                percent = _lastPercent;
+                cancelThisAttempt = _anyoneCancelled;
+            }
+            // Outside the lock: these reach the UI. Only for a watcher that wants catching up --
+            // replaying to the toast route would announce a check the user never asked about.
+            if (watcher.WantsCatchingUp)
+            {
+                foreach (var said in replay)
+                    said(watcher);
+                if (percent.HasValue)
+                    watcher.Percent(percent.Value);
+            }
+
+            HookUpCancellation(watcher, cancelThisAttempt);
+            return true;
+        }
+
+        /// <summary>
+        /// One watcher cancelling stops the download for all of them. That is deliberate: the only
+        /// watcher that can cancel is a user who pressed a button, and an explicit "no" outranks a
+        /// background convenience nobody asked for.
+        /// </summary>
+        /// <remarks>The source is passed in rather than read from the field, so a registration made
+        /// for one attempt can never cancel a later one.</remarks>
+        private static void HookUpCancellation(
+            UpdateReporter watcher,
+            CancellationTokenSource cancelThisAttempt
+        )
+        {
+            if (!watcher.CancellationToken.CanBeCanceled)
+                return;
+            watcher.CancellationToken.Register(() =>
+            {
+                try
+                {
+                    cancelThisAttempt.Cancel();
+                }
+                catch (ObjectDisposedException) { }
+            });
+        }
+
+        // There is deliberately no way to re-arm one of these for a second attempt. An earlier
+        // version had one, and it needed a fresh CancellationTokenSource (they cannot be
+        // un-cancelled) and a decision about what to do with a watcher who had already cancelled --
+        // and either answer to that was wrong. Dropping them threw away a cancellation the user had
+        // asked for; keeping them cancelled the new attempt before it began. A new attempt gets a
+        // new list instead, so there is no stale stop-signal and no stale replay log to reason
+        // about. See BL-16690.
+
+        private void ToEach(Action<UpdateReporter> what, bool remember)
+        {
+            UpdateReporter[] now;
+            lock (_lock)
+            {
+                if (remember)
+                    _saidSoFar.Add(what);
+                now = _watchers.ToArray();
+            }
+            foreach (var w in now)
+                what(w);
+        }
+
+        public override void Say(string message) => ToEach(w => w.Say(message), true);
+
+        public override void SayWarning(string message) => ToEach(w => w.SayWarning(message), true);
+
+        public override void SayProblem(string message, Exception exception) =>
+            ToEach(w => w.SayProblem(message, exception), true);
+
+        // Offers are not replayed to a joiner: by the time anyone joins, an offer has either been
+        // taken up or overtaken by the state the attempt is now in.
+        public override void OfferToDownload(string message, string acceptLabel, Action accept) =>
+            ToEach(w => w.OfferToDownload(message, acceptLabel, accept), false);
+
+        public override void OfferToRestart(string message, string acceptLabel, Action accept) =>
+            ToEach(w => w.OfferToRestart(message, acceptLabel, accept), false);
+
+        public override void Percent(int percent)
+        {
+            lock (_lock)
+            {
+                _lastPercent = percent;
+            }
+            ToEach(w => w.Percent(percent), false);
+        }
+
+        public override void Finished(
+            UpdateAttemptOutcome outcome,
+            string downloadedVersion,
+            string message
+        )
+        {
+            lock (_lock)
+            {
+                _finished = true; // nobody may join after this
+            }
+            ToEach(w => w.Finished(outcome, downloadedVersion, message), false);
+        }
+
+        public override CancellationToken CancellationToken => _anyoneCancelled.Token;
     }
 
     /// <summary>
@@ -162,11 +333,30 @@ namespace Bloom
         private readonly ManualResetEventSlim _finished = new ManualResetEventSlim(false);
 
         /// <summary>
+        /// Yes: a progress dialog that joins an attempt already under way must be caught up, or the
+        /// user watches an empty window while a download they asked for runs invisibly.
+        /// </summary>
+        public override bool WantsCatchingUp => true;
+
+        /// <summary>
         /// Start writing to the progress dialog, once there is one.
         /// </summary>
         public void WriteTo(IWebSocketProgress progress)
         {
             _progress = progress;
+        }
+
+        /// <summary>
+        /// Get ready to be told about another attempt, having already been told about one. The caller
+        /// does that when the first attempt ended merely by OFFERING an update: it then asks again,
+        /// this time saying the user has consented. Without resetting, the wait would return
+        /// immediately on the previous attempt's signal.
+        /// </summary>
+        public void StartAnotherAttempt()
+        {
+            Outcome = UpdateAttemptOutcome.Failed; // until the new attempt says otherwise
+            FailureMessage = null;
+            _finished.Reset();
         }
 
         public UpdateAttemptOutcome Outcome { get; private set; } = UpdateAttemptOutcome.Failed;

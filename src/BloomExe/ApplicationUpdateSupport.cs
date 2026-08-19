@@ -76,6 +76,61 @@ namespace Bloom
         private static Exception _updateException;
 
         /// <summary>
+        /// Guards _status and everything decided from it. See the comment in CheckForAVelopackUpdate
+        /// about why one lock is needed now that two threads can ask for an update at once.
+        /// </summary>
+        private static readonly object _statusLock = new object();
+
+        /// <summary>
+        /// Everyone watching the attempt currently in flight, or null when there is none. A second
+        /// caller joins this rather than being turned away.
+        /// </summary>
+        private static AttemptWatchers _watchers;
+
+        /// <summary>
+        /// What to do about a request to check for updates, decided while holding _statusLock and
+        /// carried out after releasing it.
+        /// </summary>
+        private enum WhatToDoAboutThisRequest
+        {
+            /// No attempt was in flight, so this request is the attempt.
+            RunIt,
+
+            /// One is in flight; try to watch it too, once the lock is released.
+            TryToJoinTheOneInFlight,
+
+            /// One was in flight and this caller is now watching it too.
+            JoinedTheOneInFlight,
+
+            /// It finished between our looking and our joining.
+            SayItIsAlreadyBusy,
+
+            /// We know of an update and the user has already agreed to it.
+            DownloadWhatWeFound,
+
+            /// We know of an update and should ask whether they want it.
+            OfferWhatWeFound,
+
+            /// It is downloaded already and installs when Bloom exits.
+            SayItIsAlreadyDownloaded,
+
+            /// An earlier attempt failed and we do not try again this session.
+            SayWeGaveUpEarlier,
+        }
+
+        /// <summary>
+        /// The attempt is over, so a later request starts a fresh one rather than joining watchers
+        /// who have already been told how this one ended.
+        /// </summary>
+        private static void LetGoOfTheAttempt()
+        {
+            lock (_statusLock)
+            {
+                _watchers = null;
+            }
+        }
+
+        /// <summary>
         /// True once we have arranged to install a downloaded update as Bloom exits. We must only do
         /// that once: applying the same update twice is how an upgrade fails, or restarts Bloom when
         /// nobody asked it to.
@@ -147,44 +202,108 @@ namespace Bloom
             //}
 
 #if !__MonoCS__
-            switch (_status)
+            // Decide what to do, and claim the attempt, under the lock; then act outside it. Two
+            // threads really do arrive here -- the workspace's timer and its Check For Updates menu
+            // run on the UI thread, while the minimum-version dialog runs on a progress dialog's
+            // background worker -- and everything they are deciding from (_status, _watchers,
+            // _newVersion, _bloomUpdateManager) is static. Reading a state and then transitioning it
+            // has to be one step, or both callers can pass the same gate. Nothing that touches the UI
+            // or awaits happens while the lock is held.
+            WhatToDoAboutThisRequest whatToDo;
+            AttemptWatchers watchers;
+            lock (_statusLock)
             {
-                case UploadStatus.NothingKnown:
-                    // The rest of this method looks for them and deals with the results
-                    break;
-                case UploadStatus.Failed:
+                switch (_status)
+                {
+                    case UploadStatus.NothingKnown:
+                        // Ours to run. Claim it here rather than after the update URL lookup, so a
+                        // second caller arriving during that lookup joins us instead of starting a
+                        // rival attempt.
+                        _status = UploadStatus.LookingForUpdates;
+                        _watchers = new AttemptWatchers(reporter);
+                        whatToDo = WhatToDoAboutThisRequest.RunIt;
+                        break;
+                    case UploadStatus.LookingForUpdates:
+                    case UploadStatus.Downloading:
+                        // An attempt is already in flight. Join it: the caller then sees its
+                        // messages, its percentage, and can cancel it, instead of being told Bloom
+                        // is busy and sent away from the upgrade they just asked for. The joining
+                        // itself happens after the lock, because it replays what has been said so
+                        // far and that reaches the UI.
+                        whatToDo =
+                            _watchers == null
+                                ? WhatToDoAboutThisRequest.SayItIsAlreadyBusy
+                                : WhatToDoAboutThisRequest.TryToJoinTheOneInFlight;
+                        break;
+                    case UploadStatus.FoundUpdates:
+                        whatToDo = userHasAlreadyAgreedToUpdate
+                            ? WhatToDoAboutThisRequest.DownloadWhatWeFound
+                            : WhatToDoAboutThisRequest.OfferWhatWeFound;
+                        break;
+                    case UploadStatus.DownloadedWaitingForRestart:
+                        whatToDo = WhatToDoAboutThisRequest.SayItIsAlreadyDownloaded;
+                        break;
+                    default: // Failed
+                        whatToDo = WhatToDoAboutThisRequest.SayWeGaveUpEarlier;
+                        break;
+                }
+                watchers = _watchers;
+            }
+
+            if (whatToDo == WhatToDoAboutThisRequest.TryToJoinTheOneInFlight)
+            {
+                // Outside the lock, because catching the joiner up on what it missed reaches the UI.
+                // Add says no if the attempt reported its outcome in the meantime, in which case
+                // there is nothing to join and we fall through to saying Bloom is busy.
+                whatToDo = watchers.Add(reporter)
+                    ? WhatToDoAboutThisRequest.JoinedTheOneInFlight
+                    : WhatToDoAboutThisRequest.SayItIsAlreadyBusy;
+
+                if (
+                    whatToDo == WhatToDoAboutThisRequest.JoinedTheOneInFlight
+                    && verbosity == BloomUpdateMessageVerbosity.Verbose
+                    && !reporter.WantsCatchingUp
+                )
+                {
+                    // Someone who asked in as many words -- Help > Check For Updates -- gets an
+                    // answer now, as they always did, rather than silence until the attempt they
+                    // joined finishes minutes later. A joiner that wants catching up has just been
+                    // given the backlog instead, which is a better answer than this one.
+                    reporter.Say(
+                        _status == UploadStatus.Downloading && _newVersion != null
+                            ? DownloadingMessage()
+                            : AlreadyCheckingMessage()
+                    );
+                }
+            }
+
+            switch (whatToDo)
+            {
+                case WhatToDoAboutThisRequest.JoinedTheOneInFlight:
+                    // Nothing more to do. The attempt we joined will tell this reporter how it ends.
+                    return;
+                case WhatToDoAboutThisRequest.SayWeGaveUpEarlier:
                     // Hopefully we don't get into this state.
                     ReportFailure(reporter, kRestartToTryAgainMessage);
                     return;
-                case UploadStatus.LookingForUpdates:
-                    // We don't need this message if the caller is the timer (presumably AFTER the user already
-                    // asked us to check).
+                case WhatToDoAboutThisRequest.SayItIsAlreadyBusy:
+                    // Only reachable if the in-flight attempt finished between our two locks.
                     if (verbosity == BloomUpdateMessageVerbosity.Verbose)
-                    {
                         reporter.Say(AlreadyCheckingMessage());
-                    }
-
                     reporter.Finished(UpdateAttemptOutcome.Failed, null, AlreadyCheckingMessage());
                     return;
-                // Conceivably the appropriate toast is still up. Very likely in the last case, since that
-                // one doesn't go away. But it's harmless to show it again, and maybe the new animation will
-                // help the user notice it.
-                case UploadStatus.FoundUpdates:
-                    // Unless the user has already said yes elsewhere, in which case asking again by
-                    // toast would be strange -- go straight to downloading what we found.
-                    if (userHasAlreadyAgreedToUpdate)
-                    {
-                        DownloadAndApplyUpdates(restartBloom, reporter);
-                        return;
-                    }
-                    OfferFoundUpdates(reporter, restartBloom);
+                case WhatToDoAboutThisRequest.DownloadWhatWeFound:
+                    // The user has already said yes elsewhere, so asking again by toast would be odd.
+                    DownloadAndApplyUpdates(restartBloom, reporter);
+                    return;
+                case WhatToDoAboutThisRequest.OfferWhatWeFound:
+                    // Conceivably the toast is still up, but it is harmless to show it again.
+                    // `reporter` is still the caller's own here: the switch runs before we adopt the
+                    // watcher list.
+                    OfferFoundUpdates(reporter, reporter, restartBloom);
                     reporter.Finished(UpdateAttemptOutcome.Offered, null, null);
                     return;
-                case UploadStatus.Downloading:
-                    reporter.Say(DownloadingMessage());
-                    reporter.Finished(UpdateAttemptOutcome.Failed, null, AlreadyCheckingMessage());
-                    return;
-                case UploadStatus.DownloadedWaitingForRestart:
+                case WhatToDoAboutThisRequest.SayItIsAlreadyDownloaded:
                     OfferRestartToApplyDownload(
                         reporter,
                         _newVersion.TargetFullRelease.Version.ToString(),
@@ -200,6 +319,13 @@ namespace Bloom
                     return;
             }
 
+            // From here on we are the attempt, and we SAY things to everyone watching it rather than
+            // only to the reporter we were handed. But we keep hold of that one: anything we hand
+            // onwards as "the caller" must be an individual reporter, never this list, or it ends up
+            // being asked to watch itself.
+            var callersOwnReporter = reporter;
+            reporter = watchers;
+
             try
             {
                 // We do not yet know of any updates. See if there are any.
@@ -213,15 +339,17 @@ namespace Bloom
                 if (!GetUpdateUrl(verbosity, reporter, out var updateUrl))
                 {
                     // Overwhelmingly the reason we can't work out where to look is that we can't
-                    // reach the server.
+                    // reach the server. Give the attempt back, so the user can try again.
+                    lock (_statusLock)
+                    {
+                        _status = UploadStatus.NothingKnown;
+                    }
                     reporter.Finished(UpdateAttemptOutcome.Failed, null, CannotConnectMessage());
-                    return; // we can stay in NothingKnown state, allow user to try again.
+                    LetGoOfTheAttempt();
+                    return;
                 }
 
-                // Now we're starting stuff we don't want to overlap with other update efforts.
-                // Thus the other states all display a message and return above.
-                _status = UploadStatus.LookingForUpdates;
-
+                // _status became LookingForUpdates when we claimed the attempt, above.
                 var options = new UpdateOptions
                 {
                     // this number is arbitrary. We just want to speed up alpha (and maybe beta?) channel updates.
@@ -237,8 +365,12 @@ namespace Bloom
                         reporter.Say(UpToDateMessage());
                     }
                     _bloomUpdateManager = null; // no updates, so no need to keep this object around
-                    _status = UploadStatus.NothingKnown; // allows user to try again
+                    lock (_statusLock)
+                    {
+                        _status = UploadStatus.NothingKnown; // allows user to try again
+                    }
                     reporter.Finished(UpdateAttemptOutcome.NothingNewer, null, null);
+                    LetGoOfTheAttempt();
                     return;
                 }
 
@@ -246,9 +378,19 @@ namespace Bloom
                 // ask whether to download them -- unless they have already said yes somewhere else.
                 if (!Settings.Default.AutoUpdate && !userHasAlreadyAgreedToUpdate)
                 {
-                    _status = UploadStatus.FoundUpdates;
-                    OfferFoundUpdates(reporter, restartBloom);
+                    lock (_statusLock)
+                    {
+                        _status = UploadStatus.FoundUpdates;
+                    }
+                    // Show the offer to everyone watching, but if it is accepted, start the download
+                    // for the individual who asked -- not for the watcher list itself.
+                    OfferFoundUpdates(reporter, callersOwnReporter, restartBloom);
                     reporter.Finished(UpdateAttemptOutcome.Offered, null, null);
+                    // Nothing is in flight while an offer sits unanswered, so let go of the watcher
+                    // list: whoever accepts starts a new attempt with a new one. A caller arriving
+                    // meanwhile does not need to join anything -- the FoundUpdates branch of the
+                    // switch above already gives them the update we found.
+                    LetGoOfTheAttempt();
                     return;
                 }
             }
@@ -259,47 +401,92 @@ namespace Bloom
                 // Review: should we go straight to "NotifyUserOfProblem" if verbosity
                 // is verbose (i.e., called by Check for Updates user action)?
                 ReportFailure(reporter, kUnableToCheckMessage, e);
+                LetGoOfTheAttempt();
                 return;
             }
 
-            // If autoupdate is true, we just go ahead and download the updates.
-            DownloadAndApplyUpdates(restartBloom, reporter);
+            // If autoupdate is true, we just go ahead and download the updates. Hand it the caller's
+            // own reporter, not the watcher list -- it resolves the list for itself.
+            DownloadAndApplyUpdates(restartBloom, callersOwnReporter);
 #endif
         }
 
+        /// <param name="reporter">Whoever wants to know: always an INDIVIDUAL reporter, never a
+        /// watcher list. This method resolves the list for the attempt itself, and a list asked to
+        /// watch itself throws. Every caller therefore passes the reporter it was originally handed,
+        /// not the one it may since have swapped in for saying things to everybody.</param>
         private static async void DownloadAndApplyUpdates(
             Action restartBloom,
             UpdateReporter reporter
         )
         {
 #if !__MonoCS__
-            // One download at a time. The switch in CheckForAVelopackUpdate guards the way in, but
-            // not this method, which the "Update Now" toast also calls straight from its click. A
-            // toast left on screen from an earlier check plus the upgrade dialog -- which skips the
-            // asking step -- can now both arrive here, and two DownloadUpdatesAsync calls on one
-            // UpdateManager is not something we want to find out about in the field.
-            if (_status == UploadStatus.DownloadedWaitingForRestart)
             {
-                // Not a failure: it is already downloaded and already arranged to install when
-                // Bloom exits. Telling the caller otherwise would send someone who asked to be
-                // upgraded away to pick another collection, when the new Bloom is sitting ready.
-                reporter.Finished(
-                    UpdateAttemptOutcome.Downloaded,
-                    _newVersion?.TargetFullRelease?.Version?.ToString(),
-                    null
-                );
-                return;
-            }
-            if (_status == UploadStatus.Downloading)
-            {
-                reporter.Say(DownloadingMessage());
-                reporter.Finished(UpdateAttemptOutcome.Failed, null, AlreadyCheckingMessage());
-                return;
+                // One download at a time. The switch in CheckForAVelopackUpdate guards the way in,
+                // but not this method, which the "Update Now" toast also calls straight from its
+                // click, so decide and transition here under the same lock.
+                UploadStatus wasAlready;
+                AttemptWatchers joinable;
+                bool weAreTheDownload;
+                lock (_statusLock)
+                {
+                    wasAlready = _status;
+                    joinable = _watchers;
+                    weAreTheDownload =
+                        _status != UploadStatus.Downloading
+                        && _status != UploadStatus.DownloadedWaitingForRestart;
+                    if (weAreTheDownload)
+                    {
+                        _status = UploadStatus.Downloading;
+                        // Keep the attempt's existing watcher list if there is one. Reaching here
+                        // with one means the check we already claimed is now becoming its download --
+                        // the same attempt, so the same watchers, and anyone who joined during the
+                        // check must not be dropped. (Doing exactly that made the dialog sit there
+                        // saying nothing, which is the case this whole change exists to fix.)
+                        //
+                        // It is null when nothing was in flight: a toast click, or an offer being
+                        // taken up. Then the caller who asked is the first watcher of a fresh list,
+                        // which is what keeps a previous attempt's stop-signal and replay log from
+                        // leaking into this one.
+                        if (_watchers == null)
+                            _watchers = new AttemptWatchers(reporter);
+                        joinable = _watchers;
+                    }
+                }
+
+                if (wasAlready == UploadStatus.DownloadedWaitingForRestart)
+                {
+                    // Not a failure: it is already downloaded and already arranged to install when
+                    // Bloom exits. Telling the caller otherwise would send someone who asked to be
+                    // upgraded away to pick another collection, when the new Bloom is sitting ready.
+                    reporter.Finished(
+                        UpdateAttemptOutcome.Downloaded,
+                        _newVersion?.TargetFullRelease?.Version?.ToString(),
+                        null
+                    );
+                    return;
+                }
+                if (!weAreTheDownload)
+                {
+                    // Someone else's download is already running: watch it rather than start a
+                    // second one. Joining happens outside the lock, since it reaches the UI.
+                    if (joinable != null && joinable.Add(reporter))
+                        return;
+                    reporter.Say(DownloadingMessage());
+                    reporter.Finished(UpdateAttemptOutcome.Failed, null, AlreadyCheckingMessage());
+                    return;
+                }
+
+                // We are the download. Make sure whoever asked for it is actually among the watchers
+                // before we start talking to the list instead of to them -- on the "an update was
+                // found earlier and is now being accepted" path the list predates this caller, and
+                // leaving them out of it left them watching a window that never moved.
+                joinable.Add(reporter);
+                reporter = joinable;
             }
 
             try
             {
-                _status = UploadStatus.Downloading;
                 reporter.Say(DownloadingMessage());
 
                 await _bloomUpdateManager.DownloadUpdatesAsync(
@@ -315,12 +502,19 @@ namespace Bloom
                 // registered, so nothing installs.
                 if (reporter.CancellationToken.IsCancellationRequested)
                 {
-                    _status = UploadStatus.NothingKnown;
+                    lock (_statusLock)
+                    {
+                        _status = UploadStatus.NothingKnown;
+                    }
                     reporter.Finished(UpdateAttemptOutcome.Cancelled, null, null);
+                    LetGoOfTheAttempt();
                     return;
                 }
 
-                _status = UploadStatus.DownloadedWaitingForRestart;
+                lock (_statusLock)
+                {
+                    _status = UploadStatus.DownloadedWaitingForRestart;
+                }
                 OfferRestartToApplyDownload(
                     reporter,
                     _newVersion.TargetFullRelease.Version.ToString(),
@@ -363,6 +557,7 @@ namespace Bloom
                     _newVersion?.TargetFullRelease?.Version?.ToString(),
                     null
                 );
+                LetGoOfTheAttempt();
             }
             catch (OperationCanceledException)
             {
@@ -370,14 +565,19 @@ namespace Bloom
                 // exit handler was registered (we never got that far), nothing is downloaded, and
                 // putting the status back to NothingKnown means a later attempt this session starts
                 // cleanly rather than being told an update is already in progress.
-                _status = UploadStatus.NothingKnown;
+                lock (_statusLock)
+                {
+                    _status = UploadStatus.NothingKnown;
+                }
                 reporter.Finished(UpdateAttemptOutcome.Cancelled, null, null);
+                LetGoOfTheAttempt();
             }
             catch (Exception e)
             {
                 // Hopefully this is very rare. But it's dangerous not to catch all exceptions in an
                 // async void method, according to a VS popup.
                 ReportFailure(reporter, kUnableToDownloadMessage, e);
+                LetGoOfTheAttempt();
             }
 #endif
         }
@@ -392,7 +592,10 @@ namespace Bloom
             Exception e = null
         )
         {
-            _status = UploadStatus.Failed;
+            lock (_statusLock)
+            {
+                _status = UploadStatus.Failed;
+            }
             if (e != null)
                 _updateException = e;
             // _updateException rather than e, deliberately. The one caller that passes no exception
@@ -474,12 +677,21 @@ namespace Bloom
         // The two things we say that come with something for the user to click.
         // ------------------------------------------------------------------------------------
 
-        private static void OfferFoundUpdates(UpdateReporter reporter, Action restartBloom)
+        /// <param name="sayItTo">Who to show the offer to -- everyone watching, when we are the
+        /// attempt.</param>
+        /// <param name="downloadFor">Who to start the download on behalf of, if the offer is
+        /// accepted. This must be an individual reporter and never a watcher list: the download
+        /// resolves the list itself, and handing it its own list would ask it to watch itself.</param>
+        private static void OfferFoundUpdates(
+            UpdateReporter sayItTo,
+            UpdateReporter downloadFor,
+            Action restartBloom
+        )
         {
-            reporter.OfferToDownload(
+            sayItTo.OfferToDownload(
                 UpdatesAvailableMessage(),
                 LocalizationManager.GetString("CollectionTab.UpdateNow", "Update Now"),
-                () => DownloadAndApplyUpdates(restartBloom, reporter)
+                () => DownloadAndApplyUpdates(restartBloom, downloadFor)
             );
         }
 
@@ -722,7 +934,7 @@ namespace Bloom
                     reporter.Say(UpToDateMessage());
                     return;
                 case "foundUpdates":
-                    OfferFoundUpdates(reporter, restartBloom);
+                    OfferFoundUpdates(reporter, reporter, restartBloom);
                     return;
                 case "downloading":
                     reporter.Say(DownloadingMessage("9.9.9", 123));

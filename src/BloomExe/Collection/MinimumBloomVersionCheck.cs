@@ -682,17 +682,33 @@ namespace Bloom.Collection
                         return true;
                     }
 
-                    ApplicationUpdateSupport.CheckForAVelopackUpdate(
-                        ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet,
-                        restartBloom: null, // nothing to click here, and we quit ourselves
-                        reporter: reporter,
-                        userHasAlreadyAgreedToUpdate: true // they clicked Upgrade Bloom
-                    );
-                    if (!WaitForTheUpdate(reporter, worker))
+                    // Twice at most. The first attempt can end as Offered -- an update was found but
+                    // consent had not been given -- which happens when we joined a check Bloom had
+                    // already started for itself, since that one asks rather than assumes. Our user
+                    // HAS consented, so we go round again, and the second pass finds the update
+                    // already known and downloads it.
+                    for (var attempt = 1; attempt <= 2; attempt++)
                     {
-                        // The user clicked Cancel, or we gave up waiting. Either way they want to be
-                        // rid of this window, not asked to close it again.
-                        return false;
+                        reporter.StartAnotherAttempt();
+                        ApplicationUpdateSupport.CheckForAVelopackUpdate(
+                            ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet,
+                            // Our own progress dialog has nothing to click -- it stays silent about
+                            // restarting, and we quit ourselves once the user closes it. But this
+                            // action can still be reached: mid-session we may be sharing the attempt
+                            // with the workspace, whose toast DOES offer a restart, and a null here
+                            // would throw when someone clicked it.
+                            restartBloom: () => ProgramExit.Exit(),
+                            reporter: reporter,
+                            userHasAlreadyAgreedToUpdate: true // they clicked Upgrade Bloom
+                        );
+                        if (!WaitForTheUpdate(reporter, worker))
+                        {
+                            // The user clicked Cancel, or we gave up waiting. Either way they want to
+                            // be rid of this window, not asked to close it again.
+                            return false;
+                        }
+                        if (reporter.Outcome != UpdateAttemptOutcome.Offered)
+                            break;
                     }
 
                     SayHowTheUpgradeEnded(reporter, minimumVersion);
