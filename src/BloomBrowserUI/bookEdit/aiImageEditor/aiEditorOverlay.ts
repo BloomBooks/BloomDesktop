@@ -408,10 +408,17 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     //
                     // offPageApplied comes from C#, which did those itself and knows;
                     // currentPageApplied is what the page frame says it managed.
+                    // At most once per commit. postJson chains .then(success).catch(error), so
+                    // anything that escapes the success callback lands in the error callback -- which
+                    // reports too. Without this, one commit could be counted twice, and its pictures
+                    // added twice to the picture-source breakdown.
+                    let commitReported = false;
                     const reportCommit = (
                         offPageApplied: number,
                         currentPageApplied: number,
                     ) => {
+                        if (commitReported) return;
+                        commitReported = true;
                         const applied = offPageApplied + currentPageApplied;
                         if (applied > 0) anythingReachedTheBook = true;
                         // Does anything actually reach the book? A non-zero failed rate is exactly

@@ -734,6 +734,31 @@ describe("aiEditorOverlay: reporting what a commit achieved", () => {
         });
     });
 
+    test("a commit is reported at most once, even if the reply path also errors", () => {
+        // postJson chains .then(success).catch(error), so anything escaping the success callback
+        // runs the error callback too -- which reports as well. One commit must not be counted
+        // twice, nor its pictures added twice to the picture-source breakdown.
+        applyAiImageEditorReplacements.mockReturnValue({
+            applied: 1,
+            expected: 1,
+        });
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        commitAndReply(
+            postFromEditor,
+            [{ incomingId: `${kPageId}:0`, resultId: "result1" }],
+            [currentPageResult(0)],
+        );
+        expect(commitEvents()).toHaveLength(1);
+        expect(trackChangePicture).toHaveBeenCalledTimes(1);
+
+        // Now the error callback runs as well, as it would if anything threw on the way out.
+        const onError = postJson.mock.calls[0][3] as () => void;
+        onError();
+
+        expect(commitEvents()).toHaveLength(1);
+        expect(trackChangePicture).toHaveBeenCalledTimes(1);
+    });
     test("a session that got some pictures into the book is not also counted as thrown away", () => {
         // A commit can succeed for one picture and fail for another. The overlay stays open, and
         // the user closes it -- but their AI work was not thrown away, so a cancel here would count
