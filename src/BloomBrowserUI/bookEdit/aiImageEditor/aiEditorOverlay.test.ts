@@ -452,6 +452,94 @@ describe("aiEditorOverlay: analytics", () => {
         });
     });
 
+    test("closing while a commit is in flight does not report a cancel as well", () => {
+        // The overlay goes away the moment the user clicks the close box, but the pictures may be
+        // saved a moment later. Reporting a cancel here would count one session as both thrown
+        // away and committed, inflating the number the cancel event exists to provide.
+        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "commit",
+            requestId: "req1",
+            payload: {
+                replacements: [
+                    { incomingId: `${kPageId}:0`, resultId: "result1" },
+                ],
+            },
+        });
+        expect(postJson).toHaveBeenCalledTimes(1);
+
+        closeButton.click();
+        // Sanity: nothing reported yet -- the outcome is still unknown.
+        expect(cancelEvents()).toHaveLength(0);
+
+        const onSuccess = postJson.mock.calls[0][2] as (r: {
+            data: unknown;
+        }) => void;
+        onSuccess({
+            data: {
+                ok: true,
+                appliedCount: 1,
+                results: [
+                    {
+                        incomingId: `${kPageId}:0`,
+                        ok: true,
+                        isCurrentPage: true,
+                        oldSrc: kImageFile,
+                        newSrc: "ai-image1.png",
+                    },
+                ],
+            },
+        });
+
+        expect(cancelEvents()).toHaveLength(0);
+        // And the swap that landed on the page is still saved. Answering an editor that has
+        // gone away used to throw from inside postMessage, which skipped everything after it
+        // in the finally block -- including this save, losing the user's picture.
+        expect(postThatMightNavigate).toHaveBeenCalledWith(
+            "common/saveChangesAndRethinkPageEvent",
+        );
+    });
+
+    test("closing while a commit is in flight DOES report a cancel if the commit then fails", () => {
+        // The other half: the session really did end with nothing kept, so it must still be
+        // counted -- just later, once the answer is known.
+        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "commit",
+            requestId: "req1",
+            payload: {
+                replacements: [
+                    { incomingId: `${kPageId}:0`, resultId: "result1" },
+                ],
+            },
+        });
+        closeButton.click();
+        expect(cancelEvents()).toHaveLength(0);
+
+        const onError = postJson.mock.calls[0][3] as () => void;
+        onError();
+
+        expect(cancelEvents()).toHaveLength(1);
+    });
+
+    test("a cancel is reported at most once", () => {
+        const { closeButton } = openAgainstABookWithOneImage();
+
+        closeButton.click();
+        expect(cancelEvents()).toHaveLength(1);
+
+        // The close box is gone with the overlay, but the cleanup hook survives on the window
+        // for a relaunch to call; calling it again must not report a second cancel.
+        (
+            window as Window & { __bloomAiImageEditorCleanup?: () => void }
+        ).__bloomAiImageEditorCleanup?.();
+
+        expect(cancelEvents()).toHaveLength(1);
+    });
     test("a successful commit is not reported as a cancel", () => {
         const { postFromEditor } = openAgainstABookWithOneImage();
 

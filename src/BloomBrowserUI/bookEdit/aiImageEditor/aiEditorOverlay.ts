@@ -196,15 +196,36 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // has the book, the key and the history to hand.
         let generationsThisSession = 0;
         let commitSucceeded = false;
+        // A commit we have sent and not yet had an answer to. Closing the overlay in that window
+        // must not report the session as thrown away: the images may be moments from being saved.
+        let commitInFlight = false;
+        let cancelReported = false;
+        // Set by cleanup. Asking the DOM whether the overlay is still there would not do: a
+        // relaunch tears this session down and immediately puts up a new overlay with the same id.
+        let sessionEnded = false;
+
+        // The session ended with nothing kept. Called from cleanup, and again from the commit
+        // reply when a commit that was still in flight at that moment turns out to have failed.
+        const reportCancel = () => {
+            if (cancelReported || commitSucceeded) return;
+            cancelReported = true;
+            trackEvent("AI Editor Cancel", {
+                generatedThisSession: generationsThisSession,
+                historyCount: (launchData.history ?? []).length,
+            });
+        };
 
         const cleanup = () => {
             // Every way of ending the session without committing lands here: the editor's own
             // Cancel button, our close box, and a relaunch superseding this session.
-            if (!commitSucceeded) {
-                trackEvent("AI Editor Cancel", {
-                    generatedThisSession: generationsThisSession,
-                    historyCount: (launchData.history ?? []).length,
-                });
+            //
+            // Except one: closing while a commit is still in flight. The overlay goes away
+            // immediately, but the pictures may well be saved a moment later -- and reporting a
+            // cancel here would count that session as thrown-away work AND as a commit, inflating
+            // the very number this event exists to provide. The commit reply decides instead.
+            sessionEnded = true;
+            if (!commitInFlight) {
+                reportCancel();
             }
             hostWindow.removeEventListener("message", handleMessage);
             hostDocument.getElementById("ai-editor-overlay")?.remove();
@@ -328,16 +349,30 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     // via Bloom's own changeImageByElement().
                     const requestId = data.requestId;
                     const ackEditor = (ok: boolean, error?: string) => {
-                        iframe.contentWindow?.postMessage(
-                            {
-                                channel: "bloom-ai-image-tools",
-                                type: "ack",
-                                requestId,
-                                ok,
-                                error,
-                            },
-                            iframeUrl.origin,
-                        );
+                        // The editor can be gone by the time we answer: the user is free to close
+                        // the overlay while a commit is in flight, which detaches this iframe.
+                        // Telling a window that no longer exists must not throw, because the work
+                        // that follows this call still has to happen -- saving the page the swaps
+                        // landed on, and deciding whether the session ended with nothing kept.
+                        // (Browsers null contentWindow on a detached frame, so the optional chain
+                        // usually covers it; jsdom leaves it non-null and throws from inside
+                        // postMessage, and that is a difference we should not be relying on.)
+                        try {
+                            iframe.contentWindow?.postMessage(
+                                {
+                                    channel: "bloom-ai-image-tools",
+                                    type: "ack",
+                                    requestId,
+                                    ok,
+                                    error,
+                                },
+                                iframeUrl.origin,
+                            );
+                        } catch (e) {
+                            console.warn(
+                                `[AI Image Editor] could not acknowledge commit ${requestId}: ${e}`,
+                            );
+                        }
                     };
 
                     const replacements = data.payload?.replacements ?? [];
@@ -346,6 +381,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                         break;
                     }
 
+                    commitInFlight = true;
                     postJson(
                         "aiImageEditor/commit?session=" +
                             encodeURIComponent(launchData.sessionToken),
@@ -425,14 +461,25 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                         "common/saveChangesAndRethinkPageEvent",
                                     );
                                 }
+                                commitInFlight = false;
                                 if (finalOk) {
                                     commitSucceeded = true;
                                     cleanup();
+                                } else if (sessionEnded) {
+                                    // The session was closed while this commit was in flight, so
+                                    // cleanup deferred the decision to us -- and the commit did not
+                                    // work out. It really did end with nothing kept.
+                                    reportCancel();
                                 }
                             }
                         },
                         () => {
+                            commitInFlight = false;
                             ackEditor(false, "Failed to apply replacements.");
+                            if (sessionEnded) {
+                                // As above: closed while in flight, and the request itself failed.
+                                reportCancel();
+                            }
                         },
                     );
                     break;

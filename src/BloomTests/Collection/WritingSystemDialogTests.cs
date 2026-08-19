@@ -501,6 +501,23 @@ namespace BloomTests.Collection
             Assert.AreEqual(new[] { "ar", "en" }, reported.Select(r => r.tag).ToArray());
         }
 
+        [Test]
+        public void GetRtlOverridesToReport_LanguageReChosenAfterTheBaselineWasTaken_ReportsNothing()
+        {
+            // The user opened Script Settings on Arabic, wandered off to another language, then came
+            // back to Arabic. The tag matches the old baseline again, so a baseline kept on tag alone
+            // would compare against Arabic's value from BEFORE the chooser last ran and invent an
+            // override. RememberLanguageChoice clears the slot for exactly this reason, which is what
+            // this test stands for: a cleared slot has nothing to report.
+            var pending = PendingLanguages(("ar", true));
+
+            Assert.IsEmpty(
+                CollectionSettingsDialog
+                    .GetRtlOverridesToReport(pending, new CollectionSettingsDialog.RtlBaseline[3])
+                    .ToList()
+            );
+        }
+
         // "Collection Language Set" is the denominator of the ratio the reading-direction event is
         // the numerator of, so it must be counted at the same moment: when the user accepts the
         // Collection Settings dialog, not when the language chooser closes.

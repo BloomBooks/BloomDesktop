@@ -121,6 +121,13 @@ namespace Bloom.Collection
         private void RememberLanguageChoice(int slot, LanguageChangeEventArgs args)
         {
             _languagesChosen[slot] = new LanguageChoice(args.LanguageTag, args.Script, args.IsRtl);
+            // The chooser has just set this slot's reading direction from the script it picked, so
+            // any baseline we hold is out of date -- including one taken for this same language
+            // earlier, if the user went off to another language and came back. Dropping it makes the
+            // next visit to Script Settings capture what the chooser has just decided, which is what
+            // an override has to be measured against.
+            if (slot < _rtlAsDerived.Length)
+                _rtlAsDerived[slot] = null;
         }
 
         public CollectionSettingsDialog(
