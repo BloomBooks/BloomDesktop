@@ -1,6 +1,9 @@
-﻿using Bloom.Collection;
+﻿using System.IO;
+using System.Linq;
+using Bloom.Collection;
 using Bloom.Utils;
 using NUnit.Framework;
+using SIL.TestUtilities;
 using SIL.WritingSystems;
 
 namespace BloomTests.Utils
@@ -21,6 +24,72 @@ namespace BloomTests.Utils
                     "\"\"C:\\src\\Bloom Desktop 2\\output\\Debug\\Bloom.exe\" upload \"C:\\Bloom Collections\\Collection Name\" -u username@domain.com -d dev\""
                 )
             );
+        }
+
+        /// <summary>
+        /// A collection whose name ends with a period (BL-16679) gives us a path whose folder part
+        /// Windows never actually created, which breaks the FileSystemWatchers we put on the
+        /// collection folder. GetFullPath must give us back the folder that really exists,
+        /// without disturbing the file name, which legitimately keeps the period.
+        /// </summary>
+        [Test]
+        public void GetFullPath_FolderNameEndsWithPeriod_ReturnsFolderWindowsActuallyCreated()
+        {
+            using (var parent = new TemporaryFolder("MiscUtilsTests_PathAsOnDisk_Period"))
+            {
+                var dottedFolderPath = Path.Combine(parent.Path, "Collection Name.");
+                Directory.CreateDirectory(dottedFolderPath);
+
+                // Sanity check the premise of the whole test: Windows dropped the trailing period.
+                var createdFolderPath = Directory.EnumerateDirectories(parent.Path).Single();
+                Assert.That(
+                    Path.GetFileName(createdFolderPath),
+                    Is.EqualTo("Collection Name"),
+                    "Windows should have dropped the trailing period when creating the folder"
+                );
+
+                // This is the shape of the path Bloom ends up holding: a folder name with the period
+                // that is not on disk, and a settings file name that really does have two periods.
+                var settingsPath = Path.Combine(
+                    dottedFolderPath,
+                    "Collection Name..bloomCollection"
+                );
+
+                var result = MiscUtils.GetFullPath(settingsPath);
+
+                Assert.That(
+                    Path.GetDirectoryName(result),
+                    Is.EqualTo(createdFolderPath),
+                    "should point at the folder that exists"
+                );
+                Assert.That(
+                    Path.GetFileName(result),
+                    Is.EqualTo("Collection Name..bloomCollection"),
+                    "the settings file name's doubled period must survive"
+                );
+            }
+        }
+
+        [Test]
+        public void GetFullPath_OrdinaryPath_Unchanged()
+        {
+            using (var parent = new TemporaryFolder("MiscUtilsTests_PathAsOnDisk_Ordinary"))
+            {
+                var path = Path.Combine(
+                    parent.Path,
+                    "Collection Name",
+                    "Collection Name.bloomCollection"
+                );
+
+                Assert.That(MiscUtils.GetFullPath(path), Is.EqualTo(path));
+            }
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        public void GetFullPath_NullOrEmpty_ReturnedAsIs(string path)
+        {
+            Assert.That(MiscUtils.GetFullPath(path), Is.EqualTo(path));
         }
 
         [Test]

@@ -523,7 +523,7 @@ namespace BloomTests.WebLibraryIntegration
                 var collectionName = Path.GetFileName(collectionPath);
                 Assert.That(collectionName, Is.EqualTo("From Bloom Library - one"));
                 var settings2 = new CollectionSettings(
-                    CollectionSettings.GetSettingsFilePath(collectionPath)
+                    CollectionSettings.GetDefaultSettingsFilePath(collectionPath)
                 );
                 Assert.That(settings2.Language1Tag, Is.EqualTo("dmx"));
                 Assert.That(settings2.Language2Tag, Is.EqualTo("en"));
@@ -587,7 +587,7 @@ namespace BloomTests.WebLibraryIntegration
                     Does.StartWith("From Bloom Library - This ངའ་ཁས་འབབ needs")
                 );
                 var settings2 = new CollectionSettings(
-                    CollectionSettings.GetSettingsFilePath(collectionPath)
+                    CollectionSettings.GetDefaultSettingsFilePath(collectionPath)
                 );
                 Assert.That(settings2.Language1Tag, Is.EqualTo("xk"));
                 Assert.That(settings2.Language2Tag, Is.EqualTo("fr"));
