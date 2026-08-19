@@ -217,8 +217,9 @@ namespace Bloom.web.controllers
             // (BL-15902 added it, BL-15976 put it behind Pro) with no usage data at all,
             // which is a weak position in any pricing or renewal conversation. "page"
             // separates the long-standing front-cover case from BL-16648's inside-back-cover
-            // extension, and "branding" says whether that extension generalised past the one
-            // project it was built for. Reported before the early return below, because that
+            // extension. Whether that extension generalised past the one project it was built for
+            // is a question of branding, and needs no property here: every event already carries
+            // "BrandingProjectName" (see AnalyticsApi). Reported before the early return below, because that
             // path is a switch to custom too -- the front end builds the first custom layout
             // itself when we tell it there is no saved state yet.
             // "layout" is the state being switched TO, which is what actually happened -- but
@@ -235,7 +236,6 @@ namespace Bloom.web.controllers
                     {
                         { "layout", switchingToCustom ? "custom" : "standard" },
                         { "page", customLayoutId ?? "" },
-                        { "branding", book.CollectionSettings.Subscription.BrandingKey },
                         { "BookId", book.ID },
                     }
                 );

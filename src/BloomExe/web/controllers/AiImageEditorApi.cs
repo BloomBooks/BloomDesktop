@@ -1229,7 +1229,8 @@ namespace Bloom.web.controllers
             //
             // Everything those events carry is available to the overlay: it sent the replacements,
             // it gets our per-slot results below, the page frame tells it how many current-page
-            // swaps landed, and the analytics/track endpoint fills in BookId and branding.
+            // swaps landed, and the analytics/track endpoint fills in BookId. (Branding needs no
+            // property: every event already carries "BrandingProjectName" -- see AnalyticsApi.)
             request.ReplyWithJson(
                 new
                 {

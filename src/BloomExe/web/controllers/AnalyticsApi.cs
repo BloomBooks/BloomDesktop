@@ -25,9 +25,9 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Register the one endpoint. This is project-level (see ProjectContext) rather than
-        /// application-level so that we can fill in the current book's id and the collection's
-        /// branding; every caller so far is edit-tab code, which always has a project open. A
-        /// future need for analytics from the collection chooser would have to revisit that.
+        /// application-level so that we can fill in the current book's id; every caller so far is
+        /// edit-tab code, which always has a project open. A future need for analytics from the
+        /// collection chooser would have to revisit that.
         /// </summary>
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -53,21 +53,27 @@ namespace Bloom.web.controllers
                 return;
             }
             var properties = GetProperties(body["properties"] as JObject);
-            // Supply BookId and branding here rather than making every caller find them. Most of
-            // our C# events already carry BookId, and front-end code in the edit view generally has
-            // no idea what the current book's id -- let alone the collection's branding -- is. Yet
-            // almost every question we want to ask of these events is worth asking per project:
-            // which sources one customer's users search, which gate turned them away. A caller that
-            // knows better (e.g. it is reporting about some other book) can pass its own values and
-            // we leave them alone.
+            // Supply BookId here rather than making every caller find it: most of our C# events
+            // already carry it, and front-end code in the edit view generally has no idea what the
+            // current book's id is. A caller that knows better (e.g. it is reporting about some
+            // other book) can pass its own and we leave it alone.
+            //
+            // NOT the collection's branding, though it is tempting and this endpoint used to do it.
+            // Every event ALREADY carries the branding, as "BrandingProjectName", because
+            // CollectionSettings.SetAnalyticsProperties hands it to DesktopAnalytics as an
+            // application property -- those go out with every subsequent event. And it carries the
+            // better value: the subscription DESCRIPTOR, which also encodes the tier, any flavor,
+            // and the individual subscriber, where Subscription.BrandingKey normalizes all of that
+            // down to a branding folder name ("Acme-LC" becomes "Local-Community",
+            // "Steve-Trainer" and an empty descriptor both become "Default").
+            //
+            // Worth knowing why this is easy to get wrong: SetAnalyticsProperties returns early when
+            // tracking is off, and BloomAnalytics logs only the per-event properties, so on a
+            // developer build the log line shows no branding at all. That is not evidence it is
+            // missing in production. It cost a round trip to learn; please do not re-add it.
             var book = _bookSelection?.CurrentSelection;
-            if (book != null)
-            {
-                if (!properties.ContainsKey("BookId"))
-                    properties["BookId"] = book.ID;
-                if (!properties.ContainsKey("branding"))
-                    properties["branding"] = book.CollectionSettings.Subscription.BrandingKey;
-            }
+            if (book != null && !properties.ContainsKey("BookId"))
+                properties["BookId"] = book.ID;
             BloomAnalytics.Track(eventName, properties);
             request.PostSucceeded();
         }

@@ -586,7 +586,8 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 }
                 case "analytics": {
                     // The editor has no analytics service of its own; it hands events to
-                    // whatever host it is running in. C# adds BookId and branding.
+                    // whatever host it is running in. C# adds BookId; branding is already on every
+                    // event as "BrandingProjectName" (see AnalyticsApi).
                     //
                     // Only known event names, carrying only known properties, are forwarded.
                     // Bloom is the party that actually sends to Segment, so Bloom enforces its

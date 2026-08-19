@@ -769,8 +769,9 @@ export async function postJsonAsync(
 }
 
 // Report an analytics event to Segment, by way of C#'s Analytics.Track (see AnalyticsApi.cs).
-// The current book's id arrives as BookId, and the collection's branding as branding, both
-// added by C#; do not pass those yourself unless you mean a different book.
+// The current book's id arrives as BookId, added by C#; do not pass it yourself unless you mean a
+// different book. The collection's branding needs no property at all: every event already carries
+// it as "BrandingProjectName" (see AnalyticsApi).
 // Property values may be strings, numbers or booleans; they all arrive as strings. Omit a
 // property (or pass undefined) when you don't have a value for it, rather than sending "".
 // Note that DEBUG builds initialize DesktopAnalytics with allowTracking:false, so nothing sent
@@ -815,7 +816,8 @@ export function trackEvent(
 // provider: where the bytes came from -- an image-gallery provider id ("pixabay", "openverse", a
 // local collection slug), "local-disk", "clipboard", or "ai-editor".
 //
-// BookId is filled in by the analytics/track endpoint, which has the selected book.
+// BookId is filled in by the analytics/track endpoint, which has the selected book. Branding needs
+// no property: every event already carries "BrandingProjectName" (see AnalyticsApi).
 export function trackChangePicture(source: string, provider: string): void {
     trackEvent("Change Picture", { source, provider });
 }
