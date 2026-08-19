@@ -529,6 +529,42 @@ describe("aiEditorOverlay: analytics", () => {
         expect(cancelEvents()).toHaveLength(1);
     });
 
+    test("two overlapping commits: closing is not a cancel while either is outstanding", () => {
+        // The editor is free to send a second commit before the first is answered. With a flag
+        // rather than a count, the first reply cleared it while the second was still in the air, so
+        // closing then reported the session as thrown away with a commit still running.
+        applyAiImageEditorReplacements.mockReturnValue({
+            applied: 0,
+            expected: 0,
+        });
+        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+
+        const sendCommit = (requestId: string, slot: string) =>
+            postFromEditor({
+                channel: "bloom-ai-image-tools",
+                type: "commit",
+                requestId,
+                payload: {
+                    replacements: [
+                        { incomingId: slot, resultId: "r" + requestId },
+                    ],
+                },
+            });
+
+        sendCommit("req1", "page2:0");
+        sendCommit("req2", "page3:0");
+        expect(postJson).toHaveBeenCalledTimes(2);
+
+        // The FIRST one comes back, failing, while the second is still outstanding.
+        (postJson.mock.calls[0][3] as () => void)();
+
+        closeButton.click();
+        expect(cancelEvents()).toHaveLength(0);
+
+        // Once the second is answered too -- also with nothing applied -- the cancel is due.
+        (postJson.mock.calls[1][3] as () => void)();
+        expect(cancelEvents()).toHaveLength(1);
+    });
     test("a commit answered after the editor was reopened leaves the new overlay alone", () => {
         // The old session's success path calls its own cleanup, which tears down "the" overlay by
         // id and deletes the cleanup hook on the window -- both of which belong to the NEW session

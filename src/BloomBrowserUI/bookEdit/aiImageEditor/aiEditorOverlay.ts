@@ -197,9 +197,12 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // has the book, the key and the history to hand.
         let generationsThisSession = 0;
         let commitSucceeded = false;
-        // A commit we have sent and not yet had an answer to. Closing the overlay in that window
-        // must not report the session as thrown away: the images may be moments from being saved.
-        let commitInFlight = false;
+        // How many commits we have sent and not yet had an answer to. Closing the overlay while any
+        // is outstanding must not report the session as thrown away: the images may be moments from
+        // being saved. A count rather than a flag, because the editor is free to send a second
+        // commit before the first is answered, and the first reply would then clear a flag while the
+        // second was still in the air.
+        let commitsInFlight = 0;
         let cancelReported = false;
         // Set by cleanup. Asking the DOM whether the overlay is still there would not do: a
         // relaunch tears this session down and immediately puts up a new overlay with the same id.
@@ -239,7 +242,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             // commit reply made it easier to reach.)
             if (sessionEnded) return;
             sessionEnded = true;
-            if (!commitInFlight) {
+            if (commitsInFlight === 0) {
                 reportCancel();
             }
             hostWindow.removeEventListener("message", handleMessage);
@@ -444,7 +447,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                         }
                     };
 
-                    commitInFlight = true;
+                    commitsInFlight++;
                     postJson(
                         "aiImageEditor/commit?session=" +
                             encodeURIComponent(launchData.sessionToken),
@@ -524,7 +527,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                         "common/saveChangesAndRethinkPageEvent",
                                     );
                                 }
-                                commitInFlight = false;
+                                commitsInFlight--;
                                 // Now, and only now, is the applied count a fact. Counted from
                                 // C#'s own results for the other pages, plus what the page frame
                                 // reported for this one (0 if we never got that far).
@@ -546,7 +549,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                             }
                         },
                         () => {
-                            commitInFlight = false;
+                            commitsInFlight--;
                             // The request failed, so we know nothing landed as far as anyone can
                             // tell -- which is also what the editor is about to tell the user.
                             // Reporting the attempt matters more than the small chance that C#
