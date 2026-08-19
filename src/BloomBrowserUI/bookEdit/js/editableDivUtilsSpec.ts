@@ -476,6 +476,20 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
+    // Make div look like a box whose ckeditor is tracking fillingCharNode as its filling char.
+    // ckeditor keeps that reference as custom data on the editable div and hands it back as a
+    // CKEDITOR.dom.text, whose `$` is the DOM node.
+    function stubCkEditorTracking(div: HTMLElement, fillingCharNode: Node) {
+        (div as HTMLElement & { bloomCkEditor?: object }).bloomCkEditor = {
+            editable: () => ({
+                getCustomData: (key: string) =>
+                    key === "cke-fillingChar"
+                        ? { $: fillingCharNode }
+                        : undefined,
+            }),
+        };
+    }
+
     it("mergeAdjacentTextNodes leaves the box alone while ckeditor holds a filling char", () => {
         // ckeditor's filling char is a zero-width space in a text node of its own, and
         // ckeditor remembers that node so it can take the character out again. Merging the
@@ -492,12 +506,8 @@ describe("EditableDivUtils Tests", () => {
         // Stand in for the live ckeditor: what matters is that it is TRACKING the node, which
         // is what it means for the character to be one we must not disturb. (A stray
         // zero-width space nobody is tracking is a different thing, and is fine to merge.)
-        (div as HTMLElement & { bloomCkEditor?: object }).bloomCkEditor = {
-            editable: () => ({
-                getCustomData: (key: string) =>
-                    key === "cke-fillingChar" ? fillingCharNode : undefined,
-            }),
-        };
+        // ckeditor hands back a CKEDITOR.dom.text, whose `$` is the DOM node.
+        stubCkEditorTracking(div, fillingCharNode);
         // sanity check the setup: there IS a split here, so without the filling char this
         // would certainly merge.
         expect(p.childNodes.length).toBe(2);
@@ -506,6 +516,62 @@ describe("EditableDivUtils Tests", () => {
 
         expect(p.childNodes.length).toBe(2);
         expect(p.childNodes[1]).toBe(fillingCharNode);
+
+        div.remove();
+    });
+
+    it("mergeAdjacentTextNodes is not blocked by a filling char that has been orphaned", () => {
+        // ckeditor keeps the reference on the editable DIV, so anything that rewrites the box's
+        // innerHTML (doCkEditorCleanup, cleanUpNbsps) detaches the text node and leaves the
+        // reference dangling - the BL-16490 orphan. Nothing will write to that node any more,
+        // so it must not stop us repairing the box; a first version of this guard let it stop
+        // us indefinitely, which would have left letters unpainted (Devin caught it on #8217).
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode("waf"));
+        p.appendChild(document.createTextNode("fle"));
+        div.appendChild(p);
+        document.body.appendChild(div);
+        const orphan = document.createTextNode(String.fromCharCode(0x200b));
+        stubCkEditorTracking(div, orphan);
+        // sanity check the setup: the tracked node is NOT in the box, which is what makes it
+        // an orphan, and there is a split here that would otherwise be blocked.
+        expect(div.contains(orphan)).toBe(false);
+        expect(p.childNodes.length).toBe(2);
+
+        EditableDivUtils.mergeAdjacentTextNodes(div);
+
+        expect(p.childNodes.length).toBe(1);
+        expect(p.textContent).toBe("waffle");
+
+        div.remove();
+    });
+
+    it("mergeAdjacentTextNodes still repairs paragraphs the filling char is not in", () => {
+        // The guard is per-run, not per-box: a filling char parked in one paragraph must not
+        // stop the others being repaired.
+        const div = document.createElement("div");
+        div.innerHTML = "<p id='guarded'></p><p id='other'></p>";
+        const guarded = div.querySelector("#guarded") as HTMLElement;
+        const other = div.querySelector("#other") as HTMLElement;
+        guarded.appendChild(document.createTextNode("waf"));
+        const fillingCharNode = document.createTextNode(
+            String.fromCharCode(0x200b),
+        );
+        guarded.appendChild(fillingCharNode);
+        other.appendChild(document.createTextNode("shuf"));
+        other.appendChild(document.createTextNode("fle"));
+        document.body.appendChild(div);
+        stubCkEditorTracking(div, fillingCharNode);
+        // sanity check the setup
+        expect(guarded.childNodes.length).toBe(2);
+        expect(other.childNodes.length).toBe(2);
+
+        EditableDivUtils.mergeAdjacentTextNodes(div);
+
+        expect(guarded.childNodes.length).toBe(2); // left alone
+        expect(other.childNodes.length).toBe(1); // repaired
+        expect(other.textContent).toBe("shuffle");
 
         div.remove();
     });

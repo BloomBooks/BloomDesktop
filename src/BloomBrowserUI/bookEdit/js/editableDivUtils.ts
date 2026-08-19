@@ -542,19 +542,20 @@ export class EditableDivUtils {
         if (!EditableDivUtils.hasAdjacentTextNodes(element)) {
             return; // nothing to merge; leave the box, and the selection, strictly alone
         }
-        if (EditableDivUtils.ckEditorIsHoldingAFillingChar(element)) {
-            // Leave the box strictly alone while ckeditor is holding a filling char.
-            // That char is a zero-width space in a text node of its own, which ckeditor
-            // inserts at a collapsed selection next to an inline element so the caret shows,
-            // and it remembers THAT NODE (setCustomData("cke-fillingChar", ...)) to take the
-            // char out again later. normalize() would fold the node into its neighbour, so
-            // ckeditor would be left writing to a detached node and the zero-width space
-            // would stay in the text and get saved into the book - the BL-16490 hazard.
-            // Skipping costs us nothing lasting: the filling char is transient, and the next
-            // keystroke brings us back here to do the repair.
-            return;
-        }
-        EditableDivUtils.mergeAdjacentTextNodeRuns(element);
+        // Leave ckeditor's filling char alone. That char is a zero-width space in a text node
+        // of its own, which ckeditor inserts at a collapsed selection next to an inline element
+        // so the caret shows, and it remembers THAT NODE
+        // (setCustomData("cke-fillingChar", ...)) to take the char out again later. normalize()
+        // would fold the node into its neighbour, so ckeditor would be left writing to a
+        // detached node and the zero-width space would stay in the text and get saved into the
+        // book - the BL-16490 hazard.
+        // We hand the node down rather than giving up on the whole box, so a filling char in
+        // one paragraph doesn't stop us repairing another: only the runs whose merge would
+        // reach it are skipped, and they come back to us on the next keystroke.
+        EditableDivUtils.mergeAdjacentTextNodeRuns(
+            element,
+            EditableDivUtils.ckEditorFillingCharNodeIn(element),
+        );
     }
 
     // Merge each run of adjacent sibling text nodes back into one.
@@ -581,7 +582,10 @@ export class EditableDivUtils {
     // can be the .bloom-editable itself, and hiding a focused contenteditable blurs it - the
     // user's next keystrokes would go nowhere - besides leaving a stray style="" attribute
     // behind in the saved book.
-    private static mergeAdjacentTextNodeRuns(element: HTMLElement): void {
+    private static mergeAdjacentTextNodeRuns(
+        element: HTMLElement,
+        fillingCharNodeToLeaveAlone?: Node,
+    ): void {
         const doc = element.ownerDocument;
         // The node each run will collapse into: normalize() appends a run's text onto its
         // first non-empty node and removes the others, so that is the node that survives, and
@@ -614,7 +618,17 @@ export class EditableDivUtils {
 
         survivorOfEachRun.forEach((survivor) => {
             // A text node always has a parent element here: we are walking inside element.
-            survivor.parentElement!.normalize();
+            const parent = survivor.parentElement!;
+            // normalize() is DEEP - it merges every text node under `parent`, not just this
+            // run - so the filling char is out of reach only if it is outside `parent`
+            // altogether. See mergeAdjacentTextNodes() for why we must not touch it.
+            if (
+                fillingCharNodeToLeaveAlone &&
+                parent.contains(fillingCharNodeToLeaveAlone)
+            ) {
+                return;
+            }
+            parent.normalize();
             if (!survivor.isConnected) {
                 return; // the whole run was empty nodes; normalize() removed them all
             }
@@ -665,27 +679,39 @@ export class EditableDivUtils {
     // We ask ckeditor rather than searching the text for a zero-width space, which was the
     // first thing I wrote: some scripts (Thai, Khmer, Myanmar) use U+200B in real text as a
     // word break, and searching for the character would have quietly turned the repair off
-    // for a whole book in those languages. It also means an ORPHANED filling char - the
-    // BL-16490 case - does not block the repair, which is right: nothing is tracking it, so
-    // nothing is going to write to it, and folding it into its neighbour loses nothing that
-    // doCkEditorCleanup's removeCkEditorFillingChars would not have stripped at save time.
-    // If a ckeditor upgrade ever renamed this key, this would stop guarding and we would be
-    // back to the behavior that shipped in the first fix for BL-16717, which merged regardless.
+    // for a whole book in those languages.
+    // Asking is not enough on its own, though: ckeditor keeps the reference as custom data on
+    // the editable DIV, so anything that rewrites the box's innerHTML (doCkEditorCleanup,
+    // cleanUpNbsps) detaches the text node while leaving the reference behind. That is the
+    // BL-16490 "orphaned filling char", and it must NOT block the repair - nothing is tracking
+    // it any more, so nothing will write to it. Hence the isConnected/contains check: what
+    // blocks us is a node ckeditor is tracking that is still in this box.
+    // If a ckeditor upgrade ever renamed this key, or changed the shape it stores, this would
+    // stop guarding and we would be back to the behavior that shipped in the first fix for
+    // BL-16717, which merged regardless.
     // (Typed locally rather than through CKEDITOR.editor: our ckeditor.d.ts only declares the
-    // editable(element) setter overloads, not the no-argument getter that actually exists.)
-    private static ckEditorIsHoldingAFillingChar(
+    // editable(element) setter overloads, not the no-argument getter that actually exists. The
+    // value is a CKEDITOR.dom.text, whose `$` is the DOM node it wraps.)
+    private static ckEditorFillingCharNodeIn(
         element: HTMLElement,
-    ): boolean {
+    ): Node | undefined {
         const ckEditorOfThisBox = (
             element as HTMLElement & {
                 bloomCkEditor?: {
-                    editable: () => { getCustomData: (key: string) => unknown };
+                    editable: () => {
+                        getCustomData: (
+                            key: string,
+                        ) => { $?: Node } | undefined;
+                    };
                 };
             }
         ).bloomCkEditor;
-        return !!ckEditorOfThisBox
+        const trackedNode = ckEditorOfThisBox
             ?.editable()
-            ?.getCustomData("cke-fillingChar");
+            ?.getCustomData("cke-fillingChar")?.$;
+        return trackedNode && element.contains(trackedNode)
+            ? trackedNode
+            : undefined;
     }
 
     public static restoreSelectionFromCkEditorBookmarks(
