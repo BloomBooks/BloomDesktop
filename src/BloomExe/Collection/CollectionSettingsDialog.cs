@@ -70,6 +70,27 @@ namespace Bloom.Collection
         // Ugly I know, but we need to be able to access these by an index number sometimes.
         internal WritingSystem[] PendingLanguages = new WritingSystem[3];
 
+        /// <summary>
+        /// The reading direction BL-16593 derived from a language's script, as it was before the
+        /// user opened Script Settings on it. Kept so that on OK we can tell a real correction
+        /// from a value the user changed and then changed back. The tag is stored with it because
+        /// the user can replace the language in this same dialog session, which makes any earlier
+        /// baseline for that slot meaningless.
+        /// </summary>
+        internal class RtlBaseline
+        {
+            public RtlBaseline(string tag, bool isRightToLeft)
+            {
+                Tag = tag;
+                IsRightToLeft = isRightToLeft;
+            }
+
+            public string Tag { get; }
+            public bool IsRightToLeft { get; }
+        }
+
+        private readonly RtlBaseline[] _rtlAsDerived = new RtlBaseline[3];
+
         public CollectionSettingsDialog(
             CollectionSettings collectionSettings,
             QueueRenameOfCollection queueRenameOfCollection,
@@ -488,6 +509,25 @@ namespace Bloom.Collection
                 PendingLanguage3.SetName(String.Empty, false);
             }
 
+            // Now, not when the Script Settings sub-dialog closed: only reaching this point means
+            // the user actually kept the correction. Reporting at the earlier moment counted
+            // corrections that Cancel threw away, and counted a value set and set back as two --
+            // inflating exactly the number this event exists to provide.
+            foreach (var (tag, rtl) in GetRtlOverridesToReport(PendingLanguages, _rtlAsDerived))
+            {
+                // The user is correcting the reading direction BL-16593 chose from their script.
+                // Pair this with "Collection Language Set" (CollectionSettingsApi) to see which
+                // scripts ethnolib gets wrong.
+                BloomAnalytics.Track(
+                    "Collection Language Rtl Overridden",
+                    new Dictionary<string, string>
+                    {
+                        { "Language", tag ?? "" },
+                        { "rtl", rtl ? "true" : "false" },
+                    }
+                );
+            }
+
             UpdateLanguageSettings(
                 _collectionSettings.AllLanguages,
                 PendingLanguages,
@@ -597,6 +637,34 @@ namespace Bloom.Collection
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// The reading-direction corrections worth reporting: a language whose pending value now
+        /// differs from the one derived from its script (see <see cref="RtlBaseline"/>). A slot
+        /// with no baseline is one whose Script Settings the user never opened; a baseline whose
+        /// tag no longer matches belongs to a language the user has since replaced, and in that
+        /// case the new language's derived value has never been questioned.
+        ///
+        /// Static, like UpdateLanguageSettings below, so it can be tested without a dialog.
+        /// </summary>
+        internal static IEnumerable<(string tag, bool rtl)> GetRtlOverridesToReport(
+            WritingSystem[] pendingLanguages,
+            RtlBaseline[] derivedValues
+        )
+        {
+            Debug.Assert(pendingLanguages.Length == 3);
+            Debug.Assert(derivedValues.Length == pendingLanguages.Length);
+
+            for (var i = 0; i < pendingLanguages.Length; i++)
+            {
+                var pending = pendingLanguages[i];
+                var derived = derivedValues[i];
+                if (pending == null || derived == null || derived.Tag != pending.Tag)
+                    continue;
+                if (pending.IsRightToLeft != derived.IsRightToLeft)
+                    yield return (pending.Tag, pending.IsRightToLeft);
+            }
         }
 
         // internal and static to facilitate unit testing
@@ -782,6 +850,17 @@ namespace Bloom.Collection
         public bool FontSettingsLinkClicked(int zeroBasedLanguageNumber)
         {
             var pendingLanguage = PendingLanguages[zeroBasedLanguageNumber];
+            // Remember the reading direction BL-16593 derived from the script, before the user
+            // has had any chance to change it -- see RtlBaseline and GetRtlOverridesToReport,
+            // which the OK handler uses to decide what to report. Captured
+            // only the first time this dialog is opened for a given language, so that a second
+            // visit compares against what the script chose rather than against what the user
+            // typed last time.
+            if (_rtlAsDerived[zeroBasedLanguageNumber]?.Tag != pendingLanguage.Tag)
+                _rtlAsDerived[zeroBasedLanguageNumber] = new RtlBaseline(
+                    pendingLanguage.Tag,
+                    pendingLanguage.IsRightToLeft
+                );
             using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
             using (var frm = new ScriptSettingsDialog())
             {
@@ -801,22 +880,10 @@ namespace Bloom.Collection
                 pendingLanguage.LineHeight = frm.LanguageLineSpacing;
                 pendingLanguage.BreaksLinesOnlyAtSpaces = frm.BreakLinesOnlyAtSpaces;
                 pendingLanguage.BaseUIFontSizeInPoints = frm.UIFontSize;
-                var rtlBefore = pendingLanguage.IsRightToLeft;
                 pendingLanguage.IsRightToLeft = frm.LanguageRightToLeft;
-                if (pendingLanguage.IsRightToLeft != rtlBefore)
-                {
-                    // The user is correcting the reading direction BL-16593 chose from their
-                    // script. Pair this with "Collection Language Set" (CollectionSettingsApi) to
-                    // see which scripts ethnolib gets wrong.
-                    BloomAnalytics.Track(
-                        "Collection Language Rtl Overridden",
-                        new Dictionary<string, string>
-                        {
-                            { "Language", pendingLanguage.Tag ?? "" },
-                            { "rtl", pendingLanguage.IsRightToLeft ? "true" : "false" },
-                        }
-                    );
-                }
+                // Deliberately not reported here: nothing this dialog does is saved until the user
+                // accepts Collection Settings. The OK handler reports it, via
+                // GetRtlOverridesToReport.
                 return pendingLanguage.IsRightToLeft
                     != _collectionSettings.AllLanguages[zeroBasedLanguageNumber].IsRightToLeft;
             }
