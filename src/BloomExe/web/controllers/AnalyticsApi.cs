@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using Bloom.Api;
 using Bloom.Book;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Bloom.web.controllers
@@ -41,7 +43,7 @@ namespace Bloom.web.controllers
         /// </summary>
         private void HandleTrack(ApiRequest request)
         {
-            var body = JObject.Parse(request.RequiredPostJson());
+            var body = ParseTrackRequestBody(request.RequiredPostJson());
             var eventName = body["event"]?.ToString();
             if (string.IsNullOrWhiteSpace(eventName))
             {
@@ -103,6 +105,30 @@ namespace Bloom.web.controllers
                     { "BookId", bookId ?? "" },
                 }
             );
+        }
+
+        /// <summary>
+        /// Parse the request body WITHOUT letting Newtonsoft turn date-looking strings into dates.
+        ///
+        /// Its default DateParseHandling materializes a JSON string that parses as a date-time --
+        /// "2024-01-01T10:00:00Z", say -- as a DateTime rather than a string. We would then record
+        /// whatever the local culture makes of it: "1/1/2024 10:00:00 AM" on this machine, something
+        /// else on the next. (A date-only "2024-01-01" is left alone, so the reachable case is a full
+        /// timestamp.) Property values arrive as JSON strings and must reach Segment as the caller
+        /// wrote them: several of them are free user text -- an image search term above all -- so
+        /// rewriting one silently makes the record disagree with what the user actually typed.
+        /// </summary>
+        internal static JObject ParseTrackRequestBody(string json)
+        {
+            using (
+                var reader = new JsonTextReader(new StringReader(json))
+                {
+                    DateParseHandling = DateParseHandling.None,
+                }
+            )
+            {
+                return JObject.Load(reader);
+            }
         }
 
         /// <summary>

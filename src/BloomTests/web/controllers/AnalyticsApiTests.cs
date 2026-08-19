@@ -94,5 +94,57 @@ namespace BloomTests.web.controllers
         {
             Assert.That(AnalyticsApi.GetProperties(null), Is.Empty);
         }
+
+        // The next two go through ParseTrackRequestBody rather than JObject.Parse, because the
+        // coercion these guard against happens at parse time, not in GetProperties.
+
+        private static JObject ParsedProperties(string propertiesJson)
+        {
+            return AnalyticsApi.ParseTrackRequestBody("{\"properties\": " + propertiesJson + "}")[
+                    "properties"
+                ] as JObject;
+        }
+
+        [Test]
+        public void GetProperties_AValueThatParsesAsADateTime_ComesThroughExactlyAsSent()
+        {
+            // Newtonsoft's default turns a JSON string like this into a DateTime, and we would then
+            // record whatever the local culture makes of it ("1/1/2024 10:00:00 AM" here). Several of
+            // these properties are free user text -- an image search term above all -- so the record
+            // has to say what was sent. A date-ONLY string is left alone by Newtonsoft, which is why
+            // this test uses a full timestamp: that is the reachable case.
+            var result = AnalyticsApi.GetProperties(
+                ParsedProperties("{\"term\": \"2024-01-01T10:00:00Z\"}")
+            );
+
+            Assert.AreEqual("2024-01-01T10:00:00Z", result["term"]);
+        }
+
+        [Test]
+        public void GetProperties_AValueThatParsesAsADateTime_IsNotLocaleFormattedEither()
+        {
+            var wasCulture = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+                // Sanity check: this culture formats date-times its own way, so a coerced value
+                // would be visibly wrong here rather than coincidentally right.
+                Assert.AreNotEqual(
+                    "1/1/2024 10:00:00 AM",
+                    new System.DateTime(2024, 1, 1, 10, 0, 0).ToString(),
+                    "test setup: de-DE should not format date-times the way en-US does"
+                );
+
+                var result = AnalyticsApi.GetProperties(
+                    ParsedProperties("{\"term\": \"2024-01-01T10:00:00Z\"}")
+                );
+
+                Assert.AreEqual("2024-01-01T10:00:00Z", result["term"]);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = wasCulture;
+            }
+        }
     }
 }
