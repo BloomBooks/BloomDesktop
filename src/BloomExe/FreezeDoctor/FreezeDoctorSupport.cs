@@ -62,6 +62,17 @@ namespace Bloom.FreezeDoctor
         private static bool _endedAtDoctorsRequest;
 
         /// <summary>
+        /// Serialises every change to <see cref="_session"/>.
+        ///
+        /// Without it the "Bloom already reported this problem" note could be silently lost: the watchdog
+        /// thread rewrites the session every ten seconds by read-modify-write, and if it read the record
+        /// before the note was applied and wrote its copy afterwards, the note would vanish — from memory and
+        /// from disk. That note is the only thing stopping the Doctor filing a second report about a problem
+        /// the user has already reported themselves.
+        /// </summary>
+        private static readonly object _sessionLock = new object();
+
+        /// <summary>
         /// How often the session file is rewritten. It carries facts that barely change, so this is not
         /// about freshness — it is so that a Doctor installed *after* Bloom started, or one that had not
         /// yet been running when Bloom did, still finds a file describing the Bloom in front of it.
@@ -89,6 +100,13 @@ namespace Bloom.FreezeDoctor
             // created: it is what a Doctor reads about a Bloom that has already died, so it is the more
             // important of the two for the case where nobody was watching at the time.
             WriteSessionFile();
+
+            // Install the clean-exit hook BEFORE anything that might bail out. The on-disk half of the
+            // contract does not depend on shared memory, and if we returned early without this hook the
+            // session file would sit there for ever with no exit record — which a Doctor reads as "this run
+            // did not shut down properly". Failing to create a shared page would have manufactured exactly
+            // the false positive the proof exists to prevent.
+            AppDomain.CurrentDomain.ProcessExit += (sender, args) => RecordCleanExit();
 
             try
             {
@@ -120,12 +138,10 @@ namespace Bloom.FreezeDoctor
                 };
                 _watchdog.Start();
 
-                // ProcessExit is the whole of the clean-exit proof, and the reason it is a hook rather
-                // than an edit to each exit path: it runs for a normal return from Main and for
-                // Environment.Exit, and NOT for FailFast, TerminateProcess, or an access violation. That
-                // is precisely the line the Doctor wants drawn, and no future exit path in Program.cs can
-                // forget to honour it.
-                AppDomain.CurrentDomain.ProcessExit += (sender, args) => RecordCleanExit();
+                // (The ProcessExit hook — the whole of the clean-exit proof — is installed above, before
+                // anything can return early. It runs for a normal return from Main and for Environment.Exit,
+                // and NOT for FailFast, TerminateProcess, or an access violation, which is precisely the line
+                // the Doctor wants drawn and one no future exit path can forget to honour.)
 
                 // Ask for a dump on the way down. Hooked here rather than only at Program.Run's two catch
                 // blocks because those catch just TargetInvocationException and AccessViolationException
@@ -227,19 +243,20 @@ namespace Bloom.FreezeDoctor
         {
             try
             {
-                if (_session == null)
-                    return;
-                _session = _session with
+                lock (_sessionLock)
                 {
-                    Exit = new DoctorSessionExit
+                    if (_session == null)
+                        return;
+                    // On the session itself, NOT inside an Exit record. A user can file a problem report and
+                    // then carry on working for hours; writing an exit here would describe a running Bloom as
+                    // finished, which a later reader would take as proof it shut down properly.
+                    _session = _session with
                     {
-                        AtUtc = DateTimeOffset.UtcNow,
-                        ShutdownPhase = _shutdownPhase,
                         BloomAlreadyReported = true,
                         ReportedId = reportedId,
-                    },
-                };
-                DoctorSessionStore.TryWrite(_session);
+                    };
+                    DoctorSessionStore.TryWrite(_session);
+                }
             }
             catch (Exception) { }
         }
@@ -292,21 +309,25 @@ namespace Bloom.FreezeDoctor
         {
             try
             {
-                if (_session == null)
-                    return;
-                // Do not overwrite a record that Bloom already reported a problem: that is more
-                // informative than "shut down at phase 4", and the Doctor uses it to stay quiet.
-                if (_session.Exit?.BloomAlreadyReported == true)
-                    return;
-                _session = _session with
+                lock (_sessionLock)
                 {
-                    Exit = new DoctorSessionExit
+                    if (_session == null)
+                        return;
+                    // The exit is always recorded now. It used to be skipped when Bloom had already reported a
+                    // problem, which meant a genuinely orderly shutdown went unrecorded — and the two facts
+                    // are independent anyway: "the user reported something" and "we then shut down properly"
+                    // are both worth knowing, and they live in separate fields.
+                    _session = _session with
                     {
-                        AtUtc = DateTimeOffset.UtcNow,
-                        ShutdownPhase = _shutdownPhase,
-                    },
-                };
-                DoctorSessionStore.TryWrite(_session);
+                        Exit = new DoctorSessionExit
+                        {
+                            AtUtc = DateTimeOffset.UtcNow,
+                            ShutdownPhase = _shutdownPhase,
+                            ForcedByDoctor = _endedAtDoctorsRequest,
+                        },
+                    };
+                    DoctorSessionStore.TryWrite(_session);
+                }
             }
             catch (Exception) { }
         }
@@ -432,9 +453,11 @@ namespace Bloom.FreezeDoctor
         {
             try
             {
+                // Publish "idle" rather than leaving the last interesting value in place. Otherwise the
+                // field keeps naming a request that finished minutes ago, and a freeze report blames work
+                // that had already completed — a wrong lead is worse than no lead.
                 var activity = ApiActivityTracker.DescribeCurrentActivity();
-                if (activity != null)
-                    _channel?.SetActivity(activity);
+                _channel?.SetActivity(activity ?? "no request in flight");
 
                 var server = Api.BloomServer._theOneInstance;
                 if (server != null)
@@ -454,22 +477,27 @@ namespace Bloom.FreezeDoctor
         {
             try
             {
-                if (_session == null)
-                    return;
-                var httpPort = Api.BloomServer.portForHttp;
-                var refreshed = _session with
+                lock (_sessionLock)
                 {
-                    LogPath = Logger.LogPath ?? _session.LogPath,
-                    HttpPort = httpPort,
-                    CdpPort = httpPort > 0 ? Api.BloomServer.RemoteDebuggingPort : 0,
-                    CollectionName = SafeCollectionName(),
-                };
-                // Only touch the disk when something actually changed: this runs every ten seconds for the
-                // life of the process, and a pointless write every ten seconds is a pointless write.
-                if (refreshed == _session)
-                    return;
-                _session = refreshed;
-                DoctorSessionStore.TryWrite(_session);
+                    if (_session == null)
+                        return;
+                    var httpPort = Api.BloomServer.portForHttp;
+                    // Composed on the CURRENT value inside the lock, so a note written by another thread a
+                    // moment ago is carried forward rather than overwritten.
+                    var refreshed = _session with
+                    {
+                        LogPath = Logger.LogPath ?? _session.LogPath,
+                        HttpPort = httpPort,
+                        CdpPort = httpPort > 0 ? Api.BloomServer.RemoteDebuggingPort : 0,
+                        CollectionName = SafeCollectionName(),
+                    };
+                    // Only touch the disk when something actually changed: this runs every ten seconds for
+                    // the life of the process, and a pointless write every ten seconds is a pointless write.
+                    if (refreshed == _session)
+                        return;
+                    _session = refreshed;
+                    DoctorSessionStore.TryWrite(_session);
+                }
             }
             catch (Exception) { }
         }

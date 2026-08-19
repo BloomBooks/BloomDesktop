@@ -20,10 +20,18 @@ namespace Bloom.FreezeDoctor
     /// somebody has to have deliberately arranged both conditions.
     ///
     /// Usage: set `BLOOM_SIMULATE_FREEZE=&lt;kind&gt;[:&lt;delaySeconds&gt;]` before launching Bloom.
-    /// Kinds: `sleep`, `stawait`, `spin`, `failfast`, `throw`, `zombie`.
+    /// Kinds: `sleep`, `stawait`, `spin`, `failfast`, `throw`, `crashthread`, `zombie` — each documented at
+    /// its case below, with the state it imitates.
     /// </summary>
     public static class FreezeSimulator
     {
+        /// <summary>
+        /// Keeps the countdown timer alive. A WinForms timer referenced only by a local would be eligible for
+        /// collection the moment the method returns, and a simulator that sometimes forgets to fire is worse
+        /// than no simulator: it looks like the Doctor failing to detect something.
+        /// </summary>
+        private static System.Windows.Forms.Timer _countdown;
+
         /// <summary>The environment variable that arms this. Absent means absent; there is no other route in.</summary>
         public const string EnvironmentVariable = "BLOOM_SIMULATE_FREEZE";
 
@@ -80,16 +88,16 @@ namespace Bloom.FreezeDoctor
             // A UI-thread timer, because most of these have to happen ON the UI thread to be the failure
             // we are imitating. A background timer would produce a quite different (and uninteresting)
             // kind of stuck.
-            var timer = new System.Windows.Forms.Timer
+            _countdown = new System.Windows.Forms.Timer
             {
                 Interval = (int)Math.Max(1000, delay.TotalMilliseconds),
             };
-            timer.Tick += (sender, args) =>
+            _countdown.Tick += (sender, args) =>
             {
-                timer.Stop();
+                _countdown.Stop();
                 Simulate(kind);
             };
-            timer.Start();
+            _countdown.Start();
         }
 
         /// <summary>

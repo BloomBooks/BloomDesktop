@@ -73,8 +73,23 @@ public sealed record DoctorSession
     public string CollectionName { get; init; } = "";
 
     /// <summary>
+    /// True when Bloom's own reporting has already told us about a problem this run — a Sentry event or a
+    /// tracker card. The Doctor defers to it rather than filing a second report about the same thing.
+    ///
+    /// This lives on the session rather than inside <see cref="Exit"/>, and that placement is the whole
+    /// point: a user can file a problem report and then carry on working for hours. Recording it as an exit
+    /// would describe a running Bloom as finished, which then reads as proof of an orderly shutdown for a
+    /// process that may go on to crash.
+    /// </summary>
+    public bool BloomAlreadyReported { get; init; }
+
+    /// <summary>The card or event Bloom filed, if it filed one.</summary>
+    public string? ReportedId { get; init; }
+
+    /// <summary>
     /// How this run ended, once it has. Null while Bloom is running — and null *after* Bloom has gone is
-    /// itself the evidence that it did not shut down properly.
+    /// itself the evidence that it did not shut down properly. Nothing may set this while Bloom is still
+    /// running; see <see cref="BloomAlreadyReported"/> for what used to get that wrong.
     /// </summary>
     public DoctorSessionExit? Exit { get; init; }
 }
@@ -89,13 +104,10 @@ public sealed record DoctorSessionExit
     public int ShutdownPhase { get; init; }
 
     /// <summary>
-    /// True when Bloom's own reporting already told us about a problem this run — a Sentry event or a
-    /// tracker card. The Doctor defers to it rather than filing a second report about the same thing.
+    /// True when this exit was forced by the Doctor asking Bloom to go, rather than being an orderly
+    /// shutdown. Recorded so that ending a zombie is not later mistaken for proof that it shut down properly.
     /// </summary>
-    public bool BloomAlreadyReported { get; init; }
-
-    /// <summary>The card or event Bloom filed, if it filed one.</summary>
-    public string? ReportedId { get; init; }
+    public bool ForcedByDoctor { get; init; }
 }
 
 /// <summary>
@@ -119,7 +131,14 @@ public static class DoctorSessionStore
             "sessions"
         );
 
-    /// <summary>The file for one process.</summary>
+    /// <summary>
+    /// The file for one process.
+    ///
+    /// Keyed by process id, which Windows reuses — so a reader that finds a file for a *live* pid must check
+    /// <see cref="DoctorSession.StartedAtUtc"/> against that process's actual start time before believing the
+    /// file describes it. The alternative (a unique id in the name) would stop a Doctor finding the file for a
+    /// pid it is watching, which is the common case this has to be good at.
+    /// </summary>
     public static string PathFor(int processId, string? directory = null) =>
         Path.Combine(directory ?? DefaultDirectory, $"bloom-{processId}.json");
 

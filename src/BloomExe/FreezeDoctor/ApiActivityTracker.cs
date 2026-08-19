@@ -120,8 +120,9 @@ namespace Bloom.FreezeDoctor
         }
 
         /// <summary>
-        /// Every request that has been in flight longer than <paramref name="longerThan"/>, newest first, as
-        /// text for a report. Separate from <see cref="DescribeCurrentActivity"/> because a report can afford
+        /// Every request that has been in flight longer than <paramref name="longerThan"/>, **longest-running
+        /// first** (which is oldest-started first), as text for a report — the one that has been stuck the
+        /// longest is the one a reader wants at the top. Separate from <see cref="DescribeCurrentActivity"/> because a report can afford
         /// several lines where the activity field has room for one.
         /// </summary>
         public static string[] DescribeStuckRequests(TimeSpan longerThan)
