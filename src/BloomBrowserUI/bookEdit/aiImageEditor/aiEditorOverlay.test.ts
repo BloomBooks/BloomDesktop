@@ -526,6 +526,55 @@ describe("aiEditorOverlay: analytics", () => {
         expect(cancelEvents()).toHaveLength(1);
     });
 
+    test("a commit answered after the editor was reopened leaves the new overlay alone", () => {
+        // The old session's success path calls its own cleanup, which tears down "the" overlay by
+        // id and deletes the cleanup hook on the window -- both of which belong to the NEW session
+        // by then. Without an idempotence guard the editor the user is looking at disappears.
+        const first = openAgainstABookWithOneImage();
+
+        first.postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "commit",
+            requestId: "req1",
+            payload: {
+                replacements: [
+                    { incomingId: `${kPageId}:0`, resultId: "result1" },
+                ],
+            },
+        });
+        const onSuccess = postJson.mock.calls[0][2] as (r: {
+            data: unknown;
+        }) => void;
+
+        first.closeButton.click();
+        // The helper expects a fresh launch, and this is the second in one test.
+        post.mockClear();
+        openAgainstABookWithOneImage();
+        // Sanity: the new session is up and is the one the window would tear down.
+        expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
+
+        onSuccess({
+            data: {
+                ok: true,
+                appliedCount: 1,
+                results: [
+                    {
+                        incomingId: `${kPageId}:0`,
+                        ok: true,
+                        isCurrentPage: true,
+                        oldSrc: kImageFile,
+                        newSrc: "ai-image1.png",
+                    },
+                ],
+            },
+        });
+
+        expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
+        expect(
+            (window as Window & { __bloomAiImageEditorCleanup?: () => void })
+                .__bloomAiImageEditorCleanup,
+        ).toBeTypeOf("function");
+    });
     test("a cancel is reported at most once", () => {
         const { closeButton } = openAgainstABookWithOneImage();
 

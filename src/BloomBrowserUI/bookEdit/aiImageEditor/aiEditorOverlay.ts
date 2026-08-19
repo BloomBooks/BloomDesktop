@@ -223,6 +223,14 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             // immediately, but the pictures may well be saved a moment later -- and reporting a
             // cancel here would count that session as thrown-away work AND as a commit, inflating
             // the very number this event exists to provide. The commit reply decides instead.
+            //
+            // Idempotent, and it has to be: a commit sent by THIS session can be answered after the
+            // user has closed it and opened the editor again, and its success path calls us. The
+            // overlay we would then tear down -- looked up by id, and the cleanup hook on the
+            // window -- belong to the new session, so a second run would make the editor the user
+            // is looking at vanish, unclosably. (Pre-existing; deferring the cancel decision to the
+            // commit reply made it easier to reach.)
+            if (sessionEnded) return;
             sessionEnded = true;
             if (!commitInFlight) {
                 reportCancel();
