@@ -43,7 +43,15 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
         // Standard opens the menu and finds Custom greyed out, which is the moment they
         // wanted it and could not have it. (Not when they are already on Custom: then they
         // are opening the menu to go back, not being refused anything.)
+        //
+        // Nothing is reported until the subscription lookup has answered. Until it does,
+        // blockedBySubscription is false, which makes a legacy theme look like the only wall --
+        // so a menu opened in that first moment would blame the theme for a refusal the
+        // subscription also caused, and the same book would report a different cause a second
+        // later. Since the whole value of this event is the split between the two causes, one
+        // lost event is much cheaper than a wrong one.
         if (
+            customLayoutFeatureStatus !== undefined &&
             (blockedBySubscription || blockedByLegacyTheme) &&
             !props.isCustom
         ) {
