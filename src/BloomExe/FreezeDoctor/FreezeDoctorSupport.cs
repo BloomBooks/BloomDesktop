@@ -121,6 +121,18 @@ namespace Bloom.FreezeDoctor
                 // forget to honour it.
                 AppDomain.CurrentDomain.ProcessExit += (sender, args) => RecordCleanExit();
 
+                // Ask for a dump on the way down. Hooked here rather than only at Program.Run's two catch
+                // blocks because those catch just TargetInvocationException and AccessViolationException
+                // from the message loop, whereas this fires for an unhandled exception on ANY thread — far
+                // more of the crashes we actually want to explain.
+                //
+                // Note what this deliberately does NOT cover: a direct Environment.FailFast runs no managed
+                // handlers at all, by design, so no dump can be requested for one. Those crashes are still
+                // recognisable, through Windows Error Reporting and through the absence of a clean-exit
+                // proof; we just do not get a dump of our own.
+                AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+                    RequestDumpBeforeDying();
+
                 Logger.WriteEvent(
                     "Freeze Doctor channel opened; publishing health to any Doctor watching"
                 );
@@ -339,6 +351,12 @@ namespace Bloom.FreezeDoctor
         private static void WatchdogLoop()
         {
             var sinceSessionRefresh = TimeSpan.Zero;
+            // The Doctor sets this to ask us to exit under our own power when our UI is gone but we are
+            // still running. Waiting on it HERE is the point: this thread is still alive long after the UI
+            // thread has stopped, which is exactly the situation in which the request gets made.
+            var quitRequest = DoctorSignals.TryCreate(
+                DoctorSignals.QuitRequestName(Process.GetCurrentProcess().Id)
+            );
             while (true)
             {
                 try
@@ -350,6 +368,18 @@ namespace Bloom.FreezeDoctor
                     {
                         sinceSessionRefresh = TimeSpan.Zero;
                         RefreshSessionFile();
+                    }
+
+                    // Sleep on the quit request rather than sleeping blindly, so one thread does both jobs
+                    // and a request is acted on within a second rather than whenever we next wake.
+                    if (quitRequest != null)
+                    {
+                        if (quitRequest.WaitOne(WatchdogInterval))
+                        {
+                            ExitAtDoctorsRequest();
+                            return;
+                        }
+                        continue;
                     }
                     Thread.Sleep(WatchdogInterval);
                 }
@@ -422,6 +452,74 @@ namespace Bloom.FreezeDoctor
                 DoctorSessionStore.TryWrite(_session);
             }
             catch (Exception) { }
+        }
+
+        /// <summary>
+        /// Exits because the Doctor asked us to, having decided our UI is gone and we are in the user's way.
+        ///
+        /// We exit *ourselves* rather than being killed, which is worth the round trip: `Environment.Exit`
+        /// runs the `ProcessExit` handlers, so Bloom's single-instance token is released properly and its own
+        /// record of the shutdown is written. Being killed from outside would leave both undone. Note we do
+        /// NOT try to shut down gracefully — a Bloom in this state has already failed to do that, which is
+        /// why anyone is asking.
+        /// </summary>
+        private static void ExitAtDoctorsRequest()
+        {
+            try
+            {
+                Logger.WriteEvent(
+                    "The Bloom Freeze Doctor asked this process to exit (its UI is gone and it is holding "
+                        + "the single-instance token). Exiting."
+                );
+            }
+            catch (Exception) { }
+            try
+            {
+                // 1 rather than 0: this was not a normal exit, and the exit code should say so.
+                Environment.Exit(1);
+            }
+            catch (Exception)
+            {
+                // If even that fails, the Doctor's fallback is to kill us, which is what it is there for.
+            }
+        }
+
+        /// <summary>
+        /// Asks a watching Doctor to dump this process, and waits briefly for it. Call from a crash path, as
+        /// late as possible: a dump taken from outside is worth more than one a dying process takes of
+        /// itself, but only if the process is still there to dump.
+        ///
+        /// **The zero-timeout check comes first, and it is the important part.** Nearly every user has no
+        /// Doctor installed, and an unconditional pause here would make every crash worse for all of them to
+        /// benefit the few. So: if nobody is watching, this returns immediately and costs nothing.
+        /// </summary>
+        public static void RequestDumpBeforeDying()
+        {
+            try
+            {
+                var pid = Process.GetCurrentProcess().Id;
+                if (!DoctorSignals.Exists(DoctorSignals.WatchingName(pid)))
+                    return; // No Doctor. Do not delay this crash by even a millisecond.
+
+                if (!DoctorSignals.TrySignal(DoctorSignals.DumpRequestName(pid)))
+                    return;
+
+                // Short on purpose. The user is already looking at a crash; a few seconds to capture what
+                // caused it is a fair trade, but only a few.
+                var dumped = DoctorSignals.WaitFor(
+                    DoctorSignals.DumpCompleteName(pid),
+                    TimeSpan.FromSeconds(3)
+                );
+                Logger.WriteEvent(
+                    dumped
+                        ? "The Bloom Freeze Doctor captured a dump of this crash"
+                        : "Asked the Bloom Freeze Doctor for a crash dump but it did not answer in time"
+                );
+            }
+            catch (Exception)
+            {
+                // A crash path is the last place to introduce a new way to fail.
+            }
         }
 
         private static void SafeRecordUiTick()

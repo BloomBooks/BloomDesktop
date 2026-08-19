@@ -126,9 +126,29 @@ namespace Bloom.FreezeDoctor
                     Environment.FailFast("FreezeSimulator was asked to fail fast");
                     break;
 
-                // An unhandled exception, for comparison with failfast's exit code.
+                // An exception on the UI thread. Note this does NOT kill Bloom: Bloom's own error handling
+                // catches it and reports it, which is the correct behaviour and is also the case where the
+                // Doctor should stay quiet because Bloom has already told us.
                 case "throw":
                     throw new ApplicationException("FreezeSimulator was asked to throw");
+
+                // A genuinely fatal crash: an exception on a plain background thread, which nothing catches.
+                // AppDomain.UnhandledException fires and the process dies — the path the Doctor's
+                // crash-dump handshake exists for, and the only one we can actually exercise, since a direct
+                // FailFast runs no managed handlers at all.
+                case "crashthread":
+                    new Thread(() =>
+                    {
+                        Thread.Sleep(500);
+                        throw new ApplicationException(
+                            "FreezeSimulator was asked to crash a background thread"
+                        );
+                    })
+                    {
+                        IsBackground = false,
+                        Name = "FreezeSimulator crashing thread",
+                    }.Start();
+                    break;
 
                 // The UI goes away but the process lives on, held up by a foreground thread: the state
                 // whose symptom users report as "Bloom won't start".

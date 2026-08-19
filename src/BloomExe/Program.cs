@@ -1446,6 +1446,10 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
+                // Ask a watching Freeze Doctor to dump us while we still exist. Costs nothing at all when no
+                // Doctor is installed, which is the overwhelmingly common case: it checks with a zero
+                // timeout before it agrees to wait for anything.
+                FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(bad);
                 System.Environment.FailFast(exceptMsg);
             }
@@ -1461,6 +1465,9 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
+                // As above: a dump from outside beats one a dying process takes of itself, and this costs
+                // nothing when nobody is watching.
+                FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(nasty);
                 System.Environment.FailFast(exceptMsg);
             }
