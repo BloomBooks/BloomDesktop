@@ -2270,16 +2270,17 @@ namespace Bloom.Edit
                 _bookPathFromCopyPage = page.Book.GetPathHtmlFile();
             };
 
-            // The copied page has to end up SELECTED, which is why this navigates at all: a
-            // later Paste inserts after the current selection (see
-            // DeterminePageWhichWouldPrecedeNextInsertion), so if copying left the selection
-            // elsewhere, the pasted copy would land somewhere the user did not ask for.
+            // In practice the page being copied is ALWAYS the selected one: the page list only
+            // opens its context menu on the selected page (see openContextMenu in
+            // pageThumbnailList.tsx, which bails unless pageId === selectedPageId), and the menu
+            // button is only rendered there. So we take the in-place branch and copying a page
+            // does not reload it -- which is the win here.
             //
-            // Almost always it is already selected -- the user right-clicked the page they are on
-            // -- and then there is nothing to navigate to and we can leave the page completely
-            // alone, which is the win here: copying a page no longer reloads it. Only the rarer
-            // case of right-clicking some OTHER thumbnail (a right-click does not select) still
-            // has to move, exactly as it did before.
+            // The navigating branch is kept as a safety net rather than dead weight, because the
+            // copied page MUST end up selected: a later Paste inserts after the current selection
+            // (see DeterminePageWhichWouldPrecedeNextInsertion), so were that guarantee ever
+            // relaxed, copying without selecting would drop the pasted copy somewhere the user
+            // did not ask for.
             var copyingTheSelectedPage = _pageSelection.CurrentSelection?.Id == page.Id;
             if (
                 copyingTheSelectedPage
