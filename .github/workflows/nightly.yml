@@ -318,22 +318,43 @@ jobs:
                   echo "----- collected diagnostics -----"
                   ls -R "$dest" || true
 
-            # Keep the current + diff images so a human can see what changed, plus the Bloom logs /
-            # crash events / watchdog stacks gathered above. The committed *-reference.png baselines
-            # are already in the repo; *-current.png and *-diff.png are generated (gitignored).
-            # if-no-files-found: ignore avoids a warning when there was no pixel mismatch at all
-            # (e.g. a clean run, or Bloom failed to launch so no screenshots were produced).
-            # Uploaded on success too, for the reason given on the collect step above.
-            - name: Upload visual regression diffs
+            # The logs / crash events / watchdog stacks gathered above, kept for EVERY run that got
+            # as far as the visual-regression suite -- green ones included, for the reason given on
+            # the collect step. This is deliberately a SEPARATE artifact from the screenshots below,
+            # because it is the cheap half: about 0.4 MB a night against about 28 MB of screenshots.
+            # if-no-files-found: ignore avoids a warning if nothing at all was collected.
+            - name: Upload Bloom diagnostics
               if: ${{ !cancelled() && steps.visual_regression.outcome != 'skipped' }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: bloom-diagnostics
+                  path: bloom-diagnostics/**
+                  retention-days: 4
+                  if-no-files-found: ignore
+
+            # The current + diff images, so a human can see what changed -- on FAILURE only. The
+            # committed *-reference.png baselines are already in the repo; *-current.png and
+            # *-diff.png are generated (gitignored). On a green run no *-diff.png exists at all
+            # (nothing mismatched) and the *-current.png set is a ~28 MB re-upload of baselines we
+            # already have in git -- 98% of what this step used to upload, for none of the
+            # information -- once a night, times retention-days. That is what was blowing out our
+            # Actions storage budget, so the pixels now go up only when the pixels are news; what a
+            # green run leaves behind is the diagnostics artifact above.
+            #
+            # A hung Bloom -- what BL-16612 is about -- fails the suite, so failure() still keeps
+            # its screenshots; and the diagnostics that actually explain a hang go up either way.
+            # if-no-files-found: ignore because a failure can also mean Bloom never launched, in
+            # which case there are no screenshots to collect.
+            - name: Upload visual regression screenshots
+              if: ${{ steps.visual_regression.outcome == 'failure' }}
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: visual-regression-diffs
                   path: |
                       src/BloomVisualRegressionTests/collections/**/screenshots/*-current.png
                       src/BloomVisualRegressionTests/collections/**/screenshots/*-diff.png
-                      bloom-diagnostics/**
-                  retention-days: 14
+                  # Four days, so a failure noticed after a weekend is still there to look at.
+                  retention-days: 4
                   if-no-files-found: ignore
 
             # ----- Test reports, one per suite -----
