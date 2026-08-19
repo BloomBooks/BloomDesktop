@@ -194,7 +194,14 @@ namespace Bloom.web.controllers
         private void HandleSetCustomPageLayout(ApiRequest request)
         {
             var pageId = request.RequiredPostString("pageId");
-            var switchingToCustom = request.RequiredPostString("layout") == "custom";
+            var layout = request.RequiredPostString("layout");
+            // Fail fast rather than letting a typo mean "standard", which is the branch that
+            // discards the saved custom layout.
+            if (layout != "standard" && layout != "custom")
+                throw new ArgumentException(
+                    $"editView/setCustomPageLayout got an unexpected layout \"{layout}\"; expected \"standard\" or \"custom\"."
+                );
+            var switchingToCustom = layout == "custom";
             var keepCustomLayoutDataWhenSwitchingToStandard =
                 request.RequiredPostString("keepCustomLayoutDataWhenSwitchingToStandard") == "true";
             var book = View.Model.CurrentBook;
