@@ -569,6 +569,7 @@ namespace Bloom
                             Settings.Default.MruProjects = new MostRecentPathsList();
                         }
 
+                        // The Save() below covers both this and the list we may just have created.
                         Settings.Default.MruProjects.AddNewPath(newCollection);
                         Settings.Default.Save();
 
@@ -1675,7 +1676,12 @@ namespace Bloom
             try
             {
                 //// See BL-10012.
-                var path = Bloom.Utils.LongPathAware.GetLongPath(collectionPath);
+                // GetFullPath: a collection name ending in a period or space leaves us with a
+                // path whose folder part doesn't literally exist, which breaks the FileSystemWatchers
+                // that TeamCollection and BookCollection set up on the collection folder. See BL-16679.
+                var path = MiscUtils.GetFullPath(
+                    Bloom.Utils.LongPathAware.GetLongPath(collectionPath)
+                );
                 if (Utils.LongPathAware.GetExceedsMaxPath(path))
                 {
                     Utils.LongPathAware.ReportLongPath(path);
@@ -1872,7 +1878,17 @@ namespace Bloom
         {
             if (OpenProjectWindow(path))
             {
-                Settings.Default.MruProjects.AddNewPath(path);
+                // Remember the collection by the path that really exists on disk, so that a path saved
+                // by an older Bloom with trailing periods or spaces on the folder name heals rather
+                // than being handed back to us on every launch. See BL-16679.
+                var pathAsOnDisk = MiscUtils.GetFullPath(path);
+                if (pathAsOnDisk != path)
+                {
+                    // The list matches paths as exact strings, so without this the old spelling stays
+                    // in it and the collection is listed twice in the Open/Create Collections dialog.
+                    Settings.Default.MruProjects.RemovePath(path);
+                }
+                Settings.Default.MruProjects.AddNewPath(pathAsOnDisk);
                 Settings.Default.Save();
                 return true;
             }
@@ -2048,6 +2064,16 @@ namespace Bloom
                 );
 
                 Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
+                // Deliberately NOT saved here, unlike the other settings this branch made save
+                // promptly. This runs on every startup path, and very early: before Main sets
+                // RunningInConsoleMode and dispatches the command-line verbs, so saving would make
+                // `bloom upload`, `hydrate` and friends rewrite the user's settings file - a smaller
+                // version of the very problem BL-16660 is about - and would risk failing an
+                // unattended run at startup. It is also before Main migrates the previous version's
+                // settings, whose Reload() would discard whatever we wrote anyway.
+                // Nothing is lost: this is a value derived at startup, not a user's choice, and
+                // GetDesiredUiLanguage derives it again next launch. When the user actually picks a
+                // language, WorkspaceView.ApplyUiLanguageChange saves both settings immediately.
 
                 // Per BL-6449, these two languages should try Spanish before English if a localization is missing.
                 // (If they ever get localized enough to show up in our list.)

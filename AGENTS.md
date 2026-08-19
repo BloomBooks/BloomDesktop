@@ -76,6 +76,17 @@ under `output/agent/<key>/` so your build/test never touches the locked shared o
 means you do **not** need to stop the developer's Bloom to build or run unit tests, and
 multiple terminals can build/test at once. See `Directory.Build.props` for how it works.
 
+- For `test`, the wrapper **judges the run and prints a verdict as its last line**, so
+  `[agent-dotnet] test run completed. Passed! ...` is the only thing you need to read (and it
+  survives `| tail`). Do not judge a run by the `Passed!`/`Failed!` summary above it: a run whose
+  test host is killed part way through still prints a passing summary of however many tests got to
+  run. The wrapper catches that and says `*** TEST RUN ABORTED ***`, and exits non-zero, as it
+  does for ordinary failures. The text it looks for lives in `build/test-abort-markers.txt`.
+- **Tests retire their BloomServers, they do not dispose them.** A fixture that made a server
+  listen calls `RetiredTestServers.Retire(server)`; the listener is closed a few fixtures later,
+  once whatever it was serving has certainly finished. Disposing on the spot is what used to kill
+  the test host (BL-16667). If you add a fixture that calls `EnsureListening`, retire it the same
+  way rather than calling `Dispose`.
 - This wrapper is for **building and running tests only**. To *run* Bloom, still use
   `./go.sh` (see "Running Bloom" below) — the wrapper builds no `Bloom.exe` apphost.
   (`BloomPdfMaker.exe` is the one apphost it does build, because Bloom's PDF code shells
@@ -154,6 +165,20 @@ Like the C# wrapper it is **build-only**: it confirms the bundle compiles; it do
 running Bloom load those bundles (Bloom reads the fixed `output\browser` / dev server). It
 skips the pug/LESS/markdown/static-copy steps, so it is a fast pure-bundle check.
 
+## If the front-end test suite seems to hang, re-run it with `--no-file-parallelism`
+
+On some machines `yarn test` (`vitest run`) gets through roughly fifteen test files and then
+stops dead — no error, no failing test, no summary — until something kills it. That is vitest's
+worker pool wedging, **not** a broken test and not the branch you are on: run the files one at a
+time and the whole suite completes green.
+
+```bash
+cd src/BloomBrowserUI && yarn vitest run --no-file-parallelism
+```
+
+So before reporting the suite as hanging or failing, re-run it that way and report *that* result.
+Do not go hunting for the "test that hangs" — it moves. Excluding whichever file it stopped after
+just relocates the stall to a different one.
 
 # Terminal
 The vscode terminal often loses the first character sent from copilot agents. So if you send "cd" it might just say "bash: d: command not found". Try prefixing commands with a space.

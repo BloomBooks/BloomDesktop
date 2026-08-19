@@ -30,6 +30,7 @@ import { kBloomBlue } from "../bloomMaterialUITheme";
 import { BloomTooltip } from "../react_components/BloomToolTip";
 import { Link } from "../react_components/link";
 import { ForumInvitationDialogLauncher } from "../react_components/forumInvitationDialog";
+import { SignInInvitationDialogLauncher } from "../react_components/signInInvitationDialog";
 import { CollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
 import { BooksOnBlorgProgressBar } from "../booksOnBlorg/BooksOnBlorgProgressBar";
 import { SubscriptionStatus } from "./SubscriptionStatus";
@@ -705,6 +706,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <TeamCollectionDialogLauncher />
             <SpreadsheetExportDialogLauncher />
             <ForumInvitationDialogLauncher />
+            <SignInInvitationDialogLauncher />
             <RegistrationDialogEventLauncher />
             <AboutDialogLauncher />
             <CollectionSettingsDialog />

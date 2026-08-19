@@ -1,0 +1,11 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "//": "The 'vanilla' flavor of SIL-Niger shows no SIL Niger logo, on either the title page or the back cover. It shows only the standard 'Made with Bloom' badge, exactly as the Default branding does.",
+            "content": "{bloom-badge-default}",
+            "condition": "always"
+        }
+    ]
+}

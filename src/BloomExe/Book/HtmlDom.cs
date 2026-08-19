@@ -2878,6 +2878,10 @@ namespace Bloom.Book
                 audioOrDivWithBackgroundMusic.GetAttribute("data-backgroundaudio") ?? String.Empty;
             if (backgroundAudioFileName != String.Empty)
             {
+                // data-backgroundaudio really IS URL-encoded -- the music tool writes it through
+                // encodeAndSetPageAttr (encodeURIComponent). Do not "correct" this to match its
+                // neighbours data-sound / data-correct-sound / data-wrong-sound, which are plain.
+                // See the encoding conventions note on UrlPathString.
                 return UrlPathString.CreateFromUrlEncodedString(backgroundAudioFileName);
             }
 

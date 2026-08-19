@@ -64,6 +64,10 @@ namespace BloomTests.web
         [TestCase("bl%F4%80%80%8Aah", "/bl􀀊ah")] // private use character
         [TestCase("one + one", "/one + one")] // BL-3814. See http://stackoverflow.com/a/1006074/723299
         [TestCase("//networkUrl", "///networkUrl")] // BL-3808 Error using Bloom through network share
+        // BL-16669: a file name may itself contain a '%' followed by two hex digits. Encoded for
+        // the url that '%' becomes "%25", and we must decode exactly once to get back to the real
+        // name; a second decode would send us looking for "photoA.jpg", which isn't there.
+        [TestCase("photo%2541.jpg", "/photo%41.jpg")]
         public void LocalPathWithoutQuery_SpecialCharactersDecodedCorrectly(
             string urlEnd,
             string expectedResult

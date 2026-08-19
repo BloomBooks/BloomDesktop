@@ -80,6 +80,7 @@ namespace Bloom.web.controllers
                 }
                 else
                 {
+                    // All we want here is the HTML encoding; a heading is prose, never a url.
                     HeadingHtml = UrlPathString.CreateFromUnencodedString(heading).HtmlXmlEncoded;
                 }
 

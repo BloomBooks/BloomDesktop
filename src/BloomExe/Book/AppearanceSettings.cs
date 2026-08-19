@@ -1047,6 +1047,9 @@ public class AppearanceSettings
     /// Sets the appropriate page number CSS properties based on the specified position.
     /// (Brandings and Xmattters should instead set pageNumber-left-margin, pageNumber-right-margin, and
     /// pageNumber-always-left-margin to control page number placement.)
+    /// A theme whose page margin is not a suitable distance from the page edge for a forced
+    /// left/right page number (e.g. zero-margin pages) can adjust it by setting
+    /// --pageNumber-forced-side-extra-margin (BL-16695).
     /// </summary>
     private void SetPageNumberProperties()
     {
@@ -1068,7 +1071,7 @@ public class AppearanceSettings
                 SetProperty(
                     new KeyValuePair<string, object>(
                         kPageNumberLeftMarginOverrideVar,
-                        "calc(var(--page-margin-left) + var(--pageNumber-full-bleed-extra-margin, 0px))"
+                        "calc(var(--page-margin-left) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))"
                     )
                 );
                 SetProperty(
@@ -1092,7 +1095,7 @@ public class AppearanceSettings
                 SetProperty(
                     new KeyValuePair<string, object>(
                         kPageNumberRightMarginOverrideVar,
-                        "calc(var(--page-margin-right) + var(--pageNumber-full-bleed-extra-margin, 0px))"
+                        "calc(var(--page-margin-right) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))"
                     )
                 );
                 SetProperty(

@@ -384,6 +384,11 @@ namespace Bloom.Edit
         {
             if (details.FromTab == Workspace.WorkspaceTab.edit)
             {
+                // Leaving the tab means no page will load to run whatever was queued for the next
+                // page load (see RunAfterNextPageLoad) — and it was queued for the page we are
+                // leaving, so it must not spring to life if the user comes back to that page later.
+                _doAfterNextPageLoad = null;
+
                 // When an external tool has overwritten the current book on disk (see
                 // ReloadCurrentBookDiscardingEdits), we are leaving the Edit tab specifically to
                 // discard the unsaved page. In that case reload from disk instead of saving, so the
@@ -1182,12 +1187,34 @@ namespace Bloom.Edit
             _view.GoToPage(_pageSelection.CurrentSelection, changingUiLanguage);
         }
 
+        /// <summary>
+        /// XPath for the img on a page whose src is the given (URL-encoded) file name.
+        /// </summary>
+        /// <remarks>
+        /// A src often carries a query string as well as the file name -- "?transparent=yes" from
+        /// the transparency handling, "?thumbnail=1" from the page list, or the old cache-busting
+        /// "?12345". Matching the src exactly therefore found nothing on exactly the pages that
+        /// use those, and the caller's only response to finding nothing is to give up silently.
+        /// So we accept either the bare name or the name followed by '?'. Requiring the '?' is
+        /// what keeps this from also matching a different file that merely starts with the same
+        /// characters ("cat.png" must not match "cat2.png"). (BL-16669)
+        ///
+        /// The name is safe to embed in the XPath string literal: it is URL-encoded, and
+        /// UrlEncoded escapes an apostrophe as %27, so it cannot terminate the literal.
+        /// </remarks>
+        internal static string MakeImgWithSrcXPath(string urlEncodedFileName)
+        {
+            return $".//img[@src='{urlEncodedFileName}' or starts-with(@src, '{urlEncodedFileName}?')]";
+        }
+
         public void UpdateMetaData(string url)
         {
+            // url is a file name (EditingView._fileNameOfImageBeingModified), which we re-encode
+            // here so it matches what is in the src attribute.
             var match = UrlPathString.CreateFromUnencodedString(url).UrlEncoded;
             var imgElt = _pageSelection
                 .CurrentSelection.GetDivNodeForThisPage()
-                .SafeSelectNodes($".//img[@src='{match}']")
+                .SafeSelectNodes(MakeImgWithSrcXPath(match))
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             if (imgElt == null)
@@ -1460,7 +1487,9 @@ namespace Bloom.Edit
                 false,
                 InMemoryHtmlFileSource.Pagelist
             );
-            var urlPath = UrlPathString.CreateFromUnencodedString(url);
+            // PossiblyEncoded because CreateSimulatedFile returns a localhost url whose path
+            // components are already escaped; see the note on CreateFromPossiblyEncodedString.
+            var urlPath = UrlPathString.CreateFromPossiblyEncodedString(url);
             var encodedUrl = urlPath.UrlEncodedForHttpPath;
             BloomServer.SetCurrentPageListUrlForDebugging(encodedUrl);
             return encodedUrl;
@@ -2128,11 +2157,59 @@ namespace Bloom.Edit
         public void HandlePageDomLoadedEvent(string pageId)
         {
             var nowEditing = _stateMachine.ToEditing(pageId);
+            if (nowEditing)
+            {
+                // Run whatever was queued for "the browser has a page again" (see
+                // RunAfterNextPageLoad). Taken and cleared before invoking, so it fires at most
+                // once even if it throws, and so an action that queues another one works.
+                // Before AdvanceUpdatingAllPages, which may navigate straight off this page.
+                var afterPageLoad = _doAfterNextPageLoad;
+                _doAfterNextPageLoad = null;
+                afterPageLoad?.Invoke(pageId);
+            }
             // If we are in the middle of the "Update Book" per-page pass, a page finishing loading
             // (which means the edit-tab page setup code has run on it) is our cue to save it and
             // move on to the next page. See StartUpdatingAllPages().
             if (nowEditing && _updatingAllPages)
                 AdvanceUpdatingAllPages(pageId);
+        }
+
+        // The one action queued by RunAfterNextPageLoad, or null.
+        private Action<string> _doAfterNextPageLoad;
+
+        /// <summary>
+        /// Arrange for <paramref name="action"/> to run the next time a page finishes loading in
+        /// the browser, passing it that page's id.
+        ///
+        /// This exists for callers that must save the current page before doing something in the
+        /// browser that needs the saved book DOM to be up to date. Saving strips the live page, so
+        /// it always ends by re-navigating to it (see EditingStateMachine) — which means
+        /// SaveThen's own doAfterSaveToDisk is too early for such a caller: it runs before that
+        /// navigation, so the browser code it started would be torn down. Waiting for the page to
+        /// come back is the only safe point. AiImageEditorApi.HandleSaveThenLaunch is the caller
+        /// this was written for (BL-16682).
+        ///
+        /// Note that "torn down" is not limited to the page iframe, which is why this cannot be
+        /// worked around by putting the browser code somewhere higher up.
+        /// EditingView.StartNavigationToEditPage picks one of three routes, and the third reloads
+        /// the whole workspace root document. In practice that route is reached when
+        /// MemoryUtils.SystemIsShortOfMemory() — which is Bloom's OWN private bytes past ~2GB, so
+        /// the ordinary state of a long editing session on a big book, and exactly what the full
+        /// reload exists to recover from. (Its other trigger, _changingUiLanguage, appears
+        /// unreachable from the edit tab today: everything that sets it — choosing a UI language,
+        /// toggling unapproved translations — reopens the project or restarts Bloom first. Don't
+        /// rely on that; the memory condition alone is enough.) So no browser-side state at all is
+        /// guaranteed to survive the navigation that ends a save; only C#-side state like this is.
+        ///
+        /// Only one action is held; queueing a second replaces the first, and passing null cancels.
+        /// The page that loads next is not necessarily the one the caller was on (the user may have
+        /// navigated, or the save may have failed), so callers that care must check the id they are
+        /// given. Leaving the Edit tab drops it (see OnTabAboutToChange), since no page would load
+        /// to run it and the caller's page is no longer on screen.
+        /// </summary>
+        public void RunAfterNextPageLoad(Action<string> action)
+        {
+            _doAfterNextPageLoad = action;
         }
 
         // Fields supporting the "Update Book" per-page pass (see StartUpdatingAllPages()).

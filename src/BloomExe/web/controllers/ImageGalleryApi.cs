@@ -219,6 +219,9 @@ namespace Bloom.web.controllers
                     request.ReplyWithJson(
                         new
                         {
+                            // destName is the name of the file we just copied into the book
+                            // folder, so it is certainly not URL-encoded; see the same call in
+                            // PageEditingModel.ChangePicture.
                             src = UrlPathString.CreateFromUnencodedString(destName).UrlEncoded,
                             copyright = "",
                             license = "",

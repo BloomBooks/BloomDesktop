@@ -46,7 +46,7 @@ namespace BloomTests.TeamCollection
                         "Strange book content",
                         bookFolderName2
                     );
-                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
 
@@ -103,7 +103,7 @@ namespace BloomTests.TeamCollection
                     Assert.That(File.Exists(teamCollectionLinkPath));
                     var collectionFileContent = RobustFile.ReadAllText(teamCollectionLinkPath);
                     Assert.That(collectionFileContent, Is.EqualTo(sharedFolder.FolderPath));
-                    var sharedSettingsPath = CollectionSettings.GetSettingsFilePath(
+                    var sharedSettingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     Assert.That(
@@ -242,7 +242,7 @@ namespace BloomTests.TeamCollection
                     )
                 )
                 {
-                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     var tcManager = new TeamCollectionManager(
@@ -781,7 +781,7 @@ namespace BloomTests.TeamCollection
                         collectionFolder.FolderPath,
                         repoFolder.FolderPath
                     );
-                    var otherPath = CollectionSettings.GetSettingsFilePath(
+                    var otherPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     Directory.CreateDirectory(Path.GetDirectoryName(otherPath));
@@ -875,7 +875,7 @@ namespace BloomTests.TeamCollection
                         collectionFolder.FolderPath,
                         repoFolder.FolderPath
                     );
-                    var otherPath = CollectionSettings.GetSettingsFilePath(
+                    var otherPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     // this test doesn't need this folder except that StartMonitoring does.
@@ -1266,6 +1266,214 @@ namespace BloomTests.TeamCollection
                     );
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets up a team collection whose repo holds a settings file with the given content, and
+        /// runs the given check against it. See BL-16691.
+        /// </summary>
+        private void WithRepoSettingsFile(
+            string testName,
+            string settingsFileContent,
+            Action<TestFolderTeamCollection, CollectionSettings> check
+        )
+        {
+            using (var collectionFolder = new TemporaryFolder(testName + "_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder(testName + "_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var settings = new CollectionSettings();
+                    mockTcManager.Setup(m => m.Settings).Returns(settings);
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.GetDirectoryName(settingsPath));
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    if (settingsFileContent != null)
+                    {
+                        File.WriteAllText(settingsPath, settingsFileContent);
+                        tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+                    }
+                    check(tc, settings);
+                }
+            }
+        }
+
+        [TestCase("False", false)]
+        [TestCase("True", true)]
+        public void GetAllowCheckoutsFromRepo_ReadsTheRepoCopy(string valueInFile, bool expected)
+        {
+            WithRepoSettingsFile(
+                "GetAllowCheckouts" + valueInFile,
+                $"<Collection version=\"0.2\"><AllowCheckouts>{valueInFile}</AllowCheckouts></Collection>",
+                (tc, settings) => Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.EqualTo(expected))
+            );
+        }
+
+        /// <summary>
+        /// Reading the repo copy has to cope with what Bloom actually writes, and Bloom writes the
+        /// settings file with a UTF-8 BOM. The other tests here write the file themselves without
+        /// one, so they would not notice if the BOM reached the XML parser. See BL-16691.
+        /// </summary>
+        [Test]
+        public void GetAllowCheckoutsFromRepo_FileWrittenByBloomWithBom_IsRead()
+        {
+            using (var collectionFolder = new TemporaryFolder("GetAllowCheckoutsBom_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder("GetAllowCheckoutsBom_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+
+                    // Write it the way Bloom really does, rather than by hand.
+                    var settings = new CollectionSettings(settingsPath) { AllowCheckouts = false };
+                    settings.Save();
+
+                    // Sanity check: the whole point of this test is that Bloom emits a BOM.
+                    Assert.That(
+                        File.ReadAllBytes(settingsPath).Take(3).ToArray(),
+                        Is.EqualTo(new byte[] { 0xEF, 0xBB, 0xBF }),
+                        "setup failed: expected Bloom to write a UTF-8 BOM"
+                    );
+                    tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+
+                    Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.False);
+                }
+            }
+        }
+
+        [Test]
+        public void GetAllowCheckoutsFromRepo_ElementMissing_IsTrue()
+        {
+            WithRepoSettingsFile(
+                "GetAllowCheckoutsMissing",
+                "<Collection version=\"0.2\"><AllowNewBooks>True</AllowNewBooks></Collection>",
+                (tc, settings) => Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.True)
+            );
+        }
+
+        /// <summary>
+        /// If we can't read the repo copy we must leave the setting alone rather than guess.
+        /// </summary>
+        [Test]
+        public void GetAllowCheckoutsFromRepo_NoRepoSettings_IsNull()
+        {
+            WithRepoSettingsFile(
+                "GetAllowCheckoutsNoRepo",
+                null,
+                (tc, settings) => Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.Null)
+            );
+        }
+
+        /// <summary>
+        /// The point of the whole exercise: an administrator pausing checkouts must take effect
+        /// on a machine that is already running, without waiting for a restart. See BL-16691.
+        /// </summary>
+        [Test]
+        public void UpdateAllowCheckoutsFromRepo_RepoSaysPaused_UpdatesLiveSettings()
+        {
+            WithRepoSettingsFile(
+                "UpdateAllowCheckoutsPaused",
+                "<Collection version=\"0.2\"><AllowCheckouts>False</AllowCheckouts></Collection>",
+                (tc, settings) =>
+                {
+                    // Sanity check: the running Bloom starts out allowing checkouts, which is what
+                    // makes the change below meaningful.
+                    Assert.That(
+                        settings.AllowCheckouts,
+                        Is.True,
+                        "setup failed: should have started out allowing checkouts"
+                    );
+
+                    tc.UpdateAllowCheckoutsFromRepo();
+
+                    Assert.That(settings.AllowCheckouts, Is.False);
+                }
+            );
+        }
+
+        /// <summary>
+        /// The administrator pauses checkouts by editing their own local settings file while Bloom
+        /// runs, and Bloom pushes that up to the repo. Their own repo watcher is suppressed while
+        /// we write, so without help the machine that made the change is the one machine that
+        /// doesn't act on it -- and its stale in-memory "allowed" would be written back over the
+        /// change by the next Save(), un-pausing the whole team. See BL-16691.
+        /// </summary>
+        [Test]
+        public void SyncLocalAndRepoCollectionFiles_LocalPausePushedUp_UpdatesLiveSettings()
+        {
+            using (var collectionFolder = new TemporaryFolder("LocalPausePushedUp_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder("LocalPausePushedUp_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var settings = new CollectionSettings();
+                    mockTcManager.Setup(m => m.Settings).Returns(settings);
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+
+                    // The administrator's hand-edit: the file says paused...
+                    File.WriteAllText(
+                        settingsPath,
+                        "<Collection version=\"0.2\"><AllowCheckouts>False</AllowCheckouts></Collection>"
+                    );
+                    // ...while this running Bloom still has the value it loaded at startup.
+                    Assert.That(
+                        settings.AllowCheckouts,
+                        Is.True,
+                        "setup failed: the running Bloom should still think checkouts are allowed"
+                    );
+
+                    tc.SyncLocalAndRepoCollectionFiles(false);
+
+                    Assert.That(
+                        settings.AllowCheckouts,
+                        Is.False,
+                        "the machine that made the change should be paused too"
+                    );
+                    Assert.That(
+                        tc.GetAllowCheckoutsFromRepo(),
+                        Is.False,
+                        "and the pause should have reached the repo"
+                    );
+                }
+            }
+        }
+
+        [Test]
+        public void UpdateAllowCheckoutsFromRepo_NoRepoSettings_LeavesSettingAlone()
+        {
+            WithRepoSettingsFile(
+                "UpdateAllowCheckoutsNoRepo",
+                null,
+                (tc, settings) =>
+                {
+                    settings.AllowCheckouts = false;
+                    tc.UpdateAllowCheckoutsFromRepo();
+                    Assert.That(settings.AllowCheckouts, Is.False);
+                }
+            );
         }
     }
 }

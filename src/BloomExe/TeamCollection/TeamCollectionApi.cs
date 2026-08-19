@@ -286,8 +286,11 @@ namespace Bloom.TeamCollection
         /// </remarks>
         private void HandleReportBadZip(ApiRequest request)
         {
-            var fileEncoded = request.Parameters["file"];
-            var file = UrlPathString.CreateFromUrlEncodedString(fileEncoded).NotEncoded;
+            // No decoding here: ApiRequest.Parameters comes from RequestInfo.GetQueryParameters(),
+            // i.e. HttpUtility.ParseQueryString, which has already decoded the value once.
+            // Decoding again turned a path that genuinely contains a '%' ("photo%41.bloom") into a
+            // different one ("photoA.bloom"). (BL-16669)
+            var file = request.Parameters["file"];
             request.PostSucceeded(); // this should come before a modal dialog
             NonFatalProblem.Report(
                 ModalIf.All,
@@ -534,6 +537,7 @@ namespace Bloom.TeamCollection
                         isNewLocalBook = true,
                         checkinMessage = "",
                         isUserAdmin = _tcManager.OkToEditCollectionSettings,
+                        checkoutsArePaused = !_settings.AllowCheckouts,
                     }
                 );
             }
@@ -620,6 +624,7 @@ namespace Bloom.TeamCollection
                     isNewLocalBook,
                     checkinMessage,
                     isUserAdmin = _tcManager.OkToEditCollectionSettings,
+                    checkoutsArePaused = !_settings.AllowCheckouts,
                 }
             );
         }
@@ -685,6 +690,23 @@ namespace Bloom.TeamCollection
             if (!_tcManager.CheckConnection())
             {
                 request.Failed();
+                return;
+            }
+
+            // The UI disables the checkout button when checkouts are paused, but it decides that
+            // from a status snapshot it fetched earlier, and not every path back here re-checks it
+            // -- the post issued after the registration dialog, for one, doesn't. This is also the
+            // side that notices an administrator pausing checkouts part way through a session (see
+            // TeamCollection.UpdateAllowCheckoutsFromRepo), so it can know before the browser does.
+            // Either way, refuse here rather than rely on the browser having current status.
+            // See BL-16691.
+            if (!_settings.AllowCheckouts)
+            {
+                // Tell the browser to re-read book status, so the panel redraws itself into the
+                // paused state and explains why the checkout didn't happen. Without this the
+                // person just sees the button stop responding with no reason given.
+                _socketServer.SendEvent("bookTeamCollectionStatus", "reload");
+                request.Failed("checkouts are paused for this collection");
                 return;
             }
 
