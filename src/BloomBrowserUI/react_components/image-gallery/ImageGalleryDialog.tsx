@@ -115,6 +115,20 @@ const ImageGalleryDialog: React.FunctionComponent<{
     // back. The term is what makes the rest of the data mean anything: with it we can tell a
     // term that keeps being searched and never accepted (a real gap in the art we can reach)
     // from one that works first time.
+    //
+    // Sending the term is a deliberate, signed-off decision (John, on the BL-16716 review), and
+    // this is the only place in Bloom's analytics where free-form user text leaves the machine, so
+    // it is worth writing down rather than rediscovering. Three things make it acceptable: users are
+    // told that Bloom collects analytics, we take care that what we collect is not personally
+    // identifiable, and these are the same one- or two-word queries the user is simultaneously
+    // sending to a public image service. Contrast AI prompt text, which is excluded by name (see the
+    // allow-list in aiEditorOverlay.ts) precisely because it carries sentences out of the book.
+    //
+    // Two things to know if this is ever revisited. Searching a LOCAL collection (Art of Reading and
+    // the like) needs no network at all, so those terms could in principle stay on the machine while
+    // the online ones are reported -- the split is available if we ever want it. And the decision was
+    // explicitly "stick with this unless someone complains", so a complaint is the trigger to
+    // reopen it, not a reason to be surprised.
     const handleSearch = (report: ISearchReport) => {
         searchCountRef.current++;
         providersTriedRef.current.add(report.providerId);
