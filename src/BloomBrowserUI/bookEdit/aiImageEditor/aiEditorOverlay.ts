@@ -213,10 +213,21 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // thrown away, however it ends afterwards.
         let anythingReachedTheBook = false;
 
-        // The session ended with nothing kept. Called from cleanup, and again from the commit
-        // reply when a commit that was still in flight at that moment turns out to have failed.
+        // The session ended with nothing kept. Called from cleanup, and again from each commit
+        // reply, since a commit outstanding at the moment the user closed is what decides.
+        //
+        // The outstanding-commit test lives HERE rather than at the call sites, because every
+        // caller needs it and one of them is easy to get wrong: a reply arriving for commit A must
+        // not report a cancel while commit B is still in the air, or a session whose pictures do
+        // land ends up in both the cancel and the commit figures. Each reply decrements the count
+        // before calling us, so whichever one settles last is the one that reports.
         const reportCancel = () => {
-            if (cancelReported || commitSucceeded || anythingReachedTheBook)
+            if (
+                cancelReported ||
+                commitSucceeded ||
+                anythingReachedTheBook ||
+                commitsInFlight > 0
+            )
                 return;
             cancelReported = true;
             trackEvent("AI Editor Cancel", {
@@ -231,8 +242,9 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             //
             // Except one: closing while a commit is still in flight. The overlay goes away
             // immediately, but the pictures may well be saved a moment later -- and reporting a
-            // cancel here would count that session as thrown-away work AND as a commit, inflating
-            // the very number this event exists to provide. The commit reply decides instead.
+            // cancel now would count that session as thrown-away work AND as a commit, inflating
+            // the very number this event exists to provide. reportCancel declines in that case;
+            // the last commit reply to arrive is what reports.
             //
             // Idempotent, and it has to be: a commit sent by THIS session can be answered after the
             // user has closed it and opened the editor again, and its success path calls us. The
@@ -242,9 +254,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             // commit reply made it easier to reach.)
             if (sessionEnded) return;
             sessionEnded = true;
-            if (commitsInFlight === 0) {
-                reportCancel();
-            }
+            reportCancel();
             hostWindow.removeEventListener("message", handleMessage);
             hostDocument.getElementById("ai-editor-overlay")?.remove();
             delete hostWindow.__bloomAiImageEditorCleanup;

@@ -615,6 +615,59 @@ describe("aiEditorOverlay: analytics", () => {
 
         expect(cancelEvents()).toHaveLength(1);
     });
+
+    test("of two overlapping commits, one failing and one succeeding is not also a cancel", () => {
+        // The other ordering from the test above, and the one that was wrong: the user closes with
+        // both commits outstanding, the FIRST comes back a failure, and the second then succeeds.
+        // Reporting the cancel when the failure arrived would put one session in both the cancel
+        // and the commit figures.
+        applyAiImageEditorReplacements.mockReturnValue({
+            applied: 0,
+            expected: 0,
+        });
+        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+
+        const sendCommit = (requestId: string, slot: string) =>
+            postFromEditor({
+                channel: "bloom-ai-image-tools",
+                type: "commit",
+                requestId,
+                payload: {
+                    replacements: [
+                        { incomingId: slot, resultId: "r" + requestId },
+                    ],
+                },
+            });
+
+        sendCommit("req1", "page2:0");
+        sendCommit("req2", "page3:0");
+        closeButton.click();
+
+        // The first fails...
+        (postJson.mock.calls[0][3] as () => void)();
+        expect(cancelEvents()).toHaveLength(0);
+
+        // ...and the second puts its picture in the book.
+        const onSuccess = postJson.mock.calls[1][2] as (r: {
+            data: unknown;
+        }) => void;
+        onSuccess({
+            data: {
+                ok: true,
+                results: [
+                    { incomingId: "page3:0", ok: true, isCurrentPage: false },
+                ],
+            },
+        });
+
+        // Sanity: that commit really was reported as putting a picture in the book.
+        expect(
+            trackEvent.mock.calls.filter(
+                (call) => call[0] === "AI Editor Commit",
+            ).length,
+        ).toBeGreaterThan(0);
+        expect(cancelEvents()).toHaveLength(0);
+    });
     test("a commit answered after the editor was reopened leaves the new overlay alone", () => {
         // The old session's success path calls its own cleanup, which tears down "the" overlay by
         // id and deletes the cleanup hook on the window -- both of which belong to the NEW session
