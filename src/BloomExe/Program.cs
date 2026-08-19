@@ -16,6 +16,7 @@ using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionChoosing;
 using Bloom.ErrorReporter;
+using Bloom.FreezeDoctor;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Registration;
@@ -1414,10 +1415,14 @@ namespace Bloom
             // before the message loop, because the UI heartbeat is a WinForms timer: it only ticks while
             // messages are being pumped, and that is exactly what makes its silence meaningful. Costs
             // nothing when no Doctor is installed, and cannot fail in a way Bloom notices.
-            FreezeDoctor.FreezeDoctorSupport.Start();
+            FreezeDoctorSupport.Start();
+            // And start the Doctor itself if the user has installed it, because a diagnostic tool is no use
+            // unless it is already running when the trouble starts. Costs one directory check when it is not
+            // installed, which is the normal case.
+            DoctorLauncher.LaunchIfInstalled();
             // Deliberate breakage for testing the Doctor, and inert unless BLOOM_SIMULATE_FREEZE is set
             // AND this is a developer build.
-            FreezeDoctor.FreezeSimulator.ArmIfRequested(ApplicationUpdateSupport.ChannelName);
+            FreezeSimulator.ArmIfRequested(ApplicationUpdateSupport.ChannelName);
 
             try
             {

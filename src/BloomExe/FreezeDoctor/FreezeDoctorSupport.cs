@@ -53,6 +53,20 @@ namespace Bloom.FreezeDoctor
         private static Thread _watchdog;
         private static int _shutdownPhase;
         private static bool _started;
+        private static DoctorSession _session;
+
+        /// <summary>
+        /// How often the session file is rewritten. It carries facts that barely change, so this is not
+        /// about freshness — it is so that a Doctor installed *after* Bloom started, or one that had not
+        /// yet been running when Bloom did, still finds a file describing the Bloom in front of it.
+        /// </summary>
+        private static readonly TimeSpan SessionRefreshInterval = TimeSpan.FromSeconds(10);
+
+        /// <summary>
+        /// How long an unexplained session file is kept. Long enough that a Doctor installed the day after
+        /// a crash can still find out about it, short enough not to accumulate.
+        /// </summary>
+        private static readonly TimeSpan SessionRetention = TimeSpan.FromDays(7);
 
         /// <summary>
         /// Starts publishing. Call once, on the UI thread, immediately before entering the message loop:
@@ -64,6 +78,12 @@ namespace Bloom.FreezeDoctor
             if (_started)
                 return;
             _started = true;
+
+            // The session file goes first, and happens even if the shared-memory channel cannot be
+            // created: it is what a Doctor reads about a Bloom that has already died, so it is the more
+            // important of the two for the case where nobody was watching at the time.
+            WriteSessionFile();
+
             try
             {
                 _channel = new DoctorChannelWriter(Process.GetCurrentProcess().Id);
@@ -165,6 +185,9 @@ namespace Bloom.FreezeDoctor
             {
                 _channel?.SetShutdownPhase(_shutdownPhase);
                 _channel?.RecordCleanExit();
+                // Also on disk, because the shared-memory page vanishes once the last handle closes and a
+                // Doctor may not have been watching. The file is what a Doctor started tomorrow will read.
+                WriteSessionExit();
             }
             catch (Exception)
             {
@@ -174,17 +197,160 @@ namespace Bloom.FreezeDoctor
         }
 
         /// <summary>
-        /// The background heartbeat. Deliberately does almost nothing: it exists to prove the process as a
-        /// whole is still scheduling threads, so anything it did beyond that would only add ways for it to
-        /// stop for reasons that are not the ones we care about.
+        /// Records that Bloom's own reporting has already told us about a problem this run, so the Doctor
+        /// does not file a second report about the same thing. Called when a Sentry event or a tracker card
+        /// goes out successfully.
+        /// </summary>
+        public static void NoteBloomReportedAProblem(string reportedId)
+        {
+            try
+            {
+                if (_session == null)
+                    return;
+                _session = _session with
+                {
+                    Exit = new DoctorSessionExit
+                    {
+                        AtUtc = DateTimeOffset.UtcNow,
+                        ShutdownPhase = _shutdownPhase,
+                        BloomAlreadyReported = true,
+                        ReportedId = reportedId,
+                    },
+                };
+                DoctorSessionStore.TryWrite(_session);
+            }
+            catch (Exception) { }
+        }
+
+        /// <summary>
+        /// Records the facts a Doctor needs but cannot reliably work out from outside — above all the log
+        /// file we are actually writing to, and the ports.
+        /// </summary>
+        private static void WriteSessionFile()
+        {
+            try
+            {
+                var process = Process.GetCurrentProcess();
+                var httpPort = Api.BloomServer.portForHttp;
+                _session = new DoctorSession
+                {
+                    ProcessId = process.Id,
+                    StartedAtUtc = process.StartTime.ToUniversalTime(),
+                    ExePath = SafeExePath(process),
+                    Version = Shell.GetShortVersionInfo(),
+                    Channel = ApplicationUpdateSupport.ChannelName,
+                    CommandLine = Environment.CommandLine,
+                    // The point of the whole file: Bloom recreates Log.txt each run and only falls back to
+                    // a random name when another Bloom holds it, so from outside the newest log is the
+                    // wrong answer exactly when it matters most.
+                    LogPath = Logger.LogPath ?? "",
+                    HttpPort = httpPort,
+                    // Kept in step with WebView2Browser.RemoteDebuggingPort rather than recomputed
+                    // independently, so the two cannot drift apart.
+                    CdpPort = httpPort > 0 ? Api.BloomServer.RemoteDebuggingPort : 0,
+                    CollectionName = SafeCollectionName(),
+                };
+                DoctorSessionStore.TryWrite(_session);
+
+                // Tidy up after previous runs, so a machine does not accumulate these for ever. An
+                // unexplained session is kept until it ages out — that is exactly the evidence a Doctor
+                // installed after a crash comes looking for.
+                DoctorSessionStore.Prune(ProcessIsAlive, SessionRetention);
+            }
+            catch (Exception e)
+            {
+                TryLog("Freeze Doctor session file could not be written", e);
+            }
+        }
+
+        /// <summary>
+        /// Rewrites the session file with how this run ended. Called from the same place as the clean-exit
+        /// flag, so the on-disk record and the shared-memory record agree.
+        /// </summary>
+        private static void WriteSessionExit()
+        {
+            try
+            {
+                if (_session == null)
+                    return;
+                // Do not overwrite a record that Bloom already reported a problem: that is more
+                // informative than "shut down at phase 4", and the Doctor uses it to stay quiet.
+                if (_session.Exit?.BloomAlreadyReported == true)
+                    return;
+                _session = _session with
+                {
+                    Exit = new DoctorSessionExit
+                    {
+                        AtUtc = DateTimeOffset.UtcNow,
+                        ShutdownPhase = _shutdownPhase,
+                    },
+                };
+                DoctorSessionStore.TryWrite(_session);
+            }
+            catch (Exception) { }
+        }
+
+        private static bool ProcessIsAlive(int processId)
+        {
+            try
+            {
+                using (var process = Process.GetProcessById(processId))
+                    return !process.HasExited;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private static string SafeExePath(Process process)
+        {
+            try
+            {
+                return process.MainModule?.FileName ?? "";
+            }
+            catch (Exception)
+            {
+                return "";
+            }
+        }
+
+        private static string SafeCollectionName()
+        {
+            try
+            {
+                var path = Bloom.Properties.Settings.Default.MruProjects?.Latest;
+                return string.IsNullOrEmpty(path)
+                    ? ""
+                    : System.IO.Path.GetFileNameWithoutExtension(path);
+            }
+            catch (Exception)
+            {
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// The background heartbeat. Deliberately does almost nothing beyond proving the process as a whole
+        /// is still scheduling threads — anything more would only add ways for it to stop for reasons that
+        /// are not the ones we care about. It does also refresh the session file, which is cheap and keeps
+        /// that work off the UI thread.
         /// </summary>
         private static void WatchdogLoop()
         {
+            var sinceSessionRefresh = TimeSpan.Zero;
             while (true)
             {
                 try
                 {
                     _channel?.RecordWatchdogTick();
+                    PublishWhatBloomIsDoing();
+                    sinceSessionRefresh += WatchdogInterval;
+                    if (sinceSessionRefresh >= SessionRefreshInterval)
+                    {
+                        sinceSessionRefresh = TimeSpan.Zero;
+                        RefreshSessionFile();
+                    }
                     Thread.Sleep(WatchdogInterval);
                 }
                 catch (Exception)
@@ -201,6 +367,61 @@ namespace Bloom.FreezeDoctor
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Publishes what Bloom is doing right now, worked out from the in-flight API requests, along with
+        /// the server's worker counts.
+        ///
+        /// This is where the Doctor's most useful sentence comes from. A stack trace says the UI thread is
+        /// waiting; this says *which request* has been running for 47 seconds, which is usually the answer.
+        /// Computed on this thread rather than in the request path, so the cost falls on a once-a-second
+        /// thread instead of on every request.
+        /// </summary>
+        private static void PublishWhatBloomIsDoing()
+        {
+            try
+            {
+                var activity = ApiActivityTracker.DescribeCurrentActivity();
+                if (activity != null)
+                    _channel?.SetActivity(activity);
+
+                var server = Api.BloomServer._theOneInstance;
+                if (server != null)
+                    _channel?.SetServerWorkerCounts(
+                        server.BusyWorkerCount,
+                        server.BlockedWorkerCount
+                    );
+            }
+            catch (Exception) { }
+        }
+
+        /// <summary>
+        /// Rewrites the session file with anything that may have changed since startup — the ports, which
+        /// are assigned after we first wrote it, and the collection, which changes when the user switches.
+        /// </summary>
+        private static void RefreshSessionFile()
+        {
+            try
+            {
+                if (_session == null)
+                    return;
+                var httpPort = Api.BloomServer.portForHttp;
+                var refreshed = _session with
+                {
+                    LogPath = Logger.LogPath ?? _session.LogPath,
+                    HttpPort = httpPort,
+                    CdpPort = httpPort > 0 ? Api.BloomServer.RemoteDebuggingPort : 0,
+                    CollectionName = SafeCollectionName(),
+                };
+                // Only touch the disk when something actually changed: this runs every ten seconds for the
+                // life of the process, and a pointless write every ten seconds is a pointless write.
+                if (refreshed == _session)
+                    return;
+                _session = refreshed;
+                DoctorSessionStore.TryWrite(_session);
+            }
+            catch (Exception) { }
         }
 
         private static void SafeRecordUiTick()
