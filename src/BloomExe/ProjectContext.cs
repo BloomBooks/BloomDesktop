@@ -68,31 +68,66 @@ namespace Bloom
         )
         {
             Logger.WriteMinorEvent("starting to construct the project context");
-            SettingsPath = projectSettingsPath;
+            // Settle which settings file we are really opening before anything uses the path. The
+            // caller's may not exist: the name is not always the folder's (BL-16679), and the lock
+            // below would then be aimed at a file that isn't there -- silently protecting nothing in
+            // a release build, and throwing in a DEBUG one.
+            SettingsPath = GetRealSettingsPath(projectSettingsPath);
 
             _collectionLock = new CollectionLock(SettingsPath);
             _collectionLock.Lock();
 
-            // BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.
-            // While we are starting (or restarting, in the case of switching collections) BloomServer we need to use
-            // the WinFormsExceptionHandler mechanism, which doesn't use a browser.
-            // The ProblemReportApi, which uses the browser (and therefore BloomServer) isn't available to us
-            // while BloomServer is starting up. By the time WorkspaceView comes online and sets the error reporting
-            // to the ProblemReportApi mechanism, BloomServer will be up and running again.
-            ErrorReport.OnShowDetails = null;
-            FatalExceptionHandler.UseFallback = true;
+            try
+            {
+                // BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.
+                // While we are starting (or restarting, in the case of switching collections) BloomServer we need to use
+                // the WinFormsExceptionHandler mechanism, which doesn't use a browser.
+                // The ProblemReportApi, which uses the browser (and therefore BloomServer) isn't available to us
+                // while BloomServer is starting up. By the time WorkspaceView comes online and sets the error reporting
+                // to the ProblemReportApi mechanism, BloomServer will be up and running again.
+                ErrorReport.OnShowDetails = null;
+                FatalExceptionHandler.UseFallback = true;
 
-            BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
+                BuildSubContainerForThisProject(SettingsPath, parentContainer);
 
-            _scope
-                .Resolve<CollectionSettings>()
-                .CheckAndFixDependencies(_scope.Resolve<BloomFileLocator>());
+                _scope
+                    .Resolve<CollectionSettings>()
+                    .CheckAndFixDependencies(_scope.Resolve<BloomFileLocator>());
 
-            if (!justEnoughForHtmlDialog)
-                ProjectWindow = _scope.Resolve<Shell>();
+                if (!justEnoughForHtmlDialog)
+                    ProjectWindow = _scope.Resolve<Shell>();
 
-            ToolboxView.SetupToolboxForCollection(Settings);
-            _scope.Resolve<TeamCollectionManager>().Settings = Settings;
+                ToolboxView.SetupToolboxForCollection(Settings);
+                _scope.Resolve<TeamCollectionManager>().Settings = Settings;
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError(ex);
+                // If we fail to build the subcontainer, we have to clean up after ourselves: Program
+                // assigns _projectContext only once this constructor returns, so on this path nobody
+                // else has a reference to us and nobody else can dispose us. Dispose unlocks the
+                // collection, so the user can try again (or at least not be locked out of the
+                // collection), and disposes whatever project-scoped objects we did manage to build --
+                // the Shell and its WebView2 browsers, the file watchers, and the rest of the scope.
+                // Left running, those can keep Bloom from ever exiting, which is part of what left it
+                // lingering as a zombie process. (BloomServer itself is application-level, resolved
+                // from the parent container, so it is not ours to shut down.) (BL-16679)
+                try
+                {
+                    Dispose();
+                }
+                catch (Exception disposeError)
+                {
+                    // Tearing down a half-built project can fail in its own right. If we let that
+                    // exception out, it would replace the one that actually explains what went
+                    // wrong, both for the user's problem report and for the log entry above.
+                    Logger.WriteError(
+                        "Error disposing a ProjectContext that failed to build",
+                        disposeError
+                    );
+                }
+                throw;
+            }
         }
 
         /// ------------------------------------------------------------------------------------
@@ -489,23 +524,58 @@ namespace Bloom
             };
         }
 
+        /// <summary>
+        /// The settings file we should really open: the one asked for, or, when that isn't there, the
+        /// .bloomCollection that actually is in the same folder. Returns the path it was given when
+        /// there is nothing better to offer.
+        /// </summary>
+        /// <remarks>
+        /// The two differ whenever a caller worked the file name out from the folder name, which is not
+        /// always what the settings file is called: renaming a collection folder leaves the old file
+        /// name behind, and a collection whose name ends with a period gets a folder without it,
+        /// because Windows drops trailing periods when it creates a folder (BL-16679). Also, the
+        /// TeamCollection manager may have deleted the file while syncing settings.
+        /// </remarks>
+        internal static string GetRealSettingsPath(string projectSettingsPath)
+        {
+            // Spell the path the way the disk does, here rather than trusting each caller to have done
+            // it: this is the one place every ProjectContext passes through, including the command-line
+            // entry points (creating artifacts, bulk upload, font analytics), which never went through
+            // Program's normalization. A folder name with a trailing period opens files perfectly well
+            // -- Windows normalizes for file APIs -- so without this the un-normalized spelling
+            // survives into the FileSystemWatchers, which is the original bug. (BL-16679)
+            projectSettingsPath = MiscUtils.GetFullPath(projectSettingsPath);
+            if (RobustFile.Exists(projectSettingsPath))
+                return projectSettingsPath;
+            var folder = Path.GetDirectoryName(projectSettingsPath);
+            // Note that TryGetSettingsFilePath wants the FOLDER; it was once passed the settings file
+            // path here, which just threw DirectoryNotFoundException, so this repair never worked.
+            if (
+                !string.IsNullOrEmpty(folder)
+                && Directory.Exists(folder)
+                && CollectionSettings.TryGetSettingsFilePath(folder, out var realPath)
+            )
+            {
+                return realPath;
+            }
+            return projectSettingsPath;
+        }
+
         // Get the collection settings. Passed the expected path, but if not found,
         // will look for any other bloomCollection file in the folder.
         public static CollectionSettings GetCollectionSettings(string projectSettingsPath)
         {
+            projectSettingsPath = GetRealSettingsPath(projectSettingsPath);
             if (!RobustFile.Exists(projectSettingsPath))
             {
-                // TCManager constructor may have deleted it in the process of syncing TC settings
-                if (
-                    CollectionSettings.TryGetSettingsFilePath(
-                        projectSettingsPath,
-                        out var settingsFilePath
-                    )
-                )
-                {
-                    // Hopefully this repairs things.
-                    projectSettingsPath = settingsFilePath;
-                }
+                // There is no collection here to load. Say so, rather than carrying on: the
+                // CollectionSettings constructor treats a path that doesn't exist as "make me a new
+                // collection there", so we would silently write a default .bloomCollection into the
+                // folder (and create the folder) instead of reporting the problem.
+                throw new FileNotFoundException(
+                    $"Bloom could not find a .bloomCollection file in {Path.GetDirectoryName(projectSettingsPath)}",
+                    projectSettingsPath
+                );
             }
 
             return new CollectionSettings(projectSettingsPath);
@@ -889,6 +959,15 @@ namespace Bloom
             // Disposing ProjectContext disables api functionality and disposes WorkspaceModel/View, BloomServer, et al.,
             // so we need to resort to our fallback error handler.
             ResetToFallbackHandler();
+
+            // We can be disposed without a scope: our constructor disposes us if it fails, and it can
+            // fail in (or even before) BuildSubContainerForThisProject. Unlocking the collection above
+            // is then all there is to do. This also makes Dispose safe to call twice. (BL-16679)
+            if (_scope == null)
+            {
+                GC.SuppressFinalize(this);
+                return;
+            }
 
             // We now keep BloomApiHandler alive for the application lifetime, but many endpoints are project-scoped.
             // Disposing the ProjectContext should fully shut down the project (including webviews) before we clear
