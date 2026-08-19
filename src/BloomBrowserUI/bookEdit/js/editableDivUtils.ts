@@ -526,6 +526,14 @@ export class EditableDivUtils {
     // that a .bloom-editable never sits holding adjacent text nodes, whoever split it - which
     // means calling this without knowing, or caring, what did.
     //
+    // The tempting shortcut is to stop the browser forming ligatures in the edit view at all
+    // (font-variant-ligatures: none), which is what code editors do - CodeMirror disables them
+    // in its default stylesheet precisely because of the caret behavior. Do NOT do that here.
+    // Bloom's edit view has to render as nearly as possible like the published book, and
+    // ligatures change the width of a word: text that fitted the page while the user was
+    // editing would break to a different line, and could overflow, in a publication mode.
+    // A rare glitch while typing is the lesser problem, and it is the one this repairs.
+    //
     // Note that repairing the DOM is not on its own enough to repair the display: see
     // mergeAdjacentTextNodeRuns().
     // We deliberately do NOT save and restore the insertion point around this. The DOM spec
