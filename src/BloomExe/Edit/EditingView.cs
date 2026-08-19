@@ -1188,6 +1188,12 @@ namespace Bloom.Edit
             );
         }
 
+        /// <summary>
+        /// Nothing calls this at present -- it is left from an older path -- so the "paste"/
+        /// "clipboard" pair it reports below is the route it USED to serve, not one derived from
+        /// anything the caller says. Anyone reusing this method from somewhere else must pass the
+        /// real route through instead; see AnalyticsApi.TrackChangePicture for the vocabulary.
+        /// </summary>
         public void SaveChangedImage(
             string imageId,
             UrlPathString priorImageSrc,
