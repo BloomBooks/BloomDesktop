@@ -542,7 +542,7 @@ export class EditableDivUtils {
         if (!EditableDivUtils.hasAdjacentTextNodes(element)) {
             return; // nothing to merge; leave the box, and the selection, strictly alone
         }
-        if (EditableDivUtils.hasCkEditorFillingChar(element)) {
+        if (EditableDivUtils.ckEditorIsHoldingAFillingChar(element)) {
             // Leave the box strictly alone while ckeditor is holding a filling char.
             // That char is a zero-width space in a text node of its own, which ckeditor
             // inserts at a collapsed selection next to an inline element so the caret shows,
@@ -643,8 +643,9 @@ export class EditableDivUtils {
         });
     }
 
-    // Does element contain two text nodes that are siblings, as removing a bookmark leaves
-    // behind? (An empty text node next to another one counts: merging folds it away.)
+    // Does element contain two text nodes that are siblings, as removing a bookmark - or a
+    // backspace, or long-press - leaves behind? (An empty text node next to another one
+    // counts: merging folds it away.)
     private static hasAdjacentTextNodes(element: HTMLElement): boolean {
         const walker = element.ownerDocument.createTreeWalker(
             element,
@@ -658,13 +659,33 @@ export class EditableDivUtils {
         return false;
     }
 
-    // Is ckeditor currently holding a filling char (a zero-width space) in this box?
-    // See mergeAdjacentTextNodes(), which must not merge while one is there. We look for
-    // the character itself rather than asking ckeditor for the node it remembers, so that
-    // an orphaned one - which is what BL-16490 was about - counts too.
-    private static hasCkEditorFillingChar(element: HTMLElement): boolean {
-        const fillingChar = String.fromCharCode(0x200b); // U+200B ZERO WIDTH SPACE
-        return element.textContent?.includes(fillingChar) ?? false;
+    // Is ckeditor currently holding a filling char in this box - that is, does it have a
+    // text node it is going to come back and edit? See mergeAdjacentTextNodes(), which must
+    // not merge one away underneath it.
+    // We ask ckeditor rather than searching the text for a zero-width space, which was the
+    // first thing I wrote: some scripts (Thai, Khmer, Myanmar) use U+200B in real text as a
+    // word break, and searching for the character would have quietly turned the repair off
+    // for a whole book in those languages. It also means an ORPHANED filling char - the
+    // BL-16490 case - does not block the repair, which is right: nothing is tracking it, so
+    // nothing is going to write to it, and folding it into its neighbour loses nothing that
+    // doCkEditorCleanup's removeCkEditorFillingChars would not have stripped at save time.
+    // If a ckeditor upgrade ever renamed this key, this would stop guarding and we would be
+    // back to the behavior that shipped in the first fix for BL-16717, which merged regardless.
+    // (Typed locally rather than through CKEDITOR.editor: our ckeditor.d.ts only declares the
+    // editable(element) setter overloads, not the no-argument getter that actually exists.)
+    private static ckEditorIsHoldingAFillingChar(
+        element: HTMLElement,
+    ): boolean {
+        const ckEditorOfThisBox = (
+            element as HTMLElement & {
+                bloomCkEditor?: {
+                    editable: () => { getCustomData: (key: string) => unknown };
+                };
+            }
+        ).bloomCkEditor;
+        return !!ckEditorOfThisBox
+            ?.editable()
+            ?.getCustomData("cke-fillingChar");
     }
 
     public static restoreSelectionFromCkEditorBookmarks(

@@ -489,6 +489,15 @@ describe("EditableDivUtils Tests", () => {
         div.appendChild(p);
         document.body.appendChild(div);
         const fillingCharNode = p.childNodes[1];
+        // Stand in for the live ckeditor: what matters is that it is TRACKING the node, which
+        // is what it means for the character to be one we must not disturb. (A stray
+        // zero-width space nobody is tracking is a different thing, and is fine to merge.)
+        (div as HTMLElement & { bloomCkEditor?: object }).bloomCkEditor = {
+            editable: () => ({
+                getCustomData: (key: string) =>
+                    key === "cke-fillingChar" ? fillingCharNode : undefined,
+            }),
+        };
         // sanity check the setup: there IS a split here, so without the filling char this
         // would certainly merge.
         expect(p.childNodes.length).toBe(2);
@@ -497,6 +506,30 @@ describe("EditableDivUtils Tests", () => {
 
         expect(p.childNodes.length).toBe(2);
         expect(p.childNodes[1]).toBe(fillingCharNode);
+
+        div.remove();
+    });
+
+    it("mergeAdjacentTextNodes merges a zero-width space nobody is tracking", () => {
+        // The mirror image of the test above, and the reason it asks ckeditor rather than
+        // searching the text: Thai, Khmer and Myanmar use U+200B in real text as a word break,
+        // and treating the character itself as a filling char would have turned the repair off
+        // for a whole book in those languages.
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode("waf"));
+        p.appendChild(
+            document.createTextNode(`fle${String.fromCharCode(0x200b)}word`),
+        );
+        div.appendChild(p);
+        document.body.appendChild(div);
+        // sanity check the setup
+        expect(p.childNodes.length).toBe(2);
+
+        EditableDivUtils.mergeAdjacentTextNodes(div);
+
+        expect(p.childNodes.length).toBe(1);
+        expect(p.textContent).toBe(`waffle${String.fromCharCode(0x200b)}word`);
 
         div.remove();
     });
