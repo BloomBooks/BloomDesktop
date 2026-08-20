@@ -16,13 +16,21 @@ namespace BloomTests.MiscUI
             StartupScreenManager.DoStartupAction(null, EventArgs.Empty);
         }
 
+        [SetUp]
+        public void SetUp()
+        {
+            // The queue is static, so start from a known-empty one rather than inheriting whatever
+            // another fixture may have left queued.
+            StartupScreenManager.ClearQueueForTests();
+        }
+
         [TearDown]
         public void TearDown()
         {
-            // The queue is static, so drain anything a test left behind rather than letting it run
-            // during some later fixture. Bounded so a bug here can't hang the test run.
-            for (var i = 0; i < 20; i++)
-                Tick();
+            // Clear rather than tick the queue empty: ticking would *run* any action still queued, and
+            // an empty tick closes the splash screen, so draining has side effects on global state that
+            // clearing does not.
+            StartupScreenManager.ClearQueueForTests();
         }
 
         /// <summary>

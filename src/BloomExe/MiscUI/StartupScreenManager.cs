@@ -191,6 +191,27 @@ namespace Bloom.MiscUI
                 // got Idle event while startup action in progress. Wait till it finishes.
                 return;
             }
+
+            // Everything below is guarded, not just the task invocation: hiding the splash screen and
+            // running the "do this when the splash screen closes" action can throw too (both touch
+            // forms that may already be disposed), and a throw from any of it would leave the queue
+            // wedged just the same. See HandleStartupActionFailure. (BL-16678)
+            try
+            {
+                PickAndRunNextStartupAction();
+            }
+            catch (Exception error)
+            {
+                HandleStartupActionFailure(error);
+            }
+        }
+
+        /// <summary>
+        /// The body of DoStartupAction: choose the next action that should run and run it, or close the
+        /// splash screen and stand down when there are none left.
+        /// </summary>
+        private static void PickAndRunNextStartupAction()
+        {
             _current = _startupActions.FirstOrDefault(a =>
                 a.Enabled && a.Priority == StartupActionPriority.high
             );
@@ -200,9 +221,11 @@ namespace Bloom.MiscUI
             {
                 if (DateTime.Now > _earliestWeShouldCloseTheSplashScreen)
                 {
-                    CloseSplashScreen();
-                    // We can stop running altogether until some new action gets added or enabled.
+                    // Stand down first. If closing the splash screen throws, we still want to be out of
+                    // the idle queue: otherwise we would come straight back here on the next idle event
+                    // and throw again, forever. (BL-16678)
                     Application.Idle -= DoStartupAction;
+                    CloseSplashScreen();
                 }
                 return;
             }
@@ -286,30 +309,23 @@ namespace Bloom.MiscUI
                 }
             }
 
-            try
+            if (_current.NeedsToRun != null)
             {
-                if (_current.NeedsToRun != null)
+                if (_current.NeedsToRun())
                 {
-                    if (_current.NeedsToRun())
-                    {
-                        _current.Task();
-                        _current = null; // NOT done, but will be found again.
-                        return;
-                    }
-                    else
-                    {
-                        ConsiderCurrentTaskDone();
-                        return;
-                    }
+                    _current.Task();
+                    _current = null; // NOT done, but will be found again.
+                    return;
                 }
+                else
+                {
+                    ConsiderCurrentTaskDone();
+                    return;
+                }
+            }
 
-                _current.Task();
-                ConsiderCurrentTaskDone();
-            }
-            catch (Exception error)
-            {
-                HandleStartupActionFailure(error);
-            }
+            _current.Task();
+            ConsiderCurrentTaskDone();
         }
 
         /// <summary>
@@ -359,6 +375,19 @@ namespace Bloom.MiscUI
         /// dialog, we can go on with the next task as long as we know the one for which
         /// the progress dialog was launched is complete.
         /// </summary>
+        /// <summary>
+        /// Forget every queued action and any action in progress. For tests: this queue is static, so a
+        /// fixture that adds actions must clear them rather than running them out, which would execute
+        /// whatever another fixture had left queued (and close the splash screen) at an arbitrary point
+        /// in the run.
+        /// </summary>
+        internal static void ClearQueueForTests()
+        {
+            _startupActions.Clear();
+            _current = null;
+            Application.Idle -= DoStartupAction;
+        }
+
         public static void ConsiderCurrentTaskDone()
         {
             if (_current == null)

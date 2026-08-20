@@ -259,32 +259,66 @@ namespace BloomTests
 
         /// <summary>
         /// The constructor disposes itself when it fails, and it can fail before it ever gets hold of
-        /// the server, so this has to cope with having no server to clean up. See BL-16678.
+        /// the server, so this has to cope with having none. With no server there is also nothing of
+        /// ours to take back -- we had registered no handlers and advertised no collection -- so it must
+        /// leave what it finds alone rather than clearing it. See BL-16678.
         /// </summary>
         [Test]
-        public void ReleaseApplicationLevelProjectState_NoServer_StillForgetsTheCollection()
+        public void ReleaseApplicationLevelProjectState_NoServer_ChangesNothing()
         {
-            CommonApi.CurrentCollectionSettings = new CollectionSettings();
+            var settings = new CollectionSettings();
+            CommonApi.CurrentCollectionSettings = settings;
 
             Assert.That(
                 () => ProjectContext.ReleaseApplicationLevelProjectState(null),
                 Throws.Nothing
             );
 
-            Assert.That(CommonApi.CurrentCollectionSettings, Is.Null);
+            Assert.That(CommonApi.CurrentCollectionSettings, Is.SameAs(settings));
         }
 
+        /// <summary>
+        /// A second Dispose must be a no-op. It is easy for it not to be: this runs before the check
+        /// that we still have a scope, so if it cleared the "which collection is current" setting
+        /// unconditionally, disposing an already-disposed context would blank that out for whichever
+        /// project is live by then. See BL-16678.
+        /// </summary>
         [Test]
-        public void ReleaseApplicationLevelProjectState_CalledTwice_DoesNotThrow()
+        public void ReleaseApplicationLevelProjectState_CalledTwice_LeavesTheSecondCallerAlone()
         {
             var server = new BloomServer(new BookSelection());
+            server.ApiHandler.RegisterEndpointHandler("common/instanceInfo", request => { }, false);
+            server.ApiHandler.RecordApplicationLevelHandlers();
             server.ApiHandler.RegisterEndpointHandler("audio/startRecord", request => { }, false);
 
             ProjectContext.ReleaseApplicationLevelProjectState(server);
+            Assert.That(server.ApiHandler.HasProjectLevelHandlers, Is.False);
+
+            // Stand in for a later project that has since opened and set these up again.
+            var nextCollection = new CollectionSettings();
+            CommonApi.CurrentCollectionSettings = nextCollection;
+
+            // Disposing the old context a second time (it no longer has a server) must not touch any
+            // of that.
+            Assert.That(
+                () => ProjectContext.ReleaseApplicationLevelProjectState(null),
+                Throws.Nothing
+            );
 
             Assert.That(
-                () => ProjectContext.ReleaseApplicationLevelProjectState(server),
-                Throws.Nothing
+                CommonApi.CurrentCollectionSettings,
+                Is.SameAs(nextCollection),
+                "a second Dispose must not forget the collection a later project has opened"
+            );
+            Assert.That(
+                () =>
+                    server.ApiHandler.RegisterEndpointHandler(
+                        "common/instanceInfo",
+                        request => { },
+                        false
+                    ),
+                Throws.ArgumentException,
+                "the application-level handlers must still be registered"
             );
         }
     }

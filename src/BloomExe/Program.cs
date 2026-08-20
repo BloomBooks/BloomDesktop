@@ -1685,12 +1685,18 @@ namespace Bloom
             {
                 ChooseACollection();
             }
-            catch (Utils.PathTooLongException)
+            catch (System.IO.PathTooLongException error)
             {
-                // The one exception ChooseACollection raises on purpose, so that the top-level handler
-                // can show its own "that path is too long" report. Swallowing it here would replace
-                // that with a misleading message about the chooser itself. (BL-16678)
-                throw;
+                // ChooseACollection raises this on purpose when the collection the user picked has too
+                // long a path, so that we can say so specifically instead of blaming the chooser. Do
+                // that report here rather than letting it out: the tailored one lives in
+                // ProblemReportApi, which is not in play on these paths (no project, so we are still on
+                // the WinForms fallback reporter), and an exception let out of here reaches
+                // FatalExceptionHandler, which in fallback mode shows a message and lets Bloom carry on
+                // -- windowless, which is the very thing this method exists to prevent. (BL-16678)
+                Logger.WriteError("A collection was chosen whose path is too long", error);
+                LongPathAware.ReportLongPath(error);
+                ProgramExit.Exit();
             }
             catch (Exception error)
             {
@@ -1807,19 +1813,38 @@ namespace Bloom
         /// ------------------------------------------------------------------------------------
         private static void HandleErrorOpeningProjectWindow(Exception error, string projectPath)
         {
-            if (_projectContext != null)
+            // The finally matters. This block only runs when the failure came *after* the
+            // ProjectContext was built (the constructor's own failures never assign _projectContext,
+            // and clean up after themselves), and closing a half-working window or disposing a
+            // half-working project can throw in its own right. If that took out the two lines below it,
+            // we would be left with the failed project's API handlers still registered and a stale
+            // _projectContext -- so the next collection would hit the duplicate-key failure this whole
+            // change is about, and trip the Debug.Assert in OpenProjectWindow on the way. (BL-16678)
+            try
             {
-                if (_projectContext.ProjectWindow != null)
+                if (_projectContext != null)
                 {
-                    _projectContext.ProjectWindow.Closed -= HandleProjectWindowClosed;
-                    _projectContext.ProjectWindow.Close();
+                    if (_projectContext.ProjectWindow != null)
+                    {
+                        _projectContext.ProjectWindow.Closed -= HandleProjectWindowClosed;
+                        _projectContext.ProjectWindow.Close();
+                    }
+
+                    _projectContext.Dispose();
                 }
-
-                _projectContext.Dispose();
-                _projectContext = null;
             }
-
-            EnsureNoProjectStateSurvivesAFailedOpen();
+            catch (Exception teardownError)
+            {
+                Logger.WriteError(
+                    "Error shutting down a project that failed to open",
+                    teardownError
+                );
+            }
+            finally
+            {
+                _projectContext = null;
+                EnsureNoProjectStateSurvivesAFailedOpen();
+            }
 
             try
             {

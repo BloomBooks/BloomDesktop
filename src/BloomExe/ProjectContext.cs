@@ -992,13 +992,18 @@ namespace Bloom
         /// </remarks>
         internal static void ReleaseApplicationLevelProjectState(BloomServer server)
         {
+            // No server means we failed before we ever got hold of one, so we had not registered any
+            // handlers and had not advertised our collection either -- there is nothing of ours to take
+            // back. Bailing out first also keeps a second Dispose() the no-op it has always been,
+            // rather than letting it clear settings that by then belong to a live project.
+            if (server == null)
+                return;
+
             // So that common/instanceInfo doesn't report a collection we are not in. Unlike the
             // server's copy, this one is read as "which collection is current", and the collection
             // chooser uses it to decide what to highlight.
             web.controllers.CommonApi.CurrentCollectionSettings = null;
 
-            if (server == null)
-                return; // we failed before we ever got hold of it, so we registered nothing
             try
             {
                 server.ApiHandler.ClearProjectLevelHandlers();
@@ -1023,11 +1028,6 @@ namespace Bloom
         /// ------------------------------------------------------------------------------------
         public void Dispose()
         {
-            if (_collectionLock != null)
-            {
-                _collectionLock.Unlock();
-            }
-
             // Disposing ProjectContext disables api functionality and disposes WorkspaceModel/View, BloomServer, et al.,
             // so we need to resort to our fallback error handler.
             ResetToFallbackHandler();
@@ -1047,6 +1047,15 @@ namespace Bloom
             // at least we avoid mysterious errors in the API handlers due to disposed objects.
             ReleaseApplicationLevelProjectState(_server);
             _server = null;
+
+            // Unlock after that, not before: CollectionLock.Unlock rethrows in a DEBUG build, and on the
+            // ordinary collection-switch path nothing catches it -- so unlocking first meant a failing
+            // unlock could leave the project's API handlers registered, which is the state this whole
+            // change exists to prevent. (BL-16678)
+            if (_collectionLock != null)
+            {
+                _collectionLock.Unlock();
+            }
 
             // We can be disposed without a scope: our constructor disposes us if it fails, and it can
             // fail in (or even before) BuildSubContainerForThisProject. Unlocking the collection above
