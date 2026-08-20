@@ -107,45 +107,81 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void StatedActivitySurvivesTheWatchdogsOncePerSecondRefresh()
+        public void WhatBloomIsDoingIsComposedFromBothSourcesRatherThanEitherWinning()
         {
-            // Regression test for a bug that has now been introduced twice, in two different ways, so it is
-            // worth a test rather than a comment. What Bloom says it is doing must survive the watchdog's
-            // refresh: the first version let the refresh overwrite it, and the second recorded "starting up"
-            // straight into the shared page instead of through SetActivity, so there was nothing for the
-            // refresh to carry forward. Either way a Bloom that wedged during startup — the one case where
-            // this string is the only clue there is — reported "no request in flight".
-            // Explicitly, rather than trusting the initial value: this is static state shared with every
-            // other test in the assembly, so anything else that ever states an activity would otherwise
-            // make this test pass or fail depending on the order they ran in.
-            FreezeDoctorSupport.SetActivity(null);
-            Assert.That(
-                FreezeDoctorSupport.ComposeCurrentActivity(),
-                Is.EqualTo("no request in flight"),
-                "sanity check: nothing stated and no request in flight yet"
-            );
+            // Regression test for a bug introduced three times, in three different ways, which is what earns
+            // it a test rather than a comment. Every version got one of the two directions wrong: the refresh
+            // overwrote what Bloom stated ("starting up" survived less than a second); then "starting up" went
+            // straight into the shared page so there was nothing for the refresh to carry forward; then it was
+            // carried forward for ever and described an idle Bloom hours later. The two failures are opposite,
+            // so both directions are pinned here.
+            const string startup = FreezeDoctorSupport.StartupActivity;
 
-            FreezeDoctorSupport.SetActivity("starting up");
+            Assert.Multiple(() =>
+            {
+                // Nothing stated, nothing running.
+                Assert.That(
+                    FreezeDoctorSupport.Compose(null, null, false),
+                    Is.EqualTo("no request in flight")
+                );
 
-            Assert.That(
-                FreezeDoctorSupport.ComposeCurrentActivity(),
-                Is.EqualTo("starting up"),
-                "the stated activity must still be there a refresh later"
-            );
+                // Direction 1: what Bloom stated must not be lost. This is the startup-freeze case, where the
+                // stated text is the only clue there is.
+                Assert.That(
+                    FreezeDoctorSupport.Compose(startup, null, false),
+                    Is.EqualTo(startup),
+                    "the startup note must survive until Bloom has actually started"
+                );
 
-            // And it must be replaceable, or a stale "starting up" would outlive startup for ever.
-            FreezeDoctorSupport.SetActivity("Publishing to BloomPUB");
-            Assert.That(
-                FreezeDoctorSupport.ComposeCurrentActivity(),
-                Is.EqualTo("Publishing to BloomPUB")
-            );
+                // Direction 2: it must not outlive its truth. Handling a request means Bloom is up.
+                Assert.That(
+                    FreezeDoctorSupport.Compose(startup, null, true),
+                    Is.EqualTo("no request in flight"),
+                    "once Bloom has handled a request it is no longer starting up"
+                );
 
-            FreezeDoctorSupport.SetActivity(null);
-            Assert.That(
-                FreezeDoctorSupport.ComposeCurrentActivity(),
-                Is.EqualTo("no request in flight"),
-                "clearing it must go back to idle rather than leaving the last value in place"
-            );
+                // A stated activity that is not the startup note is the caller's business and is never
+                // retired on their behalf — a long publish must keep saying so.
+                Assert.That(
+                    FreezeDoctorSupport.Compose("Publishing to BloomPUB", null, true),
+                    Is.EqualTo("Publishing to BloomPUB")
+                );
+
+                // Neither source silences the other.
+                Assert.That(
+                    FreezeDoctorSupport.Compose(
+                        "Publishing to BloomPUB",
+                        "api/publish running 9s",
+                        true
+                    ),
+                    Is.EqualTo("Publishing to BloomPUB | api/publish running 9s")
+                );
+                Assert.That(
+                    FreezeDoctorSupport.Compose(null, "api/publish running 9s", true),
+                    Is.EqualTo("api/publish running 9s")
+                );
+            });
+        }
+
+        [Test]
+        public void SetActivityIsWhatTheComposerReads()
+        {
+            // The chain the second version of the bug broke: Start() wrote to the shared page directly, so
+            // SetActivity had never recorded anything and the composer had nothing to carry forward.
+            FreezeDoctorSupport.SetActivity("Saving Foo.htm");
+            try
+            {
+                Assert.That(
+                    FreezeDoctorSupport.ComposeCurrentActivity(),
+                    Does.Contain("Saving Foo.htm"),
+                    "SetActivity must reach the composer, not just the shared page"
+                );
+            }
+            finally
+            {
+                // Static state shared with the rest of the assembly.
+                FreezeDoctorSupport.SetActivity(null);
+            }
         }
 
         [Test]

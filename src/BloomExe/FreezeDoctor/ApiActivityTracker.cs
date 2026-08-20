@@ -32,6 +32,13 @@ namespace Bloom.FreezeDoctor
         private static long _nextTicket;
 
         /// <summary>
+        /// True once Bloom has handled at least one API request. Which is to say: the UI is up and talking to
+        /// the server, so Bloom has finished starting. Used to retire the "starting up" note, which would
+        /// otherwise describe an idle Bloom hours later.
+        /// </summary>
+        internal static bool HasHandledARequest => Volatile.Read(ref _nextTicket) > 0;
+
+        /// <summary>
         /// How long a request has to have been running before we consider it worth naming. Below this it is
         /// just normal traffic.
         /// </summary>

@@ -79,6 +79,12 @@ namespace Bloom.FreezeDoctor
         private static string _statedActivity = "";
 
         /// <summary>
+        /// What Bloom says it is doing before it has done anything. Named because two places have to agree
+        /// on it: the one that states it, and <see cref="ComposeCurrentActivity"/>, which retires it.
+        /// </summary>
+        internal const string StartupActivity = "starting up";
+
+        /// <summary>
         /// How often the session file is rewritten. It carries facts that barely change, so this is not
         /// about freshness — it is so that a Doctor installed *after* Bloom started, or one that had not
         /// yet been running when Bloom did, still finds a file describing the Bloom in front of it.
@@ -125,7 +131,8 @@ namespace Bloom.FreezeDoctor
                 // here left _statedActivity empty, so the first watchdog tick (one second later) replaced
                 // "starting up" with "no request in flight" — and a Bloom that wedges during startup, the one
                 // case where this string is the only clue there is, reported the least useful thing it could.
-                SetActivity("starting up");
+                // ComposeCurrentActivity retires this again once Bloom has handled a request.
+                SetActivity(StartupActivity);
                 // Authoritative, and worth more than the Doctor's own guess: it is why a developer
                 // stopping their debugger never produces a report.
                 _channel.SetDebuggerAttached(Debugger.IsAttached);
@@ -502,14 +509,30 @@ namespace Bloom.FreezeDoctor
         /// during startup would report "no request in flight", which is both wrong and the least helpful
         /// thing it could say.
         ///
-        /// Separated out, and internal, so a test can pin that chain: both halves of it have been broken
-        /// once, the second time by <see cref="Start"/> writing to the channel directly and so never
-        /// recording anything for this to read.
+        /// Separated out, and internal, so a test can pin that chain: every version of this has been got
+        /// wrong once — first by the refresh overwriting the stated text, then by <see cref="Start"/> writing
+        /// to the channel directly so there was nothing to carry forward, then by "starting up" never being
+        /// retired and so describing an idle Bloom hours later.
         /// </summary>
-        internal static string ComposeCurrentActivity()
+        internal static string ComposeCurrentActivity() =>
+            Compose(
+                Volatile.Read(ref _statedActivity),
+                ApiActivityTracker.DescribeCurrentActivity(),
+                ApiActivityTracker.HasHandledARequest
+            );
+
+        /// <summary>
+        /// The composition rule on its own, with nothing static in it, so both of its failure directions can
+        /// be tested deterministically. Called by <see cref="ComposeCurrentActivity"/> with the live values.
+        /// </summary>
+        internal static string Compose(string stated, string request, bool bloomHasHandledARequest)
         {
-            var request = ApiActivityTracker.DescribeCurrentActivity();
-            var stated = Volatile.Read(ref _statedActivity);
+            // "starting up" is true until it isn't, and nothing else was ever going to replace it: Bloom
+            // states it once and has no natural "finished starting" moment to clear it at. Handling an API
+            // request IS that moment — the UI is up and talking to the server — and deciding it here means no
+            // future startup path has to remember to say so.
+            if (stated == StartupActivity && bloomHasHandledARequest)
+                stated = "";
             return (string.IsNullOrEmpty(stated), request == null) switch
             {
                 (false, false) => stated + " | " + request,
