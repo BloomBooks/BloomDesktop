@@ -1,4 +1,4 @@
-// a static registry of features. Each one has a name, a subscription tier, and a flag indicating whether it is experimental or advanced.
+﻿// a static registry of features. Each one has a name, a subscription tier, and a flag indicating whether it is experimental or advanced.
 using System.Collections.Generic;
 
 namespace Bloom.SubscriptionAndFeatures
@@ -205,7 +205,8 @@ namespace Bloom.SubscriptionAndFeatures
             new FeatureInfo
             {
                 Feature = FeatureName.Table,
-                SubscriptionTier = SubscriptionTier.Basic,
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kTables,
                 ExistsInPageXPath = ".//div[contains(@class,'bloom-table')]",
             },
             // ----------------------------------------

@@ -4,7 +4,11 @@ import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { post, postThatMightNavigate } from "../../utils/bloomApi";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
-import { getFeatureStatusAsync } from "../../react_components/featureStatus";
+import {
+    FeatureStatus,
+    getFeatureStatusAsync,
+} from "../../react_components/featureStatus";
+import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import $ from "jquery";
 import "../../lib/jquery.i18n.custom";
 import { splitPane } from "../../lib/split-pane/split-pane";
@@ -20,14 +24,23 @@ $(() => {
 
 let isWidgetFeatureEnabledForOrigami = false;
 let isCanvasFeatureEnabledForOrigami = false;
+// The Table link needs both parts of the feature's status, because it behaves
+// differently for each: the experiment being off hides the link, while a
+// subscription tier below Pro shows it disabled, with a badge saying why.
+let tableFeatureStatusForOrigami: FeatureStatus | undefined = undefined;
 
 export function setupOrigami() {
-    getFeatureStatusAsync("widget").then((widgetFeatureStatus) => {
-        getFeatureStatusAsync("canvas").then((canvasFeatureStatus) => {
+    Promise.all([
+        getFeatureStatusAsync("widget"),
+        getFeatureStatusAsync("canvas"),
+        getFeatureStatusAsync("table"),
+    ]).then(
+        ([widgetFeatureStatus, canvasFeatureStatus, tableFeatureStatus]) => {
             isWidgetFeatureEnabledForOrigami =
                 widgetFeatureStatus?.enabled || false;
             isCanvasFeatureEnabledForOrigami =
                 canvasFeatureStatus?.enabled || false;
+            tableFeatureStatusForOrigami = tableFeatureStatus;
             replaceOrigamiTemplates();
             const customPages = document.getElementsByClassName("customPage");
             const bloomPage = document.getElementsByClassName(
@@ -52,15 +65,15 @@ export function setupOrigami() {
                 );
             }
             // I'm not clear why the rest of this needs to wait until we have
-            // the two results, but none of the controls shows up if we leave it all
+            // the feature results, but none of the controls shows up if we leave it all
             // outside the bloomApi functions.
             if ($(".customPage .marginBox.origami-layout-mode").length) {
                 setupLayoutMode();
             }
 
             $(".customPage").find("*[data-i18n]").localize();
-        }); // canvas
-    }); // widget
+        },
+    );
 }
 
 export function cleanupOrigami() {
@@ -431,6 +444,53 @@ function getCloseButton() {
     return closeButton;
 }
 
+/**
+ * The Table entry of a section's type chooser, or nothing when tables are not on offer.
+ *
+ * The "Tables" experiment being off hides the entry altogether, the way the Canvas and
+ * HTML Widget entries disappear when their features are off. A subscription tier below
+ * the one tables need is different: the entry stays, so the user can see that tables
+ * exist, but it does nothing except explain itself. It carries the same badge as the
+ * subscription-only tools in the toolbox, and clicking either the word or the badge
+ * opens the dialog that says what subscription tables need.
+ */
+function createTableSelector(): JQuery | undefined {
+    const status = tableFeatureStatusForOrigami;
+    if (!status?.visible) {
+        return undefined;
+    }
+    const tableLink = $(
+        "<a href='' data-i18n='EditTab.CustomPage.Table'>Table</a>",
+    );
+    if (status.enabled) {
+        tableLink.click(makeTableFieldClickHandler);
+        return tableLink;
+    }
+    tableLink.addClass("origami-featureNeedsSubscription");
+    const badge = $("<span class='subscription-badge'></span>");
+    const explain = () => {
+        getWorkspaceBundleExports().showRequiresSubscriptionDialog("table");
+        return false;
+    };
+    tableLink.click(explain);
+    badge.click(explain);
+    theOneLocalizationManager
+        .asyncGetText(
+            "Subscription.RequiredTierForFeatureSentence",
+            'This feature requires a Bloom subscription tier of at least "{0}".',
+            "tooltip text",
+            status.localizedTier,
+        )
+        .done((tooltip) => {
+            tableLink.attr("title", tooltip);
+            badge.attr("title", tooltip);
+        });
+    // One element for the caller to place, so the word and its badge stay together.
+    return $("<span class='origami-tableSelector'></span>")
+        .append(tableLink)
+        .append(badge);
+}
+
 // N.B. If we ever add a new type, make sure you also modify 'bloomContainerClasses'.
 function createTypeSelectors(includeWidget: boolean, includeCanvas: boolean) {
     const space = " ";
@@ -456,13 +516,11 @@ function createTypeSelectors(includeWidget: boolean, includeCanvas: boolean) {
         "<a href='' data-i18n='EditTab.CustomPage.HtmlWidget'>HTML Widget</a>",
     );
     htmlWidgetLink.click(makeHtmlWidgetFieldClickHandler);
-    const tableLink = $(
-        "<a href='' data-i18n='EditTab.CustomPage.Table'>Table</a>",
-    );
-    tableLink.click(makeTableFieldClickHandler);
+    const tableSelector = createTableSelector();
     links.append(imageLink).append(",").append(space);
     if (includeCanvas) links.append(canvasLink).append(",");
     links.append(space).append(videoLink).append(",").append(space);
+    if (tableSelector) links.append(tableSelector).append(",").append(space);
     if (includeWidget) {
         links
             .append(textLink)
@@ -474,7 +532,6 @@ function createTypeSelectors(includeWidget: boolean, includeCanvas: boolean) {
     } else {
         links.append(orDiv).append(space).append(textLink);
     }
-    links.append(",").append(space).append(tableLink);
     return $(
         "<div class='container-selector-links bloom-ui origami-ui'></div>",
     ).append(links);

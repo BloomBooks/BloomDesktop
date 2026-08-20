@@ -64,7 +64,14 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const editable = props.canvasElement.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement | undefined;
-    const langName = editable?.getAttribute("data-languagetipcontent");
+    // A table is many text boxes, so naming the language of the first cell here would
+    // be misleading. Each cell shows its own language name, the way a text box on an
+    // ordinary page does; see the .bloom-table rules in editMode.less.
+    const holdsTable =
+        props.canvasElement.getElementsByClassName("bloom-table").length > 0;
+    const langName = holdsTable
+        ? undefined
+        : editable?.getAttribute("data-languagetipcontent");
     const setMenuOpen = (open: boolean, launchingDialog?: boolean) => {
         // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
         // or some other code somewhere is doing it when we choose a menu item. So we tell the CanvasElementManager

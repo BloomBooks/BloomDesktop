@@ -75,6 +75,47 @@ mixin standardPage-Custom
       .split-pane-component-inner
 
 
+//- An origami fold with a Heading 1 text block across the top (for the chart's title)
+//- and, below it, a bloom-table of letters and pictures: nine rows, each holding three pairs of
+//- a letter cell and the picture of a word that starts with it. Every row and every
+//- picture column is "fill", so the chart spreads over whatever page size the book
+//- uses; the letter columns "hug", which holds them to the 60px minimum a column can
+//- take and leaves the rest of the width to the pictures.
+//- bloom-table keeps the borders on the table, not on the cells: data-edges-v is
+//- one row per table row, each with seven entries for the six columns' left and
+//- right boundaries (entry 0 is the left edge of the table, entry 6 the right);
+//- data-edges-h is ten boundaries of six entries, one per column (boundary 0 is
+//- the top of the table, boundary 9 the bottom). An entry with a weight applies
+//- to both sides of the boundary; west/east and north/south set one side only.
+mixin standardPage-AlphabetBook
+   -
+      var kAlphabetRowCount = 9;
+      var kAlphabetPairsPerRow = 3;
+      var kLine = { weight: 1, style: 'solid', color: '#000' };
+      var kNoLine = { weight: 0, style: 'none', color: '#000' };
+      //- A letter cell is boxed; the picture beside it is not. So the boundary
+      //- between a letter and the picture on its right draws on the letter's
+      //- side only, and the picture columns draw nothing.
+      var alphabetEdgesV = [];
+      var alphabetEdgesH = [];
+      for (var row = 0; row < kAlphabetRowCount; row++)
+         alphabetEdgesV.push([{}, { west: kLine, east: kNoLine }, kLine, kLine, kLine, kLine, kNoLine]);
+      for (var boundary = 0; boundary <= kAlphabetRowCount; boundary++)
+         alphabetEdgesH.push([{}, kNoLine, kLine, kNoLine, kLine, kNoLine]);
+   +page-choice('Alphabet Book', 'A letter of the alphabet and a picture, three pairs to a row.').customPage#beead98f-0fd2-4872-a364-2f14fa08d27b(data-feature='table')&attributes(attributes)
+      +stack
+         +upper(90)
+            +field("auto").Heading1-style
+         +lower(90)
+            .bloom-table.bloom-leadingElement(data-column-widths='hug,fill,hug,fill,hug,fill', data-row-heights=Array(kAlphabetRowCount).fill('fill').join(','), data-gap-y='8px', data-edges-v=alphabetEdgesV, data-edges-h=alphabetEdgesH)
+               each row in Array(kAlphabetRowCount).fill(0)
+                  each pair in Array(kAlphabetPairsPerRow).fill(0)
+                     .bloom-cell(data-content-type='text', data-corners='{"radius":4}')
+                        +fieldx
+                     .bloom-cell(data-content-type='image')
+                        +image
+
+
 //- Shared contents for pages that use the Canvas tool.
 //- Allows callers to optionally insert additional .bloom-canvas-element items.
 mixin canvasPageContents

@@ -19,6 +19,22 @@ House rules:
 
 ---
 
+## 2026-08-20 — Rebuilding a pnpm-linked front-end dependency needs a whole new go.sh session
+
+- **Cut:** `bloom-table` is linked from a sibling repo, and after `vp pack` there the running
+  Bloom kept executing the old code. The launcher's `/restart` does not help: it restarts
+  Bloom.exe, but the Vite dev server from the first `go.sh` survives and keeps serving the
+  module it transformed at startup (`/@id/bloom-table` was 1462507 bytes stale against a 1462511
+  byte file on disk). Killing that one node process to force a fresh server killed the launcher
+  with it, so the control API vanished and the developer's Bloom went down.
+- **Idea:** Either have `go.sh` watch the dist of linked deps and restart Vite, or give the
+  launcher a documented "restart Vite too" action. Meanwhile the skill note that says "restart
+  Bloom" should say "stop the session and run `./go.sh` again", because a `/restart` reads as
+  enough and is not. `curl http://localhost:<vitePort>/@id/<dep>` and grep for your change is the
+  cheap way to tell whether the server is stale.
+- **Context:** `Add-Tables` branch, removing the table toolbox and taking the latest bloom-table.
+  Cost about twenty minutes plus an unplanned relaunch of the developer's Bloom.
+
 ## 2026-07-30 — Visual regression suite reports only the first stale image per case
 - **Cut:** Each case in `src/BloomVisualRegressionTests/index.spec.ts` compares the book preview
   and then every bloom-player page in sequence, and every comparison throws on failure — so the
@@ -283,3 +299,27 @@ the editor repo publish its host-harness selectors so this driver can import rat
 copy them.
 
 **Context:** BL-16603, verifying the credits fix end-to-end against a real Bloom.
+
+## A rebuilt bloom-table never reaches the running Bloom until the dev server restarts
+
+**2026-08-20, Add-Tables.** `vite.config.mts` deliberately puts `bloom-table` in
+`optimizeDeps.exclude` with a comment saying that pre-bundling would cache a stale copy, and
+that excluding it "makes Vite serve the dist live, so a `vp pack` in the sibling repo shows up".
+It does not show up. The page loads it as `/@fs/D:/bloom-table/dist/bloom-table.mjs?t=<stamp>`,
+and Vite keeps serving the transform it cached under that exact URL: the file is outside the
+project root, so nothing watches it, so the stamp never changes and the cache is never
+invalidated. A page reload, a cache-disabled reload, deleting `node_modules/.vite/deps`, and
+`launcherControl.mjs --restart` all leave the old library in place.
+
+The cost is a wrong diagnosis, not just lost time: the new code is served correctly for the
+Bloom-side file and only the library is stale, so the console fills with
+`TypeError: dragToResize.beginResizeAtPoint is not a function` from a line that plainly calls a
+method the built `.d.mts` and `.mjs` both contain. It reads as a build or export problem in the
+library.
+
+What worked: `launcherControl.mjs --shutdown` then `--ensure-running --wait-ready`, i.e. a fresh
+Vite. Note the ports change, so re-read `output/bloom-launcher.json`, and Bloom comes back on the
+collection tab (`switchWorkspaceTab.mjs --running-bloom --tab edit`).
+
+**Idea:** either add `D:/bloom-table/dist` to `server.watch`, or have `go.sh` run bloom-table's
+`build:watch` when it is linked, so a `vp pack` there triggers the invalidation Vite needs.

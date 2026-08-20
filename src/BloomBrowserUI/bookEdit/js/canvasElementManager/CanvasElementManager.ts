@@ -2854,6 +2854,15 @@ export class CanvasElementManager {
         // but dragging gets stopped by mouse up, so we need to do it here.
         theOneCanvasElementManager.handleResizeAdjustments();
     }
+    /**
+     * Re-fit the background image of every bloom-canvas on the page to its container.
+     * Table editing calls this when a cell changes size, because a cell's picture must
+     * follow the cell the way an origami image follows its pane.
+     */
+    public adjustAfterContainerResize(): void {
+        this.handleResizeAdjustments();
+    }
+
     private handleResizeAdjustments(): void {
         handleBackgroundResizeAdjustments(
             this.backgroundImageManagerState,

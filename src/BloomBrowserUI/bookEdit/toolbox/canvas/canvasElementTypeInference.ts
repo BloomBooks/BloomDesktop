@@ -79,6 +79,12 @@ export const inferCanvasElementType = (
         return "rectangle";
     }
 
+    // Test for a table before the image and text tests below: a cell can hold a
+    // bloom-canvas or a translationGroup, and those would otherwise win.
+    if (canvasElement.getElementsByClassName("bloom-table").length > 0) {
+        return "table";
+    }
+
     if (canvasElement.querySelector('[data-icon-type="audio"]')) {
         return "sound";
     }

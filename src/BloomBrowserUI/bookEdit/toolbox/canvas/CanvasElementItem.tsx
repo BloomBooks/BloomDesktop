@@ -610,6 +610,25 @@ export const CanvasElementLinkGridItem: React.FunctionComponent = (props) => {
     );
 };
 
+export const CanvasElementTableItem: React.FunctionComponent = (props) => {
+    return (
+        <CanvasElementSvgItem
+            canvasElementType="table"
+            addClasses={""}
+            showOuterRectangle={false}
+        >
+            <img
+                css={css`
+                    width: 50px;
+                    height: 50px;
+                    cursor: grab;
+                `}
+                src="/bloom/bookEdit/toolbox/canvas/tablePaletteItem.svg"
+            />
+        </CanvasElementSvgItem>
+    );
+};
+
 export const NavigationImageButtonPaletteItem: React.FunctionComponent = (
     props,
 ) => {

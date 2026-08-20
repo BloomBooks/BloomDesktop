@@ -11,6 +11,7 @@ import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { convertPointFromViewportToElementFrame } from "./CanvasElementGeometry";
 import { inPlayMode } from "./CanvasElementPositioning";
+import { dragToResize } from "bloom-table";
 
 export interface ICanvasElementPointerInteractionsHost {
     getActiveElement: () => HTMLElement | undefined;
@@ -172,6 +173,18 @@ export class CanvasElementPointerInteractions {
         if (this.isMouseEventAlreadyHandled(event)) {
             return;
         }
+        // A press on a row or column boundary of a table resizes that row or column,
+        // which has to win over dragging the canvas element the table sits in. The
+        // table cannot claim the press for itself: we listen in the capture phase, and
+        // the Comical canvas covers the table anyway, so the press never reaches it.
+        // So we hand it over, and the table's own document-level handlers take the drag
+        // from here.
+        if (dragToResize.beginResizeAtPoint(event)) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
         this.gotAMoveWhileMouseDown = false;
 
         const coordinates = this.getPointRelativeToCanvas(event, bloomCanvas);
@@ -310,6 +323,7 @@ export class CanvasElementPointerInteractions {
             return;
         }
         if (!this.bubbleToDrag) {
+            this.showTableResizeCursor(event);
             return;
         }
         const deltaX = event.clientX - this.clientXAtMouseDown;
@@ -329,6 +343,22 @@ export class CanvasElementPointerInteractions {
         const container = event.currentTarget as HTMLElement;
         this.handleMouseMoveDragCanvasElement(event, container);
     };
+
+    // Show the row or column resize cursor over a table's boundaries. The table
+    // does this for itself when it gets the mouse moves, but the Comical canvas is
+    // painted over it, so here the moves arrive with the canvas as their target.
+    private showTableResizeCursor(event: MouseEvent) {
+        const target = event.target as HTMLElement;
+        if (!target?.style) {
+            return;
+        }
+        const edge = dragToResize.resizeEdgeAtPoint(event);
+        if (edge) {
+            target.style.cursor = edge === "row" ? "ns-resize" : "ew-resize";
+        } else if (target.style.cursor.endsWith("-resize")) {
+            target.style.cursor = "";
+        }
+    }
 
     private handleMouseMoveDragCanvasElement(
         event: MouseEvent,

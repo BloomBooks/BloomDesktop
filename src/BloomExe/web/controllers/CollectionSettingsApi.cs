@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
@@ -400,6 +400,8 @@ namespace Bloom.web.controllers
                         ?? ExperimentalFeatures.IsFeatureEnabled(
                             ExperimentalFeatures.kAiImageEditing
                         ),
+                    allowTables = dialog?.PendingAllowTables
+                        ?? ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTables),
                     showQrCode = dialog?.PendingShowQrCode
                         ?? _collectionSettings.ShowBlorgLanguageQrCode,
                     qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
@@ -447,6 +449,12 @@ namespace Bloom.web.controllers
             {
                 var allowAiImageEditing = allowAiImageEditingToken.Value<bool>();
                 dialog.PendingAllowAiImageEditing = allowAiImageEditing;
+            }
+
+            var allowTablesToken = data["allowTables"];
+            if (allowTablesToken != null)
+            {
+                dialog.PendingAllowTables = allowTablesToken.Value<bool>();
             }
 
             var showQrCodeToken = data["showQrCode"];

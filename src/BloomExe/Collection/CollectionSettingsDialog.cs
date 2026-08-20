@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
@@ -52,6 +52,7 @@ namespace Bloom.Collection
         internal bool PendingAllowTeamCollection;
         internal bool PendingAllowAppBuilder;
         internal bool PendingAllowAiImageEditing;
+        internal bool PendingAllowTables;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
@@ -124,6 +125,9 @@ namespace Bloom.Collection
             );
             PendingAllowAiImageEditing = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kAiImageEditing
+            );
+            PendingAllowTables = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kTables
             );
 
             if (
@@ -422,6 +426,7 @@ namespace Bloom.Collection
             UpdateTeamCollectionAllowed();
             UpdateAppBuilderAllowed();
             UpdateAiImageEditingAllowed();
+            UpdateTablesAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -849,6 +854,14 @@ namespace Bloom.Collection
                 ExperimentalFeatures.kAiImageEditing,
                 PendingAllowAiImageEditing
             );
+        }
+
+        private void UpdateTablesAllowed()
+        {
+            // NB: This change does not require a restart. The Table link in a
+            // custom page's section chooser asks the features API each time the
+            // page loads, so the next page load reflects the new value.
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kTables, PendingAllowTables);
         }
     }
 }

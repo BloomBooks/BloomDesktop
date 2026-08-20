@@ -434,4 +434,43 @@ These patterns were verified driving the real Bloom.exe WebView2 via `dev-browse
 - **Toolbox tools.** Optional/experimental tools must first be enabled via the "More…" settings checkbox (e.g. `#<toolname>Check`, which calls `toolboxBundle.showOrHideTool_click(this)`), then activated by clicking their accordion header `[data-toolId="<id>Tool"]`. Tool buttons expose `title`/`aria-label` (e.g. `button[title="Insert Row Below"]`), not `alt`.
 - **Capture console errors** while exercising React UI: `page.on('console', m => { if (m.type()==='error') errors.push(m.text()); })` — the cheapest check for "multiple React"/hook/MUI problems.
 - **dev-browser script gotchas.** Scripts run in a QuickJS sandbox (no Node/`require`/`fs`). Keep them small and single-purpose; end by logging the state you need. Bump `--timeout` (e.g. 40–50) for multi-step scripts. Avoid stray bare expressions (e.g. a lone `window` line) — they can abort the script.
-- **After relinking/rebuilding a linked front-end dependency**, restart Bloom (kill + `./go.sh`) rather than relying on hot reload, so Vite re-optimizes the dep; otherwise the page may run the stale pre-bundled copy.
+- **After relinking/rebuilding a linked front-end dependency**, restart the whole `go.sh` session rather than relying on hot reload; otherwise the page runs the stale copy. A launcher `/restart` is *not* enough: it restarts Bloom.exe but the Vite dev server started by the first `go.sh` keeps running and keeps serving the module it transformed at startup (`curl http://localhost:<vitePort>/@id/<dep>` and grep for your change to confirm). Do not kill the Vite process on its own either, because that takes the launcher down with it and the control API disappears. Stop the session and start `./go.sh` again; the new session picks new Vite and control ports, so re-read `output/bloom-launcher.json`.
+- **Locator coordinates are top-level, not frame-relative.** `locator.boundingBox()` on an element inside the page iframe already returns main-frame viewport coordinates, so `appPage.mouse.click(box.x + box.width/2, box.y + box.height/2)` lands on the element. Adding the iframe's own offset makes the click miss.
+
+## Change Layout (adding a section to a custom page)
+
+The Change Layout toggle turns on origami layout mode, which is the only place the
+section chooser ("Image, Video, Table, or Text") appears. So to give yourself a
+table, an image or a video to work with: turn the toggle on, click the section you
+want, then turn the toggle off.
+
+The toggle is **inside the page iframe**, not the shell: `AbovePageControls.tsx`
+renders a visually hidden checkbox `#changeLayoutToggle` with a visible
+`<label class="onoffswitch-label" for="changeLayoutToggle">`. Click the label; the
+checkbox itself is not clickable.
+
+```js
+const f = appPage.frames().find((fr) => fr.name() === "page");
+const state = () =>
+    f.evaluate(() => ({
+        checked: document.getElementById("changeLayoutToggle")?.checked,
+        marginBox: document.querySelector(".marginBox")?.className,
+    }));
+await f.locator('label.onoffswitch-label[for="changeLayoutToggle"]').click();
+// Layout mode adds a class, so the marginBox reads
+// "marginBox origami-layout-mode" while the toggle is on.
+```
+
+Two gotchas:
+
+- Allow about two seconds after the click. The page rebuilds its controls, and
+  `state()` right after the click still reports the old value.
+- **The chooser links exist twice.** A hidden `.origami-template-container` holds a
+  prototype copy of every link, and a plain locator matches that one first. Ask for
+  the visible one:
+  `f.locator('a[data-i18n="EditTab.CustomPage.Table"]:visible').first().click()`.
+
+The link's `data-i18n` values are `EditTab.CustomPage.Image`, `.Video`, `.Table`
+and `.Text`. A link only appears when its feature is on, so a missing Table link
+usually means the "Tables" experiment is off in Collection Settings, not that the
+click failed.

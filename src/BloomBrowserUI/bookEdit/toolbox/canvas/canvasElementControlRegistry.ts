@@ -149,6 +149,18 @@ export const captionCanvasElementControls: ICanvasElementControlConfiguration =
         ),
     };
 
+export const tableCanvasElementControls: ICanvasElementControlConfiguration = {
+    type: "table",
+    // A table carries its own in-page affordances for everything inside it:
+    // pills for the table, the row and the column, edge insert buttons, and
+    // right-click menus. So the canvas surfaces only what belongs to the
+    // element as a whole, such as Duplicate and Delete.
+    menuSections: ["wholeElement"],
+    toolbar: ["duplicate", "delete"],
+    toolPanel: [],
+    availabilityRules: wholeElementAvailabilityRules,
+};
+
 export const bookLinkGridControls: ICanvasElementControlConfiguration = {
     type: "book-link-grid",
     menuSections: ["linkGrid", "wholeElement"],
@@ -291,6 +303,7 @@ export const canvasElementControlRegistry: Record<
     rectangle: rectangleBubbleCanvasElementControls,
     speech: speechCanvasElementControls,
     caption: captionCanvasElementControls,
+    table: tableCanvasElementControls,
     "book-link-grid": bookLinkGridControls,
     "navigation-image-button": navigationImageButtonControls,
     "navigation-image-with-label-button":
