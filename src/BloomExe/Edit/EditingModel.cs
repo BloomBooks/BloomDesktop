@@ -20,7 +20,6 @@ using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
@@ -570,7 +569,7 @@ namespace Bloom.Edit
                                             : ""
                                     )
                             );
-                            Analytics.Track("Duplicate Page");
+                            BloomAnalytics.Track("Duplicate Page");
                         }
                         catch (Exception error)
                         {
@@ -612,7 +611,7 @@ namespace Bloom.Edit
                         _currentlyDisplayedBook.DeletePage(page);
                         //_view.UpdatePageList(false);  DeletePage calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
                         Logger.WriteEvent("Delete Page");
-                        Analytics.Track("Delete Page");
+                        BloomAnalytics.Track("Delete Page");
                         return pageToShowNext.Id;
                     }
                     catch (Exception error)
@@ -661,7 +660,7 @@ namespace Bloom.Edit
                 RefreshDisplayOfCurrentPage();
                 _view.UpdatePageList(false);
 
-                Analytics.Track("Relocate Page");
+                BloomAnalytics.Track("Relocate Page");
                 Logger.WriteEvent("Relocate Page");
             }
         }
@@ -705,7 +704,7 @@ namespace Bloom.Edit
                     {
                         try
                         {
-                            Analytics.Track(
+                            BloomAnalytics.Track(
                                 "Insert Template Page",
                                 new Dictionary<string, string>
                                 {
@@ -889,7 +888,7 @@ namespace Bloom.Edit
                     _view.UpdatePageList(true); //counting on this to redo the thumbnails
 
                     Logger.WriteEvent("ChangingContentLanguages");
-                    Analytics.Track("Change Content Languages");
+                    BloomAnalytics.Track("Change Content Languages");
                     return _pageSelection.CurrentSelection.Id;
                 },
                 () => { } // wrong state, do nothing
@@ -1048,7 +1047,7 @@ namespace Bloom.Edit
 
                 _pageSelection.SelectPage(page);
                 Logger.WriteMinorEvent("changing page selection");
-                Analytics.Track("Select Page"); //not "edit page" because at the moment we don't have the capability of detecting that.
+                BloomAnalytics.Track("Select Page"); //not "edit page" because at the moment we don't have the capability of detecting that.
 
                 // Trace memory usage in case it may be useful
                 // First see if we seem to have a problem without taking time (~100ms in a large book/fast computer) to force GC.
@@ -1820,10 +1819,14 @@ namespace Bloom.Edit
             request.ReplyWithHtml(translationGroupHtml);
         }
 
+        /// <param name="source">For analytics; passed on to UpdateImageInBrowser.</param>
+        /// <param name="provider">For analytics; passed on to UpdateImageInBrowser.</param>
         public void ChangePicture(
             string imageId,
             UrlPathString priorImageSrc,
             PalasoImage imageInfo,
+            string source,
+            string provider,
             string pageBackgroundColor = null
         )
         {
@@ -1840,7 +1843,7 @@ namespace Bloom.Edit
                     pageBackgroundColor,
                     undoable: true // All image changes made here are undoable.
                 );
-                UpdateImageInBrowser(args);
+                UpdateImageInBrowser(args, source, provider);
             }
             catch (Exception e)
             {
@@ -1853,7 +1856,16 @@ namespace Bloom.Edit
             }
         }
 
-        public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
+        /// <param name="source">Which route the user took to change this picture, for analytics:
+        /// see AnalyticsApi.TrackChangePicture. Every caller here is some form of paste; the image
+        /// chooser and the AI image editor report their own.</param>
+        /// <param name="provider">Where the bytes came from, for analytics: see
+        /// AnalyticsApi.TrackChangePicture.</param>
+        public void UpdateImageInBrowser(
+            PageEditingModel.ImageInfoForJavascript args,
+            string source,
+            string provider
+        )
         {
             // We generally don't need to wait since we don't need to save as part of this operation.
             // If a cover image needs to be made transparent, code in version 6.5 and later takes care of that elsewhere.
@@ -1863,7 +1875,7 @@ namespace Bloom.Edit
                     $"workspaceBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
                 );
             // not saving, but we still want to log etc.
-            Analytics.Track("Change Picture");
+            AnalyticsApi.TrackChangePicture(source, provider, CurrentBook?.ID);
             Logger.WriteEvent("ChangePicture {0}...", (object)args.src);
         }
 
@@ -1966,12 +1978,38 @@ namespace Bloom.Edit
 
         public void CopyImageMetadataToWholeBook(Metadata metadata)
         {
+            // The card that added this (BL-16449) worried about books with hundreds of images --
+            // "I tested one with 400". Whether real users have books like that, and how long they
+            // are made to wait, is a measurable thing we would act on. (How often the feature gets
+            // used is not, which is why that is not what this reports.)
+            //
+            // The count comes back from the work itself. Counting the images up front instead would
+            // have made the very command we are measuring slower: GetImagePaths reads embedded
+            // metadata from every file, so on a 400-image book that was a second full scan, and it
+            // ran before the progress dialog appeared -- a longer silent freeze, added in order to
+            // measure the wait.
+            var imageCount = 0;
+            var stopwatch = Stopwatch.StartNew();
             using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
             {
                 dlg.ShowAndDoWork(progress =>
-                    CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress)
+                    imageCount = CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress)
                 );
             }
+            stopwatch.Stop();
+            BloomAnalytics.Track(
+                "Image Metadata Applied To Book",
+                new Dictionary<string, string>
+                {
+                    { "imageCount", imageCount.ToString() },
+                    {
+                        "elapsedSeconds",
+                        Math.Round(stopwatch.Elapsed.TotalSeconds, 1)
+                            .ToString(CultureInfo.InvariantCulture)
+                    },
+                    { "BookId", CurrentBook.ID },
+                }
+            );
         }
 
         public string GetFontAvailabilityMessage()

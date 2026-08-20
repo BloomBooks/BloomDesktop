@@ -224,6 +224,7 @@ namespace Bloom
                                 typeof(ProgressDialogApi),
                                 typeof(EditingViewApi),
                                 typeof(ImageGalleryApi),
+                                typeof(AnalyticsApi),
                                 typeof(ProblemReportApi),
                                 typeof(FontsApi),
                                 typeof(BulkBloomPubCreator),
@@ -513,6 +514,7 @@ namespace Bloom
             _scope.Resolve<ExternalApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BrandingPreviewApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<LoggerApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<AnalyticsApi>().RegisterWithApiHandler(server.ApiHandler);
         }
 
         public static string[] SourceRootFolders()

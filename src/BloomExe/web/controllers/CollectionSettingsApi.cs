@@ -133,17 +133,22 @@ namespace Bloom.web.controllers
                         // User clicked cancel. Clear all listeners for this dialog
                         UnsubscribeAllLanguageChangeListeners();
                     }
-                    LanguageChange?.Invoke(
-                        this,
-                        new LanguageChangeEventArgs()
-                        {
-                            LanguageTag = data.LanguageTag,
-                            DesiredName = data.DesiredName,
-                            DefaultName = data.DefaultName,
-                            IsRtl = data.IsRtl,
-                            Country = data.Country,
-                        }
-                    );
+                    var args = new LanguageChangeEventArgs()
+                    {
+                        LanguageTag = data.LanguageTag,
+                        DesiredName = data.DesiredName,
+                        DefaultName = data.DefaultName,
+                        IsRtl = data.IsRtl,
+                        Country = data.Country,
+                        Script = data.Script,
+                    };
+                    // Deliberately not reported here. The chooser only updates the Collection
+                    // Settings dialog's PENDING languages, which Cancel throws away, so a report
+                    // sent now would count languages nobody ended up with. The dialog remembers
+                    // what the chooser said (see RememberLanguageChoice) and reports it from OK,
+                    // the same point at which it reports a reading direction the user overrode --
+                    // which matters, because those two events are meant to be read as a ratio.
+                    LanguageChange?.Invoke(this, args);
                     request.PostSucceeded();
                 },
                 true

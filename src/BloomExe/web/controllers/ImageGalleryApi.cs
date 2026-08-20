@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -62,6 +64,13 @@ namespace Bloom.web.controllers
         /// without this they would each spend seconds building a preview and one would leak.
         /// </summary>
         private readonly object _previewLock = new object();
+
+        /// <summary>
+        /// How long building a preview has to take before we think the user noticed. Well under
+        /// the ~2.5 seconds a 713-megapixel JPEG costs (see MakeBrowserSafePreview), so a genuinely
+        /// slow case reports, while the ordinary "this file is fine as it is" answer does not.
+        /// </summary>
+        private const double kSlowPreviewThresholdSeconds = 1.0;
 
         /// <summary>
         /// Chromium — and therefore WebView2 — flatly refuses to decode an image whose pixel
@@ -154,6 +163,9 @@ namespace Bloom.web.controllers
             data.TryGetValue("license", out string license);
             data.TryGetValue("licenseUrl", out string licenseUrl);
             data.TryGetValue("creator", out string galleryCreator);
+            // The image-gallery provider the picture came from ("pixabay", "openverse", a local
+            // collection slug, or "local-disk"). Analytics only.
+            data.TryGetValue("provider", out string provider);
             string sourceFilePath;
             bool isTempFile = false;
 
@@ -216,6 +228,7 @@ namespace Bloom.web.controllers
                         sourceFilePath,
                         Path.Combine(View.Model.CurrentBook.FolderPath, destName)
                     );
+                    TrackPictureChosenFromGallery(provider);
                     request.ReplyWithJson(
                         new
                         {
@@ -281,6 +294,7 @@ namespace Bloom.web.controllers
                         );
                     }
 
+                    TrackPictureChosenFromGallery(provider);
                     request.ReplyWithJson(
                         new
                         {
@@ -301,6 +315,20 @@ namespace Bloom.web.controllers
                 if (isTempFile && RobustFile.Exists(sourceFilePath))
                     RobustFile.Delete(sourceFilePath);
             }
+        }
+
+        /// <summary>
+        /// Report a picture the user chose in the image chooser. Opening a file from disk counts as
+        /// its own route rather than as a search result: the user bypassed every collection we
+        /// offer, which is exactly the thing we want to be able to see separately.
+        /// </summary>
+        private void TrackPictureChosenFromGallery(string provider)
+        {
+            AnalyticsApi.TrackChangePicture(
+                provider == "local-disk" ? "local disk" : "image chooser",
+                provider,
+                View?.Model?.CurrentBook?.ID
+            );
         }
 
         /// <summary>
@@ -832,8 +860,31 @@ namespace Bloom.web.controllers
                 if (!answerIsAboutThisFile)
                 {
                     DeleteLastPickedImagePreview();
+                    var stopwatch = Stopwatch.StartNew();
                     _lastPickedLocalImagePreviewPath = MakeBrowserSafePreview(fullPath);
+                    stopwatch.Stop();
                     _lastPickedLocalImagePreviewSourcePath = fullPath;
+                    // Re-encoding a very large image is documented above as taking on the order
+                    // of seconds. Report only the slow cases, so what we learn is whether real
+                    // users are waiting -- not how often this endpoint gets called.
+                    if (stopwatch.Elapsed.TotalSeconds >= kSlowPreviewThresholdSeconds)
+                    {
+                        BloomAnalytics.Track(
+                            "Image Preview Slow",
+                            new Dictionary<string, string>
+                            {
+                                {
+                                    "elapsedSeconds",
+                                    Math.Round(stopwatch.Elapsed.TotalSeconds, 1)
+                                        .ToString(CultureInfo.InvariantCulture)
+                                },
+                                {
+                                    "madeStandIn",
+                                    _lastPickedLocalImagePreviewPath == null ? "false" : "true"
+                                },
+                            }
+                        );
+                    }
                 }
                 pathToServe = _lastPickedLocalImagePreviewPath ?? fullPath;
             }

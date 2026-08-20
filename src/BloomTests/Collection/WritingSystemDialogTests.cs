@@ -393,5 +393,222 @@ namespace BloomTests.Collection
             Assert.AreEqual("es", languages[4].Tag);
             Assert.AreEqual("Andika 3", languages[4].FontName);
         }
+
+        // The "Collection Language Rtl Overridden" event exists to find the scripts ethnolib gets
+        // wrong, so it must count only reading directions the user really did correct and kept.
+        // GetRtlOverridesToReport is the decision; the dialog calls it from its OK handler, which
+        // is why nothing is reported at all when the user cancels.
+
+        private WritingSystem[] PendingLanguages(params (string tag, bool rtl)[] languages)
+        {
+            var result = new WritingSystem[3];
+            for (var i = 0; i < languages.Length; i++)
+                result[i] = new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = languages[i].tag,
+                    IsRightToLeft = languages[i].rtl,
+                };
+            return result;
+        }
+
+        [Test]
+        public void GetRtlOverridesToReport_UserChangedTheDirection_Reports()
+        {
+            // ethnolib said Arabic is left-to-right; the user put it right.
+            var pending = PendingLanguages(("ar", true));
+            var derived = new CollectionSettingsDialog.RtlBaseline[3];
+            derived[0] = new CollectionSettingsDialog.RtlBaseline("ar", false);
+            // Sanity check: the two disagree, or this test proves nothing.
+            Assert.AreNotEqual(
+                derived[0].IsRightToLeft,
+                pending[0].IsRightToLeft,
+                "test data is wrong: nothing was overridden"
+            );
+
+            var reported = CollectionSettingsDialog
+                .GetRtlOverridesToReport(pending, derived)
+                .ToList();
+
+            Assert.AreEqual(1, reported.Count, "should report the one language the user corrected");
+            Assert.AreEqual("ar", reported[0].tag);
+            Assert.IsTrue(reported[0].rtl, "should report the direction the user ended up with");
+        }
+
+        [Test]
+        public void GetRtlOverridesToReport_UserChangedItBackAgain_ReportsNothing()
+        {
+            // Two visits to Script Settings that cancel out. The baseline is what the script
+            // gave us, not what the user chose last time, so there is nothing to report.
+            var pending = PendingLanguages(("ar", false));
+            var derived = new CollectionSettingsDialog.RtlBaseline[3];
+            derived[0] = new CollectionSettingsDialog.RtlBaseline("ar", false);
+
+            Assert.IsEmpty(
+                CollectionSettingsDialog.GetRtlOverridesToReport(pending, derived).ToList()
+            );
+        }
+
+        [Test]
+        public void GetRtlOverridesToReport_ScriptSettingsNeverOpened_ReportsNothing()
+        {
+            // No baseline for any slot: the user never questioned what the script chose, whatever
+            // those values happen to be.
+            var pending = PendingLanguages(("ar", true), ("en", false), ("fr", false));
+
+            Assert.IsEmpty(
+                CollectionSettingsDialog
+                    .GetRtlOverridesToReport(pending, new CollectionSettingsDialog.RtlBaseline[3])
+                    .ToList()
+            );
+        }
+
+        [Test]
+        public void GetRtlOverridesToReport_LanguageReplacedAfterTheBaselineWasTaken_ReportsNothing()
+        {
+            // The user opened Script Settings on Arabic, then went back and picked English for that
+            // slot instead. English's own left-to-right has never been questioned, and comparing it
+            // with Arabic's value would invent an override nobody made.
+            var pending = PendingLanguages(("en", false));
+            var derived = new CollectionSettingsDialog.RtlBaseline[3];
+            derived[0] = new CollectionSettingsDialog.RtlBaseline("ar", true);
+            // Sanity check: without the tag check these values WOULD look like an override.
+            Assert.AreNotEqual(
+                derived[0].IsRightToLeft,
+                pending[0].IsRightToLeft,
+                "test data is wrong: the values must differ for this test to mean anything"
+            );
+
+            Assert.IsEmpty(
+                CollectionSettingsDialog.GetRtlOverridesToReport(pending, derived).ToList()
+            );
+        }
+
+        [Test]
+        public void GetRtlOverridesToReport_TwoLanguagesCorrected_ReportsBoth()
+        {
+            var pending = PendingLanguages(("ar", true), ("en", true), ("fr", false));
+            var derived = new CollectionSettingsDialog.RtlBaseline[3];
+            derived[0] = new CollectionSettingsDialog.RtlBaseline("ar", false);
+            derived[1] = new CollectionSettingsDialog.RtlBaseline("en", false);
+            // The third language was left alone even though Script Settings was opened on it.
+            derived[2] = new CollectionSettingsDialog.RtlBaseline("fr", false);
+
+            var reported = CollectionSettingsDialog
+                .GetRtlOverridesToReport(pending, derived)
+                .ToList();
+
+            Assert.AreEqual(2, reported.Count);
+            Assert.AreEqual(new[] { "ar", "en" }, reported.Select(r => r.tag).ToArray());
+        }
+
+        [Test]
+        public void GetRtlOverridesToReport_LanguageReChosenAfterTheBaselineWasTaken_ReportsNothing()
+        {
+            // The user opened Script Settings on Arabic, wandered off to another language, then came
+            // back to Arabic. The tag matches the old baseline again, so a baseline kept on tag alone
+            // would compare against Arabic's value from BEFORE the chooser last ran and invent an
+            // override. RememberLanguageChoice clears the slot for exactly this reason, which is what
+            // this test stands for: a cleared slot has nothing to report.
+            var pending = PendingLanguages(("ar", true));
+
+            Assert.IsEmpty(
+                CollectionSettingsDialog
+                    .GetRtlOverridesToReport(pending, new CollectionSettingsDialog.RtlBaseline[3])
+                    .ToList()
+            );
+        }
+
+        // "Collection Language Set" is the denominator of the ratio the reading-direction event is
+        // the numerator of, so it must be counted at the same moment: when the user accepts the
+        // Collection Settings dialog, not when the language chooser closes.
+
+        private static CollectionSettingsDialog.LanguageChoice Chose(
+            string tag,
+            string script = "Arab",
+            bool? rtlFromEthnolib = true
+        )
+        {
+            return new CollectionSettingsDialog.LanguageChoice(tag, script, rtlFromEthnolib);
+        }
+
+        [Test]
+        public void GetLanguageChoicesToReport_ChoiceStillInPlace_Reports()
+        {
+            var chosen = new CollectionSettingsDialog.LanguageChoice[4];
+            chosen[0] = Chose("ar");
+
+            var reported = CollectionSettingsDialog
+                .GetLanguageChoicesToReport(new[] { "ar", "en", "", "" }, chosen)
+                .ToList();
+
+            Assert.AreEqual(1, reported.Count);
+            Assert.AreEqual("ar", reported[0].Tag);
+            Assert.AreEqual("Arab", reported[0].Script);
+            Assert.AreEqual(true, reported[0].RtlFromEthnolib);
+        }
+
+        [Test]
+        public void GetLanguageChoicesToReport_ChooserNeverOpened_ReportsNothing()
+        {
+            // The languages the collection already had are not choices anyone made here.
+            Assert.IsEmpty(
+                CollectionSettingsDialog
+                    .GetLanguageChoicesToReport(
+                        new[] { "ar", "en", "fr", "ase" },
+                        new CollectionSettingsDialog.LanguageChoice[4]
+                    )
+                    .ToList()
+            );
+        }
+
+        [Test]
+        public void GetLanguageChoicesToReport_UserPickedAgainAfterwards_ReportsOnlyTheOneKept()
+        {
+            // RememberLanguageChoice overwrites the slot, so only the final visit is held. This
+            // checks the other half: a held choice whose language is no longer in that slot -- the
+            // user removed it, or something else replaced it -- is not reported.
+            var chosen = new CollectionSettingsDialog.LanguageChoice[4];
+            chosen[0] = Chose("fr");
+            chosen[2] = Chose("de");
+
+            var reported = CollectionSettingsDialog
+                .GetLanguageChoicesToReport(new[] { "fr", "en", "", "" }, chosen)
+                .ToList();
+
+            Assert.AreEqual(1, reported.Count, "the removed third language should not be reported");
+            Assert.AreEqual("fr", reported[0].Tag);
+        }
+
+        [Test]
+        public void GetLanguageChoicesToReport_SignLanguage_IsReportedToo()
+        {
+            var chosen = new CollectionSettingsDialog.LanguageChoice[4];
+            chosen[3] = Chose("ase", "Sgnw", null);
+
+            var reported = CollectionSettingsDialog
+                .GetLanguageChoicesToReport(new[] { "en", "en", "", "ase" }, chosen)
+                .ToList();
+
+            Assert.AreEqual(1, reported.Count);
+            Assert.AreEqual("ase", reported[0].Tag);
+            Assert.IsNull(
+                reported[0].RtlFromEthnolib,
+                "no script-derived direction is a different answer from left-to-right"
+            );
+        }
+
+        [Test]
+        public void GetLanguageChoicesToReport_EmptyTag_ReportsNothing()
+        {
+            // The chooser was cancelled, which posts an empty tag.
+            var chosen = new CollectionSettingsDialog.LanguageChoice[4];
+            chosen[0] = Chose("");
+
+            Assert.IsEmpty(
+                CollectionSettingsDialog
+                    .GetLanguageChoicesToReport(new[] { "", "en", "", "" }, chosen)
+                    .ToList()
+            );
+        }
     }
 }

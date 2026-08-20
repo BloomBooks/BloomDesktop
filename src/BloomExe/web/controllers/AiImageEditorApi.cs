@@ -410,6 +410,9 @@ namespace Bloom.web.controllers
                     == null
             )
             {
+                // Should never happen in the field. If it does, our packaging is broken and we
+                // would otherwise only hear about it from a confused user.
+                BloomAnalytics.Track("AI Editor Unavailable");
                 request.Failed("The AI Image Editor is not included in this build of Bloom.");
                 return;
             }
@@ -426,6 +429,29 @@ namespace Bloom.web.controllers
 
             var httpBase = $"{BloomServer.ServerUrlWithBloomPrefixEndingInSlash}api/aiImageEditor";
 
+            // Enumerated here rather than inline in the reply below so that the analytics can
+            // count them without doing the work twice.
+            var bookImages = EnumerateBookImages(book);
+            var historyImages = EnumerateHistoryImages(book);
+            var apiKey = OpenRouterCredentialStore.GetApiKey();
+
+            // The top of the funnel. Every generation spends real OpenRouter credit, and there
+            // are several places to fall out before that happens -- finding the menu item,
+            // getting past the API key, generating something, committing it -- so we record each
+            // stage. hasApiKey is the one that matters most here: if people open the editor and
+            // stop, the key is where we should look.
+            BloomAnalytics.Track(
+                "AI Editor Open",
+                new Dictionary<string, string>
+                {
+                    { "BookId", book.BookInfo.Id },
+                    { "hasApiKey", string.IsNullOrEmpty(apiKey) ? "false" : "true" },
+                    { "demoOnly", book.IsPlayground ? "true" : "false" },
+                    { "bookImageCount", bookImages.Count.ToString() },
+                    { "historyCount", historyImages.Count.ToString() },
+                }
+            );
+
             // Return the data the JS needs to create the iframe overlay. The AI image editor
             // runs in iframe mode and gets its `init` from the overlay JS (which builds it
             // from this reply and posts it to the iframe), so the whole-book image list must
@@ -437,15 +463,15 @@ namespace Bloom.web.controllers
                     httpBase,
                     sessionToken = _sessionToken,
                     book = new { id = book.BookInfo.Id, title = book.BookInfo.Title },
-                    bookImages = EnumerateBookImages(book),
+                    bookImages,
                     // The history folder is the source of truth; enumerate it so images
                     // (and their sidecars) appear even when state.json doesn't list them.
-                    history = EnumerateHistoryImages(book),
+                    history = historyImages,
                     references = Array.Empty<object>(),
                     // Bloom owns the OpenRouter key: supply the per-user stored key so the AI
                     // image editor doesn't have to ask for it again. It hands any newly
                     // obtained key back via aiImageEditor/saveCredentials.
-                    apiKey = OpenRouterCredentialStore.GetApiKey(),
+                    apiKey,
                     // In a Playground template book all features are unlocked for
                     // "try it out", so the AI image editor opens — but it's a shared demo
                     // context, so it must not let the user set/save an OpenRouter API key.
@@ -500,6 +526,15 @@ namespace Bloom.web.controllers
             }
 
             OpenRouterCredentialStore.Save(payload.apiKey);
+            // How many users get as far as supplying a key at all -- the far end of the obstacle
+            // that "hasApiKey" on AI Editor Open measures the near end of.
+            BloomAnalytics.Track(
+                "AI Editor Key Saved",
+                new Dictionary<string, string>
+                {
+                    { "cleared", string.IsNullOrEmpty(payload.apiKey) ? "true" : "false" },
+                }
+            );
             request.PostSucceeded();
         }
 
@@ -1180,6 +1215,22 @@ namespace Bloom.web.controllers
             // survives.
             DeleteSupersededAiImageFiles(book.FolderPath, book.OurHtmlDom, supersededOffPageFiles);
 
+            // "AI Editor Commit" and the per-picture "Change Picture" events are deliberately NOT
+            // reported here; aiEditorOverlay.ts reports both once this reply reaches it.
+            //
+            // The reason is appliedCount. For a slot on the page the user has open we only stage the
+            // replacement -- import the file, work out the credits -- and hand it back for the
+            // browser to swap into the live DOM, which can fail (see the comment above this method).
+            // So counting a staged slot as applied overstates, in exactly the case the event exists
+            // to catch: BL-16702 was a commit that silently did nothing. And it overstates in the
+            // ORDINARY case, not a rare one -- the picture the user right-clicked to open the editor
+            // is by definition on the page they have open, so a single-picture commit was always
+            // reported as "1 applied, 0 failed" whatever became of it.
+            //
+            // Everything those events carry is available to the overlay: it sent the replacements,
+            // it gets our per-slot results below, the page frame tells it how many current-page
+            // swaps landed, and the analytics/track endpoint fills in BookId. (Branding needs no
+            // property: every event already carries "BrandingProjectName" -- see AnalyticsApi.)
             request.ReplyWithJson(
                 new
                 {

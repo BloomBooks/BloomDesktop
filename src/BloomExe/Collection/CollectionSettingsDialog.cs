@@ -70,6 +70,66 @@ namespace Bloom.Collection
         // Ugly I know, but we need to be able to access these by an index number sometimes.
         internal WritingSystem[] PendingLanguages = new WritingSystem[3];
 
+        /// <summary>
+        /// The reading direction BL-16593 derived from a language's script, as it was before the
+        /// user opened Script Settings on it. Kept so that on OK we can tell a real correction
+        /// from a value the user changed and then changed back. The tag is stored with it because
+        /// the user can replace the language in this same dialog session, which makes any earlier
+        /// baseline for that slot meaningless.
+        /// </summary>
+        internal class RtlBaseline
+        {
+            public RtlBaseline(string tag, bool isRightToLeft)
+            {
+                Tag = tag;
+                IsRightToLeft = isRightToLeft;
+            }
+
+            public string Tag { get; }
+            public bool IsRightToLeft { get; }
+        }
+
+        private readonly RtlBaseline[] _rtlAsDerived = new RtlBaseline[3];
+
+        /// <summary>
+        /// What the language chooser answered for one language slot: the language the user picked,
+        /// and the reading direction ethnolib derived from its script. Held rather than reported
+        /// on the spot, because the chooser only writes to the pending languages -- see
+        /// GetLanguageChoicesToReport.
+        /// </summary>
+        internal class LanguageChoice
+        {
+            public LanguageChoice(string tag, string script, bool? rtlFromEthnolib)
+            {
+                Tag = tag;
+                Script = script;
+                RtlFromEthnolib = rtlFromEthnolib;
+            }
+
+            public string Tag { get; }
+            public string Script { get; }
+
+            /// <summary>Null when the chooser offered no script-derived direction at all, which
+            /// is a different answer from it saying left-to-right.</summary>
+            public bool? RtlFromEthnolib { get; }
+        }
+
+        // Index 3 is the sign language, which is not one of the PendingLanguages.
+        private readonly LanguageChoice[] _languagesChosen = new LanguageChoice[4];
+
+        /// <summary>Remembers what the language chooser said, for reporting on OK.</summary>
+        private void RememberLanguageChoice(int slot, LanguageChangeEventArgs args)
+        {
+            _languagesChosen[slot] = new LanguageChoice(args.LanguageTag, args.Script, args.IsRtl);
+            // The chooser has just set this slot's reading direction from the script it picked, so
+            // any baseline we hold is out of date -- including one taken for this same language
+            // earlier, if the user went off to another language and came back. Dropping it makes the
+            // next visit to Script Settings capture what the chooser has just decided, which is what
+            // an override has to be measured against.
+            if (slot < _rtlAsDerived.Length)
+                _rtlAsDerived[slot] = null;
+        }
+
         public CollectionSettingsDialog(
             CollectionSettings collectionSettings,
             QueueRenameOfCollection queueRenameOfCollection,
@@ -283,6 +343,7 @@ namespace Bloom.Collection
                 if (args.IsRtl.HasValue)
                     PendingLanguage1.IsRightToLeft = args.IsRtl.Value;
                 PendingLanguage1.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                RememberLanguageChoice(0, args);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage1.Tag, potentiallyCustomName);
@@ -300,6 +361,7 @@ namespace Bloom.Collection
                 if (args.IsRtl.HasValue)
                     PendingLanguage2.IsRightToLeft = args.IsRtl.Value;
                 PendingLanguage2.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                RememberLanguageChoice(1, args);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage2.Tag, potentiallyCustomName);
@@ -317,6 +379,7 @@ namespace Bloom.Collection
                 if (args.IsRtl.HasValue)
                     PendingLanguage3.IsRightToLeft = args.IsRtl.Value;
                 PendingLanguage3.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                RememberLanguageChoice(2, args);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage3.Tag, potentiallyCustomName);
@@ -343,6 +406,7 @@ namespace Bloom.Collection
                 PendingSignLanguage.Tag = args.LanguageTag;
                 var slIsCustom = args.DefaultName != args.DesiredName;
                 PendingSignLanguage.SetName(args.DesiredName, slIsCustom);
+                RememberLanguageChoice(3, args);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingSignLanguage.Tag, potentiallyCustomName);
@@ -488,6 +552,61 @@ namespace Bloom.Collection
                 PendingLanguage3.SetName(String.Empty, false);
             }
 
+            // BL-16593 made the reading direction follow the script the user picked, using
+            // ethnolib's data. That is a correctness feature, so what is worth knowing is not
+            // whether it was used but whether it was right: this records what ethnolib said, and
+            // the loop below records it when the user overrode it. If overrides cluster on a
+            // script, ethnolib is wrong for that script -- and we would otherwise never hear
+            // about it, because flipping a checkbox back is not worth filing a bug over.
+            foreach (
+                var choice in GetLanguageChoicesToReport(
+                    new[]
+                    {
+                        PendingLanguage1.Tag,
+                        PendingLanguage2.Tag,
+                        PendingLanguage3.Tag,
+                        PendingSignLanguage.Tag,
+                    },
+                    _languagesChosen
+                )
+            )
+            {
+                // Spelled out rather than nested ternaries, per AGENTS.md. "unknown" is a real
+                // answer: it means the chooser offered no script-derived direction at all, which
+                // is different from it saying left-to-right.
+                var rtlFromEthnolib = "unknown";
+                if (choice.RtlFromEthnolib.HasValue)
+                    rtlFromEthnolib = choice.RtlFromEthnolib.Value ? "true" : "false";
+                BloomAnalytics.Track(
+                    "Collection Language Set",
+                    new Dictionary<string, string>
+                    {
+                        { "Language", choice.Tag },
+                        { "script", choice.Script ?? "" },
+                        { "rtlFromEthnolib", rtlFromEthnolib },
+                    }
+                );
+            }
+
+            // Now, not when the Script Settings sub-dialog closed: only reaching this point means
+            // the user actually kept the correction. Reporting at the earlier moment counted
+            // corrections that Cancel threw away, and counted a value set and set back as two --
+            // inflating exactly the number this event exists to provide.
+            foreach (var (tag, rtl) in GetRtlOverridesToReport(PendingLanguages, _rtlAsDerived))
+            {
+                // The user is correcting the reading direction BL-16593 chose from their script.
+                // Pair this with "Collection Language Set" (CollectionSettingsApi) to see which
+                // scripts ethnolib gets wrong.
+                BloomAnalytics.Track(
+                    "Collection Language Rtl Overridden",
+                    new Dictionary<string, string>
+                    {
+                        { "Language", tag ?? "" },
+                        { "rtl", rtl ? "true" : "false" },
+                    }
+                );
+            }
+
             UpdateLanguageSettings(
                 _collectionSettings.AllLanguages,
                 PendingLanguages,
@@ -597,6 +716,61 @@ namespace Bloom.Collection
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// The language choices worth reporting: ones the user made in the chooser and still has
+        /// when the dialog is accepted. A slot the chooser was never opened for has nothing to
+        /// report; a choice whose tag no longer matches was replaced by a later choice or removed,
+        /// and reporting it would count a language the collection does not end up with.
+        ///
+        /// pendingTags is language 1, 2, 3 and then the sign language, matching _languagesChosen.
+        ///
+        /// Static, like UpdateLanguageSettings below, so it can be tested without a dialog.
+        /// </summary>
+        internal static IEnumerable<LanguageChoice> GetLanguageChoicesToReport(
+            string[] pendingTags,
+            LanguageChoice[] chosen
+        )
+        {
+            Debug.Assert(chosen.Length == pendingTags.Length);
+
+            for (var i = 0; i < pendingTags.Length; i++)
+            {
+                var choice = chosen[i];
+                if (choice == null || string.IsNullOrEmpty(choice.Tag))
+                    continue;
+                if (choice.Tag == pendingTags[i])
+                    yield return choice;
+            }
+        }
+
+        /// <summary>
+        /// The reading-direction corrections worth reporting: a language whose pending value now
+        /// differs from the one derived from its script (see <see cref="RtlBaseline"/>). A slot
+        /// with no baseline is one whose Script Settings the user never opened; a baseline whose
+        /// tag no longer matches belongs to a language the user has since replaced, and in that
+        /// case the new language's derived value has never been questioned.
+        ///
+        /// Static, like UpdateLanguageSettings below, so it can be tested without a dialog.
+        /// </summary>
+        internal static IEnumerable<(string tag, bool rtl)> GetRtlOverridesToReport(
+            WritingSystem[] pendingLanguages,
+            RtlBaseline[] derivedValues
+        )
+        {
+            Debug.Assert(pendingLanguages.Length == 3);
+            Debug.Assert(derivedValues.Length == pendingLanguages.Length);
+
+            for (var i = 0; i < pendingLanguages.Length; i++)
+            {
+                var pending = pendingLanguages[i];
+                var derived = derivedValues[i];
+                if (pending == null || derived == null || derived.Tag != pending.Tag)
+                    continue;
+                if (pending.IsRightToLeft != derived.IsRightToLeft)
+                    yield return (pending.Tag, pending.IsRightToLeft);
+            }
         }
 
         // internal and static to facilitate unit testing
@@ -782,6 +956,17 @@ namespace Bloom.Collection
         public bool FontSettingsLinkClicked(int zeroBasedLanguageNumber)
         {
             var pendingLanguage = PendingLanguages[zeroBasedLanguageNumber];
+            // Remember the reading direction BL-16593 derived from the script, before the user
+            // has had any chance to change it -- see RtlBaseline and GetRtlOverridesToReport,
+            // which the OK handler uses to decide what to report. Captured
+            // only the first time this dialog is opened for a given language, so that a second
+            // visit compares against what the script chose rather than against what the user
+            // typed last time.
+            if (_rtlAsDerived[zeroBasedLanguageNumber]?.Tag != pendingLanguage.Tag)
+                _rtlAsDerived[zeroBasedLanguageNumber] = new RtlBaseline(
+                    pendingLanguage.Tag,
+                    pendingLanguage.IsRightToLeft
+                );
             using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
             using (var frm = new ScriptSettingsDialog())
             {
@@ -802,6 +987,9 @@ namespace Bloom.Collection
                 pendingLanguage.BreaksLinesOnlyAtSpaces = frm.BreakLinesOnlyAtSpaces;
                 pendingLanguage.BaseUIFontSizeInPoints = frm.UIFontSize;
                 pendingLanguage.IsRightToLeft = frm.LanguageRightToLeft;
+                // Deliberately not reported here: nothing this dialog does is saved until the user
+                // accepts Collection Settings. The OK handler reports it, via
+                // GetRtlOverridesToReport.
                 return pendingLanguage.IsRightToLeft
                     != _collectionSettings.AllLanguages[zeroBasedLanguageNumber].IsRightToLeft;
             }

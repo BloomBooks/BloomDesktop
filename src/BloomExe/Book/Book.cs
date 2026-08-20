@@ -4828,11 +4828,14 @@ namespace Bloom.Book
         /// <summary>
         /// This is used when the user elects to apply the same image metadata to all images.
         /// </summary>
-        public void CopyImageMetadataToWholeBookAndSave(Metadata metadata, IProgress progress)
+        /// <returns>How many images were worked through, for the caller to report to analytics;
+        /// 0 if we bailed out because a file could not be written.</returns>
+        public int CopyImageMetadataToWholeBookAndSave(Metadata metadata, IProgress progress)
         {
+            int imageCount;
             try
             {
-                ImageUpdater.CopyImageMetadataToWholeBook(
+                imageCount = ImageUpdater.CopyImageMetadataToWholeBook(
                     Storage.FolderPath,
                     OurHtmlDom,
                     metadata,
@@ -4842,10 +4845,11 @@ namespace Bloom.Book
             catch (UnauthorizedAccessException e)
             {
                 BookStorage.ShowAccessDeniedErrorReport(e);
-                return; // Probably not much point to saving if copying the image metadata didn't fully complete successfully
+                return 0; // Probably not much point to saving if copying the image metadata didn't fully complete successfully
             }
             // This function is always called on a publication we are creating
             Save(true);
+            return imageCount;
         }
 
         public Metadata GetLicenseMetadata()

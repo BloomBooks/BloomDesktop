@@ -35,6 +35,9 @@ export interface ILanguageData {
     DesiredName: string | null;
     IsRtl: boolean | null;
     Country?: string | null;
+    // The script code (e.g. "Arab"), which is where IsRtl comes from. Reported to analytics
+    // so that a script whose right-to-left data users keep having to correct can be identified.
+    Script?: string | null;
 }
 
 export function getLanguageData(
@@ -54,6 +57,7 @@ export function getLanguageData(
         DefaultName: defaultName,
         DesiredName: selection?.customDetails?.customDisplayName || defaultName,
         IsRtl: isRtl !== undefined ? isRtl : null,
+        Script: selection?.script?.code || null,
         Country: languageTag
             ? defaultRegionForLangTag(languageTag, selection?.language)?.name ||
               null

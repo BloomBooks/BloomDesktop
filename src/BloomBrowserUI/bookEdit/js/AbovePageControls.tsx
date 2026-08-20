@@ -19,6 +19,8 @@ interface IAbovePageControlsState {
     showPageLayoutMenu: boolean;
     isCustomPageLayout: boolean;
     disableCustomPage?: boolean;
+    // The page's data-custom-layout-id, for analytics only.
+    customLayoutPageId?: string;
     onSetCustom?: (
         value: "standard" | "custom",
         keepCustomLayoutDataWhenSwitchingToStandard: boolean,
@@ -96,6 +98,7 @@ function renderAbovePageControls(): void {
             showPageLayoutMenu={currentState.showPageLayoutMenu}
             isCustomPageLayout={currentState.isCustomPageLayout}
             disableCustomPage={currentState.disableCustomPage}
+            customLayoutPageId={currentState.customLayoutPageId}
             onSetCustom={currentState.onSetCustom}
         />,
         container,
@@ -199,6 +202,7 @@ const AbovePageControls: React.FunctionComponent<IAbovePageControlsState> = (
                     <CustomPageLayoutMenu
                         isCustom={props.isCustomPageLayout}
                         disableCustomPage={props.disableCustomPage}
+                        pageId={props.customLayoutPageId}
                         setCustom={props.onSetCustom}
                     />
                 )}

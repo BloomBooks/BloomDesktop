@@ -8,11 +8,14 @@ import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { LocalizableSelectableMenuItem } from "../../../react_components/localizableMenuItem";
 import { useGetFeatureStatus } from "../../../react_components/featureStatus";
+import { trackEvent } from "../../../utils/bloomApi";
 import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
 
 export const CustomPageLayoutMenu: React.FunctionComponent<{
     isCustom: boolean;
     disableCustomPage?: boolean;
+    // Which xmatter page this is ("outsideFrontCover", "insideBackCover", ...). Analytics only.
+    pageId?: string;
     setCustom: (
         value: "standard" | "custom",
         keepCustomLayoutDataWhenSwitchingToStandard: boolean,
@@ -34,6 +37,29 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
 
     const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
         setMenuAnchor(event.currentTarget);
+        // Demand we are refusing, split by cause -- and the two causes call for opposite
+        // responses. A legacy-theme wall is a migration-path problem we can fix; a
+        // subscription wall is the demand signal for the Pro tier. Reported when someone on
+        // Standard opens the menu and finds Custom greyed out, which is the moment they
+        // wanted it and could not have it. (Not when they are already on Custom: then they
+        // are opening the menu to go back, not being refused anything.)
+        //
+        // Nothing is reported until the subscription lookup has answered. Until it does,
+        // blockedBySubscription is false, which makes a legacy theme look like the only wall --
+        // so a menu opened in that first moment would blame the theme for a refusal the
+        // subscription also caused, and the same book would report a different cause a second
+        // later. Since the whole value of this event is the split between the two causes, one
+        // lost event is much cheaper than a wrong one.
+        if (
+            customLayoutFeatureStatus !== undefined &&
+            (blockedBySubscription || blockedByLegacyTheme) &&
+            !props.isCustom
+        ) {
+            trackEvent("Cover Layout Blocked", {
+                reason: blockedBySubscription ? "subscription" : "legacy theme",
+                page: props.pageId,
+            });
+        }
     };
 
     const handleCloseMenu = () => {
@@ -41,6 +67,11 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
     };
 
     const handleOpenThemeAndLayoutSettings = () => {
+        // Whether the signpost we built to Book Settings actually gets used, or whether
+        // people just give up at a greyed-out menu item.
+        trackEvent("Cover Layout Blocked Link Followed", {
+            page: props.pageId,
+        });
         handleCloseMenu();
         getWorkspaceBundleExports().showBookSettingsDialog("themeAndLayout");
     };

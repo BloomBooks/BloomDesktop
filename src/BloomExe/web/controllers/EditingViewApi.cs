@@ -200,6 +200,11 @@ namespace Bloom.web.controllers
                 requestJson != null
                 && request.RequiredPostString("keepCustomLayoutDataWhenSwitchingToStandard")
                     == "true";
+            // False only for the revert Bloom performs for itself when a legacy theme cannot
+            // support a custom layout (see setupPageLayoutMenu). Analytics only -- the toggle
+            // behaves identically either way.
+            var userInitiated =
+                requestJson == null || request.RequiredPostString("userInitiated") != "false";
             var book = View.Model.CurrentBook;
             var page = book.GetPage(pageId);
             var pageElt = page.GetDivNodeForThisPage();
@@ -207,6 +212,34 @@ namespace Bloom.web.controllers
             var shouldRemoveCustomLayoutDataWhenSwitchingToStandard =
                 !switchingToCustom && !keepCustomLayoutDataWhenSwitchingToStandard;
             var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
+            // The baseline nobody has: how much custom-cover use there is at all, and on
+            // which page. The capability has been subscription-gated across two releases
+            // (BL-15902 added it, BL-15976 put it behind Pro) with no usage data at all,
+            // which is a weak position in any pricing or renewal conversation. "page"
+            // separates the long-standing front-cover case from BL-16648's inside-back-cover
+            // extension. Whether that extension generalised past the one project it was built for
+            // is a question of branding, and needs no property here: every event already carries
+            // "BrandingProjectName" (see AnalyticsApi). Reported before the early return below, because that
+            // path is a switch to custom too -- the front end builds the first custom layout
+            // itself when we tell it there is no saved state yet.
+            // "layout" is the state being switched TO, which is what actually happened -- but
+            // note this endpoint is a toggle and the menu does not guard against re-picking the
+            // option already ticked, so a "standard" event can come from someone who clicked
+            // Custom. Worth knowing before reading much into the ratio. That menu behaviour is a
+            // real bug in its own right -- it silently discards a custom cover layout -- and is
+            // filed as BL-16725; when that is fixed this caveat goes away.
+            if (userInitiated)
+            {
+                BloomAnalytics.Track(
+                    "Cover Layout Changed",
+                    new Dictionary<string, string>
+                    {
+                        { "layout", switchingToCustom ? "custom" : "standard" },
+                        { "page", customLayoutId ?? "" },
+                        { "BookId", book.ID },
+                    }
+                );
+            }
             if (switchingToCustom)
             {
                 var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");

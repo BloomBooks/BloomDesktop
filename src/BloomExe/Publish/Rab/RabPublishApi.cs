@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Threading.Tasks;
 using Bloom.Api;
+using SIL.Reporting;
 
 namespace Bloom.Publish.Rab
 {
@@ -43,6 +47,69 @@ namespace Bloom.Publish.Rab
         private void SetWorkspaceTabsEnabled(bool enable)
         {
             _publishView?.WorkspaceView?.SetTabsEnabled(enable);
+        }
+
+        /// <summary>
+        /// Report how one of the three long-running App Builder actions turned out.
+        ///
+        /// This is the only continuous coverage this path can have. Nothing under Publish/Rab has
+        /// ever reported anything; the feature shipped as "initial, unpolished, experimental"; and
+        /// CI never runs the real RAB build at all -- only a developer who deliberately sets
+        /// BLOOM_RUN_RAB_MANUAL_TESTS=1 exercises it end to end. So whether the toolchain works on
+        /// real machines, and where it breaks, is something we can otherwise only learn from
+        /// support traffic. BL-16469 improved the error messages; this is how we find out which
+        /// errors people actually hit.
+        /// </summary>
+        /// <param name="action">"Prepare", "Build" or "Install"; becomes part of the event name.</param>
+        /// <param name="result">"success", "cancelled" or "failed".</param>
+        /// <param name="error">The exception, when it failed. We send its type as a normalised
+        /// errorKind and never the raw Gradle log, which is enormous and full of file paths.</param>
+        private void TrackRabAction(
+            string action,
+            string result,
+            Stopwatch stopwatch,
+            Exception error = null
+        )
+        {
+            // Everything here is wrapped, not just the send. Gathering the properties calls
+            // GetStatus(), which reads and parses files, and this method is called from inside the
+            // try/catch that decides whether the action succeeded -- so an I/O hiccup here would
+            // have written "the build failed" to the log of a build that finished fine.
+            // (BloomAnalytics.Track guards its own send; this covers the gathering above it.)
+            try
+            {
+                var properties = new Dictionary<string, string>
+                {
+                    { "result", result },
+                    {
+                        "elapsedSeconds",
+                        Math.Round(stopwatch.Elapsed.TotalSeconds, 1)
+                            .ToString(CultureInfo.InvariantCulture)
+                    },
+                };
+                if (error != null)
+                    properties["errorKind"] = error.GetType().Name;
+                // A status read costs a little file poking, which is nothing next to the action that
+                // just finished, and it is the only place the book count and artifact size live.
+                var status = _rabProjectService.GetStatus();
+                if (status != null)
+                {
+                    properties["bookCount"] = (status.TrackedBooks?.Length ?? 0).ToString();
+                    if (status.ApkSizeBytes > 0)
+                        properties["apkSizeMB"] = Math.Round(
+                                status.ApkSizeBytes / 1024.0 / 1024.0,
+                                1
+                            )
+                            .ToString(CultureInfo.InvariantCulture);
+                }
+                BloomAnalytics.Track("Publish App " + action, properties);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent(
+                    $"[analytics] FAILED to report the App Builder {action} outcome: {e.Message}"
+                );
+            }
         }
 
         /// <summary>
@@ -146,12 +213,14 @@ namespace Bloom.Publish.Rab
                     _ = Task.Run(async () =>
                     {
                         var succeeded = false;
+                        var stopwatch = Stopwatch.StartNew();
                         try
                         {
                             try
                             {
                                 await _rabProjectService.PrepareAsync();
                                 succeeded = true;
+                                TrackRabAction("Prepare", "success", stopwatch);
                             }
                             catch (OperationCanceledException)
                                 when (_rabProjectService.IsCancellationRequested)
@@ -162,6 +231,7 @@ namespace Bloom.Publish.Rab
                                 // shown as "cancelled". ReportCancellation logs before the UI tears
                                 // down the subscription.
                                 _rabProjectService.ReportCancellation("Prepare");
+                                TrackRabAction("Prepare", "cancelled", stopwatch);
                             }
                             catch (Exception error)
                             {
@@ -169,6 +239,7 @@ namespace Bloom.Publish.Rab
                                 // message lands in the ActionLogAccordion before the UI tears
                                 // down the subscription in response to "actionComplete".
                                 _rabProjectService.ReportFailure("Prepare", error);
+                                TrackRabAction("Prepare", "failed", stopwatch, error);
                             }
                         }
                         finally
@@ -199,21 +270,25 @@ namespace Bloom.Publish.Rab
                     _ = Task.Run(async () =>
                     {
                         var succeeded = false;
+                        var stopwatch = Stopwatch.StartNew();
                         try
                         {
                             try
                             {
                                 await _rabProjectService.BuildAsync();
                                 succeeded = true;
+                                TrackRabAction("Build", "success", stopwatch);
                             }
                             catch (OperationCanceledException)
                                 when (_rabProjectService.IsCancellationRequested)
                             {
                                 _rabProjectService.ReportCancellation("Build");
+                                TrackRabAction("Build", "cancelled", stopwatch);
                             }
                             catch (Exception error)
                             {
                                 _rabProjectService.ReportFailure("Build", error);
+                                TrackRabAction("Build", "failed", stopwatch, error);
                             }
                         }
                         finally
@@ -241,21 +316,25 @@ namespace Bloom.Publish.Rab
                     _ = Task.Run(async () =>
                     {
                         var succeeded = false;
+                        var stopwatch = Stopwatch.StartNew();
                         try
                         {
                             try
                             {
                                 await _rabProjectService.InstallAsync();
                                 succeeded = true;
+                                TrackRabAction("Install", "success", stopwatch);
                             }
                             catch (OperationCanceledException)
                                 when (_rabProjectService.IsCancellationRequested)
                             {
                                 _rabProjectService.ReportCancellation("Try on phone");
+                                TrackRabAction("Install", "cancelled", stopwatch);
                             }
                             catch (Exception error)
                             {
                                 _rabProjectService.ReportFailure("Try on phone", error);
+                                TrackRabAction("Install", "failed", stopwatch, error);
                             }
                         }
                         finally
