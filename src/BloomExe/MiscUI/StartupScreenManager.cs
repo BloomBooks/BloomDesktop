@@ -180,7 +180,11 @@ namespace Bloom.MiscUI
         /// They are done in the order added, except that high priority ones go first.
         /// If there are none, and the minimum time has expired, it closes the splash screen.
         /// </summary>
-        private static void DoStartupAction(object sender, EventArgs e)
+        /// <remarks>
+        /// Internal rather than private only so that a test can drive one step of the queue without an
+        /// Application.Idle pump; see StartupScreenManagerTests.
+        /// </remarks>
+        internal static void DoStartupAction(object sender, EventArgs e)
         {
             if (_current != null)
             {
@@ -282,23 +286,61 @@ namespace Bloom.MiscUI
                 }
             }
 
-            if (_current.NeedsToRun != null)
+            try
             {
-                if (_current.NeedsToRun())
+                if (_current.NeedsToRun != null)
                 {
-                    _current.Task();
-                    _current = null; // NOT done, but will be found again.
-                    return;
+                    if (_current.NeedsToRun())
+                    {
+                        _current.Task();
+                        _current = null; // NOT done, but will be found again.
+                        return;
+                    }
+                    else
+                    {
+                        ConsiderCurrentTaskDone();
+                        return;
+                    }
                 }
-                else
-                {
-                    ConsiderCurrentTaskDone();
-                    return;
-                }
-            }
 
-            _current.Task();
+                _current.Task();
+                ConsiderCurrentTaskDone();
+            }
+            catch (Exception error)
+            {
+                HandleStartupActionFailure(error);
+            }
+        }
+
+        /// <summary>
+        /// A startup action threw. Report it, and above all get it out of the queue so the rest of
+        /// startup can go on.
+        /// </summary>
+        /// <remarks>
+        /// This is not about hiding the error -- we report it as loudly as we can -- it is about not
+        /// letting it wedge startup. DoStartupAction runs from Application.Idle and returns immediately
+        /// while _current is set, so an exception used to leave the queue dead for the rest of the run:
+        /// the splash screen never closed, no later action ever ran (including the one that offers the
+        /// Open/Create Collections dialog when a collection won't open), nothing went on to call
+        /// ProgramExit.Exit() so not even its 20-second force-quit net was armed, and Main's finally
+        /// never released the single-instance token. The user was left with an invisible Bloom they
+        /// could neither see nor quit, and the next launch was turned away with "Bloom is already
+        /// running". See BL-16678.
+        /// </remarks>
+        private static void HandleStartupActionFailure(Exception error)
+        {
+            // First, unwedge the queue. Do this before reporting, which shows a dialog and could throw
+            // in its own right.
             ConsiderCurrentTaskDone();
+
+            Logger.WriteError("A Bloom startup action failed", error);
+            NonFatalProblem.Report(
+                ModalIf.All,
+                PassiveIf.None,
+                "Bloom had a problem while starting up.",
+                null,
+                error
+            );
         }
 
         public static void PutSplashAbove(Form aboveThis)

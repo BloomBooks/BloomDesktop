@@ -1,6 +1,9 @@
 using System.IO;
 using Bloom;
+using Bloom.Api;
+using Bloom.Book;
 using Bloom.Collection;
+using Bloom.web.controllers;
 using BloomTemp;
 using NUnit.Framework;
 using SIL.IO;
@@ -211,6 +214,78 @@ namespace BloomTests
                 Assert.That(settings.SettingsFilePath, Is.EqualTo(expectedSettingsPath));
                 Assert.That(settings.Language1Tag, Is.EqualTo("fr"));
             }
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            // Some tests below set this application-level static; don't leave it set for other fixtures.
+            CommonApi.CurrentCollectionSettings = null;
+        }
+
+        /// <summary>
+        /// Everything a project leaves on application-level objects has to come off again, whether the
+        /// project shut down tidily or blew up half built. If the endpoint handlers stay registered, the
+        /// next collection the user opens dies on a duplicate key and they are stuck until they restart
+        /// Bloom. See BL-16678.
+        /// </summary>
+        [Test]
+        public void ReleaseApplicationLevelProjectState_RemovesOnlyWhatTheProjectAdded()
+        {
+            var server = new BloomServer(new BookSelection());
+            server.ApiHandler.RegisterEndpointHandler("common/instanceInfo", request => { }, false);
+            server.ApiHandler.RecordApplicationLevelHandlers();
+            server.ApiHandler.RegisterEndpointHandler("audio/startRecord", request => { }, false);
+            CommonApi.CurrentCollectionSettings = new CollectionSettings();
+            // Sanity checks on the state we are asking it to undo.
+            Assert.That(server.ApiHandler.HasProjectLevelHandlers, Is.True);
+            Assert.That(CommonApi.CurrentCollectionSettings, Is.Not.Null);
+
+            ProjectContext.ReleaseApplicationLevelProjectState(server);
+
+            Assert.That(server.ApiHandler.HasProjectLevelHandlers, Is.False);
+            Assert.That(CommonApi.CurrentCollectionSettings, Is.Null);
+            Assert.That(
+                () =>
+                    server.ApiHandler.RegisterEndpointHandler(
+                        "common/instanceInfo",
+                        request => { },
+                        false
+                    ),
+                Throws.ArgumentException,
+                "the application-level handler should still be registered"
+            );
+        }
+
+        /// <summary>
+        /// The constructor disposes itself when it fails, and it can fail before it ever gets hold of
+        /// the server, so this has to cope with having no server to clean up. See BL-16678.
+        /// </summary>
+        [Test]
+        public void ReleaseApplicationLevelProjectState_NoServer_StillForgetsTheCollection()
+        {
+            CommonApi.CurrentCollectionSettings = new CollectionSettings();
+
+            Assert.That(
+                () => ProjectContext.ReleaseApplicationLevelProjectState(null),
+                Throws.Nothing
+            );
+
+            Assert.That(CommonApi.CurrentCollectionSettings, Is.Null);
+        }
+
+        [Test]
+        public void ReleaseApplicationLevelProjectState_CalledTwice_DoesNotThrow()
+        {
+            var server = new BloomServer(new BookSelection());
+            server.ApiHandler.RegisterEndpointHandler("audio/startRecord", request => { }, false);
+
+            ProjectContext.ReleaseApplicationLevelProjectState(server);
+
+            Assert.That(
+                () => ProjectContext.ReleaseApplicationLevelProjectState(server),
+                Throws.Nothing
+            );
         }
     }
 }
