@@ -60,7 +60,6 @@ const ImageGalleryDialog: React.FunctionComponent<{
     const providersTriedRef = useRef(new Set<string>());
     // The most recent term searched on each provider, so an accepted image can name the term
     // that produced it.
-    const lastTermByProviderRef = useRef<Record<string, string>>({});
     // Pixabay is the one source a user cannot simply use -- it needs an API key fetched from
     // Pixabay's site -- so whether this session had one is the headline number for how much of
     // an obstacle that is.
@@ -111,30 +110,25 @@ const ImageGalleryDialog: React.FunctionComponent<{
         );
     });
 
-    // One event per search, recording what was asked for, where it was sent, and what came
-    // back. The term is what makes the rest of the data mean anything: with it we can tell a
-    // term that keeps being searched and never accepted (a real gap in the art we can reach)
-    // from one that works first time.
+    // One event per search: where it was sent, in which language, and what came back.
     //
-    // Sending the term is a deliberate, signed-off decision (John, on the BL-16716 review), and
-    // this is the only place in Bloom's analytics where free-form user text leaves the machine, so
-    // it is worth writing down rather than rediscovering. Three things make it acceptable: users are
-    // told that Bloom collects analytics, we take care that what we collect is not personally
-    // identifiable, and these are the same one- or two-word queries the user is simultaneously
-    // sending to a public image service. Contrast AI prompt text, which is excluded by name (see the
-    // allow-list in aiEditorOverlay.ts) precisely because it carries sentences out of the book.
+    // WE DO NOT SEND THE SEARCH TERM. It is the only free-form user text this instrumentation ever
+    // had, an earlier round of BL-16716 did send it, and we were then told not to. So it is dropped
+    // here, at Bloom's boundary, deliberately rather than by omission -- `report.term` is still
+    // handed to us by the image gallery (see ISearchReport), because if the decision is revisited
+    // the change is adding one property back and nothing in the gallery has to move.
     //
-    // Two things to know if this is ever revisited. Searching a LOCAL collection (Art of Reading and
-    // the like) needs no network at all, so those terms could in principle stay on the machine while
-    // the online ones are reported -- the split is available if we ever want it. And the decision was
-    // explicitly "stick with this unless someone complains", so a complaint is the trigger to
-    // reopen it, not a reason to be surprised.
+    // What the rest of these properties can and cannot answer without it. They still say how many
+    // searches a visit took, which sources were tried and in what order, whether anything came back,
+    // and -- paired with acceptedProvider on Image Chooser Closed -- whether the visit ended in a
+    // picture. What is gone is the commissioning signal: we can no longer see WHICH subjects people
+    // search for and never find, which was the original argument for the term. Also gone is the
+    // ability to tell one idea tried in three languages from three different ideas, so searchIndex
+    // and searchCount now count queries and nothing finer.
     const handleSearch = (report: ISearchReport) => {
         searchCountRef.current++;
         providersTriedRef.current.add(report.providerId);
-        lastTermByProviderRef.current[report.providerId] = report.term;
         trackEvent("Image Search", {
-            term: report.term,
             provider: report.providerId,
             language: report.language,
             resultCount: report.resultCount,
@@ -157,9 +151,8 @@ const ImageGalleryDialog: React.FunctionComponent<{
         trackEvent("Image Chooser Closed", {
             outcome,
             acceptedProvider,
-            acceptedTerm: acceptedProvider
-                ? lastTermByProviderRef.current[acceptedProvider]
-                : undefined,
+            // No acceptedTerm: see handleSearch above. Which SOURCE satisfied the user is the part
+            // that makes this a success rate, and that is not user text.
             searchCount: searchCountRef.current,
             providersTried: providersTriedRef.current.size,
             providers: [...providersTriedRef.current].join(","),
