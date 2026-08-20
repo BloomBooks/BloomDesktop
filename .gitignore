@@ -200,7 +200,8 @@ pr-comments*.md
 bloom-diagnostics/
 bloom-watchdog/
 
-# Temporary, while BloomFreezeDoctor.Contract is not published: build/pack-contract-locally.ps1
-# drops the package here and the root NuGet.Config restores it from here. See BL-16719.
+# Temporary, while BloomBooks.FreezeDoctor.Protocol is not published:
+# build/pack-freeze-doctor-protocol.ps1 drops the package here and the root NuGet.Config restores it
+# from here. See BL-16719.
 localpackages/*.nupkg
 localpackages/*.snupkg

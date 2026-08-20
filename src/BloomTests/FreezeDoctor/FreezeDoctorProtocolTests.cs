@@ -1,17 +1,18 @@
 using System;
 using Bloom.FreezeDoctor;
-using BloomFreezeDoctor.Contract;
+using BloomBooks.FreezeDoctor.Protocol;
 using NUnit.Framework;
 
 namespace BloomTests.FreezeDoctor
 {
     /// <summary>
-    /// Pins the shared-memory contract Bloom publishes for the Bloom Freeze Doctor
-    /// (https://github.com/BloomBooks/bloom-freeze-doctor).
+    /// Bloom's side of the protocol it shares with the Bloom Freeze Doctor
+    /// (https://github.com/BloomBooks/bloom-freeze-doctor): the layout it expects, and the health it
+    /// publishes through it.
     ///
-    /// **What this fixture is for changed when the contract became a package.** It used to guard against
-    /// two hand-maintained copies of the same file drifting apart. There is only one copy now — the
-    /// `BloomFreezeDoctor.Contract` package — so drift in that sense is no longer possible.
+    /// **What this fixture is for changed when the protocol became a package.** It used to guard against
+    /// two hand-maintained copies of the same file drifting apart. There is only one definition now — the
+    /// `BloomBooks.FreezeDoctor.Protocol` package — so drift in that sense is no longer possible.
     ///
     /// It still earns its place, for a different reason: it pins the layout Bloom *expects* against the
     /// layout the referenced package version actually has. A package upgrade that changed an offset or
@@ -23,7 +24,7 @@ namespace BloomTests.FreezeDoctor
     /// rather than the numbers here being updated to match.
     /// </summary>
     [TestFixture]
-    public class DoctorChannelContractTests
+    public class FreezeDoctorProtocolTests
     {
         /// <summary>A process id no real Bloom will have, so a test run cannot collide with a live channel.</summary>
         private const int TestProcessId = 999_002;
