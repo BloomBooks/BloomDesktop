@@ -2595,11 +2595,6 @@
         <source xml:lang="en">Music Tool</source>
         <note>ID: EditTab.Toolbox.MusicTool</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TableTool" translate="no" sil:dynamic="true">
-        <source xml:lang="en">Table Tool</source>
-        <note>ID: EditTab.Toolbox.TableTool</note>
-        <note>Name of the toolbox tool for editing tables (experimental feature)</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>

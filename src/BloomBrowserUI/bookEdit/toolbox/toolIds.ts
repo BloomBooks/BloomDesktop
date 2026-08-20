@@ -9,4 +9,3 @@ export const kCanvasToolId = "canvas";
 export const kGameToolId = "game";
 export const kMotionToolId = "motion";
 export const kMusicToolId = "music";
-export const kTableToolId = "table";

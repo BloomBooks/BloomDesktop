@@ -1,8 +1,10 @@
 import {
     attachTable,
+    defaultCellContentsForEachType,
     detachTable,
     registerCellContentType,
     setDefaultCellContentTypeId,
+    unregisterCellContentType,
     kTableCellContentChangedEvent,
 } from "bloom-table";
 // Edit-only table styles (selection highlight, boundary hints). These must NOT
@@ -16,40 +18,66 @@ import BloomField from "../bloomField/BloomField";
 
 let contentTypesRegistered = false;
 
+/**
+ * Replace one of the library's built-in cell content types with the Bloom
+ * equivalent, keeping the library's own name and icon so the cell menu still
+ * looks and reads the way the library intends.
+ */
+function replaceCellContentType(
+    id: string,
+    templateHtml: string,
+    regexToIdentify: RegExp,
+    makeDefault: boolean,
+): void {
+    const libraryType = defaultCellContentsForEachType.find((c) => c.id === id);
+    if (!libraryType) {
+        throw new Error(
+            `bloom-table has no cell content type "${id}" to replace`,
+        );
+    }
+    registerCellContentType(
+        { ...libraryType, templateHtml, regexToIdentify },
+        { makeDefault },
+    );
+}
+
 /** Register Bloom-specific cell content types with the bloom-table library. */
 function ensureContentTypesRegistered(): void {
     if (contentTypesRegistered) return;
     contentTypesRegistered = true;
 
-    // Default cell type: a bloom-translationGroup so text participates in
-    // Bloom's multilingual system. TranslationGroupManager (C#) adds per-language
-    // bloom-editable children on the first page load after a new table is created.
-    registerCellContentType(
-        {
-            id: "translationGroup",
-            englishName: "Text",
-            templateHtml:
-                "<div class='bloom-translationGroup bloom-trailingElement normal-style'></div>",
-            regexToIdentify: /bloom-translationGroup/,
-            icon: "",
-        },
-        { makeDefault: true },
+    // Text cells hold a bloom-translationGroup rather than the library's bare
+    // contenteditable, so text in a table participates in Bloom's multilingual
+    // system and its styles. TranslationGroupManager (C#) adds the per-language
+    // bloom-editable children on the first page load after a new table is made.
+    replaceCellContentType(
+        "text",
+        "<div class='bloom-translationGroup bloom-trailingElement normal-style'></div>",
+        /bloom-translationGroup/,
+        true,
     );
 
-    // Image cell: a bloom-canvas so Bloom's image tooling works inside cells.
-    registerCellContentType({
-        id: "image",
-        englishName: "Image",
-        templateHtml:
-            "<div class='bloom-canvas bloom-has-canvas-element bloom-leadingElement'>" +
+    // Image cells hold a bloom-canvas, so Bloom's image tooling (choose image,
+    // crop, image description, canvas elements) works inside a cell. The markup
+    // matches what origami's Image link creates.
+    replaceCellContentType(
+        "image",
+        "<div class='bloom-canvas bloom-has-canvas-element bloom-leadingElement'>" +
             "<div class='bloom-canvas-element bloom-backgroundImage' style='width:100%;height:100%;'>" +
             "<div class='bloom-imageContainer'><img src='placeHolder.png'/></div>" +
             "</div></div>",
-        regexToIdentify: /bloom-canvas/,
-        icon: "",
-    });
+        /bloom-canvas/,
+        false,
+    );
 
-    setDefaultCellContentTypeId("translationGroup");
+    // The library's video cell is a plain HTML5 <video> pointing at a sample on
+    // the web. Bloom video needs a bloom-videoContainer and the Sign Language
+    // tool, so offering the library's version would only produce a broken cell.
+    // A cell can still hold a nested table, which the library's own template
+    // builds out of cells of the default (text) type registered above.
+    unregisterCellContentType("video");
+
+    setDefaultCellContentTypeId("text");
 }
 
 /** Handle a cell's content being (re)initialised. Attached via SetupTableEditing. */
@@ -59,7 +87,7 @@ function onTableCellContentChanged(e: Event): void {
         contentType: string;
     }>;
     const { cell, contentType } = custom.detail;
-    if (contentType === "translationGroup") {
+    if (contentType === "text") {
         // Wire any bloom-editable divs C# may have already populated.
         // If the translationGroup is empty, bloom-editables will appear on next page load.
         cell.querySelectorAll<HTMLElement>(".bloom-editable").forEach(

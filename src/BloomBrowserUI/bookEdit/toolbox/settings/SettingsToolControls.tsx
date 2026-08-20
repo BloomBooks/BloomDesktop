@@ -110,11 +110,6 @@ export const SettingsToolControls: FunctionComponent = () => {
             l10nKeySuffix: "SignLanguageTool",
             toolLabel: "Sign Language Tool",
         },
-        {
-            tool: "table",
-            l10nKeySuffix: "TableTool",
-            toolLabel: "Table Tool",
-        },
     ];
     const [checkedState, setCheckedState] = useState<Record<string, boolean>>(
         () =>

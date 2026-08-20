@@ -17,8 +17,7 @@ import {
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
-import { tableHistoryManager, defaultTableApi } from "bloom-table";
-import type { TableApi } from "bloom-table";
+import { tableHistoryManager } from "bloom-table";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -76,9 +75,6 @@ export interface IPageFrameExports {
 
     tableCanUndo(): boolean;
     tableUndo(): void;
-    // Returns the bloom-table operations API built in the page frame, for the
-    // toolbox TableTool to inject into the library's TableMenu (see B6).
-    getTableApi(): TableApi;
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
@@ -350,15 +346,6 @@ export function tableUndo(): void {
     tableHistoryManager.undoLast();
 }
 
-// Return the bloom-table operations API built in THIS (page) frame. The toolbox
-// TableTool runs in a different iframe/realm; it passes this object to the
-// library's TableMenu so every structural edit executes in the page frame, where
-// the tables are attached and tableHistoryManager owns them. (Calling the
-// toolbox frame's own copy of the library would silently no-op — see B6.)
-export function getTableApi(): TableApi {
-    return defaultTableApi;
-}
-
 for (let j = 0; j < styleSheets.length; j++) {
     // This doesn't work any more because we are now loading this code as a module,
     // which means it is loaded after the document is parsed.
@@ -444,7 +431,6 @@ interface EditablePageBundleApi {
     ckeditorUndo: typeof ckeditorUndo;
     tableCanUndo: typeof tableCanUndo;
     tableUndo: typeof tableUndo;
-    getTableApi: typeof getTableApi;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
     removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
     e2eSetActiveCanvasElementByIndex: typeof e2eSetActiveCanvasElementByIndex;
@@ -525,7 +511,6 @@ window.editablePageBundle = {
     ckeditorUndo,
     tableCanUndo,
     tableUndo,
-    getTableApi,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
     e2eSetActiveCanvasElementByIndex,

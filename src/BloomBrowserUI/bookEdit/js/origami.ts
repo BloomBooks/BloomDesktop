@@ -586,7 +586,7 @@ function makeTableFieldClickHandler(e) {
     const container = $(this).closest(".split-pane-component-inner");
     addUndoPoint();
     const tableContainer = $(
-        "<div class='bloom-table table bloom-leadingElement'></div>",
+        "<div class='bloom-table bloom-leadingElement'></div>",
     );
     container.append(tableContainer);
     // AttachNewTable registers Bloom-specific content types and calls attachTable,
