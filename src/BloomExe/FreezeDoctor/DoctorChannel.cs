@@ -1,7 +1,7 @@
 // Explicit usings and an explicit nullable context, rather than relying on the project's settings.
 // This file is copied into BloomDesktop, which has neither ImplicitUsings nor nullable enabled, so
-// depending on them would mean the copy could not be byte-identical — and a file that has to be edited
-// on the way in is a file that will drift.
+// depending on them would mean the copy had to be edited on the way in — and a file that has to be
+// edited on the way in is a file that will drift.
 #nullable enable
 using System;
 using System.IO;
@@ -14,9 +14,17 @@ namespace Bloom.FreezeDoctor;
 //  THIS FILE IS THE CONTRACT BETWEEN BLOOM AND THE FREEZE DOCTOR, AND IT IS COPIED INTO BOTH REPOS.
 //
 //  Source of truth: BloomBooks/bloom-freeze-doctor, src/BloomFreezeDoctor.Core/Contract/DoctorChannel.cs
-//  The copy in BloomDesktop must stay byte-identical apart from its namespace. Both repos have a test
-//  that pins SchemaVersion and the field offsets, so a drift breaks a build rather than silently
-//  producing reports full of nonsense.
+//  The two copies must agree on everything except the namespace. They are NOT byte-identical: the two
+//  repos' formatters disagree about where to wrap a few long lines, so the comparison ignores
+//  whitespace. Two nets catch a drift: build/check-freeze-doctor-contract.sh compares the copies on
+//  every PR that touches them, and each repo has a test pinning SchemaVersion and the field offsets by
+//  value. Both exist because a drift here fails silently — Bloom writes one set of offsets, the Doctor
+//  reads another, and the resulting reports are confident and wrong.
+//
+//  ALL OF THAT IS A WORKAROUND FOR THESE BEING COPIES AT ALL. The intended end state is to publish this
+//  as a NuGet package from the Doctor's repo and delete Bloom's copies, at which point the script goes
+//  too. It is not done yet because the format is still settling and a publish round-trip on every edit
+//  would cost more than it saves; the moment to do it is the Doctor's first packaged release.
 //
 //  Why shared memory rather than a pipe, a socket, or Bloom's own web server: the Doctor has to be able
 //  to read this when Bloom is wedged. A request/response channel needs Bloom to be well enough to
