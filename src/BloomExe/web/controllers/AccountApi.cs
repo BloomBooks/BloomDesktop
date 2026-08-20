@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Properties;
+using Bloom.TeamCollection;
 using Bloom.WebLibraryIntegration;
 
 namespace Bloom.web.controllers
@@ -23,6 +24,12 @@ namespace Bloom.web.controllers
         private readonly BloomLibraryBookApiClient _client;
         private readonly BloomWebSocketServer _webSocketServer;
         private readonly AvatarCache _avatarCache;
+        private readonly ITeamCollectionManager _tcManager;
+
+        // Whether we still owe the user the "please sign in" invitation described in
+        // HandleSignInInvitationNeeded. It is used up once the front end reports having shown the
+        // dialog, so we invite the user at most once per Bloom run.
+        private bool _signInInvitationStillOwed = true;
 
         /// <summary>
         /// Created by autofac, which creates the one instance and registers it with the server.
@@ -33,12 +40,14 @@ namespace Bloom.web.controllers
         public AccountApi(
             BloomLibraryBookApiClient client,
             BloomWebSocketServer webSocketServer,
-            AvatarCache avatarCache
+            AvatarCache avatarCache,
+            ITeamCollectionManager tcManager
         )
         {
             _client = client;
             _webSocketServer = webSocketServer;
             _avatarCache = avatarCache;
+            _tcManager = tcManager;
             _client.LoginDataChanged += OnLoginDataChanged;
         }
 
@@ -50,7 +59,8 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Register the account/* endpoints: status (GET), login (POST), logout (POST).
+        /// Register the account/* endpoints: status (GET), login (POST), logout (POST),
+        /// signInInvitationNeeded (GET), signInInvitationShown (POST).
         /// </summary>
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -67,6 +77,16 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 "account/logout",
                 HandleLogout,
+                handleOnUiThread: false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "account/signInInvitationNeeded",
+                HandleSignInInvitationNeeded,
+                handleOnUiThread: false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "account/signInInvitationShown",
+                HandleSignInInvitationShown,
                 handleOnUiThread: false
             );
         }
@@ -96,6 +116,65 @@ namespace Bloom.web.controllers
                 _avatarCache.RemoveKnownPhotoUrl(AvatarCache.Md5OfEmail(emailBeforeLogout));
             // The state-change broadcast happens via the LoginDataChanged event handler above.
             request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// GET account/signInInvitationNeeded: should the front end show the "Please sign in to Bloom"
+        /// invitation? Team Collection members will need a BloomLibrary.org account as team
+        /// collaboration moves to the web (BL-16692), so whenever they open a Team Collection while
+        /// nobody is signed in, we invite them to sign in now. There is deliberately no "don't show
+        /// this again" setting: they get the invitation each time they open the collection until they
+        /// sign in.
+        ///
+        /// The front end asks (when the collection tab mounts) rather than us pushing a websocket
+        /// event at startup, because the workspace page can finish loading well after the startup
+        /// actions run -- especially in a Team Collection, whose sync comes first -- and a pushed
+        /// event with nobody listening yet is simply lost.
+        ///
+        /// Asking does NOT use up the invitation; the front end reports back to
+        /// HandleSignInInvitationShown once it has actually put the dialog on screen. Otherwise a
+        /// page reload in the moment between the two would silently swallow the invitation for the
+        /// rest of the run.
+        /// </summary>
+        private void HandleSignInInvitationNeeded(ApiRequest request)
+        {
+            request.ReplyWithJson(new { needed = SignInInvitationNeeded });
+        }
+
+        /// <summary>
+        /// POST account/signInInvitationShown: the front end has shown the invitation, so this run
+        /// has delivered it. We remember that here rather than in the front end because the
+        /// collection tab is unmounted whenever the user visits the Edit or Publish tab, which would
+        /// lose any memory it kept -- and coming back to the collection tab is not opening the
+        /// collection again, so it must not bring the dialog back.
+        /// </summary>
+        private void HandleSignInInvitationShown(ApiRequest request)
+        {
+            NoteSignInInvitationShown();
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Whether the user should be invited to sign in right now. See
+        /// HandleSignInInvitationNeeded, whose answer this is.
+        /// </summary>
+        internal bool SignInInvitationNeeded =>
+            _signInInvitationStillOwed
+            // Only members of a team need an account. A disconnected or disabled Team Collection
+            // still counts: the user is part of a team, and signing in is what gets them ready.
+            && _tcManager.CurrentCollectionEvenIfDisconnected != null
+            && !_client.LoggedIn
+            // An automated run has nobody to dismiss a modal dialog, and this one would sit on
+            // top of the collection tab for the whole run.
+            && !Program.RunningE2eTests;
+
+        /// <summary>
+        /// Record that this run's invitation has been delivered. Called when the front end reports
+        /// it showed the dialog (and directly by tests).
+        /// </summary>
+        internal void NoteSignInInvitationShown()
+        {
+            _signInInvitationStillOwed = false;
         }
 
         // The email of the logged-in user, or empty when not logged in.

@@ -19,7 +19,7 @@ import { inferCanvasElementType } from "./canvasElementTypeInference";
 import { canvasElementControlRegistry } from "./canvasElementControlRegistry";
 import { CanvasElementType } from "./canvasElementTypes";
 import { IControlContext } from "./canvasControlTypes";
-import { isAiEditableImageSrc } from "./aiEditorImageFormats";
+import { isAiEditableImageSrc } from "../../aiImageEditor/aiEditorImageFormats";
 
 const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
     if (!img) {

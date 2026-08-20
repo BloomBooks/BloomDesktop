@@ -92,7 +92,7 @@ import {
 import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { isDraggable, kDraggableIdAttribute } from "./canvasElementDraggables";
 import { setGeneratedDraggableId } from "./CanvasElementItem";
-import { launchAiImageEditor } from "./aiEditorLauncher";
+import { launchAiImageEditor } from "../../aiImageEditor/aiEditorPageCommands";
 import {
     makeFieldTypeMenuItem,
     makeLanguageMenuItem,
@@ -404,6 +404,8 @@ const makeChooseAudioMenuItemForImage = (
                         return;
                     }
 
+                    // The plain file name, deliberately NOT URL-encoded; C# reads it straight
+                    // back as a file name. See the encoding conventions note on UrlPathString.cs.
                     ctx.canvasElement.setAttribute("data-sound", selectedSound);
                     void copyAndPlaySoundAsync(selectedSound, ctx.page, false);
                 },
@@ -504,9 +506,11 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             getCanvasElementManager()?.resetCropping();
         },
     },
-    // "Edit with AI…" — the entry point for the AI Image Editor integration. The heavy
-    // lifting (launch, iframe overlay, postMessage handshake, commit) lives in
-    // aiEditorLauncher.ts; see that file's header for the full flow.
+    // "Edit with AI…" — the entry point for the AI Image Editor integration. This command
+    // only reports the clicked image to C#, which saves the page and then opens the overlay
+    // (aiEditorPageCommands.launchAiImageEditor explains why). The heavy lifting — overlay,
+    // postMessage handshake, commit — is in the top window, like the two commands above;
+    // see aiEditorOverlay.ts's header for the full flow.
     editWithAi: {
         kind: "command",
         id: "editWithAi",
@@ -524,7 +528,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             if (!img) {
                 return;
             }
-            launchAiImageEditor(img, getImageContainer(ctx), ctx.canvasElement);
+            launchAiImageEditor(img, getImageContainer(ctx));
             runtime.closeMenu(true);
         },
     },
@@ -991,8 +995,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     bubbleStyle: {
         kind: "panel",
         id: "bubbleStyle",
-        l10nId: "EditTab.Toolbox.ComicTool.Options.Style",
-        englishLabel: "Style",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.ElementType",
+        englishLabel: "Element Type",
         canvasToolsControl: BubbleStylePanelControl,
     },
     showTail: {
@@ -1026,8 +1030,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     outlineColor: {
         kind: "panel",
         id: "outlineColor",
-        l10nId: "EditTab.Toolbox.ComicTool.Options.OutlineColor",
-        englishLabel: "Outline Color",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.OuterOutlineColor",
+        englishLabel: "Outer Outline Color",
         canvasToolsControl: OutlineColorPanelControl,
     },
     setDestination: {

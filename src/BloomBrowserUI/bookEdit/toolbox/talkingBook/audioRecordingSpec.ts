@@ -1727,6 +1727,142 @@ describe("audio recording tests", () => {
         });
     });
 
+    describe("- stopPlaybackAsync()", () => {
+        // BL-16276: clicking Adjust Timings while the audio was playing produced an empty
+        // dialog, because while playing we move the recording highlight onto the sentence
+        // being played instead of the text box that the dialog needs to work from.
+        it("stopPlaybackAsync moves the highlight from the playing sentence back to the text box", async () => {
+            setupDefaultApiResponses();
+            const segments =
+                '<p><span id="seg1" class="bloom-highlightSegment">Sentence 1.</span> <span id="seg2" class="bloom-highlightSegment" data-test-preselect="true">Sentence 2.</span></p>';
+            const textBox = `<div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence bloom-postAudioSplit" lang="es" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0">${segments}</div>`;
+            SetupIFrameFromHtml(
+                `<div class="bloom-translationGroup">${textBox}</div>`,
+            );
+
+            const recording = new AudioRecording();
+            recording.recordingMode = RecordingMode.TextBox;
+            // Simulate the tool being visible so doesCurrentToolPlayAudio() returns true.
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            setHighlightedElementFromDom(recording);
+
+            const box = getFrameElementById("page", "box1")!;
+            const playingSegment = getFrameElementById("page", "seg2")!;
+            // Sanity check that we really start out in the mid-playback state this is about.
+            expect(
+                recording.getAudioCurrentElement(),
+                "test setup problem",
+            ).toBe(playingSegment);
+
+            // System under test
+            await recording.stopPlaybackAsync();
+
+            // Verification
+            expect(recording.getAudioCurrentElement()).toBe(box);
+        });
+
+        // In sentence mode the highlight is already on the element we record, so there is
+        // nothing to move it back to; dragging it to the first sentence would lose the
+        // user's place. (playEndedAsync() skips the same work for the same reason.)
+        it("stopPlaybackAsync leaves the highlight alone in sentence mode", async () => {
+            setupDefaultApiResponses();
+            const sentences =
+                '<p><span id="sent1" class="audio-sentence">Sentence 1.</span> <span id="sent2" class="audio-sentence" data-test-preselect="true">Sentence 2.</span></p>';
+            const textBox = `<div id="box1" class="bloom-editable bloom-visibility-code-on" lang="es" data-audiorecordingmode="Sentence">${sentences}</div>`;
+            SetupIFrameFromHtml(
+                `<div class="bloom-translationGroup">${textBox}</div>`,
+            );
+
+            const recording = new AudioRecording();
+            recording.recordingMode = RecordingMode.Sentence;
+            // Simulate the tool being visible so doesCurrentToolPlayAudio() returns true.
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            setHighlightedElementFromDom(recording);
+
+            const second = getFrameElementById("page", "sent2")!;
+            // Sanity check: the highlight starts on the second sentence, not the first.
+            expect(
+                recording.getAudioCurrentElement(),
+                "test setup problem",
+            ).toBe(second);
+
+            // System under test
+            await recording.stopPlaybackAsync();
+
+            // Verification: still on the second sentence.
+            expect(recording.getAudioCurrentElement()).toBe(second);
+        });
+    });
+
+    describe("- canAdjustTimingsForCurrentTextBox()", () => {
+        // BL-16276: "Listen to the whole page" walks through every text box, but the Adjust
+        // Timings button's enabled state is not recalculated as it goes. So on a page mixing
+        // recording modes the button can still be clicked while a by-sentence box is current,
+        // and opening the dialog on such a box reproduces the very blank dialog we fixed.
+        const mixedModePage = (whichBoxIsCurrent: "textBox" | "sentence") => {
+            const textBoxCurrent =
+                whichBoxIsCurrent === "textBox"
+                    ? ' data-test-preselect="true"'
+                    : "";
+            const sentenceCurrent =
+                whichBoxIsCurrent === "sentence"
+                    ? ' data-test-preselect="true"'
+                    : "";
+            // Recorded by whole text box, soft split into highlight segments.
+            const wholeBox = `<div id="wholeBox" class="bloom-editable bloom-visibility-code-on audio-sentence bloom-postAudioSplit"${textBoxCurrent} lang="es" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0"><p><span id="seg1" class="bloom-highlightSegment">Uno.</span> <span id="seg2" class="bloom-highlightSegment">Dos.</span></p></div>`;
+            // Recorded sentence by sentence: one audio file per sentence, no box timings.
+            const sentenceBox = `<div id="sentenceBox" class="bloom-editable bloom-visibility-code-on" lang="en" data-audiorecordingmode="Sentence"><p><span id="sent1" class="audio-sentence"${sentenceCurrent}>One.</span> <span id="sent2" class="audio-sentence">Two.</span></p></div>`;
+            return `<div class="bloom-translationGroup">${wholeBox}</div><div class="bloom-translationGroup">${sentenceBox}</div>`;
+        };
+
+        const makeRecorder = (mode: RecordingMode) => {
+            const recording = new AudioRecording();
+            recording.recordingMode = mode;
+            // Simulate the tool being visible so doesCurrentToolPlayAudio() returns true.
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            return recording;
+        };
+
+        it("says no when the current box is recorded by sentence", () => {
+            setupDefaultApiResponses();
+            SetupIFrameFromHtml(mixedModePage("sentence"));
+
+            // recordingMode is set to TextBox on purpose, disagreeing with the box the
+            // highlight is actually in. In the running app the field would normally have been
+            // refreshed to Sentence by now (setSoundFrom re-derives it as playback moves from
+            // box to box), so this is a deliberately contrived state: it pins the contract that
+            // the helper answers about the CURRENT BOX and does not depend on that refresh
+            // having happened.
+            const recording = makeRecorder(RecordingMode.TextBox);
+            setHighlightedElementFromDom(recording);
+
+            // Sanity check the mid-Listen state: the highlight is inside the by-sentence box.
+            const current = getFrameElementById("page", "sent1")!;
+            expect(
+                recording.getAudioCurrentElement(),
+                "test setup problem",
+            ).toBe(current);
+
+            expect(recording.canAdjustTimingsForCurrentTextBox()).toBe(false);
+        });
+
+        it("says yes when the current box is recorded by whole text box", () => {
+            setupDefaultApiResponses();
+            SetupIFrameFromHtml(mixedModePage("textBox"));
+
+            const recording = makeRecorder(RecordingMode.TextBox);
+            setHighlightedElementFromDom(recording);
+
+            const current = getFrameElementById("page", "wholeBox")!;
+            expect(
+                recording.getAudioCurrentElement(),
+                "test setup problem",
+            ).toBe(current);
+
+            expect(recording.canAdjustTimingsForCurrentTextBox()).toBe(true);
+        });
+    });
+
     describe("- initializeAudioRecordingMode()", () => {
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Text Box)", () => {
             SetupIFrameFromHtml(

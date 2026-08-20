@@ -395,14 +395,16 @@ namespace Bloom.web
                         // - urlEncode:false, because re-encoding the whole string would turn the ?
                         //   into %3f and bury the thumbnail param in the path, invisible to
                         //   GetQueryParameters().
-                        // - strictlyTreatAsEncoded:true, because otherwise CreateFromUnencodedString
-                        //   sees the %XX escapes in the path and helpfully decodes them, and we would
-                        //   then write out a raw filename like "This Image !@#$%^&()2.jpg?thumbnail=1",
-                        //   where the browser treats the # as the start of a fragment and never
-                        //   requests the real file.
+                        // - CreateFromUnencodedString rather than CreateFromPossiblyEncodedString,
+                        //   because the latter would see the %XX escapes in the path and decode
+                        //   them, and we would then write out a raw filename like
+                        //   "This Image !@#$%^&()2.jpg?thumbnail=1", where the browser treats the
+                        //   # as the start of a fragment and never requests the real file. (This
+                        //   is the one place where "unencoded" is a slight fiction: what we hold
+                        //   is encoded, and the point is precisely that we must not touch it.)
                         HtmlDom.SetImageElementUrl(
                             imgNode,
-                            UrlPathString.CreateFromUnencodedString(url, true),
+                            UrlPathString.CreateFromUnencodedString(url),
                             urlEncode: false
                         );
                     }

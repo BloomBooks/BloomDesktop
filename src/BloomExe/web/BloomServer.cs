@@ -64,6 +64,15 @@ namespace Bloom.Api
         public static int portForHttp;
         public const int kNumberOfConsecutivePortsToReserve = 3;
 
+        /// <summary>
+        /// How many ports EnsureListening will try before giving up — and giving up means
+        /// ProgramExit.Exit, not an exception someone can catch. Class-level and internal rather
+        /// than a local, so that the tests can assert against the real number: they hold listeners
+        /// open deliberately (see BloomTests' RetiredTestServers) and their budget has to be
+        /// checked against this, not against a copy of it that could silently fall out of step.
+        /// </summary>
+        internal const int kNumberOfPortsToTry = 20;
+
         public static int WebSocketPort => portForHttp + 1;
 
         public static int RemoteDebuggingPort => portForHttp + 2;
@@ -442,7 +451,11 @@ namespace Bloom.Api
             {
                 // We need to UrlEncode the single and double quote characters, and the space character,
                 // so they will play nicely with HTML.
-                var urlPath = UrlPathString.CreateFromUnencodedString(url);
+                // PossiblyEncoded, not Unencoded: ToLocalhost() above has already escaped each
+                // path component, so we hand this an ENCODED string and rely on it being decoded
+                // before UrlEncodedForHttpPath re-encodes it. Saying "unencoded" here would
+                // double-encode the whole url.
+                var urlPath = UrlPathString.CreateFromPossiblyEncodedString(url);
                 url = urlPath.UrlEncodedForHttpPath;
             }
             if (setAsCurrentPageForDebugging)
@@ -566,7 +579,9 @@ namespace Bloom.Api
             string pageId
         )
         {
-            var urlPath = UrlPathString.CreateFromUnencodedString(
+            // PossiblyEncoded because UrlForCurrentBookPage ends in ToLocalhost(), which has
+            // already escaped the path components; see the note on CreateFromPossiblyEncodedString.
+            var urlPath = UrlPathString.CreateFromPossiblyEncodedString(
                 UrlForCurrentBookPage(bookFolderPath, pageId)
             );
             return urlPath.UrlEncodedForHttpPath;
@@ -1662,7 +1677,6 @@ namespace Bloom.Api
             if (_listener?.IsListening == true)
                 return;
             const int kStartingPort = 8089;
-            const int kNumberOfPortsToTry = 20;
             bool success = false;
 
             // Note: this now checks whether the following ports in the block are available,
@@ -2760,7 +2774,43 @@ namespace Bloom.Api
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Frees everything this server can free WITHOUT closing its HttpListener: it stops
+        /// accepting requests, stops and joins its threads (which are foreground threads, so
+        /// releasing them is what lets a process exit), and releases the image cache. Afterwards
+        /// the only thing the server still holds is the listener, and therefore its port.
+        ///
+        /// Why this is separable from Dispose (BL-16667): closing the listener is the one step
+        /// that can crash. A response body can still be going out after the worker that produced
+        /// it has finished -- RequestInfo hands the tail of the send to the framework, which
+        /// completes it on a callback whose only handler is `catch (Win32Exception)` -- and
+        /// closing the listener underneath that makes it throw ObjectDisposedException on a thread
+        /// none of our try/catch blocks cover, which kills the process. Everything in this method
+        /// is safe to do at any time; only CloseListener has to wait until nothing is in flight.
+        ///
+        /// Production still calls Dispose, which is PreDispose followed immediately by
+        /// CloseListener, so nothing about Bloom's behaviour changes. The tests use this to let
+        /// the listener be closed later, once the requests it served are long finished --
+        /// see BloomTests' RetiredTestServers.
+        /// </summary>
+        /// <remarks>
+        /// Note the seam, since it is invisible: this goes straight to the private overload, so a
+        /// subclass that overrode the protected virtual Dispose(bool) would be called on the real
+        /// Dispose path but NOT on this one. Nothing derives from BloomServer today. If something
+        /// ever does, make the two-argument overload the virtual one rather than leaving a subclass
+        /// silently half-invoked.
+        /// </remarks>
+        public void PreDispose()
+        {
+            Dispose(true, closeListener: false);
+        }
+
         protected virtual void Dispose(bool fDisposing)
+        {
+            Dispose(fDisposing, closeListener: true);
+        }
+
+        private void Dispose(bool fDisposing, bool closeListener)
         {
             Debug.WriteLineIf(
                 !fDisposing,
@@ -2831,7 +2881,9 @@ namespace Bloom.Api
                             }
                         }
 
-                        CloseListener();
+                        // The one step PreDispose leaves undone; see its comment.
+                        if (closeListener)
+                            CloseListener();
                     }
                     if (_cache != null)
                     {
@@ -2852,7 +2904,12 @@ namespace Bloom.Api
 #endif
                 }
             }
-            IsDisposed = true;
+            // Deliberately NOT set by PreDispose: the server still owns its listener, so a later
+            // real Dispose has to be allowed to run and close it. Everything above is safe to
+            // repeat -- _stop is already set, the threads are already joined, the cache is already
+            // gone -- so the second pass does nothing but the CloseListener that was skipped.
+            if (closeListener)
+                IsDisposed = true;
         }
 
         /// <summary>

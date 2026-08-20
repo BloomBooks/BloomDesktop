@@ -673,8 +673,12 @@ namespace Bloom.Api
             var queryPart = queryIndex >= 0 ? url.Substring(queryIndex) : string.Empty;
 
             // handle, e.g. http://localhost:8089/bloom/C:/foo/bar/ปก2.jpg
+            // PossiblyEncoded because callers genuinely differ: BloomServer redirects using its
+            // own RawUrl, which is encoded, while ServerHandlerForBloomPlayer builds one from a
+            // raw book path, which is not. This is a public entry point, so it has to cope with
+            // both; see the note on CreateFromPossiblyEncodedString.
             var encodedPath = UrlPathString
-                .CreateFromUnencodedString(pathPart)
+                .CreateFromPossiblyEncodedString(pathPart)
                 .UrlEncodedForHttpPath;
             var encodedUrl = encodedPath + queryPart;
             _actualContext.Response.Headers.Add("Location", encodedUrl);
