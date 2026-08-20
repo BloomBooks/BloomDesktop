@@ -22,7 +22,7 @@ namespace BloomTests
             {
                 // Deliberately not in alphabetical order, so the sorting below is doing something.
                 { "provider", "pixabay" },
-                { "term", "dog" },
+                { "resultCount", "20" },
                 { "BookId", "abc123" },
             };
 
@@ -39,7 +39,7 @@ namespace BloomTests
             // Still says what the event WAS: "nothing was sent" is only useful next to what it was
             // that went unsent.
             Assert.That(line, Does.Contain("Image Search"));
-            Assert.That(line, Does.Contain("term=dog"));
+            Assert.That(line, Does.Contain("provider=pixabay"));
         }
 
         [Test]
@@ -66,7 +66,9 @@ namespace BloomTests
 
             Assert.That(
                 line,
-                Is.EqualTo("[analytics] Image Search -- BookId=abc123, provider=pixabay, term=dog")
+                Is.EqualTo(
+                    "[analytics] Image Search -- BookId=abc123, provider=pixabay, resultCount=20"
+                )
             );
         }
 
@@ -92,16 +94,17 @@ namespace BloomTests
         [Test]
         public void FormatForLog_APropertyValueContainingABrace_IsLeftAlone()
         {
-            // Search terms are user input and reach us verbatim. This is safe only because Log
-            // passes the line to Logger.WriteEvent as the message and never as a format string
-            // with arguments -- see the remarks on FormatForLog.
+            // We do not control the shape of every value: a search provider's error message reaches
+            // us as it was written. That is safe only because Log passes the line to
+            // Logger.WriteEvent as the message and never as a format string with arguments -- see
+            // the remarks on FormatForLog.
             var line = BloomAnalytics.FormatForLog(
                 "Image Search",
-                new Dictionary<string, string> { { "term", "a{0}b" } },
+                new Dictionary<string, string> { { "error", "rate limit a{0}b" } },
                 trackingAllowed: true
             );
 
-            Assert.That(line, Does.Contain("term=a{0}b"));
+            Assert.That(line, Does.Contain("error=rate limit a{0}b"));
         }
     }
 }

@@ -88,8 +88,9 @@ namespace Bloom
         /// Note that Log passes this to Logger.WriteEvent as the whole message and never as a
         /// format string with arguments. That matters: Logger.WriteEvent runs string.Format over
         /// its message when (and only when) it is given arguments, so a brace arriving inside an
-        /// event property -- a search term, say -- is harmless here. Keep it that way; adding
-        /// arguments would turn one user's typing into a FormatException.
+        /// event property -- from a search provider's error message, say, which we pass along as
+        /// we received it -- is harmless here. Keep it that way; adding arguments would turn a
+        /// stray brace in someone else's text into a FormatException.
         /// </summary>
         /// <param name="trackingAllowed">Normally DesktopAnalytics.Analytics.AllowTracking. Passed
         /// in rather than read here so that this stays a pure function and both of its answers can

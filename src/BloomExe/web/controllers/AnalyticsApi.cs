@@ -120,9 +120,10 @@ namespace Bloom.web.controllers
         /// "2024-01-01T10:00:00Z", say -- as a DateTime rather than a string. We would then record
         /// whatever the local culture makes of it: "1/1/2024 10:00:00 AM" on this machine, something
         /// else on the next. (A date-only "2024-01-01" is left alone, so the reachable case is a full
-        /// timestamp.) Property values arrive as JSON strings and must reach Segment as the caller
-        /// wrote them: several of them are free user text -- an image search term above all -- so
-        /// rewriting one silently makes the record disagree with what the user actually typed.
+        /// timestamp.) Property values arrive as JSON strings and must reach Segment exactly as the
+        /// caller sent them: we do not control the shape of all of them -- a search provider's error
+        /// message, a model name, an id from someone else's API -- and a value we silently rewrite is
+        /// a record that disagrees with what happened.
         /// </summary>
         internal static JObject ParseTrackRequestBody(string json)
         {
