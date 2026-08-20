@@ -494,7 +494,9 @@ export function setupPageLayoutMenu(): void {
 
     const usingLegacyTheme = isLegacyThemeCssLoaded();
     if (usingLegacyTheme && page.classList.contains("bloom-customLayout")) {
-        toggleCustomPageLayout(page.getAttribute("id")!, true);
+        // A legacy theme can't show a custom layout, so force this page back to standard,
+        // keeping the custom layout data in case the user switches to a newer theme.
+        setCustomPageLayout(page.getAttribute("id")!, "standard", true);
         return;
     }
 
@@ -506,12 +508,16 @@ export function setupPageLayoutMenu(): void {
     }
 }
 
-function toggleCustomPageLayout(
+// Ask the server to put this page into the given layout. This says what it means: asking for the
+// layout the page is already in is a no-op on the server, rather than flipping to the other one.
+function setCustomPageLayout(
     pageId: string,
+    layout: "standard" | "custom",
     keepCustomLayoutDataWhenSwitchingToStandard: boolean,
 ) {
-    return postData("editView/toggleCustomPageLayout", {
+    return postData("editView/setCustomPageLayout", {
         pageId,
+        layout,
         keepCustomLayoutDataWhenSwitchingToStandard:
             keepCustomLayoutDataWhenSwitchingToStandard ? "true" : "false",
     });
@@ -531,8 +537,9 @@ function renderPageLayoutMenu(page: HTMLElement): void {
             if (usingLegacyTheme && selection !== "standard") {
                 return;
             }
-            const response = await toggleCustomPageLayout(
+            const response = await setCustomPageLayout(
                 page.getAttribute("id")!,
+                selection,
                 keepCustomLayoutDataWhenSwitchingToStandard,
             );
             if (
@@ -548,7 +555,7 @@ function renderPageLayoutMenu(page: HTMLElement): void {
                     () => convertXmatterPageToCustom(page),
                     "customPageLayout-convertFirstTime",
                 );
-                // Persist the newly created custom layout state so a later toggle back
+                // Persist the newly created custom layout state so a later switch back
                 // to standard has matching server-side state to work from.
                 await postString(
                     "editView/jumpToPage",

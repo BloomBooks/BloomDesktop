@@ -127,8 +127,8 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                "editView/toggleCustomPageLayout",
-                HandleToggleCustomCover,
+                "editView/setCustomPageLayout",
+                HandleSetCustomPageLayout,
                 true
             );
             apiHandler.RegisterEndpointHandler(
@@ -185,25 +185,35 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Save the current state of the page, then toggle the book cover custom flag, and finally reload the page.
-        /// If we are in standard mode and do not have any saved state for custom mode, we return false, and
-        /// the calling code will generate a new custom page state.
+        /// Save the current state of the page, then put the page into the requested layout
+        /// ("standard" or "custom"), and finally reload the page. Asking for the layout the page is
+        /// already in does nothing: this is a "set", not a "toggle" (BL-16725).
+        /// If we are switching to custom and do not have any saved state for custom mode, we return
+        /// false, and the calling code will generate a new custom page state.
         /// </summary>
-        private void HandleToggleCustomCover(ApiRequest request)
+        private void HandleSetCustomPageLayout(ApiRequest request)
         {
-            var requestJson = request.GetPostJsonOrNull();
-            var pageId =
-                requestJson == null
-                    ? request.GetPostStringOrNull()
-                    : request.RequiredPostString("pageId");
+            var pageId = request.RequiredPostString("pageId");
+            var layout = request.RequiredPostString("layout");
+            // Fail fast rather than letting a typo mean "standard", which is the branch that
+            // discards the saved custom layout.
+            if (layout != "standard" && layout != "custom")
+                throw new ArgumentException(
+                    $"editView/setCustomPageLayout got an unexpected layout \"{layout}\"; expected \"standard\" or \"custom\"."
+                );
+            var switchingToCustom = layout == "custom";
             var keepCustomLayoutDataWhenSwitchingToStandard =
-                requestJson != null
-                && request.RequiredPostString("keepCustomLayoutDataWhenSwitchingToStandard")
-                    == "true";
+                request.RequiredPostString("keepCustomLayoutDataWhenSwitchingToStandard") == "true";
             var book = View.Model.CurrentBook;
             var page = book.GetPage(pageId);
             var pageElt = page.GetDivNodeForThisPage();
-            var switchingToCustom = !pageElt.HasClass("bloom-customLayout");
+            if (switchingToCustom == pageElt.HasClass("bloom-customLayout"))
+            {
+                // Already in the requested layout, so there is nothing to do (and in particular
+                // nothing to discard).
+                request.ReplyWithText("true");
+                return;
+            }
             var shouldRemoveCustomLayoutDataWhenSwitchingToStandard =
                 !switchingToCustom && !keepCustomLayoutDataWhenSwitchingToStandard;
             var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
@@ -225,10 +235,10 @@ namespace Bloom.web.controllers
             View.Model.SaveThen(
                 () =>
                 {
-                    if (pageElt.HasClass("bloom-customLayout"))
-                        pageElt.RemoveClass("bloom-customLayout");
-                    else
+                    if (switchingToCustom)
                         pageElt.AddClass("bloom-customLayout");
+                    else
+                        pageElt.RemoveClass("bloom-customLayout");
                     // We must capture these from the saved page before typically replacing that with a different
                     // page element.
                     var backgroundAudio = pageElt.GetAttribute(HtmlDom.musicAttrName);
