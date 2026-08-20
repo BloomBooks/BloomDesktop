@@ -8,21 +8,21 @@
 // frame through getEditablePageBundleExports() (see aiEditorPageCommands.ts).
 //
 // The C# half is AiImageEditorApi.cs (read that file's header for the full picture). The
-// AI image editor is a SEPARATE web app (the `bloom-ai-image-tools` package); we do not
+// ai-editor is a SEPARATE web app (the `bloom-ai-image-tools` package); we do not
 // import it — we load it into an <iframe> overlay. The flow:
 //   0. The menu command (aiEditorPageCommands.launchAiImageEditor, in the page frame)
 //      POSTs aiImageEditor/saveThenLaunch. C# saves the page being edited — which the
 //      whole-book image list below depends on, and which reloads the page frame — and then
 //      calls openAiImageEditor() here. See HandleSaveThenLaunch.
 //   1. POST aiImageEditor/launch -> C# mints a session, makes the per-book
-//      .ai-image-editor folder, and returns the AI image editor URL + the whole-book image
+//      .ai-image-editor folder, and returns the ai-editor URL + the whole-book image
 //      list + enumerated history + httpBase/sessionToken.
 //   2. Build a fixed overlay <div id="ai-editor-overlay"> holding an <iframe> at
 //      that URL with ?mode=bloom-iframe.
 //   3. Handshake over window.postMessage on channel "bloom-ai-image-tools": the
-//      AI image editor posts `ready`; we post `init` (the launch reply + the right-clicked
+//      ai-editor posts `ready`; we post `init` (the launch reply + the right-clicked
 //      image as selectedBookImageId). Image bytes never ride postMessage — they go
-//      over HTTP via aiImageEditor/file; the AI image editor references results by id.
+//      over HTTP via aiImageEditor/file; the ai-editor references results by id.
 //   4. On `commit` we POST aiImageEditor/commit; C# applies replacements to all
 //      non-current pages and returns {oldSrc,newSrc,copyright,creator,license} for any on
 //      the live page, which the page frame applies for us. `cancel`/close just tear the
@@ -45,49 +45,21 @@ import {
     isCurrentPageSwap,
 } from "./aiEditorShared";
 
-// The analytics the editor iframe is allowed to send us: event names, and for each the exact
-// property names that may ride along. Both halves are pinned on Bloom's side of the bridge,
-// because Bloom is what actually posts to Segment -- see the "analytics" case below. Adding
-// anything here is a deliberate act, which is the point: the editor's promise not to include
-// prompt text is a promise made in another repository, and a property allow-list is what makes
-// it true here regardless.
-// A Map, not an object literal: with an object, `event in obj` is also true for inherited
-// members, so an event named "toString" or "constructor" would be treated as permitted and then
-// blow up while its properties were filtered -- taking down the handling of that message, which
-// is the same handler that processes commit and cancel. Map.has() only sees real entries.
-const kAnalyticsTheEditorMaySend = new Map<string, string[]>([
-    [
-        "AI Editor Generate",
-        [
-            "tool",
-            "model",
-            "sourceKind",
-            "referenceCount",
-            "batch",
-            "runsLocally",
-            "attemptNumber",
-            "result",
-            "durationSeconds",
-            "costUSD",
-            "spentCredits",
-        ],
-    ],
+// The analytics event names the ai-editor may ask us to send. Bloom is what actually posts to
+// Segment, and a name it does not recognize would create a new event type in our data rather than
+// land in an existing one, so the vocabulary is pinned on this side.
+//
+// Their PROPERTIES are not filtered. We control both ends of this channel, so an allow-list of
+// property names would only be guarding against ourselves; if something specific ever must not be
+// forwarded, the place to stop it is in the ai-editor, or by removing that one property here.
+// Today it sends nothing but ids, enums, numbers and booleans -- no free-form text of any kind.
+//
+// A Set, not an object literal: with an object, `event in obj` is also true for inherited members,
+// so an event named "toString" or "constructor" would be treated as permitted. Set.has() only sees
+// real entries.
+const kAnalyticsEventsTheAiEditorMaySend = new Set<string>([
+    "AI Editor Generate",
 ]);
-
-// Keep only the properties that event is allowed to carry, dropping anything unrecognized.
-function allowedProperties(
-    event: string,
-    properties?: Record<string, string | number | boolean>,
-): Record<string, string | number | boolean> {
-    const allowed = kAnalyticsTheEditorMaySend.get(event) ?? [];
-    const result: Record<string, string | number | boolean> = {};
-    for (const name of allowed) {
-        if (properties && name in properties) {
-            result[name] = properties[name];
-        }
-    }
-    return result;
-}
 
 // Hand the commit's current-page swaps to the page frame, which owns the live page. Only call
 // this when there is such a swap (see isCurrentPageSwap): the frame is briefly unreachable while
@@ -132,16 +104,16 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 name?: string;
             }>;
             // Enumerated by C# from the per-book history folder; rides through
-            // the `...launchData` spread into the AI image editor's init payload.
+            // the `...launchData` spread into the ai-editor's init payload.
             history?: Array<{
                 id: string;
                 url: string;
                 metadata?: Record<string, unknown> | null;
             }>;
             apiKey?: string | null;
-            // Playground/demo context: the AI image editor must disable its
+            // Playground/demo context: the ai-editor must disable its
             // "set OpenRouter API key" UI. Rides through the `...launchData`
-            // spread below into the AI image editor's init payload.
+            // spread below into the ai-editor's init payload.
             demoOnly?: boolean;
         };
         const hostWindow = window as Window & {
@@ -155,11 +127,11 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         iframeUrl.searchParams.set("mode", "bloom-iframe");
         // Bloom (C#) enumerates every user-changeable image in the whole book
         // and supplies them as `launchData.bookImages`, each with a stable
-        // "{pageId}:{ordinal}" id the AI image editor echoes back on commit. The host
+        // "{pageId}:{ordinal}" id the ai-editor echoes back on commit. The host
         // applies replacements book-wide in C#, so there is no per-image DOM
         // id wrangling here anymore.
 
-        // Identify the image the user right-clicked so the AI image editor can open with it
+        // Identify the image the user right-clicked so the ai-editor can open with it
         // already in the "Image to Edit" slot. We match by page + filename rather than DOM
         // ordinal, because the live page has extra injected UI images that would throw
         // positional indices off.
@@ -187,8 +159,8 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
 
         hostWindow.__bloomAiImageEditorCleanup?.();
 
-        // ----- Analytics for this editor session (BL-16716) -----
-        // Generation happens inside the editor app, which reports each attempt to us over the
+        // ----- Analytics for this ai-editor session (BL-16716) -----
+        // Generation happens inside the ai-editor app, which reports each attempt to us over the
         // bridge (the "analytics" message below); we count those so that a session the user
         // abandons can say how much AI work was thrown away. That is the clearest signal we
         // have that the output was not good enough -- much better than a count of generations,
@@ -199,7 +171,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         let commitSucceeded = false;
         // How many commits we have sent and not yet had an answer to. Closing the overlay while any
         // is outstanding must not report the session as thrown away: the images may be moments from
-        // being saved. A count rather than a flag, because the editor is free to send a second
+        // being saved. A count rather than a flag, because the ai-editor is free to send a second
         // commit before the first is answered, and the first reply would then clear a flag while the
         // second was still in the air.
         let commitsInFlight = 0;
@@ -237,7 +209,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         };
 
         const cleanup = () => {
-            // Every way of ending the session without committing lands here: the editor's own
+            // Every way of ending the session without committing lands here: the ai-editor's own
             // Cancel button, our close box, and a relaunch superseding this session.
             //
             // Except one: closing while a commit is still in flight. The overlay goes away
@@ -247,9 +219,9 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             // the last commit reply to arrive is what reports.
             //
             // Idempotent, and it has to be: a commit sent by THIS session can be answered after the
-            // user has closed it and opened the editor again, and its success path calls us. The
+            // user has closed it and opened the ai-editor again, and its success path calls us. The
             // overlay we would then tear down -- looked up by id, and the cleanup hook on the
-            // window -- belong to the new session, so a second run would make the editor the user
+            // window -- belong to the new session, so a second run would make the ai-editor the user
             // is looking at vanish, unclosably. (Pre-existing; deferring the cancel decision to the
             // commit reply made it easier to reach.)
             if (sessionEnded) return;
@@ -312,8 +284,8 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                       payload?: {
                           level?: string;
                           message?: string;
-                          // We relay this array to C# as-is, so every field the AI
-                          // image editor sends is declared here even though this side
+                          // We relay this array to C# as-is, so every field the
+                          // ai-editor sends is declared here even though this side
                           // reads only resultId and sourceUrl (to say how many pictures
                           // were generated rather than reused — see reportCommit).
                           // Rebuilding the array field by field instead of passing it
@@ -339,7 +311,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                               } | null;
                           }>;
                           apiKey?: string | null;
-                          // For the "analytics" message: an event the editor wants recorded.
+                          // For the "analytics" message: an event the ai-editor wants recorded.
                           // Its own code guarantees no prompt text or other user content is in
                           // here -- see IBloomHostControl.trackEvent in bloom-ai-image-tools.
                           event?: string;
@@ -379,7 +351,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     // via Bloom's own changeImageByElement().
                     const requestId = data.requestId;
                     const ackEditor = (ok: boolean, error?: string) => {
-                        // The editor can be gone by the time we answer: the user is free to close
+                        // The ai-editor can be gone by the time we answer: the user is free to close
                         // the overlay while a commit is in flight, which detaches this iframe.
                         // Telling a window that no longer exists must not throw, because the work
                         // that follows this call still has to happen -- saving the page the swaps
@@ -417,7 +389,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     // only stage those and hand them back, so counting a staged one as applied
                     // overstated success in exactly the case the event exists to catch -- and in the
                     // ordinary case at that, since the picture the user right-clicked to open the
-                    // editor is by definition on the page they have open.
+                    // ai-editor is by definition on the page they have open.
                     //
                     // offPageApplied comes from C#, which did those itself and knows;
                     // currentPageApplied is what the page frame says it managed.
@@ -481,7 +453,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                 | undefined;
                             // The server reports whether it staged every replacement; for
                             // current-page slots only the live DOM knows whether the edit
-                            // actually landed. Combine both so the AI image editor's ack
+                            // actually landed. Combine both so the ai-editor's ack
                             // reflects the true outcome, and always ack (even when the
                             // apply fails) so its overlay can't hang.
                             let finalOk = false;
@@ -570,7 +542,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                         () => {
                             noteCommitSettled();
                             // The request failed, so we know nothing landed as far as anyone can
-                            // tell -- which is also what the editor is about to tell the user.
+                            // tell -- which is also what the ai-editor is about to tell the user.
                             // Reporting the attempt matters more than the small chance that C#
                             // did the work and only the reply went missing: a commit that reaches
                             // nobody is the failure this event was added to make visible.
@@ -585,17 +557,18 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     break;
                 }
                 case "analytics": {
-                    // The editor has no analytics service of its own; it hands events to
+                    // The ai-editor has no analytics service of its own; it hands events to
                     // whatever host it is running in. C# adds BookId; branding is already on every
                     // event as "BrandingProjectName" (see AnalyticsApi).
                     //
-                    // Only known event names, carrying only known properties, are forwarded.
-                    // Bloom is the party that actually sends to Segment, so Bloom enforces its
-                    // own privacy line rather than trusting a sibling repository not to regress:
-                    // without this, a change over there could push an arbitrary event name, or a
-                    // new property holding prompt text, straight out of here.
+                    // Known event names only, so an unrecognized one cannot invent a new event type
+                    // in our data. Their properties are passed through as sent -- see the comment on
+                    // kAnalyticsEventsTheAiEditorMaySend.
                     const event = data.payload?.event;
-                    if (!event || !kAnalyticsTheEditorMaySend.has(event)) {
+                    if (
+                        !event ||
+                        !kAnalyticsEventsTheAiEditorMaySend.has(event)
+                    ) {
                         if (event) {
                             console.warn(
                                 `[AI Image Editor] not forwarding unrecognized analytics event "${event}"`,
@@ -606,10 +579,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     if (event === "AI Editor Generate") {
                         generationsThisSession++;
                     }
-                    trackEvent(
-                        event,
-                        allowedProperties(event, data.payload?.properties),
-                    );
+                    trackEvent(event, data.payload?.properties);
                     break;
                 }
                 case "log":
@@ -621,8 +591,8 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     );
                     break;
                 case "saveCredentials":
-                    // Bloom owns the OpenRouter API key. A key the user pastes into the AI
-                    // image editor is handed up here so Bloom persists it per-user (and
+                    // Bloom owns the OpenRouter API key. A key the user pastes into the
+                    // ai-editor is handed up here so Bloom persists it per-user (and
                     // supplies it on the next launch). A null apiKey clears the stored key.
                     postJson(
                         "aiImageEditor/saveCredentials?session=" +

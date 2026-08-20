@@ -413,10 +413,9 @@ describe("aiEditorOverlay: analytics", () => {
     test("an event name we do not know is ignored, and does not break the session", () => {
         const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
 
-        // "toString" is the interesting case rather than a random word: an object-literal
-        // allow-list would answer `"toString" in list` with true, let it through, and then throw
-        // while filtering its properties -- killing this handler, which is also the one that
-        // processes commit and cancel.
+        // "toString" is the interesting case rather than a random word: with an object literal
+        // instead of a Set, `"toString" in list` answers true, so the name would be treated as one
+        // we know and would go on to create a junk event type in our data.
         postFromEditor({
             channel: "bloom-ai-image-tools",
             type: "analytics",
@@ -433,7 +432,10 @@ describe("aiEditorOverlay: analytics", () => {
         expect(cancelEvents()).toHaveLength(1);
     });
 
-    test("only the properties an event is allowed to carry are passed on", () => {
+    test("the properties of a known event are passed on as the ai-editor sent them", () => {
+        // Deliberately not filtered: we control both ends of this channel. If a property ever must
+        // not be forwarded, it is stopped in the ai-editor or removed by name here -- not by an
+        // allow-list that only guards us against ourselves.
         const { postFromEditor } = openAgainstABookWithOneImage();
 
         postFromEditor({
@@ -443,15 +445,16 @@ describe("aiEditorOverlay: analytics", () => {
                 event: "AI Editor Generate",
                 properties: {
                     model: "some-model",
-                    // Not on the allow-list. The editor promises never to send anything like
-                    // this; the point of the list is that Bloom does not have to rely on that.
-                    promptUsed: "a sentence lifted out of the book",
+                    costUSD: 0.0733,
+                    spentCredits: true,
                 },
             },
         });
 
         expect(trackEvent).toHaveBeenCalledWith("AI Editor Generate", {
             model: "some-model",
+            costUSD: 0.0733,
+            spentCredits: true,
         });
     });
 
@@ -497,7 +500,7 @@ describe("aiEditorOverlay: analytics", () => {
         });
 
         expect(cancelEvents()).toHaveLength(0);
-        // And the swap that landed on the page is still saved. Answering an editor that has
+        // And the swap that landed on the page is still saved. Answering an ai-editor that has
         // gone away used to throw from inside postMessage, which skipped everything after it
         // in the finally block -- including this save, losing the user's picture.
         expect(postThatMightNavigate).toHaveBeenCalledWith(
@@ -530,7 +533,7 @@ describe("aiEditorOverlay: analytics", () => {
     });
 
     test("two overlapping commits: closing is not a cancel while either is outstanding", () => {
-        // The editor is free to send a second commit before the first is answered. With a flag
+        // The ai-editor is free to send a second commit before the first is answered. With a flag
         // rather than a count, the first reply cleared it while the second was still in the air, so
         // closing then reported the session as thrown away with a commit still running.
         applyAiImageEditorReplacements.mockReturnValue({
@@ -668,7 +671,7 @@ describe("aiEditorOverlay: analytics", () => {
         ).toBeGreaterThan(0);
         expect(cancelEvents()).toHaveLength(0);
     });
-    test("a commit answered after the editor was reopened leaves the new overlay alone", () => {
+    test("a commit answered after the ai-editor was reopened leaves the new overlay alone", () => {
         // The old session's success path calls its own cleanup, which tears down "the" overlay by
         // id and deletes the cleanup hook on the window -- both of which belong to the NEW session
         // by then. Without an idempotence guard the editor the user is looking at disappears.
