@@ -2,6 +2,9 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
+// The wire format Bloom shares with the Freeze Doctor, from the package the Doctor's repo publishes.
+// This used to be three files copied into this folder; see BL-16719 for why it is a package now.
+using BloomFreezeDoctor.Contract;
 using SIL.Reporting;
 
 namespace Bloom.FreezeDoctor

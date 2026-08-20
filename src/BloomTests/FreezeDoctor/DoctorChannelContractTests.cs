@@ -1,5 +1,6 @@
 using System;
 using Bloom.FreezeDoctor;
+using BloomFreezeDoctor.Contract;
 using NUnit.Framework;
 
 namespace BloomTests.FreezeDoctor
@@ -8,13 +9,18 @@ namespace BloomTests.FreezeDoctor
     /// Pins the shared-memory contract Bloom publishes for the Bloom Freeze Doctor
     /// (https://github.com/BloomBooks/bloom-freeze-doctor).
     ///
-    /// **The point of this fixture is to make drift break a build.** `DoctorChannel.cs` is a copy of a
-    /// file in the Doctor's repository, and the two must agree byte for byte about the layout. If they
-    /// ever disagree, nothing fails loudly: Bloom writes one set of offsets, the Doctor reads another, and
-    /// the result is a stream of reports full of plausible nonsense that nobody can tell from real ones.
-    /// So the schema version, the page size and the name format are asserted here BY VALUE, and the
-    /// equivalent fixture in the Doctor's repository asserts the same numbers. Changing the layout should
-    /// therefore require changing two tests in two repositories, which is the intended amount of friction.
+    /// **What this fixture is for changed when the contract became a package.** It used to guard against
+    /// two hand-maintained copies of the same file drifting apart. There is only one copy now — the
+    /// `BloomFreezeDoctor.Contract` package — so drift in that sense is no longer possible.
+    ///
+    /// It still earns its place, for a different reason: it pins the layout Bloom *expects* against the
+    /// layout the referenced package version actually has. A package upgrade that changed an offset or
+    /// the schema version would otherwise be silent — Bloom would compile, run, and publish its health to
+    /// offsets the Doctor no longer reads, and the reports would be plausible nonsense that nobody could
+    /// tell from real ones. Asserting the numbers BY VALUE here turns that into a failed build.
+    ///
+    /// So: if this fails after a version bump, the layout changed, and Bloom's side needs looking at
+    /// rather than the numbers here being updated to match.
     /// </summary>
     [TestFixture]
     public class DoctorChannelContractTests
