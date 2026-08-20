@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Bloom.Book;
+using Bloom.ImageProcessing;
 using Bloom.web.controllers;
 using NUnit.Framework;
 using SIL.Code;
@@ -256,12 +257,69 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
+        public void ImportImageIntoBookFolder_OversizedCreditedImage_KeepsItsCredits()
+        {
+            // An uploaded result big enough to need resizing is rewritten by GraphicsMagick on the
+            // way in, and that drops the iTXt/XMP chunk libpalaso keeps IP metadata in (measured:
+            // a plain gm resize loses it, and asking it not to strip profiles doesn't help). The
+            // ordinary import path is safe because PageEditingModel.ChangePicture re-writes the
+            // metadata straight after ProcessAndSaveImageIntoFolder; this path has to do the same,
+            // or an uploaded photo quietly loses its copyright (BL-16645).
+            var source = MakeSourcePng("credited-huge.png", 4200, 1000);
+            using (var img = PalasoImage.FromFileRobustly(source))
+            {
+                img.Metadata.Creator = "Jane Doe";
+                img.Metadata.CopyrightNotice = "Copyright 2020 Jane Doe";
+                img.Metadata.License = new CreativeCommonsLicense(
+                    true,
+                    true,
+                    CreativeCommonsLicense.DerivativeRules.Derivatives
+                );
+                RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
+            }
+            // Sanity: the credits really are in the source, so a match below isn't two blanks
+            // agreeing with each other.
+            var before = Metadata.FromFile(source);
+            Assert.That(before.Creator, Is.EqualTo("Jane Doe"), "setup");
+            Assert.That(before.CopyrightNotice, Is.EqualTo("Copyright 2020 Jane Doe"), "setup");
+
+            var newName = AiImageEditorApi.ImportImageIntoBookFolder(source, _bookFolder.Path);
+
+            var newPath = Path.Combine(_bookFolder.Path, newName);
+            using (var after = Image.FromFile(newPath))
+            {
+                // Sanity: it really took the resize path, which is the one that loses metadata.
+                Assert.That(
+                    after.Width,
+                    Is.LessThan(4200),
+                    "setup: this image should have been downscaled on the way in"
+                );
+            }
+            var kept = Metadata.FromFile(newPath);
+            Assert.That(
+                kept.Creator,
+                Is.EqualTo("Jane Doe"),
+                "the creator must survive the import resize"
+            );
+            Assert.That(
+                kept.CopyrightNotice,
+                Is.EqualTo("Copyright 2020 Jane Doe"),
+                "the copyright must survive the import resize"
+            );
+            Assert.That(
+                kept.License,
+                Is.Not.Null.And.Not.InstanceOf<NullLicense>(),
+                "the licence must survive the import resize too"
+            );
+        }
+
+        [Test]
         public void ImportImageIntoBookFolder_ReusedImage_IsNotResized()
         {
             // A reused book image was already import-processed on its own way in, so we
-            // deliberately don't resize it again: resizing rewrites the file through
-            // GraphicsMagick, and the reuse path doesn't re-write credits afterwards, so
-            // anything embedded in the original would simply be lost.
+            // deliberately don't resize it again: it would gain nothing and would cost the image
+            // a generation of quality. (Credits used to be part of that reasoning; they no longer
+            // are, now that the import re-attaches metadata whichever path it took.)
             var source = MakeSourcePng("already-in-book.png", 5000, 4000);
 
             var newName = AiImageEditorApi.ImportImageIntoBookFolder(
@@ -349,6 +407,434 @@ namespace BloomTests.web.controllers
                 Is.True,
                 "a corrupt image must still be copied rather than silently dropped"
             );
+        }
+
+        // ------------------------------------------------------------------
+        // ConvertPngToJpegIfItBloatsTheJpegItReplaces: an AI result often comes back as a PNG
+        // for a slot the book held as a JPEG, and a photographic PNG can be several times the
+        // size (BL-16645). man.png and man.jpg are the same photo in both formats, so together
+        // they stand in for exactly that situation.
+        // ------------------------------------------------------------------
+
+        private const string _pathToTestImages = "src/BloomTests/ImageProcessing/images";
+
+        // Copies one of the images distributed with the application into the book folder under
+        // the given name, and returns that name (which is what the API deals in).
+        private string CopyTestImageIntoBookFolder(string distributedName, string nameInBook)
+        {
+            var source = FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                distributedName
+            );
+            RobustFile.Copy(source, Path.Combine(_bookFolder.Path, nameInBook), true);
+            return nameInBook;
+        }
+
+        private long LengthInBookFolder(string name)
+        {
+            return new FileInfo(Path.Combine(_bookFolder.Path, name)).Length;
+        }
+
+        // A real (header-sniffable) but tiny JPEG in the book folder, for cases that need the
+        // superseded file to be small enough to make the new PNG look bloated.
+        private string MakeSmallJpegInBookFolder(string name)
+        {
+            var path = Path.Combine(_bookFolder.Path, name);
+            using (var bitmap = new Bitmap(4, 4))
+            {
+                RobustImageIO.SaveImage(bitmap, path, ImageFormat.Jpeg);
+            }
+            Assert.That(
+                ImageUtils.IsJpegFile(path),
+                Is.True,
+                "setup: the stand-in old file must sniff as a real JPEG"
+            );
+            return name;
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_BigPngReplacingSmallJpeg_KeepsTheJpegAndDeletesThePng()
+        {
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+            var pngLength = LengthInBookFolder(newName);
+            // Sanity: this really is the blow-up case, or the method would rightly do nothing
+            // and the assertions below would pass for the wrong reason.
+            Assert.That(
+                pngLength,
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: the new PNG must be the bloated one"
+            );
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                Path.GetExtension(result),
+                Is.EqualTo(".jpg"),
+                "a photo PNG this much bigger than the JPEG it replaces should be re-encoded"
+            );
+            Assert.That(
+                result,
+                Does.StartWith("ai-image"),
+                "DeleteSupersededAiImageFiles reclaims our files by this prefix"
+            );
+            Assert.That(
+                File.Exists(Path.Combine(_bookFolder.Path, result)),
+                Is.True,
+                "the file we name has to exist"
+            );
+            Assert.That(
+                LengthInBookFolder(result),
+                Is.LessThan(pngLength),
+                "the whole point is a smaller file"
+            );
+            Assert.That(
+                File.Exists(Path.Combine(_bookFolder.Path, newName)),
+                Is.False,
+                "leaving the PNG behind would keep exactly the bulk we converted away from"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_JpegOfTheSameBaseNameExists_DoesNotOverwriteIt()
+        {
+            // ImportImageIntoBookFolder only reserved "ai-image1.png", and GetUnusedFilename
+            // checks just that one name — so "ai-image1.jpg" can be another slot's live image,
+            // and writing the conversion over it would destroy that image.
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+            var otherSlotsImage = Path.Combine(_bookFolder.Path, "ai-image1.jpg");
+            File.WriteAllText(otherSlotsImage, "another slot's image");
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                Path.GetExtension(result),
+                Is.EqualTo(".jpg"),
+                "setup: this case should still convert, or it proves nothing about clobbering"
+            );
+            Assert.That(
+                result,
+                Is.Not.EqualTo("ai-image1.jpg"),
+                "the conversion must claim a name of its own"
+            );
+            Assert.That(
+                File.ReadAllText(otherSlotsImage),
+                Is.EqualTo("another slot's image"),
+                "the other slot's image must come through untouched"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_ReplacingAPng_LeavesTheNewPngAlone()
+        {
+            // Nothing to gain: the book was already paying PNG prices for this slot, and
+            // re-encoding would silently cost quality.
+            var oldSrc = CopyTestImageIntoBookFolder("bird.png", "old-art.png");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(result, Is.EqualTo(newName), "only a superseded JPEG justifies converting");
+            Assert.That(File.Exists(Path.Combine(_bookFolder.Path, newName)), Is.True);
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_PngNoBiggerThanTheJpegItReplaces_LeavesItAlone()
+        {
+            // LakePendOreille.jpg is far bigger than man.png, so there is no blow-up to undo
+            // and the lossy re-encode would buy the book nothing.
+            var oldSrc = CopyTestImageIntoBookFolder("LakePendOreille.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.LessThan(LengthInBookFolder(oldSrc)),
+                "setup: the new PNG is not the bloated one in this case"
+            );
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                result,
+                Is.EqualTo(newName),
+                "no conversion when the PNG isn't the problem"
+            );
+            Assert.That(File.Exists(Path.Combine(_bookFolder.Path, newName)), Is.True);
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_ConversionDeclined_LeavesNoStrayJpegInTheBookFolder()
+        {
+            // bird.png is line art: converting it gains little, so the conversion is declined
+            // after a name has already been reserved and GraphicsMagick has run. Whatever the
+            // reason for declining, nothing unreferenced may be left behind — a stray file
+            // would sit in the very folder this method exists to keep small.
+            var oldSrc = MakeSmallJpegInBookFolder("old-tiny.jpg");
+            var newName = CopyTestImageIntoBookFolder("bird.png", "ai-image1.png");
+            // Sanity: the ratio gate must pass, so we really do get as far as converting.
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: big enough to be a conversion candidate"
+            );
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(result, Is.EqualTo(newName), "line art is not worth re-encoding");
+            Assert.That(
+                Directory.GetFiles(_bookFolder.Path, "ai-image*.jpg"),
+                Is.Empty,
+                "a declined conversion must not leave an unreferenced file in the book folder"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_TransparentPng_IsLeftAloneEvenThoughItIsBigger()
+        {
+            // A JPEG has no alpha channel, so converting would flatten the see-through areas
+            // onto a solid background — and since we delete the PNG on success, the
+            // transparency would be gone for good. Size is no excuse for that.
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder(
+                "shirtWithTransparentBg.png",
+                "ai-image1.png"
+            );
+            // Sanity: this is a big PNG that really is transparent, so it would otherwise be
+            // converted and the assertion below would be testing nothing.
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: big enough that only the transparency check can stop the conversion"
+            );
+            using (var image = Image.FromFile(Path.Combine(_bookFolder.Path, newName)))
+            {
+                Assert.That(
+                    ImageUtils.HasTransparency(image),
+                    Is.True,
+                    "setup: the test image must actually have transparency"
+                );
+            }
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                result,
+                Is.EqualTo(newName),
+                "a transparent PNG must be kept as a PNG however big it is"
+            );
+            Assert.That(
+                File.Exists(Path.Combine(_bookFolder.Path, newName)),
+                Is.True,
+                "and the transparent file itself must survive"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_Converted_CarriesTheCreditsOntoTheJpeg()
+        {
+            // GraphicsMagick does not preserve credits when it rewrites a PNG as a JPEG, and an
+            // uploaded result can arrive with the user's own credits embedded in it. Nothing
+            // downstream would put them back — EmbedCreditsInNewImageFile writes only the credits
+            // the AI editor explicitly sent — so losing them here would quietly strip a
+            // photographer's copyright.
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+            var newPath = Path.Combine(_bookFolder.Path, newName);
+            using (var img = PalasoImage.FromFileRobustly(newPath))
+            {
+                img.Metadata.Creator = "Jane Doe";
+                img.Metadata.CopyrightNotice = "Copyright 2020 Jane Doe";
+                img.Metadata.License = new CreativeCommonsLicense(
+                    true,
+                    true,
+                    CreativeCommonsLicense.DerivativeRules.Derivatives
+                );
+                RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
+            }
+            // Sanity: the credits really are in the PNG, so a match below isn't two blanks agreeing.
+            var before = Metadata.FromFile(newPath);
+            Assert.That(before.Creator, Is.EqualTo("Jane Doe"), "setup");
+            Assert.That(before.CopyrightNotice, Is.EqualTo("Copyright 2020 Jane Doe"), "setup");
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            // Sanity: it really did convert, or there would be no re-encode to lose anything.
+            Assert.That(
+                Path.GetExtension(result),
+                Is.EqualTo(".jpg"),
+                "setup: this case must convert for the test to mean anything"
+            );
+            var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, result));
+            Assert.That(
+                after.Creator,
+                Is.EqualTo("Jane Doe"),
+                "the creator must survive the re-encode"
+            );
+            Assert.That(
+                after.CopyrightNotice,
+                Is.EqualTo("Copyright 2020 Jane Doe"),
+                "the copyright must survive the re-encode"
+            );
+            Assert.That(
+                after.License?.Token,
+                Is.EqualTo("cc-by"),
+                "and so must the licence, which otherwise degrades to 'ask permission'"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_PngTransparentOnlyInTheMiddle_IsLeftAlone()
+        {
+            // The case the corner-only check used to miss (BL-16645): a subject knocked out of an
+            // otherwise solid canvas, so the corners are opaque but the middle is see-through.
+            // Converting it would flatten the cutout and delete the original.
+            var oldSrc = MakeSmallJpegInBookFolder("old-tiny.jpg");
+            var newName = "ai-image1.png";
+            var newPath = Path.Combine(_bookFolder.Path, newName);
+            using (var bitmap = new Bitmap(300, 300, PixelFormat.Format32bppArgb))
+            {
+                for (int y = 0; y < 300; ++y)
+                for (int x = 0; x < 300; ++x)
+                {
+                    var inBorder = x < 30 || y < 30 || x >= 270 || y >= 270;
+                    // Varied border colors, so the PNG doesn't compress down below the size gate.
+                    bitmap.SetPixel(
+                        x,
+                        y,
+                        inBorder
+                            ? Color.FromArgb(255, (x * 7) % 256, (y * 13) % 256, (x + y) % 256)
+                            : Color.FromArgb(0, 0, 0, 0)
+                    );
+                }
+                RobustImageIO.SaveImage(bitmap, newPath, ImageFormat.Png);
+            }
+            // Sanity checks, so this can't pass for the wrong reason: it sniffs as a PNG, it is
+            // big enough to be a conversion candidate, and the transparency really is invisible to
+            // the corner scan yet visible to HasTransparency.
+            Assert.That(ImageUtils.IsPngFile(newPath), Is.True, "setup");
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: big enough that only the transparency check can stop the conversion"
+            );
+            using (var check = Image.FromFile(newPath))
+            {
+                Assert.That(
+                    ((Bitmap)check).GetPixel(5, 5).A,
+                    Is.EqualTo(255),
+                    "setup: the corner must be opaque, or the old corner-only check would have caught it"
+                );
+                Assert.That(
+                    ImageUtils.HasTransparency(check),
+                    Is.True,
+                    "setup: the scattered sampling must see the interior cutout"
+                );
+            }
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                result,
+                Is.EqualTo(newName),
+                "a picture see-through only in its middle must still be kept as a PNG"
+            );
+            Assert.That(File.Exists(newPath), Is.True, "and the original must survive");
+            Assert.That(
+                Directory.GetFiles(_bookFolder.Path, "ai-image*.jpg"),
+                Is.Empty,
+                "no JPEG should have been produced at all"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_UndecodableFile_LeavesItAloneRatherThanThrowing()
+        {
+            // ImportImageIntoBookFolder copies a file it can't process in verbatim, without
+            // ever decoding it, so a file with a valid PNG header but junk content really can
+            // reach us. Throwing here would abort the whole commit — every replacement in it —
+            // over a missed size saving.
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = "ai-image1.png";
+            var newPath = Path.Combine(_bookFolder.Path, newName);
+            var junk = new byte[20000];
+            new byte[] { 137, 80, 78, 71 }.CopyTo(junk, 0); // a PNG header, then nothing valid
+            File.WriteAllBytes(newPath, junk);
+            // Sanity: it sniffs as a PNG and is big enough, so we really do reach the decode.
+            Assert.That(ImageUtils.IsPngFile(newPath), Is.True, "setup");
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: big enough to be a conversion candidate"
+            );
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(result, Is.EqualTo(newName), "an undecodable file is simply not optimized");
+            Assert.That(
+                File.Exists(newPath),
+                Is.True,
+                "and it must still be there for the page to point at"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_NoOldFile_LeavesTheNewPngAlone()
+        {
+            // A slot can point at a file that isn't there (or at nothing at all); with nothing
+            // to compare against we must still not lose the image we just imported.
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+
+            foreach (var missingOldSrc in new[] { "no-such-file.jpg", "", null })
+            {
+                var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                    _bookFolder.Path,
+                    missingOldSrc,
+                    newName
+                );
+
+                Assert.That(
+                    result,
+                    Is.EqualTo(newName),
+                    $"oldSrc '{missingOldSrc}' gives us nothing to compare against"
+                );
+                Assert.That(File.Exists(Path.Combine(_bookFolder.Path, newName)), Is.True);
+            }
         }
 
         // ------------------------------------------------------------------

@@ -1317,14 +1317,25 @@ namespace Bloom.web.controllers
             var newFileName = ImportImageIntoBookFolder(
                 sourceBytesPath,
                 book.FolderPath,
-                // Only a freshly generated/uploaded result needs resizing. A REUSED book image
-                // was already import-processed on its own way in, so there is nothing to gain
-                // by shrinking it again — and resizing rewrites the file through
-                // GraphicsMagick, which can drop the credits embedded in it. This path
-                // deliberately doesn't re-write credits (see EmbedCreditsInNewImageFile below),
-                // so there would be nothing to put them back.
+                // Only a freshly generated/uploaded result needs resizing: a reused book image was
+                // already import-processed on its own way in, so shrinking it again would gain
+                // nothing and would cost it a generation of quality.
+                // This used to cite credits as the reason too — resizing rewrites the file through
+                // GraphicsMagick, which drops the XMP packet the licence lives in. That no longer
+                // applies: ImportImageIntoBookFolder now re-attaches the metadata after processing,
+                // whichever path it took. So scope is the whole justification for this argument.
                 resizeIfNeeded: !string.IsNullOrEmpty(replacement.resultId)
             );
+            // A generated result can arrive as a PNG for a slot the book held as a JPEG,
+            // which can be several times the size; re-encode it as a JPEG when that wins
+            // enough to be worth it (BL-16645).  A reused image is already in the book
+            // folder in the appropriate format, so we don't need to process it again.
+            if (!string.IsNullOrEmpty(replacement.resultId))
+                newFileName = ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                    book.FolderPath,
+                    oldSrc,
+                    newFileName
+                );
             newSrc = newFileName;
 
             // A generated result arrives with no intellectual-property metadata of its own, so
@@ -1393,10 +1404,10 @@ namespace Bloom.web.controllers
         /// an image that fails to process at all. Internal for testing.
         /// </summary>
         /// <param name="resizeIfNeeded">
-        /// False for a reused book image, which was already import-processed on its own way in.
-        /// Resizing it again would gain nothing and would rewrite the file through
-        /// GraphicsMagick, which can drop the credits embedded in it — and the reuse path
-        /// deliberately doesn't re-write credits, so they would simply be lost.
+        /// False for a reused book image, which was already import-processed on its own way in, so
+        /// resizing it again would gain nothing and would cost it a generation of quality. (It used
+        /// to matter for credits as well; it no longer does, since this method re-attaches the
+        /// metadata after processing whichever path it took.)
         /// </param>
         /// <returns>The name (no path) of the new file in the book folder.</returns>
         internal static string ImportImageIntoBookFolder(
@@ -1421,6 +1432,49 @@ namespace Bloom.web.controllers
                             isSameFile: false,
                             resizeFileIfNeeded: resizeIfNeeded
                         );
+                        // Only re-attach metadata we actually read something from. Writing an empty
+                        // model over the processed file could STRIP what
+                        // ProcessAndSaveImageIntoFolder had preserved by copying the file verbatim —
+                        // turning "we found no metadata" into "there is now no metadata" — and there
+                        // is nothing to restore in that case anyway. Two ways to end up empty: the
+                        // read failed (ImageUtils.CopyCoreMetadata guards on the same flag), or it
+                        // succeeded and the source simply had none, which is the normal case for a
+                        // freshly generated AI result. Both of Devin's reviews of #8188 on this line.
+                        if (
+                            processedName != null
+                            && imageInfo.Metadata != null
+                            && imageInfo.Metadata.ExceptionCaughtWhileLoading == null
+                            && !imageInfo.Metadata.IsEmpty
+                        )
+                        {
+                            // Put the credits back on whatever was just written, exactly as
+                            // PageEditingModel.ChangePicture does after the same call — and for the
+                            // same reason. Processing can rewrite the bytes (a GraphicsMagick
+                            // resize, or a save through GDI+ for a non-web format), and libpalaso
+                            // keeps the licence only in the XMP packet, which a GraphicsMagick
+                            // rewrite drops. Creator and copyright happen to survive, because they
+                            // are also written as PNG tEXt keys, so the symptom is narrow and easy
+                            // to miss: an uploaded photo keeps its copyright line but arrives with
+                            // no licence at all (BL-16645).
+                            try
+                            {
+                                ImageUtils.SaveImageMetadata(
+                                    imageInfo,
+                                    Path.Combine(bookFolderPath, processedName)
+                                );
+                            }
+                            catch (Exception metadataEx)
+                            {
+                                // Deliberately not rethrown: the outer catch would fall back to
+                                // copying the source in verbatim, throwing away a perfectly good
+                                // processed image over a metadata problem. Unprocessed bulk is a
+                                // worse outcome than metadata we failed to re-attach.
+                                Logger.WriteError(
+                                    $"AiImageEditorApi: imported {sourceBytesPath} but could not re-attach its metadata",
+                                    metadataEx
+                                );
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -1447,6 +1501,161 @@ namespace Bloom.web.controllers
             else
                 RobustFile.Copy(sourceBytesPath, newPath, true);
             return newFileName;
+        }
+
+        // How much bigger than the JPEG it supersedes a new PNG has to be before we spend a
+        // GraphicsMagick run (and some lossy re-encoding) trying to shrink it. A PNG merely the
+        // same size as the JPEG it replaces isn't the blow-up BL-16645 is about.
+        private const double PngBloatRatioWorthReencoding = 1.5;
+
+        /// <summary>
+        /// The AI image editor can return a PNG for a slot the book held as a JPEG, and a
+        /// photographic PNG can be several times the size of the JPEG it replaced — the very
+        /// bloat <see cref="ImportImageIntoBookFolder"/> exists to avoid (BL-16645). So when the
+        /// file we just imported is a PNG substantially bigger than the JPEG it supersedes,
+        /// re-encode it as a JPEG and keep that instead, deleting the PNG. We only keep the JPEG
+        /// if the saving is real: <see cref="ImageUtils.TryChangeFormatToJpegIfHelpful"/> insists
+        /// on at least 50% smaller and cleans up after itself otherwise.
+        ///
+        /// A PNG we can see is transparent is left alone whatever its size, because a JPEG cannot
+        /// carry an alpha channel and converting one would permanently flatten its see-through
+        /// areas onto a solid background.  Note that checking the image for transparency does
+        /// an exhaustive scan of its pixels, which can take about 10 msec for the largest images
+        /// we store that are fully opaque (on a fast machine).  Any pixel that is less than fully
+        /// opaque makes the image "transparent" for our purposes, so we don't have to check every
+        /// pixel if we find one that is not fully opaque.  Checking for transparency is done only
+        /// when needed, and is still much faster than re-encoding a large PNG as a JPEG.
+        ///
+        /// Returns the name (no path) to use for the new file — the JPEG's if we converted,
+        /// otherwise <paramref name="newFileName"/> unchanged. Internal for testing.
+        /// </summary>
+        /// <remarks>
+        /// Only called for a freshly generated or uploaded result; a REUSED book image is left alone.
+        /// The problem this method fixes is about a generated result bloating a book, and a reused
+        /// image is already in the book folder in the appropriate format.
+        /// </remarks>
+        internal static string ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+            string bookFolderPath,
+            string oldSrc,
+            string newFileName
+        )
+        {
+            if (string.IsNullOrEmpty(oldSrc))
+                return newFileName; // nothing was there to compare against
+            var oldPath = Path.Combine(bookFolderPath, oldSrc);
+            var newPath = Path.Combine(bookFolderPath, newFileName);
+            // Judge by the bytes, not the extensions: a book folder can easily hold a file whose
+            // extension misdescribes its content (which is why these helpers sniff the header).
+            if (!ImageUtils.IsJpegFile(oldPath) || !ImageUtils.IsPngFile(newPath))
+                return newFileName;
+            if (
+                new FileInfo(newPath).Length
+                <= PngBloatRatioWorthReencoding * new FileInfo(oldPath).Length
+            )
+                return newFileName;
+
+            // ImportImageIntoBookFolder only reserved the ".png" name, and GetUnusedFilename
+            // checks just that one name — so the same base name with a ".jpg" extension may
+            // well be another slot's live image. Reserve a genuinely unused .jpg name instead
+            // of writing over it; TryChangeFormatToJpegIfHelpful also warns that a
+            // pre-existing destination file can make GraphicsMagick fail outright.
+            var jpegFileName = ImageUtils.GetUnusedFilename(bookFolderPath, "ai-image", ".jpg");
+            var jpegPath = Path.Combine(bookFolderPath, jpegFileName);
+            bool keepTheJpeg;
+            try
+            {
+                // Dispose before touching the PNG again: PalasoImage owns a decoded copy of it.
+                using (var image = PalasoImage.FromFileRobustly(newPath))
+                {
+                    // A JPEG has no alpha channel, so re-encoding a PNG that has any
+                    // see-through areas would flatten them onto a solid background — and we
+                    // delete the PNG below, so the transparency would be gone for good. That is
+                    // why we scan every pixel here, while the same conversion in
+                    // ImageUtils.AdjustImageForDisplay settles for a sample: there the original
+                    // survives, so a missed patch costs a display copy rather than the picture.
+                    if (ImageUtils.HasTransparency(image.Image, samplePixels: false))
+                        return newFileName;
+                    keepTheJpeg = ImageUtils.TryChangeFormatToJpegIfHelpful(image, jpegPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Anything we can't decode simply doesn't get optimized. Note that
+                // ImportImageIntoBookFolder may have copied these bytes in verbatim without
+                // ever decoding them (that is its fallback for a file it can't process), so an
+                // undecodable file really can reach us — and letting that abort the whole
+                // commit, losing every replacement in it, would be a poor trade for a missed
+                // size saving.
+                Logger.WriteError(
+                    $"AiImageEditorApi: could not consider re-encoding {newPath} as a JPEG",
+                    ex
+                );
+                // GraphicsMagick may already have written the JPEG before we got here — the throw
+                // can come from disposing the PalasoImage, after the conversion itself succeeded —
+                // and we are about to walk away from it, so clean it up like the declined case
+                // below rather than leaving it unreferenced in the book folder.
+                try
+                {
+                    if (RobustFile.Exists(jpegPath))
+                        RobustFile.Delete(jpegPath);
+                }
+                catch (Exception cleanupEx)
+                {
+                    Logger.WriteError(
+                        $"AiImageEditorApi: could not clean up the abandoned {jpegPath}",
+                        cleanupEx
+                    );
+                }
+                return newFileName;
+            }
+            if (!keepTheJpeg)
+            {
+                // TryChangeFormatToJpegIfHelpful removes a JPEG it merely decided against, but
+                // not one left behind by a GraphicsMagick run that failed partway. Unlike its
+                // other callers, our destination is the book folder itself, so a leftover would
+                // sit unreferenced in the very place this method exists to keep small.
+                // Guarded for the same reason as the delete below, and even more plainly: this is
+                // the branch where we gained nothing at all, so a locked leftover file is the last
+                // thing that should be allowed to throw away the user's whole commit.
+                try
+                {
+                    if (RobustFile.Exists(jpegPath))
+                        RobustFile.Delete(jpegPath);
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteError(
+                        $"AiImageEditorApi: could not clean up the unused {jpegPath}",
+                        ex
+                    );
+                }
+                return newFileName;
+            }
+            // Carry the credits across before the PNG goes away. GraphicsMagick does not preserve
+            // them when it rewrites a PNG as a JPEG — measured, not assumed: creator, copyright and
+            // licence all come back empty. That matters because an UPLOADED result can arrive with
+            // the user's own credits embedded in it, and nothing downstream would put them back:
+            // EmbedCreditsInNewImageFile writes only the credits the AI editor explicitly sent, and
+            // only when it sent any. So without this, uploading a credited photo and having it
+            // re-encoded would quietly strip its copyright (BL-16645, and John's review of #8188).
+            ImageUtils.CopyCoreMetadata(newPath, jpegPath);
+            // Nothing references the PNG now, and leaving it in the book folder would keep
+            // exactly the bulk we just converted away from. But a momentarily locked file (a
+            // virus scanner, the host still serving it) must not abort the commit: we already
+            // have the JPEG, so a PNG we failed to delete is strictly better than discarding
+            // every replacement in the request.
+            try
+            {
+                RobustFile.Delete(newPath);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError(
+                    $"AiImageEditorApi: converted {newPath} to a JPEG but could not delete it",
+                    ex
+                );
+            }
+            return jpegFileName;
         }
 
         /// <summary>

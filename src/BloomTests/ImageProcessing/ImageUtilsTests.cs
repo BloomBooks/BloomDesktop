@@ -71,6 +71,130 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
+        public void AdjustImageForDisplay_PhotoPngThatAlsoNeedsResizing_StillConvertsToJpeg()
+        {
+            // The publication paths (BloomPubMaker, EpubMaker) pass maxShortSide/maxLongSide, so a
+            // large photo hits resize AND format conversion together. Shrinking it must not cost us
+            // the JPEG re-encoding: a photo published as a resized PNG is several times bigger than
+            // it needs to be. The sibling test above uses a 118x154 image, which never resizes, so
+            // it cannot catch a regression on this path (BL-16645).
+            var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "man.png"
+            );
+            using (var destFolder = new TemporaryFolder("AdjustImageForDisplay_PhotoPngResized"))
+            {
+                // Ask for a size smaller than the source, which is what makes needsResize true.
+                var result = ImageUtils.AdjustImageForDisplay(
+                    inputPath,
+                    destFolder.Path,
+                    maxShortSide: 60,
+                    maxLongSide: 80
+                );
+
+                Assert.That(result, Is.Not.Null, "Expected a processed version to be created");
+                using (var img = Image.FromFile(result))
+                {
+                    // Sanity: it really did take the resize path, so this is the combined case.
+                    Assert.That(
+                        img.Width,
+                        Is.LessThan(118),
+                        "setup: the image should have been shrunk"
+                    );
+                    Assert.That(
+                        img.RawFormat,
+                        Is.EqualTo(ImageFormat.Jpeg),
+                        "a resized photo must still be re-encoded as a JPEG"
+                    );
+                }
+                Assert.That(Path.GetExtension(result), Is.EqualTo(".jpg"));
+            }
+        }
+
+        [Test]
+        public void AdjustImageForDisplay_PhotoPngWithOneStrayTransparentPixel_StillConvertsToJpeg()
+        {
+            // The publish path settles for a sampled transparency check deliberately: a photograph
+            // carrying a stray non-opaque pixel — a common artifact of editing and AI tools — must
+            // still get the JPEG re-encoding that keeps published books small. Nothing pinned that,
+            // which is how an exhaustive per-pixel scan reached this call site unnoticed and blocked
+            // the conversion for any such photo (BL-16645). The AI image editor keeps the exhaustive
+            // scan, because it deletes the original; that is covered by its own tests.
+            var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "man.png"
+            );
+            using (var sourceFolder = new TemporaryFolder("AdjustImageForDisplay_StrayAlphaSource"))
+            using (var destFolder = new TemporaryFolder("AdjustImageForDisplay_StrayAlphaDest"))
+            {
+                var strayPath = Path.Combine(sourceFolder.Path, "stray.png");
+                using (var source = new Bitmap(inputPath))
+                using (
+                    var photo = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppArgb)
+                )
+                {
+                    using (var g = Graphics.FromImage(photo))
+                        g.DrawImage(source, 0, 0, source.Width, source.Height);
+
+                    // Find a pixel the sampler doesn't look at rather than assuming which one that
+                    // is, so this test doesn't quietly stop testing anything if the sample pattern
+                    // changes.
+                    var strayX = -1;
+                    for (var y = source.Height / 2; y < source.Height && strayX < 0; ++y)
+                    {
+                        for (var x = source.Width / 2; x < source.Width; ++x)
+                        {
+                            var wasOpaque = photo.GetPixel(x, y);
+                            photo.SetPixel(x, y, Color.FromArgb(254, wasOpaque));
+                            if (!ImageUtils.HasTransparency(photo))
+                            {
+                                strayX = x;
+                                break;
+                            }
+                            photo.SetPixel(x, y, wasOpaque);
+                        }
+                    }
+                    Assert.That(
+                        strayX,
+                        Is.GreaterThanOrEqualTo(0),
+                        "setup: could not find a pixel the sampling misses"
+                    );
+                    // Sanity: the transparency really is in the image, and only the exhaustive scan
+                    // sees it — otherwise this test would pass without exercising the choice at all.
+                    Assert.That(
+                        ImageUtils.HasTransparency(photo),
+                        Is.False,
+                        "setup: sampling should miss a single stray pixel"
+                    );
+                    Assert.That(
+                        ImageUtils.HasTransparency(photo, samplePixels: false),
+                        Is.True,
+                        "setup: the stray pixel should really be there"
+                    );
+                    photo.Save(strayPath, ImageFormat.Png);
+                }
+
+                // Ask for a size smaller than the source, the way the publication code calls in.
+                var result = ImageUtils.AdjustImageForDisplay(
+                    strayPath,
+                    destFolder.Path,
+                    maxShortSide: 60,
+                    maxLongSide: 80
+                );
+
+                Assert.That(result, Is.Not.Null, "Expected a processed version to be created");
+                using (var img = Image.FromFile(result))
+                {
+                    Assert.That(
+                        img.RawFormat,
+                        Is.EqualTo(ImageFormat.Jpeg),
+                        "a stray transparent pixel must not cost a photo its JPEG conversion"
+                    );
+                }
+            }
+        }
+
+        [Test]
         public void AdjustImageForDisplay_PhotoButPNGFile_ConvertsToJpeg()
         {
             var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
@@ -252,6 +376,336 @@ namespace BloomTests.ImageProcessing
                     Assert.That(resultBitmap.GetPixel(0, 0).A, Is.EqualTo(0));
                     Assert.That(resultBitmap.GetPixel(20, 20).A, Is.EqualTo(255));
                 }
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // HasTransparency. It samples rather than proving opacity: the top-left corner, plus a
+        // handful of pixels scattered over the rest of the image. The scattered part was added for
+        // BL-16645, where a "no" makes the AI image editor re-encode the picture as a JPEG and
+        // delete the original — so a picture the corner check alone called opaque was flattened
+        // for good.
+        // ------------------------------------------------------------------
+
+        // A 32-bit bitmap with an opaque border and a fully transparent middle: the shape of a
+        // subject knocked out of an otherwise solid canvas. The border is wider than the 15-pixel
+        // corner scan, so the corner alone sees nothing but opaque pixels.
+        private static Bitmap MakeBitmapTransparentOnlyInTheMiddle(int size, int borderWidth)
+        {
+            var bitmap = new Bitmap(size, size, PixelFormat.Format32bppArgb);
+            for (int y = 0; y < size; ++y)
+            for (int x = 0; x < size; ++x)
+            {
+                var inBorder =
+                    x < borderWidth
+                    || y < borderWidth
+                    || x >= size - borderWidth
+                    || y >= size - borderWidth;
+                // Vary the border colors so the PNG of this can't compress away to nothing.
+                bitmap.SetPixel(
+                    x,
+                    y,
+                    inBorder
+                        ? Color.FromArgb(255, (x * 7) % 256, (y * 13) % 256, (x + y) % 256)
+                        : Color.FromArgb(0, 0, 0, 0)
+                );
+            }
+            return bitmap;
+        }
+
+        [Test]
+        public void HasTransparency_TransparentOnlyInTheMiddle_IsDetected()
+        {
+            using (var bitmap = MakeBitmapTransparentOnlyInTheMiddle(200, 20))
+            {
+                // Sanity: the corner scan really is blind here, so this test is exercising the
+                // scattered sampling and not just re-testing the corner.
+                Assert.That(
+                    bitmap.GetPixel(0, 0).A,
+                    Is.EqualTo(255),
+                    "setup: the corner must be opaque"
+                );
+                Assert.That(
+                    bitmap.GetPixel(14, 14).A,
+                    Is.EqualTo(255),
+                    "setup: the whole 15x15 corner scan must be opaque"
+                );
+                Assert.That(
+                    bitmap.GetPixel(100, 100).A,
+                    Is.EqualTo(0),
+                    "setup: the middle really is transparent"
+                );
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap),
+                    Is.True,
+                    "an interior-only cutout must be found, or the AI editor would flatten it"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_PaletteBasedTransparency_IsDetected()
+        {
+            // A PNG-8 (or GIF-style) picture keeps its transparency in its palette, and GDI+ loads
+            // it as Format8bppIndexed — a pixel format that does NOT carry the Alpha flag. So the
+            // "no alpha channel, therefore opaque" shortcut must not be allowed to answer for an
+            // indexed image; the palette is the only place its transparency lives.
+            using (var bitmap = new Bitmap(50, 50, PixelFormat.Format8bppIndexed))
+            {
+                var palette = bitmap.Palette;
+                palette.Entries[0] = Color.FromArgb(0, 0, 0, 0); // a transparent palette entry
+                for (int i = 1; i < palette.Entries.Length; ++i)
+                    palette.Entries[i] = Color.FromArgb(255, i % 256, 128, 64);
+                bitmap.Palette = palette;
+
+                // Sanity: this really is the shape described above, so the assertion below is
+                // testing the indexed path and not something else.
+                Assert.That(
+                    (bitmap.PixelFormat & PixelFormat.Indexed),
+                    Is.EqualTo(PixelFormat.Indexed),
+                    "setup: must be an indexed image"
+                );
+                Assert.That(
+                    (bitmap.PixelFormat & PixelFormat.Alpha),
+                    Is.Not.EqualTo(PixelFormat.Alpha),
+                    "setup: an indexed format carries no Alpha flag — that's the trap"
+                );
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap),
+                    Is.True,
+                    "a transparent palette entry means the picture has transparency"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_PaletteWithNoTransparentEntry_IsFalse()
+        {
+            // The other direction, so the indexed path isn't just answering "true" for everything.
+            using (var bitmap = new Bitmap(50, 50, PixelFormat.Format8bppIndexed))
+            {
+                var palette = bitmap.Palette;
+                for (int i = 0; i < palette.Entries.Length; ++i)
+                    palette.Entries[i] = Color.FromArgb(255, i % 256, 128, 64);
+                bitmap.Palette = palette;
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap),
+                    Is.False,
+                    "an all-opaque palette means no transparency"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_FullyOpaqueRgbaImage_IsFalse()
+        {
+            // The other direction matters just as much: AI tools routinely emit fully opaque RGBA
+            // PNGs, and a false positive here would silently switch off the size optimization
+            // BL-16645 added for them.
+            using (var bitmap = new Bitmap(200, 200, PixelFormat.Format32bppArgb))
+            {
+                for (int y = 0; y < 200; ++y)
+                for (int x = 0; x < 200; ++x)
+                    bitmap.SetPixel(x, y, Color.FromArgb(255, (x * 3) % 256, (y * 5) % 256, 128));
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap),
+                    Is.False,
+                    "an opaque image must not be reported as transparent"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_SameImageTwice_GivesTheSameAnswer()
+        {
+            // Callers delete the original on a "no", so the answer has to be reproducible rather
+            // than varying from run to run. A tiny transparent patch is the case where a sampled
+            // answer could differ if the sample positions were not fixed.
+            using (var bitmap = new Bitmap(400, 400, PixelFormat.Format32bppArgb))
+            {
+                for (int y = 0; y < 400; ++y)
+                for (int x = 0; x < 400; ++x)
+                    bitmap.SetPixel(x, y, Color.FromArgb(255, 10, 20, 30));
+                bitmap.SetPixel(390, 390, Color.FromArgb(0, 0, 0, 0));
+
+                var first = ImageUtils.HasTransparency(bitmap);
+                for (int i = 0; i < 5; ++i)
+                {
+                    Assert.That(
+                        ImageUtils.HasTransparency(bitmap),
+                        Is.EqualTo(first),
+                        "the same picture must get the same answer every time"
+                    );
+                }
+            }
+        }
+
+        // An opaque bitmap of the given format, with one transparent pixel at (x, y).
+        private static Bitmap MakeOpaqueBitmapWithOneClearPixel(
+            int width,
+            int height,
+            int x,
+            int y,
+            PixelFormat format
+        )
+        {
+            var bitmap = new Bitmap(width, height, format);
+            using (var g = Graphics.FromImage(bitmap))
+                g.Clear(Color.FromArgb(255, 10, 20, 30));
+            bitmap.SetPixel(x, y, Color.FromArgb(0, 0, 0, 0));
+            return bitmap;
+        }
+
+        [Test]
+        public void HasTransparency_TruecolorPngWithTrnsChunk_IsDetected()
+        {
+            // A PNG can be truecolour with no alpha channel and still be transparent, by naming one
+            // colour transparent in a tRNS chunk. If GDI+ handed us that as a plain 24-bit bitmap,
+            // the "no alpha channel" shortcut would call it opaque — and the AI image editor deletes
+            // the original once told that, so it would be flattened for good. This is the same shape
+            // as the palette bug (BL-16645), so it is worth pinning rather than assuming.
+            var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "truecolor-trns.png"
+            );
+            using (var image = Image.FromFile(path))
+            {
+                Assert.That(
+                    ImageUtils.HasTransparency(image, samplePixels: false),
+                    Is.True,
+                    $"a tRNS truecolour PNG must not be called opaque (GDI+ gave us {image.PixelFormat})"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_Exhaustive_FindsTheOnePixelSamplingMisses()
+        {
+            // The whole point of samplePixels:false. This is also the test that would catch the
+            // exhaustive scan reading the wrong byte or the wrong rows: if it did, it would report
+            // this image opaque, and its caller would flatten the transparency and delete the
+            // original.
+            using (
+                var bitmap = MakeOpaqueBitmapWithOneClearPixel(
+                    900,
+                    700,
+                    613,
+                    417,
+                    PixelFormat.Format32bppArgb
+                )
+            )
+            {
+                // Sanity: the sampled answer really does miss it, so the two modes are being
+                // distinguished rather than both trivially succeeding.
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: true),
+                    Is.False,
+                    "setup: one stray pixel is exactly what sampling cannot see"
+                );
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: false),
+                    Is.True,
+                    "reading every pixel must find it"
+                );
+            }
+        }
+
+        [Test]
+        // The corners of the buffer are where an off-by-one in the row arithmetic or the alpha
+        // offset shows up: first pixel, last pixel of the first row, first of the last row, and
+        // the very last pixel. A stride mistake typically loses the last row or the last column.
+        [TestCase(0, 0)]
+        [TestCase(899, 0)]
+        [TestCase(0, 699)]
+        [TestCase(899, 699)]
+        [TestCase(898, 698)]
+        public void HasTransparency_Exhaustive_FindsTransparencyAtTheEdges(int x, int y)
+        {
+            using (
+                var bitmap = MakeOpaqueBitmapWithOneClearPixel(
+                    900,
+                    700,
+                    x,
+                    y,
+                    PixelFormat.Format32bppArgb
+                )
+            )
+            {
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: false),
+                    Is.True,
+                    $"a transparent pixel at ({x},{y}) must be found"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_Exhaustive_PremultipliedFormat_IsStillRead()
+        {
+            // We ask LockBits for Format32bppArgb whatever the bitmap really is, so GDI+ converts
+            // a premultiplied image for us. If that ever stopped working we would read nonsense.
+            using (
+                var bitmap = MakeOpaqueBitmapWithOneClearPixel(
+                    500,
+                    400,
+                    321,
+                    222,
+                    PixelFormat.Format32bppPArgb
+                )
+            )
+            {
+                Assert.That(
+                    bitmap.PixelFormat,
+                    Is.EqualTo(PixelFormat.Format32bppPArgb),
+                    "setup: the bitmap really is premultiplied"
+                );
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: false),
+                    Is.True,
+                    "transparency in a premultiplied image must still be found"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_Exhaustive_FullyOpaque_IsFalse()
+        {
+            // The other direction, and the one that matters for the size optimization: a false
+            // positive here would stop an opaque photo ever being re-encoded.
+            using (var bitmap = new Bitmap(900, 700, PixelFormat.Format32bppArgb))
+            {
+                using (var g = Graphics.FromImage(bitmap))
+                    g.Clear(Color.FromArgb(255, 10, 20, 30));
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: false),
+                    Is.False,
+                    "an opaque image must not be reported as transparent"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_Exhaustive_IndexedImage_StillUsesThePalette()
+        {
+            // samplePixels only governs the non-indexed path; an indexed image is exact either way,
+            // and must not fall through to the pixel scan.
+            using (var bitmap = new Bitmap(50, 50, PixelFormat.Format8bppIndexed))
+            {
+                var palette = bitmap.Palette;
+                palette.Entries[0] = Color.FromArgb(0, 0, 0, 0);
+                for (int i = 1; i < palette.Entries.Length; ++i)
+                    palette.Entries[i] = Color.FromArgb(255, i % 256, 128, 64);
+                bitmap.Palette = palette;
+
+                Assert.That(ImageUtils.HasTransparency(bitmap, samplePixels: false), Is.True);
+                Assert.That(ImageUtils.HasTransparency(bitmap, samplePixels: true), Is.True);
             }
         }
 
