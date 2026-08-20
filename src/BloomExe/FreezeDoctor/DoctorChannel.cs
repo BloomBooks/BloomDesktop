@@ -411,25 +411,36 @@ public sealed class DoctorChannelWriter : IDisposable
         {
             lock (_writeLock)
             {
-                view.Write(DoctorChannelLayout.OffsetWriteSequence, ++_writeSequence);
+                // EVERY increment is inside this try, and the finally restores parity from whatever value we
+                // actually reached. That ordering is the whole point, and getting it wrong here is unusually
+                // expensive: an odd resting value means "a write is in progress" to every reader, for ever, so
+                // the channel silently disables itself for the rest of the run and the Doctor falls back to
+                // watching from outside with no indication why.
+                //
+                // The earlier version incremented the counter in the same statement that wrote it, from
+                // outside the inner try. A throw from that one write then left the counter odd with no finally
+                // to correct it — and from then on every write published an even value while in progress and
+                // came to rest on an odd one, which is exactly backwards. Letting a reader see one
+                // inconsistent state is a far smaller loss than that.
                 try
                 {
+                    _writeSequence++; // now odd: a write is in progress
+                    view.Write(DoctorChannelLayout.OffsetWriteSequence, _writeSequence);
                     update(view);
                 }
                 finally
                 {
-                    // Always leave the sequence EVEN, even if the update threw. An odd resting value means
-                    // "a write is in progress" to every reader, for ever — so one failed write would silently
-                    // disable the channel for the rest of the run, and the Doctor would fall back to watching
-                    // from outside with no indication why. A reader may see one inconsistent state; that is a
-                    // far smaller loss.
-                    view.Write(DoctorChannelLayout.OffsetWriteSequence, ++_writeSequence);
+                    if (_writeSequence % 2 != 0)
+                        _writeSequence++;
+                    view.Write(DoctorChannelLayout.OffsetWriteSequence, _writeSequence);
                 }
             }
         }
         catch (Exception)
         {
-            // Never let publishing state break the thing whose state we are publishing.
+            // Never let publishing state break the thing whose state we are publishing. Note that the
+            // counter itself is even by now whatever happened above, so even a failure that stopped the
+            // final view.Write is repaired by the next successful write rather than lasting for ever.
         }
     }
 
