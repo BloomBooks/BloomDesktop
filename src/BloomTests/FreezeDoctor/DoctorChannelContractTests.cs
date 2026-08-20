@@ -117,8 +117,61 @@ namespace BloomTests.FreezeDoctor
             {
                 Environment.SetEnvironmentVariable(FreezeSimulator.EnvironmentVariable, "sleep:1");
 
-                Assert.DoesNotThrow(() => FreezeSimulator.ArmIfRequested("Release"));
-                Assert.DoesNotThrow(() => FreezeSimulator.ArmIfRequested("Beta"));
+                Assert.That(
+                    FreezeSimulator.ArmIfRequested("Release"),
+                    Is.False,
+                    "a stray environment variable must not be able to break a Release Bloom"
+                );
+                Assert.That(FreezeSimulator.ArmIfRequested("Beta"), Is.False, "nor a Beta one");
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(FreezeSimulator.EnvironmentVariable, saved);
+            }
+        }
+
+        [Test]
+        public void FreezeSimulatorArmsOnAlphaAndDeveloperChannels()
+        {
+            // Alpha is allowed on purpose: reproducing a freeze usually means working with somebody who is
+            // actually experiencing one, and those people are running Alpha, not a build from source. This
+            // is the other half of the safeguard above — the pair of tests together say exactly which
+            // channels may be broken deliberately, so widening or narrowing that set breaks a test.
+            var saved = Environment.GetEnvironmentVariable(FreezeSimulator.EnvironmentVariable);
+            try
+            {
+                // A delay far longer than the test run, so nothing ever actually fires. There is no message
+                // loop here either, so the UI-thread timer it arms cannot tick.
+                Environment.SetEnvironmentVariable(
+                    FreezeSimulator.EnvironmentVariable,
+                    "sleep:100000"
+                );
+
+                Assert.That(FreezeSimulator.ArmIfRequested("Alpha"), Is.True, "Alpha");
+                Assert.That(
+                    FreezeSimulator.ArmIfRequested("Developer/Debug"),
+                    Is.True,
+                    "developer"
+                );
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(FreezeSimulator.EnvironmentVariable, saved);
+                FreezeSimulator.Disarm();
+            }
+        }
+
+        [Test]
+        public void FreezeSimulatorStaysInertWithNoEnvironmentVariableEvenOnAlpha()
+        {
+            // Belt and braces: the channel is a gate, not a trigger. Nobody on Alpha gets a broken Bloom
+            // unless they asked for one.
+            var saved = Environment.GetEnvironmentVariable(FreezeSimulator.EnvironmentVariable);
+            try
+            {
+                Environment.SetEnvironmentVariable(FreezeSimulator.EnvironmentVariable, null);
+
+                Assert.That(FreezeSimulator.ArmIfRequested("Alpha"), Is.False);
             }
             finally
             {

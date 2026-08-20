@@ -39,15 +39,39 @@ namespace Bloom.FreezeDoctor
         private static readonly TimeSpan DefaultDelay = TimeSpan.FromSeconds(45);
 
         /// <summary>
+        /// Channels on which the simulator is allowed to act.
+        ///
+        /// Developer builds are obvious. **Alpha is here deliberately**: reproducing a freeze usually means
+        /// working with somebody who is actually experiencing it, and those people are on Alpha, not running
+        /// a build from source. Excluding it would have left the simulator useful only on the machines where
+        /// we can least often reproduce the problem.
+        ///
+        /// Beta and Release are excluded, and the internal channels are not listed either — add them here if
+        /// that ever proves inconvenient, rather than loosening the test.
+        /// </summary>
+        private static bool IsChannelWhereWeMayBreakBloomDeliberately(string channelName)
+        {
+            if (string.IsNullOrEmpty(channelName))
+                return false;
+            return channelName.StartsWith("Developer", StringComparison.OrdinalIgnoreCase)
+                || channelName.Equals("Alpha", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Arms the simulator if it has been asked for. Call once during startup; it returns immediately
         /// and does its damage later, so that Bloom has time to finish starting and the Doctor has time to
         /// adopt it.
         /// </summary>
         /// <param name="channelName">
-        /// Bloom's release channel. Anything that is not a developer channel is refused, so that a stray
-        /// environment variable on a user's machine cannot break their Bloom.
+        /// Bloom's release channel. Anything outside
+        /// <see cref="IsChannelWhereWeMayBreakBloomDeliberately"/> is refused, so that a stray environment
+        /// variable on an ordinary user's machine cannot break their Bloom.
         /// </param>
-        public static void ArmIfRequested(string channelName)
+        /// <returns>
+        /// True if the simulator is now armed. Returned so a test can tell "armed" from "declined" without
+        /// waiting for Bloom to actually break.
+        /// </returns>
+        public static bool ArmIfRequested(string channelName)
         {
             string request;
             try
@@ -56,21 +80,18 @@ namespace Bloom.FreezeDoctor
             }
             catch (Exception)
             {
-                return;
+                return false;
             }
             if (string.IsNullOrWhiteSpace(request))
-                return;
+                return false;
 
-            var isDeveloperChannel =
-                channelName != null
-                && channelName.StartsWith("Developer", StringComparison.OrdinalIgnoreCase);
-            if (!isDeveloperChannel)
+            if (!IsChannelWhereWeMayBreakBloomDeliberately(channelName))
             {
                 Logger.WriteEvent(
                     $"{EnvironmentVariable} is set but this is the '{channelName}' channel, so it is being "
-                        + "ignored. Deliberate breakage is for developer builds only."
+                        + "ignored. Deliberate breakage is for developer and Alpha builds only."
                 );
-                return;
+                return false;
             }
 
             var parts = request.Split(':');
@@ -98,6 +119,19 @@ namespace Bloom.FreezeDoctor
                 Simulate(kind);
             };
             _countdown.Start();
+            return true;
+        }
+
+        /// <summary>
+        /// Cancels a pending simulation. Exists for the tests: they arm the simulator to prove that a
+        /// channel is allowed to, and an armed timer left behind would be a Bloom-breaking booby trap
+        /// waiting for whichever later test happens to pump messages.
+        /// </summary>
+        public static void Disarm()
+        {
+            _countdown?.Stop();
+            _countdown?.Dispose();
+            _countdown = null;
         }
 
         /// <summary>
