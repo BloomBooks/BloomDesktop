@@ -106,6 +106,11 @@ namespace Bloom.FreezeDoctor
                     + $"This Bloom is deliberately going to misbehave. Unset {EnvironmentVariable} to stop it."
             );
 
+            // Arming twice would otherwise abandon the first timer still running, leaving a simulation
+            // nobody asked for to go off later. Startup only calls this once, but the tests call it per
+            // channel, and a booby trap that only appears under test is still a booby trap.
+            Disarm();
+
             // A UI-thread timer, because most of these have to happen ON the UI thread to be the failure
             // we are imitating. A background timer would produce a quite different (and uninteresting)
             // kind of stuck.

@@ -120,7 +120,12 @@ namespace Bloom.FreezeDoctor
                 if (!_channel.IsOpen)
                     return; // Another process owns the name, or the OS refused. Nothing more to do.
 
-                _channel.SetActivity("starting up");
+                // Through the static wrapper, NOT _channel directly: the wrapper is what remembers the text
+                // in _statedActivity, and the watchdog composes from that. Writing straight to the channel
+                // here left _statedActivity empty, so the first watchdog tick (one second later) replaced
+                // "starting up" with "no request in flight" — and a Bloom that wedges during startup, the one
+                // case where this string is the only clue there is, reported the least useful thing it could.
+                SetActivity("starting up");
                 // Authoritative, and worth more than the Doctor's own guess: it is why a developer
                 // stopping their debugger never produces a report.
                 _channel.SetDebuggerAttached(Debugger.IsAttached);
@@ -194,6 +199,18 @@ namespace Bloom.FreezeDoctor
         /// Marks work that legitimately blocks the UI for a long time — publishing, uploading, making a
         /// PDF. This buys Bloom patience rather than silence: the Doctor raises its threshold from one
         /// minute to five, and still reports if Bloom is stuck beyond that.
+        ///
+        /// **NOTHING CALLS THIS YET, AND UNTIL SOMETHING DOES, THAT PATIENCE DOES NOT EXIST.** The Doctor
+        /// side is complete and reads this flag; with no caller it is permanently false, so every freeze is
+        /// judged at the one-minute threshold. Work that blocks the UI thread for longer than that *without
+        /// pumping messages* will therefore be filed as a freeze, which is the false positive this flag was
+        /// added to prevent. (Work behind a modal progress dialog is safe either way: ShowDialog runs a
+        /// nested message loop, so the UI heartbeat keeps ticking and no freeze is detected at all.)
+        ///
+        /// Deciding which operations to mark is a judgement about how Bloom really behaves, not something to
+        /// infer from the code — "a request has run for a minute" is the same signal as the freeze itself, so
+        /// it cannot tell legitimately-slow from wedged. That is why this is a deliberate call at the few
+        /// places that know, and why it is still unwired: see BL-16719.
         /// </summary>
         public static void SetLongOperation(bool inProgress)
         {
@@ -474,29 +491,39 @@ namespace Bloom.FreezeDoctor
         /// Computed on this thread rather than in the request path, so the cost falls on a once-a-second
         /// thread instead of on every request.
         /// </summary>
+        /// <summary>
+        /// Composes what Bloom's own code last said it was doing with what the request table says, rather
+        /// than letting either clobber the other.
+        ///
+        /// Two mistakes to avoid, one on each side. Leaving the last interesting value in place means the
+        /// field keeps naming a request that finished minutes ago, and a freeze report blames work that had
+        /// already completed. But overwriting it every second makes the public <see cref="SetActivity"/>
+        /// entry point useless — "starting up" would survive less than a second, so a Bloom that wedged
+        /// during startup would report "no request in flight", which is both wrong and the least helpful
+        /// thing it could say.
+        ///
+        /// Separated out, and internal, so a test can pin that chain: both halves of it have been broken
+        /// once, the second time by <see cref="Start"/> writing to the channel directly and so never
+        /// recording anything for this to read.
+        /// </summary>
+        internal static string ComposeCurrentActivity()
+        {
+            var request = ApiActivityTracker.DescribeCurrentActivity();
+            var stated = Volatile.Read(ref _statedActivity);
+            return (string.IsNullOrEmpty(stated), request == null) switch
+            {
+                (false, false) => stated + " | " + request,
+                (false, true) => stated,
+                (true, false) => request,
+                _ => "no request in flight",
+            };
+        }
+
         private static void PublishWhatBloomIsDoing()
         {
             try
             {
-                // Compose what Bloom's own code said it was doing with what the request table says, rather
-                // than letting either clobber the other.
-                //
-                // Two mistakes to avoid, one on each side. Leaving the last interesting value in place means
-                // the field keeps naming a request that finished minutes ago, and a freeze report blames work
-                // that had already completed. But overwriting it every second makes the public SetActivity
-                // entry point useless — "starting up" would survive less than a second, so a Bloom that
-                // wedged during startup would report "no request in flight", which is both wrong and the
-                // least helpful thing it could say.
-                var request = ApiActivityTracker.DescribeCurrentActivity();
-                var stated = Volatile.Read(ref _statedActivity);
-                var activity = (string.IsNullOrEmpty(stated), request == null) switch
-                {
-                    (false, false) => stated + " | " + request,
-                    (false, true) => stated,
-                    (true, false) => request,
-                    _ => "no request in flight",
-                };
-                _channel?.SetActivity(activity);
+                _channel?.SetActivity(ComposeCurrentActivity());
 
                 var server = Api.BloomServer._theOneInstance;
                 if (server != null)

@@ -107,6 +107,48 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
+        public void StatedActivitySurvivesTheWatchdogsOncePerSecondRefresh()
+        {
+            // Regression test for a bug that has now been introduced twice, in two different ways, so it is
+            // worth a test rather than a comment. What Bloom says it is doing must survive the watchdog's
+            // refresh: the first version let the refresh overwrite it, and the second recorded "starting up"
+            // straight into the shared page instead of through SetActivity, so there was nothing for the
+            // refresh to carry forward. Either way a Bloom that wedged during startup — the one case where
+            // this string is the only clue there is — reported "no request in flight".
+            // Explicitly, rather than trusting the initial value: this is static state shared with every
+            // other test in the assembly, so anything else that ever states an activity would otherwise
+            // make this test pass or fail depending on the order they ran in.
+            FreezeDoctorSupport.SetActivity(null);
+            Assert.That(
+                FreezeDoctorSupport.ComposeCurrentActivity(),
+                Is.EqualTo("no request in flight"),
+                "sanity check: nothing stated and no request in flight yet"
+            );
+
+            FreezeDoctorSupport.SetActivity("starting up");
+
+            Assert.That(
+                FreezeDoctorSupport.ComposeCurrentActivity(),
+                Is.EqualTo("starting up"),
+                "the stated activity must still be there a refresh later"
+            );
+
+            // And it must be replaceable, or a stale "starting up" would outlive startup for ever.
+            FreezeDoctorSupport.SetActivity("Publishing to BloomPUB");
+            Assert.That(
+                FreezeDoctorSupport.ComposeCurrentActivity(),
+                Is.EqualTo("Publishing to BloomPUB")
+            );
+
+            FreezeDoctorSupport.SetActivity(null);
+            Assert.That(
+                FreezeDoctorSupport.ComposeCurrentActivity(),
+                Is.EqualTo("no request in flight"),
+                "clearing it must go back to idle rather than leaving the last value in place"
+            );
+        }
+
+        [Test]
         public void FreezeSimulatorIsInertOnReleaseChannels()
         {
             // The safeguard that matters: this class deliberately breaks Bloom, so a stray environment
