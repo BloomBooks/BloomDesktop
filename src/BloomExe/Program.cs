@@ -16,6 +16,7 @@ using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionChoosing;
 using Bloom.ErrorReporter;
+using Bloom.FreezeDoctor;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Registration;
@@ -1409,6 +1410,20 @@ namespace Bloom
             // Crashes if initialized twice, and there's at least once case when joining a TC
             // where we can come here twice.
             WritingSystem.EnsureSldrInitialized();
+
+            // Publish our health for the Bloom Freeze Doctor, if one is watching. Started here, just
+            // before the message loop, because the UI heartbeat is a WinForms timer: it only ticks while
+            // messages are being pumped, and that is exactly what makes its silence meaningful. Costs
+            // nothing when no Doctor is installed, and cannot fail in a way Bloom notices.
+            FreezeDoctorSupport.Start();
+            // And start the Doctor itself if the user has installed it, because a diagnostic tool is no use
+            // unless it is already running when the trouble starts. Costs one directory check when it is not
+            // installed, which is the normal case.
+            DoctorLauncher.LaunchIfInstalled();
+            // Deliberate breakage for testing the Doctor, and inert unless BLOOM_SIMULATE_FREEZE is set
+            // AND this is a developer build.
+            FreezeSimulator.ArmIfRequested(ApplicationUpdateSupport.ChannelName);
+
             try
             {
                 Application.Run();
@@ -1431,6 +1446,10 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
+                // Ask a watching Freeze Doctor to dump us while we still exist. Costs nothing at all when no
+                // Doctor is installed, which is the overwhelmingly common case: it checks with a zero
+                // timeout before it agrees to wait for anything.
+                FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(bad);
                 System.Environment.FailFast(exceptMsg);
             }
@@ -1446,6 +1465,9 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
+                // As above: a dump from outside beats one a dying process takes of itself, and this costs
+                // nothing when nobody is watching.
+                FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(nasty);
                 System.Environment.FailFast(exceptMsg);
             }
@@ -1455,6 +1477,13 @@ namespace Bloom
                     FileMeddlerManager.Stop();
                 WebView2Browser.CleanupWebView2UserFolders();
             }
+
+            // From here on we mark how far shutdown has got, so that a Bloom which dies part way through
+            // can say WHERE it stopped rather than only that it did. These are the phases a Freeze Doctor
+            // report will quote; keep them in step with the comment if the sequence changes.
+            //   1 = the message loop returned    2 = settings saved
+            //   3 = the log has been written out  4 = the project context is disposed (fully shut down)
+            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(1);
 
             try
             {
@@ -1472,6 +1501,7 @@ namespace Bloom
                 }
             }
 
+            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(2);
             Sldr.Cleanup();
             Logger.WriteMinorEvent("shutting down logger, about to dispose project context");
             // Force the log file to include the minor events.  I don't know why this isn't the default. (BL-16290)
@@ -1482,9 +1512,11 @@ namespace Bloom
                 logPath = Path.Combine(Path.GetTempPath(), "SIL", "Bloom", "Log.txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logPath));
             RobustFile.WriteAllText(logPath, logText);
+            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(3);
 
             if (_projectContext != null)
                 _projectContext.Dispose();
+            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(4);
         }
 
         /// <summary>
