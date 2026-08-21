@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Bloom.FreezeDoctor;
 using BloomBooks.FreezeDoctor.Protocol;
 using NUnit.Framework;
@@ -30,11 +31,12 @@ namespace BloomTests.FreezeDoctor
         private const int TestProcessId = 999_002;
 
         [Test]
-        public void LayoutMatchesTheDoctorsCopy()
+        public void LayoutIsWhatBloomWasBuiltAgainst()
         {
-            // If you are here because this failed: the layout changed. Update the copy of
-            // DoctorChannel.cs in BloomBooks/bloom-freeze-doctor, bump SchemaVersion in both, and update
-            // the pinned numbers in both repositories' tests.
+            // If you are here because this failed, a package upgrade changed the layout. Do NOT just update
+            // these numbers to match: check what moved and why. Adding a field should never reach this test
+            // (see the next one); anything that MOVES a field is a SchemaVersion bump, and Bloom's side of
+            // the protocol needs looking at before the numbers here are touched.
             Assert.That(DoctorChannelLayout.SchemaVersion, Is.EqualTo(1), "schema version");
             Assert.That(DoctorChannelLayout.Size, Is.EqualTo(4096), "page size");
             Assert.That(
@@ -47,6 +49,86 @@ namespace BloomTests.FreezeDoctor
                 Is.EqualTo(@"Local\BloomFreezeDoctor.v1.1234"),
                 "the name must stay in the Local namespace and carry both version and pid"
             );
+
+            // Every field, by value, from the layout's own published description of itself. This is what
+            // turns "the package quietly moved a field" from a silent wrong-offset bug into a failed build.
+            var expected = new[]
+            {
+                "SchemaVersion@0+4",
+                "PayloadBytes@4+4",
+                "WriteSequence@8+8",
+                "ProcessId@16+4",
+                "ShutdownPhase@20+4",
+                "UiTicks@24+8",
+                "UiTimestamp@32+8",
+                "WatchdogTicks@40+8",
+                "WatchdogTimestamp@48+8",
+                "Flags@56+4",
+                "ServerBusy@60+4",
+                "ServerBlocked@64+4",
+                "Reserved@68+4",
+                "Activity@72+256",
+            };
+            Assert.That(
+                DoctorChannelLayout.Fields.Select(f => $"{f.Name}@{f.Offset}+{f.Size}").ToArray(),
+                Is.EqualTo(expected),
+                "the field layout Bloom publishes to"
+            );
+        }
+
+        [Test]
+        public void AddingAFieldToTheProtocolDoesNotBreakBloom()
+        {
+            // The counterpart to the test above, and the reason it can be strict without being a nuisance.
+            //
+            // The protocol is allowed to GROW without a version bump: new fields are appended and
+            // PayloadBytes grows to match. When that happens the pinned list above gains an entry, but
+            // nothing Bloom does changes — Bloom keeps writing the fields it knows about, at the offsets it
+            // knows, and an older Doctor keeps reading them.
+            //
+            // So what is pinned here is not a number that may not change; it is the *invariant* that makes
+            // growth safe. If this fails, the layout has been rearranged rather than extended, and every
+            // Doctor already installed is reading Bloom's page wrongly.
+            var end = DoctorChannelLayout.Fields.Max(f => f.Offset + f.Size);
+
+            Assert.That(
+                DoctorChannelLayout.PayloadBytes,
+                Is.EqualTo(end),
+                "PayloadBytes must be one past the last field, or a new field is outside what Bloom claims to have written"
+            );
+            Assert.That(
+                DoctorChannelLayout.PayloadBytes,
+                Is.GreaterThanOrEqualTo(DoctorChannelLayout.BaselinePayloadBytes),
+                "the layout may only grow past the generation-1 baseline"
+            );
+            Assert.That(
+                DoctorChannelLayout.BaselinePayloadBytes,
+                Is.EqualTo(328),
+                "the baseline is frozen for the life of schema version 1"
+            );
+        }
+
+        [Test]
+        public void WhatBloomPublishesSaysHowMuchOfItIsReal()
+        {
+            // A Doctor newer than this Bloom needs to be able to tell a field Bloom never wrote from a real
+            // zero. That only works if Bloom actually records its extent, so it is worth asserting that it
+            // reaches the page rather than trusting the constant.
+            using (var writer = new DoctorChannelWriter(TestProcessId))
+            {
+                Assert.That(writer.IsOpen, Is.True, "setup: the channel should have been created");
+
+                Assert.That(
+                    DoctorChannelReader.TryRead(TestProcessId, out var snapshot),
+                    Is.True,
+                    "setup: the channel should be readable"
+                );
+                Assert.That(
+                    snapshot.PayloadBytes,
+                    Is.EqualTo(DoctorChannelLayout.PayloadBytes),
+                    "Bloom must record how far it wrote, or a newer Doctor cannot tell absent from zero"
+                );
+            }
         }
 
         [Test]
