@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using Bloom.FreezeDoctor;
 using BloomBooks.FreezeDoctor.Protocol;
@@ -68,6 +69,7 @@ namespace BloomTests.FreezeDoctor
                 "ServerBlocked@64+4",
                 "Reserved@68+4",
                 "Activity@72+256",
+                "DebuggerLastDetached@328+8",
             };
             Assert.That(
                 DoctorChannelLayout.Fields.Select(f => $"{f.Name}@{f.Offset}+{f.Size}").ToArray(),
@@ -101,11 +103,71 @@ namespace BloomTests.FreezeDoctor
                 Is.GreaterThanOrEqualTo(DoctorChannelLayout.BaselinePayloadBytes),
                 "the layout may only grow past the generation-1 baseline"
             );
+            // Equal to PayloadBytes for now, because generation 1 is unreleased and there is no older Bloom
+            // writing less. Once a Bloom ships writing this page, this number freezes and appending a field
+            // grows only PayloadBytes.
             Assert.That(
                 DoctorChannelLayout.BaselinePayloadBytes,
-                Is.EqualTo(328),
-                "the baseline is frozen for the life of schema version 1"
+                Is.EqualTo(336),
+                "the generation-1 floor"
             );
+        }
+
+        [Test]
+        public void TheNativeDebuggerCheckActuallyResolves()
+        {
+            // Bloom's debugger check swallows exceptions, because a diagnostic must never be able to break
+            // the watchdog thread. That means a wrong DllImport signature would not fail loudly — it would
+            // just report "no debugger" for ever, and the sticky flag would never be set on any machine.
+            // Calling it here, outside that catch, is what turns a broken P/Invoke into a failing test.
+            Assert.DoesNotThrow(
+                () => FreezeDoctorSupport.IsDebuggerPresent(),
+                "the kernel32 IsDebuggerPresent import should resolve"
+            );
+
+            // Whatever the environment, the combined answer must agree with the managed one when that says
+            // a debugger is attached — this is the direction that matters, since it is what suppresses
+            // reports while a developer is stepping through Bloom.
+            if (Debugger.IsAttached)
+                Assert.That(
+                    FreezeDoctorSupport.IsDebuggerAttached(),
+                    Is.True,
+                    "a managed debugger must always count as attached"
+                );
+            else
+                Assert.DoesNotThrow(() => FreezeDoctorSupport.IsDebuggerAttached());
+        }
+
+        [Test]
+        public void ADebuggerThatHasComeAndGoneIsStillVisibleToTheDoctor()
+        {
+            // Bloom's end of the sticky flag. The Doctor's repo tests the mechanism; what is worth checking
+            // here is that Bloom is publishing through the call that remembers, so that a debugger which
+            // attached and left does not leave a heartbeat gap looking like a genuine freeze.
+            using (var writer = new DoctorChannelWriter(TestProcessId))
+            {
+                Assert.That(writer.IsOpen, Is.True, "setup: the channel should have been created");
+
+                writer.SetDebuggerAttached(true);
+                writer.SetDebuggerAttached(false);
+
+                Assert.That(DoctorChannelReader.TryRead(TestProcessId, out var snapshot), Is.True);
+                Assert.That(
+                    snapshot.DebuggerAttached,
+                    Is.False,
+                    "setup: it should have gone again"
+                );
+                Assert.That(
+                    snapshot.DebuggerEverAttached,
+                    Is.True,
+                    "but the Doctor must still be able to tell that one was here"
+                );
+                Assert.That(
+                    snapshot.DebuggerLastDetachedAge,
+                    Is.LessThan(TimeSpan.FromMinutes(1)),
+                    "and roughly when it left, so an unrelated freeze later is still reportable"
+                );
+            }
         }
 
         [Test]

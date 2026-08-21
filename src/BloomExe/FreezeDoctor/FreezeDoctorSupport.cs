@@ -37,6 +37,14 @@ namespace Bloom.FreezeDoctor
         /// How often the UI thread reports in. Frequent enough that a freeze is obvious within the
         /// Doctor's shortest threshold, cheap enough to be invisible: this is one `WM_TIMER` and a
         /// handful of writes to a page of memory already resident.
+        ///
+        /// **Twice as often as the watchdog below, and the difference is deliberate.** This heartbeat is
+        /// not a liveness check, it is the *measurement* the whole tool rests on: its staleness is the
+        /// freeze signal, so its interval sets the resolution of that signal and the floor under how tight
+        /// the Doctor's threshold can safely be (5 seconds today, ten of these intervals). It is also the
+        /// fragile one — `WM_TIMER` is the lowest-priority message there is, and a busy-but-live UI really
+        /// can starve it — so ticking twice as often means a moment's starvation has to swallow two ticks
+        /// rather than one before it starts to look like a freeze.
         /// </summary>
         private static readonly TimeSpan UiHeartbeatInterval = TimeSpan.FromMilliseconds(500);
 
@@ -44,6 +52,13 @@ namespace Bloom.FreezeDoctor
         /// How often the background thread reports in. Its purpose is comparison: if the UI heartbeat is
         /// stale and this one is fresh, the UI thread is blocked; if both are stale, the whole process is
         /// wedged — a garbage collection that will not finish, or a suspended process.
+        ///
+        /// Slower than the UI heartbeat because it is only a reference point, and nothing is measured
+        /// against *its* resolution — it needs to be reliably alive, not finely sampled. It also does real
+        /// work on each tick (publishes what Bloom is doing, polls for a debugger, and every tenth time
+        /// rewrites the session file), so ticking it faster would cost more for no gain. And it doubles as
+        /// the latency of the Doctor's quit request, which this thread waits on rather than sleeping
+        /// blindly: one second is how long a stuck Bloom takes to notice it has been asked to leave.
         /// </summary>
         private static readonly TimeSpan WatchdogInterval = TimeSpan.FromSeconds(1);
 
@@ -137,8 +152,11 @@ namespace Bloom.FreezeDoctor
                 // ComposeCurrentActivity retires this again once Bloom has handled a request.
                 SetActivity(StartupActivity);
                 // Authoritative, and worth more than the Doctor's own guess: it is why a developer
-                // stopping their debugger never produces a report.
-                _channel.SetDebuggerAttached(Debugger.IsAttached);
+                // stopping their debugger never produces a report. Published here so it is right from the
+                // start, and refreshed every second by the watchdog thread — a debugger can be attached to
+                // an already-running Bloom, and used to stop it, so reading this once would have missed
+                // exactly the cases that produce a bogus report.
+                _channel.SetDebuggerAttached(IsDebuggerAttached());
 
                 _uiHeartbeat = new System.Windows.Forms.Timer
                 {
@@ -430,6 +448,45 @@ namespace Bloom.FreezeDoctor
         /// are not the ones we care about. It does also refresh the session file, which is cheap and keeps
         /// that work off the UI thread.
         /// </summary>
+        /// <summary>
+        /// Reads the PEB's BeingDebugged flag for this process. Wanted alongside
+        /// <see cref="Debugger.IsAttached"/> because that one only sees a MANAGED debugger: a native one
+        /// (WinDbg without SOS, say) can attach to a running Bloom and stop it while IsAttached stays false
+        /// the whole time, which is precisely the case that would otherwise be reported as a crash.
+        /// </summary>
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        [return: System.Runtime.InteropServices.MarshalAs(
+            System.Runtime.InteropServices.UnmanagedType.Bool
+        )]
+        internal static extern bool IsDebuggerPresent();
+
+        /// <summary>
+        /// Whether anything is debugging us, managed or native.
+        ///
+        /// Cheap enough to poll every second, which is what the watchdog does: IsAttached reads a runtime
+        /// flag, and IsDebuggerPresent reads a single byte out of our own process's PEB. Neither is a
+        /// blocking call and neither touches Bloom's UI thread.
+        ///
+        /// What it cannot see, for the record: a NON-INVASIVE attach (`windbg -pv`) sets neither flag, and a
+        /// debugger that attaches and detaches entirely between two polls is missed — though one that
+        /// actually breaks or kills lasts far longer than a second.
+        /// </summary>
+        internal static bool IsDebuggerAttached()
+        {
+            if (Debugger.IsAttached)
+                return true;
+            try
+            {
+                return IsDebuggerPresent();
+            }
+            catch (Exception)
+            {
+                // A P/Invoke that cannot be resolved must not be able to break the watchdog; the managed
+                // answer above is still worth having.
+                return false;
+            }
+        }
+
         private static void WatchdogLoop()
         {
             var sinceSessionRefresh = TimeSpan.Zero;
@@ -456,6 +513,7 @@ namespace Bloom.FreezeDoctor
                 {
                     _channel?.RecordWatchdogTick();
                     PublishWhatBloomIsDoing();
+                    _channel?.SetDebuggerAttached(IsDebuggerAttached());
                     sinceSessionRefresh += WatchdogInterval;
                     if (sinceSessionRefresh >= SessionRefreshInterval)
                     {
