@@ -10,11 +10,16 @@
         @highlightColor
     );
     // Mask to the microphone shape so the background-color shows through it.
-    -webkit-mask-image: url(currentTextIndicator.svg);
+    // These urls must be absolute: this stylesheet reaches the toolbox by being
+    // imported into talkingBookTool.tsx, and the build turns such an import into a
+    // <style> element, whose relative urls would resolve against the document
+    // rather than against this file. (The page frame still links it; see
+    // editablePage.ts.)
+    -webkit-mask-image: url(/bloom/bookEdit/toolbox/talkingBook/currentTextIndicator.svg);
     -webkit-mask-size: 10px 13px;
     -webkit-mask-position: 2px 5px;
     -webkit-mask-repeat: no-repeat;
-    mask-image: url(currentTextIndicator.svg);
+    mask-image: url(/bloom/bookEdit/toolbox/talkingBook/currentTextIndicator.svg);
     mask-size: 10px 13px;
     mask-position: 2px 5px;
     mask-repeat: no-repeat;

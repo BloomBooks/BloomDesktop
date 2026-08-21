@@ -1,12 +1,16 @@
 import { hideImageDescriptions } from "../imageDescription/imageDescriptionUtils";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
-import { getTheOneToolbox } from "../toolbox";
-import { ToolBox } from "../toolbox";
+import { getTheOneToolbox, IToolboxSettings } from "../toolbox";
+import { getPageIframeBody } from "../../../utils/shared";
 import { getAudioRecorder, getOrCreateAudioRecorder } from "./audioRecording";
 import * as AudioRecorder from "./audioRecording";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { TalkingBookToolControls } from "./TalkingBookToolControls";
+import { kImageDescriptionToolId, kTalkingBookToolId } from "../toolIds";
+// Gets these styles into the toolbox document. (The page frame links the compiled
+// audioRecording.css separately; see the styleSheets list in editablePage.ts.)
+import "./audioRecording.less";
 
 // This class renders the TalkingBookToolControls React component
 // in the toolbox, and passes into it an instance of the audioRecorder.
@@ -19,17 +23,22 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     imageUpdated(img: HTMLImageElement | undefined): void {
         // No action needed for this tool
     }
-    public makeRootElement(): HTMLDivElement {
-        return this.adaptReactElement(
-            <TalkingBookToolControls
-                audioRecorder={getOrCreateAudioRecorder()}
-            />,
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <TalkingBookToolControls
+                    audioRecorder={getOrCreateAudioRecorder()}
+                />
+            </div>
         );
     }
-    public beginRestoreSettings(settings: string): JQueryPromise<void> {
+    /** This tool saves no state of its own; see ITool.beginRestoreSettings(). */
+    public async beginRestoreSettings(
+        _settings: IToolboxSettings,
+    ): Promise<void> {
         // Nothing to do except that we need the sentence ending punctuation settings
         // from the leveled reader tool.  (We share sentence parsing via libSynphony.)
-        return beginLoadSynphonySettings();
+        await beginLoadSynphonySettings();
     }
 
     public isAlwaysEnabled(): boolean {
@@ -41,14 +50,15 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     }
 
     // When are showTool, newPageReady, and updateMarkup called?
-    // Some scenarios:
+    // (The toolbox runs these from a React effect for whichever tool is the current tool of
+    // a showing toolbox; see useToolLifecycle.ts.) Some scenarios:
     // * Open the toolbox and Talking Book shows up  - showTool, newPageReady
     // * Open a book and Talking Book tool automatically opens - showTool, newPageReady
-    // * Creating a new page while tool is open - newPageReady, newPageReady (again)
+    // * Creating a new page while tool is open - showTool, newPageReady, newPageReady (again)
     // * Changing to an existing page while tool is open - same as above.
     // * Typing in a text box while tool is open - updateMarkup
-    // * Close the toolbox: hideTool()
-    // * hit the Toolbox's "More" switcher: hideTool()
+    // * Close the toolbox: detachFromPage(), hideTool()
+    // * hit the Toolbox's "More" switcher: detachFromPage(), hideTool()
     // * Switching from a different tool to Talking Book Tool - showTool, newPageReady
     // * Add a new text box using Origami ("Change Layout"), then turn off the Origami Editor: newPageReady, updateMarkup
     public async showTool(): Promise<void> {
@@ -143,7 +153,7 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         if (audioRecorder) {
             audioRecorder.removeRecordingSetup();
         }
-        const page = ToolBox.getPage();
+        const page = getPageIframeBody();
         if (page) {
             hideImageDescriptions(page);
             TalkingBookTool.enshroudPhraseDelimiters(page);
@@ -164,13 +174,13 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     }
 
     private isImageDescriptionToolActive(): boolean {
-        return getTheOneToolbox().isToolActive("imageDescriptionTool");
+        return getTheOneToolbox().isToolActive(kImageDescriptionToolId);
     }
 
     private showImageDescriptionsIfAny() {
         // If we have any image descriptions we need to show them so we can record them.
         // (BL-8515) Unless the image description tool is not currently active.
-        const page = ToolBox.getPage();
+        const page = getPageIframeBody();
         if (!page) {
             return;
         }
@@ -197,14 +207,11 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     }
 
     public id() {
-        return "talkingBook";
+        return kTalkingBookToolId;
     }
 
-    public hasRestoredSettings: boolean;
-
-    // Some things were impossible to do i18n on via the jade/pug
-    // This gives us a hook to finish up the more difficult spots
-    public finishToolLocalization(paneDOM: HTMLElement) {
-        // So far unneeded in talkingBook
+    /** The icon for this tool's section header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/images/microphone-white.svg";
     }
 }

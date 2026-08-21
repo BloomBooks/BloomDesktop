@@ -71,9 +71,11 @@ export const openCanvasToolTab = async (toolboxFrame: Frame): Promise<void> => {
         return;
     }
 
+    // The toolbox is a MUI accordion (see ToolboxRoot.tsx): each section's clickable header
+    // is an AccordionSummary, and the icon inside it carries the tool's canonical id.
     const canvasToolHeader = toolboxFrame
         .locator(
-            'h3[data-toolid="canvasTool"], h3[data-toolid="canvas"], h3[data-toolid*="canvas"], h3:has-text("Canvas")',
+            '.MuiAccordionSummary-root:has([data-toolid="canvas"]), .MuiAccordionSummary-root:has-text("Canvas Tool")',
         )
         .first();
 
