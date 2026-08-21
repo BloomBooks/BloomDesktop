@@ -23,6 +23,17 @@ vi.mock("./directoryWatcher", () => ({
     },
 }));
 
+// The reload path fetches the sample-texts list through axios directly rather than bloomApi.
+vi.mock("axios", () => ({
+    default: {
+        get: () => Promise.resolve({ data: "" }),
+        post: () => Promise.resolve({ data: "" }),
+        all: (promises: Promise<unknown>[]) => Promise.all(promises),
+        spread: (fn: (...args: unknown[]) => unknown) => (args: unknown[]) =>
+            fn(...args),
+    },
+}));
+
 vi.mock("../../../utils/bloomApi", () => {
     // Defined in here rather than at file scope because vi.mock() is hoisted above it.
     const answers: { [endpoint: string]: unknown } = {

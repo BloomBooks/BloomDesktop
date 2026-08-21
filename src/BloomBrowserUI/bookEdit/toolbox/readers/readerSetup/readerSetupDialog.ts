@@ -51,7 +51,14 @@ export function showSetupDialog(showWhat) {
     // happened (or has survived) by the time the button is clicked, and if it hasn't,
     // clicking the button appears to do nothing at all. So make sure they are loaded
     // before we show anything. This is cheap when they already are. (BL-16732)
-    beginLoadSynphonySettings().then(() => beginShowSetupDialog(showWhat));
+    //
+    // The setTimeout builds the dialog outside the promise chain: a jQuery promise turns
+    // anything thrown in a .then() callback into a rejection nobody is listening for, so a
+    // failure in here would be swallowed and once again show up as a button that does
+    // nothing. Outside the chain, it reaches our usual error reporting.
+    beginLoadSynphonySettings().always(() =>
+        window.setTimeout(() => beginShowSetupDialog(showWhat), 0),
+    );
 }
 
 function beginShowSetupDialog(showWhat) {
