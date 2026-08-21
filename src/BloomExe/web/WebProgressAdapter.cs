@@ -45,7 +45,17 @@ namespace Bloom.web
             set { _showVerbose = value; }
         }
 
-        public bool CancelRequested { get; set; }
+        // Volatile because a cancel is set by an api handler on a server worker thread while the
+        // work being cancelled polls this from a background thread, with no lock between the two
+        // (BL-16340). An auto-property gives no such guarantee.
+        private volatile bool _cancelRequested;
+
+        public bool CancelRequested
+        {
+            get { return _cancelRequested; }
+            set { _cancelRequested = value; }
+        }
+
         public bool ErrorEncountered
         {
             get { return false; }
