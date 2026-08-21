@@ -383,6 +383,41 @@
         <target xml:lang="ksw" state="needs-translation">Move into {0}</target>
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
       </trans-unit>
+      <trans-unit id="EditTab.CopyTextFailed" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Bloom was not able to copy that.</source>
+        <target xml:lang="ksw" state="needs-translation">Bloom was not able to copy that.</target>
+        <note>ID: EditTab.CopyTextFailed</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteTextFailed" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Bloom was not able to paste.</source>
+        <target xml:lang="ksw" state="needs-translation">Bloom was not able to paste.</target>
+        <note>ID: EditTab.PasteTextFailed</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PreviewTooLarge" translate="no">
+        <source xml:lang="en">This image is too large to preview here, but you can still use it.</source>
+        <target xml:lang="ksw" state="needs-translation">This image is too large to preview here, but you can still use it.</target>
+        <note>ID: ImageLibrary.PreviewTooLarge</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PreviewUnavailable" translate="no">
+        <source xml:lang="en">This image could not be previewed.</source>
+        <target xml:lang="ksw" state="needs-translation">This image could not be previewed.</target>
+        <note>ID: ImageLibrary.PreviewUnavailable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.FieldType.BookTitle">
+        <source xml:lang="en">Book Title</source>
+        <target xml:lang="ksw" state="needs-translation">Book Title</target>
+        <note>ID: EditTab.CustomCover.FieldType.BookTitle</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.FieldType.CoverCredits">
+        <source xml:lang="en">Cover Credits</source>
+        <target xml:lang="ksw" state="needs-translation">Cover Credits</target>
+        <note>ID: EditTab.CustomCover.FieldType.CoverCredits</note>
+      </trans-unit>
+      <trans-unit id="ImageUtils.ShrinkingImagesFailed" translate="no">
+        <source xml:lang="en">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</source>
+        <target xml:lang="ksw" state="needs-translation">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</target>
+        <note>ID: ImageUtils.ShrinkingImagesFailed</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
