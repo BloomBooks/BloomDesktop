@@ -32,6 +32,18 @@
     <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.1.512801" />
     <!-- Asking the target's own runtime to write its dump, over the diagnostics IPC pipe. -->
     <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.510501" />
+    <!--
+      libpalaso, for SIL.IO.RobustFile and RobustIO. Available because the Doctor now lives in Bloom's
+      repository, where this is already restored - and worth taking for a concrete reason rather than for
+      consistency: the outbox's staging-to-final rename was losing a race against whatever else on Windows
+      had just touched the files it wrote, failing about one run in three and discarding a gathered report.
+      RobustIO retries; see the note at that call.
+
+      Keep the version in step with BloomExe's SIL.* references by hand for now. If this layout is adopted,
+      it belongs in Directory.Build.props alongside VelopackVersion, which already exists to be the single
+      source of truth for exactly this kind of thing.
+    -->
+    <PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
   </ItemGroup>
 
 </Project>

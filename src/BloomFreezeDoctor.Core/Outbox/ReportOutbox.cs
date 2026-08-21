@@ -1,5 +1,6 @@
 using System.Text.Json;
 using BloomFreezeDoctor.Gathering;
+using SIL.IO;
 
 namespace BloomFreezeDoctor.Outbox;
 
@@ -178,7 +179,22 @@ public sealed class ReportOutbox
         };
         WriteMetadata(staging, metadata);
 
-        Directory.Move(staging, final);
+        // RobustIO rather than Directory.Move, because this exact line failed about one run in three:
+        //
+        //     IOException: Access to the path '...\.staging-20260919-100000-recent' is denied.
+        //
+        // Nothing is wrong with the code's logic. On Windows a directory whose files were written
+        // milliseconds ago is quite likely to still be held by something else - a virus scanner or the
+        // search indexer following our own writes - and the rename simply loses that race. RobustIO
+        // retries for a short while, which is all this needs.
+        //
+        // Worth being clear about what was at stake, since this is the one place in the Doctor where a
+        // transient failure destroys evidence rather than merely inconveniencing somebody: this rename IS
+        // the publish step. Before it, the bundle is a hidden staging directory nothing will ever look in;
+        // after it, the bundle is queued and will be filed. Losing the race meant throwing away a gathered
+        // report at the exact moment a user had just sat through a freeze - and a real machine, with real
+        // antivirus, is more exposed to it than a temp folder on a developer's box, not less.
+        RobustIO.MoveDirectory(staging, final);
         Prune();
         return new QueuedBundle { Directory = final, Metadata = metadata };
     }
