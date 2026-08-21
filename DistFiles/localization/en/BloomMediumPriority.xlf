@@ -34,16 +34,6 @@
         <note>ID: Common.Working</note>
         <note>Shown next to a spinner while an operation is in progress.</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder" translate="no">
-        <source xml:lang="en">App Builder</source>
-        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
-        <note>This checkbox enables the experimental publish-to-apps workflow.</note>
-      </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.EditWithAI" translate="no">
-        <source xml:lang="en">Edit Images with AI</source>
-        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.EditWithAI</note>
-        <note>This checkbox enables the experimental "Edit with AI" image editor.</note>
-      </trans-unit>
       <trans-unit id="Feature.AiImageEditing" translate="no">
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>

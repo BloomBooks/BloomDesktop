@@ -50,8 +50,6 @@ namespace Bloom.Collection
         internal bool ShowExperimentalBookSourcesOption = false;
 
         internal bool PendingAllowTeamCollection;
-        internal bool PendingAllowAppBuilder;
-        internal bool PendingAllowAiImageEditing;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
@@ -118,12 +116,6 @@ namespace Bloom.Collection
             );
             PendingAllowTeamCollection = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
-            );
-            PendingAllowAppBuilder = ExperimentalFeatures.IsFeatureEnabled(
-                ExperimentalFeatures.kAppBuilder
-            );
-            PendingAllowAiImageEditing = ExperimentalFeatures.IsFeatureEnabled(
-                ExperimentalFeatures.kAiImageEditing
             );
 
             if (
@@ -420,8 +412,6 @@ namespace Bloom.Collection
             Settings.Default.Save();
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
-            UpdateAppBuilderAllowed();
-            UpdateAiImageEditingAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -834,21 +824,6 @@ namespace Bloom.Collection
 
             if (wasTeamCollectionsEnabled != PendingAllowTeamCollection)
                 ChangeThatRequiresRestart();
-        }
-
-        private void UpdateAppBuilderAllowed()
-        {
-            // NB: This change does not require a restart.
-            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, PendingAllowAppBuilder);
-        }
-
-        private void UpdateAiImageEditingAllowed()
-        {
-            // NB: This change does not require a restart.
-            ExperimentalFeatures.SetValue(
-                ExperimentalFeatures.kAiImageEditing,
-                PendingAllowAiImageEditing
-            );
         }
     }
 }
