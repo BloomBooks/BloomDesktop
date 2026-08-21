@@ -314,6 +314,28 @@
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
+      <trans-unit id="Collection.CollectionRequiresNewerVersion" translate="no">
+        <source xml:lang="en">The collection "{0}" requires Bloom {1} or greater. You are running Bloom {2}.</source>
+        <note>ID: Collection.CollectionRequiresNewerVersion</note>
+        <note>{0} is the name of the collection, {1} is the version it requires, {2} is the version of Bloom that is running.</note>
+      </trans-unit>
+      <trans-unit id="Collection.NewerVersionNeededHeader" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This collection needs a newer version of Bloom.</source>
+        <note>ID: Collection.NewerVersionNeededHeader</note>
+      </trans-unit>
+      <trans-unit id="Collection.NothingNewerAvailable" translate="no">
+        <source xml:lang="en">This collection needs Bloom {0}, but you already have the newest Bloom available to you.</source>
+        <note>ID: Collection.NothingNewerAvailable</note>
+        <note>{0} is the version the collection requires.</note>
+      </trans-unit>
+      <trans-unit id="Collection.OpenDifferentCollection" translate="no">
+        <source xml:lang="en">Open a Different Collection</source>
+        <note>ID: Collection.OpenDifferentCollection</note>
+      </trans-unit>
+      <trans-unit id="Collection.UpgradeBloom" translate="no">
+        <source xml:lang="en">Upgrade Bloom</source>
+        <note>ID: Collection.UpgradeBloom</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
         <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>
