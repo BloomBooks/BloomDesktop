@@ -103,12 +103,19 @@ function loadReaderSettingsWithRetry(
             const normalizedSettings = tryNormalizeReaderSettings(
                 settingsFileContent.data,
             );
-            if (normalizedSettings) {
-                onLoaded(normalizedSettings);
-                return;
-            }
+            // Act on the reply outside the request's promise chain. bloomApi.get() hangs
+            // our error callback on a .catch() *after* this handler, so anything thrown in
+            // here -- a genuine bug in onLoaded, not a failed request -- would otherwise be
+            // caught, retried, and finally reported as a load failure, hiding it. Out here
+            // it fails fast and gets reported, which is what this repo wants. (BL-16732)
+            window.setTimeout(() => {
+                if (normalizedSettings) {
+                    onLoaded(normalizedSettings);
+                    return;
+                }
 
-            retryOrFail();
+                retryOrFail();
+            }, 0);
         },
         // A request that outright fails has to count as a failed attempt too. Without this
         // error callback, bloomApi.get() reports the error and never calls anyone back, so
@@ -246,10 +253,17 @@ export function beginLoadSynphonySettings(): JQueryPromise<void> {
                     result.resolve();
                     return;
                 }
-                beginRefreshEverything(normalizedSettings).then(() => {
-                    lastReaderToolSettingsContent = newSettingsContent;
-                    result.resolve();
-                });
+                beginRefreshEverything(normalizedSettings).then(
+                    () => {
+                        lastReaderToolSettingsContent = newSettingsContent;
+                        result.resolve();
+                    },
+                    // Refreshing fetches the sample-texts list, and if that request fails we
+                    // have no settings worth remembering -- but our callers still have to be
+                    // released. A caller left waiting forever is precisely what the user
+                    // experiences as a button that does nothing. (BL-16732)
+                    () => result.resolve(),
+                );
             },
             () => {
                 readerToolsInitialized = false;
