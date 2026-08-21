@@ -206,6 +206,19 @@ export function beginLoadSynphonySettings(): JQueryPromise<void> {
     // make sure synphony is initialized
     const result = $.Deferred<void>();
     get("collection/defaultFont", (result) => setDefaultFont(result.data));
+    // readerToolsInitialized and lastReaderToolSettingsContent are module state in
+    // whichever frame loaded this module, but the ReaderToolsModel they describe lives
+    // in a holder on the top window which getTheOneReaderToolsModel() deliberately
+    // *replaces* when the frame that created it is reloaded. So our flags can outlive
+    // the model that actually holds the data. If that has happened, the model in front
+    // of us has no synphony, and taking the "already initialized" path below would
+    // resolve without ever loading it -- leaving every reader-tool feature that needs
+    // synphony silently dead (e.g. Set Up Levels/Stages) until Bloom is restarted.
+    // Treat a model with no synphony as not initialized. (BL-16732)
+    if (readerToolsInitialized && !getTheOneReaderToolsModel().synphony) {
+        readerToolsInitialized = false;
+        lastReaderToolSettingsContent = undefined;
+    }
     if (readerToolsInitialized) {
         // If we already initialized the reader tools, we still need to read the current data,
         // since now that we're using a single browser window for the whole workspace,
