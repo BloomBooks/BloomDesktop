@@ -1267,10 +1267,6 @@
         <note>ID: PublishTab.Apps.SettingsDialog.AppName</note>
         <note>Field label for the app name shown to end users on the Android device.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.MainColor">
-        <source xml:lang="en">Main Color</source>
-        <note>ID: PublishTab.Apps.SettingsDialog.MainColor</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.ColorScheme">
         <source xml:lang="en">Color Scheme</source>
         <note>ID: PublishTab.Apps.SettingsDialog.ColorScheme</note>
@@ -1301,11 +1297,6 @@
         <note>ID: PublishTab.Apps.SettingsDialog.About</note>
         <note>Field label for the descriptive About text shown in the app.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.IconReset">
-        <source xml:lang="en">Reset</source>
-        <note>ID: PublishTab.Apps.SettingsDialog.IconReset</note>
-        <note>Button label that resets the app icon to the default choice.</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.IconChooseTitle">
         <source xml:lang="en">Choose App Icon</source>
         <note>ID: PublishTab.Apps.SettingsDialog.IconChooseTitle</note>
@@ -1315,11 +1306,6 @@
         <source xml:lang="en">Template: org.&lt;yourorg&gt;.&lt;language-code&gt;.&lt;appname&gt;. E.g. org.sil.xyz.stories. For additional help please contact the Digital Publishing Department of your organization.</source>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Description</note>
         <note>Help text explaining how to form a valid Android package name. Keep the example package names lowercase and dot-separated.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Required">
-        <source xml:lang="en">Package name is required.</source>
-        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Required</note>
-        <note>Validation message shown when the package name field is blank.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Invalid">
         <source xml:lang="en">Use a lowercase dot-separated package name with no spaces, like org.sil.sample.</source>
