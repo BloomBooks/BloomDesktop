@@ -124,6 +124,7 @@ namespace BloomTests.web
             public string HttpMethod { get; private set; }
             public Stream InputStream { get; private set; }
             public string RawUrl { get; private set; }
+            public string Referer { get; set; }
             public Uri Url { get; private set; }
 
             public void SetRawUrl(string rawUrl)
