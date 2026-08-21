@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The protocol Bloom and the Freeze Doctor share: the shared-memory health page, the session file, and
+    the named events they use to reach each other.
+
+    EXPLORATION BRANCH. In this arrangement the Doctor lives in this repository, so the two consumers can
+    share this project directly - BloomExe and BloomFreezeDoctor.Core each just reference it. That removes
+    the whole apparatus the other arrangement needed: no NuGet package, no publish-then-unlist, no API key,
+    no version to keep in step, and no local-feed scaffolding. There is one definition, and it is compiled
+    into both sides from the same source every build, so drift is not merely detected - it cannot exist.
+
+    All the package metadata that used to be here (PackageId, Version, licence, README packing, symbol
+    packages, and the long note about pushing to nuget.org and unlisting) is gone with it. If this
+    arrangement is not adopted, that is what has to come back.
+
+    Still worth keeping: the name. `BloomBooks.FreezeDoctor.Protocol` reads oddly for a project that is no
+    longer a package - the `BloomBooks.` prefix existed to namespace a public package id. Renaming it is a
+    loose end for whoever decides this, not something to churn twice.
+  -->
+  <PropertyGroup>
+    <!--
+      net8.0-windows rather than plain net8.0, and not merely by inheritance from its consumers: the named
+      kernel objects this uses - a named EventWaitHandle, a memory-mapped file in the `Local\` namespace -
+      are annotated Windows-only in .NET, so a neutral target reports every use as a platform warning, and
+      warnings are errors here. Both consumers are Windows-only anyway.
+    -->
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>BloomBooks.FreezeDoctor.Protocol</RootNamespace>
+    <AssemblyName>BloomBooks.FreezeDoctor.Protocol</AssemblyName>
+    <Platforms>x64;ARM64</Platforms>
+  </PropertyGroup>
+
+</Project>

@@ -16,6 +16,18 @@ if [ -s $filesToCheck ]; then
     case "$file" in
       src/BloomExe/ProgramExit.cs) continue;;
       src/BloomTests/*) continue;;
+      # EXPLORATION BRANCH ONLY - see the note in check-csharp-robustfile.sh.
+      #
+      # Unlike the RobustFile exemption, this one is arguably CORRECT rather than a debt. This rule says
+      # "use Bloom's ProgramExit, not Application.Exit", and it exists because Bloom's shutdown has to be
+      # sequenced. The Freeze Doctor is a different application with its own Program and its own message
+      # loop; Application.Exit is simply how a WinForms app closes, and Bloom's ProgramExit means nothing
+      # to it.
+      #
+      # Which is the finding worth taking from this branch: these gates all assume "every .cs file here is
+      # Bloom". A second application in the repo needs them to gain a notion of WHICH application a file
+      # belongs to, and that is a change to shared tooling rather than to the Doctor.
+      src/BloomFreezeDoctor/*|src/BloomFreezeDoctor.Core/*|src/BloomFreezeDoctor.Tests/*) continue;;
     esac
     # Strip // line comments and /* ... */ single-line block comments before
     # searching, so a mention of Application.Exit in a comment doesn't trip this check.

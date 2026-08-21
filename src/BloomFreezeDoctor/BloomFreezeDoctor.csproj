@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The Doctor itself. WinExe rather than Exe so there is no console flash when Bloom launches it; the
+    queue-inspection switches attach to the parent console when they need to print.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>BloomFreezeDoctor</AssemblyName>
+    <RootNamespace>BloomFreezeDoctor</RootNamespace>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Company>SIL Global</Company>
+    <Product>Bloom Freeze Doctor</Product>
+    <Description>Diagnoses Bloom freezes, unreported crashes and stuck processes, and reports them.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BloomFreezeDoctor.Core\BloomFreezeDoctor.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Velopack does the installing and updating; `vpk pack` in build-and-release.yml builds the
+      installer out of this project's published output, and refuses to pack at all unless
+      VelopackApp.Build().Run() is present - see the note at the top of Main.
+
+      This is UPSTREAM Velopack, deliberately, and not the BloomBooks.Velopack fork that Bloom itself
+      uses. That fork exists to localize the installer's UI, and the Doctor has nothing to localize:
+      it is a tool for developers and for support staff helping someone through a freeze, not
+      something shipped in a user's own language. Staying upstream means no fork to keep in step.
+
+      Keep this version and the `vpk` CLI the workflow installs on the same major version; they are
+      halves of one mechanism.
+    -->
+    <PackageReference Include="Velopack" Version="1.2.0" />
+  </ItemGroup>
+
+</Project>
