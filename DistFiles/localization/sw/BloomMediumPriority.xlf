@@ -35,10 +35,30 @@
         <target xml:lang="sw" state="needs-translation">Working…</target>
         <note>ID: Common.Working</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder" translate="no">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder">
         <source xml:lang="en">App Builder</source>
         <target xml:lang="sw" state="needs-translation">App Builder</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.EditWithAI" translate="no">
+        <source xml:lang="en">Edit Images with AI</source>
+        <target xml:lang="sw" state="needs-translation">Edit Images with AI</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.EditWithAI</note>
+      </trans-unit>
+      <trans-unit id="Feature.AiImageEditing" translate="no">
+        <source xml:lang="en">Edit Images with AI</source>
+        <target xml:lang="sw" state="needs-translation">Edit Images with AI</target>
+        <note>ID: Feature.AiImageEditing</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditWithAI">
+        <source xml:lang="en">Edit with AI...</source>
+        <target xml:lang="sw" state="needs-translation">Edit with AI...</target>
+        <note>ID: EditTab.Image.EditWithAI</note>
+      </trans-unit>
+      <trans-unit id="EditTab.TextContextMenu.NoIndent">
+        <source xml:lang="en">No Indent</source>
+        <target xml:lang="sw" state="needs-translation">No Indent</target>
+        <note>ID: EditTab.TextContextMenu.NoIndent</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
@@ -163,11 +183,6 @@
         <target xml:lang="sw" state="needs-translation">Part of the right answer</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswer</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore">
-        <source xml:lang="en">Untick this item if it is not part of the right answer</source>
-        <target xml:lang="sw" state="needs-translation">Untick this item if it is not part of the right answer</target>
-        <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2">
         <source xml:lang="en">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</source>
         <target xml:lang="sw" state="needs-translation">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</target>
@@ -272,6 +287,26 @@
         <target xml:lang="sw" state="needs-translation">Book is not Decodable</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport" sil:dynamic="true">
+        <source xml:lang="en">Generate Report</source>
+        <target xml:lang="sw" state="needs-translation">Generate Report</target>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.GenerateReport</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport.ToolTip" sil:dynamic="true">
+        <source xml:lang="en">Create and open a text file listing the letters and words available at each decodable stage.</source>
+        <target xml:lang="sw" state="needs-translation">Create and open a text file listing the letters and words available at each decodable stage.</target>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.GenerateReport.ToolTip</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNumber" sil:dynamic="true">
+        <source xml:lang="en">Stage {0}</source>
+        <target xml:lang="sw" state="needs-translation">Stage {0}</target>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNumber</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ReaderTools.OfCount" sil:dynamic="true">
+        <source xml:lang="en">of {0}</source>
+        <target xml:lang="sw" state="needs-translation">of {0}</target>
+        <note>ID: EditTab.Toolbox.ReaderTools.OfCount</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Theme">
         <source xml:lang="en">Theme</source>
         <target xml:lang="sw" state="needs-translation">Theme</target>
@@ -357,11 +392,6 @@
         <target xml:lang="sw" state="needs-translation">Drag the words where they go</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.OrderInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions">
-        <source>Put instructions here</source>
-        <target xml:lang="sw" state="needs-translation">Put instructions here</target>
-        <note>ID: EditTab.Toolbox.Games.Placeholder.CustomGameInstructions</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
         <source xml:lang="en">Game Tool</source>
         <target xml:lang="sw" state="needs-translation">Game Tool</target>
@@ -406,6 +436,31 @@
         <source xml:lang="en">Book is not Leveled</source>
         <target xml:lang="sw" state="needs-translation">Book is not Leveled</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelNumber" sil:dynamic="true">
+        <source xml:lang="en">Level {0}</source>
+        <target xml:lang="sw" state="needs-translation">Level {0}</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelNumber</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Measure" sil:dynamic="true">
+        <source xml:lang="en">Measure</source>
+        <target xml:lang="sw" state="needs-translation">Measure</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.Measure</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.OverLevel" sil:dynamic="true">
+        <source xml:lang="en">Over level</source>
+        <target xml:lang="sw" state="needs-translation">Over level</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.OverLevel</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.OverLevelWarning" sil:dynamic="true">
+        <source xml:lang="en">This book reads above Level {0}</source>
+        <target xml:lang="sw" state="needs-translation">This book reads above Level {0}</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.OverLevelWarning</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WithinLevel" sil:dynamic="true">
+        <source xml:lang="en">Within level</source>
+        <target xml:lang="sw" state="needs-translation">Within level</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.WithinLevel</note>
       </trans-unit>
       <!-- Talking Book Advanced -->
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
@@ -674,21 +729,6 @@
         <target xml:lang="sw" state="needs-translation">This is disabled because this book does not have any audio in this language.</target>
         <note>ID: PublishTab.AudioLanguage.Disabled</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Activities.None">
-        <source xml:lang="en">This book does not have any interactive activities.</source>
-        <target xml:lang="sw" state="needs-translation">This book does not have any interactive activities.</target>
-        <note>ID: PublishTab.Feature.Activities.None</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Feature.Activities.Present">
-        <source xml:lang="en">This book has interactive activities.</source>
-        <target xml:lang="sw" state="needs-translation">This book has interactive activities.</target>
-        <note>ID: PublishTab.Feature.Activities.Present</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
-        <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
-        <target xml:lang="sw" state="needs-translation">This is disabled because publishing interactive activities requires a subscription.</target>
-        <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Feature.Games.None">
         <source xml:lang="en">This book does not have any games.</source>
         <target xml:lang="sw" state="needs-translation">This book does not have any games.</target>
@@ -699,16 +739,6 @@
         <target xml:lang="sw" state="needs-translation">This book has games.</target>
         <note>ID: PublishTab.Feature.Games.Present</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Comic.None">
-        <source xml:lang="en">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</source>
-        <target xml:lang="sw" state="needs-translation">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</target>
-        <note>ID: PublishTab.Feature.Comic.None</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Feature.Comic.Possible">
-        <source xml:lang="en">Select this if you want to list this book as a Comic Book. This only affects how the book is categorized, it does not affect the content of the book.</source>
-        <target xml:lang="sw" state="needs-translation">Select this if you want to list this book as a Comic Book. This only affects how the book is categorized, it does not affect the content of the book.</target>
-        <note>ID: PublishTab.Feature.Comic.Possible</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Feature.Motion.None">
         <source xml:lang="en">This is disabled because this book does not have any pages with motion enabled.</source>
         <target xml:lang="sw" state="needs-translation">This is disabled because this book does not have any pages with motion enabled.</target>
@@ -717,7 +747,7 @@
       <trans-unit id="PublishTab.Feature.Motion.Possible">
         <source xml:lang="en">Select this if you want to show motion when the book is read in landscape mode.</source>
         <target xml:lang="sw" state="needs-translation">Select this if you want to show motion when the book is read in landscape mode.</target>
-        <note>ID: PublishTab.Feature.Motion.None</note>
+        <note>ID: PublishTab.Feature.Motion.Possible</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Music">
         <source xml:lang="en">Background Music</source>
@@ -844,67 +874,67 @@
         <target xml:lang="sw" state="needs-translation">Problem</target>
         <note>CollectionTab.OnBlorgBadge.Problem</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource">
         <source xml:lang="en">Import .bloomSource File(s)</source>
         <target xml:lang="sw" state="needs-translation">Import .bloomSource File(s)</target>
         <note>ID: CollectionTab.ImportBloomSource</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.ChoiceTitle" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource.ChoiceTitle">
         <source xml:lang="en">Import books</source>
         <target xml:lang="sw" state="needs-translation">Import books</target>
         <note>ID: CollectionTab.ImportBloomSource.ChoiceTitle</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.EditChoice" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource.EditChoice">
         <source xml:lang="en">Import for editing</source>
         <target xml:lang="sw" state="needs-translation">Import for editing</target>
         <note>ID: CollectionTab.ImportBloomSource.EditChoice</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.EditChoiceDescription" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource.EditChoiceDescription">
         <source xml:lang="en">Preserve everything.</source>
         <target xml:lang="sw" state="needs-translation">Preserve everything.</target>
         <note>ID: CollectionTab.ImportBloomSource.EditChoiceDescription</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoice" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoice">
         <source xml:lang="en">Import as derivatives — new books based on the originals</source>
         <target xml:lang="sw" state="needs-translation">Import as derivatives — new books based on the originals</target>
         <note>ID: CollectionTab.ImportBloomSource.DerivativeChoice</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoiceDescription" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoiceDescription">
         <source xml:lang="en">Use a new book ID &amp; make room for new copyright and credits while preserving those of the original.</source>
         <target xml:lang="sw" state="needs-translation">Use a new book ID &amp; make room for new copyright and credits while preserving those of the original.</target>
         <note>ID: CollectionTab.ImportBloomSource.DerivativeChoiceDescription</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.DuplicatePrompt" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource.DuplicatePrompt">
         <source xml:lang="en">Some of these books are already in this collection.</source>
         <target xml:lang="sw" state="needs-translation">Some of these books are already in this collection.</target>
         <note>ID: CollectionTab.ImportBloomSource.DuplicatePrompt</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.Replace" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource.Replace">
         <source xml:lang="en">Replace the existing books</source>
         <target xml:lang="sw" state="needs-translation">Replace the existing books</target>
         <note>ID: CollectionTab.ImportBloomSource.Replace</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.ReplaceDescription" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource.ReplaceDescription">
         <source xml:lang="en">The current copies will be overwritten.</source>
         <target xml:lang="sw" state="needs-translation">The current copies will be overwritten.</target>
         <note>ID: CollectionTab.ImportBloomSource.ReplaceDescription</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.ReplaceNeedsCheckout" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource.ReplaceNeedsCheckout">
         <source xml:lang="en">All books must be checked out</source>
         <target xml:lang="sw" state="needs-translation">All books must be checked out</target>
         <note>ID: CollectionTab.ImportBloomSource.ReplaceNeedsCheckout</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.AddCopy" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource.AddCopy">
         <source xml:lang="en">Add them as new copies</source>
         <target xml:lang="sw" state="needs-translation">Add them as new copies</target>
         <note>ID: CollectionTab.ImportBloomSource.AddCopy</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.AddCopyDescription" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource.AddCopyDescription">
         <source xml:lang="en">The existing books stay as they are.</source>
         <target xml:lang="sw" state="needs-translation">The existing books stay as they are.</target>
         <note>ID: CollectionTab.ImportBloomSource.AddCopyDescription</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.Importing" translate="no">
+      <trans-unit id="CollectionTab.ImportBloomSource.Importing">
         <source xml:lang="en">Importing Books</source>
         <target xml:lang="sw" state="needs-translation">Importing Books</target>
         <note>ID: CollectionTab.ImportBloomSource.Importing</note>
@@ -999,11 +1029,6 @@
         <target xml:lang="sw" state="needs-translation">Fill the front cover with a single image</target>
         <note>BookSettings.CoverIsImage</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage.Description" sil:dynamic="true">
-        <source xml:lang="en">Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
-        <target xml:lang="sw" state="needs-translation">Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</target>
-        <note>BookSettings.CoverIsImage.Description</note>
-      </trans-unit>
       <trans-unit id="BookSettings.CoverIsImage.Description.V2" sil:dynamic="true">
         <source xml:lang="en">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
         <target xml:lang="sw" state="needs-translation">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</target>
@@ -1093,11 +1118,6 @@
         <source xml:lang="en">Page Numbers</source>
         <target xml:lang="sw" state="needs-translation">Page Numbers</target>
         <note>BookSettings.PageNumbers</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.ShowPageNumbers" sil:dynamic="true">
-        <source xml:lang="en">Show Page Numbers</source>
-        <target xml:lang="sw" state="needs-translation">Show Page Numbers</target>
-        <note>BookSettings.ShowPageNumbers</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers.Automatic" sil:dynamic="true">
         <source xml:lang="en">(Automatic)</source>
@@ -1307,11 +1327,6 @@
         <target xml:lang="sw" state="needs-translation">Legacy (Bloom 5.6)</target>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
-      <trans-unit id="EditTab.PasteHyperlink">
-        <source xml:lang="en">Paste Hyperlink</source>
-        <target xml:lang="sw" state="needs-translation">Paste Hyperlink</target>
-        <note>ID: EditTab.PasteHyperlink</note>
-      </trans-unit>
       <trans-unit id="EditTab.SetupHyperlink">
         <source xml:lang="en">Set Up Hyperlink</source>
         <target xml:lang="sw" state="needs-translation">Set Up Hyperlink</target>
@@ -1327,312 +1342,297 @@
         <target xml:lang="sw" state="needs-translation">A Recording</target>
         <note>ID: ARecording</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.ChooseBooksDialog.Title" translate="no">
+      <trans-unit id="PublishTab.Apps.ChooseBooksDialog.Title">
         <source xml:lang="en">Choose Books</source>
         <target xml:lang="sw" state="needs-translation">Choose Books</target>
         <note>ID: PublishTab.Apps.ChooseBooksDialog.Title</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.CustomizeButton" translate="no">
+      <trans-unit id="PublishTab.Apps.CustomizeButton">
         <source xml:lang="en">Customize...</source>
         <target xml:lang="sw" state="needs-translation">Customize...</target>
         <note>ID: PublishTab.Apps.CustomizeButton</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.CustomizeButton.ValidationMessage" translate="no">
+      <trans-unit id="PublishTab.Apps.CustomizeButton.ValidationMessage">
         <source xml:lang="en">Required or invalid settings: %0.</source>
         <target xml:lang="sw" state="needs-translation">Required or invalid settings: %0.</target>
         <note>ID: PublishTab.Apps.CustomizeButton.ValidationMessage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareButton" translate="no">
+      <trans-unit id="PublishTab.Apps.PrepareButton">
         <source xml:lang="en">Prepare</source>
         <target xml:lang="sw" state="needs-translation">Prepare</target>
         <note>ID: PublishTab.Apps.PrepareButton</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareStepper.BuildToolsInstalled" translate="no">
+      <trans-unit id="PublishTab.Apps.PrepareStepper.BuildToolsInstalled">
         <source xml:lang="en">Install build tools</source>
         <target xml:lang="sw" state="needs-translation">Install build tools</target>
         <note>ID: PublishTab.Apps.PrepareStepper.BuildToolsInstalled</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareStepper.InstallerAvailable" translate="no">
+      <trans-unit id="PublishTab.Apps.PrepareStepper.InstallerAvailable">
         <source xml:lang="en">Get installer</source>
         <target xml:lang="sw" state="needs-translation">Get installer</target>
         <note>ID: PublishTab.Apps.PrepareStepper.InstallerAvailable</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareStepper.ProjectCreated" translate="no">
+      <trans-unit id="PublishTab.Apps.PrepareStepper.ProjectCreated">
         <source xml:lang="en">Create project</source>
         <target xml:lang="sw" state="needs-translation">Create project</target>
         <note>ID: PublishTab.Apps.PrepareStepper.ProjectCreated</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareStepper.RabInstalled" translate="no">
+      <trans-unit id="PublishTab.Apps.PrepareStepper.RabInstalled">
         <source xml:lang="en">Run installer</source>
         <target xml:lang="sw" state="needs-translation">Run installer</target>
         <note>ID: PublishTab.Apps.PrepareStepper.RabInstalled</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareStepper.SigningKeyReady" translate="no">
+      <trans-unit id="PublishTab.Apps.PrepareStepper.SigningKeyReady">
         <source xml:lang="en">Create signing key</source>
         <target xml:lang="sw" state="needs-translation">Create signing key</target>
         <note>ID: PublishTab.Apps.PrepareStepper.SigningKeyReady</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.CheckingDevice" translate="no">
+      <trans-unit id="PublishTab.Apps.Progress.CheckingDevice">
         <source xml:lang="en">Checking for connected phone</source>
         <target xml:lang="sw" state="needs-translation">Checking for connected phone</target>
         <note>ID: PublishTab.Apps.Progress.CheckingDevice</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.InstallingOnPhone" translate="no">
+      <trans-unit id="PublishTab.Apps.Progress.InstallingOnPhone">
         <source xml:lang="en">Installing app on phone</source>
         <target xml:lang="sw" state="needs-translation">Installing app on phone</target>
         <note>ID: PublishTab.Apps.Progress.InstallingOnPhone</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.LaunchingOnPhone" translate="no">
+      <trans-unit id="PublishTab.Apps.Progress.LaunchingOnPhone">
         <source xml:lang="en">Launching app on phone</source>
         <target xml:lang="sw" state="needs-translation">Launching app on phone</target>
         <note>ID: PublishTab.Apps.Progress.LaunchingOnPhone</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.Title" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.Title">
         <source xml:lang="en">App Settings</source>
         <target xml:lang="sw" state="needs-translation">App Settings</target>
         <note>ID: PublishTab.Apps.SettingsDialog.Title</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.BasicsGroup" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.BasicsGroup">
         <source xml:lang="en">Basics</source>
         <target xml:lang="sw" state="needs-translation">Basics</target>
         <note>ID: PublishTab.Apps.SettingsDialog.BasicsGroup</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.AppearanceGroup" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.AppearanceGroup">
         <source xml:lang="en">Appearance</source>
         <target xml:lang="sw" state="needs-translation">Appearance</target>
         <note>ID: PublishTab.Apps.SettingsDialog.AppearanceGroup</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.AppName" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.AppName">
         <source xml:lang="en">App Name</source>
         <target xml:lang="sw" state="needs-translation">App Name</target>
         <note>ID: PublishTab.Apps.SettingsDialog.AppName</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.MainColor" translate="no">
-        <source xml:lang="en">Main Color</source>
-        <target xml:lang="sw" state="needs-translation">Main Color</target>
-        <note>ID: PublishTab.Apps.SettingsDialog.MainColor</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.ColorScheme" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.ColorScheme">
         <source xml:lang="en">Color Scheme</source>
         <target xml:lang="sw" state="needs-translation">Color Scheme</target>
         <note>ID: PublishTab.Apps.SettingsDialog.ColorScheme</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName">
         <source xml:lang="en">Package Name</source>
         <target xml:lang="sw" state="needs-translation">Package Name</target>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.Icon" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.Icon">
         <source xml:lang="en">Icon</source>
         <target xml:lang="sw" state="needs-translation">Icon</target>
         <note>ID: PublishTab.Apps.SettingsDialog.Icon</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.Icon.Current" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.Icon.Current">
         <source xml:lang="en">Current icon</source>
         <target xml:lang="sw" state="needs-translation">Current icon</target>
         <note>ID: PublishTab.Apps.SettingsDialog.Icon.Current</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.Copyright" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.Copyright">
         <source xml:lang="en">Copyright</source>
         <target xml:lang="sw" state="needs-translation">Copyright</target>
         <note>ID: PublishTab.Apps.SettingsDialog.Copyright</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.About" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.About">
         <source xml:lang="en">About</source>
         <target xml:lang="sw" state="needs-translation">About</target>
         <note>ID: PublishTab.Apps.SettingsDialog.About</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.IconReset" translate="no">
-        <source xml:lang="en">Reset</source>
-        <target xml:lang="sw" state="needs-translation">Reset</target>
-        <note>ID: PublishTab.Apps.SettingsDialog.IconReset</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.IconChooseTitle" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.IconChooseTitle">
         <source xml:lang="en">Choose App Icon</source>
         <target xml:lang="sw" state="needs-translation">Choose App Icon</target>
         <note>ID: PublishTab.Apps.SettingsDialog.IconChooseTitle</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Description" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Description">
         <source xml:lang="en">Template: org.&lt;yourorg&gt;.&lt;language-code&gt;.&lt;appname&gt;. E.g. org.sil.xyz.stories. For additional help please contact the Digital Publishing Department of your organization.</source>
         <target xml:lang="sw" state="needs-translation">Template: org.&lt;yourorg&gt;.&lt;language-code&gt;.&lt;appname&gt;. E.g. org.sil.xyz.stories. For additional help please contact the Digital Publishing Department of your organization.</target>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Description</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Required" translate="no">
-        <source xml:lang="en">Package name is required.</source>
-        <target xml:lang="sw" state="needs-translation">Package name is required.</target>
-        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Required</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Invalid" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Invalid">
         <source xml:lang="en">Use a lowercase dot-separated package name with no spaces, like org.sil.sample.</source>
         <target xml:lang="sw" state="needs-translation">Use a lowercase dot-separated package name with no spaces, like org.sil.sample.</target>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Invalid</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.ReadingAppBuilder" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.ReadingAppBuilder">
         <source xml:lang="en">Reading App Builder</source>
         <target xml:lang="sw" state="needs-translation">Reading App Builder</target>
         <note>ID: PublishTab.Apps.SettingsDialog.ReadingAppBuilder</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.MoreSettings" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.MoreSettings">
         <source xml:lang="en">More Settings</source>
         <target xml:lang="sw" state="needs-translation">More Settings</target>
         <note>ID: PublishTab.Apps.SettingsDialog.MoreSettings</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder">
         <source xml:lang="en">Starting Reading App Builder...</source>
         <target xml:lang="sw" state="needs-translation">Starting Reading App Builder...</target>
         <note>ID: PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.RunRAB.Description" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.RunRAB.Description">
         <source xml:lang="en">Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.</source>
         <target xml:lang="sw" state="needs-translation">Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.</target>
         <note>ID: PublishTab.Apps.SettingsDialog.RunRAB.Description</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.ShowApkInFileExplorer" translate="no">
+      <trans-unit id="PublishTab.Apps.ShowApkInFileExplorer">
         <source xml:lang="en">Show App (.apk) in File Explorer</source>
         <target xml:lang="sw" state="needs-translation">Show App (.apk) in File Explorer</target>
         <note>ID: PublishTab.Apps.ShowApkInFileExplorer</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.BannerTitle" translate="no">
+      <trans-unit id="PublishTab.Apps.BannerTitle">
         <source xml:lang="en">Build Android Apps</source>
         <target xml:lang="sw" state="needs-translation">Build Android Apps</target>
         <note>ID: PublishTab.Apps.BannerTitle</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps" translate="no">
+      <trans-unit id="PublishTab.Apps">
         <source xml:lang="en">Apps</source>
         <target xml:lang="sw" state="needs-translation">Apps</target>
         <note>ID: PublishTab.Apps</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps-tooltip" translate="no" sil:dynamic="true">
+      <trans-unit id="PublishTab.Apps-tooltip" sil:dynamic="true">
         <source xml:lang="en">Create an app that you can install on your Android phone, share with others, and publish on the Google Play Store.</source>
         <target xml:lang="sw" state="needs-translation">Create an app that you can install on your Android phone, share with others, and publish on the Google Play Store.</target>
         <note>ID: PublishTab.Apps-tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Build" translate="no">
+      <trans-unit id="PublishTab.Apps.Build">
         <source xml:lang="en">Build</source>
         <target xml:lang="sw" state="needs-translation">Build</target>
         <note>ID: PublishTab.Apps.Build</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Build.DoneTooltip" translate="no">
+      <trans-unit id="PublishTab.Apps.Build.DoneTooltip">
         <source xml:lang="en">The APK is current. Try on phone will use the latest build.</source>
         <target xml:lang="sw" state="needs-translation">The APK is current. Try on phone will use the latest build.</target>
         <note>ID: PublishTab.Apps.Build.DoneTooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Build.NeedsPrepareTooltip" translate="no">
+      <trans-unit id="PublishTab.Apps.Build.NeedsPrepareTooltip">
         <source xml:lang="en">Run Prepare before building the app.</source>
         <target xml:lang="sw" state="needs-translation">Run Prepare before building the app.</target>
         <note>ID: PublishTab.Apps.Build.NeedsPrepareTooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Build.Tooltip" translate="no">
+      <trans-unit id="PublishTab.Apps.Build.Tooltip">
         <source xml:lang="en">Build a new APK from the current settings and selected books.</source>
         <target xml:lang="sw" state="needs-translation">Build a new APK from the current settings and selected books.</target>
         <note>ID: PublishTab.Apps.Build.Tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.ChooseBooks" translate="no">
+      <trans-unit id="PublishTab.Apps.ChooseBooks">
         <source xml:lang="en">Choose Books...</source>
         <target xml:lang="sw" state="needs-translation">Choose Books...</target>
         <note>ID: PublishTab.Apps.ChooseBooks</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.ChooseBooks.Tooltip" translate="no">
+      <trans-unit id="PublishTab.Apps.ChooseBooks.Tooltip">
         <source xml:lang="en">Choose which books to include in the app and the order they should appear.</source>
         <target xml:lang="sw" state="needs-translation">Choose which books to include in the app and the order they should appear.</target>
         <note>ID: PublishTab.Apps.ChooseBooks.Tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.BuildingAndroidApp" translate="no">
+      <trans-unit id="PublishTab.Apps.Progress.BuildingAndroidApp">
         <source xml:lang="en">Building Android app</source>
         <target xml:lang="sw" state="needs-translation">Building Android app</target>
         <note>ID: PublishTab.Apps.Progress.BuildingAndroidApp</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.Complete" translate="no">
+      <trans-unit id="PublishTab.Apps.Progress.Complete">
         <source xml:lang="en">Done</source>
         <target xml:lang="sw" state="needs-translation">Done</target>
         <note>ID: PublishTab.Apps.Progress.Complete</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.CreatingProject" translate="no">
+      <trans-unit id="PublishTab.Apps.Progress.CreatingProject">
         <source xml:lang="en">Creating Reading App Builder project</source>
         <target xml:lang="sw" state="needs-translation">Creating Reading App Builder project</target>
         <note>ID: PublishTab.Apps.Progress.CreatingProject</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.ExportingBloompubs" translate="no">
+      <trans-unit id="PublishTab.Apps.Progress.ExportingBloompubs">
         <source xml:lang="en">Creating BloomPUBs</source>
         <target xml:lang="sw" state="needs-translation">Creating BloomPUBs</target>
         <note>ID: PublishTab.Apps.Progress.ExportingBloompubs</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.FinalizingApk" translate="no">
+      <trans-unit id="PublishTab.Apps.Progress.FinalizingApk">
         <source xml:lang="en">Finalizing APK</source>
         <target xml:lang="sw" state="needs-translation">Finalizing APK</target>
         <note>ID: PublishTab.Apps.Progress.FinalizingApk</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.GeneratingSigningKey" translate="no">
+      <trans-unit id="PublishTab.Apps.Progress.GeneratingSigningKey">
         <source xml:lang="en">Generating signing key</source>
         <target xml:lang="sw" state="needs-translation">Generating signing key</target>
         <note>ID: PublishTab.Apps.Progress.GeneratingSigningKey</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.PreparingBuild" translate="no">
+      <trans-unit id="PublishTab.Apps.Progress.PreparingBuild">
         <source xml:lang="en">Preparing build</source>
         <target xml:lang="sw" state="needs-translation">Preparing build</target>
         <note>ID: PublishTab.Apps.Progress.PreparingBuild</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.PreparingWorkspace" translate="no">
+      <trans-unit id="PublishTab.Apps.Progress.PreparingWorkspace">
         <source xml:lang="en">Preparing workspace</source>
         <target xml:lang="sw" state="needs-translation">Preparing workspace</target>
         <note>ID: PublishTab.Apps.Progress.PreparingWorkspace</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.UpdatingProject" translate="no">
+      <trans-unit id="PublishTab.Apps.Progress.UpdatingProject">
         <source xml:lang="en">Updating Reading App Builder project</source>
         <target xml:lang="sw" state="needs-translation">Updating Reading App Builder project</target>
         <note>ID: PublishTab.Apps.Progress.UpdatingProject</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.ReadingAppBuilderSite" translate="no">
+      <trans-unit id="PublishTab.Apps.ReadingAppBuilderSite">
         <source xml:lang="en">Reading App Builder website</source>
         <target xml:lang="sw" state="needs-translation">Reading App Builder website</target>
         <note>ID: PublishTab.Apps.ReadingAppBuilderSite</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsButton.Tooltip" translate="no">
+      <trans-unit id="PublishTab.Apps.SettingsButton.Tooltip">
         <source xml:lang="en">Edit the Reading App Builder app settings for this collection.</source>
         <target xml:lang="sw" state="needs-translation">Edit the Reading App Builder app settings for this collection.</target>
         <note>ID: PublishTab.Apps.SettingsButton.Tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareRequiredTooltip" translate="no">
+      <trans-unit id="PublishTab.Apps.PrepareRequiredTooltip">
         <source xml:lang="en">Run Prepare before using this step.</source>
         <target xml:lang="sw" state="needs-translation">Run Prepare before using this step.</target>
         <note>ID: PublishTab.Apps.PrepareRequiredTooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Prepare.DoneTooltip" translate="no">
+      <trans-unit id="PublishTab.Apps.Prepare.DoneTooltip">
         <source xml:lang="en">The Reading App Builder project is already prepared for this collection.</source>
         <target xml:lang="sw" state="needs-translation">The Reading App Builder project is already prepared for this collection.</target>
         <note>ID: PublishTab.Apps.Prepare.DoneTooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Prepare.TooltipBloomAppData" translate="no">
+      <trans-unit id="PublishTab.Apps.Prepare.TooltipBloomAppData">
         <source xml:lang="en">Create the Reading App Builder project in this collection's Bloom App Data folder.</source>
         <target xml:lang="sw" state="needs-translation">Create the Reading App Builder project in this collection's Bloom App Data folder.</target>
         <note>ID: PublishTab.Apps.Prepare.TooltipBloomAppData</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.TryOnPhone" translate="no">
+      <trans-unit id="PublishTab.Apps.TryOnPhone">
         <source xml:lang="en">Try on phone</source>
         <target xml:lang="sw" state="needs-translation">Try on phone</target>
         <note>ID: PublishTab.Apps.TryOnPhone</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.TryOnPhone.Tooltip" translate="no">
+      <trans-unit id="PublishTab.Apps.TryOnPhone.Tooltip">
         <source xml:lang="en">Load and run the app on your phone. First enable USB Debugging on the phone and connect it with a USB cable.</source>
         <target xml:lang="sw" state="needs-translation">Load and run the app on your phone. First enable USB Debugging on the phone and connect it with a USB cable.</target>
         <note>ID: PublishTab.Apps.TryOnPhone.Tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.ApkSize.Text" translate="no">
+      <trans-unit id="PublishTab.Apps.ApkSize.Text">
         <source xml:lang="en">Actual app size is %0.</source>
         <target xml:lang="sw" state="needs-translation">Actual app size is %0.</target>
         <note>ID: PublishTab.Apps.ApkSize.Text</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SizeEstimate.OverheadLabel" translate="no">
+      <trans-unit id="PublishTab.Apps.SizeEstimate.OverheadLabel">
         <source xml:lang="en">App overhead</source>
         <target xml:lang="sw" state="needs-translation">App overhead</target>
         <note>ID: PublishTab.Apps.SizeEstimate.OverheadLabel</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SizeEstimate.OverLimit" translate="no">
+      <trans-unit id="PublishTab.Apps.SizeEstimate.OverLimit">
         <source xml:lang="en">This estimate is above the %0 Android app size limit. Choose fewer books or smaller books.</source>
         <target xml:lang="sw" state="needs-translation">This estimate is above the %0 Android app size limit. Choose fewer books or smaller books.</target>
         <note>ID: PublishTab.Apps.SizeEstimate.OverLimit</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SizeEstimate.Total" translate="no">
+      <trans-unit id="PublishTab.Apps.SizeEstimate.Total">
         <source xml:lang="en">Apps have a maximum size of about %1. The current estimate for this app is %0.</source>
         <target xml:lang="sw" state="needs-translation">Apps have a maximum size of about %1. The current estimate for this app is %0.</target>
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
