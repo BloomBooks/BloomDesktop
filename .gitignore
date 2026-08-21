@@ -199,3 +199,9 @@ pr-comments*.md
 # run build/ci/watch-for-hung-bloom.ps1 locally). Never meant to be committed.
 bloom-diagnostics/
 bloom-watchdog/
+
+# Temporary, while BloomBooks.FreezeDoctor.Protocol is not published:
+# build/pack-freeze-doctor-protocol.ps1 drops the package here and the root NuGet.Config restores it
+# from here. See BL-16719.
+localpackages/*.nupkg
+localpackages/*.snupkg

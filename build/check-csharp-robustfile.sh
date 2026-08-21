@@ -35,14 +35,6 @@ if [ -s $filesToCheck ]; then
     case "$file" in
       src/BloomExe/RobustFileIO.cs) continue;;
       src/BloomTests/*) continue;;
-      # The Freeze Doctor contract files are copies of files in BloomBooks/bloom-freeze-doctor and must
-      # stay byte-identical to them apart from the namespace, so they cannot use RobustFile - it does not
-      # exist in that repository. Exempting them is safe rather than merely convenient: every call in them
-      # is a best-effort diagnostic write already wrapped in a catch-everything, and the failure they would
-      # otherwise retry through simply means "no session file this time", which the callers are built to
-      # tolerate. Nothing a user's work depends on passes through these files.
-      src/BloomExe/FreezeDoctor/DoctorChannel.cs) continue;;
-      src/BloomExe/FreezeDoctor/DoctorSession.cs) continue;;
     esac
     if awk '
       # Flag ordinary banned file APIs directly.

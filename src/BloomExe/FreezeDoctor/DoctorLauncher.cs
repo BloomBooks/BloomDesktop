@@ -83,8 +83,14 @@ namespace Bloom.FreezeDoctor
 
         /// <summary>
         /// Looks for an installed Doctor. Velopack installs per-user into
-        /// <c>%LOCALAPPDATA%\BloomFreezeDoctor\current\</c>, and we accept a few nearby shapes so that a
-        /// developer running one from a build tree can be found too.
+        /// <c>%LOCALAPPDATA%\BloomFreezeDoctor\current\</c>, plus an environment variable so a developer
+        /// can point at a build tree.
+        ///
+        /// Only that one installed shape is looked for, deliberately. An earlier version also checked the
+        /// parent directory, in case a future Velopack went back to putting the launcher there — but that
+        /// is speculation about a direction Velopack seems unlikely to reverse, and the cost of being wrong
+        /// is small and obvious: somebody on a newer Doctor launches it by hand. A directory check that
+        /// exists for a hypothetical is a directory check nobody can ever prove is still needed.
         /// </summary>
         private static string FindInstalledDoctor()
         {
@@ -95,8 +101,6 @@ namespace Bloom.FreezeDoctor
             {
                 // The installed layout.
                 Path.Combine(localAppData, "BloomFreezeDoctor", "current", ExecutableName),
-                // Some Velopack versions put the launcher one level up.
-                Path.Combine(localAppData, "BloomFreezeDoctor", ExecutableName),
                 // An explicit override, for testing against a build tree.
                 Environment.GetEnvironmentVariable("BLOOM_FREEZE_DOCTOR_PATH"),
             };

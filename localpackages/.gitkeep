@@ -1,0 +1,1 @@
+﻿# Keeps this folder present so NuGet does not complain about a missing source before you run build/pack-freeze-doctor-protocol.ps1. Temporary; see the NuGet.Config at the repo root.
