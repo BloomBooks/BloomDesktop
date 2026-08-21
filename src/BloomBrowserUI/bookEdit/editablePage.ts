@@ -49,6 +49,13 @@ document.addEventListener("DOMContentLoaded", () => {
 // and then it will bring this along, with disastrous results.
 export interface IPageFrameExports {
     requestPageContent(): void;
+    // Gather the current page's content and have C# save it, without the page being reloaded
+    // afterwards. Unlike requestPageContent(), this is initiated from the Javascript side.
+    // Resolves false if C# declined to save; see savePageWithoutReloading in bloomEditing.ts.
+    savePageWithoutReloading(): Promise<boolean>;
+    // The combined "body <SPLIT-DATA> userCss" string that a save needs, gathered without
+    // disturbing the live page.
+    getPageContentForSaveWhenReady(): Promise<string>;
     pageUnloading(): void;
     copySelection(): void;
     cutSelection(): void;
@@ -112,10 +119,10 @@ export interface IPageFrameExports {
 // This exports the functions that should be accessible from other IFrames or from C#.
 // For example, workspaceBundle.getEditablePageBundleExports().requestPageContent() can be called.
 import {
-    getBodyContentForSavePage,
+    getPageContentForSaveWhenReady,
     requestPageContent,
+    savePageWithoutReloading,
     captureContentForExternalProcessing,
-    userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
     copySelection,
@@ -129,9 +136,11 @@ import {
     changeImageByElement,
     imageOperationCanUndo,
     imageOperationUndo,
+} from "./js/bloomEditing";
+import {
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
-} from "./js/bloomEditing";
+} from "./js/pageContentDelays";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 // Called from the AI Image Editor overlay in the top window, which owns the session but
 // cannot touch this page itself; see aiEditorPageCommands.ts and aiEditorOverlay.ts.
@@ -141,10 +150,10 @@ import type {
     IAiImageEditorCommitResult,
 } from "./aiImageEditor/aiEditorShared";
 export {
-    getBodyContentForSavePage,
+    getPageContentForSaveWhenReady,
     requestPageContent,
+    savePageWithoutReloading,
     captureContentForExternalProcessing,
-    userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
     copySelection,
@@ -401,9 +410,9 @@ export function SayHello() {
 // NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
 interface EditablePageBundleApi {
     requestPageContent: typeof requestPageContent;
+    savePageWithoutReloading: typeof savePageWithoutReloading;
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
-    getBodyContentForSavePage: typeof getBodyContentForSavePage;
-    userStylesheetContent: typeof userStylesheetContent;
+    getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
@@ -480,9 +489,9 @@ declare global {
 
 window.editablePageBundle = {
     requestPageContent,
+    savePageWithoutReloading,
     captureContentForExternalProcessing,
-    getBodyContentForSavePage,
-    userStylesheetContent,
+    getPageContentForSaveWhenReady,
     pageUnloading,
     copySelection,
     cutSelection,

@@ -22,6 +22,36 @@ public enum State
 }
 
 /// <summary>
+/// What an attempt at an in-place save actually did. The point of the distinction is the third
+/// case: a caller that has a fallback (SaveThen) must only use it when nothing happened, because
+/// its doBeforeSaveToDisk is usually not something you can afford to do twice -- running it again
+/// would duplicate or delete a second page.
+/// </summary>
+public enum InPlaceSaveOutcome
+{
+    // We were not in a state to save, so nothing was written and doBeforeSaveToDisk did NOT run.
+    // A normal outcome, not an error: the user may have started changing pages. The caller is free
+    // to fall back to SaveThen.
+    Declined,
+
+    // Saved, and (for the ...ThenNavigating form) on the way to the next page.
+    Saved,
+
+    // We started and something threw. The browser's content may already be in the book DOM and
+    // doBeforeSaveToDisk may have run and changed the book. The failure has been reported to the
+    // user; the caller must NOT fall back, or the action happens twice.
+    Failed,
+
+    // We MUST not write this page at all -- an external process has replaced the book on disk and
+    // the user's page is about to be discarded in favour of what it wrote. Nothing was written and
+    // doBeforeSaveToDisk did NOT run, exactly as for Declined; the difference is that the caller
+    // must NOT fall back to asking the browser, because that path would go ahead and save and so
+    // clobber the other program's work. Refused and Declined look alike and mean opposite things,
+    // which is why they are separate values rather than one "didn't save".
+    Refused,
+}
+
+/// <summary>
 /// A state machine to help us reason about the possible states of the editing model,
 /// manage the valid transitions between them, and ensure that we don't attempt invalid ones.
 /// </summary>
@@ -45,6 +75,14 @@ public class EditingStateMachine
     // page content) will be discarded on completion rather than merged into the DOM and written to
     // disk. See DiscardInFlightSave.
     private bool _discardInFlightSave;
+
+    // Set only while ToSavedInPlaceThenNavigating is running its doBeforeSaveToDisk. In that window
+    // the browser's content is already in the book DOM, so ToNavigating's "cannot navigate while
+    // editing" guard does not apply -- there are no unsaved changes left to lose. Some actions do
+    // navigate: relocating a page raises RelocatePageEvent, and EditingModel.OnRelocatePage
+    // refreshes the display of the page whose HTML (side, page number) just changed. Under the old
+    // SaveThen flow that was legal because the action ran while the machine sat in SavedAndStripped.
+    private bool _runningSaveInPlaceAction;
     private Action _hidePage;
 
     private Action<bool> _enableStateTransitions; // arg is (enabled)
@@ -102,6 +140,16 @@ public class EditingStateMachine
                     _currentState = State.NoPage;
                     return true;
                 case State.Editing:
+                    if (_runningSaveInPlaceAction)
+                    {
+                        // See _runningSaveInPlaceAction: we have just saved, so the guard below
+                        // (which is about losing unsaved edits) has nothing to protect. This is
+                        // the "action returned null, leave the editor blank" case.
+                        LogTransition("empty page", null);
+                        _hidePage();
+                        _currentState = State.NoPage;
+                        return true;
+                    }
                     LogError("empty page");
                     throw new InvalidOperationException("Cannot empty page while editing.");
                 case State.SavePending:
@@ -161,6 +209,13 @@ public class EditingStateMachine
                         return true;
                     }
                 case State.Editing:
+                    if (_runningSaveInPlaceAction)
+                    {
+                        // See _runningSaveInPlaceAction: we have just saved, so the guard below
+                        // (which is about losing unsaved edits) has nothing to protect.
+                        StartNavigating(pageId);
+                        return true;
+                    }
                     LogError("navigate");
                     throw new InvalidOperationException("Cannot navigate while editing");
                 case State.SavePending:
@@ -329,6 +384,21 @@ public class EditingStateMachine
                     DoPostSaveAction(null, doBeforeSaveToDisk, failureAction, doAfterSaveToDisk);
                     return true;
                 case State.Editing:
+                    if (_runningSaveInPlaceAction)
+                    {
+                        // We are inside a save-in-place action: the browser's content is already
+                        // merged into the book DOM and _saveBook() is about to run, so there is
+                        // nothing for another save to do. Ignoring it is also what the old flow
+                        // did for free -- the action used to run in SavedAndStripped, where this
+                        // method returns false. Accepting it would be actively harmful: it would
+                        // put us in SavePending, and the ToNavigating that follows the action is
+                        // ignored from there, so the page the action promised to go to would
+                        // never be shown (and the browser's eventual reply would save a second
+                        // time). Reachable from an action that changes the page selection, e.g.
+                        // PageThumbnailList.PageMoved when the relocation is refused.
+                        LogIgnore("save");
+                        return false;
+                    }
                     _saveActionHandlesSaveBook = saveActionHandlesSaveBook;
                     _doBeforeSaveToDisk = doBeforeSaveToDisk;
                     _failureAction = failureAction;
@@ -370,6 +440,174 @@ public class EditingStateMachine
             return false;
         _discardInFlightSave = true;
         return true;
+    }
+
+    /// <summary>
+    /// Save the current page from content the browser gathered on its own initiative, and stay in
+    /// Editing.
+    ///
+    /// This is the transition that exists because the browser can now produce the page content
+    /// WITHOUT wrecking the live page (it cleans a clone: see getPageContentForSaveWhenReady() in
+    /// bloomEditing.ts). So, unlike the ToSavePending/ToSavedAndStripped pair, there is no stripped
+    /// page to recover from, nothing to wait for, and no navigation to do afterwards: the user is
+    /// still editing the same page when we return.
+    ///
+    /// Only legal while Editing. In every other state either there is nothing to save (NoPage), or
+    /// a save/navigation is already under way and this one would race with it; we return false so
+    /// the caller can decide what to do about that.
+    /// </summary>
+    public bool ToSavedInPlace(string pageContentData, Action<Exception> reportFailure)
+    {
+        try
+        {
+            switch (_currentState)
+            {
+                case State.Editing:
+                    LogTransition("saved in place", _pageId);
+                    if (pageContentData.StartsWith("ERROR:"))
+                        throw new ApplicationException(pageContentData);
+                    _updateBookWithPageContents(_pageId, pageContentData);
+                    _pageIdWeFailedToSave = null;
+                    _saveBook();
+                    return true;
+                case State.NoPage:
+                case State.Navigating:
+                case State.SavePending:
+                case State.SavedAndStripped:
+                    LogIgnore("save in place");
+                    return false;
+                default:
+                    throw new InvalidOperationException(
+                        "Unknown state In ToSavedInPlace(): " + _currentState.ToString()
+                    );
+            }
+        }
+        catch (Exception e)
+        {
+            // Unlike the ToSavedAndStripped path we don't have to navigate to get out of an
+            // invalid state: we never left Editing, and the browser still has the intact page. So
+            // all we owe the user is the report, and the caller a 'false'.
+            // As there, we only report once per page, so that a page that fails every time doesn't
+            // lock the user out of Bloom.
+            if (_pageId != _pageIdWeFailedToSave)
+            {
+                _pageIdWeFailedToSave = _pageId;
+                reportFailure(e);
+            }
+            return false;
+        }
+        finally
+        {
+            UpdateUI();
+        }
+    }
+
+    /// <summary>
+    /// Save the current page from content the browser sent WITH its request, optionally change the
+    /// book in some way, then go to whichever page doBeforeSaveToDisk names. This is the
+    /// straight-line form of the whole ToSavePending/ToSavedAndStripped sequence, and it is the
+    /// reason SavePending can eventually go away: when the browser hands us the content up front
+    /// there is nothing to wait for, so this is Editing -> Navigating in one step rather than
+    /// Editing -> SavePending (ask the browser, wait) -> SavedAndStripped -> Navigating.
+    ///
+    /// doBeforeSaveToDisk plays exactly the role it plays in ToSavePending: it runs after the
+    /// browser's content has been merged into the book DOM and before the book is written to disk
+    /// (so a page it duplicates or deletes already reflects the user's latest edits), and it
+    /// returns the id of the page to show afterwards. For a caller that only wants to change pages
+    /// it is simply () => theNewPageId. It is allowed to navigate (see _runningSaveInPlaceAction);
+    /// if it does, the navigation we do afterwards to its returned page simply supersedes it, or is
+    /// ignored if it is to the same page.
+    ///
+    /// If it fails we report it and do NOT navigate: doing so would throw away the edits we failed
+    /// to save, and unlike the ToSavedAndStripped path we are not in a broken state we have to
+    /// escape, since the browser still has the page intact and editable. Note the difference
+    /// between the two failure-ish outcomes -- see InPlaceSaveOutcome, and be careful to preserve
+    /// it: Declined means the action never ran and the caller may fall back to SaveThen, whereas
+    /// Failed means it may have run already and the caller must not run it again.
+    /// </summary>
+    public InPlaceSaveOutcome ToSavedInPlaceThenNavigating(
+        string pageContentData,
+        Func<string> doBeforeSaveToDisk,
+        Action<Exception> reportFailure
+    )
+    {
+        try
+        {
+            switch (_currentState)
+            {
+                case State.Editing:
+                    LogTransition("saved in place, then navigating", _pageId);
+                    if (pageContentData.StartsWith("ERROR:"))
+                        throw new ApplicationException(pageContentData);
+                    _updateBookWithPageContents(_pageId, pageContentData);
+                    _pageIdWeFailedToSave = null;
+                    RunActionThenSaveAndNavigate(doBeforeSaveToDisk);
+                    return InPlaceSaveOutcome.Saved;
+                case State.NoPage:
+                    // There is no browser content to merge, but the action can still change the
+                    // book (it may duplicate or delete a page), and that has to reach disk just
+                    // the same. ToSavePending's NoPage branch goes through DoPostSaveAction, which
+                    // runs the action, saves the book, and then navigates -- so we do the same.
+                    RunActionThenSaveAndNavigate(doBeforeSaveToDisk);
+                    return InPlaceSaveOutcome.Saved;
+                case State.Navigating:
+                case State.SavePending:
+                case State.SavedAndStripped:
+                    LogIgnore("save in place then navigate");
+                    return InPlaceSaveOutcome.Declined;
+                default:
+                    throw new InvalidOperationException(
+                        "Unknown state In ToSavedInPlaceThenNavigating(): "
+                            + _currentState.ToString()
+                    );
+            }
+        }
+        catch (Exception e)
+        {
+            if (_pageId != _pageIdWeFailedToSave)
+            {
+                _pageIdWeFailedToSave = _pageId;
+                reportFailure(e);
+            }
+            return InPlaceSaveOutcome.Failed;
+        }
+        finally
+        {
+            UpdateUI();
+        }
+    }
+
+    /// <summary>
+    /// The middle of ToSavedInPlaceThenNavigating, from the point where the browser's content is
+    /// safely in the book DOM: run the caller's action, write the book, and go to the page the
+    /// action named. Separated out only so that _runningSaveInPlaceAction is obviously scoped to
+    /// the action, and obviously cleared even if it throws.
+    /// </summary>
+    private void RunActionThenSaveAndNavigate(Func<string> doBeforeSaveToDisk)
+    {
+        _runningSaveInPlaceAction = true;
+        try
+        {
+            var pageIdToGoTo = doBeforeSaveToDisk();
+            _saveBook();
+            if (pageIdToGoTo == null)
+            {
+                // SaveThen's contract: the action returns null to say "leave the editor blank"
+                // (which is how leaving the edit tab saves). DoPostSaveAction honours that, so we
+                // must too -- trying to navigate to no page would just leave a broken editor.
+                ToNoPage();
+                return;
+            }
+            // Via ToNavigating rather than StartNavigating so that an action which already
+            // navigated to this very page (as relocating one does) is not made to do it twice.
+            // While _runningSaveInPlaceAction is set, ToNavigating accepts being called from
+            // Editing, which is the state we are still in if the action did not navigate.
+            ToNavigating(pageIdToGoTo);
+        }
+        finally
+        {
+            _runningSaveInPlaceAction = false;
+        }
     }
 
     /// <summary>

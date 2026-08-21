@@ -29,7 +29,7 @@
 //      overlay down. (There is intentionally no C#->iframe message channel; init flows from
 //      here, because only the browser can postMessage to the iframe.)
 
-import { post, postJson, postThatMightNavigate } from "../../utils/bloomApi";
+import { post, postJson } from "../../utils/bloomApi";
 import { getEditablePageBundleExports } from "../js/workspaceFrames";
 import {
     fileNameOf,
@@ -331,23 +331,62 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                 ackEditor(finalOk, message);
                                 // changeImageByElement only mutated the LIVE page DOM;
                                 // unlike the off-page slots (which C# saved), a
-                                // current-page swap is not otherwise persisted. Save +
-                                // rethink the page so the saved DOM matches the live one:
-                                // otherwise a second commit in this same session would
-                                // read its oldSrc from a saved page still showing the
-                                // pre-edit image and match nothing ("0 of N could be
-                                // updated"). Mirrors doVideoCommand's save after
-                                // updateVideoInContainer.
+                                // current-page swap is not otherwise persisted. Save the
+                                // page so the saved DOM matches the live one: otherwise a
+                                // second commit in this same session would read its oldSrc
+                                // from a saved page still showing the pre-edit image and
+                                // match nothing ("0 of N could be updated").
                                 //
-                                // We can save right now, even with the overlay still up,
-                                // precisely because this overlay lives in the top window:
-                                // the page reload underneath it leaves its controls alone.
+                                // savePageWithoutReloading leaves the page frame alone
+                                // (BL-13502), so the user keeps whatever they had selected
+                                // underneath the overlay, and nothing here has to care about
+                                // a reload happening beneath it.
                                 // (currentPageApplied is what the page frame says landed,
                                 // so a failure part way through still saves the rest.)
+                                //
+                                // C# can decline the save (the user may have started changing
+                                // pages), and then the file still shows the pre-edit image --
+                                // exactly the state this save exists to avoid. We can't undo
+                                // that here, but we can make sure it isn't silent.
                                 if (currentPageApplied > 0) {
-                                    postThatMightNavigate(
-                                        "common/saveChangesAndRethinkPageEvent",
-                                    );
+                                    const complain = (why: string) =>
+                                        console.error(
+                                            `AI image editor: ${why} after applying ${currentPageApplied} ` +
+                                                "replacement(s) to the open page. The book on disk still has the " +
+                                                "old image(s), so editing these again in this session may report " +
+                                                "that nothing matched.",
+                                        );
+                                    // Every way this can go wrong has to say so, not just the
+                                    // refusal: the page frame may be gone (the optional call then
+                                    // yields nothing at all), and the request itself can fail.
+                                    //
+                                    // Note we deliberately do NOT claim which of those happened
+                                    // when we simply get back "not saved". A failed request does
+                                    // not reject: bloomApi's wrapAxios catches it (and reports the
+                                    // network error itself), so it arrives here as a false exactly
+                                    // like a refusal does. The rejection handler below is kept for
+                                    // the day that changes, but it is not what fires today.
+                                    const save =
+                                        getEditablePageBundleExports()?.savePageWithoutReloading();
+                                    if (!save) {
+                                        complain(
+                                            "the page frame was not available to save",
+                                        );
+                                    } else {
+                                        void save.then(
+                                            (saved) => {
+                                                if (!saved)
+                                                    complain(
+                                                        "the page was not saved (Bloom declined, " +
+                                                            "or the request failed)",
+                                                    );
+                                            },
+                                            (error) =>
+                                                complain(
+                                                    `saving the page failed (${error})`,
+                                                ),
+                                        );
+                                    }
                                 }
                                 if (finalOk) {
                                     cleanup();

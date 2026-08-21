@@ -100,8 +100,32 @@ export interface ITool {
     // To guard against certain race conditions, we currently call this again after 600ms. Tools should
     // allow for this possibility and not repeat any work that was already done.
     newPageReady();
-    detachFromPage(); // called when a page is going away AND before hideTool
+    // Remove from 'pageOrClone' the markup this tool adds for editing that must not be saved.
+    // THE SAME METHOD IS USED TWO WAYS, which is why the parameter is named as it is:
+    //   * on every save, with a detached CLONE of the .bloom-page div, so we can save clean HTML
+    //     while the user goes on editing the real page (see getPageContentForSave in
+    //     bloomEditing.ts);
+    //   * on the live .bloom-page div when the page is going away, from detachFromPage().
+    // So it must be pure DOM surgery inside 'pageOrClone': it may not reach out to the live
+    // document, and it may not change this tool's own state (that would be wrong on a save, when
+    // the tool is still running). Anything live-only — observers, React state, re-enabling image
+    // editing, clearing caches — belongs in detachFromPage() instead.
+    // Leave it as the inherited no-op if the markup this tool adds is all either marked bloom-ui or
+    // ui-resizable-handle, or is a cke_* class, or lives outside the .bloom-page div: the C# save
+    // pipeline already discards all of those (see HtmlDom.ProcessPageAfterEditing). But make that a
+    // deliberate decision, not an omission.
+    removeToolMarkup(pageOrClone: HTMLElement): void;
+    // Called when a page is going away AND before hideTool. ToolboxToolReactAdaptor's
+    // implementation calls removeToolMarkup() on the live page, so a tool that has nothing
+    // live-only to do needs only removeToolMarkup(). OVERRIDE THIS ONLY TO ADD live-only teardown,
+    // and be sure to call super.detachFromPage() at the point where the markup should come off;
+    // detachCurrentTool() complains to the console if you forget.
+    detachFromPage(): void;
     id(): string; // without trailing "Tool"!
+    // True if the last call to detachFromPage() reached ToolboxToolReactAdaptor's implementation,
+    // i.e. removeToolMarkup() was run on the live page. Only detachCurrentTool() should use this;
+    // it is how we notice a tool that overrode detachFromPage() and forgot to call super.
+    didRemoveToolMarkupWhileDetaching(): boolean;
     hasRestoredSettings: boolean;
     isAlwaysEnabled(): boolean;
     isExperimental(): boolean;
@@ -390,7 +414,7 @@ export class ToolBox {
         }
         this.doWhenClosingTool = [];
         if (currentTool && isToolInitialized(currentTool)) {
-            currentTool.detachFromPage();
+            detachToolFromPage(currentTool);
         }
     }
     // A list of tasks to do when the current tool is closed. This is currently used to
@@ -807,7 +831,21 @@ function detachCurrentTool() {
     } else if (currentTool && isToolInitialized(currentTool)) {
         // If the toolbox is not available, we still may be able to detach the current tool.
         // This is what we used to do before we had some extra behavior in the toolbox.
-        currentTool.detachFromPage();
+        detachToolFromPage(currentTool);
+    }
+}
+
+// Detach one tool from the live page, and complain if it overrode detachFromPage() without calling
+// super.detachFromPage(). That mistake is easy to make and its symptom is remote: the tool's markup
+// stays on the page and gets saved into the book, but only sometimes and only for that tool. Since
+// this runs while we are changing pages, we report rather than throw — losing the page change would
+// be worse than the stale markup we are warning about.
+function detachToolFromPage(tool: ITool): void {
+    tool.detachFromPage();
+    if (!tool.didRemoveToolMarkupWhileDetaching()) {
+        console.error(
+            `${tool.id()}Tool.detachFromPage() did not call super.detachFromPage(), so its removeToolMarkup() never ran on the live page. See ITool.detachFromPage.`,
+        );
     }
 }
 
@@ -1136,10 +1174,24 @@ function restoreToolboxSettingsWhenPageReady(settings: ToolboxSettings) {
     });
 }
 
-// Remove any markup the toolbox is inserting. Called by a RunJavaScript() in EditingView
-// before saving the page.
+// Remove any markup the toolbox is inserting. Called when the page is going away (or the tool is
+// being switched); it detaches the current tool from the live page, which leaves the page unusable
+// for further editing.
 export function removeToolboxMarkup() {
     detachCurrentTool();
+}
+
+// Strip from 'pageClone' — a detached clone of the page div — any markup the current tool added for
+// editing that must not be saved. This runs the very same ITool.removeToolMarkup() that
+// detachFromPage() runs on the live page, so the two can't drift apart; the difference is only in
+// what we hand it. Everything else about detaching (the doWhenClosingTool tasks that close popups
+// and dialogs, each tool's live-only teardown) is deliberately skipped: the user is still on this
+// page and still using this tool.
+// Called (via the toolbox bundle exports) from the page iframe's getPageContentForSave().
+export function removeToolMarkupFromPageClone(pageClone: HTMLElement): void {
+    if (currentTool && isToolInitialized(currentTool)) {
+        currentTool.removeToolMarkup(pageClone);
+    }
 }
 
 function switchTool(newToolName: string): void {

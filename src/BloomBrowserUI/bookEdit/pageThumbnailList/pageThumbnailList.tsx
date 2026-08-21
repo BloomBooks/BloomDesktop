@@ -28,6 +28,7 @@ import {
     postString,
     useApiData,
 } from "../../utils/bloomApi";
+import { collectCurrentPageContent } from "./currentPageContent";
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -702,10 +703,7 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
                 const pageElt = e.currentTarget.closest("[id]")!;
                 const pageId = pageElt.getAttribute("id");
                 const caption = pageElt.getAttribute("data-caption");
-                postJson("pageList/pageClicked", {
-                    pageId,
-                    detail: caption,
-                });
+                postPageClicked(pageId!, caption ?? "");
             }
         }
     };
@@ -817,10 +815,15 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
         closeContextMenuOnBlurCleanupRef.current = undefined;
 
         const pageId = contextMenuPoint.pageId;
-        const postCommand = () =>
+        // Most of these commands (duplicate, copy, paste, remove) have to save the current page
+        // first, so send its content along. See collectCurrentPageContent().
+        const postCommand = async () =>
             postJson("pageList/contextMenuItemClicked", {
                 pageId,
                 commandId,
+                pageContent: await collectCurrentPageContent(
+                    `the ${commandId} command`,
+                ),
             });
         if (commandId === "removePage") {
             confirmRemovePage(postCommand);
@@ -1057,16 +1060,35 @@ function onDragStop(
         // the page clicked. (Note however that this seems to get fired on any click,
         // even just closing a popup menu, so it's possible that we might get more
         // click events than we really want.)
-        postJson("pageList/pageClicked", {
-            pageId: movedPageId,
-            detail: "unknown",
-        });
+        postPageClicked(movedPageId, "unknown");
         return;
     }
     // Needs more smarts if we ever do other than two columns.
     const newIndex = newItem.y * 2 + newItem.x;
 
-    postJson("pageList/pageMoved", { movedPageId, newIndex });
+    // Moving a page saves the current one first; see collectCurrentPageContent().
+    void collectCurrentPageContent("the page move").then((pageContent) =>
+        postJson("pageList/pageMoved", {
+            movedPageId,
+            newIndex,
+            pageContent,
+        }),
+    );
+}
+
+// Tell C# the user picked a page, sending the CURRENT page's content along with the click so it
+// can save the page we are leaving in the same step. See collectCurrentPageContent().
+async function postPageClicked(
+    pageId: string,
+    detail: string,
+    onSuccess?: () => void,
+): Promise<void> {
+    const pageContent = await collectCurrentPageContent("the page change");
+    postJson(
+        "pageList/pageClicked",
+        { pageId, detail, pageContent },
+        onSuccess,
+    );
 }
 
 function ContinueAutomatedPageClicking(
@@ -1082,22 +1104,15 @@ function ContinueAutomatedPageClicking(
             "**  pageThumbnailList: user initiated Automated Page Clicking test function",
         );
     }
-    postJson(
-        "pageList/pageClicked",
-        {
-            pageId: pagesRemaining[0].key,
-            detail: pagesRemaining[0].caption,
-        },
-        () => {
-            const remaining = pagesRemaining.slice(1);
-            if (remaining.length > 0)
-                window.setTimeout(
-                    () => {
-                        ContinueAutomatedPageClicking(remaining, count + 1);
-                    },
-                    8 * 1000, // leave time for the browser to redraw
-                );
-            else window.alert("Done with automated page clicking");
-        },
-    );
+    postPageClicked(pagesRemaining[0].key, pagesRemaining[0].caption, () => {
+        const remaining = pagesRemaining.slice(1);
+        if (remaining.length > 0)
+            window.setTimeout(
+                () => {
+                    ContinueAutomatedPageClicking(remaining, count + 1);
+                },
+                8 * 1000, // leave time for the browser to redraw
+            );
+        else window.alert("Done with automated page clicking");
+    });
 }

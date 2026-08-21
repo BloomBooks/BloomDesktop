@@ -155,10 +155,13 @@ export function adjustCanvasElementChildrenIfSizeChanged(
         let newChildHeight = child.clientHeight;
         let reposition = true;
         const bubbleSpec = Bubble.getBubbleSpec(child);
-        needComicalUpdate =
-            needComicalUpdate ||
-            (!!bubbleSpec.tails && bubbleSpec.tails.length > 0) ||
-            bubbleSpec.spec !== "none";
+        // This used to end with `|| bubbleSpec.spec !== "none"`. BubbleSpec has no `spec` member —
+        // it has `style` — so that term was always true, and this has in fact always been set for
+        // every child. Until comicaljs 0.4.x a broken import in its .d.ts files typed BubbleSpec as
+        // `any`, which is why the compiler never objected. Keeping the behavior we have actually
+        // been shipping rather than quietly changing it to `style` while bumping a dependency;
+        // whether it SHOULD test style is a separate question. See Edit/SavingWithoutReloading.md.
+        needComicalUpdate = true;
         if (
             Array.from(child.children).some(
                 (c: HTMLElement) =>

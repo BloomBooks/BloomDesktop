@@ -11,20 +11,19 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 //    matches that against the book image list to fill the "Image to Edit" slot (BL-16682).
 //  - Saving after a commit. The current-page swaps only touched the LIVE DOM, so unless we
 //    save, a second commit in the same session would read its oldSrc from a saved page still
-//    showing the pre-edit image and match nothing. Because this overlay lives in the top
-//    window, we can save immediately: the page reload underneath leaves its controls alone.
+//    showing the pre-edit image and match nothing. We save immediately, via the page frame's
+//    savePageWithoutReloading, which leaves the page under the overlay alone (BL-13502).
 
 const post = vi.fn();
 const postJson = vi.fn();
-const postThatMightNavigate = vi.fn();
+const savePageWithoutReloading = vi.fn();
 const applyAiImageEditorReplacements = vi.fn();
 const getEditablePageBundleExports = vi.fn();
 
 vi.mock("../../utils/bloomApi", () => ({
     post: (...args: unknown[]) => post(...args),
     postJson: (...args: unknown[]) => postJson(...args),
-    postThatMightNavigate: (...args: unknown[]) =>
-        postThatMightNavigate(...args),
+    postThatMightNavigate: vi.fn(),
 }));
 
 vi.mock("../js/workspaceFrames", () => ({
@@ -33,7 +32,6 @@ vi.mock("../js/workspaceFrames", () => ({
 
 import { openAiImageEditor } from "./aiEditorOverlay";
 
-const kSaveEvent = "common/saveChangesAndRethinkPageEvent";
 const kEditorUrl = "http://localhost:8089/bloom/aiImageEditor/index.html";
 const kPageId = "page1";
 const kImageFile = "old.png";
@@ -145,7 +143,9 @@ const commitAndReplyFromHost = (
 beforeEach(() => {
     post.mockClear();
     postJson.mockClear();
-    postThatMightNavigate.mockClear();
+    savePageWithoutReloading.mockClear();
+    // It answers whether C# actually saved; the overlay chains onto that to complain if not.
+    savePageWithoutReloading.mockResolvedValue(true);
     applyAiImageEditorReplacements.mockClear();
     applyAiImageEditorReplacements.mockReturnValue({
         applied: 1,
@@ -153,6 +153,7 @@ beforeEach(() => {
     });
     getEditablePageBundleExports.mockReturnValue({
         applyAiImageEditorReplacements,
+        savePageWithoutReloading,
     });
     delete (window as Window & { __bloomAiImageEditorCleanup?: () => void })
         .__bloomAiImageEditorCleanup;
@@ -227,8 +228,52 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         // assertions below aren't just watching a no-op.
         expect(applyAiImageEditorReplacements).toHaveBeenCalledTimes(1);
         expect(document.getElementById("ai-editor-overlay")).toBeNull();
-        expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
-        expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
+        expect(savePageWithoutReloading).toHaveBeenCalledTimes(1);
+    });
+
+    test("a save Bloom refuses is complained about, not swallowed", async () => {
+        // Bloom can decline (the user may have started changing pages). The book on disk then
+        // still has the old image, which is exactly what this save exists to prevent, so the
+        // least we can do is say so rather than let it look like it worked.
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+        savePageWithoutReloading.mockResolvedValue(false);
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        commitAndReplyFromHost(postFromEditor, true);
+        await vi.waitFor(() => expect(error).toHaveBeenCalled());
+
+        expect(error.mock.calls[0][0]).toContain("was not saved");
+        error.mockRestore();
+    });
+
+    test("a save that errors is complained about too", async () => {
+        // Not just the refusal: the request itself can fail, and the consequence for the user is
+        // the same -- the book still has the old image.
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+        savePageWithoutReloading.mockRejectedValue(new Error("network gone"));
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        commitAndReplyFromHost(postFromEditor, true);
+        await vi.waitFor(() => expect(error).toHaveBeenCalled());
+
+        expect(error.mock.calls[0][0]).toContain("saving the page failed");
+        error.mockRestore();
+    });
+
+    test("a page frame that has gone away is complained about too", () => {
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+        const { postFromEditor } = openAgainstABookWithOneImage();
+        // The commit applies through the exports we already handed out, then the frame goes.
+        applyAiImageEditorReplacements.mockImplementation(() => {
+            getEditablePageBundleExports.mockReturnValue(undefined);
+            return { applied: 1, failures: [] };
+        });
+
+        commitAndReplyFromHost(postFromEditor, true);
+
+        expect(error).toHaveBeenCalled();
+        expect(error.mock.calls[0][0]).toContain("not available to save");
+        error.mockRestore();
     });
 
     test("a partial failure keeps the overlay up AND still saves what landed", () => {
@@ -241,14 +286,13 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         // it, so the swap that did land is persisted immediately rather than held hostage
         // until the user closes the overlay.
         expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
-        expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
-        expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
+        expect(savePageWithoutReloading).toHaveBeenCalledTimes(1);
 
         // The ✕ still works after that save, because these controls belong to the top
         // window, not to the page frame the save reloaded.
         closeButton.click();
         expect(document.getElementById("ai-editor-overlay")).toBeNull();
-        expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
+        expect(savePageWithoutReloading).toHaveBeenCalledTimes(1);
     });
 
     test("a commit that changed nothing on this page never saves", () => {
@@ -262,9 +306,9 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         // live-DOM change here to persist.
         commitAndReplyFromHost(postFromEditor, true);
 
-        expect(postThatMightNavigate).not.toHaveBeenCalled();
+        expect(savePageWithoutReloading).not.toHaveBeenCalled();
         closeButton.click();
-        expect(postThatMightNavigate).not.toHaveBeenCalled();
+        expect(savePageWithoutReloading).not.toHaveBeenCalled();
     });
 
     test("a failed swap's reason reaches the editor, not just the count", () => {
@@ -291,7 +335,7 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         expect(ack.error).toContain("Only 1 of 2");
         expect(ack.error).toContain("kaboom");
         // What did land still gets saved.
-        expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
+        expect(savePageWithoutReloading).toHaveBeenCalledTimes(1);
         postMessageToEditor.mockRestore();
     });
 
@@ -342,7 +386,7 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         expect(ack.ok).toBe(true);
         expect(ack.error).toBeUndefined();
         // Nothing landed on this page, so nothing to save.
-        expect(postThatMightNavigate).not.toHaveBeenCalled();
+        expect(savePageWithoutReloading).not.toHaveBeenCalled();
         expect(applyAiImageEditorReplacements).not.toHaveBeenCalled();
         postMessageToEditor.mockRestore();
     });
@@ -368,7 +412,7 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         expect(ack.error).toContain("not available");
         expect(ack.error).toContain("other pages were made");
         // Nothing landed, so nothing to save.
-        expect(postThatMightNavigate).not.toHaveBeenCalled();
+        expect(savePageWithoutReloading).not.toHaveBeenCalled();
         postMessageToEditor.mockRestore();
     });
 });
