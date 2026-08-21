@@ -171,6 +171,11 @@ namespace Bloom.web.controllers
                             // without actually loading all the files. We need the title for the Performance Measurement and later
                             // we'll use the BookInfo object to get the fully updated book.
                             BookInfo newBookInfo = null;
+                            // Like other long-running operations (Edit-tab saves, uploads), lock the
+                            // workspace tabs while we load the newly selected book. Bringing a heavy
+                            // book up to date can take several seconds, and clicking Edit during that
+                            // window could show the previous book (BL-15971).
+                            _collectionTabView.WorkspaceView?.SetTabsEnabled(false);
                             try
                             {
                                 newBookInfo = GetBookInfoFromPost(request);
@@ -231,6 +236,10 @@ namespace Bloom.web.controllers
                                 }
                                 throw;
                             }
+                            finally
+                            {
+                                _collectionTabView.WorkspaceView?.SetTabsEnabled(true);
+                            }
 
                             request.PostSucceeded();
                             break;
@@ -243,18 +252,28 @@ namespace Bloom.web.controllers
                 kApiUrlPart + "selectAndEditBook",
                 request =>
                 {
-                    var book = GetBookObjectFromPost(request);
-                    if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
+                    // Lock the workspace tabs while we load the book, as in "selected-book"
+                    // above (BL-15971).
+                    _collectionTabView.WorkspaceView?.SetTabsEnabled(false);
+                    try
                     {
-                        _collectionModel.SelectBook(book);
+                        var book = GetBookObjectFromPost(request);
+                        if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
+                        {
+                            _collectionModel.SelectBook(book);
+                        }
+                        if (
+                            book.IsSaveable
+                            && GetCollectionOfRequest(request).Type
+                                == BookCollection.CollectionType.TheOneEditableCollection
+                        )
+                        {
+                            _editBookCommand.Raise(_bookSelection.CurrentSelection);
+                        }
                     }
-                    if (
-                        book.IsSaveable
-                        && GetCollectionOfRequest(request).Type
-                            == BookCollection.CollectionType.TheOneEditableCollection
-                    )
+                    finally
                     {
-                        _editBookCommand.Raise(_bookSelection.CurrentSelection);
+                        _collectionTabView.WorkspaceView?.SetTabsEnabled(true);
                     }
 
                     request.PostSucceeded();

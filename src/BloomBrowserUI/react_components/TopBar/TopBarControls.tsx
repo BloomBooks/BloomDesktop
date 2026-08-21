@@ -3,7 +3,7 @@ import * as React from "react";
 import { CollectionTopBarControls } from "./CollectionTopBarControls/CollectionTopBarControls";
 import { WorkspaceTopRightControls } from "./workspaceTopRightControls/WorkspaceTopRightControls";
 import { EditTopBarControls } from "../../bookEdit/topbar/editTopBarControls";
-import { WorkspaceTabId } from "./TopBar";
+import { WorkspaceTabId } from "./workspaceTabInfo";
 
 export const TopBarControls: React.FunctionComponent<{
     activeTab: WorkspaceTabId;
