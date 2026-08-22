@@ -1777,7 +1777,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       </trans-unit>
       <trans-unit id="EditTab.FontMissing" approved="yes">
         <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
-        <target xml:lang="sw" state="final">Fonti iliyochaguliwa kwa sasa ni '', lakini haijawekwa kwenye kompyuta hii.Fonti nyingine itatumiwa.</target>
+        <target xml:lang="sw" state="final">Fonti iliyochaguliwa kwa sasa ni '{0}', lakini haijawekwa kwenye kompyuta hii.Fonti nyingine itatumiwa.</target>
         <note>ID: EditTab.FontMissing</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true" approved="yes">
@@ -5422,7 +5422,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       </trans-unit>
       <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice" approved="yes">
         <source xml:lang="en">Sorry, "{0}" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.</source>
-        <target xml:lang="sw" state="final">Samahani, "" haikufaulu kuwekwa. Wakati mwingine hii husababishwa na matatizo yasiyo ya kudumu yanayotokana na vifaa tunavyotumia. Ni muhimu kujaribu tena kwa muda wa saa moja au mbili. Iwapo utapata tatizo hili mara kwa mara tafadhali piga ripoti kwetu.</target>
+        <target xml:lang="sw" state="final">Samahani, "{0}" haikufaulu kuwekwa. Wakati mwingine hii husababishwa na matatizo yasiyo ya kudumu yanayotokana na vifaa tunavyotumia. Ni muhimu kujaribu tena kwa muda wa saa moja au mbili. Iwapo utapata tatizo hili mara kwa mara tafadhali piga ripoti kwetu.</target>
         <note>ID: PublishTab.Upload.FinalUploadFailureNotice</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem">
