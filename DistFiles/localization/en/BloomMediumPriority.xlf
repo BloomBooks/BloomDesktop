@@ -30,7 +30,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile">
         <source xml:lang="en">Choose Sound File</source>
-        <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
+        <note>ID: EditTab.Toolbox.DragActivity.ChooseSoundFile</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Correct">
         <source xml:lang="en">Correct</source>
@@ -184,11 +184,11 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectSound">
         <source xml:lang="en">Correct Sound</source>
-        <note>ID: EditTab.Toolbox.DragActivity.WhenCorrect</note>
+        <note>ID: EditTab.Toolbox.DragActivity.CorrectSound</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongSound">
         <source xml:lang="en">Wrong Sound</source>
-        <note>ID: EditTab.Toolbox.DragActivity.WhenWrong</note>
+        <note>ID: EditTab.Toolbox.DragActivity.WrongSound</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Word">
         <source xml:lang="en">Word</source>
@@ -282,7 +282,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.OrderWordsInstructions">
         <source>Drag the words where they go</source>
-        <note>ID: EditTab.Toolbox.Games.Placeholder.OrderInstructions</note>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.OrderWordsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions">
         <source>Put instructions here</source>
@@ -404,7 +404,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition" sil:dynamic="true">
         <source xml:lang="en">Bloom will hide these when you publish.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition</note>
         <note>This will be appended to the end of EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip. "these" refers to the "|" characters that mark audio segments, described in EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip" sil:dynamic="true">
@@ -414,7 +414,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip" sil:dynamic="true">
         <source xml:lang="en">If you want to change this mode, first use the "Clear" button to remove your recording.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip</note>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip" sil:dynamic="true">
         <source xml:lang="en">Record one sentence at a time. You can break up sentences using the `|` character.</source>
@@ -482,7 +482,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.DragInstructions" sil:dynamic="true">
         <source xml:lang="en">Drag any of these onto a canvas:</source>
-        <note>ID: EditTab.Toolbox.CanvasTool.DragInstructions2</note>
+        <note>ID: EditTab.Toolbox.CanvasTool.DragInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit" sil:dynamic="true">
         <source xml:lang="en">Image Fit</source>
@@ -510,7 +510,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.NavButtons" sil:dynamic="true">
         <source xml:lang="en">A button that jumps you to a page or book in your app</source>
-        <note>ID: EditTab.Toolbox.OverlayTool.NavButtons</note>
+        <note>ID: EditTab.Toolbox.CanvasTool.NavButtons</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.Navigation" sil:dynamic="true">
         <source xml:lang="en">Navigation</source>
@@ -524,7 +524,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true">
         <source xml:lang="en">Set Destination</source>
-        <note>ID: EditTab.Toolbox.OverlayTool.SetDest</note>
+        <note>ID: EditTab.Toolbox.CanvasTool.SetDest</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true">
         <source xml:lang="en">drag</source>
@@ -610,7 +610,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Motion.Possible">
         <source xml:lang="en">Select this if you want to show motion when the book is read in landscape mode.</source>
-        <note>ID: PublishTab.Feature.Motion.None</note>
+        <note>ID: PublishTab.Feature.Motion.Possible</note>
         <note>This is a tooltip.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Music">
@@ -934,7 +934,7 @@
       </trans-unit>
       <trans-unit id="Common.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background Color</source>
-        <note>Common.CoverBackgroundColor</note>
+        <note>Common.BackgroundColor</note>
       </trans-unit>
       <trans-unit id="BookSettings.WhatToShowOnCover" sil:dynamic="true">
         <source xml:lang="en">Front Cover</source>
@@ -977,7 +977,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers.Left" sil:dynamic="true">
         <source xml:lang="en">Left</source>
-        <note>BookSettings.PageNumbers.TopLeft</note>
+        <note>BookSettings.PageNumbers.Left</note>
         <note>Indicates page number should be positioned on the left side of the page</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers.Center" sil:dynamic="true">
