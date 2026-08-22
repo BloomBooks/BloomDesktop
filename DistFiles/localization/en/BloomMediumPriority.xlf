@@ -145,11 +145,6 @@
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>
         <note>Label of a button that puts the Bloom Game tool into its the mode for playing (testing) the game.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.None">
-        <source xml:lang="en">None</source>
-        <note>ID: EditTab.Toolbox.DragActivity.None</note>
-        <note>Used as the label of a button that is otherwise the name of a sound file, indicating that no sound has been chosen.</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TargetsSameSize">
         <source xml:lang="en">Keep all targets the same size so students can't use size as a clue.</source>
         <note>ID: EditTab.Toolbox.DragActivity.TargetsSameSize</note>
@@ -331,11 +326,6 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled</note>
       </trans-unit>
       <!-- Talking Book Advanced -->
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
-        <source xml:lang="en">eSpeak failed.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
-        <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true">
         <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
@@ -550,10 +540,6 @@
         <source xml:lang="en">move</source>
         <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Move</note>
         <note>Used in the Key hint at the bottom of the Canvas Tool for "Ctrl + drag = move".</note>
-      </trans-unit>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
-        <source xml:lang="en">Special Sentence-Ending Punctuation</source>
-        <note>ID: ReaderSetup.SentencePunctuation.Header</note>
       </trans-unit>
       <trans-unit id="PublishTab.Language.Enabled" sil:dynamic="true">
         <source xml:lang="en">Select this if you want readers to be able to choose to read the book in this language.</source>
@@ -1032,10 +1018,6 @@
         <source xml:lang="en">Delete {0}</source>
         <note>BookSettings.DeleteCustomBookStyles</note>
         <note>{0} is a placeholder for a filename and should not be translated</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.CustomMigrateCanDelete" sil:dynamic="true">
-        <source xml:lang="en"></source>
-        <note>BookSettings.CustomMigrateCanDelete</note>
       </trans-unit>
       <trans-unit id="BookSettings.UsingLegacyThemeWithIncompatibleCss" sil:dynamic="true">
         <source xml:lang="en">The {0} stylesheet of this book is incompatible with modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click [here] for more information.</source>
