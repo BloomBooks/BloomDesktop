@@ -897,7 +897,7 @@
       <trans-unit id="CollectionTab.UnableToCheckForUpdate">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
         <note>ID: CollectionTab.UnableToCheckForUpdate</note>
-        <note>Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc.</note>
+        <note>Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problem with our server, etc.</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UpToDate">
         <source xml:lang="en">Your Bloom is up to date.</source>
@@ -968,7 +968,7 @@
       <trans-unit id="Common.BloomSubscriptionFeature">
         <source xml:lang="en">Bloom Subscription Feature</source>
         <note>ID: Common.BloomSubscriptionFeature</note>
-        <note>This tooltip shows over the Bloom Subcription icon.</note>
+        <note>This tooltip shows over the Bloom Subscription icon.</note>
       </trans-unit>
       <trans-unit id="Common.Cancel">
         <source xml:lang="en">Cancel</source>
@@ -980,7 +980,7 @@
         <note>This is identical to Common.Cancel. The duplication was introduced by a mistake.</note>
         <note>This is shown at the bottom of a dialog box. It is paired with an action button like "OK" and it means "do not do the action".</note>
         <!-- The ampersand is used to indicate a mnemonic in C# WinForms. Ugh, I'm not happy that we expose it to the translators -->
-        <note>If you include "&amp;" (which represents an ampersand) in your translation, it will not be visible in Bloom. Instead, the letter following it will be a keyboard shortcut (e.g., &amp;Cancel means that alt-C can be used to activate the Cancel button.) The letter marked with ampersand is usually the first one but does not have to be. It is important not to mark the same letter in two different controls in the same dialog. If you are not sure, just don't include the "amp;"; the only consequence is that this control cannot be activated using an alt-key shortcut.</note>
+        <note>If you include "&amp;" (which represents an ampersand) in your translation, it will not be visible in Bloom. Instead, the letter following it will be a keyboard shortcut (e.g., &amp;Cancel means that alt-C can be used to activate the Cancel button.) The letter marked with ampersand is usually the first one but does not have to be. It is important not to mark the same letter in two different controls in the same dialog. If you are not sure, just don't include the "&amp;"; the only consequence is that this control cannot be activated using an alt-key shortcut.</note>
         <note>ID: Common.CancelButton</note>
       </trans-unit>
       <trans-unit id="Common.Close">
@@ -1557,7 +1557,7 @@
       <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true">
         <source xml:lang="en">Your subscription includes this feature.</source>
         <note>ID: EditTab.SubscriptionEnabled</note>
-        <note>Appears in a tooltip on the Subscription button when the user DOES have a subcription (cf EditTab.RequiresSubscription).</note>
+        <note>Appears in a tooltip on the Subscription button when the user DOES have a subscription (cf EditTab.RequiresSubscription).</note>
         <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="EditTab.SubscriptionSettingsButton" sil:dynamic="true">
@@ -1814,7 +1814,7 @@
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
         <source xml:lang="en">Book title in {lang}</source>
         <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>
-        <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
         <source xml:lang="en">Click to Edit Copyright &amp; License</source>
@@ -1823,7 +1823,7 @@
       <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true">
         <source xml:lang="en">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</source>
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
-        <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.EditOriginalTitleCaption" sil:dynamic="true">
         <source xml:lang="en">Edit Original Title</source>
@@ -1872,14 +1872,17 @@
       <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true">
         <source xml:lang="en">Name of Translator, in {lang}</source>
         <note>ID: EditTab.FrontMatter.NameofTranslatorPrompt</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true">
         <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence">
         <source xml:lang="en">This book is an adaptation of the original, {0}.</source>
@@ -1925,6 +1928,7 @@
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
       <trans-unit id="EditTab.HowToUseHyperlink">
         <source xml:lang="en">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</source>
@@ -2054,7 +2058,7 @@
       <trans-unit id="EditTab.NewBookName">
         <source xml:lang="en">Book</source>
         <note>ID: EditTab.NewBookName</note>
-        <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
+        <note>Default file and folder name when you make a new book, but haven't given it a title yet.</note>
       </trans-unit>
       <trans-unit id="EditTab.NoImageFoundOnClipboard">
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
@@ -2067,7 +2071,7 @@
       <trans-unit id="EditTab.NoOtherLayouts">
         <source xml:lang="en">There are no other options for this template.</source>
         <note>ID: EditTab.NoOtherLayouts</note>
-        <note>Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice</note>
+        <note>Shown in the size/orientation chooser dropdown of the edit tab, if there was only a single choice</note>
       </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true">
         <source xml:lang="en">This box has more text than will fit</source>
@@ -2117,7 +2121,7 @@
       <trans-unit id="EditTab.Snap.MatchImageAspect" sil:dynamic="true">
         <source xml:lang="en">Fit image</source>
         <note>ID: EditTab.Snap.MatchImageAspect</note>
-        <note>Explains why a splitter has snapped to a particular position. This position matches the proportion of the image so that it fits snuggly in the box.</note>
+        <note>Explains why a splitter has snapped to a particular position. This position matches the proportion of the image so that it fits snugly in the box.</note>
       </trans-unit>
       <trans-unit id="EditTab.Snap.MatchPreviousPage" sil:dynamic="true">
         <source xml:lang="en">Matches previous page</source>
@@ -2953,7 +2957,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitError">
         <source xml:lang="en">Something went wrong while splitting the recording.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitError</note>
-        <note>This text appears if an error occurs while perfoming automatic splitting of audio (an audio file corresponding to an entire text box will be split into multiple sections, one section per sentence).</note>
+        <note>This text appears if an error occurs while performing automatic splitting of audio (an audio file corresponding to an entire text box will be split into multiple sections, one section per sentence).</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
         <source xml:lang="en">Split</source>
@@ -3906,7 +3910,7 @@
       <trans-unit id="PublishTab.Android.Usb.Progress.Connected" sil:dynamic="true">
         <source xml:lang="en">Connected to {0} via USB...</source>
         <note>ID: PublishTab.Android.Usb.Progress.Connected</note>
-        <note>{0} is a the name of the device Bloom connected to</note>
+        <note>{0} is the name of the device Bloom connected to</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceOutOfMemory" sil:dynamic="true">
         <source xml:lang="en">The device reported that it does not have enough space for this book. The book is {0} MB.</source>
@@ -4118,7 +4122,7 @@
       <trans-unit id="PublishTab.Epub.Accessibility">
         <source xml:lang="en">Accessibility</source>
         <note>ID: PublishTab.Epub.Accessibility</note>
-        <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
+        <note>Here, the English 'Accessibility' is a common way of referring to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes both the blind and people who might need text to be larger, or who are colorblind, etc.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.BannerDescription">
         <source xml:lang="en">Make an electronic book that can be read in EPUB readers on all devices.</source>
@@ -4240,7 +4244,7 @@
       <trans-unit id="PublishTab.OnePagePerPaperRadio">
         <source xml:lang="en">Simple</source>
         <note>ID: PublishTab.OnePagePerPaperRadio</note>
-        <note>Instead of making a booklet, just make normal pages. (This is no longer a radio button, but keeping the name for backwards compatiblity with translations.)</note>
+        <note>Instead of making a booklet, just make normal pages. (This is no longer a radio button, but keeping the name for backwards compatibility with translations.)</note>
       </trans-unit>
       <trans-unit id="PublishTab.OnePagePerPaper-description" sil:dynamic="true">
         <source xml:lang="en">A simple PDF instead of a booklet.</source>
@@ -4741,7 +4745,7 @@
       <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip">
         <source xml:lang="en">This feature requires an Enterprise subscription and a destination shelf selected in Collection Settings.</source>
         <note>ID: PublishTab.Upload.EnterpriseShelfRequiredTooltip</note>
-        <note>Leaving this one as "enterprise" instead of "Subscription" becuase it really does require the Enterprise Tier.</note>
+        <note>Leaving this one as "enterprise" instead of "Subscription" because it really does require the Enterprise Tier.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ErrorUploading">
         <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
@@ -5027,7 +5031,7 @@ Do you want to go ahead?</note>
         </source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBookCancel.Commentary</note>
         <note>This is explanatory commentary on a radio button. Don't translate the email in brackets ([librarian@bloomlibrary.org]). It will be replaced by a link to send an email.</note>
-        <note>Leaving this one as "enterprise" instead of "Subscription" becuase it really does require the Enterprise Tier.</note>
+        <note>Leaving this one as "enterprise" instead of "Subscription" because it really does require the Enterprise Tier.</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.SameBook">
         <source xml:lang="en">Is this an update of your existing book?</source>
@@ -5083,7 +5087,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.BookMaxWords2" sil:dynamic="true">
         <source xml:lang="en">Per **Book**</source>
         <note>ID: ReaderSetup.BookMaxWords2</note>
-        <note>follows headings "maximum" and "words" to convey "maximum words per book. Surround text that should be bold in double asterisks.</note>
+        <note>follows headings "maximum" and "words" to convey "maximum words per book". Surround text that should be bold in double asterisks.</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
@@ -5153,7 +5157,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.LevelLabelMax" sil:dynamic="true">
         <source xml:lang="en">Level {0} Maximums</source>
         <note>ID: ReaderSetup.LevelLabelMax</note>
-        <note xml:lang="en">{0} is a number. A heading for several items each of which specfies a maximum for a different quantity for a reader of the level specified by the number.</note>
+        <note xml:lang="en">{0} is a number. A heading for several items each of which specifies a maximum for a different quantity for a reader of the level specified by the number.</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.Levels" sil:dynamic="true">
         <source xml:lang="en">Reader Levels</source>
@@ -5172,7 +5176,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Average per **Sentence** in **Book**</source>
         <note>ID: ReaderSetup.MaxAverageWords</note>
         <note>Prior to 4.9, was "Maximum Average Length of Sentences in Book"</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". Surround text that should be bold in double asterisks.</note>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average sentence length in book". Surround text that should be bold in double asterisks.</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
         <source xml:lang="en">Average per **Page**</source>
@@ -5461,7 +5465,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReportProblemDialog.FatalTitle">
         <source xml:lang="en">Bloom encountered an error and needs to quit</source>
         <note>ID: ReportProblemDialog.FatalTitle</note>
-        <note>The title of the dialog after a Fatal error will cause Bloom to close.</note>
+        <note>The title of the dialog after a Fatal error that will cause Bloom to close.</note>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.FirstTime">
         <source xml:lang="en">First Time</source>
@@ -5573,7 +5577,7 @@ Do you want to go ahead?</note>
       <trans-unit id="Common.BloomSubscription">
         <source xml:lang="en">Bloom Subscription</source>
         <note>ID: Common.BloomSubscription</note>
-        <note>This is paid subscription for advanced features.</note>
+        <note>This is a paid subscription for advanced features.</note>
       </trans-unit>
       <!-- Most subscription labels are in the BloomLowPriority. What we want here
 is mostly status, which shows on the Collection Tab -->
@@ -5585,12 +5589,12 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="Subscription.RequiredTierForFeatureSentence">
         <source xml:lang="en">This feature requires a Bloom subscription tier of at least "{0}".</source>
         <note>ID: Subscription.RequiredTierForFeatureSentence</note>
-        <note>{0} is will be filled in with name of the tier. e.g "Pro" or "Enterprise"</note>
+        <note>{0} will be filled in with the name of the tier, e.g. "Pro" or "Enterprise"</note>
       </trans-unit>
       <trans-unit id="Subscription.FeatureIsIncludedSentence">
         <source xml:lang="en">This feature is included in your {0} subscription.</source>
         <note>ID: Subscription.FeatureIsIncludedSentence</note>
-        <note>{0} is will be filled in with name of the tier. e.g "Pro" or "Enterprise"</note>
+        <note>{0} will be filled in with the name of the tier, e.g. "Pro" or "Enterprise"</note>
       </trans-unit>
       <trans-unit id="Subscription.Pro.EmailMismatch">
         <source xml:lang="en">Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}.</source>
@@ -5657,7 +5661,7 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TeamCollection.TeamCollections">
         <source xml:lang="en">Team Collections</source>
         <note>ID: TeamCollection.TeamCollections</note>
-        <note>Should be translated similarly as TeamCollection.TeamCollection, but plural instead of singular</note>
+        <note>Should be translated similarly to TeamCollection.TeamCollection, but plural instead of singular</note>
       </trans-unit>
       <trans-unit id="TeamCollection.Available" sil:dynamic="true">
         <source xml:lang="en">This book is available for editing</source>
