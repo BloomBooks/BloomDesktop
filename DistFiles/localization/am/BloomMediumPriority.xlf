@@ -197,11 +197,6 @@
         <target xml:lang="am" state="needs-translation">Play</target>
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.None">
-        <source xml:lang="en">None</source>
-        <target xml:lang="am" state="needs-translation">None</target>
-        <note>ID: EditTab.Toolbox.DragActivity.None</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TargetsSameSize">
         <source xml:lang="en">Keep all targets the same size so students can't use size as a clue.</source>
         <target xml:lang="am" state="needs-translation">Keep all targets the same size so students can't use size as a clue.</target>
@@ -463,11 +458,6 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.WithinLevel</note>
       </trans-unit>
       <!-- Talking Book Advanced -->
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
-        <source xml:lang="en">eSpeak failed.</source>
-        <target xml:lang="am" state="needs-translation">eSpeak failed.</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true">
         <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
         <target xml:lang="am" state="needs-translation">Please split or clear the existing recording in this text box before changing modes.</target>
@@ -703,11 +693,6 @@
         <source xml:lang="en">move</source>
         <target xml:lang="am" state="needs-translation">move</target>
         <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Move</note>
-      </trans-unit>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
-        <source xml:lang="en">Special Sentence-Ending Punctuation</source>
-        <target xml:lang="am" state="needs-translation">Special Sentence-Ending Punctuation</target>
-        <note>ID: ReaderSetup.SentencePunctuation.Header</note>
       </trans-unit>
       <trans-unit id="PublishTab.Language.Enabled" sil:dynamic="true">
         <source xml:lang="en">Select this if you want readers to be able to choose to read the book in this language.</source>
@@ -1168,10 +1153,6 @@
         <source xml:lang="en">Delete {0}</source>
         <target xml:lang="am" state="needs-translation">Delete {0}</target>
         <note>BookSettings.DeleteCustomBookStyles</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.CustomMigrateCanDelete" sil:dynamic="true">
-        <source xml:lang="en"/>
-        <note>BookSettings.CustomMigrateCanDelete</note>
       </trans-unit>
       <trans-unit id="BookSettings.UsingLegacyThemeWithIncompatibleCss" sil:dynamic="true">
         <source xml:lang="en">The {0} stylesheet of this book is incompatible with modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click [here] for more information.</source>
