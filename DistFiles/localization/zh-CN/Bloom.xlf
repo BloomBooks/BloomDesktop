@@ -2116,7 +2116,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Name of Translator, in {lang}</source>
-        <target xml:lang="zh-CN" state="final">译者名,{语言}语</target>
+        <target xml:lang="zh-CN" state="final">译者名,{lang}语</target>
         <note>ID: EditTab.FrontMatter.NameofTranslatorPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
@@ -2176,7 +2176,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
-        <target xml:lang="zh-CN" state="final">向翻译版本致谢,{语言}语</target>
+        <target xml:lang="zh-CN" state="final">向翻译版本致谢,{lang}语</target>
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.HyperlinkPasteFailure">
