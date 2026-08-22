@@ -5647,6 +5647,9 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <!--
 // Don't want these actually translated until things stabilize. Will need re-ordering.
+// NOTE: before uncommenting this section, verify the strings against the current code:
+// each string must match the English the code actually uses, any strings the feature now
+// uses must be added if missing here, and any entries the code no longer uses must be removed.
       <trans-unit id="TeamCollection.DropboxSettingsAcknowledgement" sil:dynamic="true">
         <source xml:lang="en">I will ensure that all team members have properly configured [Critical Dropbox Settings](https://docs.bloomlibrary.org/critical-dropbox-settings/).</source>
         <note>ID: TeamCollection.DropboxSettingsAcknowledgement</note>
@@ -5712,8 +5715,8 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TeamCollection.ConflictingEdit</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CheckoutRequired" sil:dynamic="true">
-        <source xml:lang="en">CheckoutRequired</source>
-        <note>ID: TeamCollection.ConflictingEdit</note>
+        <source xml:lang="en">Checkout Required</source>
+        <note>ID: TeamCollection.CheckoutRequired</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CreateTeamCollection" sil:dynamic="true">
         <source xml:lang="en">Create a Team Collection</source>
@@ -5792,7 +5795,7 @@ is mostly status, which shows on the Collection Tab -->
         <note>{0} is the path to the book's folder</note>
         <note>{1} is the error message from the system</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.ErrorCreating>
+      <trans-unit id="TeamCollection.ErrorCreating">
         <source xml:lang="en">Error creating team collection {0}: {1}</source>
         <note>ID: TeamCollection.ErrorCreating</note>
         <note>{0} is the path to the collection folder</note>
@@ -5809,7 +5812,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TeamCollection.CheckoutRequiredExplanation" sil:dynamic="true">
         <source xml:lang="en">Please check out this book from the Team Collection before publishing it.</source>
-        <note>ID: TeamCollection.ConflictingEdit</note>
+        <note>ID: TeamCollection.CheckoutRequiredExplanation</note>
       </trans-unit>
 -->
       <trans-unit id="TemplateBooks.BookName.Activity" sil:dynamic="true">
