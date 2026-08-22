@@ -4525,7 +4525,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.LookingForExisting" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Looking for an existing "{0}"...</source>
-        <target xml:lang="prs" state="final">در جستجوی یک "(0)" موجود میباشیم...</target>
+        <target xml:lang="prs" state="final">در جستجوی یک "{0}" موجود میباشیم...</target>
         <note>ID: PublishTab.Android.Usb.Progress.LookingForExisting</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.MoreThanOne" sil:dynamic="true">
