@@ -2121,12 +2121,12 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
-        <target xml:lang="te" state="final">ఒరిజినల్ (లేదా shell) {భాషను} లో రసీదులు</target>
+        <target xml:lang="te" state="final">ఒరిజినల్ (లేదా shell) {lang} లో రసీదులు</target>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
-        <target xml:lang="te" state="final">{భాషను}, మొదలైనవి రచయితలు, చిత్రకారులు, సంపాదకులు, చేసిన రచనలు</target>
+        <target xml:lang="te" state="final">{lang}, మొదలైనవి రచయితలు, చిత్రకారులు, సంపాదకులు, చేసిన రచనలు</target>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence">
@@ -6195,7 +6195,7 @@
       </trans-unit>
       <trans-unit id="RegisterDialog.HowAreYouUsing" approved="yes">
         <source xml:lang="en">How are you using {0}?</source>
-        <target xml:lang="te" state="final">మీరు ఎలా ఉపయోగిస్తున్నారు(0)?</target>
+        <target xml:lang="te" state="final">మీరు ఎలా ఉపయోగిస్తున్నారు{0}?</target>
         <note>ID: RegisterDialog.HowAreYouUsing</note>
       </trans-unit>
       <trans-unit id="RegisterDialog.IAmStuckLabel" approved="yes">
