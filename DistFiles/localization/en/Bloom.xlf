@@ -1792,7 +1792,7 @@
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
         <source xml:lang="en">Book title in {lang}</source>
         <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>
-        <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
         <source xml:lang="en">Click to Edit Copyright &amp; License</source>
@@ -1801,7 +1801,7 @@
       <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true">
         <source xml:lang="en">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</source>
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
-        <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.EditOriginalTitleCaption" sil:dynamic="true">
         <source xml:lang="en">Edit Original Title</source>
@@ -1850,14 +1850,17 @@
       <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true">
         <source xml:lang="en">Name of Translator, in {lang}</source>
         <note>ID: EditTab.FrontMatter.NameofTranslatorPrompt</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true">
         <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence">
         <source xml:lang="en">This book is an adaptation of the original, {0}.</source>
@@ -1903,6 +1906,7 @@
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
       <trans-unit id="EditTab.HowToUseHyperlink">
         <source xml:lang="en">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</source>
