@@ -137,7 +137,7 @@
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2</note>
       </trans-unit>
       <!-- This string is not currently used. It was added (commit 472b7f6f6, July 2024) as a
-           tooltip for the disabled "part of the right answer" button, but three days later
+           tooltip for the disabled "part of the right answer" button, but days later
            commit 3b195aad0 changed that control to be hidden when not relevant instead of
            disabled, so the string was commented out. Kept in case a disabled state returns;
            if uncommenting, verify the wording against the code first.
