@@ -5638,7 +5638,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.TimeProblem" approved="yes">
         <source xml:lang="en">There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</source>
-        <target xml:lang="ha" state="final">An sami wata matsala a lokacin ɗora littafinka.Wataƙila don an yi saitin na'urarka ta yi amfani da lokacin wani yankin da ba daidai ba ko saitn agogon na'urarka ba ya da kyau.Duba http://www.di-mgt.com.au/wclo/help/wclo_setsysclock.html don ganin yadda za ka saita wannan.</target>
+        <target xml:lang="ha" state="final">An sami wata matsala a lokacin ɗora littafinka.Wataƙila don an yi saitin na'urarka ta yi amfani da lokacin wani yankin da ba daidai ba ko saitn agogon na'urarka ba ya da kyau.Duba http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html don ganin yadda za ka saita wannan.</target>
         <note>ID: PublishTab.Upload.TimeProblem</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadButton" approved="yes">
