@@ -2051,7 +2051,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book title in {lang}</source>
-        <target xml:lang="am" state="final">የመጽሐፍ ርዕስ በ{ቋንቋ}</target>
+        <target xml:lang="am" state="final">የመጽሐፍ ርዕስ በ{lang}</target>
         <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
