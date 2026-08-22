@@ -5638,7 +5638,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.TimeProblem" approved="yes">
         <source xml:lang="en">There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</source>
-        <target xml:lang="zh-CN" state="final">上传书时出现错误。可能因为您的电脑的时区设定错误，或是系统时间出错，修复方法请查看http:www.di-mgt.com.au/wclock/help/wclo_setsysclock.html</target>
+        <target xml:lang="zh-CN" state="final">上传书时出现错误。可能因为您的电脑的时区设定错误，或是系统时间出错，修复方法请查看http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html</target>
         <note>ID: PublishTab.Upload.TimeProblem</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadButton" approved="yes">
