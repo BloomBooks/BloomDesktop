@@ -1921,7 +1921,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
-        <target xml:lang="te" state="final">శైలి '{0}' మరియు భాష '{1}'. \ N ప్రస్తుత పరిమాణం {2} pt మోస్తున్న అన్ని బాక్సులను కోసం టెక్స్ట్ పరిమాణం మార్పులు.</target>
+        <target xml:lang="te" state="final">శైలి '{0}' మరియు భాష '{1}'.\nప్రస్తుత పరిమాణం {2}pt మోస్తున్న అన్ని బాక్సులను కోసం టెక్స్ట్ పరిమాణం మార్పులు.</target>
         <note>ID: EditTab.FormatDialog.FontSizeTip</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true" approved="yes">
