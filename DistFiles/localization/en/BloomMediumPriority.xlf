@@ -35,7 +35,7 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.Correct">
         <source xml:lang="en">Correct</source>
         <note>ID: EditTab.Toolbox.DragActivity.Correct</note>
-        <note>Label of a button that puts the Bloom Game tool into its the mode for adding elements that should show when the reader gets the answer right.</note>
+        <note>Label of a button that puts the Bloom Game tool into the mode for adding elements that should show when the reader gets the answer right.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectInstructions">
         <source xml:lang="en">Add items that will show when the learner gets the correct answer. For example, you might add a text that says “Correct!” with a GIF of a dancing chicken.</source>
@@ -143,7 +143,7 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.Play">
         <source xml:lang="en">Play</source>
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>
-        <note>Label of a button that puts the Bloom Game tool into its the mode for playing (testing) the game.</note>
+        <note>Label of a button that puts the Bloom Game tool into the mode for playing (testing) the game.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TargetsSameSize">
         <source xml:lang="en">Keep all targets the same size so students can't use size as a clue.</source>
@@ -202,7 +202,7 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.Wrong">
         <source xml:lang="en">Wrong</source>
         <note>ID: EditTab.Toolbox.DragActivity.Wrong</note>
-        <note>Label of a button that puts the Bloom Game tool into its the mode for adding elements that should show when the reader gets the answer wrong.</note>
+        <note>Label of a button that puts the Bloom Game tool into the mode for adding elements that should show when the reader gets the answer wrong.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongInstructions">
         <source xml:lang="en">Add items that will show when the learner gets the wrong answer. For example, you might add a text that says “Try Again!”.\nIt is OK to have no correct or wrong answers. Just give the same positive reinforcement, like “Looks Nice!”.</source>
@@ -868,7 +868,7 @@
       <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true">
         <source xml:lang="en">4K</source>
         <note>BookSettings.eBook.Image.MaxResolution.4K</note>
-        <note>abbreviation for Ultra High Definition, also known as "4K" (3480 x 2160)</note>
+        <note>abbreviation for Ultra High Definition, also known as "4K" (3840 x 2160)</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true">
         <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
