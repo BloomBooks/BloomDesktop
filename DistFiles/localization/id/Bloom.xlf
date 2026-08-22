@@ -2051,7 +2051,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book title in {lang}</source>
-        <target xml:lang="id" state="final">Judul buku dalam {bahasa}</target>
+        <target xml:lang="id" state="final">Judul buku dalam {lang}</target>
         <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true" approved="yes">
@@ -2116,17 +2116,17 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Name of Translator, in {lang}</source>
-        <target xml:lang="id" state="final">Nama Penerjemah, dalam {bahasa}</target>
+        <target xml:lang="id" state="final">Nama Penerjemah, dalam {lang}</target>
         <note>ID: EditTab.FrontMatter.NameofTranslatorPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
-        <target xml:lang="id" state="final">Penghargaan Asli (atau Kerangka) dalam {bahasa}</target>
+        <target xml:lang="id" state="final">Penghargaan Asli (atau Kerangka) dalam {lang}</target>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
-        <target xml:lang="id" state="final">Kontribusi dibuat oleh para penulis, ilustrator, editor, dsb., dalam {bahasa}</target>
+        <target xml:lang="id" state="final">Kontribusi dibuat oleh para penulis, ilustrator, editor, dsb., dalam {lang}</target>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence" approved="yes">
@@ -2176,7 +2176,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
-        <target xml:lang="id" state="final">Penghargaan untuk versi terjemahan, dalam {bahasa}</target>
+        <target xml:lang="id" state="final">Penghargaan untuk versi terjemahan, dalam {lang}</target>
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.HyperlinkPasteFailure">
