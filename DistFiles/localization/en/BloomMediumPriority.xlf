@@ -136,10 +136,16 @@
         <source xml:lang="en">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2</note>
       </trans-unit>
-      <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled">
+      <!-- This string is not currently used. It was added (commit 472b7f6f6, July 2024) as a
+           tooltip for the disabled "part of the right answer" button, but days later
+           commit 3b195aad0 changed that control to be hidden when not relevant instead of
+           disabled, so the string was commented out. Kept in case a disabled state returns;
+           if uncommenting, verify the wording against the code first.
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled">
         <source xml:lang="en">Nothing that can be part of the right answer is selected</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled</note>
-      </trans-unit-->
+      </trans-unit>
+      -->
       <trans-unit id="EditTab.Toolbox.DragActivity.Play">
         <source xml:lang="en">Play</source>
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>
