@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="AboutDialog.AboutBloom">
         <source xml:lang="en">About {0}</source>
-        <note>ID: AboutDialog.WindowTitle</note>
+        <note>ID: AboutDialog.AboutBloom</note>
         <note>{0} is the application name</note>
       </trans-unit>
       <trans-unit id="AboutDialog.BuiltOnDate">
@@ -1830,7 +1830,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ImageCreditMissing">
         <source xml:lang="en"> {0} (page {1})</source>
-        <note>ID: EditTab.FrontMatter.MissingCredit</note>
+        <note>ID: EditTab.FrontMatter.ImageCreditMissing</note>
         <note>The {0} is replaced by the filename of an image.  The {1} is replaced by a reference to the first page in the book where that image occurs.</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true">
@@ -2222,7 +2222,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
         <source xml:lang="en">Fill the space</source>
-        <note>ID: EditTab.Toolbox.ComicTool.Handle.Fit</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Fill</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
         <source xml:lang="en">Resize</source>
@@ -2995,7 +2995,7 @@
       </trans-unit>
       <trans-unit id="Errors.CopyImageMetadata">
         <source xml:lang="en">Bloom was not able to copy the metadata to {0} image(s): {1}. The files may be corrupted. Please try other images, or try with Bloom 6.0 or newer.</source>
-        <note>ID: Errors.BookProblem</note>
+        <note>ID: Errors.CopyImageMetadata</note>
         <note>The placeholder {0} will get a number that is the count of how many image files had a problem.</note>
         <note>The placeholder {1} will get a list of the names of image files that had a problem.</note>
       </trans-unit>
@@ -3745,7 +3745,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
         <source xml:lang="en">There are several ways to start a temporary one.</source>
-        <note>ID: </note>
+        <note>ID: PublishTab.Android.WiFi.Hint</note>
         <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true">
@@ -3755,7 +3755,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true">
         <source xml:lang="en">Bloom Reader Bookshelf</source>
-        <note>ID: PublishTab.Android.BookShelf</note>
+        <note>ID: PublishTab.Android.Bookshelf</note>
         <note>A heading in the Publish to Android screen.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CantGetLicenseInfo" sil:dynamic="true">
@@ -4018,7 +4018,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.BloomPUB.BannerDescription.v2">
         <source xml:lang="en">BloomPUBs are a kind of eBook. Your book will look exactly like it does here in Bloom. It will have all the same features. This makes BloomPUBs better than ePUBs.</source>
-        <note>ID: PublishTab.BloomPUB.BannerDescription</note>
+        <note>ID: PublishTab.BloomPUB.BannerDescription.v2</note>
         <note>Task description at the top of the BloomPUB Publishing page</note>
       </trans-unit>
       <trans-unit id="PublishTab.BloomPUB.BannerTitle">
@@ -4033,12 +4033,12 @@
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.Explanation" sil:dynamic="true">
         <source xml:lang="en">This file will cause these books to be grouped under a single bookshelf in Bloom Reader. This collection's bookshelf is set to "{0}".</source>
-        <note>ID: Publish.BulkBloomPub.Explanation</note>
+        <note>ID: PublishTab.BulkBloomPub.Explanation</note>
         <note>{0} will be replaced with the name of the bookshelf. Make sure to place the {0} at the appropriate place in the translation. The double quotes ("") around it can be replaced with whatever kind of quotation marks are appropriate in the language you are translating to.</note>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.Make" sil:dynamic="true">
         <source xml:lang="en">Make</source>
-        <note>ID: Publish.BulkBloomPub.Make</note>
+        <note>ID: PublishTab.BulkBloomPub.Make</note>
         <note>"Make" is the label of a button that will make the selected file</note>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.MakeAllBloomPubs" sil:dynamic="true">
@@ -4048,13 +4048,13 @@
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true">
         <source xml:lang="en">Compress into a single .bloombundle file</source>
-        <note>ID: Publish.BulkBloomPub.MakeBloomBundle</note>
+        <note>ID: PublishTab.BulkBloomPub.MakeBloomBundle</note>
         <note>"Compress" means to take multiple things and turn them into a single combined file. (The result is smaller than the sum of the parts.)</note>
         <note>.bloombundle is the file extension. It is in lowercase. It will be the same extension regardless of the user's language settings.</note>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true">
         <source xml:lang="en">Produce a .bloomshelf file</source>
-        <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
+        <note>ID: PublishTab.BulkBloomPub.ProduceBloomShelf</note>
       </trans-unit>
       <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true">
         <source xml:lang="en">Removing one or more pages which require a higher subscription tier</source>
@@ -5265,7 +5265,7 @@ Do you want to go ahead?</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true">
         <source xml:lang="en">Per **Sentence**</source>
-        <note>ID: ReaderSetup.SentenceMaxWords</note>
+        <note>ID: ReaderSetup.SentenceMaxWords2</note>
         <note>follows headings "maximum" and "words" to convey "maximum words per sentence". Surround text that should be bold in double asterisks.</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
