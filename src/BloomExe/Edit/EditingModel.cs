@@ -1819,10 +1819,12 @@ namespace Bloom.Edit
             request.ReplyWithHtml(translationGroupHtml);
         }
 
+        /// <param name="source">For analytics; passed on to UpdateImageInBrowser.</param>
         public void ChangePicture(
             string imageId,
             UrlPathString priorImageSrc,
             PalasoImage imageInfo,
+            string source,
             string pageBackgroundColor = null
         )
         {
@@ -1839,7 +1841,7 @@ namespace Bloom.Edit
                     pageBackgroundColor,
                     undoable: true // All image changes made here are undoable.
                 );
-                UpdateImageInBrowser(args);
+                UpdateImageInBrowser(args, source);
             }
             catch (Exception e)
             {
@@ -1852,7 +1854,13 @@ namespace Bloom.Edit
             }
         }
 
-        public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
+        /// <param name="source">Where this picture came from, for analytics: see
+        /// AnalyticsApi.TrackChangePicture. Every caller here is some form of paste; the image
+        /// chooser and the AI image editor report their own.</param>
+        public void UpdateImageInBrowser(
+            PageEditingModel.ImageInfoForJavascript args,
+            string source
+        )
         {
             // We generally don't need to wait since we don't need to save as part of this operation.
             // If a cover image needs to be made transparent, code in version 6.5 and later takes care of that elsewhere.
@@ -1862,7 +1870,7 @@ namespace Bloom.Edit
                     $"workspaceBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
                 );
             // not saving, but we still want to log etc.
-            BloomAnalytics.Track("Change Picture");
+            AnalyticsApi.TrackChangePicture(source, CurrentBook?.ID);
             Logger.WriteEvent("ChangePicture {0}...", (object)args.src);
         }
 

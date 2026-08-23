@@ -422,6 +422,12 @@ async function doChangeGifImage(
             "imageGallery/imageGalleryResult",
             {
                 localPath: filePath,
+                // Say where this came from, or the endpoint records it as an image-chooser pick
+                // from an "unknown" provider (see ImageGalleryApi.TrackPictureChosenFromGallery).
+                // A GIF change never opens the chooser at all: it goes straight to the native file
+                // picker, so it belongs with the other pictures the user took off their own disk.
+                // "local-disk" is the id the chooser uses for that route too.
+                provider: "local-disk",
             },
         );
         const result = changeResponse!.data as {

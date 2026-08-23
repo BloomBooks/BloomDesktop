@@ -70,6 +70,9 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 licenseUrl: image.licenseUrl,
                 credits: image.credits,
                 creator: image.creator,
+                // Which source the picture came from, so C#'s "Change Picture" event can say
+                // where pictures actually come from rather than only how many there were.
+                provider: image.providerId,
             };
             const response = await postJsonAsync(
                 "imageGallery/imageGalleryResult",

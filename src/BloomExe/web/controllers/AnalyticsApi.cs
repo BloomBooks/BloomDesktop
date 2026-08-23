@@ -79,6 +79,40 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// Report that a picture in a book was replaced, saying where it came from.
+        ///
+        /// The count on its own is not the interesting part -- choosing a picture is an essential
+        /// thing to do and we already know people do it. The source is: it turns a number we don't
+        /// need into the breakdown of picture sources that we do. Which is also why this lives in
+        /// one place: the event has several call sites and would be worthless if they disagreed
+        /// about the vocabulary. This is the one place for the routes that report from here -- a
+        /// paste, the image chooser, a file from disk. The AI image editor route reports from the
+        /// browser instead, because only the browser knows whether a picture on the page being
+        /// edited actually landed (see AiImageEditorApi.HandleCommit), so it uses the mirror of
+        /// this method: trackChangePicture in bloomApi.ts. Change the words here, change them
+        /// there.
+        /// </summary>
+        /// <param name="source">Where the picture came from: an image-gallery ISearchProvider id
+        /// ("pixabay", "openverse", or a local collection's slug such as "art-of-reading"),
+        /// "local-disk", "clipboard", or "ai-editor".
+        ///
+        /// One field rather than the route and the provider separately, because every provider
+        /// worth telling apart belonged to a single route -- the image chooser -- so each is now a
+        /// first-class source in its own right, and the two routes that had no provider of their
+        /// own (a paste, a file off disk) name themselves the same way.</param>
+        public static void TrackChangePicture(string source, string bookId)
+        {
+            BloomAnalytics.Track(
+                "Change Picture",
+                new Dictionary<string, string>
+                {
+                    { "source", source ?? "unknown" },
+                    { "BookId", bookId ?? "" },
+                }
+            );
+        }
+
+        /// <summary>
         /// Parse the request body WITHOUT letting Newtonsoft turn date-looking strings into dates.
         ///
         /// Its default DateParseHandling materializes a JSON string that parses as a date-time --

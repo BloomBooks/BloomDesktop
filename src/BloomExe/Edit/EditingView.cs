@@ -755,6 +755,7 @@ namespace Bloom.Edit
                             imageId,
                             priorImageSrc,
                             clipboardImage,
+                            "clipboard",
                             pageBackgroundColor
                         );
                         pictureChanged = true;
@@ -771,6 +772,7 @@ namespace Bloom.Edit
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
+                                "clipboard",
                                 pageBackgroundColor
                             );
                             pictureChanged = true;
@@ -789,6 +791,7 @@ namespace Bloom.Edit
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
+                                "clipboard",
                                 pageBackgroundColor
                             );
                             pictureChanged = true;
@@ -824,6 +827,7 @@ namespace Bloom.Edit
                                         imageId,
                                         priorImageSrc,
                                         palasoImage,
+                                        "clipboard",
                                         pageBackgroundColor
                                     );
                                     pictureChanged = true;
@@ -1051,7 +1055,7 @@ namespace Bloom.Edit
                 creator = "",
                 undoable = "true",
             };
-            _model.UpdateImageInBrowser(args);
+            _model.UpdateImageInBrowser(args, "clipboard");
         }
 
         /// <summary>
@@ -1180,6 +1184,12 @@ namespace Bloom.Edit
             );
         }
 
+        /// <summary>
+        /// Nothing calls this at present -- it is left from an older path -- so the "clipboard"
+        /// source it reports below is the route it USED to serve, not one derived from anything
+        /// the caller says. Anyone reusing this method from somewhere else must pass the real
+        /// route through instead; see AnalyticsApi.TrackChangePicture for the vocabulary.
+        /// </summary>
         public void SaveChangedImage(
             string imageId,
             UrlPathString priorImageSrc,
@@ -1193,7 +1203,13 @@ namespace Bloom.Edit
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
                     return;
-                _model.ChangePicture(imageId, priorImageSrc, imageInfo, pageBackgroundColor);
+                _model.ChangePicture(
+                    imageId,
+                    priorImageSrc,
+                    imageInfo,
+                    "clipboard",
+                    pageBackgroundColor
+                );
                 imageChanged = true;
             }
             catch (System.IO.IOException error)
