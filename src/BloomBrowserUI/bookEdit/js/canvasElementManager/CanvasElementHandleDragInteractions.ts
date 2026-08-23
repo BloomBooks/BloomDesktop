@@ -958,14 +958,27 @@ export class CanvasElementHandleDragInteractions {
             });
             return;
         }
-        const imgRect = img.getBoundingClientRect();
-        const canvasElementRect = activeElement.getBoundingClientRect();
+        // Compare the laid-out positions and sizes rather than the on-screen rectangles.
+        // getBoundingClientRect reports the upright box around a turned element, which is
+        // larger than the element itself, so on a turned element it puts the mark on sides
+        // that are not cropped. The image and the element are inside the same rotation, so
+        // their own offsets, widths and heights compare directly.
+        let imgLeft = 0;
+        let imgTop = 0;
+        for (
+            let e: HTMLElement | null = img;
+            e && e !== activeElement;
+            e = e.offsetParent as HTMLElement | null
+        ) {
+            imgLeft += e.offsetLeft;
+            imgTop += e.offsetTop;
+        }
         const slop = 1;
         const cropped = {
-            n: imgRect.top + slop < canvasElementRect.top,
-            e: imgRect.right > canvasElementRect.right + slop,
-            s: imgRect.bottom > canvasElementRect.bottom + slop,
-            w: imgRect.left + slop < canvasElementRect.left,
+            n: imgTop < -slop,
+            e: imgLeft + img.offsetWidth > activeElement.clientWidth + slop,
+            s: imgTop + img.offsetHeight > activeElement.clientHeight + slop,
+            w: imgLeft < -slop,
         };
         sideHandles.forEach((handle) => {
             const longClass = Array.from(handle.classList).find((c) =>

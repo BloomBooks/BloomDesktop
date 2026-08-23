@@ -13,7 +13,10 @@ import {
     kBloomCanvasSelector,
 } from "../../toolbox/canvas/canvasElementConstants";
 import { CanvasElementHandleDragInteractions } from "./CanvasElementHandleDragInteractions";
-import { canRotateCanvasElement } from "./canvasElementRotation";
+import {
+    canRotateCanvasElement,
+    getCanvasElementRotation,
+} from "./canvasElementRotation";
 
 // The picture in the rotate knob: the Material UI "Refresh" icon, which shows a circling
 // arrow. We build the SVG here rather than rendering a React icon component, because the
@@ -257,6 +260,51 @@ export async function getHandleTitlesAsync(
     }
 }
 
+// The eight directions of the eight resize cursors, clockwise from the top.
+const kClockwiseDirections = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
+// The cursors for an axis, for the same eight directions taken two at a time: a vertical
+// axis, then the two diagonals with the horizontal axis between them.
+const kAxisCursors = ["ns-resize", "nwse-resize", "ew-resize", "nesw-resize"];
+
+/**
+ * Give each resize handle and each crop handle the cursor for the direction it really moves
+ * on screen. The handles turn with the element, but a cursor cannot turn, so on a turned
+ * element each handle needs the cursor of another direction. There are only eight cursors,
+ * so the angle is taken to the nearest eighth of a turn.
+ */
+function setHandleCursorsForRotation(
+    controlFrame: HTMLElement,
+    rotation: number,
+): void {
+    const steps = ((Math.round(rotation / 45) % 8) + 8) % 8;
+    const setCursor = (className: string, cursor: string) => {
+        const handle = controlFrame.getElementsByClassName(className)[0] as
+            | HTMLElement
+            | undefined;
+        if (handle) handle.style.cursor = cursor;
+    };
+    // A corner moves along one of the eight directions, so its cursor is the direction the
+    // rotation takes it to.
+    ["nw", "ne", "se", "sw"].forEach((corner) => {
+        const direction =
+            kClockwiseDirections[
+                (kClockwiseDirections.indexOf(corner) + steps) % 8
+            ];
+        setCursor(
+            "bloom-ui-canvas-element-resize-handle-" + corner,
+            direction + "-resize",
+        );
+    });
+    // A side moves along an axis, and an axis turned half a turn is the same axis, so four
+    // cursors cover it.
+    ["n", "e", "s", "w"].forEach((side) => {
+        setCursor(
+            "bloom-ui-canvas-element-side-handle-" + side,
+            kAxisCursors[(kClockwiseDirections.indexOf(side) + steps) % 4],
+        );
+    });
+}
+
 // Align the control frame with the active canvas element.
 export function alignControlFrameWithActiveElement(
     activeElement: HTMLElement | undefined,
@@ -280,6 +328,14 @@ export function alignControlFrameWithActiveElement(
     // centres (the CSS default), and we give the frame the same size and position as the
     // element below, so copying the transform is enough to keep them together.
     controlFrame.style.transform = activeElement.style.transform;
+    // The frame turns everything inside it, including the tooltip of each handle, which the
+    // CSS then turns back so that the text stays level.
+    const rotation = getCanvasElementRotation(activeElement);
+    controlFrame.style.setProperty(
+        "--canvas-element-rotation",
+        rotation + "deg",
+    );
+    setHandleCursorsForRotation(controlFrame, rotation);
     // The user can change a text box's bubble style while it is selected, which can turn
     // rotation on or off, so this has to be kept up to date here as well as when the frame
     // is first set up.

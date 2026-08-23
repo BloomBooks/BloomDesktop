@@ -1747,6 +1747,10 @@ canvas.moving {
         padding: 0.2em;
         z-index: 2;
         text-wrap-mode: nowrap;
+        // The control frame turns with the element, so this text would lie at the angle
+        // of the element. Turn it back by the same angle to keep it level and readable.
+        // The frame sets the angle; a frame with no angle set gets zero and stays put.
+        transform: rotate(calc(-1 * var(--canvas-element-rotation, 0deg)));
     }
     // the tooltip may not be visible outside the frame, so
     // on the south and east sides we move it to the other side.
