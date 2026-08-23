@@ -1490,6 +1490,11 @@ canvas.moving {
 @resizeHandleRadius: 8px;
 @sideHandleRadius: 4px;
 @sideHandleCenter: 6px;
+// The rotate handle is a small pill on the end of a short stem, above the middle of the top
+// edge of the control frame. We put it outside the frame because the middle of every side
+// inside the frame is already a crop handle.
+@rotateHandleDiameter: 18px;
+@rotateHandleStemLength: 20px;
 // We place this frame over each canvas element to support resizing and cropping.
 // The frame itself is invisible (and ignores pointer events), but it provides a container
 // for the resize and crop handles and the toolbox below.
@@ -1524,7 +1529,8 @@ canvas.moving {
     // (except for the resize or crop control we are operating).
     &.moving {
         .bloom-ui-canvas-element-resize-handle,
-        .bloom-ui-canvas-element-side-handle {
+        .bloom-ui-canvas-element-side-handle,
+        .bloom-ui-canvas-element-rotate-handle {
             display: none;
             &.active-control {
                 display: block;
@@ -1626,6 +1632,59 @@ canvas.moving {
         left: calc(50% - @resizeHandleRadius);
         display: none;
         cursor: move;
+    }
+
+    // The rotate handle. It is only shown for the canvas elements we can turn: an element
+    // whose bubble outline is drawn by comicaljs cannot turn, because that drawing stays
+    // upright, and neither can a background image, which fills its bloom-canvas.
+    // The frame carries the same rotation as its element, so the handle orbits with it and
+    // always shows which way is up for the element.
+    .bloom-ui-canvas-element-rotate-handle {
+        display: none;
+        position: absolute;
+        width: @rotateHandleDiameter;
+        height: @rotateHandleDiameter;
+        top: -(@rotateHandleDiameter + @rotateHandleStemLength);
+        left: calc(50% - @rotateHandleDiameter / 2);
+        border-radius: 50%;
+        background-color: white;
+        border: 1px solid var(--canvas-element-control-color);
+        box-sizing: border-box;
+        pointer-events: all;
+        cursor: grab;
+        &.active-control {
+            cursor: grabbing;
+        }
+        &.active-control,
+        &:hover {
+            background-color: var(--canvas-element-control-color);
+        }
+        // the icon in the knob, which tells the user what the knob does. The mouse events
+        // belong to the knob, so the icon must not take any of them.
+        svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+            fill: var(--canvas-element-control-color);
+            pointer-events: none;
+        }
+        &.active-control svg,
+        &:hover svg {
+            fill: white;
+        }
+        // the stem, joining the pill to the top edge of the frame
+        &:before {
+            content: "";
+            position: absolute;
+            left: calc(50% - 0.5px);
+            top: 100%;
+            width: 1px;
+            height: @rotateHandleStemLength;
+            background-color: var(--canvas-element-control-color);
+        }
+    }
+    &.can-rotate:not(.moving) .bloom-ui-canvas-element-rotate-handle {
+        display: block;
     }
 
     &.bloom-ui-canvas-element-show-move-crop-handle

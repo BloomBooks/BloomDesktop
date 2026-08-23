@@ -49,6 +49,31 @@
         <note>ID: Feature.AiImageEditing</note>
         <note>Name of the AI image editing feature, used in subscription messages.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.RotateRight" translate="no">
+        <source xml:lang="en">Rotate right</source>
+        <note>ID: EditTab.Image.RotateRight</note>
+        <note>Command on the menu for a picture in the Edit tab. It turns the picture a quarter turn clockwise. Its keyboard shortcut is Ctrl+R.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Flip" translate="no">
+        <source xml:lang="en">Flip</source>
+        <note>ID: EditTab.Image.Flip</note>
+        <note>Command on the menu for a picture in the Edit tab. It opens a submenu with the two items "Flip horizontal" and "Flip vertical". "Flip" here means to mirror the picture, as a mirror reverses what it shows.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.FlipHorizontal" translate="no">
+        <source xml:lang="en">Flip horizontal</source>
+        <note>ID: EditTab.Image.FlipHorizontal</note>
+        <note>Item on the "Flip" submenu for a picture in the Edit tab. It mirrors the picture from side to side, so that the left of the picture becomes the right.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.FlipVertical" translate="no">
+        <source xml:lang="en">Flip vertical</source>
+        <note>ID: EditTab.Image.FlipVertical</note>
+        <note>Item on the "Flip" submenu for a picture in the Edit tab. It mirrors the picture from top to bottom, so that the top of the picture becomes the bottom.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Rotate" translate="no">
+        <source xml:lang="en">Rotate</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Rotate</note>
+        <note>Tooltip on the small handle above a selected item on a page in the Edit tab. Dragging that handle around the item turns the item to any angle.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.EditWithAI">
         <source xml:lang="en">Edit with AI...</source>
         <note>ID: EditTab.Image.EditWithAI</note>

@@ -20,6 +20,7 @@ import { canvasElementControlRegistry } from "./canvasElementControlRegistry";
 import { CanvasElementType } from "./canvasElementTypes";
 import { IControlContext } from "./canvasControlTypes";
 import { isAiEditableImageSrc } from "../../aiImageEditor/aiEditorImageFormats";
+import { imageContentIsTransformed } from "../../js/imageContentTransform";
 
 const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
     if (!img) {
@@ -187,6 +188,11 @@ export const buildCanvasElementControlRegistryContext = (
         rectangleHasBackground:
             rectangle?.classList.contains("bloom-theme-background") ?? false,
         isCropped: !!img?.style?.width,
+        isImageContentTransformed: img ? imageContentIsTransformed(img) : false,
+        hasChosenTransparency:
+            !!img &&
+            (img.classList.contains("bloom-transparent") ||
+                img.classList.contains("bloom-opaque")),
         isNavigationButton: elementType.startsWith("navigation-"),
         isButton,
         isBackgroundImage,

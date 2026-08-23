@@ -31,6 +31,7 @@ import {
     getImageFromCanvasElement,
     kImageContainerClass,
     normalizeCoverImageDesignation,
+    setImageTransparencyToAuto,
     SetupMetadataButton,
     UpdateImageTooltipVisibility,
     HandleImageError,
@@ -88,6 +89,17 @@ import {
 } from "./CanvasElementSelectionUi";
 import { CanvasElementPointerInteractions } from "./CanvasElementPointerInteractions";
 import { CanvasElementHandleDragInteractions } from "./CanvasElementHandleDragInteractions";
+import {
+    canRotateCanvasElement,
+    getCanvasElementRotation,
+    setCanvasElementRotation,
+} from "./canvasElementRotation";
+import {
+    clearImageContentTransform,
+    flipImageContent,
+    FlipAxis,
+    rotateImageContentRight,
+} from "../imageContentTransform";
 import {
     adjustCanvasElementOrdering,
     adjustDraggableTarget,
@@ -1337,7 +1349,63 @@ export class CanvasElementManager {
             startSideControlDrag:
                 this.handleDragInteractions.startSideControlDrag,
             startMoveCrop: this.handleDragInteractions.startMoveCrop,
+            startRotateDrag: this.handleDragInteractions.startRotateDrag,
         });
+    }
+
+    // Turn the active canvas element a quarter turn clockwise. Used by the Rotate Right
+    // menu command and its Ctrl+R shortcut, for everything except a background image; see
+    // rotateActiveImageRight.
+    public rotateActiveElementRight(): void {
+        if (
+            !this.activeElement ||
+            !canRotateCanvasElement(this.activeElement)
+        ) {
+            return;
+        }
+        setCanvasElementRotation(
+            this.activeElement,
+            getCanvasElementRotation(this.activeElement) + 90,
+        );
+        this.adjustTarget(this.activeElement);
+        this.alignControlFrameWithActiveElement();
+    }
+
+    // Rotate whatever the Rotate Right command applies to for the active element: the
+    // element itself where that is possible, otherwise the picture inside it. A background
+    // image fills its bloom-canvas and cannot be turned as a box, so for it we turn the
+    // picture and shrink it to fit, which is what an author wants for a photograph that
+    // arrived on its side. Answers whether anything was rotated.
+    public rotateActiveImageRight(): boolean {
+        if (!this.activeElement) {
+            return false;
+        }
+        if (canRotateCanvasElement(this.activeElement)) {
+            this.rotateActiveElementRight();
+            return true;
+        }
+        const img = getImageFromCanvasElement(this.activeElement);
+        if (!img || isPlaceHolderImage(img.getAttribute("src"))) {
+            return false;
+        }
+        rotateImageContentRight(img);
+        this.adjustStuffRelatedToImage(this.activeElement, img);
+        return true;
+    }
+
+    // Mirror the picture in the active canvas element about the axis the user sees. This is
+    // always done to the picture rather than to the box, because mirroring a box would move
+    // it without changing how it looks.
+    public flipActiveImage(axis: FlipAxis): void {
+        if (!this.activeElement) {
+            return;
+        }
+        const img = getImageFromCanvasElement(this.activeElement);
+        if (!img) {
+            return;
+        }
+        flipImageContent(img, axis);
+        this.adjustStuffRelatedToImage(this.activeElement, img);
     }
 
     private minWidth = 30; // @MinTextBoxWidth in canvasTool.less
@@ -1364,6 +1432,22 @@ export class CanvasElementManager {
         this.alignControlFrameWithActiveElement();
         this.adjustTarget(this.activeElement);
         notifyToolOfChangedImage(img);
+    }
+
+    // The Reset Image command: put the picture back the way it arrived. That means the crop
+    // goes, and so do the quarter turns and the mirrors that Rotate right and Flip apply to
+    // the picture. The rotation of a canvas element box is left alone, because it belongs to
+    // the box, like its size and its position; the rotate handle and Undo are the way back
+    // from that. The transparency goes back to "Auto", which is the state of a picture that
+    // the user has not made a choice about.
+    public resetImage(): void {
+        if (!this.activeElement) return;
+        const img = getImageFromCanvasElement(this.activeElement);
+        if (!img) return;
+        clearImageContentTransform(img);
+        setImageTransparencyToAuto(img);
+        this.resetCropping();
+        this.adjustStuffRelatedToImage(this.activeElement, img);
     }
 
     public resetCropping(adjustContainer = true) {

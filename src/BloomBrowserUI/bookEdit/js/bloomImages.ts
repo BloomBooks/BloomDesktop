@@ -626,6 +626,23 @@ function isNearWhite(color: string): boolean {
 // Returns true when `color` is a non-empty, non-transparent, non-near-white CSS color string
 // — i.e., when a page with this background color needs image transparency applied.
 // Matches the behavior of the C# ImageUtils.ShouldMakeTransparentForPageBackground.
+/**
+ * Put the image's transparency back to "Auto": no explicit choice by the user, so the
+ * transparent parameter follows the page's own background color. The Transparency submenu's
+ * "Auto" item and the Reset Image command both use this.
+ */
+export function setImageTransparencyToAuto(img: HTMLElement): void {
+    img.classList.remove("bloom-transparent", "bloom-opaque");
+    const backgroundColor = getOwningPageBackgroundColor(img);
+    setImgTransparentParam(
+        img,
+        getImageTransparencyMode(
+            img,
+            pageBackgroundNeedsTransparency(backgroundColor),
+        ),
+    );
+}
+
 export function pageBackgroundNeedsTransparency(color: string): boolean {
     if (!color) return false;
     const normalized = normalizeCssColorToHexOrEmpty(color);

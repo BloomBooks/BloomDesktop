@@ -5,11 +5,21 @@ import { handlePlayClick } from "../bloomVideo";
 import {
     kBackgroundImageClass,
     kBloomCanvasSelector,
+    kCanvasElementClass,
     kCanvasElementSelector,
 } from "../../toolbox/canvas/canvasElementConstants";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
-import { convertPointFromViewportToElementFrame } from "./CanvasElementGeometry";
+import {
+    convertPointFromViewportToElementFrame,
+    getLeftAndTopBorderWidths,
+    getLeftAndTopPaddings,
+} from "./CanvasElementGeometry";
+import {
+    getCanvasElementRotation,
+    isPointInsideRotatedCanvasElement,
+    kRotatedClass,
+} from "./canvasElementRotation";
 import { inPlayMode } from "./CanvasElementPositioning";
 
 export interface ICanvasElementPointerInteractionsHost {
@@ -110,6 +120,116 @@ export class CanvasElementPointerInteractions {
         };
     }
 
+    // Which canvas element the user clicked on, given a point in the coordinates of the
+    // bloom-canvas.
+    //
+    // comicaljs tests each element against its un-rotated offset box, so it reports a miss
+    // for a point that is really inside an element the user has turned, and a hit for a point
+    // in the part of the box the element has turned away from. We therefore test the turned
+    // elements here and leave the rest to comicaljs, then take whichever hit is on top.
+    private getCanvasElementHit(
+        bloomCanvas: HTMLElement,
+        x: number,
+        y: number,
+    ): Bubble | undefined {
+        const unrotatedHit = Comical.getBubbleHit(
+            bloomCanvas,
+            x,
+            y,
+            true, // only consider canvas elements with pointer events allowed.
+            `.${kRotatedClass}`,
+        );
+        const rotatedHit = this.getRotatedCanvasElementHit(bloomCanvas, x, y);
+        if (!rotatedHit) {
+            return unrotatedHit;
+        }
+        if (!unrotatedHit) {
+            return rotatedHit;
+        }
+        // Level is comicaljs's stacking order; the higher one is in front.
+        const rotatedLevel =
+            Bubble.getBubbleSpec(rotatedHit.content).level ?? 0;
+        const unrotatedLevel =
+            Bubble.getBubbleSpec(unrotatedHit.content).level ?? 0;
+        return rotatedLevel >= unrotatedLevel ? rotatedHit : unrotatedHit;
+    }
+
+    private getRotatedCanvasElementHit(
+        bloomCanvas: HTMLElement,
+        x: number,
+        y: number,
+    ): Bubble | undefined {
+        let hit: HTMLElement | undefined;
+        let hitLevel = Number.NEGATIVE_INFINITY;
+        Array.from(bloomCanvas.getElementsByClassName(kRotatedClass)).forEach(
+            (element) => {
+                if (
+                    !(element instanceof HTMLElement) ||
+                    !element.classList.contains(kCanvasElementClass)
+                ) {
+                    return;
+                }
+                const styles = window.getComputedStyle(element);
+                // Match the two things comicaljs filters on: an invisible element is not there,
+                // and one that takes no pointer events cannot be clicked.
+                if (
+                    styles.display === "none" ||
+                    styles.pointerEvents === "none" ||
+                    !isPointInsideRotatedCanvasElement(element, x, y)
+                ) {
+                    return;
+                }
+                const level = Bubble.getBubbleSpec(element).level ?? 0;
+                if (level >= hitLevel) {
+                    hitLevel = level;
+                    hit = element;
+                }
+            },
+        );
+        return hit ? new Bubble(hit) : undefined;
+    }
+
+    // Where inside the canvas element the user took hold of it. The move code subtracts this
+    // from the pointer position to get the element's new position, so it must be measured
+    // against the element's own box.
+    //
+    // For an element the user has turned, getBoundingClientRect reports the box around the
+    // turned element instead, which would make the element jump as soon as the drag began. In
+    // that case we rebuild the same measurement from offsetLeft/offsetTop, which describe the
+    // element's own box whatever its angle. For an element that is not turned the two agree,
+    // so nothing changes for the ordinary case.
+    private getGrabOffsetPoint(
+        pointRelativeToViewport: Point,
+        canvasElement: HTMLElement,
+    ): Point {
+        if (getCanvasElementRotation(canvasElement) === 0) {
+            return convertPointFromViewportToElementFrame(
+                pointRelativeToViewport,
+                canvasElement,
+            );
+        }
+        const bloomCanvas = canvasElement.parentElement?.closest(
+            kBloomCanvasSelector,
+        ) as HTMLElement;
+        const pointInCanvas = convertPointFromViewportToElementFrame(
+            pointRelativeToViewport,
+            bloomCanvas,
+        );
+        const borderAndPadding = getLeftAndTopBorderWidths(canvasElement).add(
+            getLeftAndTopPaddings(canvasElement),
+        );
+        return new Point(
+            pointInCanvas.getUnscaledX() -
+                canvasElement.offsetLeft -
+                borderAndPadding.getUnscaledX(),
+            pointInCanvas.getUnscaledY() -
+                canvasElement.offsetTop -
+                borderAndPadding.getUnscaledY(),
+            PointScaling.Unscaled,
+            "Grab offset within a rotated canvas element",
+        );
+    }
+
     private moveInsertionPointAndFocusTo = (x, y): Range | undefined => {
         type DocumentWithCaret = Document & {
             caretPositionFromPoint?: (
@@ -179,11 +299,10 @@ export class CanvasElementPointerInteractions {
             return;
         }
 
-        const bubble = Comical.getBubbleHit(
+        const bubble = this.getCanvasElementHit(
             bloomCanvas,
             coordinates.getUnscaledX(),
             coordinates.getUnscaledY(),
-            true, // only consider canvas elements with pointer events allowed.
         );
         if (bubble && event.button === 2) {
             // Right mouse button
@@ -244,7 +363,7 @@ export class CanvasElementPointerInteractions {
                 PointScaling.Scaled,
                 "MouseEvent Client (Relative to viewport)",
             );
-            const relativePoint = convertPointFromViewportToElementFrame(
+            const relativePoint = this.getGrabOffsetPoint(
                 pointRelativeToViewport,
                 bubbleToStart.content,
             );

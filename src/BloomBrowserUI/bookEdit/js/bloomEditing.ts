@@ -13,6 +13,7 @@ import {
     SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
+    kImageContainerClass,
 } from "./bloomImages";
 import {
     removeTransientVideoTimestampParams,
@@ -197,6 +198,41 @@ function SetupDeletable(containerDiv) {
     return $(containerDiv);
 }
 
+// True if the user is typing somewhere, so a shortcut must not take a key away from them.
+function isTypingInText(): boolean {
+    const target = document.activeElement as HTMLElement | null;
+    if (!target) {
+        return false;
+    }
+    return (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+    );
+}
+
+// Carry out the Rotate Right command on the selected canvas element, if it holds a picture
+// the user is allowed to change. Answers whether it did anything, so the caller can fall
+// back to another meaning for the same shortcut.
+function rotateSelectedImageRight(): boolean {
+    if (!theOneCanvasElementManager?.isCanvasElementEditingOn) {
+        return false;
+    }
+    const activeElement = theOneCanvasElementManager.getActiveElement();
+    if (!activeElement) {
+        return false;
+    }
+    const imageContainer =
+        activeElement.getElementsByClassName(kImageContainerClass)[0];
+    if (
+        !imageContainer ||
+        imageContainer.classList.contains("bloom-unmodifiable-image")
+    ) {
+        return false;
+    }
+    return theOneCanvasElementManager.rotateActiveImageRight();
+}
+
 // Add various editing key handlers
 function AddEditKeyHandlers(container) {
     //Make F6 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
@@ -300,9 +336,15 @@ function AddEditKeyHandlers(container) {
     });
 
     $(document).on("keydown", (e) => {
-        // Ctrl+R: right justify
+        // Ctrl+R: rotate the selected image a quarter turn clockwise, or, when no image is
+        // selected, right justify. The two commands share the shortcut because they can
+        // never apply at once: right justify needs the caret in text, and the rotate
+        // command needs a selected canvas element that holds a picture.
         if (e.ctrlKey && !e.altKey && !e.shiftKey && e.key === "r") {
             e.preventDefault();
+            if (!isTypingInText() && rotateSelectedImageRight()) {
+                return;
+            }
             document.execCommand("justifyright", false);
             return;
         }
