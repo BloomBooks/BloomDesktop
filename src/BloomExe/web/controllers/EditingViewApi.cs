@@ -204,6 +204,10 @@ namespace Bloom.web.controllers
             var switchingToCustom = layout == "custom";
             var keepCustomLayoutDataWhenSwitchingToStandard =
                 request.RequiredPostString("keepCustomLayoutDataWhenSwitchingToStandard") == "true";
+            // False only for the revert Bloom performs for itself when a legacy theme cannot
+            // support a custom layout (see setupPageLayoutMenu). Analytics only -- setting the
+            // layout behaves identically either way.
+            var userInitiated = request.RequiredPostString("userInitiated") != "false";
             var book = View.Model.CurrentBook;
             var page = book.GetPage(pageId);
             var pageElt = page.GetDivNodeForThisPage();
@@ -217,6 +221,36 @@ namespace Bloom.web.controllers
             var shouldRemoveCustomLayoutDataWhenSwitchingToStandard =
                 !switchingToCustom && !keepCustomLayoutDataWhenSwitchingToStandard;
             var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
+            // The baseline nobody has: how much custom-cover use there is at all, and on
+            // which page. The capability has been subscription-gated across two releases
+            // (BL-15902 added it, BL-15976 put it behind Pro) with no usage data at all,
+            // which is a weak position in any pricing or renewal conversation. "page"
+            // separates the long-standing front-cover case from BL-16648's inside-back-cover
+            // extension. Whether that extension generalised past the one project it was built for
+            // is a question of branding, and needs no property here: every event already carries
+            // "BrandingProjectName" (see AnalyticsApi).
+            //
+            // "layout" is the state being switched TO, which is what actually happened. That is
+            // trustworthy now that this endpoint is a "set" rather than a toggle (BL-16725): the
+            // early return above means asking for the layout the page is already in is not
+            // reported at all, so a "standard" event really is someone leaving a custom layout.
+            //
+            // Placed here deliberately, between the two early returns. Above it, the no-op case
+            // has already been answered. Below it, a switch to custom with no saved state replies
+            // "false" and the front end builds the first custom layout itself -- which is every
+            // bit a switch to custom, and has to be counted as one.
+            if (userInitiated)
+            {
+                BloomAnalytics.Track(
+                    "Cover Layout Changed",
+                    new Dictionary<string, string>
+                    {
+                        { "layout", switchingToCustom ? "custom" : "standard" },
+                        { "page", customLayoutId ?? "" },
+                        { "BookId", book.ID },
+                    }
+                );
+            }
             if (switchingToCustom)
             {
                 var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");
