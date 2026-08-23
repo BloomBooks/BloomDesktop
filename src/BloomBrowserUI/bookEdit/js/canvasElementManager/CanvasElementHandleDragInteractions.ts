@@ -18,6 +18,7 @@ import {
     setCanvasElementRotation,
     unrotateVector,
 } from "./canvasElementRotation";
+import { pushUndoForCanvasElementRotation } from "../ImageUndoManager";
 
 export interface ICanvasElementHandleDragInteractionsHost {
     getActiveElement: () => HTMLElement | undefined;
@@ -228,6 +229,16 @@ export class CanvasElementHandleDragInteractions {
         this.host.stopMoving();
         const activeElement = this.host.getActiveElement();
         if (activeElement) {
+            // One record for the whole drag, and none at all if the element came back to the
+            // angle it started at, so that Undo always has something to put back.
+            if (
+                getCanvasElementRotation(activeElement) !== this.startRotation
+            ) {
+                pushUndoForCanvasElementRotation(
+                    activeElement,
+                    this.startRotation,
+                );
+            }
             this.host.adjustTarget(activeElement);
         }
         this.host.alignControlFrameWithActiveElement();

@@ -4,6 +4,7 @@ import {
     ImageUndoManager,
     ImageUndoManagerHost,
 } from "./ImageUndoManager";
+import { setCanvasElementRotation } from "./canvasElementManager/canvasElementRotation";
 
 describe("ImageUndoManager crop preservation", () => {
     let manager: ImageUndoManager;
@@ -148,7 +149,7 @@ describe("ImageUndoManager rotate and flip", () => {
     let manager: ImageUndoManager;
     let updateAfterTransform: (
         canvasElement: HTMLElement,
-        img: HTMLImageElement,
+        img: HTMLImageElement | undefined,
     ) => void;
     let canvasElement: HTMLElement;
     let imgElement: HTMLImageElement;
@@ -255,5 +256,78 @@ describe("ImageUndoManager rotate and flip", () => {
 
         expect(manager.undoImageOperation()).toBe(true);
         expect(manager.undoImageOperation()).toBe(false);
+    });
+});
+
+describe("ImageUndoManager rotation handle drag", () => {
+    let manager: ImageUndoManager;
+    let updateAfterTransform: (
+        canvasElement: HTMLElement,
+        img: HTMLImageElement | undefined,
+    ) => void;
+    let activeElement: HTMLElement | undefined;
+    let page: HTMLElement;
+
+    // A drag of the rotation handle records the angle the element had before the drag, so
+    // the tests set the new angle first and then push the old one, as the drag does.
+    beforeEach(() => {
+        updateAfterTransform = vi.fn();
+        activeElement = undefined;
+        const hostMock: Partial<ImageUndoManagerHost> = {
+            getCurrentPage: () =>
+                document.querySelector<HTMLElement>(".bloom-page") || undefined,
+            updateCanvasElementAfterTransformChange: updateAfterTransform,
+            getActiveElement: () => activeElement,
+            setActiveElement: vi.fn(),
+            removeDetachedTargets: vi.fn(),
+            updateCanvasElementClass: vi.fn(),
+        };
+        manager = new ImageUndoManager(hostMock as ImageUndoManagerHost);
+
+        document.body.innerHTML = "";
+        page = document.createElement("div");
+        page.className = "bloom-page";
+        page.setAttribute("data-page-id", "drag-test-page");
+        document.body.appendChild(page);
+    });
+
+    function makeTextCanvasElement(): HTMLElement {
+        const element = document.createElement("div");
+        element.className = "bloom-canvas-element";
+        const editable = document.createElement("div");
+        editable.className = "bloom-editable";
+        editable.textContent = "some words";
+        element.appendChild(editable);
+        page.appendChild(element);
+        return element;
+    }
+
+    it("undo puts back the angle a text box had before the drag", () => {
+        const textBox = makeTextCanvasElement();
+        setCanvasElementRotation(textBox, 10);
+        expect(textBox.style.transform).toBe("rotate(10deg)");
+
+        // The drag turns the box, then records where it started.
+        setCanvasElementRotation(textBox, 75);
+        manager.pushUndoForCanvasElementRotation(textBox, 10);
+        expect(textBox.style.transform).toBe("rotate(75deg)");
+
+        expect(manager.undoImageOperation()).toBe(true);
+        expect(textBox.style.transform).toBe("rotate(10deg)");
+        expect(updateAfterTransform).toHaveBeenCalledWith(textBox, undefined);
+    });
+
+    it("a rotated text box is undoable while it is the selected element", () => {
+        const textBox = makeTextCanvasElement();
+        const otherBox = makeTextCanvasElement();
+        setCanvasElementRotation(textBox, 45);
+        manager.pushUndoForCanvasElementRotation(textBox, 0);
+
+        activeElement = textBox;
+        expect(manager.canUndoImageOperation()).toBe(true);
+
+        // Another element is selected, so this undo belongs to nothing the user is looking at.
+        activeElement = otherBox;
+        expect(manager.canUndoImageOperation()).toBe(false);
     });
 });

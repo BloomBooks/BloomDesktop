@@ -23,13 +23,14 @@ type ImageOperationUndoItem =
           imageInfo: IImageInfo;
           cropInfo: IImageCropInfo;
       }
-    // Rotate right and Flip. The picture keeps its file and its metadata, so the only things
-    // to put back are the rotation of the canvas element box, the turn and mirror of the
-    // picture, and the crop, which a turn of the picture removes.
+    // Rotate right, Flip, and a drag of the rotation handle. The picture keeps its file and
+    // its metadata, so the only things to put back are the rotation of the canvas element
+    // box, the turn and mirror of the picture, and the crop, which a turn of the picture
+    // removes. There is no img when the rotation handle turns a text box or a video.
     | {
           kind: "restoreImageTransform";
           canvasElement: HTMLElement;
-          img: HTMLImageElement;
+          img: HTMLImageElement | undefined;
           elementRotation: number;
           imageTransform: string;
           cropInfo: IImageCropInfo;
@@ -48,7 +49,7 @@ export interface ImageUndoManagerHost {
     // changed a rotation, a mirror or a crop.
     updateCanvasElementAfterTransformChange(
         canvasElement: HTMLElement,
-        img: HTMLImageElement,
+        img: HTMLImageElement | undefined,
     ): void;
     getActiveElement(): HTMLElement | undefined;
     setActiveElement(element: HTMLElement | undefined): void;
@@ -83,22 +84,44 @@ export class ImageUndoManager {
      * wait for before we keep the record.
      */
     public pushUndoForImageTransform(canvasElement: HTMLElement): void {
+        this.pushTransformUndo(
+            canvasElement,
+            getCanvasElementRotation(canvasElement),
+        );
+    }
+
+    /**
+     * Record a drag of the rotation handle, so that Undo can put the angle back. The caller
+     * gives the angle the element had when the drag started, because by the time the drag
+     * ends the element is already turned. It calls this only when the angle really changed,
+     * so a click on the handle leaves nothing for Undo to do.
+     */
+    public pushUndoForCanvasElementRotation(
+        canvasElement: HTMLElement,
+        rotationBeforeDrag: number,
+    ): void {
+        this.pushTransformUndo(canvasElement, rotationBeforeDrag);
+    }
+
+    private pushTransformUndo(
+        canvasElement: HTMLElement,
+        elementRotation: number,
+    ): void {
         this.clearImageOperationUndoOnPageChange();
+        // A rotation handle turns text boxes and videos as well, so there is not always a
+        // picture. The turn and the crop of the picture are only in the record when there is.
         const img = this.getImageElement(canvasElement);
-        if (!img) {
-            return;
-        }
         this.imageOperationUndoStack.push({
             kind: "restoreImageTransform",
             canvasElement,
             img,
-            elementRotation: getCanvasElementRotation(canvasElement),
-            imageTransform: img.style.transform,
+            elementRotation,
+            imageTransform: img?.style.transform ?? "",
             cropInfo: {
-                width: img.style.width,
-                height: img.style.height,
-                left: img.style.left,
-                top: img.style.top,
+                width: img?.style.width ?? "",
+                height: img?.style.height ?? "",
+                left: img?.style.left ?? "",
+                top: img?.style.top ?? "",
             },
         });
     }
@@ -137,6 +160,18 @@ export class ImageUndoManager {
     public canUndoImageOperation(): boolean {
         this.clearImageOperationUndoOnPageChange();
         const activeElement = this.host.getActiveElement();
+        const topOfStack =
+            this.imageOperationUndoStack[
+                this.imageOperationUndoStack.length - 1
+            ];
+        if (topOfStack?.kind === "restoreImageTransform") {
+            // The rotation handle turns text boxes and videos too, so this record does not
+            // need a picture. We ask instead that the element it belongs to is the selected
+            // one, which is the same idea as one undo stack for each text box.
+            return (
+                !!activeElement && activeElement === topOfStack.canvasElement
+            );
+        }
         let onImageContainer = false;
         if (activeElement) {
             onImageContainer =
@@ -177,11 +212,13 @@ export class ImageUndoManager {
                     undoItem.canvasElement,
                     undoItem.elementRotation,
                 );
-                undoItem.img.style.transform = undoItem.imageTransform;
-                undoItem.img.style.width = undoItem.cropInfo.width;
-                undoItem.img.style.height = undoItem.cropInfo.height;
-                undoItem.img.style.left = undoItem.cropInfo.left;
-                undoItem.img.style.top = undoItem.cropInfo.top;
+                if (undoItem.img) {
+                    undoItem.img.style.transform = undoItem.imageTransform;
+                    undoItem.img.style.width = undoItem.cropInfo.width;
+                    undoItem.img.style.height = undoItem.cropInfo.height;
+                    undoItem.img.style.left = undoItem.cropInfo.left;
+                    undoItem.img.style.top = undoItem.cropInfo.top;
+                }
                 // This also tells the tool panel about the change.
                 this.host.updateCanvasElementAfterTransformChange(
                     undoItem.canvasElement,
@@ -283,6 +320,16 @@ export function prepareUndoForImageOperation(
 
 export function pushUndoForImageTransform(canvasElement: HTMLElement): void {
     getImageUndoManager().pushUndoForImageTransform(canvasElement);
+}
+
+export function pushUndoForCanvasElementRotation(
+    canvasElement: HTMLElement,
+    rotationBeforeDrag: number,
+): void {
+    getImageUndoManager().pushUndoForCanvasElementRotation(
+        canvasElement,
+        rotationBeforeDrag,
+    );
 }
 
 export function clearImageOperationUndoState(): void {
