@@ -17,7 +17,6 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.Code;
 using SIL.IO;
@@ -2783,7 +2782,7 @@ namespace Bloom.TeamCollection
         /// </summary>
         public void SynchronizeRepoAndLocal(Action whenDone = null)
         {
-            Analytics.Track(
+            BloomAnalytics.Track(
                 "TeamCollectionOpen",
                 new Dictionary<string, string>()
                 {

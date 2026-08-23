@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Windows.Forms;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
-using DesktopAnalytics;
 using Microsoft.Win32;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -129,7 +128,7 @@ namespace Bloom
                         ["newVersion"] = v.ToString(),
                         ["channel"] = ApplicationUpdateSupport.ChannelName,
                     };
-                    Analytics.Track("Update Version", props);
+                    BloomAnalytics.Track("Update Version", props);
                 })
                 .Run();
             if (commandLineArgs.Length == 0)

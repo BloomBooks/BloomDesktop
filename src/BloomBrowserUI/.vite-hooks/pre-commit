@@ -187,4 +187,5 @@ fi
 build/check-csharp-robustfile.sh || exit 1
 build/check-csharp-xmlclasses.sh || exit 1
 build/check-csharp-ApplicationExit.sh || exit 1
+build/check-csharp-analytics.sh || exit 1
 build/run-csharpier.sh || exit 1

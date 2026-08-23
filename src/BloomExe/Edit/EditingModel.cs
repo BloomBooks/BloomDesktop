@@ -20,7 +20,6 @@ using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
@@ -570,7 +569,7 @@ namespace Bloom.Edit
                                             : ""
                                     )
                             );
-                            Analytics.Track("Duplicate Page");
+                            BloomAnalytics.Track("Duplicate Page");
                         }
                         catch (Exception error)
                         {
@@ -612,7 +611,7 @@ namespace Bloom.Edit
                         _currentlyDisplayedBook.DeletePage(page);
                         //_view.UpdatePageList(false);  DeletePage calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
                         Logger.WriteEvent("Delete Page");
-                        Analytics.Track("Delete Page");
+                        BloomAnalytics.Track("Delete Page");
                         return pageToShowNext.Id;
                     }
                     catch (Exception error)
@@ -661,7 +660,7 @@ namespace Bloom.Edit
                 RefreshDisplayOfCurrentPage();
                 _view.UpdatePageList(false);
 
-                Analytics.Track("Relocate Page");
+                BloomAnalytics.Track("Relocate Page");
                 Logger.WriteEvent("Relocate Page");
             }
         }
@@ -705,7 +704,7 @@ namespace Bloom.Edit
                     {
                         try
                         {
-                            Analytics.Track(
+                            BloomAnalytics.Track(
                                 "Insert Template Page",
                                 new Dictionary<string, string>
                                 {
@@ -889,7 +888,7 @@ namespace Bloom.Edit
                     _view.UpdatePageList(true); //counting on this to redo the thumbnails
 
                     Logger.WriteEvent("ChangingContentLanguages");
-                    Analytics.Track("Change Content Languages");
+                    BloomAnalytics.Track("Change Content Languages");
                     return _pageSelection.CurrentSelection.Id;
                 },
                 () => { } // wrong state, do nothing
@@ -1048,7 +1047,7 @@ namespace Bloom.Edit
 
                 _pageSelection.SelectPage(page);
                 Logger.WriteMinorEvent("changing page selection");
-                Analytics.Track("Select Page"); //not "edit page" because at the moment we don't have the capability of detecting that.
+                BloomAnalytics.Track("Select Page"); //not "edit page" because at the moment we don't have the capability of detecting that.
 
                 // Trace memory usage in case it may be useful
                 // First see if we seem to have a problem without taking time (~100ms in a large book/fast computer) to force GC.
@@ -1863,7 +1862,7 @@ namespace Bloom.Edit
                     $"workspaceBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
                 );
             // not saving, but we still want to log etc.
-            Analytics.Track("Change Picture");
+            BloomAnalytics.Track("Change Picture");
             Logger.WriteEvent("ChangePicture {0}...", (object)args.src);
         }
 

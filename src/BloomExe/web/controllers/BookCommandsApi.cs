@@ -19,7 +19,6 @@ using Bloom.Spreadsheet;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
@@ -427,7 +426,7 @@ namespace Bloom.web.controllers
 
                 _collectionModel.ExportDocFormat(destPath);
                 ProcessExtra.SafeStartInFront(destPath);
-                Analytics.Track("Exported To Doc format");
+                BloomAnalytics.Track("Exported To Doc format");
             }
             catch (IOException error)
             {
@@ -436,12 +435,12 @@ namespace Bloom.web.controllers
                     error.Message,
                     "Could not export the book"
                 );
-                Analytics.ReportException(error);
+                BloomAnalytics.ReportException(error);
             }
             catch (Exception error)
             {
                 SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
-                Analytics.ReportException(error);
+                BloomAnalytics.ReportException(error);
             }
         }
 
