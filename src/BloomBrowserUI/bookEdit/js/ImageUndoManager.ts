@@ -4,6 +4,10 @@ import {
     notifyToolOfChangedImage,
 } from "./bloomEditing";
 import { normalizeCoverImageDesignation } from "./bloomImages";
+import {
+    getCanvasElementRotation,
+    setCanvasElementRotation,
+} from "./canvasElementManager/canvasElementRotation";
 
 export interface IImageCropInfo {
     width: string;
@@ -12,12 +16,24 @@ export interface IImageCropInfo {
     top: string;
 }
 
-type ImageOperationUndoItem = {
-    kind: "restoreImage";
-    element: HTMLElement;
-    imageInfo: IImageInfo;
-    cropInfo: IImageCropInfo;
-};
+type ImageOperationUndoItem =
+    | {
+          kind: "restoreImage";
+          element: HTMLElement;
+          imageInfo: IImageInfo;
+          cropInfo: IImageCropInfo;
+      }
+    // Rotate right and Flip. The picture keeps its file and its metadata, so the only things
+    // to put back are the rotation of the canvas element box, the turn and mirror of the
+    // picture, and the crop, which a turn of the picture removes.
+    | {
+          kind: "restoreImageTransform";
+          canvasElement: HTMLElement;
+          img: HTMLImageElement;
+          elementRotation: number;
+          imageTransform: string;
+          cropInfo: IImageCropInfo;
+      };
 // | {
 //       kind: "removeElement";
 //       element: HTMLElement;
@@ -27,6 +43,12 @@ export interface ImageUndoManagerHost {
     updateCanvasElementForChangedImage(
         imgOrImageContainer: HTMLElement,
         cropInfo?: IImageCropInfo,
+    ): void;
+    // Put the frame, the game target and the tool panel back in step after an undo that only
+    // changed a rotation, a mirror or a crop.
+    updateCanvasElementAfterTransformChange(
+        canvasElement: HTMLElement,
+        img: HTMLImageElement,
     ): void;
     getActiveElement(): HTMLElement | undefined;
     setActiveElement(element: HTMLElement | undefined): void;
@@ -53,6 +75,32 @@ export class ImageUndoManager {
             imageInfo: this.getCurrentImageInfo(imageOrContainer),
             cropInfo: this.getCurrentImageCropInfo(imageOrContainer),
         };
+    }
+
+    /**
+     * Record what Rotate right or Flip is about to change, so that Undo can put it back. This
+     * is one phase, not two: the command cannot fail or be canceled, so there is nothing to
+     * wait for before we keep the record.
+     */
+    public pushUndoForImageTransform(canvasElement: HTMLElement): void {
+        this.clearImageOperationUndoOnPageChange();
+        const img = this.getImageElement(canvasElement);
+        if (!img) {
+            return;
+        }
+        this.imageOperationUndoStack.push({
+            kind: "restoreImageTransform",
+            canvasElement,
+            img,
+            elementRotation: getCanvasElementRotation(canvasElement),
+            imageTransform: img.style.transform,
+            cropInfo: {
+                width: img.style.width,
+                height: img.style.height,
+                left: img.style.left,
+                top: img.style.top,
+            },
+        });
     }
 
     /** Clear all pending/recorded image operation undo state. */
@@ -122,6 +170,23 @@ export class ImageUndoManager {
                 }
                 const img = this.getImageElement(undoItem.element);
                 notifyToolOfChangedImage(img);
+                return true;
+            }
+            case "restoreImageTransform": {
+                setCanvasElementRotation(
+                    undoItem.canvasElement,
+                    undoItem.elementRotation,
+                );
+                undoItem.img.style.transform = undoItem.imageTransform;
+                undoItem.img.style.width = undoItem.cropInfo.width;
+                undoItem.img.style.height = undoItem.cropInfo.height;
+                undoItem.img.style.left = undoItem.cropInfo.left;
+                undoItem.img.style.top = undoItem.cropInfo.top;
+                // This also tells the tool panel about the change.
+                this.host.updateCanvasElementAfterTransformChange(
+                    undoItem.canvasElement,
+                    undoItem.img,
+                );
                 return true;
             }
             // case "removeElement": {
@@ -214,6 +279,10 @@ export function prepareUndoForImageOperation(
     imageOrContainer: HTMLElement,
 ): void {
     getImageUndoManager().prepareUndoForImageOperation(imageOrContainer);
+}
+
+export function pushUndoForImageTransform(canvasElement: HTMLElement): void {
+    getImageUndoManager().pushUndoForImageTransform(canvasElement);
 }
 
 export function clearImageOperationUndoState(): void {

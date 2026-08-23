@@ -119,6 +119,7 @@ import {
     IImageCropInfo,
     initializeImageUndoManager,
     prepareUndoForImageOperation,
+    pushUndoForImageTransform,
 } from "../ImageUndoManager";
 
 const kComicalGeneratedClass: string = "comical-generated";
@@ -180,6 +181,8 @@ export class CanvasElementManager {
                     | undefined,
             updateCanvasElementForChangedImage:
                 this.updateCanvasElementForChangedImage.bind(this),
+            updateCanvasElementAfterTransformChange:
+                this.adjustStuffRelatedToImage.bind(this),
             getActiveElement: this.getActiveElement.bind(this),
             setActiveElement: this.setActiveElement.bind(this),
             removeDetachedTargets: this.removeDetachedTargets.bind(this),
@@ -1381,6 +1384,7 @@ export class CanvasElementManager {
             return false;
         }
         if (canRotateCanvasElement(this.activeElement)) {
+            pushUndoForImageTransform(this.activeElement);
             this.rotateActiveElementRight();
             return true;
         }
@@ -1388,6 +1392,7 @@ export class CanvasElementManager {
         if (!img || isPlaceHolderImage(img.getAttribute("src"))) {
             return false;
         }
+        pushUndoForImageTransform(this.activeElement);
         rotateImageContentRight(img);
         this.adjustStuffRelatedToImage(this.activeElement, img);
         return true;
@@ -1404,6 +1409,7 @@ export class CanvasElementManager {
         if (!img) {
             return;
         }
+        pushUndoForImageTransform(this.activeElement);
         flipImageContent(img, axis);
         this.adjustStuffRelatedToImage(this.activeElement, img);
     }
