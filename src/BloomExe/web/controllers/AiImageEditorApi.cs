@@ -1180,6 +1180,22 @@ namespace Bloom.web.controllers
             // survives.
             DeleteSupersededAiImageFiles(book.FolderPath, book.OurHtmlDom, supersededOffPageFiles);
 
+            // "AI Image Editor Closed" and the per-picture "Change Picture" events are deliberately
+            // NOT reported here; aiEditorOverlay.ts reports both once this reply reaches it.
+            //
+            // The reason is appliedCount. For a slot on the page the user has open we only stage the
+            // replacement -- import the file, work out the credits -- and hand it back for the
+            // browser to swap into the live DOM, which can fail (see the comment above this method).
+            // So counting a staged slot as applied overstates, in exactly the case the event exists
+            // to catch: BL-16702 was a commit that silently did nothing. And it overstates in the
+            // ORDINARY case, not a rare one -- the picture the user right-clicked to open the editor
+            // is by definition on the page they have open, so a single-picture commit was always
+            // reported as "1 applied, 0 failed" whatever became of it.
+            //
+            // Everything those events carry is available to the overlay: it sent the replacements,
+            // it gets our per-slot results below, the page frame tells it how many current-page
+            // swaps landed, and the analytics/track endpoint fills in BookId. (Branding needs no
+            // property: every event already carries "BrandingProjectName" -- see AnalyticsApi.)
             request.ReplyWithJson(
                 new
                 {
