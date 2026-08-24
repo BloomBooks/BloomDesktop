@@ -173,6 +173,8 @@ namespace Bloom
         /// <summary>
         /// True if we consider our install to be shared by all users of the computer.
         /// We currently detect this based on being in the Program Files folder.
+        /// NOTE: currently always false -- we no longer ship an all-users install -- so the
+        /// branches this guards are dead code (as of 6.4, 2026).
         /// </summary>
         /// <returns></returns>
         public static bool SharedByAllUsers()
@@ -195,7 +197,7 @@ namespace Bloom
             if (Program.RunningUnitTests)
                 return; // unit testing.
             // If we support allUsers installs, we will need to make an exception here when called during installation.
-            if (SharedByAllUsers())
+            if (SharedByAllUsers()) // currently always false; see its comment
                 return;
             _installInLocalMachine = SharedByAllUsers();
             if (Platform.IsLinux)
@@ -345,7 +347,7 @@ namespace Bloom
         {
             get
             {
-                if (SharedByAllUsers())
+                if (SharedByAllUsers()) // currently always false; see its comment
                     return Registry.LocalMachine.CreateSubKey(@"Software\Classes");
                 else
                     return Registry.CurrentUser.CreateSubKey(@"Software\Classes");
