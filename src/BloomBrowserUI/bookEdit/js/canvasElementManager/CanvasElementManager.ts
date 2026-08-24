@@ -2290,17 +2290,25 @@ export class CanvasElementManager {
             // and it probably isn't necessary.
             if (canvasElement.closest(".bloom-describedImage")) return;
 
-            // Careful. For older books, left and top might be percentages.
-            const canvasElementRect = canvasElement.getBoundingClientRect();
-            const parentRect = parentContainer.getBoundingClientRect();
-
+            // Read the element's own laid-out position, which is what
+            // adjustCanvasElementLocation compares against and writes back. Careful: for
+            // older books, left and top might be percentages, which offsetLeft and offsetTop
+            // resolve to pixels for us.
+            //
+            // A turned element is why this cannot use the on-screen rectangle.
+            // getBoundingClientRect reports the upright box around the turned element, and
+            // the corner of that box is not the corner of the element's own box: for a
+            // quarter turn the two differ by half the difference of the element's width and
+            // height. Reading the position from it therefore moved a turned element on every
+            // page load, up the page and to the right for a wide element, and down and to the
+            // left for a tall one, a little further each time (BL-16741).
             this.adjustCanvasElementLocation(
                 canvasElement,
                 parentContainer,
                 new Point(
-                    canvasElementRect.left - parentRect.left,
-                    canvasElementRect.top - parentRect.top,
-                    PointScaling.Scaled,
+                    canvasElement.offsetLeft,
+                    canvasElement.offsetTop,
+                    PointScaling.Unscaled,
                     "ensureCanvasElementsIntersectParent",
                 ),
             );

@@ -32,6 +32,7 @@ import {
     initializeCanvasElementManager,
     theOneCanvasElementManager,
 } from "./canvasElementManager/CanvasElementManager";
+import { kPointerInsideClass } from "./canvasElementManager/canvasElementRotation";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import {
     canUndoImageOperation,
@@ -149,6 +150,9 @@ function Cleanup() {
         $(this).removeClass("ui-resizable");
         // obsolete, but we'll keep the cleanup for a while
         $(this).removeClass("hoverUp");
+        // Marks the turned canvas element the pointer is inside, so it means nothing once the
+        // page is saved. See kPointerInsideClass in canvasElementRotation.ts.
+        $(this).removeClass(kPointerInsideClass);
     });
     $("span").each(function () {
         $(this).removeClass("ui-disableHighlight");

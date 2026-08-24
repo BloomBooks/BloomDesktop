@@ -22,6 +22,15 @@ import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstan
 // exists so that CSS and selectors can find the rotated elements cheaply.
 export const kRotatedClass = "bloom-rotated";
 
+// Marks the turned canvas element the pointer is inside. A turned element has a CSS transform,
+// which makes it a stacking context, so the high z-indexes its contents use to get above the
+// comicaljs canvas no longer reach past the element itself. The canvas therefore covers the
+// element and takes the pointer, and the browser never gives the element :hover. Anything shown
+// on hover, such as a video's play button, would never appear. CanvasElementPointerInteractions
+// puts this class on the element the pointer is really inside, using the same rotation-aware hit
+// test that click uses, and the CSS accepts it in place of :hover (BL-16741).
+export const kPointerInsideClass = "bloom-pointer-inside";
+
 const kRotatePattern = /rotate\(\s*(-?[0-9]*\.?[0-9]+)deg\s*\)/;
 
 // Reduce any angle to the [0, 360) range that we store and display.
@@ -56,6 +65,9 @@ export function setCanvasElementRotation(
     if (rounded === 0 || rounded === 360) {
         canvasElement.style.transform = "";
         canvasElement.classList.remove(kRotatedClass);
+        // The code that marks the element the pointer is inside only ever visits the turned
+        // elements, so it can neither find nor clear this once the element is upright again.
+        canvasElement.classList.remove(kPointerInsideClass);
     } else {
         canvasElement.style.transform = `rotate(${rounded}deg)`;
         canvasElement.classList.add(kRotatedClass);

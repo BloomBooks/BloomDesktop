@@ -227,11 +227,18 @@ export class CanvasElementHandleDragInteractions {
     // was on screen.
     //
     // Writing it as a correction applied after the ordinary arithmetic keeps the rotation out
-    // of that arithmetic. It is safe to run on every mouse move because the resize and crop
-    // code always recomputes the position from the values recorded at mouse-down, so the
-    // correction never accumulates.
+    // of that arithmetic.
+    //
+    // The caller passes the position the ordinary arithmetic wants, rather than letting this
+    // method read the position out of the element. That matters because the correction writes
+    // both left and top, while a drag of one edge recomputes only one of them from the
+    // mouse-down values: the other still holds the correction of the previous mouse move.
+    // Reading it back therefore fed each correction into the next one, and the element crept
+    // across the page for as long as the drag went on (BL-16741).
     private compensateForRotationDuringResize(
         activeElement: HTMLElement,
+        newLeft: number,
+        newTop: number,
     ): void {
         const rotation = getCanvasElementRotation(activeElement);
         if (rotation === 0) {
@@ -239,22 +246,18 @@ export class CanvasElementHandleDragInteractions {
         }
         // How far the centre of the box has moved, in un-rotated coordinates.
         const centerShiftX =
-            activeElement.offsetLeft +
+            newLeft +
             activeElement.clientWidth / 2 -
             (this.oldLeft + this.oldWidth / 2);
         const centerShiftY =
-            activeElement.offsetTop +
+            newTop +
             activeElement.clientHeight / 2 -
             (this.oldTop + this.oldHeight / 2);
         // On screen that shift appears turned by the element's angle. The difference between
         // where it appears and where the arithmetic put it is what we must undo.
         const onScreen = rotateVector(centerShiftX, centerShiftY, rotation);
-        activeElement.style.left = `${
-            activeElement.offsetLeft + onScreen.x - centerShiftX
-        }px`;
-        activeElement.style.top = `${
-            activeElement.offsetTop + onScreen.y - centerShiftY
-        }px`;
+        activeElement.style.left = `${newLeft + onScreen.x - centerShiftX}px`;
+        activeElement.style.top = `${newTop + onScreen.y - centerShiftY}px`;
     }
 
     // Start dragging the rotate handle (the "lollipop" above the top of the control frame).
@@ -670,7 +673,7 @@ export class CanvasElementHandleDragInteractions {
         style.height = newHeight + "px";
         style.top = newTop + "px";
         style.left = newLeft + "px";
-        this.compensateForRotationDuringResize(activeElement);
+        this.compensateForRotationDuringResize(activeElement, newLeft, newTop);
         if (imgOrVideo?.style.width) {
             const scale = newWidth / this.oldWidth;
             imgOrVideo.style.width = this.oldImageWidth * scale + "px";
@@ -779,6 +782,9 @@ export class CanvasElementHandleDragInteractions {
         let deltaY = unrotatedDelta.y;
         let newCanvasElementWidth = this.oldWidth;
         let newCanvasElementHeight = this.oldHeight;
+        // Where this drag puts the box. Only the w handle moves it, but the rotation
+        // correction needs both numbers; see compensateForRotationDuringResize.
+        let newLeft = this.oldLeft;
         console.assert(
             this.currentDragSide === "e" ||
                 this.currentDragSide === "w" ||
@@ -807,8 +813,9 @@ export class CanvasElementHandleDragInteractions {
                     minWidth,
                 );
                 deltaX = this.oldWidth - newCanvasElementWidth;
+                newLeft = this.oldLeft + deltaX;
                 activeElement.style.width = `${newCanvasElementWidth}px`;
-                activeElement.style.left = `${this.oldLeft + deltaX}px`;
+                activeElement.style.left = `${newLeft}px`;
                 break;
             case "s":
                 newCanvasElementHeight = Math.max(
@@ -822,7 +829,11 @@ export class CanvasElementHandleDragInteractions {
                 activeElement.style.height = `${newCanvasElementHeight}px`;
         }
         this.host.adjustCanvasElementHeightToContentOrMarkOverflow(editable);
-        this.compensateForRotationDuringResize(activeElement);
+        this.compensateForRotationDuringResize(
+            activeElement,
+            newLeft,
+            this.oldTop,
+        );
         this.host.adjustTarget(activeElement);
         this.host.alignControlFrameWithActiveElement();
         this.guideProvider.duringDrag(activeElement);
@@ -863,6 +874,10 @@ export class CanvasElementHandleDragInteractions {
 
         let newCanvasElementWidth = this.oldWidth;
         let newCanvasElementHeight = this.oldHeight;
+        // Where this drag puts the box. Only the n and w handles move it, but the rotation
+        // correction needs both numbers; see compensateForRotationDuringResize.
+        let newLeft = this.oldLeft;
+        let newTop = this.oldTop;
         let shouldSnapForBackground = "";
         let backgroundSnapDelta = 0;
         if (
@@ -951,8 +966,9 @@ export class CanvasElementHandleDragInteractions {
                     minHeight,
                 );
                 deltaY = this.oldHeight - newCanvasElementHeight;
+                newTop = this.oldTop + deltaY;
                 activeElement.style.height = `${newCanvasElementHeight}px`;
-                activeElement.style.top = `${this.oldTop + deltaY}px`;
+                activeElement.style.top = `${newTop}px`;
                 img.style.top = `${this.oldImageTop - deltaY}px`;
                 break;
             case "s":
@@ -1012,12 +1028,13 @@ export class CanvasElementHandleDragInteractions {
                     minWidth,
                 );
                 deltaX = this.oldWidth - newCanvasElementWidth;
+                newLeft = this.oldLeft + deltaX;
                 activeElement.style.width = `${newCanvasElementWidth}px`;
-                activeElement.style.left = `${this.oldLeft + deltaX}px`;
+                activeElement.style.left = `${newLeft}px`;
                 img.style.left = `${this.oldImageLeft - deltaX}px`;
                 break;
         }
-        this.compensateForRotationDuringResize(activeElement);
+        this.compensateForRotationDuringResize(activeElement, newLeft, newTop);
         this.host.adjustStuffRelatedToImage(activeElement, img);
         CanvasElementHandleDragInteractions.updateCurrentlyCropped(
             activeElement,

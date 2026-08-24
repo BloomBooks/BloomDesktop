@@ -320,6 +320,29 @@ export function alignControlFrameWithActiveElement(
         rotation + "deg",
     );
     setHandleCursorsForRotation(controlFrame, rotation);
+    // The lollipop hangs from the element's top edge. Once the element is turned far enough,
+    // that edge points down the screen, and the lollipop lands behind the panel of controls
+    // that sits below the element. So for those angles we hang it from the element's bottom
+    // edge instead. We leave it alone during a drag: the lollipop is under the pointer, and
+    // moving it to the other end of the element part way through a turn would take it out
+    // from under the pointer.
+    //
+    // The switch waits for three eighths of a turn, not a quarter turn. At a quarter turn the
+    // handle points straight out to the side, where the panel does not reach it, so a switch
+    // there only moved the handle across the element for no gain, at the angle a user stops at
+    // most often (BL-16741). The rotation snap stops at every 45 degrees, so 135 is the first
+    // stop where the handle is on its way under the panel.
+    //
+    // Turning to 180 degrees still moves the handle on the mouse-up of the drag that got there,
+    // because endRotateDrag calls stopMoving before it aligns the frame. That is the angle where
+    // the panel really does cover the handle, so the move is what the user needs, but it does
+    // take the handle out from under the pointer at the end of the drag.
+    if (!controlFrame.classList.contains("moving")) {
+        controlFrame.classList.toggle(
+            "rotate-handle-on-bottom-edge",
+            rotation > 135 && rotation < 225,
+        );
+    }
     // The user can change a text box's bubble style while it is selected, which can turn
     // rotation on or off, so this has to be kept up to date here as well as when the frame
     // is first set up.

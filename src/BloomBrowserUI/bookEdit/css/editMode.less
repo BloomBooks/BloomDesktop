@@ -1687,6 +1687,20 @@ canvas.moving {
         display: block;
     }
 
+    // Once the element is turned far enough, its top edge points down the screen, and a
+    // lollipop hanging from that edge lands behind the panel of controls that sits below the
+    // element. For those angles we hang the lollipop from the element's bottom
+    // edge, which is then the upper edge on screen. The stem goes with it, so it now rises
+    // from the pill to the edge below. alignControlFrameWithActiveElement adds this class.
+    &.rotate-handle-on-bottom-edge .bloom-ui-canvas-element-rotate-handle {
+        top: auto;
+        bottom: -(@rotateHandleDiameter + @rotateHandleStemLength);
+        &:before {
+            top: auto;
+            bottom: 100%;
+        }
+    }
+
     &.bloom-ui-canvas-element-show-move-crop-handle
         .bloom-ui-canvas-element-move-crop-handle {
         display: block;
@@ -1840,9 +1854,17 @@ svg.bloom-videoControl {
     }
 }
 
+// The browser gives a turned canvas element no :hover, because the comicaljs canvas covers it
+// and takes the pointer. So everywhere these rules ask for :hover on a video, they also accept
+// bloom-pointer-inside, which CanvasElementPointerInteractions puts on the turned element the
+// pointer is really inside. See kPointerInsideClass in canvasElementRotation.ts (BL-16741).
+@pointerInsideTurnedElement: ~".bloom-canvas-element.bloom-pointer-inside";
+
 // Show pause and replay when playing and hovered
 // (except for when we put bloom-ui-no-controls on draggable videos in Play Mode because there they can't be paused)
-.bloom-videoContainer.playing:hover:not(:has(video.bloom-ui-no-controls)) {
+.bloom-videoContainer.playing:hover:not(:has(video.bloom-ui-no-controls)),
+@{pointerInsideTurnedElement}
+    .bloom-videoContainer.playing:not(:has(video.bloom-ui-no-controls)) {
     .bloom-videoControlContainer {
         &.bloom-videoPauseIcon,
         &.bloom-videoReplayIcon {
@@ -1852,7 +1874,8 @@ svg.bloom-videoControl {
 }
 
 // Show play, centered, when hovering a video that is not paused or playing
-.bloom-videoContainer:not(.paused):not(.playing):hover {
+.bloom-videoContainer:not(.paused):not(.playing):hover,
+@{pointerInsideTurnedElement} .bloom-videoContainer:not(.paused):not(.playing) {
     .bloom-videoPlayIcon {
         display: flex;
         left: calc(50% - @videoIconSize / 2);
@@ -1867,7 +1890,10 @@ svg.bloom-videoControl {
 // (This rule would be more at home in Games.less, but we don't need any other Game-specific
 // rules about the video controls, so I think it's more helpful to keep it with the rules
 // it modifies.)
-.drag-activity-play .bloom-videoContainer:not(.paused):not(.playing):hover {
+.drag-activity-play .bloom-videoContainer:not(.paused):not(.playing):hover,
+.drag-activity-play
+    @{pointerInsideTurnedElement}
+    .bloom-videoContainer:not(.paused):not(.playing) {
     .bloom-videoPlayIcon {
         display: none;
     }
