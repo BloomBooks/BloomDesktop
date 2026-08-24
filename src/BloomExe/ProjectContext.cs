@@ -45,6 +45,13 @@ namespace Bloom
         /// </summary>
         private ILifetimeScope _scope;
 
+        /// <summary>
+        /// The application-level server we registered our project-level API endpoints on. Kept so that
+        /// Dispose can take them off again without having to resolve anything. See
+        /// ReleaseApplicationLevelProjectState. (BL-16678)
+        /// </summary>
+        private BloomServer _server;
+
         //		private CommandAvailabilityPublisher _commandAvailabilityPublisher;
         public Form ProjectWindow { get; private set; }
 
@@ -68,17 +75,21 @@ namespace Bloom
         )
         {
             Logger.WriteMinorEvent("starting to construct the project context");
-            // Settle which settings file we are really opening before anything uses the path. The
-            // caller's may not exist: the name is not always the folder's (BL-16679), and the lock
-            // below would then be aimed at a file that isn't there -- silently protecting nothing in
-            // a release build, and throwing in a DEBUG one.
-            SettingsPath = GetRealSettingsPath(projectSettingsPath);
-
-            _collectionLock = new CollectionLock(SettingsPath);
-            _collectionLock.Lock();
-
             try
             {
+                // Settle which settings file we are really opening before anything uses the path. The
+                // caller's may not exist: the name is not always the folder's (BL-16679).
+                SettingsPath = GetRealSettingsPath(projectSettingsPath);
+
+                _collectionLock = new CollectionLock(SettingsPath);
+                // Only lock a file that is there to be locked. GetRealSettingsPath hands back the path
+                // it was given when the folder holds no .bloomCollection at all, and Lock() rethrows in
+                // a DEBUG build -- which would replace the clear "could not find a .bloomCollection
+                // file in ..." that GetCollectionSettings throws with a bare FileNotFoundException
+                // about the lock, sending the next developer to look in the wrong place. (BL-16678)
+                if (RobustFile.Exists(SettingsPath))
+                    _collectionLock.Lock();
+
                 // BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.
                 // While we are starting (or restarting, in the case of switching collections) BloomServer we need to use
                 // the WinFormsExceptionHandler mechanism, which doesn't use a browser.
@@ -111,7 +122,10 @@ namespace Bloom
                 // the Shell and its WebView2 browsers, the file watchers, and the rest of the scope.
                 // Left running, those can keep Bloom from ever exiting, which is part of what left it
                 // lingering as a zombie process. (BloomServer itself is application-level, resolved
-                // from the parent container, so it is not ours to shut down.) (BL-16679)
+                // from the parent container, so it is not ours to shut down -- but the endpoint handlers
+                // we registered on it are ours to remove, and failing to is what stopped the next
+                // collection from opening. See ReleaseApplicationLevelProjectState.)
+                // (BL-16679, BL-16678)
                 try
                 {
                     Dispose();
@@ -252,39 +266,36 @@ namespace Bloom
                     //*every* collection has a "*.BloomCollection" settings file. But the one we make the most use of is the one editable collection
                     //That's why we're registering it... it gets used all over. At the moment (May 2012), we don't ever read the
                     //settings file of the collections we're using for sources.
-                    try
-                    {
-                        // It's important to create the TC manager before we create CollectionSettings, as its constructor makes sure
-                        // we have a current version of the file that CollectionSettings is built from.
-                        builder
-                            .Register<TeamCollectionManager>(c => new TeamCollectionManager(
-                                projectSettingsPath,
-                                c.Resolve<BloomWebSocketServer>(),
-                                c.Resolve<BookStatusChangeEvent>(),
-                                c.Resolve<BookSelection>(),
-                                c.Resolve<CollectionClosing>(),
-                                c.Resolve<BookCollectionHolder>(),
-                                _collectionLock,
-                                c.Resolve<BookRenamedEvent>()
-                            ))
-                            .InstancePerLifetimeScope();
-                        builder
-                            .Register<ITeamCollectionManager>(c =>
-                                c.Resolve<TeamCollectionManager>()
-                            )
-                            .InstancePerLifetimeScope();
-                        builder
-                            .Register<CollectionSettings>(c =>
-                            {
-                                c.Resolve<TeamCollectionManager>();
-                                return GetCollectionSettings(projectSettingsPath);
-                            })
-                            .InstancePerLifetimeScope();
-                    }
-                    catch (Exception)
-                    {
-                        return;
-                    }
+                    // It's important to create the TC manager before we create CollectionSettings, as its constructor makes sure
+                    // we have a current version of the file that CollectionSettings is built from.
+                    builder
+                        .Register<TeamCollectionManager>(c => new TeamCollectionManager(
+                            projectSettingsPath,
+                            c.Resolve<BloomWebSocketServer>(),
+                            c.Resolve<BookStatusChangeEvent>(),
+                            c.Resolve<BookSelection>(),
+                            c.Resolve<CollectionClosing>(),
+                            c.Resolve<BookCollectionHolder>(),
+                            _collectionLock,
+                            c.Resolve<BookRenamedEvent>()
+                        ))
+                        .InstancePerLifetimeScope();
+                    builder
+                        .Register<ITeamCollectionManager>(c => c.Resolve<TeamCollectionManager>())
+                        .InstancePerLifetimeScope();
+                    builder
+                        .Register<CollectionSettings>(c =>
+                        {
+                            c.Resolve<TeamCollectionManager>();
+                            return GetCollectionSettings(projectSettingsPath);
+                        })
+                        .InstancePerLifetimeScope();
+                    // (There used to be a try/catch around the three registrations above whose catch
+                    // just returned. Registering doesn't run any of these lambdas, so it could hardly
+                    // fire; if it ever did, returning here abandoned every registration below, and the
+                    // user got an Autofac ComponentNotRegisteredException naming some unrelated type
+                    // instead of the real cause. The constructor now disposes and reports properly, so
+                    // letting the exception out is both safe and much easier to diagnose. BL-16678)
 
                     builder
                         .Register<CollectionModel>(c => new CollectionModel(
@@ -432,9 +443,19 @@ namespace Bloom
                     MessageBoxIcon.Error
                 );
                 ProgramExit.Exit();
+                // Don't fall through. This used to, straight into code that dereferences the _scope we
+                // just failed to build, so what the user and Sentry actually got was a
+                // NullReferenceException naming nothing useful instead of the missing file. Throwing
+                // lets our constructor dispose us and the real exception reach the log and the report.
+                // (BL-16678)
+                throw;
             }
 
-            var server = parentContainer.Resolve<BloomServer>();
+            // Remember the server in a field as well: it is application-level, so the endpoint handlers
+            // we are about to register on it outlive us, and Dispose has to be able to take them off
+            // again even when resolving things has stopped working. See
+            // ReleaseApplicationLevelProjectState. (BL-16678)
+            var server = _server = parentContainer.Resolve<BloomServer>();
             var collectionSettings = _scope.Resolve<CollectionSettings>();
             server.SetCollectionSettingsDuringInitialization(collectionSettings);
             // Let the application-level CommonApi (which can't take a project dependency in its
@@ -952,17 +973,93 @@ namespace Bloom
             FatalExceptionHandler.UseFallback = true;
         }
 
+        /// <summary>
+        /// Undo the marks a project leaves on objects that outlive it: the API endpoint handlers it
+        /// registered on the application-level server, and the collection it advertised to the
+        /// application-level CommonApi. Safe to call repeatedly, and with no server.
+        /// </summary>
+        /// <remarks>
+        /// This is not just tidiness. The next project registers the same endpoint patterns, and
+        /// RegisterEndpointHandler throws on a duplicate key -- deliberately, since a real double
+        /// registration is a programming error. So handlers left behind by a project that failed to
+        /// finish being built make every later collection in that run fail too, with an error naming
+        /// whichever endpoint happens to be registered first ("An item with the same key has already
+        /// been added. Key: audio/startrecord"), until Bloom is restarted. That is BL-16678, and it is
+        /// why this is done from a field rather than by resolving the server, and outside any try that
+        /// something else could fail out of first.
+        ///
+        /// Note that we deliberately do NOT clear the server's own CurrentCollectionSettings. Several
+        /// places in BloomServer read it unguarded to serve files relative to the collection folder, so
+        /// between one project closing and the next opening -- which is exactly when the Open/Create
+        /// Collections dialog is up -- settings describing the collection we just left are a better
+        /// answer than null. The next project overwrites them.
+        /// </remarks>
+        internal static void ReleaseApplicationLevelProjectState(BloomServer server)
+        {
+            // No server means we failed before we ever got hold of one, so we had not registered any
+            // handlers and had not advertised our collection either -- there is nothing of ours to take
+            // back. Bailing out first also keeps a second Dispose() the no-op it has always been,
+            // rather than letting it clear settings that by then belong to a live project.
+            if (server == null)
+                return;
+
+            // So that common/instanceInfo doesn't report a collection we are not in. Unlike the
+            // server's copy, this one is read as "which collection is current", and the collection
+            // chooser uses it to decide what to highlight.
+            web.controllers.CommonApi.CurrentCollectionSettings = null;
+
+            try
+            {
+                server.ApiHandler.ClearProjectLevelHandlers();
+            }
+            catch (ObjectDisposedException)
+            {
+                // During application shutdown, WinForms can fire Application.ApplicationExit (for
+                // example as a worker thread's message context is torn down while publish artifacts are
+                // being created, as in the harvester's CreateArtifacts flow). That disposes the
+                // ApplicationContainer, so the server and its API handlers may already be gone, in
+                // which case there is nothing project-scoped left to clean up.
+            }
+            catch (Exception e)
+            {
+                // Anything else is unexpected, so say so -- but this is called from Dispose, ahead of
+                // disposing our scope, and letting it out would skip that. (Before this method existed,
+                // that was guaranteed by a finally.)
+                Logger.WriteError("Error clearing a project's application-level API handlers", e);
+            }
+        }
+
         /// ------------------------------------------------------------------------------------
         public void Dispose()
         {
+            // Disposing ProjectContext disables api functionality and disposes WorkspaceModel/View, BloomServer, et al.,
+            // so we need to resort to our fallback error handler.
+            ResetToFallbackHandler();
+
+            // Give the application-level objects back the state they had before this project existed.
+            // This runs before anything below that could throw, and without resolving anything, because
+            // it is the one part of our teardown that the *next* collection the user opens depends on.
+            // (BL-16678)
+            //
+            // The order also matters, and is why this comes before disposing the scope. Browsers could
+            // still be running and trying to call APIs while we are shutting down. Disposing the scope
+            // disposes the browsers, after which they shouldn't be able to make requests, but some
+            // requests might still be queued up in the server. If we clear the project level handlers
+            // first, then those requests could fail because no handler is registered. If we dispose the
+            // scope first, then those requests will find the handlers, but they may rely on objects that
+            // have been disposed. On the whole, I think it's best to clear the handlers first; that way,
+            // at least we avoid mysterious errors in the API handlers due to disposed objects.
+            ReleaseApplicationLevelProjectState(_server);
+            _server = null;
+
+            // Unlock after that, not before: CollectionLock.Unlock rethrows in a DEBUG build, and on the
+            // ordinary collection-switch path nothing catches it -- so unlocking first meant a failing
+            // unlock could leave the project's API handlers registered, which is the state this whole
+            // change exists to prevent. (BL-16678)
             if (_collectionLock != null)
             {
                 _collectionLock.Unlock();
             }
-
-            // Disposing ProjectContext disables api functionality and disposes WorkspaceModel/View, BloomServer, et al.,
-            // so we need to resort to our fallback error handler.
-            ResetToFallbackHandler();
 
             // We can be disposed without a scope: our constructor disposes us if it fails, and it can
             // fail in (or even before) BuildSubContainerForThisProject. Unlocking the collection above
@@ -973,46 +1070,8 @@ namespace Bloom
                 return;
             }
 
-            // We now keep BloomApiHandler alive for the application lifetime, but many endpoints are project-scoped.
-            // Disposing the ProjectContext should fully shut down the project (including webviews) before we clear
-            // those project-scoped endpoints.
-            try
-            {
-                // During application shutdown, WinForms can fire Application.ApplicationExit (for example as a
-                // worker thread's message context is torn down while publish artifacts are being created, as in
-                // the harvester's CreateArtifacts flow). That disposes the ApplicationContainer, which is the
-                // parent of _scope, before this Dispose runs. When that has happened, BloomServer (an
-                // application-level singleton) and all its API handlers are already gone, so resolving it throws
-                // ObjectDisposedException and there is nothing project-scoped left to clean up. In that case we
-                // just fall through to disposing our own scope.
-                var server = _scope.Resolve<BloomServer>();
-
-                // The order of these is tricky. The problem is that browsers could still be
-                // running and trying to call APIs while we are shutting down.
-                // Disposing the scope disposes the browsers, after which they shouldn't be able
-                // to make requests. But some requests might still be queued up in the server.
-                // If we clear the project level handlers first, then those requests could fail
-                // because no handler is registered. If we dispose the scope first, then those
-                // requests will find the handlers, but they may rely on objects that have been
-                // disposed. On the whole, I think it's best to clear the handlers first; that way,
-                // at least we avoid mysterious errors in the API handlers due to disposed objects.
-                server.ApiHandler.ClearProjectLevelHandlers();
-                // Clear the project-scoped collection settings we set on the application-level CommonApi
-                // (see constructor), so common/instanceInfo doesn't report stale collection info after the
-                // project is closed. A reload disposes this context before creating the next one, which
-                // sets it again, so clearing here is safe.
-                web.controllers.CommonApi.CurrentCollectionSettings = null;
-            }
-            catch (ObjectDisposedException)
-            {
-                // The application container was already disposed (see above); nothing project-scoped
-                // remains to clean up, so proceed to dispose our own scope below.
-            }
-            finally
-            {
-                _scope.Dispose();
-                _scope = null;
-            }
+            _scope.Dispose();
+            _scope = null;
 
             //REVIEW: by debugging, I see that _httpServer is already (and properly) disposed of by the
             //_scope.Dispose() above.
