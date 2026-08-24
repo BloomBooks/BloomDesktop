@@ -98,6 +98,7 @@ import {
     clearImageContentTransform,
     flipImageContent,
     FlipAxis,
+    getImageContentTransform,
     rotateImageContentRight,
 } from "../imageContentTransform";
 import {
@@ -1377,8 +1378,9 @@ export class CanvasElementManager {
     // Rotate whatever the Rotate Right command applies to for the active element: the
     // element itself where that is possible, otherwise the picture inside it. A background
     // image fills its bloom-canvas and cannot be turned as a box, so for it we turn the
-    // picture and shrink it to fit, which is what an author wants for a photograph that
-    // arrived on its side. Answers whether anything was rotated.
+    // picture inside the box and reshape the box to match, which gives what an author wants
+    // for a photograph that arrived on its side: the picture upright, and any crop kept.
+    // Answers whether anything was rotated.
     public rotateActiveImageRight(): boolean {
         if (!this.activeElement) {
             return false;
@@ -1510,6 +1512,9 @@ export class CanvasElementManager {
         const currentImgWidth = imgStyleWidth
             ? CanvasElementManager.pxToNumber(imgStyleWidth)
             : img.clientWidth;
+        if (getImageContentTransform(img).quarterTurns % 2 === 1) {
+            return this.getExpandedTurnedImageDimensions(img, bloomCanvas);
+        }
         // using <= here because client values are whole pixels and rounding easily
         // produces a spurious 1px difference.
         const canvasElementFillsCanvas =
@@ -1565,6 +1570,49 @@ export class CanvasElementManager {
             }
         }
         return null;
+    }
+
+    // The same as getExpandedImageDimensions, for a picture that has been turned a quarter
+    // turn. The picture's layout box lies across the page, so the box's width has to cover the
+    // page's height and the box's height has to cover the page's width, and both offsets have
+    // to move, because the box turns about its own centre.
+    private getExpandedTurnedImageDimensions(
+        img: HTMLImageElement,
+        bloomCanvas: HTMLElement,
+    ): {
+        imgWidth: number;
+        imgTop?: number;
+        imgLeft?: number;
+    } | null {
+        const pageWidth = bloomCanvas.clientWidth;
+        const pageHeight = bloomCanvas.clientHeight;
+        const imgWidth = Math.max(
+            pageHeight,
+            (pageWidth * img.naturalWidth) / img.naturalHeight,
+        );
+        const imgHeight = (imgWidth * img.naturalHeight) / img.naturalWidth;
+        const imgLeft = (pageWidth - imgWidth) / 2;
+        const imgTop = (pageHeight - imgHeight) / 2;
+        const currentWidth = img.style.width
+            ? CanvasElementManager.pxToNumber(img.style.width)
+            : img.clientWidth;
+        const alreadyDone =
+            Math.abs(currentWidth - imgWidth) < 1 &&
+            Math.abs(
+                CanvasElementManager.pxToNumber(img.style.left) - imgLeft,
+            ) < 1 &&
+            Math.abs(CanvasElementManager.pxToNumber(img.style.top) - imgTop) <
+                1 &&
+            Math.abs(
+                bloomCanvas.clientHeight - this.activeElement!.clientHeight,
+            ) <= 1 &&
+            Math.abs(
+                bloomCanvas.clientWidth - this.activeElement!.clientWidth,
+            ) <= 1;
+        if (alreadyDone) {
+            return null;
+        }
+        return { imgWidth, imgLeft, imgTop };
     }
 
     // If the background canvas element doesn't fill the container, we can expand the image to make it so.

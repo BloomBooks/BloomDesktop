@@ -19,6 +19,7 @@ import {
     unrotateVector,
 } from "./canvasElementRotation";
 import { pushUndoForCanvasElementRotation } from "../ImageUndoManager";
+import { getImageContentTransform } from "../imageContentTransform";
 
 export interface ICanvasElementHandleDragInteractionsHost {
     getActiveElement: () => HTMLElement | undefined;
@@ -45,6 +46,38 @@ export interface ICanvasElementHandleDragInteractionsHost {
 
     startMoving: () => void;
     stopMoving: () => void;
+}
+
+// Which sides of a picture are cropped, in the coordinates of the canvas element that holds
+// it, so that the marks go on the right handles.
+//
+// The picture's own box may be turned inside the element, by the Rotate Right command on a page
+// background. A CSS transform turns the box about its own centre and leaves the layout alone, so
+// what the element shows is a rectangle the size of the box with its two dimensions swapped for
+// an odd number of quarter turns, centred where the box's centre is. Comparing the box itself
+// against the element, as we may for an untuned picture, would mark every side of a turned one.
+export function getCroppedSides(
+    elementWidth: number,
+    elementHeight: number,
+    boxLeft: number,
+    boxTop: number,
+    boxWidth: number,
+    boxHeight: number,
+    quarterTurns: number,
+    // Client values are whole pixels, and rounding easily produces a spurious difference of one.
+    slop = 1,
+): { n: boolean; e: boolean; s: boolean; w: boolean } {
+    const isQuarterTurn = quarterTurns % 2 === 1;
+    const shownWidth = isQuarterTurn ? boxHeight : boxWidth;
+    const shownHeight = isQuarterTurn ? boxWidth : boxHeight;
+    const centreX = boxLeft + boxWidth / 2;
+    const centreY = boxTop + boxHeight / 2;
+    return {
+        n: centreY - shownHeight / 2 < -slop,
+        e: centreX + shownWidth / 2 > elementWidth + slop,
+        s: centreY + shownHeight / 2 > elementHeight + slop,
+        w: centreX - shownWidth / 2 < -slop,
+    };
 }
 
 export class CanvasElementHandleDragInteractions {
@@ -973,13 +1006,15 @@ export class CanvasElementHandleDragInteractions {
             imgLeft += e.offsetLeft;
             imgTop += e.offsetTop;
         }
-        const slop = 1;
-        const cropped = {
-            n: imgTop < -slop,
-            e: imgLeft + img.offsetWidth > activeElement.clientWidth + slop,
-            s: imgTop + img.offsetHeight > activeElement.clientHeight + slop,
-            w: imgLeft < -slop,
-        };
+        const cropped = getCroppedSides(
+            activeElement.clientWidth,
+            activeElement.clientHeight,
+            imgLeft,
+            imgTop,
+            img.offsetWidth,
+            img.offsetHeight,
+            getImageContentTransform(img).quarterTurns,
+        );
         sideHandles.forEach((handle) => {
             const longClass = Array.from(handle.classList).find((c) =>
                 c.startsWith("bloom-ui-canvas-element-side-handle-"),

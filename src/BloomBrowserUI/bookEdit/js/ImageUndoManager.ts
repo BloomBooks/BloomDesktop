@@ -16,6 +16,15 @@ export interface IImageCropInfo {
     top: string;
 }
 
+// The inline size and place of a canvas element box, as written, so that an undo can put back
+// exactly what was there, including nothing at all.
+export interface IElementGeometry {
+    width: string;
+    height: string;
+    left: string;
+    top: string;
+}
+
 type ImageOperationUndoItem =
     | {
           kind: "restoreImage";
@@ -24,9 +33,11 @@ type ImageOperationUndoItem =
           cropInfo: IImageCropInfo;
       }
     // Rotate right, Flip, and a drag of the rotation handle. The picture keeps its file and
-    // its metadata, so the only things to put back are the rotation of the canvas element
-    // box, the turn and mirror of the picture, and the crop, which a turn of the picture
-    // removes. There is no img when the rotation handle turns a text box or a video.
+    // its metadata, so the things to put back are the rotation of the canvas element box, the
+    // turn and mirror of the picture, the crop, and the size and place of the box itself: a
+    // turn of a page background picture changes the shape of its box, because the box takes the
+    // shape of the picture. There is no img when the rotation handle turns a text box or a
+    // video.
     | {
           kind: "restoreImageTransform";
           canvasElement: HTMLElement;
@@ -34,6 +45,7 @@ type ImageOperationUndoItem =
           elementRotation: number;
           imageTransform: string;
           cropInfo: IImageCropInfo;
+          elementGeometry: IElementGeometry;
       };
 // | {
 //       kind: "removeElement";
@@ -122,6 +134,12 @@ export class ImageUndoManager {
                 height: img?.style.height ?? "",
                 left: img?.style.left ?? "",
                 top: img?.style.top ?? "",
+            },
+            elementGeometry: {
+                width: canvasElement.style.width,
+                height: canvasElement.style.height,
+                left: canvasElement.style.left,
+                top: canvasElement.style.top,
             },
         });
     }
@@ -219,6 +237,13 @@ export class ImageUndoManager {
                     undoItem.img.style.left = undoItem.cropInfo.left;
                     undoItem.img.style.top = undoItem.cropInfo.top;
                 }
+                undoItem.canvasElement.style.width =
+                    undoItem.elementGeometry.width;
+                undoItem.canvasElement.style.height =
+                    undoItem.elementGeometry.height;
+                undoItem.canvasElement.style.left =
+                    undoItem.elementGeometry.left;
+                undoItem.canvasElement.style.top = undoItem.elementGeometry.top;
                 // This also tells the tool panel about the change.
                 this.host.updateCanvasElementAfterTransformChange(
                     undoItem.canvasElement,
