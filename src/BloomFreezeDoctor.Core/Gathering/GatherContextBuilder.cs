@@ -113,8 +113,9 @@ public static class GatherContextBuilder
 
             // No WebView2 child advertised a port. If this Bloom has WebView2 children at all, it is
             // not running the 6.3 arrangement, so guessing 9222 would be guessing about someone else.
+            // With no children, this looks like 6.3, which hardcodes the port and does not advertise it.
             var children = WebView2Processes.FindChildrenOf(target.ProcessId);
-            return children.Count == 0 ? null : (int?)null;
+            return children.Count == 0 ? WebView2Processes.LegacyHardcodedPort : (int?)null;
         }
         catch (Exception)
         {
