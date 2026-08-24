@@ -1724,7 +1724,11 @@ namespace Bloom.Edit
                 }
                 catch (Exception ex)
                 {
-                    BloomWebSocketServer.Instance.SendEvent(
+                    // Instance is only set while a collection is open, so this can be null while one
+                    // is closing -- and it used to be a disposed server instead, which swallowed the
+                    // message silently. Losing the notification is the right failure here; turning a
+                    // handled download error into a NullReferenceException is not.
+                    BloomWebSocketServer.Instance?.SendEvent(
                         "makeThumbnailFile-" + desiredFileNameWithoutExtension,
                         "error: " + ex.Message
                     );

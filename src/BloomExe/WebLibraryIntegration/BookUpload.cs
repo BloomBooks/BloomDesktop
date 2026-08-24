@@ -1066,7 +1066,10 @@ namespace Bloom.WebLibraryIntegration
                 var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(bookObjectId);
                 book.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishWeb, url);
 
-                BloomWebSocketServer.Instance.SendEvent("booksOnBlorg", "reload");
+                // Instance is only set while a collection is open. An upload that finishes as the
+                // collection is closing has nothing left to tell, and no longer has a disposed
+                // server to tell it to, so say nothing rather than throw.
+                BloomWebSocketServer.Instance?.SendEvent("booksOnBlorg", "reload");
                 return bookObjectId;
             }
             finally
