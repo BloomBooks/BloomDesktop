@@ -71,7 +71,7 @@ public class ReportOutboxTests
             )
         )
         {
-            var filed = await outbox.DrainAsync(submitter, CancellationToken.None);
+            var filed = (await outbox.DrainAsync(submitter, CancellationToken.None)).Filed;
 
             Assert.That(
                 filed,
@@ -93,7 +93,7 @@ public class ReportOutboxTests
 
         // Sanity check the other direction: with the gate free, the same outbox does drain. Without this
         // the test above would still pass if DrainAsync were broken outright.
-        var filedAfter = await outbox.DrainAsync(submitter, CancellationToken.None);
+        var filedAfter = (await outbox.DrainAsync(submitter, CancellationToken.None)).Filed;
         Assert.That(filedAfter, Is.EqualTo(1), "with the gate free it should file the bundle");
         Assert.That(submitter.Submitted, Has.Count.EqualTo(1));
     }
@@ -231,7 +231,7 @@ public class ReportOutboxTests
         outbox.Enqueue(Report("newest"), "BL", "Release", "Frozen");
         var submitter = new FakeSubmitter();
 
-        var filed = await outbox.DrainAsync(submitter);
+        var filed = (await outbox.DrainAsync(submitter)).Filed;
 
         Assert.That(filed, Is.EqualTo(2));
         Assert.That(
@@ -258,7 +258,7 @@ public class ReportOutboxTests
         outbox.Enqueue(Report("two"), "BL", "Release", "Frozen");
         var submitter = new FakeSubmitter { Outcome = SubmitOutcome.NetworkUnavailable };
 
-        var filed = await outbox.DrainAsync(submitter);
+        var filed = (await outbox.DrainAsync(submitter)).Filed;
 
         Assert.That(filed, Is.EqualTo(0));
         Assert.That(outbox.Pending(), Has.Count.EqualTo(2), "nothing may be lost by being offline");
@@ -305,7 +305,7 @@ public class ReportOutboxTests
         }
         var submitter = new FakeSubmitter();
 
-        var filed = await outbox.DrainAsync(submitter);
+        var filed = (await outbox.DrainAsync(submitter)).Filed;
 
         Assert.That(filed, Is.EqualTo(ReportOutbox.MaxFilingsPerDay));
         Assert.That(
@@ -316,7 +316,7 @@ public class ReportOutboxTests
 
         // A day later the queue moves again.
         _now = _now.AddDays(1).AddMinutes(1);
-        var filedTomorrow = await outbox.DrainAsync(submitter);
+        var filedTomorrow = (await outbox.DrainAsync(submitter)).Filed;
         Assert.That(filedTomorrow, Is.EqualTo(2));
     }
 

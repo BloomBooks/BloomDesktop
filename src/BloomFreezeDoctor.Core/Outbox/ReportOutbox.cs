@@ -5,6 +5,18 @@ using SIL.IO;
 
 namespace BloomFreezeDoctor.Outbox;
 
+/// <summary>
+/// What a drain did. **The two fields are not interchangeable, and conflating them was a real bug:**
+/// `Filed: 0` on its own is ambiguous between "there was nothing to send" and "somebody else is sending
+/// it", and the caller that asks a user-facing question - "Report now" - needs to tell those apart, or it
+/// announces failure for a report that is about to be filed perfectly well.
+/// </summary>
+/// <param name="Filed">How many bundles were actually accepted by the tracker.</param>
+/// <param name="GatedOut">
+/// True if another drain held the gate and we left the queue to it, having sent nothing.
+/// </param>
+public readonly record struct DrainOutcome(int Filed, bool GatedOut);
+
 /// <summary>One queued report on disk.</summary>
 public sealed record QueuedBundle
 {
@@ -266,7 +278,7 @@ public sealed class ReportOutbox
 
     private readonly TimeSpan _drainGateWait;
 
-    public async Task<int> DrainAsync(
+    public async Task<DrainOutcome> DrainAsync(
         IReportSubmitter submitter,
         CancellationToken cancellation = default
     )
@@ -285,7 +297,12 @@ public sealed class ReportOutbox
         {
             gate = await AcquireDrainGateAsync(cancellation).ConfigureAwait(false);
             if (gate == null)
-                return 0; // somebody else is draining; those bundles are theirs to send.
+            {
+                // Somebody else is draining, so those bundles are theirs to send. Saying so, rather than
+                // just reporting zero filed, is what lets "Report now" tell the user their report is
+                // QUEUED instead of implying it failed.
+                return new DrainOutcome(Filed: 0, GatedOut: true);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -301,7 +318,8 @@ public sealed class ReportOutbox
 
         try
         {
-            return await DrainInnerAsync(submitter, cancellation).ConfigureAwait(false);
+            var filed = await DrainInnerAsync(submitter, cancellation).ConfigureAwait(false);
+            return new DrainOutcome(filed, GatedOut: false);
         }
         finally
         {

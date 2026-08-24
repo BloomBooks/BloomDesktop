@@ -7,6 +7,18 @@ using Protocol = BloomBooks.FreezeDoctor.Protocol;
 
 namespace BloomFreezeDoctor;
 
+/// <summary>
+/// What came of a person pressing "Report now".
+///
+/// Three distinct answers, and the middle one is the reason this is not just a string: a report can be
+/// safely gathered and queued without being filed yet — offline, over the daily cap, or another process
+/// is draining the queue — and telling somebody that FAILED, when their report is sitting on disk about
+/// to go, is a good way to have them try again and again.
+/// </summary>
+/// <param name="IssueId">The card, if the tracker accepted it there and then.</param>
+/// <param name="Queued">True if it is safely on disk and will be sent later.</param>
+public readonly record struct ReportNowResult(string? IssueId, bool Queued);
+
 /// <summary>What the window needs to render, published by the supervisor as things change.</summary>
 public sealed record DoctorStatus
 {
@@ -162,11 +174,11 @@ public sealed class DoctorSupervisor : IDisposable
     /// "Report now" of the card, and it is also how support gets a snapshot of a Bloom that is merely
     /// slow rather than frozen.
     /// </summary>
-    public async Task<string?> ReportNowAsync(int processId, CancellationToken cancellation)
+    public async Task<ReportNowResult> ReportNowAsync(int processId, CancellationToken cancellation)
     {
         var facts = GatherContextBuilder.DescribeRunningProcess(processId);
         if (facts == null)
-            return null;
+            return new ReportNowResult(null, Queued: false);
         var verdict = new DetectorVerdict
         {
             State = TargetState.Healthy,
@@ -178,8 +190,9 @@ public sealed class DoctorSupervisor : IDisposable
                 "a person asked for this report deliberately (the Report now button, or --report-now); "
                 + "Bloom was not necessarily frozen",
         };
-        return await GatherFileAndRecordAsync(facts, verdict, mayFile: true, cancellation)
+        var outcome = await GatherFileAndRecordAsync(facts, verdict, mayFile: true, cancellation)
             .ConfigureAwait(false);
+        return new ReportNowResult(outcome.IssueId, outcome.StillQueued);
     }
 
     /// <summary>Looks for Blooms we are not yet watching, and forgets ones that have gone.</summary>
@@ -287,15 +300,15 @@ public sealed class DoctorSupervisor : IDisposable
                 Note(
                     $"gathering evidence about Bloom {e.Target.ProcessId}: {e.Verdict.Explanation}"
                 );
-                var issue = await GatherFileAndRecordAsync(
+                var outcome = await GatherFileAndRecordAsync(
                         e.Target,
                         e.Verdict,
                         e.MayFile || _forceFiling,
                         _stopping.Token
                     )
                     .ConfigureAwait(false);
-                if (issue != null)
-                    ReportFiled?.Invoke(this, issue);
+                if (outcome.IssueId != null)
+                    ReportFiled?.Invoke(this, outcome.IssueId);
             }
             catch (Exception ex)
             {
@@ -309,7 +322,23 @@ public sealed class DoctorSupervisor : IDisposable
         });
     }
 
-    private async Task<string?> GatherFileAndRecordAsync(
+    /// <summary>
+    /// What one gather-and-file attempt achieved.
+    /// </summary>
+    /// <param name="IssueId">The card, if the tracker accepted it during this attempt.</param>
+    /// <param name="StillQueued">
+    /// True when the report is safely on disk but has not been filed yet. That is a perfectly good
+    /// outcome - offline, over the daily cap, or another process is sending it - and it must not be
+    /// reported to a user as a failure.
+    /// </param>
+    /// <param name="WasGatedOut">True when another process was already draining, so we sent nothing.</param>
+    private readonly record struct GatherOutcome(
+        string? IssueId,
+        bool StillQueued,
+        bool WasGatedOut
+    );
+
+    private async Task<GatherOutcome> GatherFileAndRecordAsync(
         BloomTargetFacts facts,
         DetectorVerdict verdict,
         bool mayFile,
@@ -343,13 +372,20 @@ public sealed class DoctorSupervisor : IDisposable
         PublishStatus();
 
         if (!report.MayFile)
-            return null;
+        {
+            // Gathered to disk and never to be sent, which is the intended end for a developer or
+            // automation run. Not queued, and not a failure either.
+            return new GatherOutcome(null, StillQueued: false, WasGatedOut: false);
+        }
 
-        await DrainAsync(cancellation).ConfigureAwait(false);
-        return _outbox
+        var gatedOut = await DrainAsync(cancellation).ConfigureAwait(false);
+        var issueId = _outbox
             .List()
             .FirstOrDefault(b => b.Directory == bundle.Directory)
             ?.Metadata.IssueId;
+        // Deliberately returned rather than stashed in a field: several gathers can be in flight at once
+        // (one per watched Bloom), so a field here would be read by the wrong caller.
+        return new GatherOutcome(issueId, StillQueued: issueId == null, WasGatedOut: gatedOut);
     }
 
     /// <summary>
@@ -631,7 +667,12 @@ public sealed class DoctorSupervisor : IDisposable
     /// </summary>
     private readonly SemaphoreSlim _drainGate = new(1, 1);
 
-    private async Task DrainAsync(CancellationToken cancellation)
+    /// <summary>
+    /// Drains, and says whether another process was already doing it. See the note on
+    /// <see cref="DrainOutcome"/> for why "nothing filed" and "somebody else is filing it" must not be
+    /// the same answer.
+    /// </summary>
+    private async Task<bool> DrainAsync(CancellationToken cancellation)
     {
         try
         {
@@ -639,19 +680,22 @@ public sealed class DoctorSupervisor : IDisposable
         }
         catch (OperationCanceledException)
         {
-            return;
+            return false;
         }
         try
         {
             if (_outbox.Pending().Count == 0)
-                return;
-            var filed = await _outbox
+                return false;
+            var outcome = await _outbox
                 .DrainAsync(new YouTrackSubmitter(), cancellation)
                 .ConfigureAwait(false);
-            if (filed > 0)
-                Note($"filed {filed} report(s)");
+            if (outcome.Filed > 0)
+                Note($"filed {outcome.Filed} report(s)");
+            else if (outcome.GatedOut)
+                Note("another Freeze Doctor is sending the queued reports");
             PublishStatus();
             ConsiderExiting();
+            return outcome.GatedOut;
         }
         catch (OperationCanceledException) { }
         catch (Exception e)
@@ -662,6 +706,7 @@ public sealed class DoctorSupervisor : IDisposable
         {
             _drainGate.Release();
         }
+        return false;
     }
 
     /// <summary>

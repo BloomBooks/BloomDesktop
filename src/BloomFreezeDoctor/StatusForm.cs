@@ -312,11 +312,27 @@ public sealed class StatusForm : Form
         _lastEvent.Text = "Gathering a report on request…";
         _ = Task.Run(async () =>
         {
-            var issue = await _supervisor
+            var result = await _supervisor
                 .ReportNowAsync(target.Id, CancellationToken.None)
                 .ConfigureAwait(false);
-            if (issue != null)
-                OnReportFiled(this, issue);
+            if (result.IssueId != null)
+            {
+                OnReportFiled(this, result.IssueId);
+            }
+            else if (result.Queued)
+            {
+                // Gathered and safely on disk, just not sent yet: offline, over the daily limit, or
+                // another Doctor is draining the queue. Saying so matters, because the alternative was
+                // saying nothing at all and leaving "Gathering a report…" on screen, which reads as a
+                // failure and invites the user to press it again.
+                SayOnTheUiThread(
+                    "Report saved. It will be sent when the Freeze Doctor can reach the tracker."
+                );
+            }
+            else
+            {
+                SayOnTheUiThread("The report could not be gathered.");
+            }
         });
     }
 
@@ -331,6 +347,25 @@ public sealed class StatusForm : Form
             _tray.Dispose();
         }
         base.Dispose(disposing);
+    }
+
+    /// <summary>
+    /// Puts a line in the window's status area from whatever thread we happen to be on. The report work
+    /// runs on a worker thread, so this cannot touch the control directly.
+    /// </summary>
+    private void SayOnTheUiThread(string text)
+    {
+        try
+        {
+            if (InvokeRequired)
+                BeginInvoke(() => _lastEvent.Text = text);
+            else
+                _lastEvent.Text = text;
+        }
+        catch (Exception)
+        {
+            // The window is going away. Losing a status line at that point costs nothing.
+        }
     }
 
     private static string Truncate(string value, int max) =>
