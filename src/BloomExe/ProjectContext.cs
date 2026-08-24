@@ -221,7 +221,6 @@ namespace Bloom
                                 typeof(SignLanguageApi),
                                 typeof(AudioSegmentationApi),
                                 typeof(FileIOApi),
-                                typeof(ProgressDialogApi),
                                 typeof(EditingViewApi),
                                 typeof(ImageGalleryApi),
                                 typeof(ProblemReportApi),
@@ -496,7 +495,12 @@ namespace Bloom
             _scope.Resolve<ProblemReportApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CopyrightAndLicenseApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<FileIOApi>().RegisterWithApiHandler(server.ApiHandler);
-            _scope.Resolve<ProgressDialogApi>().RegisterWithApiHandler(server.ApiHandler);
+            // ProgressDialogApi is registered once, application-wide, by ApplicationContainer: a
+            // progress dialog has to be possible before any collection is open. Registering it
+            // here as well would be a duplicate key in the endpoint dictionary, which throws --
+            // and application-level registrations are deliberately NOT cleared between
+            // collections, so the second one would never go away. This is the same arrangement as
+            // CommonApi and NewCollectionWizardApi, which likewise appear only there.
             _scope.Resolve<EditingViewApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ImageGalleryApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<LibraryPublishApi>().RegisterWithApiHandler(server.ApiHandler);

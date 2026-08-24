@@ -1688,6 +1688,48 @@ namespace Bloom
                     return false;
                 }
 
+                // The collection may declare a minimum Bloom version. Check that before we go to the
+                // trouble of building a ProjectContext around it. This is the one place all the ways
+                // of opening a collection funnel through, and each caller responds to a false return
+                // by putting up the collection chooser, which is one of the two choices we offer the
+                // user here. See BL-16690.
+                //
+                // Deliberately, this gates only the interactive ways of opening a collection. The
+                // command-line commands and BulkUploader build a ProjectContext directly and so are
+                // not stopped by a minimum version. We decided to leave it that way: those tools have
+                // no user to read a dialog or choose another collection, and failing an overnight
+                // upload job is its own kind of damage. If the flag ever needs to protect the files
+                // themselves rather than warn a person, this is the decision to revisit.
+                if (MinimumBloomVersionCheck.IsThisBloomTooOld(path, out var minimumBloomVersion))
+                {
+                    // We're normally still showing the splash screen at this point, and it would sit on
+                    // top of our dialog. Also, the dialog is a ReactDialog, so it needs the server.
+                    StartupScreenManager.HideSplashScreenForDialog();
+                    _applicationContainer.BloomServer.EnsureListening();
+                    if (
+                        MinimumBloomVersionCheck.ReportCollectionNeedsNewerBloom(
+                            Path.GetFileNameWithoutExtension(path),
+                            minimumBloomVersion
+                        )
+                    )
+                    {
+                        // The user chose to upgrade: a newer Bloom has been downloaded and we have
+                        // asked Bloom to quit so it can be installed. Claim success, not because we
+                        // opened anything, but so that no caller puts up the collection chooser
+                        // while we are shutting down -- that would start a fresh modal message loop
+                        // and could keep Bloom alive.
+                        //
+                        // NOTE for anyone adding a caller: this is the one path where we return true
+                        // with _projectContext still null. It suits today's callers, which only use
+                        // the result to decide whether to offer the chooser (and recording this
+                        // collection as most-recently-used is right, since the upgraded Bloom should
+                        // reopen it). A caller that goes on to use _projectContext would need a
+                        // three-way result -- opened / refused / quitting -- instead of this bool.
+                        return true;
+                    }
+                    return false;
+                }
+
                 //NB: initially, you could have multiple blooms, if they were different projects.
                 //however, then we switched to the embedded http image server, which can't share
                 //a port. So we could fix that (get different ports), but for now, I'm just going
@@ -1710,6 +1752,11 @@ namespace Bloom
                 if (BloomThreadCancelService != null)
                     BloomThreadCancelService.Dispose();
                 BloomThreadCancelService = new CancellationTokenSource();
+
+                // We have a collection open, so no lock-out is in progress any more. Without this,
+                // a user locked out of collection A who moved to B and later came back to A would
+                // find that A could never lock them out again this session. See BL-16690.
+                MinimumBloomVersionCheck.NoteCollectionOpened();
 
                 return true;
             }
@@ -1878,6 +1925,12 @@ namespace Bloom
         {
             if (OpenProjectWindow(path))
             {
+                // Note that OpenProjectWindow also reports success when the user chose to upgrade
+                // rather than open anything. Recording the collection is right in that case too: an
+                // upgrade has been downloaded and will be installed as Bloom closes, so the next
+                // Bloom to start really can open this collection, and landing straight back in it is
+                // exactly what the user was trying to do.
+                //
                 // Remember the collection by the path that really exists on disk, so that a path saved
                 // by an older Bloom with trailing periods or spaces on the folder name heals rather
                 // than being handed back to us on every launch. See BL-16679.
@@ -1903,6 +1956,22 @@ namespace Bloom
         public static void SwitchToCollection(string path, Shell formToClose)
         {
             _collectionPathToOpenAfterCurrentProjectClosed = path;
+            formToClose.UserWantsToOpenADifferentProject = true;
+            formToClose.Close();
+        }
+
+        /// <summary>
+        /// Closes the current collection's window and puts up the collection chooser, as if the
+        /// user had chosen Open/Create Collection but without a destination collection chosen yet.
+        /// Used when the open collection can no longer stay open -- a Team Collection minimum
+        /// Bloom version we don't meet arrived mid-session (BL-16690). Cancelling the chooser
+        /// exits Bloom (see ChooseACollection), which preserves the rule that staying in the
+        /// locked-out collection is not an option.
+        /// </summary>
+        public static void CloseCurrentCollectionAndChooseAnother(Shell formToClose)
+        {
+            // No chosen path: OpenCollectionChosenInDialog reads null as "show the chooser".
+            _collectionPathToOpenAfterCurrentProjectClosed = null;
             formToClose.UserWantsToOpenADifferentProject = true;
             formToClose.Close();
         }
@@ -1943,7 +2012,14 @@ namespace Bloom
         private static void ReopenProject(object sender, EventArgs e)
         {
             Application.Idle -= ReopenProject;
-            OpenCollection(Settings.Default.MruProjects.Latest);
+            if (!OpenCollection(Settings.Default.MruProjects.Latest))
+            {
+                // The shell is already closed by the time we get here, so if the re-open failed
+                // we must put the chooser up or the user is left with no window at all. This can
+                // happen now that a collection can refuse to open: a Team Collection member on a
+                // newer Bloom can add a MinimumBloomVersion that syncs down mid-session.
+                ChooseACollection();
+            }
         }
 
         private static void OpenCollectionChosenInDialog(object sender, EventArgs e)
@@ -1951,10 +2027,11 @@ namespace Bloom
             Application.Idle -= OpenCollectionChosenInDialog;
             var pathToOpen = _collectionPathToOpenAfterCurrentProjectClosed;
             _collectionPathToOpenAfterCurrentProjectClosed = null;
-            Debug.Assert(!string.IsNullOrEmpty(pathToOpen));
-            if (!OpenCollection(pathToOpen))
+            // pathToOpen is null when CloseCurrentCollectionAndChooseAnother closed the shell:
+            // no collection has been chosen yet, so go straight to the chooser.
+            if (string.IsNullOrEmpty(pathToOpen) || !OpenCollection(pathToOpen))
             {
-                // If opening failed, fall back to letting the user choose again.
+                // Also comes here if opening failed: fall back to letting the user choose again.
                 ChooseACollection();
             }
         }

@@ -72,6 +72,20 @@ namespace Bloom.Collection
         // if this is null, relevant code uses the default, so we don't have to initialize it here
         public string BadgeQrCodeLabel;
 
+        /// <summary>
+        /// The oldest version of Bloom that is allowed to open this collection, e.g. "6.5".
+        /// Empty means any version may open it. At this point there is no UI for setting this;
+        /// it has to be added by editing the .bloomCollection file by hand. See BL-16690.
+        /// The gate that actually enforces it is MinimumBloomVersionCheck.
+        /// </summary>
+        public string MinimumBloomVersion = "";
+
+        /// <summary>
+        /// The name of the element in the .bloomCollection file that holds MinimumBloomVersion.
+        /// MinimumBloomVersionCheck reads it without loading the whole CollectionSettings.
+        /// </summary>
+        public const string kMinimumBloomVersionElementName = "MinimumBloomVersion";
+
         public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
             new Dictionary<string, string>()
             {
@@ -460,6 +474,10 @@ namespace Bloom.Collection
             xml.Add(BulkPublishBloomPubSettings.ToXElement());
             xml.Add(new XElement("ShowBlorgLanguageQrCode", ShowBlorgLanguageQrCode));
             xml.Add(new XElement("BadgeQrCodeLabel", BadgeQrCodeLabel));
+            // Only write this if it is actually in use. Save() builds the file from scratch, so if we
+            // didn't write it back, the first save after someone hand-added it would silently lose it.
+            if (!string.IsNullOrWhiteSpace(MinimumBloomVersion))
+                xml.Add(new XElement(kMinimumBloomVersionElementName, MinimumBloomVersion));
             RobustIO.SaveXElement(xml, SettingsFilePath);
 
             // Color palette settings are stored in a separate Json file
@@ -775,6 +793,7 @@ namespace Bloom.Collection
 
                 ShowBlorgLanguageQrCode = ReadBoolean(xml, "ShowBlorgLanguageQrCode", true);
                 BadgeQrCodeLabel = ReadString(xml, "BadgeQrCodeLabel", "");
+                MinimumBloomVersion = ReadString(xml, kMinimumBloomVersionElementName, "");
 
                 LoadDictionary(xml, "Palette", ColorPalettes);
             }
