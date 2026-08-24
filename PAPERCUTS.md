@@ -19,6 +19,40 @@ House rules:
 
 ---
 
+## 2026-08-24 — The book folder's own basePage.css can be older than the one you just built
+
+- **Cut:** Bloom serves `basePage.css` for the edit page out of the *book* folder, and the copy
+  there (`<collection>/<book>/basePage.css`) was 71330 bytes with no bloom-table rules at all,
+  byte-for-byte the size of `D:/bloom/output/browser/bookLayout/basePage.css` from Aug 8, while
+  this worktree's freshly built copy was 74244 bytes and had them. The symptom does not look like
+  a CSS problem: the table loses `display: grid`, so every cell becomes a full-width block, cells
+  report a height of 1px, and Bloom's picture-fitting code writes nonsense geometry from those
+  sizes. Rebuilding the worktree's `basePage.css` changes nothing, because nothing re-copies it.
+- **Idea:** When a table (or anything else whose CSS lives in `basePage.css`) is not laid out as
+  expected, fetch the stylesheet the page actually loaded and grep it, rather than reading the
+  built file: `link[rel=stylesheet]` in the page iframe points at the book folder. Copying
+  `output/browser/bookLayout/basePage.css` over the book's copy fixes it immediately. Worth
+  finding out what decides not to re-copy it, and whether a book last opened by another checkout's
+  Bloom keeps that checkout's support files.
+- **Context:** `Add-Tables`, verifying table picture cells in the running Bloom. Cost about an
+  hour of chasing a layout bug that was a stale stylesheet.
+
+## 2026-08-24 — A changed bloom-table.css never reaches basePage.css
+
+- **Cut:** `basePage.less` pulls the library's structural styles in with
+  `@import (inline) ".../node_modules/bloom-table/dist/bloom-table.css"`, but `build:less-inner`
+  (watchLessManager.js) decides whether to recompile by comparing the mtimes of the imports LESS
+  reports, and that inline CSS is not among them. So after the library changes its CSS the built
+  `output/browser/bookLayout/basePage.css` stays stale and the running Bloom lays tables out by
+  the old rules, with nothing saying so.
+- **Idea:** Have the manager count an inline-imported file among an entry's dependencies (the
+  regex in `scanLessImports` already matches `@import (inline) "..."`; it is `resolveLessImport`
+  plus the post-compile `result.imports` list that drop it). Meanwhile: delete
+  `output/browser/bookLayout/basePage.css` and run `pnpm --dir src/content run build:less-inner`,
+  which rebuilds when the output is missing.
+- **Context:** `Add-Tables`, updating Bloom to the current bloom-table. The one stale property was
+  `overflow: hidden` where the library now needs `overflow: clip` for nested tables.
+
 ## 2026-08-20 — Rebuilding a pnpm-linked front-end dependency needs a whole new go.sh session
 
 - **Cut:** `bloom-table` is linked from a sibling repo, and after `vp pack` there the running

@@ -19,8 +19,21 @@ import {
 // bloom-table.css, which basePage.less inlines so they ship everywhere.
 import "bloom-table/bloom-table-edit.css";
 import { SetupImagesInContainer } from "./bloomImages";
+import $ from "jquery";
 import BloomField from "../bloomField/BloomField";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
+import {
+    activateLongPressFor,
+    AddLanguageTags,
+    attachToCkEditor,
+} from "./bloomEditing";
+
+// The library's own "something changed in a table" notification. It fires on the
+// page's document at the end of every operation that goes through the table's
+// history (adding a row or column, changing a cell's content type, pasting or
+// deleting a table, an undo or a redo), which is exactly when new cell content
+// may need Bloom's wiring.
+const kTableHistoryUpdatedEvent = "tableHistoryUpdated";
 
 let contentTypesRegistered = false;
 
@@ -94,32 +107,93 @@ function ensureContentTypesRegistered(): void {
     setDefaultCellContentTypeId("text");
 }
 
+/**
+ * Give the Bloom content of the cells inside `root` the wiring that Bloom
+ * normally applies to a whole page as it loads, for the cells that have not had
+ * it yet.
+ *
+ * The library builds cell content itself, and it does so long after the page
+ * loaded: a new row or column, every cell of a nested table, a cell whose
+ * content type the user changed, and the whole table again after an undo, which
+ * restores the table's innerHTML. Bloom's own page-load pass (SetupElements in
+ * bloomEditing.ts) is what makes a bloom-editable typable, gives it CKEditor,
+ * its language name and long-press, and what wires an image cell's
+ * bloom-canvas; content built after that pass has none of it, so until this
+ * runs a cell in a new row cannot be typed in at all.
+ *
+ * Written to be safe to run again on the same cells: an editable that has been
+ * through here has a contenteditable attribute, which is what identifies the
+ * ones that still need the treatment.
+ */
+function wireBloomContentOfNewCells(root: HTMLElement): void {
+    // `root` is a cell or a table, so everything below it that is a
+    // bloom-editable belongs to some cell of some table.
+    root.querySelectorAll<HTMLElement>(
+        ".bloom-editable:not([contenteditable])",
+    ).forEach((editable) => {
+        // Must come before attachToCkEditor: CKEditor's inline mode decides
+        // whether the editor is read-only from the element's contenteditable
+        // state at the moment it attaches.
+        editable.setAttribute("contenteditable", "true");
+        BloomField.ManageField(editable);
+        attachToCkEditor(editable);
+        activateLongPressFor($(editable));
+    });
+    // Gives each cell the little tag naming the language it is in. Run on the
+    // whole root because it only looks at editables that are contenteditable,
+    // which the ones above have only just become.
+    AddLanguageTags(root);
+    // `root` itself is one of these when a cell has just become a picture cell.
+    const imageCellSelector = ".bloom-cell[data-content-type='image']";
+    const imageCells = Array.from(
+        root.querySelectorAll<HTMLElement>(imageCellSelector),
+    );
+    if (root.matches(imageCellSelector)) imageCells.push(root);
+    imageCells.forEach((cell) => SetupImagesInContainer(cell));
+    observeImageCells(root);
+}
+
 /** Handle a cell's content being (re)initialised. Attached via SetupTableEditing. */
 function onTableCellContentChanged(e: Event): void {
     const custom = e as CustomEvent<{
         cell: HTMLElement;
         contentType: string;
     }>;
-    const { cell, contentType } = custom.detail;
-    if (contentType === "text") {
-        // Wire any bloom-editable divs C# may have already populated.
-        // If the translationGroup is empty, bloom-editables will appear on next page load.
-        cell.querySelectorAll<HTMLElement>(".bloom-editable").forEach(
-            (editable) => BloomField.ManageField(editable),
-        );
-    } else if (contentType === "image") {
-        SetupImagesInContainer(cell);
-        const table = cell.closest<HTMLElement>(".bloom-table");
-        const bloomCanvas = cell.querySelector<HTMLElement>(".bloom-canvas");
-        if (table && bloomCanvas) {
-            imageCellObservers.get(table)?.observe(bloomCanvas);
-        }
-    }
+    const { cell } = custom.detail;
+    // The cell may now hold a text box, a picture, or a whole nested table
+    // whose own cells the library filled with Bloom's default cell content, so
+    // rather than switch on the content type we wire whatever is in there.
+    wireBloomContentOfNewCells(cell);
 }
 
-// The ResizeObserver watching the image cells of each attached table, so we can
-// disconnect it when the table is detached.
-const imageCellObservers = new Map<HTMLElement, ResizeObserver>();
+/** Handle the library finishing a table operation. Attached via SetupTableEditing. */
+function onTableHistoryUpdated(e: Event): void {
+    const table = (
+        e as CustomEvent<{ table?: HTMLElement }>
+    ).detail?.table?.closest<HTMLElement>(".bloom-table");
+    // Deleting a table takes it out of the document, so there may be nothing to
+    // wire; and an operation on a nested table hands us that table, while an
+    // undo can have restored the cells of the table that holds it. Wiring from
+    // the outermost table covers both.
+    if (table?.isConnected) wireBloomContentOfNewCells(outermostTable(table));
+}
+
+/** The table that holds `table`, and holds no other table itself. */
+function outermostTable(table: HTMLElement): HTMLElement {
+    let outermost = table;
+    let parent = outermost.parentElement?.closest<HTMLElement>(".bloom-table");
+    while (parent) {
+        outermost = parent;
+        parent = outermost.parentElement?.closest<HTMLElement>(".bloom-table");
+    }
+    return outermost;
+}
+
+// The one ResizeObserver watching every image cell on the page, so we can
+// disconnect it when we tear table editing down. It is page-wide rather than
+// per-table because a nested table's image cells need watching too, and the
+// library creates and attaches nested tables itself.
+let imageCellObserver: ResizeObserver | undefined;
 
 // True while we wait for the next animation frame to refit the pictures, so that
 // resizing a whole column produces one refit rather than one per cell.
@@ -135,23 +209,42 @@ let refitIsPending = false;
  * column resize changes a cell without Bloom hearing about it. A picture fitted to a
  * cell of zero width is invisible, which is what made the placeholder flowers disappear
  * on the second load of a page.
+ *
+ * The page-wide call handles canvas elements the user placed inside a cell, which keep
+ * their position relative to the picture. Each cell's background image then gets fitted
+ * on its own, because the page-wide pass would preserve the offsets it was given before
+ * the table laid itself out rather than working them out afresh.
  */
 function refitImageCellPictures(): void {
     if (refitIsPending) return;
     refitIsPending = true;
     requestAnimationFrame(() => {
         refitIsPending = false;
-        theOneCanvasElementManager?.adjustAfterContainerResize();
+        if (!theOneCanvasElementManager) return;
+        theOneCanvasElementManager.adjustAfterContainerResize();
+        document
+            .querySelectorAll<HTMLElement>(".bloom-cell > .bloom-canvas")
+            .forEach((bloomCanvas) => {
+                // A cell mid-layout has no area to fit anything to, and asking
+                // would only start the picture off from meaningless numbers.
+                if (!bloomCanvas.clientWidth || !bloomCanvas.clientHeight)
+                    return;
+                theOneCanvasElementManager.refitBackgroundImage(bloomCanvas);
+            });
     });
 }
 
-/** Watch the image cells of one table, so their pictures follow the cells' size. */
-function observeImageCells(tableDiv: HTMLElement): void {
-    const observer = new ResizeObserver(() => refitImageCellPictures());
-    tableDiv
-        .querySelectorAll<HTMLElement>(".bloom-cell .bloom-canvas")
-        .forEach((bloomCanvas) => observer.observe(bloomCanvas));
-    imageCellObservers.set(tableDiv, observer);
+/** Watch the image cells within `root`, so their pictures follow the cells' size. */
+function observeImageCells(root: HTMLElement): void {
+    if (!imageCellObserver) {
+        imageCellObserver = new ResizeObserver(() => refitImageCellPictures());
+    }
+    // Every bloom-canvas below a table or a cell is the picture of some cell.
+    root.querySelectorAll<HTMLElement>(".bloom-canvas").forEach(
+        // Observing one that is already observed does nothing, so cells this
+        // has already seen cost nothing on a later pass.
+        (bloomCanvas) => imageCellObserver!.observe(bloomCanvas),
+    );
 }
 
 function attachSingleTable(tableDiv: HTMLElement): void {
@@ -172,6 +265,14 @@ export function SetupTableEditing(container: HTMLElement): void {
     container.addEventListener(
         kTableCellContentChangedEvent,
         onTableCellContentChanged,
+    );
+    // The library dispatches this one on the document rather than on the table,
+    // so it is the document that has to listen. Adding the same function again
+    // is a no-op, which matters because SetupElements (and so this) runs again
+    // on a subtree whenever a canvas element is added.
+    container.ownerDocument.addEventListener(
+        kTableHistoryUpdatedEvent,
+        onTableHistoryUpdated,
     );
     container
         .querySelectorAll<HTMLElement>(".bloom-table")
@@ -241,12 +342,19 @@ export function TeardownTableEditing(container: HTMLElement): void {
         kTableCellContentChangedEvent,
         onTableCellContentChanged,
     );
+    container.ownerDocument.removeEventListener(
+        kTableHistoryUpdatedEvent,
+        onTableHistoryUpdated,
+    );
+    imageCellObserver?.disconnect();
+    imageCellObserver = undefined;
+    // Every table, not only the ones we attached: the library attaches a nested
+    // table itself, both when the user makes one and when an undo rebuilds it,
+    // so a nested table has no data-table-attached of ours to find it by.
     container
-        .querySelectorAll<HTMLElement>(".bloom-table[data-table-attached]")
+        .querySelectorAll<HTMLElement>(".bloom-table")
         .forEach((tableDiv) => {
             tableDiv.removeAttribute("data-table-attached");
-            imageCellObservers.get(tableDiv)?.disconnect();
-            imageCellObservers.delete(tableDiv);
             detachTable(tableDiv);
         });
 }

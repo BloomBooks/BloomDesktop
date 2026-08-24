@@ -1,8 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { getTableInfo } from "bloom-table";
+import { addRow, getTableInfo } from "bloom-table";
 import {
     AttachNewTable,
     AttachNewTableThatFillsItsSpace,
+    SetupTableEditing,
+    TeardownTableEditing,
 } from "./tableEditing";
 
 // jsdom has no ResizeObserver, which attachSingleTable installs to keep cell
@@ -20,6 +22,22 @@ class NoopResizeObserver {
 (globalThis as unknown as { GetSettings: unknown }).GetSettings = () => ({
     languageForNewTextBoxes: "xyz",
 });
+
+// CKEditor is loaded into the real editing page by a script tag, and
+// attachToCkEditor is what makes a bloom-editable a live editor. All this
+// stand-in has to do is let that call run to the end without a browser.
+(globalThis as unknown as { CKEDITOR: unknown }).CKEDITOR = {
+    // A palette of its own keeps attachToCkEditor from asking Bloom's server
+    // for one.
+    config: { colorButton_colors: "FFFFFF,FF0000" },
+    inline: () => ({
+        id: "stubEditor",
+        config: {},
+        on: () => {},
+        addCommand: () => {},
+        ui: { addButton: () => {} },
+    }),
+};
 
 describe("AttachNewTableThatFillsItsSpace", () => {
     it("gives every row and column the growing size", () => {
@@ -65,5 +83,71 @@ describe("AttachNewTable", () => {
         const info = getTableInfo(tableDiv);
         expect(info.columnWidths).toEqual(["fill", "fill"]);
         expect(info.rowHeights).toEqual(["hug", "hug"]);
+    });
+});
+
+describe("cells the library builds after the page has loaded", () => {
+    it("are given Bloom's editing wiring", () => {
+        const tableDiv = document.createElement("div");
+        tableDiv.classList.add("bloom-table");
+        document.body.appendChild(tableDiv);
+        SetupTableEditing(document.body);
+        AttachNewTable(tableDiv);
+        const cellCountAtLoad = tableDiv.querySelectorAll(".bloom-cell").length;
+        // Sanity check: the page-load pass has made these four typable, which is
+        // what the new row's cells must end up with too.
+        expect(cellCountAtLoad).toBe(4);
+        tableDiv
+            .querySelectorAll<HTMLElement>(".bloom-editable")
+            .forEach((e) => e.setAttribute("contenteditable", "true"));
+
+        // A library operation, which announces itself with tableHistoryUpdated.
+        addRow(tableDiv);
+
+        const newCells = tableDiv.querySelectorAll(".bloom-cell").length;
+        expect(newCells).toBe(6);
+        // Without the wiring these two have no contenteditable at all, so the
+        // user cannot type in the row they just added.
+        expect(
+            tableDiv.querySelectorAll(".bloom-editable[contenteditable='true']")
+                .length,
+        ).toBe(6);
+        TeardownTableEditing(document.body);
+    });
+
+    it("include the cells of a nested table, which the library attaches itself", () => {
+        document.body.innerHTML = "";
+        const tableDiv = document.createElement("div");
+        tableDiv.classList.add("bloom-table");
+        document.body.appendChild(tableDiv);
+        SetupTableEditing(document.body);
+        AttachNewTable(tableDiv);
+        const hostCell = tableDiv.querySelector<HTMLElement>(".bloom-cell")!;
+
+        // What the cell menu's Table content type does.
+        const nested = document.createElement("div");
+        nested.classList.add("bloom-table");
+        hostCell.innerHTML = "";
+        hostCell.appendChild(nested);
+        hostCell.dataset.contentType = "table";
+        AttachNewTable(nested);
+        hostCell.dispatchEvent(
+            new CustomEvent("tableCellContentChanged", {
+                bubbles: true,
+                detail: { cell: hostCell, contentType: "table" },
+            }),
+        );
+
+        expect(
+            nested.querySelectorAll(".bloom-editable[contenteditable='true']")
+                .length,
+        ).toBe(4);
+
+        // The nested table has none of our data-table-attached marker (the
+        // library attaches it in the real app), so teardown has to find it by
+        // its class or it keeps its listeners.
+        nested.removeAttribute("data-table-attached");
+        TeardownTableEditing(document.body);
+        expect(nested.getAttribute("data-table-attached")).toBeNull();
     });
 });

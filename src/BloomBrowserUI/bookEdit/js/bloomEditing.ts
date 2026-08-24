@@ -337,7 +337,7 @@ function AddEditKeyHandlers(container) {
 // But there may be yet others that are not visible when we run this but which soon will be,
 // such as image descriptions. We don't seem to need the optimization, so let's just do
 // them all.)
-function AddLanguageTags(container) {
+export function AddLanguageTags(container) {
     $(container)
         .find(".bloom-editable[contentEditable=true]")
         .each(function () {
