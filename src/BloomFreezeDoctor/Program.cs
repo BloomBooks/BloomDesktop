@@ -163,8 +163,14 @@ internal static class Program
         Console.WriteLine($"{pending} report(s) pending in {outbox.Root}");
         if (pending == 0)
             return 0;
-        var filed = outbox.DrainAsync(new YouTrackSubmitter()).GetAwaiter().GetResult();
-        Console.WriteLine($"filed {filed}");
+        var outcome = outbox.DrainAsync(new YouTrackSubmitter()).GetAwaiter().GetResult();
+        // Distinguish the two, or support reads "filed 0" and concludes something is broken when in fact
+        // a Doctor is running and already sending these.
+        Console.WriteLine(
+            outcome.GatedOut
+                ? "another Freeze Doctor is already sending these; nothing done here"
+                : $"filed {outcome.Filed}"
+        );
         foreach (var bundle in outbox.List())
             Console.WriteLine(
                 $"  {bundle.Metadata.State, -18} {bundle.Metadata.IssueId ?? bundle.Metadata.LastError ?? ""}"

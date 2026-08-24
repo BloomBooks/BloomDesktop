@@ -123,14 +123,13 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         CancellationToken cancellation
     )
     {
-        var projectId = await FindProjectIdAsync(bundle.Metadata.Project, cancellation)
+        var (projectId, lookupFailure) = await FindProjectIdAsync(
+                bundle.Metadata.Project,
+                cancellation
+            )
             .ConfigureAwait(false);
         if (projectId == null)
-            return new SubmitResult
-            {
-                Outcome = SubmitOutcome.RejectedPermanently,
-                Error = $"the tracker does not know a project called '{bundle.Metadata.Project}'",
-            };
+            return lookupFailure!.Value;
 
         var payload = new JsonObject
         {
@@ -180,15 +179,51 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             : new SubmitResult { Outcome = SubmitOutcome.Filed, IssueId = id };
     }
 
-    private async Task<string?> FindProjectIdAsync(string shortName, CancellationToken cancellation)
+    /// <summary>
+    /// Looks up the tracker's internal id for a project. Returns the id, or the failure to report.
+    ///
+    /// **It returns the failure rather than just null, and that is the whole point of the shape.** It used
+    /// to return null for any non-success status, and the caller turned null into RejectedPermanently -
+    /// so an ordinary 5xx or gateway timeout on this one GET marked a gathered report failed FOR GOOD and
+    /// stopped every retry. Every other call in this class routes its failures through
+    /// <see cref="ClassifyFailure"/>; this one silently did not, which defeated the one thing the outbox
+    /// exists for: surviving the flaky network that so often arrives with a freeze.
+    /// </summary>
+    private async Task<(string? Id, SubmitResult? Failure)> FindProjectIdAsync(
+        string shortName,
+        CancellationToken cancellation
+    )
     {
         using var response = await _http
             .GetAsync($"{BaseUrl}/admin/projects/{shortName}?fields=id", cancellation)
             .ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
-            return null;
+        {
+            // ClassifyFailure already draws the line in the right place for this call too: a 404 means
+            // the project really is not there and never will be, while a 429 or anything 5xx is the
+            // server having a moment and is worth trying again later.
+            return (
+                null,
+                new SubmitResult
+                {
+                    Outcome = ClassifyFailure(response.StatusCode),
+                    Error = $"looking up project '{shortName}' returned {(int)response.StatusCode}",
+                }
+            );
+        }
+
         var json = await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false);
-        return JsonNode.Parse(json)?["id"]?.GetValue<string>();
+        var id = JsonNode.Parse(json)?["id"]?.GetValue<string>();
+        if (id == null)
+            return (
+                null,
+                new SubmitResult
+                {
+                    Outcome = SubmitOutcome.RejectedPermanently,
+                    Error = $"the tracker does not know a project called '{shortName}'",
+                }
+            );
+        return (id, null);
     }
 
     private async Task CommentAsync(string issueId, string body, CancellationToken cancellation)
