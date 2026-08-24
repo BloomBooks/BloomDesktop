@@ -230,9 +230,70 @@ public sealed class ReportOutbox
     /// most likely next event after a freeze is the user restarting Bloom, which starts the Doctor,
     /// which drains this queue.
     /// </summary>
+    /// <summary>
+    /// The name of the cross-process gate below. `Local\` rather than `Global\`, to match everything else
+    /// here: the outbox lives under the user's own LOCALAPPDATA, so two Windows sessions have separate
+    /// queues and have nothing to serialise with each other.
+    /// </summary>
+    private const string DrainGateName = @"Local\BloomFreezeDoctor.outbox-drain";
+
+    /// <summary>
+    /// How long to wait for another drain to finish before giving up and leaving the queue to it. Short on
+    /// purpose: the bundles are not lost, and whoever holds the gate is already sending them.
+    /// </summary>
+    private static readonly TimeSpan DrainGateWait = TimeSpan.FromSeconds(20);
+
     public async Task<int> DrainAsync(
         IReportSubmitter submitter,
         CancellationToken cancellation = default
+    )
+    {
+        // A named, CROSS-PROCESS gate, because in-process serialisation is not enough. `--drain` is
+        // handled before the singleton mutex - deliberately, so support can drain the queue whether or not
+        // a Doctor is running - and it calls straight in here. So two PROCESSES can be draining one queue,
+        // and each would list the same pending bundles and walk the non-atomic search-then-create flow:
+        // duplicate cards, or a combined total past the three-a-day cap that exists to stop a machine in a
+        // bad state spamming the tracker.
+        //
+        // A Semaphore and not a Mutex, and that is not a style choice: a Mutex has thread affinity and
+        // must be released by the thread that took it, which cannot be guaranteed across the awaits below.
+        // A named semaphore has no affinity.
+        Semaphore? gate = null;
+        var held = false;
+        try
+        {
+            gate = new Semaphore(1, 1, DrainGateName);
+            held = gate.WaitOne(DrainGateWait);
+            if (!held)
+                return 0; // somebody else is draining; the bundles are theirs to send.
+        }
+        catch (Exception)
+        {
+            // Could not create the gate at all. Carry on ungated rather than never draining: a report that
+            // is never sent is a worse outcome than a rare duplicate, and this is the path where reports
+            // actually reach the tracker.
+            gate?.Dispose();
+            gate = null;
+        }
+
+        try
+        {
+            return await DrainInnerAsync(submitter, cancellation).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (gate != null)
+            {
+                if (held)
+                    gate.Release();
+                gate.Dispose();
+            }
+        }
+    }
+
+    private async Task<int> DrainInnerAsync(
+        IReportSubmitter submitter,
+        CancellationToken cancellation
     )
     {
         var filed = 0;
