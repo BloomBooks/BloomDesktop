@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { getCroppedSides } from "./CanvasElementHandleDragInteractions";
+import {
+    clampCropPosition,
+    getCroppedSides,
+    getShownContentRectangle,
+} from "./CanvasElementHandleDragInteractions";
 
 describe("getCroppedSides", () => {
     it("says no side is cropped when the picture just fills its element", () => {
@@ -49,5 +53,88 @@ describe("getCroppedSides", () => {
             s: false,
             w: false,
         });
+    });
+});
+
+describe("getShownContentRectangle", () => {
+    it("returns the box itself when the picture is not turned", () => {
+        expect(getShownContentRectangle(-300, 0, 1080, 720, 0)).toEqual({
+            left: -300,
+            top: 0,
+            width: 1080,
+            height: 720,
+        });
+    });
+
+    it("swaps the two dimensions about the centre for a quarter turn", () => {
+        // The layout Rotate Right leaves on a cropped page background: a box 720 by 480 at
+        // (-120, -80). The turn is about the box's own centre, at (240, 160), so the element
+        // shows 480 by 720 there, which starts at the element's left edge and reaches 200
+        // above its top.
+        expect(getShownContentRectangle(-120, -80, 720, 480, 1)).toEqual({
+            left: 0,
+            top: -200,
+            width: 480,
+            height: 720,
+        });
+    });
+
+    it("returns the box itself for a half turn, which swaps nothing", () => {
+        expect(getShownContentRectangle(-120, -80, 720, 480, 2)).toEqual({
+            left: -120,
+            top: -80,
+            width: 720,
+            height: 480,
+        });
+    });
+});
+
+describe("clampCropPosition", () => {
+    it("leaves a position that keeps the picture covering the element", () => {
+        expect(clampCropPosition(480, 720, -300, 0, 1080, 720, 0)).toEqual({
+            left: -300,
+            top: 0,
+        });
+    });
+
+    it("stops the picture before a blank band appears at the left or the top", () => {
+        // Asked for a position down and to the right of the element's own corner.
+        expect(clampCropPosition(480, 720, 40, 25, 1080, 720, 0)).toEqual({
+            left: 0,
+            top: 0,
+        });
+    });
+
+    it("stops the picture before a blank band appears at the right", () => {
+        // 480 - 1080 is as far left as the picture can go and still reach the right edge.
+        expect(clampCropPosition(480, 720, -900, 0, 1080, 720, 0)).toEqual({
+            left: -600,
+            top: 0,
+        });
+    });
+
+    it("uses the turned rectangle, not the box, for a turned picture", () => {
+        // Element 480 by 320, holding a box 720 by 480 given a quarter turn, so the element
+        // shows 480 by 720. The width matches the element exactly, so the only position that
+        // leaves no blank band puts the box at -120. Up and down, the box may sit anywhere
+        // from -280 to 120, and 200 is past that.
+        expect(clampCropPosition(480, 320, 0, 200, 720, 480, 1)).toEqual({
+            left: -120,
+            top: 120,
+        });
+        expect(clampCropPosition(480, 320, 0, -400, 720, 480, 1)).toEqual({
+            left: -120,
+            top: -280,
+        });
+    });
+
+    it("lets a turned picture move where the box's own numbers would pin it", () => {
+        // The bug this fixes: measuring the box rather than what the element shows made the
+        // limits cross each other, and the same position came back for every drag.
+        const high = clampCropPosition(480, 320, 0, -100, 720, 480, 1);
+        const low = clampCropPosition(480, 320, 0, 100, 720, 480, 1);
+        expect(high.top).toBe(-100);
+        expect(low.top).toBe(100);
+        expect(high.top).not.toBe(low.top);
     });
 });

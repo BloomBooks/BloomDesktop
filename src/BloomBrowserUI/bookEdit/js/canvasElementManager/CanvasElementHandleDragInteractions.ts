@@ -48,14 +48,34 @@ export interface ICanvasElementHandleDragInteractionsHost {
     stopMoving: () => void;
 }
 
-// Which sides of a picture are cropped, in the coordinates of the canvas element that holds
-// it, so that the marks go on the right handles.
+// Where a picture lands inside the canvas element that holds it, in the element's own
+// coordinates.
 //
 // The picture's own box may be turned inside the element, by the Rotate Right command on a page
 // background. A CSS transform turns the box about its own centre and leaves the layout alone, so
 // what the element shows is a rectangle the size of the box with its two dimensions swapped for
-// an odd number of quarter turns, centred where the box's centre is. Comparing the box itself
-// against the element, as we may for an untuned picture, would mark every side of a turned one.
+// an odd number of quarter turns, centred where the layout put the box's centre. Every crop
+// measurement has to use this rectangle. The box itself, which the picture's `left`, `top` and
+// `width` describe, is the right answer only for a picture that is not turned.
+export function getShownContentRectangle(
+    boxLeft: number,
+    boxTop: number,
+    boxWidth: number,
+    boxHeight: number,
+    quarterTurns: number,
+): { left: number; top: number; width: number; height: number } {
+    const isQuarterTurn = quarterTurns % 2 === 1;
+    const width = isQuarterTurn ? boxHeight : boxWidth;
+    const height = isQuarterTurn ? boxWidth : boxHeight;
+    return {
+        left: boxLeft + boxWidth / 2 - width / 2,
+        top: boxTop + boxHeight / 2 - height / 2,
+        width,
+        height,
+    };
+}
+
+// Which sides of a picture are cropped, so that the marks go on the right handles.
 export function getCroppedSides(
     elementWidth: number,
     elementHeight: number,
@@ -67,16 +87,58 @@ export function getCroppedSides(
     // Client values are whole pixels, and rounding easily produces a spurious difference of one.
     slop = 1,
 ): { n: boolean; e: boolean; s: boolean; w: boolean } {
-    const isQuarterTurn = quarterTurns % 2 === 1;
-    const shownWidth = isQuarterTurn ? boxHeight : boxWidth;
-    const shownHeight = isQuarterTurn ? boxWidth : boxHeight;
-    const centreX = boxLeft + boxWidth / 2;
-    const centreY = boxTop + boxHeight / 2;
+    const shown = getShownContentRectangle(
+        boxLeft,
+        boxTop,
+        boxWidth,
+        boxHeight,
+        quarterTurns,
+    );
     return {
-        n: centreY - shownHeight / 2 < -slop,
-        e: centreX + shownWidth / 2 > elementWidth + slop,
-        s: centreY + shownHeight / 2 > elementHeight + slop,
-        w: centreX - shownWidth / 2 < -slop,
+        n: shown.top < -slop,
+        e: shown.left + shown.width > elementWidth + slop,
+        s: shown.top + shown.height > elementHeight + slop,
+        w: shown.left < -slop,
+    };
+}
+
+// Where to put a picture's box so that the picture keeps covering its canvas element while the
+// author drags it about inside the crop. The wanted position is what the pointer asks for; the
+// result is that position pulled back far enough that no blank band appears at an edge.
+//
+// The box is what we write, but the element shows the turned rectangle, so the limits belong to
+// that rectangle. On a picture whose two dimensions differ, and which is turned, the two frames
+// disagree by half the difference, which is enough to hold the picture still through a whole
+// drag.
+export function clampCropPosition(
+    elementWidth: number,
+    elementHeight: number,
+    wantedBoxLeft: number,
+    wantedBoxTop: number,
+    boxWidth: number,
+    boxHeight: number,
+    quarterTurns: number,
+): { left: number; top: number } {
+    const shown = getShownContentRectangle(
+        wantedBoxLeft,
+        wantedBoxTop,
+        boxWidth,
+        boxHeight,
+        quarterTurns,
+    );
+    const clampedShownLeft = Math.max(
+        Math.min(shown.left, 0),
+        elementWidth - shown.width,
+    );
+    const clampedShownTop = Math.max(
+        Math.min(shown.top, 0),
+        elementHeight - shown.height,
+    );
+    // The turn moves the box and the rectangle it shows by the same amount, so one difference
+    // carries the clamp back into the box's own frame.
+    return {
+        left: wantedBoxLeft + clampedShownLeft - shown.left,
+        top: wantedBoxTop + clampedShownTop - shown.top,
     };
 }
 
@@ -95,6 +157,7 @@ export class CanvasElementHandleDragInteractions {
     private oldTop: number;
     // The original size and position of the main img inside a canvas element being resized or cropped
     private oldImageWidth: number;
+    private oldImageHeight: number;
     private oldImageLeft: number;
     private oldImageTop: number;
     // during a resize drag, keeps track of which corner we're dragging
@@ -341,17 +404,14 @@ export class CanvasElementHandleDragInteractions {
         event.preventDefault();
         event.stopPropagation();
         const imgStyle = img.style;
-        const newLeft = Math.max(
-            Math.min(this.oldImageLeft + deltaX, 0),
-            activeElement.clientLeft +
-                activeElement.clientWidth -
-                img.clientWidth,
-        );
-        const newTop = Math.max(
-            Math.min(this.oldImageTop + deltaY, 0),
-            activeElement.clientTop +
-                activeElement.clientHeight -
-                img.clientHeight,
+        const { left: newLeft, top: newTop } = clampCropPosition(
+            activeElement.clientWidth,
+            activeElement.clientHeight,
+            this.oldImageLeft + deltaX,
+            this.oldImageTop + deltaY,
+            img.clientWidth,
+            img.clientHeight,
+            getImageContentTransform(img).quarterTurns,
         );
         imgStyle.left = newLeft + "px";
         imgStyle.top = newTop + "px";
@@ -648,6 +708,9 @@ export class CanvasElementHandleDragInteractions {
         if (img) {
             this.oldImageLeft = img.offsetLeft;
             this.oldImageTop = img.offsetTop;
+            // A side drag never writes the picture's own size, so these hold for the whole drag.
+            this.oldImageWidth = img.offsetWidth;
+            this.oldImageHeight = img.offsetHeight;
 
             if (this.lastCropControl !== event.currentTarget) {
                 this.initialCropImageWidth = img.offsetWidth;
@@ -851,6 +914,27 @@ export class CanvasElementHandleDragInteractions {
         const minWidth = this.host.getMinWidth();
         const minHeight = this.host.getMinHeight();
 
+        // How far each edge can travel is a property of the rectangle the element shows, not of
+        // the picture's own box, and the two differ on a turned picture. The n and w handles move
+        // the picture as well as the edge, so they measure from where the picture was when this
+        // drag began; the s and e handles leave the picture alone, so they measure from where it
+        // was when this handle was first taken hold of.
+        const quarterTurns = getImageContentTransform(img).quarterTurns;
+        const shownNow = getShownContentRectangle(
+            this.oldImageLeft,
+            this.oldImageTop,
+            this.oldImageWidth,
+            this.oldImageHeight,
+            quarterTurns,
+        );
+        const shownAtFirst = getShownContentRectangle(
+            this.initialCropImageLeft,
+            this.initialCropImageTop,
+            this.initialCropImageWidth,
+            this.initialCropImageHeight,
+            quarterTurns,
+        );
+
         switch (this.currentDragSide) {
             case "n":
                 deltaY = this.adjustDeltaForSnap(
@@ -859,8 +943,8 @@ export class CanvasElementHandleDragInteractions {
                     backgroundSnapDelta,
                     "n",
                 );
-                if (this.oldImageTop - deltaY > 0) {
-                    deltaY = this.oldImageTop;
+                if (shownNow.top - deltaY > 0) {
+                    deltaY = shownNow.top;
                 }
                 newCanvasElementHeight = Math.max(
                     this.oldHeight - deltaY,
@@ -879,13 +963,11 @@ export class CanvasElementHandleDragInteractions {
                     "s",
                 );
                 if (
-                    this.initialCropImageTop + this.initialCropImageHeight <
+                    shownAtFirst.top + shownAtFirst.height <
                     this.oldHeight + deltaY
                 ) {
                     deltaY =
-                        this.initialCropImageTop +
-                        this.initialCropImageHeight -
-                        this.oldHeight;
+                        shownAtFirst.top + shownAtFirst.height - this.oldHeight;
                 }
                 newCanvasElementHeight = Math.max(
                     this.oldHeight + deltaY,
@@ -902,13 +984,11 @@ export class CanvasElementHandleDragInteractions {
                     "e",
                 );
                 if (
-                    this.initialCropImageLeft + this.initialCropImageWidth <
+                    shownAtFirst.left + shownAtFirst.width <
                     this.oldWidth + deltaX
                 ) {
                     deltaX =
-                        this.initialCropImageLeft +
-                        this.initialCropImageWidth -
-                        this.oldWidth;
+                        shownAtFirst.left + shownAtFirst.width - this.oldWidth;
                 }
                 newCanvasElementWidth = Math.max(
                     this.oldWidth + deltaX,
@@ -924,8 +1004,8 @@ export class CanvasElementHandleDragInteractions {
                     backgroundSnapDelta,
                     "w",
                 );
-                if (this.oldImageLeft > deltaX) {
-                    deltaX = this.oldImageLeft;
+                if (shownNow.left > deltaX) {
+                    deltaX = shownNow.left;
                 }
                 newCanvasElementWidth = Math.max(
                     this.oldWidth - deltaX,
