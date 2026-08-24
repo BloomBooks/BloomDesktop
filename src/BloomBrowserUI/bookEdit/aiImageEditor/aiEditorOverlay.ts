@@ -190,7 +190,6 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         let picturesGenerated = 0;
         let picturesReused = 0;
         let closedReported = false;
-        let commitSucceeded = false;
         // How many commits we have sent and not yet had an answer to. Reporting the session while
         // any is outstanding must not happen: the pictures may be moments from being saved. A count
         // rather than a flag, because the ai-editor is free to send a second commit before the
@@ -545,7 +544,6 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                     currentPageApplied,
                                 );
                                 if (finalOk) {
-                                    commitSucceeded = true;
                                     cleanup();
                                 }
                                 // Unconditionally, and after cleanup rather than instead of it.
