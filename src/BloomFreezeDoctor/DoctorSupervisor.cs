@@ -584,8 +584,32 @@ public sealed class DoctorSupervisor : IDisposable
             _ => "it could not be ended; the user may need to restart the machine",
         };
 
+    /// <summary>
+    /// Lets only one drain run at a time.
+    ///
+    /// Three separate things ask for a drain - startup, the five-minute timer, and the end of a gather -
+    /// and all three were fire-and-forget, so two could overlap. Both would then list the SAME pending
+    /// bundles and both walk the search-then-create flow, which is not atomic: the result is duplicate
+    /// cards, or duplicate comments on one card, and a combined total that can exceed the deliberate
+    /// three-per-day cap. That cap exists so a machine in a bad state cannot spam the tracker, so
+    /// quietly exceeding it is the worst version of this bug.
+    ///
+    /// It WAITS rather than skipping. Skipping would be cheaper, but ReportNowAsync awaits this and then
+    /// looks for its own bundle in the queue: if its drain had been skipped because another was already
+    /// running, it could report failure for a report that was about to be filed perfectly well.
+    /// </summary>
+    private readonly SemaphoreSlim _drainGate = new(1, 1);
+
     private async Task DrainAsync(CancellationToken cancellation)
     {
+        try
+        {
+            await _drainGate.WaitAsync(cancellation).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
         try
         {
             if (_outbox.Pending().Count == 0)
@@ -602,6 +626,10 @@ public sealed class DoctorSupervisor : IDisposable
         catch (Exception e)
         {
             Note($"could not send reports: {e.GetType().Name}");
+        }
+        finally
+        {
+            _drainGate.Release();
         }
     }
 
@@ -723,5 +751,6 @@ public sealed class DoctorSupervisor : IDisposable
             _watchers.Clear();
         }
         _stopping.Dispose();
+        _drainGate.Dispose();
     }
 }
