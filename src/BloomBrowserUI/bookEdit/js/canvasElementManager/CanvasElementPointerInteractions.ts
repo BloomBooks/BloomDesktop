@@ -164,6 +164,25 @@ export class CanvasElementPointerInteractions {
         return range as Range;
     };
 
+    /**
+     * Whether a press landed in a table, which owns its own right-click menu.
+     *
+     * event.target cannot answer this: the Comical canvas covers the table, so a
+     * press on a cell reports the canvas as its target. Two ways to be in a table:
+     * this bloom-canvas is the picture inside a cell, or the canvas element under
+     * the pointer is the one a table sits in.
+     */
+    private isPressInsideTable(
+        bloomCanvas: HTMLElement,
+        bubble: Bubble | undefined,
+    ): boolean {
+        if (bloomCanvas.closest(".bloom-cell")) return true;
+        return (
+            !!bubble &&
+            bubble.content.getElementsByClassName("bloom-table").length > 0
+        );
+    }
+
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
     public onMouseDown = (event: MouseEvent) => {
@@ -198,6 +217,16 @@ export class CanvasElementPointerInteractions {
             coordinates.getUnscaledY(),
             true, // only consider canvas elements with pointer events allowed.
         );
+        if (
+            event.button === 2 &&
+            this.isPressInsideTable(bloomCanvas, bubble)
+        ) {
+            // The table puts up its own Cell menu, from the contextmenu event that
+            // follows this press, so leave the press alone: claiming it here would
+            // show this canvas element's menu (Duplicate, Delete) over a cell.
+            return;
+        }
+
         if (bubble && event.button === 2) {
             // Right mouse button
             if (bubble.content !== this.host.getActiveElement()) {
