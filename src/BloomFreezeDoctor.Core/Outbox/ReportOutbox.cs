@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using BloomFreezeDoctor.Gathering;
 using SIL.IO;
@@ -96,8 +97,17 @@ public sealed class ReportOutbox
     /// <c>%LOCALAPPDATA%\SIL\BloomFreezeDoctor\outbox</c>). The clock is injectable so retention and
     /// rate-limiting can be tested without waiting a day.
     /// </summary>
-    public ReportOutbox(string? root = null, Func<DateTimeOffset>? clock = null)
+    /// <param name="drainGateWait">
+    /// How long to wait for another drainer's gate before leaving the queue to it. Injectable so the test
+    /// that proves a second drain is refused does not have to wait out the real timeout.
+    /// </param>
+    public ReportOutbox(
+        string? root = null,
+        Func<DateTimeOffset>? clock = null,
+        TimeSpan? drainGateWait = null
+    )
     {
+        _drainGateWait = drainGateWait ?? DefaultDrainGateWait;
         _root =
             root
             ?? Path.Combine(
@@ -252,7 +262,9 @@ public sealed class ReportOutbox
     /// How long to keep trying for the gate before giving up and leaving the queue to whoever holds it.
     /// The bundles are not lost either way: the holder is already sending them.
     /// </summary>
-    private static readonly TimeSpan DrainGateWait = TimeSpan.FromSeconds(20);
+    private static readonly TimeSpan DefaultDrainGateWait = TimeSpan.FromSeconds(20);
+
+    private readonly TimeSpan _drainGateWait;
 
     public async Task<int> DrainAsync(
         IReportSubmitter submitter,
@@ -265,10 +277,15 @@ public sealed class ReportOutbox
         // list the same pending bundles and each walk the non-atomic search-then-create flow: duplicate
         // cards, or a combined total past the three-a-day cap that exists to stop a machine in a bad
         // state spamming the tracker.
-        FileStream? gate = null;
+        // NOTE the two different reasons `gate` can end up null, because conflating them made this whole
+        // gate a no-op once already: a null RETURN means somebody else holds it and we must not drain,
+        // while a THROW means the gating mechanism itself is unavailable and we drain anyway.
+        FileStream? gate;
         try
         {
             gate = await AcquireDrainGateAsync(cancellation).ConfigureAwait(false);
+            if (gate == null)
+                return 0; // somebody else is draining; those bundles are theirs to send.
         }
         catch (OperationCanceledException)
         {
@@ -302,7 +319,10 @@ public sealed class ReportOutbox
         // be mistaken for one.
         Directory.CreateDirectory(_root);
         var path = Path.Combine(_root, DrainLockFileName);
-        var deadline = _now() + DrainGateWait;
+        // Real elapsed time, deliberately NOT the injectable _now clock. That clock is frozen in tests so
+        // that retention and the daily cap can be exercised without waiting a day - and a frozen clock
+        // would make this deadline unreachable and spin here for ever.
+        var waited = Stopwatch.StartNew();
         while (true)
         {
             cancellation.ThrowIfCancellationRequested();
@@ -319,7 +339,7 @@ public sealed class ReportOutbox
             catch (IOException)
             {
                 // Held by somebody else. Keep trying until the deadline.
-                if (_now() >= deadline)
+                if (waited.Elapsed >= _drainGateWait)
                     return null;
                 await Task.Delay(250, cancellation).ConfigureAwait(false);
             }

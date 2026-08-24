@@ -39,6 +39,65 @@ public class ReportOutboxTests
 
     private ReportOutbox NewOutbox() => new(_root, () => _now);
 
+    /// <summary>
+    /// An outbox that gives up on the drain gate almost at once, so the test below need not wait out the
+    /// real twenty seconds.
+    /// </summary>
+    private ReportOutbox NewImpatientOutbox() =>
+        new(_root, () => _now, drainGateWait: TimeSpan.FromMilliseconds(200));
+
+    [Test]
+    public async Task A_second_drainer_is_refused_while_another_holds_the_gate()
+    {
+        // This exists because the gate has now been got wrong twice: first it was in-process only, so
+        // `--drain` in another process sailed past it; then, when it became a lock file, the "somebody
+        // else holds it" case fell through and drained anyway, which made the whole gate a no-op while
+        // its comment claimed otherwise. Two processes draining one queue means duplicate YouTrack cards
+        // and a combined total past the deliberate three-a-day cap, so a comment is not enough here.
+        var outbox = NewImpatientOutbox();
+        outbox.Enqueue(Report(), "AUT", "Alpha", "Frozen");
+        Assert.That(outbox.Pending(), Has.Count.EqualTo(1), "setup: one bundle should be waiting");
+
+        var submitter = new FakeSubmitter();
+
+        // Hold the gate exactly as another process would.
+        var lockPath = Path.Combine(_root, ".drain.lock");
+        using (
+            var heldByOtherProcess = new FileStream(
+                lockPath,
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.None
+            )
+        )
+        {
+            var filed = await outbox.DrainAsync(submitter, CancellationToken.None);
+
+            Assert.That(
+                filed,
+                Is.Zero,
+                "nothing should be filed while another drainer holds the gate"
+            );
+            Assert.That(
+                submitter.Submitted,
+                Is.Empty,
+                "it must not even attempt a submission - attempting is what duplicates a card"
+            );
+        }
+
+        Assert.That(
+            outbox.Pending(),
+            Has.Count.EqualTo(1),
+            "the bundle must still be pending, so whoever holds the gate can send it"
+        );
+
+        // Sanity check the other direction: with the gate free, the same outbox does drain. Without this
+        // the test above would still pass if DrainAsync were broken outright.
+        var filedAfter = await outbox.DrainAsync(submitter, CancellationToken.None);
+        Assert.That(filedAfter, Is.EqualTo(1), "with the gate free it should file the bundle");
+        Assert.That(submitter.Submitted, Has.Count.EqualTo(1));
+    }
+
     private GatheredReport Report(
         string fingerprint = "abc123",
         bool mayFile = true,
