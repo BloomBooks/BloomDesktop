@@ -128,6 +128,22 @@ public sealed class StatusForm : Form
     /// </summary>
     protected override void SetVisibleCore(bool value)
     {
+        // Force the window handle into existence on the first call, even though we are about to refuse
+        // to become visible. This is not ceremony: Application.Run(form) sets Visible = true, and if that
+        // is simply denied the form never gets a handle - so the message loop has no window, exits
+        // immediately, and the Doctor dies a few milliseconds after Bloom starts it, tray icon and all.
+        // No test would catch that, because nothing unit-tests a message loop.
+        if (!IsHandleCreated)
+        {
+            CreateHandle();
+            // Only the hidden-start case refuses here. A Doctor launched by a person, rather than by
+            // Bloom, has _stayHidden false and must appear as usual - they went looking for it.
+            if (_stayHidden)
+            {
+                base.SetVisibleCore(false);
+                return;
+            }
+        }
         base.SetVisibleCore(value && !_stayHidden);
     }
 

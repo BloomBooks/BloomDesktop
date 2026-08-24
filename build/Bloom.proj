@@ -170,6 +170,12 @@
     build here does NOT go to the same directory as the VS build. -->
     <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
     <Exec Command='dotnet build "$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <!-- The Freeze Doctor, which ships inside Bloom's installer rather than having one of its own. It
+    has to be named here, exactly like WebView2PdfMaker above, BECAUSE this target builds project by
+    project rather than building the solution: being in Bloom.sln is not enough. Leaving it out would
+    have failed silently and expensively - the signing step below has ContinueOnError, so an unbuilt
+    Doctor would simply have been missing from the installer with nothing going red anywhere. -->
+    <Exec Command='dotnet build "$(RootDir)\src\BloomFreezeDoctor\BloomFreezeDoctor.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
   <!--If the number of directories between output and OutDir changes, we need a corresponding
     change in BloomFileLocatorTests.kRelativePathToBrowserFolder and XMatterHelperTests.OneTimeSetup-->
     <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\Tests\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
