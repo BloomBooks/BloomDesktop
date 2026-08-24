@@ -250,6 +250,81 @@ namespace Bloom.FreezeDoctor
         }
 
         /// <summary>
+        /// How many long operations are running. Counted rather than a bare boolean because these nest —
+        /// publishing an app builds a BloomPUB on the way — and a plain <c>SetLongOperation(false)</c> from
+        /// an inner operation would take the patience away while the outer one was still going.
+        /// </summary>
+        private static int _longOperationDepth;
+
+        /// <summary>
+        /// How many long operations are currently running. Exposed for the test that pins the nesting
+        /// arithmetic, which is the part with teeth: the flag reaching the shared page is one line and is
+        /// covered by the protocol round-trip test, whereas getting the counting wrong is silent and lasts
+        /// the whole session — too few decrements and freeze detection stays off for good.
+        /// </summary>
+        internal static int LongOperationDepth => Volatile.Read(ref _longOperationDepth);
+
+        /// <summary>
+        /// Marks a stretch of work that is *deliberately* slow, so the Doctor waits five minutes rather than
+        /// one before deciding Bloom has frozen, and says what Bloom is doing while it runs.
+        ///
+        /// Use it with `using`. That is not style: the alternative is paired calls, and a paired call that
+        /// is skipped by an early return or an exception leaves the Doctor permanently patient — which
+        /// silently disables freeze detection for the rest of the session, the worst possible failure for
+        /// this particular flag.
+        ///
+        /// Which operations get this is a judgement about how Bloom behaves, not something to infer from the
+        /// code: "a request has run for a minute" is the same signal as a freeze, so nothing automatic can
+        /// tell legitimately-slow from wedged. The set was chosen deliberately (BL-16719) as the major
+        /// publishing operations — BloomPUB, ePUB, video and app creation, and uploading to or downloading
+        /// from Bloom Library — because those routinely take minutes on a large book or a slow connection
+        /// and are the ones that would otherwise be reported as freezes.
+        /// </summary>
+        /// <param name="whatBloomIsDoing">
+        /// Plain words for the report, e.g. "making a BloomPUB". This becomes the activity line, so it is
+        /// worth writing for whoever reads the card rather than for the code.
+        /// </param>
+        public static IDisposable LongOperation(string whatBloomIsDoing)
+        {
+            return new LongOperationScope(whatBloomIsDoing);
+        }
+
+        private sealed class LongOperationScope : IDisposable
+        {
+            private readonly string _previousActivity;
+            private bool _disposed;
+
+            public LongOperationScope(string whatBloomIsDoing)
+            {
+                _previousActivity = Volatile.Read(ref _statedActivity);
+                try
+                {
+                    SetActivity(whatBloomIsDoing);
+                    if (Interlocked.Increment(ref _longOperationDepth) == 1)
+                        SetLongOperation(true);
+                }
+                catch (Exception)
+                {
+                    // Diagnostics must never break the operation they are describing.
+                }
+            }
+
+            public void Dispose()
+            {
+                if (_disposed)
+                    return; // a double Dispose must not decrement twice and cancel somebody else's patience
+                _disposed = true;
+                try
+                {
+                    if (Interlocked.Decrement(ref _longOperationDepth) == 0)
+                        SetLongOperation(false);
+                    SetActivity(_previousActivity);
+                }
+                catch (Exception) { }
+            }
+        }
+
+        /// <summary>
         /// Records how far shutdown has got. Called at the points Bloom passes through on its way out, so
         /// that a Bloom which dies mid-shutdown can say *where* it stopped rather than merely that it did
         /// — which is the same evidence the "UI gone but process alive" case needs.

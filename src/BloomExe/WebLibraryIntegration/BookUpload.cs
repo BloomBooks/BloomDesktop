@@ -13,6 +13,7 @@ using Amazon.S3;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.FreezeDoctor;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
@@ -908,6 +909,13 @@ namespace Bloom.WebLibraryIntegration
             bool changeUploader = false
         )
         {
+            // Deliberately slow, and slowest exactly where our users are: uploading a book with audio and
+            // video over a poor connection routinely takes many minutes, so the Freeze Doctor should wait
+            // rather than file a card about a freeze that is really just an upload.
+            using var _longOperation = FreezeDoctorSupport.LongOperation(
+                "uploading a book to Bloom Library"
+            );
+
             // this (isForPublish:true) is dangerous and the product of much discussion.
             // See "finally" block later to see that we put branding files back
             book.Storage.CleanupUnusedSupportFiles(isForPublish: true);

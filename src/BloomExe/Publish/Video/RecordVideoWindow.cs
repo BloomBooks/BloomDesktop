@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.FreezeDoctor;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
@@ -449,6 +450,12 @@ namespace Bloom.Publish.Video
         /// <param name="soundLogJson"></param>
         public async Task StopRecordingAsync(string soundLogJson)
         {
+            // The encode-and-merge after recording is the deliberately slow part, and it is CPU-bound
+            // rather than waiting on a window, so unlike the recording itself it could be taken for a
+            // freeze. (Recording is safe without this: it runs with a live window pumping messages, so the
+            // UI heartbeat keeps ticking.)
+            using var _longOperation = FreezeDoctorSupport.LongOperation("making a video");
+
             // Couldn't get this to work. See comment in constructor. If we do get it working,
             // make sure it gets turned off, however things turn out. Or maybe we can turn it
             // off much sooner, without waiting for the recording to finish? Waiting until this

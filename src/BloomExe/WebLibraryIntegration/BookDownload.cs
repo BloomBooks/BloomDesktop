@@ -14,6 +14,7 @@ using Amazon.Runtime;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
+using Bloom.FreezeDoctor;
 using Bloom.MiscUI;
 using Bloom.Publish.BloomLibrary;
 using Bloom.ToPalaso;
@@ -57,6 +58,12 @@ namespace Bloom.WebLibraryIntegration
             bool forEdit = false
         )
         {
+            // Deliberately slow, and slowest exactly where our users are: a large book over a poor
+            // connection can take many minutes, and the Freeze Doctor should wait rather than file a card.
+            using var _longOperation = FreezeDoctorSupport.LongOperation(
+                "downloading a book from Bloom Library"
+            );
+
             string storageKeyOfBookFolderParentOnS3 = "unknown";
             try
             {

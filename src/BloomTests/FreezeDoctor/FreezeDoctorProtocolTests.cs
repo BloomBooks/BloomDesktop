@@ -114,6 +114,90 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
+        public void NestedLongOperationsDoNotEndEachOthersPatience()
+        {
+            // The failure this guards against is silent and lasts the whole session. The Doctor waits five
+            // minutes instead of one while a long operation runs; if an inner operation's exit cleared the
+            // flag, the outer one would lose its patience half way through — and if an exit were MISSED,
+            // the flag would stay set for ever and freeze detection would be off for the rest of the run.
+            //
+            // Nesting is not hypothetical: building an app makes a BloomPUB on the way, so those two scopes
+            // are genuinely inside one another in production.
+            Assert.That(
+                FreezeDoctorSupport.LongOperationDepth,
+                Is.Zero,
+                "setup: nothing long is running yet"
+            );
+
+            using (FreezeDoctorSupport.LongOperation("building an app"))
+            {
+                Assert.That(FreezeDoctorSupport.LongOperationDepth, Is.EqualTo(1), "outer entered");
+
+                using (FreezeDoctorSupport.LongOperation("making a BloomPUB"))
+                {
+                    Assert.That(
+                        FreezeDoctorSupport.LongOperationDepth,
+                        Is.EqualTo(2),
+                        "inner entered"
+                    );
+                }
+
+                Assert.That(
+                    FreezeDoctorSupport.LongOperationDepth,
+                    Is.EqualTo(1),
+                    "the inner operation finishing must NOT end the outer one's patience"
+                );
+            }
+
+            Assert.That(
+                FreezeDoctorSupport.LongOperationDepth,
+                Is.Zero,
+                "and the outermost finishing must clear it, or freeze detection stays off for good"
+            );
+        }
+
+        [Test]
+        public void DisposingALongOperationTwiceDoesNotStealSomebodyElsesPatience()
+        {
+            // A double Dispose is easy to arrange by accident, and an unguarded decrement would drive the
+            // count negative — after which the NEXT operation's exit would not clear the flag, leaving the
+            // Doctor permanently patient. Guarded in the scope; pinned here.
+            var outer = FreezeDoctorSupport.LongOperation("building an app");
+            var inner = FreezeDoctorSupport.LongOperation("making a BloomPUB");
+            inner.Dispose();
+            inner.Dispose();
+
+            Assert.That(
+                FreezeDoctorSupport.LongOperationDepth,
+                Is.EqualTo(1),
+                "the second Dispose must be ignored, not counted again"
+            );
+
+            outer.Dispose();
+            Assert.That(FreezeDoctorSupport.LongOperationDepth, Is.Zero);
+        }
+
+        [Test]
+        public void ALongOperationEndsEvenWhenItThrows()
+        {
+            // `using` is the whole reason the API is a scope rather than paired calls: an exception on a
+            // publish path must not leave the Doctor permanently patient.
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                using (FreezeDoctorSupport.LongOperation("making an ePUB"))
+                {
+                    throw new InvalidOperationException("pretend the publish failed");
+                }
+            });
+
+            Assert.That(
+                FreezeDoctorSupport.LongOperationDepth,
+                Is.Zero,
+                "an operation that threw must still have ended"
+            );
+        }
+
+        [Test]
         public void TheNativeDebuggerCheckActuallyResolves()
         {
             // Bloom's debugger check swallows exceptions, because a diagnostic must never be able to break
