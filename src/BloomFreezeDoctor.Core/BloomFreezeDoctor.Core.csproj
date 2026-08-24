@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The Doctor's decision-making, deliberately separated from everything that touches a real
+    process or a window. Detection logic is where the subtle mistakes live (see
+    docs/SPIKE-FINDINGS.md), so it must be testable without a frozen Bloom to hand.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PlatformTarget>x64</PlatformTarget>
+    <RootNamespace>BloomFreezeDoctor</RootNamespace>
+    <AssemblyName>BloomFreezeDoctor.Core</AssemblyName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      The wire format Bloom and the Doctor share. Its own project because it is also published as its
+      own package, which is how BloomDesktop gets it instead of keeping a copy.
+    -->
+    <ProjectReference Include="..\BloomBooks.FreezeDoctor.Protocol\BloomBooks.FreezeDoctor.Protocol.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reading the Windows Event Log for crash and unexpected-shutdown entries (plan 4.4). -->
+    <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.1" />
+    <!-- Reading another process's command line, to spot automation runs and the WebView2 debug port. -->
+    <PackageReference Include="System.Management" Version="8.0.0" />
+    <!-- Walking managed stacks out of a dump, or out of a live process without suspending it. -->
+    <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.1.512801" />
+    <!-- Asking the target's own runtime to write its dump, over the diagnostics IPC pipe. -->
+    <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.510501" />
+    <!--
+      libpalaso, for SIL.IO.RobustFile and RobustIO. Available because the Doctor now lives in Bloom's
+      repository, where this is already restored - and worth taking for a concrete reason rather than for
+      consistency: the outbox's staging-to-final rename was losing a race against whatever else on Windows
+      had just touched the files it wrote, failing about one run in three and discarding a gathered report.
+      RobustIO retries; see the note at that call.
+
+      Keep the version in step with BloomExe's SIL.* references by hand for now. If this layout is adopted,
+      it belongs in Directory.Build.props alongside VelopackVersion, which already exists to be the single
+      source of truth for exactly this kind of thing.
+    -->
+    <PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
+  </ItemGroup>
+
+</Project>

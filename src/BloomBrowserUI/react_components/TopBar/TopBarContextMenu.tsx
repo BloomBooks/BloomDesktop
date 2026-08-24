@@ -30,6 +30,7 @@ export const TopBarContextMenu: React.FunctionComponent<{
         React.useState(false);
     const [isMeddlingWithNewFiles, setIsMeddlingWithNewFiles] =
         React.useState(false);
+    const [runFreezeDoctor, setRunFreezeDoctor] = React.useState(false);
 
     const onClose = React.useCallback(() => {
         setMenuPoint(undefined);
@@ -49,6 +50,11 @@ export const TopBarContextMenu: React.FunctionComponent<{
         // the back end for the current value.
         getBoolean("app/isMeddlingWithNewFiles", (value) => {
             setIsMeddlingWithNewFiles(value);
+        });
+        // Persisted across runs, so the check mark has to come from the back end rather than
+        // from local state: it may well have been turned on during a previous session.
+        getBoolean("app/runFreezeDoctor", (value) => {
+            setRunFreezeDoctor(value);
         });
 
         const target = props.targetRef.current;
@@ -152,8 +158,25 @@ export const TopBarContextMenu: React.FunctionComponent<{
                     setIsMeddlingWithNewFiles(newValue);
                 },
             },
+            {
+                // The Freeze Doctor ships inside Bloom but does nothing unless switched on here.
+                // Turning it on starts it immediately, so you can switch it on while chasing a freeze
+                // rather than having to restart Bloom first.
+                label: "Run Freeze Doctor",
+                selected: runFreezeDoctor,
+                onClick: () => {
+                    const newValue = !runFreezeDoctor;
+                    postBoolean("app/runFreezeDoctor", newValue);
+                    setRunFreezeDoctor(newValue);
+                },
+            },
         ];
-    }, [alwaysMeasurePerformance, currentlyMeasuring, isMeddlingWithNewFiles]);
+    }, [
+        alwaysMeasurePerformance,
+        currentlyMeasuring,
+        isMeddlingWithNewFiles,
+        runFreezeDoctor,
+    ]);
 
     return (
         <Menu

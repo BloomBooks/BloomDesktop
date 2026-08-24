@@ -1,0 +1,103 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace BloomFreezeDoctor.Gathering;
+
+/// <summary>
+/// Works out a stable identifier for "this particular problem", so that the same freeze happening
+/// twenty times becomes one card with twenty occurrences rather than twenty cards (plan §5.2).
+///
+/// The hard part is choosing what to hash. Too much and every occurrence looks unique — thread ids,
+/// timings and memory addresses all differ every time. Too little and unrelated freezes collapse
+/// together. What identifies a freeze is *where the UI thread was stuck*, so we hash the top few
+/// frames of the interesting stack, plus the state and the Bloom version.
+/// </summary>
+public static class ReportFingerprint
+{
+    /// <summary>How many frames to include. Enough to distinguish, few enough to survive a refactor.</summary>
+    private const int FramesToHash = 5;
+
+    /// <summary>
+    /// Builds the fingerprint for a report. Also embedded in the card's text, so a tracker search can
+    /// find the earlier card for the same problem.
+    /// </summary>
+    public static string For(GatherContext context, IEnumerable<ReportSection> sections)
+    {
+        var ingredients = new StringBuilder();
+        ingredients.Append(context.Verdict.Report).Append('|');
+        ingredients.Append(VersionOf(context.Target.ExePath)).Append('|');
+        ingredients.Append(context.Target.Channel).Append('|');
+
+        var stacks = sections.FirstOrDefault(s => s.Title == "Managed stacks");
+        foreach (var frame in TopFramesOfUiThread(stacks?.Body ?? ""))
+            ingredients.Append(frame).Append(';');
+
+        return Hash(ingredients.ToString());
+    }
+
+    /// <summary>
+    /// Pulls the UI thread's top frames out of the rendered stacks section. Working from the text
+    /// rather than the objects keeps this independent of how stacks were obtained (a dump or a live
+    /// read), which matters because the two paths can produce slightly different frame lists.
+    /// </summary>
+    private static List<string> TopFramesOfUiThread(string stacksBody)
+    {
+        var frames = new List<string>();
+        var inUiSection = false;
+        foreach (var rawLine in stacksBody.Split('\n'))
+        {
+            var line = rawLine.TrimEnd('\r');
+            if (line.StartsWith("### The UI thread", StringComparison.Ordinal))
+            {
+                inUiSection = true;
+                continue;
+            }
+            if (inUiSection && line.StartsWith("###", StringComparison.Ordinal))
+                break;
+            if (!inUiSection || !line.StartsWith("    ", StringComparison.Ordinal))
+                continue;
+
+            var frame = line.Trim();
+            // Skip the plumbing that appears in every stack and identifies nothing.
+            if (
+                frame.Length == 0
+                || frame.StartsWith("InlinedCallFrame", StringComparison.Ordinal)
+                || frame.StartsWith("(native)", StringComparison.Ordinal)
+                || frame.Contains("IL_STUB", StringComparison.Ordinal)
+            )
+                continue;
+            frames.Add(frame);
+            if (frames.Count == FramesToHash)
+                break;
+        }
+        return frames;
+    }
+
+    /// <summary>
+    /// The version from the exe path, when the path carries one. Included so that the same freeze in a
+    /// new release is treated as a new problem — it may well have a different cause, and a card that
+    /// spans four releases helps nobody.
+    /// </summary>
+    private static string VersionOf(string exePath)
+    {
+        try
+        {
+            var info = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath);
+            return info.FileVersion ?? "";
+        }
+        catch (Exception)
+        {
+            // A path we cannot read still fingerprints; it just loses the version component.
+            return Regex.Match(exePath ?? "", @"\d+\.\d+\.\d+").Value;
+        }
+    }
+
+    private static string Hash(string value)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+        // Twelve hex characters is far more than enough to avoid collisions among our volumes, and
+        // short enough for a human to compare two cards at a glance.
+        return Convert.ToHexString(bytes, 0, 6).ToLowerInvariant();
+    }
+}

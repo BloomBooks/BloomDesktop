@@ -234,6 +234,17 @@
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.0.0" />
 		<PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />
+		<!--
+			The protocol Bloom and the Bloom Freeze Doctor share: the shared-memory health page, the
+			session file, and the named events. This was three files copied into this repo by hand, 750
+			lines of them, kept in step by a drift check because they had already drifted.
+
+			A plain ProjectReference, because on this branch the Doctor lives in this repository too, so
+			both sides compile the same source every build. Note where the ProjectReference sits: this
+			is otherwise a list of PackageReferences, and the only reason this is not one of them is
+			that the Doctor is here rather than in its own repo.
+		-->
+		<ProjectReference Include="..\BloomBooks.FreezeDoctor.Protocol\BloomBooks.FreezeDoctor.Protocol.csproj" />
 		<PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
 		<PackageReference Include="CairoSharp-signed" Version="3.22.24.37" />
 		<PackageReference Include="CommandLineParser" Version="2.8.0" />

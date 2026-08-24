@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The Doctor itself. WinExe rather than Exe so there is no console flash when Bloom launches it; the
+    queue-inspection switches attach to the parent console when they need to print.
+
+    NO INSTALLER OF ITS OWN, and therefore no Velopack. BloomFreezeDoctor.exe is built into Bloom's own
+    output directory, signed by Bloom's build alongside Bloom.exe and BloomPdfMaker.exe, and swept into
+    Bloom's installer by the wildcard in build/Bloom.proj. Whether a user actually RUNS it is a setting,
+    off by default, toggled from the debug menu on the collections tab - which is a better switch than
+    "did you install a second thing", because it needs no download and can be turned on during a support
+    conversation.
+
+    What that removed, all of it accidental complexity rather than anything the Doctor wanted: a Velopack
+    dependency and the VelopackApp.Build().Run() call it required at the top of Main, a `vpk pack` step, a
+    second signing pass, a rolling GitHub release, an argument about upstream Velopack versus Bloom's fork
+    (they install the same global `vpk` command, so one repository could not have both), and the ASP.NET
+    Core 9 runtime that the fork's CLI turns out to need.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>BloomFreezeDoctor</AssemblyName>
+    <RootNamespace>BloomFreezeDoctor</RootNamespace>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Company>SIL Global</Company>
+    <Product>Bloom Freeze Doctor</Product>
+    <Description>Diagnoses Bloom freezes, unreported crashes and stuck processes, and reports them.</Description>
+
+    <!--
+      Into Bloom's output directory, beside Bloom.exe, exactly as WebView2PdfMaker does. Two things depend
+      on it landing here rather than in the project's own bin: build/Bloom.proj's installer step includes
+      `..\output\release\x64\**\*.*`, so this is what gets it into the installer at all; and Bloom finds
+      the exe beside itself at run time (see DoctorLauncher), so no install path has to be guessed.
+    -->
+    <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <OutputPath>..\..\output\$(Configuration)\$(Platform)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BloomFreezeDoctor.Core\BloomFreezeDoctor.Core.csproj" />
+  </ItemGroup>
+
+</Project>
