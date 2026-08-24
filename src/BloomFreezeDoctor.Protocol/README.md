@@ -1,17 +1,16 @@
-# BloomBooks.FreezeDoctor.Protocol
+# BloomFreezeDoctor.Protocol
 
-The protocol between [Bloom](https://github.com/BloomBooks/BloomDesktop) and the
-[Bloom Freeze Doctor](https://github.com/BloomBooks/bloom-freeze-doctor) — a diagnostic tool that
-watches Bloom and reports freezes, unreported crashes, and processes whose window has gone but
-which are still running.
+The protocol between Bloom and the Bloom Freeze Doctor — a diagnostic tool that watches Bloom and
+reports freezes, unreported crashes, and processes whose window has gone but which are still
+running. Both live in this repository: Bloom's side is `src/BloomExe/FreezeDoctor/`, the Doctor is
+`src/BloomFreezeDoctor` and `src/BloomFreezeDoctor.Core`.
 
 "Protocol" rather than "contract" because it is more than the shared data: alongside the layouts it
 defines the kernel object naming scheme and the signalling handshakes the two use to ask each other
 for something.
 
-This package is **not generally useful on its own**, and is published unlisted for that reason. It
-exists so that one wire format has one definition instead of two hand-maintained copies. It
-contains:
+It is a plain project both sides reference, not a published package. It exists so that one wire
+format has one definition instead of two hand-maintained copies. It contains:
 
 - **`DoctorChannel`** — a small fixed-layout page in shared memory, written by Bloom and read by the
   Doctor, carrying a UI-thread heartbeat and what Bloom believes it is doing. Shared memory rather

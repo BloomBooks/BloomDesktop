@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using BloomBooks.FreezeDoctor.Protocol;
+using BloomFreezeDoctor.Protocol;
 
 namespace BloomFreezeDoctor;
 
