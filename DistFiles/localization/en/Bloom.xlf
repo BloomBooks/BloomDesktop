@@ -1192,9 +1192,9 @@
         <note>ID: Common.Uploading</note>
       </trans-unit>
       <trans-unit id="Common.Warning">
-        <source xml:lang="en">Info</source>
+        <source xml:lang="en">Warning</source>
         <note>ID: Common.Warning</note>
-        <note>A heading shown above some messages.</note>
+        <note>A heading shown above warning messages, e.g. when publishing removes pages that require a higher subscription tier.</note>
       </trans-unit>
       <trans-unit id="Common.WhatsThis" sil:dynamic="true">
         <source xml:lang="en">What's this?</source>
