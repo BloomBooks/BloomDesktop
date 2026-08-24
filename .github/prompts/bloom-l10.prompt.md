@@ -4,7 +4,7 @@ description: make a string localizable
 
 This project uses the following methods to make strings localizable in react components:
 - use an l10n-aware component such as <BloomButton l10nKey="myKey">My Text</BloomButton>, <H1 l10nKey="myKey">My Text</H1>, etc.
-- useL10n("myKey", "My Text")
+- useL10n("My Text", "myKey")  — note the order: the English text first, then the id
 
 There should be a selected line with a string. If there is not, stop and tell me that I have to select a line with a string to be localized.
 
@@ -12,7 +12,7 @@ There should be a selected line with a string. If there is not, stop and tell me
 If the string is already wrapped in a l10n-aware component or useL10n, go on to the XLF portion of these instructions. Otherwise, wrap it in `useL10n2()`. Or `useL10n(english, id)`.
 ```tsx
 // somewhere in Foobar dialog
-<button>{Brighten everything}</button>
+<button>Brighten everything</button>
 ```
 to this:
 ```tsx
@@ -25,7 +25,7 @@ The `import` above will need the correct path relative to the current file. The 
 * Normally, don't fill in l10nComment parameter when using useL10n, that just clutters the code. We will put context in the xlf file instead. However if you want to use the later parameters, then you have to put something in that parameter.
 
 # Adding to XLF files
-For each string, we have to have a matching record in one of the xlf files in the /DistFiles/l10n/en folder. There are high (DistFiles/localization/en/Bloom.xlf), medium (DistFiles/localization/en/BloomMediumPriority.xlf), and low (DistFiles/localization/en/BloomLowPriority.xlf) priority options. Check all three xlf files for a matching record. If you find it, tell the me where it is. If you don't find it, stop and ask me which priority I want with numbers so I can respond 1 (high), 2 (medium), or 3 (low). Then create the record in the appropriate file, placing the record next to similar records. For example, here we would want to group the `FoobarDialog` records together.
+For each string, we have to have a matching record in one of the xlf files in the DistFiles/localization/en folder. There are high (DistFiles/localization/en/Bloom.xlf), medium (DistFiles/localization/en/BloomMediumPriority.xlf), and low (DistFiles/localization/en/BloomLowPriority.xlf) priority options. Check all three xlf files for a matching record. If you find it, tell me where it is. If you don't find it, stop and ask me which priority I want with numbers so I can respond 1 (high), 2 (medium), or 3 (low). Then create the record in the appropriate file, placing the record next to similar records. For example, here we would want to group the `FoobarDialog` records together.
 
 # Default to not ready for translation
 Add a `translate="no"` attribute to new records unless I tell that these strings are ready for translation.
@@ -36,8 +36,10 @@ The string ID may be used by translators as they try to understand context or tr
 ## Expose ID to translators
 Add a note like this: `<note>ID: LinkTargetChooser.URL.Paste.Tooltip</note>`
 
-## Legacy strings
-Our localization build system is such that if we are no longer using a string ID in the next version, we cannot remove the ID from the XLF file immediately. This is because if we release a new version of the previous release, we will still need that old localization ID. The fact that its code base still has it will not be sufficient. The actual Crowdin database will lose the string and translations when it sees the string ID removed from the master branch. Therefore when we stop using a string ID we just add a note like this: "<note>Obsolete as of 6.2</note>". You can figure out the current version from the `Version` property in `build/Bloom.proj`.
+## Anything beyond adding a string
+This prompt covers one job: making a selected string localizable. For everything else about XLF entries — changing one, retiring one, or reviewing a PR that touches them — follow `.github/skills/xlf-strings/SKILL.md`, and see `DistFiles/localization/README.md` for how Crowdin works and why those rules exist.
+
+In particular, **never delete a string ID that is no longer used.** Mark it obsolete instead; `.github/skills/xlf-strings/SKILL.md` has the note format. The reasoning is in the README's "Why we can't just delete a string".
 
 ## Add comments for translators
 Although we don't want to fill in l10nComment in useL10n, we do want to fill in the note field to give context to translators. They don't know where the string appears in the UI; they also might need some explanation of what it means. For example, for the above string, we might add a note like `<note>This is the text on a button in the Foobar dialog that brightens all images in the current book.</note>`
