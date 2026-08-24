@@ -231,15 +231,26 @@ public sealed class ReportOutbox
     /// which drains this queue.
     /// </summary>
     /// <summary>
-    /// The name of the cross-process gate below. `Local\` rather than `Global\`, to match everything else
-    /// here: the outbox lives under the user's own LOCALAPPDATA, so two Windows sessions have separate
-    /// queues and have nothing to serialise with each other.
+    /// The file whose exclusive lock serves as the cross-process gate for draining. It lives inside the
+    /// outbox, which is the entire point: **the gate has to be scoped exactly like the thing it protects.**
+    ///
+    /// This was a named `Local\` semaphore, and that was wrong in a way worth recording. `Local\` names are
+    /// per Windows LOGON SESSION, while the outbox lives under LOCALAPPDATA, which is per USER - so the
+    /// same user in two sessions (fast user switching, or a second desktop over RDP) shared one queue while
+    /// holding two different gates, and could drain it twice at once. A `Global\` name would have fixed the
+    /// scope and broken something else: creating a `Global\` object needs SeCreateGlobalPrivilege, which a
+    /// standard user does not necessarily have, and the failure path here is "carry on ungated".
+    ///
+    /// A lock file in the outbox directory has neither problem. Same outbox means the same file and
+    /// therefore the same gate; a different outbox - another user, or a test with its own root - gets its
+    /// own gate and no spurious contention. It needs no privileges, and Windows releases the lock when the
+    /// handle closes, including when the process dies without closing it.
     /// </summary>
-    private const string DrainGateName = @"Local\BloomFreezeDoctor.outbox-drain";
+    private const string DrainLockFileName = ".drain.lock";
 
     /// <summary>
-    /// How long to wait for another drain to finish before giving up and leaving the queue to it. Short on
-    /// purpose: the bundles are not lost, and whoever holds the gate is already sending them.
+    /// How long to keep trying for the gate before giving up and leaving the queue to whoever holds it.
+    /// The bundles are not lost either way: the holder is already sending them.
     /// </summary>
     private static readonly TimeSpan DrainGateWait = TimeSpan.FromSeconds(20);
 
@@ -248,31 +259,26 @@ public sealed class ReportOutbox
         CancellationToken cancellation = default
     )
     {
-        // A named, CROSS-PROCESS gate, because in-process serialisation is not enough. `--drain` is
-        // handled before the singleton mutex - deliberately, so support can drain the queue whether or not
-        // a Doctor is running - and it calls straight in here. So two PROCESSES can be draining one queue,
-        // and each would list the same pending bundles and walk the non-atomic search-then-create flow:
-        // duplicate cards, or a combined total past the three-a-day cap that exists to stop a machine in a
-        // bad state spamming the tracker.
-        //
-        // A Semaphore and not a Mutex, and that is not a style choice: a Mutex has thread affinity and
-        // must be released by the thread that took it, which cannot be guaranteed across the awaits below.
-        // A named semaphore has no affinity.
-        Semaphore? gate = null;
-        var held = false;
+        // A CROSS-PROCESS gate, because in-process serialisation is not enough: `--drain` is handled
+        // before the singleton mutex - deliberately, so support can drain the queue whether or not a
+        // Doctor is running - and it calls straight in here. Two processes draining one queue would each
+        // list the same pending bundles and each walk the non-atomic search-then-create flow: duplicate
+        // cards, or a combined total past the three-a-day cap that exists to stop a machine in a bad
+        // state spamming the tracker.
+        FileStream? gate = null;
         try
         {
-            gate = new Semaphore(1, 1, DrainGateName);
-            held = gate.WaitOne(DrainGateWait);
-            if (!held)
-                return 0; // somebody else is draining; the bundles are theirs to send.
+            gate = await AcquireDrainGateAsync(cancellation).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception)
         {
-            // Could not create the gate at all. Carry on ungated rather than never draining: a report that
-            // is never sent is a worse outcome than a rare duplicate, and this is the path where reports
-            // actually reach the tracker.
-            gate?.Dispose();
+            // Could not even try for the gate (an unwritable directory, say). Carry on ungated rather than
+            // never draining: a report that never reaches the tracker is worse than a rare duplicate, and
+            // this is the path by which reports actually get sent.
             gate = null;
         }
 
@@ -282,11 +288,40 @@ public sealed class ReportOutbox
         }
         finally
         {
-            if (gate != null)
+            gate?.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Takes the drain gate, or returns null if somebody else is holding it after
+    /// <see cref="DrainGateWait"/>. Null means "not ours to drain", not "nothing to drain".
+    /// </summary>
+    private async Task<FileStream?> AcquireDrainGateAsync(CancellationToken cancellation)
+    {
+        // Only directories are ever treated as bundles (see Pending), so a lock FILE sitting here cannot
+        // be mistaken for one.
+        Directory.CreateDirectory(_root);
+        var path = Path.Combine(_root, DrainLockFileName);
+        var deadline = _now() + DrainGateWait;
+        while (true)
+        {
+            cancellation.ThrowIfCancellationRequested();
+            try
             {
-                if (held)
-                    gate.Release();
-                gate.Dispose();
+                // FileShare.None is the lock. Whoever opens it first owns the drain.
+                return new FileStream(
+                    path,
+                    FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite,
+                    FileShare.None
+                );
+            }
+            catch (IOException)
+            {
+                // Held by somebody else. Keep trying until the deadline.
+                if (_now() >= deadline)
+                    return null;
+                await Task.Delay(250, cancellation).ConfigureAwait(false);
             }
         }
     }
