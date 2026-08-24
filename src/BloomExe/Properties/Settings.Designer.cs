@@ -142,19 +142,6 @@ namespace Bloom.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int ImageChooserSessionCount {
-            get {
-                return ((int)(this["ImageChooserSessionCount"]));
-            }
-            set {
-                this["ImageChooserSessionCount"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool ShowLocalizationControls {
             get {

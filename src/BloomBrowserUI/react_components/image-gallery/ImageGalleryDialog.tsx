@@ -20,7 +20,6 @@ import {
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { getEditablePageBundleExports } from "../../bookEdit/js/workspaceFrames";
-import { useMountEffect } from "../../utils/useMountEffect";
 import { ShowEditViewDialog } from "../../bookEdit/workspaceRoot";
 
 // The shape of what C# returns from imageGallery/imageGalleryResult
@@ -59,9 +58,6 @@ const ImageGalleryDialog: React.FunctionComponent<{
     // Pixabay's site -- so whether this session had one is the headline number for how much of
     // an obstacle that is.
     const pixabayKeyPresentRef = useRef(false);
-    // How many times this user had opened the chooser before now. A key (or an accept) on the
-    // first visit is a speed bump; one that takes eight visits is a real barrier.
-    const priorChooserSessionsRef = useRef<number | undefined>(undefined);
     // Exactly one "Image Chooser Closed" event per dialog session.
     const closeReportedRef = useRef(false);
 
@@ -84,26 +80,6 @@ const ImageGalleryDialog: React.FunctionComponent<{
             })
             .finally(() => setKeysLoaded(true));
     }, []);
-
-    // Unlike the fetch above, this one WRITES, so it has to happen exactly once per dialog.
-    // React StrictMode runs mount effects twice in development, which would bump the durable
-    // counter by two on every visit -- skewing the very number this exists to provide, and
-    // doing it precisely when a developer is checking the feature.
-    const sessionCountedRef = useRef(false);
-    useMountEffect(() => {
-        if (sessionCountedRef.current) return;
-        sessionCountedRef.current = true;
-        getAsync("app/userSetting?settingName=ImageChooserSessionCount").then(
-            (r) => {
-                const priorSessions = (r?.data?.settingValue as number) ?? 0;
-                priorChooserSessionsRef.current = priorSessions;
-                postJsonAsync("app/userSetting", {
-                    settingName: "ImageChooserSessionCount",
-                    settingValue: priorSessions + 1,
-                });
-            },
-        );
-    });
 
     // Searches are counted, not reported one by one: how many a visit took and which sources it
     // tried are what the close event needs, and a per-query event adds nothing on top of them.
@@ -141,7 +117,6 @@ const ImageGalleryDialog: React.FunctionComponent<{
             providersTried: providersTriedRef.current.size,
             providers: [...providersTriedRef.current].join(","),
             pixabayKeyPresent: pixabayKeyPresentRef.current,
-            priorChooserSessions: priorChooserSessionsRef.current,
         });
     };
 
