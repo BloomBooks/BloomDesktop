@@ -303,14 +303,31 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                       payload?: {
                           level?: string;
                           message?: string;
-                          // We relay this array to C# as-is, so every field the
-                          // ai-editor sends is declared here even though this side
-                          // reads only resultId and sourceUrl (to say how many pictures
-                          // were generated rather than reused — see noteCommitResult).
-                          // Rebuilding the array field by field instead of passing it
-                          // through would silently drop `credits`, and the result would
-                          // lose its credits — the bug this whole feature exists to
-                          // prevent.
+                          // Note that this whole block is a type assertion on the
+                          // message that arrived -- it describes the wire, and builds
+                          // nothing. The `commit` case below forwards `replacements` to
+                          // C# by reference, unchanged, which has two consequences worth
+                          // knowing before touching either place:
+                          //
+                          //  - a field the ai-editor sends arrives at C# intact whether
+                          //    or not it is declared here, so this list being incomplete
+                          //    would break nothing today;
+                          //  - it is nevertheless kept complete on purpose, because the
+                          //    obvious-looking refactor -- rebuild the array field by
+                          //    field on the way to C# -- can only carry the fields
+                          //    someone thought to name, and would silently drop any this
+                          //    type had not caught up with.
+                          //
+                          // This side itself reads only resultId and sourceUrl, to say
+                          // how many pictures were generated rather than reused (see
+                          // noteCommitResult).
+                          //
+                          // "credits" below means the picture's ATTRIBUTION -- copyright
+                          // notice, creator, license. It has nothing to do with the
+                          // OpenRouter credits that costUSD and spentCredits report, in
+                          // this same message type. Attribution being lost when a picture
+                          // went through the ai-editor was BL-16603; that is why these
+                          // fields exist and why they have to survive the trip.
                           replacements?: Array<{
                               incomingId?: string;
                               resultId?: string;
