@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using Bloom.FreezeDoctor;
-using BloomBooks.FreezeDoctor.Protocol;
+using BloomFreezeDoctor.Protocol;
 using NUnit.Framework;
 
 namespace BloomTests.FreezeDoctor
@@ -14,7 +14,7 @@ namespace BloomTests.FreezeDoctor
     ///
     /// **What this fixture is for changed when the protocol became a package.** It used to guard against
     /// two hand-maintained copies of the same file drifting apart. There is only one definition now — the
-    /// `BloomBooks.FreezeDoctor.Protocol` package — so drift in that sense is no longer possible.
+    /// `BloomFreezeDoctor.Protocol` package — so drift in that sense is no longer possible.
     ///
     /// It still earns its place, for a different reason: it pins the layout Bloom *expects* against the
     /// layout the referenced package version actually has. A package upgrade that changed an offset or

@@ -14,9 +14,11 @@
     packages, and the long note about pushing to nuget.org and unlisting) is gone with it. If this
     arrangement is not adopted, that is what has to come back.
 
-    Still worth keeping: the name. `BloomBooks.FreezeDoctor.Protocol` reads oddly for a project that is no
-    longer a package - the `BloomBooks.` prefix existed to namespace a public package id. Renaming it is a
-    loose end for whoever decides this, not something to churn twice.
+    The name lost its `BloomBooks.` prefix along with the package. That prefix existed only to namespace a
+    public NuGet package id, so once the Doctor moved into this repository it named nothing. The project is
+    `BloomFreezeDoctor.Protocol`, which groups it with its three siblings in `src` - and, less loftily,
+    stops a folder sorting ahead of `BloomBrowserUI`, which had been quietly costing everyone who types
+    `src/b` and expects tab completion to land on the front end.
   -->
   <PropertyGroup>
     <!--
@@ -29,8 +31,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <RootNamespace>BloomBooks.FreezeDoctor.Protocol</RootNamespace>
-    <AssemblyName>BloomBooks.FreezeDoctor.Protocol</AssemblyName>
+    <RootNamespace>BloomFreezeDoctor.Protocol</RootNamespace>
+    <AssemblyName>BloomFreezeDoctor.Protocol</AssemblyName>
     <Platforms>x64;ARM64</Platforms>
   </PropertyGroup>
 

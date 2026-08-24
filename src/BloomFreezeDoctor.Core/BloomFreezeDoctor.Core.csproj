@@ -20,7 +20,7 @@
       The wire format Bloom and the Doctor share. Its own project because it is also published as its
       own package, which is how BloomDesktop gets it instead of keeping a copy.
     -->
-    <ProjectReference Include="..\BloomBooks.FreezeDoctor.Protocol\BloomBooks.FreezeDoctor.Protocol.csproj" />
+    <ProjectReference Include="..\BloomFreezeDoctor.Protocol\BloomFreezeDoctor.Protocol.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
 using System.Diagnostics;
 // Aliased rather than imported plainly, so uses below still read as Protocol.DoctorSignals - it is worth
 // saying at each use that this is the shared wire format, not something local to the Doctor.
-using Protocol = BloomBooks.FreezeDoctor.Protocol;
+using Protocol = BloomFreezeDoctor.Protocol;
 
 namespace BloomFreezeDoctor;
 

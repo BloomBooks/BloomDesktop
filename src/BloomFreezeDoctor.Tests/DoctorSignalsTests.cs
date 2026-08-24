@@ -1,5 +1,5 @@
 using System.Threading;
-using BloomBooks.FreezeDoctor.Protocol;
+using BloomFreezeDoctor.Protocol;
 using NUnit.Framework;
 
 namespace BloomFreezeDoctor.Tests;
