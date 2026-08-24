@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using SIL.IO;
 // Aliased rather than imported plainly, so uses below still read as Protocol.DoctorSession - it is worth
 // saying at each use that this is the shared wire format, not something local to the Doctor.
 using Protocol = BloomBooks.FreezeDoctor.Protocol;
@@ -70,7 +71,7 @@ public static class GatherContextBuilder
     /// </summary>
     private static string? FirstUsable(string? preferred, Func<string?> fallback)
     {
-        if (!string.IsNullOrEmpty(preferred) && File.Exists(preferred))
+        if (!string.IsNullOrEmpty(preferred) && RobustFile.Exists(preferred))
             return preferred;
         return fallback();
     }

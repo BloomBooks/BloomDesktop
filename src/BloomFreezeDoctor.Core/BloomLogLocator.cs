@@ -154,6 +154,11 @@ public static class BloomLogLocator
     {
         try
         {
+            // robustfile-hook: allow FileStream
+            // The documented exception, and this is the case it was written for: we need
+            // FileShare.ReadWrite | FileShare.Delete specifically, because the Bloom that owns this log
+            // holds it open for writing and may delete it while we read. A robust wrapper that retried
+            // would not help — the sharing flags are the whole point, not a transient failure.
             using var stream = new FileStream(
                 path,
                 FileMode.Open,

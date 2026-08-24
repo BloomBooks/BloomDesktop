@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using Microsoft.Diagnostics.NETCore.Client;
 using Microsoft.Diagnostics.Runtime;
+using SIL.IO;
 
 namespace BloomFreezeDoctor.Gathering;
 
@@ -306,8 +307,8 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     {
         try
         {
-            if (File.Exists(path))
-                File.Delete(path);
+            if (RobustFile.Exists(path))
+                RobustFile.Delete(path);
         }
         catch (Exception) { }
     }

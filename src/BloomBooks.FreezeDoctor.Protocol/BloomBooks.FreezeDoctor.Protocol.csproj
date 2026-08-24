@@ -34,4 +34,18 @@
     <Platforms>x64;ARM64</Platforms>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!--
+      libpalaso, for SIL.IO.RobustFile. This project deliberately had NO dependencies while it was a NuGet
+      package, and that was a real selling point. It is a plain project reference now, and BloomExe already
+      restores this exact version, so the cost is gone - while the benefit is not cosmetic: DoctorSession
+      writes and reads a file on a user's disk, and this repository's rule is that such writes retry rather
+      than fail the first time a virus scanner happens to be holding the file.
+
+      Keep the version in step with BloomExe's other SIL.* references by hand for now; if this layout
+      settles, it belongs in Directory.Build.props alongside VelopackVersion.
+    -->
+    <PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
+  </ItemGroup>
+
 </Project>

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using SIL.IO;
 
 namespace BloomFreezeDoctor;
 
@@ -43,10 +44,13 @@ public static class DoctorLog
                 var directory = System.IO.Path.GetDirectoryName(Path)!;
                 Directory.CreateDirectory(directory);
                 RotateIfBig();
-                File.AppendAllText(
+                // No encoding overload on RobustFile.AppendAllText. Dropping the explicit UTF8 changes
+                // nothing that matters: .NET's default for these APIs is UTF-8 without a BOM, which is
+                // what we were asking for, and appending with an explicit UTF8 encoding would in fact
+                // have been slightly worse - it can write a BOM into the middle of an existing file.
+                RobustFile.AppendAllText(
                     Path,
-                    $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{Environment.ProcessId}] {message}{Environment.NewLine}",
-                    Encoding.UTF8
+                    $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{Environment.ProcessId}] {message}{Environment.NewLine}"
                 );
             }
         }
@@ -68,9 +72,9 @@ public static class DoctorLog
             if (!info.Exists || info.Length < MaxBytes)
                 return;
             var previous = Path + ".1";
-            if (File.Exists(previous))
-                File.Delete(previous);
-            File.Move(Path, previous);
+            if (RobustFile.Exists(previous))
+                RobustFile.Delete(previous);
+            RobustFile.Move(Path, previous);
         }
         catch (Exception)
         {
