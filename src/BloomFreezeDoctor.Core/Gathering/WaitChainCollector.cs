@@ -157,24 +157,59 @@ public sealed class WaitChainCollector : IEvidenceCollector
         Error,
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    /// <summary>
+    /// Pads out the remainder of the native union so that this struct is the same SIZE as
+    /// <c>WAITCHAIN_NODE_INFO</c>. That matters as much as the field offsets do: the API fills an array,
+    /// so if our struct is a different size, every node after the first is read from the wrong place.
+    ///
+    /// 256 bytes: the union's larger branch is 272 (a 256-byte name, an 8-byte timeout at the next
+    /// 8-boundary, a 4-byte BOOL, padded to 272 by the timeout's alignment), of which the four thread
+    /// DWORDs above already account for 16.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Size = 256)]
+    private struct WaitChainUnionTail { }
+
+    /// <summary>
+    /// <c>WAITCHAIN_NODE_INFO</c>. **Its second half is a UNION**, and getting that wrong is a bug that
+    /// reports nonsense rather than failing: this struct used to declare the thread fields *after* a
+    /// 256-byte name, so Windows wrote ProcessId and ThreadId at offset 8 while we read them from around
+    /// 276, and the size mismatch misaligned every node past the first. Cards stated thread ids that were
+    /// simply garbage.
+    ///
+    /// Only the thread branch is declared, because only it is ever read — the lock branch's ObjectName is
+    /// not used anywhere. So the union is expressed as its four DWORDs followed by enough padding to make
+    /// the whole struct the right size, which is both simpler and blittable (no marshalling on a call made
+    /// once per thread).
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
     private struct WaitChainNode
     {
-        public WaitChainObjectType ObjectType;
-        public WaitChainObjectStatus ObjectStatus;
+        public WaitChainObjectType ObjectType; // offset 0
+        public WaitChainObjectStatus ObjectStatus; // offset 4
 
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        public string ObjectName;
+        // The union starts here, at offset 8. These are its thread branch, valid when ObjectType is
+        // Thread; for a lock node the same bytes are the start of ObjectName and must not be read.
+        public int ProcessId; // offset 8
+        public int ThreadId; // offset 12
+        public int WaitTime; // offset 16
+        public int ContextSwitches; // offset 20
 
-        public long Timeout;
-        public bool Alertable;
-
-        // The union's thread branch; valid when ObjectType is Thread.
-        public int ProcessId;
-        public int ThreadId;
-        public int WaitTime;
-        public int ContextSwitches;
+        public WaitChainUnionTail Tail; // offsets 24..279
     }
+
+    /// <summary>
+    /// The native layout as this build sees it, so a test can pin it without needing a frozen process.
+    ///
+    /// It exists because the layout was wrong once and nothing noticed: the wait-chain section simply
+    /// printed rubbish, which no test and no build could catch. Asserting the size and the two offsets
+    /// that are actually read turns the next such mistake into a failing test.
+    /// </summary>
+    public static (int Size, int ProcessIdOffset, int ThreadIdOffset) DescribeNativeNodeLayout() =>
+        (
+            Marshal.SizeOf<WaitChainNode>(),
+            (int)Marshal.OffsetOf<WaitChainNode>(nameof(WaitChainNode.ProcessId)),
+            (int)Marshal.OffsetOf<WaitChainNode>(nameof(WaitChainNode.ThreadId))
+        );
 
     [DllImport("advapi32.dll", SetLastError = true)]
     private static extern IntPtr OpenThreadWaitChainSession(uint flags, IntPtr callback);
