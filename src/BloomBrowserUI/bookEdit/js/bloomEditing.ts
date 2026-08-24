@@ -327,6 +327,29 @@ function AddEditKeyHandlers(container) {
             hideInvisibles(e);
         });
 
+    addDocumentKeyHandlers();
+
+    // Note, CTRL+N is also caught, but up on the Shell where it is turned into an event,
+    // so that it can be caught even when the focus isn't on the browser
+}
+
+// Add the key handlers that listen on the whole document rather than on one element.
+// AddEditKeyHandlers runs again every time a canvas element is added, because SetupElements
+// does, so a handler bound here without this guard would be bound once more each time and
+// would then run several times for one key press. That did no harm while every command here
+// was one that gives the same result however often it runs, but Rotate right is not such a
+// command: it would turn the picture a quarter turn for each copy and leave that many steps
+// on the undo stack. The mark goes on the document object, not in the page, so a page the
+// user moves to gets its own handlers and nothing is written into the book.
+function addDocumentKeyHandlers(): void {
+    const documentWithMark = document as Document & {
+        bloomDocumentKeyHandlersAdded?: boolean;
+    };
+    if (documentWithMark.bloomDocumentKeyHandlersAdded) {
+        return;
+    }
+    documentWithMark.bloomDocumentKeyHandlersAdded = true;
+
     // Ctrl+Space: "clear formatting" on the current selection. We route this through the CKEditor
     // instance that currently has focus (rather than the browser's document.execCommand) so that
     // (a) it uses our removeFormat configuration/filter, which strips exactly the inline formatting
@@ -375,9 +398,6 @@ function AddEditKeyHandlers(container) {
             return;
         }
     });
-
-    // Note, CTRL+N is also caught, but up on the Shell where it is turned into an event,
-    // so that it can be caught even when the focus isn't on the browser
 }
 
 // Add little language tags. (At one point we limited this to visible .bloom-editable divs,
