@@ -13,6 +13,7 @@ import { buildCanvasElementControlRegistryContext } from "./buildCanvasElementCo
 function makeCanvasElement(options: {
     kind: "image" | "text";
     activity?: string;
+    isBackgroundImage?: boolean;
 }): HTMLElement {
     const page = document.createElement("div");
     page.className = "bloom-page";
@@ -22,6 +23,9 @@ function makeCanvasElement(options: {
 
     const canvasElement = document.createElement("div");
     canvasElement.className = "bloom-canvas-element";
+    if (options.isBackgroundImage) {
+        canvasElement.classList.add("bloom-backgroundImage");
+    }
 
     if (options.kind === "image") {
         const container = document.createElement("div");
@@ -76,6 +80,20 @@ describe("canChooseAudioForElement", () => {
         );
 
         expect(ctx.isInDraggableGame).toBe(true);
+        expect(ctx.canChooseAudioForElement).toBe(true);
+    });
+
+    test("offered for a page's background picture too", () => {
+        // Gating on "has an image" reaches the page's background picture as well as
+        // pictures sitting on top of it. That was already true inside a draggable game
+        // (unlike draggability, which explicitly excludes the background image), so this
+        // pins the wider surface rather than leaving it untested. If we ever decide a
+        // background picture should not offer a click sound, this is the test to change.
+        const ctx = buildCanvasElementControlRegistryContext(
+            makeCanvasElement({ kind: "image", isBackgroundImage: true }),
+        );
+
+        expect(ctx.isBackgroundImage).toBe(true);
         expect(ctx.canChooseAudioForElement).toBe(true);
     });
 
