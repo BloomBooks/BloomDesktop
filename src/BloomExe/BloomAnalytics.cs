@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using DesktopAnalytics;
 using SIL.Reporting;
@@ -58,7 +57,7 @@ namespace Bloom
             {
                 // Deliberately swallowed, and the only place in this file that is: the channel we
                 // would report a logging failure on is the one that just failed.
-                Debug.WriteLine($"[analytics] could not log \"{eventName}\": {e.Message}");
+                Console.Error.WriteLine($"[analytics] could not log \"{eventName}\": {e.Message}");
             }
         }
 
@@ -92,7 +91,9 @@ namespace Bloom
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"[analytics] could not log an exception report: {e.Message}");
+                Console.Error.WriteLine(
+                    $"[analytics] could not log an exception report: {e.Message}"
+                );
             }
         }
 
