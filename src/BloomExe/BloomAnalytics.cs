@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using DesktopAnalytics;
 using SIL.Reporting;
@@ -9,23 +10,17 @@ namespace Bloom
     /// <summary>
     /// The single place Bloom hands an analytics event to DesktopAnalytics, and so to Segment.
     ///
-    /// It exists to close a hole that makes new events unverifiable on a developer machine.
-    /// <see cref="Program.InitializeAnalytics"/> constructs DesktopAnalytics with
-    /// allowTracking:false in DEBUG, and DesktopAnalytics makes that decision *inside*
-    /// Analytics.Track. So a new event is easy to write, easy to believe in, and impossible to
-    /// see: nothing is sent, and nothing says that nothing was sent. The only way to confirm one
-    /// was to ship it to alpha and wait.
+    /// All analytics traffic should route through this class; build/check-csharp-analytics.sh
+    /// attempts to enforce that at commit time.
     ///
-    /// So every event is logged here, on our side of that call, before it is offered to
-    /// DesktopAnalytics. When tracking is off the log line says so, and also goes to standard
-    /// error, so a developer running ./go.sh watches events scroll past as they exercise the
-    /// feature. In a release run the line still reaches the Bloom log, which means a support log
-    /// now shows what analytics reported at the time -- worth having in its own right.
+    /// Every event is logged here as well as sent. DEBUG builds construct DesktopAnalytics with
+    /// allowTracking:false, so on a developer machine the log line is what tells you an event
+    /// fired; it says so explicitly, and also goes to standard error, so someone running ./go.sh
+    /// watches events scroll past as they exercise the feature. In a release run the line still
+    /// reaches the Bloom log, so a support log shows what analytics reported at the time.
     ///
-    /// Call this rather than DesktopAnalytics.Analytics.Track:
-    /// build/check-csharp-analytics.sh fails the commit otherwise. An event that bypasses this is
-    /// invisible again, and a log the reader cannot trust to be complete is worse than no log --
-    /// a missing line would mean "not instrumented" as readily as "did not happen".
+    /// The log is only worth reading if it is complete, which is the reason for the commit-time
+    /// check: a missing line would mean "not instrumented" as readily as "did not happen".
     /// </summary>
     public static class BloomAnalytics
     {
@@ -38,11 +33,14 @@ namespace Bloom
             // Recording an event must never be able to affect what it is observing. Callers sit
             // inside try/catch blocks that mean something else entirely -- one of them turns any
             // exception into "the app build failed" on the user's screen -- so an exception raised
-            // here would be attributed to their operation, not to analytics. A lost event is a far
-            // smaller problem, and the log line below still records that we meant to send it.
+            // here would be attributed to their operation, not to analytics.
+            //
+            // Send FIRST, then log, each guarded separately. Logging first would let a failure in
+            // our own logging stop the event ever reaching Segment, which is the wrong way round.
+            // Separate guards also keep the two reports honest: a single try/catch around both
+            // would announce a logging failure as a failure to send.
             try
             {
-                Log(FormatForLog(eventName, properties, Analytics.AllowTracking));
                 if (properties == null)
                     Analytics.Track(eventName);
                 else
@@ -51,6 +49,16 @@ namespace Bloom
             catch (Exception e)
             {
                 Logger.WriteEvent($"[analytics] FAILED to send \"{eventName}\": {e.Message}");
+            }
+            try
+            {
+                Log(FormatForLog(eventName, properties, Analytics.AllowTracking));
+            }
+            catch (Exception e)
+            {
+                // Deliberately swallowed, and the only place in this file that is: the channel we
+                // would report a logging failure on is the one that just failed.
+                Debug.WriteLine($"[analytics] could not log \"{eventName}\": {e.Message}");
             }
         }
 
@@ -63,7 +71,15 @@ namespace Bloom
         {
             // Guarded for the same reason as Track, and more urgently: one caller is Program's
             // global unhandled-exception handler, so a throw from in here would be a failure while
-            // reporting a failure.
+            // reporting a failure. Sent before it is logged, for the reason given in Track.
+            try
+            {
+                Analytics.ReportException(exception);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent($"[analytics] FAILED to report an exception: {e.Message}");
+            }
             try
             {
                 Log(
@@ -73,11 +89,10 @@ namespace Bloom
                         Analytics.AllowTracking
                     )
                 );
-                Analytics.ReportException(exception);
             }
             catch (Exception e)
             {
-                Logger.WriteEvent($"[analytics] FAILED to report an exception: {e.Message}");
+                Debug.WriteLine($"[analytics] could not log an exception report: {e.Message}");
             }
         }
 

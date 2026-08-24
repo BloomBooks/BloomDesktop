@@ -775,7 +775,8 @@ export async function postJsonAsync(
 // Property values may be strings, numbers or booleans; they all arrive as strings. Omit a
 // property (or pass undefined) when you don't have a value for it, rather than sending "".
 // Note that DEBUG builds initialize DesktopAnalytics with allowTracking:false, so nothing sent
-// from a developer machine reaches Segment; new events have to be verified on alpha.
+// from a developer machine reaches Segment. What confirms a new event fired is the line
+// BloomAnalytics writes to Bloom's log (Help > Show Event Log) and to standard error.
 //
 // Recording an event must never break -- or appear to break -- whatever the user was doing.
 // Two ways it otherwise could, both closed here deliberately:
