@@ -16,6 +16,7 @@ import { CanvasElementHandleDragInteractions } from "./CanvasElementHandleDragIn
 import {
     canRotateCanvasElement,
     getCanvasElementRotation,
+    getHandleCursorForRotation,
 } from "./canvasElementRotation";
 
 // The picture in the rotate knob: the Material UI "Refresh" icon, which shows a circling
@@ -260,47 +261,30 @@ export async function getHandleTitlesAsync(
     }
 }
 
-// The eight directions of the eight resize cursors, clockwise from the top.
-const kClockwiseDirections = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
-// The cursors for an axis, for the same eight directions taken two at a time: a vertical
-// axis, then the two diagonals with the horizontal axis between them.
-const kAxisCursors = ["ns-resize", "nwse-resize", "ew-resize", "nesw-resize"];
-
 /**
  * Give each resize handle and each crop handle the cursor for the direction it really moves
- * on screen. The handles turn with the element, but a cursor cannot turn, so on a turned
- * element each handle needs the cursor of another direction. There are only eight cursors,
- * so the angle is taken to the nearest eighth of a turn.
+ * on screen; see getHandleCursorForRotation.
  */
 function setHandleCursorsForRotation(
     controlFrame: HTMLElement,
     rotation: number,
 ): void {
-    const steps = ((Math.round(rotation / 45) % 8) + 8) % 8;
     const setCursor = (className: string, cursor: string) => {
         const handle = controlFrame.getElementsByClassName(className)[0] as
             | HTMLElement
             | undefined;
         if (handle) handle.style.cursor = cursor;
     };
-    // A corner moves along one of the eight directions, so its cursor is the direction the
-    // rotation takes it to.
-    ["nw", "ne", "se", "sw"].forEach((corner) => {
-        const direction =
-            kClockwiseDirections[
-                (kClockwiseDirections.indexOf(corner) + steps) % 8
-            ];
+    (["nw", "ne", "se", "sw"] as const).forEach((corner) => {
         setCursor(
             "bloom-ui-canvas-element-resize-handle-" + corner,
-            direction + "-resize",
+            getHandleCursorForRotation(corner, rotation),
         );
     });
-    // A side moves along an axis, and an axis turned half a turn is the same axis, so four
-    // cursors cover it.
-    ["n", "e", "s", "w"].forEach((side) => {
+    (["n", "e", "s", "w"] as const).forEach((side) => {
         setCursor(
             "bloom-ui-canvas-element-side-handle-" + side,
-            kAxisCursors[(kClockwiseDirections.indexOf(side) + steps) % 4],
+            getHandleCursorForRotation(side, rotation),
         );
     });
 }

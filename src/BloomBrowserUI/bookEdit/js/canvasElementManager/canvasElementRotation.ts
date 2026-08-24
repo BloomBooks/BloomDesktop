@@ -105,6 +105,32 @@ export function unrotateVector(
     return rotateVector(x, y, -degrees);
 }
 
+// The eight directions of the eight directional resize cursors, clockwise from the top.
+const kClockwiseDirections = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
+
+// The cursors for an axis, one for each 45 degrees of turn from the vertical. A vertical axis
+// turned 45 degrees clockwise runs from the bottom left to the top right, which is the
+// north-east to south-west diagonal, so that cursor comes second.
+const kAxisCursors = ["ns-resize", "nesw-resize", "ew-resize", "nwse-resize"];
+
+// The cursor for one handle of the control frame on an element turned by the given angle. The
+// handles turn with the element, but a cursor cannot turn, so a handle on a turned element
+// needs the cursor of another direction. There are only eight cursors, so the angle is taken
+// to the nearest eighth of a turn. A corner moves along one of the eight directions and takes
+// a directional cursor; a side moves along an axis, and an axis turned half a turn is the same
+// axis, so four cursors cover the sides.
+export function getHandleCursorForRotation(
+    handle: "n" | "e" | "s" | "w" | "nw" | "ne" | "se" | "sw",
+    degrees: number,
+): string {
+    const steps = ((Math.round(normalizeDegrees(degrees) / 45) % 8) + 8) % 8;
+    const index = kClockwiseDirections.indexOf(handle) + steps;
+    if (handle.length === 2) {
+        return kClockwiseDirections[index % 8] + "-resize";
+    }
+    return kAxisCursors[index % 4];
+}
+
 // True if the point (in the coordinate system of the element's offsetParent, which is what
 // offsetLeft/offsetTop are measured in) is inside this canvas element, taking its rotation
 // into account. comicaljs tests the un-rotated offset box, so the page code has to do this

@@ -16,6 +16,7 @@ vi.mock("comicaljs", () => ({
 import {
     canRotateCanvasElement,
     getCanvasElementRotation,
+    getHandleCursorForRotation,
     isPointInsideRotatedCanvasElement,
     kRotatedClass,
     normalizeDegrees,
@@ -226,5 +227,46 @@ describe("isPointInsideRotatedCanvasElement", () => {
         giveElementABox(element, 100, 100, 100, 20);
         setCanvasElementRotation(element, 37);
         expect(isPointInsideRotatedCanvasElement(element, 150, 110)).toBe(true);
+    });
+});
+
+describe("getHandleCursorForRotation", () => {
+    it("gives each handle its own cursor on an upright element", () => {
+        expect(getHandleCursorForRotation("n", 0)).toBe("ns-resize");
+        expect(getHandleCursorForRotation("s", 0)).toBe("ns-resize");
+        expect(getHandleCursorForRotation("e", 0)).toBe("ew-resize");
+        expect(getHandleCursorForRotation("w", 0)).toBe("ew-resize");
+        expect(getHandleCursorForRotation("nw", 0)).toBe("nw-resize");
+        expect(getHandleCursorForRotation("ne", 0)).toBe("ne-resize");
+        expect(getHandleCursorForRotation("se", 0)).toBe("se-resize");
+        expect(getHandleCursorForRotation("sw", 0)).toBe("sw-resize");
+    });
+
+    it("swaps the two axes of the sides at a quarter turn", () => {
+        expect(getHandleCursorForRotation("n", 90)).toBe("ew-resize");
+        expect(getHandleCursorForRotation("e", 90)).toBe("ns-resize");
+    });
+
+    it("gives a side the diagonal its axis really lies on at 45 degrees", () => {
+        // A vertical axis turned 45 degrees clockwise runs from the bottom left to the top
+        // right, so the north handle takes the north-east to south-west cursor.
+        expect(getHandleCursorForRotation("n", 45)).toBe("nesw-resize");
+        expect(getHandleCursorForRotation("e", 45)).toBe("nwse-resize");
+    });
+
+    it("moves a corner round to the direction the turn takes it to", () => {
+        expect(getHandleCursorForRotation("nw", 90)).toBe("ne-resize");
+        expect(getHandleCursorForRotation("nw", 45)).toBe("n-resize");
+        expect(getHandleCursorForRotation("se", 180)).toBe("nw-resize");
+    });
+
+    it("takes an angle to the nearest eighth of a turn", () => {
+        expect(getHandleCursorForRotation("n", 4)).toBe("ns-resize");
+        expect(getHandleCursorForRotation("n", 88)).toBe("ew-resize");
+    });
+
+    it("treats a whole turn as no turn", () => {
+        expect(getHandleCursorForRotation("nw", 360)).toBe("nw-resize");
+        expect(getHandleCursorForRotation("n", 720)).toBe("ns-resize");
     });
 });

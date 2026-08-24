@@ -13,6 +13,7 @@ import {
     SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
+    isPlaceHolderImage,
     kImageContainerClass,
 } from "./bloomImages";
 import {
@@ -228,6 +229,13 @@ function rotateSelectedImageRight(): boolean {
         !imageContainer ||
         imageContainer.classList.contains("bloom-unmodifiable-image")
     ) {
+        return false;
+    }
+    // The Rotate Right menu item is offered only for a real picture, so the shortcut must
+    // ask for one too. Without this, Ctrl+R turns a box that still holds the grey
+    // placeholder and puts a step on the undo stack for it.
+    const img = imageContainer.getElementsByTagName("img")[0];
+    if (!img || isPlaceHolderImage(img.getAttribute("src"))) {
         return false;
     }
     return theOneCanvasElementManager.rotateActiveImageRight();

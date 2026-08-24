@@ -1410,7 +1410,13 @@ export class CanvasElementManager {
             return;
         }
         pushUndoForImageTransform(this.activeElement);
-        flipImageContent(img, axis);
+        // The box may be turned as well, which moves the picture on screen, so the axis the
+        // user asked for is found from the two turns together; see flipImageContent.
+        flipImageContent(
+            img,
+            axis,
+            getCanvasElementRotation(this.activeElement),
+        );
         this.adjustStuffRelatedToImage(this.activeElement, img);
     }
 
@@ -1446,6 +1452,11 @@ export class CanvasElementManager {
     // the box, like its size and its position; the rotate handle and Undo are the way back
     // from that. The transparency goes back to "Auto", which is the state of a picture that
     // the user has not made a choice about.
+    //
+    // This command deliberately puts nothing on the undo stack, as the older reset-crop
+    // command did not either: a reset is itself a way back, so an undo of it would be a way
+    // back from a way back. Rotate right and Flip do record undo, because each of them is a
+    // step forward.
     public resetImage(): void {
         if (!this.activeElement) return;
         const img = getImageFromCanvasElement(this.activeElement);

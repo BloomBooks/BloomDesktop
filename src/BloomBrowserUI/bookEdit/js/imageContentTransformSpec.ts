@@ -222,6 +222,47 @@ describe("flipImageContent", () => {
         });
     });
 
+    it("mirrors the other axis when the box is turned a quarter turn", () => {
+        const img = makeImage();
+        // The picture itself is not turned; the box around it is, which moves the picture on
+        // screen in the same way, so a mirror from side to side on screen is again a mirror
+        // of the y axis of the picture.
+        flipImageContent(img, "horizontal", 90);
+        expect(getImageContentTransform(img)).toEqual({
+            quarterTurns: 0,
+            flipX: false,
+            flipY: true,
+        });
+    });
+
+    it("mirrors the requested axis when the box is turned a half turn", () => {
+        const img = makeImage();
+        flipImageContent(img, "horizontal", 180);
+        expect(getImageContentTransform(img).flipX).toBe(true);
+    });
+
+    it("takes the two turns together", () => {
+        const img = makeImage();
+        rotateImageContentRight(img);
+        // A quarter turn of the picture and a quarter turn of the box make a half turn, which
+        // leaves the axes of the picture the way they started on screen.
+        flipImageContent(img, "horizontal", 90);
+        expect(getImageContentTransform(img)).toEqual({
+            quarterTurns: 1,
+            flipX: true,
+            flipY: false,
+        });
+    });
+
+    it("takes the angle of the box to the nearest quarter turn", () => {
+        const img = makeImage();
+        flipImageContent(img, "horizontal", 80);
+        expect(getImageContentTransform(img).flipY).toBe(true);
+        const other = makeImage();
+        flipImageContent(other, "horizontal", 10);
+        expect(getImageContentTransform(other).flipX).toBe(true);
+    });
+
     it("keeps the crop, because a mirror does not change the shape of the box", () => {
         const img = makeImage();
         img.style.width = "300px";

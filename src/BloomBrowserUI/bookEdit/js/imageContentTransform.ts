@@ -155,9 +155,21 @@ export function rotateImageContentRight(img: HTMLImageElement): void {
 // right change places on screen, whichever way the picture has been turned. After an odd
 // number of quarter turns the picture's own x axis runs up and down the screen, so a
 // horizontal flip on screen is a flip of the picture's y axis.
-export function flipImageContent(img: HTMLImageElement, axis: FlipAxis): void {
+//
+// The canvas element box can be turned as well, by the Rotate Right command or by the
+// rotation handle, and that turn moves the picture on screen just as a turn of the picture
+// itself does. The caller passes that angle as boxRotationDegrees. The handle turns to any
+// angle, and no mirror of the picture's own axes equals a mirror about the screen axis at,
+// say, 37 degrees, so we take the box angle to the nearest quarter turn and mirror about the
+// axis of the picture that lies nearest the one the user asked for.
+export function flipImageContent(
+    img: HTMLImageElement,
+    axis: FlipAxis,
+    boxRotationDegrees = 0,
+): void {
     const state = getImageContentTransform(img);
-    const isQuarterTurn = state.quarterTurns % 2 === 1;
+    const boxQuarterTurns = Math.round(boxRotationDegrees / 90);
+    const isQuarterTurn = (state.quarterTurns + boxQuarterTurns) % 2 !== 0;
     const flipLocalX = axis === "horizontal" ? !isQuarterTurn : isQuarterTurn;
     setImageContentTransform(img, {
         ...state,
