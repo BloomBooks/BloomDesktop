@@ -9,6 +9,7 @@ using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.FreezeDoctor;
 using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
@@ -128,6 +129,12 @@ namespace Bloom.Publish.BloomPub
             bool isTemplateBook = false
         )
         {
+            // Tell the Freeze Doctor this is deliberately slow, so it waits five minutes rather than one
+            // before deciding Bloom has frozen. Marked here, at the innermost worker, rather than at the
+            // publish screens: every route to a BloomPUB comes through this method, including the bulk
+            // publisher and app building, which are the cases that run longest.
+            using var _longOperation = FreezeDoctorSupport.LongOperation("making a BloomPUB");
+
             // PrepareBookForBloomReader is about to modify sTheMostRecentBloomFileLocator.
             // Record the previous value so we can restore it later.
             var previousLocator = BloomFileLocator.sTheMostRecentBloomFileLocator;
