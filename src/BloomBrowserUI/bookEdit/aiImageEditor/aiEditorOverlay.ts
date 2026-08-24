@@ -437,6 +437,13 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                         const applied = offPageApplied + currentPageApplied;
                         replacementsAttempted += replacements.length;
                         picturesApplied += applied;
+                        // Deliberately counted over every replacement the ai-editor sent, not only
+                        // the ones that landed -- so generatedCount and reusedCount are NOT
+                        // comparable with appliedCount, and do not sum to it when a swap fails.
+                        // They answer a different question: what the user chose, and therefore what
+                        // they paid OpenRouter for, which is true whether or not the picture then
+                        // made it into the book. appliedCount and failedCount are the pair that
+                        // says what landed.
                         picturesGenerated += replacements.filter(
                             (r) => !!r?.resultId,
                         ).length;
