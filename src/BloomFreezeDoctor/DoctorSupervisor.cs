@@ -356,8 +356,15 @@ public sealed class DoctorSupervisor : IDisposable
         {
             if (verdict.State != TargetState.Exited)
                 return;
-            if (!_exitsExamined.Add(watcher.Target.ProcessId))
-                return; // one examination per process
+            // Under _lock because every watcher raises Observed on its OWN timer thread, so with two
+            // Blooms being watched these sets are touched concurrently. An unsynchronised HashSet can
+            // corrupt itself, throw, or - worst here, because it is silent - lose the entry and let a
+            // second examination through. Only the test-and-claim is inside the lock; the work is not.
+            lock (_lock)
+            {
+                if (!_exitsExamined.Add(watcher.Target.ProcessId))
+                    return; // one examination per process
+            }
             Note($"Bloom {watcher.Target.ProcessId} has gone; examining why");
 
             Interlocked.Increment(ref _workInFlight);
@@ -443,8 +450,15 @@ public sealed class DoctorSupervisor : IDisposable
     {
         try
         {
-            if (!watcher.DumpRequested() || !_dumpsRequested.Add(watcher.Target.ProcessId))
+            if (!watcher.DumpRequested())
                 return;
+            // See the note in ConsiderReportingAnExit: shared set, per-watcher threads. A lost dedup here
+            // would mean dumping a crashing Bloom twice, while it is holding its own death open for us.
+            lock (_lock)
+            {
+                if (!_dumpsRequested.Add(watcher.Target.ProcessId))
+                    return;
+            }
 
             Note($"Bloom {watcher.Target.ProcessId} is crashing and asked for a dump");
             _ = Task.Run(async () =>
@@ -492,10 +506,16 @@ public sealed class DoctorSupervisor : IDisposable
         {
             if (verdict.State != TargetState.Zombie || watcher.ZombieSince == null)
                 return;
-            if (!_zombiesReported.Contains(watcher.Target.ProcessId))
-                return; // the evidence has to be safely gathered first
-            if (!_zombiesEnded.Add(watcher.Target.ProcessId))
-                return; // one attempt per process; we do not keep hammering at it
+            // Both under one lock, because together they are a single test-and-claim: "the evidence is
+            // gathered AND nobody else has taken the one attempt". Splitting them would let two watcher
+            // threads both decide they were the one to end this process.
+            lock (_lock)
+            {
+                if (!_zombiesReported.Contains(watcher.Target.ProcessId))
+                    return; // the evidence has to be safely gathered first
+                if (!_zombiesEnded.Add(watcher.Target.ProcessId))
+                    return; // one attempt per process; we do not keep hammering at it
+            }
 
             var decision = ZombieEnder.Decide(
                 new ZombieDecisionFacts
@@ -513,7 +533,10 @@ public sealed class DoctorSupervisor : IDisposable
             {
                 // Put the ticket back: the reason may be temporary (the grace period, or a save in
                 // progress), and we should look again next tick rather than never.
-                _zombiesEnded.Remove(watcher.Target.ProcessId);
+                lock (_lock)
+                {
+                    _zombiesEnded.Remove(watcher.Target.ProcessId);
+                }
                 return;
             }
 
