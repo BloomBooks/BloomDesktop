@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using SIL.IO;
 
 namespace BloomFreezeDoctor.Gathering;
 
@@ -63,7 +64,7 @@ public sealed class BloomLogCollector : IEvidenceCollector
         text.AppendLine("**Bloom's log**");
         text.AppendLine();
 
-        if (string.IsNullOrEmpty(context.BloomLogPath) || !File.Exists(context.BloomLogPath))
+        if (string.IsNullOrEmpty(context.BloomLogPath) || !RobustFile.Exists(context.BloomLogPath))
         {
             text.AppendLine(
                 "We could not identify this Bloom's log file. Bloom recreates `Log.txt` on every run and "
@@ -128,7 +129,7 @@ public sealed class BloomLogCollector : IEvidenceCollector
             // than reference, because Bloom will overwrite Log.txt on its very next run.
             var copy = Path.Combine(context.ArtifactDirectory, "bloom-log.txt");
             Directory.CreateDirectory(context.ArtifactDirectory);
-            File.Copy(context.BloomLogPath, copy, overwrite: true);
+            RobustFile.Copy(context.BloomLogPath, copy, overwrite: true);
             artifacts.Add(copy);
         }
         catch (Exception e)
@@ -152,7 +153,7 @@ public sealed class BloomLogCollector : IEvidenceCollector
             "Bloom",
             "velopack.log"
         );
-        if (!File.Exists(path))
+        if (!RobustFile.Exists(path))
         {
             text.AppendLine("No `velopack.log` found.");
             text.AppendLine();

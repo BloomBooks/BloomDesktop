@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using SIL.IO;
 
 namespace BloomFreezeDoctor;
 
@@ -289,7 +290,7 @@ public sealed class StatusForm : Form
         foreach (var folder in new[] { "Bloom", "BloomBeta", "BloomAlpha", "BloomBetaInternal" })
         {
             var candidate = Path.Combine(local, folder, "current", folder + ".exe");
-            if (File.Exists(candidate))
+            if (RobustFile.Exists(candidate))
                 return candidate;
         }
         return null;

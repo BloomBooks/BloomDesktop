@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using SIL.IO;
 
 namespace BloomFreezeDoctor.Outbox;
 
@@ -258,7 +259,7 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         var budget = MaxAttachmentBytes;
         foreach (var path in bundle.ArtifactPaths)
         {
-            if (!File.Exists(path))
+            if (!RobustFile.Exists(path))
                 continue;
             var size = new FileInfo(path).Length;
             if (size > budget)
@@ -289,9 +290,7 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     {
         using var form = new MultipartFormDataContent();
         var fileName = Path.GetFileName(path);
-        var bytes = new ByteArrayContent(
-            await File.ReadAllBytesAsync(path, cancellation).ConfigureAwait(false)
-        );
+        var bytes = new ByteArrayContent(RobustFile.ReadAllBytes(path));
         form.Add(bytes, fileName, fileName);
         using var response = await _http
             .PostAsync($"{BaseUrl}/issues/{issueId}/attachments?fields=id", form, cancellation)
@@ -414,7 +413,7 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     {
         try
         {
-            return File.ReadAllText(bundle.ReportPath);
+            return RobustFile.ReadAllText(bundle.ReportPath);
         }
         catch (Exception e)
         {

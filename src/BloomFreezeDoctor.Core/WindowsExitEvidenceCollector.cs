@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using SIL.IO;
 
 namespace BloomFreezeDoctor;
 
@@ -169,7 +170,7 @@ public sealed class WindowsExitEvidenceCollector
     /// </summary>
     private static bool LogEndsWithForcedShutdown(string? logPath)
     {
-        if (string.IsNullOrEmpty(logPath) || !File.Exists(logPath))
+        if (string.IsNullOrEmpty(logPath) || !RobustFile.Exists(logPath))
             return false;
         try
         {
@@ -192,6 +193,10 @@ public sealed class WindowsExitEvidenceCollector
     /// </summary>
     public static List<string> ReadLastLines(string path, int count)
     {
+        // robustfile-hook: allow FileStream
+        // Same documented case as BloomLogLocator.ReadLaunchLine: the sharing flags ARE the requirement,
+        // because the process being diagnosed is still writing this file and may delete it underneath us.
+        // Retrying would not substitute for being allowed to read a file somebody else holds.
         using var stream = new FileStream(
             path,
             FileMode.Open,

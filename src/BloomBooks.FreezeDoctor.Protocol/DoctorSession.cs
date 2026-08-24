@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using SIL.IO;
 
 namespace BloomBooks.FreezeDoctor.Protocol;
 
@@ -154,9 +155,17 @@ public static class DoctorSessionStore
             var path = PathFor(session.ProcessId, directory);
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             var temp = path + ".tmp";
-            File.WriteAllText(temp, JsonSerializer.Serialize(session, Options));
+            RobustFile.WriteAllText(temp, JsonSerializer.Serialize(session, Options));
             // A rename within one volume is atomic; a copy is not, and this file is rewritten repeatedly.
-            File.Move(temp, path, overwrite: true);
+            //
+            // Replace-or-Move rather than an overwriting Move, because RobustFile.Move has no overwrite
+            // overload. Replace is the better primitive anyway when the target exists: it swaps the file
+            // in one step, so a reader never sees the path missing, which an unlink-then-rename would
+            // allow. Move covers the first write, when there is nothing to replace.
+            if (RobustFile.Exists(path))
+                RobustFile.Replace(temp, path, null);
+            else
+                RobustFile.Move(temp, path);
             return true;
         }
         catch (Exception)
@@ -171,10 +180,10 @@ public static class DoctorSessionStore
         try
         {
             var path = PathFor(processId, directory);
-            if (!File.Exists(path))
+            if (!RobustFile.Exists(path))
                 return null;
             var session = JsonSerializer.Deserialize<DoctorSession>(
-                File.ReadAllText(path),
+                RobustFile.ReadAllText(path),
                 Options
             );
             // Refuse a schema we do not understand rather than misreading it.
@@ -204,7 +213,7 @@ public static class DoctorSessionStore
                 try
                 {
                     var session = JsonSerializer.Deserialize<DoctorSession>(
-                        File.ReadAllText(path),
+                        RobustFile.ReadAllText(path),
                         Options
                     );
                     if (session != null && session.SchemaVersion == SchemaVersion)
@@ -243,7 +252,7 @@ public static class DoctorSessionStore
                 // away the record of the very thing we exist to report.
                 var explained = session.Exit != null && !session.Exit.ForcedByDoctor;
                 if (tooOld || explained)
-                    File.Delete(PathFor(session.ProcessId, directory));
+                    RobustFile.Delete(PathFor(session.ProcessId, directory));
             }
             catch (Exception)
             {

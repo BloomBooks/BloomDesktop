@@ -80,6 +80,19 @@ public interface IReportSubmitter
 /// arrives *with* a dead network — BL-16697's own log shows DNS failing moments before the freeze — so a
 /// design that files inline loses precisely the reports we most want. Everything here therefore assumes
 /// the network is absent and the machine may be restarted at any moment.
+///
+/// **Every file operation in the Doctor goes through SIL.IO's RobustFile / RobustIO, with no exemption.**
+/// That was decided deliberately when the Doctor moved into this repository (BL-16719): the tempting
+/// argument was that its writes are only diagnostics, so a transient failure costs nothing much. It is
+/// wrong, and this class is the proof — the rename that publishes a gathered report into this queue was
+/// failing about one run in three with "access is denied", because Windows had not finished with the files
+/// we had written milliseconds earlier, and each failure discarded a report at the exact moment a user had
+/// just sat through a freeze. A tool whose entire purpose is to capture evidence that is otherwise lost
+/// has *less* room to be careless with the disk than Bloom does, not more.
+///
+/// The only carve-outs are the three documented `robustfile-hook: allow FileStream` sites, where the
+/// sharing flags are the requirement rather than an accident — reading a log another process holds open,
+/// and the exclusive lock that serialises draining.
 /// </summary>
 public sealed class ReportOutbox
 {
@@ -168,10 +181,10 @@ public sealed class ReportOutbox
         var staging = Path.Combine(_root, ".staging-" + name);
         var final = Path.Combine(_root, name);
         if (Directory.Exists(staging))
-            Directory.Delete(staging, recursive: true);
+            RobustIO.DeleteDirectoryAndContents(staging);
         Directory.CreateDirectory(staging);
 
-        File.WriteAllText(Path.Combine(staging, ReportFileName), report.Body);
+        RobustFile.WriteAllText(Path.Combine(staging, ReportFileName), report.Body);
 
         var artifactNames = new List<string>();
         foreach (var artifact in report.Artifacts)
@@ -179,7 +192,7 @@ public sealed class ReportOutbox
             try
             {
                 var fileName = Path.GetFileName(artifact);
-                File.Move(artifact, Path.Combine(staging, fileName));
+                RobustFile.Move(artifact, Path.Combine(staging, fileName));
                 artifactNames.Add(fileName);
             }
             catch (Exception)
@@ -201,7 +214,7 @@ public sealed class ReportOutbox
         };
         WriteMetadata(staging, metadata);
 
-        // RobustIO rather than Directory.Move, because this exact line failed about one run in three:
+        // RobustIO rather than the plain framework rename, because this exact line failed about one run in three:
         //
         //     IOException: Access to the path '...\.staging-20260919-100000-recent' is denied.
         //
@@ -346,7 +359,10 @@ public sealed class ReportOutbox
             cancellation.ThrowIfCancellationRequested();
             try
             {
-                // FileShare.None is the lock. Whoever opens it first owns the drain.
+                // robustfile-hook: allow FileStream
+                // FileShare.None is not incidental here — it IS the lock, and the exclusivity is the
+                // entire mechanism. A robust wrapper that retried past a sharing violation would defeat
+                // the gate rather than harden it, since "somebody else has it" is the answer we want.
                 return new FileStream(
                     path,
                     FileMode.OpenOrCreate,
@@ -479,10 +495,10 @@ public sealed class ReportOutbox
         try
         {
             var path = Path.Combine(directory, MetadataFileName);
-            if (!File.Exists(path))
+            if (!RobustFile.Exists(path))
                 return null;
             return JsonSerializer.Deserialize<BundleMetadata>(
-                File.ReadAllText(path),
+                RobustFile.ReadAllText(path),
                 BundleMetadata.JsonOptions
             );
         }
@@ -501,15 +517,24 @@ public sealed class ReportOutbox
     {
         var path = Path.Combine(directory, MetadataFileName);
         var temp = path + ".tmp";
-        File.WriteAllText(temp, JsonSerializer.Serialize(metadata, BundleMetadata.JsonOptions));
-        File.Move(temp, path, overwrite: true);
+        RobustFile.WriteAllText(
+            temp,
+            JsonSerializer.Serialize(metadata, BundleMetadata.JsonOptions)
+        );
+        // Replace-or-Move, not an overwriting Move: RobustFile.Move has no overwrite overload, and Replace
+        // is the better primitive when the target exists anyway, since it swaps the file in one step
+        // rather than leaving a moment where the metadata file is absent.
+        if (RobustFile.Exists(path))
+            RobustFile.Replace(temp, path, null);
+        else
+            RobustFile.Move(temp, path);
     }
 
     private static void TryDelete(string directory)
     {
         try
         {
-            Directory.Delete(directory, recursive: true);
+            RobustIO.DeleteDirectoryAndContents(directory);
         }
         catch (Exception)
         {

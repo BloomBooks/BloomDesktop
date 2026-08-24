@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using BloomFreezeDoctor.Gathering;
 using BloomFreezeDoctor.Outbox;
+using SIL.IO;
 // Aliased rather than imported plainly, so uses below still read as Protocol.DoctorSignals - it is worth
 // saying at each use that this is the shared wire format, not something local to the Doctor.
 using Protocol = BloomBooks.FreezeDoctor.Protocol;
@@ -805,7 +806,7 @@ public sealed class DoctorSupervisor : IDisposable
         try
         {
             if (Directory.Exists(path))
-                Directory.Delete(path, recursive: true);
+                RobustIO.DeleteDirectoryAndContents(path);
         }
         catch (Exception)
         {
