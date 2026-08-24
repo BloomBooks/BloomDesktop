@@ -50,23 +50,8 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Report how one of the long-running App Builder stages turned out.
-        ///
-        /// This is the only continuous coverage this path can have. Nothing under Publish/Rab has
-        /// ever reported anything; the feature shipped as "initial, unpolished, experimental"; and
-        /// CI never runs the real RAB build at all -- only a developer who deliberately sets
-        /// BLOOM_RUN_RAB_MANUAL_TESTS=1 exercises it end to end. So whether the toolchain works on
-        /// real machines, and where it breaks, is something we can otherwise only learn from
-        /// support traffic. BL-16469 improved the error messages; this is how we find out which
-        /// errors people actually hit.
-        ///
-        /// One event, "Publish App", with the stage as a property rather than three event names.
-        /// And one event per stage that finishes rather than one per publish run: a build the user
-        /// never goes on to install still reports its own result and its own duration, which a
-        /// single furthest-stage-reached event would fold away.
-        ///
-        /// The prepare stage is not reported. It is fast and entirely local, so it tells us
-        /// nothing about the toolchain; build and install are where a real RAB installation breaks.
+        /// Report how one of the long-running App Builder stages turned out. Called for build and
+        /// install; prepare is fast and local, so it is deliberately not reported.
         /// </summary>
         /// <param name="stage">"build" or "install".</param>
         /// <param name="result">"success", "cancelled" or "failed".</param>
