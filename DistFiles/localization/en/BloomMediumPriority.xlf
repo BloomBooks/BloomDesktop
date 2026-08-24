@@ -52,7 +52,7 @@
       <trans-unit id="EditTab.Image.RotateRight" translate="no">
         <source xml:lang="en">Rotate right</source>
         <note>ID: EditTab.Image.RotateRight</note>
-        <note>Command on the menu for a picture in the Edit tab. It turns the picture a quarter turn clockwise. Its keyboard shortcut is Ctrl+R.</note>
+        <note>Command on the menu for a picture in the Edit tab. It turns the picture a quarter turn clockwise.</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.Flip" translate="no">
         <source xml:lang="en">Flip</source>

@@ -510,17 +510,14 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     // - An ordinary image canvas element turns as a whole, using the same rotation the
     //   rotate handle on the control frame sets, so the two commands cannot disagree.
     // - A background image fills its bloom-canvas and cannot be turned as a box, so the
-    //   picture inside turns and is shrunk to fit. Any cropping is dropped, because the
-    //   cropped region described the picture the way it was before the turn.
+    //   picture inside turns and its own box is reshaped to match. Any cropping is kept: the
+    //   cropped region turns with the picture and is scaled to fit the page.
     rotateRight: {
         kind: "command",
         id: "rotateRight",
         l10nId: "EditTab.Image.RotateRight",
         englishLabel: "Rotate right",
         icon: RotateRightIcon,
-        menu: {
-            shortcutDisplay: "Ctrl+R",
-        },
         action: () => {
             getCanvasElementManager()?.rotateActiveImageRight();
         },

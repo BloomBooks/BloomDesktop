@@ -13,8 +13,6 @@ import {
     SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
-    isPlaceHolderImage,
-    kImageContainerClass,
 } from "./bloomImages";
 import {
     removeTransientVideoTimestampParams,
@@ -199,48 +197,6 @@ function SetupDeletable(containerDiv) {
     return $(containerDiv);
 }
 
-// True if the user is typing somewhere, so a shortcut must not take a key away from them.
-function isTypingInText(): boolean {
-    const target = document.activeElement as HTMLElement | null;
-    if (!target) {
-        return false;
-    }
-    return (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable
-    );
-}
-
-// Carry out the Rotate Right command on the selected canvas element, if it holds a picture
-// the user is allowed to change. Answers whether it did anything, so the caller can fall
-// back to another meaning for the same shortcut.
-function rotateSelectedImageRight(): boolean {
-    if (!theOneCanvasElementManager?.isCanvasElementEditingOn) {
-        return false;
-    }
-    const activeElement = theOneCanvasElementManager.getActiveElement();
-    if (!activeElement) {
-        return false;
-    }
-    const imageContainer =
-        activeElement.getElementsByClassName(kImageContainerClass)[0];
-    if (
-        !imageContainer ||
-        imageContainer.classList.contains("bloom-unmodifiable-image")
-    ) {
-        return false;
-    }
-    // The Rotate Right menu item is offered only for a real picture, so the shortcut must
-    // ask for one too. Without this, Ctrl+R turns a box that still holds the grey
-    // placeholder and puts a step on the undo stack for it.
-    const img = imageContainer.getElementsByTagName("img")[0];
-    if (!img || isPlaceHolderImage(img.getAttribute("src"))) {
-        return false;
-    }
-    return theOneCanvasElementManager.rotateActiveImageRight();
-}
-
 // Add various editing key handlers
 function AddEditKeyHandlers(container) {
     //Make F6 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
@@ -336,11 +292,11 @@ function AddEditKeyHandlers(container) {
 // Add the key handlers that listen on the whole document rather than on one element.
 // AddEditKeyHandlers runs again every time a canvas element is added, because SetupElements
 // does, so a handler bound here without this guard would be bound once more each time and
-// would then run several times for one key press. That did no harm while every command here
-// was one that gives the same result however often it runs, but Rotate right is not such a
-// command: it would turn the picture a quarter turn for each copy and leave that many steps
-// on the undo stack. The mark goes on the document object, not in the page, so a page the
-// user moves to gets its own handlers and nothing is written into the book.
+// would then run several times for one key press. Every command here gives the same result
+// however often it runs, so the copies did no visible harm, but a command that counts its
+// calls, such as one that puts a step on the undo stack, would be wrong for each extra copy.
+// The mark goes on the document object, not in the page, so a page the user moves to gets its
+// own handlers and nothing is written into the book.
 function addDocumentKeyHandlers(): void {
     const documentWithMark = document as Document & {
         bloomDocumentKeyHandlersAdded?: boolean;
@@ -367,15 +323,9 @@ function addDocumentKeyHandlers(): void {
     });
 
     $(document).on("keydown", (e) => {
-        // Ctrl+R: rotate the selected image a quarter turn clockwise, or, when no image is
-        // selected, right justify. The two commands share the shortcut because they can
-        // never apply at once: right justify needs the caret in text, and the rotate
-        // command needs a selected canvas element that holds a picture.
+        // Ctrl+R: right justify
         if (e.ctrlKey && !e.altKey && !e.shiftKey && e.key === "r") {
             e.preventDefault();
-            if (!isTypingInText() && rotateSelectedImageRight()) {
-                return;
-            }
             document.execCommand("justifyright", false);
             return;
         }

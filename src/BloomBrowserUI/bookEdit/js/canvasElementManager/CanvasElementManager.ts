@@ -1358,8 +1358,7 @@ export class CanvasElementManager {
     }
 
     // Turn the active canvas element a quarter turn clockwise. Used by the Rotate Right
-    // menu command and its Ctrl+R shortcut, for everything except a background image; see
-    // rotateActiveImageRight.
+    // menu command, for everything except a background image; see rotateActiveImageRight.
     public rotateActiveElementRight(): void {
         if (
             !this.activeElement ||
