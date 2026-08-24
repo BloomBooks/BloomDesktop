@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // Tests for the top-window half of the AI Image Editor integration: the overlay and its
-// conversation with the editor's iframe.
+// conversation with the AI Image Editor's iframe.
 //
 // Two things this half is responsible for, both of which used to be tangled up with the
 // live page and are pinned here:
@@ -43,7 +43,7 @@ const kPageId = "page1";
 const kImageFile = "old.png";
 
 // Opens the overlay as C# does, and answers the launch request as C# would. Returns the
-// handles a test needs, with the overlay up and the editor about to be sent its `init`.
+// handles a test needs, with the overlay up and the AI Image Editor about to be sent its `init`.
 const openAgainstABookWithOneImage = (
     target = { pageId: kPageId, imageFileName: kImageFile },
     bookImages: Array<{ id: string; src: string; isPlaceholder?: boolean }> = [
@@ -76,7 +76,7 @@ const openAgainstABookWithOneImage = (
     const iframe = overlay.querySelector("iframe") as HTMLIFrameElement;
     const closeButton = overlay.querySelector("button") as HTMLButtonElement;
 
-    // Deliver a message as if it came from the editor's iframe. The overlay ignores
+    // Deliver a message as if it came from the AI Image Editor's iframe. The overlay ignores
     // messages from anywhere else, so the source has to be the iframe's window.
     const postFromEditor = (data: unknown) => {
         window.dispatchEvent(
@@ -90,7 +90,7 @@ const openAgainstABookWithOneImage = (
     return { closeButton, iframe, postFromEditor };
 };
 
-// Answers the editor's `ready` and returns the `init` the overlay posts back into its
+// Answers the AI Image Editor's `ready` and returns the `init` the overlay posts back into its
 // iframe — which is where the edit target ("Image to Edit") is named.
 const getInitPayloadSentToEditor = (
     iframe: HTMLIFrameElement,
@@ -166,7 +166,7 @@ beforeEach(() => {
 });
 
 describe("aiEditorOverlay: the edit target", () => {
-    test("the image C# names becomes the editor's edit target", () => {
+    test("the image C# names becomes the AI Image Editor's edit target", () => {
         const { iframe, postFromEditor } = openAgainstABookWithOneImage();
 
         const payload = getInitPayloadSentToEditor(iframe, postFromEditor);
@@ -273,7 +273,7 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         expect(postThatMightNavigate).not.toHaveBeenCalled();
     });
 
-    test("a failed swap's reason reaches the editor, not just the count", () => {
+    test("a failed swap's reason reaches the AI Image Editor, not just the count", () => {
         // The page frame reports a throw as a return value, so the overlay has to append
         // its reason itself or the user only ever sees "Only 1 of 2 …".
         applyAiImageEditorReplacements.mockReturnValue({
@@ -404,7 +404,7 @@ describe("aiEditorOverlay: analytics", () => {
             },
         });
 
-        // Sanity: the editor's own event was passed through, under our name for it.
+        // Sanity: the AI Image Editor's own event was passed through, under our name for it.
         expect(trackEvent).toHaveBeenCalledWith("AI Image Editor Generate", {
             model: "some-model",
             result: "success",
@@ -441,10 +441,10 @@ describe("aiEditorOverlay: analytics", () => {
         expect(abandonedEvents()).toHaveLength(1);
     });
 
-    test("the properties of a known event are passed on as the ai-editor sent them", () => {
+    test("the properties of a known event are passed on as the AI Image Editor sent them", () => {
         // Deliberately not filtered: we control both ends of this channel. If a property ever must
-        // not be forwarded, it is stopped in the ai-editor or removed by name here -- not by an
-        // allow-list that only guards us against ourselves.
+        // not be forwarded, it is stopped in the AI Image Editor or removed by name here -- not
+        // by an allow-list that only guards us against ourselves.
         const { postFromEditor } = openAgainstABookWithOneImage();
 
         postFromEditor({
@@ -509,7 +509,7 @@ describe("aiEditorOverlay: analytics", () => {
         });
 
         expect(abandonedEvents()).toHaveLength(0);
-        // And the swap that landed on the page is still saved. Answering an ai-editor that has
+        // And the swap that landed on the page is still saved. Answering an AI Image Editor that has
         // gone away used to throw from inside postMessage, which skipped everything after it
         // in the finally block -- including this save, losing the user's picture.
         expect(postThatMightNavigate).toHaveBeenCalledWith(
@@ -542,8 +542,9 @@ describe("aiEditorOverlay: analytics", () => {
     });
 
     test("two overlapping commits: closing is not a cancel while either is outstanding", () => {
-        // The ai-editor is free to send a second commit before the first is answered. With a flag
-        // rather than a count, the first reply cleared it while the second was still in the air, so
+        // The AI Image Editor is free to send a second commit before the first is answered. With
+        // a flag rather than a count, the first reply cleared it while the second was still in the
+        // air, so
         // closing then reported the session as thrown away with a commit still running.
         applyAiImageEditorReplacements.mockReturnValue({
             applied: 0,
@@ -679,10 +680,10 @@ describe("aiEditorOverlay: analytics", () => {
         expect(closedEvents()[0][1]).toMatchObject({ appliedCount: 1 });
         expect(abandonedEvents()).toHaveLength(0);
     });
-    test("a commit answered after the ai-editor was reopened leaves the new overlay alone", () => {
+    test("a commit answered after the AI Image Editor was reopened leaves the new overlay alone", () => {
         // The old session's success path calls its own cleanup, which tears down "the" overlay by
         // id and deletes the cleanup hook on the window -- both of which belong to the NEW session
-        // by then. Without an idempotence guard the editor the user is looking at disappears.
+        // by then. Without an idempotence guard the AI Image Editor the user is looking at disappears.
         const first = openAgainstABookWithOneImage();
 
         first.postFromEditor({
@@ -861,7 +862,7 @@ describe("aiEditorOverlay: reporting what a commit achieved", () => {
         expect(trackChangePicture).toHaveBeenCalledWith("ai-editor");
     });
 
-    test("generated and reused come from what the editor sent", () => {
+    test("generated and reused come from what the AI Image Editor sent", () => {
         applyAiImageEditorReplacements.mockReturnValue({
             applied: 1,
             expected: 1,
@@ -871,7 +872,7 @@ describe("aiEditorOverlay: reporting what a commit achieved", () => {
         commitAndReply(
             postFromEditor,
             [
-                // A newly generated image: the editor gives it a result id.
+                // A newly generated image: the AI Image Editor gives it a result id.
                 { incomingId: `${kPageId}:0`, resultId: "result1" },
                 // One the user reused from an image already in the book.
                 {
@@ -970,7 +971,8 @@ describe("aiEditorOverlay: reporting what a commit achieved", () => {
 
         const onError = postJson.mock.calls[0][3] as () => void;
         onError();
-        // The request failed, so the ai-editor is still up; the session ends when the user closes.
+        // The request failed, so the AI Image Editor is still up; the session ends when the user
+        // closes it.
         closeButton.click();
 
         // The attempt survives as a replacementCount with nothing applied, which is the

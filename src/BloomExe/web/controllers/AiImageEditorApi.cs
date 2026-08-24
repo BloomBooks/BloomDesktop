@@ -251,7 +251,7 @@ namespace Bloom.web.controllers
         /// slot's current src — is read from the SAVED book DOM, but an image the user has just
         /// added exists only in the live page (Bloom deliberately doesn't save on an image change;
         /// see EditingModel.UpdateImageInBrowser and BL-16330). Launching against the unsaved DOM
-        /// opened the editor with an empty "Image to Edit" slot (BL-16682); it would also have
+        /// opened the AI Image Editor with an empty "Image to Edit" slot (BL-16682); it would also have
         /// made the current page's commit results describe an image the live page no longer shows,
         /// and left <see cref="DeleteSupersededAiImageFiles"/> blind to a file the live page uses.
         ///
@@ -268,7 +268,7 @@ namespace Bloom.web.controllers
         /// EditingView.StartNavigationToEditPage reloads the whole workspace root when
         /// MemoryUtils.SystemIsShortOfMemory(), which is Bloom's own private bytes past ~2GB —
         /// the ordinary state of a long editing session on a big book. Opening from
-        /// doAfterSaveToDisk there meant the page saved correctly and the editor never appeared,
+        /// doAfterSaveToDisk there meant the page saved correctly and the AI Image Editor never appeared,
         /// with no message: openAiImageEditor doesn't even build the overlay synchronously; it
         /// POSTs launch first and builds it in the reply, a whole round trip after the reload
         /// began. Waiting for the page load costs nothing and is immune to all three routes.
@@ -304,7 +304,7 @@ namespace Bloom.web.controllers
             // Asking now, rather than from the callbacks below: OnTabAboutToChange discards the
             // queued request when the user leaves the Edit tab. If we only queued it later, from
             // doAfterSaveToDisk, that discard could run first — on a save still in flight — and we
-            // would then re-arm behind it, so the editor sprang open when the user came back to
+            // would then re-arm behind it, so the AI Image Editor sprang open when the user came back to
             // that page. (Devin caught that; queueing up front puts the discard reliably after us.)
             var bookDomIsSound = false;
             model.RunAfterNextPageLoad(loadedPageId =>
@@ -313,7 +313,7 @@ namespace Bloom.web.controllers
                 // to edit isn't there to edit.
                 if (loadedPageId != pageId)
                     return;
-                // The save was attempted and failed. Leave the editor closed: the book DOM is
+                // The save was attempted and failed. Leave the AI Image Editor closed: the book DOM is
                 // still stale, so we would be opening it on exactly the out-of-date data this
                 // endpoint exists to prevent, and a commit from there would call book.Save() again
                 // on top of whatever went wrong (disk full, a corrupt image, out of memory). The
@@ -345,7 +345,7 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Tells the browser to open the AI image editor overlay on <paramref name="target"/>. The
-        /// browser owns the overlay (only it can postMessage to the editor's iframe), so all this
+        /// browser owns the overlay (only it can postMessage to the AI Image Editor's iframe), so all this
         /// side does is call its entry point; see openAiImageEditor in aiEditorOverlay.ts.
         /// Fire-and-forget, like EditingModel.UpdateImageInBrowser's call to changeImage: there is
         /// nothing here to wait for.
@@ -530,7 +530,7 @@ namespace Bloom.web.controllers
             {
                 request.Failed(
                     HttpStatusCode.Unauthorized,
-                    "The selected book changed since the editor was launched"
+                    "The selected book changed since the AI Image Editor was launched"
                 );
                 return false;
             }
@@ -1188,7 +1188,7 @@ namespace Bloom.web.controllers
             // browser to swap into the live DOM, which can fail (see the comment above this method).
             // So counting a staged slot as applied overstates, in exactly the case the event exists
             // to catch: BL-16702 was a commit that silently did nothing. And it overstates in the
-            // ORDINARY case, not a rare one -- the picture the user right-clicked to open the editor
+            // ORDINARY case, not a rare one -- the picture the user right-clicked to open the AI Image Editor
             // is by definition on the page they have open, so a single-picture commit was always
             // reported as "1 applied, 0 failed" whatever became of it.
             //
@@ -1651,7 +1651,7 @@ namespace Bloom.web.controllers
             // them when it rewrites a PNG as a JPEG — measured, not assumed: creator, copyright and
             // licence all come back empty. That matters because an UPLOADED result can arrive with
             // the user's own credits embedded in it, and nothing downstream would put them back:
-            // EmbedCreditsInNewImageFile writes only the credits the AI editor explicitly sent, and
+            // EmbedCreditsInNewImageFile writes only the credits the AI Image Editor explicitly sent, and
             // only when it sent any. So without this, uploading a credited photo and having it
             // re-encoded would quietly strip its copyright (BL-16645, and John's review of #8188).
             ImageUtils.CopyCoreMetadata(newPath, jpegPath);
