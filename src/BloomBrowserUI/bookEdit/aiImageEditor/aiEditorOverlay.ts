@@ -125,9 +125,12 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // withheld, on the grounds that an empty slot has nothing to edit — but the AI
         // image editor answers a missing selectedBookImageId by targeting the FIRST
         // image of the book, which is normally the front cover. So withholding it aimed
-        // the user at the cover when they had asked for an empty slot on some other
-        // page. Sending it targets the slot they clicked, which is where the image they
-        // are about to create belongs; a "create" tool ignores the target anyway.
+        // the user at the cover when they had asked for an empty slot on some other page.
+        // The editor reads isPlaceholder on the named slot and, for an empty one, puts
+        // nothing in its "Image to Edit" panel and opens its "Create an Image" tool
+        // instead; it keeps the slot so the created image can be committed straight into
+        // it. That behavior needs a bloom-ai-image-tools build newer than dist-v0.1.5,
+        // so the dep in package.json has to be bumped for this to work in a real Bloom.
         const selectedBookImageId = clickedMatch?.id;
 
         const initPayload = {
