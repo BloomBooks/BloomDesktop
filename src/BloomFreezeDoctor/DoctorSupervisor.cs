@@ -607,6 +607,12 @@ public sealed class DoctorSupervisor : IDisposable
     /// It WAITS rather than skipping. Skipping would be cheaper, but ReportNowAsync awaits this and then
     /// looks for its own bundle in the queue: if its drain had been skipped because another was already
     /// running, it could report failure for a report that was about to be filed perfectly well.
+    ///
+    /// **This is not the same gate as the one inside ReportOutbox.DrainAsync, and neither replaces the
+    /// other.** That one is a NAMED semaphore guarding against a different PROCESS - `--drain`, which
+    /// support can run while a Doctor is already going - and it gives up after a short wait, since the
+    /// bundles belong to whoever holds it. This one is in-process only and waits indefinitely, which is
+    /// what keeps ReportNowAsync's "drain, then look for my bundle" honest for our own three callers.
     /// </summary>
     private readonly SemaphoreSlim _drainGate = new(1, 1);
 
