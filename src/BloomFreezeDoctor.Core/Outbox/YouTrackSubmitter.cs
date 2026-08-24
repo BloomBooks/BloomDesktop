@@ -1,0 +1,397 @@
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
+namespace BloomFreezeDoctor.Outbox;
+
+/// <summary>
+/// Files reports to Bloom's YouTrack, deduplicating by fingerprint.
+///
+/// Everything here was verified against the real tracker during the Phase 0 spike (project `AUT`, test
+/// card deleted afterwards): the token can create issues, search by a fingerprint string in a
+/// description, attach files, and restrict an attachment to the Developers group. That last one is what
+/// decision D2 requires, so it is not optional.
+/// </summary>
+public sealed class YouTrackSubmitter : IReportSubmitter
+{
+    /// <summary>
+    /// The shared `auto_report_creator` permanent token, in the same split form Bloom itself uses.
+    ///
+    /// Decision D6: BloomDesktop is already a public repository and already carries this token in the
+    /// clear, so reusing it here adds no new exposure. It is not a secret we are leaking; it is a
+    /// secret the project already treats as shipped. A serverless relay, so that nothing is shipped at
+    /// all, remains on the list as later hardening for both applications.
+    /// </summary>
+    private const string TokenPiece =
+        @"YXV0b19yZXBvcnRfY3JlYXRvcg==.NzQtMA==.V9k0yNUN7Df5eqo4QEk5N4BBKqmEHV";
+
+    /// <summary>
+    /// YouTrack's id for the Developers group. Hardcoded because the token cannot enumerate groups
+    /// (verified: `admin/groups` returns 404 for it), which is also how Bloom does it.
+    /// </summary>
+    private const string DevelopersGroupId = "25-3";
+
+    private const string BaseUrl = "https://issues.bloomlibrary.org/youtrack/api";
+
+    /// <summary>Total attachment bytes we are willing to upload. A tracker card is not a file server.</summary>
+    public const long MaxAttachmentBytes = 12 * 1024 * 1024;
+
+    private readonly HttpClient _http;
+
+    /// <summary>Creates a submitter, optionally with a supplied HttpClient (tests, or a proxy).</summary>
+    public YouTrackSubmitter(HttpClient? http = null)
+    {
+        _http = http ?? new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
+        _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            "perm:" + TokenPiece
+        );
+        _http.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("application/json")
+        );
+    }
+
+    /// <inheritdoc />
+    public async Task<SubmitResult> SubmitAsync(QueuedBundle bundle, CancellationToken cancellation)
+    {
+        try
+        {
+            var body = BuildBody(bundle);
+
+            // Dedupe first: if this exact problem already has a card, add to it rather than filing
+            // another. Searching is available to us (verified in the spike), so this is a real
+            // capability rather than an aspiration.
+            var existing = await FindExistingIssueAsync(bundle.Metadata, cancellation)
+                .ConfigureAwait(false);
+            if (existing != null)
+            {
+                await CommentAsync(existing, body, cancellation).ConfigureAwait(false);
+                return new SubmitResult { Outcome = SubmitOutcome.Filed, IssueId = existing };
+            }
+
+            var created = await CreateIssueAsync(bundle, body, cancellation).ConfigureAwait(false);
+            if (created.IssueId == null)
+                return created;
+
+            await AttachArtifactsAsync(created.IssueId, bundle, cancellation).ConfigureAwait(false);
+            return created;
+        }
+        catch (HttpRequestException e)
+        {
+            // No network, DNS failure, connection refused: exactly the situation the outbox exists for.
+            return new SubmitResult
+            {
+                Outcome = SubmitOutcome.NetworkUnavailable,
+                Error = $"{e.GetType().Name}: {e.Message}",
+            };
+        }
+        catch (TaskCanceledException e)
+        {
+            return new SubmitResult
+            {
+                Outcome = SubmitOutcome.NetworkUnavailable,
+                Error = "timed out talking to the tracker: " + e.Message,
+            };
+        }
+    }
+
+    /// <summary>
+    /// Looks for a card already carrying this fingerprint. Restricted to the same project, so a test
+    /// run in `AUT` can never comment on a real `BL` card.
+    /// </summary>
+    private async Task<string?> FindExistingIssueAsync(
+        BundleMetadata metadata,
+        CancellationToken cancellation
+    )
+    {
+        var query = Uri.EscapeDataString($"project: {metadata.Project} {metadata.Fingerprint}");
+        using var response = await _http
+            .GetAsync($"{BaseUrl}/issues?query={query}&fields=idReadable&$top=5", cancellation)
+            .ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+            return null; // a failed search is not a reason to skip filing; worst case we file a new card
+        var json = await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false);
+        var array = JsonNode.Parse(json)?.AsArray();
+        return array is { Count: > 0 } ? array[0]?["idReadable"]?.GetValue<string>() : null;
+    }
+
+    private async Task<SubmitResult> CreateIssueAsync(
+        QueuedBundle bundle,
+        string body,
+        CancellationToken cancellation
+    )
+    {
+        var projectId = await FindProjectIdAsync(bundle.Metadata.Project, cancellation)
+            .ConfigureAwait(false);
+        if (projectId == null)
+            return new SubmitResult
+            {
+                Outcome = SubmitOutcome.RejectedPermanently,
+                Error = $"the tracker does not know a project called '{bundle.Metadata.Project}'",
+            };
+
+        var payload = new JsonObject
+        {
+            ["project"] = new JsonObject { ["id"] = projectId },
+            ["summary"] = bundle.Metadata.Summary,
+            ["description"] = body,
+            // Same as Bloom's own automated reports: let a human decide what kind of issue it is.
+            ["customFields"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["name"] = "Type",
+                    ["$type"] = "SingleEnumIssueCustomField",
+                    ["value"] = new JsonObject
+                    {
+                        ["name"] = "Awaiting Classification",
+                        ["$type"] = "EnumBundleElement",
+                    },
+                },
+            },
+        };
+
+        using var content = new StringContent(
+            payload.ToJsonString(),
+            Encoding.UTF8,
+            "application/json"
+        );
+        using var response = await _http
+            .PostAsync($"{BaseUrl}/issues?fields=idReadable", content, cancellation)
+            .ConfigureAwait(false);
+        var text = await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+            return new SubmitResult
+            {
+                Outcome = ClassifyFailure(response.StatusCode),
+                Error = $"creating the issue returned {(int)response.StatusCode}: {Trim(text)}",
+            };
+
+        var id = JsonNode.Parse(text)?["idReadable"]?.GetValue<string>();
+        return id == null
+            ? new SubmitResult
+            {
+                Outcome = SubmitOutcome.RejectedPermanently,
+                Error = "the tracker accepted the issue but returned no id: " + Trim(text),
+            }
+            : new SubmitResult { Outcome = SubmitOutcome.Filed, IssueId = id };
+    }
+
+    private async Task<string?> FindProjectIdAsync(string shortName, CancellationToken cancellation)
+    {
+        using var response = await _http
+            .GetAsync($"{BaseUrl}/admin/projects/{shortName}?fields=id", cancellation)
+            .ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+            return null;
+        var json = await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false);
+        return JsonNode.Parse(json)?["id"]?.GetValue<string>();
+    }
+
+    private async Task CommentAsync(string issueId, string body, CancellationToken cancellation)
+    {
+        var payload = new JsonObject { ["text"] = body };
+        using var content = new StringContent(
+            payload.ToJsonString(),
+            Encoding.UTF8,
+            "application/json"
+        );
+        using var response = await _http
+            .PostAsync($"{BaseUrl}/issues/{issueId}/comments", content, cancellation)
+            .ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <summary>
+    /// Uploads the artifacts and then restricts each to the Developers group, which is decision D2's
+    /// requirement: a dump can contain book text, file paths and the user's own details, so it must not
+    /// be visible to everyone who can see the card.
+    ///
+    /// Restriction is a second call because the upload is multipart and cannot carry the visibility
+    /// object. If that second call fails we delete the attachment rather than leave it unrestricted —
+    /// failing to attach is a much smaller problem than exposing a dump.
+    /// </summary>
+    private async Task AttachArtifactsAsync(
+        string issueId,
+        QueuedBundle bundle,
+        CancellationToken cancellation
+    )
+    {
+        var budget = MaxAttachmentBytes;
+        foreach (var path in bundle.ArtifactPaths)
+        {
+            if (!File.Exists(path))
+                continue;
+            var size = new FileInfo(path).Length;
+            if (size > budget)
+                continue; // too big; the report says where the local copy is
+            budget -= size;
+
+            string? attachmentId = null;
+            try
+            {
+                attachmentId = await UploadAsync(issueId, path, cancellation).ConfigureAwait(false);
+                if (attachmentId != null)
+                    await RestrictToDevelopersAsync(issueId, attachmentId, cancellation)
+                        .ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                if (attachmentId != null)
+                    await TryDeleteAttachmentAsync(issueId, attachmentId).ConfigureAwait(false);
+            }
+        }
+    }
+
+    private async Task<string?> UploadAsync(
+        string issueId,
+        string path,
+        CancellationToken cancellation
+    )
+    {
+        using var form = new MultipartFormDataContent();
+        var fileName = Path.GetFileName(path);
+        var bytes = new ByteArrayContent(
+            await File.ReadAllBytesAsync(path, cancellation).ConfigureAwait(false)
+        );
+        form.Add(bytes, fileName, fileName);
+        using var response = await _http
+            .PostAsync($"{BaseUrl}/issues/{issueId}/attachments?fields=id", form, cancellation)
+            .ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+            return null;
+        var json = await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false);
+        // The upload endpoint answers with an array, even for one file.
+        var node = JsonNode.Parse(json);
+        return node is JsonArray array
+            ? array.FirstOrDefault()?["id"]?.GetValue<string>()
+            : node?["id"]?.GetValue<string>();
+    }
+
+    private async Task RestrictToDevelopersAsync(
+        string issueId,
+        string attachmentId,
+        CancellationToken cancellation
+    )
+    {
+        var payload = new JsonObject
+        {
+            ["visibility"] = new JsonObject
+            {
+                ["$type"] = "LimitedVisibility",
+                ["permittedGroups"] = new JsonArray
+                {
+                    new JsonObject { ["id"] = DevelopersGroupId },
+                },
+            },
+        };
+        using var content = new StringContent(
+            payload.ToJsonString(),
+            Encoding.UTF8,
+            "application/json"
+        );
+        using var response = await _http
+            .PostAsync(
+                $"{BaseUrl}/issues/{issueId}/attachments/{attachmentId}?fields=id,visibility($type)",
+                content,
+                cancellation
+            )
+            .ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+    }
+
+    private async Task TryDeleteAttachmentAsync(string issueId, string attachmentId)
+    {
+        try
+        {
+            using var _ = await _http
+                .DeleteAsync($"{BaseUrl}/issues/{issueId}/attachments/{attachmentId}")
+                .ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            // We tried. The alternative — leaving it and saying nothing — is what we are avoiding.
+        }
+    }
+
+    /// <summary>
+    /// Decides whether a failure is worth retrying. A 4xx other than "too many requests" means the
+    /// request itself is wrong and will stay wrong; retrying it forever would hammer the tracker and
+    /// bury the real problem.
+    /// </summary>
+    private static SubmitOutcome ClassifyFailure(HttpStatusCode status) =>
+        (int)status switch
+        {
+            429 => SubmitOutcome.NetworkUnavailable,
+            >= 400 and < 500 => SubmitOutcome.RejectedPermanently,
+            _ => SubmitOutcome.NetworkUnavailable,
+        };
+
+    /// <summary>
+    /// Assembles what actually goes on the card: the report, plus the framing a reader needs — how long
+    /// ago this happened, how many times, and the fingerprint that lets the next occurrence find this
+    /// card instead of making a new one.
+    /// </summary>
+    private static string BuildBody(QueuedBundle bundle)
+    {
+        var metadata = bundle.Metadata;
+        var text = new StringBuilder();
+
+        text.AppendLine("*Filed automatically by the Bloom Freeze Doctor.*");
+        text.AppendLine();
+
+        var age = DateTimeOffset.UtcNow - metadata.GatheredAtUtc;
+        if (age > TimeSpan.FromMinutes(10))
+            text.AppendLine(
+                $"> **This report was gathered {Describe(age)} ago** and queued until the machine could "
+                    + "reach the tracker. Bloom's version below is the version at the time, which may not "
+                    + "be what the user is running now."
+            );
+        if (metadata.Occurrences > 1)
+            text.AppendLine(
+                $"> **This problem happened {metadata.Occurrences} times** while the report was waiting"
+                    + (
+                        metadata.LastOccurrenceUtc.HasValue
+                            ? $", most recently at {metadata.LastOccurrenceUtc:yyyy-MM-dd HH:mm}Z."
+                            : "."
+                    )
+            );
+        if (metadata.Occurrences > 1 || age > TimeSpan.FromMinutes(10))
+            text.AppendLine();
+
+        text.AppendLine($"- **Gathered:** {metadata.GatheredAtUtc:yyyy-MM-dd HH:mm:ss}Z");
+        text.AppendLine($"- **Fingerprint:** `{metadata.Fingerprint}`");
+        text.AppendLine();
+        text.AppendLine(ReadReport(bundle));
+        text.AppendLine();
+        text.AppendLine(
+            $"*Fingerprint `{metadata.Fingerprint}` identifies this problem; a later occurrence will "
+                + "comment here rather than open a new card. Attachments are restricted to the "
+                + "Developers group because a dump can contain the user's own content.*"
+        );
+        return text.ToString();
+    }
+
+    private static string ReadReport(QueuedBundle bundle)
+    {
+        try
+        {
+            return File.ReadAllText(bundle.ReportPath);
+        }
+        catch (Exception e)
+        {
+            return $"*(the report body could not be read from disk: {e.GetType().Name})*";
+        }
+    }
+
+    private static string Describe(TimeSpan age) =>
+        age.TotalDays >= 1 ? $"{age.TotalDays:F0} day(s)"
+        : age.TotalHours >= 1 ? $"{age.TotalHours:F0} hour(s)"
+        : $"{age.TotalMinutes:F0} minute(s)";
+
+    private static string Trim(string value) =>
+        value.Length <= 300 ? value : value.Substring(0, 299) + "…";
+}
