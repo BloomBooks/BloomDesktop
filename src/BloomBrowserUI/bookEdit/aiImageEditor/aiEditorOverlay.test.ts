@@ -198,11 +198,18 @@ describe("aiEditorOverlay: the edit target", () => {
         expect(payload.selectedBookImageId).toBeUndefined();
     });
 
-    test("an empty placeholder slot is not preloaded as the target", () => {
-        // There is nothing to edit, and the placeholder graphic isn't a real raster image.
+    test("an empty placeholder slot becomes the target too (BL-16744)", () => {
+        // The user launched on an empty slot to create an image for it, so that slot is
+        // the target. Withholding it made the editor fall back to the first image of the
+        // book (usually the front cover), which is not what the user clicked.
+        const kCoverId = "cover:0";
         const { iframe, postFromEditor } = openAgainstABookWithOneImage(
             { pageId: kPageId, imageFileName: "placeHolder.png" },
             [
+                {
+                    id: kCoverId,
+                    src: "http://localhost:8089/bloom/book/cover.png",
+                },
                 {
                     id: `${kPageId}:0`,
                     src: "http://localhost:8089/bloom/book/placeHolder.png",
@@ -213,7 +220,9 @@ describe("aiEditorOverlay: the edit target", () => {
 
         const payload = getInitPayloadSentToEditor(iframe, postFromEditor);
 
-        expect(payload.selectedBookImageId).toBeUndefined();
+        // Sanity: the cover comes first in the list, so a fallback would have picked it.
+        expect(payload.selectedBookImageId).not.toBe(kCoverId);
+        expect(payload.selectedBookImageId).toBe(`${kPageId}:0`);
     });
 });
 

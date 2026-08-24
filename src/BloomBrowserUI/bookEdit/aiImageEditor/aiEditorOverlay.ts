@@ -121,11 +121,14 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                           fileNameOf(bi.src) === target.imageFileName,
                   )
                 : undefined;
-        // Don't preload an empty placeholder slot into the edit target — there's
-        // nothing to edit, and its placeholder graphic isn't a real raster image.
-        const selectedBookImageId = clickedMatch?.isPlaceholder
-            ? undefined
-            : clickedMatch?.id;
+        // An empty placeholder slot is sent like any other (BL-16744). It used to be
+        // withheld, on the grounds that an empty slot has nothing to edit — but the AI
+        // image editor answers a missing selectedBookImageId by targeting the FIRST
+        // image of the book, which is normally the front cover. So withholding it aimed
+        // the user at the cover when they had asked for an empty slot on some other
+        // page. Sending it targets the slot they clicked, which is where the image they
+        // are about to create belongs; a "create" tool ignores the target anyway.
+        const selectedBookImageId = clickedMatch?.id;
 
         const initPayload = {
             ...launchData,
