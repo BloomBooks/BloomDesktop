@@ -187,10 +187,25 @@ public sealed class DoctorSupervisor : IDisposable
     {
         try
         {
+            // Take the ids and let the Process objects go at once. Each one holds an OS handle, and this
+            // runs every five seconds for as long as the Doctor lives - which can be hours - so keeping
+            // them until finalization accumulates handles in the one process that must stay healthy
+            // enough to diagnose everything else.
+            int[] runningIds;
             var running = Process.GetProcessesByName(_targetProcessName);
-            foreach (var process in running)
+            try
             {
-                var facts = GatherContextBuilder.DescribeRunningProcess(process.Id);
+                runningIds = running.Select(p => p.Id).ToArray();
+            }
+            finally
+            {
+                foreach (var process in running)
+                    process.Dispose();
+            }
+
+            foreach (var id in runningIds)
+            {
+                var facts = GatherContextBuilder.DescribeRunningProcess(id);
                 if (facts != null)
                     AdoptFacts(facts);
             }
@@ -204,7 +219,7 @@ public sealed class DoctorSupervisor : IDisposable
                 // by the time we get here its story has been told.
                 foreach (var id in _watchers.Keys.ToList())
                 {
-                    if (running.Any(p => p.Id == id))
+                    if (runningIds.Contains(id))
                         continue;
                     _watchers[id].Dispose();
                     _watchers.Remove(id);
