@@ -68,7 +68,17 @@ public sealed class YouTrackSubmitter : IReportSubmitter
                 .ConfigureAwait(false);
             if (existing != null)
             {
-                await CommentAsync(existing, body, cancellation).ConfigureAwait(false);
+                // A short note, not the whole report again - see BuildRecurrenceComment. Note also what is
+                // NOT here: AttachArtifactsAsync runs only on the create path below, so a recurrence
+                // uploads nothing. The dump and log for it stay in the bundle folder named in the comment.
+                var commentFailure = await CommentAsync(
+                        existing,
+                        BuildRecurrenceComment(bundle),
+                        cancellation
+                    )
+                    .ConfigureAwait(false);
+                if (commentFailure != null)
+                    return commentFailure.Value;
                 return new SubmitResult { Outcome = SubmitOutcome.Filed, IssueId = existing };
             }
 
@@ -227,7 +237,60 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         return (id, null);
     }
 
-    private async Task CommentAsync(string issueId, string body, CancellationToken cancellation)
+    /// <summary>
+    /// The comment posted when this problem already has a card: what varied this time, and where the full
+    /// report is, rather than the whole report over again.
+    ///
+    /// Two reports sharing a fingerprint share their reason, Bloom's version, the channel and the top five
+    /// frames of the UI thread - so most of a second report is identical by construction, and a card
+    /// carrying several of them becomes unreadable exactly when it matters most. The dump and the log are
+    /// not attached either: they are near-duplicates of the first occurrence's at some 16 MB each, and the
+    /// folder named below is how to get them if anyone ever wants to.
+    /// </summary>
+    private static string BuildRecurrenceComment(QueuedBundle bundle)
+    {
+        var text = new StringBuilder();
+        text.AppendLine("**This happened again.**");
+        text.AppendLine();
+        text.AppendLine(
+            $"- When: {bundle.Metadata.GatheredAtUtc.ToLocalTime():yyyy-MM-dd HH:mm} "
+                + $"(UTC {bundle.Metadata.GatheredAtUtc:HH:mm})"
+        );
+        if (bundle.Metadata.Occurrences > 1)
+            text.AppendLine(
+                $"- Seen {bundle.Metadata.Occurrences} times before this report was sent"
+            );
+        if (!string.IsNullOrWhiteSpace(bundle.Metadata.RecurrenceNote))
+            text.AppendLine(bundle.Metadata.RecurrenceNote);
+        text.AppendLine();
+        text.AppendLine(
+            "The full report, with the crash dump and Bloom's log, is on that machine at "
+                + $"`{bundle.Directory}` and is deliberately not attached here - it is near enough a copy "
+                + "of the one already on this card."
+        );
+        return text.ToString();
+    }
+
+    /// <summary>
+    /// Adds our findings to a card that already exists for this fingerprint. Returns null on success, or
+    /// the classified failure.
+    ///
+    /// **It classifies rather than throwing, and that is the point.** `EnsureSuccessStatusCode` here threw
+    /// an <c>HttpRequestException</c>, which the caller's catch turned into `NetworkUnavailable` — so a
+    /// flat, permanent refusal (a 400, a 403, a card that has since been deleted) was recorded as "no
+    /// network" and retried every five minutes for thirty days. Worse, the drain stops at the first bundle
+    /// it cannot send, so that one undeliverable comment sat at the head of the queue and blocked every
+    /// report behind it, indefinitely.
+    ///
+    /// This is the same trap <see cref="FindProjectIdAsync"/> was fixed for; every other call in this
+    /// class already routes its failures through <see cref="ClassifyFailure"/>, which draws the line in
+    /// the right place here too — a definite refusal is permanent, a 429 or 5xx is worth retrying.
+    /// </summary>
+    private async Task<SubmitResult?> CommentAsync(
+        string issueId,
+        string body,
+        CancellationToken cancellation
+    )
     {
         var payload = new JsonObject { ["text"] = body };
         using var content = new StringContent(
@@ -238,7 +301,14 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         using var response = await _http
             .PostAsync($"{BaseUrl}/issues/{issueId}/comments", content, cancellation)
             .ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        if (response.IsSuccessStatusCode)
+            return null;
+        return new SubmitResult
+        {
+            Outcome = ClassifyFailure(response.StatusCode),
+            Error =
+                $"commenting on {issueId} failed: {(int)response.StatusCode} {response.ReasonPhrase}",
+        };
     }
 
     /// <summary>

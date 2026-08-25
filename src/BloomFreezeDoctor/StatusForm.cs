@@ -119,7 +119,16 @@ public sealed class StatusForm : Form
         _tray.DoubleClick += (_, _) => RestoreFromTray();
         var menu = new ContextMenuStrip();
         menu.Items.Add("Show", null, (_, _) => RestoreFromTray());
-        menu.Items.Add("Quit", null, (_, _) => Close());
+        // The one route that really stops the Doctor; the X button only hides the window (OnFormClosing).
+        menu.Items.Add(
+            "Quit",
+            null,
+            (_, _) =>
+            {
+                _quitRequested = true;
+                Close();
+            }
+        );
         _tray.ContextMenuStrip = menu;
 
         // CTRL is polled rather than key-hooked, because the window is usually not focused when someone
@@ -218,6 +227,36 @@ public sealed class StatusForm : Form
         if (WindowState == FormWindowState.Minimized)
             ShowInTaskbar = false;
     }
+
+    /// <summary>
+    /// The X button puts the window away and leaves the Doctor watching. Quitting is the tray menu's
+    /// "Quit", which is deliberately the only way to stop it.
+    ///
+    /// John's decision, and the reason is worth keeping: closing used to end the program, tray icon and
+    /// all, while Bloom was still being watched and reports might still be queued. Somebody tidying their
+    /// screen would have switched off freeze detection for the rest of the session with nothing to suggest
+    /// they had.
+    ///
+    /// Only a person clicking X is intercepted. Our own "nothing left to do" exit arrives as
+    /// <see cref="CloseReason.ApplicationExitCall"/> and the tray's Quit sets <c>_quitRequested</c>; both
+    /// must be allowed through, or the Doctor could never exit at all.
+    /// </summary>
+    protected override void OnFormClosing(FormClosingEventArgs e)
+    {
+        if (e.CloseReason == CloseReason.UserClosing && !_quitRequested)
+        {
+            e.Cancel = true;
+            // Straight to the tray, the same state minimising leaves it in.
+            WindowState = FormWindowState.Minimized;
+            ShowInTaskbar = false;
+            Hide();
+            return;
+        }
+        base.OnFormClosing(e);
+    }
+
+    /// <summary>True once the tray menu's Quit has been chosen, which is what lets the form really close.</summary>
+    private bool _quitRequested;
 
     private void RestoreFromTray()
     {
@@ -443,8 +482,10 @@ public sealed class StatusForm : Form
             handedOff = true;
             Task.Run(() =>
                 {
+                    // Through the supervisor, not straight to ZombieEnder: it records that this death is
+                    // our doing, so the Doctor does not then file a card about the Bloom we just ended.
                     foreach (var id in ids)
-                        ZombieEnder.End(id);
+                        _supervisor.EndBloomAtSomebodysRequest(id);
                 })
                 .ContinueWith(_ => FinishRestart());
         }
@@ -562,8 +603,17 @@ public sealed class StatusForm : Form
         RevealYourself();
     }
 
-    /// <summary>Remembers a Bloom's path while we can still see it, for the restart button later.</summary>
-    public void RememberBloomPath(string exePath) => _bloomExeToRestart ??= exePath;
+    /// <summary>
+    /// Remembers a Bloom's path while we can still see it, for the restart button later - by then the
+    /// process it came from is usually gone, which is why this is recorded up front.
+    ///
+    /// Last one wins, rather than the first. Every Bloom we watch reports in here now, and with two of them
+    /// the newer is the better guess; keeping the first would have pinned us to whichever Bloom happened to
+    /// be running when the Doctor started. In practice the distinction rarely bites, because two Blooms on
+    /// one machine are nearly always the same executable - the failure this was fixed for was having no
+    /// path at all and falling back to whatever was installed.
+    /// </summary>
+    public void RememberBloomPath(string exePath) => _bloomExeToRestart = exePath;
 
     private static string? FindBloomExecutable()
     {
@@ -580,8 +630,12 @@ public sealed class StatusForm : Form
 
     private void ReportNow()
     {
-        var target = Process.GetProcessesByName("Bloom").FirstOrDefault();
-        if (target == null)
+        // Ask the supervisor which Blooms it is watching, rather than looking for a process called
+        // "Bloom". The installer renames the executable per channel, so that literal name misses every
+        // Alpha and Beta install - and it also defeated `--target-name`, which exists so a stand-in can
+        // be watched during testing. This is the Bloom we are actually watching, by construction.
+        var target = _supervisor.LiveWatchedBlooms().FirstOrDefault();
+        if (target.ProcessId == 0)
         {
             MessageBox.Show(
                 this,
@@ -596,7 +650,7 @@ public sealed class StatusForm : Form
         _ = Task.Run(async () =>
         {
             var result = await _supervisor
-                .ReportNowAsync(target.Id, CancellationToken.None)
+                .ReportNowAsync(target.ProcessId, CancellationToken.None)
                 .ConfigureAwait(false);
             if (result.IssueId != null)
             {

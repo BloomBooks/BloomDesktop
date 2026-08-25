@@ -26,6 +26,12 @@ public sealed record GatheredReport
 
     /// <summary>False for a developer or automation run, or a target seen under a debugger.</summary>
     public required bool MayFile { get; init; }
+
+    /// <summary>
+    /// The handful of facts that differ between occurrences of the same problem, for the comment posted
+    /// when a card for this fingerprint already exists. See EvidenceGatherer.BuildRecurrenceNote.
+    /// </summary>
+    public string? RecurrenceNote { get; init; }
 }
 
 /// <summary>
@@ -106,7 +112,50 @@ public sealed class EvidenceGatherer
             Artifacts = sections.SelectMany(s => s.Artifacts).ToList(),
             Duration = overall.Elapsed,
             MayFile = mayFile,
+            RecurrenceNote = BuildRecurrenceNote(context),
         };
+    }
+
+    /// <summary>
+    /// The few facts that differ between one occurrence of a problem and the next, for the comment added
+    /// to a card that already exists.
+    ///
+    /// **Why not the whole report.** Two reports sharing a fingerprint share their reason, Bloom's version,
+    /// the channel and the top five frames of the UI thread — that is what the fingerprint means — so the
+    /// bulk of a second report is identical by construction. A card accumulating several 18 KB reports
+    /// becomes unreadable at exactly the moment it is most useful, and the second report's dump and log are
+    /// near-duplicates of the first at some 16 MB each.
+    ///
+    /// What is worth saying is what varied, because that is what tells you whether the recurrences are the
+    /// same situation or the same stack arrived at from different directions. The full report stays on the
+    /// machine; the submitter adds its folder name so it can be fetched if anyone wants it.
+    /// </summary>
+    private static string BuildRecurrenceNote(GatherContext context)
+    {
+        var lines = new List<string> { $"- Process {context.Target.ProcessId}" };
+
+        if (!string.IsNullOrWhiteSpace(context.Verdict.Explanation))
+            lines.Add($"- What we saw: {context.Verdict.Explanation}");
+
+        var state = context.PublishedState;
+        if (state != null)
+        {
+            lines.Add(
+                "- What Bloom thought it was doing: "
+                    + (
+                        string.IsNullOrWhiteSpace(state.Activity)
+                            ? "(nothing in particular)"
+                            : state.Activity
+                    )
+            );
+            if (state.LongOperationInProgress)
+                lines.Add(
+                    "- Bloom said it was deliberately busy on a long operation, so it was being given "
+                        + "extra patience"
+                );
+        }
+
+        return string.Join("\n", lines);
     }
 
     /// <summary>

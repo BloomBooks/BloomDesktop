@@ -58,6 +58,10 @@ public sealed class WaitChainCollector : IEvidenceCollector
 
             var described = 0;
             var deadlocked = false;
+            // Counted once, up front, rather than read again after the loop. `Process.Threads` re-queries
+            // the process, and this one may die while we are walking it - which would then throw and lose
+            // the chains we had already rendered, for the sake of a number in a footnote.
+            var threadCount = process.Threads.Count;
             foreach (ProcessThread thread in process.Threads)
             {
                 cancellation.ThrowIfCancellationRequested();
@@ -125,7 +129,7 @@ public sealed class WaitChainCollector : IEvidenceCollector
                     "> **How to read these.** Each entry is one thread and what Windows can see it waiting "
                         + "for, in order: the thread itself, then the object it is blocked on, then the "
                         + $"thread that owns that object. Only {described} of this process's "
-                        + $"{process.Threads.Count} threads appear, and that is not because the rest are "
+                        + $"{threadCount} threads appear, and that is not because the rest are "
                         + "idle: a thread is listed only where Windows could name something it waits on, "
                         + "and a `Monitor`, an `await` or a plain `Thread.Sleep` is invisible here."
                 );

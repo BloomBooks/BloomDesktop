@@ -47,6 +47,23 @@ namespace Bloom.FreezeDoctor
         private static readonly TimeSpan DefaultDelay = TimeSpan.FromSeconds(45);
 
         /// <summary>
+        /// The kinds this understands. Kept beside <see cref="Simulate"/>'s switch and checked BEFORE
+        /// arming, so an unrecognised value refuses outright instead of half-arming — see the check in
+        /// <see cref="ArmIfRequested"/> for why that distinction matters.
+        /// </summary>
+        internal static readonly string[] KnownKinds =
+        {
+            "sleep",
+            "stawait",
+            "spin",
+            "mutexchain",
+            "failfast",
+            "throw",
+            "crashthread",
+            "zombie",
+        };
+
+        /// <summary>
         /// Channels on which the simulator is allowed to act.
         ///
         /// Developer builds are obvious. **Alpha is here deliberately**: reproducing a freeze usually means
@@ -108,6 +125,23 @@ namespace Bloom.FreezeDoctor
                 parts.Length > 1 && int.TryParse(parts[1], out var seconds)
                     ? TimeSpan.FromSeconds(seconds)
                     : DefaultDelay;
+
+            // Refuse a kind we do not know, HERE, before anything else happens.
+            //
+            // This check has to precede the marker below, and getting that order wrong was a real defect:
+            // an unrecognised value - a typo like `slep`, or a stale name - used to arm nothing at all
+            // (the switch simply logged "not a kind it knows about" 45 seconds later) while still telling
+            // the Doctor this Bloom was a rehearsal. The Doctor then declined to file a card for every
+            // GENUINE freeze for the rest of that session. A misspelled environment variable silently
+            // turning off freeze reporting is far worse than the typo it came from.
+            if (Array.IndexOf(KnownKinds, kind) < 0)
+            {
+                Logger.WriteEvent(
+                    $"*** FreezeSimulator: '{kind}' is not a kind it knows about, so nothing is armed. "
+                        + $"Expected one of: {string.Join(", ", KnownKinds)}."
+                );
+                return false;
+            }
 
             Logger.WriteEvent(
                 $"*** FreezeSimulator armed: will simulate '{kind}' in {delay.TotalSeconds:F0} seconds. "

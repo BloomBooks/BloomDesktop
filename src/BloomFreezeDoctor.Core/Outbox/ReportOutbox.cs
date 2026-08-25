@@ -211,6 +211,7 @@ public sealed class ReportOutbox
             Artifacts = artifactNames,
             BloomChannel = channel,
             Reason = reason,
+            RecurrenceNote = report.RecurrenceNote,
         };
         WriteMetadata(staging, metadata);
 

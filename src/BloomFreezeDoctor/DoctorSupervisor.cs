@@ -46,6 +46,9 @@ public sealed record DoctorStatus
 /// </summary>
 public sealed class DoctorSupervisor : IDisposable
 {
+    /// <summary>The process name we look for unless told otherwise. See <see cref="_targetProcessNames"/>.</summary>
+    public const string DefaultTargetProcessName = "Bloom";
+
     /// <summary>How often to look for Blooms that have started or gone away.</summary>
     private static readonly TimeSpan DiscoveryInterval = TimeSpan.FromSeconds(5);
 
@@ -62,6 +65,25 @@ public sealed class DoctorSupervisor : IDisposable
     private readonly ReportOutbox _outbox;
     private readonly string _project;
     private readonly string _targetProcessName;
+
+    /// <summary>
+    /// Every process name that might BE Bloom, because "Bloom" alone is wrong for most of our users.
+    ///
+    /// **This was a shipping-stopper.** Bloom's installer renames the executable per channel
+    /// (`Bloom$(channel).exe` in build/Bloom.proj), so an Alpha install runs as `BloomAlpha` and a Beta
+    /// one as `BloomBeta`. Bloom launches us with only `--adopt &lt;pid&gt;`, so the name stayed at its
+    /// default of "Bloom", `Process.GetProcessesByName("Bloom")` matched nothing, discovery therefore
+    /// treated the Bloom we had just adopted as gone, dropped its watcher, and the Doctor concluded it had
+    /// nothing left to do and exited - within a second of starting, silently. It worked only on Release and
+    /// on developer builds, where the exe happens to be `Bloom.exe`. Alpha and Beta are precisely where we
+    /// most want it, and are the only channels where the freeze simulator is allowed.
+    ///
+    /// So the set starts from what we were told and LEARNS: adopting a process adds that process's own
+    /// name, which needs no list to be kept up to date and cannot go stale. The seeded channel names below
+    /// only matter for a Doctor started by hand, with no Bloom to adopt; `--target-name` covers anything
+    /// unusual.
+    /// </summary>
+    private readonly HashSet<string> _targetProcessNames = new(StringComparer.OrdinalIgnoreCase);
     private readonly bool _forceFiling;
     private readonly Dictionary<int, BloomTargetWatcher> _watchers = new();
     private readonly object _lock = new();
@@ -81,6 +103,17 @@ public sealed class DoctorSupervisor : IDisposable
 
     /// <summary>Zombies we have already tried to end, so we do not keep hammering at one.</summary>
     private readonly HashSet<int> _zombiesEnded = new();
+
+    /// <summary>
+    /// Blooms we asked to stop - whether by our own zombie policy or because somebody pressed "Restart
+    /// Bloom". Their deaths are our doing, so they are not news and must not be reported.
+    ///
+    /// Without this the Doctor filed a second card about a death it had itself caused: a frozen Bloom was
+    /// reported (AUT-20929), the user pressed Restart, the button ended that Bloom, and the Doctor then
+    /// dutifully reported "UI froze, then the process died" as a fresh problem (AUT-20930). Two cards for
+    /// one incident, the second of them describing our own action as a bug.
+    /// </summary>
+    private readonly HashSet<int> _weAskedItToStop = new();
 
     /// <summary>Exits we have already examined, so one death produces one examination.</summary>
     private readonly HashSet<int> _exitsExamined = new();
@@ -113,7 +146,7 @@ public sealed class DoctorSupervisor : IDisposable
     /// </param>
     public DoctorSupervisor(
         string project = "BL",
-        string targetProcessName = "Bloom",
+        string targetProcessName = DefaultTargetProcessName,
         bool forceFiling = false,
         ReportOutbox? outbox = null,
         bool neverEndZombies = false
@@ -121,6 +154,16 @@ public sealed class DoctorSupervisor : IDisposable
     {
         _project = project;
         _targetProcessName = targetProcessName;
+        _targetProcessNames.Add(targetProcessName);
+        // Only when nobody named a specific target: `--target-name` exists so the freeze stub can stand in
+        // for Bloom, and widening that would have us adopt a real Bloom in the middle of a test.
+        if (targetProcessName == DefaultTargetProcessName)
+        {
+            // The same channel folders StatusForm.FindBloomExecutable already looks in.
+            _targetProcessNames.Add("BloomAlpha");
+            _targetProcessNames.Add("BloomBeta");
+            _targetProcessNames.Add("BloomBetaInternal");
+        }
         _forceFiling = forceFiling;
         _outbox = outbox ?? new ReportOutbox();
         _neverEndZombies = neverEndZombies;
@@ -147,11 +190,36 @@ public sealed class DoctorSupervisor : IDisposable
     /// </summary>
     public event EventHandler<string>? ReportSavedWithoutFiling;
 
+    /// <summary>
+    /// Raised with the full path of each Bloom we start watching, so the window knows which Bloom to
+    /// restart.
+    ///
+    /// It used to be told only on the `--adopt` path, in Program.Main - so a Doctor started by hand, or
+    /// watching a second Bloom it found by discovery, never learned any path at all and fell back to
+    /// scanning the installed layouts. Testing showed the consequence plainly: "Restart Bloom" relaunched
+    /// an installed 6.3.2 Release build instead of the developer build that had just frozen. Raising it
+    /// from here covers every route into a watcher, because they all pass through one place.
+    /// </summary>
+    public event EventHandler<string>? WatchingBloomAt;
+
     /// <summary>Raised when the Doctor has nothing left to do and should exit.</summary>
     public event EventHandler? NothingLeftToDo;
 
     /// <summary>The queue of reports waiting to be sent.</summary>
     public ReportOutbox Outbox => _outbox;
+
+    /// <summary>
+    /// Ends a Bloom because a person asked us to - the "Restart Bloom" button clearing the way for a new
+    /// one. Goes through the supervisor rather than straight to <see cref="ZombieEnder"/> so that the death
+    /// is recorded as our own doing and is not then reported as a problem; see
+    /// <see cref="_weAskedItToStop"/>.
+    /// </summary>
+    public ZombieEndOutcome EndBloomAtSomebodysRequest(int processId)
+    {
+        lock (_lock)
+            _weAskedItToStop.Add(processId);
+        return ZombieEnder.End(processId);
+    }
 
     /// <summary>
     /// The Blooms we are watching that are still running, and what state each is in.
@@ -201,7 +269,31 @@ public sealed class DoctorSupervisor : IDisposable
         var facts = GatherContextBuilder.DescribeRunningProcess(processId);
         if (facts == null)
             return;
+        // Learn this Bloom's actual process name before the first discovery tick, or that tick will look
+        // for the wrong name, conclude this Bloom is gone, and take the Doctor down with it. See
+        // _targetProcessNames.
+        RememberProcessName(facts.ExePath);
         AdoptFacts(facts);
+    }
+
+    /// <summary>
+    /// Adds the executable's own name to the set discovery searches, so a channel-renamed Bloom
+    /// (`BloomAlpha`, `BloomBeta`, or anything future) is found without anyone maintaining a list.
+    /// </summary>
+    private void RememberProcessName(string exePath)
+    {
+        try
+        {
+            var name = Path.GetFileNameWithoutExtension(exePath);
+            if (string.IsNullOrWhiteSpace(name))
+                return;
+            lock (_lock)
+                _targetProcessNames.Add(name);
+        }
+        catch (Exception)
+        {
+            // A malformed path is not worth failing an adoption over; the seeded names still apply.
+        }
     }
 
     /// <summary>
@@ -239,17 +331,25 @@ public sealed class DoctorSupervisor : IDisposable
             // runs every five seconds for as long as the Doctor lives - which can be hours - so keeping
             // them until finalization accumulates handles in the one process that must stay healthy
             // enough to diagnose everything else.
-            int[] runningIds;
-            var running = Process.GetProcessesByName(_targetProcessName);
-            try
+            string[] namesToSearch;
+            lock (_lock)
+                namesToSearch = _targetProcessNames.ToArray();
+
+            var ids = new List<int>();
+            foreach (var name in namesToSearch)
             {
-                runningIds = running.Select(p => p.Id).ToArray();
+                var running = Process.GetProcessesByName(name);
+                try
+                {
+                    ids.AddRange(running.Select(p => p.Id));
+                }
+                finally
+                {
+                    foreach (var process in running)
+                        process.Dispose();
+                }
             }
-            finally
-            {
-                foreach (var process in running)
-                    process.Dispose();
-            }
+            var runningIds = ids.Distinct().ToArray();
 
             foreach (var id in runningIds)
             {
@@ -319,6 +419,12 @@ public sealed class DoctorSupervisor : IDisposable
             watcher.Start();
             Note($"watching Bloom {facts.ProcessId} ({facts.Channel})");
         }
+
+        // Outside the lock: the handler marshals to the UI thread, and holding a lock across that is how
+        // deadlocks are made. Every route into a watcher passes here, which is the point - see
+        // WatchingBloomAt.
+        if (!string.IsNullOrWhiteSpace(facts.ExePath))
+            WatchingBloomAt?.Invoke(this, facts.ExePath);
     }
 
     /// <summary>
@@ -327,6 +433,27 @@ public sealed class DoctorSupervisor : IDisposable
     /// </summary>
     private void OnReportWanted(object? sender, ReportWantedEventArgs e)
     {
+        // A death we asked for is not a bug. If we told this Bloom to stop - our zombie policy, or somebody
+        // pressing "Restart Bloom" - then it dying is the request being honoured, and reporting it as a
+        // problem describes our own action as a fault. The freeze that led to the request has already been
+        // reported on its own merits.
+        var itDied =
+            e.Verdict.Report == ReportReason.DiedWhileFrozen
+            || e.Verdict.State == TargetState.Exited;
+        if (itDied)
+        {
+            lock (_lock)
+            {
+                if (_weAskedItToStop.Contains(e.Target.ProcessId))
+                {
+                    Note(
+                        $"Bloom {e.Target.ProcessId} has gone, as we asked it to; not reporting that as a problem"
+                    );
+                    return;
+                }
+            }
+        }
+
         Interlocked.Increment(ref _workInFlight);
         _ = Task.Run(async () =>
         {
@@ -405,12 +532,19 @@ public sealed class DoctorSupervisor : IDisposable
         // Simulation is checked FIRST because it is the most informative answer when more than one applies,
         // which on a developer machine is the normal case: "you asked for this crash" tells the reader far
         // more than "this is a developer build", and a real report was confusing for exactly that reason.
+        // All FOUR reasons are covered. With only three, the fourth - Bloom having already reported the
+        // problem itself - fell through to whichever arm came last, and the log then stated something
+        // simply untrue about a Bloom no debugger had been near.
         var simulated = context.Session?.SimulatedFailure;
-        var notFiledBecause =
-            !string.IsNullOrEmpty(simulated)
-                ? $"this failure was deliberately simulated ({simulated})"
-            : facts.NeverFile ? "this is a developer or automation build"
-            : "a debugger was attached";
+        string notFiledBecause;
+        if (!string.IsNullOrEmpty(simulated))
+            notFiledBecause = $"this failure was deliberately simulated ({simulated})";
+        else if (facts.NeverFile)
+            notFiledBecause = "this is a developer or automation build";
+        else if (context.Session?.BloomAlreadyReported == true)
+            notFiledBecause = "Bloom has already reported this problem itself";
+        else
+            notFiledBecause = "a debugger was attached";
         Note(
             report.MayFile
                 ? $"report queued ({report.Summary})"
@@ -652,6 +786,10 @@ public sealed class DoctorSupervisor : IDisposable
             }
 
             Note($"ending stuck Bloom {watcher.Target.ProcessId}: {decision.Explanation}");
+            // Recorded before we act, so that the death cannot be observed and reported as a problem in the
+            // gap between asking and it happening. See _weAskedItToStop.
+            lock (_lock)
+                _weAskedItToStop.Add(watcher.Target.ProcessId);
             _ = Task.Run(() =>
             {
                 var outcome = ZombieEnder.End(watcher.Target.ProcessId);
@@ -771,15 +909,21 @@ public sealed class DoctorSupervisor : IDisposable
         if (Volatile.Read(ref _workInFlight) > 0)
             return;
 
+        // Both under the one lock, and the second is not fussiness: _lastBloomSeenAt is a nullable
+        // DateTimeOffset, far too wide to be read atomically, and it is written under this lock from the
+        // discovery thread while this runs on another. Reading it unlocked risks seeing half of one value
+        // and half of another - and this is the code that decides whether the Doctor exits.
+        DateTimeOffset? lastSeen;
         lock (_lock)
         {
             if (_watchers.Count > 0)
                 return;
+            lastSeen = _lastBloomSeenAt;
         }
-        if (_lastBloomSeenAt == null)
+        if (lastSeen == null)
             return; // we have not seen a Bloom yet; wait for one rather than exiting immediately
 
-        var waited = DateTimeOffset.UtcNow - _lastBloomSeenAt.Value;
+        var waited = DateTimeOffset.UtcNow - lastSeen.Value;
         var pending = _outbox.Pending().Count;
         if (pending > 0 && waited < LingerForOutbox)
             return;

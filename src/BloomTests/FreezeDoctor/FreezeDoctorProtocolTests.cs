@@ -9,7 +9,7 @@ namespace BloomTests.FreezeDoctor
 {
     /// <summary>
     /// Bloom's side of the protocol it shares with the Bloom Freeze Doctor
-    /// (https://github.com/BloomBooks/bloom-freeze-doctor): the layout it expects, and the health it
+    /// (src/BloomFreezeDoctor, in this repository): the layout it expects, and the health it
     /// publishes through it.
     ///
     /// **What this fixture is for changed when the protocol became a package.** It used to guard against
@@ -466,6 +466,77 @@ namespace BloomTests.FreezeDoctor
                     Is.True,
                     "developer"
                 );
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(FreezeSimulator.EnvironmentVariable, saved);
+                FreezeSimulator.Disarm();
+            }
+        }
+
+        [Test]
+        public void AMisspeltSimulationKindArmsNothingAtAll()
+        {
+            // The failure this guards against is worse than the typo that causes it. An unrecognised kind
+            // used to arm no simulation - the switch merely logged "not a kind it knows about" 45 seconds
+            // later - while still recording in the session file that this Bloom was a deliberate
+            // rehearsal. The Doctor reads that marker and declines to file a card, so one misspelt
+            // environment variable silently turned off freeze reporting for the whole session, on a Bloom
+            // that was behaving perfectly normally and might genuinely freeze.
+            var saved = Environment.GetEnvironmentVariable(FreezeSimulator.EnvironmentVariable);
+            try
+            {
+                // Sanity check first, so this test cannot pass merely because arming never works here.
+                Environment.SetEnvironmentVariable(
+                    FreezeSimulator.EnvironmentVariable,
+                    "sleep:100000"
+                );
+                Assert.That(
+                    FreezeSimulator.ArmIfRequested("Alpha"),
+                    Is.True,
+                    "setup: a known kind on an allowed channel must arm, or this test proves nothing"
+                );
+                FreezeSimulator.Disarm();
+
+                Environment.SetEnvironmentVariable(
+                    FreezeSimulator.EnvironmentVariable,
+                    "slep:100000"
+                );
+                Assert.That(
+                    FreezeSimulator.ArmIfRequested("Alpha"),
+                    Is.False,
+                    "a kind we do not recognise must refuse outright, not half-arm"
+                );
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(FreezeSimulator.EnvironmentVariable, saved);
+                FreezeSimulator.Disarm();
+            }
+        }
+
+        [Test]
+        public void EverySimulationKindTheSwitchHandlesIsAlsoAcceptedByTheGuard()
+        {
+            // The guard and the switch are two lists that must not drift apart: a kind the switch knows
+            // but the guard rejects is a simulation nobody can run, and the reverse is the silent-marker
+            // bug above. Asserting every advertised kind arms is the cheap half of keeping them together.
+            var saved = Environment.GetEnvironmentVariable(FreezeSimulator.EnvironmentVariable);
+            try
+            {
+                foreach (var kind in FreezeSimulator.KnownKinds)
+                {
+                    Environment.SetEnvironmentVariable(
+                        FreezeSimulator.EnvironmentVariable,
+                        kind + ":100000"
+                    );
+                    Assert.That(
+                        FreezeSimulator.ArmIfRequested("Alpha"),
+                        Is.True,
+                        $"'{kind}' is advertised as a kind, so it must arm"
+                    );
+                    FreezeSimulator.Disarm();
+                }
             }
             finally
             {
