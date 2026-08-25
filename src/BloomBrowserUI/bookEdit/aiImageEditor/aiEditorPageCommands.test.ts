@@ -11,6 +11,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const postJson = vi.fn();
 const changeImageByElement = vi.fn();
+const setActiveElementToClosest = vi.fn();
 
 vi.mock("../../utils/bloomApi", () => ({
     postJson: (...args: unknown[]) => postJson(...args),
@@ -18,6 +19,13 @@ vi.mock("../../utils/bloomApi", () => ({
 
 vi.mock("../js/bloomEditing", () => ({
     changeImageByElement: (...args: unknown[]) => changeImageByElement(...args),
+}));
+
+vi.mock("../js/canvasElementManager/CanvasElementManager", () => ({
+    theOneCanvasElementManager: {
+        setActiveElementToClosest: (...args: unknown[]) =>
+            setActiveElementToClosest(...args),
+    },
 }));
 
 vi.mock("../js/bloomImages", () => ({
@@ -193,10 +201,11 @@ describe("aiEditorPageCommands: the menu command", () => {
 describe("aiEditorPageCommands: applying current-page replacements", () => {
     beforeEach(() => {
         changeImageByElement.mockClear();
+        setActiveElementToClosest.mockClear();
         document.body.innerHTML = "";
     });
 
-    test("swaps the matching image and reports it applied", () => {
+    test("swaps the matching image, undoably, and reports it applied", () => {
         const [img] = makePageWithImages("old.png");
 
         const outcome = applyAiImageEditorReplacements([
@@ -208,8 +217,39 @@ describe("aiEditorPageCommands: applying current-page replacements", () => {
         expect(changeImageByElement.mock.calls[0][0]).toBe(img);
         expect(changeImageByElement.mock.calls[0][1]).toMatchObject({
             src: "ai-image1.png",
-            undoable: "false",
+            // Registers an image undo, like a pasted image; that is why the overlay must
+            // not save afterwards (the reload would discard the undo stack).
+            undoable: "true",
         });
+        // The swapped slot becomes the active element, or canUndoImageOperation would
+        // refuse to offer the undo until the user clicked the image.
+        expect(setActiveElementToClosest).toHaveBeenCalledWith(img);
+    });
+
+    test("a retry re-targets a slot this session already swapped, despite the stale oldSrc", () => {
+        // After a partial failure the overlay stays up and nothing was saved, so a retry's
+        // oldSrc (read from the saved page) still names the pre-swap file. The slot the
+        // earlier apply swapped must accept the retry at its ordinal anyway — falling back
+        // to a filename match would land it on a different same-named slot.
+        const images = makePageWithImages(
+            "placeHolder.png",
+            "placeHolder.png",
+            "placeHolder.png",
+        );
+        // First apply: slot 2 gets the image, and the live element now shows it.
+        applyAiImageEditorReplacements([
+            currentPageResult(2, "placeHolder.png", "ai-image1.png"),
+        ]);
+        images[2].setAttribute("src", "ai-image1.png");
+        changeImageByElement.mockClear();
+
+        // Retry: same slot, stale oldSrc, a new result file.
+        const outcome = applyAiImageEditorReplacements([
+            currentPageResult(2, "placeHolder.png", "ai-image2.png"),
+        ]);
+
+        expect(outcome).toEqual({ applied: 1, expected: 1 });
+        expect(changeImageByElement.mock.calls[0][0]).toBe(images[2]);
     });
 
     test("a lone swap lands on the slot its ordinal names, not the first same-named slot (BL-16744)", () => {

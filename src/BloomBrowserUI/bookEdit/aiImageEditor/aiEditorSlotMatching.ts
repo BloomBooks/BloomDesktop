@@ -41,6 +41,11 @@ export interface IReplacementMatch<TReplacement, TElement> {
  *          live-only elements (e.g. Bloom's injected controls) already removed so indexes
  *          line up with the saved page's holders
  * @param candidateFilenameOf the filename currently shown by a candidate element
+ * @param isKnownStaleFilename optional: true for a candidate whose live filename is KNOWN to
+ *          disagree with the saved page the replacement's oldSrc was read from — e.g. an
+ *          element an earlier, not-yet-saved apply already swapped. For such a candidate the
+ *          filename check is expected to fail and the ordinal is trusted on its own; a retry
+ *          after a partial failure re-sends those slots (BL-16744).
  * @returns one {replacement, element} pair per successfully matched replacement, in the order
  *          they were applied (ascending ordinal)
  */
@@ -50,6 +55,7 @@ export function matchReplacementsToElements<TReplacement, TElement>(
     wantedFilenameOf: (replacement: TReplacement) => string,
     candidates: TElement[],
     candidateFilenameOf: (element: TElement) => string,
+    isKnownStaleFilename?: (element: TElement) => boolean,
 ): Array<IReplacementMatch<TReplacement, TElement>> {
     const used = new Set<TElement>();
     const matches: Array<IReplacementMatch<TReplacement, TElement>> = [];
@@ -61,7 +67,8 @@ export function matchReplacementsToElements<TReplacement, TElement>(
             const element =
                 atOrdinal !== undefined &&
                 !used.has(atOrdinal) &&
-                candidateFilenameOf(atOrdinal) === wanted
+                (candidateFilenameOf(atOrdinal) === wanted ||
+                    isKnownStaleFilename?.(atOrdinal) === true)
                     ? atOrdinal
                     : candidates.find(
                           (candidate) =>

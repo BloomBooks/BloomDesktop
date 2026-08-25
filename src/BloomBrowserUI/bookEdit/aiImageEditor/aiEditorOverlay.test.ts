@@ -33,7 +33,6 @@ vi.mock("../js/workspaceFrames", () => ({
 
 import { openAiImageEditor } from "./aiEditorOverlay";
 
-const kSaveEvent = "common/saveChangesAndRethinkPageEvent";
 const kEditorUrl = "http://localhost:8089/bloom/aiImageEditor/index.html";
 const kPageId = "page1";
 const kImageFile = "old.png";
@@ -284,8 +283,12 @@ describe("aiEditorOverlay: the edit target", () => {
     });
 });
 
-describe("aiEditorOverlay: saving the live page after a commit", () => {
-    test("a successful commit closes the overlay and saves at once", () => {
+describe("aiEditorOverlay: the live page is NOT saved after a commit", () => {
+    // A current-page swap registers an image undo in the page frame, and a save would
+    // reload that frame and discard the undo (BL-16330's reasoning for ordinary image
+    // changes). So the overlay must never post the save event: the page saves by the
+    // normal mechanisms when the user moves on, and every launch saves first.
+    test("a successful commit closes the overlay without saving", () => {
         const { postFromEditor } = openAgainstABookWithOneImage();
 
         commitAndReplyFromHost(postFromEditor, true);
@@ -294,43 +297,20 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         // assertions below aren't just watching a no-op.
         expect(applyAiImageEditorReplacements).toHaveBeenCalledTimes(1);
         expect(document.getElementById("ai-editor-overlay")).toBeNull();
-        expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
-        expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
+        expect(postThatMightNavigate).not.toHaveBeenCalled();
     });
 
-    test("a partial failure keeps the overlay up AND still saves what landed", () => {
+    test("a partial failure keeps the overlay up, still without saving", () => {
         const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
 
         commitAndReplyFromHost(postFromEditor, false);
 
-        // The overlay stays up so the user can read the error about the slot that failed —
-        // and, unlike when this code lived in the page frame, saving now does not endanger
-        // it, so the swap that did land is persisted immediately rather than held hostage
-        // until the user closes the overlay.
+        // The overlay stays up so the user can read the error about the slot that failed.
         expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
-        expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
-        expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
+        expect(postThatMightNavigate).not.toHaveBeenCalled();
 
-        // The ✕ still works after that save, because these controls belong to the top
-        // window, not to the page frame the save reloaded.
         closeButton.click();
         expect(document.getElementById("ai-editor-overlay")).toBeNull();
-        expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
-    });
-
-    test("a commit that changed nothing on this page never saves", () => {
-        applyAiImageEditorReplacements.mockReturnValue({
-            applied: 0,
-            expected: 0,
-        });
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
-
-        // C# applied everything itself (all the slots were off-page), so there is no
-        // live-DOM change here to persist.
-        commitAndReplyFromHost(postFromEditor, true);
-
-        expect(postThatMightNavigate).not.toHaveBeenCalled();
-        closeButton.click();
         expect(postThatMightNavigate).not.toHaveBeenCalled();
     });
 
@@ -357,16 +337,15 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         expect(ack.ok).toBe(false);
         expect(ack.error).toContain("Only 1 of 2");
         expect(ack.error).toContain("kaboom");
-        // What did land still gets saved.
-        expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
+        expect(postThatMightNavigate).not.toHaveBeenCalled();
         postMessageToEditor.mockRestore();
     });
 
     test("an all-off-page commit succeeds even if the page frame is unreachable", () => {
-        // The page frame is briefly null while it reloads — which this feature's own
-        // post-commit save causes. Asking for it when the commit has nothing to do on the
-        // open page reported an error for images C# had in fact replaced and saved, and
-        // invited a retry that would redo them and orphan the files.
+        // The page frame is briefly null while it reloads (e.g. from the save at launch).
+        // Asking for it when the commit has nothing to do on the open page reported an
+        // error for images C# had in fact replaced and saved, and invited a retry that
+        // would redo them and orphan the files.
         getEditablePageBundleExports.mockReturnValue(null);
         const { iframe, postFromEditor } = openAgainstABookWithOneImage();
         const postMessageToEditor = vi.spyOn(

@@ -29,7 +29,7 @@
 //      overlay down. (There is intentionally no C#->iframe message channel; init flows from
 //      here, because only the browser can postMessage to the iframe.)
 
-import { post, postJson, postThatMightNavigate } from "../../utils/bloomApi";
+import { post, postJson } from "../../utils/bloomApi";
 import { getEditablePageBundleExports } from "../js/workspaceFrames";
 import {
     fileNameOf,
@@ -302,7 +302,6 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                             // apply fails) so its overlay can't hang.
                             let finalOk = false;
                             let message: string | undefined;
-                            let currentPageApplied = 0;
                             try {
                                 // Only involve the page frame when this commit actually has a
                                 // swap for the page being edited. Asking for it unconditionally
@@ -315,7 +314,6 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                 )
                                     ? applyOnThePageBeingEdited(result?.results)
                                     : { applied: 0, expected: 0 };
-                                currentPageApplied = cp.applied;
                                 const serverOk = result?.ok !== false;
                                 finalOk =
                                     serverOk &&
@@ -342,26 +340,19 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                         : String(e));
                             } finally {
                                 ackEditor(finalOk, message);
-                                // changeImageByElement only mutated the LIVE page DOM;
-                                // unlike the off-page slots (which C# saved), a
-                                // current-page swap is not otherwise persisted. Save +
-                                // rethink the page so the saved DOM matches the live one:
-                                // otherwise a second commit in this same session would
-                                // read its oldSrc from a saved page still showing the
-                                // pre-edit image and match nothing ("0 of N could be
-                                // updated"). Mirrors doVideoCommand's save after
-                                // updateVideoInContainer.
-                                //
-                                // We can save right now, even with the overlay still up,
-                                // precisely because this overlay lives in the top window:
-                                // the page reload underneath it leaves its controls alone.
-                                // (currentPageApplied is what the page frame says landed,
-                                // so a failure part way through still saves the rest.)
-                                if (currentPageApplied > 0) {
-                                    postThatMightNavigate(
-                                        "common/saveChangesAndRethinkPageEvent",
-                                    );
-                                }
+                                // Deliberately NO save here. A current-page swap lives in
+                                // the live page DOM only, like an image pasted or chosen
+                                // from the gallery, and is saved the same way: by the
+                                // normal page save when the user moves on. Saving now
+                                // would reload the page frame, and the reload would
+                                // discard the image undo the swap just registered — the
+                                // whole reason ordinary image changes don't save either
+                                // (BL-16330). Later sessions still read a fresh book DOM,
+                                // because every launch saves first (HandleSaveThenLaunch);
+                                // a retry from THIS still-open overlay reads stale oldSrc
+                                // for the slots that landed, which the page frame handles
+                                // by remembering the elements it already swapped (see
+                                // applyAiImageEditorReplacements).
                                 if (finalOk) {
                                     cleanup();
                                 }

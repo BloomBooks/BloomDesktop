@@ -17,6 +17,7 @@ import {
     GetRawImageUrl,
 } from "../js/bloomImages";
 import { changeImageByElement } from "../js/bloomEditing";
+import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import { matchReplacementsToElements } from "./aiEditorSlotMatching";
 import {
     fileNameOf,
@@ -103,10 +104,25 @@ function asMessage(e: unknown): string {
     return e instanceof Error ? e.message : String(e);
 }
 
+// The elements this page's live DOM has already had an AI replacement applied to. A retry
+// after a partial failure sends the same slots again, but C# reads each slot's oldSrc from
+// the SAVED page, which does not have our unsaved swap yet — so for exactly these elements
+// the filename check below is expected to fail, and the ordinal must be trusted anyway.
+// A WeakSet keyed on the elements themselves: a page reload discards both the elements and,
+// with them, the entries.
+const elementsAlreadySwappedByAi = new WeakSet<HTMLElement>();
+
 // Applies the replacements C# flagged as being on the currently-edited page. It cannot
 // change that page itself (this live browser owns it), so it returns oldSrc/newSrc and we
 // use Bloom's changeImageByElement() here. Returns how many swaps landed and how many were
 // asked for, so the caller can report a partial failure honestly.
+//
+// Each swap registers an image undo, like a pasted image or a picture chosen from the
+// gallery, so Ctrl+Z puts the old image back. That works because nothing here saves the
+// page: the save's reload would throw the live undo stack away (the same reasoning as
+// BL-16330 for ordinary image changes). The page is saved by the normal mechanisms when the
+// user moves on, and every editor launch saves first (see HandleSaveThenLaunch), so later
+// sessions still read a fresh book DOM.
 //
 // Called from the top window, so it must not assume anything about who is calling: `results`
 // has crossed a frame boundary but is plain data, and everything it touches is this
@@ -138,6 +154,7 @@ export function applyAiImageEditorReplacements(
         (r) => fileNameOf(r.oldSrc, false),
         candidates as HTMLElement[],
         (el) => fileNameOf(GetRawImageUrl(el)),
+        (el) => elementsAlreadySwappedByAi.has(el),
     );
     // Count as we go rather than from pairs.length at the end: if a swap throws, the ones
     // already made are in the live DOM and the caller still has to know to save them.
@@ -155,11 +172,16 @@ export function applyAiImageEditorReplacements(
                 creator: r.creator ?? "",
                 copyright: r.copyright ?? "",
                 license: r.license ?? "",
-                // The AI commit applies replacements book-wide in C# (saved directly, not
-                // undoable), so don't register a separate per-image undo for the
-                // current-page piece.
-                undoable: "false",
+                // Register an image undo for each swap, like any other image change
+                // (see the header comment).
+                undoable: "true",
             });
+            elementsAlreadySwappedByAi.add(target);
+            // Make the swapped slot the active element. canUndoImageOperation only
+            // offers the undo while an image container is active, and after the launch
+            // saved and reloaded this page nothing is — so without this, Ctrl+Z right
+            // after the editor closes would do nothing until the user clicked the image.
+            theOneCanvasElementManager.setActiveElementToClosest(target);
             applied++;
         });
     } catch (e) {
