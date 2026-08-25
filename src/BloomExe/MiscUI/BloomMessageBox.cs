@@ -57,7 +57,13 @@ namespace Bloom.MiscUI
                 // and remove the control box.
                 dlg.ControlBox = false;
                 if (owner == null)
+                {
                     dlg.StartPosition = FormStartPosition.CenterScreen;
+                    // With no owner there is no other Bloom presence on the taskbar, so without
+                    // its own button an ownerless message box that loses the foreground is
+                    // unfindable. (ReactDialog turns this off, which suits the owned case.)
+                    dlg.ShowInTaskbar = true;
+                }
                 dlg.ShowDialog(owner);
                 return dlg.CloseSource;
             }

@@ -1838,6 +1838,11 @@ namespace Bloom
                     {
                         dlg.StartPosition = FormStartPosition.Manual; // try not to have it under the splash screen
                         dlg.SetDesktopLocation(50, 50);
+                        // With no owner window to hand it the foreground, this opens behind
+                        // whatever the user launched Bloom from (Windows Explorer, say) --
+                        // notably when the minimum-version gate's "Open a Different Collection"
+                        // brings us here at startup. See BL-16690.
+                        dlg.BringToFrontWhenShown();
                     }
 
                     try

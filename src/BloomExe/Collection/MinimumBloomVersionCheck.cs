@@ -625,7 +625,8 @@ namespace Bloom.Collection
             BrowserProgressDialog.DoWorkWithProgressDialog(
                 socketServer,
                 () =>
-                    new ReactDialog(
+                {
+                    var dlg = new ReactDialog(
                         "progressDialogBundle",
                         new
                         {
@@ -651,7 +652,18 @@ namespace Bloom.Collection
                         // empty. The message area scrolls, so a failure with more to say
                         // still fits.
                         Height = 260,
-                    },
+                        // ReactDialog turns this off, which is right for a dialog whose parent
+                        // is on the taskbar. This one has no parent, so without its own button
+                        // there is nothing anywhere to find it by if it loses the foreground.
+                        ShowInTaskbar = true,
+                    };
+                    // By the time this opens, the message box where they clicked Upgrade Bloom
+                    // has closed, so whatever the user launched Bloom from (Windows Explorer,
+                    // say) may hold the foreground again -- and this dialog has no owner and no
+                    // taskbar button, so it would open behind it. See BL-16690.
+                    dlg.BringToFrontWhenShown();
+                    return dlg;
+                },
                 (progress, worker) =>
                 {
                     reporter.WriteTo(progress);
