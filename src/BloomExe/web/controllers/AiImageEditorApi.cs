@@ -955,8 +955,9 @@ namespace Bloom.web.controllers
         /// <param name="pageName">from <see cref="GetPageNameForImageSlotLabel"/>, may be null</param>
         /// <param name="isCanvasBackground">true for the canvas background image</param>
         /// <param name="imageNumber">
-        /// the 1-based position of this slot among the page's images, counting only the ones that
-        /// are not the canvas background. Ignored when isCanvasBackground is true.
+        /// the 1-based position of this slot among the page's images, counting every slot that is
+        /// not being named as the canvas background. A page with several canvases names none of
+        /// them, so there every slot is counted. Ignored when isCanvasBackground is true.
         /// </param>
         /// <param name="slotCount">how many image slots this page offers in all</param>
         internal static string BuildImageSlotLabel(
