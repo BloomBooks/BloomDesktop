@@ -250,6 +250,12 @@ public sealed class StatusForm : Form
             WindowState = FormWindowState.Minimized;
             ShowInTaskbar = false;
             Hide();
+            // Back to "hidden until somebody asks", which is exactly what closing the window means - and
+            // NOT merely tidiness. RevealYourself is the only route to visibility in this class and it
+            // returns early unless _stayHidden is set, so leaving this false made the window unreachable
+            // for the rest of the session: the tray's Show did nothing, and every later report revealed
+            // nothing, leaving "Restart Bloom" and "Show report" alive but invisible.
+            _stayHidden = true;
             return;
         }
         base.OnFormClosing(e);
@@ -262,9 +268,15 @@ public sealed class StatusForm : Form
     {
         // Asking for the window from the tray is an explicit request, so it overrides the
         // stay-hidden rule rather than being silently refused by SetVisibleCore.
-        RevealYourself();
+        //
+        // It clears the flag and calls Show() itself rather than relying on RevealYourself, whose early
+        // return makes it a no-op when the flag is already clear. Depending on that is what made this path
+        // silently do nothing once, and "the window will not come back from the tray" is the one failure
+        // this method exists to prevent. Show() and Activate() are both harmless when already visible.
+        _stayHidden = false;
         ShowInTaskbar = true;
         WindowState = FormWindowState.Normal;
+        Show();
         Activate();
     }
 
