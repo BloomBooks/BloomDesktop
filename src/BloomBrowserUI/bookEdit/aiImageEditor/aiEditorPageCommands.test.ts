@@ -212,6 +212,45 @@ describe("aiEditorPageCommands: applying current-page replacements", () => {
         });
     });
 
+    test("a lone swap lands on the slot its ordinal names, not the first same-named slot (BL-16744)", () => {
+        // Every empty slot shows placeHolder.png. A commit for the third of them must not
+        // land on the first, which is where a filename-only match always put it.
+        const images = makePageWithImages(
+            "placeHolder.png",
+            "placeHolder.png",
+            "placeHolder.png",
+        );
+
+        const outcome = applyAiImageEditorReplacements([
+            currentPageResult(2, "placeHolder.png", "ai-image1.png"),
+        ]);
+
+        expect(outcome).toEqual({ applied: 1, expected: 1 });
+        expect(changeImageByElement).toHaveBeenCalledTimes(1);
+        expect(changeImageByElement.mock.calls[0][0]).toBe(images[2]);
+    });
+
+    test("a control Bloom injects into the live page does not shift the ordinal", () => {
+        // Injected controls are in the live page only; the ordinal counts the saved page's
+        // holders, which have none of them.
+        document.body.innerHTML = `
+            <div class="bloom-page" id="${kPageId}">
+                <div class="bloom-ui"><img src="placeHolder.png" /></div>
+                <div class="bloom-canvas-element"><img src="placeHolder.png" /></div>
+                <div class="bloom-canvas-element"><img src="placeHolder.png" /></div>
+            </div>`;
+        const images = Array.from(
+            document.querySelectorAll("img"),
+        ) as HTMLImageElement[];
+
+        const outcome = applyAiImageEditorReplacements([
+            currentPageResult(1, "placeHolder.png", "ai-image1.png"),
+        ]);
+
+        expect(outcome).toEqual({ applied: 1, expected: 1 });
+        expect(changeImageByElement.mock.calls[0][0]).toBe(images[2]);
+    });
+
     test("ignores results for other pages and results that failed", () => {
         makePageWithImages("old.png");
 

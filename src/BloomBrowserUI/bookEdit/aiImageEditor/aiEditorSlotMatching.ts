@@ -1,17 +1,24 @@
 // Pure slot-matching helper for applying AI-editor replacements to the currently-open page.
 //
 // When the AI commit returns replacements for the page the user is looking at, the front-end
-// has to pair each replacement with the right live image element. Matching is by filename
-// (a cache-busting query string or path prefix on the live element would defeat a full-src
-// compare), but a single page can have several image slots that share the same filename —
-// e.g. two empty placeholders, or the same photo used twice. Filename alone can't tell those
-// apart, so we (a) apply in slot order — the ordinal in each replacement's "{pageId}:{n}" id
-// counts the saved page's image holders in document order, which is the live candidates'
-// order too — and (b) consume each element at most once, so distinct replacements land on
-// distinct elements instead of all collapsing onto the first same-filename match.
+// has to pair each replacement with the right live image element. The ordinal in each
+// replacement's "{pageId}:{n}" id counts the saved page's image holders in document order,
+// which is the live candidates' order too (the caller strips the live-only elements), so the
+// candidate AT that index is the slot the user chose — a page can hold several slots showing
+// the same filename (every empty slot shows placeHolder.png), and a lone replacement for the
+// seventh of them must not land on the first (BL-16744).
 //
-// This is factored out of canvasControlRegistry.ts's editWithAi command so the pairing logic
-// can be unit-tested without a DOM or the changeImage side effects; the caller supplies the
+// The filename (from the replacement's oldSrc) is the safety check on that index: the live
+// page can grow an image-bearing element the saved page lacks, which would shift every index
+// after it. A candidate whose filename is not the one the replacement expects is refused, and
+// the replacement falls back to the first unused same-filename candidate — the pre-BL-16744
+// behavior, wrong only among same-named slots and safe everywhere else. Filename, not full
+// src, because a cache-busting query string or path prefix on the live element would defeat a
+// full-src compare. Each candidate is consumed at most once, so distinct replacements land on
+// distinct elements.
+//
+// This is factored out of aiEditorPageCommands.ts's apply step so the pairing logic can be
+// unit-tested without a DOM or the changeImage side effects; the caller supplies the
 // ordinal/filename accessors and performs the actual image swap on the returned pairs.
 
 export interface IReplacementMatch<TReplacement, TElement> {
@@ -20,14 +27,19 @@ export interface IReplacementMatch<TReplacement, TElement> {
 }
 
 /**
- * Pairs replacements to candidate elements by filename, in ascending ordinal order, using each
+ * Pairs each replacement with the candidate at its slot ordinal, falling back to the first
+ * unused same-filename candidate when that index is out of range, already used, or shows a
+ * different filename (see the header). Applies in ascending ordinal order and uses each
  * candidate at most once. A replacement with no filename match (given the still-unused
  * candidates) is skipped and simply omitted from the result.
  *
  * @param replacements the current-page replacements to place
- * @param ordinalOf extracts a replacement's slot ordinal (used only to order placement)
+ * @param ordinalOf extracts a replacement's slot ordinal — the index of its slot among the
+ *          saved page's image holders, which the candidates must mirror
  * @param wantedFilenameOf the filename a replacement wants to land on (from its oldSrc)
- * @param candidates the live page's image-bearing elements, in document order
+ * @param candidates the live page's image-bearing elements, in document order, with the
+ *          live-only elements (e.g. Bloom's injected controls) already removed so indexes
+ *          line up with the saved page's holders
  * @param candidateFilenameOf the filename currently shown by a candidate element
  * @returns one {replacement, element} pair per successfully matched replacement, in the order
  *          they were applied (ascending ordinal)
@@ -45,11 +57,17 @@ export function matchReplacementsToElements<TReplacement, TElement>(
         .sort((a, b) => ordinalOf(a) - ordinalOf(b))
         .forEach((replacement) => {
             const wanted = wantedFilenameOf(replacement);
-            const element = candidates.find(
-                (candidate) =>
-                    !used.has(candidate) &&
-                    candidateFilenameOf(candidate) === wanted,
-            );
+            const atOrdinal = candidates[ordinalOf(replacement)];
+            const element =
+                atOrdinal !== undefined &&
+                !used.has(atOrdinal) &&
+                candidateFilenameOf(atOrdinal) === wanted
+                    ? atOrdinal
+                    : candidates.find(
+                          (candidate) =>
+                              !used.has(candidate) &&
+                              candidateFilenameOf(candidate) === wanted,
+                      );
             if (element === undefined) {
                 return;
             }

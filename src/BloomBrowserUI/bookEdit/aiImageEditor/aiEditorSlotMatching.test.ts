@@ -118,6 +118,57 @@ describe("matchReplacementsToElements", () => {
         expect(result[0].replacement.newSrc).toBe("gen-0.png");
     });
 
+    test("a lone replacement lands on the slot its ordinal names, not the first same-filename slot", () => {
+        // The BL-16744 case: a page full of empty slots, all showing placeHolder.png, and
+        // the user made an image for the seventh. Filename alone cannot tell them apart;
+        // the ordinal must pick the element.
+        const els: El[] = Array.from({ length: 9 }, (_, i) => ({
+            filename: "placeHolder.png",
+            tag: `slot-${i}`,
+        }));
+        const result = match(
+            [
+                {
+                    incomingId: "p:7",
+                    oldSrc: "placeHolder.png",
+                    newSrc: "gen.png",
+                },
+            ],
+            els,
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].element.tag).toBe("slot-7");
+    });
+
+    test("an ordinal pointing at a different filename falls back to the filename match", () => {
+        // The live page grew an element the saved page lacks, so the indexes shifted. The
+        // filename check refuses the shifted candidate and the filename match still finds
+        // the right one.
+        const els: El[] = [
+            { filename: "photo.jpg", tag: "photo" },
+            { filename: "a.png", tag: "A" },
+        ];
+        const result = match(
+            [{ incomingId: "p:0", oldSrc: "a.png", newSrc: "gen-a.png" }],
+            els,
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].element.tag).toBe("A");
+    });
+
+    test("an ordinal past the end of the candidates falls back to the filename match", () => {
+        const els: El[] = [{ filename: "a.png", tag: "A" }];
+        const result = match(
+            [{ incomingId: "p:5", oldSrc: "a.png", newSrc: "gen-a.png" }],
+            els,
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].element.tag).toBe("A");
+    });
+
     test("does not mutate the caller's replacements array order", () => {
         const replacements: Repl[] = [
             { incomingId: "p:2", oldSrc: "a.png", newSrc: "n2.png" },

@@ -118,17 +118,20 @@ export function applyAiImageEditorReplacements(
     if (toApply.length === 0) return { applied: 0, expected: 0 };
     const pageRoot =
         (document.querySelector(".bloom-page") as HTMLElement) || document;
-    // Look up the page's image-bearing elements once, not per replacement.
+    // Look up the page's image-bearing elements once, not per replacement. The selector
+    // mirrors C#'s SelectChildImgAndBackgroundImageElements, and the .bloom-ui filter
+    // removes the controls Bloom injects into the live page only, so each candidate's
+    // index is its ordinal among the saved page's holders — the "{pageId}:{ordinal}" the
+    // replacement carries.
     const candidates = Array.from(
         pageRoot.querySelectorAll('img, [style*="background-image"]'),
-    );
-    // A page can have several slots sharing the same source (e.g. multiple empty
-    // placeholders). matchReplacementsToElements consumes each matched element once so
-    // distinct replacements land on distinct elements instead of collapsing onto the first
-    // match, and applies in slot (ordinal) order. We match by filename, not full src, so a
-    // cache-busting query string or path prefix on the live element doesn't cause a silent
-    // miss. oldSrc arrives from C# already decoded; the live srcs are encoded, so
-    // fileNameOf normalizes both sides.
+    ).filter((el) => !el.closest(".bloom-ui"));
+    // A page can have several slots sharing the same source (every empty slot shows
+    // placeHolder.png), so matchReplacementsToElements takes each replacement's slot by
+    // its ordinal, checks it by filename, and consumes each matched element once. We
+    // match by filename, not full src, so a cache-busting query string or path prefix on
+    // the live element doesn't cause a silent miss. oldSrc arrives from C# already
+    // decoded; the live srcs are encoded, so fileNameOf normalizes both sides.
     const pairs = matchReplacementsToElements(
         toApply,
         (r) => parseInt((r.incomingId ?? "").split(":").pop() ?? "", 10) || 0,
