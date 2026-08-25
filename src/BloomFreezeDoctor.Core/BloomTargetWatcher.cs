@@ -165,12 +165,19 @@ public sealed class BloomTargetWatcher : IDisposable
             if (!verdict.ShouldReport)
                 return;
 
-            // Three independent reasons never to file, checked here rather than left to the gatherer so
+            // Four independent reasons never to file, checked here rather than left to the gatherer so
             // that the decision lives in one place: this target has been under a debugger at some point;
-            // it is a developer or automation run; or Bloom's own reporting has already told us about
-            // this problem, in which case a second card is noise about the same trouble.
+            // it is a developer or automation run; Bloom's own reporting has already told us about this
+            // problem, in which case a second card is noise about the same trouble; or the freeze was
+            // deliberately simulated, and nobody wants a card about a rehearsal.
+            //
+            // Any of these can still be overridden by the Doctor's `--force`, which exists to test the
+            // filing path itself; see DoctorSupervisor, where that override is applied.
             var mayFile =
-                !_detector.IsPoisonedByDebugger && !Target.NeverFile && !BloomAlreadyReported();
+                !_detector.IsPoisonedByDebugger
+                && !Target.NeverFile
+                && !BloomAlreadyReported()
+                && !WasDeliberatelySimulated();
             ReportWanted?.Invoke(
                 this,
                 new ReportWantedEventArgs
@@ -212,6 +219,34 @@ public sealed class BloomTargetWatcher : IDisposable
         {
             // If we cannot tell, err towards reporting: a duplicate card is a smaller loss than silence
             // about a real freeze.
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// True when this Bloom was deliberately told to break itself, which makes any freeze we see a
+    /// rehearsal rather than news.
+    ///
+    /// Read fresh each time, and NOT captured when we adopt the process, because the ordering makes
+    /// caching wrong: Bloom writes its session file, launches us, and only then arms the simulator - so at
+    /// the moment we adopt a Bloom the marker is reliably absent. Reading it here, at the moment of
+    /// decision, is the only way to see it at all.
+    ///
+    /// Note what this deliberately does NOT touch: detection, gathering, and the zombie-ending policy all
+    /// behave exactly as they would for a real freeze. A simulated run that took a shortcut anywhere else
+    /// would stop being a test of the thing it exists to test.
+    /// </summary>
+    private bool WasDeliberatelySimulated()
+    {
+        try
+        {
+            var session = Protocol.DoctorSessionStore.TryRead(Target.ProcessId);
+            return !string.IsNullOrEmpty(session?.SimulatedFailure);
+        }
+        catch (Exception)
+        {
+            // Err towards reporting, as with BloomAlreadyReported: silence about a real freeze is the
+            // costlier mistake, and `--force` is there for anyone who needs to override this either way.
             return false;
         }
     }

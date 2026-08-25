@@ -90,11 +90,21 @@ public sealed class WaitChainCollector : IEvidenceCollector
                 for (var i = 0; i < count; i++)
                 {
                     var node = nodes[i];
-                    text.AppendLine(
-                        node.ObjectType == WaitChainObjectType.Thread
-                            ? $"    - waiting on thread {node.ThreadId} in process {node.ProcessId} ({node.ObjectStatus})"
-                            : $"    - waiting on a {node.ObjectType} ({node.ObjectStatus})"
-                    );
+                    // The API's first node IS the thread we asked about, not something it waits on. Calling
+                    // it "waiting on thread N" makes the report claim a thread is blocked on itself, which
+                    // reads as a self-deadlock and sends whoever holds the card looking for one.
+                    if (i == 0 && node.ObjectType == WaitChainObjectType.Thread)
+                        text.AppendLine(
+                            $"    - this thread ({node.ThreadId} in process {node.ProcessId}) is {node.ObjectStatus}"
+                        );
+                    else if (node.ObjectType == WaitChainObjectType.Thread)
+                        text.AppendLine(
+                            $"    - waiting on thread {node.ThreadId} in process {node.ProcessId} ({node.ObjectStatus})"
+                        );
+                    else
+                        text.AppendLine(
+                            $"    - waiting on a {node.ObjectType} ({node.ObjectStatus})"
+                        );
                 }
             }
 
@@ -105,9 +115,38 @@ public sealed class WaitChainCollector : IEvidenceCollector
                         + "it is not evidence that nothing is blocked. The managed stacks are the "
                         + "authority."
                 );
-            else if (deadlocked)
-                headline =
-                    "Windows reports a deadlock cycle between threads (see the wait chains).";
+            else
+            {
+                // Written because a reader who knows Bloom well still could not tell what these lines
+                // claimed, or why only some threads appeared. A chain nobody can interpret is no better
+                // than no chain, and the two questions it raises have short, definite answers.
+                text.AppendLine();
+                text.AppendLine(
+                    "> **How to read these.** Each entry is one thread and what Windows can see it waiting "
+                        + "for, in order: the thread itself, then the object it is blocked on, then the "
+                        + $"thread that owns that object. Only {described} of this process's "
+                        + $"{process.Threads.Count} threads appear, and that is not because the rest are "
+                        + "idle: a thread is listed only where Windows could name something it waits on, "
+                        + "and a `Monitor`, an `await` or a plain `Thread.Sleep` is invisible here."
+                );
+                text.AppendLine(">");
+                text.AppendLine(
+                    deadlocked
+                        ? "> **Windows reports a cycle**, which is the strong form of this evidence: the "
+                            + "chain leads back to a thread already in it, so these threads are each "
+                            + "waiting for the other and none of them will ever proceed. That is a genuine "
+                            + "deadlock, not merely a slow wait."
+                        : "> **Windows did not report a cycle**, so what is above is a one-way block: this "
+                            + "thread waits for that one, and that one is not waiting for this one. It says "
+                            + "nothing about whether the owner will ever finish — it may be busy, sleeping, "
+                            + "or waiting on something this API cannot see. Note that a cycle running "
+                            + "*through* a managed lock is invisible here too, so no cycle reported is not "
+                            + "proof that there is no deadlock."
+                );
+                if (deadlocked)
+                    headline =
+                        "Windows reports a deadlock cycle between threads (see the wait chains).";
+            }
 
             return Task.FromResult(
                 new ReportSection

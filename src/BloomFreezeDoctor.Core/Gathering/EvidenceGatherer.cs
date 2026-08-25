@@ -256,6 +256,21 @@ public sealed class EvidenceGatherer
         text.AppendLine("### What Bloom said about itself");
         text.AppendLine();
 
+        // First, and outside the channel check below, because it must appear even for a Bloom that
+        // published no live state: somebody reading this needs to know it is a rehearsal before they spend
+        // any time on the stacks.
+        if (!string.IsNullOrEmpty(context.Session?.SimulatedFailure))
+        {
+            text.AppendLine(
+                $"> **This freeze was deliberate.** Bloom was told to simulate `{context.Session!.SimulatedFailure}` "
+                    + $"by the `BLOOM_SIMULATE_FREEZE` environment variable, so it broke itself on purpose. "
+                    + "Everything below was gathered exactly as it would be for a real freeze — only the "
+                    + "decision to file is different, and a report like this is normally kept on disk rather "
+                    + "than sent."
+            );
+            text.AppendLine();
+        }
+
         if (context.PublishedState == null)
         {
             text.AppendLine(

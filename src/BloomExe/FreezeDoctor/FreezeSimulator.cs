@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using SIL.Reporting;
@@ -20,8 +21,8 @@ namespace Bloom.FreezeDoctor
     /// somebody has to have deliberately arranged both conditions.
     ///
     /// Usage: set `BLOOM_SIMULATE_FREEZE=&lt;kind&gt;[:&lt;delaySeconds&gt;]` before launching Bloom.
-    /// Kinds: `sleep`, `stawait`, `spin`, `failfast`, `throw`, `crashthread`, `zombie` — each documented at
-    /// its case below, with the state it imitates.
+    /// Kinds: `sleep`, `stawait`, `spin`, `failfast`, `throw`, `crashthread`, `zombie`, `mutexchain` — each
+    /// documented at its case below, with the state it imitates.
     /// </summary>
     public static class FreezeSimulator
     {
@@ -34,6 +35,13 @@ namespace Bloom.FreezeDoctor
 
         /// <summary>The environment variable that arms this. Absent means absent; there is no other route in.</summary>
         public const string EnvironmentVariable = "BLOOM_SIMULATE_FREEZE";
+
+        /// <summary>
+        /// The plain kernel wait, used by the `mutexchain` kind. See that case for why the managed
+        /// <c>Mutex.WaitOne</c> will not do.
+        /// </summary>
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern uint WaitForSingleObject(IntPtr handle, uint milliseconds);
 
         /// <summary>How long to wait before misbehaving, if the variable does not say.</summary>
         private static readonly TimeSpan DefaultDelay = TimeSpan.FromSeconds(45);
@@ -105,6 +113,11 @@ namespace Bloom.FreezeDoctor
                 $"*** FreezeSimulator armed: will simulate '{kind}' in {delay.TotalSeconds:F0} seconds. "
                     + $"This Bloom is deliberately going to misbehave. Unset {EnvironmentVariable} to stop it."
             );
+
+            // Tell any Doctor that this Bloom is a rehearsal, so it does not file a card about a freeze we
+            // asked for. Said here rather than where the variable is read, because only now do we know the
+            // simulator will actually act: the channel check and the kind have both been accepted.
+            FreezeDoctorSupport.NoteSimulatedFailureArmed(kind);
 
             // Arming twice would otherwise abandon the first timer still running, leaving a simulation
             // nobody asked for to go off later. Startup only calls this once, but the tests call it per
@@ -196,6 +209,48 @@ namespace Bloom.FreezeDoctor
                         Name = "FreezeSimulator crashing thread",
                     }.Start();
                     break;
+
+                // A freeze WINDOWS ITSELF can explain, which none of the others are, and the only way to
+                // exercise the Doctor's wait-chain reading against real data.
+                //
+                // The Wait Chain Traversal API - what Resource Monitor's "Analyze Wait Chain" runs on - is
+                // blind to `Monitor`, `SemaphoreSlim` and async waits, so every other kind here produces
+                // an empty chain. That code once reported thread ids that were pure garbage (the native
+                // structure's second half is a union) and nothing noticed, because nothing had ever fed
+                // it a wait it could see. A mutex is a genuine kernel object whose owner the kernel
+                // tracks, so this produces a real chain: this thread, blocked on a mutex, owned by that
+                // thread - a thread id that can be checked against the managed stacks in the same report.
+                case "mutexchain":
+                {
+                    var mutex = new Mutex(false);
+                    var holderHasIt = new ManualResetEventSlim(false);
+                    // A Mutex has thread affinity, so the holder must take it itself rather than be handed
+                    // it. Foreground, so the process cannot quietly exit from under the wait.
+                    new Thread(() =>
+                    {
+                        mutex.WaitOne();
+                        holderHasIt.Set();
+                        // Never released. This Bloom is not going to recover on purpose.
+                        Thread.Sleep(TimeSpan.FromMinutes(10));
+                    })
+                    {
+                        IsBackground = false,
+                        Name = "FreezeSimulator mutex holder",
+                    }.Start();
+                    // Do not block until the other thread genuinely owns it, or the UI thread would take
+                    // the mutex itself and simulate nothing at all.
+                    holderHasIt.Wait(TimeSpan.FromSeconds(5));
+                    // Deliberately the raw Win32 wait rather than Mutex.WaitOne. On an STA thread the
+                    // managed wait becomes CoWaitForMultipleHandles, which pumps messages and may leave
+                    // the thread looking to the kernel like it is waiting on COM rather than on the mutex.
+                    // Since the entire point here is to hand WCT a wait it can attribute, we ask for the
+                    // plain kernel wait and leave nothing to interpretation.
+                    WaitForSingleObject(
+                        mutex.SafeWaitHandle.DangerousGetHandle(),
+                        (uint)TimeSpan.FromMinutes(10).TotalMilliseconds
+                    );
+                    break;
+                }
 
                 // The UI goes away but the process lives on, held up by a foreground thread: the state
                 // whose symptom users report as "Bloom won't start".

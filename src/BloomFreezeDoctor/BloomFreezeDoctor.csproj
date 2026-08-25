@@ -37,6 +37,14 @@
       `..\output\release\x64\**\*.*`, so this is what gets it into the installer at all; and Bloom finds
       the exe beside itself at run time (see DoctorLauncher), so no install path has to be guessed.
     -->
+    <!--
+      Bloom's own icon, shared from BloomExe rather than copied here, so it cannot fall behind if Bloom's
+      icon is ever redrawn. StatusForm reads it back off this exe for the notification-area icon, which is
+      the only visible sign the Doctor is running: a generic system icon there says nothing about Bloom and
+      simply gets missed. If the Doctor is ever given a mark of its own, this is the one line to change.
+    -->
+    <ApplicationIcon>..\BloomExe\bloom.ico</ApplicationIcon>
+
     <Platforms>x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>

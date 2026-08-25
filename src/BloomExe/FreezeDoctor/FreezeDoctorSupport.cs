@@ -397,6 +397,31 @@ namespace Bloom.FreezeDoctor
         }
 
         /// <summary>
+        /// Records that this Bloom has been deliberately told to break, and how, so a Doctor can tell a
+        /// rehearsal from the real thing.
+        ///
+        /// Called when the simulator ARMS rather than when the environment variable is seen: the variable
+        /// alone proves nothing, since a Beta or Release channel refuses and so does an unrecognised kind.
+        ///
+        /// Written into the session file rather than the shared page because it has to survive the process:
+        /// `failfast`, `crashthread` and `zombie` are exactly the cases where the wreckage is all there is.
+        /// </summary>
+        public static void NoteSimulatedFailureArmed(string kind)
+        {
+            try
+            {
+                lock (_sessionLock)
+                {
+                    if (_session == null)
+                        return;
+                    _session = _session with { SimulatedFailure = kind };
+                    DoctorSessionStore.TryWrite(_session);
+                }
+            }
+            catch (Exception) { }
+        }
+
+        /// <summary>
         /// Records the facts a Doctor needs but cannot reliably work out from outside — above all the log
         /// file we are actually writing to, and the ports.
         /// </summary>
@@ -781,8 +806,21 @@ namespace Bloom.FreezeDoctor
                 if (!DoctorSignals.Exists(DoctorSignals.WatchingName(pid)))
                     return; // No Doctor. Do not delay this crash by even a millisecond.
 
+                // Past the watching check, so a Doctor is there and these lines cost only the few users who
+                // have one. Both of the outcomes below used to return in silence, and that silence cost a
+                // whole test cycle: a simulated crash produced no dump, and nothing anywhere could say
+                // whether we had failed to ask, been unable to ask, or never reached this code at all. On a
+                // path that exists purely to gather diagnostics, saying nothing is the one unaffordable
+                // failure.
+                Logger.WriteEvent("Asking the Bloom Freeze Doctor for a dump of this crash");
+
                 if (!DoctorSignals.TrySignal(DoctorSignals.DumpRequestName(pid)))
+                {
+                    Logger.WriteEvent(
+                        "Could not signal the Bloom Freeze Doctor for a dump; it may have stopped watching"
+                    );
                     return;
+                }
 
                 // Short on purpose. The user is already looking at a crash; a few seconds to capture what
                 // caused it is a fair trade, but only a few.

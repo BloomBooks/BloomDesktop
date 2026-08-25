@@ -39,7 +39,7 @@ public class BloomTargetWatcherTests
     private static BloomTargetFacts Facts(string exePath, string commandLine = "\"Bloom.exe\" ") =>
         new()
         {
-            ProcessId = 1234,
+            ProcessId = TestPid,
             ExePath = exePath,
             Channel = BloomChannel.DeriveFromExePath(exePath),
             CommandLine = commandLine,
@@ -48,6 +48,31 @@ public class BloomTargetWatcherTests
 
     private const string InstalledExe = @"C:\Users\jt\AppData\Local\Bloom\current\Bloom.exe";
     private const string DeveloperExe = @"C:\github\BloomDesktop\output\Debug\x64\Bloom.exe";
+
+    /// <summary>
+    /// The pid every test here uses. It matters that the session file for it is absent unless a test puts
+    /// one there: the watcher reads the session from the machine's default directory and takes no override,
+    /// so a file left behind by an earlier run would silently change what these tests measure - a stray
+    /// SimulatedFailure would make the fileable-report test fail for a reason nothing would explain.
+    /// </summary>
+    private const int TestPid = 1234;
+
+    [SetUp]
+    public void ClearAnyLeftoverSession() => RemoveTestSession();
+
+    [TearDown]
+    public void RemoveTestSessionAfterwards() => RemoveTestSession();
+
+    private static void RemoveTestSession()
+    {
+        try
+        {
+            var path = Protocol.DoctorSessionStore.PathFor(TestPid);
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch (Exception) { }
+    }
 
     /// <summary>Runs the watcher forward a second at a time, collecting any reports raised.</summary>
     private static List<ReportWantedEventArgs> RunToFreeze(
@@ -86,6 +111,49 @@ public class BloomTargetWatcherTests
             "a real installed Bloom is exactly what we file for"
         );
         Assert.That(watcher.State, Is.EqualTo(TargetState.Frozen));
+    }
+
+    /// <summary>
+    /// The invariant that keeps simulated freezes worth running at all: the marker may change whether a
+    /// report is FILED, and nothing else. If it were ever allowed to short-circuit detection or gathering,
+    /// a simulated run would stop exercising the code it exists to exercise, and would quietly become
+    /// theatre.
+    ///
+    /// Deliberately an INSTALLED exe: on a developer build the report is unfilable anyway, so the test
+    /// could pass with the simulated marker doing nothing at all. Its counterpart above -
+    /// An_installed_Bloom_that_freezes_produces_a_fileable_report - is what proves the contrast.
+    /// </summary>
+    [Test]
+    public void A_deliberately_simulated_freeze_is_still_detected_and_gathered_but_never_filed()
+    {
+        var session = new Protocol.DoctorSession
+        {
+            ProcessId = TestPid,
+            StartedAtUtc = DateTimeOffset.UtcNow,
+            Channel = "Alpha",
+            SimulatedFailure = "stawait",
+        };
+        Assert.That(
+            Protocol.DoctorSessionStore.TryWrite(session),
+            Is.True,
+            "setup: without the session file on disk this test would prove nothing, since the watcher has "
+                + "no other way to learn the freeze was simulated"
+        );
+
+        var probe = new ScriptedProbe();
+        using var watcher = new BloomTargetWatcher(Facts(InstalledExe), probe);
+        var reports = RunToFreeze(watcher, probe);
+
+        Assert.That(
+            reports,
+            Is.Not.Empty,
+            "a simulated freeze must still be detected and gathered - only the decision to file may differ"
+        );
+        Assert.That(
+            reports[0].MayFile,
+            Is.False,
+            "nobody wants a tracker card about a freeze we asked for"
+        );
     }
 
     [Test]

@@ -79,10 +79,36 @@ public sealed class BloomLogCollector : IEvidenceCollector
         text.AppendLine($"`{context.BloomLogPath}`");
         text.AppendLine();
 
+        // Attach the whole log FIRST, then read the tail out of our own copy.
+        //
+        // The order is the fix, and it used to be the other way round. Bloom's log is written by the very
+        // process we are diagnosing, and it is held exclusively for the instant of each write, so every
+        // open of it is a throw of the dice. Doing two - tail, then copy - threw twice, and it was the
+        // copy that lost: a real report came back carrying 19 lines of log and no attachment at all.
+        // Copying first means ONE contended open, retried by RobustFile, after which the tail comes from a
+        // file nobody else can touch.
+        //
+        // Copy rather than reference, because Bloom overwrites Log.txt on its very next run - which, after
+        // a freeze, is usually only minutes away.
+        var whereToReadTheTail = context.BloomLogPath;
+        string? attachmentFailure = null;
+        try
+        {
+            var copy = Path.Combine(context.ArtifactDirectory, "bloom-log.txt");
+            Directory.CreateDirectory(context.ArtifactDirectory);
+            RobustFile.Copy(context.BloomLogPath, copy, overwrite: true);
+            artifacts.Add(copy);
+            whereToReadTheTail = copy;
+        }
+        catch (Exception e)
+        {
+            attachmentFailure = $"{e.GetType().Name}: {e.Message}";
+        }
+
         string? headline = null;
         try
         {
-            var lines = WindowsExitEvidenceCollector.ReadLastLines(context.BloomLogPath, TailLines);
+            var lines = WindowsExitEvidenceCollector.ReadLastLines(whereToReadTheTail, TailLines);
             if (
                 lines.Any(l =>
                     l.Contains(
@@ -117,24 +143,37 @@ public sealed class BloomLogCollector : IEvidenceCollector
                 text.AppendLine();
             }
 
-            text.AppendLine($"Last {Math.Min(TailLines, lines.Count)} lines:");
+            // Say when the tail is in fact the whole thing. "Last 19 lines" of a 19-line log invites the
+            // reader to wonder what they are not being shown.
+            text.AppendLine(
+                lines.Count < TailLines
+                    ? $"The whole log ({lines.Count} lines):"
+                    : $"Last {TailLines} lines:"
+            );
             text.AppendLine();
             text.AppendLine("```");
             foreach (var line in lines)
                 text.AppendLine(line);
             text.AppendLine("```");
             text.AppendLine();
-
-            // Attach a copy: the tail is for reading, the whole file is for investigating. Copy rather
-            // than reference, because Bloom will overwrite Log.txt on its very next run.
-            var copy = Path.Combine(context.ArtifactDirectory, "bloom-log.txt");
-            Directory.CreateDirectory(context.ArtifactDirectory);
-            RobustFile.Copy(context.BloomLogPath, copy, overwrite: true);
-            artifacts.Add(copy);
         }
         catch (Exception e)
         {
             text.AppendLine($"*(could not read the log: {e.GetType().Name}: {e.Message})*");
+            text.AppendLine();
+        }
+
+        // Said separately from any failure to read, because the two are different news and the old code
+        // conflated them: a failure to ATTACH produced the message "could not read the log" even though
+        // the tail had just been read successfully, so a report missing only its attachment looked like one
+        // whose log could not be read at all.
+        if (attachmentFailure != null)
+        {
+            text.AppendLine(
+                "*(the tail above is all there is: the full log could not be attached — "
+                    + attachmentFailure
+                    + ")*"
+            );
             text.AppendLine();
         }
         return headline;
