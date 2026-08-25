@@ -6,6 +6,8 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using Bloom;
 using Bloom.Api;
@@ -1109,6 +1111,69 @@ namespace BloomTests.Book
                 Directory.Delete(newFolder.Path);
                 ChangeNameAndCheck(newFolder, storage);
             }
+        }
+
+        /// <summary>
+        /// Renaming is done by several operations that run on a background thread (the .bloomSource
+        /// import, for one), and BookRenamedEvent is raised inline, so its subscribers run on that
+        /// thread. This checks that the whole rename-and-notify chain works from there. It cannot
+        /// cover what actually broke in BL-16749 - a subscriber touching the WebView2, which only
+        /// throws in the real app - but it does pin the rest of the chain, and that a subscriber
+        /// which marshals to the UI thread still runs when there is no window (as in these tests,
+        /// and in the command-line tools).
+        /// </summary>
+        [Test]
+        public void SetBookName_CalledOnBackgroundThread_RenamesAndNotifiesSubscriber()
+        {
+            RobustFile.WriteAllText(
+                _bookPath,
+                "<html><head></head><body><div class='bloom-page'></div></body></html>"
+            );
+            // The book folder has to be inside the collection folder, or RaiseBookRenamedEvent
+            // deliberately says nothing (it doesn't want to report renames of temporary copies).
+            var collectionSettings = new CollectionSettings(
+                Path.Combine(_fixtureFolder.Path, "test.bloomCollection")
+            );
+            var renamedEvent = new BookRenamedEvent();
+            var notifications = new List<KeyValuePair<string, string>>();
+            var threadOfNotification = -1;
+            renamedEvent.Subscribe(pair =>
+            {
+                notifications.Add(pair);
+                threadOfNotification = Thread.CurrentThread.ManagedThreadId;
+            });
+            var storage = new BookStorage(
+                _folder.Path,
+                _fileLocator,
+                renamedEvent,
+                collectionSettings
+            );
+            storage.Save();
+            var newName = "renamed on a worker";
+            var expectedFolder = Path.Combine(_fixtureFolder.Path, newName);
+            // Sanity checks: there is really a rename to do, and nothing has been reported yet.
+            Assert.That(storage.FolderPath, Is.EqualTo(_folder.Path));
+            Assert.That(Directory.Exists(expectedFolder), Is.False);
+            Assert.That(notifications, Is.Empty);
+
+            var testThread = Thread.CurrentThread.ManagedThreadId;
+            Task.Run(() => storage.SetBookName(newName)).GetAwaiter().GetResult();
+
+            Assert.That(
+                threadOfNotification,
+                Is.Not.EqualTo(testThread),
+                "The point of this test is that the rename happened on another thread"
+            );
+            Assert.That(notifications.Count, Is.EqualTo(1));
+            Assert.That(notifications[0].Key, Is.EqualTo(_folder.Path));
+            Assert.That(notifications[0].Value, Is.EqualTo(expectedFolder));
+            Assert.That(storage.FolderPath, Is.EqualTo(expectedFolder));
+            Assert.That(Directory.Exists(expectedFolder), Is.True);
+            Assert.That(
+                RobustFile.Exists(Path.Combine(expectedFolder, newName + ".htm")),
+                Is.True,
+                "the HTML file should have been renamed along with the folder"
+            );
         }
 
         [Test]
