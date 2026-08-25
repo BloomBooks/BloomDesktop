@@ -655,17 +655,23 @@ public sealed class DoctorSupervisor : IDisposable
                         // as evidence — but only when Bloom was capable of leaving one. No session file at
                         // all means an older Bloom, where absence means nothing.
                         //
-                        // An exit record only counts as proof of a CLEAN exit when it says the exit was
-                        // orderly. Bloom writes a record on the way out of a hard failure too and marks it
-                        // forced; counting that as proof classified the failure as "Bloom shut down
-                        // properly" and reported nothing. DoctorSession.Prune already applies exactly this
-                        // test, and its comment says why - "an exit that was forced is not an explanation,
-                        // it is the evidence" - so the two now agree.
+                        // An exit record only counts as proof of a CLEAN exit when it says Bloom actually
+                        // walked the orderly path. Bloom writes a record on the way out of a hard failure
+                        // too; counting that as proof classified the failure as "Bloom shut down properly"
+                        // and reported nothing.
+                        //
+                        // The test is the shutdown PHASE, not the record's ForcedByDoctor flag, because
+                        // that flag means two different things: `_endedAtDoctorsRequest || phase == 0`. A
+                        // Doctor asking a healthy Bloom to quit gets a forced flag on a perfectly orderly
+                        // shutdown, and reporting that would be a card about our own request - the mistake
+                        // `_weAskedItToStop` exists to prevent, coming back in through a different door
+                        // whenever the asking and the examining are different Doctor processes. Phase 0
+                        // means the orderly path was never begun, which is the thing actually worth a card.
                         cleanExitProofPresent: session == null
                             ? null
-                            : session.Exit != null && !session.Exit.ForcedByDoctor,
+                            : session.Exit != null && session.Exit.ShutdownPhase > 0,
                         shutdownPhaseReached: session?.Exit?.ShutdownPhase,
-                        exitRecordedAsForced: session?.Exit?.ForcedByDoctor == true,
+                        exitRecordedAsForced: session?.Exit is { ShutdownPhase: 0 },
                         exeFileName: SafeFileName(watcher.Target.ExePath)
                     );
 

@@ -260,4 +260,29 @@ public class ExitClassifierTests
         Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.Clean));
         Assert.That(conclusion.ShouldReport, Is.False, "nobody wants a card about quitting Bloom");
     }
+
+    [Test]
+    public void A_shutdown_the_Doctor_asked_for_is_still_clean()
+    {
+        // The exit record's "forced" flag covers two quite different things - the Doctor asking Bloom to
+        // quit, and a hard failure that never began the orderly path. Treating them alike would file a
+        // card about our own request whenever the Doctor that asked and the Doctor that examined the exit
+        // were different processes, which is the mistake _weAskedItToStop exists to prevent. So the test
+        // is the shutdown phase: this Bloom was asked to go and shut down properly.
+        var evidence = new ExitEvidence
+        {
+            CleanExitProofPresent = true,
+            ExitRecordedAsForced = false,
+            ShutdownPhaseReached = 4,
+        };
+
+        var conclusion = ExitClassifier.Classify(evidence, Phase3);
+
+        Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.Clean));
+        Assert.That(
+            conclusion.ShouldReport,
+            Is.False,
+            "Bloom doing exactly what it was asked is not a bug report"
+        );
+    }
 }
