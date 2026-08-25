@@ -44,8 +44,19 @@ public sealed class YouTrackSubmitter : IReportSubmitter
 
     private const string BaseUrl = "https://issues.bloomlibrary.org/youtrack/api";
 
-    /// <summary>Total attachment bytes we are willing to upload. A tracker card is not a file server.</summary>
-    public const long MaxAttachmentBytes = 12 * 1024 * 1024;
+    /// <summary>
+    /// Total attachment bytes we are willing to upload. A tracker card is not a file server.
+    ///
+    /// **It has to clear a minidump, or it defeats the feature.** At 12 MB it did not: this project's own
+    /// measurement, recorded in ManagedStacksCollector, is that a `DumpType.Normal` dump of a real Bloom
+    /// is **16-17 MB** against a 234 MB working set. The dump is the primary artifact and the point of
+    /// decision D2, and every one of them was silently over budget and skipped — so the cap meant to stop
+    /// a card becoming a file server was instead stopping it carrying the one file worth having.
+    ///
+    /// 30 MB clears that with room for the log beside it, and is still far short of anything anyone would
+    /// call a file server. Note it is a budget for the whole card, not per file.
+    /// </summary>
+    public const long MaxAttachmentBytes = 30 * 1024 * 1024;
 
     private readonly HttpClient _http;
 
@@ -345,9 +356,9 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         {
             if (!RobustFile.Exists(path))
                 continue;
-            var size = new FileInfo(path).Length;
+            var size = SizeOrZero(path);
             if (size > budget)
-                continue; // too big; the report says where the local copy is
+                continue; // too big; the body named it and said where the local copy is
             budget -= size;
 
             string? attachmentId = null;
@@ -496,6 +507,20 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             text.AppendLine();
         }
 
+        // Anything the budget will not carry is named here, with where to find it. It used to be dropped
+        // in silence, which is how a cap of 12 MB came to be quietly discarding every 16 MB dump: the card
+        // looked complete, and nothing anywhere said the most useful file had been left behind.
+        var leftBehind = ArtifactsTooBigToAttach(bundle).ToList();
+        if (leftBehind.Count > 0)
+        {
+            text.AppendLine(
+                $"> **Not attached, too large for the {MaxAttachmentBytes / 1024 / 1024} MB budget:** "
+                    + string.Join(", ", leftBehind)
+                    + $". The local copies are in `{bundle.Directory}` on the user's machine."
+            );
+            text.AppendLine();
+        }
+
         text.AppendLine($"- **Gathered:** {metadata.GatheredAtUtc:yyyy-MM-dd HH:mm:ss}Z");
         text.AppendLine($"- **Fingerprint:** `{metadata.Fingerprint}`");
         text.AppendLine();
@@ -507,6 +532,38 @@ public sealed class YouTrackSubmitter : IReportSubmitter
                 + "Developers group because a dump can contain the user's own content.*"
         );
         return text.ToString();
+    }
+
+    /// <summary>
+    /// The artifacts the budget cannot carry, by name, in the same order and by the same arithmetic the
+    /// upload itself uses — so what the card says was left behind is what actually is.
+    /// </summary>
+    private static IEnumerable<string> ArtifactsTooBigToAttach(QueuedBundle bundle)
+    {
+        var budget = MaxAttachmentBytes;
+        foreach (var path in bundle.ArtifactPaths)
+        {
+            if (!RobustFile.Exists(path))
+                continue;
+            var size = SizeOrZero(path);
+            if (size > budget)
+                yield return $"`{Path.GetFileName(path)}` ({size / 1024.0 / 1024.0:F1} MB)";
+            else
+                budget -= size;
+        }
+    }
+
+    /// <summary>A file's size, or zero if it cannot be measured — which the callers treat as "free".</summary>
+    private static long SizeOrZero(string path)
+    {
+        try
+        {
+            return new FileInfo(path).Length;
+        }
+        catch (Exception)
+        {
+            return 0;
+        }
     }
 
     private static string ReadReport(QueuedBundle bundle)

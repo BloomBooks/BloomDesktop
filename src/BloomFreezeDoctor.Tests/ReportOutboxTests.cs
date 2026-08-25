@@ -696,4 +696,25 @@ public class ReportOutboxTests
             "once the send cannot still be running, the report must go out rather than being stranded"
         );
     }
+
+    [Test]
+    public void The_attachment_budget_clears_a_real_minidump()
+    {
+        // The cap exists so a tracker card does not become a file server. At 12 MB it was doing the
+        // opposite: this project's own measurement is that a Normal dump of a real Bloom is 16-17 MB, and
+        // an artifact over budget is skipped - so every dump was silently discarded, and the dump is the
+        // whole point of attaching anything at all.
+        const long measuredDumpBytes = 17L * 1024 * 1024;
+
+        Assert.That(
+            YouTrackSubmitter.MaxAttachmentBytes,
+            Is.GreaterThan(measuredDumpBytes),
+            "a budget that cannot carry a measured dump defeats the feature it exists to protect"
+        );
+        Assert.That(
+            YouTrackSubmitter.MaxAttachmentBytes - measuredDumpBytes,
+            Is.GreaterThan(2L * 1024 * 1024),
+            "and it needs room for Bloom's log beside the dump, not just the dump alone"
+        );
+    }
 }
