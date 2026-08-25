@@ -53,12 +53,21 @@ export function launchAiImageEditor(
     });
 }
 
+// The classes C# refuses to offer the AI image editor (IsUserChangeableImageElement in
+// AiImageEditorApi.cs). An empty one of those shows placeHolder.png like any other empty slot,
+// so the count below has to skip them or it would run ahead of the list C# sent.
+const kNotUserChangeableClasses = ["branding", "licenseImage", "bloom-qrcode"];
+
 // Counts the slots BEFORE `clicked` on its page that show the same file name, so the overlay
 // can tell two same-named slots apart (BL-16744). Every empty slot shows placeHolder.png, so
 // on a page with two of them the file name alone made the overlay pick the first one, and the
-// image the user made for the second slot landed in the first. Counting only the same-named
-// slots is what makes this safe: the extra images Bloom injects into the live page, and the
-// slots C# leaves out of the book image list, carry other file names and so cannot shift it.
+// image the user made for the second slot landed in the first.
+//
+// Counting only the same-named slots is what keeps this in step with the list C# sent: a
+// picture C# left out for having a format the editor cannot open carries its own file name, so
+// it cannot shift the count. The two exclusions below cover the cases that would: a slot C#
+// refuses on class alone, and the controls Bloom injects into the live page, neither of which
+// is in that list.
 function sameNameOrdinalOnPage(
     clicked: HTMLElement | undefined,
     imageFileName: string,
@@ -71,6 +80,15 @@ function sameNameOrdinalOnPage(
         // A container that carries the background image AND holds an <img> matches twice;
         // keep the inner one only, so each slot counts once.
         .filter((el) => el.tagName === "IMG" || !el.querySelector("img"))
+        .filter(
+            (el) =>
+                !kNotUserChangeableClasses.some((name) =>
+                    el.classList.contains(name),
+                ),
+        )
+        // Bloom's own injected controls live in the live page only, never in the saved book
+        // C# read, so they must not count either.
+        .filter((el) => !el.closest(".bloom-ui"))
         .filter(
             (el) =>
                 fileNameOf(GetRawImageUrl(el as HTMLElement)) === imageFileName,

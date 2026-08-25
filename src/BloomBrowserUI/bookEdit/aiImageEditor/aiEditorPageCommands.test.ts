@@ -127,6 +127,50 @@ describe("aiEditorPageCommands: the menu command", () => {
         });
     });
 
+    test("a branding slot showing the same placeholder does not shift the count", () => {
+        // C# never offers a branding, license, or QR slot to the editor, but an empty one of
+        // those shows placeHolder.png too. Counting it would put the count one ahead of the
+        // list C# sent, and the overlay would fall back to the first empty slot.
+        document.body.innerHTML = `
+            <div class="bloom-page" id="${kPageId}">
+                <div class="bloom-canvas-element"><img class="branding" src="placeHolder.png" /></div>
+                <div class="bloom-canvas-element"><img src="placeHolder.png" /></div>
+                <div class="bloom-canvas-element"><img src="placeHolder.png" /></div>
+            </div>`;
+        const images = Array.from(
+            document.querySelectorAll("img"),
+        ) as HTMLImageElement[];
+
+        launchAiImageEditor(images[2], undefined);
+
+        // The branding slot is not in C#'s list, so the clicked slot is its SECOND entry.
+        expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
+            imageFileName: "placeHolder.png",
+            sameNameOrdinal: 1,
+        });
+    });
+
+    test("a control Bloom injects into the live page does not shift the count", () => {
+        // Injected controls are in the live page only; C# read the saved book, which has
+        // none of them.
+        document.body.innerHTML = `
+            <div class="bloom-page" id="${kPageId}">
+                <div class="bloom-ui"><img src="placeHolder.png" /></div>
+                <div class="bloom-canvas-element"><img src="placeHolder.png" /></div>
+                <div class="bloom-canvas-element"><img src="placeHolder.png" /></div>
+            </div>`;
+        const images = Array.from(
+            document.querySelectorAll("img"),
+        ) as HTMLImageElement[];
+
+        launchAiImageEditor(images[2], undefined);
+
+        expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
+            imageFileName: "placeHolder.png",
+            sameNameOrdinal: 1,
+        });
+    });
+
     test("a differently-named picture in between does not shift the count", () => {
         // The count runs over the same-named slots only, which is what keeps it immune to
         // the extra images Bloom injects into the live page and to the pictures C# leaves

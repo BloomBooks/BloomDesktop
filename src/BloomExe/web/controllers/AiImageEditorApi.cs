@@ -809,6 +809,10 @@ namespace Bloom.web.controllers
         /// license, and QR-code images are never user-changeable, so they are excluded both
         /// from the list offered to the AI image editor and from being overwritten at commit.
         /// Internal for testing.
+        ///
+        /// kNotUserChangeableClasses in aiEditorPageCommands.ts holds the same three names,
+        /// because the page frame has to skip the same slots when it counts the same-named
+        /// ones ahead of the clicked one. Change one list and change the other.
         /// </summary>
         internal static bool IsUserChangeableImageElement(SafeXmlElement element) =>
             !element.HasClass("branding")
