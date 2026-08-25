@@ -180,7 +180,12 @@ public sealed class CdpClient : IAsyncDisposable
     private async Task<string?> ReceiveAsync(CancellationToken cancellation)
     {
         var buffer = new byte[16 * 1024];
-        var text = new StringBuilder();
+        // Bytes, and decoded only once the message is complete. Decoding each fragment as it arrived was
+        // wrong in a quiet way: a fragment boundary can fall in the middle of a multi-byte UTF-8 character,
+        // and each half then decodes to a replacement character. The JSON still parses, so nothing
+        // complains - the text inside it is simply corrupted, which for Bloom means exactly the vernacular
+        // book titles and console messages a report is quoting.
+        using var message = new MemoryStream();
         while (true)
         {
             var result = await _socket
@@ -188,9 +193,9 @@ public sealed class CdpClient : IAsyncDisposable
                 .ConfigureAwait(false);
             if (result.MessageType == WebSocketMessageType.Close)
                 return null;
-            text.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
+            message.Write(buffer, 0, result.Count);
             if (result.EndOfMessage)
-                return text.ToString();
+                return Encoding.UTF8.GetString(message.ToArray());
         }
     }
 

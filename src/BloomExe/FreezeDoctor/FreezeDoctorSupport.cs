@@ -298,11 +298,21 @@ namespace Bloom.FreezeDoctor
         private sealed class LongOperationScope : IDisposable
         {
             private readonly string _previousActivity;
+
+            /// <summary>
+            /// What this scope itself put in the slot, so that on the way out it can tell whether the slot
+            /// is still its to restore. Two long operations on different threads do not have to nest
+            /// tidily, and without this check the one that finished first put back the activity from
+            /// *before* it started — overwriting the description of an operation that was still running,
+            /// and then being overwritten in turn by a description of work already finished.
+            /// </summary>
+            private readonly string _whatIPublished;
             private bool _disposed;
 
             public LongOperationScope(string whatBloomIsDoing)
             {
                 _previousActivity = Volatile.Read(ref _statedActivity);
+                _whatIPublished = whatBloomIsDoing ?? "";
                 try
                 {
                     SetActivity(whatBloomIsDoing);
@@ -324,7 +334,17 @@ namespace Bloom.FreezeDoctor
                 {
                     if (Interlocked.Decrement(ref _longOperationDepth) == 0)
                         SetLongOperation(false);
-                    SetActivity(_previousActivity);
+                    // Only put the old activity back if the slot still holds what we put there. If
+                    // somebody else has since described their own operation, theirs is the one still
+                    // running and ours is the stale news — see _whatIPublished.
+                    if (
+                        Interlocked.CompareExchange(
+                            ref _statedActivity,
+                            _previousActivity,
+                            _whatIPublished
+                        ) == _whatIPublished
+                    )
+                        _channel?.SetActivity(_previousActivity);
                 }
                 catch (Exception) { }
             }
@@ -377,8 +397,12 @@ namespace Bloom.FreezeDoctor
 
         /// <summary>
         /// Records that Bloom's own reporting has already told us about a problem this run, so the Doctor
-        /// does not file a second report about the same thing. Called when a Sentry event or a tracker card
-        /// goes out successfully.
+        /// does not file a second report about the same thing. Called when a **tracker card** goes out
+        /// successfully — the one place a duplicate is possible.
+        ///
+        /// Deliberately NOT called for a Sentry event, which the doc here used to claim. A Sentry event
+        /// creates no card, so a Doctor report about the same trouble is not a duplicate of it; it is the
+        /// only thing that would put the problem on the board at all. Suppressing on Sentry would lose it.
         /// </summary>
         public static void NoteBloomReportedAProblem(string reportedId)
         {

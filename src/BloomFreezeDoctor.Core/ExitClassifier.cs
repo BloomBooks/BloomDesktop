@@ -21,6 +21,17 @@ public sealed record ExitEvidence
     public int? ShutdownPhaseReached { get; init; }
 
     /// <summary>
+    /// Bloom left an exit record, and that record says the exit was **forced** rather than orderly — a
+    /// hard failure taking <c>Environment.Exit</c> before the orderly path began.
+    ///
+    /// This is why <see cref="CleanExitProofPresent"/> cannot simply mean "there is an exit record".
+    /// Bloom writes one on the way out of a hard failure too, marked as forced; reading that as proof of
+    /// a clean exit turned the loudest thing Bloom can tell us into silence, and produced the
+    /// self-contradicting explanation "Bloom shut down properly (shutdown phase 0)".
+    /// </summary>
+    public bool ExitRecordedAsForced { get; init; }
+
+    /// <summary>
     /// A Windows "Application Error" (1000), "Application Hang" (1002) or .NET Runtime entry naming
     /// this process. Strong evidence of a crash.
     /// </summary>
@@ -164,6 +175,20 @@ public static class ExitClassifier
                 ExitVerdict.ForcedAfterStalledShutdown,
                 true,
                 "Bloom's shutdown stalled and its 20-second safety net forced the process to exit"
+            );
+
+        // Bloom's own account of a forced exit, which outranks the crash signals below because it is
+        // first-hand: it says what Bloom was doing, not what Windows noticed afterwards.
+        if (evidence.ExitRecordedAsForced)
+            return Conclude(
+                ExitVerdict.NoOrderlyShutdown,
+                true,
+                "Bloom recorded its own exit as forced rather than orderly"
+                    + (
+                        evidence.ShutdownPhaseReached.HasValue
+                            ? $" (it had reached shutdown phase {evidence.ShutdownPhaseReached})"
+                            : ""
+                    )
             );
 
         if (evidence.CleanExitProofPresent == true)

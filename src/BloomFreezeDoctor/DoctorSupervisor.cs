@@ -509,7 +509,8 @@ public sealed class DoctorSupervisor : IDisposable
         BloomTargetFacts facts,
         DetectorVerdict verdict,
         bool mayFile,
-        CancellationToken cancellation
+        CancellationToken cancellation,
+        Protocol.DoctorChannelSnapshot? lastSeenPublishedState = null
     )
     {
         var alive = IsAlive(facts.ProcessId);
@@ -518,13 +519,25 @@ public sealed class DoctorSupervisor : IDisposable
             "BloomFreezeDoctor",
             $"gather-{facts.ProcessId}-{Guid.NewGuid():N}"
         );
-        var context = GatherContextBuilder.Build(facts, verdict, alive, artifacts);
+        var context = GatherContextBuilder.Build(
+            facts,
+            verdict,
+            alive,
+            artifacts,
+            lastSeenPublishedState: lastSeenPublishedState
+        );
 
         var report = await new EvidenceGatherer()
             .GatherAsync(context, mayFile, cancellation)
             .ConfigureAwait(false);
 
-        var bundle = _outbox.Enqueue(report, _project, facts.Channel, verdict.Report.ToString());
+        var bundle = _outbox.Enqueue(
+            report,
+            _project,
+            facts.Channel,
+            verdict.Report.ToString(),
+            facts.ProcessId
+        );
         // Ending a zombie is only allowed once its evidence is safely on disk, so this is the moment that
         // unlocks it.
         if (verdict.Report == ReportReason.Zombie)
@@ -641,8 +654,19 @@ public sealed class DoctorSupervisor : IDisposable
                         // A session file with no exit record is the absence of proof that section 3.5 treats
                         // as evidence — but only when Bloom was capable of leaving one. No session file at
                         // all means an older Bloom, where absence means nothing.
-                        cleanExitProofPresent: session == null ? null : session.Exit != null,
-                        shutdownPhaseReached: session?.Exit?.ShutdownPhase
+                        //
+                        // An exit record only counts as proof of a CLEAN exit when it says the exit was
+                        // orderly. Bloom writes a record on the way out of a hard failure too and marks it
+                        // forced; counting that as proof classified the failure as "Bloom shut down
+                        // properly" and reported nothing. DoctorSession.Prune already applies exactly this
+                        // test, and its comment says why - "an exit that was forced is not an explanation,
+                        // it is the evidence" - so the two now agree.
+                        cleanExitProofPresent: session == null
+                            ? null
+                            : session.Exit != null && !session.Exit.ForcedByDoctor,
+                        shutdownPhaseReached: session?.Exit?.ShutdownPhase,
+                        exitRecordedAsForced: session?.Exit?.ForcedByDoctor == true,
+                        exeFileName: SafeFileName(watcher.Target.ExePath)
                     );
 
                     // Bloom telling us it already reported the problem outranks everything: a second card
@@ -678,7 +702,11 @@ public sealed class DoctorSupervisor : IDisposable
                                 Explanation = conclusion.Explanation,
                             },
                             mayFile: !watcher.IsPoisonedByDebugger && !watcher.Target.NeverFile,
-                            _stopping.Token
+                            _stopping.Token,
+                            // The process has gone, so its health channel has gone with it. This is the
+                            // last reading we took while it was alive, and the only way this report can
+                            // say what Bloom thought it was doing.
+                            probe.PublishedSnapshot
                         )
                         .ConfigureAwait(false);
                 }
@@ -700,6 +728,24 @@ public sealed class DoctorSupervisor : IDisposable
     /// Bloom is crashing and has asked to be dumped while it still exists. This is the one time the Doctor
     /// has to be quick: Bloom is holding its own death open for about three seconds waiting for us.
     /// </summary>
+    /// <summary>
+    /// The exe's file name, or null if we never learned the path. Null rather than empty: the Event Log
+    /// reader reads "unknown" as "accept any of the channel names the installer produces", where an empty
+    /// string would match every message ever written.
+    /// </summary>
+    private static string? SafeFileName(string? path)
+    {
+        try
+        {
+            var name = string.IsNullOrWhiteSpace(path) ? null : Path.GetFileName(path);
+            return string.IsNullOrWhiteSpace(name) ? null : name;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
     private void RespondToACrashingBloom(BloomTargetWatcher watcher)
     {
         try

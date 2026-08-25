@@ -370,4 +370,101 @@ public class ReportOutboxTests
         Assert.That(listed, Has.Count.EqualTo(1), "the good bundle is still readable");
         Assert.That(listed[0].Metadata.Fingerprint, Is.EqualTo("good"));
     }
+
+    [Test]
+    public void A_second_problem_with_the_same_Bloom_joins_the_first_card()
+    {
+        // One Bloom's collapse arrives in instalments: the UI freezes (one report), then the process
+        // dies (another, with a different reason and so a different fingerprint). Before this, nothing
+        // recognised the two as related and two cards were filed for one event - which is exactly what
+        // the first live test produced, AUT-20929 and AUT-20930.
+        var outbox = NewOutbox();
+        var dump = MakeArtifact("dump-from-the-death.dmp");
+
+        var first = outbox.Enqueue(Report("frozen-fp"), "AUT", "Alpha", "Frozen", processId: 4242);
+        Assert.That(outbox.List(), Has.Count.EqualTo(1), "setup: the freeze report is queued");
+        Assert.That(
+            first.Metadata.FollowOnNotes,
+            Is.Empty,
+            "setup: nothing has followed on from it yet"
+        );
+
+        var second = outbox.Enqueue(
+            Report("died-fp", artifacts: new[] { dump }),
+            "AUT",
+            "Alpha",
+            "DiedWhileFrozen",
+            processId: 4242
+        );
+
+        Assert.That(outbox.List(), Has.Count.EqualTo(1), "still one card's worth, not two");
+        Assert.That(
+            second.Directory,
+            Is.EqualTo(first.Directory),
+            "the death should have joined the freeze's bundle"
+        );
+        Assert.That(
+            second.Metadata.Fingerprint,
+            Is.EqualTo("frozen-fp"),
+            "the first card's identity is what everything about this Bloom lands on"
+        );
+        Assert.That(
+            second.Metadata.FollowOnNotes,
+            Has.Count.EqualTo(1),
+            "the death must be recorded, not merely swallowed"
+        );
+        Assert.That(second.Metadata.FollowOnNotes[0], Does.Contain("DiedWhileFrozen"));
+        Assert.That(
+            second.Metadata.Occurrences,
+            Is.EqualTo(1),
+            "a different problem is not the same one twice; counting it would make the card claim it was"
+        );
+        Assert.That(
+            second.Metadata.Artifacts,
+            Has.Some.StartsWith(ReportOutbox.FollowOnReportPrefix),
+            "the follow-on report's own body is kept - 'and then it died' is new information"
+        );
+        Assert.That(
+            second.Metadata.Artifacts,
+            Contains.Item("dump-from-the-death.dmp"),
+            "and its artifacts come with it, which for a crash is where the minidump is"
+        );
+        Assert.That(
+            File.Exists(Path.Combine(second.Directory, "dump-from-the-death.dmp")),
+            Is.True,
+            "the artifact should really have been moved in, not just listed"
+        );
+    }
+
+    [Test]
+    public void A_problem_with_a_different_Bloom_gets_its_own_card()
+    {
+        // The sanity check on the test above: folding is keyed on the process, so two Blooms in trouble
+        // must still produce two cards however close together it happens.
+        var outbox = NewOutbox();
+
+        outbox.Enqueue(Report("fp-one"), "AUT", "Alpha", "Frozen", processId: 111);
+        outbox.Enqueue(Report("fp-two"), "AUT", "Alpha", "Frozen", processId: 222);
+
+        Assert.That(outbox.List(), Has.Count.EqualTo(2), "two Blooms, two problems, two cards");
+    }
+
+    [Test]
+    public void A_much_later_problem_with_the_same_process_id_gets_its_own_card()
+    {
+        // The fold is for instalments of one collapse, which arrive seconds apart. Windows reuses process
+        // ids, so without a time bound a report still queued from a Bloom that died this morning could
+        // swallow this afternoon's report about whatever process inherited its number.
+        var outbox = NewOutbox();
+        outbox.Enqueue(Report("this-morning"), "AUT", "Alpha", "Frozen", processId: 4242);
+
+        _now = _now + ReportOutbox.FollowOnWindow + TimeSpan.FromMinutes(1);
+        outbox.Enqueue(Report("this-afternoon"), "AUT", "Alpha", "Frozen", processId: 4242);
+
+        Assert.That(
+            outbox.List(),
+            Has.Count.EqualTo(2),
+            "too far apart to be the same trouble, so two cards"
+        );
+    }
 }

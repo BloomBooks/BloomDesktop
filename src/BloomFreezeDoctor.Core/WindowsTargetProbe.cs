@@ -186,7 +186,10 @@ public sealed class WindowsTargetProbe : ITargetProbe
             || snapshot == null
         )
         {
-            PublishedSnapshot = null;
+            // Note what is deliberately NOT done here: clearing PublishedSnapshot. The channel lives in
+            // the process's own memory, so the read stops working the instant Bloom dies — which is
+            // exactly when the last thing Bloom said about itself turns into evidence. Throwing it away
+            // on that tick discarded it at the moment it became worth having.
             return (false, false, false, TimeSpan.Zero);
         }
         PublishedSnapshot = snapshot;
@@ -214,8 +217,10 @@ public sealed class WindowsTargetProbe : ITargetProbe
     }
 
     /// <summary>
-    /// The most recent state Bloom published, or null if it publishes none. Kept so the report can quote
-    /// what Bloom said it was doing.
+    /// The most recent state Bloom published, or null if it never published any. Kept so the report can
+    /// quote what Bloom said it was doing — and kept *after* the read stops working, because a report
+    /// about a Bloom that has died can be gathered no other way: the channel is in the dead process's
+    /// memory. See the note in <see cref="ReadPublishedState"/>.
     /// </summary>
     public Protocol.DoctorChannelSnapshot? PublishedSnapshot { get; private set; }
 

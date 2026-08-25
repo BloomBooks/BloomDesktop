@@ -322,13 +322,33 @@ public sealed class EvidenceGatherer
 
         if (context.PublishedState == null)
         {
+            // Two quite different silences, and saying the wrong one is worse than saying nothing. The
+            // channel lives in Bloom's own memory, so for a Bloom that has already died there is nothing
+            // left to read however new it is - and this section used to answer that by asserting the
+            // process "does not publish a health channel", in the very reports where what Bloom last
+            // thought it was doing matters most.
             text.AppendLine(
-                "Nothing: this Bloom does not publish a health channel, so everything below was observed "
-                    + "from outside. That is the normal case for a Bloom released before the Freeze Doctor "
-                    + "existed."
+                context.ProcessWasAlive
+                    ? "Nothing: this Bloom does not publish a health channel, so everything below was "
+                        + "observed from outside. That is the normal case for a Bloom released before the "
+                        + "Freeze Doctor existed."
+                    : "Nothing readable: Bloom had already gone by the time this was gathered, and the "
+                        + "health channel lives in the process's own memory, so it went too. Whether this "
+                        + "Bloom published one cannot be told from here."
             );
             text.AppendLine();
             return;
+        }
+
+        // State we hold for a Bloom that has gone can only be the last reading taken before it went, so
+        // date it rather than presenting it as the state at the moment of gathering.
+        if (!context.ProcessWasAlive)
+        {
+            text.AppendLine(
+                "*Bloom had gone by the time this was gathered, so this is the last thing it published "
+                    + "about itself, taken within a second or so of its death.*"
+            );
+            text.AppendLine();
         }
 
         var state = context.PublishedState;
