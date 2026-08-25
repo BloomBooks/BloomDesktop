@@ -234,17 +234,20 @@ namespace Bloom.FreezeDoctor
         /// PDF. This buys Bloom patience rather than silence: the Doctor raises its threshold from one
         /// minute to five, and still reports if Bloom is stuck beyond that.
         ///
-        /// **NOTHING CALLS THIS YET, AND UNTIL SOMETHING DOES, THAT PATIENCE DOES NOT EXIST.** The Doctor
-        /// side is complete and reads this flag; with no caller it is permanently false, so every freeze is
-        /// judged at the one-minute threshold. Work that blocks the UI thread for longer than that *without
-        /// pumping messages* will therefore be filed as a freeze, which is the false positive this flag was
-        /// added to prevent. (Work behind a modal progress dialog is safe either way: ShowDialog runs a
-        /// nested message loop, so the UI heartbeat keeps ticking and no freeze is detected at all.)
+        /// Call it through <see cref="LongOperation"/>, not directly, so the count is kept and the
+        /// description of what Bloom is doing goes with it.
+        ///
+        /// **Six operations are marked**, all through that scope: making a BloomPUB, an ePUB, a video or a
+        /// Reading-App-Builder app, and uploading to or downloading from Bloom Library. Anything *not*
+        /// marked that blocks the UI thread for over a minute *without pumping messages* is filed as a
+        /// freeze, which is the false positive this exists to prevent. (Work behind a modal progress dialog
+        /// is safe either way: ShowDialog runs a nested message loop, so the UI heartbeat keeps ticking and
+        /// no freeze is detected at all.)
         ///
         /// Deciding which operations to mark is a judgement about how Bloom really behaves, not something to
         /// infer from the code — "a request has run for a minute" is the same signal as the freeze itself, so
-        /// it cannot tell legitimately-slow from wedged. That is why this is a deliberate call at the few
-        /// places that know, and why it is still unwired: see BL-16719.
+        /// it cannot tell legitimately-slow from wedged. That is why it is a deliberate call at the few
+        /// places that know, rather than anything automatic.
         /// </summary>
         public static void SetLongOperation(bool inProgress)
         {
