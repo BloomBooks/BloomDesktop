@@ -836,11 +836,11 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                                 getOwningPageBackgroundColor(img),
                             ),
                         imageFormat: imageFormatOf(img),
-                        // The whole sequence of choices made on this image, so we can see the
-                        // person who cycled through the options -- someone who did not like what
-                        // they saw and was guessing. A lot of those means the three labels do not
-                        // predict the result well enough, which is a UI problem rather than an
-                        // algorithm one.
+                        // Every transparency choice made on this image so far, joined with " > "
+                        // -- so a picture switched twice reads "auto > transparent > opaque"
+                        // (built by recordTransparencyChoice above). A long one may mean the three
+                        // labels did not predict the result and the user was guessing, though it
+                        // could as easily be someone just exploring the options.
                         path,
                     });
                 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -5,14 +6,15 @@ using Bloom.Api;
 using Bloom.Book;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SIL.Reporting;
 
 namespace Bloom.web.controllers
 {
     /// <summary>
     /// Lets front-end code report an analytics event. Until this existed, every one of our analytics
     /// events came from C#, so a feature implemented in React could only be measured by inventing a
-    /// bespoke endpoint for it (as publish/pdf/printAnalytics did) -- which in practice meant most of
-    /// them were not measured at all.
+    /// bespoke endpoint for it (as publish/pdf/printAnalytics still does) -- which in practice meant
+    /// most of them were not measured at all.
     /// </summary>
     public class AnalyticsApi
     {
@@ -48,7 +50,18 @@ namespace Bloom.web.controllers
             if (string.IsNullOrWhiteSpace(eventName))
             {
                 // A caller that got the shape of the request wrong should hear about it rather than
-                // quietly recording nothing, which is a very hard thing to notice.
+                // quietly recording nothing, which is a very hard thing to notice. Said three ways
+                // because each reaches a different person: request.Failed goes to the browser
+                // console, the log line to Help > Show Event Log, and standard error to the
+                // terminal a developer already has analytics scrolling past in.
+                //
+                // Deliberately not Debug.Fail: with no debugger attached that is
+                // Environment.FailFast, and taking Bloom down over a mis-shaped analytics call is
+                // the one thing this whole feature is written not to do.
+                const string complaint =
+                    "[analytics] analytics/track was called with no event name";
+                Logger.WriteEvent(complaint);
+                Console.Error.WriteLine(complaint);
                 request.Failed("analytics/track requires an 'event' name");
                 return;
             }
@@ -58,19 +71,16 @@ namespace Bloom.web.controllers
             // current book's id is. A caller that knows better (e.g. it is reporting about some
             // other book) can pass its own and we leave it alone.
             //
-            // NOT the collection's branding, though it is tempting and this endpoint used to do it.
-            // Every event ALREADY carries the branding, as "BrandingProjectName", because
-            // CollectionSettings.SetAnalyticsProperties hands it to DesktopAnalytics as an
-            // application property -- those go out with every subsequent event. And it carries the
-            // better value: the subscription DESCRIPTOR, which also encodes the tier, any flavor,
-            // and the individual subscriber, where Subscription.BrandingKey normalizes all of that
-            // down to a branding folder name ("Acme-LC" becomes "Local-Community",
-            // "Steve-Trainer" and an empty descriptor both become "Default").
+            // Do NOT add a branding property here, tempting though it is. Every event already
+            // carries one, as "BrandingProjectName": CollectionSettings.SetAnalyticsProperties
+            // hands it to DesktopAnalytics as an application property, and those ride on every
+            // subsequent event. It is also the better value -- the subscription descriptor, which
+            // encodes tier, flavor and subscriber, where Subscription.BrandingKey normalizes all
+            // three away.
             //
-            // Worth knowing why this is easy to get wrong: SetAnalyticsProperties returns early when
-            // tracking is off, and BloomAnalytics logs only the per-event properties, so on a
-            // developer build the log line shows no branding at all. That is not evidence it is
-            // missing in production. It cost a round trip to learn; please do not re-add it.
+            // The trap: SetAnalyticsProperties returns early when tracking is off, and the log line
+            // shows only per-event properties, so on a developer build no branding appears
+            // anywhere. That is not evidence it is missing in production.
             var book = _bookSelection?.CurrentSelection;
             if (book != null && !properties.ContainsKey("BookId"))
                 properties["BookId"] = book.ID;
