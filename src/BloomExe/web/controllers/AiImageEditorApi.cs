@@ -915,6 +915,46 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// What to call a page when naming one of its image slots to the user: "Page 3" for a
+        /// numbered page, or the page's own name (e.g. "Front Cover") for front or back matter.
+        /// Null when the page says neither, in which case the slot goes unlabelled.
+        /// The name is English, because the AI image editor's user interface is English only.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately not HtmlDom.GetNumberOrLabelOfPageWhereElementLives: that returns the
+        /// number bare, with no "Page", and answers "unknown" for a page whose
+        /// data-page-number attribute is missing rather than empty, which HtmlDom itself can
+        /// produce (see BL-12903). "unknown" would be worse than no label at all.
+        /// </remarks>
+        internal static string GetPageNameForImageSlotLabel(SafeXmlElement page)
+        {
+            // Back matter pages do carry page numbers, but they are clearer by name.
+            var number = page.GetAttribute("data-page-number");
+            if (!string.IsNullOrWhiteSpace(number) && !HtmlDom.IsBackMatterPage(page))
+                return "Page " + number;
+
+            var label = page.SelectSingleNode("./div[@class='pageLabel']")?.InnerText.Trim();
+            return string.IsNullOrEmpty(label) ? null : label;
+        }
+
+        /// <summary>
+        /// Names one image slot for the user: just the page name when the page offers a single
+        /// image, or the page name plus " - image N" when it offers more than one. Every empty
+        /// slot looks the same in the AI image editor, so this label is the only thing that tells
+        /// two of them apart (BL-16744).
+        /// </summary>
+        /// <param name="pageName">from <see cref="GetPageNameForImageSlotLabel"/>, may be null</param>
+        /// <param name="slotCount">how many image slots this page offers</param>
+        /// <param name="index">the zero-based position of this slot among them</param>
+        internal static string BuildImageSlotLabel(string pageName, int slotCount, int index)
+        {
+            var number = "Image " + (index + 1);
+            if (string.IsNullOrEmpty(pageName))
+                return slotCount > 1 ? number : null;
+            return slotCount > 1 ? pageName + " - image " + (index + 1) : pageName;
+        }
+
+        /// <summary>
         /// Enumerates every image the user is allowed to change across the whole book — all
         /// pages including front cover and xmatter, including empty placeholder slots —
         /// excluding only branding and license images. Each entry is a reference (id +
@@ -934,9 +974,14 @@ namespace Bloom.web.controllers
                 var pageId = page.GetAttribute("id");
                 if (string.IsNullOrEmpty(pageId) || !SafeId.IsMatch(pageId))
                     continue;
-                var pageLabel = page.GetAttribute("data-page-number");
+                var pageName = GetPageNameForImageSlotLabel(page);
 
                 var holders = HtmlDom.SelectChildImgAndBackgroundImageElements(page);
+                // The slots this page offers, gathered before any is added to the result,
+                // because a slot's label depends on how many the page has: a page with one
+                // image says just "Page 2", a page with more says "Page 2 - image 1" and so on.
+                var slotsOnThisPage =
+                    new List<(string id, string src, bool isPlaceholder, ImageCredits credits)>();
                 // Ordinal is the index within the full holder list so that commit can
                 // re-find the element deterministically; the branding/license skip below
                 // only affects which slots we offer, not the indexing.
@@ -958,22 +1003,36 @@ namespace Bloom.web.controllers
                     if (!IsImageFileName(relativePath))
                         continue;
 
-                    images.Add(
-                        new
-                        {
-                            id = pageId + ":" + ordinal,
-                            src = (folderAsUrlPrefix + "/" + relativePath).ToLocalhost(),
-                            pageLabel = string.IsNullOrEmpty(pageLabel) ? null : pageLabel,
+                    slotsOnThisPage.Add(
+                        (
+                            id: pageId + ":" + ordinal,
+                            src: (folderAsUrlPrefix + "/" + relativePath).ToLocalhost(),
                             // The AI image editor shows its own placeholder graphic for empty
                             // slots rather than trying to load the (book-less)
                             // placeHolder.png.
-                            isPlaceholder = ImageUtils.IsPlaceholderImageFilename(relativePath),
+                            isPlaceholder: ImageUtils.IsPlaceholderImageFilename(relativePath),
                             // The image's current credits, so a result derived from it can
                             // carry (or amend) them. The AI image editor owns the credit
                             // *decision* and hands back whatever it chose on commit; Bloom
                             // only embeds that into the file. Null when the image has no
                             // usable metadata.
-                            credits = GetCreditsForImageFile(book.FolderPath, relativePath),
+                            credits: GetCreditsForImageFile(book.FolderPath, relativePath)
+                        )
+                    );
+                }
+
+                // Now that the page's slot count is known, label each slot and add it.
+                for (var i = 0; i < slotsOnThisPage.Count; i++)
+                {
+                    var slot = slotsOnThisPage[i];
+                    images.Add(
+                        new
+                        {
+                            id = slot.id,
+                            src = slot.src,
+                            pageLabel = BuildImageSlotLabel(pageName, slotsOnThisPage.Count, i),
+                            isPlaceholder = slot.isPlaceholder,
+                            credits = slot.credits,
                         }
                     );
                 }

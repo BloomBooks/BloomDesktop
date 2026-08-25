@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using Bloom.Book;
 using Bloom.ImageProcessing;
+using Bloom.SafeXml;
 using Bloom.web.controllers;
 using NUnit.Framework;
 using SIL.Code;
@@ -1686,6 +1687,88 @@ namespace BloomTests.web.controllers
             Assert.That(attributes.copyright, Is.EqualTo(img.GetAttribute("data-copyright")));
             Assert.That(attributes.creator, Is.EqualTo(img.GetAttribute("data-creator")));
             Assert.That(attributes.license, Is.EqualTo(img.GetAttribute("data-license")));
+        }
+
+        // The single page of a one-page DOM, as the label helpers take it.
+        private static SafeXmlElement FirstPageOf(string pageMarkup)
+        {
+            var dom = new HtmlDom("<html><head></head><body>" + pageMarkup + "</body></html>");
+            var page = dom
+                .RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                .OfType<SafeXmlElement>()
+                .FirstOrDefault();
+            if (page == null)
+                Assert.Fail("the test markup has no bloom-page, so there is nothing to name");
+            return page;
+        }
+
+        [Test]
+        public void GetPageNameForImageSlotLabel_NumberedPage_SaysPageAndTheNumber()
+        {
+            var page = FirstPageOf(
+                "<div class='bloom-page numberedPage' id='p1' data-page-number='3'>"
+                    + "<div class='pageLabel'>Basic Text &amp; Picture</div></div>"
+            );
+
+            // The user thinks in page numbers, not template names, so the number wins over the
+            // page's own label when the page has one.
+            Assert.That(AiImageEditorApi.GetPageNameForImageSlotLabel(page), Is.EqualTo("Page 3"));
+        }
+
+        [Test]
+        public void GetPageNameForImageSlotLabel_FrontMatter_UsesThePageName()
+        {
+            var page = FirstPageOf(
+                // Bloom writes data-page-number='' on an unnumbered page (BL-7303).
+                "<div class='bloom-page bloom-frontMatter' id='cover' data-page-number=''>"
+                    + "<div class='pageLabel'>Front Cover</div></div>"
+            );
+
+            // Front matter has no page number, so the page's own name is all we can say. It is
+            // the English name: the AI image editor's user interface is English only.
+            Assert.That(
+                AiImageEditorApi.GetPageNameForImageSlotLabel(page),
+                Is.EqualTo("Front Cover")
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_OnePictureOnThePage_JustNamesThePage()
+        {
+            Assert.That(AiImageEditorApi.BuildImageSlotLabel("Page 3", 1, 0), Is.EqualTo("Page 3"));
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_TwoPicturesOnThePage_NumbersThem()
+        {
+            // Two empty slots on one page show the same graphic in the AI image editor, so
+            // without these numbers the user cannot tell which slot is which (BL-16744).
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", 2, 0),
+                Is.EqualTo("Page 3 - image 1")
+            );
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", 2, 1),
+                Is.EqualTo("Page 3 - image 2")
+            );
+        }
+
+        [Test]
+        public void GetPageNameForImageSlotLabel_NoNumberAndNoLabel_SaysNothing()
+        {
+            // HtmlDom can leave a page with no data-page-number attribute at all (BL-12903).
+            // No label is better than a made-up one such as "unknown".
+            var page = FirstPageOf("<div class='bloom-page' id='p1'></div>");
+
+            Assert.That(AiImageEditorApi.GetPageNameForImageSlotLabel(page), Is.Null);
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_NoPageName_NumbersTheImagesOnly()
+        {
+            // Nothing to say about the page, but two slots still have to be told apart.
+            Assert.That(AiImageEditorApi.BuildImageSlotLabel(null, 1, 0), Is.Null);
+            Assert.That(AiImageEditorApi.BuildImageSlotLabel(null, 2, 1), Is.EqualTo("Image 2"));
         }
     }
 }
