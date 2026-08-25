@@ -2,17 +2,19 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
-// The wire format Bloom shares with the Freeze Doctor, from the package the Doctor's repo publishes.
-// This used to be three files copied into this folder; see BL-16719 for why it is a package now.
+// The wire format Bloom shares with the Freeze Doctor. A plain project reference to
+// src/BloomFreezeDoctor.Protocol, compiled into both sides from the same source every build, so the two
+// cannot hold copies that disagree. It was briefly a published NuGet package, when the Doctor lived in its
+// own repository; see BL-16719 for why it is neither of those things now.
 using BloomFreezeDoctor.Protocol;
 using SIL.Reporting;
 
 namespace Bloom.FreezeDoctor
 {
     /// <summary>
-    /// Publishes just enough about Bloom's health for the Bloom Freeze Doctor
-    /// (https://github.com/BloomBooks/bloom-freeze-doctor) to tell a frozen Bloom from a busy one, and a
-    /// crash from an orderly shutdown.
+    /// Publishes just enough about Bloom's health for the Bloom Freeze Doctor (which lives in this
+    /// repository, under src/BloomFreezeDoctor) to tell a frozen Bloom from a busy one, and a crash from an
+    /// orderly shutdown.
     ///
     /// **Why Bloom needs to help at all.** Watching from outside cannot detect the freeze we most expect.
     /// A UI thread blocked in a managed wait on an STA thread — `WaitHandle.WaitOne`, `Task.Wait`,
@@ -69,6 +71,10 @@ namespace Bloom.FreezeDoctor
         // System.Threading.Timer would keep ticking right through the freeze we are trying to detect.
         private static System.Windows.Forms.Timer _uiHeartbeat;
         private static Thread _watchdog;
+
+        /// <summary>Set once the first caller has asked for a crash dump. See RequestDumpBeforeDying.</summary>
+        private static int _dumpAlreadyRequested;
+
         private static int _shutdownPhase;
         private static bool _started;
         private static DoctorSession _session;
@@ -797,9 +803,25 @@ namespace Bloom.FreezeDoctor
         /// **The zero-timeout check comes first, and it is the important part.** Nearly every user has no
         /// Doctor installed, and an unconditional pause here would make every crash worse for all of them to
         /// benefit the few. So: if nobody is watching, this returns immediately and costs nothing.
+        ///
+        /// **And when nobody is watching, that is the end of it — Bloom does NOT dump itself.** Considered
+        /// and declined deliberately (John, BL-16719): with no Doctor running there is nothing to file the
+        /// dump, so it would sit on a user's disk at 15-20 MB a crash waiting for somebody to think of
+        /// asking for it. If that ever looks worth building, the shape that fits what already exists is to
+        /// record the path in the session file - which is designed to outlive the process - so that a Doctor
+        /// started or installed later finds the crash and attaches it; not a parallel collection mechanism.
         /// </summary>
         public static void RequestDumpBeforeDying()
         {
+            // Once per process, whoever asks.
+            //
+            // Bloom's own fatal handler now asks for this (FatalExceptionHandler.DisplayError), because
+            // relying on the AppDomain hook below meant relying on handler registration order, which we
+            // lost. That hook is kept as a backstop for the fatal routes which never reach DisplayError -
+            // harvester mode, and the fallback handler - so for one crash both can fire, and only the
+            // first should pay the wait.
+            if (Interlocked.Exchange(ref _dumpAlreadyRequested, 1) != 0)
+                return;
             try
             {
                 var pid = Process.GetCurrentProcess().Id;

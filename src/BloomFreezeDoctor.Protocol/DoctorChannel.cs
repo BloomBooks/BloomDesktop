@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Text;
+using System.Threading;
 
 namespace BloomFreezeDoctor.Protocol;
 
@@ -343,10 +344,21 @@ public static class DoctorChannelReader
                 MemoryMappedFileAccess.Read
             );
 
-            // Retry a few times: a write in progress is momentary, and giving up after three attempts
-            // is better than looping while Bloom is busy.
-            for (var attempt = 0; attempt < 3; attempt++)
+            // Retry a few times: a write in progress is momentary, and giving up after a handful of
+            // attempts is better than looping while Bloom is busy.
+            //
+            // **The yield matters as much as the count.** Three back-to-back reads all land inside one
+            // scheduling quantum, so a writer that was preempted mid-write (holding the sequence odd)
+            // defeats every attempt and TryRead returns false. Callers cannot tell that from "this Bloom
+            // publishes nothing": the report then states that Bloom published no health channel, which is
+            // untrue, and the check for work in progress answers "no" - one of the guards against ending
+            // a Bloom that is part-way through saving. So give the writer a chance to be rescheduled, and
+            // take a few more attempts while we are at it; the whole loop is still bounded and brief.
+            for (var attempt = 0; attempt < 8; attempt++)
             {
+                if (attempt > 0)
+                    Thread.Yield();
+
                 var before = view.ReadInt64(DoctorChannelLayout.OffsetWriteSequence);
                 if (before % 2 != 0)
                     continue; // a write is in flight
@@ -502,6 +514,11 @@ public sealed class DoctorChannelWriter : IDisposable
             // reading zero-filled space as data. Written once, at creation, and never changed.
             _view.Write(DoctorChannelLayout.OffsetPayloadBytes, DoctorChannelLayout.PayloadBytes);
             _view.Write(DoctorChannelLayout.OffsetProcessId, processId);
+            // The heartbeats are deliberately NOT seeded here, and a test pins that
+            // (A_heartbeat_that_never_ticked_reads_as_infinitely_old_rather_than_as_fresh). Seeding them
+            // to "now" would read as healthy, which sounds tidier and is the dangerous direction: a Bloom
+            // that hangs BEFORE its first tick - during startup, which is a real freeze - would then look
+            // perfectly well. "Never ticked" erring towards alarm is the correct bias.
         }
         catch (Exception)
         {

@@ -84,6 +84,13 @@ public sealed record BundleMetadata
     /// <summary>Why we gathered: frozen, zombie, died-while-frozen, and so on.</summary>
     public string? Reason { get; init; }
 
+    /// <summary>
+    /// The few facts that differ between occurrences of this problem, used as the comment when a card for
+    /// this fingerprint already exists rather than posting the whole report again. Null for a bundle
+    /// gathered before this existed, which the submitter falls back from gracefully.
+    /// </summary>
+    public string? RecurrenceNote { get; init; }
+
     /// <summary>Options used for reading and writing these files. Indented so a human can read a queue.</summary>
     [JsonIgnore]
     public static System.Text.Json.JsonSerializerOptions JsonOptions { get; } =

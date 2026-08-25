@@ -79,14 +79,15 @@ public sealed class BloomLogCollector : IEvidenceCollector
         text.AppendLine($"`{context.BloomLogPath}`");
         text.AppendLine();
 
-        // Attach the whole log FIRST, then read the tail out of our own copy.
+        // Attach the whole log FIRST, then read the tail out of our own copy - so the tail comes from a
+        // file nobody else can touch, and the contended read happens once.
         //
-        // The order is the fix, and it used to be the other way round. Bloom's log is written by the very
-        // process we are diagnosing, and it is held exclusively for the instant of each write, so every
-        // open of it is a throw of the dice. Doing two - tail, then copy - threw twice, and it was the
-        // copy that lost: a real report came back carrying 19 lines of log and no attachment at all.
-        // Copying first means ONE contended open, retried by RobustFile, after which the tail comes from a
-        // file nobody else can touch.
+        // CopyWhileInUse rather than RobustFile.Copy, and that is the substance of it: Bloom holds its log
+        // open for writing for the whole of its run, and RobustFile.Copy is refused outright by such a file
+        // - permanently, not transiently, so retrying cannot help. For a FREEZE the process is by
+        // definition still alive, so the ordinary copy could only ever have worked for a Bloom that had
+        // already exited. A real filed card (AUT-20929) went out with no log attached because of this.
+        // AttachingTheLogTests pins both halves.
         //
         // Copy rather than reference, because Bloom overwrites Log.txt on its very next run - which, after
         // a freeze, is usually only minutes away.
@@ -96,7 +97,7 @@ public sealed class BloomLogCollector : IEvidenceCollector
         {
             var copy = Path.Combine(context.ArtifactDirectory, "bloom-log.txt");
             Directory.CreateDirectory(context.ArtifactDirectory);
-            RobustFile.Copy(context.BloomLogPath, copy, overwrite: true);
+            WindowsExitEvidenceCollector.CopyWhileInUse(context.BloomLogPath, copy);
             artifacts.Add(copy);
             whereToReadTheTail = copy;
         }
@@ -143,12 +144,18 @@ public sealed class BloomLogCollector : IEvidenceCollector
                 text.AppendLine();
             }
 
-            // Say when the tail is in fact the whole thing. "Last 19 lines" of a 19-line log invites the
-            // reader to wonder what they are not being shown.
-            text.AppendLine(
+            // One sentence covering how much is shown AND whether the file itself is attached, because
+            // writing those separately let them contradict each other: a real card said "The whole log (18
+            // lines)" and then, further down, that the log could not be attached. Both were true - one is
+            // about the text below, one about the artifact - and together they read as nonsense.
+            var howMuch =
                 lines.Count < TailLines
-                    ? $"The whole log ({lines.Count} lines):"
-                    : $"Last {TailLines} lines:"
+                    ? $"The whole log ({lines.Count} lines)"
+                    : $"The last {TailLines} lines";
+            text.AppendLine(
+                attachmentFailure == null
+                    ? $"{howMuch}, and the file itself is attached as `bloom-log.txt`:"
+                    : $"{howMuch}. The file itself could not be attached, so this is all of it we have:"
             );
             text.AppendLine();
             text.AppendLine("```");
@@ -163,17 +170,12 @@ public sealed class BloomLogCollector : IEvidenceCollector
             text.AppendLine();
         }
 
-        // Said separately from any failure to read, because the two are different news and the old code
-        // conflated them: a failure to ATTACH produced the message "could not read the log" even though
-        // the tail had just been read successfully, so a report missing only its attachment looked like one
-        // whose log could not be read at all.
+        // Why the attachment failed, once, after the log itself - and deliberately not phrased as a failure
+        // to READ, which is what the old shared catch said even when the tail had just been read fine.
+        // The line above has already told the reader whether the file is attached; this only says why not.
         if (attachmentFailure != null)
         {
-            text.AppendLine(
-                "*(the tail above is all there is: the full log could not be attached — "
-                    + attachmentFailure
-                    + ")*"
-            );
+            text.AppendLine($"*(the attachment failed: {attachmentFailure})*");
             text.AppendLine();
         }
         return headline;

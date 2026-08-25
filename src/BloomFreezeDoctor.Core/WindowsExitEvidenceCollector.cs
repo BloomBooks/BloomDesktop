@@ -220,6 +220,40 @@ public sealed class WindowsExitEvidenceCollector
     }
 
     /// <summary>
+    /// Copies a file that another process is still writing to.
+    ///
+    /// **Why not <c>RobustFile.Copy</c>, which is this repository's rule.** It is refused outright by a
+    /// file whose owner holds it for writing, and Bloom holds its log open for the whole of its run — so
+    /// for a FREEZE, where the process is by definition still alive, attaching the log could only ever have
+    /// worked for a Bloom that had already exited. Retrying does not help: the refusal is not transient.
+    /// AttachingTheLogTests pins both halves of that, because getting it wrong is silent — the copy throws,
+    /// the report simply has no log, and a real card said both "the whole log" and "could not be attached".
+    ///
+    /// Same sharing flags, and the same reasoning, as <see cref="ReadLastLines"/>: the flags ARE the
+    /// requirement here, which is why this is one of the documented exceptions to the RobustFile rule.
+    /// </summary>
+    public static void CopyWhileInUse(string path, string destination)
+    {
+        // robustfile-hook: allow FileStream
+        // The process being diagnosed is still writing this file; permissive sharing is the whole point.
+        using var source = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete
+        );
+        // robustfile-hook: allow FileStream
+        // The destination is ours alone, inside the bundle we are building.
+        using var target = new FileStream(
+            destination,
+            FileMode.Create,
+            FileAccess.Write,
+            FileShare.None
+        );
+        source.CopyTo(target);
+    }
+
+    /// <summary>
     /// True when the machine itself went down while Bloom was running: an unexpected-shutdown event
     /// (6008), or a boot that happened after the process died, which can only mean we are looking at
     /// the wreckage from before a restart.

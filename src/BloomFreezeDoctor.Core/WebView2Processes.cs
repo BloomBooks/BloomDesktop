@@ -112,18 +112,27 @@ public static class WebView2Processes
                     + WebViewExecutable
                     + "'"
             );
-            foreach (var item in searcher.Get())
+            // Both the collection and every object in it are disposable and each holds unmanaged COM
+            // state. This runs every few seconds for every Bloom being watched, for as long as the Doctor
+            // lives, so leaving them to finalization accumulates that state in the one process which has
+            // to stay healthy enough to diagnose everything else. Discover() already disposes its Process
+            // objects for exactly this reason.
+            using var found = searcher.Get();
+            foreach (ManagementObject item in found)
             {
-                var commandLine = item["CommandLine"] as string ?? "";
-                result.Add(
-                    new WebView2Child
-                    {
-                        ProcessId = Convert.ToInt32(item["ProcessId"]),
-                        ParentProcessId = Convert.ToInt32(item["ParentProcessId"]),
-                        Kind = ExtractKind(commandLine),
-                        CommandLine = commandLine,
-                    }
-                );
+                using (item)
+                {
+                    var commandLine = item["CommandLine"] as string ?? "";
+                    result.Add(
+                        new WebView2Child
+                        {
+                            ProcessId = Convert.ToInt32(item["ProcessId"]),
+                            ParentProcessId = Convert.ToInt32(item["ParentProcessId"]),
+                            Kind = ExtractKind(commandLine),
+                            CommandLine = commandLine,
+                        }
+                    );
+                }
             }
         }
         catch (Exception)
@@ -144,8 +153,10 @@ public static class WebView2Processes
             using var searcher = new ManagementObjectSearcher(
                 $"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {processId}"
             );
-            foreach (var item in searcher.Get())
-                return item["CommandLine"] as string ?? "";
+            using var found = searcher.Get();
+            foreach (ManagementObject item in found)
+                using (item)
+                    return item["CommandLine"] as string ?? "";
         }
         catch (Exception) { }
         return "";
