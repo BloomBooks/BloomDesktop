@@ -989,6 +989,46 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// Names every image slot of one page, in the order the page offers them. Kept in one
+        /// place because a slot's name depends on what else the page holds, not just on itself.
+        /// </summary>
+        /// <param name="pageName">from <see cref="GetPageNameForImageSlotLabel"/>, may be null</param>
+        /// <param name="isCanvasBackground">
+        /// for each slot of the page, in order, whether it is the background image of a canvas
+        /// </param>
+        internal static List<string> BuildImageSlotLabelsForPage(
+            string pageName,
+            IReadOnlyList<bool> isCanvasBackground
+        )
+        {
+            // "Canvas Background" names a slot only when the page has exactly one canvas. A
+            // Picture Dictionary page has six, so six background images; calling them all
+            // "Canvas Background" would be six identical labels, which is the very confusion
+            // the label exists to remove. There, plain numbering tells them apart.
+            var nameTheBackground = isCanvasBackground.Count(background => background) == 1;
+
+            var labels = new List<string>();
+            var imageNumber = 0;
+            foreach (var background in isCanvasBackground)
+            {
+                // The background is named, not numbered, so the numbering of the pictures on
+                // top of it starts at 1 whether or not the page has a background.
+                var nameAsBackground = background && nameTheBackground;
+                if (!nameAsBackground)
+                    imageNumber++;
+                labels.Add(
+                    BuildImageSlotLabel(
+                        pageName,
+                        nameAsBackground,
+                        imageNumber,
+                        isCanvasBackground.Count
+                    )
+                );
+            }
+            return labels;
+        }
+
+        /// <summary>
         /// Enumerates every image the user is allowed to change across the whole book — all
         /// pages including front cover and xmatter, including empty placeholder slots —
         /// excluding only branding and license images. Each entry is a reference (id +
@@ -1065,25 +1105,20 @@ namespace Bloom.web.controllers
                     );
                 }
 
-                // Now that the page's slot count is known, label each slot and add it.
-                var imageNumber = 0;
-                foreach (var slot in slotsOnThisPage)
+                // Now that the whole page is known, name its slots and add them.
+                var labels = BuildImageSlotLabelsForPage(
+                    pageName,
+                    slotsOnThisPage.Select(slot => slot.isCanvasBackground).ToList()
+                );
+                for (var i = 0; i < slotsOnThisPage.Count; i++)
                 {
-                    // The canvas background is named, not numbered, so the numbering of the
-                    // pictures on top of it starts at 1 whether or not there is a background.
-                    if (!slot.isCanvasBackground)
-                        imageNumber++;
+                    var slot = slotsOnThisPage[i];
                     images.Add(
                         new
                         {
                             id = slot.id,
                             src = slot.src,
-                            pageLabel = BuildImageSlotLabel(
-                                pageName,
-                                slot.isCanvasBackground,
-                                imageNumber,
-                                slotsOnThisPage.Count
-                            ),
+                            pageLabel = labels[i],
                             isPlaceholder = slot.isPlaceholder,
                             credits = slot.credits,
                         }

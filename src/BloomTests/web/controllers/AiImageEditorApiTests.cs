@@ -1828,5 +1828,50 @@ namespace BloomTests.web.controllers
             Assert.That(HtmlDom.IsBackgroundImage(images[0]), Is.True);
             Assert.That(HtmlDom.IsBackgroundImage(images[1]), Is.False);
         }
+
+        [Test]
+        public void BuildImageSlotLabelsForPage_BackgroundAndTwoPicturesOnIt_NamesThenNumbers()
+        {
+            var labels = AiImageEditorApi.BuildImageSlotLabelsForPage(
+                "Page 4",
+                new[] { true, false, false }
+            );
+
+            Assert.That(
+                labels,
+                Is.EqualTo(
+                    new[] { "Page 4 - Canvas Background", "Page 4 - Image 1", "Page 4 - Image 2" }
+                )
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabelsForPage_SeveralCanvasesOnThePage_NumbersThemAll()
+        {
+            // A Picture Dictionary page has six canvases, so six background images. Naming
+            // them all "Canvas Background" would give six identical labels, which is the
+            // confusion these labels exist to remove (BL-16744).
+            var labels = AiImageEditorApi.BuildImageSlotLabelsForPage(
+                "Page 4",
+                new[] { true, true, true }
+            );
+
+            Assert.That(
+                labels,
+                Is.EqualTo(new[] { "Page 4 - Image 1", "Page 4 - Image 2", "Page 4 - Image 3" }),
+                "identical labels would tell the user nothing"
+            );
+            Assert.That(labels.Distinct().Count(), Is.EqualTo(3), "every label must be distinct");
+        }
+
+        [Test]
+        public void BuildImageSlotLabelsForPage_OneCanvasOnly_JustNamesThePage()
+        {
+            // The common case: a full-page picture is one canvas background and nothing else.
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabelsForPage("Page 4", new[] { true }),
+                Is.EqualTo(new[] { "Page 4" })
+            );
+        }
     }
 }
