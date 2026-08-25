@@ -466,6 +466,22 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         if (metadata.Occurrences > 1 || age > TimeSpan.FromMinutes(10))
             text.AppendLine();
 
+        // What else went wrong with this same Bloom afterwards. Without this the fold would be worse than
+        // the two cards it replaces: the death would be on disk as an attachment and nowhere in the text.
+        if (metadata.FollowOnNotes.Count > 0)
+        {
+            text.AppendLine("**What happened next to this same Bloom**");
+            text.AppendLine();
+            foreach (var note in metadata.FollowOnNotes)
+                text.AppendLine($"- {note}");
+            text.AppendLine();
+            text.AppendLine(
+                "*Each of those was gathered as its own report and is attached, rather than filed as a "
+                    + "separate card: they are instalments of one Bloom's failure, not separate problems.*"
+            );
+            text.AppendLine();
+        }
+
         text.AppendLine($"- **Gathered:** {metadata.GatheredAtUtc:yyyy-MM-dd HH:mm:ss}Z");
         text.AppendLine($"- **Fingerprint:** `{metadata.Fingerprint}`");
         text.AppendLine();

@@ -103,6 +103,25 @@ public sealed class ReportOutbox
     public const string MetadataFileName = "meta.json";
 
     /// <summary>
+    /// Names the body of a report folded in as a later instalment about the same Bloom. See
+    /// <see cref="FoldInAFollowOnProblem"/>.
+    /// </summary>
+    public const string FollowOnReportPrefix = "follow-on-report-";
+
+    /// <summary>
+    /// How recently the previous report about a Bloom must have been gathered for a new one to be treated
+    /// as a further instalment of the same trouble rather than as separate news.
+    ///
+    /// A bound is needed in both directions. The instalments this exists for arrive seconds apart — the UI
+    /// freezes, then the process dies — so it does not need to be long; and a process id is only unique
+    /// while its process lives, so without a bound a queued report about a Bloom that died this morning
+    /// could swallow this afternoon's report about whatever new process Windows handed that number to.
+    /// Measured from the *last* thing that happened to the bundle, so a chain of instalments keeps
+    /// extending rather than being cut off ten minutes after the first one.
+    /// </summary>
+    public static readonly TimeSpan FollowOnWindow = TimeSpan.FromMinutes(10);
+
+    /// <summary>
     /// How long a bundle may sit unfiled before we give up on it. A month of a bad connection is
     /// plausible; a year of it means the report has lost its value and its disk space matters more.
     /// </summary>
@@ -148,18 +167,22 @@ public sealed class ReportOutbox
     public string Root => _root;
 
     /// <summary>
-    /// Adds a gathered report to the queue, or folds it into an existing pending bundle with the same
-    /// fingerprint.
+    /// Adds a gathered report to the queue, or folds it into an existing pending bundle — for either of
+    /// two reasons.
     ///
-    /// Folding rather than adding is what stops an offline user with a recurring freeze producing
-    /// twenty cards: the count goes up, the artifacts are not duplicated (they would be near-identical
-    /// dumps of the same problem), and one good card gets filed when the network returns.
+    /// **The same problem again** (matching fingerprints) is what stops an offline user with a recurring
+    /// freeze producing twenty cards: the count goes up, the artifacts are not duplicated (they would be
+    /// near-identical dumps of the same problem), and one good card gets filed when the network returns.
+    ///
+    /// **A different problem with the same Bloom** folds in too, and that is not a variation on the
+    /// first — see <see cref="FoldInAFollowOnProblem"/> for why one process gets one card.
     /// </summary>
     public QueuedBundle Enqueue(
         GatheredReport report,
         string project,
         string? channel,
-        string? reason
+        string? reason,
+        int? processId = null
     )
     {
         Directory.CreateDirectory(_root);
@@ -171,6 +194,22 @@ public sealed class ReportOutbox
             );
         if (existing != null)
             return RecordAnotherOccurrence(existing);
+
+        // A different problem, but the same Bloom, moments ago. See FoldInAFollowOnProblem.
+        // List() is newest-first, so Last is the EARLIEST such bundle - the original report, and the one
+        // whose card everything about this Bloom should end up on.
+        if (processId != null)
+        {
+            var sameBloom = List()
+                .LastOrDefault(b =>
+                    b.Metadata.State == BundleState.Pending
+                    && b.Metadata.ProcessId == processId
+                    && _now() - (b.Metadata.LastOccurrenceUtc ?? b.Metadata.GatheredAtUtc)
+                        <= FollowOnWindow
+                );
+            if (sameBloom != null)
+                return FoldInAFollowOnProblem(sameBloom, report, reason);
+        }
 
         var state = report.MayFile ? BundleState.Pending : BundleState.NotForFiling;
         var now = _now();
@@ -211,6 +250,7 @@ public sealed class ReportOutbox
             Artifacts = artifactNames,
             BloomChannel = channel,
             Reason = reason,
+            ProcessId = processId,
             RecurrenceNote = report.RecurrenceNote,
         };
         WriteMetadata(staging, metadata);
@@ -460,6 +500,85 @@ public sealed class ReportOutbox
                 && b.Metadata.LastAttemptUtc.HasValue
                 && b.Metadata.LastAttemptUtc.Value > since
             );
+    }
+
+    /// <summary>
+    /// Folds a report about a **different** problem into the bundle for a report about the same Bloom.
+    ///
+    /// One Bloom's collapse is one story, and the Doctor tends to see it in instalments: the UI stops
+    /// responding, so we report a freeze; then the process dies, and the exit examination finds no proof
+    /// of an orderly shutdown and reports that. Two reports, different reasons, therefore different
+    /// fingerprints - so nothing recognised them as related and two cards were filed about one event.
+    /// That is exactly what happened during the first live test (AUT-20929 and AUT-20930), and it will
+    /// happen again for a crashing Bloom now that the dump handshake works, which gathers once while
+    /// Bloom is alive and once after it has gone.
+    ///
+    /// So the tie is the process, not the fingerprint. The fingerprint's job is recognising this problem
+    /// on *other* machines and is unchanged; a process id means nothing anywhere else, which is precisely
+    /// why it is the right key for "these two happened to the same Bloom, minutes apart".
+    ///
+    /// Unlike a plain recurrence, the follow-on report is **kept**: its body goes in as an attachment
+    /// and its own artifacts come with it. A recurrence's evidence is a near-duplicate not worth
+    /// re-attaching, but "and then it died" is new information, and for a crash it is the instalment
+    /// carrying the minidump.
+    /// </summary>
+    private QueuedBundle FoldInAFollowOnProblem(
+        QueuedBundle bundle,
+        GatheredReport report,
+        string? reason
+    )
+    {
+        var artifacts = bundle.Metadata.Artifacts.ToList();
+        var followOnNumber = artifacts.Count(n =>
+            n.StartsWith(FollowOnReportPrefix, StringComparison.Ordinal)
+        );
+        var bodyName = $"{FollowOnReportPrefix}{followOnNumber + 1}.md";
+        try
+        {
+            RobustFile.WriteAllText(Path.Combine(bundle.Directory, bodyName), report.Body);
+            artifacts.Add(bodyName);
+        }
+        catch (Exception)
+        {
+            // The note below still records that it happened, which is the part that must not be lost.
+        }
+
+        foreach (var artifact in report.Artifacts)
+        {
+            try
+            {
+                var fileName = Path.GetFileName(artifact);
+                // A follow-on can easily carry a file named like one already here (both collectors name
+                // the log after the process). Renaming keeps both rather than overwriting the first.
+                if (artifacts.Contains(fileName))
+                    fileName =
+                        Path.GetFileNameWithoutExtension(fileName)
+                        + $"-followon{followOnNumber + 1}"
+                        + Path.GetExtension(fileName);
+                RobustFile.Move(artifact, Path.Combine(bundle.Directory, fileName));
+                artifacts.Add(fileName);
+            }
+            catch (Exception)
+            {
+                // As in Enqueue: an artifact we cannot move is one the report does without.
+            }
+        }
+
+        var note =
+            $"{_now():yyyy-MM-dd HH:mm}Z — the same Bloom then had a further problem: "
+            + $"{reason ?? "reason not recorded"}. {report.Summary}";
+        var notes = bundle.Metadata.FollowOnNotes.ToList();
+        notes.Add(note);
+        var metadata = bundle.Metadata with
+        {
+            // NOT Occurrences: see FollowOnNotes. LastOccurrenceUtc is still right, though - it is the
+            // last time we saw anything wrong with this Bloom, which is what the card's reader wants.
+            LastOccurrenceUtc = _now(),
+            Artifacts = artifacts,
+            FollowOnNotes = notes,
+        };
+        WriteMetadata(bundle.Directory, metadata);
+        return bundle with { Metadata = metadata };
     }
 
     private QueuedBundle RecordAnotherOccurrence(QueuedBundle bundle)

@@ -25,7 +25,8 @@ public static class GatherContextBuilder
         DetectorVerdict verdict,
         bool processWasAlive,
         string artifactDirectory,
-        string? logDirectory = null
+        string? logDirectory = null,
+        Protocol.DoctorChannelSnapshot? lastSeenPublishedState = null
     )
     {
         // Bloom's own session file, when there is one, is better than anything we can work out from
@@ -42,7 +43,7 @@ public static class GatherContextBuilder
             BloomLogPath = FirstUsable(session?.LogPath, () => FindLog(target, logDirectory)),
             CdpPort = session is { CdpPort: > 0 } ? session.CdpPort : FindCdpPort(target),
             Session = session,
-            PublishedState = ReadPublishedState(target.ProcessId),
+            PublishedState = ReadPublishedState(target.ProcessId) ?? lastSeenPublishedState,
         };
     }
 
@@ -50,6 +51,11 @@ public static class GatherContextBuilder
     /// Reads Bloom's live published state, if it publishes any. Read at gather time rather than taken from
     /// the watcher so that the report quotes the state at the moment we decided to gather, which is the
     /// moment a reader will be asking about.
+    ///
+    /// It falls back to the watcher's last reading (above) for one case that the live read cannot serve at
+    /// all: a Bloom that has already died. The channel lives in the process's own memory, so it goes when
+    /// the process goes, and a death report was reduced to declaring that Bloom "does not publish a health
+    /// channel" — of a Bloom that had been publishing one a second earlier.
     /// </summary>
     private static Protocol.DoctorChannelSnapshot? ReadPublishedState(int processId)
     {

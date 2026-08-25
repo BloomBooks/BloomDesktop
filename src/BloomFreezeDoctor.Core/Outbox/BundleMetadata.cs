@@ -85,6 +85,24 @@ public sealed record BundleMetadata
     public string? Reason { get; init; }
 
     /// <summary>
+    /// Which Bloom this was about. Not for identifying the *problem* — a process id means nothing on
+    /// anyone else's machine, which is why the fingerprint exists — but for recognising that two reports
+    /// are about one Bloom's last few seconds and belong on one card. Null for a bundle written before
+    /// this field existed.
+    /// </summary>
+    public int? ProcessId { get; init; }
+
+    /// <summary>
+    /// One line per *further, different* problem the same Bloom had after this report was gathered — the
+    /// freeze that then became a death, the crash whose exit was examined afterwards.
+    ///
+    /// Deliberately not counted in <see cref="Occurrences"/>, which means "this same problem, again":
+    /// adding a follow-on there made the card say "this problem happened 2 times", which is a plain
+    /// misreading of one Bloom failing once and then dying of it.
+    /// </summary>
+    public IReadOnlyList<string> FollowOnNotes { get; init; } = Array.Empty<string>();
+
+    /// <summary>
     /// The few facts that differ between occurrences of this problem, used as the comment when a card for
     /// this fingerprint already exists rather than posting the whole report again. Null for a bundle
     /// gathered before this existed, which the submitter falls back from gracefully.

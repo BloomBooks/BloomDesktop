@@ -42,7 +42,9 @@ public sealed class WindowsExitEvidenceCollector
         bool debuggerCouldExplainIt,
         bool neverFile,
         bool? cleanExitProofPresent = null,
-        int? shutdownPhaseReached = null
+        int? shutdownPhaseReached = null,
+        bool exitRecordedAsForced = false,
+        string? exeFileName = null
     )
     {
         return new ExitEvidence
@@ -52,7 +54,8 @@ public sealed class WindowsExitEvidenceCollector
             NeverFile = neverFile,
             CleanExitProofPresent = cleanExitProofPresent,
             ShutdownPhaseReached = shutdownPhaseReached,
-            HasEventLogCrashEntry = LookForCrashEntry(processId, diedAt),
+            ExitRecordedAsForced = exitRecordedAsForced,
+            HasEventLogCrashEntry = LookForCrashEntry(processId, diedAt, exeFileName),
             HasWerReport = LookForWerReport(diedAt),
             LogShowsForcedShutdown = LogEndsWithForcedShutdown(logPath),
             MachineWentDown = DidMachineGoDown(startedAt, diedAt),
@@ -62,8 +65,13 @@ public sealed class WindowsExitEvidenceCollector
     /// <summary>
     /// Looks for a Windows "Application Error" (1000), "Application Hang" (1002) or .NET Runtime entry
     /// naming Bloom, close to when the process died.
+    ///
+    /// <paramref name="exeFileName"/> is the file name of the Bloom that died, because there is no one
+    /// name to look for: the installer renames the exe per channel, so a release machine has
+    /// <c>Bloom.exe</c> but an alpha has <c>BloomAlpha.exe</c>. Matching the literal "Bloom.exe" found
+    /// neither of the renamed ones.
     /// </summary>
-    private static bool LookForCrashEntry(int processId, DateTime diedAt)
+    private static bool LookForCrashEntry(int processId, DateTime diedAt, string? exeFileName)
     {
         try
         {
@@ -94,15 +102,7 @@ public sealed class WindowsExitEvidenceCollector
                 if (!isCrashSource)
                     continue;
 
-                var message = entry.Message ?? "";
-                // Match on the executable name, and on the pid where Windows includes it. Bloom's
-                // WebView2 children matter too: a renderer crash is Bloom's problem even when the
-                // parent survives.
-                if (
-                    message.Contains("Bloom.exe", StringComparison.OrdinalIgnoreCase)
-                    || message.Contains("msedgewebview2.exe", StringComparison.OrdinalIgnoreCase)
-                    || message.Contains($"{processId:x}", StringComparison.OrdinalIgnoreCase)
-                )
+                if (EntryNamesThisBloom(entry.Message ?? "", processId, exeFileName))
                     return true;
             }
         }
@@ -110,6 +110,89 @@ public sealed class WindowsExitEvidenceCollector
         {
             // Unreadable Event Log: indistinguishable from no entry, which Phase 1 already treats as
             // "say nothing".
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// True when this Event Log entry is about *this* Bloom. Deliberately narrow, because the cost of the
+    /// two answers is not symmetric: a missed entry loses one piece of corroboration, while a wrong one
+    /// puts "Bloom crashed: Windows logged an Application Error" on a card about a crash that was some
+    /// other program's.
+    ///
+    /// It used to accept three things, and two of them matched other people's crashes:
+    ///
+    /// - the bare hex pid, ANYWHERE in the message and with no delimiters. Every Application Error entry
+    ///   is full of hex - exception codes, fault offsets, module base addresses - so a short pid was
+    ///   near-certain to appear inside one of them. Pid 4096 is "1000", which matches a fault offset of
+    ///   0x00007ff81000a4c0.
+    /// - <c>msedgewebview2.exe</c>, unqualified. Bloom is far from the only WebView2 host on a Windows
+    ///   machine: Teams, Outlook and the Widgets panel all crash renderers of their own, and any of them
+    ///   doing so within five minutes became evidence that Bloom crashed. There is no fix that keeps the
+    ///   clause, either - the pid in a renderer's entry is the RENDERER's, not Bloom's, so it could never
+    ///   have told ours from theirs. It is dropped rather than narrowed. Little is lost: Bloom normally
+    ///   survives a renderer crash, and this code only runs when Bloom itself has gone.
+    /// </summary>
+    public static bool EntryNamesThisBloom(string message, int processId, string? exeFileName)
+    {
+        if (string.IsNullOrEmpty(message))
+            return false;
+
+        if (!string.IsNullOrEmpty(exeFileName))
+        {
+            if (message.Contains(exeFileName!, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        // Nobody told us what this Bloom was called, so accept any of the channel names the installer
+        // produces (Bloom.exe, BloomAlpha.exe, BloomBetaInternal.exe...) rather than guessing one.
+        else if (
+            System.Text.RegularExpressions.Regex.IsMatch(
+                message,
+                @"\bBloom\w*\.exe\b",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase
+            )
+        )
+            return true;
+
+        return PidAppearsAsAProcessId(message, processId);
+    }
+
+    /// <summary>
+    /// True when the message quotes our pid **as a process id** — "Faulting process id: 0x1a2c" — rather
+    /// than merely containing those hex digits somewhere. Both halves of that matter: the digits must be a
+    /// whole hex number (not the middle of a longer address), and they must be labelled as a process id.
+    ///
+    /// This clause earns its place on ".NET Runtime" entries, which identify the process by id and do not
+    /// always name the executable.
+    /// </summary>
+    private static bool PidAppearsAsAProcessId(string message, int processId)
+    {
+        var hex = processId.ToString("x");
+        var from = 0;
+        while (from < message.Length)
+        {
+            var at = message.IndexOf(hex, from, StringComparison.OrdinalIgnoreCase);
+            if (at < 0)
+                return false;
+            from = at + 1;
+
+            // A whole hex number, not part of a longer one. Note that the "x" of a "0x" prefix is not
+            // itself a hex digit, so a prefixed number passes this on the left.
+            if (at > 0 && Uri.IsHexDigit(message[at - 1]))
+                continue;
+            var after = at + hex.Length;
+            if (after < message.Length && Uri.IsHexDigit(message[after]))
+                continue;
+
+            // And labelled as what we think it is. Windows writes "Faulting process id: 0x1a2c" and
+            // "Process ID: 1a2c"; the label is always close in front of the number.
+            var start = Math.Max(0, at - 32);
+            var lead = message.Substring(start, at - start);
+            if (
+                lead.Contains("process id", StringComparison.OrdinalIgnoreCase)
+                || lead.Contains("processid", StringComparison.OrdinalIgnoreCase)
+            )
+                return true;
         }
         return false;
     }

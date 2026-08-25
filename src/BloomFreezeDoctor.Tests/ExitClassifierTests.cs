@@ -207,4 +207,57 @@ public class ExitClassifierTests
         Assert.That(conclusion.ShouldReport, Is.False);
         Assert.That(conclusion.Explanation, Does.Contain("code 0"));
     }
+
+    [Test]
+    public void An_exit_Bloom_itself_recorded_as_forced_is_reported_not_called_clean()
+    {
+        // Bloom writes an exit record on the way out of a hard failure too - Environment.Exit before the
+        // orderly shutdown began - and marks it forced. The supervisor used to pass "there is a record"
+        // as "there is proof of a clean exit", so the loudest thing Bloom can tell us became silence,
+        // under the self-contradicting explanation "Bloom shut down properly (shutdown phase 0)".
+        var evidence = new ExitEvidence
+        {
+            CleanExitProofPresent = false,
+            ExitRecordedAsForced = true,
+            ShutdownPhaseReached = 0,
+        };
+
+        var conclusion = ExitClassifier.Classify(
+            evidence,
+            ExitReportPolicy.RequiresProofOfCleanExit
+        );
+
+        Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.NoOrderlyShutdown));
+        Assert.That(
+            conclusion.ShouldReport,
+            Is.True,
+            "a hard failure is the whole point of the Doctor"
+        );
+        Assert.That(
+            conclusion.Explanation,
+            Does.Contain("forced").And.Contains("phase 0"),
+            "and it should say what Bloom told us, not guess at a user kill"
+        );
+    }
+
+    [Test]
+    public void An_orderly_exit_is_still_clean()
+    {
+        // The sanity check on the test above: the new branch must not swallow the ordinary case, which is
+        // by far the commonest thing that happens to a watched Bloom.
+        var evidence = new ExitEvidence
+        {
+            CleanExitProofPresent = true,
+            ExitRecordedAsForced = false,
+            ShutdownPhaseReached = 4,
+        };
+
+        var conclusion = ExitClassifier.Classify(
+            evidence,
+            ExitReportPolicy.RequiresProofOfCleanExit
+        );
+
+        Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.Clean));
+        Assert.That(conclusion.ShouldReport, Is.False, "nobody wants a card about quitting Bloom");
+    }
 }
