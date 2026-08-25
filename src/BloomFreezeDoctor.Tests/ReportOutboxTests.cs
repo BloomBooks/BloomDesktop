@@ -642,4 +642,58 @@ public class ReportOutboxTests
             "and it must still be waiting rather than given up on"
         );
     }
+
+    [Test]
+    public async Task A_send_that_was_interrupted_leaves_its_report_sendable()
+    {
+        // Marking a bundle before the network call is what lets a gather see that it must not merge. The
+        // hazard that creates: the drain only ever looks at Pending, so a mark left behind by a Doctor that
+        // was killed mid-upload would make that report invisible to every future drain - never retried,
+        // never filed, not even recorded as failed, just quietly evicted by age eventually. Protecting a
+        // report must not become the way to lose it.
+        var outbox = NewOutbox();
+        var bundle = outbox.Enqueue(
+            Report("interrupted-fp"),
+            "AUT",
+            "Alpha",
+            "Frozen",
+            processId: 600
+        );
+
+        // Exactly what a killed Doctor leaves on disk.
+        var abandoned = bundle.Metadata with
+        {
+            State = BundleState.Uploading,
+            LastAttemptUtc = _now,
+        };
+        File.WriteAllText(
+            Path.Combine(bundle.Directory, ReportOutbox.MetadataFileName),
+            System.Text.Json.JsonSerializer.Serialize(abandoned, BundleMetadata.JsonOptions)
+        );
+        Assert.That(
+            outbox.Pending(),
+            Is.Empty,
+            "setup: while marked, nothing considers it sendable"
+        );
+
+        // Not yet - an upload of a large dump on a poor connection is genuinely slow, and reclaiming one
+        // still in flight would file it twice.
+        var tooSoon = new FakeSubmitter();
+        await outbox.DrainAsync(tooSoon, CancellationToken.None);
+        Assert.That(
+            tooSoon.Submitted,
+            Is.Empty,
+            "a send that may still be in flight must be left alone"
+        );
+
+        _now = _now + ReportOutbox.AbandonedUploadTimeout + TimeSpan.FromMinutes(1);
+        var later = new FakeSubmitter();
+        await outbox.DrainAsync(later, CancellationToken.None);
+
+        Assert.That(
+            later.Submitted,
+            Contains.Item("interrupted-fp"),
+            "once the send cannot still be running, the report must go out rather than being stranded"
+        );
+    }
 }

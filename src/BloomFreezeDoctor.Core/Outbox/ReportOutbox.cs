@@ -119,6 +119,12 @@ public sealed class ReportOutbox
     private static readonly TimeSpan MetadataLockWait = TimeSpan.FromSeconds(2);
 
     /// <summary>
+    /// How long a bundle may sit marked as being uploaded before we conclude the send that marked it is
+    /// never coming back. See <see cref="ReclaimAbandonedUploads"/>.
+    /// </summary>
+    public static readonly TimeSpan AbandonedUploadTimeout = TimeSpan.FromMinutes(15);
+
+    /// <summary>
     /// How recently the previous report about a Bloom must have been gathered for a new one to be treated
     /// as a further instalment of the same trouble rather than as separate news.
     ///
@@ -472,6 +478,7 @@ public sealed class ReportOutbox
         CancellationToken cancellation
     )
     {
+        ReclaimAbandonedUploads();
         var filed = 0;
         var filedToday = CountFiledToday();
 
@@ -561,6 +568,41 @@ public sealed class ReportOutbox
             }
         }
         return filed;
+    }
+
+    /// <summary>
+    /// Puts back to Pending any bundle left marked <see cref="BundleState.Uploading"/> by a send that
+    /// never finished — the Doctor was killed mid-upload, or the machine went down.
+    ///
+    /// **Without this, marking a bundle before the network call would be a way to lose reports rather than
+    /// a way to protect them.** Uploading is not Pending, and the drain only ever looks at Pending, so an
+    /// abandoned mark would make that bundle invisible to every future drain: never retried, never filed,
+    /// and not even reported as failed. It would sit there until age eviction quietly deleted it.
+    ///
+    /// The timeout is generous because a real upload can be slow — a dump of a dozen megabytes over the
+    /// sort of connection that accompanies a freeze — and reclaiming one that is genuinely still in flight
+    /// would file it twice.
+    /// </summary>
+    private void ReclaimAbandonedUploads()
+    {
+        foreach (var bundle in List().Where(b => b.Metadata.State == BundleState.Uploading))
+        {
+            var startedAt = bundle.Metadata.LastAttemptUtc ?? bundle.Metadata.GatheredAtUtc;
+            if (_now() - startedAt < AbandonedUploadTimeout)
+                continue;
+            WhileHoldingTheMetadata(
+                bundle.Directory,
+                current =>
+                    current.State != BundleState.Uploading
+                        ? null // it finished while we were looking at it
+                        : current with
+                        {
+                            State = BundleState.Pending,
+                            LastError =
+                                "a previous send was interrupted before it finished; queued again",
+                        }
+            );
+        }
     }
 
     /// <summary>
