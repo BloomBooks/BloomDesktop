@@ -342,7 +342,10 @@ const makeChooseAudioMenuItemForText = (
     };
 };
 
-const makeChooseAudioMenuItemForImage = (
+// Exported for unit testing: the labels on these rows have regressed once (the
+// play row showed the localized "A Recording" instead of the sound's file name),
+// and this is the only way to assert them without a running Bloom.
+export const makeChooseAudioMenuItemForImage = (
     ctx: IControlContext,
     runtime: IControlRuntime,
 ): IControlMenuCommandRow => {
@@ -374,9 +377,12 @@ const makeChooseAudioMenuItemForImage = (
             },
             {
                 id: "playCurrentAudio",
-                l10nId: "ARecording",
+                // Deliberately no l10nId: this row's label is the chosen sound
+                // file's name, which must not be replaced by a localized string.
                 englishLabel: imageSoundLabel,
                 featureName: "canvas",
+                // Marks this as the sound currently in effect.
+                icon: React.createElement(CheckIcon, null),
                 availability: {
                     visible: (itemCtx) => itemCtx.hasCurrentImageSound,
                 },
