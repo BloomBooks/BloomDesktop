@@ -236,4 +236,54 @@ public class BloomTargetWatcherTests
             throw new InvalidOperationException("probe failure");
         }
     }
+
+    /// <summary>
+    /// The same question the freeze path answers above, asked the way the crash and exit paths ask it.
+    ///
+    /// Those two paths do not go through Tick's ReportWanted at all — they gather directly when the
+    /// process dies — and they each used to work out for themselves whether filing was allowed, with a
+    /// shorter list of conditions than this one: the debugger and the channel, but not the simulated
+    /// marker. So a deliberately simulated CRASH on a channel where the simulator is allowed filed a real
+    /// tracker card, while a simulated FREEZE on the same machine correctly did not.
+    /// </summary>
+    [Test]
+    public void A_simulated_run_may_not_file_however_the_question_is_asked()
+    {
+        var session = new Protocol.DoctorSession
+        {
+            ProcessId = TestPid,
+            StartedAtUtc = DateTimeOffset.UtcNow,
+            Channel = "Alpha",
+            SimulatedFailure = "crashthread",
+        };
+        Assert.That(
+            Protocol.DoctorSessionStore.TryWrite(session),
+            Is.True,
+            "setup: the marker on disk is the watcher's only way to know this was a rehearsal"
+        );
+
+        var probe = new ScriptedProbe();
+        using var watcher = new BloomTargetWatcher(Facts(InstalledExe), probe);
+
+        Assert.That(
+            watcher.MayFileAReport(),
+            Is.False,
+            "an installed Bloom on a simulator-enabled channel, told to break itself - filing this would "
+                + "put a rehearsal on the tracker"
+        );
+    }
+
+    /// <summary>The sanity check on the test above: the same call says yes when nothing forbids it.</summary>
+    [Test]
+    public void An_ordinary_installed_Bloom_may_file()
+    {
+        var probe = new ScriptedProbe();
+        using var watcher = new BloomTargetWatcher(Facts(InstalledExe), probe);
+
+        Assert.That(
+            watcher.MayFileAReport(),
+            Is.True,
+            "with no debugger, no simulation and a real channel, a report is exactly what we want"
+        );
+    }
 }

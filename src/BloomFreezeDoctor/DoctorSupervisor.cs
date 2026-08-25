@@ -86,6 +86,12 @@ public sealed class DoctorSupervisor : IDisposable
     private readonly HashSet<string> _targetProcessNames = new(StringComparer.OrdinalIgnoreCase);
     private readonly bool _forceFiling;
     private readonly Dictionary<int, BloomTargetWatcher> _watchers = new();
+
+    /// <summary>
+    /// Each watched Bloom's probe, kept beside its watcher so the discovery sweep can examine an exit
+    /// itself rather than only hoping the watcher gets one more tick first. See <see cref="Discover"/>.
+    /// </summary>
+    private readonly Dictionary<int, WindowsTargetProbe> _probes = new();
     private readonly object _lock = new();
     private readonly CancellationTokenSource _stopping = new();
 
@@ -358,25 +364,56 @@ public sealed class DoctorSupervisor : IDisposable
                     AdoptFacts(facts);
             }
 
+            var departed = new List<(BloomTargetWatcher Watcher, WindowsTargetProbe? Probe)>();
             lock (_lock)
             {
                 if (_watchers.Count > 0)
                     _lastBloomSeenAt = DateTimeOffset.UtcNow;
 
-                // Drop watchers whose process has exited. The watcher itself reports the exit first, so
-                // by the time we get here its story has been told.
+                // Collect the watchers whose process has gone. They are examined and disposed below,
+                // outside the lock.
                 foreach (var id in _watchers.Keys.ToList())
                 {
                     if (runningIds.Contains(id))
                         continue;
-                    _watchers[id].Dispose();
+                    departed.Add((_watchers[id], _probes.GetValueOrDefault(id)));
                     _watchers.Remove(id);
+                    _probes.Remove(id);
                     // Forget that we asked this one to stop, now that it has. Windows recycles process ids
                     // from a pool, and "Restart Bloom" is exactly the case that kills one and starts
                     // another moments later - so a stale entry here could silence a genuine report about a
                     // DIFFERENT Bloom that happened to be handed the dead one's id.
                     _weAskedItToStop.Remove(id);
                 }
+            }
+
+            // Give each departed Bloom its exit examination before letting go of its watcher.
+            //
+            // This used to assume the watcher had already told its story - "the watcher itself reports the
+            // exit first, so by the time we get here its story has been told" - and that was a hope, not a
+            // guarantee. The examination runs on the watcher's own one-second tick; this sweep runs every
+            // five seconds; and whichever fires first after the death wins. When the sweep won it disposed
+            // the watcher, which stopped the timer, and the exit was never examined at all. For a death at
+            // a random moment that is something like one in ten - so roughly one Bloom in ten that simply
+            // vanished, which is one of the three states this whole tool exists to notice, produced no
+            // report whatsoever.
+            //
+            // Calling it here needs no coordination with the tick: the examination claims each process id
+            // once, under the lock, so whichever path arrives second does nothing. Outside the lock
+            // because it starts background work.
+            foreach (var (watcher, probe) in departed)
+            {
+                if (probe != null)
+                    ConsiderReportingAnExit(
+                        watcher,
+                        probe,
+                        new DetectorVerdict
+                        {
+                            State = TargetState.Exited,
+                            Explanation = "the process is no longer running",
+                        }
+                    );
+                watcher.Dispose();
             }
 
             PublishStatus();
@@ -421,6 +458,7 @@ public sealed class DoctorSupervisor : IDisposable
                 ConsiderReportingAnExit(watcher, probe, verdict);
             };
             _watchers[facts.ProcessId] = watcher;
+            _probes[facts.ProcessId] = probe;
             watcher.Start();
             Note($"watching Bloom {facts.ProcessId} ({facts.Channel})");
         }
@@ -707,7 +745,7 @@ public sealed class DoctorSupervisor : IDisposable
                                 Report = ReportReason.ExitedWithoutProof,
                                 Explanation = conclusion.Explanation,
                             },
-                            mayFile: !watcher.IsPoisonedByDebugger && !watcher.Target.NeverFile,
+                            mayFile: watcher.MayFileAReport(),
                             _stopping.Token,
                             // The process has gone, so its health channel has gone with it. This is the
                             // last reading we took while it was alive, and the only way this report can
@@ -790,7 +828,7 @@ public sealed class DoctorSupervisor : IDisposable
                                 Explanation =
                                     "Bloom was crashing and asked to be dumped before it died",
                             },
-                            mayFile: !watcher.IsPoisonedByDebugger && !watcher.Target.NeverFile,
+                            mayFile: watcher.MayFileAReport(),
                             _stopping.Token
                         )
                         .ConfigureAwait(false);
@@ -1090,6 +1128,7 @@ public sealed class DoctorSupervisor : IDisposable
             foreach (var watcher in _watchers.Values)
                 watcher.Dispose();
             _watchers.Clear();
+            _probes.Clear();
         }
         _stopping.Dispose();
         _drainGate.Dispose();

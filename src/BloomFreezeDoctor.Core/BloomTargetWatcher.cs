@@ -202,19 +202,7 @@ public sealed class BloomTargetWatcher : IDisposable
             if (!verdict.ShouldReport)
                 return;
 
-            // Four independent reasons never to file, checked here rather than left to the gatherer so
-            // that the decision lives in one place: this target has been under a debugger at some point;
-            // it is a developer or automation run; Bloom's own reporting has already told us about this
-            // problem, in which case a second card is noise about the same trouble; or the freeze was
-            // deliberately simulated, and nobody wants a card about a rehearsal.
-            //
-            // Any of these can still be overridden by the Doctor's `--force`, which exists to test the
-            // filing path itself; see DoctorSupervisor, where that override is applied.
-            var mayFile =
-                !_detector.IsPoisonedByDebugger
-                && !Target.NeverFile
-                && !BloomAlreadyReported()
-                && !WasDeliberatelySimulated();
+            var mayFile = MayFileAReport();
             ReportWanted?.Invoke(
                 this,
                 new ReportWantedEventArgs
@@ -236,6 +224,29 @@ public sealed class BloomTargetWatcher : IDisposable
             Interlocked.Exchange(ref _observing, 0);
         }
     }
+
+    /// <summary>
+    /// Whether a report about this Bloom may actually be filed, as opposed to gathered to disk and kept.
+    ///
+    /// Four independent reasons never to file, and they live here — one definition, called by every path
+    /// that files — rather than being restated at each one. They were restated at each one, and two paths
+    /// got a shorter version: the crash-dump path and the exit examination each checked only the debugger
+    /// and the channel, so a **deliberately simulated** crash on a channel where the simulator is allowed
+    /// filed a real tracker card. Rehearsals reaching the tracker is the one outcome the simulated-failure
+    /// guard exists to prevent, and the paths that ran when Bloom actually died were the ones without it.
+    ///
+    /// The four: this target has been under a debugger at some point; it is a developer or automation run;
+    /// Bloom's own reporting has already told us about this problem, in which case a second card is noise
+    /// about the same trouble; or the failure was deliberately simulated.
+    ///
+    /// Any of these can still be overridden by the Doctor's `--force`, which exists to test the filing
+    /// path itself; see DoctorSupervisor, where that override is applied.
+    /// </summary>
+    public bool MayFileAReport() =>
+        !_detector.IsPoisonedByDebugger
+        && !Target.NeverFile
+        && !BloomAlreadyReported()
+        && !WasDeliberatelySimulated();
 
     /// <summary>
     /// True when Bloom has already reported a problem for this run. Bloom writes this into its session file
