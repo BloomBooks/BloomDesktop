@@ -143,7 +143,7 @@ function imageFileOf(img: HTMLImageElement): string {
 //
 //  - the raw src, because setImgTransparentParam adds and removes a "?transparent=yes"
 //    parameter, so each choice would be filed under a different key from the one before it and
-//    the path would restart on the very first change;
+//    the sequence would restart on the very first change;
 //  - the file alone, because a page image's src is just its bare name relative to the book
 //    folder ("placeholder.png", "aor_AOR_ABC.png"). This map is module-level and lives for the
 //    whole run of Bloom, so two books -- or two pages -- using the same file would append to
@@ -155,7 +155,7 @@ function imageHistoryKeyOf(img: HTMLImageElement): string {
     return `${pageId}/${imageFileOf(img)}`;
 }
 
-// Append this choice to the image's sequence and return the whole path, e.g.
+// Append this choice to the image's sequence and return the whole of it, e.g.
 // "auto > transparent > opaque".
 function recordTransparencyChoice(
     img: HTMLImageElement,
@@ -826,7 +826,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     if (!img) return;
                     const from = transparencyModeOf(img);
                     if (from === to) return; // re-picking what is already ticked says nothing
-                    const path = recordTransparencyChoice(img, from, to);
+                    const choices = recordTransparencyChoice(img, from, to);
                     trackEvent("Image Transparency Set", {
                         from,
                         to,
@@ -841,7 +841,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                         // (built by recordTransparencyChoice above). A long one may mean the three
                         // labels did not predict the result and the user was guessing, though it
                         // could as easily be someone just exploring the options.
-                        path,
+                        choices,
                     });
                 }
 
