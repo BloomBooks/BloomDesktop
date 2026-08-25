@@ -32,6 +32,7 @@ import {
     initializeCanvasElementManager,
     theOneCanvasElementManager,
 } from "./canvasElementManager/CanvasElementManager";
+import { kPointerInsideClass } from "./canvasElementManager/canvasElementRotation";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import {
     canUndoImageOperation,
@@ -149,6 +150,9 @@ function Cleanup() {
         $(this).removeClass("ui-resizable");
         // obsolete, but we'll keep the cleanup for a while
         $(this).removeClass("hoverUp");
+        // Marks the turned canvas element the pointer is inside, so it means nothing once the
+        // page is saved. See kPointerInsideClass in canvasElementRotation.ts.
+        $(this).removeClass(kPointerInsideClass);
     });
     $("span").each(function () {
         $(this).removeClass("ui-disableHighlight");
@@ -283,6 +287,29 @@ function AddEditKeyHandlers(container) {
             hideInvisibles(e);
         });
 
+    addDocumentKeyHandlers();
+
+    // Note, CTRL+N is also caught, but up on the Shell where it is turned into an event,
+    // so that it can be caught even when the focus isn't on the browser
+}
+
+// Add the key handlers that listen on the whole document rather than on one element.
+// AddEditKeyHandlers runs again every time a canvas element is added, because SetupElements
+// does, so a handler bound here without this guard would be bound once more each time and
+// would then run several times for one key press. Every command here gives the same result
+// however often it runs, so the copies did no visible harm, but a command that counts its
+// calls, such as one that puts a step on the undo stack, would be wrong for each extra copy.
+// The mark goes on the document object, not in the page, so a page the user moves to gets its
+// own handlers and nothing is written into the book.
+function addDocumentKeyHandlers(): void {
+    const documentWithMark = document as Document & {
+        bloomDocumentKeyHandlersAdded?: boolean;
+    };
+    if (documentWithMark.bloomDocumentKeyHandlersAdded) {
+        return;
+    }
+    documentWithMark.bloomDocumentKeyHandlersAdded = true;
+
     // Ctrl+Space: "clear formatting" on the current selection. We route this through the CKEditor
     // instance that currently has focus (rather than the browser's document.execCommand) so that
     // (a) it uses our removeFormat configuration/filter, which strips exactly the inline formatting
@@ -325,9 +352,6 @@ function AddEditKeyHandlers(container) {
             return;
         }
     });
-
-    // Note, CTRL+N is also caught, but up on the Shell where it is turned into an event,
-    // so that it can be caught even when the focus isn't on the browser
 }
 
 // Add little language tags. (At one point we limited this to visible .bloom-editable divs,

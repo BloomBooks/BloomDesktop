@@ -633,6 +633,23 @@ export function pageBackgroundNeedsTransparency(color: string): boolean {
     return !isNearWhite(normalized);
 }
 
+/**
+ * Put the image's transparency back to "Auto": no explicit choice by the user, so the
+ * transparent parameter follows the page's own background color. The Transparency submenu's
+ * "Auto" item and the Reset Image command both use this.
+ */
+export function setImageTransparencyToAuto(img: HTMLElement): void {
+    img.classList.remove("bloom-transparent", "bloom-opaque");
+    const backgroundColor = getOwningPageBackgroundColor(img);
+    setImgTransparentParam(
+        img,
+        getImageTransparencyMode(
+            img,
+            pageBackgroundNeedsTransparency(backgroundColor),
+        ),
+    );
+}
+
 export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {
     if (!bloomCanvas) {
         return;

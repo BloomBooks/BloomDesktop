@@ -1,15 +1,30 @@
 import { Bubble, Comical } from "comicaljs";
 import { Point, PointScaling } from "../point";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
-import { handlePlayClick } from "../bloomVideo";
+import {
+    handlePauseClick,
+    handlePlayClick,
+    handleReplayClick,
+} from "../bloomVideo";
 import {
     kBackgroundImageClass,
     kBloomCanvasSelector,
+    kCanvasElementClass,
     kCanvasElementSelector,
 } from "../../toolbox/canvas/canvasElementConstants";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
-import { convertPointFromViewportToElementFrame } from "./CanvasElementGeometry";
+import {
+    convertPointFromViewportToElementFrame,
+    getLeftAndTopBorderWidths,
+    getLeftAndTopPaddings,
+} from "./CanvasElementGeometry";
+import {
+    getCanvasElementRotation,
+    isPointInsideRotatedCanvasElement,
+    kPointerInsideClass,
+    kRotatedClass,
+} from "./canvasElementRotation";
 import { inPlayMode } from "./CanvasElementPositioning";
 
 export interface ICanvasElementPointerInteractionsHost {
@@ -80,6 +95,12 @@ export class CanvasElementPointerInteractions {
         bloomCanvas.onmousemove = null;
         bloomCanvas.onmouseup = null;
 
+        // While the pointer is inside the bloom-canvas, onMouseMove keeps the mark on the turned
+        // element the pointer is inside. No move event tells us it has left, so clear the mark here.
+        // This must be the same function object every time, because this method runs again on every
+        // page load and addEventListener would otherwise stack up another listener each time.
+        bloomCanvas.addEventListener("mouseleave", this.onMouseLeave);
+
         // We use mousemove effects instead of drag due to concerns that drag effects would make the entire bloom-canvas appear to drag.
         // Instead, with mousemove, we can make only the specific canvas element move around
         // Grabbing these (particularly the move event) in the capture phase allows us to suppress
@@ -108,6 +129,116 @@ export class CanvasElementPointerInteractions {
             if (!topBox) return;
             topBox.classList.remove("bloom-allowAutoShrink");
         };
+    }
+
+    // Which canvas element the user clicked on, given a point in the coordinates of the
+    // bloom-canvas.
+    //
+    // comicaljs tests each element against its un-rotated offset box, so it reports a miss
+    // for a point that is really inside an element the user has turned, and a hit for a point
+    // in the part of the box the element has turned away from. We therefore test the turned
+    // elements here and leave the rest to comicaljs, then take whichever hit is on top.
+    private getCanvasElementHit(
+        bloomCanvas: HTMLElement,
+        x: number,
+        y: number,
+    ): Bubble | undefined {
+        const unrotatedHit = Comical.getBubbleHit(
+            bloomCanvas,
+            x,
+            y,
+            true, // only consider canvas elements with pointer events allowed.
+            `.${kRotatedClass}`,
+        );
+        const rotatedHit = this.getRotatedCanvasElementHit(bloomCanvas, x, y);
+        if (!rotatedHit) {
+            return unrotatedHit;
+        }
+        if (!unrotatedHit) {
+            return rotatedHit;
+        }
+        // Level is comicaljs's stacking order; the higher one is in front.
+        const rotatedLevel =
+            Bubble.getBubbleSpec(rotatedHit.content).level ?? 0;
+        const unrotatedLevel =
+            Bubble.getBubbleSpec(unrotatedHit.content).level ?? 0;
+        return rotatedLevel >= unrotatedLevel ? rotatedHit : unrotatedHit;
+    }
+
+    private getRotatedCanvasElementHit(
+        bloomCanvas: HTMLElement,
+        x: number,
+        y: number,
+    ): Bubble | undefined {
+        let hit: HTMLElement | undefined;
+        let hitLevel = Number.NEGATIVE_INFINITY;
+        Array.from(bloomCanvas.getElementsByClassName(kRotatedClass)).forEach(
+            (element) => {
+                if (
+                    !(element instanceof HTMLElement) ||
+                    !element.classList.contains(kCanvasElementClass)
+                ) {
+                    return;
+                }
+                const styles = window.getComputedStyle(element);
+                // Match the two things comicaljs filters on: an invisible element is not there,
+                // and one that takes no pointer events cannot be clicked.
+                if (
+                    styles.display === "none" ||
+                    styles.pointerEvents === "none" ||
+                    !isPointInsideRotatedCanvasElement(element, x, y)
+                ) {
+                    return;
+                }
+                const level = Bubble.getBubbleSpec(element).level ?? 0;
+                if (level >= hitLevel) {
+                    hitLevel = level;
+                    hit = element;
+                }
+            },
+        );
+        return hit ? new Bubble(hit) : undefined;
+    }
+
+    // Where inside the canvas element the user took hold of it. The move code subtracts this
+    // from the pointer position to get the element's new position, so it must be measured
+    // against the element's own box.
+    //
+    // For an element the user has turned, getBoundingClientRect reports the box around the
+    // turned element instead, which would make the element jump as soon as the drag began. In
+    // that case we rebuild the same measurement from offsetLeft/offsetTop, which describe the
+    // element's own box whatever its angle. For an element that is not turned the two agree,
+    // so nothing changes for the ordinary case.
+    private getGrabOffsetPoint(
+        pointRelativeToViewport: Point,
+        canvasElement: HTMLElement,
+    ): Point {
+        if (getCanvasElementRotation(canvasElement) === 0) {
+            return convertPointFromViewportToElementFrame(
+                pointRelativeToViewport,
+                canvasElement,
+            );
+        }
+        const bloomCanvas = canvasElement.parentElement?.closest(
+            kBloomCanvasSelector,
+        ) as HTMLElement;
+        const pointInCanvas = convertPointFromViewportToElementFrame(
+            pointRelativeToViewport,
+            bloomCanvas,
+        );
+        const borderAndPadding = getLeftAndTopBorderWidths(canvasElement).add(
+            getLeftAndTopPaddings(canvasElement),
+        );
+        return new Point(
+            pointInCanvas.getUnscaledX() -
+                canvasElement.offsetLeft -
+                borderAndPadding.getUnscaledX(),
+            pointInCanvas.getUnscaledY() -
+                canvasElement.offsetTop -
+                borderAndPadding.getUnscaledY(),
+            PointScaling.Unscaled,
+            "Grab offset within a rotated canvas element",
+        );
     }
 
     private moveInsertionPointAndFocusTo = (x, y): Range | undefined => {
@@ -179,11 +310,10 @@ export class CanvasElementPointerInteractions {
             return;
         }
 
-        const bubble = Comical.getBubbleHit(
+        const bubble = this.getCanvasElementHit(
             bloomCanvas,
             coordinates.getUnscaledX(),
             coordinates.getUnscaledY(),
-            true, // only consider canvas elements with pointer events allowed.
         );
         if (bubble && event.button === 2) {
             // Right mouse button
@@ -244,7 +374,7 @@ export class CanvasElementPointerInteractions {
                 PointScaling.Scaled,
                 "MouseEvent Client (Relative to viewport)",
             );
-            const relativePoint = convertPointFromViewportToElementFrame(
+            const relativePoint = this.getGrabOffsetPoint(
                 pointRelativeToViewport,
                 bubbleToStart.content,
             );
@@ -301,6 +431,13 @@ export class CanvasElementPointerInteractions {
 
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
+    public onMouseLeave = (event: MouseEvent) => {
+        this.markTurnedElementUnderPointer(
+            event.currentTarget as HTMLElement,
+            undefined,
+        );
+    };
+
     public onMouseMove = (event: MouseEvent) => {
         if (inPlayMode(event.currentTarget as HTMLElement)) {
             return;
@@ -308,6 +445,12 @@ export class CanvasElementPointerInteractions {
         if (event.buttons === 0 && this.mouseIsDown) {
             this.onBubbleDragMouseUp(event);
             return;
+        }
+        if (event.buttons === 0) {
+            // Not a drag, so keep the mark on the turned element the pointer is inside. This has
+            // to come before the bubbleToDrag test, because a mouse-up on a video's play button
+            // returns while that field is still set, which would leave the mark behind.
+            this.updateTurnedElementUnderPointer(event);
         }
         if (!this.bubbleToDrag) {
             return;
@@ -329,6 +472,44 @@ export class CanvasElementPointerInteractions {
         const container = event.currentTarget as HTMLElement;
         this.handleMouseMoveDragCanvasElement(event, container);
     };
+
+    // Which turned canvas element the pointer is inside, so that the CSS can do what :hover
+    // cannot for a turned element; see kPointerInsideClass. An element the user has not turned
+    // gets a real :hover from the browser, so we only have to do this for the turned ones, which
+    // also keeps the work small: we walk the turned elements, not every element, and we do no
+    // comicaljs hit test.
+    private updateTurnedElementUnderPointer(event: MouseEvent) {
+        const bloomCanvas = event.currentTarget as HTMLElement;
+        if (bloomCanvas.getElementsByClassName(kRotatedClass).length === 0) {
+            return;
+        }
+        const coordinates = this.getPointRelativeToCanvas(event, bloomCanvas);
+        if (!coordinates) {
+            return;
+        }
+        const hit = this.getRotatedCanvasElementHit(
+            bloomCanvas,
+            coordinates.getUnscaledX(),
+            coordinates.getUnscaledY(),
+        );
+        this.markTurnedElementUnderPointer(bloomCanvas, hit?.content);
+    }
+
+    // Put the mark on one turned element and take it off the others. Pass undefined to clear it
+    // from all of them.
+    private markTurnedElementUnderPointer(
+        bloomCanvas: HTMLElement,
+        element: HTMLElement | undefined,
+    ) {
+        Array.from(bloomCanvas.getElementsByClassName(kRotatedClass)).forEach(
+            (turned) => {
+                turned.classList.toggle(
+                    kPointerInsideClass,
+                    turned === element,
+                );
+            },
+        );
+    }
 
     private handleMouseMoveDragCanvasElement(
         event: MouseEvent,
@@ -415,6 +596,38 @@ export class CanvasElementPointerInteractions {
         });
     }
 
+    // One of a video's three buttons, when the user has clicked it inside a turned canvas
+    // element. The obvious test, event.target, works only while the button is what the browser
+    // hit; inside a turned element the comicaljs canvas is on top and is the target instead, for
+    // the reason given at kPointerInsideClass. So we look through everything under the pointer
+    // rather than at the topmost thing alone.
+    //
+    // Two limits keep that from clicking a button the user cannot see. The button must belong to
+    // the element the user pressed on, which the ordinary hit test chose, so a button that
+    // another element covers is not clicked. And a button that is not displayed is not in the
+    // list at all, so a hidden video cannot be started.
+    private getVideoButtonInsideTurnedElement(
+        event: MouseEvent,
+    ): HTMLElement | undefined {
+        const pressed = this.bubbleToDrag?.content;
+        if (!pressed?.classList.contains(kRotatedClass)) {
+            return undefined;
+        }
+        const doc = pressed.ownerDocument;
+        for (const element of doc.elementsFromPoint(
+            event.clientX,
+            event.clientY,
+        )) {
+            const button = element.closest(
+                ".bloom-videoPlayIcon, .bloom-videoPauseIcon, .bloom-videoReplayIcon",
+            );
+            if (button instanceof HTMLElement && pressed.contains(button)) {
+                return button;
+            }
+        }
+        return undefined;
+    }
+
     private onBubbleDragMouseUp = (event: MouseEvent) => {
         this.mouseIsDown = false;
         this.snapProvider.endDrag();
@@ -431,6 +644,23 @@ export class CanvasElementPointerInteractions {
             (event.target as HTMLElement).closest(".bloom-videoPlayIcon")
         ) {
             handlePlayClick(event, true);
+            return;
+        }
+        // Inside a turned element the buttons never get the click themselves, so we deliver it.
+        // The pause and replay buttons need this as much as play does: isMouseEventAlreadyHandled
+        // leaves those two to their own listeners, which the comicaljs canvas stops from ever
+        // firing on a turned element.
+        const button = this.gotAMoveWhileMouseDown
+            ? undefined
+            : this.getVideoButtonInsideTurnedElement(event);
+        if (button) {
+            if (button.classList.contains("bloom-videoPlayIcon")) {
+                handlePlayClick(event, true, button);
+            } else if (button.classList.contains("bloom-videoPauseIcon")) {
+                handlePauseClick(event, button);
+            } else {
+                handleReplayClick(event, button);
+            }
             return;
         }
 

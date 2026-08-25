@@ -13,6 +13,33 @@ import {
     kBloomCanvasSelector,
 } from "../../toolbox/canvas/canvasElementConstants";
 import { CanvasElementHandleDragInteractions } from "./CanvasElementHandleDragInteractions";
+import {
+    canRotateCanvasElement,
+    getCanvasElementRotation,
+    getHandleCursorForRotation,
+} from "./canvasElementRotation";
+
+// The picture in the rotate knob: the Material UI "Refresh" icon, which shows a circling
+// arrow. We build the SVG here rather than rendering a React icon component, because the
+// control frame is plain DOM that this file creates and removes by hand. The path is the one
+// in @mui/icons-material/Refresh.
+const kRefreshIconPath =
+    "M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 " +
+    "6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 " +
+    "3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z";
+
+function makeRotateHandleIcon(
+    elementInTheRightDocument: HTMLElement,
+): SVGElement {
+    const doc = elementInTheRightDocument.ownerDocument;
+    const kSvgNamespace = "http://www.w3.org/2000/svg";
+    const svg = doc.createElementNS(kSvgNamespace, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    const path = doc.createElementNS(kSvgNamespace, "path");
+    path.setAttribute("d", kRefreshIconPath);
+    svg.appendChild(path);
+    return svg;
+}
 
 export interface ICanvasElementSelectionUiCallbacks {
     getActiveElement: () => HTMLElement | undefined;
@@ -27,6 +54,7 @@ export interface ICanvasElementSelectionUiCallbacks {
     ) => void;
     startSideControlDrag: (event: MouseEvent, side: string) => void;
     startMoveCrop: (event: MouseEvent) => void;
+    startRotateDrag: (event: MouseEvent) => void;
 }
 
 let pendingRemoveControlFrameTimeout: number | undefined;
@@ -148,6 +176,22 @@ export function setupControlFrame(
             }
             callbacks.startMoveCrop(event);
         });
+        // The rotate handle is the "lollipop": a stem rising from the top edge of the frame
+        // with a knob on the end, which the user drags around the element to turn it. We put
+        // it outside the frame because every centre-of-a-side position inside the frame is
+        // already a crop handle. On an element right at the top of its bloom-canvas the
+        // lollipop is clipped, as the corner resize handles already are there.
+        const rotateHandle =
+            eltToPutControlsOn.ownerDocument.createElement("div");
+        rotateHandle.classList.add("bloom-ui-canvas-element-rotate-handle");
+        rotateHandle.appendChild(makeRotateHandleIcon(eltToPutControlsOn));
+        controlFrame?.appendChild(rotateHandle);
+        rotateHandle.addEventListener("mousedown", (event) => {
+            if (event.buttons !== 1 || !callbacks.getActiveElement()) {
+                return;
+            }
+            callbacks.startRotateDrag(event);
+        });
         const toolboxRoot =
             eltToPutControlsOn.ownerDocument.createElement("div");
         toolboxRoot.setAttribute("id", "canvas-element-context-controls");
@@ -172,6 +216,10 @@ export function setupControlFrame(
         },
         { className: "has-svg", enabled: hasSvg },
         { className: "has-text", enabled: hasText },
+        {
+            className: "can-rotate",
+            enabled: canRotateCanvasElement(eltToPutControlsOn),
+        },
     ];
     controlFrameClassStates.forEach((state) => {
         controlFrame.classList.toggle(state.className, !!state.enabled);
@@ -213,6 +261,34 @@ export async function getHandleTitlesAsync(
     }
 }
 
+/**
+ * Give each resize handle and each crop handle the cursor for the direction it really moves
+ * on screen; see getHandleCursorForRotation.
+ */
+function setHandleCursorsForRotation(
+    controlFrame: HTMLElement,
+    rotation: number,
+): void {
+    const setCursor = (className: string, cursor: string) => {
+        const handle = controlFrame.getElementsByClassName(className)[0] as
+            | HTMLElement
+            | undefined;
+        if (handle) handle.style.cursor = cursor;
+    };
+    (["nw", "ne", "se", "sw"] as const).forEach((corner) => {
+        setCursor(
+            "bloom-ui-canvas-element-resize-handle-" + corner,
+            getHandleCursorForRotation(corner, rotation),
+        );
+    });
+    (["n", "e", "s", "w"] as const).forEach((side) => {
+        setCursor(
+            "bloom-ui-canvas-element-side-handle-" + side,
+            getHandleCursorForRotation(side, rotation),
+        );
+    });
+}
+
 // Align the control frame with the active canvas element.
 export function alignControlFrameWithActiveElement(
     activeElement: HTMLElement | undefined,
@@ -231,6 +307,48 @@ export function alignControlFrameWithActiveElement(
     controlFrame.classList.toggle(
         "bloom-noAutoHeight",
         activeElement.classList.contains("bloom-noAutoHeight"),
+    );
+    // The frame must lie over the element, so it turns with it. Both turn about their
+    // centres (the CSS default), and we give the frame the same size and position as the
+    // element below, so copying the transform is enough to keep them together.
+    controlFrame.style.transform = activeElement.style.transform;
+    // The frame turns everything inside it, including the tooltip of each handle, which the
+    // CSS then turns back so that the text stays level.
+    const rotation = getCanvasElementRotation(activeElement);
+    controlFrame.style.setProperty(
+        "--canvas-element-rotation",
+        rotation + "deg",
+    );
+    setHandleCursorsForRotation(controlFrame, rotation);
+    // The lollipop hangs from the element's top edge. Once the element is turned far enough,
+    // that edge points down the screen, and the lollipop lands behind the panel of controls
+    // that sits below the element. So for those angles we hang it from the element's bottom
+    // edge instead. We leave it alone during a drag: the lollipop is under the pointer, and
+    // moving it to the other end of the element part way through a turn would take it out
+    // from under the pointer.
+    //
+    // The switch waits for three eighths of a turn, not a quarter turn. At a quarter turn the
+    // handle points straight out to the side, where the panel does not reach it, so a switch
+    // there only moved the handle across the element for no gain, at the angle a user stops at
+    // most often (BL-16741). The rotation snap stops at every 45 degrees, so 135 is the first
+    // stop where the handle is on its way under the panel.
+    //
+    // Turning to 180 degrees still moves the handle on the mouse-up of the drag that got there,
+    // because endRotateDrag calls stopMoving before it aligns the frame. That is the angle where
+    // the panel really does cover the handle, so the move is what the user needs, but it does
+    // take the handle out from under the pointer at the end of the drag.
+    if (!controlFrame.classList.contains("moving")) {
+        controlFrame.classList.toggle(
+            "rotate-handle-on-bottom-edge",
+            rotation > 135 && rotation < 225,
+        );
+    }
+    // The user can change a text box's bubble style while it is selected, which can turn
+    // rotation on or off, so this has to be kept up to date here as well as when the frame
+    // is first set up.
+    controlFrame.classList.toggle(
+        "can-rotate",
+        canRotateCanvasElement(activeElement),
     );
     // We want some special CSS rules for control frames on background images (e.g., no resize handles).
     // But we give the class a different name so the control frame won't accidentally be affected
@@ -275,6 +393,11 @@ export function alignControlFrameWithActiveElement(
         controlFrame,
         "bloom-ui-canvas-element-move-crop-handle",
         "Shift",
+    );
+    void getHandleTitlesAsync(
+        controlFrame,
+        "bloom-ui-canvas-element-rotate-handle",
+        "Rotate",
     );
     // Text boxes get a little extra padding, making the control frame bigger than
     // the canvas element itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
@@ -335,11 +458,16 @@ export function adjustMoveCropHandleVisibility(
     const img = imgC?.getElementsByTagName("img")[0];
     let wantMoveCropHandle = false;
     if (img) {
-        const imgRect = img.getBoundingClientRect();
-        const controlRect = controlFrame.getBoundingClientRect();
+        // Compare the laid-out sizes rather than the on-screen rectangles. For a rotated
+        // canvas element getBoundingClientRect reports the box around the turned element,
+        // which is bigger than the element itself and would make a picture that is not
+        // cropped look as if it were. The image and the element are both children of the
+        // same rotation, so their own widths and heights can be compared directly. (For an
+        // image the control frame is the same size as the element; the few extra pixels the
+        // frame gets are for text elements, which have no image.)
         wantMoveCropHandle =
-            imgRect.width > controlRect.width + 1 ||
-            imgRect.height > controlRect.height + 1;
+            img.offsetWidth > activeElement.clientWidth + 1 ||
+            img.offsetHeight > activeElement.clientHeight + 1;
         if (!wantMoveCropHandle && removeCropAttrsIfNotNeeded) {
             img.style.width = "";
             img.style.top = "";

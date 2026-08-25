@@ -37,6 +37,8 @@ import { default as CopyIcon } from "@mui/icons-material/ContentCopy";
 import { default as PasteIcon } from "@mui/icons-material/ContentPaste";
 import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
+import { default as FlipIcon } from "@mui/icons-material/Flip";
+import { default as RotateRightIcon } from "@mui/icons-material/RotateRight";
 import { default as SearchIcon } from "@mui/icons-material/Search";
 import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
 import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
@@ -51,6 +53,7 @@ import {
     isPlaceHolderImage,
     kImageContainerClass,
     pageBackgroundNeedsTransparency,
+    setImageTransparencyToAuto,
     setImgTransparentParam,
 } from "../../js/bloomImages";
 import { doVideoCommand } from "../../js/bloomVideo";
@@ -496,14 +499,74 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         id: "resetImage",
         l10nId: "EditTab.Image.Reset",
         englishLabel: "Reset Image",
-        iconScale: 0.9,
-        icon: React.createElement("img", {
-            src: "/bloom/images/reset image black.svg",
-            alt: "",
-            className: "canvas-context-menu-monochrome-icon",
-        }),
+        // No icon: the row reads better without one, and the command is the odd one out in
+        // its group, because it undoes the commands above it.
         action: () => {
-            getCanvasElementManager()?.resetCropping();
+            getCanvasElementManager()?.resetImage();
+        },
+    },
+    // "Rotate right" — a quarter turn clockwise. What turns depends on what the image is
+    // part of, because the two cases want different things:
+    // - An ordinary image canvas element turns as a whole, using the same rotation the
+    //   rotate handle on the control frame sets, so the two commands cannot disagree.
+    // - A background image fills its bloom-canvas and cannot be turned as a box, so the
+    //   picture inside turns and its own box is reshaped to match. Any cropping is kept: the
+    //   cropped region turns with the picture and is scaled to fit the page.
+    rotateRight: {
+        kind: "command",
+        id: "rotateRight",
+        l10nId: "EditTab.Image.RotateRight",
+        englishLabel: "Rotate right",
+        icon: RotateRightIcon,
+        action: () => {
+            getCanvasElementManager()?.rotateActiveImageRight();
+        },
+    },
+    // "Flip" — mirror the picture. This always applies to the picture rather than to the
+    // canvas element, because mirroring a box moves it without changing how it looks.
+    // The axes are the ones the user sees on screen, whatever way the picture is turned.
+    flipImage: {
+        kind: "command",
+        id: "flipImage",
+        l10nId: "EditTab.Image.Flip",
+        englishLabel: "Flip",
+        icon: FlipIcon,
+        action: () => {},
+        menu: {
+            buildMenuItem: () => {
+                return {
+                    id: "flipImage",
+                    l10nId: "EditTab.Image.Flip",
+                    englishLabel: "Flip",
+                    onSelect: () => {},
+                    subMenuItems: [
+                        {
+                            l10nId: "EditTab.Image.FlipHorizontal",
+                            englishLabel: "Flip horizontal",
+                            icon: React.createElement(FlipIcon, null),
+                            onSelect: () => {
+                                getCanvasElementManager()?.flipActiveImage(
+                                    "horizontal",
+                                );
+                            },
+                        },
+                        {
+                            l10nId: "EditTab.Image.FlipVertical",
+                            englishLabel: "Flip vertical",
+                            // The same icon turned a quarter turn, so that the pair reads as
+                            // one idea about two axes. MUI has no vertical flip icon.
+                            icon: React.createElement(FlipIcon, {
+                                style: { transform: "rotate(90deg)" },
+                            }),
+                            onSelect: () => {
+                                getCanvasElementManager()?.flipActiveImage(
+                                    "vertical",
+                                );
+                            },
+                        },
+                    ],
+                };
+            },
         },
     },
     // "Edit with AI…" — the entry point for the AI Image Editor integration. This command
@@ -770,11 +833,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                                 : undefined,
                             onSelect: () => {
                                 if (!img) return;
-                                img.classList.remove(
-                                    "bloom-transparent",
-                                    "bloom-opaque",
-                                );
-                                applyTransparencyParam();
+                                setImageTransparencyToAuto(img);
                             },
                         },
                         {
@@ -1245,21 +1304,32 @@ export const controlSections: Record<SectionId, IControlSection> = {
             menu: ["format"],
         },
     },
+    // The image commands come in three menu sections, so that the menu shows a line between
+    // them. The first section is about which picture is in the box, the second about how the
+    // picture sits in the box, and the third about the other things we can do to it. Reset
+    // image is last in its section because it undoes the commands above it.
     image: {
         id: "image",
         controlsBySurface: {
+            menu: ["missingMetadata", "chooseImage", "copyImage", "pasteImage"],
+        },
+    },
+    imageArrangement: {
+        id: "imageArrangement",
+        controlsBySurface: {
             menu: [
-                "missingMetadata",
-                "chooseImage",
-                "copyImage",
-                "pasteImage",
-                "resetImage",
                 "expandToFillSpace",
-                "becomeBackground",
-                "imageFieldType",
+                "rotateRight",
+                "flipImage",
                 "imageBackground",
-                "editWithAi",
+                "resetImage",
             ],
+        },
+    },
+    imageSettings: {
+        id: "imageSettings",
+        controlsBySurface: {
+            menu: ["becomeBackground", "imageFieldType", "editWithAi"],
         },
     },
     imagePanel: {

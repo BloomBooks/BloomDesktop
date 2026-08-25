@@ -1490,6 +1490,11 @@ canvas.moving {
 @resizeHandleRadius: 8px;
 @sideHandleRadius: 4px;
 @sideHandleCenter: 6px;
+// The rotate handle is a small pill on the end of a short stem, above the middle of the top
+// edge of the control frame. We put it outside the frame because the middle of every side
+// inside the frame is already a crop handle.
+@rotateHandleDiameter: 18px;
+@rotateHandleStemLength: 20px;
 // We place this frame over each canvas element to support resizing and cropping.
 // The frame itself is invisible (and ignores pointer events), but it provides a container
 // for the resize and crop handles and the toolbox below.
@@ -1524,7 +1529,8 @@ canvas.moving {
     // (except for the resize or crop control we are operating).
     &.moving {
         .bloom-ui-canvas-element-resize-handle,
-        .bloom-ui-canvas-element-side-handle {
+        .bloom-ui-canvas-element-side-handle,
+        .bloom-ui-canvas-element-rotate-handle {
             display: none;
             &.active-control {
                 display: block;
@@ -1628,6 +1634,73 @@ canvas.moving {
         cursor: move;
     }
 
+    // The rotate handle. It is only shown for the canvas elements we can turn: an element
+    // whose bubble outline is drawn by comicaljs cannot turn, because that drawing stays
+    // upright, and neither can a background image, which fills its bloom-canvas.
+    // The frame carries the same rotation as its element, so the handle orbits with it and
+    // always shows which way is up for the element.
+    .bloom-ui-canvas-element-rotate-handle {
+        display: none;
+        position: absolute;
+        width: @rotateHandleDiameter;
+        height: @rotateHandleDiameter;
+        top: -(@rotateHandleDiameter + @rotateHandleStemLength);
+        left: calc(50% - @rotateHandleDiameter / 2);
+        border-radius: 50%;
+        background-color: white;
+        border: 1px solid var(--canvas-element-control-color);
+        box-sizing: border-box;
+        pointer-events: all;
+        cursor: grab;
+        &.active-control {
+            cursor: grabbing;
+        }
+        &.active-control,
+        &:hover {
+            background-color: var(--canvas-element-control-color);
+        }
+        // the icon in the knob, which tells the user what the knob does. The mouse events
+        // belong to the knob, so the icon must not take any of them.
+        svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+            fill: var(--canvas-element-control-color);
+            pointer-events: none;
+        }
+        &.active-control svg,
+        &:hover svg {
+            fill: white;
+        }
+        // the stem, joining the pill to the top edge of the frame
+        &:before {
+            content: "";
+            position: absolute;
+            left: calc(50% - 0.5px);
+            top: 100%;
+            width: 1px;
+            height: @rotateHandleStemLength;
+            background-color: var(--canvas-element-control-color);
+        }
+    }
+    &.can-rotate:not(.moving) .bloom-ui-canvas-element-rotate-handle {
+        display: block;
+    }
+
+    // Once the element is turned far enough, its top edge points down the screen, and a
+    // lollipop hanging from that edge lands behind the panel of controls that sits below the
+    // element. For those angles we hang the lollipop from the element's bottom
+    // edge, which is then the upper edge on screen. The stem goes with it, so it now rises
+    // from the pill to the edge below. alignControlFrameWithActiveElement adds this class.
+    &.rotate-handle-on-bottom-edge .bloom-ui-canvas-element-rotate-handle {
+        top: auto;
+        bottom: -(@rotateHandleDiameter + @rotateHandleStemLength);
+        &:before {
+            top: auto;
+            bottom: 100%;
+        }
+    }
+
     &.bloom-ui-canvas-element-show-move-crop-handle
         .bloom-ui-canvas-element-move-crop-handle {
         display: block;
@@ -1688,6 +1761,10 @@ canvas.moving {
         padding: 0.2em;
         z-index: 2;
         text-wrap-mode: nowrap;
+        // The control frame turns with the element, so this text would lie at the angle
+        // of the element. Turn it back by the same angle to keep it level and readable.
+        // The frame sets the angle; a frame with no angle set gets zero and stays put.
+        transform: rotate(calc(-1 * var(--canvas-element-rotation, 0deg)));
     }
     // the tooltip may not be visible outside the frame, so
     // on the south and east sides we move it to the other side.
@@ -1777,9 +1854,17 @@ svg.bloom-videoControl {
     }
 }
 
+// The browser gives a turned canvas element no :hover, because the comicaljs canvas covers it
+// and takes the pointer. So everywhere these rules ask for :hover on a video, they also accept
+// bloom-pointer-inside, which CanvasElementPointerInteractions puts on the turned element the
+// pointer is really inside. See kPointerInsideClass in canvasElementRotation.ts (BL-16741).
+@pointerInsideTurnedElement: ~".bloom-canvas-element.bloom-pointer-inside";
+
 // Show pause and replay when playing and hovered
 // (except for when we put bloom-ui-no-controls on draggable videos in Play Mode because there they can't be paused)
-.bloom-videoContainer.playing:hover:not(:has(video.bloom-ui-no-controls)) {
+.bloom-videoContainer.playing:hover:not(:has(video.bloom-ui-no-controls)),
+@{pointerInsideTurnedElement}
+    .bloom-videoContainer.playing:not(:has(video.bloom-ui-no-controls)) {
     .bloom-videoControlContainer {
         &.bloom-videoPauseIcon,
         &.bloom-videoReplayIcon {
@@ -1789,7 +1874,8 @@ svg.bloom-videoControl {
 }
 
 // Show play, centered, when hovering a video that is not paused or playing
-.bloom-videoContainer:not(.paused):not(.playing):hover {
+.bloom-videoContainer:not(.paused):not(.playing):hover,
+@{pointerInsideTurnedElement} .bloom-videoContainer:not(.paused):not(.playing) {
     .bloom-videoPlayIcon {
         display: flex;
         left: calc(50% - @videoIconSize / 2);
@@ -1804,7 +1890,10 @@ svg.bloom-videoControl {
 // (This rule would be more at home in Games.less, but we don't need any other Game-specific
 // rules about the video controls, so I think it's more helpful to keep it with the rules
 // it modifies.)
-.drag-activity-play .bloom-videoContainer:not(.paused):not(.playing):hover {
+.drag-activity-play .bloom-videoContainer:not(.paused):not(.playing):hover,
+.drag-activity-play
+    @{pointerInsideTurnedElement}
+    .bloom-videoContainer:not(.paused):not(.playing) {
     .bloom-videoPlayIcon {
         display: none;
     }
