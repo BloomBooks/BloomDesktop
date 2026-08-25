@@ -1062,7 +1062,7 @@ const main = async () => {
             `[go] Linking bundled libraries: ${process.env.BLOOM_LINKED_LIBS}`,
         );
         for (const { entry, dir } of bundled) {
-            for (const command of entry.watchCommands) {
+            for (const command of entry.watchCommands ?? []) {
                 startManagedCommand(command, dir, `[${entry.name}] `);
             }
             if (entry.extraCopy) {
@@ -1084,14 +1084,14 @@ const main = async () => {
     // app for Bloom to serve, before Bloom starts.
     let dev;
     if (iframe) {
-        // Bring Bloom's Vite up and confirm it healthy FIRST, THEN start the editor's own
-        // Vite dev server. Running two Vite startups (and the editor's dependency optimizer)
+        // Bring Bloom's Vite up and confirm it healthy FIRST, THEN start the AI Image Editor's own
+        // Vite dev server. Running two Vite startups (and the AI Image Editor's dependency optimizer)
         // at once starves Bloom's health check and makes it look unreachable.
         dev = await startDevServer();
         const url = await startIframeDevServer(iframe.entry, iframe.dir);
         // Bloom.exe inherits process.env; AiImageEditorApi.GetAiImageEditorUrl reads this.
         process.env[iframe.entry.devUrlEnv] = url;
-        console.log(`[go] AI editor: live dev server at ${url} (HMR).`);
+        console.log(`[go] AI Image Editor: live dev server at ${url} (HMR).`);
     } else {
         // Default staging is best-effort and usually lightweight, so run it alongside
         // Vite startup — but its checkout fallback can run a full editor build, and a
@@ -1107,7 +1107,7 @@ const main = async () => {
         const stagingOrTimeout = new Promise((resolve) => {
             const timer = setTimeout(() => {
                 console.log(
-                    "[go] AI editor: staging is still running after " +
+                    "[go] AI Image Editor: staging is still running after " +
                         `${stagingGraceMs / 1000}s; starting Bloom without waiting for it.`,
                 );
                 resolve();
