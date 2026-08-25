@@ -2037,10 +2037,12 @@ namespace Bloom
                     dlg.SetScaledSize(700, 500);
                     dlg.StartPosition = FormStartPosition.CenterScreen;
                     dlg.ShowInTaskbar = true;
-                    // Ensure the dialog comes to the foreground even when opened
-                    // programmatically (e.g. after closing/reopening for a language change).
-                    dlg.TopMost = true;
-                    dlg.Activated += (s, e) => dlg.TopMost = false;
+                    // With no owner window to hand it the foreground, this opens behind
+                    // whatever the user launched Bloom from (Windows Explorer, say) -- notably
+                    // when the minimum-version gate's "Open a Different Collection" brings us
+                    // here at startup -- and also when we reopen it programmatically after a
+                    // language change. See BL-16690.
+                    dlg.BringToFrontWhenShown();
                     dlg.ShowDialog();
                     closeSource = dlg.CloseSource;
                 }
