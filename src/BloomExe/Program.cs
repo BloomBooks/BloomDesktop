@@ -1666,6 +1666,90 @@ namespace Bloom
         /// ------------------------------------------------------------------------------------
         private static void StartUpShellBasedOnMostRecentUsedIfPossible()
         {
+            var opened = false;
+            try
+            {
+                opened = TryOpenMostRecentlyUsedCollection();
+            }
+            catch (Exception error)
+            {
+                // OpenProjectWindow reports and returns false for anything that goes wrong while
+                // actually opening, so reaching here means something around it threw. Report it, but
+                // carry on to the chooser below: if we let this out, we would never get there, and a
+                // startup action that throws leaves Bloom running with no window at all. (BL-16678)
+                Logger.WriteError("Error opening the most recently used collection", error);
+                NonFatalProblem.Report(
+                    ModalIf.All,
+                    PassiveIf.None,
+                    "Bloom had a problem opening the collection you were last using.",
+                    null,
+                    error
+                );
+            }
+
+            if (!opened)
+            {
+                // Rather than just adding it to the idle queue, we make sure it doesn't overlap with any other startup idle tasks
+                // and that the splash screen will be closed to make way for it.
+                StartupScreenManager.AddStartupAction(
+                    () => ChooseACollectionOrQuit(),
+                    shouldHideSplashScreen: true
+                );
+            }
+        }
+
+        /// <summary>
+        /// Offer the collection chooser, and if even that fails, quit.
+        /// </summary>
+        /// <remarks>
+        /// Use this wherever the chooser is our recovery from not having a collection open, as opposed
+        /// to the user asking for it while a collection is open. On those paths there is no Shell: if
+        /// showing the chooser throws, the exception goes to FatalExceptionHandler, which during startup
+        /// is in fallback mode and so shows a message and lets the application carry on -- carrying on
+        /// with no window and no way to quit, holding the single-instance token so that the next launch
+        /// is turned away with "Bloom is already running". Quitting is a poor outcome, but it is a much
+        /// better one than that, and ProgramExit arms the force-quit net in case shutdown is stuck too.
+        /// (BL-16678)
+        /// </remarks>
+        private static void ChooseACollectionOrQuit()
+        {
+            try
+            {
+                ChooseACollection();
+            }
+            catch (System.IO.PathTooLongException error)
+            {
+                // ChooseACollection raises this on purpose when the collection the user picked has too
+                // long a path, so that we can say so specifically instead of blaming the chooser. Do
+                // that report here rather than letting it out: the tailored one lives in
+                // ProblemReportApi, which is not in play on these paths (no project, so we are still on
+                // the WinForms fallback reporter), and an exception let out of here reaches
+                // FatalExceptionHandler, which in fallback mode shows a message and lets Bloom carry on
+                // -- windowless, which is the very thing this method exists to prevent. (BL-16678)
+                Logger.WriteError("A collection was chosen whose path is too long", error);
+                LongPathAware.ReportLongPath(error);
+                ProgramExit.Exit();
+            }
+            catch (Exception error)
+            {
+                Logger.WriteError("Error offering the collection chooser", error);
+                NonFatalProblem.Report(
+                    ModalIf.All,
+                    PassiveIf.None,
+                    "Bloom was not able to show you the list of collections, and has to quit.",
+                    null,
+                    error
+                );
+                ProgramExit.Exit();
+            }
+        }
+
+        /// <summary>
+        /// Open the collection the user was last in, if we have a usable one remembered.
+        /// </summary>
+        /// <returns>true if a project window is now open</returns>
+        private static bool TryOpenMostRecentlyUsedCollection()
+        {
             var path = Settings.Default.MruProjects.Latest;
 
             if (!string.IsNullOrEmpty(path))
@@ -1680,7 +1764,9 @@ namespace Bloom
                 }
                 else
                 {
-                    while (Utils.MiscUtils.IsInvalidCollectionToEdit(path))
+                    // The null check matters: once we have removed the last entry, Latest returns null,
+                    // and IsInvalidCollectionToEdit would then throw on it. (BL-16678)
+                    while (path != null && Utils.MiscUtils.IsInvalidCollectionToEdit(path))
                     {
                         // Somehow...from a previous version?...we have an invalid file in our MRU list.
                         Settings.Default.MruProjects.RemovePath(path);
@@ -1689,15 +1775,7 @@ namespace Bloom
                 }
             }
 
-            if (path == null || !OpenProjectWindow(path))
-            {
-                // Rather than just adding it to the idle queue, we make sure it doesn't overlap with any other startup idle tasks
-                // and that the splash screen will be closed to make way for it.
-                StartupScreenManager.AddStartupAction(
-                    () => ChooseACollection(),
-                    shouldHideSplashScreen: true
-                );
-            }
+            return path != null && OpenProjectWindow(path);
         }
 
         /// ------------------------------------------------------------------------------------
@@ -1717,6 +1795,48 @@ namespace Bloom
                 if (Utils.LongPathAware.GetExceedsMaxPath(path))
                 {
                     Utils.LongPathAware.ReportLongPath(path);
+                    return false;
+                }
+
+                // The collection may declare a minimum Bloom version. Check that before we go to the
+                // trouble of building a ProjectContext around it. This is the one place all the ways
+                // of opening a collection funnel through, and each caller responds to a false return
+                // by putting up the collection chooser, which is one of the two choices we offer the
+                // user here. See BL-16690.
+                //
+                // Deliberately, this gates only the interactive ways of opening a collection. The
+                // command-line commands and BulkUploader build a ProjectContext directly and so are
+                // not stopped by a minimum version. We decided to leave it that way: those tools have
+                // no user to read a dialog or choose another collection, and failing an overnight
+                // upload job is its own kind of damage. If the flag ever needs to protect the files
+                // themselves rather than warn a person, this is the decision to revisit.
+                if (MinimumBloomVersionCheck.IsThisBloomTooOld(path, out var minimumBloomVersion))
+                {
+                    // We're normally still showing the splash screen at this point, and it would sit on
+                    // top of our dialog. Also, the dialog is a ReactDialog, so it needs the server.
+                    StartupScreenManager.HideSplashScreenForDialog();
+                    _applicationContainer.BloomServer.EnsureListening();
+                    if (
+                        MinimumBloomVersionCheck.ReportCollectionNeedsNewerBloom(
+                            Path.GetFileNameWithoutExtension(path),
+                            minimumBloomVersion
+                        )
+                    )
+                    {
+                        // The user chose to upgrade: a newer Bloom has been downloaded and we have
+                        // asked Bloom to quit so it can be installed. Claim success, not because we
+                        // opened anything, but so that no caller puts up the collection chooser
+                        // while we are shutting down -- that would start a fresh modal message loop
+                        // and could keep Bloom alive.
+                        //
+                        // NOTE for anyone adding a caller: this is the one path where we return true
+                        // with _projectContext still null. It suits today's callers, which only use
+                        // the result to decide whether to offer the chooser (and recording this
+                        // collection as most-recently-used is right, since the upgraded Bloom should
+                        // reopen it). A caller that goes on to use _projectContext would need a
+                        // three-way result -- opened / refused / quitting -- instead of this bool.
+                        return true;
+                    }
                     return false;
                 }
 
@@ -1743,6 +1863,11 @@ namespace Bloom
                     BloomThreadCancelService.Dispose();
                 BloomThreadCancelService = new CancellationTokenSource();
 
+                // We have a collection open, so no lock-out is in progress any more. Without this,
+                // a user locked out of collection A who moved to B and later came back to A would
+                // find that A could never lock them out again this session. See BL-16690.
+                MinimumBloomVersionCheck.NoteCollectionOpened();
+
                 return true;
             }
             catch (Exception e)
@@ -1767,18 +1892,91 @@ namespace Bloom
         /// ------------------------------------------------------------------------------------
         private static void HandleErrorOpeningProjectWindow(Exception error, string projectPath)
         {
-            if (_projectContext != null)
+            // The finally matters. This block only runs when the failure came *after* the
+            // ProjectContext was built (the constructor's own failures never assign _projectContext,
+            // and clean up after themselves), and closing a half-working window or disposing a
+            // half-working project can throw in its own right. If that took out the two lines below it,
+            // we would be left with the failed project's API handlers still registered and a stale
+            // _projectContext -- so the next collection would hit the duplicate-key failure this whole
+            // change is about, and trip the Debug.Assert in OpenProjectWindow on the way. (BL-16678)
+            try
             {
-                if (_projectContext.ProjectWindow != null)
+                if (_projectContext != null)
                 {
-                    _projectContext.ProjectWindow.Closed -= HandleProjectWindowClosed;
-                    _projectContext.ProjectWindow.Close();
-                }
+                    if (_projectContext.ProjectWindow != null)
+                    {
+                        _projectContext.ProjectWindow.Closed -= HandleProjectWindowClosed;
+                        _projectContext.ProjectWindow.Close();
+                    }
 
-                _projectContext.Dispose();
+                    _projectContext.Dispose();
+                }
+            }
+            catch (Exception teardownError)
+            {
+                Logger.WriteError(
+                    "Error shutting down a project that failed to open",
+                    teardownError
+                );
+            }
+            finally
+            {
                 _projectContext = null;
+                EnsureNoProjectStateSurvivesAFailedOpen();
             }
 
+            try
+            {
+                ReportErrorOpeningProjectWindow(error, projectPath);
+            }
+            catch (Exception reportingError)
+            {
+                // Reporting runs inside OpenProjectWindow's catch, and its callers depend on
+                // OpenProjectWindow returning false to put up the collection chooser. If a failure to
+                // report escaped from here, it would take that recovery with it and leave Bloom running
+                // with no window and no way to quit. The user has already lost the collection they asked
+                // for; don't also cost them the way back in. (BL-16678)
+                Logger.WriteError("Error reporting a failure to open a collection", reportingError);
+            }
+        }
+
+        /// <summary>
+        /// Make sure nothing the failed project left on application-level objects can spoil the next
+        /// collection the user picks.
+        /// </summary>
+        /// <remarks>
+        /// ProjectContext.Dispose does this for itself, but only as far as it gets: if its own teardown
+        /// throws part way, the constructor logs that and carries on, and the API endpoint handlers the
+        /// failed project registered are still there. The next collection then re-registers the same
+        /// patterns and dies on a duplicate key ("An item with the same key has already been added.
+        /// Key: audio/startrecord"), so one bad collection cost the user every later one until they
+        /// restarted Bloom. This is the one place that knows we have failed and are about to offer
+        /// another collection, so make it certain here. It is cheap and idempotent. (BL-16678)
+        /// </remarks>
+        private static void EnsureNoProjectStateSurvivesAFailedOpen()
+        {
+            try
+            {
+                var server = _applicationContainer?.BloomServer;
+                Debug.Assert(
+                    server?.ApiHandler.HasProjectLevelHandlers != true,
+                    "ProjectContext.Dispose should already have removed the failed project's API endpoint handlers (BL-16678)"
+                );
+                ProjectContext.ReleaseApplicationLevelProjectState(server);
+            }
+            catch (Exception e)
+            {
+                // Same reasoning as the caller's guard: getting back to the collection chooser matters
+                // more than this cleanup succeeding.
+                Logger.WriteError(
+                    "Error clearing state left by a collection that failed to open",
+                    e
+                );
+            }
+        }
+
+        private static void ReportErrorOpeningProjectWindow(Exception error, string projectPath)
+        {
             // FileException is a Bloom exception to capture the filepath. We want to report the inner, original exception.
             Exception originalError = FileException.UnwrapIfFileException(error);
             string errorFilePath = FileException.GetFilePathIfPresent(error);
@@ -1910,6 +2108,12 @@ namespace Bloom
         {
             if (OpenProjectWindow(path))
             {
+                // Note that OpenProjectWindow also reports success when the user chose to upgrade
+                // rather than open anything. Recording the collection is right in that case too: an
+                // upgrade has been downloaded and will be installed as Bloom closes, so the next
+                // Bloom to start really can open this collection, and landing straight back in it is
+                // exactly what the user was trying to do.
+                //
                 // Remember the collection by the path that really exists on disk, so that a path saved
                 // by an older Bloom with trailing periods or spaces on the folder name heals rather
                 // than being handed back to us on every launch. See BL-16679.
@@ -1935,6 +2139,22 @@ namespace Bloom
         public static void SwitchToCollection(string path, Shell formToClose)
         {
             _collectionPathToOpenAfterCurrentProjectClosed = path;
+            formToClose.UserWantsToOpenADifferentProject = true;
+            formToClose.Close();
+        }
+
+        /// <summary>
+        /// Closes the current collection's window and puts up the collection chooser, as if the
+        /// user had chosen Open/Create Collection but without a destination collection chosen yet.
+        /// Used when the open collection can no longer stay open -- a Team Collection minimum
+        /// Bloom version we don't meet arrived mid-session (BL-16690). Cancelling the chooser
+        /// exits Bloom (see ChooseACollection), which preserves the rule that staying in the
+        /// locked-out collection is not an option.
+        /// </summary>
+        public static void CloseCurrentCollectionAndChooseAnother(Shell formToClose)
+        {
+            // No chosen path: OpenCollectionChosenInDialog reads null as "show the chooser".
+            _collectionPathToOpenAfterCurrentProjectClosed = null;
             formToClose.UserWantsToOpenADifferentProject = true;
             formToClose.Close();
         }
@@ -1975,7 +2195,17 @@ namespace Bloom
         private static void ReopenProject(object sender, EventArgs e)
         {
             Application.Idle -= ReopenProject;
-            OpenCollection(Settings.Default.MruProjects.Latest);
+            if (!OpenCollection(Settings.Default.MruProjects.Latest))
+            {
+                // Fall back to letting the user choose again, exactly as OpenCollectionChosenInDialog
+                // does. We get here from a UI language change or from the Collection Settings dialog,
+                // and HandleProjectWindowClosed has already closed the Shell and disposed the project.
+                // Without this, a reopen that fails leaves Application.Run() with no window, and since
+                // nothing goes on to call ProgramExit.Exit(), not even its 20-second force-quit net is
+                // armed: Bloom sits there invisibly holding the single-instance token, so the next
+                // launch is turned away with "Bloom is already running". (BL-16678)
+                ChooseACollectionOrQuit();
+            }
         }
 
         private static void OpenCollectionChosenInDialog(object sender, EventArgs e)
@@ -1983,11 +2213,14 @@ namespace Bloom
             Application.Idle -= OpenCollectionChosenInDialog;
             var pathToOpen = _collectionPathToOpenAfterCurrentProjectClosed;
             _collectionPathToOpenAfterCurrentProjectClosed = null;
-            Debug.Assert(!string.IsNullOrEmpty(pathToOpen));
-            if (!OpenCollection(pathToOpen))
+            // pathToOpen is null when CloseCurrentCollectionAndChooseAnother closed the shell:
+            // no collection has been chosen yet, so go straight to the chooser.
+            if (string.IsNullOrEmpty(pathToOpen) || !OpenCollection(pathToOpen))
             {
-                // If opening failed, fall back to letting the user choose again.
-                ChooseACollection();
+                // If opening failed, fall back to letting the user choose again. (The Shell was closed
+                // before we got here, so if even the chooser fails we have to quit rather than leave
+                // Bloom running with no window. See ChooseACollectionOrQuit. BL-16678)
+                ChooseACollectionOrQuit();
             }
         }
 
