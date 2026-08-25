@@ -193,7 +193,13 @@ public sealed class ReportOutbox
                 && b.Metadata.Fingerprint == report.Fingerprint
             );
         if (existing != null)
-            return RecordAnotherOccurrence(existing);
+        {
+            // Null means it stopped being mergeable while we were deciding, so fall through and make a
+            // bundle of our own. See StillMergeable.
+            var merged = RecordAnotherOccurrence(existing);
+            if (merged != null)
+                return merged;
+        }
 
         // A different problem, but the same Bloom, moments ago. See FoldInAFollowOnProblem.
         // List() is newest-first, so Last is the EARLIEST such bundle - the original report, and the one
@@ -208,17 +214,32 @@ public sealed class ReportOutbox
                         <= FollowOnWindow
                 );
             if (sameBloom != null)
-                return FoldInAFollowOnProblem(sameBloom, report, reason);
+            {
+                var folded = FoldInAFollowOnProblem(sameBloom, report, reason);
+                if (folded != null)
+                    return folded;
+            }
         }
 
         var state = report.MayFile ? BundleState.Pending : BundleState.NotForFiling;
         var now = _now();
         var name = $"{now:yyyyMMdd-HHmmss}-{report.Fingerprint}";
 
+        // Two bundles really can want this name: the timestamp is only to the second, and reports of the
+        // same problem that do NOT merge are a normal case - a developer run, where nothing merges at all,
+        // or one arriving just after the bundle it would have joined was filed. The name is only a name,
+        // so make it unique rather than letting the publish rename below fail, which throws out of
+        // Enqueue and discards the report.
+        var final = Path.Combine(_root, name);
+        for (var attempt = 2; Directory.Exists(final); attempt++)
+        {
+            name = $"{now:yyyyMMdd-HHmmss}-{report.Fingerprint}-{attempt}";
+            final = Path.Combine(_root, name);
+        }
+
         // Build in a staging folder and rename into place, so a reader never sees a half-written
         // bundle. A rename within one volume is atomic; a copy is not.
         var staging = Path.Combine(_root, ".staging-" + name);
-        var final = Path.Combine(_root, name);
         if (Directory.Exists(staging))
             RobustIO.DeleteDirectoryAndContents(staging);
         Directory.CreateDirectory(staging);
@@ -522,13 +543,20 @@ public sealed class ReportOutbox
     /// re-attaching, but "and then it died" is new information, and for a crash it is the instalment
     /// carrying the minidump.
     /// </summary>
-    private QueuedBundle FoldInAFollowOnProblem(
+    private QueuedBundle? FoldInAFollowOnProblem(
         QueuedBundle bundle,
         GatheredReport report,
         string? reason
     )
     {
-        var artifacts = bundle.Metadata.Artifacts.ToList();
+        // Checked here, before writing anything, and again before the metadata write below. See
+        // StillMergeable.
+        var fresh = StillMergeable(bundle);
+        if (fresh == null)
+            return null;
+
+        var added = new List<string>();
+        var artifacts = fresh.Metadata.Artifacts.ToList();
         var followOnNumber = artifacts.Count(n =>
             n.StartsWith(FollowOnReportPrefix, StringComparison.Ordinal)
         );
@@ -536,6 +564,7 @@ public sealed class ReportOutbox
         try
         {
             RobustFile.WriteAllText(Path.Combine(bundle.Directory, bodyName), report.Body);
+            added.Add(bodyName);
             artifacts.Add(bodyName);
         }
         catch (Exception)
@@ -556,6 +585,7 @@ public sealed class ReportOutbox
                         + $"-followon{followOnNumber + 1}"
                         + Path.GetExtension(fileName);
                 RobustFile.Move(artifact, Path.Combine(bundle.Directory, fileName));
+                added.Add(fileName);
                 artifacts.Add(fileName);
             }
             catch (Exception)
@@ -564,12 +594,24 @@ public sealed class ReportOutbox
             }
         }
 
+        // Writing the report body and moving a minidump takes long enough for a drain to finish in the
+        // meantime, so the decision is re-taken against the disk here, immediately before the only write
+        // that could undo one. If it has been filed, the files just written stay in its folder as
+        // harmless spare copies and the caller makes a bundle of its own - which keeps the report itself,
+        // and loses only the attachments. Filing the same card twice would be the worse trade.
+        var current = StillMergeable(bundle);
+        if (current == null)
+            return null;
+
         var note =
             $"{_now():yyyy-MM-dd HH:mm}Z — the same Bloom then had a further problem: "
             + $"{reason ?? "reason not recorded"}. {report.Summary}";
-        var notes = bundle.Metadata.FollowOnNotes.ToList();
+        var notes = current.Metadata.FollowOnNotes.ToList();
         notes.Add(note);
-        var metadata = bundle.Metadata with
+        // Union of what the disk says and what we added, so an artifact another thread recorded while we
+        // were writing is not dropped.
+        artifacts = current.Metadata.Artifacts.Concat(added).Distinct().ToList();
+        var metadata = current.Metadata with
         {
             // NOT Occurrences: see FollowOnNotes. LastOccurrenceUtc is still right, though - it is the
             // last time we saw anything wrong with this Bloom, which is what the card's reader wants.
@@ -581,15 +623,42 @@ public sealed class ReportOutbox
         return bundle with { Metadata = metadata };
     }
 
-    private QueuedBundle RecordAnotherOccurrence(QueuedBundle bundle)
+    private QueuedBundle? RecordAnotherOccurrence(QueuedBundle bundle)
     {
-        var metadata = bundle.Metadata with
+        var fresh = StillMergeable(bundle);
+        if (fresh == null)
+            return null;
+        var metadata = fresh.Metadata with
         {
-            Occurrences = bundle.Metadata.Occurrences + 1,
+            Occurrences = fresh.Metadata.Occurrences + 1,
             LastOccurrenceUtc = _now(),
         };
-        WriteMetadata(bundle.Directory, metadata);
-        return bundle with { Metadata = metadata };
+        WriteMetadata(fresh.Directory, metadata);
+        return fresh with { Metadata = metadata };
+    }
+
+    /// <summary>
+    /// Re-reads a bundle's metadata at the moment of merging into it, and refuses the merge if it has
+    /// left the queue in the meantime.
+    ///
+    /// Merging is a read-then-write, and a drain can run between the two: the supervisor drains on a
+    /// timer as well as after each gather, while an enqueue happens on whichever worker thread gathered.
+    /// The gap is not small either — a follow-on merge writes a report body and moves a minidump before
+    /// it writes the metadata. Writing our stale copy back over a bundle that had just been filed would
+    /// restore `Pending` and drop its `IssueId`, and the queue would then file the same report a second
+    /// time: the exact duplicate card that merging exists to prevent.
+    ///
+    /// Refusing here sends the caller back to making a bundle of its own, which is the right answer — the
+    /// card it would have joined has already gone out.
+    /// </summary>
+    private QueuedBundle? StillMergeable(QueuedBundle bundle)
+    {
+        var current = TryReadMetadata(bundle.Directory);
+        if (current == null || current.State != BundleState.Pending)
+            return null;
+        // The disk's copy, not ours: it carries any attempt count or occurrence another thread recorded
+        // while we were deciding, and dropping those is a lost update in its own right.
+        return bundle with { Metadata = current };
     }
 
     /// <summary>
