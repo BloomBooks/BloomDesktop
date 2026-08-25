@@ -70,6 +70,22 @@ public sealed class BloomTargetWatcher : IDisposable
     /// </summary>
     private EventWaitHandle? _watchingSignal;
 
+    /// <summary>
+    /// The two halves of the crash-dump handshake, created and held here for as long as we watch.
+    ///
+    /// **They have to be created by US, and nothing used to create them at all.** Every other accessor in
+    /// DoctorSignals goes through TryOpenExisting, so with no creator: Bloom's request to be dumped found
+    /// no event and gave up, and our own check for a request could only ever read false. The handshake
+    /// could not fire at either end, which made the crash-dump path dead code - silently, in exactly the
+    /// case the feature exists for. The quit handshake works only because Bloom happens to create ITS
+    /// event and hold it while waiting.
+    ///
+    /// We are the right owner: our lifetime spans the crash, Bloom's does not, and Bloom already asks
+    /// whether we are watching before it pauses for anything.
+    /// </summary>
+    private EventWaitHandle? _dumpRequest;
+    private EventWaitHandle? _dumpComplete;
+
     /// <summary>Guards against a slow reading overlapping the next tick.</summary>
     private int _observing;
 
@@ -110,6 +126,13 @@ public sealed class BloomTargetWatcher : IDisposable
         _watchingSignal ??= Protocol.DoctorSignals.TryCreate(
             Protocol.DoctorSignals.WatchingName(Target.ProcessId)
         );
+        // Both halves of the dump handshake, created before Bloom could possibly need them. See the fields.
+        _dumpRequest ??= Protocol.DoctorSignals.TryCreate(
+            Protocol.DoctorSignals.DumpRequestName(Target.ProcessId)
+        );
+        _dumpComplete ??= Protocol.DoctorSignals.TryCreate(
+            Protocol.DoctorSignals.DumpCompleteName(Target.ProcessId)
+        );
         _timer ??= new Timer(_ => Tick(), null, TimeSpan.Zero, _cadence);
     }
 
@@ -122,10 +145,14 @@ public sealed class BloomTargetWatcher : IDisposable
     {
         try
         {
-            using var request = Protocol.DoctorSignals.TryOpen(
-                Protocol.DoctorSignals.DumpRequestName(Target.ProcessId)
-            );
-            return request != null && request.WaitOne(TimeSpan.Zero);
+            // The handle we created and hold, not a fresh TryOpen - which is what made this permanently
+            // false, since nothing had created the event for it to find.
+            if (_dumpRequest == null || !_dumpRequest.WaitOne(TimeSpan.Zero))
+                return false;
+            // Manual-reset, so clear it now we have taken it. The supervisor separately allows one dump per
+            // process, but leaving this set would have every later tick believe a fresh request had arrived.
+            _dumpRequest.Reset();
+            return true;
         }
         catch (Exception)
         {
@@ -134,8 +161,18 @@ public sealed class BloomTargetWatcher : IDisposable
     }
 
     /// <summary>Tells Bloom the dump is done, so it can stop waiting and get on with dying.</summary>
-    public void SignalDumpComplete() =>
-        Protocol.DoctorSignals.TrySignal(Protocol.DoctorSignals.DumpCompleteName(Target.ProcessId));
+    public void SignalDumpComplete()
+    {
+        try
+        {
+            _dumpComplete?.Set();
+        }
+        catch (Exception)
+        {
+            // Bloom's wait times out in about three seconds either way; it must not be our failure that
+            // holds a dying process open.
+        }
+    }
 
     /// <summary>When this target was first judged a zombie, for the grace period in <see cref="ZombieEnder"/>.</summary>
     public DateTimeOffset? ZombieSince { get; private set; }
@@ -260,6 +297,11 @@ public sealed class BloomTargetWatcher : IDisposable
         // an answer that is not coming.
         _watchingSignal?.Dispose();
         _watchingSignal = null;
+        // And the dump handshake goes with it: we are the only holder, so these are ours to release.
+        _dumpRequest?.Dispose();
+        _dumpRequest = null;
+        _dumpComplete?.Dispose();
+        _dumpComplete = null;
     }
 
     /// <summary>
