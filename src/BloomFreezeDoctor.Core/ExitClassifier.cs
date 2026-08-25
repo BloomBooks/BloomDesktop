@@ -21,13 +21,17 @@ public sealed record ExitEvidence
     public int? ShutdownPhaseReached { get; init; }
 
     /// <summary>
-    /// Bloom left an exit record, and that record says the exit was **forced** rather than orderly — a
-    /// hard failure taking <c>Environment.Exit</c> before the orderly path began.
+    /// Bloom left an exit record, and that record says the orderly shutdown never began — a hard failure
+    /// taking <c>Environment.Exit</c> straight out.
     ///
     /// This is why <see cref="CleanExitProofPresent"/> cannot simply mean "there is an exit record".
-    /// Bloom writes one on the way out of a hard failure too, marked as forced; reading that as proof of
-    /// a clean exit turned the loudest thing Bloom can tell us into silence, and produced the
-    /// self-contradicting explanation "Bloom shut down properly (shutdown phase 0)".
+    /// Bloom writes one on the way out of a hard failure too; reading that as proof of a clean exit turned
+    /// the loudest thing Bloom can tell us into silence, and produced the self-contradicting explanation
+    /// "Bloom shut down properly (shutdown phase 0)".
+    ///
+    /// Note that this is narrower than the record's own "forced" flag, which also covers a Doctor asking
+    /// a healthy Bloom to quit — an orderly shutdown that nobody should get a card about. See where the
+    /// supervisor fills this in.
     /// </summary>
     public bool ExitRecordedAsForced { get; init; }
 
