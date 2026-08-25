@@ -1735,21 +1735,44 @@ namespace BloomTests.web.controllers
         [Test]
         public void BuildImageSlotLabel_OnePictureOnThePage_JustNamesThePage()
         {
-            Assert.That(AiImageEditorApi.BuildImageSlotLabel("Page 3", 1, 0), Is.EqualTo("Page 3"));
+            // Nothing to tell it apart from, so the page name is enough. This is the common
+            // case: a full-page picture is one canvas background image and nothing else.
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", true, 1, 1),
+                Is.EqualTo("Page 3")
+            );
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", false, 1, 1),
+                Is.EqualTo("Page 3")
+            );
         }
 
         [Test]
-        public void BuildImageSlotLabel_TwoPicturesOnThePage_NumbersThem()
+        public void BuildImageSlotLabel_BackgroundAndAPictureOnIt_NamesTheBackgroundAndNumbersTheRest()
         {
             // Two empty slots on one page show the same graphic in the AI image editor, so
-            // without these numbers the user cannot tell which slot is which (BL-16744).
+            // without these names the user cannot tell which slot is which (BL-16744).
             Assert.That(
-                AiImageEditorApi.BuildImageSlotLabel("Page 3", 2, 0),
-                Is.EqualTo("Page 3 - image 1")
+                AiImageEditorApi.BuildImageSlotLabel("Page 1", true, 0, 2),
+                Is.EqualTo("Page 1 - Canvas Background")
+            );
+            // The pictures on top of the background start at 1, not at 2.
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 1", false, 1, 2),
+                Is.EqualTo("Page 1 - Image 1")
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_TwoPicturesAndNoBackground_NumbersThem()
+        {
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", false, 1, 2),
+                Is.EqualTo("Page 3 - Image 1")
             );
             Assert.That(
-                AiImageEditorApi.BuildImageSlotLabel("Page 3", 2, 1),
-                Is.EqualTo("Page 3 - image 2")
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", false, 2, 2),
+                Is.EqualTo("Page 3 - Image 2")
             );
         }
 
@@ -1764,11 +1787,46 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
-        public void BuildImageSlotLabel_NoPageName_NumbersTheImagesOnly()
+        public void BuildImageSlotLabel_NoPageName_NamesTheSlotOnly()
         {
             // Nothing to say about the page, but two slots still have to be told apart.
-            Assert.That(AiImageEditorApi.BuildImageSlotLabel(null, 1, 0), Is.Null);
-            Assert.That(AiImageEditorApi.BuildImageSlotLabel(null, 2, 1), Is.EqualTo("Image 2"));
+            Assert.That(AiImageEditorApi.BuildImageSlotLabel(null, false, 1, 1), Is.Null);
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel(null, false, 2, 2),
+                Is.EqualTo("Image 2")
+            );
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel(null, true, 0, 2),
+                Is.EqualTo("Canvas Background")
+            );
+        }
+
+        [Test]
+        public void IsBackgroundImage_TellsTheCanvasBackgroundFromAPictureOnTopOfIt()
+        {
+            // EnumerateBookImages asks HtmlDom which slot is the canvas background, and labels
+            // that one "Canvas Background" rather than "Image 1". This test pins the markup
+            // that question is asked about, so a change to the canvas DOM breaks here.
+            var page = FirstPageOf(
+                "<div class='bloom-page numberedPage' id='p1' data-page-number='1'>"
+                    + "<div class='bloom-canvas'>"
+                    + "<div class='bloom-canvas-element bloom-backgroundImage'>"
+                    + "<div class='bloom-imageContainer'><img src='back.png'/></div></div>"
+                    + "<div class='bloom-canvas-element'>"
+                    + "<div class='bloom-imageContainer'><img src='front.png'/></div></div>"
+                    + "</div></div>"
+            );
+            var images = HtmlDom
+                .SelectChildImgAndBackgroundImageElements(page)
+                .OfType<SafeXmlElement>()
+                .ToList();
+
+            // Sanity: both pictures are there, in the order the labels will number them.
+            Assert.That(images.Count, Is.EqualTo(2), "setup");
+            Assert.That(images[0].GetAttribute("src"), Is.EqualTo("back.png"), "setup");
+
+            Assert.That(HtmlDom.IsBackgroundImage(images[0]), Is.True);
+            Assert.That(HtmlDom.IsBackgroundImage(images[1]), Is.False);
         }
     }
 }

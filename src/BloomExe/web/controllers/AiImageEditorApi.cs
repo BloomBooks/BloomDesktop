@@ -938,20 +938,32 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Names one image slot for the user: just the page name when the page offers a single
-        /// image, or the page name plus " - image N" when it offers more than one. Every empty
-        /// slot looks the same in the AI image editor, so this label is the only thing that tells
-        /// two of them apart (BL-16744).
+        /// Names one image slot for the user. A page with a single image slot needs no more than
+        /// the page name. A page with several says which slot this is: "Page 3 - Canvas
+        /// Background" for the canvas background image, "Page 3 - Image 1" for the pictures on
+        /// top of it. Every empty slot looks the same in the AI image editor, so this label is
+        /// the only thing that tells two of them apart (BL-16744).
         /// </summary>
         /// <param name="pageName">from <see cref="GetPageNameForImageSlotLabel"/>, may be null</param>
-        /// <param name="slotCount">how many image slots this page offers</param>
-        /// <param name="index">the zero-based position of this slot among them</param>
-        internal static string BuildImageSlotLabel(string pageName, int slotCount, int index)
+        /// <param name="isCanvasBackground">true for the canvas background image</param>
+        /// <param name="imageNumber">
+        /// the 1-based position of this slot among the page's images, counting only the ones that
+        /// are not the canvas background. Ignored when isCanvasBackground is true.
+        /// </param>
+        /// <param name="slotCount">how many image slots this page offers in all</param>
+        internal static string BuildImageSlotLabel(
+            string pageName,
+            bool isCanvasBackground,
+            int imageNumber,
+            int slotCount
+        )
         {
-            var number = "Image " + (index + 1);
-            if (string.IsNullOrEmpty(pageName))
-                return slotCount > 1 ? number : null;
-            return slotCount > 1 ? pageName + " - image " + (index + 1) : pageName;
+            // The only picture on the page. There is nothing to tell it apart from.
+            if (slotCount < 2)
+                return pageName;
+
+            var whichSlot = isCanvasBackground ? "Canvas Background" : "Image " + imageNumber;
+            return string.IsNullOrEmpty(pageName) ? whichSlot : pageName + " - " + whichSlot;
         }
 
         /// <summary>
@@ -979,9 +991,15 @@ namespace Bloom.web.controllers
                 var holders = HtmlDom.SelectChildImgAndBackgroundImageElements(page);
                 // The slots this page offers, gathered before any is added to the result,
                 // because a slot's label depends on how many the page has: a page with one
-                // image says just "Page 2", a page with more says "Page 2 - image 1" and so on.
+                // image says just "Page 2", a page with more says "Page 2 - Image 1" and so on.
                 var slotsOnThisPage =
-                    new List<(string id, string src, bool isPlaceholder, ImageCredits credits)>();
+                    new List<(
+                        string id,
+                        string src,
+                        bool isPlaceholder,
+                        bool isCanvasBackground,
+                        ImageCredits credits
+                    )>();
                 // Ordinal is the index within the full holder list so that commit can
                 // re-find the element deterministically; the branding/license skip below
                 // only affects which slots we offer, not the indexing.
@@ -1011,6 +1029,10 @@ namespace Bloom.web.controllers
                             // slots rather than trying to load the (book-less)
                             // placeHolder.png.
                             isPlaceholder: ImageUtils.IsPlaceholderImageFilename(relativePath),
+                            // A bloom-canvas can hold one background image with pictures on
+                            // top of it. The background is worth naming as such, because the
+                            // user thinks of it as the page's picture, not as "image 1".
+                            isCanvasBackground: HtmlDom.IsBackgroundImage(element),
                             // The image's current credits, so a result derived from it can
                             // carry (or amend) them. The AI image editor owns the credit
                             // *decision* and hands back whatever it chose on commit; Bloom
@@ -1022,15 +1044,24 @@ namespace Bloom.web.controllers
                 }
 
                 // Now that the page's slot count is known, label each slot and add it.
-                for (var i = 0; i < slotsOnThisPage.Count; i++)
+                var imageNumber = 0;
+                foreach (var slot in slotsOnThisPage)
                 {
-                    var slot = slotsOnThisPage[i];
+                    // The canvas background is named, not numbered, so the numbering of the
+                    // pictures on top of it starts at 1 whether or not there is a background.
+                    if (!slot.isCanvasBackground)
+                        imageNumber++;
                     images.Add(
                         new
                         {
                             id = slot.id,
                             src = slot.src,
-                            pageLabel = BuildImageSlotLabel(pageName, slotsOnThisPage.Count, i),
+                            pageLabel = BuildImageSlotLabel(
+                                pageName,
+                                slot.isCanvasBackground,
+                                imageNumber,
+                                slotsOnThisPage.Count
+                            ),
                             isPlaceholder = slot.isPlaceholder,
                             credits = slot.credits,
                         }
