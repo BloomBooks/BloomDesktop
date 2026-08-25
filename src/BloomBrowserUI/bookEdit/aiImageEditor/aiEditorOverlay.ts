@@ -112,15 +112,22 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // Identify the image the user right-clicked so the AI image editor can open with it
         // already in the "Image to Edit" slot. We match by page + filename rather than DOM
         // ordinal, because the live page has extra injected UI images that would throw
-        // positional indices off.
-        const clickedMatch =
+        // positional indices off. A page can hold two slots of the same name, though — every
+        // empty slot shows placeHolder.png — so the page frame counts the same-named slots
+        // ahead of the clicked one and we take that one here. Without it the user who clicked
+        // the second empty slot got the first, and the image they made landed there.
+        const sameNameOnPage =
             target.pageId && target.imageFileName
-                ? (launchData.bookImages ?? []).find(
+                ? (launchData.bookImages ?? []).filter(
                       (bi) =>
                           bi.id.startsWith(target.pageId + ":") &&
                           fileNameOf(bi.src) === target.imageFileName,
                   )
-                : undefined;
+                : [];
+        // The fallback covers the one way the count can overshoot: C# leaves some pictures
+        // out of the book image list, so a page could hold more same-named slots than it sent.
+        const clickedMatch =
+            sameNameOnPage[target.sameNameOrdinal] ?? sameNameOnPage[0];
         // An empty placeholder slot is sent like any other (BL-16744). It used to be
         // withheld, on the grounds that an empty slot has nothing to edit — but the AI
         // image editor answers a missing selectedBookImageId by targeting the FIRST
@@ -129,8 +136,8 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // The editor reads isPlaceholder on the named slot and, for an empty one, puts
         // nothing in its "Image to Edit" panel and opens its "Create an Image" tool
         // instead; it keeps the slot so the created image can be committed straight into
-        // it. That behavior needs a bloom-ai-image-tools build newer than dist-v0.1.5,
-        // so the dep in package.json has to be bumped for this to work in a real Bloom.
+        // it. That behavior arrived in bloom-ai-image-tools 0.1.6, which package.json pins
+        // as dist-v0.1.6; an older pin gets the placeholder graphic as the image to edit.
         const selectedBookImageId = clickedMatch?.id;
 
         const initPayload = {

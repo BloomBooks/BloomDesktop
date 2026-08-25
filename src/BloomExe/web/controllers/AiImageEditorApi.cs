@@ -234,14 +234,21 @@ namespace Bloom.web.controllers
 
         /// <summary>The image the user right-clicked, as the page frame sends it to
         /// <see cref="HandleSaveThenLaunch"/> and as we hand it back to the browser once the page
-        /// has been saved. See IAiImageEditorTarget in aiEditorShared.ts. The page frame sends only
-        /// the file name; we fill in the page id, since we are the ones who know which page we
-        /// saved, and the overlay (in the top window) has no page DOM of its own to read it from.
+        /// has been saved. See IAiImageEditorTarget in aiEditorShared.ts. The page frame sends the
+        /// file name and how many same-named slots come before the clicked one; we fill in the page
+        /// id, since we are the ones who know which page we saved, and the overlay (in the top
+        /// window) has no page DOM of its own to read it from.
         /// </summary>
         private class SaveThenLaunchRequest
         {
             public string imageFileName { get; set; }
             public string pageId { get; set; }
+
+            /// <summary>How many slots before the clicked one on that page show the same file
+            /// name. The page frame counts them, because only it can see which of two
+            /// same-named slots the user clicked; we just carry it back to the overlay.
+            /// </summary>
+            public int sameNameOrdinal { get; set; }
         }
 
         /// <summary>

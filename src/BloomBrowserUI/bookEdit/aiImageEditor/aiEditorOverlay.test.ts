@@ -41,7 +41,7 @@ const kImageFile = "old.png";
 // Opens the overlay as C# does, and answers the launch request as C# would. Returns the
 // handles a test needs, with the overlay up and the editor about to be sent its `init`.
 const openAgainstABookWithOneImage = (
-    target = { pageId: kPageId, imageFileName: kImageFile },
+    target = { pageId: kPageId, imageFileName: kImageFile, sameNameOrdinal: 0 },
     bookImages: Array<{ id: string; src: string; isPlaceholder?: boolean }> = [
         {
             id: `${kPageId}:0`,
@@ -175,6 +175,7 @@ describe("aiEditorOverlay: the edit target", () => {
         const { iframe, postFromEditor } = openAgainstABookWithOneImage({
             pageId: kPageId,
             imageFileName: "somethingElse.png",
+            sameNameOrdinal: 0,
         });
 
         const payload = getInitPayloadSentToEditor(iframe, postFromEditor);
@@ -184,7 +185,7 @@ describe("aiEditorOverlay: the edit target", () => {
 
     test("a matching slot on a different page is not selected", () => {
         const { iframe, postFromEditor } = openAgainstABookWithOneImage(
-            { pageId: "page2", imageFileName: kImageFile },
+            { pageId: "page2", imageFileName: kImageFile, sameNameOrdinal: 0 },
             [
                 {
                     id: `${kPageId}:0`,
@@ -204,7 +205,11 @@ describe("aiEditorOverlay: the edit target", () => {
         // book (usually the front cover), which is not what the user clicked.
         const kCoverId = "cover:0";
         const { iframe, postFromEditor } = openAgainstABookWithOneImage(
-            { pageId: kPageId, imageFileName: "placeHolder.png" },
+            {
+                pageId: kPageId,
+                imageFileName: "placeHolder.png",
+                sameNameOrdinal: 0,
+            },
             [
                 {
                     id: kCoverId,
@@ -222,6 +227,59 @@ describe("aiEditorOverlay: the edit target", () => {
 
         // Sanity: the cover comes first in the list, so a fallback would have picked it.
         expect(payload.selectedBookImageId).not.toBe(kCoverId);
+        expect(payload.selectedBookImageId).toBe(`${kPageId}:0`);
+    });
+
+    test("the SECOND of two empty slots is the target when that is the one clicked (BL-16744)", () => {
+        // Both empty slots show placeHolder.png, so the file name alone cannot tell them
+        // apart. The page frame says how many same-named slots come first; without that the
+        // editor opened on slot 0 and the created image landed in the wrong box.
+        const { iframe, postFromEditor } = openAgainstABookWithOneImage(
+            {
+                pageId: kPageId,
+                imageFileName: "placeHolder.png",
+                sameNameOrdinal: 1,
+            },
+            [
+                {
+                    id: `${kPageId}:0`,
+                    src: "http://localhost:8089/bloom/book/placeHolder.png",
+                    isPlaceholder: true,
+                },
+                {
+                    id: `${kPageId}:1`,
+                    src: "http://localhost:8089/bloom/book/placeHolder.png",
+                    isPlaceholder: true,
+                },
+            ],
+        );
+
+        const payload = getInitPayloadSentToEditor(iframe, postFromEditor);
+
+        expect(payload.selectedBookImageId).toBe(`${kPageId}:1`);
+    });
+
+    test("a count past the end of the list falls back to the first same-named slot", () => {
+        // C# leaves some pictures out of the book image list, so a page can hold more
+        // same-named slots than it sent. Aiming at the first one beats aiming at nothing,
+        // which the editor answers by targeting the first image of the whole book.
+        const { iframe, postFromEditor } = openAgainstABookWithOneImage(
+            {
+                pageId: kPageId,
+                imageFileName: "placeHolder.png",
+                sameNameOrdinal: 3,
+            },
+            [
+                {
+                    id: `${kPageId}:0`,
+                    src: "http://localhost:8089/bloom/book/placeHolder.png",
+                    isPlaceholder: true,
+                },
+            ],
+        );
+
+        const payload = getInitPayloadSentToEditor(iframe, postFromEditor);
+
         expect(payload.selectedBookImageId).toBe(`${kPageId}:0`);
     });
 });

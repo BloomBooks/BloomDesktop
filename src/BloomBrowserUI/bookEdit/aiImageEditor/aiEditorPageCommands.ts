@@ -43,9 +43,42 @@ export function launchAiImageEditor(
     const clickedUrl = imgContainer
         ? getImageUrlFromImageContainer(imgContainer)
         : img?.getAttribute("src");
+    const imageFileName = fileNameOf(clickedUrl);
     postJson("aiImageEditor/saveThenLaunch", {
-        imageFileName: fileNameOf(clickedUrl),
+        imageFileName,
+        sameNameOrdinal: sameNameOrdinalOnPage(
+            imgContainer ?? img,
+            imageFileName,
+        ),
     });
+}
+
+// Counts the slots BEFORE `clicked` on its page that show the same file name, so the overlay
+// can tell two same-named slots apart (BL-16744). Every empty slot shows placeHolder.png, so
+// on a page with two of them the file name alone made the overlay pick the first one, and the
+// image the user made for the second slot landed in the first. Counting only the same-named
+// slots is what makes this safe: the extra images Bloom injects into the live page, and the
+// slots C# leaves out of the book image list, carry other file names and so cannot shift it.
+function sameNameOrdinalOnPage(
+    clicked: HTMLElement | undefined,
+    imageFileName: string,
+): number {
+    if (!clicked || !imageFileName) return 0;
+    const pageRoot = clicked.closest(".bloom-page") ?? document;
+    const sameName = Array.from(
+        pageRoot.querySelectorAll('img, [style*="background-image"]'),
+    )
+        // A container that carries the background image AND holds an <img> matches twice;
+        // keep the inner one only, so each slot counts once.
+        .filter((el) => el.tagName === "IMG" || !el.querySelector("img"))
+        .filter(
+            (el) =>
+                fileNameOf(GetRawImageUrl(el as HTMLElement)) === imageFileName,
+        );
+    const index = sameName.findIndex(
+        (el) => el === clicked || el.contains(clicked) || clicked.contains(el),
+    );
+    return index < 0 ? 0 : index;
 }
 
 function asMessage(e: unknown): string {

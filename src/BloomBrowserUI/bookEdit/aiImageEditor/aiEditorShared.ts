@@ -11,6 +11,13 @@
 export interface IAiImageEditorTarget {
     pageId: string;
     imageFileName: string;
+    // How many slots BEFORE the clicked one on that page show the same file name. The file
+    // name alone cannot say which slot the user clicked when a page holds two of the same:
+    // every empty slot shows placeHolder.png, and one photo can be used twice. We count only
+    // the same-named slots, which keeps the count immune both to the extra images Bloom
+    // injects into the live page and to the slots C# leaves out of the book image list,
+    // since neither of those shares the clicked file name.
+    sameNameOrdinal: number;
 }
 
 // One entry of aiImageEditor/commit's reply. The ones flagged isCurrentPage are the slots

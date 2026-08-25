@@ -77,9 +77,10 @@ describe("aiEditorPageCommands: the menu command", () => {
 
         expect(postJson).toHaveBeenCalledTimes(1);
         expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
-            // Only the file name travels: the save reloads this frame, so a live element
+            // Only plain data travels: the save reloads this frame, so a live element
             // reference could not survive the round trip. C# adds the page id.
             imageFileName: "old.png",
+            sameNameOrdinal: 0,
         });
     });
 
@@ -97,6 +98,50 @@ describe("aiEditorPageCommands: the menu command", () => {
 
         expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
             imageFileName: "fromContainer.png",
+            sameNameOrdinal: 0,
+        });
+    });
+
+    test("counts the same-named slots ahead of the clicked one (BL-16744)", () => {
+        // Every empty slot shows placeHolder.png, so the file name alone cannot say which
+        // one the user clicked. Without the count the overlay picked the first, and the
+        // image the user made for the second slot landed in the first.
+        const [first, second] = makePageWithImages(
+            "placeHolder.png",
+            "placeHolder.png",
+        );
+
+        launchAiImageEditor(second, undefined);
+
+        expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
+            imageFileName: "placeHolder.png",
+            sameNameOrdinal: 1,
+        });
+
+        // Sanity: the first slot of the same pair still counts as none ahead of it.
+        postJson.mockClear();
+        launchAiImageEditor(first, undefined);
+        expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
+            imageFileName: "placeHolder.png",
+            sameNameOrdinal: 0,
+        });
+    });
+
+    test("a differently-named picture in between does not shift the count", () => {
+        // The count runs over the same-named slots only, which is what keeps it immune to
+        // the extra images Bloom injects into the live page and to the pictures C# leaves
+        // out of the book image list.
+        const images = makePageWithImages(
+            "placeHolder.png",
+            "photo.png",
+            "placeHolder.png",
+        );
+
+        launchAiImageEditor(images[2], undefined);
+
+        expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
+            imageFileName: "placeHolder.png",
+            sameNameOrdinal: 1,
         });
     });
 });
