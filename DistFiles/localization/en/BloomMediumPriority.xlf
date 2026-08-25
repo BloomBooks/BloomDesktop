@@ -50,6 +50,26 @@
         <note>ID: EditTab.Image.EditWithAI</note>
         <note>Context-menu item on an image in the Edit tab; opens the AI image editor in an overlay. The "..." indicates further UI will open, as in the sibling item "Choose image from your computer...".</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.SlotLabel.Page" translate="no">
+        <source xml:lang="en">Page {0}</source>
+        <note>ID: AiImageEditor.SlotLabel.Page</note>
+        <note>Names the page an image sits on, shown over the picture in the AI image editor's strip of the book's images. {0} is replaced with the page number.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.SlotLabel.CanvasBackground" translate="no">
+        <source xml:lang="en">Canvas Background</source>
+        <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
+        <note>Names one picture of a page that has several, shown over the picture in the AI image editor's strip of the book's images. This is the picture behind the page, which other pictures sit on top of. Combined with the page name by AiImageEditor.SlotLabel.PageAndSlot, giving e.g. "Page 3 - Canvas Background".</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.SlotLabel.Image" translate="no">
+        <source xml:lang="en">Image {0}</source>
+        <note>ID: AiImageEditor.SlotLabel.Image</note>
+        <note>Names one picture of a page that has several, shown over the picture in the AI image editor's strip of the book's images. {0} is replaced with the number of the picture on its page, counting from 1 and not counting the background picture. Combined with the page name by AiImageEditor.SlotLabel.PageAndSlot, giving e.g. "Page 3 - Image 2".</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.SlotLabel.PageAndSlot" translate="no">
+        <source xml:lang="en">{0} - {1}</source>
+        <note>ID: AiImageEditor.SlotLabel.PageAndSlot</note>
+        <note>Joins the two halves of the name shown over a picture in the AI image editor's strip of the book's images. {0} is the page, e.g. "Page 3" or "Front Cover". {1} is which picture of that page, e.g. "Canvas Background" or "Image 2". Change the order or the separator if that reads better in your language.</note>
+      </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">No Indent</source>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>

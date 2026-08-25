@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
+using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Core.ClearShare;
 using SIL.IO;
@@ -918,7 +919,7 @@ namespace Bloom.web.controllers
         /// What to call a page when naming one of its image slots to the user: "Page 3" for a
         /// numbered page, or the page's own name (e.g. "Front Cover") for front or back matter.
         /// Null when the page says neither, in which case the slot goes unlabelled.
-        /// The name is English, because the AI image editor's user interface is English only.
+        /// In the user interface language.
         /// </summary>
         /// <remarks>
         /// Deliberately not HtmlDom.GetNumberOrLabelOfPageWhereElementLives: that returns the
@@ -931,10 +932,17 @@ namespace Bloom.web.controllers
             // Back matter pages do carry page numbers, but they are clearer by name.
             var number = page.GetAttribute("data-page-number");
             if (!string.IsNullOrWhiteSpace(number) && !HtmlDom.IsBackMatterPage(page))
-                return "Page " + number;
+                return string.Format(
+                    LocalizationManager.GetString("AiImageEditor.SlotLabel.Page", "Page {0}"),
+                    number
+                );
 
             var label = page.SelectSingleNode("./div[@class='pageLabel']")?.InnerText.Trim();
-            return string.IsNullOrEmpty(label) ? null : label;
+            if (string.IsNullOrEmpty(label))
+                return null;
+            // Page labels are localized under a dynamic id built from the English label, the
+            // same way the page list in the Edit tab does it.
+            return LocalizationManager.GetString("TemplateBooks.PageLabel." + label, label);
         }
 
         /// <summary>
@@ -962,8 +970,22 @@ namespace Bloom.web.controllers
             if (slotCount < 2)
                 return pageName;
 
-            var whichSlot = isCanvasBackground ? "Canvas Background" : "Image " + imageNumber;
-            return string.IsNullOrEmpty(pageName) ? whichSlot : pageName + " - " + whichSlot;
+            var whichSlot = isCanvasBackground
+                ? LocalizationManager.GetString(
+                    "AiImageEditor.SlotLabel.CanvasBackground",
+                    "Canvas Background"
+                )
+                : string.Format(
+                    LocalizationManager.GetString("AiImageEditor.SlotLabel.Image", "Image {0}"),
+                    imageNumber
+                );
+            if (string.IsNullOrEmpty(pageName))
+                return whichSlot;
+            return string.Format(
+                LocalizationManager.GetString("AiImageEditor.SlotLabel.PageAndSlot", "{0} - {1}"),
+                pageName,
+                whichSlot
+            );
         }
 
         /// <summary>
