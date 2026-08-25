@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SIL.Reporting;
@@ -49,17 +50,17 @@ namespace Bloom.web.controllers
             var eventName = body["event"]?.ToString();
             if (string.IsNullOrWhiteSpace(eventName))
             {
-                // A caller that got the shape of the request wrong should hear about it rather than
-                // quietly recording nothing, which is a very hard thing to notice. Said three ways
-                // because each reaches a different person: request.Failed goes to the browser
-                // console, the log line to Help > Show Event Log, and standard error to the
-                // terminal a developer already has analytics scrolling past in.
+                // This is a definite programming error in the caller, not a runtime condition, and
+                // it fails silently in the worst way: nothing is recorded and nothing says so.
                 //
-                // Deliberately not Debug.Fail: with no debugger attached that is
-                // Environment.FailFast, and taking Bloom down over a mis-shaped analytics call is
-                // the one thing this whole feature is written not to do.
+                // BloomDebug.Fail stops a developer dead over it -- breaking into the debugger,
+                // failing the test, or putting up a dialog, whichever suits where Bloom is running
+                // -- and compiles away entirely in a release build, where the log line and the
+                // failed request are what remain. We do not use Debug.Fail directly because with
+                // no debugger attached it is Environment.FailFast; see BloomDebug.
                 const string complaint =
                     "[analytics] analytics/track was called with no event name";
+                BloomDebug.Fail(complaint);
                 Logger.WriteEvent(complaint);
                 Console.Error.WriteLine(complaint);
                 request.Failed("analytics/track requires an 'event' name");
