@@ -23,7 +23,7 @@ public interface ITargetProbe
 /// a worse state than it found it — a property worth preserving deliberately, since the spike proved
 /// how badly a suspending diagnostic can end (see docs/SPIKE-FINDINGS.md §6).
 /// </summary>
-public sealed class WindowsTargetProbe : ITargetProbe
+public sealed class WindowsTargetProbe : ITargetProbe, IDisposable
 {
     private readonly Process _process;
 
@@ -397,4 +397,26 @@ public sealed class WindowsTargetProbe : ITargetProbe
     private static extern bool CheckRemoteDebuggerPresent(IntPtr process, ref bool present);
 
     #endregion
+
+    /// <summary>
+    /// Releases the handle on the watched process.
+    ///
+    /// **Who calls this is the whole point, and it is not the watcher.** The handle is what lets us read
+    /// the exit code of a process that has *already died* — that is why it is deliberately held open past
+    /// the death — and the exit examination reads it from a background task. Releasing it when the watcher
+    /// is let go would take it out from under an examination still in progress and lose exactly the
+    /// evidence it exists to preserve. So ownership passes to whichever examination claims the death, and
+    /// that examination releases it when it has finished. See DoctorSupervisor.ConsiderReportingAnExit.
+    /// </summary>
+    public void Dispose()
+    {
+        try
+        {
+            _process.Dispose();
+        }
+        catch (Exception)
+        {
+            // A handle we cannot release is not worth failing over; the process is already gone.
+        }
+    }
 }
