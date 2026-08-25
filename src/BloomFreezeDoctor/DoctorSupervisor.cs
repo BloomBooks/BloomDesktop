@@ -371,6 +371,11 @@ public sealed class DoctorSupervisor : IDisposable
                         continue;
                     _watchers[id].Dispose();
                     _watchers.Remove(id);
+                    // Forget that we asked this one to stop, now that it has. Windows recycles process ids
+                    // from a pool, and "Restart Bloom" is exactly the case that kills one and starts
+                    // another moments later - so a stale entry here could silence a genuine report about a
+                    // DIFFERENT Bloom that happened to be handed the dead one's id.
+                    _weAskedItToStop.Remove(id);
                 }
             }
 
@@ -597,6 +602,20 @@ public sealed class DoctorSupervisor : IDisposable
             // second examination through. Only the test-and-claim is inside the lock; the work is not.
             lock (_lock)
             {
+                // The same "we caused this" guard as OnReportWanted, and it has to be here too because
+                // this path files its own report without going through that one. It matters most exactly
+                // when we had to KILL rather than ask: a killed process runs no ProcessExit handler, so it
+                // leaves no proof of a clean exit, which is precisely what this examination reports as
+                // "exited without shutting down properly" - a second card about our own doing, and with a
+                // different reason from the first, so the outbox could not have merged them either.
+                if (_weAskedItToStop.Contains(watcher.Target.ProcessId))
+                {
+                    _exitsExamined.Add(watcher.Target.ProcessId);
+                    Note(
+                        $"Bloom {watcher.Target.ProcessId} has gone, as we asked it to; not examining that as a problem"
+                    );
+                    return;
+                }
                 if (!_exitsExamined.Add(watcher.Target.ProcessId))
                     return; // one examination per process
             }
