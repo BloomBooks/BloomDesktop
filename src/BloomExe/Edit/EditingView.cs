@@ -200,6 +200,11 @@ namespace Bloom.Edit
         /// import's worker thread is what threw "CoreWebView2 can only be accessed from the UI
         /// thread" and abandoned the import (BL-16749). When no window is open (e.g. unit tests)
         /// this just runs inline; the same pattern as CollectionModel.SelectBookOnUiThread.
+        /// The Invoke is deliberately synchronous, which keeps the handler's old ordering (the
+        /// settings write and the page-list refresh both finish before the rename returns). That
+        /// would only deadlock if the UI thread were blocked waiting on this worker, which no
+        /// current path does: the import's progress dialog does not block it, and a modal dialog
+        /// would still pump messages.
         /// </summary>
         private void HandleBookRenamedOnUiThread(KeyValuePair<string, string> oldToNewPath)
         {
