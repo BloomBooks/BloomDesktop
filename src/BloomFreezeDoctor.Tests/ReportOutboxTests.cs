@@ -467,4 +467,49 @@ public class ReportOutboxTests
             "too far apart to be the same trouble, so two cards"
         );
     }
+
+    [Test]
+    public void A_report_is_not_merged_into_a_bundle_that_has_already_been_filed()
+    {
+        // Merging is a read-then-write, and the supervisor drains on a timer as well as after each
+        // gather, so a drain can finish in between - and a follow-on merge writes a report body and moves
+        // a minidump before it writes metadata, which is plenty of time. Writing our stale copy back over
+        // a filed bundle would restore Pending and drop its IssueId, and the queue would file the same
+        // report a second time: the exact duplicate card that merging exists to prevent.
+        var outbox = NewOutbox();
+        var first = outbox.Enqueue(Report("shared-fp"), "AUT", "Alpha", "Frozen", processId: 77);
+        Assert.That(
+            first.Metadata.State,
+            Is.EqualTo(BundleState.Pending),
+            "setup: it starts out mergeable"
+        );
+
+        // Exactly what a drain that won the race leaves behind.
+        var filed = first.Metadata with
+        {
+            State = BundleState.Filed,
+            IssueId = "AUT-1",
+        };
+        File.WriteAllText(
+            Path.Combine(first.Directory, ReportOutbox.MetadataFileName),
+            System.Text.Json.JsonSerializer.Serialize(filed, BundleMetadata.JsonOptions)
+        );
+
+        // Same fingerprint, so this would have merged; and same process, so the follow-on path would
+        // have too.
+        var second = outbox.Enqueue(Report("shared-fp"), "AUT", "Alpha", "Frozen", processId: 77);
+
+        Assert.That(
+            second.Directory,
+            Is.Not.EqualTo(first.Directory),
+            "it must make its own bundle rather than reopening a filed one"
+        );
+        var reread = outbox.List().Single(b => b.Directory == first.Directory);
+        Assert.That(
+            reread.Metadata.State,
+            Is.EqualTo(BundleState.Filed),
+            "and the filed bundle must still be filed"
+        );
+        Assert.That(reread.Metadata.IssueId, Is.EqualTo("AUT-1"), "with its card still recorded");
+    }
 }
