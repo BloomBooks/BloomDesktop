@@ -83,6 +83,25 @@ public sealed record DoctorSession
     public string? ReportedId { get; init; }
 
     /// <summary>
+    /// The kind of failure Bloom was deliberately told to simulate — `stawait`, `zombie`, `mutexchain` and
+    /// so on — or null, which is every real Bloom.
+    ///
+    /// Bloom publishes this so the Doctor can tell a rehearsal from the real thing, and it lives HERE
+    /// rather than in the shared-memory page for the usual reason: the page dies with the process, and
+    /// three of the simulated kinds (`failfast`, `crashthread`, `zombie`) are precisely the cases where
+    /// what remains afterwards is all we have.
+    ///
+    /// It records that the simulator ARMED, not merely that somebody set the environment variable. Those
+    /// differ: a Beta or Release channel refuses, and so does an unrecognised kind, and marking a Bloom
+    /// that was never going to misbehave would be worse than not marking at all.
+    ///
+    /// **What may depend on this: whether a report is filed, and a line in the report saying so. Nothing
+    /// else.** Detection, gathering and the zombie-ending policy must behave exactly as they would for a
+    /// real freeze, or a simulated run stops testing the thing it exists to test.
+    /// </summary>
+    public string? SimulatedFailure { get; init; }
+
+    /// <summary>
     /// How this run ended, once it has. Null while Bloom is running — and null *after* Bloom has gone is
     /// itself the evidence that it did not shut down properly. Nothing may set this while Bloom is still
     /// running; see <see cref="BloomAlreadyReported"/> for what used to get that wrong.

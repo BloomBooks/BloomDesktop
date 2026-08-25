@@ -92,9 +92,25 @@ internal static class Program
 
         supervisor.NothingLeftToDo += (_, _) =>
         {
+            // Not while the user is part-way through something with the window - above all a restart,
+            // where ending the old Bloom is itself what leaves us with nothing to watch. ConsiderExiting
+            // runs again on every discovery tick, so deferring costs a few seconds and nothing else.
+            if (window.MustNotQuitYet)
+                return;
             try
             {
-                window.BeginInvoke(() => Application.Exit());
+                window.BeginInvoke(() =>
+                {
+                    // Asked AGAIN, here on the UI thread, because the check above was made on the
+                    // supervisor's thread and can be out of date by the time this runs. The case that
+                    // caught us: a CRASHED Bloom is already gone when its report lands, so "nothing left
+                    // to watch" is true the instant the report is raised. The reveal and this exit were
+                    // both queued, the reveal ran first, and then this killed the window it had just put
+                    // on screen - so a crash was gathered perfectly and reported to nobody.
+                    if (window.MustNotQuitYet)
+                        return;
+                    Application.Exit();
+                });
             }
             catch (Exception)
             {

@@ -20,6 +20,9 @@ namespace BloomFreezeDoctor;
 /// <param name="Queued">True if it is safely on disk and will be sent later.</param>
 public readonly record struct ReportNowResult(string? IssueId, bool Queued);
 
+/// <summary>One still-running Bloom the Doctor is watching, and the state it is in.</summary>
+public readonly record struct LiveBloom(int ProcessId, TargetState State);
+
 /// <summary>What the window needs to render, published by the supervisor as things change.</summary>
 public sealed record DoctorStatus
 {
@@ -132,11 +135,42 @@ public sealed class DoctorSupervisor : IDisposable
     /// <summary>Raised when a report has been filed, so the window can say so and offer a restart.</summary>
     public event EventHandler<string>? ReportFiled;
 
+    /// <summary>
+    /// Raised when a report was gathered and deliberately NOT filed - a developer or automation build, or
+    /// a Bloom under a debugger. Carries the folder it was saved in.
+    ///
+    /// A separate event from <see cref="ReportFiled"/> rather than a flag on it, because the two need
+    /// quite different words: "the tracker has been told" versus "nothing was sent, and here is where to
+    /// look". Without this the Doctor did all of its work and then showed absolutely nothing - on
+    /// precisely the runs a developer uses to test it, which is where it most needs to be visible. That is
+    /// the same failure as a "Report now" that said nothing: silence reads as failure.
+    /// </summary>
+    public event EventHandler<string>? ReportSavedWithoutFiling;
+
     /// <summary>Raised when the Doctor has nothing left to do and should exit.</summary>
     public event EventHandler? NothingLeftToDo;
 
     /// <summary>The queue of reports waiting to be sent.</summary>
     public ReportOutbox Outbox => _outbox;
+
+    /// <summary>
+    /// The Blooms we are watching that are still running, and what state each is in.
+    ///
+    /// The window needs this because Bloom is single-instance: a new one cannot start while an old one
+    /// still holds the token, so "Restart Bloom" without this check starts a process that exits a few
+    /// seconds later. What the user then sees is "Bloom will not start" - which is the very complaint
+    /// that brought them to the Doctor in the first place.
+    /// </summary>
+    public IReadOnlyList<LiveBloom> LiveWatchedBlooms()
+    {
+        lock (_lock)
+        {
+            return _watchers
+                .Values.Where(watcher => IsAlive(watcher.Target.ProcessId))
+                .Select(watcher => new LiveBloom(watcher.Target.ProcessId, watcher.State))
+                .ToList();
+        }
+    }
 
     /// <summary>Starts watching. Drains the outbox first, which is the moment that matters most.</summary>
     public void Start()
@@ -364,10 +398,23 @@ public sealed class DoctorSupervisor : IDisposable
         if (verdict.Report == ReportReason.Zombie)
             lock (_lock)
                 _zombiesReported.Add(facts.ProcessId);
+        // Say WHICH of the reasons applies. The old wording listed them all at once and left the reader to
+        // guess - and they are acted on quite differently: a developer build is permanent, a debugger can
+        // be detached, and a simulated failure means nothing was wrong in the first place.
+        //
+        // Simulation is checked FIRST because it is the most informative answer when more than one applies,
+        // which on a developer machine is the normal case: "you asked for this crash" tells the reader far
+        // more than "this is a developer build", and a real report was confusing for exactly that reason.
+        var simulated = context.Session?.SimulatedFailure;
+        var notFiledBecause =
+            !string.IsNullOrEmpty(simulated)
+                ? $"this failure was deliberately simulated ({simulated})"
+            : facts.NeverFile ? "this is a developer or automation build"
+            : "a debugger was attached";
         Note(
             report.MayFile
                 ? $"report queued ({report.Summary})"
-                : "report gathered to disk only (developer or automation run, or a debugged process)"
+                : $"report gathered to disk only, not filed because {notFiledBecause}"
         );
         TryDeleteDirectory(artifacts);
         PublishStatus();
@@ -375,7 +422,9 @@ public sealed class DoctorSupervisor : IDisposable
         if (!report.MayFile)
         {
             // Gathered to disk and never to be sent, which is the intended end for a developer or
-            // automation run. Not queued, and not a failure either.
+            // automation run. Not queued, and not a failure either - but somebody has to be TOLD, or a
+            // successful gather is indistinguishable from the Doctor having done nothing at all.
+            ReportSavedWithoutFiling?.Invoke(this, bundle.Directory);
             return new GatherOutcome(null, StillQueued: false, WasGatedOut: false);
         }
 
