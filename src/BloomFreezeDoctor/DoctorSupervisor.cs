@@ -88,8 +88,13 @@ public sealed class DoctorSupervisor : IDisposable
     private readonly Dictionary<int, BloomTargetWatcher> _watchers = new();
 
     /// <summary>
-    /// Each watched Bloom's probe, kept beside its watcher so the discovery sweep can examine an exit
-    /// itself rather than only hoping the watcher gets one more tick first. See <see cref="Discover"/>.
+    /// Each watched Bloom's probe, kept beside its watcher for two reasons: so the discovery sweep can
+    /// examine an exit itself rather than only hoping the watcher gets one more tick first (see
+    /// <see cref="Discover"/>), and so the handle each probe holds has a definite owner.
+    ///
+    /// **An entry here means nobody has claimed that Bloom's death yet.** Claiming it removes the entry
+    /// and takes over releasing the handle, because the handle is what supplies a dead process's exit code
+    /// and must outlive the death by as long as the examination takes.
     /// </summary>
     private readonly Dictionary<int, WindowsTargetProbe> _probes = new();
     private readonly object _lock = new();
@@ -307,6 +312,24 @@ public sealed class DoctorSupervisor : IDisposable
     /// "Report now" of the card, and it is also how support gets a snapshot of a Bloom that is merely
     /// slow rather than frozen.
     /// </summary>
+    /// <summary>
+    /// Why a report about this Bloom would not normally be filed, in words fit to show someone. Empty
+    /// when nothing stands in the way.
+    ///
+    /// "Report now" files regardless — see <see cref="BloomTargetWatcher.ReasonsFilingWouldNormallyBeBlocked"/>
+    /// for why that is deliberate — so this exists to let the window say what is being overridden before
+    /// it happens, rather than to prevent it.
+    /// </summary>
+    public IReadOnlyList<string> WhyFilingWouldNormallyBeBlocked(int processId)
+    {
+        lock (_lock)
+        {
+            return _watchers.TryGetValue(processId, out var watcher)
+                ? watcher.ReasonsFilingWouldNormallyBeBlocked()
+                : Array.Empty<string>();
+        }
+    }
+
     public async Task<ReportNowResult> ReportNowAsync(int processId, CancellationToken cancellation)
     {
         var facts = GatherContextBuilder.DescribeRunningProcess(processId);
@@ -410,6 +433,9 @@ public sealed class DoctorSupervisor : IDisposable
                         new DetectorVerdict
                         {
                             State = TargetState.Exited,
+                            // The examination works out its own reason from the evidence; all this
+                            // verdict has to say is that the process has gone.
+                            Report = ReportReason.None,
                             Explanation = "the process is no longer running",
                         }
                     );
@@ -662,13 +688,21 @@ public sealed class DoctorSupervisor : IDisposable
                 if (_weAskedItToStop.Contains(watcher.Target.ProcessId))
                 {
                     _exitsExamined.Add(watcher.Target.ProcessId);
+                    _probes.Remove(watcher.Target.ProcessId);
                     Note(
                         $"Bloom {watcher.Target.ProcessId} has gone, as we asked it to; not examining that as a problem"
                     );
+                    // We have claimed this death and are not going to examine it, so nothing else will
+                    // release the handle. See WindowsTargetProbe.Dispose for why that is ours to do here
+                    // and not the watcher's.
+                    probe.Dispose();
                     return;
                 }
                 if (!_exitsExamined.Add(watcher.Target.ProcessId))
-                    return; // one examination per process
+                    return; // one examination per process, and the one that claimed it owns the probe
+                // Claimed. From here the background task below owns the probe and releases it when it has
+                // finished reading the dead process's exit code.
+                _probes.Remove(watcher.Target.ProcessId);
             }
             Note($"Bloom {watcher.Target.ProcessId} has gone; examining why");
 
@@ -760,6 +794,9 @@ public sealed class DoctorSupervisor : IDisposable
                 }
                 finally
                 {
+                    // The handle goes now, and not before: everything above reads the exit code of a
+                    // process that has already died, which is the one thing the handle is still good for.
+                    probe.Dispose();
                     Interlocked.Decrement(ref _workInFlight);
                     ConsiderExiting();
                 }
@@ -1128,6 +1165,10 @@ public sealed class DoctorSupervisor : IDisposable
             foreach (var watcher in _watchers.Values)
                 watcher.Dispose();
             _watchers.Clear();
+            // Only the probes still in here, which by construction are the ones no examination has
+            // claimed - a claim removes its probe from this dictionary and takes over releasing it.
+            foreach (var probe in _probes.Values)
+                probe.Dispose();
             _probes.Clear();
         }
         _stopping.Dispose();

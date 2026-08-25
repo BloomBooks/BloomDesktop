@@ -242,11 +242,38 @@ public sealed class BloomTargetWatcher : IDisposable
     /// Any of these can still be overridden by the Doctor's `--force`, which exists to test the filing
     /// path itself; see DoctorSupervisor, where that override is applied.
     /// </summary>
-    public bool MayFileAReport() =>
-        !_detector.IsPoisonedByDebugger
-        && !Target.NeverFile
-        && !BloomAlreadyReported()
-        && !WasDeliberatelySimulated();
+    public bool MayFileAReport() => ReasonsFilingWouldNormallyBeBlocked().Count == 0;
+
+    /// <summary>
+    /// The same four conditions as <see cref="MayFileAReport"/>, but named, in the words someone would
+    /// want to read before overriding them.
+    ///
+    /// "Report now" deliberately files whatever these say — being able to force a real filing without
+    /// restarting the Doctor with `--force` is useful twice over: it is how the filing path itself gets
+    /// tested, and a developer build can have a real freeze genuinely worth reporting. So the person is
+    /// shown what they are overriding rather than being stopped.
+    /// </summary>
+    public IReadOnlyList<string> ReasonsFilingWouldNormallyBeBlocked()
+    {
+        var reasons = new List<string>();
+        if (_detector.IsPoisonedByDebugger)
+            reasons.Add(
+                "a debugger has been attached to this Bloom, so its stacks may show a breakpoint "
+                    + "rather than a freeze"
+            );
+        if (BloomChannel.IsDeveloperChannel(Target.Channel))
+            reasons.Add("this is a developer build, which never files on its own");
+        else if (BloomChannel.IsHeadlessOrAutomationRun(Target.CommandLine))
+            reasons.Add(
+                "this Bloom is an automation or headless run, which never files on its own"
+            );
+        var simulated = SimulatedFailureKind();
+        if (!string.IsNullOrEmpty(simulated))
+            reasons.Add($"this Bloom was told to break itself on purpose (`{simulated}`)");
+        if (BloomAlreadyReported())
+            reasons.Add("Bloom has already reported a problem itself during this run");
+        return reasons;
+    }
 
     /// <summary>
     /// True when Bloom has already reported a problem for this run. Bloom writes this into its session file
@@ -272,8 +299,9 @@ public sealed class BloomTargetWatcher : IDisposable
     }
 
     /// <summary>
-    /// True when this Bloom was deliberately told to break itself, which makes any freeze we see a
-    /// rehearsal rather than news.
+    /// What this Bloom was told to break itself with, or null if nothing — which is what makes any freeze
+    /// we see a rehearsal rather than news. Returns the kind rather than a bare true so that the person
+    /// overriding it in "Report now" can be told which rehearsal they are filing.
     ///
     /// Read fresh each time, and NOT captured when we adopt the process, because the ordering makes
     /// caching wrong: Bloom writes its session file, launches us, and only then arms the simulator - so at
@@ -284,18 +312,17 @@ public sealed class BloomTargetWatcher : IDisposable
     /// behave exactly as they would for a real freeze. A simulated run that took a shortcut anywhere else
     /// would stop being a test of the thing it exists to test.
     /// </summary>
-    private bool WasDeliberatelySimulated()
+    private string? SimulatedFailureKind()
     {
         try
         {
-            var session = Protocol.DoctorSessionStore.TryRead(Target.ProcessId);
-            return !string.IsNullOrEmpty(session?.SimulatedFailure);
+            return Protocol.DoctorSessionStore.TryRead(Target.ProcessId)?.SimulatedFailure;
         }
         catch (Exception)
         {
             // Err towards reporting, as with BloomAlreadyReported: silence about a real freeze is the
             // costlier mistake, and `--force` is there for anyone who needs to override this either way.
-            return false;
+            return null;
         }
     }
 

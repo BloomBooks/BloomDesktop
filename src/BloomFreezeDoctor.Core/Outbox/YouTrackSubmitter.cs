@@ -24,6 +24,14 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     /// clear, so reusing it here adds no new exposure. It is not a secret we are leaking; it is a
     /// secret the project already treats as shipped. A serverless relay, so that nothing is shipped at
     /// all, remains on the list as later hardening for both applications.
+    ///
+    /// **Reviewed again in August 2026** when a review pointed out that the token now travels inside a
+    /// second executable, and deliberately left as it is. What the Doctor does with the token is under our
+    /// control exactly as what Bloom does with it is, so a second program of ours carrying it adds no risk
+    /// that the first did not already carry. The risk that does exist is the pre-existing one and is not
+    /// changed by anything here: anyone who takes the token out of either binary and puts it in a program
+    /// of their own can do whatever it permits. That is an argument for narrowing what the account is
+    /// allowed to do, or for the relay above — not for treating the two executables differently.
     /// </summary>
     private const string TokenPiece =
         @"YXV0b19yZXBvcnRfY3JlYXRvcg==.NzQtMA==.V9k0yNUN7Df5eqo4QEk5N4BBKqmEHV";
@@ -64,8 +72,14 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             // Dedupe first: if this exact problem already has a card, add to it rather than filing
             // another. Searching is available to us (verified in the spike), so this is a real
             // capability rather than an aspiration.
-            var existing = await FindExistingIssueAsync(bundle.Metadata, cancellation)
-                .ConfigureAwait(false);
+            //
+            // A card the outbox already knows about wins over searching, and is the only way to reach it:
+            // this bundle exists because it could not be folded into a sibling that was being uploaded at
+            // that moment, and its own fingerprint is not the one that sibling's card was opened under, so
+            // no search for it would ever find that card. See BundleMetadata.CommentOnIssueId.
+            var existing = !string.IsNullOrEmpty(bundle.Metadata.CommentOnIssueId)
+                ? bundle.Metadata.CommentOnIssueId
+                : await FindExistingIssueAsync(bundle.Metadata, cancellation).ConfigureAwait(false);
             if (existing != null)
             {
                 // A short note, not the whole report again - see BuildRecurrenceComment. Note also what is

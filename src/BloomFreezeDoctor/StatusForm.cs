@@ -658,6 +658,36 @@ public sealed class StatusForm : Form
             );
             return;
         }
+        // "Report now" files even when everything else would decline — a developer build, a rehearsal, a
+        // debugged process. That is deliberate: it is how the filing path gets tested without stopping and
+        // restarting the Doctor with `--force`, and a developer build can have a real freeze genuinely
+        // worth reporting. But filing a card by accident wastes somebody's time, so say plainly what is
+        // being overridden and let the person decide.
+        var blockers = _supervisor.WhyFilingWouldNormallyBeBlocked(target.ProcessId);
+        if (blockers.Count > 0)
+        {
+            var reasons = string.Join(Environment.NewLine, blockers.Select(r => "  • " + r));
+            var answer = MessageBox.Show(
+                this,
+                "This report would not normally be filed on the tracker:"
+                    + Environment.NewLine
+                    + Environment.NewLine
+                    + reasons
+                    + Environment.NewLine
+                    + Environment.NewLine
+                    + "\"Report now\" files anyway. Go ahead and create a real tracker card?",
+                "Bloom Freeze Doctor",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2
+            );
+            if (answer != DialogResult.Yes)
+            {
+                _lastEvent.Text = "Report not filed, at your request.";
+                return;
+            }
+        }
+
         _lastEvent.Text = "Gathering a report on request…";
         _ = Task.Run(async () =>
         {

@@ -108,6 +108,16 @@ public sealed class ReportOutbox
     /// </summary>
     public const string FollowOnReportPrefix = "follow-on-report-";
 
+    /// <summary>Guards a single bundle's metadata while it is read-modify-written. See <see cref="WhileHoldingTheMetadata"/>.</summary>
+    private const string MetadataLockFileName = ".meta.lock";
+
+    /// <summary>
+    /// How long to wait for another thread or process to finish its own read-modify-write of one bundle's
+    /// metadata. Deliberately tiny: the thing being waited for is a few file operations, never a network
+    /// call, so anything longer than this means something is wrong rather than merely busy.
+    /// </summary>
+    private static readonly TimeSpan MetadataLockWait = TimeSpan.FromSeconds(2);
+
     /// <summary>
     /// How recently the previous report about a Bloom must have been gathered for a new one to be treated
     /// as a further instalment of the same trouble rather than as separate news.
@@ -187,18 +197,28 @@ public sealed class ReportOutbox
     {
         Directory.CreateDirectory(_root);
 
+        // Uploading counts as a candidate, not just Pending. It is the case that matters: the merge will
+        // be refused (nothing may be written to a bundle mid-send) and we need to have identified the
+        // bundle anyway, so that this report can be told whose card it belongs on and wait for it.
         var existing = List()
             .FirstOrDefault(b =>
-                b.Metadata.State == BundleState.Pending
+                IsAwaitingOrDuringSend(b.Metadata.State)
                 && b.Metadata.Fingerprint == report.Fingerprint
             );
+        // Where this report belongs if it cannot be merged after all. Same fingerprint needs no note - the
+        // submitter finds that card by searching for the fingerprint - but a follow-on's card can only be
+        // found by way of the sibling that owns it.
+        string? belongsOnTheCardFor = null;
+
         if (existing != null)
         {
-            // Null means it stopped being mergeable while we were deciding, so fall through and make a
-            // bundle of our own. See StillMergeable.
+            // Null means it stopped being mergeable while we were deciding - most likely it went out, or
+            // is going out this second - so fall through and make a bundle of our own, which the submitter
+            // will turn into a comment on the card once that card exists. See StillMergeable.
             var merged = RecordAnotherOccurrence(existing);
             if (merged != null)
                 return merged;
+            belongsOnTheCardFor = existing.Metadata.Fingerprint;
         }
 
         // A different problem, but the same Bloom, moments ago. See FoldInAFollowOnProblem.
@@ -208,7 +228,7 @@ public sealed class ReportOutbox
         {
             var sameBloom = List()
                 .LastOrDefault(b =>
-                    b.Metadata.State == BundleState.Pending
+                    IsAwaitingOrDuringSend(b.Metadata.State)
                     && b.Metadata.ProcessId == processId
                     && _now() - (b.Metadata.LastOccurrenceUtc ?? b.Metadata.GatheredAtUtc)
                         <= FollowOnWindow
@@ -218,6 +238,10 @@ public sealed class ReportOutbox
                 var folded = FoldInAFollowOnProblem(sameBloom, report, reason);
                 if (folded != null)
                     return folded;
+                // It was the right bundle to join and we could not join it, so remember whose card this
+                // belongs on. Nothing else could work it out later: the fingerprints differ, which is what
+                // made this a follow-on rather than a recurrence in the first place.
+                belongsOnTheCardFor = sameBloom.Metadata.Fingerprint;
             }
         }
 
@@ -272,6 +296,7 @@ public sealed class ReportOutbox
             BloomChannel = channel,
             Reason = reason,
             ProcessId = processId,
+            CommentOnFingerprint = belongsOnTheCardFor,
             RecurrenceNote = report.RecurrenceNote,
         };
         WriteMetadata(staging, metadata);
@@ -462,12 +487,36 @@ public sealed class ReportOutbox
                 break;
             }
 
-            var result = await submitter.SubmitAsync(bundle, cancellation).ConfigureAwait(false);
-            var metadata = bundle.Metadata with
-            {
-                AttemptCount = bundle.Metadata.AttemptCount + 1,
-                LastAttemptUtc = _now(),
-            };
+            // A bundle waiting on a sibling's card is skipped until that card exists. See
+            // BundleMetadata.CommentOnFingerprint.
+            if (!ReadyToSend(bundle))
+                continue;
+
+            // Claim it before the network call, under the brief metadata lock, so a gather arriving
+            // mid-upload can see that merging into this bundle is no longer safe and take itself
+            // elsewhere. Marking it is the point; the upload below happens with no lock held at all.
+            var belongsOn = CardThisBundleBelongsOn(bundle);
+            var claimed = WhileHoldingTheMetadata(
+                bundle.Directory,
+                current =>
+                    current.State != BundleState.Pending
+                        ? null // somebody else got to it first
+                        : current with
+                        {
+                            State = BundleState.Uploading,
+                            AttemptCount = current.AttemptCount + 1,
+                            LastAttemptUtc = _now(),
+                            CommentOnIssueId = belongsOn ?? current.CommentOnIssueId,
+                        }
+            );
+            if (claimed == null)
+                continue;
+            var claimedBundle = bundle with { Metadata = claimed };
+
+            var result = await submitter
+                .SubmitAsync(claimedBundle, cancellation)
+                .ConfigureAwait(false);
+            var metadata = claimed;
 
             switch (result.Outcome)
             {
@@ -497,13 +546,76 @@ public sealed class ReportOutbox
                     break;
 
                 default:
-                    // Still offline. Leave it pending and stop trying the rest: if this one could not
-                    // reach the tracker, neither will the next, and each attempt costs a timeout.
-                    WriteMetadata(bundle.Directory, metadata with { LastError = result.Error });
+                    // Still offline. Put it back to pending - it is no longer being uploaded - and stop
+                    // trying the rest: if this one could not reach the tracker, neither will the next, and
+                    // each attempt costs a timeout.
+                    WriteMetadata(
+                        bundle.Directory,
+                        metadata with
+                        {
+                            State = BundleState.Pending,
+                            LastError = result.Error,
+                        }
+                    );
                     return filed;
             }
         }
         return filed;
+    }
+
+    /// <summary>
+    /// Whether a bundle should be sent on this pass.
+    ///
+    /// Nearly always yes. The exception is a bundle that belongs on a sibling's card — it exists because
+    /// the sibling was being uploaded at the moment this report wanted to join it (see
+    /// <see cref="BundleMetadata.CommentOnFingerprint"/>) — and the sibling's card may not exist yet.
+    ///
+    /// Three outcomes, and the middle one is the reason this is not just a search:
+    /// - the sibling is filed, so its card id is known locally: send, and the submitter comments there;
+    /// - the sibling is still waiting or still uploading: skip this pass, and try again on the next one.
+    ///   Creating a card now would produce exactly the second card this whole mechanism exists to avoid;
+    /// - the sibling is gone from the queue entirely (evicted, or given up on): stop waiting for a card
+    ///   that is never coming and let this one be filed on its own merits.
+    /// </summary>
+    /// <summary>
+    /// True for a bundle that is on its way to the tracker but has not got there: waiting in the queue, or
+    /// being sent this moment. Both are candidates for a new report to belong with; only the first can
+    /// actually be written to.
+    /// </summary>
+    private static bool IsAwaitingOrDuringSend(BundleState state) =>
+        state == BundleState.Pending || state == BundleState.Uploading;
+
+    private bool ReadyToSend(QueuedBundle bundle)
+    {
+        var waitingFor = bundle.Metadata.CommentOnFingerprint;
+        if (string.IsNullOrEmpty(waitingFor))
+            return true;
+        var sibling = List()
+            .FirstOrDefault(b =>
+                b.Metadata.Fingerprint == waitingFor && b.Directory != bundle.Directory
+            );
+        if (sibling == null)
+            return true;
+        return sibling.Metadata.State != BundleState.Pending
+            && sibling.Metadata.State != BundleState.Uploading;
+    }
+
+    /// <summary>
+    /// The card a bundle should comment on rather than opening a new one, when we already know it locally.
+    /// Null when there is nothing to say — which is the normal case.
+    /// </summary>
+    public string? CardThisBundleBelongsOn(QueuedBundle bundle)
+    {
+        var waitingFor = bundle.Metadata.CommentOnFingerprint;
+        if (string.IsNullOrEmpty(waitingFor))
+            return null;
+        return List()
+            .FirstOrDefault(b =>
+                b.Metadata.Fingerprint == waitingFor
+                && b.Directory != bundle.Directory
+                && !string.IsNullOrEmpty(b.Metadata.IssueId)
+            )
+            ?.Metadata.IssueId;
     }
 
     /// <summary>
@@ -594,47 +706,50 @@ public sealed class ReportOutbox
             }
         }
 
-        // Writing the report body and moving a minidump takes long enough for a drain to finish in the
-        // meantime, so the decision is re-taken against the disk here, immediately before the only write
-        // that could undo one. If it has been filed, the files just written stay in its folder as
-        // harmless spare copies and the caller makes a bundle of its own - which keeps the report itself,
-        // and loses only the attachments. Filing the same card twice would be the worse trade.
-        var current = StillMergeable(bundle);
-        if (current == null)
-            return null;
-
+        // Writing the report body and moving a minidump takes long enough for a drain to start in the
+        // meantime, so the decision is re-taken against the disk here, under the lock, immediately before
+        // the only write that could undo one. If the bundle has gone out or is going out, the files just
+        // written stay in its folder as harmless spare copies and the caller makes a bundle of its own.
         var note =
             $"{_now():yyyy-MM-dd HH:mm}Z — the same Bloom then had a further problem: "
             + $"{reason ?? "reason not recorded"}. {report.Summary}";
-        var notes = current.Metadata.FollowOnNotes.ToList();
-        notes.Add(note);
-        // Union of what the disk says and what we added, so an artifact another thread recorded while we
-        // were writing is not dropped.
-        artifacts = current.Metadata.Artifacts.Concat(added).Distinct().ToList();
-        var metadata = current.Metadata with
-        {
-            // NOT Occurrences: see FollowOnNotes. LastOccurrenceUtc is still right, though - it is the
-            // last time we saw anything wrong with this Bloom, which is what the card's reader wants.
-            LastOccurrenceUtc = _now(),
-            Artifacts = artifacts,
-            FollowOnNotes = notes,
-        };
-        WriteMetadata(bundle.Directory, metadata);
-        return bundle with { Metadata = metadata };
+        var written = WhileHoldingTheMetadata(
+            bundle.Directory,
+            current =>
+            {
+                if (current.State != BundleState.Pending)
+                    return null;
+                var notes = current.FollowOnNotes.ToList();
+                notes.Add(note);
+                return current with
+                {
+                    // NOT Occurrences: see FollowOnNotes. LastOccurrenceUtc is still right, though - it is
+                    // the last time we saw anything wrong with this Bloom, which is what a reader wants.
+                    LastOccurrenceUtc = _now(),
+                    // Union of what the disk says and what we added, so an artifact another thread
+                    // recorded while we were writing is not dropped.
+                    Artifacts = current.Artifacts.Concat(added).Distinct().ToList(),
+                    FollowOnNotes = notes,
+                };
+            }
+        );
+        return written == null ? null : bundle with { Metadata = written };
     }
 
     private QueuedBundle? RecordAnotherOccurrence(QueuedBundle bundle)
     {
-        var fresh = StillMergeable(bundle);
-        if (fresh == null)
-            return null;
-        var metadata = fresh.Metadata with
-        {
-            Occurrences = fresh.Metadata.Occurrences + 1,
-            LastOccurrenceUtc = _now(),
-        };
-        WriteMetadata(fresh.Directory, metadata);
-        return fresh with { Metadata = metadata };
+        var written = WhileHoldingTheMetadata(
+            bundle.Directory,
+            current =>
+                current.State != BundleState.Pending
+                    ? null // gone out, or going out right now; see WhileHoldingTheMetadata
+                    : current with
+                    {
+                        Occurrences = current.Occurrences + 1,
+                        LastOccurrenceUtc = _now(),
+                    }
+        );
+        return written == null ? null : bundle with { Metadata = written };
     }
 
     /// <summary>
@@ -702,6 +817,63 @@ public sealed class ReportOutbox
     /// Writes metadata by temp-then-rename, because this file is rewritten on every attempt and a
     /// power cut mid-write would otherwise lose the whole bundle rather than one attempt's record.
     /// </summary>
+    /// <summary>
+    /// Runs one read-modify-write of a bundle's metadata with nobody else doing the same thing.
+    ///
+    /// The lock is held for a handful of file operations and **never across the upload**, which is the
+    /// whole design: the drain marks a bundle <see cref="BundleState.Uploading"/> under this lock, lets it
+    /// go, does the network round trip, then takes it again to record the answer. A gather that arrives in
+    /// between therefore waits microseconds, not the length of an upload on a bad connection — and what it
+    /// then reads is the truth, because the marking and its own read cannot interleave.
+    ///
+    /// <paramref name="change"/> is given the metadata as it is on disk and returns what to write, or null
+    /// to write nothing. Returns what was written, or null if it declined or the lock could not be had.
+    /// A lock we cannot take means somebody else is mid-change, so declining is right: whatever we decided
+    /// from a stale read is exactly what must not be written.
+    /// </summary>
+    private BundleMetadata? WhileHoldingTheMetadata(
+        string directory,
+        Func<BundleMetadata, BundleMetadata?> change
+    )
+    {
+        var lockPath = Path.Combine(directory, MetadataLockFileName);
+        // Real elapsed time, deliberately not the injectable clock, which tests freeze.
+        var waited = Stopwatch.StartNew();
+        while (true)
+        {
+            try
+            {
+                // robustfile-hook: allow FileStream - the exclusive share mode IS the lock, which is
+                // precisely what RobustFile's retrying wrapper cannot express.
+                using var held = new FileStream(
+                    lockPath,
+                    FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite,
+                    FileShare.None
+                );
+                var current = TryReadMetadata(directory);
+                if (current == null)
+                    return null;
+                var updated = change(current);
+                if (updated == null)
+                    return null;
+                WriteMetadata(directory, updated);
+                return updated;
+            }
+            catch (IOException)
+            {
+                // Somebody else holds it. They are doing a few file operations, so this is brief.
+                if (waited.Elapsed >= MetadataLockWait)
+                    return null;
+                Thread.Sleep(15);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return null;
+            }
+        }
+    }
+
     private static void WriteMetadata(string directory, BundleMetadata metadata)
     {
         var path = Path.Combine(directory, MetadataFileName);

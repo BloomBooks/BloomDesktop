@@ -8,6 +8,18 @@ public enum BundleState
     /// <summary>Waiting to be filed. The normal state, possibly for weeks on a bad connection.</summary>
     Pending,
 
+    /// <summary>
+    /// Handed to the tracker, with the answer still to come. A visible state rather than an internal
+    /// detail, because it is what lets a gather happening at the same moment tell "waiting to be sent"
+    /// from "being sent right now" — and those need opposite treatment. Merging into a bundle that is
+    /// already going out would either be lost or overwrite the card it came back with; a bundle that is
+    /// merely waiting can be merged into freely.
+    ///
+    /// Not a terminal state: it becomes <see cref="Filed"/>, or falls back to <see cref="Pending"/> if
+    /// the upload failed, or <see cref="FailedPermanently"/> if the tracker refused it outright.
+    /// </summary>
+    Uploading,
+
     /// <summary>Filed. Kept briefly so the local record shows what happened and where it went.</summary>
     Filed,
 
@@ -101,6 +113,25 @@ public sealed record BundleMetadata
     /// misreading of one Bloom failing once and then dying of it.
     /// </summary>
     public IReadOnlyList<string> FollowOnNotes { get; init; } = Array.Empty<string>();
+
+    /// <summary>
+    /// The fingerprint of a sibling bundle whose card this one belongs on, set when this report *would*
+    /// have been folded into that sibling but could not be — because the sibling was being uploaded at
+    /// that exact moment.
+    ///
+    /// This is how "wait and comment" is expressed without holding anything up. The sibling's upload is a
+    /// network round trip and nothing should block on it, so the report goes into a bundle of its own with
+    /// a note of where it belongs; when it is drained, the sibling has a card and this becomes a comment
+    /// on it. Null for a bundle that is nobody's follow-on, which is nearly all of them.
+    /// </summary>
+    public string? CommentOnFingerprint { get; init; }
+
+    /// <summary>
+    /// The card <see cref="CommentOnFingerprint"/> resolved to, filled in at the moment of sending. Known
+    /// locally, so it needs no search — and a search could not find it anyway, since this report's own
+    /// fingerprint differs from the one the card was opened under.
+    /// </summary>
+    public string? CommentOnIssueId { get; init; }
 
     /// <summary>
     /// The few facts that differ between occurrences of this problem, used as the comment when a card for

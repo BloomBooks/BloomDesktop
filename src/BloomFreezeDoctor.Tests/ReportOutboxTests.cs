@@ -512,4 +512,134 @@ public class ReportOutboxTests
         );
         Assert.That(reread.Metadata.IssueId, Is.EqualTo("AUT-1"), "with its card still recorded");
     }
+
+    /// <summary>
+    /// Submits, and while it is "uploading" reads what the queue says about the bundle it was handed —
+    /// which is the only way to check that the mark goes on *before* the network call rather than after.
+    /// Optionally enqueues a second report at that same moment, standing in for a gather that arrives
+    /// mid-upload.
+    /// </summary>
+    private sealed class NosySubmitter : IReportSubmitter
+    {
+        public NosySubmitter(ReportOutbox outbox) => _outbox = outbox;
+
+        private readonly ReportOutbox _outbox;
+
+        public BundleState StateSeenDuringUpload { get; private set; }
+        public Func<QueuedBundle>? EnqueueDuringUpload { get; set; }
+        public QueuedBundle? WhatTheGatherProduced { get; private set; }
+        public string? CommentedOn { get; private set; }
+
+        public Task<SubmitResult> SubmitAsync(QueuedBundle bundle, CancellationToken cancellation)
+        {
+            StateSeenDuringUpload = _outbox
+                .List()
+                .First(b => b.Directory == bundle.Directory)
+                .Metadata.State;
+            CommentedOn = bundle.Metadata.CommentOnIssueId;
+            if (EnqueueDuringUpload != null)
+                WhatTheGatherProduced = EnqueueDuringUpload();
+            return Task.FromResult(
+                new SubmitResult { Outcome = SubmitOutcome.Filed, IssueId = "AUT-4242" }
+            );
+        }
+    }
+
+    [Test]
+    public async Task A_bundle_is_marked_as_uploading_before_the_network_call_not_after()
+    {
+        // The mark is the whole mechanism: it is what lets a gather arriving mid-upload tell "waiting to
+        // be sent" from "going out right now", and those need opposite treatment. Marked afterwards it
+        // would be useless, and there is no way to tell the two apart except from inside the upload.
+        var outbox = NewOutbox();
+        outbox.Enqueue(Report("fp"), "AUT", "Alpha", "Frozen", processId: 500);
+        var submitter = new NosySubmitter(outbox);
+
+        await outbox.DrainAsync(submitter, CancellationToken.None);
+
+        Assert.That(
+            submitter.StateSeenDuringUpload,
+            Is.EqualTo(BundleState.Uploading),
+            "the queue must say 'being sent right now' for the whole duration of the send"
+        );
+        Assert.That(
+            outbox.List().Single().Metadata.State,
+            Is.EqualTo(BundleState.Filed),
+            "and settle to Filed once the answer comes back"
+        );
+    }
+
+    [Test]
+    public async Task A_report_arriving_mid_upload_ends_up_commenting_on_the_same_card()
+    {
+        // The case the developer asked for. A freeze is reported and starts uploading; the same Bloom then
+        // dies, and that report wants to join the first one's card. It cannot merge into a bundle that is
+        // already going out - that is what would either be lost or overwrite the card id coming back - so
+        // it takes a bundle of its own, remembers whose card it belongs on, and waits.
+        var outbox = NewOutbox();
+        outbox.Enqueue(Report("frozen-fp"), "AUT", "Alpha", "Frozen", processId: 501);
+
+        var submitter = new NosySubmitter(outbox);
+        submitter.EnqueueDuringUpload = () =>
+            outbox.Enqueue(Report("died-fp"), "AUT", "Alpha", "DiedWhileFrozen", processId: 501);
+
+        await outbox.DrainAsync(submitter, CancellationToken.None);
+
+        var arrival = submitter.WhatTheGatherProduced;
+        Assert.That(arrival, Is.Not.Null, "setup: the second report should have been enqueued");
+        Assert.That(
+            arrival!.Metadata.CommentOnFingerprint,
+            Is.EqualTo("frozen-fp"),
+            "it must remember whose card it belongs on - nothing could work that out later, because the "
+                + "two fingerprints differ, which is what made this a follow-on rather than a recurrence"
+        );
+        Assert.That(
+            arrival.Metadata.State,
+            Is.EqualTo(BundleState.Pending),
+            "and it must still be waiting, not filed as a card of its own"
+        );
+
+        // Second pass: the first bundle now has its card, so the waiting one goes out as a comment on it.
+        var second = new NosySubmitter(outbox);
+        await outbox.DrainAsync(second, CancellationToken.None);
+
+        Assert.That(
+            second.CommentedOn,
+            Is.EqualTo("AUT-4242"),
+            "the second report should be told which card to comment on, rather than opening another"
+        );
+    }
+
+    [Test]
+    public async Task A_report_waiting_on_a_card_is_not_filed_before_that_card_exists()
+    {
+        // The sanity check on the test above, and the failure it guards against: a bundle waiting for a
+        // sibling's card must not be sent before that card exists, or it opens the second card this whole
+        // mechanism exists to prevent. The waiting one is deliberately the OLDER of the two, because the
+        // queue drains oldest first - so it is reached while its sibling is still merely pending.
+        var outbox = NewOutbox();
+        var waiting = outbox.Enqueue(Report("orphan-fp"), "AUT", "Alpha", "Died", processId: 503);
+        var meta = waiting.Metadata with { CommentOnFingerprint = "frozen-fp" };
+        File.WriteAllText(
+            Path.Combine(waiting.Directory, ReportOutbox.MetadataFileName),
+            System.Text.Json.JsonSerializer.Serialize(meta, BundleMetadata.JsonOptions)
+        );
+
+        _now = _now + TimeSpan.FromMinutes(1);
+        outbox.Enqueue(Report("frozen-fp"), "AUT", "Alpha", "Frozen", processId: 502);
+
+        var submitter = new FakeSubmitter();
+        await outbox.DrainAsync(submitter, CancellationToken.None);
+
+        Assert.That(
+            submitter.Submitted,
+            Is.EqualTo(new[] { "frozen-fp" }),
+            "only the bundle that owns the card should have gone out; the one waiting on it must hold"
+        );
+        Assert.That(
+            outbox.List().Single(b => b.Metadata.Fingerprint == "orphan-fp").Metadata.State,
+            Is.EqualTo(BundleState.Pending),
+            "and it must still be waiting rather than given up on"
+        );
+    }
 }
