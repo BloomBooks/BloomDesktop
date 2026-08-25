@@ -136,8 +136,8 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // The editor reads isPlaceholder on the named slot and, for an empty one, puts
         // nothing in its "Image to Edit" panel and opens its "Create an Image" tool
         // instead; it keeps the slot so the created image can be committed straight into
-        // it. That behavior arrived in bloom-ai-image-tools 0.1.6, which package.json pins
-        // as dist-v0.1.6; an older pin gets the placeholder graphic as the image to edit.
+        // it. That behavior arrived in bloom-ai-image-tools 0.1.6 (package.json pins a
+        // later dist tag); an older pin gets the placeholder graphic as the image to edit.
         const selectedBookImageId = clickedMatch?.id;
 
         const initPayload = {
