@@ -342,7 +342,10 @@ const makeChooseAudioMenuItemForText = (
     };
 };
 
-const makeChooseAudioMenuItemForImage = (
+// Exported for unit testing: the labels on these rows have regressed once (the
+// play row showed the localized "A Recording" instead of the sound's file name),
+// and this is the only way to assert them without a running Bloom.
+export const makeChooseAudioMenuItemForImage = (
     ctx: IControlContext,
     runtime: IControlRuntime,
 ): IControlMenuCommandRow => {
