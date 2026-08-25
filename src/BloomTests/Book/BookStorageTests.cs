@@ -1116,11 +1116,11 @@ namespace BloomTests.Book
         /// <summary>
         /// Renaming is done by several operations that run on a background thread (the .bloomSource
         /// import, for one), and BookRenamedEvent is raised inline, so its subscribers run on that
-        /// thread. This checks that the whole rename-and-notify chain works from there. It cannot
-        /// cover what actually broke in BL-16749 - a subscriber touching the WebView2, which only
-        /// throws in the real app - but it does pin the rest of the chain, and that a subscriber
-        /// which marshals to the UI thread still runs when there is no window (as in these tests,
-        /// and in the command-line tools).
+        /// thread. This checks that the rename-and-notify chain works from there: the folder and
+        /// the HTML file are renamed, and the subscriber is called exactly once, on that worker
+        /// thread. It does not cover what actually broke in BL-16749 - EditingView's subscriber
+        /// touching the WebView2 - because that needs a window and a real browser control, so it
+        /// only misbehaves in the running app.
         /// </summary>
         [Test]
         public void SetBookName_CalledOnBackgroundThread_RenamesAndNotifiesSubscriber()
