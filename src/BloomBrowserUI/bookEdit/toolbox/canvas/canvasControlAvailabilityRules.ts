@@ -13,6 +13,7 @@
 //
 // Keep rule objects behavior-focused and side-effect free.
 import { AvailabilityRulesMap } from "./canvasControlTypes";
+import { pageAllowsCanvasElements } from "./canvasElementDomUtils";
 
 export const imageAvailabilityRules: AvailabilityRulesMap = {
     chooseImage: {
@@ -68,19 +69,12 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
             ctx.isCustomPage && ctx.hasImage && !ctx.isNavigationButton,
     },
     becomeBackground: {
-        visible: (ctx) => {
-            const isXmatterPage =
-                !!ctx.page?.classList.contains("bloom-frontMatter") ||
-                !!ctx.page?.classList.contains("bloom-backMatter");
-            const pageAllowsCanvasElements = !isXmatterPage || ctx.isCustomPage;
-            return (
-                ctx.hasImage &&
-                ctx.hasRealImage &&
-                !ctx.isNavigationButton &&
-                !ctx.isBackgroundImage &&
-                pageAllowsCanvasElements
-            );
-        },
+        visible: (ctx) =>
+            ctx.hasImage &&
+            ctx.hasRealImage &&
+            !ctx.isNavigationButton &&
+            !ctx.isBackgroundImage &&
+            pageAllowsCanvasElements(ctx.page),
     },
     imageBackground: {
         visible: (ctx) => ctx.hasImage,
