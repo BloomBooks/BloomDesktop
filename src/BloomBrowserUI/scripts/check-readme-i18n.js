@@ -13,11 +13,13 @@
  * so nothing reports it. It just stays English forever, in every language. This script is what
  * reports it.
  *
- * Three checks, all mechanical:
+ * Four checks, all mechanical:
  *   1. Text in ReadMe-en.htm that no `i18n` attribute covers -> it will never be translated.
  *   2. A block with an `i18n` id and real text, but no matching trans-unit in ReadMe-en.xlf
  *      -> extraction dropped it.
- *   3. A trans-unit in ReadMe-en.xlf with no matching block in the HTML, and not marked obsolete
+ *   3. One id on two blocks whose text differs -> one of them will show the other's
+ *      translation (sharing an id for identical text is fine, and is used deliberately).
+ *   4. A trans-unit in ReadMe-en.xlf with no matching block in the HTML, and not marked obsolete
  *      -> a stale unit still being offered to translators.
  *
  * Usage: node scripts/check-readme-i18n.js [--strict]
@@ -152,7 +154,30 @@ function checkReadme(htmPath) {
             );
     }
 
-    // 3. Live trans-units that no longer correspond to anything in the HTML.
+    // 3. One id used by two blocks whose text differs. Sharing an id between blocks that say
+    // the same thing is deliberate and useful -- the Leveled Reader's "n/a" cells do it, so the
+    // string is translated once -- but the XLIFF holds one source per id, so if the texts differ
+    // one block silently ends up displaying the other's translation.
+    const textsById = new Map();
+    for (const el of document.querySelectorAll("[i18n]")) {
+        const text = el.textContent.replace(/\s+/g, " ").trim();
+        if (!text) continue;
+        const id = el.getAttribute("i18n");
+        if (!textsById.has(id)) textsById.set(id, new Set());
+        textsById.get(id).add(text);
+    }
+    for (const [id, texts] of textsById) {
+        if (texts.size > 1)
+            problems.push(
+                `i18n id "${id}" is used by ${texts.size} blocks with different text, so all but ` +
+                    `one will show the wrong translation -- give them separate ids: ` +
+                    Array.from(texts)
+                        .map((t) => `"${shorten(t)}"`)
+                        .join(" vs "),
+            );
+    }
+
+    // 4. Live trans-units that no longer correspond to anything in the HTML.
     const allHtmlIds = new Set(
         Array.from(document.querySelectorAll("[i18n]")).map((e) =>
             e.getAttribute("i18n"),
