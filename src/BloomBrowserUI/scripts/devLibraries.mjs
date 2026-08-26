@@ -10,7 +10,8 @@
 //                  resolved from node_modules as installed. Linked: Bloom's vite.config adds
 //                  a resolve.alias to the checkout (see BLOOM_LINKED_LIBS in vite.config.mts)
 //                  and go.mjs runs the checkout's watch-build(s) as managed children so the
-//                  alias target keeps rebuilding.
+//                  alias target keeps rebuilding. A library consumed as source rather than as
+//                  a build product (bloom-image-gallery) simply omits watchCommands.
 //
 //   "iframe-app" – a standalone Vite app Bloom loads in an <iframe> (bloom-ai-image-tools).
 //                  Default: copy the prebuilt dist-app/ out of the installed package into
@@ -42,6 +43,22 @@ export const DEV_LIBRARIES = [
         // chosen URL back from this env var and hands it to Bloom.
         devCommand: "pnpm dev",
         devUrlEnv: "BLOOM_AI_EDITOR_URL",
+    },
+    {
+        name: "bloom-image-gallery",
+        kind: "bundled",
+        checkoutCandidates: [
+            "../bloom-image-gallery",
+            "../../bloom-image-gallery",
+        ],
+        // The package is consumed as SOURCE: its package.json "main"/"module"/"types" all
+        // point at src/index.ts, and Bloom's Vite compiles that directly. So aliasing the
+        // package to the checkout root is the whole job -- there is nothing to build, and
+        // hence no watchCommands: an edit in the checkout is picked up by Bloom's own dev
+        // server like any other source file. React/MUI resolve to Bloom's copies because
+        // vite.config dedupes them (without that, the checkout's own node_modules would give
+        // us a second React and hooks would fail).
+        aliasTo: ".",
     },
     {
         name: "bloom-player",
