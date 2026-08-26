@@ -45,7 +45,11 @@ export const BloomAvatar: React.FunctionComponent<{
             >
                 <ConfigProvider cache={cache}>
                     <Avatar
-                        md5Email={getMd5(props.email)}
+                        // A history event written by an older Bloom can have a null userid
+                        // (BL-16757), and getMd5 throws on null. No email means there is no
+                        // gravatar to look up, so react-avatar falls back to the initials
+                        // generated from `name`.
+                        md5Email={props.email ? getMd5(props.email) : undefined}
                         name={props.name}
                         size={avatarSize}
                         maxInitials={3}
