@@ -54,7 +54,27 @@ internal static class Program
         if (!owned)
         {
             // Another Doctor is already watching. Nothing to do — and this is the normal path every time
-            // Bloom starts while the Doctor is already running.
+            // Bloom starts while the Doctor is already running, which is why it is not an error.
+            //
+            // But say so when somebody asked for something that only a Doctor which actually RUNS can
+            // honour. `--force`, `--project` and `--target-name` are all requests to be the Doctor on
+            // particular terms, and silently exiting 0 makes them look accepted when they have been
+            // discarded: the running Doctor keeps its own settings and knows nothing of these. That cost a
+            // manual test of the crash path before this line existed — the command appeared to succeed,
+            // and the run was quietly conducted by an auto-launched Doctor with neither the force flag nor
+            // the test project, so nothing was filed and the crash path looked broken.
+            if (options.ForceFiling || options.ProjectWasGiven || options.TargetNameWasGiven)
+            {
+                // Without this the message goes nowhere: this is a WinExe, so it has no console of its own
+                // and must borrow the one it was launched from - the same reason --list-queue does it.
+                AttachConsole(-1);
+                Console.Error.WriteLine(
+                    "A Bloom Freeze Doctor is already running, so this one has exited and its "
+                        + "command-line options have been IGNORED. The running Doctor keeps the settings it "
+                        + "was started with. Quit it from its tray icon (or turn off \"Run Freeze Doctor\" "
+                        + "in Bloom and quit it) and then start this one again."
+                );
+            }
             return 0;
         }
 
@@ -216,6 +236,16 @@ internal sealed record CommandLineOptions
     public string Project { get; init; } = "BL";
 
     /// <summary>
+    /// Whether `--project` was actually given, as opposed to defaulting. Only so that a Doctor which
+    /// exits because another already holds the singleton can tell whether it is discarding options
+    /// somebody chose or merely its own defaults — see where that message is printed.
+    /// </summary>
+    public bool ProjectWasGiven { get; init; }
+
+    /// <summary>Whether `--target-name` was actually given. Same purpose as <see cref="ProjectWasGiven"/>.</summary>
+    public bool TargetNameWasGiven { get; init; }
+
+    /// <summary>
     /// `--target-name X`: which process name to watch. Overridable so the freeze stub can stand in for
     /// Bloom while testing, which is the only way to exercise the whole app without breaking a real Bloom.
     /// </summary>
@@ -251,11 +281,15 @@ internal sealed record CommandLineOptions
                     options = options with { DrainOnly = true };
                     break;
                 case "--project" when i + 1 < args.Length:
-                    options = options with { Project = args[i + 1] };
+                    options = options with { Project = args[i + 1], ProjectWasGiven = true };
                     i++;
                     break;
                 case "--target-name" when i + 1 < args.Length:
-                    options = options with { TargetProcessName = args[i + 1] };
+                    options = options with
+                    {
+                        TargetProcessName = args[i + 1],
+                        TargetNameWasGiven = true,
+                    };
                     i++;
                     break;
                 case "--force":
