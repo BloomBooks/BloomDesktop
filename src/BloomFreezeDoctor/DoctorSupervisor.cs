@@ -416,7 +416,12 @@ public sealed class DoctorSupervisor : IDisposable
                     AdoptFacts(facts);
             }
 
-            var departed = new List<(BloomTargetWatcher Watcher, WindowsTargetProbe? Probe)>();
+            var departed =
+                new List<(
+                    BloomTargetWatcher Watcher,
+                    WindowsTargetProbe? Probe,
+                    bool WeAskedItToStop
+                )>();
             lock (_lock)
             {
                 if (_watchers.Count > 0)
@@ -428,7 +433,17 @@ public sealed class DoctorSupervisor : IDisposable
                 {
                     if (runningIds.Contains(id))
                         continue;
-                    departed.Add((_watchers[id], _probes.GetValueOrDefault(id)));
+                    // The answer is CARRIED OUT of the lock rather than looked up below, because the very
+                    // next line makes looking it up impossible: the examination happens outside the lock,
+                    // by which time this id has been forgotten, and it would then read "nobody asked" about
+                    // a Bloom we ourselves ended.
+                    departed.Add(
+                        (
+                            _watchers[id],
+                            _probes.GetValueOrDefault(id),
+                            _weAskedItToStop.Contains(id)
+                        )
+                    );
                     _watchers.Remove(id);
                     _probes.Remove(id);
                     // Forget that we asked this one to stop, now that it has. Windows recycles process ids
@@ -451,7 +466,7 @@ public sealed class DoctorSupervisor : IDisposable
             // Calling it here needs no coordination with the tick: the examination claims each process id
             // once, under the lock, so whichever path arrives second does nothing. Outside the lock
             // because it starts background work.
-            foreach (var (watcher, probe) in departed)
+            foreach (var (watcher, probe, weAskedItToStop) in departed)
             {
                 if (probe != null)
                     ConsiderReportingAnExit(
@@ -464,7 +479,8 @@ public sealed class DoctorSupervisor : IDisposable
                             // verdict has to say is that the process has gone.
                             Report = ReportReason.None,
                             Explanation = "the process is no longer running",
-                        }
+                        },
+                        weAskedItToStop
                     );
                 watcher.Dispose();
             }
@@ -694,10 +710,16 @@ public sealed class DoctorSupervisor : IDisposable
     /// Windows' own crash records, and whether Bloom left proof of an orderly shutdown. All of that is
     /// <see cref="ExitClassifier"/>'s business; this supplies it and acts on the verdict.
     /// </summary>
+    /// <param name="weAskedItToStop">
+    /// True when the caller already knows this death was our own doing. The departure sweep has to say so,
+    /// because it forgets the process id before this runs; the per-tick path leaves it false and the set
+    /// below answers for it.
+    /// </param>
     private void ConsiderReportingAnExit(
         BloomTargetWatcher watcher,
         WindowsTargetProbe probe,
-        DetectorVerdict verdict
+        DetectorVerdict verdict,
+        bool weAskedItToStop = false
     )
     {
         try
@@ -716,7 +738,7 @@ public sealed class DoctorSupervisor : IDisposable
                 // leaves no proof of a clean exit, which is precisely what this examination reports as
                 // "exited without shutting down properly" - a second card about our own doing, and with a
                 // different reason from the first, so the outbox could not have merged them either.
-                if (_weAskedItToStop.Contains(watcher.Target.ProcessId))
+                if (weAskedItToStop || _weAskedItToStop.Contains(watcher.Target.ProcessId))
                 {
                     _exitsExamined.Add(watcher.Target.ProcessId);
                     _probes.Remove(watcher.Target.ProcessId);
