@@ -135,7 +135,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
             }
 
             using var runtime = clr.CreateRuntime();
-            var headline = AppendThreads(text, runtime);
+            var headline = AppendThreads(text, runtime, context.IsAboutAFreeze);
             return new ReportSection
             {
                 Title = Title,
@@ -178,7 +178,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
             if (clr == null)
                 return null;
             using var runtime = clr.CreateRuntime();
-            var headline = AppendThreads(text, runtime);
+            var headline = AppendThreads(text, runtime, context.IsAboutAFreeze);
             return new ReportSection
             {
                 Title = Title,
@@ -198,7 +198,11 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     /// naming what the UI thread was doing — which is the sentence a human triaging the card reads
     /// first.
     /// </summary>
-    private static string? AppendThreads(StringBuilder text, ClrRuntime runtime)
+    private static string? AppendThreads(
+        StringBuilder text,
+        ClrRuntime runtime,
+        bool isAboutAFreeze
+    )
     {
         var threads = runtime
             .Threads.Where(t => t.IsAlive)
@@ -219,17 +223,21 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
         {
             var blocking = DescribeBlockingCall(uiThread.Frames);
             headline =
-                blocking == null
-                    ? "The UI thread is in its message loop (idle or pumping)."
-                    : $"The UI thread is blocked in {blocking}.";
+                blocking != null ? $"The UI thread is blocked in {blocking}."
+                // Not blocked. On a freeze report that is a finding worth stating as one; on a crash it is
+                // just where the thread happened to be, and phrasing it as a verdict makes the report
+                // appear to argue with its own headline. See GatherContext.IsAboutAFreeze.
+                : isAboutAFreeze ? "The UI thread is in its message loop (idle or pumping)."
+                : "The UI thread was in its message loop when this snapshot was taken.";
             text.AppendLine("### The UI thread (the one running the message loop)");
             text.AppendLine();
             AppendFrames(text, uiThread.Frames);
             text.AppendLine();
         }
 
-        text.AppendLine("### All other managed threads");
-        text.AppendLine();
+        // Collapsed on the card. The UI thread's stack stays open above, because that is usually the
+        // answer; these are the ones a reader scrolls past to reach anything else. See CollapsibleSections.
+        CollapsibleSections.Begin(text, "All other managed threads");
         var shown = 0;
         foreach (
             var thread in threads.Where(t => t != uiThread).OrderByDescending(t => t.Frames.Count)
@@ -246,6 +254,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
             AppendFrames(text, thread.Frames);
             text.AppendLine();
         }
+        CollapsibleSections.Finish(text);
         return headline;
     }
 

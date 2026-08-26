@@ -55,7 +55,7 @@ public sealed class ProcessEvidenceCollector : IEvidenceCollector
         AppendBasics(text, process);
         AppendRespondingCaveat(text, process, context);
         var cpu = await SampleCpuAsync(process, cancellation).ConfigureAwait(false);
-        headline = AppendCpu(text, cpu);
+        headline = AppendCpu(text, cpu, context.IsAboutAFreeze);
         AppendWindows(text, process);
         AppendWebViewChildren(text, context.Target.ProcessId);
         AppendUnexplainedModules(text, process);
@@ -164,7 +164,11 @@ public sealed class ProcessEvidenceCollector : IEvidenceCollector
         return deltas;
     }
 
-    private static string? AppendCpu(StringBuilder text, Dictionary<int, TimeSpan> deltas)
+    private static string? AppendCpu(
+        StringBuilder text,
+        Dictionary<int, TimeSpan> deltas,
+        bool isAboutAFreeze
+    )
     {
         text.AppendLine($"**CPU used per thread over {CpuSampleWindow.TotalSeconds:F0} seconds**");
         text.AppendLine();
@@ -175,12 +179,21 @@ public sealed class ProcessEvidenceCollector : IEvidenceCollector
 
         if (busy.Count == 0)
         {
-            text.AppendLine(
-                "No thread used measurable CPU. That is consistent with a deadlock or a thread waiting "
-                    + "on something, and rules out a spin loop."
-            );
+            // The same observation, but only a freeze makes it a deduction. A crashing or exiting Bloom
+            // has nothing to spin, so "this is a wait rather than a spin" would be arguing with the
+            // report's own headline. See GatherContext.IsAboutAFreeze.
+            if (isAboutAFreeze)
+            {
+                text.AppendLine(
+                    "No thread used measurable CPU. That is consistent with a deadlock or a thread waiting "
+                        + "on something, and rules out a spin loop."
+                );
+                text.AppendLine();
+                return "No thread is burning CPU, so this is a wait rather than a spin.";
+            }
+            text.AppendLine("No thread used measurable CPU during the sample.");
             text.AppendLine();
-            return "No thread is burning CPU, so this is a wait rather than a spin.";
+            return null;
         }
 
         foreach (var (id, delta) in busy.Take(10))

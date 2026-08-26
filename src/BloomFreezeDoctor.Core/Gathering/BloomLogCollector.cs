@@ -158,10 +158,14 @@ public sealed class BloomLogCollector : IEvidenceCollector
                     : $"{howMuch}. The file itself could not be attached, so this is all of it we have:"
             );
             text.AppendLine();
+            // Collapsed on the card: the longest block in the report, and the least often the thing
+            // somebody opened the card to read. See CollapsibleSections.
+            CollapsibleSections.Begin(text, "Bloom's log");
             text.AppendLine("```");
             foreach (var line in lines)
                 text.AppendLine(line);
             text.AppendLine("```");
+            CollapsibleSections.Finish(text);
             text.AppendLine();
         }
         catch (Exception e)
@@ -187,8 +191,6 @@ public sealed class BloomLogCollector : IEvidenceCollector
     /// </summary>
     private static void AppendVelopackLog(StringBuilder text, List<string> artifacts)
     {
-        text.AppendLine("**Installer log (Velopack)**");
-        text.AppendLine();
         var path = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Bloom",
@@ -196,17 +198,19 @@ public sealed class BloomLogCollector : IEvidenceCollector
         );
         if (!RobustFile.Exists(path))
         {
-            text.AppendLine("No `velopack.log` found.");
+            text.AppendLine("**Installer log (Velopack)**: no `velopack.log` found.");
             text.AppendLine();
             return;
         }
         try
         {
             var lines = WindowsExitEvidenceCollector.ReadLastLines(path, 25);
+            CollapsibleSections.Begin(text, "Installer log (Velopack)");
             text.AppendLine("```");
             foreach (var line in lines)
                 text.AppendLine(line);
             text.AppendLine("```");
+            CollapsibleSections.Finish(text);
         }
         catch (Exception e)
         {
