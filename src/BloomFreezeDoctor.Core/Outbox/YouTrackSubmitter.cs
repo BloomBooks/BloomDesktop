@@ -518,19 +518,14 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             text.AppendLine();
         }
 
-        // Anything too large to attach is named here and linked in a comment once it has been uploaded. It
-        // used to be dropped in silence, which is how a 12 MB cap came to be quietly discarding every
-        // 16 MB dump: the card looked complete, and nothing said the most useful file was missing.
-        var tooBig = ArtifactsTooBigToAttach(bundle).ToList();
-        if (tooBig.Count > 0)
-        {
-            text.AppendLine(
-                "> **Too large to attach, so uploaded separately:** "
-                    + string.Join(", ", tooBig)
-                    + ". See the comment below for links."
-            );
-            text.AppendLine();
-        }
+        // Note what is deliberately NOT here: a line naming the files too large to attach. The comment that
+        // carries the links says all of it, and says it better, because by then the links exist - a line
+        // here can only name the file and send the reader looking elsewhere on the same card. It is written
+        // whether the upload succeeded or failed, so nothing is lost by leaving the body quiet.
+        //
+        // The reason it cannot simply carry the links itself: this body is built before the card exists,
+        // and the upload deliberately happens after, so that a creation that fails leaves nothing orphaned
+        // in the bucket. See UploadWhatCouldNotBeAttachedAsync.
 
         text.AppendLine($"- **Gathered:** {metadata.GatheredAtUtc:yyyy-MM-dd HH:mm:ss}Z");
         text.AppendLine($"- **Fingerprint:** `{metadata.Fingerprint}`");
@@ -593,11 +588,9 @@ public sealed class YouTrackSubmitter : IReportSubmitter
                 lines.AppendLine($"- [{name}]({url}) ({megabytes:F1} MB)");
             }
         }
-        lines.AppendLine();
-        lines.AppendLine(
-            "*These are served to anyone holding the link, so treat the link as the only thing keeping "
-                + "them private — a deliberate trade, since it only appears on this card.*"
-        );
+        // No standing note about the links being world-readable. That is a decision already taken and
+        // recorded where decisions belong - in SupportFileUploader, next to the code that sets the ACL -
+        // and repeating it on every card is a paragraph of nothing for whoever reads them.
         if (anyFailed)
             lines.AppendLine(
                 Environment.NewLine
@@ -609,16 +602,6 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         // not post must not turn a successful filing into a failure.
         await CommentAsync(issueId, lines.ToString(), cancellation).ConfigureAwait(false);
     }
-
-    /// <summary>
-    /// The artifacts the budget cannot carry, by name, in the same order and by the same arithmetic the
-    /// upload itself uses — so what the card says was left behind is what actually is.
-    /// </summary>
-    private static IEnumerable<string> ArtifactsTooBigToAttach(QueuedBundle bundle) =>
-        SortArtifacts(bundle)
-            .TooBig.Select(p =>
-                $"`{Path.GetFileName(p)}` ({SizeOrZero(p) / 1024.0 / 1024.0:F1} MB)"
-            );
 
     /// <summary>
     /// Splits a bundle's artifacts into the ones we will attach to the card and the ones that have to be
@@ -666,7 +649,11 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     {
         try
         {
-            return RobustFile.ReadAllText(bundle.ReportPath);
+            // The card gets the long blocks collapsed; the file on disk keeps them as plain Markdown. The
+            // gatherer marks the regions and this is the only place that knows what YouTrack renders.
+            return Gathering.CollapsibleSections.RenderForACard(
+                RobustFile.ReadAllText(bundle.ReportPath)
+            );
         }
         catch (Exception e)
         {

@@ -57,6 +57,26 @@ public sealed record GatherContext
     /// <summary>Why we are gathering, which shapes what matters.</summary>
     public required DetectorVerdict Verdict { get; init; }
 
+    /// <summary>
+    /// True when this report is about a Bloom that stopped responding, rather than one that crashed or
+    /// simply went away.
+    ///
+    /// It exists because several collectors draw a *conclusion* from what they see, and the same
+    /// observation supports opposite conclusions in the two cases. "No thread is burning CPU, so this is a
+    /// wait rather than a spin" is a genuinely useful deduction about a freeze; on a report headed "Bloom
+    /// was crashing and asked to be dumped before it died" it reads as a flat contradiction, because of
+    /// course nothing is spinning — the process is on its way out. Likewise "the UI thread is in its
+    /// message loop", which is reassuring nonsense next to a crash.
+    ///
+    /// So collectors state the observation either way and reserve the freeze reasoning for a freeze.
+    /// </summary>
+    public bool IsAboutAFreeze =>
+        Verdict.Report
+            is ReportReason.Frozen
+                or ReportReason.RecoveredFromFreeze
+                or ReportReason.DiedWhileFrozen
+                or ReportReason.Zombie;
+
     /// <summary>True if the process was still running when gathering began.</summary>
     public required bool ProcessWasAlive { get; init; }
 
