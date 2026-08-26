@@ -54,7 +54,7 @@ namespace Bloom.Edit
         private Timer _saveZoomSettingTimer;
 
         /// <summary>How long the zoom must hold still before we write it to the settings file.</summary>
-        private const int kSaveZoomSettingDelayMs = 1000;
+        private const int kSaveZoomSettingDelayMs = 2000;
         private Browser _mainBrowser => WorkspaceView?.MainBrowser;
         private WorkspaceView _workspaceView;
         private Form _hostFormForEvents;
@@ -1649,7 +1649,7 @@ namespace Bloom.Edit
             _mainBrowser.RunJavascriptFireAndForget($"workspaceBundle.setZoom({zoomFactor});");
             Settings.Default.PageZoom = zoom.ToString(CultureInfo.InvariantCulture);
             // Do not write the settings file here. Restart the timer, so that the write happens
-            // one second after the last zoom change. SaveZoomSettingNow() also writes the file
+            // two seconds after the last zoom change. SaveZoomSettingNow() also writes the file
             // if we leave the Edit tab, lose the main window, or shut down before the tick.
             _saveZoomSettingTimer.Stop();
             _saveZoomSettingTimer.Start();
