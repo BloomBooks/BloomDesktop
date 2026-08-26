@@ -29,7 +29,6 @@ using Bloom.SafeXml;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
@@ -1706,7 +1705,7 @@ namespace Bloom.Api
             {
                 ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
                 Logger.WriteEvent("Error: Could not start up internal HTTP Server");
-                Analytics.ReportException(new ApplicationException("Could not start server."));
+                BloomAnalytics.ReportException(new ApplicationException("Could not start server."));
                 ProgramExit.Exit();
             }
 
@@ -2909,7 +2908,7 @@ namespace Bloom.Api
                     throw;
 #else
                     //just quietly report this
-                    DesktopAnalytics.Analytics.ReportException(e);
+                    BloomAnalytics.ReportException(e);
 #endif
                 }
             }

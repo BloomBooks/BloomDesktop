@@ -8,7 +8,6 @@ using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.Reporting;
 using Application = System.Windows.Forms.Application;
@@ -302,7 +301,7 @@ namespace Bloom.Publish.PDF
 
         private void HandlePrintAnalytics(ApiRequest request)
         {
-            Analytics.Track(
+            BloomAnalytics.Track(
                 "Print PDF",
                 new Dictionary<string, string>()
                 {

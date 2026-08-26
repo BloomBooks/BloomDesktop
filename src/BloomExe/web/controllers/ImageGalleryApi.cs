@@ -154,6 +154,9 @@ namespace Bloom.web.controllers
             data.TryGetValue("license", out string license);
             data.TryGetValue("licenseUrl", out string licenseUrl);
             data.TryGetValue("creator", out string galleryCreator);
+            // The image-gallery provider the picture came from ("pixabay", "openverse", a local
+            // collection slug, or "local-disk"). Analytics only.
+            data.TryGetValue("provider", out string provider);
             string sourceFilePath;
             bool isTempFile = false;
 
@@ -216,6 +219,7 @@ namespace Bloom.web.controllers
                         sourceFilePath,
                         Path.Combine(View.Model.CurrentBook.FolderPath, destName)
                     );
+                    TrackPictureChosenFromGallery(provider);
                     request.ReplyWithJson(
                         new
                         {
@@ -281,6 +285,7 @@ namespace Bloom.web.controllers
                         );
                     }
 
+                    TrackPictureChosenFromGallery(provider);
                     request.ReplyWithJson(
                         new
                         {
@@ -301,6 +306,17 @@ namespace Bloom.web.controllers
                 if (isTempFile && RobustFile.Exists(sourceFilePath))
                     RobustFile.Delete(sourceFilePath);
             }
+        }
+
+        /// <summary>
+        /// Report a picture the user chose in the image chooser. The provider id IS the source:
+        /// opening a file from disk arrives here as "local-disk" and counts as its own route
+        /// rather than as a search result, because the user bypassed every collection we offer,
+        /// which is exactly the thing we want to be able to see separately.
+        /// </summary>
+        private void TrackPictureChosenFromGallery(string provider)
+        {
+            AnalyticsApi.TrackChangePicture(provider, View?.Model?.CurrentBook?.ID);
         }
 
         /// <summary>

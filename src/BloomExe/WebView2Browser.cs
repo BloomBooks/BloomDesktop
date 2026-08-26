@@ -802,18 +802,53 @@ namespace Bloom
         /// </summary>
         public override void RunJavascriptFireAndForget(string script)
         {
+            if (_webview == null || _webview.IsDisposed || _webview.Disposing)
+                return;
+
+            // Everything below, including the CoreWebView2 readiness check, must happen on the thread
+            // that created the control, which is usually the UI thread. Reading the CoreWebView2 property
+            // from any other thread can throw "CoreWebView2 can only be accessed from the UI thread": the
+            // WinForms wrapper does a COM QueryInterface on the apartment-bound ICoreWebView2Controller,
+            // which fails E_NOINTERFACE across apartments. Whether it actually throws depends on the
+            // apartment that controller ended up in, so it fails on some machines and not others. That
+            // made the readiness guard checking _webview.CoreWebView2 the crash site (BL-16749: a
+            // .bloomSource import runs on a background thread, and the book rename it does raises
+            // BookRenamedEvent inline, which asks the Edit view to refresh the page list).
+            // Since this method is fire-and-forget by contract - the script has not necessarily run by the
+            // time we return - re-posting the whole call to the correct (UI) thread costs the caller nothing.
+            // Do NOT fold this back into the guard below.
+            if (_webview.IsHandleCreated && _webview.InvokeRequired)
+            {
+                try
+                {
+                    _webview.BeginInvoke((Action)(() => RunJavascriptFireAndForget(script)));
+                }
+                catch (Exception e)
+                    when (e is ObjectDisposedException || e is InvalidOperationException)
+                {
+                    // The control can start disposing between the checks above and this call. That
+                    // is the same expected shutdown race the ContinueWith below logs rather than
+                    // reports, and here we are on a background thread, where letting it escape
+                    // would take Bloom down.
+                    Logger.WriteEvent(
+                        "WebView2Browser.RunJavascriptFireAndForget: could not marshal to the UI thread (expected during shutdown): "
+                            + e.Message
+                    );
+                }
+                return;
+            }
+            // With no handle there is no UI thread to post to, and any CoreWebView2 is not usable
+            // yet, so this is the same "not in a usable state" case the guard below covers.
+            if (!_webview.IsHandleCreated)
+                return;
+
             // Guard against running when the browser isn't in a usable state. During app startup
             // (before CoreWebView2 is initialized) or shutdown (while the control is disposing),
             // ExecuteScriptAsync throws from inside its async state machine. Because nothing here
             // awaits or otherwise observes the returned Task, that fault used to reach the GC
             // finalizer thread and get rethrown as an UnobservedTaskException (Sentry
             // BLOOM-DESKTOP-D07). This mirrors the readiness check in UpdateDisplay().
-            if (
-                _webview == null
-                || _webview.IsDisposed
-                || _webview.Disposing
-                || _webview.CoreWebView2 == null
-            )
+            if (_webview.CoreWebView2 == null)
                 return;
 
             // Even with the guard above there is a tiny race window in which the control can start

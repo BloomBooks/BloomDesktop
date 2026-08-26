@@ -15,7 +15,6 @@ using Bloom.SubscriptionAndFeatures;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using BloomTemp;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
@@ -677,7 +676,7 @@ namespace Bloom.Publish
                     // we want the simple PDF we already made.
                     RobustFile.Copy(PdfFilePath, destFileName, true);
                 }
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "Save PDF",
                     new Dictionary<string, string>()
                     {

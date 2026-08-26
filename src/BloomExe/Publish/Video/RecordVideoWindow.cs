@@ -17,7 +17,6 @@ using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
@@ -1508,7 +1507,7 @@ namespace Bloom.Publish.Video
                 RobustFile.Copy(_finalVideo.Path, destFileName, true);
             }
 
-            Analytics.Track(
+            BloomAnalytics.Track(
                 "Publish Audio/Video",
                 new Dictionary<string, string>()
                 {

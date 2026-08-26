@@ -22,7 +22,6 @@ using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
@@ -377,7 +376,7 @@ namespace Bloom.WebLibraryIntegration
 
                     if (IsProductionRun) // don't make it seem like there are more uploads than there really are if this is just a tester pushing to the sandbox
                     {
-                        Analytics.Track(
+                        BloomAnalytics.Track(
                             "UploadBook-Success",
                             new Dictionary<string, string>()
                             {
@@ -412,7 +411,7 @@ namespace Bloom.WebLibraryIntegration
                         )
                     );
                     if (IsProductionRun)
-                        Analytics.Track("UploadBook-Failure-SystemTime");
+                        BloomAnalytics.Track("UploadBook-Failure-SystemTime");
                 }
                 else
                 {
@@ -459,7 +458,7 @@ namespace Bloom.WebLibraryIntegration
         private void ReportFailureToAnalytics(BookMetaData metadata, bool isNewBook, Exception e)
         {
             if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this is just a tester pushing to the sandbox
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "UploadBook-Failure",
                     new Dictionary<string, string>()
                     {

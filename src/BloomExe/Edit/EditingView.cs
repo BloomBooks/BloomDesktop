@@ -153,43 +153,7 @@ namespace Bloom.Edit
 
             controlKeyEvent.Subscribe(HandleControlKeyEvent);
 
-            bookRenamedEvent.Subscribe(
-                (oldToNewPath) =>
-                {
-                    // If the selected book is renamed, we should update our saved CurrentBookPath.
-                    // Each branch below saves the settings itself: it used to be enough to change
-                    // the value in memory, because the next SelectBook() would flush it, but
-                    // SelectBook() no longer writes settings at all (BL-16660).
-                    if (model.CurrentBook == null)
-                    {
-                        // Note: possibly all we need is this branch, which doesn't actually depend
-                        // on model.CurrentBook being null. However, if we do have a model.CurrentBook,
-                        // that's the definitive source of truth. We don't want by any chance to
-                        // be updating our settings to indicate that anything else is selected.
-                        // So I decided to use this only when we don't have that...usually only
-                        // during startup, I think because of a duplicate name.
-                        if (oldToNewPath.Key == Settings.Default.CurrentBookPath)
-                        {
-                            Settings.Default.CurrentBookPath = oldToNewPath.Value;
-                            Settings.Default.Save();
-                        }
-                    }
-                    else if (oldToNewPath.Value == _model.CurrentBook?.FolderPath)
-                    {
-                        // This is the usual path, updating the settings to match the model's current book.
-                        Settings.Default.CurrentBookPath = oldToNewPath.Value;
-                        Settings.Default.Save();
-                    }
-                    UpdatePageList(true);
-                    if (_model.CurrentBook != null)
-                    {
-                        var url = _model.GetUrlForPageListFile();
-                        _mainBrowser.RunJavascriptFireAndForget(
-                            $"workspaceBundle.switchThumbnailPage('{url}');"
-                        );
-                    }
-                }
-            );
+            bookRenamedEvent.Subscribe(HandleBookRenamedOnUiThread);
 #if __MonoCS__
             // The inactive button images look garishly pink on Linux/Mono, but look okay on Windows.
             // Merely introducing an "identity color matrix" to the image attributes appears to fix
@@ -225,6 +189,70 @@ namespace Bloom.Edit
                 ColorAdjustType.Bitmap
             );
 #endif
+        }
+
+        /// <summary>
+        /// Runs <see cref="HandleBookRenamed"/> on the UI thread. A book can be renamed from a
+        /// background thread - BookStorage.SetBookName raises BookRenamedEvent inline, and several
+        /// operations that bring a book up to date (notably the .bloomSource import, which runs
+        /// behind a progress dialog) do that off the UI thread - but what we do in response drives
+        /// WinForms and the WebView2, both of which are UI-thread-only. Doing it directly from the
+        /// import's worker thread is what threw "CoreWebView2 can only be accessed from the UI
+        /// thread" and abandoned the import (BL-16749). When no window is open (e.g. unit tests)
+        /// this just runs inline; the same pattern as CollectionModel.SelectBookOnUiThread.
+        /// The Invoke is deliberately synchronous, which keeps the handler's old ordering (the
+        /// settings write and the page-list refresh both finish before the rename returns). That
+        /// would only deadlock if the UI thread were blocked waiting on this worker, which no
+        /// current path does: the import's progress dialog does not block it, and a modal dialog
+        /// would still pump messages.
+        /// </summary>
+        private void HandleBookRenamedOnUiThread(KeyValuePair<string, string> oldToNewPath)
+        {
+            var form = Shell.GetShellOrOtherOpenForm();
+            if (form != null && form.InvokeRequired)
+                form.Invoke((Action)(() => HandleBookRenamed(oldToNewPath)));
+            else
+                HandleBookRenamed(oldToNewPath);
+        }
+
+        /// <summary>
+        /// Updates our saved CurrentBookPath and refreshes the page list after a book has been
+        /// renamed. Call it only on the UI thread (see <see cref="HandleBookRenamedOnUiThread"/>).
+        /// </summary>
+        private void HandleBookRenamed(KeyValuePair<string, string> oldToNewPath)
+        {
+            // If the selected book is renamed, we should update our saved CurrentBookPath.
+            // Each branch below saves the settings itself: it used to be enough to change
+            // the value in memory, because the next SelectBook() would flush it, but
+            // SelectBook() no longer writes settings at all (BL-16660).
+            if (_model.CurrentBook == null)
+            {
+                // Note: possibly all we need is this branch, which doesn't actually depend
+                // on model.CurrentBook being null. However, if we do have a model.CurrentBook,
+                // that's the definitive source of truth. We don't want by any chance to
+                // be updating our settings to indicate that anything else is selected.
+                // So I decided to use this only when we don't have that...usually only
+                // during startup, I think because of a duplicate name.
+                if (oldToNewPath.Key == Settings.Default.CurrentBookPath)
+                {
+                    Settings.Default.CurrentBookPath = oldToNewPath.Value;
+                    Settings.Default.Save();
+                }
+            }
+            else if (oldToNewPath.Value == _model.CurrentBook?.FolderPath)
+            {
+                // This is the usual path, updating the settings to match the model's current book.
+                Settings.Default.CurrentBookPath = oldToNewPath.Value;
+                Settings.Default.Save();
+            }
+            UpdatePageList(true);
+            if (_model.CurrentBook != null)
+            {
+                var url = _model.GetUrlForPageListFile();
+                _mainBrowser.RunJavascriptFireAndForget(
+                    $"workspaceBundle.switchThumbnailPage('{url}');"
+                );
+            }
         }
 
         public EditingModel Model => _model;
@@ -755,6 +783,7 @@ namespace Bloom.Edit
                             imageId,
                             priorImageSrc,
                             clipboardImage,
+                            "clipboard",
                             pageBackgroundColor
                         );
                         pictureChanged = true;
@@ -771,6 +800,7 @@ namespace Bloom.Edit
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
+                                "clipboard",
                                 pageBackgroundColor
                             );
                             pictureChanged = true;
@@ -789,6 +819,7 @@ namespace Bloom.Edit
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
+                                "clipboard",
                                 pageBackgroundColor
                             );
                             pictureChanged = true;
@@ -824,6 +855,7 @@ namespace Bloom.Edit
                                         imageId,
                                         priorImageSrc,
                                         palasoImage,
+                                        "clipboard",
                                         pageBackgroundColor
                                     );
                                     pictureChanged = true;
@@ -1051,7 +1083,7 @@ namespace Bloom.Edit
                 creator = "",
                 undoable = "true",
             };
-            _model.UpdateImageInBrowser(args);
+            _model.UpdateImageInBrowser(args, "clipboard");
         }
 
         /// <summary>
@@ -1180,6 +1212,12 @@ namespace Bloom.Edit
             );
         }
 
+        /// <summary>
+        /// Nothing calls this at present -- it is left from an older path -- so the "clipboard"
+        /// source it reports below is the route it USED to serve, not one derived from anything
+        /// the caller says. Anyone reusing this method from somewhere else must pass the real
+        /// route through instead; see AnalyticsApi.TrackChangePicture for the vocabulary.
+        /// </summary>
         public void SaveChangedImage(
             string imageId,
             UrlPathString priorImageSrc,
@@ -1193,7 +1231,13 @@ namespace Bloom.Edit
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
                     return;
-                _model.ChangePicture(imageId, priorImageSrc, imageInfo, pageBackgroundColor);
+                _model.ChangePicture(
+                    imageId,
+                    priorImageSrc,
+                    imageInfo,
+                    "clipboard",
+                    pageBackgroundColor
+                );
                 imageChanged = true;
             }
             catch (System.IO.IOException error)
