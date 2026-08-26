@@ -885,12 +885,29 @@ namespace Bloom.FreezeDoctor
                 // Simply raising it to a minute would have swapped that for the failure the timeout was
                 // there for: a Doctor that died between the check above and this line would hold a crashing
                 // Bloom open for the whole minute, for nothing.
-                if (
-                    !DoctorSignals.WaitFor(
-                        DoctorSignals.DumpStartedName(pid),
+                // An older Doctor does not create the "started" event at all, and the two cases must not be
+                // confused: "it does not exist" means we are talking to a Doctor that predates it, while
+                // "it exists and nobody set it" means nothing picked the request up. Treating the first
+                // like the second would quietly withdraw crash dumps from a real arrangement - a Doctor
+                // outlives Bloom's own updates, so a freshly updated Bloom talking to the Doctor that was
+                // already running is not hypothetical.
+                var startedName = DoctorSignals.DumpStartedName(pid);
+                if (!DoctorSignals.Exists(startedName))
+                {
+                    var dumpedByAnOlderDoctor = DoctorSignals.WaitFor(
+                        DoctorSignals.DumpCompleteName(pid),
                         TimeSpan.FromSeconds(3)
-                    )
-                )
+                    );
+                    Logger.WriteEvent(
+                        dumpedByAnOlderDoctor
+                            ? "An older Bloom Freeze Doctor captured a dump of this crash"
+                            : "An older Bloom Freeze Doctor did not answer in time; it cannot be waited for "
+                                + "any longer than this, because it never says when it has started"
+                    );
+                    return;
+                }
+
+                if (!DoctorSignals.WaitFor(startedName, TimeSpan.FromSeconds(3)))
                 {
                     // Its tick is a second, so three is already generous for merely picking the request up.
                     // Nothing has, so there is nothing to wait for.
