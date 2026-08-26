@@ -100,7 +100,8 @@ internal static class Program
         using var supervisor = new DoctorSupervisor(
             options.Project,
             options.TargetProcessName,
-            options.ForceFiling
+            options.ForceFiling,
+            targetNameWasGiven: options.TargetNameWasGiven
         );
 
         // Launched by Bloom, we start out of the way in the tray; launched by a person, we show ourselves,
