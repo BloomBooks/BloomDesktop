@@ -46,6 +46,12 @@ public static class CollapsibleSections
     ///   reason to risk a stray tag showing as text on every card.
     /// - Inside `&lt;pre&gt;` the content is HTML, so `&lt;` and `&amp;` must be escaped or a generic type
     ///   in a stack frame (`List&lt;int&gt;`) is read as a tag and silently disappears.
+    ///
+    /// **Confirmed against the real tracker on 26 August 2026** — a probe comment in exactly this shape
+    /// rendered as a collapsed block with the angle brackets intact. Worth knowing if this is ever revisited:
+    /// the risk was that an unsupported tag would show as literal text on every card, which would have been
+    /// worse than not collapsing at all, so the shape above is proven rather than merely plausible. Only
+    /// `&lt;summary&gt;` remains untested.
     /// </summary>
     public static string RenderForACard(string report)
     {
