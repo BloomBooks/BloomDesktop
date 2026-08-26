@@ -2,10 +2,8 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
-// The wire format Bloom shares with the Freeze Doctor. A plain project reference to
-// src/BloomFreezeDoctor.Protocol, compiled into both sides from the same source every build, so the two
-// cannot hold copies that disagree. It was briefly a published NuGet package, when the Doctor lived in its
-// own repository; see BL-16719 for why it is neither of those things now.
+// The wire format Bloom shares with the Freeze Doctor: one project, src/BloomFreezeDoctor.Protocol,
+// compiled into both sides from the same source, so the two cannot hold copies that disagree.
 using BloomFreezeDoctor.Protocol;
 using SIL.Reporting;
 
@@ -16,37 +14,34 @@ namespace Bloom.FreezeDoctor
     /// repository, under src/BloomFreezeDoctor) to tell a frozen Bloom from a busy one, and a crash from an
     /// orderly shutdown.
     ///
-    /// **Why Bloom needs to help at all.** Watching from outside cannot detect the freeze we most expect.
-    /// A UI thread blocked in a managed wait on an STA thread — `WaitHandle.WaitOne`, `Task.Wait`,
-    /// anything that ends in `CoWaitForMultipleHandles` — keeps dispatching *sent* messages so that COM
-    /// still works. The window therefore answers `SendMessageTimeout`, `IsHungAppWindow` reports it as
-    /// healthy, and `Process.Responding` says `true`, while Bloom is completely stuck. This was measured,
-    /// not assumed. `WM_TIMER` is *not* dispatched by those restricted pumps, so a timer that stops
-    /// ticking is the one signal that gives the freeze away — and since Bloom's UI thread awaits WebView2
-    /// constantly, we should expect this shape of freeze to be common rather than exotic.
+    /// **Why Bloom has to help at all.** Watching from outside cannot detect the freeze we most expect.
+    /// A UI thread blocked in a managed wait on an STA thread — `WaitHandle.WaitOne`, `Task.Wait`, anything
+    /// ending in `CoWaitForMultipleHandles` — keeps dispatching *sent* messages so that COM still works, so
+    /// the window answers `SendMessageTimeout`, `IsHungAppWindow` calls it healthy and `Process.Responding`
+    /// returns true while Bloom is completely stuck. Measured on a real Bloom: nine minutes frozen,
+    /// reported responsive throughout. `WM_TIMER` is *not* dispatched by those restricted pumps, so a timer
+    /// that stops ticking is the one signal that gives the freeze away — and since Bloom's UI thread awaits
+    /// WebView2 constantly, this is the common shape of freeze rather than an exotic one.
     ///
-    /// **The rules this code lives by**, because it runs on the UI thread and in the shutdown path of an
-    /// application whose shutdown has historically been fragile:
+    /// **The rules this code lives by**, since it runs on the UI thread and in Bloom's shutdown path:
     ///
-    /// - It must never throw. Every entry point swallows its own failures.
+    /// - It must never throw. Every entry point swallows its own failures; see <see cref="Publish"/>.
     /// - It must never block. Nothing here waits on anything.
-    /// - It must never matter. If the channel cannot be created, Bloom carries on exactly as before, and
-    ///   the Doctor falls back to watching from outside as it does for every Bloom already in the field.
+    /// - It must never matter. If the channel cannot be created, Bloom carries on exactly as before and the
+    ///   Doctor falls back to watching from outside, as it does for every Bloom already in the field.
     /// </summary>
     public static class FreezeDoctorSupport
     {
         /// <summary>
-        /// How often the UI thread reports in. Frequent enough that a freeze is obvious within the
-        /// Doctor's shortest threshold, cheap enough to be invisible: this is one `WM_TIMER` and a
-        /// handful of writes to a page of memory already resident.
+        /// How often the UI thread reports in. One `WM_TIMER` and a few writes to a resident page, so the
+        /// cost is invisible.
         ///
-        /// **Twice as often as the watchdog below, and the difference is deliberate.** This heartbeat is
-        /// not a liveness check, it is the *measurement* the whole tool rests on: its staleness is the
-        /// freeze signal, so its interval sets the resolution of that signal and the floor under how tight
-        /// the Doctor's threshold can safely be (5 seconds today, ten of these intervals). It is also the
-        /// fragile one — `WM_TIMER` is the lowest-priority message there is, and a busy-but-live UI really
-        /// can starve it — so ticking twice as often means a moment's starvation has to swallow two ticks
-        /// rather than one before it starts to look like a freeze.
+        /// **Twice as often as the watchdog below, deliberately.** This is not a liveness check but the
+        /// measurement the whole tool rests on — its staleness *is* the freeze signal — so its interval sets
+        /// the resolution of that signal and the floor under how tight the Doctor's threshold can safely be
+        /// (5 seconds, ten of these). It is also the fragile one, since `WM_TIMER` is the lowest-priority
+        /// message there is and a busy-but-live UI can starve it, so ticking twice as often means a
+        /// moment's starvation must swallow two ticks rather than one before it looks like a freeze.
         /// </summary>
         private static readonly TimeSpan UiHeartbeatInterval = TimeSpan.FromMilliseconds(500);
 
@@ -55,12 +50,11 @@ namespace Bloom.FreezeDoctor
         /// stale and this one is fresh, the UI thread is blocked; if both are stale, the whole process is
         /// wedged — a garbage collection that will not finish, or a suspended process.
         ///
-        /// Slower than the UI heartbeat because it is only a reference point, and nothing is measured
-        /// against *its* resolution — it needs to be reliably alive, not finely sampled. It also does real
-        /// work on each tick (publishes what Bloom is doing, polls for a debugger, and every tenth time
-        /// rewrites the session file), so ticking it faster would cost more for no gain. And it doubles as
-        /// the latency of the Doctor's quit request, which this thread waits on rather than sleeping
-        /// blindly: one second is how long a stuck Bloom takes to notice it has been asked to leave.
+        /// Slower than the UI heartbeat because nothing is measured against *its* resolution: it needs to
+        /// be reliably alive, not finely sampled. It also does real work each tick — publishes what Bloom is
+        /// doing, polls for a debugger, and every tenth time rewrites the session file. It doubles as the
+        /// latency of the Doctor's quit request, which this thread waits on rather than sleeping blindly, so
+        /// one second is also how long a stuck Bloom takes to notice it has been asked to leave.
         /// </summary>
         private static readonly TimeSpan WatchdogInterval = TimeSpan.FromSeconds(1);
 
@@ -122,6 +116,40 @@ namespace Bloom.FreezeDoctor
         private static readonly TimeSpan SessionRetention = TimeSpan.FromDays(7);
 
         /// <summary>
+        /// How long a dying Bloom waits for the Doctor to say it has taken up the dump request. The Doctor
+        /// polls once a second, so this is generous for merely picking something up; the point of keeping it
+        /// short is that a Doctor which is alive but not working cannot hold a crashing Bloom for long.
+        /// </summary>
+        private static readonly TimeSpan PatienceForPickup = TimeSpan.FromSeconds(3);
+
+        /// <summary>
+        /// How long to wait once a dump is known to be underway. Generous because it can afford to be: the
+        /// wait ends the moment the Doctor stops existing, so this ceiling only binds a Doctor that is alive
+        /// and taking its time — which is the case we want to be patient with, since a dump of a real Bloom
+        /// takes seconds and longer on a slow or loaded machine.
+        /// </summary>
+        private static readonly TimeSpan PatienceForTheDumpItself = TimeSpan.FromSeconds(60);
+
+        /// <summary>How often that wait re-checks whether the Doctor is still there.</summary>
+        private static readonly TimeSpan WaitSlice = TimeSpan.FromMilliseconds(500);
+
+        /// <summary>
+        /// How far Bloom's shutdown has got, as recorded by <see cref="SetShutdownPhase"/>. A Bloom that
+        /// dies part way out can then say *where* it stopped rather than only that it did, and zero — never
+        /// having reached the first of these — is how a hard failure is told from an orderly exit.
+        ///
+        /// Named rather than passed as bare numbers at the call sites, so that the sequence documents itself
+        /// and cannot drift away from a comment listing what each number meant.
+        /// </summary>
+        public static class ShutdownPhase
+        {
+            public const int MessageLoopReturned = 1;
+            public const int SettingsSaved = 2;
+            public const int LogWritten = 3;
+            public const int ProjectContextDisposed = 4;
+        }
+
+        /// <summary>
         /// Starts publishing. Call once, on the UI thread, immediately before entering the message loop:
         /// the UI heartbeat is a WinForms timer, so it only ticks once messages are being pumped, which is
         /// exactly the property that makes it a useful signal.
@@ -137,11 +165,14 @@ namespace Bloom.FreezeDoctor
             // important of the two for the case where nobody was watching at the time.
             WriteSessionFile();
 
-            // Install the clean-exit hook BEFORE anything that might bail out. The on-disk half of the
-            // contract does not depend on shared memory, and if we returned early without this hook the
-            // session file would sit there for ever with no exit record — which a Doctor reads as "this run
-            // did not shut down properly". Failing to create a shared page would have manufactured exactly
-            // the false positive the proof exists to prevent.
+            // Before anything that can bail out. The on-disk half of the contract does not depend on shared
+            // memory, and a session file with no exit record reads as "this run did not shut down
+            // properly" - so returning early without this hook would manufacture the very false positive
+            // the proof exists to prevent.
+            //
+            // It runs for a normal return from Main and for Environment.Exit, and NOT for FailFast,
+            // TerminateProcess or an access violation, which is exactly the line the Doctor wants drawn and
+            // one no future exit path can forget to honour.
             AppDomain.CurrentDomain.ProcessExit += (sender, args) => RecordCleanExit();
 
             try
@@ -150,25 +181,23 @@ namespace Bloom.FreezeDoctor
                 if (!_channel.IsOpen)
                     return; // Another process owns the name, or the OS refused. Nothing more to do.
 
-                // Through the static wrapper, NOT _channel directly: the wrapper is what remembers the text
-                // in _statedActivity, and the watchdog composes from that. Writing straight to the channel
-                // here left _statedActivity empty, so the first watchdog tick (one second later) replaced
-                // "starting up" with "no request in flight" — and a Bloom that wedges during startup, the one
-                // case where this string is the only clue there is, reported the least useful thing it could.
-                // ComposeCurrentActivity retires this again once Bloom has handled a request.
+                // Through the static wrapper, not _channel directly: the wrapper is what records the text in
+                // _statedActivity, which the watchdog composes from. Writing straight to the channel leaves
+                // that empty, and the next watchdog tick replaces "starting up" with "no request in flight"
+                // - discarding the only clue available about a Bloom that wedges during startup.
+                // ComposeCurrentActivity retires this once Bloom has handled a request.
                 SetActivity(StartupActivity);
-                // Authoritative, and worth more than the Doctor's own guess: it is why a developer
-                // stopping their debugger never produces a report. Published here so it is right from the
-                // start, and refreshed every second by the watchdog thread — a debugger can be attached to
-                // an already-running Bloom, and used to stop it, so reading this once would have missed
-                // exactly the cases that produce a bogus report.
+                // Worth more than the Doctor's own guess, and why a developer stopping their debugger never
+                // produces a report. Refreshed every second by the watchdog rather than read once, because a
+                // debugger can be attached to a running Bloom and detached again - exactly the cases that
+                // would otherwise produce a bogus report.
                 _channel.SetDebuggerAttached(IsDebuggerAttached());
 
                 _uiHeartbeat = new System.Windows.Forms.Timer
                 {
                     Interval = (int)UiHeartbeatInterval.TotalMilliseconds,
                 };
-                _uiHeartbeat.Tick += (sender, args) => SafeRecordUiTick();
+                _uiHeartbeat.Tick += (sender, args) => RecordUiTick();
                 _uiHeartbeat.Start();
 
                 _watchdog = new Thread(WatchdogLoop)
@@ -183,20 +212,13 @@ namespace Bloom.FreezeDoctor
                 };
                 _watchdog.Start();
 
-                // (The ProcessExit hook — the whole of the clean-exit proof — is installed above, before
-                // anything can return early. It runs for a normal return from Main and for Environment.Exit,
-                // and NOT for FailFast, TerminateProcess, or an access violation, which is precisely the line
-                // the Doctor wants drawn and one no future exit path can forget to honour.)
-
-                // Ask for a dump on the way down. Hooked here rather than only at Program.Run's two catch
-                // blocks because those catch just TargetInvocationException and AccessViolationException
-                // from the message loop, whereas this fires for an unhandled exception on ANY thread — far
-                // more of the crashes we actually want to explain.
+                // Ask for a dump on the way down. Hooked here as well as at Program.Run's catch blocks,
+                // which see only TargetInvocationException and AccessViolationException from the message
+                // loop, whereas this fires for an unhandled exception on ANY thread.
                 //
-                // Note what this deliberately does NOT cover: a direct Environment.FailFast runs no managed
-                // handlers at all, by design, so no dump can be requested for one. Those crashes are still
-                // recognisable, through Windows Error Reporting and through the absence of a clean-exit
-                // proof; we just do not get a dump of our own.
+                // It cannot cover Environment.FailFast, which by design runs no managed handlers at all.
+                // Those crashes are still recognisable from Windows Error Reporting and the absence of a
+                // clean-exit proof; we just get no dump of our own.
                 AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
                     RequestDumpBeforeDying();
 
@@ -216,15 +238,29 @@ namespace Bloom.FreezeDoctor
         /// Says what Bloom is doing, in words fit to appear at the top of a bug report — "Publishing to
         /// BloomPUB", "Saving Foo.htm". Truncated if very long; safe to call from any thread.
         /// </summary>
-        public static void SetActivity(string activity)
+        public static void SetActivity(string activity) =>
+            Publish(() =>
+            {
+                // Remembered as well as published, because the watchdog rewrites the same slot once a
+                // second; published alone, the message would survive less than a second. The watchdog
+                // composes this with the in-flight request text instead.
+                Volatile.Write(ref _statedActivity, activity ?? "");
+                _channel?.SetActivity(activity);
+            });
+
+        /// <summary>
+        /// Runs one publishing step, swallowing whatever it throws.
+        ///
+        /// Every entry point here goes through this. Diagnostics that can break the application they
+        /// diagnose are worse than no diagnostics, and there is nothing any caller could usefully do with a
+        /// failure to write a health field — so rather than each method repeating the same empty catch and
+        /// the same explanation, the rule lives here once.
+        /// </summary>
+        private static void Publish(Action step)
         {
             try
             {
-                // Remembered rather than published directly, because the watchdog thread rewrites the same
-                // slot once a second; if this wrote straight through, the message would survive less than a
-                // second. The watchdog composes this with the in-flight request text instead.
-                Volatile.Write(ref _statedActivity, activity ?? "");
-                _channel?.SetActivity(activity);
+                step();
             }
             catch (Exception) { }
         }
@@ -234,29 +270,20 @@ namespace Bloom.FreezeDoctor
         /// PDF. This buys Bloom patience rather than silence: the Doctor raises its threshold from one
         /// minute to five, and still reports if Bloom is stuck beyond that.
         ///
-        /// Call it through <see cref="LongOperation"/>, not directly, so the count is kept and the
-        /// description of what Bloom is doing goes with it.
+        /// Call it through <see cref="LongOperation"/> rather than directly, so the nesting count is kept
+        /// and a description of the work goes with it.
         ///
-        /// **Six operations are marked**, all through that scope: making a BloomPUB, an ePUB, a video or a
-        /// Reading-App-Builder app, and uploading to or downloading from Bloom Library. Anything *not*
-        /// marked that blocks the UI thread for over a minute *without pumping messages* is filed as a
-        /// freeze, which is the false positive this exists to prevent. (Work behind a modal progress dialog
-        /// is safe either way: ShowDialog runs a nested message loop, so the UI heartbeat keeps ticking and
-        /// no freeze is detected at all.)
+        /// Anything *not* marked that blocks the UI thread for over a minute *without pumping messages* is
+        /// filed as a freeze, which is the false positive this exists to prevent. Work behind a modal
+        /// progress dialog is safe either way, since ShowDialog runs a nested message loop and the UI
+        /// heartbeat keeps ticking.
         ///
-        /// Deciding which operations to mark is a judgement about how Bloom really behaves, not something to
-        /// infer from the code — "a request has run for a minute" is the same signal as the freeze itself, so
-        /// it cannot tell legitimately-slow from wedged. That is why it is a deliberate call at the few
-        /// places that know, rather than anything automatic.
+        /// Which operations to mark is a judgement about how Bloom really behaves, and cannot be inferred
+        /// automatically: "a request has run for a minute" is the same signal as the freeze itself, so it
+        /// cannot tell legitimately-slow from wedged. Hence a deliberate call at the few places that know.
         /// </summary>
-        public static void SetLongOperation(bool inProgress)
-        {
-            try
-            {
-                _channel?.SetLongOperation(inProgress);
-            }
-            catch (Exception) { }
-        }
+        public static void SetLongOperation(bool inProgress) =>
+            Publish(() => _channel?.SetLongOperation(inProgress));
 
         /// <summary>
         /// How many long operations are running. Counted rather than a bare boolean because these nest —
@@ -358,15 +385,12 @@ namespace Bloom.FreezeDoctor
         /// that a Bloom which dies mid-shutdown can say *where* it stopped rather than merely that it did
         /// — which is the same evidence the "UI gone but process alive" case needs.
         /// </summary>
-        public static void SetShutdownPhase(int phase)
-        {
-            try
+        public static void SetShutdownPhase(int phase) =>
+            Publish(() =>
             {
                 _shutdownPhase = phase;
                 _channel?.SetShutdownPhase(phase);
-            }
-            catch (Exception) { }
-        }
+            });
 
         /// <summary>
         /// Records that shutdown ran to completion. Its ABSENCE is what the Doctor treats as evidence, so
@@ -403,9 +427,9 @@ namespace Bloom.FreezeDoctor
         /// does not file a second report about the same thing. Called when a **tracker card** goes out
         /// successfully — the one place a duplicate is possible.
         ///
-        /// Deliberately NOT called for a Sentry event, which the doc here used to claim. A Sentry event
-        /// creates no card, so a Doctor report about the same trouble is not a duplicate of it; it is the
-        /// only thing that would put the problem on the board at all. Suppressing on Sentry would lose it.
+        /// Deliberately NOT called for a Sentry event. A Sentry event creates no card, so a Doctor report
+        /// about the same trouble is not a duplicate of it — it is the only thing that would put the problem
+        /// on the board at all, and suppressing on Sentry would lose it.
         /// </summary>
         public static void NoteBloomReportedAProblem(string reportedId)
         {
@@ -513,10 +537,9 @@ namespace Bloom.FreezeDoctor
                 {
                     if (_session == null)
                         return;
-                    // The exit is always recorded now. It used to be skipped when Bloom had already reported a
-                    // problem, which meant a genuinely orderly shutdown went unrecorded — and the two facts
-                    // are independent anyway: "the user reported something" and "we then shut down properly"
-                    // are both worth knowing, and they live in separate fields.
+                    // Always recorded, even when Bloom has already reported a problem: "the user reported
+                    // something" and "we then shut down properly" are independent facts, both worth
+                    // knowing, and they live in separate fields.
                     _session = _session with
                     {
                         Exit = new DoctorSessionExit
@@ -840,13 +863,8 @@ namespace Bloom.FreezeDoctor
         /// </summary>
         public static void RequestDumpBeforeDying()
         {
-            // Once per process, whoever asks.
-            //
-            // Bloom's own fatal handler now asks for this (FatalExceptionHandler.DisplayError), because
-            // relying on the AppDomain hook below meant relying on handler registration order, which we
-            // lost. That hook is kept as a backstop for the fatal routes which never reach DisplayError -
-            // harvester mode, and the fallback handler - so for one crash both can fire, and only the
-            // first should pay the wait.
+            // Once per process, whoever asks. Two routes reach here for one crash - Bloom's fatal handler
+            // and the AppDomain hook - and only the first should pay the wait.
             if (Interlocked.Exchange(ref _dumpAlreadyRequested, 1) != 0)
                 return;
             try
@@ -855,12 +873,9 @@ namespace Bloom.FreezeDoctor
                 if (!DoctorSignals.Exists(DoctorSignals.WatchingName(pid)))
                     return; // No Doctor. Do not delay this crash by even a millisecond.
 
-                // Past the watching check, so a Doctor is there and these lines cost only the few users who
-                // have one. Both of the outcomes below used to return in silence, and that silence cost a
-                // whole test cycle: a simulated crash produced no dump, and nothing anywhere could say
-                // whether we had failed to ask, been unable to ask, or never reached this code at all. On a
-                // path that exists purely to gather diagnostics, saying nothing is the one unaffordable
-                // failure.
+                // Past that check a Doctor is there, so the logging below costs only the few users who have
+                // one - and on a path whose entire purpose is gathering diagnostics, silence is the one
+                // unaffordable failure. Each outcome says which it was.
                 Logger.WriteEvent("Asking the Bloom Freeze Doctor for a dump of this crash");
 
                 if (!DoctorSignals.TrySignal(DoctorSignals.DumpRequestName(pid)))
@@ -871,60 +886,27 @@ namespace Bloom.FreezeDoctor
                     return;
                 }
 
-                // Two waits, with quite different patience, because "nobody picked this up" and "this is
-                // taking a while" deserve opposite treatment.
-                //
-                // This used to be one flat three seconds, chosen when a real Bloom's dump was measured at
-                // 1.4 s. A later measurement on a fast developer machine, of a Bloom two minutes old, took
-                // 2.4 s of the 3 allowed — so a user's slower machine, running a Bloom that has been up for
-                // days with memory under pressure, would overrun. And overrunning does not delay the dump,
-                // it LOSES it: the dying Bloom is what writes the dump over the diagnostics pipe, so exiting
-                // mid-write aborts it and the report ends up with no managed stacks at all. The budget was
-                // tightest exactly where the need was greatest.
-                //
-                // Simply raising it to a minute would have swapped that for the failure the timeout was
-                // there for: a Doctor that died between the check above and this line would hold a crashing
-                // Bloom open for the whole minute, for nothing.
-                // An older Doctor does not create the "started" event at all, and the two cases must not be
-                // confused: "it does not exist" means we are talking to a Doctor that predates it, while
-                // "it exists and nobody set it" means nothing picked the request up. Treating the first
-                // like the second would quietly withdraw crash dumps from a real arrangement - a Doctor
-                // outlives Bloom's own updates, so a freshly updated Bloom talking to the Doctor that was
-                // already running is not hypothetical.
-                var startedName = DoctorSignals.DumpStartedName(pid);
-                if (!DoctorSignals.Exists(startedName))
+                // Wait briefly for the Doctor to say it has started. Its tick is a second, so this is
+                // generous for merely picking a request up; if nothing does, there is nothing to wait for
+                // and a crashing Bloom should not be held any longer.
+                if (!DoctorSignals.WaitFor(DoctorSignals.DumpStartedName(pid), PatienceForPickup))
                 {
-                    var dumpedByAnOlderDoctor = DoctorSignals.WaitFor(
-                        DoctorSignals.DumpCompleteName(pid),
-                        TimeSpan.FromSeconds(3)
-                    );
                     Logger.WriteEvent(
-                        dumpedByAnOlderDoctor
-                            ? "An older Bloom Freeze Doctor captured a dump of this crash"
-                            : "An older Bloom Freeze Doctor did not answer in time; it cannot be waited for "
-                                + "any longer than this, because it never says when it has started"
+                        "Asked the Bloom Freeze Doctor for a crash dump, but nothing picked it up"
                     );
                     return;
                 }
 
-                if (!DoctorSignals.WaitFor(startedName, TimeSpan.FromSeconds(3)))
-                {
-                    // Its tick is a second, so three is already generous for merely picking the request up.
-                    // Nothing has, so there is nothing to wait for.
-                    Logger.WriteEvent(
-                        "Asked the Bloom Freeze Doctor for a crash dump but nothing picked it up; not waiting"
-                    );
-                    return;
-                }
-
-                // Underway, so be patient - but only while the Doctor is demonstrably still there. It holds
-                // its "watching" event open for exactly as long as it watches, so if it dies the event stops
-                // existing and this returns at once rather than running out the ceiling.
+                // Underway, so be patient - but only while the Doctor is demonstrably still there. A dump of
+                // a real Bloom takes seconds, and longer on the slow machines that need it most; and giving
+                // up early does not merely delay it but loses it, since the dying process is what writes the
+                // dump over the diagnostics pipe. The Doctor holds its "watching" event open for exactly as
+                // long as it watches, so if it dies this returns at once rather than running out the ceiling.
                 var dumped = DoctorSignals.WaitWhileTheOtherSideLives(
                     DoctorSignals.DumpCompleteName(pid),
                     DoctorSignals.WatchingName(pid),
-                    ceiling: TimeSpan.FromSeconds(60),
-                    slice: TimeSpan.FromMilliseconds(500)
+                    PatienceForTheDumpItself,
+                    WaitSlice
                 );
                 Logger.WriteEvent(
                     dumped
@@ -938,14 +920,7 @@ namespace Bloom.FreezeDoctor
             }
         }
 
-        private static void SafeRecordUiTick()
-        {
-            try
-            {
-                _channel?.RecordUiTick();
-            }
-            catch (Exception) { }
-        }
+        private static void RecordUiTick() => Publish(() => _channel?.RecordUiTick());
 
         private static void TryLog(string message, Exception e)
         {

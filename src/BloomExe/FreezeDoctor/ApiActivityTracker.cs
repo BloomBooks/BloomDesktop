@@ -60,6 +60,14 @@ namespace Bloom.FreezeDoctor
             public long StartedAtMs { get; }
 
             public int ThreadId { get; }
+
+            /// <summary>
+            /// How long this request has been running, given a reading of the tick count. Clamped at zero:
+            /// the tick count is monotonic so it should never go backwards, and a negative duration in a
+            /// report would be a puzzle nobody needs.
+            /// </summary>
+            public TimeSpan ElapsedAt(long nowMs) =>
+                TimeSpan.FromMilliseconds(Math.Max(0, nowMs - StartedAtMs));
         }
 
         /// <summary>
@@ -98,9 +106,6 @@ namespace Bloom.FreezeDoctor
         {
             try
             {
-                if (_inFlight.IsEmpty)
-                    return null;
-
                 var now = Environment.TickCount64;
                 var snapshot = _inFlight.Values.ToArray();
                 if (snapshot.Length == 0)
@@ -113,7 +118,7 @@ namespace Bloom.FreezeDoctor
                         oldest = snapshot[i];
                 }
 
-                var elapsed = TimeSpan.FromMilliseconds(Math.Max(0, now - oldest.StartedAtMs));
+                var elapsed = oldest.ElapsedAt(now);
                 if (elapsed < InterestingDuration)
                     return null;
 
@@ -138,12 +143,10 @@ namespace Bloom.FreezeDoctor
             {
                 var now = Environment.TickCount64;
                 return _inFlight
-                    .Values.Where(r =>
-                        TimeSpan.FromMilliseconds(Math.Max(0, now - r.StartedAtMs)) > longerThan
-                    )
+                    .Values.Where(r => r.ElapsedAt(now) > longerThan)
                     .OrderBy(r => r.StartedAtMs)
                     .Select(r =>
-                        $"{r.Path} — running {Describe(TimeSpan.FromMilliseconds(Math.Max(0, now - r.StartedAtMs)))} on thread {r.ThreadId}"
+                        $"{r.Path} — running {Describe(r.ElapsedAt(now))} on thread {r.ThreadId}"
                     )
                     .ToArray();
             }

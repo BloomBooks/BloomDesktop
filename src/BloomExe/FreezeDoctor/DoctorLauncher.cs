@@ -13,8 +13,9 @@ namespace Bloom.FreezeDoctor
     ///
     /// **The Doctor is only useful if it is already running when Bloom stops responding**, which is why
     /// Bloom starts it rather than leaving it to the user: nobody launches a diagnostic tool *before* the
-    /// thing they are diagnosing goes wrong. It is installed separately, so this is opt-in by construction —
-    /// on a machine without the Doctor, all of this costs one directory check.
+    /// thing they are diagnosing goes wrong. It ships inside Bloom's installer, so the
+    /// <see cref="Settings.RunFreezeDoctor"/> setting is what keeps everyone from paying for a watcher they
+    /// did not ask for; with it off, all of this costs one setting read.
     ///
     /// **There is deliberately no handshake.** Bloom's only job is to make sure a Doctor is running; the
     /// Doctor decides for itself which Blooms to watch, by holding a single-instance mutex and scanning for
@@ -52,9 +53,6 @@ namespace Bloom.FreezeDoctor
                 )
                     return;
 
-                // Off unless asked for. The Doctor now ships inside Bloom rather than being installed
-                // separately, so this setting is what stops everyone paying for a watcher they did not
-                // ask for - it is the switch that "just don't install it" used to be.
                 if (!Settings.Default.RunFreezeDoctor)
                     return;
 
@@ -94,40 +92,17 @@ namespace Bloom.FreezeDoctor
         }
 
         /// <summary>
-        /// Finds BloomFreezeDoctor.exe, which lives beside Bloom.exe: it is built into Bloom's own output
-        /// directory and shipped by Bloom's installer, exactly like BloomPdfMaker.exe.
-        ///
-        /// It used to be a separately installed application, and this method used to go looking for it
-        /// under <c>%LOCALAPPDATA%</c> where Velopack would have put it. Sharing Bloom's installer means
-        /// there is nowhere to search: either the file is next to us or this is a build that did not
-        /// produce it. The environment variable remains, for pointing at a build tree.
+        /// BloomFreezeDoctor.exe, or null if this build did not produce one. It is always beside Bloom.exe -
+        /// built into Bloom's own output directory and shipped by Bloom's installer, exactly like
+        /// BloomPdfMaker.exe - so there is nowhere to search.
         /// </summary>
         private static string FindTheDoctor()
         {
-            var candidates = new[]
-            {
-                // An explicit override first, so a developer testing a build tree wins over whatever
-                // happens to be installed beside Bloom.
-                Environment.GetEnvironmentVariable("BLOOM_FREEZE_DOCTOR_PATH"),
-                Path.Combine(
-                    Path.GetDirectoryName(Application.ExecutablePath) ?? "",
-                    ExecutableName
-                ),
-            };
-
-            foreach (var candidate in candidates)
-            {
-                try
-                {
-                    if (!string.IsNullOrEmpty(candidate) && RobustFile.Exists(candidate))
-                        return candidate;
-                }
-                catch (Exception)
-                {
-                    // A malformed path in the environment variable, most likely; try the next.
-                }
-            }
-            return null;
+            var beside = Path.Combine(
+                Path.GetDirectoryName(Application.ExecutablePath) ?? "",
+                ExecutableName
+            );
+            return RobustFile.Exists(beside) ? beside : null;
         }
     }
 }

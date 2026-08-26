@@ -9,11 +9,10 @@ namespace BloomFreezeDoctor.Protocol;
 /// The access keys for the support-uploads bucket, read from the file the installer places beside the
 /// executable.
 ///
-/// This lives here, in the project both Bloom and the Freeze Doctor reference, because both now need it
-/// and neither should have its own idea of where the keys are or which lines of that file they occupy.
-/// Bloom's <c>AccessKeys</c> reads the file through this class rather than opening it itself, so there is
-/// one definition of the format — and adding a line to it in future cannot silently shift the meaning of
-/// the keys for one of the two consumers and not the other.
+/// This lives here, in the project both Bloom and the Freeze Doctor reference, because both need it and
+/// neither should have its own idea of where the keys are or which lines they occupy. Bloom's
+/// <c>AccessKeys</c> reads the file through this class rather than opening it itself, so adding a line in
+/// future cannot silently shift the meaning of the keys for one consumer and not the other.
 /// </summary>
 public static class SupportUploadCredentials
 {
@@ -25,9 +24,8 @@ public static class SupportUploadCredentials
     public const string ConnectionsFileName = "connections.dll";
 
     /// <summary>
-    /// Which lines hold the keys for the support-uploads bucket. Third and fourth, shared with the sandbox
-    /// and unit-test buckets — see Bloom's AccessKeys, which is where this numbering comes from and which
-    /// now defers to this class for it.
+    /// Which lines hold the keys for the support-uploads bucket: the third and fourth, shared with the
+    /// sandbox and unit-test buckets. Bloom's AccessKeys reads the other lines for its other buckets.
     /// </summary>
     private const int AccessKeyLine = 2;
     private const int SecretLine = 3;
@@ -72,11 +70,10 @@ public static class SupportUploadCredentials
     }
 
     /// <summary>
-    /// Where to look, in order. The first is where an installed Bloom and an installed Doctor both find it,
-    /// since they share a directory. The rest cover a developer build, whose executables sit in
-    /// `output/Debug/&lt;platform&gt;` while the file stays in the repository's DistFiles — libpalaso's
-    /// solution-walking lookup is tried first for that, and the hand-rolled walk is the fallback for when
-    /// this assembly is loaded somewhere that helper cannot reason about.
+    /// Where to look, in order: beside the executable, which is where an installed Bloom and an installed
+    /// Doctor both find it since they share a directory; then libpalaso's lookup, which walks to the
+    /// repository's DistFiles and so covers a developer build, whose executables sit in
+    /// `output/Debug/&lt;platform&gt;` while the file stays in the source tree.
     /// </summary>
     private static IEnumerable<string?> CandidatePaths()
     {
@@ -95,12 +92,6 @@ public static class SupportUploadCredentials
             // Its dev-mode search throws if it cannot work out where the solution is.
         }
         yield return viaPalaso;
-
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        for (var up = 0; up < 6 && directory != null; up++, directory = directory.Parent)
-        {
-            yield return Path.Combine(directory.FullName, "DistFiles", ConnectionsFileName);
-        }
     }
 }
 
@@ -115,10 +106,10 @@ public static class SupportUploadCredentials
 /// card carries a link.
 ///
 /// Objects are uploaded **public-read**, exactly as Bloom's problem-book uploads are: the bucket serves
-/// them over plain HTTPS to whoever has the URL, and the URL is the only protection. That is a deliberate,
-/// accepted trade — agreed 26 August 2026 — on the grounds that the link only ever appears on a tracker
-/// card that is itself private. But it does mean the key must not be guessable, which is why
-/// <see cref="MakeUnguessableKey"/> exists and why this does not simply use the file name.
+/// them over plain HTTPS to whoever has the URL, so the URL is the only protection. That is a deliberate
+/// trade, on the grounds that the link only ever appears on a tracker card that is itself private — but it
+/// does mean the key must not be guessable, which is why <see cref="MakeUnguessableKey"/> exists rather
+/// than this simply using the file name.
 /// </summary>
 public static class SupportFileUploader
 {

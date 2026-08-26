@@ -67,21 +67,17 @@ public sealed class DoctorSupervisor : IDisposable
     private readonly string _targetProcessName;
 
     /// <summary>
-    /// Every process name that might BE Bloom, because "Bloom" alone is wrong for most of our users.
+    /// Every process name that might BE Bloom, because "Bloom" alone is wrong for most of our users:
+    /// Bloom's installer renames the executable per channel (`Bloom$(channel).exe` in build/Bloom.proj), so
+    /// an Alpha install runs as `BloomAlpha` and a Beta one as `BloomBeta`. Matching only "Bloom" would
+    /// find nothing on those channels - which are precisely where we most want the Doctor, and the only
+    /// ones where the freeze simulator is allowed - and discovery would then treat the Bloom it had just
+    /// adopted as gone and drop its watcher.
     ///
-    /// **This was a shipping-stopper.** Bloom's installer renames the executable per channel
-    /// (`Bloom$(channel).exe` in build/Bloom.proj), so an Alpha install runs as `BloomAlpha` and a Beta
-    /// one as `BloomBeta`. Bloom launches us with only `--adopt &lt;pid&gt;`, so the name stayed at its
-    /// default of "Bloom", `Process.GetProcessesByName("Bloom")` matched nothing, discovery therefore
-    /// treated the Bloom we had just adopted as gone, dropped its watcher, and the Doctor concluded it had
-    /// nothing left to do and exited - within a second of starting, silently. It worked only on Release and
-    /// on developer builds, where the exe happens to be `Bloom.exe`. Alpha and Beta are precisely where we
-    /// most want it, and are the only channels where the freeze simulator is allowed.
-    ///
-    /// So the set starts from what we were told and LEARNS: adopting a process adds that process's own
-    /// name, which needs no list to be kept up to date and cannot go stale. The seeded channel names below
-    /// only matter for a Doctor started by hand, with no Bloom to adopt; `--target-name` covers anything
-    /// unusual.
+    /// So the set starts from what we were told and LEARNS: adopting a process adds that process's own name,
+    /// which needs no list kept up to date and cannot go stale. The seeded channel names below only matter
+    /// for a Doctor started by hand with no Bloom to adopt, and `--target-name` narrows that when a
+    /// developer's machine also runs a real Bloom of another channel.
     /// </summary>
     private readonly HashSet<string> _targetProcessNames = new(StringComparer.OrdinalIgnoreCase);
 
@@ -134,10 +130,10 @@ public sealed class DoctorSupervisor : IDisposable
     /// Blooms we asked to stop - whether by our own zombie policy or because somebody pressed "Restart
     /// Bloom". Their deaths are our doing, so they are not news and must not be reported.
     ///
-    /// Without this the Doctor filed a second card about a death it had itself caused: a frozen Bloom was
-    /// reported (AUT-20929), the user pressed Restart, the button ended that Bloom, and the Doctor then
-    /// dutifully reported "UI froze, then the process died" as a fresh problem (AUT-20930). Two cards for
-    /// one incident, the second of them describing our own action as a bug.
+    /// Without this the Doctor files a second card about a death it caused itself: a frozen Bloom is
+    /// reported, somebody presses Restart, the button ends that Bloom, and the Doctor then dutifully
+    /// reports "UI froze, then the process died" as a fresh problem - two cards for one incident, the
+    /// second of them describing our own action as a bug.
     /// </summary>
     private readonly HashSet<int> _weAskedItToStop = new();
 
@@ -146,8 +142,8 @@ public sealed class DoctorSupervisor : IDisposable
 
     /// <summary>
     /// How many gathers or examinations are in flight. The Doctor must not decide it has nothing left to do
-    /// while it is still busy — which is exactly what happened before this existed: a Bloom would crash, the
-    /// Doctor would notice the process was gone, conclude there was nothing left to watch, and exit,
+    /// while it is still busy: a crash is precisely when it has least left to watch and most left to do, so
+    /// without this it would notice the process was gone, conclude there was nothing to watch, and exit -
     /// cancelling the examination of the very crash it had just seen.
     /// </summary>
     private int _workInFlight;

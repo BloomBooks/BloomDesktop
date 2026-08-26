@@ -247,9 +247,8 @@ namespace Bloom.Publish.Epub
         /// </summary>
         public void StageEpub(WebSocketProgress progress, bool publishWithoutAudio = false)
         {
-            // Deliberately slow: the Freeze Doctor waits five minutes instead of one while this runs.
-            // Staging is the expensive half of making an ePUB — it walks every page and every audio file —
-            // so it is the part that would otherwise be mistaken for a freeze on a large book.
+            // Staging is the expensive half of making an ePUB - it walks every page and every audio file -
+            // so it is the part that would be mistaken for a freeze on a large book.
             using var _longOperation = FreezeDoctorSupport.LongOperation("making an ePUB");
 
             if (Unpaginated && Book.OurHtmlDom.HasComicalCanvasElements())

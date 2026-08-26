@@ -813,10 +813,9 @@ namespace Bloom.Publish.Rab
 
         private void Build()
         {
-            // The longest deliberate operation Bloom has: a real Gradle build takes over a minute even on
-            // a fast machine, so without this the Freeze Doctor would file a card about every app anyone
-            // built. Nested inside this, BloomPubMaker marks its own work too; the scope counts depth, so
-            // the inner one finishing does not end the patience for this one.
+            // The longest deliberate operation Bloom has: a Gradle build exceeds a minute even on a fast
+            // machine. BloomPubMaker marks its own work nested inside this; the scope counts depth, so the
+            // inner one finishing does not end the patience for this one.
             using var _longOperation = FreezeDoctorSupport.LongOperation(
                 "building an app with Reading App Builder"
             );

@@ -129,10 +129,8 @@ namespace Bloom.Publish.BloomPub
             bool isTemplateBook = false
         )
         {
-            // Tell the Freeze Doctor this is deliberately slow, so it waits five minutes rather than one
-            // before deciding Bloom has frozen. Marked here, at the innermost worker, rather than at the
-            // publish screens: every route to a BloomPUB comes through this method, including the bulk
-            // publisher and app building, which are the cases that run longest.
+            // Marked at the innermost worker rather than at the publish screens, because every route to a
+            // BloomPUB comes through here - including the bulk publisher and app building, which run longest.
             using var _longOperation = FreezeDoctorSupport.LongOperation("making a BloomPUB");
 
             // PrepareBookForBloomReader is about to modify sTheMostRecentBloomFileLocator.
