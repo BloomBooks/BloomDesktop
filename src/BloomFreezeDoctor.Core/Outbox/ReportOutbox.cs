@@ -90,13 +90,12 @@ public interface IReportSubmitter
 /// the network is absent and the machine may be restarted at any moment.
 ///
 /// **Every file operation in the Doctor goes through SIL.IO's RobustFile / RobustIO, with no exemption.**
-/// That was decided deliberately when the Doctor moved into this repository (BL-16719): the tempting
-/// argument was that its writes are only diagnostics, so a transient failure costs nothing much. It is
-/// wrong, and this class is the proof — the rename that publishes a gathered report into this queue was
-/// failing about one run in three with "access is denied", because Windows had not finished with the files
-/// we had written milliseconds earlier, and each failure discarded a report at the exact moment a user had
-/// just sat through a freeze. A tool whose entire purpose is to capture evidence that is otherwise lost
-/// has *less* room to be careless with the disk than Bloom does, not more.
+/// The tempting argument for exempting it — these writes are only diagnostics, so a transient failure costs
+/// nothing much — is wrong, and this class is where it shows: a plain rename to publish a gathered report
+/// into this queue fails about one run in three with "access is denied", because Windows has not finished
+/// with the files written milliseconds earlier, and each failure discards a report at the exact moment a
+/// user has just sat through a freeze. A tool whose entire purpose is to capture evidence that is otherwise
+/// lost has *less* room to be careless with the disk than Bloom does, not more.
 ///
 /// The only carve-outs are the three documented `robustfile-hook: allow FileStream` sites, where the
 /// sharing flags are the requirement rather than an accident — reading a log another process holds open,

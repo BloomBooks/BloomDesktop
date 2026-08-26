@@ -168,10 +168,10 @@ public static class ExitClassifier
             );
 
         // NOTE what is deliberately NOT here: a check on NeverFile. Whether a report may be *filed* is a
-        // different question from whether this exit is worth reporting on, and it is settled elsewhere — the
-        // freeze path has always gathered a developer run's evidence to disk while declining to file it, and
-        // this path used to fold the two together and so gathered nothing at all, while logging that it had.
-        // One axis per question.
+        // different question from whether this exit is worth reporting on, and it is settled elsewhere: a
+        // developer run's evidence is gathered to disk and then declined for filing. Folding the two
+        // together here would instead gather nothing at all while logging that it had. One axis per
+        // question.
 
         // Bloom's own forced exit identifies itself in the log, and is worth a card in either regime.
         if (evidence.LogShowsForcedShutdown)

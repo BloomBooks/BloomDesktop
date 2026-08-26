@@ -48,13 +48,13 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     /// The largest single file we will try to *attach*. Anything bigger goes to the support bucket instead
     /// and the card gets a link — see <see cref="SupportFileUploader"/>.
     ///
-    /// **This is a limit of the tracker, not a policy of ours**, which is what an earlier version of this
-    /// class got wrong. It capped the total at 12 MB as a self-imposed "a card is not a file server" rule,
-    /// silently skipped anything over, and so silently discarded every minidump — 16-17 MB for a real
-    /// Bloom, by this project's own measurement in ManagedStacksCollector. Raising our own number would not
-    /// have helped: Bloom measured YouTrack's real ceiling at about 10 MB in July 2020 and gave up
-    /// attaching altogether, and that measurement is still in ProblemReportApi above the commented-out
-    /// attach call it replaced. 8 MB sits under that ceiling with room to spare.
+    /// **This is a limit of the tracker, not a policy of ours**, and the distinction matters: a
+    /// self-imposed "a card is not a file server" cap would discard every minidump, which is 16-17 MB for a
+    /// real Bloom by this project's own measurement in ManagedStacksCollector — and raising our own number
+    /// would not help, because Bloom measured YouTrack's real ceiling at about 10 MB in July 2020 and gave
+    /// up attaching altogether (that measurement is still in ProblemReportApi, above the commented-out
+    /// attach call it replaced). So 8 MB, which sits under that ceiling with room to spare, and the bucket
+    /// for everything larger.
     /// </summary>
     public const long MaxSingleAttachmentBytes = 8 * 1024 * 1024;
 
@@ -550,7 +550,7 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     ///
     /// A failure here is reported on the card rather than swallowed. The dump is usually the most valuable
     /// thing in a report, so "we could not get it to you, and here is where it is on the user's machine" is
-    /// worth far more than silence — which is what a missing dump used to be.
+    /// worth far more than silence.
     /// </summary>
     private async Task UploadWhatCouldNotBeAttachedAsync(
         string issueId,

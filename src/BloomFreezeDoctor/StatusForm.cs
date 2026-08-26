@@ -73,11 +73,10 @@ public sealed class StatusForm : Form
         _restartBloom.Visible = false;
         _restartBloom.Click += (_, _) => RestartBloom();
 
-        // A real button, because the two things that used to lead to a gathered report were both
-        // ephemeral: a balloon tip that goes away after ten seconds (or the moment you click anywhere
-        // else), and a line of text that the next status update overwrites. Between them, a report could
-        // be gathered perfectly and then be unreachable from the window a minute later - which is what
-        // happened. A button survives status updates, and closing and reopening the window from the tray.
+        // A real button, because the obvious alternatives are both ephemeral: a balloon tip goes away after
+        // ten seconds (or the moment you click anywhere else), and a line of status text is overwritten by
+        // the next update. Either way a report could be gathered perfectly and be unreachable a minute
+        // later. A button survives status updates, and closing and reopening the window from the tray.
         _showReport.Text = "Show report";
         _showReport.AutoSize = true;
         _showReport.Visible = false;

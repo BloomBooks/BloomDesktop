@@ -897,11 +897,11 @@ namespace Bloom.FreezeDoctor
                     return;
                 }
 
-                // Underway, so be patient - but only while the Doctor is demonstrably still there. A dump of
-                // a real Bloom takes seconds, and longer on the slow machines that need it most; and giving
-                // up early does not merely delay it but loses it, since the dying process is what writes the
-                // dump over the diagnostics pipe. The Doctor holds its "watching" event open for exactly as
-                // long as it watches, so if it dies this returns at once rather than running out the ceiling.
+                // Underway, so be patient: a dump of a real Bloom takes seconds, longer on the slow machines
+                // that need it most, and giving up early does not merely delay it but loses it, since the
+                // dying process is what writes the dump over the diagnostics pipe. Patience is safe here
+                // because the wait ends as soon as the Doctor stops existing - see
+                // DoctorSignals.WaitWhileTheOtherSideLives for how that is known.
                 var dumped = DoctorSignals.WaitWhileTheOtherSideLives(
                     DoctorSignals.DumpCompleteName(pid),
                     DoctorSignals.WatchingName(pid),

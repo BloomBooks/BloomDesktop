@@ -141,8 +141,8 @@ internal static class Program
 
         // Every Bloom we start watching, however we found it - adopted at Bloom's request or discovered by
         // the sweep - tells the window where it lives, so "Restart Bloom" relaunches the Bloom that
-        // actually had trouble. This used to be done only for the adopted one, right here, which left a
-        // hand-started Doctor knowing no path at all and restarting whatever was installed instead.
+        // actually had trouble. Hence the event rather than just recording the adopted path here, which
+        // would leave a hand-started Doctor knowing no path at all and restarting whatever was installed.
         supervisor.WatchingBloomAt += (_, exePath) => window.RememberBloomPath(exePath);
 
         if (options.AdoptProcessId.HasValue)

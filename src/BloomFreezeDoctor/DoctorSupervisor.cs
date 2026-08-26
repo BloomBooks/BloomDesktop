@@ -181,12 +181,11 @@ public sealed class DoctorSupervisor : IDisposable
         // Only when nobody named a specific target: `--target-name` exists so the freeze stub can stand in
         // for Bloom, and widening that would have us adopt a real Bloom in the middle of a test.
         //
-        // That test used to be "is the name the default value", which cannot express the case it most
-        // needed to: `--target-name Bloom` equals the default, so it still widened to every channel. On a
-        // developer's machine that also runs a real Alpha - an ordinary arrangement, and exactly where the
-        // simulator is used - a hand-started Doctor would therefore watch the developer's real Bloom, and
-        // with `--force` would have been willing to file cards about it. Asking whether the flag was GIVEN
-        // is what "nobody named a specific target" actually means.
+        // The test is whether the flag was GIVEN, not whether its value differs from the default - only the
+        // former expresses "nobody named a specific target". `--target-name Bloom` equals the default, so a
+        // value comparison would widen to every channel; on a developer's machine that also runs a real
+        // Alpha - an ordinary arrangement, and exactly where the simulator is used - the Doctor would then
+        // watch that real Bloom, and with `--force` would be willing to file cards about it.
         if (!targetNameWasGiven && targetProcessName == DefaultTargetProcessName)
         {
             // The same channel folders StatusForm.FindBloomExecutable already looks in.
@@ -224,11 +223,11 @@ public sealed class DoctorSupervisor : IDisposable
     /// Raised with the full path of each Bloom we start watching, so the window knows which Bloom to
     /// restart.
     ///
-    /// It used to be told only on the `--adopt` path, in Program.Main - so a Doctor started by hand, or
-    /// watching a second Bloom it found by discovery, never learned any path at all and fell back to
-    /// scanning the installed layouts. Testing showed the consequence plainly: "Restart Bloom" relaunched
-    /// an installed 6.3.2 Release build instead of the developer build that had just frozen. Raising it
-    /// from here covers every route into a watcher, because they all pass through one place.
+    /// Raised from here rather than from the `--adopt` path in Program.Main, because every route into a
+    /// watcher passes through this one place: a Doctor started by hand, or watching a second Bloom it found
+    /// by discovery, would otherwise learn no path at all and fall back to scanning the installed layouts -
+    /// where "Restart Bloom" relaunches an installed Release build instead of the developer build that just
+    /// froze.
     /// </summary>
     public event EventHandler<string>? WatchingBloomAt;
 
@@ -327,20 +326,13 @@ public sealed class DoctorSupervisor : IDisposable
     }
 
     /// <summary>
-    /// Gathers and files a report for a process right now, whatever state it is in. This is the CTRL-key
-    /// "Report now" of the card, and it is also how support gets a snapshot of a Bloom that is merely
-    /// slow rather than frozen.
-    /// </summary>
-    /// <summary>
     /// Whether a report about this Bloom may be filed, honouring `--force`.
     ///
-    /// Every path that files goes through here. `--force` used to be applied at exactly one of them — the
-    /// freeze and zombie path — so the two paths that run when Bloom has *died*, the crash dump and the
-    /// exit examination, silently ignored it. Since `--force` exists precisely to exercise filing on a
-    /// machine that would otherwise decline, and since a deliberately simulated crash is the obvious way
-    /// to test the crash path, the one switch for testing filing did not work on the paths most in need of
-    /// testing. That is the same shape of mistake as those two paths having their own shorter version of
-    /// the guards, which is why the answer is the same: one place decides.
+    /// **Every path that files goes through here**, including the two that run when Bloom has *died* — the
+    /// crash dump and the exit examination. Applying `--force` per-path instead would leave those two
+    /// ignoring it, and they are the paths most in need of it: `--force` exists to exercise filing on a
+    /// machine that would otherwise decline, and a deliberately simulated crash is the obvious way to test
+    /// the crash path. One place decides, for the same reason the guards themselves live in one place.
     /// </summary>
     private bool MayFile(BloomTargetWatcher watcher) => watcher.MayFileAReport() || _forceFiling;
 
@@ -362,6 +354,11 @@ public sealed class DoctorSupervisor : IDisposable
         }
     }
 
+    /// <summary>
+    /// Gathers and files a report for a process right now, whatever state it is in. This is the "Report
+    /// now" button of the card, and it is also how support gets a snapshot of a Bloom that is merely slow
+    /// rather than frozen.
+    /// </summary>
     public async Task<ReportNowResult> ReportNowAsync(int processId, CancellationToken cancellation)
     {
         var facts = GatherContextBuilder.DescribeRunningProcess(processId);
@@ -444,14 +441,12 @@ public sealed class DoctorSupervisor : IDisposable
 
             // Give each departed Bloom its exit examination before letting go of its watcher.
             //
-            // This used to assume the watcher had already told its story - "the watcher itself reports the
-            // exit first, so by the time we get here its story has been told" - and that was a hope, not a
-            // guarantee. The examination runs on the watcher's own one-second tick; this sweep runs every
-            // five seconds; and whichever fires first after the death wins. When the sweep won it disposed
-            // the watcher, which stopped the timer, and the exit was never examined at all. For a death at
-            // a random moment that is something like one in ten - so roughly one Bloom in ten that simply
-            // vanished, which is one of the three states this whole tool exists to notice, produced no
-            // report whatsoever.
+            // **This cannot be left to the watcher's own tick.** The examination runs on that one-second
+            // tick, this sweep runs every five seconds, and whichever fires first after the death wins - so
+            // when the sweep wins, it disposes the watcher, stopping the timer, and the exit is never
+            // examined at all. For a death at a random moment that is something like one Bloom in ten
+            // silently vanishing with no report, in one of the three states this whole tool exists to
+            // notice.
             //
             // Calling it here needs no coordination with the tick: the examination claims each process id
             // once, under the lock, so whichever path arrives second does nothing. Outside the lock
@@ -650,10 +645,9 @@ public sealed class DoctorSupervisor : IDisposable
         //
         // Simulation is checked FIRST because it is the most informative answer when more than one applies,
         // which on a developer machine is the normal case: "you asked for this crash" tells the reader far
-        // more than "this is a developer build", and a real report was confusing for exactly that reason.
-        // All FOUR reasons are covered. With only three, the fourth - Bloom having already reported the
-        // problem itself - fell through to whichever arm came last, and the log then stated something
-        // simply untrue about a Bloom no debugger had been near.
+        // more than "this is a developer build". Every reason needs an arm of its own; one left out does not
+        // go unmentioned but falls through to whichever arm comes last, so the log states something simply
+        // untrue about the Bloom in front of it.
         var simulated = context.Session?.SimulatedFailure;
         string notFiledBecause;
         if (!string.IsNullOrEmpty(simulated))

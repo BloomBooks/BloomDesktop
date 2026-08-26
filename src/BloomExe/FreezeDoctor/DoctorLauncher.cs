@@ -29,11 +29,6 @@ namespace Bloom.FreezeDoctor
         private const string ExecutableName = "BloomFreezeDoctor.exe";
 
         /// <summary>
-        /// Set this to skip launching, for a developer who wants Bloom without a Doctor attaching itself.
-        /// </summary>
-        public const string SuppressEnvironmentVariable = "BLOOM_NO_FREEZE_DOCTOR";
-
-        /// <summary>
         /// Starts the Doctor if the user has asked for it, telling it which process to watch. Returns
         /// immediately and never throws: this is a diagnostic convenience, and it must not be able to
         /// affect Bloom's startup in any way a user would notice.
@@ -46,13 +41,6 @@ namespace Bloom.FreezeDoctor
         {
             try
             {
-                if (
-                    !string.IsNullOrEmpty(
-                        Environment.GetEnvironmentVariable(SuppressEnvironmentVariable)
-                    )
-                )
-                    return;
-
                 if (!Settings.Default.RunFreezeDoctor)
                     return;
 

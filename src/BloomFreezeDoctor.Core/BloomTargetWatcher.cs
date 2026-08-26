@@ -73,15 +73,13 @@ public sealed class BloomTargetWatcher : IDisposable
     /// <summary>
     /// The two halves of the crash-dump handshake, created and held here for as long as we watch.
     ///
-    /// **They have to be created by US, and nothing used to create them at all.** Every other accessor in
-    /// DoctorSignals goes through TryOpenExisting, so with no creator: Bloom's request to be dumped found
-    /// no event and gave up, and our own check for a request could only ever read false. The handshake
-    /// could not fire at either end, which made the crash-dump path dead code - silently, in exactly the
-    /// case the feature exists for. The quit handshake works only because Bloom happens to create ITS
-    /// event and hold it while waiting.
+    /// **They must be created by US.** Every accessor in DoctorSignals but TryCreate opens an existing
+    /// event, so with no creator neither side could ever see the other: Bloom's request would find no event
+    /// to set, and our check for one would always read false. With the handshake silently unable to fire,
+    /// the whole crash-dump path would be dead code - in exactly the case the feature exists for.
     ///
-    /// We are the right owner: our lifetime spans the crash, Bloom's does not, and Bloom already asks
-    /// whether we are watching before it pauses for anything.
+    /// We are the right owner rather than Bloom: our lifetime spans the crash and Bloom's does not, and
+    /// Bloom already asks whether we are watching before it pauses for anything.
     /// </summary>
     private EventWaitHandle? _dumpRequest;
     private EventWaitHandle? _dumpComplete;
@@ -155,12 +153,11 @@ public sealed class BloomTargetWatcher : IDisposable
     {
         try
         {
-            // The handle we created and hold, not a fresh TryOpen - which is what made this permanently
-            // false, since nothing had created the event for it to find.
+            // The handle we created and hold, not a fresh TryOpen: nothing else creates this event.
             if (_dumpRequest == null || !_dumpRequest.WaitOne(TimeSpan.Zero))
                 return false;
-            // Manual-reset, so clear it now we have taken it. The supervisor separately allows one dump per
-            // process, but leaving this set would have every later tick believe a fresh request had arrived.
+            // Manual-reset, so clear it now we have taken it, or every later tick would read the same
+            // request as a fresh one.
             _dumpRequest.Reset();
             return true;
         }
