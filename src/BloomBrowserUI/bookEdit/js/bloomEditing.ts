@@ -1233,11 +1233,6 @@ export function bootstrap() {
     if ($("div.bloom-page").length === 1) {
         addScrollbarsToPage($("div.bloom-page")[0]);
     }
-    // We want to do this as late in the page setup process as possible because a
-    // mouse zoom event will regenerate the page, and various things we do in the process
-    // of starting up a page don't like it if the page we are loading is already unloading.
-    // We currently suppress errors for pages which are in the process of going away, but better
-    // not to generate them than suppress them if we can help it.
     setupWheelZooming();
 }
 // The minimum time between two zoom requests to the server, in milliseconds.
@@ -1268,8 +1263,6 @@ function sendPendingZoom() {
 }
 
 // Attach a function to implement zooming on mouse wheel with ctrl.
-// Setting this up should be one of the last things we do when loading the page...
-// see the comment above where it is called.
 function setupWheelZooming() {
     $("body").on("wheel", (e) => {
         const theEvent = e.originalEvent as WheelEvent;
