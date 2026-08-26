@@ -126,14 +126,11 @@ namespace Bloom.FreezeDoctor
                     ? TimeSpan.FromSeconds(seconds)
                     : DefaultDelay;
 
-            // Refuse a kind we do not know, HERE, before anything else happens.
-            //
-            // This check has to precede the marker below, and getting that order wrong was a real defect:
-            // an unrecognised value - a typo like `slep`, or a stale name - used to arm nothing at all
-            // (the switch simply logged "not a kind it knows about" 45 seconds later) while still telling
-            // the Doctor this Bloom was a rehearsal. The Doctor then declined to file a card for every
-            // GENUINE freeze for the rest of that session. A misspelled environment variable silently
-            // turning off freeze reporting is far worse than the typo it came from.
+            // Refuse a kind we do not know HERE, before the marker below tells the Doctor this Bloom is a
+            // rehearsal. An unrecognised value - a typo like `slep`, or a stale name - arms nothing, so
+            // marking first would leave the Doctor declining to file a card for every GENUINE freeze for
+            // the rest of the session. A misspelled environment variable silently turning off freeze
+            // reporting would be far worse than the typo that caused it.
             if (Array.IndexOf(KnownKinds, kind) < 0)
             {
                 Logger.WriteEvent(

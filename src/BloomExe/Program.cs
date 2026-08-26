@@ -1411,14 +1411,12 @@ namespace Bloom
             // where we can come here twice.
             WritingSystem.EnsureSldrInitialized();
 
-            // Publish our health for the Bloom Freeze Doctor, if one is watching. Started here, just
-            // before the message loop, because the UI heartbeat is a WinForms timer: it only ticks while
-            // messages are being pumped, and that is exactly what makes its silence meaningful. Costs
-            // nothing when no Doctor is installed, and cannot fail in a way Bloom notices.
+            // Publish our health for the Freeze Doctor. Started here, just before the message loop,
+            // because the UI heartbeat is a WinForms timer: it only ticks while messages are being pumped,
+            // which is exactly what makes its silence meaningful.
             FreezeDoctorSupport.Start();
-            // And start the Doctor itself if the user has switched it on, because a diagnostic tool is no
-            // use unless it is already running when the trouble starts. Off by default, so the normal case
-            // costs one boolean.
+            // And start the Doctor itself if the user has switched it on, since a diagnostic tool is no use
+            // unless it is already running when the trouble starts.
             DoctorLauncher.LaunchIfWanted();
             // Deliberate breakage for testing the Doctor, and inert unless BLOOM_SIMULATE_FREEZE is set
             // AND this is a developer build.
@@ -1446,9 +1444,7 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
-                // Ask a watching Freeze Doctor to dump us while we still exist. Costs nothing at all when no
-                // Doctor is installed, which is the overwhelmingly common case: it checks with a zero
-                // timeout before it agrees to wait for anything.
+                // Ask a watching Freeze Doctor to dump us while we still exist.
                 FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(bad);
                 System.Environment.FailFast(exceptMsg);
@@ -1465,8 +1461,6 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
-                // As above: a dump from outside beats one a dying process takes of itself, and this costs
-                // nothing when nobody is watching.
                 FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(nasty);
                 System.Environment.FailFast(exceptMsg);
@@ -1479,11 +1473,10 @@ namespace Bloom
             }
 
             // From here on we mark how far shutdown has got, so that a Bloom which dies part way through
-            // can say WHERE it stopped rather than only that it did. These are the phases a Freeze Doctor
-            // report will quote; keep them in step with the comment if the sequence changes.
-            //   1 = the message loop returned    2 = settings saved
-            //   3 = the log has been written out  4 = the project context is disposed (fully shut down)
-            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(1);
+            // can say WHERE it stopped rather than only that it did.
+            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(
+                FreezeDoctor.FreezeDoctorSupport.ShutdownPhase.MessageLoopReturned
+            );
 
             try
             {
@@ -1501,7 +1494,9 @@ namespace Bloom
                 }
             }
 
-            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(2);
+            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(
+                FreezeDoctor.FreezeDoctorSupport.ShutdownPhase.SettingsSaved
+            );
             Sldr.Cleanup();
             Logger.WriteMinorEvent("shutting down logger, about to dispose project context");
             // Force the log file to include the minor events.  I don't know why this isn't the default. (BL-16290)
@@ -1512,11 +1507,15 @@ namespace Bloom
                 logPath = Path.Combine(Path.GetTempPath(), "SIL", "Bloom", "Log.txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logPath));
             RobustFile.WriteAllText(logPath, logText);
-            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(3);
+            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(
+                FreezeDoctor.FreezeDoctorSupport.ShutdownPhase.LogWritten
+            );
 
             if (_projectContext != null)
                 _projectContext.Dispose();
-            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(4);
+            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(
+                FreezeDoctor.FreezeDoctorSupport.ShutdownPhase.ProjectContextDisposed
+            );
         }
 
         /// <summary>

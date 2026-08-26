@@ -111,18 +111,17 @@ public sealed record BundleMetadata
     /// True once this bundle has been sent and it opened a **new card**, as opposed to adding a comment to
     /// one that already existed.
     ///
-    /// Only new cards count against the daily cap. A comment is one small POST with no attachments — the
-    /// recurrence note is deliberately a few lines — so three "it happened again" comments used to be
-    /// enough to silence a machine for the rest of the day about problems nobody had heard of yet, which
-    /// is exactly backwards.
+    /// Only new cards count against the daily cap. A comment is one small POST with no attachments - the
+    /// recurrence note is deliberately a few lines - so counting them would let three "it happened again"
+    /// notes silence a machine for the rest of the day about problems nobody had heard of yet, which is
+    /// exactly backwards.
     /// </summary>
     public bool CreatedNewCard { get; init; }
 
     /// <summary>
     /// Which Bloom this was about. Not for identifying the *problem* — a process id means nothing on
     /// anyone else's machine, which is why the fingerprint exists — but for recognising that two reports
-    /// are about one Bloom's last few seconds and belong on one card. Null for a bundle written before
-    /// this field existed.
+    /// are about one Bloom's last few seconds and belong on one card.
     /// </summary>
     public int? ProcessId { get; init; }
 
@@ -157,8 +156,7 @@ public sealed record BundleMetadata
 
     /// <summary>
     /// The few facts that differ between occurrences of this problem, used as the comment when a card for
-    /// this fingerprint already exists rather than posting the whole report again. Null for a bundle
-    /// gathered before this existed, which the submitter falls back from gracefully.
+    /// this fingerprint already exists rather than posting the whole report again.
     /// </summary>
     public string? RecurrenceNote { get; init; }
 

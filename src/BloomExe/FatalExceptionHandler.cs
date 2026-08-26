@@ -176,18 +176,10 @@ namespace Bloom
 
         protected override bool DisplayError(Exception exception)
         {
-            // Ask for a crash dump first, before anything here blocks or exits.
-            //
-            // **Bloom owns getting the dump; the Freeze Doctor is an optimisation on top of that.** This
-            // used to be left to a separate AppDomain.UnhandledException hook inside the Doctor's own
-            // startup, and it never once ran: handlers fire in registration order, this class registers
-            // during SetUpErrorHandling near the start of Program.Run, and the Doctor's hook is installed
-            // a thousand lines later — behind the modal dialog below, which does not return. A simulated
-            // crash duly produced a full report with no dump in it.
-            //
-            // Both fatal routes (Application.ThreadException and AppDomain.UnhandledException) funnel
-            // through here, which is why this is the one right place for it. When no Doctor is watching it
-            // returns immediately, so the ordinary user's crash pays nothing.
+            // First, before anything below blocks or exits. Both fatal routes - Application.ThreadException
+            // and AppDomain.UnhandledException - funnel through here, so this is the one place that catches
+            // every crash and still runs ahead of the modal dialog, which does not return. When no Doctor is
+            // watching it returns immediately, so the ordinary user's crash pays nothing.
             FreezeDoctor.FreezeDoctorSupport.RequestDumpBeforeDying();
 
             if (Program.RunningE2eTests)

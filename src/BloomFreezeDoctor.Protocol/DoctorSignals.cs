@@ -49,23 +49,15 @@ public static class DoctorSignals
         $@"Local\BloomFreezeDoctor.dumpme.{processId}";
 
     /// <summary>
-    /// Set by the Doctor the moment it takes up a dump request, before it begins the work.
+    /// Set by the Doctor the moment it takes up a dump request, before it begins the work, so that Bloom can
+    /// tell "nobody picked this up" from "it is underway" — and be impatient about the first while being
+    /// patient about the second.
     ///
-    /// It exists so that Bloom can be impatient about one thing and patient about another. Waiting for a
-    /// dump used to be a single flat three seconds, and that number was set against a spike measurement of
-    /// 1.4 seconds for "a real Bloom" — while a measured dump on a fast developer machine, of a Bloom that
-    /// had been running two minutes, took 2.4 of the 3 seconds allowed. On a user's slower machine, with a
-    /// Bloom that has been up for days and a system short of memory, it would plainly overrun.
-    ///
-    /// And overrunning does not merely delay the dump, it loses it: the dying Bloom is what actually writes
-    /// the dump, over the diagnostics pipe, so when Bloom stops waiting and exits the write is aborted and
-    /// the report falls back to having no managed stacks at all. The budget was smallest exactly where the
-    /// need was greatest.
-    ///
-    /// A flat 60 seconds would trade that for the opposite failure — a Doctor that died between Bloom's
-    /// "is anyone watching" check and its wait would hold a crashing Bloom for a minute, for nothing. With
-    /// this signal Bloom can tell "nobody picked it up" from "it is underway": give up quickly on the
-    /// first, and wait generously on the second.
+    /// Both halves matter. A dump of a real Bloom takes seconds, more on a slow or loaded machine, and
+    /// giving up early does not merely delay it but loses it: the dying Bloom is what writes the dump over
+    /// the diagnostics pipe, so exiting mid-write aborts it and the report ends up with no managed stacks at
+    /// all. Yet a flat, generous timeout would hold a crashing Bloom open for its whole length whenever no
+    /// Doctor answers — which includes one that died between Bloom's "is anyone watching" check and its wait.
     /// </summary>
     public static string DumpStartedName(int processId) =>
         $@"Local\BloomFreezeDoctor.dumping.{processId}";

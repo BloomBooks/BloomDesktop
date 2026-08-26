@@ -58,8 +58,7 @@ namespace Bloom.WebLibraryIntegration
             bool forEdit = false
         )
         {
-            // Deliberately slow, and slowest exactly where our users are: a large book over a poor
-            // connection can take many minutes, and the Freeze Doctor should wait rather than file a card.
+            // Slowest exactly where our users are: a large book over a poor connection can take many minutes.
             using var _longOperation = FreezeDoctorSupport.LongOperation(
                 "downloading a book from Bloom Library"
             );

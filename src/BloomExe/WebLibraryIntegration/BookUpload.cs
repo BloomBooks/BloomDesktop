@@ -909,9 +909,8 @@ namespace Bloom.WebLibraryIntegration
             bool changeUploader = false
         )
         {
-            // Deliberately slow, and slowest exactly where our users are: uploading a book with audio and
-            // video over a poor connection routinely takes many minutes, so the Freeze Doctor should wait
-            // rather than file a card about a freeze that is really just an upload.
+            // Slowest exactly where our users are: a book with audio and video over a poor connection
+            // routinely takes many minutes.
             using var _longOperation = FreezeDoctorSupport.LongOperation(
                 "uploading a book to Bloom Library"
             );

@@ -450,10 +450,9 @@ namespace Bloom.Publish.Video
         /// <param name="soundLogJson"></param>
         public async Task StopRecordingAsync(string soundLogJson)
         {
-            // The encode-and-merge after recording is the deliberately slow part, and it is CPU-bound
-            // rather than waiting on a window, so unlike the recording itself it could be taken for a
-            // freeze. (Recording is safe without this: it runs with a live window pumping messages, so the
-            // UI heartbeat keeps ticking.)
+            // The encode-and-merge after recording is the slow part, and being CPU-bound it could be taken
+            // for a freeze. Recording itself needs no mark: a live window pumps messages, so the UI
+            // heartbeat keeps ticking.
             using var _longOperation = FreezeDoctorSupport.LongOperation("making a video");
 
             // Couldn't get this to work. See comment in constructor. If we do get it working,

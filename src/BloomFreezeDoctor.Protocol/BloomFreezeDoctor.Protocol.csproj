@@ -4,21 +4,10 @@
     The protocol Bloom and the Freeze Doctor share: the shared-memory health page, the session file, and
     the named events they use to reach each other.
 
-    EXPLORATION BRANCH. In this arrangement the Doctor lives in this repository, so the two consumers can
-    share this project directly - BloomExe and BloomFreezeDoctor.Core each just reference it. That removes
-    the whole apparatus the other arrangement needed: no NuGet package, no publish-then-unlist, no API key,
-    no version to keep in step, and no local-feed scaffolding. There is one definition, and it is compiled
-    into both sides from the same source every build, so drift is not merely detected - it cannot exist.
-
-    All the package metadata that used to be here (PackageId, Version, licence, README packing, symbol
-    packages, and the long note about pushing to nuget.org and unlisting) is gone with it. If this
-    arrangement is not adopted, that is what has to come back.
-
-    The name lost its `BloomBooks.` prefix along with the package. That prefix existed only to namespace a
-    public NuGet package id, so once the Doctor moved into this repository it named nothing. The project is
-    `BloomFreezeDoctor.Protocol`, which groups it with its three siblings in `src` - and, less loftily,
-    stops a folder sorting ahead of `BloomBrowserUI`, which had been quietly costing everyone who types
-    `src/b` and expects tab completion to land on the front end.
+    Both consumers - BloomExe and BloomFreezeDoctor.Core - reference this project directly, so there is one
+    definition compiled into both sides from the same source every build. Drift is therefore not merely
+    detected but impossible, which matters because drift here produces confident, wrong reports rather than
+    an error. Nothing is packaged or versioned: no NuGet package, no API key, no version to keep in step.
   -->
   <PropertyGroup>
     <!--
@@ -38,23 +27,16 @@
 
   <ItemGroup>
     <!--
-      libpalaso, for SIL.IO.RobustFile. This project deliberately had NO dependencies while it was a NuGet
-      package, and that was a real selling point. It is a plain project reference now, and BloomExe already
-      restores this exact version, so the cost is gone - while the benefit is not cosmetic: DoctorSession
-      writes and reads a file on a user's disk, and this repository's rule is that such writes retry rather
-      than fail the first time a virus scanner happens to be holding the file.
+      libpalaso, for SIL.IO.RobustFile: DoctorSession writes and reads a file on a user's disk, and this
+      repository's rule is that such writes retry rather than fail the first time a virus scanner happens to
+      be holding the file. S3, for uploading a support file too large for a tracker attachment; see
+      SupportUpload.cs.
 
-      Keep the version in step with BloomExe's other SIL.* references by hand for now; if this layout
-      settles, it belongs in Directory.Build.props alongside VelopackVersion.
+      Every version here must match BloomExe.csproj, kept in step by hand: both projects land in one output
+      directory, so two versions of the same assembly is a problem worth avoiding. If this layout settles,
+      they belong in Directory.Build.props alongside VelopackVersion.
     -->
     <PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
-
-    <!--
-      S3, for uploading a support file too large for a tracker attachment - see SupportUpload.cs. Both
-      consumers need it now: Bloom already restored these exact versions for its own book uploads, and the
-      Doctor gets them by referencing this project. Keep them in step with BloomExe.csproj by hand; two
-      versions of the AWS SDK in one output directory is a problem worth avoiding.
-    -->
     <PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />
     <PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
   </ItemGroup>

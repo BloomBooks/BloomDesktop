@@ -103,8 +103,8 @@ public sealed record DoctorSession
 
     /// <summary>
     /// How this run ended, once it has. Null while Bloom is running — and null *after* Bloom has gone is
-    /// itself the evidence that it did not shut down properly. Nothing may set this while Bloom is still
-    /// running; see <see cref="BloomAlreadyReported"/> for what used to get that wrong.
+    /// itself the evidence that it did not shut down properly, which is why nothing may set it while Bloom
+    /// is still running: an exit record on a live Bloom reads as proof it shut down cleanly.
     /// </summary>
     public DoctorSessionExit? Exit { get; init; }
 }

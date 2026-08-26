@@ -10,9 +10,9 @@ namespace BloomFreezeDoctor.Protocol;
 //  THIS FILE IS THE CONTRACT BETWEEN BLOOM AND THE FREEZE DOCTOR.
 //
 //  Both programs must agree about this layout exactly, so there is deliberately only ONE definition of
-//  it: this project is published as a NuGet package and BloomDesktop references it. It used to be a copy
-//  in each repository, and they drifted — which is a failure that shows up as confident, wrong reports
-//  rather than as an error, because Bloom writes one set of offsets and the Doctor reads another.
+//  it: this project, compiled into both sides from the same source every build. Two copies would drift,
+//  and that drift shows up as confident, wrong reports rather than as an error, because Bloom would be
+//  writing one set of offsets while the Doctor read another.
 //
 //  There are two ways this format changes, and only one of them is a version bump:
 //
@@ -560,10 +560,10 @@ public sealed class DoctorChannelWriter : IDisposable
             var encoded = Encoding.UTF8.GetBytes(activity ?? "");
             var length = Math.Min(encoded.Length, bytes.Length - 1);
             // Truncate on a character boundary. Activity text can carry a book title or a file path, so
-            // cutting mid-sequence through a multi-byte character would leave the reader decoding a broken
-            // byte — and the report quoting a mangled name. Only when we actually truncated: `encoded[length]`
-            // is past the end otherwise, and the resulting exception used to leave the write sequence odd for
-            // ever, which silently disabled the whole channel.
+            // cutting mid-sequence through a multi-byte character leaves the reader decoding a broken byte,
+            // and the report quoting a mangled name. Guarded on having actually truncated, because
+            // `encoded[length]` is past the end otherwise, and throwing here would leave the write sequence
+            // odd for ever - silently disabling the whole channel.
             if (length < encoded.Length)
             {
                 while (length > 0 && (encoded[length] & 0xC0) == 0x80)
@@ -653,17 +653,12 @@ public sealed class DoctorChannelWriter : IDisposable
         {
             lock (_writeLock)
             {
-                // EVERY increment is inside this try, and the finally restores parity from whatever value we
-                // actually reached. That ordering is the whole point, and getting it wrong here is unusually
-                // expensive: an odd resting value means "a write is in progress" to every reader, for ever, so
-                // the channel silently disables itself for the rest of the run and the Doctor falls back to
-                // watching from outside with no indication why.
-                //
-                // The earlier version incremented the counter in the same statement that wrote it, from
-                // outside the inner try. A throw from that one write then left the counter odd with no finally
-                // to correct it — and from then on every write published an even value while in progress and
-                // came to rest on an odd one, which is exactly backwards. Letting a reader see one
-                // inconsistent state is a far smaller loss than that.
+                // EVERY increment is inside this try, so the finally can restore parity from whatever value
+                // we actually reached. An increment outside it could throw and leave the counter odd with
+                // nothing to correct it - and an odd resting value means "a write is in progress" to every
+                // reader, for ever, so the channel would silently disable itself for the rest of the run
+                // and the Doctor would fall back to watching from outside with no indication why. Letting
+                // one reader see a single inconsistent state is a far smaller loss.
                 try
                 {
                     _writeSequence++; // now odd: a write is in progress
