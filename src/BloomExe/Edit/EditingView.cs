@@ -51,6 +51,10 @@ namespace Bloom.Edit
         private ZoomModel _zoomModel;
         private PageListApi _pageListApi;
         private Timer _editButtonsUpdateTimer;
+        private Timer _saveZoomSettingTimer;
+
+        /// <summary>How long the zoom must hold still before we write it to the settings file.</summary>
+        private const int kSaveZoomSettingDelayMs = 1000;
         private Browser _mainBrowser => WorkspaceView?.MainBrowser;
         private WorkspaceView _workspaceView;
         private Form _hostFormForEvents;
@@ -135,6 +139,13 @@ namespace Bloom.Edit
             _pageListApi = pageListApi;
             _editButtonsUpdateTimer = new Timer();
             _editButtonsUpdateTimer.Tick += _editButtonsUpdateTimer_Tick;
+            // A Ctrl+mousewheel spin changes the zoom many times a second. A write of the
+            // settings file on each change holds the UI thread while the browser process tries
+            // to call into it, which can freeze Bloom for minutes (BL-16762, BL-16763). So we
+            // write once, after the zoom stops. See SetZoom() and SaveZoomSettingNow().
+            _saveZoomSettingTimer = new Timer();
+            _saveZoomSettingTimer.Interval = kSaveZoomSettingDelayMs;
+            _saveZoomSettingTimer.Tick += (sender, e) => SaveZoomSettingNow();
 
             //SetupThumbnailLists();
             _model.SetView(this);
@@ -304,6 +315,7 @@ namespace Bloom.Edit
         void ParentForm_Deactivate(object sender, EventArgs e)
         {
             _editButtonsUpdateTimer.Enabled = false;
+            SaveZoomSettingNow();
             // Save when we leave the main window, even just switching to the epub a11y check window.
             // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6228. This control can lose/regain
             // focus erratically on Linux, so we don't want this save on its LostFocus event.
@@ -383,6 +395,7 @@ namespace Bloom.Edit
                 // which will also cause a change to NoPage. However, it will be ignored in states where it's not valid,
                 // and may be helpful in some cases (e.g., if somehow we're navigating), so I decided to put it in.
                 _model.StateMachine.ToNoPage();
+                SaveZoomSettingNow();
             }
         }
 
@@ -1515,6 +1528,13 @@ namespace Bloom.Edit
                 _editButtonsUpdateTimer.Dispose();
                 _editButtonsUpdateTimer = null;
             }
+
+            if (_saveZoomSettingTimer != null)
+            {
+                SaveZoomSettingNow();
+                _saveZoomSettingTimer.Dispose();
+                _saveZoomSettingTimer = null;
+            }
         }
 
         public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";
@@ -1626,13 +1646,29 @@ namespace Bloom.Edit
             // setting below, so there's no reason to wait for the script to finish.
             _mainBrowser.RunJavascriptFireAndForget($"workspaceBundle.setZoom({zoomFactor});");
             Settings.Default.PageZoom = zoom.ToString(CultureInfo.InvariantCulture);
-            Settings.Default.Save();
+            // Do not write the settings file here. Restart the timer, so that the write happens
+            // one second after the last zoom change. SaveZoomSettingNow() also writes the file
+            // if we leave the Edit tab, lose the main window, or shut down before the tick.
+            _saveZoomSettingTimer.Stop();
+            _saveZoomSettingTimer.Start();
             // Note: July 29 2025 we removed code that handled zoom by reloading the page,
             // with some complicated mess involving timers to make sure one reload for zoom
             // didn't interfere with another. I eventually tracked this down to when we made
             // canvas elements draggable (6/28/2017). I think the old JQuery draggable code was
             // messed up by scaling and had to be adjusted somehow. Now we're not using that,
             // so updating in place is much cleaner (and faster!).
+        }
+
+        /// <summary>
+        /// Writes the deferred zoom setting to disk now, if SetZoom() left one pending, and stops
+        /// the timer that would have written it later. Does nothing if no write is pending.
+        /// </summary>
+        private void SaveZoomSettingNow()
+        {
+            if (_saveZoomSettingTimer == null || !_saveZoomSettingTimer.Enabled)
+                return;
+            _saveZoomSettingTimer.Stop();
+            Settings.Default.Save();
         }
 
         public void AdjustPageZoom(int delta)
