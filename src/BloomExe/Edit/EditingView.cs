@@ -315,6 +315,8 @@ namespace Bloom.Edit
         void ParentForm_Deactivate(object sender, EventArgs e)
         {
             _editButtonsUpdateTimer.Enabled = false;
+            // Safe here, unlike the model save the comment below warns about: this only
+            // serializes the in-memory settings, and runs no Javascript.
             SaveZoomSettingNow();
             // Save when we leave the main window, even just switching to the epub a11y check window.
             // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6228. This control can lose/regain
