@@ -97,6 +97,28 @@ public sealed record BundleMetadata
     public string? Reason { get; init; }
 
     /// <summary>
+    /// True when a person asked for this report by pressing a button, rather than the Doctor deciding on
+    /// its own that something was wrong.
+    ///
+    /// It exempts the report from the daily cap. The cap exists to stop a misbehaving machine filing
+    /// dozens of cards nobody asked for; somebody deliberately pressing "Report now" is the opposite of
+    /// that, and being told "not today, you have had your three" would be absurd — particularly since
+    /// pressing it is also how anyone checks that filing works at all.
+    /// </summary>
+    public bool UserRequested { get; init; }
+
+    /// <summary>
+    /// True once this bundle has been sent and it opened a **new card**, as opposed to adding a comment to
+    /// one that already existed.
+    ///
+    /// Only new cards count against the daily cap. A comment is one small POST with no attachments — the
+    /// recurrence note is deliberately a few lines — so three "it happened again" comments used to be
+    /// enough to silence a machine for the rest of the day about problems nobody had heard of yet, which
+    /// is exactly backwards.
+    /// </summary>
+    public bool CreatedNewCard { get; init; }
+
+    /// <summary>
     /// Which Bloom this was about. Not for identifying the *problem* — a process id means nothing on
     /// anyone else's machine, which is why the fingerprint exists — but for recognising that two reports
     /// are about one Bloom's last few seconds and belong on one card. Null for a bundle written before

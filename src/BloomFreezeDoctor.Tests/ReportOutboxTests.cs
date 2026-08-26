@@ -126,6 +126,10 @@ public class ReportOutboxTests
     private sealed class FakeSubmitter : IReportSubmitter
     {
         public SubmitOutcome Outcome { get; set; } = SubmitOutcome.Filed;
+
+        /// <summary>Stand in for a tracker that already has a card, so every send is a comment.</summary>
+        public bool CommentsOnly { get; set; }
+
         public List<string> Submitted { get; } = new();
 
         public Task<SubmitResult> SubmitAsync(QueuedBundle bundle, CancellationToken cancellation)
@@ -137,6 +141,11 @@ public class ReportOutboxTests
                     Outcome = Outcome,
                     IssueId = Outcome == SubmitOutcome.Filed ? "BL-99999" : null,
                     Error = Outcome == SubmitOutcome.Filed ? null : "pretend failure",
+                    // Stands in for opening a new card, which is the only thing the daily cap counts. Left
+                    // at its default of false, this fake silently spent none of the allowance and the cap
+                    // could never engage - so the test that exists to prove the cap works passed for the
+                    // wrong reason.
+                    CreatedNewCard = Outcome == SubmitOutcome.Filed && !CommentsOnly,
                 }
             );
         }
@@ -698,23 +707,126 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void The_attachment_budget_clears_a_real_minidump()
+    public void A_real_minidump_is_routed_to_the_bucket_rather_than_attached()
     {
-        // The cap exists so a tracker card does not become a file server. At 12 MB it was doing the
-        // opposite: this project's own measurement is that a Normal dump of a real Bloom is 16-17 MB, and
-        // an artifact over budget is skipped - so every dump was silently discarded, and the dump is the
-        // whole point of attaching anything at all.
+        // YouTrack will not take an attachment much over 10 MB - Bloom measured about that in July 2020 and
+        // stopped attaching altogether - and a Normal dump of a real Bloom is 16-17 MB by this project's
+        // own measurement. So the dump must be sorted into the upload pile, not the attach pile. Raising
+        // our own budget to "fix" this was the earlier mistake: our number was never the binding one.
         const long measuredDumpBytes = 17L * 1024 * 1024;
+        const long youTrackCeilingBytes = 10L * 1024 * 1024;
 
         Assert.That(
-            YouTrackSubmitter.MaxAttachmentBytes,
-            Is.GreaterThan(measuredDumpBytes),
-            "a budget that cannot carry a measured dump defeats the feature it exists to protect"
+            YouTrackSubmitter.MaxSingleAttachmentBytes,
+            Is.LessThan(youTrackCeilingBytes),
+            "attaching anything the tracker will refuse just trades a silent skip for a failed upload"
         );
         Assert.That(
-            YouTrackSubmitter.MaxAttachmentBytes - measuredDumpBytes,
-            Is.GreaterThan(2L * 1024 * 1024),
-            "and it needs room for Bloom's log beside the dump, not just the dump alone"
+            measuredDumpBytes,
+            Is.GreaterThan(YouTrackSubmitter.MaxSingleAttachmentBytes),
+            "sanity check on the premise: a measured dump really is over the attach limit, so this test is "
+                + "about the routing and not a tautology"
+        );
+        Assert.That(
+            YouTrackSubmitter.MaxAttachmentBytes,
+            Is.GreaterThan(YouTrackSubmitter.MaxSingleAttachmentBytes),
+            "the per-card total must leave room for at least one attachable file"
+        );
+    }
+
+    [Test]
+    public async Task A_report_a_person_asked_for_is_not_refused_by_the_daily_cap()
+    {
+        // The cap exists to bound cards nobody asked for. Telling somebody who pressed "Report now" that
+        // they have had their three for today would be absurd - and pressing it is also how anyone checks
+        // that filing works at all, so a capped machine would have no way to test itself.
+        var outbox = NewOutbox();
+        for (var i = 0; i < ReportOutbox.MaxFilingsPerDay; i++)
+        {
+            outbox.Enqueue(Report($"automatic{i}"), "BL", "Release", "Frozen");
+            _now = _now.AddMinutes(1);
+        }
+        var submitter = new FakeSubmitter();
+        await outbox.DrainAsync(submitter);
+        Assert.That(
+            outbox.DailyLimitReached(),
+            Is.True,
+            "setup: the machine has now used its whole allowance on automatic reports"
+        );
+
+        outbox.Enqueue(
+            Report("asked-for"),
+            "BL",
+            "Release",
+            "RequestedByPerson",
+            processId: 900,
+            userRequested: true
+        );
+        var second = new FakeSubmitter();
+        await outbox.DrainAsync(second);
+
+        Assert.That(
+            second.Submitted,
+            Contains.Item("asked-for"),
+            "a report somebody deliberately asked for must go out regardless of the cap"
+        );
+    }
+
+    [Test]
+    public async Task A_comment_on_an_existing_card_is_not_refused_by_the_daily_cap()
+    {
+        // "It happened again" is a few lines of text with no attachments. Counting it against the cap meant
+        // three of them could silence a machine for the rest of the day about problems nobody had heard of
+        // yet, which is the opposite of what the cap is for.
+        var outbox = NewOutbox();
+        for (var i = 0; i < ReportOutbox.MaxFilingsPerDay; i++)
+        {
+            outbox.Enqueue(Report($"automatic{i}"), "BL", "Release", "Frozen");
+            _now = _now.AddMinutes(1);
+        }
+        await outbox.DrainAsync(new FakeSubmitter());
+        Assert.That(outbox.DailyLimitReached(), Is.True, "setup: allowance spent");
+
+        // A second report of a problem whose card this machine has already filed: it can only ever add a
+        // comment, and the outbox can see that locally.
+        outbox.Enqueue(Report("automatic0"), "BL", "Release", "Frozen", processId: 901);
+        var second = new FakeSubmitter { CommentsOnly = true };
+        await outbox.DrainAsync(second);
+
+        Assert.That(
+            second.Submitted,
+            Contains.Item("automatic0"),
+            "a report that can only add a comment must not be held back by the cap"
+        );
+    }
+
+    [Test]
+    public async Task Comments_do_not_spend_the_allowance_that_new_cards_need()
+    {
+        // The other half of the same rule, and the one that bites in the field: a machine that comments all
+        // morning must still be able to open a card about something genuinely new in the afternoon.
+        var outbox = NewOutbox();
+        var submitter = new FakeSubmitter { CommentsOnly = true };
+        for (var i = 0; i < ReportOutbox.MaxFilingsPerDay + 3; i++)
+        {
+            outbox.Enqueue(Report($"comment{i}"), "BL", "Release", "Frozen", processId: 950 + i);
+            _now = _now.AddMinutes(1);
+            await outbox.DrainAsync(submitter);
+        }
+
+        Assert.That(
+            outbox.DailyLimitReached(),
+            Is.False,
+            "comments must not consume an allowance that exists to bound new cards"
+        );
+
+        outbox.Enqueue(Report("something-new"), "BL", "Release", "Frozen", processId: 999);
+        var opener = new FakeSubmitter();
+        await outbox.DrainAsync(opener);
+        Assert.That(
+            opener.Submitted,
+            Contains.Item("something-new"),
+            "and a genuinely new problem must still get a card"
         );
     }
 }

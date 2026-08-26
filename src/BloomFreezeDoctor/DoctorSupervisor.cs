@@ -600,7 +600,10 @@ public sealed class DoctorSupervisor : IDisposable
             _project,
             facts.Channel,
             verdict.Report.ToString(),
-            facts.ProcessId
+            facts.ProcessId,
+            // Taken from the verdict rather than from a flag threaded through every caller: this reason is
+            // set in exactly one place, ReportNowAsync, and it is set precisely because a person asked.
+            userRequested: verdict.Report == ReportReason.RequestedByPerson
         );
         // Ending a zombie is only allowed once its evidence is safely on disk, so this is the moment that
         // unlocks it.

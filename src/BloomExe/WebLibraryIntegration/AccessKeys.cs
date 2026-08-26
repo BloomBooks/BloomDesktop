@@ -26,10 +26,17 @@ namespace Bloom.WebLibraryIntegration
         //Factory
         public static AccessKeys GetAccessKeys(string bucket)
         {
-            var connectionsPath = FileLocationUtilities.GetFileDistributedWithApplication(
-                "connections.dll"
-            );
-            var lines = RobustFile.ReadAllLines(connectionsPath);
+            // Located and read by the project Bloom and the Freeze Doctor share, so that there is one
+            // definition of where this file is and what its lines mean. The Doctor needs the same keys to
+            // upload a minidump too large for a tracker attachment, and two independent readers of one
+            // undocumented line-ordered file is how a line added at the top comes to mean different things
+            // in two programs. See BloomFreezeDoctor.Protocol.SupportUploadCredentials.
+            var lines =
+                BloomFreezeDoctor.Protocol.SupportUploadCredentials.TryReadLines()
+                ?? throw new ApplicationException(
+                    "Could not find or read "
+                        + BloomFreezeDoctor.Protocol.SupportUploadCredentials.ConnectionsFileName
+                );
             switch (bucket)
             {
                 case BloomS3Client.SandboxBucketName:

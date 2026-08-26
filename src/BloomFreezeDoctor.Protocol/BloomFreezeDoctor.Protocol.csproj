@@ -48,6 +48,15 @@
       settles, it belongs in Directory.Build.props alongside VelopackVersion.
     -->
     <PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
+
+    <!--
+      S3, for uploading a support file too large for a tracker attachment - see SupportUpload.cs. Both
+      consumers need it now: Bloom already restored these exact versions for its own book uploads, and the
+      Doctor gets them by referencing this project. Keep them in step with BloomExe.csproj by hand; two
+      versions of the AWS SDK in one output directory is a problem worth avoiding.
+    -->
+    <PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />
+    <PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
   </ItemGroup>
 
 </Project>
