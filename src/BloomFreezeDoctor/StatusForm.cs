@@ -149,12 +149,11 @@ public sealed class StatusForm : Form
         _supervisor.ReportFiled += OnReportFiled;
         _supervisor.ReportSavedWithoutFiling += OnReportSavedWithoutFiling;
         _supervisor.ZombieEnded += OnZombieEnded;
-        // Clicking the balloon is the obvious thing to do when it tells you a report was saved, so make
-        // that open the folder. No new button, and therefore no change to the window's layout.
-        // Whichever of the two the balloon was actually about. It used to call OpenSavedReportFolder
-        // unconditionally, and a filed report clears that folder - so clicking the balloon that announced a
-        // filing did nothing whatsoever, which is the least helpful possible response to somebody acting on
-        // a notification.
+        // Clicking the balloon is the obvious thing to do when it has just told you about a report, so it
+        // opens whichever of the two that report was. It used to call OpenSavedReportFolder
+        // unconditionally, and filing a report deliberately clears that folder - so clicking the balloon
+        // that announced a filing did nothing whatsoever, which is the least helpful possible response to
+        // somebody acting on a notification.
         _tray.BalloonTipClicked += (_, _) => OpenWhateverTheLastReportWas();
 
         if (startMinimised)
