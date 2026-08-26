@@ -384,7 +384,7 @@ namespace Bloom.Api
         {
             // Note this request while it runs, so that a Freeze Doctor report can say what Bloom was
             // actually doing when it stopped responding. Instrumented HERE rather than at the outer
-            // dispatch because this is where the work — and the waiting on the sync locks described below —
+            // dispatch because this is where the work — and the waiting on the sync locks in the method below —
             // actually happens, which is where a hung request sits. The tracker is deliberately incapable
             // of failing a request; see its class comment.
             using (FreezeDoctor.ApiActivityTracker.Begin(localPathLc))
