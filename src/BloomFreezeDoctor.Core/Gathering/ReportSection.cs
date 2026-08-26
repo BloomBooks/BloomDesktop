@@ -58,6 +58,23 @@ public sealed record GatherContext
     public required DetectorVerdict Verdict { get; init; }
 
     /// <summary>
+    /// Called the moment nothing further needs the target process alive — which, for a Bloom that is dying
+    /// and waiting for us, is the moment it may finish dying.
+    ///
+    /// **This is not a nicety; without it a crashing Bloom waits for the whole pipeline.** The crash path
+    /// released Bloom only when the entire gather had finished, and a gather is bounded by two minutes and
+    /// includes every collector, the log copy, queueing the report, and uploading a 17 MB dump to S3 over
+    /// whatever connection the user has. None of that needs Bloom. Once the runtime has written the dump,
+    /// everything else reads the *file*.
+    ///
+    /// It went unnoticed because the old three-second wait capped the damage: Bloom gave up long before the
+    /// gather ended, so the misplaced signal cost nothing except the dump. Making the wait generous — which
+    /// it had to become, since a real dump takes longer than three seconds — turned a harmless mistake into
+    /// a crashing Bloom held open while a card is filed.
+    /// </summary>
+    public Action? TargetNoLongerNeeded { get; init; }
+
+    /// <summary>
     /// True when this report is about a Bloom that stopped responding, rather than one that crashed or
     /// simply went away.
     ///

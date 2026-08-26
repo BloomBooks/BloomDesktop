@@ -174,7 +174,12 @@ public static class SupportFileUploader
             };
             request.Headers.CacheControl = "no-cache";
             await transfer.UploadAsync(request, cancellation).ConfigureAwait(false);
-            return $"https://s3.amazonaws.com/{BucketName}/{Uri.EscapeDataString(key)}";
+            // Escaped per path segment, so the separators stay separators. Escaping the whole key turns
+            // them into %2F, which S3's path-style URLs do generally decode - both forms were checked
+            // against a real upload and returned the file - but some proxies and clients take %2F
+            // literally and 404, and it makes an ugly link on a card a human has to read.
+            var escaped = string.Join("/", key.Split('/').Select(Uri.EscapeDataString));
+            return $"https://s3.amazonaws.com/{BucketName}/{escaped}";
         }
         catch (Exception)
         {
