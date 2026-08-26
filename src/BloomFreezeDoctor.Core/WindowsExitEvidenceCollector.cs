@@ -120,18 +120,19 @@ public sealed class WindowsExitEvidenceCollector
     /// puts "Bloom crashed: Windows logged an Application Error" on a card about a crash that was some
     /// other program's.
     ///
-    /// It used to accept three things, and two of them matched other people's crashes:
+    /// Two tempting matches are therefore excluded on purpose, because each of them fires on other
+    /// programs' crashes:
     ///
-    /// - the bare hex pid, ANYWHERE in the message and with no delimiters. Every Application Error entry
-    ///   is full of hex - exception codes, fault offsets, module base addresses - so a short pid was
+    /// - **the bare hex pid, anywhere in the message and without delimiters.** Every Application Error
+    ///   entry is full of hex - exception codes, fault offsets, module base addresses - so a short pid is
     ///   near-certain to appear inside one of them. Pid 4096 is "1000", which matches a fault offset of
     ///   0x00007ff81000a4c0.
-    /// - <c>msedgewebview2.exe</c>, unqualified. Bloom is far from the only WebView2 host on a Windows
+    /// - **<c>msedgewebview2.exe</c>, unqualified.** Bloom is far from the only WebView2 host on a Windows
     ///   machine: Teams, Outlook and the Widgets panel all crash renderers of their own, and any of them
-    ///   doing so within five minutes became evidence that Bloom crashed. There is no fix that keeps the
-    ///   clause, either - the pid in a renderer's entry is the RENDERER's, not Bloom's, so it could never
-    ///   have told ours from theirs. It is dropped rather than narrowed. Little is lost: Bloom normally
-    ///   survives a renderer crash, and this code only runs when Bloom itself has gone.
+    ///   doing so within five minutes would become evidence that Bloom crashed. Narrowing the clause is not
+    ///   possible either - the pid in a renderer's entry is the RENDERER's, not Bloom's, so it can never
+    ///   tell ours from theirs. Little is lost by leaving it out: Bloom normally survives a renderer crash,
+    ///   and this code only runs when Bloom itself has gone.
     /// </summary>
     public static bool EntryNamesThisBloom(string message, int processId, string? exeFileName)
     {

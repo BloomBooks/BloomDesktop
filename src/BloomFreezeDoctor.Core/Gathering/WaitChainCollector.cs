@@ -214,10 +214,10 @@ public sealed class WaitChainCollector : IEvidenceCollector
 
     /// <summary>
     /// <c>WAITCHAIN_NODE_INFO</c>. **Its second half is a UNION**, and getting that wrong is a bug that
-    /// reports nonsense rather than failing: this struct used to declare the thread fields *after* a
-    /// 256-byte name, so Windows wrote ProcessId and ThreadId at offset 8 while we read them from around
-    /// 276, and the size mismatch misaligned every node past the first. Cards stated thread ids that were
-    /// simply garbage.
+    /// reports nonsense rather than failing. Declaring the thread fields *after* a 256-byte name — as one
+    /// would for a struct — leaves Windows writing ProcessId and ThreadId at offset 8 while we read them
+    /// from around 276, and the resulting size mismatch misaligns every node past the first, so a card
+    /// states thread ids that are simply garbage.
     ///
     /// Only the thread branch is declared, because only it is ever read — the lock branch's ObjectName is
     /// not used anywhere. So the union is expressed as its four DWORDs followed by enough padding to make

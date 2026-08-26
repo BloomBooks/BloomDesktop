@@ -253,18 +253,18 @@ public sealed class FreezeDetector
     /// True if a debugger can account for what we are looking at, and therefore nothing should be
     /// reported. Exposed so the gatherer can say why it declined, rather than silently doing nothing.
     ///
-    /// **This used to mean "a debugger has been attached at some point in this run", which wrote off the
-    /// whole run.** Attach a debugger once in the morning and a genuine freeze that afternoon went
-    /// unreported for ever — on precisely the machines whose owners are best placed to diagnose it. Now
-    /// that Bloom records *when* a debugger last left, the question can be the narrower and more useful
-    /// one: was a debugger around while THIS episode was happening?
+    /// **The question is deliberately narrow: was a debugger around while THIS episode was happening?**
+    /// The broader reading — "a debugger has been attached at some point in this run" — writes off the whole
+    /// run, so that attaching one in the morning would bury a genuine freeze that afternoon, on precisely
+    /// the machines whose owners are best placed to diagnose it. Bloom records *when* a debugger last left
+    /// so that the narrower question can be answered.
     ///
     /// The three answers, in order:
     ///
     ///   * A debugger is attached now — nothing to discuss. This also covers a debugger that terminated
     ///     Bloom, since the page Bloom leaves behind still says one was attached.
-    ///   * One was attached but we cannot tell when it left — assume it overlaps. That is the old
-    ///     behaviour, and it is what a Bloom too old to publish a channel still gets.
+    ///   * One was attached but we cannot tell when it left — assume it overlaps. This is what a Bloom too
+    ///     old to publish a channel gets, since it cannot tell us the departure time.
     ///   * One was attached and we know when it left — it only excuses an episode that had already
     ///     started by then.
     /// </summary>

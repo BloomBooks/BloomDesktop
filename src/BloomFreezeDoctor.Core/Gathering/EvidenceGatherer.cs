@@ -324,9 +324,8 @@ public sealed class EvidenceGatherer
         {
             // Two quite different silences, and saying the wrong one is worse than saying nothing. The
             // channel lives in Bloom's own memory, so for a Bloom that has already died there is nothing
-            // left to read however new it is - and this section used to answer that by asserting the
-            // process "does not publish a health channel", in the very reports where what Bloom last
-            // thought it was doing matters most.
+            // left to read however new it is. Calling that "does not publish a health channel" would be
+            // false in exactly the reports where what Bloom last thought it was doing matters most.
             text.AppendLine(
                 context.ProcessWasAlive
                     ? "Nothing: this Bloom does not publish a health channel, so everything below was "
