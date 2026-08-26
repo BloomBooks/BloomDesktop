@@ -1231,53 +1231,107 @@ namespace BloomTests.web.controllers
         }
 
         // ------------------------------------------------------------------
-        // IsUserChangeableImageElement: branding/license/QR images are off-limits.
+        // SelectImageSlotsOnPage: a page's slots are its image containers, in document
+        // order. The index of a slot in that list is its whole identity, and the page frame
+        // works out the same index for itself (slotIndexOnPage in aiEditorPageCommands.ts),
+        // so these two numberings have to agree.
         // ------------------------------------------------------------------
 
-        private static Bloom.SafeXml.SafeXmlElement MakeImgWithClass(string className)
+        private static SafeXmlElement MakePageWithBody(string bodyOfPage)
         {
-            var classAttr = className == null ? "" : $" class='{className}'";
             var dom = new HtmlDom(
                 $@"<html><head></head><body>
                     <div class='bloom-page' id='page1'><div class='marginBox'>
-                        <img src='pic.png'{classAttr}/>
+                        {bodyOfPage}
                     </div></div>
                   </body></html>"
             );
-            return (Bloom.SafeXml.SafeXmlElement)dom.RawDom.SelectSingleNode("//img");
+            return (SafeXmlElement)dom.RawDom.SelectSingleNode("//div[@id='page1']");
         }
 
         [Test]
-        public void IsUserChangeableImageElement_PlainImage_IsChangeable()
+        public void SelectImageSlotsOnPage_ReturnsContainersInDocumentOrder()
         {
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer'><img src='first.png'/></div>
+                  <div class='bloom-imageContainer'><img src='second.png'/></div>"
+            );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(2));
             Assert.That(
-                AiImageEditorApi.IsUserChangeableImageElement(MakeImgWithClass(null)),
-                Is.True
+                AiImageEditorApi.GetImageElementOfSlot(slots[0]).GetAttribute("src"),
+                Is.EqualTo("first.png")
+            );
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(slots[1]).GetAttribute("src"),
+                Is.EqualTo("second.png")
             );
         }
 
         [TestCase("branding")]
         [TestCase("licenseImage")]
         [TestCase("bloom-qrcode")]
-        public void IsUserChangeableImageElement_ProtectedImage_IsNotChangeable(string className)
+        public void SelectImageSlotsOnPage_ImageOutsideAContainer_IsNotASlot(string className)
         {
+            // Branding, license and QR-code images are never in an image container, which is
+            // why neither side of the bridge needs a list of them: they are not slots, so
+            // they cannot be offered to the AI image editor or overwritten by a commit.
+            var page = MakePageWithBody(
+                $@"<img class='{className}' src='protected.png'/>
+                   <div class='bloom-imageContainer'><img src='real.png'/></div>"
+            );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(1), $"'{className}' must not be a slot");
             Assert.That(
-                AiImageEditorApi.IsUserChangeableImageElement(MakeImgWithClass(className)),
-                Is.False,
-                $"an image with class '{className}' must not be user-changeable"
+                AiImageEditorApi.GetImageElementOfSlot(slots[0]).GetAttribute("src"),
+                Is.EqualTo("real.png")
             );
         }
 
         [Test]
-        public void IsUserChangeableImageElement_ProtectedClassAmongOthers_IsNotChangeable()
+        public void SelectImageSlotsOnPage_ClassAmongOthers_IsStillASlot()
         {
-            // The class check must find the protected class even when combined with others.
-            Assert.That(
-                AiImageEditorApi.IsUserChangeableImageElement(
-                    MakeImgWithClass("bloom-imageContainer branding")
-                ),
-                Is.False
+            // The class test must find bloom-imageContainer among other classes, and must
+            // not match a class that merely contains those characters.
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer bloom-backgroundImage'><img src='real.png'/></div>
+                  <div class='bloom-imageContainerish'><img src='notASlot.png'/></div>"
             );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(1));
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(slots[0]).GetAttribute("src"),
+                Is.EqualTo("real.png")
+            );
+        }
+
+        [Test]
+        public void GetImageElementOfSlot_BackgroundImageSlot_ReturnsTheContainer()
+        {
+            // A slot can wear its picture as a background image instead of holding an img.
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer' style=""background-image:url('bg.png')""></div>"
+            );
+
+            var slot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+
+            Assert.That(AiImageEditorApi.GetImageElementOfSlot(slot), Is.SameAs(slot));
+        }
+
+        [Test]
+        public void GetImageElementOfSlot_SlotWithNoPicture_ReturnsNull()
+        {
+            var page = MakePageWithBody(@"<div class='bloom-imageContainer'></div>");
+
+            var slot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+
+            Assert.That(AiImageEditorApi.GetImageElementOfSlot(slot), Is.Null);
         }
 
         // ------------------------------------------------------------------
@@ -1671,7 +1725,7 @@ namespace BloomTests.web.controllers
             // (updated by ImageUpdater) and as the next book-up-to-date pass. Pin that
             // agreement down rather than trusting the two to stay in step by inspection.
             var name = MakePngWithCredits("pic.png", "Ada Lovelace", "Copyright 1843 Ada");
-            var img = MakeImgWithClass(null); // its src is "pic.png", the file we just made
+            var img = MakePlainImg(); // its src is "pic.png", the file we just made
 
             ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
                 _bookFolder.Path,
@@ -1687,6 +1741,19 @@ namespace BloomTests.web.controllers
             Assert.That(attributes.copyright, Is.EqualTo(img.GetAttribute("data-copyright")));
             Assert.That(attributes.creator, Is.EqualTo(img.GetAttribute("data-creator")));
             Assert.That(attributes.license, Is.EqualTo(img.GetAttribute("data-license")));
+        }
+
+        // A plain image element, for a test that needs one and nothing around it.
+        private static SafeXmlElement MakePlainImg()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page' id='page1'><div class='marginBox'>
+                        <img src='pic.png'/>
+                    </div></div>
+                  </body></html>"
+            );
+            return (SafeXmlElement)dom.RawDom.SelectSingleNode("//img");
         }
 
         // The single page of a one-page DOM, as the label helpers take it.
