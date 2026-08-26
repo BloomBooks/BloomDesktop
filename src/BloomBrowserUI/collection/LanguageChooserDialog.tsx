@@ -4,10 +4,9 @@ import {
     IOrthography,
     defaultSearchResultModifier,
     parseLangtagFromLangChooser,
-    defaultRegionForLangTag,
-    defaultDisplayName,
 } from "@ethnolib/language-chooser-react-mui";
 import * as React from "react";
+import { getLanguageData } from "./languageData";
 
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import {
@@ -27,39 +26,6 @@ import {
     DialogOkButton,
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { H1 } from "../react_components/l10nComponents";
-
-export interface ILanguageData {
-    // Should be kept in sync with the LanguageChangeEventArgs class
-    LanguageTag: string | null;
-    DefaultName: string | null;
-    DesiredName: string | null;
-    IsRtl: boolean | null;
-    Country?: string | null;
-}
-
-export function getLanguageData(
-    languageTag: string | undefined,
-    selection: IOrthography | undefined,
-): ILanguageData {
-    const nameInScript = selection?.script?.languageNameInScript;
-    const defaultName =
-        nameInScript ||
-        (selection?.language
-            ? defaultDisplayName(selection.language) || null
-            : null);
-    const isRtl = selection?.script?.isRtl;
-    // Ensure values are null rather than undefined. Otherwise, the property won't be serialized at all.
-    return {
-        LanguageTag: languageTag || null,
-        DefaultName: defaultName,
-        DesiredName: selection?.customDetails?.customDisplayName || defaultName,
-        IsRtl: isRtl !== undefined ? isRtl : null,
-        Country: languageTag
-            ? defaultRegionForLangTag(languageTag, selection?.language)?.name ||
-              null
-            : null,
-    };
-}
 
 export const LanguageChooserDialog: React.FunctionComponent<{
     initialLanguageTag?: string;
