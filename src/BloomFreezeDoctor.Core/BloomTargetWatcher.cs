@@ -86,6 +86,13 @@ public sealed class BloomTargetWatcher : IDisposable
     private EventWaitHandle? _dumpRequest;
     private EventWaitHandle? _dumpComplete;
 
+    /// <summary>
+    /// Told to Bloom the moment we take up its dump request, so that its wait can be generous once the work
+    /// is genuinely underway and impatient when nobody has picked it up. See
+    /// <see cref="Protocol.DoctorSignals.DumpStartedName"/>.
+    /// </summary>
+    private EventWaitHandle? _dumpStarted;
+
     /// <summary>Guards against a slow reading overlapping the next tick.</summary>
     private int _observing;
 
@@ -133,6 +140,9 @@ public sealed class BloomTargetWatcher : IDisposable
         _dumpComplete ??= Protocol.DoctorSignals.TryCreate(
             Protocol.DoctorSignals.DumpCompleteName(Target.ProcessId)
         );
+        _dumpStarted ??= Protocol.DoctorSignals.TryCreate(
+            Protocol.DoctorSignals.DumpStartedName(Target.ProcessId)
+        );
         _timer ??= new Timer(_ => Tick(), null, TimeSpan.Zero, _cadence);
     }
 
@@ -157,6 +167,24 @@ public sealed class BloomTargetWatcher : IDisposable
         catch (Exception)
         {
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Tells Bloom we have taken up its request and are working on it. Called before the work, which is the
+    /// whole point: it is what turns Bloom's wait from a flat guess into "wait while this is really being
+    /// done". Bloom gives up quickly if this never arrives.
+    /// </summary>
+    public void SignalDumpStarted()
+    {
+        try
+        {
+            _dumpStarted?.Set();
+        }
+        catch (Exception)
+        {
+            // Bloom then falls back to its short patience, which loses the dump on a slow machine but
+            // cannot hang it. Failing safe in the right direction.
         }
     }
 
@@ -340,6 +368,8 @@ public sealed class BloomTargetWatcher : IDisposable
         _dumpRequest = null;
         _dumpComplete?.Dispose();
         _dumpComplete = null;
+        _dumpStarted?.Dispose();
+        _dumpStarted = null;
     }
 
     /// <summary>

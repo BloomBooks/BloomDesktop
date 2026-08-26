@@ -113,4 +113,95 @@ public class DoctorSignalsTests
             Assert.That(DoctorSignals.TrySignal(""), Is.False, "signal");
         });
     }
+
+    /// <summary>
+    /// A wait bounded by the other side's presence rather than by the clock. This is what lets a crashing
+    /// Bloom wait a minute for its dump without risking a minute-long hang: the case a short timeout used
+    /// to protect against now ends the wait at once instead.
+    /// </summary>
+    [Test]
+    public void A_liveness_bounded_wait_returns_as_soon_as_the_other_side_disappears()
+    {
+        var waitedFor = $@"Local\BloomFreezeDoctorTests.never.{Guid.NewGuid():N}";
+        var presence = $@"Local\BloomFreezeDoctorTests.alive.{Guid.NewGuid():N}";
+        using var target = Protocol.DoctorSignals.TryCreate(waitedFor);
+        var alive = Protocol.DoctorSignals.TryCreate(presence);
+        Assert.That(target, Is.Not.Null, "setup");
+        Assert.That(alive, Is.Not.Null, "setup");
+
+        // The other side goes away without ever answering - exactly what a Doctor that died mid-dump looks
+        // like, since Windows closes its handles and the event ceases to exist.
+        alive!.Dispose();
+
+        var timer = System.Diagnostics.Stopwatch.StartNew();
+        var answered = Protocol.DoctorSignals.WaitWhileTheOtherSideLives(
+            waitedFor,
+            presence,
+            ceiling: TimeSpan.FromSeconds(30),
+            slice: TimeSpan.FromMilliseconds(50)
+        );
+        timer.Stop();
+
+        Assert.That(answered, Is.False, "nobody ever signalled it");
+        Assert.That(
+            timer.Elapsed,
+            Is.LessThan(TimeSpan.FromSeconds(5)),
+            "it must give up when the other side vanishes rather than running out the 30s ceiling - that "
+                + "is the whole reason the ceiling can afford to be generous"
+        );
+    }
+
+    [Test]
+    public void A_liveness_bounded_wait_honours_a_signal_that_arrives_while_the_other_side_lives()
+    {
+        // The sanity check on the test above: a wait that always returned false quickly would pass that one
+        // and be useless.
+        var waitedFor = $@"Local\BloomFreezeDoctorTests.answered.{Guid.NewGuid():N}";
+        var presence = $@"Local\BloomFreezeDoctorTests.alive.{Guid.NewGuid():N}";
+        using var target = Protocol.DoctorSignals.TryCreate(waitedFor);
+        using var alive = Protocol.DoctorSignals.TryCreate(presence);
+
+        // Answered a little into the wait, as a real dump would be.
+        var answerer = Task.Run(() =>
+        {
+            Thread.Sleep(200);
+            Protocol.DoctorSignals.TrySignal(waitedFor);
+        });
+
+        var answered = Protocol.DoctorSignals.WaitWhileTheOtherSideLives(
+            waitedFor,
+            presence,
+            ceiling: TimeSpan.FromSeconds(10),
+            slice: TimeSpan.FromMilliseconds(50)
+        );
+        answerer.Wait();
+
+        Assert.That(answered, Is.True, "a signal arriving mid-wait must be honoured");
+    }
+
+    [Test]
+    public void A_signal_already_set_is_honoured_even_if_the_other_side_has_since_gone()
+    {
+        // The Doctor can finish the dump and then exit immediately - it often has nothing left to watch,
+        // since the Bloom it was dumping has just died. Discarding a completed dump because the process
+        // that made it tidied up quickly would be a poor reward for doing the work.
+        var waitedFor = $@"Local\BloomFreezeDoctorTests.done.{Guid.NewGuid():N}";
+        var presence = $@"Local\BloomFreezeDoctorTests.alive.{Guid.NewGuid():N}";
+        using var target = Protocol.DoctorSignals.TryCreate(waitedFor);
+        var alive = Protocol.DoctorSignals.TryCreate(presence);
+
+        Protocol.DoctorSignals.TrySignal(waitedFor); // the work finished...
+        alive!.Dispose(); // ...and then the Doctor went away
+
+        Assert.That(
+            Protocol.DoctorSignals.WaitWhileTheOtherSideLives(
+                waitedFor,
+                presence,
+                ceiling: TimeSpan.FromSeconds(5),
+                slice: TimeSpan.FromMilliseconds(50)
+            ),
+            Is.True,
+            "the dump was captured; the wait should say so"
+        );
+    }
 }

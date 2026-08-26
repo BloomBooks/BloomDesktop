@@ -871,16 +871,48 @@ namespace Bloom.FreezeDoctor
                     return;
                 }
 
-                // Short on purpose. The user is already looking at a crash; a few seconds to capture what
-                // caused it is a fair trade, but only a few.
-                var dumped = DoctorSignals.WaitFor(
+                // Two waits, with quite different patience, because "nobody picked this up" and "this is
+                // taking a while" deserve opposite treatment.
+                //
+                // This used to be one flat three seconds, chosen when a real Bloom's dump was measured at
+                // 1.4 s. A later measurement on a fast developer machine, of a Bloom two minutes old, took
+                // 2.4 s of the 3 allowed — so a user's slower machine, running a Bloom that has been up for
+                // days with memory under pressure, would overrun. And overrunning does not delay the dump,
+                // it LOSES it: the dying Bloom is what writes the dump over the diagnostics pipe, so exiting
+                // mid-write aborts it and the report ends up with no managed stacks at all. The budget was
+                // tightest exactly where the need was greatest.
+                //
+                // Simply raising it to a minute would have swapped that for the failure the timeout was
+                // there for: a Doctor that died between the check above and this line would hold a crashing
+                // Bloom open for the whole minute, for nothing.
+                if (
+                    !DoctorSignals.WaitFor(
+                        DoctorSignals.DumpStartedName(pid),
+                        TimeSpan.FromSeconds(3)
+                    )
+                )
+                {
+                    // Its tick is a second, so three is already generous for merely picking the request up.
+                    // Nothing has, so there is nothing to wait for.
+                    Logger.WriteEvent(
+                        "Asked the Bloom Freeze Doctor for a crash dump but nothing picked it up; not waiting"
+                    );
+                    return;
+                }
+
+                // Underway, so be patient - but only while the Doctor is demonstrably still there. It holds
+                // its "watching" event open for exactly as long as it watches, so if it dies the event stops
+                // existing and this returns at once rather than running out the ceiling.
+                var dumped = DoctorSignals.WaitWhileTheOtherSideLives(
                     DoctorSignals.DumpCompleteName(pid),
-                    TimeSpan.FromSeconds(3)
+                    DoctorSignals.WatchingName(pid),
+                    ceiling: TimeSpan.FromSeconds(60),
+                    slice: TimeSpan.FromMilliseconds(500)
                 );
                 Logger.WriteEvent(
                     dumped
                         ? "The Bloom Freeze Doctor captured a dump of this crash"
-                        : "Asked the Bloom Freeze Doctor for a crash dump but it did not answer in time"
+                        : "The Bloom Freeze Doctor began a dump of this crash but did not finish it"
                 );
             }
             catch (Exception)

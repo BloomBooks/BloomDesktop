@@ -48,6 +48,28 @@ public static class DoctorSignals
     public static string DumpRequestName(int processId) =>
         $@"Local\BloomFreezeDoctor.dumpme.{processId}";
 
+    /// <summary>
+    /// Set by the Doctor the moment it takes up a dump request, before it begins the work.
+    ///
+    /// It exists so that Bloom can be impatient about one thing and patient about another. Waiting for a
+    /// dump used to be a single flat three seconds, and that number was set against a spike measurement of
+    /// 1.4 seconds for "a real Bloom" — while a measured dump on a fast developer machine, of a Bloom that
+    /// had been running two minutes, took 2.4 of the 3 seconds allowed. On a user's slower machine, with a
+    /// Bloom that has been up for days and a system short of memory, it would plainly overrun.
+    ///
+    /// And overrunning does not merely delay the dump, it loses it: the dying Bloom is what actually writes
+    /// the dump, over the diagnostics pipe, so when Bloom stops waiting and exits the write is aborted and
+    /// the report falls back to having no managed stacks at all. The budget was smallest exactly where the
+    /// need was greatest.
+    ///
+    /// A flat 60 seconds would trade that for the opposite failure — a Doctor that died between Bloom's
+    /// "is anyone watching" check and its wait would hold a crashing Bloom for a minute, for nothing. With
+    /// this signal Bloom can tell "nobody picked it up" from "it is underway": give up quickly on the
+    /// first, and wait generously on the second.
+    /// </summary>
+    public static string DumpStartedName(int processId) =>
+        $@"Local\BloomFreezeDoctor.dumping.{processId}";
+
     /// <summary>Set by the Doctor when the dump is written, so Bloom can stop waiting.</summary>
     public static string DumpCompleteName(int processId) =>
         $@"Local\BloomFreezeDoctor.dumped.{processId}";
@@ -131,6 +153,55 @@ public static class DoctorSignals
         {
             using var handle = TryOpen(name);
             return handle != null && handle.WaitOne(timeout);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Waits for an event, but gives up the moment the other side stops existing — checked by testing
+    /// whether <paramref name="whileThisExists"/> is still there.
+    ///
+    /// This is what lets a wait be generous without being a gamble. A flat timeout has to be short enough
+    /// to survive the other side vanishing, which then makes it too short for the other side doing real
+    /// work. Bounding it by the other side's *presence* instead separates the two: it can be long, because
+    /// the case a short timeout was protecting against now ends the wait immediately rather than after the
+    /// full period.
+    ///
+    /// The presence test is exact rather than a heuristic. A named event lives while a handle to it is
+    /// open, and the Doctor holds its "watching" event open for precisely as long as it watches — so if
+    /// that Doctor dies, however abruptly, Windows closes the handle, the event ceases to exist, and the
+    /// next slice here sees it gone. Nothing has to be cleaned up for this to be true.
+    ///
+    /// <paramref name="ceiling"/> remains as a backstop, for a Doctor that is alive but not answering.
+    /// </summary>
+    public static bool WaitWhileTheOtherSideLives(
+        string name,
+        string whileThisExists,
+        TimeSpan ceiling,
+        TimeSpan slice
+    )
+    {
+        try
+        {
+            using var handle = TryOpen(name);
+            if (handle == null)
+                return false;
+            var waited = TimeSpan.Zero;
+            while (waited < ceiling)
+            {
+                var thisSlice = slice < ceiling - waited ? slice : ceiling - waited;
+                if (handle.WaitOne(thisSlice))
+                    return true;
+                waited += thisSlice;
+                // Checked AFTER waiting rather than before, so that an event already signalled is honoured
+                // even if the other side has since gone. It did the work; we should not discard it.
+                if (!Exists(whileThisExists))
+                    return handle.WaitOne(TimeSpan.Zero);
+            }
+            return false;
         }
         catch (Exception)
         {

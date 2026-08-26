@@ -858,6 +858,10 @@ public sealed class DoctorSupervisor : IDisposable
             }
 
             Note($"Bloom {watcher.Target.ProcessId} is crashing and asked for a dump");
+            // Before the work, and before anything below that could fail: Bloom is waiting, and this is
+            // what tells it the wait is worth being patient about. A dump of a real Bloom takes seconds,
+            // and longer on the slow machines that need it most.
+            watcher.SignalDumpStarted();
             // Counted as work in flight, like the other two background jobs. Without this the Doctor can
             // decide it has nothing left to do and exit WHILE the dump is being written - and this is the
             // likeliest path for that to happen, because the crashing Bloom is about to disappear, which
