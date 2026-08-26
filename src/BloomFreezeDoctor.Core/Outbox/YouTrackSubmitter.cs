@@ -45,18 +45,25 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     private const string BaseUrl = "https://issues.bloomlibrary.org/youtrack/api";
 
     /// <summary>
-    /// Total attachment bytes we are willing to upload. A tracker card is not a file server.
+    /// The largest single file we will try to *attach*. Anything bigger goes to the support bucket instead
+    /// and the card gets a link — see <see cref="SupportFileUploader"/>.
     ///
-    /// **It has to clear a minidump, or it defeats the feature.** At 12 MB it did not: this project's own
-    /// measurement, recorded in ManagedStacksCollector, is that a `DumpType.Normal` dump of a real Bloom
-    /// is **16-17 MB** against a 234 MB working set. The dump is the primary artifact and the point of
-    /// decision D2, and every one of them was silently over budget and skipped — so the cap meant to stop
-    /// a card becoming a file server was instead stopping it carrying the one file worth having.
-    ///
-    /// 30 MB clears that with room for the log beside it, and is still far short of anything anyone would
-    /// call a file server. Note it is a budget for the whole card, not per file.
+    /// **This is a limit of the tracker, not a policy of ours**, which is what an earlier version of this
+    /// class got wrong. It capped the total at 12 MB as a self-imposed "a card is not a file server" rule,
+    /// silently skipped anything over, and so silently discarded every minidump — 16-17 MB for a real
+    /// Bloom, by this project's own measurement in ManagedStacksCollector. Raising our own number would not
+    /// have helped: Bloom measured YouTrack's real ceiling at about 10 MB in July 2020 and gave up
+    /// attaching altogether, and that measurement is still in ProblemReportApi above the commented-out
+    /// attach call it replaced. 8 MB sits under that ceiling with room to spare.
     /// </summary>
-    public const long MaxAttachmentBytes = 30 * 1024 * 1024;
+    public const long MaxSingleAttachmentBytes = 8 * 1024 * 1024;
+
+    /// <summary>
+    /// Total attachment bytes for one card. Still worth bounding — a card is not a file server — but no
+    /// longer the thing standing between a dump and the person who needs it, since anything too big to
+    /// attach is uploaded and linked rather than dropped.
+    /// </summary>
+    public const long MaxAttachmentBytes = 20 * 1024 * 1024;
 
     private readonly HttpClient _http;
 
@@ -104,7 +111,12 @@ public sealed class YouTrackSubmitter : IReportSubmitter
                     .ConfigureAwait(false);
                 if (commentFailure != null)
                     return commentFailure.Value;
-                return new SubmitResult { Outcome = SubmitOutcome.Filed, IssueId = existing };
+                return new SubmitResult
+                {
+                    Outcome = SubmitOutcome.Filed,
+                    IssueId = existing,
+                    CreatedNewCard = false,
+                };
             }
 
             var created = await CreateIssueAsync(bundle, body, cancellation).ConfigureAwait(false);
@@ -112,6 +124,8 @@ public sealed class YouTrackSubmitter : IReportSubmitter
                 return created;
 
             await AttachArtifactsAsync(created.IssueId, bundle, cancellation).ConfigureAwait(false);
+            await UploadWhatCouldNotBeAttachedAsync(created.IssueId, bundle, cancellation)
+                .ConfigureAwait(false);
             return created;
         }
         catch (HttpRequestException e)
@@ -212,7 +226,12 @@ public sealed class YouTrackSubmitter : IReportSubmitter
                 Outcome = SubmitOutcome.RejectedPermanently,
                 Error = "the tracker accepted the issue but returned no id: " + Trim(text),
             }
-            : new SubmitResult { Outcome = SubmitOutcome.Filed, IssueId = id };
+            : new SubmitResult
+            {
+                Outcome = SubmitOutcome.Filed,
+                IssueId = id,
+                CreatedNewCard = true,
+            };
     }
 
     /// <summary>
@@ -351,16 +370,8 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         CancellationToken cancellation
     )
     {
-        var budget = MaxAttachmentBytes;
-        foreach (var path in bundle.ArtifactPaths)
+        foreach (var path in SortArtifacts(bundle).ToAttach)
         {
-            if (!RobustFile.Exists(path))
-                continue;
-            var size = SizeOrZero(path);
-            if (size > budget)
-                continue; // too big; the body named it and said where the local copy is
-            budget -= size;
-
             string? attachmentId = null;
             try
             {
@@ -507,16 +518,16 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             text.AppendLine();
         }
 
-        // Anything the budget will not carry is named here, with where to find it. It used to be dropped
-        // in silence, which is how a cap of 12 MB came to be quietly discarding every 16 MB dump: the card
-        // looked complete, and nothing anywhere said the most useful file had been left behind.
-        var leftBehind = ArtifactsTooBigToAttach(bundle).ToList();
-        if (leftBehind.Count > 0)
+        // Anything too large to attach is named here and linked in a comment once it has been uploaded. It
+        // used to be dropped in silence, which is how a 12 MB cap came to be quietly discarding every
+        // 16 MB dump: the card looked complete, and nothing said the most useful file was missing.
+        var tooBig = ArtifactsTooBigToAttach(bundle).ToList();
+        if (tooBig.Count > 0)
         {
             text.AppendLine(
-                $"> **Not attached, too large for the {MaxAttachmentBytes / 1024 / 1024} MB budget:** "
-                    + string.Join(", ", leftBehind)
-                    + $". The local copies are in `{bundle.Directory}` on the user's machine."
+                "> **Too large to attach, so uploaded separately:** "
+                    + string.Join(", ", tooBig)
+                    + ". See the comment below for links."
             );
             text.AppendLine();
         }
@@ -535,22 +546,107 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     }
 
     /// <summary>
+    /// Uploads the artifacts too large to attach, and adds one comment with links to them.
+    ///
+    /// After the card exists, rather than before, and for the same reason Bloom does it this way: an upload
+    /// made before the card was created would be orphaned in the bucket if the creation then failed, and
+    /// the retry would upload it again. This way nothing reaches the bucket unless there is a card to point
+    /// at it.
+    ///
+    /// A failure here is reported on the card rather than swallowed. The dump is usually the most valuable
+    /// thing in a report, so "we could not get it to you, and here is where it is on the user's machine" is
+    /// worth far more than silence — which is what a missing dump used to be.
+    /// </summary>
+    private async Task UploadWhatCouldNotBeAttachedAsync(
+        string issueId,
+        QueuedBundle bundle,
+        CancellationToken cancellation
+    )
+    {
+        var tooBig = SortArtifacts(bundle).TooBig;
+        if (tooBig.Count == 0)
+            return;
+
+        var lines = new StringBuilder();
+        lines.AppendLine(
+            "**Files too large for a tracker attachment**, uploaded to Bloom's support bucket:"
+        );
+        lines.AppendLine();
+        var anyFailed = false;
+        foreach (var path in tooBig)
+        {
+            var name = Path.GetFileName(path);
+            var megabytes = SizeOrZero(path) / 1024.0 / 1024.0;
+            var url = await Protocol
+                .SupportFileUploader.TryUploadAsync(path, cancellation)
+                .ConfigureAwait(false);
+            if (url == null)
+            {
+                anyFailed = true;
+                lines.AppendLine(
+                    $"- `{name}` ({megabytes:F1} MB) — **upload failed.** Still on the user's machine at "
+                        + $"`{Path.Combine(bundle.Directory, name)}`."
+                );
+            }
+            else
+            {
+                lines.AppendLine($"- [{name}]({url}) ({megabytes:F1} MB)");
+            }
+        }
+        lines.AppendLine();
+        lines.AppendLine(
+            "*These are served to anyone holding the link, so treat the link as the only thing keeping "
+                + "them private — a deliberate trade, since it only appears on this card.*"
+        );
+        if (anyFailed)
+            lines.AppendLine(
+                Environment.NewLine
+                    + "*An upload that failed can be retried by hand from the folder named above; the "
+                    + "Doctor does not try again, because the card is already filed.*"
+            );
+
+        // Best effort: the card is already filed and its own contents are intact, so a comment that will
+        // not post must not turn a successful filing into a failure.
+        await CommentAsync(issueId, lines.ToString(), cancellation).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// The artifacts the budget cannot carry, by name, in the same order and by the same arithmetic the
     /// upload itself uses — so what the card says was left behind is what actually is.
     /// </summary>
-    private static IEnumerable<string> ArtifactsTooBigToAttach(QueuedBundle bundle)
+    private static IEnumerable<string> ArtifactsTooBigToAttach(QueuedBundle bundle) =>
+        SortArtifacts(bundle)
+            .TooBig.Select(p =>
+                $"`{Path.GetFileName(p)}` ({SizeOrZero(p) / 1024.0 / 1024.0:F1} MB)"
+            );
+
+    /// <summary>
+    /// Splits a bundle's artifacts into the ones we will attach to the card and the ones that have to be
+    /// uploaded to the bucket instead.
+    ///
+    /// One place decides, and both the card's text and the upload itself read the answer from here — so
+    /// what the card says happened to a file is what actually happened to it. They were separate walks
+    /// over the same list with the same arithmetic repeated, which is a standing invitation to drift.
+    /// </summary>
+    private static (List<string> ToAttach, List<string> TooBig) SortArtifacts(QueuedBundle bundle)
     {
+        var toAttach = new List<string>();
+        var tooBig = new List<string>();
         var budget = MaxAttachmentBytes;
         foreach (var path in bundle.ArtifactPaths)
         {
             if (!RobustFile.Exists(path))
                 continue;
             var size = SizeOrZero(path);
-            if (size > budget)
-                yield return $"`{Path.GetFileName(path)}` ({size / 1024.0 / 1024.0:F1} MB)";
-            else
-                budget -= size;
+            if (size > MaxSingleAttachmentBytes || size > budget)
+            {
+                tooBig.Add(path);
+                continue;
+            }
+            budget -= size;
+            toAttach.Add(path);
         }
+        return (toAttach, tooBig);
     }
 
     /// <summary>A file's size, or zero if it cannot be measured — which the callers treat as "free".</summary>

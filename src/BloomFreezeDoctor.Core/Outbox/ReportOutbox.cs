@@ -62,6 +62,14 @@ public readonly record struct SubmitResult
     /// <summary>The card created or commented on, when we got that far.</summary>
     public string? IssueId { get; init; }
 
+    /// <summary>
+    /// True if this opened a **new** card; false if it added a comment to one that already existed. The
+    /// daily cap counts only the former — see <see cref="ReportOutbox.MaxFilingsPerDay"/> — and the
+    /// submitter is the only thing that knows which happened, since it depends on what the tracker
+    /// already had.
+    /// </summary>
+    public bool CreatedNewCard { get; init; }
+
     /// <summary>What went wrong, for the metadata and the log.</summary>
     public string? Error { get; init; }
 }
@@ -146,7 +154,22 @@ public sealed class ReportOutbox
     /// <summary>Most bundles to keep, oldest evicted first. A cap on someone else's disk, so: modest.</summary>
     public const int MaxBundles = 20;
 
-    /// <summary>Most reports to file from one machine per day, before we assume something is wrong with us.</summary>
+    /// <summary>
+    /// Most **new cards** one machine may open per day on its own initiative, before we assume the fault is
+    /// ours rather than Bloom's.
+    ///
+    /// Two things are deliberately outside it, because the cap is about unsolicited volume and neither of
+    /// them is that:
+    ///
+    /// - **A report somebody asked for by pressing a button.** Refusing that would be absurd, and pressing
+    ///   it is also how anyone checks that filing works at all.
+    /// - **A comment on a card that already exists.** It is a few lines of text with no attachments, and
+    ///   counting it meant three "it happened again" notes could silence a machine for the rest of the day
+    ///   about problems nobody had heard of yet — the exact opposite of what the cap is for.
+    ///
+    /// So the number is small on purpose: it bounds the only thing that is actually expensive, which is
+    /// opening cards nobody asked for.
+    /// </summary>
     public const int MaxFilingsPerDay = 3;
 
     private readonly string _root;
@@ -198,7 +221,8 @@ public sealed class ReportOutbox
         string project,
         string? channel,
         string? reason,
-        int? processId = null
+        int? processId = null,
+        bool userRequested = false
     )
     {
         Directory.CreateDirectory(_root);
@@ -302,6 +326,7 @@ public sealed class ReportOutbox
             BloomChannel = channel,
             Reason = reason,
             ProcessId = processId,
+            UserRequested = userRequested,
             CommentOnFingerprint = belongsOnTheCardFor,
             RecurrenceNote = report.RecurrenceNote,
         };
@@ -486,12 +511,16 @@ public sealed class ReportOutbox
         {
             cancellation.ThrowIfCancellationRequested();
 
-            if (filedToday >= MaxFilingsPerDay)
+            if (filedToday >= MaxFilingsPerDay && SubjectToTheDailyCap(bundle))
             {
-                // Not an error, and not a reason to drop anything: the bundles stay pending and go out
-                // tomorrow. A machine producing more than this is telling us something we will hear
-                // from the first three reports anyway.
-                break;
+                // Not an error, and not a reason to drop anything: it stays pending and goes out tomorrow.
+                // A machine opening more cards than this on its own is telling us something we will hear
+                // from the first three anyway.
+                //
+                // `continue`, not `break`: the cap now applies per bundle rather than to the whole pass,
+                // so a capped report must not stop the queue behind it — the next one may be a comment or
+                // something a person actually asked for, and those are exempt.
+                continue;
             }
 
             // A bundle waiting on a sibling's card is skipped until that card exists. See
@@ -534,11 +563,14 @@ public sealed class ReportOutbox
                         {
                             State = BundleState.Filed,
                             IssueId = result.IssueId,
+                            CreatedNewCard = result.CreatedNewCard,
                             LastError = null,
                         }
                     );
                     filed++;
-                    filedToday++;
+                    // Only an unsolicited new card spends any of the daily allowance.
+                    if (result.CreatedNewCard && !metadata.UserRequested)
+                        filedToday++;
                     break;
 
                 case SubmitOutcome.RejectedPermanently:
@@ -674,6 +706,47 @@ public sealed class ReportOutbox
                 b.Metadata.State == BundleState.Filed
                 && b.Metadata.LastAttemptUtc.HasValue
                 && b.Metadata.LastAttemptUtc.Value > since
+                // Only unsolicited NEW CARDS count. See MaxFilingsPerDay for why a comment and a
+                // deliberately requested report are both outside the cap rather than merely cheap.
+                && b.Metadata.CreatedNewCard
+                && !b.Metadata.UserRequested
+            );
+    }
+
+    /// <summary>
+    /// Whether the daily cap has anything to say about this particular bundle.
+    ///
+    /// It applies only to a bundle that might open a new card nobody asked for. A report somebody
+    /// requested is exempt outright; so is one we can already see will only add a comment, because a card
+    /// for it exists locally.
+    ///
+    /// The remaining case is a bundle whose card may exist only on the tracker — filed from another machine,
+    /// or by an install since replaced — which we cannot know without asking. Those are treated as
+    /// potential new cards and capped. That errs towards the cap rather than towards a machine that talks
+    /// too much, and the cost of being wrong is a comment that waits until tomorrow.
+    /// </summary>
+    private bool SubjectToTheDailyCap(QueuedBundle bundle)
+    {
+        if (bundle.Metadata.UserRequested)
+            return false;
+        return !WillOnlyAddAComment(bundle);
+    }
+
+    /// <summary>
+    /// True when we can see locally that sending this bundle will add a comment to an existing card rather
+    /// than open a new one: either it is waiting on a named sibling's card, or another bundle for the same
+    /// problem has already been filed and its card is the one this will land on.
+    /// </summary>
+    private bool WillOnlyAddAComment(QueuedBundle bundle)
+    {
+        if (CardThisBundleBelongsOn(bundle) != null)
+            return true;
+        return List()
+            .Any(b =>
+                b.Directory != bundle.Directory
+                && b.Metadata.Fingerprint == bundle.Metadata.Fingerprint
+                && b.Metadata.State == BundleState.Filed
+                && !string.IsNullOrEmpty(b.Metadata.IssueId)
             );
     }
 
