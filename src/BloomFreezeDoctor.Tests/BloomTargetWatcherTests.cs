@@ -286,4 +286,39 @@ public class BloomTargetWatcherTests
             "with no debugger, no simulation and a real channel, a report is exactly what we want"
         );
     }
+
+    /// <summary>
+    /// `--force` exists to exercise filing on a machine that would otherwise decline, and the obvious way
+    /// to exercise the crash path is a deliberately simulated crash — so the one switch for testing filing
+    /// has to work on the paths that run when Bloom dies. It was applied at exactly one of the three
+    /// deciding sites, the freeze and zombie one, so the crash dump and the exit examination ignored it
+    /// entirely and a forced run of a simulated crash filed nothing at all.
+    ///
+    /// This test guards the shape that prevents that: one method answers the question, so a caller cannot
+    /// have its own shorter version. The supervisor's `MayFile` is `MayFileAReport() || force`, and what
+    /// this checks is the half that lives here — that a simulated run really does say no on its own, so
+    /// that the override is doing something rather than papering over an answer of yes.
+    /// </summary>
+    [Test]
+    public void A_simulated_run_says_no_so_that_force_has_something_to_override()
+    {
+        var session = new Protocol.DoctorSession
+        {
+            ProcessId = TestPid,
+            StartedAtUtc = DateTimeOffset.UtcNow,
+            Channel = "Alpha",
+            SimulatedFailure = "crashthread",
+        };
+        Assert.That(Protocol.DoctorSessionStore.TryWrite(session), Is.True, "setup");
+
+        var probe = new ScriptedProbe();
+        using var watcher = new BloomTargetWatcher(Facts(InstalledExe), probe);
+
+        Assert.That(watcher.MayFileAReport(), Is.False, "the guard must refuse");
+        Assert.That(
+            watcher.ReasonsFilingWouldNormallyBeBlocked(),
+            Has.Some.Contains("crashthread"),
+            "and it must say which rehearsal, since that is what the person overriding it is shown"
+        );
+    }
 }

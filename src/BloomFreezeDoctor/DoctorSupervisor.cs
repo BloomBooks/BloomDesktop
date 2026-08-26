@@ -313,6 +313,19 @@ public sealed class DoctorSupervisor : IDisposable
     /// slow rather than frozen.
     /// </summary>
     /// <summary>
+    /// Whether a report about this Bloom may be filed, honouring `--force`.
+    ///
+    /// Every path that files goes through here. `--force` used to be applied at exactly one of them — the
+    /// freeze and zombie path — so the two paths that run when Bloom has *died*, the crash dump and the
+    /// exit examination, silently ignored it. Since `--force` exists precisely to exercise filing on a
+    /// machine that would otherwise decline, and since a deliberately simulated crash is the obvious way
+    /// to test the crash path, the one switch for testing filing did not work on the paths most in need of
+    /// testing. That is the same shape of mistake as those two paths having their own shorter version of
+    /// the guards, which is why the answer is the same: one place decides.
+    /// </summary>
+    private bool MayFile(BloomTargetWatcher watcher) => watcher.MayFileAReport() || _forceFiling;
+
+    /// <summary>
     /// Why a report about this Bloom would not normally be filed, in words fit to show someone. Empty
     /// when nothing stands in the way.
     ///
@@ -782,7 +795,7 @@ public sealed class DoctorSupervisor : IDisposable
                                 Report = ReportReason.ExitedWithoutProof,
                                 Explanation = conclusion.Explanation,
                             },
-                            mayFile: watcher.MayFileAReport(),
+                            mayFile: MayFile(watcher),
                             _stopping.Token,
                             // The process has gone, so its health channel has gone with it. This is the
                             // last reading we took while it was alive, and the only way this report can
@@ -868,7 +881,7 @@ public sealed class DoctorSupervisor : IDisposable
                                 Explanation =
                                     "Bloom was crashing and asked to be dumped before it died",
                             },
-                            mayFile: watcher.MayFileAReport(),
+                            mayFile: MayFile(watcher),
                             _stopping.Token
                         )
                         .ConfigureAwait(false);
