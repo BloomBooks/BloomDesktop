@@ -96,7 +96,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
             // DumpType.Normal is what dotnet-dump calls a mini dump: small, and still enough for
             // ClrMD to walk managed stacks. Verified in the spike against a real Bloom.
             //
-            // **Kept deliberately, knowing what it costs** (John, BL-16719). Normal carries thread stacks
+            // **Chosen deliberately, knowing what it costs.** Normal carries thread stacks
             // but NOT the GC heap - measured at 16-17 MB against a 234 MB working set - so the analysis a
             // dump is usually wanted for is out of reach: no walking the object graph to the Task the UI
             // thread awaits, no `syncblk` to name a monitor's owner (and Windows' wait-chain API cannot see

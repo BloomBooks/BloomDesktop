@@ -311,8 +311,7 @@ namespace Bloom.FreezeDoctor
         ///
         /// Which operations get this is a judgement about how Bloom behaves, not something to infer from the
         /// code: "a request has run for a minute" is the same signal as a freeze, so nothing automatic can
-        /// tell legitimately-slow from wedged. The set was chosen deliberately (BL-16719) as the major
-        /// publishing operations — BloomPUB, ePUB, video and app creation, and uploading to or downloading
+        /// tell legitimately-slow from wedged. The set is deliberately just the major publishing operations — BloomPUB, ePUB, video and app creation, and uploading to or downloading
         /// from Bloom Library — because those routinely take minutes on a large book or a slow connection
         /// and are the ones that would otherwise be reported as freezes.
         /// </summary>
@@ -849,8 +848,8 @@ namespace Bloom.FreezeDoctor
         /// Doctor installed, and an unconditional pause here would make every crash worse for all of them to
         /// benefit the few. So: if nobody is watching, this returns immediately and costs nothing.
         ///
-        /// **And when nobody is watching, that is the end of it — Bloom does NOT dump itself.** Considered
-        /// and declined deliberately (John, BL-16719): with no Doctor running there is nothing to file the
+        /// **And when nobody is watching, that is the end of it — Bloom does NOT dump itself.** That is
+        /// deliberate, not an omission: with no Doctor running there is nothing to file the
         /// dump, so it would sit on a user's disk at 15-20 MB a crash waiting for somebody to think of
         /// asking for it. If that ever looks worth building, the shape that fits what already exists is to
         /// record the path in the session file - which is designed to outlive the process - so that a Doctor
