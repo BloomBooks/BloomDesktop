@@ -347,8 +347,14 @@ public sealed class WindowsExitEvidenceCollector
         try
         {
             var bootedAt = DateTime.Now - TimeSpan.FromMilliseconds(Environment.TickCount64);
-            // A boot after the process was last seen means the machine restarted in between.
-            if (bootedAt > diedAt.AddSeconds(-30))
+            // A boot comfortably after the process was last seen means the machine restarted in between.
+            // The slack has to run FORWARD: bootedAt is derived from a tick count and is approximate, and a
+            // boot is always in the past, so accepting one slightly EARLIER than the death would classify
+            // every Bloom that dies within the slack of startup as wreckage from before a restart - writing
+            // off startup crashes, which are among the ones we most want to hear about. A real restart
+            // clears 30 seconds easily, since shutting down takes longer than that and the death precedes
+            // it.
+            if (bootedAt > diedAt.AddSeconds(30))
                 return true;
 
             using var log = new EventLog("System");
