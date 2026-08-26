@@ -84,6 +84,21 @@ public sealed class DoctorSupervisor : IDisposable
     /// unusual.
     /// </summary>
     private readonly HashSet<string> _targetProcessNames = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The process names this Doctor will watch. Exposed so a test can assert on the scoping, which is
+    /// otherwise only observable by running a Doctor next to a real Bloom of another channel and seeing
+    /// whether it adopts it — not a thing to discover the hard way, since with `--force` it would then be
+    /// willing to file cards about somebody's real work.
+    /// </summary>
+    public IReadOnlyCollection<string> TargetProcessNamesForTests
+    {
+        get
+        {
+            lock (_lock)
+                return _targetProcessNames.ToList();
+        }
+    }
     private readonly bool _forceFiling;
     private readonly Dictionary<int, BloomTargetWatcher> _watchers = new();
 
@@ -160,7 +175,8 @@ public sealed class DoctorSupervisor : IDisposable
         string targetProcessName = DefaultTargetProcessName,
         bool forceFiling = false,
         ReportOutbox? outbox = null,
-        bool neverEndZombies = false
+        bool neverEndZombies = false,
+        bool targetNameWasGiven = false
     )
     {
         _project = project;
@@ -168,7 +184,14 @@ public sealed class DoctorSupervisor : IDisposable
         _targetProcessNames.Add(targetProcessName);
         // Only when nobody named a specific target: `--target-name` exists so the freeze stub can stand in
         // for Bloom, and widening that would have us adopt a real Bloom in the middle of a test.
-        if (targetProcessName == DefaultTargetProcessName)
+        //
+        // That test used to be "is the name the default value", which cannot express the case it most
+        // needed to: `--target-name Bloom` equals the default, so it still widened to every channel. On a
+        // developer's machine that also runs a real Alpha - an ordinary arrangement, and exactly where the
+        // simulator is used - a hand-started Doctor would therefore watch the developer's real Bloom, and
+        // with `--force` would have been willing to file cards about it. Asking whether the flag was GIVEN
+        // is what "nobody named a specific target" actually means.
+        if (!targetNameWasGiven && targetProcessName == DefaultTargetProcessName)
         {
             // The same channel folders StatusForm.FindBloomExecutable already looks in.
             _targetProcessNames.Add("BloomAlpha");
