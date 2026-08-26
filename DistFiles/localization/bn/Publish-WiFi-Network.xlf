@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hotspot">
         <source xml:lang="en">Start a phone hotspot</source>
-        <target xml:lang="bn" state="translated">ফোনের হটস্পট চালু করুন </target>
+        <target xml:lang="bn" state="translated">ফোনের হটস্পট চালু করুন</target>
         <note>ID: publish.help.tips.tempWiFi.hotspot</note>
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hotspot.text">
@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hostednetwork">
         <source xml:lang="en">Start a network using your laptop</source>
-        <target xml:lang="bn" state="translated">আপনার ল্যাপটপ ব্যবহার করে একটি নেটওয়ার্ক চালু করুন </target>
+        <target xml:lang="bn" state="translated">আপনার ল্যাপটপ ব্যবহার করে একটি নেটওয়ার্ক চালু করুন</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork</note>
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hostednetwork.text">
