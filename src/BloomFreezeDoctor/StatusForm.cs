@@ -21,6 +21,7 @@ public sealed class StatusForm : Form
     private readonly Label _lastEvent = new();
     private readonly Button _restartBloom = new();
     private readonly Button _showReport = new();
+    private readonly Button _openCard = new();
     private readonly Button _reportNow = new();
     private readonly NotifyIcon _tray = new();
     private readonly System.Windows.Forms.Timer _ctrlWatcher = new();
@@ -82,6 +83,11 @@ public sealed class StatusForm : Form
         _showReport.Visible = false;
         _showReport.Click += (_, _) => OpenSavedReportFolder();
 
+        _openCard.Text = "Open card";
+        _openCard.AutoSize = true;
+        _openCard.Visible = false;
+        _openCard.Click += (_, _) => OpenFiledCard();
+
         // Both in a strip, so adding one did not have to disturb the grid or move "Report now" off the
         // right-hand side.
         var leftButtons = new FlowLayoutPanel
@@ -94,6 +100,7 @@ public sealed class StatusForm : Form
         };
         leftButtons.Controls.Add(_restartBloom);
         leftButtons.Controls.Add(_showReport);
+        leftButtons.Controls.Add(_openCard);
         layout.Controls.Add(leftButtons, 0, 2);
 
         // The card asks for this to be revealed by holding CTRL, so it is available for testing and for
@@ -144,7 +151,11 @@ public sealed class StatusForm : Form
         _supervisor.ZombieEnded += OnZombieEnded;
         // Clicking the balloon is the obvious thing to do when it tells you a report was saved, so make
         // that open the folder. No new button, and therefore no change to the window's layout.
-        _tray.BalloonTipClicked += (_, _) => OpenSavedReportFolder();
+        // Whichever of the two the balloon was actually about. It used to call OpenSavedReportFolder
+        // unconditionally, and a filed report clears that folder - so clicking the balloon that announced a
+        // filing did nothing whatsoever, which is the least helpful possible response to somebody acting on
+        // a notification.
+        _tray.BalloonTipClicked += (_, _) => OpenWhateverTheLastReportWas();
 
         if (startMinimised)
         {
@@ -321,6 +332,11 @@ public sealed class StatusForm : Form
         // should still be offering to open that older folder.
         _savedReportFolder = null;
         _showReport.Visible = false;
+        // The card exists now, so offer to open it. Until this the id was on screen and nothing else: to
+        // actually look at what had just been filed you had to read the id off the window, go and find the
+        // tracker, and type it in.
+        _filedIssueId = issueId;
+        _openCard.Visible = true;
         _restartBloom.Visible = true;
         _lastEvent.Text = $"Reported as {issueId}.";
         // Something has happened, so now the window may be seen. Until this moment the Doctor has been
@@ -330,8 +346,8 @@ public sealed class StatusForm : Form
         // activator, which is what made a toast with a button expensive before we had a real window.
         _tray.BalloonTipTitle = "Bloom problem reported";
         _tray.BalloonTipText =
-            $"The Freeze Doctor sent a report about Bloom ({issueId}). You can restart Bloom from the "
-            + "Freeze Doctor window.";
+            $"The Freeze Doctor sent a report about Bloom ({issueId}). Click here to open it, or restart "
+            + "Bloom from the Freeze Doctor window.";
         _tray.ShowBalloonTip(10_000);
     }
 
@@ -428,6 +444,51 @@ public sealed class StatusForm : Form
     /// Opens the folder holding the last unfiled report. Does nothing if there is none, or if it has since
     /// been sent or removed - the balloon that offers this is not necessarily the one still on screen.
     /// </summary>
+    /// <summary>The card the last filed report went to, for <see cref="OpenFiledCard"/>. Null if none.</summary>
+    private string? _filedIssueId;
+
+    /// <summary>
+    /// Shows the user the last report, in whatever form it took: the tracker card if it was filed, and the
+    /// folder on disk if it was only gathered. One of the two is always the right answer, which is why the
+    /// balloon and the buttons can share this.
+    /// </summary>
+    private void OpenWhateverTheLastReportWas()
+    {
+        if (!string.IsNullOrEmpty(_filedIssueId))
+            OpenFiledCard();
+        else
+            OpenSavedReportFolder();
+    }
+
+    /// <summary>
+    /// Opens the tracker card in the default browser.
+    ///
+    /// The balloon that announces a filing lasts ten seconds and the window only ever showed the id as
+    /// text, so anyone wanting to see what had actually been reported had to read the id, find the tracker
+    /// and type it in — which is a poor end to a feature whose whole point is producing that card. Asked
+    /// for by the developer after watching a real report get filed and having no way to look at it.
+    /// </summary>
+    private void OpenFiledCard()
+    {
+        var issueId = _filedIssueId;
+        if (string.IsNullOrEmpty(issueId))
+            return;
+        try
+        {
+            Process.Start(
+                new ProcessStartInfo("https://issues.bloomlibrary.org/youtrack/issue/" + issueId)
+                {
+                    UseShellExecute = true,
+                }
+            );
+        }
+        catch (Exception)
+        {
+            // No browser, or the shell refused: the id is on screen either way, which is what this was
+            // saving the user from having to use.
+        }
+    }
+
     private void OpenSavedReportFolder()
     {
         var folder = _savedReportFolder;
