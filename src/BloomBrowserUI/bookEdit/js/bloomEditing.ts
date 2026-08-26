@@ -59,12 +59,7 @@ import { showInvisibles, hideInvisibles } from "./showInvisibles";
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
 import axios from "axios";
-import {
-    postBoolean,
-    postJson,
-    postString,
-    postThatMightNavigate,
-} from "../../utils/bloomApi";
+import { post, postBoolean, postJson, postString } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 
 import { hookupLinkHandler } from "../../utils/linkHandler";
@@ -1245,30 +1240,50 @@ export function bootstrap() {
     // not to generate them than suppress them if we can help it.
     setupWheelZooming();
 }
+// The minimum time between two zoom requests to the server, in milliseconds.
+// One request per wheel notch could freeze Bloom for minutes (BL-16762): each request
+// runs on the UI thread and calls into the WebView2, while the browser process sends
+// each Ctrl key event to the host synchronously and waits for an answer.
+const kZoomRequestIntervalMs = 150;
+// The wheel notches that we have not sent yet. A positive number zooms in.
+let pendingZoomNotches = 0;
+// Set while we wait out kZoomRequestIntervalMs after a zoom request.
+let zoomRequestTimer: number | undefined;
+
+// Send the notches that came in since the last request, then wait
+// kZoomRequestIntervalMs before we send another. If no notch came in, stop the timer,
+// so that the next notch goes out at once.
+function sendPendingZoom() {
+    const notches = pendingZoomNotches;
+    pendingZoomNotches = 0;
+    if (notches === 0) {
+        zoomRequestTimer = undefined;
+        return;
+    }
+    post("edit/pageControls/zoomBy?notches=" + notches);
+    zoomRequestTimer = window.setTimeout(
+        sendPendingZoom,
+        kZoomRequestIntervalMs,
+    );
+}
+
 // Attach a function to implement zooming on mouse wheel with ctrl.
 // Setting this up should be one of the last things we do when loading the page...
 // see the comment above where it is called.
-// (Unfortunately, this tends to make zooming feel rather sluggish...we could
-// try to optimize that, possibly by trying to keep track of how many wheel events
-// we got and using bigger increments...it should be safe to set up a handler
-// that just counts them, as long as we don't initiate a new page load until we
-// get done loading this one. Or maybe there are some events in page load that
-// we could abort if we already got another zoom event. For now, just trying
-// to stop it crashing.)
 function setupWheelZooming() {
     $("body").on("wheel", (e) => {
         const theEvent = e.originalEvent as WheelEvent;
         if (!theEvent.ctrlKey) return;
-        let command: string = "";
         // Note the direction of the zoom is opposite the direction of the scroll.
         if (theEvent.deltaY < 0) {
-            command = "edit/pageControls/zoomPlus";
+            pendingZoomNotches++;
         } else if (theEvent.deltaY > 0) {
-            command = "edit/pageControls/zoomMinus";
+            pendingZoomNotches--;
         }
-        if (command !== "") {
-            // Zooming re-loads the page (because of a text-over-picture issue)
-            postThatMightNavigate(command);
+        // Nothing is in flight, so send this notch now. Only a fast spin accumulates
+        // notches, and then the server gets one big increment instead of many small ones.
+        if (zoomRequestTimer === undefined) {
+            sendPendingZoom();
         }
         // Setting the zoom is all we want to do in this context.
         e.preventDefault();
