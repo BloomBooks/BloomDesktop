@@ -343,16 +343,12 @@ namespace Bloom.FreezeDoctor
             {
                 _previousActivity = Volatile.Read(ref _statedActivity);
                 _whatIPublished = whatBloomIsDoing ?? "";
-                try
+                Publish(() =>
                 {
                     SetActivity(whatBloomIsDoing);
                     if (Interlocked.Increment(ref _longOperationDepth) == 1)
                         SetLongOperation(true);
-                }
-                catch (Exception)
-                {
-                    // Diagnostics must never break the operation they are describing.
-                }
+                });
             }
 
             public void Dispose()
@@ -360,7 +356,7 @@ namespace Bloom.FreezeDoctor
                 if (_disposed)
                     return; // a double Dispose must not decrement twice and cancel somebody else's patience
                 _disposed = true;
-                try
+                Publish(() =>
                 {
                     if (Interlocked.Decrement(ref _longOperationDepth) == 0)
                         SetLongOperation(false);
@@ -375,8 +371,7 @@ namespace Bloom.FreezeDoctor
                         ) == _whatIPublished
                     )
                         _channel?.SetActivity(_previousActivity);
-                }
-                catch (Exception) { }
+                });
             }
         }
 
