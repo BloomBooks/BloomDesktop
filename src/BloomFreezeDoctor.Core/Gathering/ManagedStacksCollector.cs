@@ -112,6 +112,12 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
             client.WriteDump(DumpType.Normal, dumpPath, logDumpGeneration: false);
             dumpTimer.Stop();
 
+            // The dump file now exists, and nothing below needs the process: LoadDump and everything
+            // after it read the FILE. So if this is a dying Bloom waiting on us, this is the moment it
+            // may go - holding it longer makes it wait on work it has no stake in, including uploading
+            // its own dump. See GatherContext.TargetNoLongerNeeded.
+            context.TargetNoLongerNeeded?.Invoke();
+
             var size = new FileInfo(dumpPath).Length;
             text.AppendLine(
                 $"Dump written by the target's own runtime: {size / 1024.0 / 1024.0:F1} MB in "
@@ -179,6 +185,9 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
                 return null;
             using var runtime = clr.CreateRuntime();
             var headline = AppendThreads(text, runtime, context.IsAboutAFreeze);
+            // Unlike the dump path, this one has been reading the LIVE process, so it could not release
+            // the target any earlier than this.
+            context.TargetNoLongerNeeded?.Invoke();
             return new ReportSection
             {
                 Title = Title,

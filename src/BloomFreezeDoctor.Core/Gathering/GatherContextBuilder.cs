@@ -26,7 +26,8 @@ public static class GatherContextBuilder
         bool processWasAlive,
         string artifactDirectory,
         string? logDirectory = null,
-        Protocol.DoctorChannelSnapshot? lastSeenPublishedState = null
+        Protocol.DoctorChannelSnapshot? lastSeenPublishedState = null,
+        Action? targetNoLongerNeeded = null
     )
     {
         // Bloom's own session file, when there is one, is better than anything we can work out from
@@ -44,6 +45,7 @@ public static class GatherContextBuilder
             CdpPort = session is { CdpPort: > 0 } ? session.CdpPort : FindCdpPort(target),
             Session = session,
             PublishedState = ReadPublishedState(target.ProcessId) ?? lastSeenPublishedState,
+            TargetNoLongerNeeded = targetNoLongerNeeded,
         };
     }
 

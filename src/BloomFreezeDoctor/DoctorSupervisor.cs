@@ -587,7 +587,8 @@ public sealed class DoctorSupervisor : IDisposable
         DetectorVerdict verdict,
         bool mayFile,
         CancellationToken cancellation,
-        Protocol.DoctorChannelSnapshot? lastSeenPublishedState = null
+        Protocol.DoctorChannelSnapshot? lastSeenPublishedState = null,
+        Action? targetNoLongerNeeded = null
     )
     {
         var alive = IsAlive(facts.ProcessId);
@@ -601,7 +602,8 @@ public sealed class DoctorSupervisor : IDisposable
             verdict,
             alive,
             artifacts,
-            lastSeenPublishedState: lastSeenPublishedState
+            lastSeenPublishedState: lastSeenPublishedState,
+            targetNoLongerNeeded: targetNoLongerNeeded
         );
 
         var report = await new EvidenceGatherer()
@@ -886,7 +888,12 @@ public sealed class DoctorSupervisor : IDisposable
                                     "Bloom was crashing and asked to be dumped before it died",
                             },
                             mayFile: MayFile(watcher),
-                            _stopping.Token
+                            _stopping.Token,
+                            // Release Bloom the moment its dump exists, rather than when this whole gather
+                            // finishes. Everything after the dump reads the file, so waiting for the rest -
+                            // every other collector, queueing, and uploading the dump itself - would hold a
+                            // dying Bloom open for work it has no stake in.
+                            targetNoLongerNeeded: watcher.SignalDumpComplete
                         )
                         .ConfigureAwait(false);
                 }
