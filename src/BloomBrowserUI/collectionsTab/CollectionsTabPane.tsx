@@ -39,6 +39,13 @@ import {
 } from "../react_components/makeReaderTemplateBloomPackDialog";
 import { AboutDialogLauncher } from "../react_components/aboutDialog";
 import { RadioChoiceDialog } from "./RadioChoiceDialog";
+import {
+    kMinPaneSizePx,
+    restoreSizes,
+    savePersistedSplitterSizes,
+    SplitterSizes,
+    usePersistedSplitterSizes,
+} from "../utils/persistedSplitterSizes";
 
 const kResizerSize = 10;
 
@@ -51,6 +58,22 @@ type CollectionInfo = {
     isRemovableFolder: boolean;
     filter?: (book: IBookInfo) => boolean;
 };
+
+// These give the two panes about the same ratio as in the Legacy view.
+const kDefaultSplitterSizes: SplitterSizes = {
+    widths: [31, 50],
+    heights: [1, 1],
+};
+
+// Used instead of the saved heights when there are no source collections to show, so that
+// the bottom pane gets no space at all.
+const kNoBottomPaneHeights = [1, 0];
+
+// App.tsx renders only the active tab, so this pane is unmounted and remounted every time the
+// user leaves the Collections tab and comes back. Keeping the splitter sizes outside the
+// component is what makes a custom layout survive that (BL-16768); saving them in this user
+// setting is what makes it survive restarting Bloom.
+const kSplitterSizesSettingName = "CollectionTabSplitterSizes";
 
 export const CollectionsTabPane: React.FunctionComponent = () => {
     // Temporary: notify c# about clicks so WinForms menus can close.
@@ -168,18 +191,18 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
 
     const [draggingSplitter, setDraggingSplitter] = useState(false);
 
-    // Initially (when Bloom first starts, until we persist splitter settings) the vertical
-    // splitter between the editable collection and the others is set to give them equal space.
-    // When the user drags the splitter, we use a callback to update this, so it will be right
-    // if we need to use it again.
-    // It is passed to the vertical splitter as the "initialSizes", which is ignored except
+    // The sizes the splitters should have: whatever the user last chose.
+    // They are passed to the splitters as their "initialSizes", which is ignored except
     // for the very first render of a particular SplitPane. So to get it to take effect later,
     // we have to modify the key of the SplitPane, forcing React to create a whole new one.
     // The only time we currently need to do this is when Bloom is restored from being
-    // minimized, which somehow puts the vertical splitter into a weird state where apparently
+    // minimized, which somehow puts the top/bottom splitter into a weird state where apparently
     // both panes are collapsed and there is nothing to see. As far as I can tell, all other
     // changes to window size are handled nicely by the SplitPane.
-    const [splitHeights, setSplitHeights] = useState([1, 1]);
+    const savedSplitterSizes = usePersistedSplitterSizes(
+        kSplitterSizesSettingName,
+        kDefaultSplitterSizes,
+    );
     const [generation, setGeneration] = useState(0);
     useSubscribeToWebSocketForEvent("window", "restored", () => {
         setGeneration((old) => old + 1);
@@ -315,16 +338,26 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         });
     }, []);
     const haveNoSources = collections && collections.length === 1;
+    // If we've got the list of collections and there are no source collections,
+    // we want to set the splitter to hide the bottom pane. That is our own doing rather
+    // than a size the user chose, so it deliberately skips the minimum in restoreSizes().
+    const splitHeights = haveNoSources
+        ? kNoBottomPaneHeights
+        : savedSplitterSizes &&
+          restoreSizes(savedSplitterSizes.heights, window.innerHeight);
+    const splitWidths =
+        savedSplitterSizes &&
+        restoreSizes(savedSplitterSizes.widths, window.innerWidth);
     useEffect(() => {
-        // If we've got the list of collections and there are no source collections,
-        // we want to set the splitter to hide the bottom pane.
+        // A new key is the only way to make a SplitPane notice a change of initialSizes.
         if (haveNoSources) {
-            setSplitHeights([1, 0]);
             setGeneration((old) => old + 1);
         }
     }, [haveNoSources]);
 
-    if (!collections) {
+    // We can't render the splitters until we know what sizes to give them, because a
+    // SplitPane only pays attention to its initialSizes on its very first render.
+    if (!collections || !splitHeights || !splitWidths) {
         return <div />;
     }
 
@@ -516,9 +549,8 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         >
             <SplitPane
                 split="vertical"
-                // This gives the two panes about the same ratio as in the Legacy view.
-                // Enhance: we'd like to save the user's chosen width.
-                initialSizes={[31, 50]}
+                initialSizes={splitWidths}
+                minSizes={kMinPaneSizePx}
                 resizerOptions={{
                     css: {
                         width: `${kResizerSize}px`,
@@ -534,6 +566,11 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                     onDragStarted: () => {
                         setDraggingSplitter(true);
                     },
+                    onSaveSizes: (sizes) => {
+                        savePersistedSplitterSizes(kSplitterSizesSettingName, {
+                            widths: sizes,
+                        });
+                    },
                 }}
                 // onDragFinished={() => {
                 //     alert("stopped dragging");
@@ -546,6 +583,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                     // TODO: the splitter library lets us specify a height, but it doesn't apply it correctly an so the pane that follows
                     // does not get pushed down to make room for the thicker resizer
                     initialSizes={splitHeights}
+                    minSizes={kMinPaneSizePx}
                     resizerOptions={{
                         css: {
                             height: `${kResizerSize}px`,
@@ -561,7 +599,10 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                             setDraggingSplitter(true);
                         },
                         onSaveSizes: (sizes) => {
-                            setSplitHeights(sizes);
+                            savePersistedSplitterSizes(
+                                kSplitterSizesSettingName,
+                                { heights: sizes },
+                            );
                         },
                     }}
                 >
