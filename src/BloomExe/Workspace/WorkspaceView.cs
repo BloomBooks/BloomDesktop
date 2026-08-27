@@ -1871,21 +1871,11 @@ window.showWorkspaceInitializationFailure = function(message) {
         /// Ask the tab bar to stop offering the tabs (or to offer them again).
         /// </summary>
         /// <remarks>
-        /// This is ADVISORY, and callers must not treat it as a lock. Two reasons:
-        /// it only pushes new tab states to the React top bar over a websocket, so there is a
-        /// round trip and a re-render before a click is actually refused; and nothing consults
-        /// _tabsEnabled when a workspace/selectTab request arrives, so a request sent before the
-        /// browser caught up (or by any other means) is still acted on. In particular, a caller
-        /// that disables the tabs while handling a selectTab request has no chance at all of
-        /// stopping a second click: that request is already queued behind this one on the UI
-        /// thread. See BL-16766, where a double-click on a tab consequently reached code that a
-        /// comment asserted was unreachable.
-        ///
-        /// Before the top bar became a single React component (Dec 2025) this set
-        /// _tabStrip.Enabled on a WinForms control, which did swallow the click synchronously and
-        /// in-process — so code and comments written before then may assume a guarantee that no
-        /// longer exists. Whatever must not happen mid-operation has to be handled where it
-        /// happens, not prevented here.
+        /// ADVISORY, not a lock: this only pushes new tab states to the React top bar over a
+        /// websocket, and nothing checks _tabsEnabled when a workspace/selectTab request arrives.
+        /// So a click made (or already in flight) before the browser catches up still gets acted
+        /// on — see BL-16766. Whatever must not happen mid-operation has to be handled where it
+        /// happens, not assumed to have been prevented here.
         /// </remarks>
         public void SetTabsEnabled(bool enable)
         {

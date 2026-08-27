@@ -63,10 +63,9 @@ public class EditingStateMachine
     /// <param name="saveBook">Called to save the current state of the DOM to disk.</param>
     /// <param name="hidePage">Called to make the transition to NoPage (when edit tab is hidden).</param>
     /// <param name="enableStateTransitions">Called to ask the UI to stop offering actions that would result in new state
-    /// transitions, because they are not valid in SavePending or SavedAndStripped. Note that this is only a request:
-    /// in the live app it ends up at WorkspaceView.SetTabsEnabled, which cannot actually stop a click that is already
-    /// on its way (see the remarks there, and BL-16766). So every transition must still refuse, or defer, an invalid
-    /// request when one arrives — do not rely on this having prevented it.</param>
+    /// transitions, because they are not valid in SavePending or SavedAndStripped. It is only a request, and does not
+    /// take effect soon enough to stop a click already on its way (see WorkspaceView.SetTabsEnabled and BL-16766), so
+    /// every transition must still refuse or defer an invalid request when one arrives.</param>
     public EditingStateMachine(
         Action<string> navigate,
         Action<string> requestPageSave,

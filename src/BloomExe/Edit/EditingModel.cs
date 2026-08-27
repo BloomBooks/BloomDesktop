@@ -428,22 +428,9 @@ namespace Bloom.Edit
                         // edit tab, but if we somehow are, we take the branch above; and if we're
                         // Editing we take the branch above too.)
                         //
-                        // This comment used to claim SavePending and SavedAndStripped were
-                        // impossible here, because "we disable the tab control while we're in
-                        // SavePending or SavedAndStripped". Disabling the tabs is still requested
-                        // — the state machine calls SetTabsEnabled(false) — but it has not been
-                        // able to prevent a click since the top bar became a React component
-                        // (Dec 2025). It used to set _tabStrip.Enabled, which really did swallow
-                        // the click, synchronously and in this process. Now it only pushes new tab
-                        // states to the browser over a websocket, and nothing checks _tabsEnabled
-                        // when a workspace/selectTab request arrives. Worse, the disable is
-                        // requested from inside this very handler, i.e. inside the first click's
-                        // own selectTab request; a second click's request is already queued behind
-                        // it on the UI thread, so it necessarily runs before the browser could
-                        // have received the push, let alone re-rendered. An ordinary
-                        // double-click on a tab therefore lands here in SavePending every time,
-                        // which is what BL-16766 was. See the note on
-                        // WorkspaceView.SetTabsEnabled.
+                        // We do ask for the tabs to be disabled while saving, but that doesn't take
+                        // effect soon enough to stop a second click on a tab, so SavePending really
+                        // does happen here — that was BL-16766. See WorkspaceView.SetTabsEnabled.
                         //
                         // Navigating: we clicked the Edit tab and then immediately something else,
                         // or clicked another tab during the fraction of a second while Bloom is
