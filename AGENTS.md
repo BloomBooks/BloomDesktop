@@ -1,3 +1,17 @@
+# ⚠️ TEMPORARY (as of 2026-08-27): new work targets Version6.5, not master
+
+We are in a transition phase. Unless the user says otherwise:
+
+- Branch new work off **`Version6.5`**, not `master`, even if you are sitting on `master` now.
+- Open PRs with **`Version6.5`** as the base branch.
+- Assume `Version6.5` is the right target rather than asking just to confirm it. If something
+  about the task genuinely makes the target unclear, it is fine to ask — but say that you are
+  assuming `Version6.5` when you do.
+
+Delete this whole section (it exists only on master) once master is the normal target again.
+
+---
+
 This project has a web front-end at src/BloomBrowserUI.
 The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 
