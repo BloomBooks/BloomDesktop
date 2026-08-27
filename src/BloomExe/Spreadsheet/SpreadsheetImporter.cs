@@ -192,7 +192,12 @@ namespace Bloom.Spreadsheet
             {
                 if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
                 {
-                    return (Browser)
+                    // Invoke returns whatever the delegate returned, and this delegate is async, so what
+                    // comes back is the Task it returned at its first await -- not a Browser. Casting it
+                    // straight to Browser was an InvalidCastException waiting to happen, and would also
+                    // have handed back a browser that did not exist yet. Await the Task instead, the way
+                    // GetMd5Async does below. (BL-16773)
+                    return await (Task<Browser>)
                         ControlForInvoke.Invoke(new GetBrowserDelegate(GetBrowserAsync));
                 }
                 // Todo Linux: I'm choosing not to do BrowserMaker.MakeBrowser here, because
@@ -202,6 +207,15 @@ namespace Bloom.Spreadsheet
                 // about to drop. So if we want this on Linux, we'll have to test carefully there,
                 // and possibly make a new overload of NavigateAndWaitUntilDone if the wait code here
                 // is not good enough.
+                //
+                // This browser is created on whatever thread we are on, and is then used across the
+                // awaits below, so that thread has to be an STA thread with a message loop or WebView2
+                // cannot initialize at all. Two arrangements provide that, and there is no third caller:
+                // in the app, ControlForInvoke is set and the block above put us on the UI thread; in the
+                // console `spreadsheetImport` verb, ControlForInvoke is null but the command runs on the
+                // STA main thread inside Program.RunConsoleCommandLoop's message loop, and its awaits
+                // resume there. Before that loop existed, console import was exposed to exactly the
+                // failure bulk upload hit in BL-16767. See ConsoleCommandLoopTests. (BL-16773)
 #if __MonoCS__
                 _browser = new GeckoFxBrowser();
 #else
