@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
-import { isAiEditableImageSrc } from "./aiEditorImageFormats";
+import { isAiEditableImageSrc } from "./aiImageEditorImageFormats";
 
-// Unit tests for isAiEditableImageSrc (see aiEditorImageFormats.ts), the front-end gate that
+// Unit tests for isAiEditableImageSrc (see aiImageEditorImageFormats.ts), the front-end gate that
 // keeps "Edit with AI..." disabled for formats the editor can't open. It works off the src's
 // final extension, ignoring any path prefix and cache-busting query string / hash.
 describe("isAiEditableImageSrc", () => {

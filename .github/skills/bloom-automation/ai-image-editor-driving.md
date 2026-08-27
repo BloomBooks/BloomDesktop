@@ -2,7 +2,7 @@
 
 How to launch, drive, and verify the **"Edit with AI…"** feature end-to-end against a real
 running `Bloom.exe`, at **zero cost** (no OpenRouter calls). This is a companion to
-`SKILL.md`; it covers the parts unique to the AI editor — the linked editor dev server, the
+`SKILL.md`; it covers the parts unique to the AI image editor — the linked editor dev server, the
 free dummy model, the three-frame topology, and how to verify a commit persisted correctly.
 
 Reusable driver: **`driveAiImageEditor.mjs`** in this folder.
@@ -27,13 +27,13 @@ Reusable driver: **`driveAiImageEditor.mjs`** in this folder.
 ```bash
 ./go.sh --with bloom-ai-image-tools=D:/bloom-ai-image-tools > /tmp/go-bloom.log 2>&1   # background
 until grep -qE "BLOOM_AUTOMATION_READY|exited shortly after" /tmp/go-bloom.log; do sleep 3; done
-grep -E "BLOOM_AUTOMATION_READY|AI editor: live dev server" /tmp/go-bloom.log
-# => [go] AI editor: live dev server at http://localhost:3000/ (HMR).
+grep -E "BLOOM_AUTOMATION_READY|AI Image Editor: live dev server" /tmp/go-bloom.log
+# => [go] AI Image Editor: live dev server at http://localhost:3000/ (HMR).
 # => [exe] BLOOM_AUTOMATION_READY {"processId":...,"httpPort":8092,"cdpPort":8094}
 ```
 
 - `--with bloom-ai-image-tools=<path>` runs the editor's **own Vite dev server** and points
-  Bloom's `BLOOM_AI_EDITOR_URL` at it (full HMR on the editor). **Pass the explicit `=<path>`**:
+  Bloom's `BLOOM_AI_IMAGE_EDITOR_URL` at it (full HMR on the editor). **Pass the explicit `=<path>`**:
   auto-discovery only looks at paths relative to the Bloom worktree and won't find a checkout
   elsewhere (e.g. `D:/bloom-ai-image-tools`).
 - Editor-side `.ts`/`.tsx` edits hot-reload; Bloom-side C# edits hot-reload for method bodies
@@ -48,7 +48,7 @@ shell page  (top, url .../bloom/…Temp/bloomXXXX.htm)
 ├─ toolbox
 ├─ pageList
 ├─ page                     ← current page content (editable images live here)
-└─ ai-editor-overlay iframe ← the editor app, url http://localhost:3000/?mode=bloom-iframe
+└─ ai-image-editor-overlay iframe ← the editor app, url http://localhost:3000/?mode=bloom-iframe
                               (only present while the overlay is open)
 ```
 
@@ -58,15 +58,15 @@ shell page  (top, url .../bloom/…Temp/bloomXXXX.htm)
 ## 3. Open the overlay the *real* way (so the commit handler is live)
 
 Right-click the canvas element → **"Edit with AI…"**. Loading the iframe directly (as the
-`bloom-exe-ai-editor-open.uitest.ts` smoke test does) does **not** register
-`aiEditorOverlay.ts`'s postMessage handler, so the commit + current-page save path wouldn't run.
+`bloom-exe-ai-image-editor-open.uitest.ts` smoke test does) does **not** register
+`aiImageEditorOverlay.ts`'s postMessage handler, so the commit + current-page save path wouldn't run.
 
 **The overlay does not appear on the same tick as the click.** The menu command posts
 `aiImageEditor/saveThenLaunch`, which makes C# save the current page — reloading the `page`
 frame — and then, *once the reloaded page reports back*, call
 `workspaceBundle.openAiImageEditor(...)` in the shell (BL-16682; the saved book DOM has to be
 current or the editor opens with an empty "Image to Edit" slot). So the wait spans a whole page
-load: **wait for the overlay**, e.g. `await page.waitForSelector("#ai-editor-overlay iframe")`,
+load: **wait for the overlay**, e.g. `await page.waitForSelector("#ai-image-editor-overlay iframe")`,
 and don't re-use any content-frame handle taken before the click — that frame is gone.
 
 Note also that the overlay itself belongs to the **shell**, not the `page` frame, so it survives
