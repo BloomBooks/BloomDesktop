@@ -56,8 +56,9 @@ namespace Bloom
 
         // When set (via CreateWithInjectedEnvironment), InitWebView uses this already-created environment
         // instead of making its own. Lets OffScreenBrowser share one environment — one browser process,
-        // user-data folder, and HTTP cache — across the fresh browser it makes per page, thread-safely and
-        // without the global shared-environment batch statics.
+        // user-data folder, and HTTP cache — across the fresh browser it makes per page, thread-safely:
+        // the environment belongs to the instance that owns it, so instances on different threads never
+        // contend, and nothing global has to be set for the duration of a batch.
         private CoreWebView2Environment _injectedEnvironment;
 
         /// <summary>
@@ -351,50 +352,6 @@ namespace Bloom
 
         static int dataFolderCounter = 0;
 
-        // When set (via BeginSharedEnvironmentBatch), all WebView2 browsers created during the batch
-        // share ONE CoreWebView2Environment — i.e. one browser process, one user-data folder, and one
-        // HTTP cache — instead of each creating its own. The first browser of the batch creates the
-        // environment; the rest reuse it. Each browser still gets its own fresh CoreWebView2 control
-        // (fresh renderer), so this does NOT reintroduce the single-control reuse-wedge. Used by
-        // BookProcessor's off-screen per-page fix-up to avoid paying environment creation per page.
-        //
-        // These statics assume the batch is UI-thread-only (which it is: all browser construction is
-        // marshalled to the UI thread, and BookProcessor drives the batch there). If another browser
-        // happens to be created during the batch (e.g. a thumbnail), it harmlessly joins the shared
-        // environment. They are NOT a mechanism for concurrent batches.
-        private static bool _useSharedEnvironment;
-        private static CoreWebView2Environment _sharedEnvironment;
-
-        public static void BeginSharedEnvironmentBatch()
-        {
-            AssertSharedEnvironmentStaticsAreUiThreadOnly();
-            _useSharedEnvironment = true;
-            _sharedEnvironment = null;
-        }
-
-        public static void EndSharedEnvironmentBatch()
-        {
-            AssertSharedEnvironmentStaticsAreUiThreadOnly();
-            _useSharedEnvironment = false;
-            // Drop our reference; the underlying browser process/profile is released once the last
-            // CoreWebView2 using this environment is disposed. (CoreWebView2Environment is not IDisposable.)
-            _sharedEnvironment = null;
-        }
-
-        // The shared-environment statics above have no synchronization; they are safe only because the
-        // batch is UI-thread-only (see the comment on _useSharedEnvironment). Assert that assumption so
-        // any future code that drives a batch off the UI thread trips here instead of silently corrupting
-        // state. Unit-test/console modes are exempt, as elsewhere in this file.
-        private static void AssertSharedEnvironmentStaticsAreUiThreadOnly()
-        {
-            Debug.Assert(
-                Program.RunningOnUiThread
-                    || Program.RunningUnitTests
-                    || Program.RunningInConsoleMode,
-                "Shared WebView2 environment batch must be driven on the UI thread (these statics are unsynchronized)"
-            );
-        }
-
         private async Task InitWebView()
         {
             // based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
@@ -524,13 +481,11 @@ namespace Bloom
             // because EnsureCoreWebView2Async still fires this control's own InitializationCompleted, which
             // is what sets _readyToNavigate.)
             SetupEventHandling();
-            // Reuse an existing environment (and its browser process + user-data folder + HTTP cache) when we
-            // can, so we don't pay environment creation per browser:
-            //  - _injectedEnvironment: an environment handed to this instance (OffScreenBrowser shares one
-            //    environment across the fresh browser it creates per page — see CreateWithInjectedEnvironment);
-            //  - _sharedEnvironment: the legacy on-UI-thread shared-environment batch (BookProcessor's old path).
-            // Otherwise we fall through and create a fresh one.
-            var env = _injectedEnvironment ?? (_useSharedEnvironment ? _sharedEnvironment : null);
+            // Reuse an environment handed to this instance (and its browser process + user-data folder +
+            // HTTP cache) when there is one, so we don't pay environment creation per browser:
+            // OffScreenBrowser shares one environment across the fresh browser it creates per page — see
+            // CreateWithInjectedEnvironment. Otherwise we fall through and create a fresh one.
+            var env = _injectedEnvironment;
             if (env == null)
             {
                 string dataFolder;
@@ -548,8 +503,6 @@ namespace Bloom
                     userDataFolder: dataFolder,
                     options: op
                 );
-                if (_useSharedEnvironment)
-                    _sharedEnvironment = env;
             }
             await _webview.EnsureCoreWebView2Async(env);
             // Added as a footnote to BL-15466 to prevent popups generated from title
