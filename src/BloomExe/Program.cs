@@ -1065,6 +1065,11 @@ namespace Bloom
         {
             var syncContext = new WindowsFormsSynchronizationContext();
             SynchronizationContext.SetSynchronizationContext(syncContext);
+            // Deliberately NOT assigned to Program.MainContext. That property means "the app's UI
+            // thread", and code keyed off it (RabProjectService, CommonApi, ToastService) behaves
+            // differently when it is set; RabProjectService in particular has a null branch precisely
+            // for the case where there is no UI. Publishing this context there would silently change
+            // those paths in console mode, which is no part of what this loop is for.
 
             var appContext = new ApplicationContext();
             Task<int> commandTask = null;
