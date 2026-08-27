@@ -42,6 +42,14 @@ namespace Bloom
         // Exposes whether the (async) CoreWebView2 environment initialization has finished. Lets callers
         // measure how long that init takes separately from the subsequent navigation (see BookProcessor).
         public override bool IsReadyToNavigate => _readyToNavigate;
+
+        /// <summary>
+        /// Why initialization failed, or null if it has not failed. Non-null means this browser will
+        /// never become ready to navigate, so a caller spinning on <see cref="IsReadyToNavigate"/> should
+        /// give up at once and blame this rather than its own timeout — see OffScreenBrowser, which owns
+        /// its own readiness wait and so cannot rely on the checks inside this class.
+        /// </summary>
+        internal Exception InitializationError => _initializationError;
         private PasteCommand _pasteCommand;
         private CopyCommand _copyCommand;
         private UndoCommand _undoCommand;

@@ -19,6 +19,10 @@ namespace BloomTests
     [Apartment(ApartmentState.STA)]
     public class ConsoleCommandLoopTests
     {
+        /// <summary>
+        /// The core property: a console command's awaits come back to the STA thread that started it,
+        /// for the first await and every later one.
+        /// </summary>
         [Test]
         public void RunConsoleCommandLoop_AwaitsResumeOnTheCallingStaThread()
         {
@@ -143,6 +147,10 @@ namespace BloomTests
             }
         }
 
+        /// <summary>
+        /// A command that throws before it can return a Task leaves nothing to complete the loop, so the
+        /// loop must end itself and report the exception rather than pumping forever.
+        /// </summary>
         [Test]
         public void RunConsoleCommandLoop_CommandThrowsBeforeReturningATask_PropagatesIt()
         {
@@ -158,6 +166,10 @@ namespace BloomTests
             Assert.That(exception.Message, Is.EqualTo("could not start"));
         }
 
+        /// <summary>
+        /// A command whose Task faults part way through still ends the loop, and its exception reaches the
+        /// caller — wrapped in an AggregateException, as it was before this loop existed.
+        /// </summary>
         [Test]
         public void RunConsoleCommandLoop_CommandTaskFaults_PropagatesIt()
         {

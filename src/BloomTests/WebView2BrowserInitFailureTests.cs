@@ -68,6 +68,14 @@ namespace BloomTests
                         Is.False,
                         "Sanity check: the browser cannot have become ready to navigate."
                     );
+                    // Callers that run their own readiness wait (OffScreenBrowser does) can only give up
+                    // early if the failure is visible to them, so it has to be exposed, not just logged.
+                    Assert.That(
+                        browser.InitializationError,
+                        Is.Not.Null,
+                        "The failure must be readable from outside, so a caller spinning on "
+                            + "IsReadyToNavigate can stop instead of waiting out its own timeout."
+                    );
                 }
                 finally
                 {
