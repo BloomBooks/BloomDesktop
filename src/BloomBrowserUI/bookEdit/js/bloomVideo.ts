@@ -169,7 +169,12 @@ function SetupClickToShowSignLanguageTool(videoContainerDiv: Element) {
             toolbox?.toolboxIsShowing() &&
             (currentToolId === kCanvasToolId ||
                 currentToolId === kGameToolId) &&
-            videoContainerDiv.closest(kCanvasElementSelector) // only ones actually in a canvas element
+            videoContainerDiv.closest(kCanvasElementSelector) && // only ones actually in a canvas element
+            // A video in a table cell is not one of the canvas elements those
+            // tools arrange, even though the table it sits in may itself be a
+            // canvas element. Suppressing its click would leave the user no way
+            // to reach the tool that records into it.
+            !videoContainerDiv.closest(".bloom-cell")
         ) {
             // Looks like a video-over-picture, and we're showing the canvas element or game tool. Don't switch to SL tool.
             return;

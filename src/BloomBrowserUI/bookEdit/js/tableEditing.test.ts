@@ -1,5 +1,14 @@
-import { describe, it, expect } from "vitest";
-import { addRow, getTableInfo } from "bloom-table";
+import { describe, it, expect, vi } from "vitest";
+import { addRow, getTableInfo, setupContentsOfCell } from "bloom-table";
+// A new video cell asks the server to put the video placeholder in the book
+// folder; there is no server here, and the call is also what proves the wiring
+// ran.
+const postMock = vi.fn();
+vi.mock("../../utils/bloomApi", async (importOriginal) => ({
+    ...((await importOriginal()) as object),
+    post: (...args: unknown[]) => postMock(...args),
+}));
+
 import {
     AttachNewTable,
     AttachNewTableThatFillsItsSpace,
@@ -149,5 +158,48 @@ describe("cells the library builds after the page has loaded", () => {
         nested.removeAttribute("data-table-attached");
         TeardownTableEditing(document.body);
         expect(nested.getAttribute("data-table-attached")).toBeNull();
+    });
+});
+
+describe("video cells", () => {
+    it("hold Bloom's own video container, wired for editing", () => {
+        document.body.innerHTML = "";
+        postMock.mockClear();
+        const tableDiv = document.createElement("div");
+        tableDiv.classList.add("bloom-table");
+        document.body.appendChild(tableDiv);
+        SetupTableEditing(document.body);
+        AttachNewTable(tableDiv);
+        const cell = tableDiv.querySelector<HTMLElement>(".bloom-cell")!;
+        // Sanity check: it starts as a text cell, and nothing has asked for the
+        // placeholder yet.
+        expect(cell.dataset.contentType).toBe("text");
+        expect(postMock).not.toHaveBeenCalled();
+
+        // What picking Video in the cell menu does.
+        setupContentsOfCell(cell, "video");
+
+        expect(cell.dataset.contentType).toBe("video");
+        // The library's own template would put a bare <video> here, which none
+        // of Bloom's video tooling knows about.
+        expect(cell.querySelector("video")).toBeNull();
+        const container = cell.querySelector(".bloom-videoContainer");
+        expect(container).not.toBeNull();
+        // Until a video is recorded or chosen, this is what shows the placeholder.
+        expect(container!.classList.contains("bloom-noVideoSelected")).toBe(
+            true,
+        );
+        expect(postMock).toHaveBeenCalledWith(
+            "edit/pageControls/requestVideoPlaceHolder",
+        );
+
+        // Wiring the same table again (which every later table operation does)
+        // must not treat the container as new a second time: that would add the
+        // click that opens the Sign Language tool over and over.
+        postMock.mockClear();
+        addRow(tableDiv);
+        expect(postMock).not.toHaveBeenCalled();
+
+        TeardownTableEditing(document.body);
     });
 });
