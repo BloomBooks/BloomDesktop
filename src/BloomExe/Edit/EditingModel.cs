@@ -423,16 +423,36 @@ namespace Bloom.Edit
                     },
                     () =>
                     {
-                        // We disable the tab control while we're in SavePending or SavedAndStripped.
-                        // We shouldn't be in NoPage while in the edit tab, but if we somehow are, we take the branch above.
-                        // If we're Editing, we will take the branch above.
-                        // So this is just the case where we're Navigating, either because we clicked on the Edit tab
-                        // and then immediately something else, or clicked another tab during the fraction of a second
-                        // while Bloom is navigating to a new page after doing some command. Abort the navigate, then go ahead.
-                        // Earlier versions of Bloom had a Debug guard against reaching this state, but it happened
-                        // often enough to be annoying, and the recovery code here seems to work adequately.
-                        // In particlar, we seem to get here after a Javascript error has been reported, and raising
-                        // an exception here tends to interfere with reporting the error we really want to see.
+                        // We get here when we could not start a save, so we're in Navigating,
+                        // SavePending or SavedAndStripped. (We shouldn't be in NoPage while in the
+                        // edit tab, but if we somehow are, we take the branch above; and if we're
+                        // Editing we take the branch above too.)
+                        //
+                        // This comment used to claim SavePending and SavedAndStripped were
+                        // impossible here, because "we disable the tab control while we're in
+                        // SavePending or SavedAndStripped". Disabling the tabs is still requested
+                        // — the state machine calls SetTabsEnabled(false) — but it has not been
+                        // able to prevent a click since the top bar became a React component
+                        // (Dec 2025). It used to set _tabStrip.Enabled, which really did swallow
+                        // the click, synchronously and in this process. Now it only pushes new tab
+                        // states to the browser over a websocket, and nothing checks _tabsEnabled
+                        // when a workspace/selectTab request arrives. Worse, the disable is
+                        // requested from inside this very handler, i.e. inside the first click's
+                        // own selectTab request; a second click's request is already queued behind
+                        // it on the UI thread, so it necessarily runs before the browser could
+                        // have received the push, let alone re-rendered. An ordinary
+                        // double-click on a tab therefore lands here in SavePending every time,
+                        // which is what BL-16766 was. See the note on
+                        // WorkspaceView.SetTabsEnabled.
+                        //
+                        // Navigating: we clicked the Edit tab and then immediately something else,
+                        // or clicked another tab during the fraction of a second while Bloom is
+                        // navigating to a new page after doing some command. Abort the navigate,
+                        // then go ahead. Earlier versions of Bloom had a Debug guard against
+                        // reaching this state, but it happened often enough to be annoying, and the
+                        // recovery code here seems to work adequately. In particlar, we seem to get
+                        // here after a Javascript error has been reported, and raising an exception
+                        // here tends to interfere with reporting the error we really want to see.
                         if (StateMachine.Navigating)
                         {
                             StateMachine.ToNoPage();

@@ -62,8 +62,11 @@ public class EditingStateMachine
     /// <param name="updateBookWithPageContents">Called with page ID and pageContentData to update the main DOM with current page content</param>
     /// <param name="saveBook">Called to save the current state of the DOM to disk.</param>
     /// <param name="hidePage">Called to make the transition to NoPage (when edit tab is hidden).</param>
-    /// <param name="enableStateTransitions">Called to enable or disabled UI actions that would result in new state transitions.
-    /// These are not allowed when we are in state SavePending or SavedAndStripped.</param>
+    /// <param name="enableStateTransitions">Called to ask the UI to stop offering actions that would result in new state
+    /// transitions, because they are not valid in SavePending or SavedAndStripped. Note that this is only a request:
+    /// in the live app it ends up at WorkspaceView.SetTabsEnabled, which cannot actually stop a click that is already
+    /// on its way (see the remarks there, and BL-16766). So every transition must still refuse, or defer, an invalid
+    /// request when one arrives — do not rely on this having prevented it.</param>
     public EditingStateMachine(
         Action<string> navigate,
         Action<string> requestPageSave,
