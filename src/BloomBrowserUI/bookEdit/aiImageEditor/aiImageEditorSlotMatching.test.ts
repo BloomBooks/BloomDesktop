@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
 
-import { matchReplacementsToElements } from "./aiEditorSlotMatching";
+import { matchReplacementsToElements } from "./aiImageEditorSlotMatching";
 
-// Unit tests for the current-page slot matcher used by the AI editor's commit (see
-// aiEditorSlotMatching.ts and canvasControlRegistry.ts editWithAi). The tricky case is a page
+// Unit tests for the current-page slot matcher used by the AI image editor's commit (see
+// aiImageEditorSlotMatching.ts and canvasControlRegistry.ts editWithAi). The tricky case is a page
 // with several image slots that share a filename: distinct replacements must land on distinct
 // elements, in slot (ordinal) order, not all collapse onto the first same-filename element.
 
