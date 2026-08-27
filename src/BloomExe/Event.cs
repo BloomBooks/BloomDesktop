@@ -90,20 +90,32 @@ namespace Bloom
         public WorkspaceTab? FromTab;
         public WorkspaceTab? ToTab;
 
-        // Must be executed by the subscriber when it is safe to do so, possibly after returning
-        // from the event handler.
+        // The two ways a subscriber can hand the tab change back to us. Exactly one of them is
+        // used, according to what the subscriber is able to do:
+        //
+        //   nothing to do first        -> CompleteTheChange, before returning
+        //   I must save first          -> CompleteTheChange, once my save has finished
+        //   a save is already running  -> StartTheChangeOver, once that save has finished
+        //
+        // The last case is the one that needs the second action: the subscriber can neither let
+        // the change proceed nor take responsibility for finishing it, because the save it is
+        // waiting on belongs to something else (typically an earlier click on a tab). See BL-16766.
+        //
         // This is a bit of a kludge. It works partly because there is currently only one subscriber,
         // so there is no ambiguity about who should do this, or how we know when all the subscribers
         // are done. If we ever have more than one subscriber, we'll need to do something more sophisticated.
-        public Action PostponedWork;
 
-        // Asks for this whole tab change to be attempted again from the start. A subscriber that
-        // finds it cannot let the change go ahead yet (EditingModel, when a save it did not start
-        // is still waiting on the browser) hands this to something that will call it when the way
-        // is clear, and does nothing else. Going right back to WorkspaceView.ChangeTab means the
-        // retry re-checks everything, and in particular does nothing at all if by then some other
-        // path has already switched to the tab we wanted. Null if the raiser has no work to redo.
-        public Action RetryWork;
+        // Actually switches the tab: everything WorkspaceView.ChangeTab held back until a
+        // subscriber said it was safe. Call this EXACTLY ONCE — it raises the tab-changed event
+        // and records the new tab as current.
+        public Action CompleteTheChange;
+
+        // Abandons this attempt and asks for the whole tab change to be made afresh later, from the
+        // top of WorkspaceView.ChangeTab. Because it starts over, it re-checks everything, so it is
+        // safe to call whenever the way is clear — including when it turns out to be unnecessary,
+        // in which case it does nothing at all because the tab we wanted is already current.
+        // Null if the raiser has nothing to redo.
+        public Action StartTheChangeOver;
     }
 
     /// <summary>

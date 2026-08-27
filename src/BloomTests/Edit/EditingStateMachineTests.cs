@@ -196,7 +196,7 @@ namespace BloomTests.Edit
             var tabChanges = 0;
             var currentTab = "edit"; // WorkspaceView._previouslySelectedTabArea
 
-            // WorkspaceView.ChangeTab's PostponedWork: it raises the tab-changed event, which
+            // WorkspaceView.ChangeTab's CompleteTheChange: it raises the tab-changed event, which
             // reaches EditingView.OnVisibleChanged(false), and only then records the new tab.
             Action postponedWorkOfTabChange = () =>
             {
@@ -207,7 +207,7 @@ namespace BloomTests.Edit
 
             // WorkspaceView.ChangeTab, including the EditingModel.OnTabAboutToChange handler it
             // raises. Assigned rather than declared so that the fallback can pass it as
-            // details.RetryWork, which is how WorkspaceView supplies it.
+            // details.StartTheChangeOver, which is how WorkspaceView supplies it.
             Action clickTheCollectionTab = null;
             clickTheCollectionTab = () =>
             {

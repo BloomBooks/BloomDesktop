@@ -410,7 +410,7 @@ namespace Bloom.Edit
                             _currentlyDisplayedBook = null;
                         }
                         else
-                            CurrentBook?.Save(); // we need it all the way saved before doing the PostponedWork
+                            CurrentBook?.Save(); // we need it all the way saved before completing the tab change
                         // This bizarre behavior prevents BL-2313 and related problems.
                         // For some reason I cannot discover, switching tabs when focus is in the Browser window
                         // causes Bloom to get deactivated, which prevents various controls from working.
@@ -418,7 +418,7 @@ namespace Bloom.Edit
                         // things get into a very bad state indeed. So arrange to re-activate ourselves as soon as the dust settles.
                         _oldActiveForm = Form.ActiveForm;
                         Application.Idle += ReactivateFormOnIdle;
-                        details.PostponedWork?.Invoke();
+                        details.CompleteTheChange?.Invoke();
                         return null; // leaving this tab, show blank page
                     },
                     () =>
@@ -469,11 +469,11 @@ namespace Bloom.Edit
                         // anything into the DOM, so the DOM still matches what the external process
                         // wrote and saving it writes that same content back. There is also no
                         // second in-flight save for the retry to discard.
-                        if (StateMachine.DeferUntilSaveCompletes(details.RetryWork))
+                        if (StateMachine.DeferUntilSaveCompletes(details.StartTheChangeOver))
                             return;
                         _oldActiveForm = Form.ActiveForm;
                         Application.Idle += ReactivateFormOnIdle;
-                        details.PostponedWork?.Invoke();
+                        details.CompleteTheChange?.Invoke();
                     },
                     skipSaveToDisk: true
                 );
@@ -481,7 +481,7 @@ namespace Bloom.Edit
             else
             {
                 // If the old tab is not Edit, we don't need to save anything, so just do the postponed work.
-                details.PostponedWork?.Invoke();
+                details.CompleteTheChange?.Invoke();
             }
         }
 
