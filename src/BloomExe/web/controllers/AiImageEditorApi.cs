@@ -497,14 +497,56 @@ namespace Bloom.web.controllers
                     // HandleSaveCredentials also refuses to persist.
                     demoOnly = book.IsPlayground,
                     // Let the AI image editor reveal its developer/tester tools (e.g. the
-                    // "Local Dummy (No AI)" model, for cost-free testing) on developer AND
-                    // alpha/unstable builds, so human alpha testers can exercise it without
-                    // spending real AI credits. The AI image editor hides those tools unless
-                    // the host opts in, so release/beta builds (IsDevOrAlpha false) never
-                    // expose them to end users.
-                    showDeveloperTools = ApplicationUpdateSupport.IsDevOrAlpha,
+                    // "Local Dummy (No AI)" model, for cost-free testing). The AI image
+                    // editor hides those tools unless the host opts in, so ordinary
+                    // release/beta builds never expose them to end users.
+                    showDeveloperTools = ShouldShowDeveloperTools(),
                 }
             );
+        }
+
+        /// <summary>
+        /// Environment variable a tester can set to get the AI image editor's tester tools
+        /// (currently the "Local Dummy (No AI)" model) on a channel that would not normally
+        /// offer them, e.g. an installed beta. See <see cref="kTesterToolsOnValues"/> for
+        /// what counts as "on".
+        /// </summary>
+        internal const string kShowTesterToolsEnvironmentVariable =
+            "BLOOM_AI_IMAGE_EDITOR_TESTER_TOOLS";
+
+        /// <summary>
+        /// The values of <see cref="kShowTesterToolsEnvironmentVariable"/> that mean "on",
+        /// compared case-insensitively after trimming. We accept several spellings because
+        /// the people setting this are testers typing into a Windows environment-variable
+        /// box, not developers reading our source.
+        /// </summary>
+        internal static readonly string[] kTesterToolsOnValues = new[]
+        {
+            "true",
+            "t",
+            "y",
+            "yes",
+            "1",
+        };
+
+        /// <summary>
+        /// Whether to tell the AI image editor to reveal its developer/tester tools. The
+        /// "Local Dummy (No AI)" model is the one such tool today; it lets a tester exercise
+        /// the editor without spending real AI credits. These are always on for developer and
+        /// alpha/unstable builds. On any other channel (beta, release) a tester can opt in by
+        /// setting <see cref="kShowTesterToolsEnvironmentVariable"/>, which is how we let a
+        /// beta tester try the editor for free without shipping the tools to end users
+        /// (BL-16770).
+        /// </summary>
+        internal static bool ShouldShowDeveloperTools()
+        {
+            if (ApplicationUpdateSupport.IsDevOrAlpha)
+                return true;
+            var optIn = Environment
+                .GetEnvironmentVariable(kShowTesterToolsEnvironmentVariable)
+                ?.Trim();
+            return optIn != null
+                && kTesterToolsOnValues.Contains(optIn, StringComparer.OrdinalIgnoreCase);
         }
 
         private class SaveCredentialsRequest
