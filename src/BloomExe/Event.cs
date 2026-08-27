@@ -96,6 +96,14 @@ namespace Bloom
         // so there is no ambiguity about who should do this, or how we know when all the subscribers
         // are done. If we ever have more than one subscriber, we'll need to do something more sophisticated.
         public Action PostponedWork;
+
+        // Asks for this whole tab change to be attempted again from the start. A subscriber that
+        // finds it cannot let the change go ahead yet (EditingModel, when a save it did not start
+        // is still waiting on the browser) hands this to something that will call it when the way
+        // is clear, and does nothing else. Going right back to WorkspaceView.ChangeTab means the
+        // retry re-checks everything, and in particular does nothing at all if by then some other
+        // path has already switched to the tab we wanted. Null if the raiser has no work to redo.
+        public Action RetryWork;
     }
 
     /// <summary>

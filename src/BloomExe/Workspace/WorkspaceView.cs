@@ -1545,6 +1545,10 @@ window.showWorkspaceInitializationFailure = function(message) {
                 {
                     FromTab = previousTab,
                     ToTab = currentTab,
+                    // If a subscriber has to wait before the change can happen, it calls this when
+                    // it is ready. The check at the top of this method makes the retry harmless if
+                    // the tab has meanwhile become the current one anyway. See BL-16766.
+                    RetryWork = () => ChangeTab(view),
                     PostponedWork = () =>
                     {
                         CurrentTabView = view;

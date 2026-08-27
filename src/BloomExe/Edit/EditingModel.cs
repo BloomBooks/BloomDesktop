@@ -448,6 +448,15 @@ namespace Bloom.Edit
                             CurrentBook?.ReloadFromDisk(null);
                             _currentlyDisplayedBook = null;
                         }
+                        // If we are here because a save is still in flight (someone else started
+                        // it, and the browser has not yet handed back the page content), we must
+                        // not let the tab change go ahead now: the tab-changed event would ask the
+                        // state machine to empty the page, which throws while a save is pending,
+                        // and would leave the workspace half switched between the two tabs
+                        // (BL-16766). Wait for the save to finish and then start the tab change
+                        // over from the beginning.
+                        if (StateMachine.DeferUntilSaveCompletes(details.RetryWork))
+                            return;
                         _oldActiveForm = Form.ActiveForm;
                         Application.Idle += ReactivateFormOnIdle;
                         details.PostponedWork?.Invoke();

@@ -45,6 +45,11 @@ public class EditingStateMachine
     // page content) will be discarded on completion rather than merged into the DOM and written to
     // disk. See DiscardInFlightSave.
     private bool _discardInFlightSave;
+
+    // Work that arrived while a save was in flight and could not be done then. It runs once that
+    // save has completed and we are back in a state that allows transitions.
+    // See DeferUntilSaveCompletes.
+    private Action _workToDoAfterInFlightSave;
     private Action _hidePage;
 
     private Action<bool> _enableStateTransitions; // arg is (enabled)
@@ -373,10 +378,53 @@ public class EditingStateMachine
     }
 
     /// <summary>
+    /// For a caller that could not start a save (ToSavePending returned false) because one is
+    /// already in flight, and whose work is not safe to do until that save has finished. If a save
+    /// really is in flight, <paramref name="work"/> is remembered and run when the save completes,
+    /// and this returns true — the caller must then do nothing else. Otherwise it returns false and
+    /// the caller must get on with its own work.
+    ///
+    /// Leaving the Edit tab is the case this exists for (BL-16766): the user clicked another tab
+    /// twice in quick succession, and the second click found the first click's save still waiting
+    /// on the browser for the page content. Pressing on with the tab change then reached
+    /// ToNoPage() while still in SavePending, which throws, and left the workspace half switched
+    /// between the two tabs.
+    ///
+    /// Only one piece of deferred work is kept: a later request supersedes an earlier one, since it
+    /// is the more recent thing the user asked for.
+    /// </summary>
+    public bool DeferUntilSaveCompletes(Action work)
+    {
+        // No save to wait for, or nothing to do: the caller must handle it itself.
+        if (_currentState != State.SavePending || work == null)
+            return false;
+        _workToDoAfterInFlightSave = work;
+        return true;
+    }
+
+    /// <summary>
     /// Source: API call providing content of current page will request this after saving and before executing pending action
     /// (e.g. changing pages)
     /// </summary>
     public bool ToSavedAndStripped(string pageContentData)
+    {
+        // This is the only way out of SavePending, so it is where anything that had to wait for the
+        // in-flight save gets its turn (see DeferUntilSaveCompletes). It runs after the whole save,
+        // including the post-save action, so that we are in a state that allows transitions again;
+        // and in a finally, because a save that fails must not swallow a pending tab change.
+        try
+        {
+            return ToSavedAndStrippedFromSavePending(pageContentData);
+        }
+        finally
+        {
+            var deferredWork = _workToDoAfterInFlightSave;
+            _workToDoAfterInFlightSave = null;
+            deferredWork?.Invoke();
+        }
+    }
+
+    private bool ToSavedAndStrippedFromSavePending(string pageContentData)
     {
         try
         {
