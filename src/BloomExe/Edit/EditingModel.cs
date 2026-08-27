@@ -455,6 +455,13 @@ namespace Bloom.Edit
                         // and would leave the workspace half switched between the two tabs
                         // (BL-16766). Wait for the save to finish and then start the tab change
                         // over from the beginning.
+                        // Note that the retry sees reloadFromDiskInsteadOfSaving as false, because
+                        // this attempt consumed the flag — so it takes the ordinary Save() branch
+                        // above rather than the reload branch. That is correct: the reload has
+                        // already happened, just above, and the discarded save cannot have merged
+                        // anything into the DOM, so the DOM still matches what the external process
+                        // wrote and saving it writes that same content back. There is also no
+                        // second in-flight save for the retry to discard.
                         if (StateMachine.DeferUntilSaveCompletes(details.RetryWork))
                             return;
                         _oldActiveForm = Form.ActiveForm;
