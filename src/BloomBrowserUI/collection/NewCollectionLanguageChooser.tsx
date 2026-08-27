@@ -7,7 +7,7 @@ import * as React from "react";
 
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { get, postData } from "../utils/bloomApi";
-import { getLanguageData } from "./LanguageChooserDialog";
+import { getLanguageData } from "./languageData";
 import { useSubscribeToWebSocketForStringMessage } from "../utils/WebSocketManager";
 
 const NewCollectionLanguageChooser: React.FunctionComponent = () => {

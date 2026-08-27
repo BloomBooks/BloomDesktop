@@ -37,9 +37,9 @@
         <target xml:lang="sw" state="final">Fungua kifaa cha kuweka Bloom tena, na uone iwapo itafunguka vyema wakati huu.</target>
         <note>ID: integrity.todo.ideas.Reinstall</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
+      <trans-unit id="integrity.todo.ideas.Antivirus">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
-        <target xml:lang="sw" state="final">Iwapo hiyo haitarekebisha, ni wakati wa kuwasiliana na programu ya kupigana na virusi.Iwapo kitengo kilicho hapa chini cha "Faili zilizopotea" kinaonyesha faili zozote zinazoanza kwa ".exe", amua "kuweka rangi nyeupe" kwa jalada la programu ya Bloom, ambalo liko .</target>
+        <target xml:lang="sw" state="translated">Iwapo hiyo haitarekebisha, ni wakati wa kuwasiliana na programu ya kupigana na virusi.Iwapo kitengo kilicho hapa chini cha "Faili zilizopotea" kinaonyesha faili zozote zinazoanza kwa ".exe", amua "kuweka rangi nyeupe" kwa jalada la programu ya Bloom, ambalo liko .</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">
