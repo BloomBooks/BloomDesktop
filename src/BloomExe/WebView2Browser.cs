@@ -32,6 +32,11 @@ namespace Bloom
         public static string AlternativeWebView2Path;
         private bool _readyToNavigate;
 
+        // Set if InitWebView failed. Since initialization is kicked off unawaited, this is the only
+        // record we have that it will never finish; without it, the browser just looks eternally
+        // not-yet-ready. See StartInitWebViewReportingAnyFailure.
+        private Exception _initializationError;
+
         // Exposes whether the (async) CoreWebView2 environment initialization has finished. Lets callers
         // measure how long that init takes separately from the subsequent navigation (see BookProcessor).
         public override bool IsReadyToNavigate => _readyToNavigate;
@@ -70,7 +75,7 @@ namespace Bloom
             browser._injectedEnvironment = environment;
             browser.InitializeComponent();
             // Kicked off unawaited (like the default constructor); callers wait on IsReadyToNavigate.
-            _ = browser.InitWebView();
+            browser.StartInitWebViewReportingAnyFailure();
             return browser;
         }
 
@@ -119,7 +124,58 @@ namespace Bloom
             // something on that thread, it's really easy to deadlock.
             // A lot of this is because of the way that WinForms works, and when we finally get away from WinForms,
             // we may be able to get to an environment where we don't need to try so hard to avoid async.)
-            _ = InitWebView();
+            StartInitWebViewReportingAnyFailure();
+        }
+
+        /// <summary>
+        /// Starts the asynchronous WebView2 initialization without awaiting it — the constructors can't
+        /// await — but, unlike a bare "_ = InitWebView()", does not silently discard a failure.
+        /// </summary>
+        /// <remarks>
+        /// Nothing observes the Task, so an exception thrown inside InitWebView used to vanish entirely:
+        /// no log entry, no dialog, nothing. The browser was simply left with _readyToNavigate false
+        /// forever, and the first visible symptom came much later and somewhere else — a navigation
+        /// timeout, then "The instance of CoreWebView2 is uninitialized" from the next JavaScript call.
+        /// That is precisely how BL-16767 hid its own cause: bulk upload had drifted onto an MTA thread
+        /// pool thread, where CoreWebView2Environment.CreateAsync throws RPC_E_CHANGED_MODE ("Cannot
+        /// change thread mode after it is set") because WebView2 needs an STA thread. Recording the
+        /// error also lets the ready-waits below give up at once instead of spinning out their timeout.
+        /// </remarks>
+        private void StartInitWebViewReportingAnyFailure()
+        {
+            // The continuation runs on some other thread, so capture what is interesting about the
+            // creating thread now: which thread it was, and its apartment, is most of the diagnosis.
+            var creatingThreadId = Thread.CurrentThread.ManagedThreadId;
+            var creatingApartment = Thread.CurrentThread.GetApartmentState();
+            InitWebView()
+                .ContinueWith(
+                    task =>
+                    {
+                        var error = task.Exception?.GetBaseException();
+                        _initializationError =
+                            error ?? new ApplicationException("WebView2 initialization failed");
+                        if (Disposing || _inDisposeMethod || IsDisposed)
+                            return; // disposed before initialization completed. See BL-13593 and BL-11384.
+                        NonFatalProblem.Report(
+                            ModalIf.None,
+                            PassiveIf.None,
+                            "Bloom could not initialize a WebView2 browser.",
+                            "This browser will never become ready to navigate, so whatever asked for it"
+                                + " will fail later, most likely with a navigation timeout followed by"
+                                + " \"The instance of CoreWebView2 is uninitialized\". It was created on"
+                                + $" thread {creatingThreadId}, whose apartment state was"
+                                + $" {creatingApartment}."
+                                + (
+                                    creatingApartment == ApartmentState.STA
+                                        ? ""
+                                        : " WebView2 requires an STA thread with a message loop, so that"
+                                            + " by itself is enough to explain the failure; see BL-16767."
+                                ),
+                            error
+                        );
+                    },
+                    TaskContinuationOptions.OnlyOnFaulted
+                );
         }
 
         private void SetupEventHandling()
@@ -643,9 +699,28 @@ namespace Bloom
             // threw an Exception indicating it was not ready, waiting like this fixed it.
             while (!_readyToNavigate)
             {
+                // Initialization failed, so waiting can only loop forever. Fail with the real cause
+                // rather than hanging (BL-16767).
+                if (_initializationError != null)
+                    throw new ApplicationException(
+                        "This WebView2 browser failed to initialize, so it can never become ready to navigate.",
+                        _initializationError
+                    );
                 Application.DoEvents();
                 Thread.Sleep(10);
             }
+        }
+
+        /// <summary>
+        /// The exception to throw when this browser's initialization failed, so that callers see the
+        /// real cause (as the InnerException) rather than a downstream timeout or a null CoreWebView2.
+        /// </summary>
+        private ApplicationException InitializationFailedException()
+        {
+            return new ApplicationException(
+                "Browser failed to initialize, so it could not load a page.",
+                _initializationError
+            );
         }
 
         // This variation should be used by clients that use a stopwatch
@@ -655,7 +730,11 @@ namespace Bloom
         // Callers should check that _readyToNavigate is true on return.
         private void EnsureBrowserReadyToNavigate(Stopwatch navTimer, int timeLimit)
         {
-            while (!_readyToNavigate && navTimer.ElapsedMilliseconds < timeLimit)
+            while (
+                !_readyToNavigate
+                && _initializationError == null // waiting is hopeless once init has failed (BL-16767)
+                && navTimer.ElapsedMilliseconds < timeLimit
+            )
             {
                 Application.DoEvents();
                 Thread.Sleep(10);
@@ -686,6 +765,21 @@ namespace Bloom
             var navTimer = new Stopwatch();
             navTimer.Start();
             EnsureBrowserReadyToNavigate(navTimer, timeLimit);
+
+            // Initialization failed outright, so there is nothing to wait for: neither this navigation
+            // nor anything else with this browser can ever work. Give up now, naming the real cause,
+            // instead of spending the whole timeLimit waiting for a navigation we never started and
+            // then reporting it as a timeout (BL-16767).
+            if (_initializationError != null)
+            {
+                if (throwOnTimeout)
+                    throw InitializationFailedException();
+                Logger.WriteError(
+                    "Not navigating: this WebView2 browser failed to initialize.",
+                    _initializationError
+                );
+                return false;
+            }
 
             EventHandler<CoreWebView2NavigationCompletedEventArgs> navigationCompletedHandler =
                 null;
@@ -727,11 +821,17 @@ namespace Bloom
                 if (!done)
                 {
                     if (throwOnTimeout)
+                    {
+                        // Initialization can also fail after the point where it set _readyToNavigate.
+                        // Blame that rather than a timeout that never had a chance (BL-16767).
+                        if (_initializationError != null)
+                            throw InitializationFailedException();
                         throw new ApplicationException(
                             _readyToNavigate
                                 ? "Browser unexpectedly took too long to load a page"
                                 : "Browser unexpectedly took too long to initialize"
                         );
+                    }
                     else
                         return false;
                 }
