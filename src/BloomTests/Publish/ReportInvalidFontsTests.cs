@@ -69,14 +69,16 @@ namespace BloomTests.Publish
             File.WriteAllText(
                 Path.Combine(folder, name + ".htm"),
                 XmlHtmlConverter.CreateHtmlString(
-                    "<div class='bloom-page'><div class='bloom-editable' lang='fr'>Bonjour</div></div>"
+                    // The font scan looks at descendants of .bloom-editable, so the text
+                    // needs to be inside a child element of the editable div.
+                    "<div class='bloom-page'><div class='bloom-editable' lang='fr'><p>Bonjour</p></div></div>"
                 )
             );
             return folder;
         }
 
         [Test]
-        public void ReportInvalidFonts_FiveBooksInARow_DoesNotThrow()
+        public void ReportInvalidFonts_FiveBooksInARow_FindsFontsEveryTime()
         {
             // Five is comfortably past the point where the pre-fix code started failing
             // (the second book).
@@ -84,9 +86,13 @@ namespace BloomTests.Publish
             {
                 var folder = MakeBook("book" + i);
                 var progress = new StringBuilderProgress();
-                Assert.DoesNotThrow(
-                    () => PublishHelper.ReportInvalidFonts(folder, progress),
-                    $"The font check threw for book {i} of the series."
+                var fontsFound = PublishHelper.ReportInvalidFonts(folder, progress);
+                // A failed navigation would not throw; it would just find no fonts. So we
+                // require that the scan really computed a font for the book's one editable div.
+                Assert.That(
+                    fontsFound,
+                    Is.Not.Empty,
+                    $"The font scan found no fonts for book {i} of the series."
                 );
             }
         }

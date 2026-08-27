@@ -2080,7 +2080,15 @@ namespace Bloom.Publish
             return fixedSomething;
         }
 
-        public static void ReportInvalidFonts(string destDirName, IProgress progress)
+        /// <summary>
+        /// Report (via progress) any fonts used in the staged book that cannot be published.
+        /// Returns the set of font names actually requested by the book's content, which
+        /// lets a test verify that the browser-based scan really ran.
+        /// </summary>
+        public static IReadOnlyCollection<string> ReportInvalidFonts(
+            string destDirName,
+            IProgress progress
+        )
         {
             // Make a browser so we can accurately determine what fonts are actually requested by
             // the stylesheets in the book, or might be if other languages being uploaded are activated.
@@ -2232,6 +2240,7 @@ namespace Bloom.Publish
                     //progress.WriteWarning("This book has a font, \"{0}\", which is not on this computer and whose license is unknown.", font);
                 }
             }
+            return fontsFound;
         }
 
         private const string AILangTagFragment = "-x-ai";
