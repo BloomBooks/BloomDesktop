@@ -225,10 +225,54 @@ namespace Bloom.web.controllers
             // instead point Bloom at its own Vite dev server by setting BLOOM_AI_IMAGE_EDITOR_URL,
             // e.g. BLOOM_AI_IMAGE_EDITOR_URL=http://localhost:3000/ and running `pnpm dev` in the
             // bloom-ai-image-tools checkout.
-            var overrideUrl = Environment.GetEnvironmentVariable("BLOOM_AI_IMAGE_EDITOR_URL");
+            var overrideUrl = GetLinkedEditorUrlOverride();
             if (!string.IsNullOrWhiteSpace(overrideUrl))
                 return overrideUrl;
             return $"{BloomServer.ServerUrl}/bloom/aiImageEditor/index.html";
+        }
+
+        /// <summary>
+        /// The env var a developer sets to point Bloom at the AI image editor's own Vite dev
+        /// server instead of the staged build.
+        /// </summary>
+        internal const string kLinkedEditorUrlEnvironmentVariable = "BLOOM_AI_IMAGE_EDITOR_URL";
+
+        /// <summary>
+        /// The name this variable had before it was renamed to match the rest of the feature.
+        /// Still honored so that a developer who has the old name in a shell profile or launch
+        /// config keeps getting their linked dev server rather than silently falling back to
+        /// the staged build. Transitional: delete once nobody is using it.
+        /// </summary>
+        internal const string kLinkedEditorUrlObsoleteEnvironmentVariable = "BLOOM_AI_EDITOR_URL";
+
+        // So the deprecation notice appears once per run rather than once per read.
+        private static bool _warnedAboutObsoleteEditorUrlVariable;
+
+        /// <summary>
+        /// The linked-dev-server URL the developer asked for, or null if they didn't ask for
+        /// one. Prefers <see cref="kLinkedEditorUrlEnvironmentVariable"/> and falls back to
+        /// <see cref="kLinkedEditorUrlObsoleteEnvironmentVariable"/>, logging once when the
+        /// obsolete name is what supplied the value.
+        /// </summary>
+        internal static string GetLinkedEditorUrlOverride()
+        {
+            var url = Environment.GetEnvironmentVariable(kLinkedEditorUrlEnvironmentVariable);
+            if (!string.IsNullOrWhiteSpace(url))
+                return url;
+
+            url = Environment.GetEnvironmentVariable(kLinkedEditorUrlObsoleteEnvironmentVariable);
+            if (string.IsNullOrWhiteSpace(url))
+                return null;
+
+            if (!_warnedAboutObsoleteEditorUrlVariable)
+            {
+                _warnedAboutObsoleteEditorUrlVariable = true;
+                Logger.WriteEvent(
+                    $"{kLinkedEditorUrlObsoleteEnvironmentVariable} is obsolete; please rename it"
+                        + $" to {kLinkedEditorUrlEnvironmentVariable}. Using it for now."
+                );
+            }
+            return url;
         }
 
         /// <summary>The image the user right-clicked, as the page frame sends it to
@@ -405,9 +449,7 @@ namespace Bloom.web.controllers
             // (e.g. a local checkout that hasn't been built/staged yet). Fail the launch with
             // a clear message rather than opening an overlay whose iframe would just 404.
             if (
-                string.IsNullOrWhiteSpace(
-                    Environment.GetEnvironmentVariable("BLOOM_AI_IMAGE_EDITOR_URL")
-                )
+                string.IsNullOrWhiteSpace(GetLinkedEditorUrlOverride())
                 && BloomFileLocator.GetBrowserFile(optional: true, "aiImageEditor", "index.html")
                     == null
             )

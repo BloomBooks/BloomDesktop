@@ -1688,4 +1688,101 @@ namespace BloomTests.web.controllers
             Assert.That(attributes.license, Is.EqualTo(img.GetAttribute("data-license")));
         }
     }
+
+    /// <summary>
+    /// Tests for <see cref="AiImageEditorApi.GetLinkedEditorUrlOverride"/>, which honors the
+    /// obsolete BLOOM_AI_EDITOR_URL name so a developer who still has it set keeps getting
+    /// their linked dev server instead of silently falling back to the staged build.
+    /// </summary>
+    [TestFixture]
+    public class AiImageEditorLinkedUrlOverrideTests
+    {
+        private string _originalCurrent;
+        private string _originalObsolete;
+
+        [SetUp]
+        public void Setup()
+        {
+            _originalCurrent = Get(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable);
+            _originalObsolete = Get(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable);
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, null);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, null);
+            // Sanity: with neither name set we must start from "no override", or a test below
+            // could pass on a value left over from the developer's own environment.
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.Null,
+                "setup: neither variable should be in play at the start of a test"
+            );
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, _originalCurrent);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, _originalObsolete);
+        }
+
+        private static string Get(string name) => Environment.GetEnvironmentVariable(name);
+
+        private static void Set(string name, string value) =>
+            Environment.SetEnvironmentVariable(name, value);
+
+        [Test]
+        public void CurrentNameSet_IsUsed()
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, "http://localhost:3000/");
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://localhost:3000/")
+            );
+        }
+
+        [Test]
+        public void OnlyObsoleteNameSet_IsStillHonored()
+        {
+            Set(
+                AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable,
+                "http://localhost:4000/"
+            );
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://localhost:4000/"),
+                "the obsolete name must keep working during the transition"
+            );
+        }
+
+        [Test]
+        public void BothNamesSet_CurrentWins()
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, "http://current/");
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, "http://obsolete/");
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://current/")
+            );
+        }
+
+        [TestCase("")]
+        [TestCase("   ")]
+        public void CurrentNameBlank_FallsBackToObsolete(string blank)
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, blank);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, "http://obsolete/");
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://obsolete/"),
+                "a blank current name should not mask a usable obsolete one"
+            );
+        }
+
+        [TestCase("")]
+        [TestCase("   ")]
+        public void BothBlankOrUnset_ReturnsNull(string blank)
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, blank);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, blank);
+            Assert.That(AiImageEditorApi.GetLinkedEditorUrlOverride(), Is.Null);
+        }
+    }
 }
