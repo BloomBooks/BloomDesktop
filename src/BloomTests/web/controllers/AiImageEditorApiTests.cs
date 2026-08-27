@@ -173,7 +173,7 @@ namespace BloomTests.web.controllers
         // ------------------------------------------------------------------
 
         // Writes a PNG of the given size into a "source" folder OUTSIDE the book folder,
-        // standing in for the AI editor's history folder, and returns its full path.
+        // standing in for the AI image editor's history folder, and returns its full path.
         private string MakeSourcePng(string name, int width, int height)
         {
             var sourceFolder = Path.Combine(_bookFolder.Path, "source");
@@ -659,7 +659,7 @@ namespace BloomTests.web.controllers
             // GraphicsMagick does not preserve credits when it rewrites a PNG as a JPEG, and an
             // uploaded result can arrive with the user's own credits embedded in it. Nothing
             // downstream would put them back — EmbedCreditsInNewImageFile writes only the credits
-            // the AI editor explicitly sent — so losing them here would quietly strip a
+            // the AI image editor explicitly sent — so losing them here would quietly strip a
             // photographer's copyright.
             var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
             var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");

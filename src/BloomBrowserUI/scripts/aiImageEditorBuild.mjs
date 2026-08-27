@@ -109,7 +109,7 @@ const runBuild = (libraryDir, log) =>
         );
         if (!fs.existsSync(vpBin)) {
             log(
-                `AI editor: vite-plus not installed in ${libraryDir} (run its package install). Skipping build.`,
+                `AI image editor: vite-plus not installed in ${libraryDir} (run its package install). Skipping build.`,
             );
             resolve(false);
             return;
@@ -128,13 +128,13 @@ const runBuild = (libraryDir, log) =>
         const timeoutMs = 5 * 60 * 1000;
         const timeout = setTimeout(() => {
             log(
-                "AI editor: build did not finish within 5 minutes; abandoning it so Bloom can start.",
+                "AI image editor: build did not finish within 5 minutes; abandoning it so Bloom can start.",
             );
             killProcessTree(child.pid);
         }, timeoutMs);
         child.on("error", (error) => {
             clearTimeout(timeout);
-            log(`AI editor: build failed to start: ${error.message}`);
+            log(`AI image editor: build failed to start: ${error.message}`);
             resolve(false);
         });
         child.on("exit", (code) => {
@@ -142,7 +142,9 @@ const runBuild = (libraryDir, log) =>
             if (code === 0) {
                 resolve(true);
             } else {
-                log(`AI editor: build exited with code ${code ?? "unknown"}.`);
+                log(
+                    `AI image editor: build exited with code ${code ?? "unknown"}.`,
+                );
                 resolve(false);
             }
         });
@@ -154,7 +156,7 @@ const buildFromCheckoutAndStage = async ({ repoRoot, entry, target, log }) => {
     const libraryDir = resolveCheckoutDir(entry, repoRoot);
     if (!libraryDir) {
         log(
-            "AI editor: not installed and no bloom-ai-image-tools checkout found; 'Edit with AI' will be unavailable. (Install the package, or use --with bloom-ai-image-tools.)",
+            "AI image editor: not installed and no bloom-ai-image-tools checkout found; 'Edit with AI' will be unavailable. (Install the package, or use --with bloom-ai-image-tools.)",
         );
         return;
     }
@@ -167,13 +169,13 @@ const buildFromCheckoutAndStage = async ({ repoRoot, entry, target, log }) => {
     if (builtMtime === 0 || sourceMtime > builtMtime) {
         log(
             builtMtime === 0
-                ? `AI editor: building from ${libraryDir} (no prior build)...`
-                : `AI editor: sources changed; rebuilding from ${libraryDir}...`,
+                ? `AI image editor: building from ${libraryDir} (no prior build)...`
+                : `AI image editor: sources changed; rebuilding from ${libraryDir}...`,
         );
         const ok = await runBuild(libraryDir, log);
         if (!ok && !fs.existsSync(distIndex)) {
             log(
-                "AI editor: no usable build available; 'Edit with AI' will be unavailable.",
+                "AI image editor: no usable build available; 'Edit with AI' will be unavailable.",
             );
             return;
         }
@@ -184,15 +186,15 @@ const buildFromCheckoutAndStage = async ({ repoRoot, entry, target, log }) => {
         mtimeMsOrZero(path.join(target, "index.html"))
     ) {
         copyTree(distApp, target);
-        log(`AI editor: staged from checkout into ${target}.`);
+        log(`AI image editor: staged from checkout into ${target}.`);
     } else {
-        log("AI editor: staged copy is up to date.");
+        log("AI image editor: staged copy is up to date.");
     }
 };
 
-// Stage the AI editor for a default (non-linked) launch: prefer the installed package's
+// Stage the AI image editor for a default (non-linked) launch: prefer the installed package's
 // prebuilt dist-app/, otherwise build from a local checkout. Never throws.
-export const stageAiEditorForDefault = async ({
+export const stageAiImageEditorForDefault = async ({
     repoRoot,
     browserUIRoot,
     log,
@@ -227,19 +229,21 @@ export const stageAiEditorForDefault = async ({
                 stagedVersion === packageVersion &&
                 fs.existsSync(path.join(target, "index.html"))
             ) {
-                log("AI editor: staged copy is up to date.");
+                log("AI image editor: staged copy is up to date.");
                 return;
             }
             copyTree(installedDistApp, target);
             fs.writeFileSync(versionMarker, packageVersion);
-            log(`AI editor: staged from installed package into ${target}.`);
+            log(
+                `AI image editor: staged from installed package into ${target}.`,
+            );
             return;
         }
 
         await buildFromCheckoutAndStage({ repoRoot, entry, target, log });
     } catch (error) {
         log(
-            `AI editor: staging skipped due to error: ${error?.message ?? error}`,
+            `AI image editor: staging skipped due to error: ${error?.message ?? error}`,
         );
     }
 };

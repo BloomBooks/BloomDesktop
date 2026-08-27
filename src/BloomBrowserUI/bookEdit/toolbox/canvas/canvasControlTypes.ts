@@ -148,7 +148,7 @@ export interface IControlContext {
     // hidden until the user enables the feature in Experimental Features.
     aiImageEditingAvailable: boolean;
     // True when the current image's format is one the AI Image Editor can actually
-    // edit (see aiEditorImageFormats.ts). False for formats the editor can't open
+    // edit (see aiImageEditorImageFormats.ts). False for formats the editor can't open
     // (e.g. svg), which keeps "Edit with AI" disabled for them.
     imageIsAiEditableFormat: boolean;
 }
