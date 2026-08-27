@@ -42,7 +42,7 @@
 .PARAMETER TriggerPattern
     The log line meaning "the page-checks navigation just gave up". Matched as a regex. Includes the DOM
     name on purpose: Bloom logs "Failed to navigate fully" from two different places (page checks in
-    RemoveUnwantedContentInternal, and the separate font scan in ReportInvalidFontsAsync), and matching
+    RemoveUnwantedContentInternal, and the separate font scan in ReportInvalidFonts), and matching
     the shorter string would let the fonts path spend both captures on a moment we are not asking about.
 
 .PARAMETER HungAfterSeconds
