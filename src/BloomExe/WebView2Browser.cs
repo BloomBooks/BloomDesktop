@@ -34,8 +34,10 @@ namespace Bloom
 
         // Set if InitWebView failed. Since initialization is kicked off unawaited, this is the only
         // record we have that it will never finish; without it, the browser just looks eternally
-        // not-yet-ready. See StartInitWebViewReportingAnyFailure.
-        private Exception _initializationError;
+        // not-yet-ready. See StartInitWebViewReportingAnyFailure. Volatile because it is written by
+        // that continuation (on whatever thread completes it) and read by the ready-waits below on
+        // the caller's thread, which spin on it.
+        private volatile Exception _initializationError;
 
         // Exposes whether the (async) CoreWebView2 environment initialization has finished. Lets callers
         // measure how long that init takes separately from the subsequent navigation (see BookProcessor).

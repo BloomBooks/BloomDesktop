@@ -118,6 +118,11 @@ namespace BloomTests
         [Test]
         public void DoEventsAsOutermostLoop_DiscardsTheWinFormsContext_WhichIsWhyWeNeedARealLoop()
         {
+            // Establish the starting point rather than assuming it. WinForms only auto-installs its
+            // context when there isn't already one, and Application.Run leaves a plain
+            // SynchronizationContext behind when it exits -- so whether this test's premise holds would
+            // otherwise depend on which test in this fixture ran first.
+            SynchronizationContext.SetSynchronizationContext(null);
             using (var control = new Control())
             {
                 control.CreateControl();
