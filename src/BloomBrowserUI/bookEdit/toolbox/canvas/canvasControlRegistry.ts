@@ -93,7 +93,7 @@ import {
 import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { isDraggable, kDraggableIdAttribute } from "./canvasElementDraggables";
 import { setGeneratedDraggableId } from "./CanvasElementItem";
-import { launchAiImageEditor } from "../../aiImageEditor/aiEditorPageCommands";
+import { launchAiImageEditor } from "../../aiImageEditor/aiImageEditorPageCommands";
 import {
     makeFieldTypeMenuItem,
     makeLanguageMenuItem,
@@ -573,9 +573,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     },
     // "Edit with AI…" — the entry point for the AI Image Editor integration. This command
     // only reports the clicked image to C#, which saves the page and then opens the overlay
-    // (aiEditorPageCommands.launchAiImageEditor explains why). The heavy lifting — overlay,
+    // (aiImageEditorPageCommands.launchAiImageEditor explains why). The heavy lifting — overlay,
     // postMessage handshake, commit — is in the top window, like the two commands above;
-    // see aiEditorOverlay.ts's header for the full flow.
+    // see aiImageEditorOverlay.ts's header for the full flow.
     editWithAi: {
         kind: "command",
         id: "editWithAi",

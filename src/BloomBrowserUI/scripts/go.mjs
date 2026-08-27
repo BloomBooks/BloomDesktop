@@ -11,7 +11,7 @@ import {
     killProcessTree,
     reapOrphanedBloomDevStacks,
 } from "./processTree.mjs";
-import { stageAiEditorForDefault } from "./aiEditorBuild.mjs";
+import { stageAiImageEditorForDefault } from "./aiImageEditorBuild.mjs";
 import {
     getLibrary,
     libraryNames,
@@ -1098,7 +1098,7 @@ const main = async () => {
         // slow or hung build must never keep Bloom itself from starting. If staging
         // outlasts the grace period, start Bloom anyway and let staging finish (or
         // fail) in the background; only "Edit with AI" is affected until it lands.
-        const staging = stageAiEditorForDefault({
+        const staging = stageAiImageEditorForDefault({
             repoRoot,
             browserUIRoot,
             log: (message) => console.log(`[go] ${message}`),

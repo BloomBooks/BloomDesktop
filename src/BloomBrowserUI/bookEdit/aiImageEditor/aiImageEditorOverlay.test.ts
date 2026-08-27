@@ -35,7 +35,7 @@ vi.mock("../js/workspaceFrames", () => ({
     getEditablePageBundleExports: () => getEditablePageBundleExports(),
 }));
 
-import { openAiImageEditor } from "./aiEditorOverlay";
+import { openAiImageEditor } from "./aiImageEditorOverlay";
 
 const kSaveEvent = "common/saveChangesAndRethinkPageEvent";
 const kEditorUrl = "http://localhost:8089/bloom/aiImageEditor/index.html";
@@ -70,7 +70,7 @@ const openAgainstABookWithOneImage = (
         },
     });
 
-    const overlay = document.getElementById("ai-editor-overlay");
+    const overlay = document.getElementById("ai-image-editor-overlay");
     if (!overlay)
         throw new Error("setup: the overlay should have been created");
     const iframe = overlay.querySelector("iframe") as HTMLIFrameElement;
@@ -165,7 +165,7 @@ beforeEach(() => {
     document.body.innerHTML = "";
 });
 
-describe("aiEditorOverlay: the edit target", () => {
+describe("aiImageEditorOverlay: the edit target", () => {
     test("the image C# names becomes the AI Image Editor's edit target", () => {
         const { iframe, postFromEditor } = openAgainstABookWithOneImage();
 
@@ -223,7 +223,7 @@ describe("aiEditorOverlay: the edit target", () => {
     });
 });
 
-describe("aiEditorOverlay: saving the live page after a commit", () => {
+describe("aiImageEditorOverlay: saving the live page after a commit", () => {
     test("a successful commit closes the overlay and saves at once", () => {
         const { postFromEditor } = openAgainstABookWithOneImage();
 
@@ -232,7 +232,7 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         // Sanity: the current-page swap really was requested of the page frame, so the
         // assertions below aren't just watching a no-op.
         expect(applyAiImageEditorReplacements).toHaveBeenCalledTimes(1);
-        expect(document.getElementById("ai-editor-overlay")).toBeNull();
+        expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
         expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
         expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
     });
@@ -246,14 +246,16 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
         // and, unlike when this code lived in the page frame, saving now does not endanger
         // it, so the swap that did land is persisted immediately rather than held hostage
         // until the user closes the overlay.
-        expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
+        expect(
+            document.getElementById("ai-image-editor-overlay"),
+        ).not.toBeNull();
         expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
         expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
 
         // The ✕ still works after that save, because these controls belong to the top
         // window, not to the page frame the save reloaded.
         closeButton.click();
-        expect(document.getElementById("ai-editor-overlay")).toBeNull();
+        expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
         expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
     });
 
@@ -379,7 +381,7 @@ describe("aiEditorOverlay: saving the live page after a commit", () => {
     });
 });
 
-describe("aiEditorOverlay: analytics", () => {
+describe("aiImageEditorOverlay: analytics", () => {
     // One "AI Image Editor Closed" event per session, sent when the session settles. An
     // appliedCount of zero is what makes it the abandoned case: it says how much AI work was
     // thrown away, so it must be zero when a session ends without committing, and must NOT be
@@ -705,7 +707,9 @@ describe("aiEditorOverlay: analytics", () => {
         post.mockClear();
         openAgainstABookWithOneImage();
         // Sanity: the new session is up and is the one the window would tear down.
-        expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
+        expect(
+            document.getElementById("ai-image-editor-overlay"),
+        ).not.toBeNull();
 
         onSuccess({
             data: {
@@ -723,7 +727,9 @@ describe("aiEditorOverlay: analytics", () => {
             },
         });
 
-        expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
+        expect(
+            document.getElementById("ai-image-editor-overlay"),
+        ).not.toBeNull();
         expect(
             (window as Window & { __bloomAiImageEditorCleanup?: () => void })
                 .__bloomAiImageEditorCleanup,
@@ -750,7 +756,7 @@ describe("aiEditorOverlay: analytics", () => {
 
         // Sanity: the commit really did close the overlay, so this is not just a session
         // that never ended.
-        expect(document.getElementById("ai-editor-overlay")).toBeNull();
+        expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
         expect(abandonedEvents()).toHaveLength(0);
     });
 });
@@ -763,7 +769,7 @@ describe("aiEditorOverlay: analytics", () => {
 //
 // The counts arrive when the SESSION settles, not when a commit is answered, so a test whose
 // commit leaves the overlay up has to close it before there is anything to assert on.
-describe("aiEditorOverlay: reporting what a commit achieved", () => {
+describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
     const closedEvents = () =>
         trackEvent.mock.calls.filter(
             (call) => call[0] === "AI Image Editor Closed",
@@ -941,7 +947,9 @@ describe("aiEditorOverlay: reporting what a commit achieved", () => {
             ],
         );
         // Sanity: the overlay is still up, so nothing has been reported yet.
-        expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
+        expect(
+            document.getElementById("ai-image-editor-overlay"),
+        ).not.toBeNull();
         expect(closedEvents()).toHaveLength(0);
 
         closeButton.click();

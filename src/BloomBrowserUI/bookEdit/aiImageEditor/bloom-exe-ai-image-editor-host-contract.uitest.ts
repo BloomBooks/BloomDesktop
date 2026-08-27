@@ -18,7 +18,7 @@ import { connectToBloomExe } from "../../react_components/component-tester/bloom
 // PRECONDITION: Bloom running in the Edit tab with a book selected (launch needs a current
 // book). Run from src/BloomBrowserUI with Bloom up:
 //   pnpm exec playwright test --config react_components/component-tester/playwright.bloom-exe.config.ts \
-//       bookEdit/toolbox/canvas/bloom-exe-ai-editor-host-contract.uitest.ts
+//       bookEdit/aiImageEditor/bloom-exe-ai-image-editor-host-contract.uitest.ts
 
 const kFileEndpoint = "/bloom/api/aiImageEditor/file";
 const kLaunchEndpoint = "/bloom/api/aiImageEditor/launch";

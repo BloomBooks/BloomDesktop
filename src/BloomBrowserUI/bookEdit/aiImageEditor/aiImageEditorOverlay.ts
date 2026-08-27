@@ -5,19 +5,19 @@
 // canvasControlRegistry.ts): the page frame gets reloaded whenever the page is saved, and
 // an overlay whose own controls belonged to that frame would be left on screen with
 // nothing able to close it. Everything that needs the live page is asked of the page
-// frame through getEditablePageBundleExports() (see aiEditorPageCommands.ts).
+// frame through getEditablePageBundleExports() (see aiImageEditorPageCommands.ts).
 //
 // The C# half is AiImageEditorApi.cs (read that file's header for the full picture). The
 // AI Image Editor is a SEPARATE web app (the `bloom-ai-image-tools` package); we do not
 // import it — we load it into an <iframe> overlay. The flow:
-//   0. The menu command (aiEditorPageCommands.launchAiImageEditor, in the page frame)
+//   0. The menu command (aiImageEditorPageCommands.launchAiImageEditor, in the page frame)
 //      POSTs aiImageEditor/saveThenLaunch. C# saves the page being edited — which the
 //      whole-book image list below depends on, and which reloads the page frame — and then
 //      calls openAiImageEditor() here. See HandleSaveThenLaunch.
 //   1. POST aiImageEditor/launch -> C# mints a session, makes the per-book
 //      .ai-image-editor folder, and returns the AI Image Editor URL + the whole-book image
 //      list + enumerated history + httpBase/sessionToken.
-//   2. Build a fixed overlay <div id="ai-editor-overlay"> holding an <iframe> at
+//   2. Build a fixed overlay <div id="ai-image-editor-overlay"> holding an <iframe> at
 //      that URL with ?mode=bloom-iframe.
 //   3. Handshake over window.postMessage on channel "bloom-ai-image-tools": the
 //      AI Image Editor posts `ready`; we post `init` (the launch reply + the right-clicked
@@ -43,7 +43,7 @@ import {
     IAiImageEditorCommitResult,
     IAiImageEditorTarget,
     isCurrentPageSwap,
-} from "./aiEditorShared";
+} from "./aiImageEditorShared";
 
 // The analytics events the AI Image Editor may ask us to send, mapping the name IT uses to the
 // name we record. Bloom is what actually posts to Segment, and a name it does not recognize
@@ -64,7 +64,7 @@ import {
 // A Map, not an object literal: with an object, `event in obj` is also true for inherited members,
 // so an event named "toString" or "constructor" would be treated as permitted. Map.get() only sees
 // real entries.
-const kAnalyticsEventsTheAiEditorMaySend = new Map<string, string>([
+const kAnalyticsEventsTheAiImageEditorMaySend = new Map<string, string>([
     ["AI Editor Generate", "AI Image Editor Generate"],
 ]);
 
@@ -249,12 +249,12 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             sessionEnded = true;
             reportClosed();
             hostWindow.removeEventListener("message", handleMessage);
-            hostDocument.getElementById("ai-editor-overlay")?.remove();
+            hostDocument.getElementById("ai-image-editor-overlay")?.remove();
             delete hostWindow.__bloomAiImageEditorCleanup;
         };
 
         const overlay = hostDocument.createElement("div");
-        overlay.id = "ai-editor-overlay";
+        overlay.id = "ai-image-editor-overlay";
         Object.assign(overlay.style, {
             position: "fixed",
             inset: "8px",
@@ -608,10 +608,10 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     // Known event names only, so an unrecognized one cannot invent a new event type
                     // in our data, and each is recorded under Bloom's own name for it. Their
                     // properties are passed through as sent -- see the comment on
-                    // kAnalyticsEventsTheAiEditorMaySend.
+                    // kAnalyticsEventsTheAiImageEditorMaySend.
                     const event = data.payload?.event;
                     const ourNameForIt = event
-                        ? kAnalyticsEventsTheAiEditorMaySend.get(event)
+                        ? kAnalyticsEventsTheAiImageEditorMaySend.get(event)
                         : undefined;
                     if (!ourNameForIt) {
                         if (event) {
