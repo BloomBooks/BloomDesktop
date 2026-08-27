@@ -46,7 +46,12 @@ const kImageFile = "old.png";
 // handles a test needs, with the overlay up and the AI Image Editor about to be sent its `init`.
 const openAgainstABookWithOneImage = (
     target = { pageId: kPageId, imageFileName: kImageFile },
-    bookImages: Array<{ id: string; src: string; isPlaceholder?: boolean }> = [
+    bookImages: Array<{
+        id: string;
+        src: string;
+        isPlaceholder?: boolean;
+        suggestedTarget?: { width: number; height: number; memo?: string };
+    }> = [
         {
             id: `${kPageId}:0`,
             src: `http://localhost:8089/bloom/book/${kImageFile}`,
@@ -220,6 +225,38 @@ describe("aiEditorOverlay: the edit target", () => {
         const payload = getInitPayloadSentToEditor(iframe, postFromEditor);
 
         expect(payload.selectedBookImageId).toBeUndefined();
+    });
+});
+
+describe("aiEditorOverlay: per-slot fields C# adds", () => {
+    test("suggestedTarget rides through to the init payload untouched", () => {
+        // The overlay does not read or rewrite the per-slot fields; it spreads launchData
+        // into `init`. This pins that, so adding a field in C# needs no change here.
+        const suggestedTarget = {
+            width: 1234,
+            height: 567,
+            memo: "1234 x 567 in order to achieve 300dpi for this 30mm x 20mm image container",
+        };
+        const { iframe, postFromEditor } = openAgainstABookWithOneImage(
+            { pageId: kPageId, imageFileName: kImageFile },
+            [
+                {
+                    id: `${kPageId}:0`,
+                    src: `http://localhost:8089/bloom/book/${kImageFile}`,
+                    suggestedTarget,
+                },
+            ],
+        );
+
+        const payload = getInitPayloadSentToEditor(
+            iframe,
+            postFromEditor,
+        ) as unknown as {
+            bookImages: Array<{ suggestedTarget?: unknown }>;
+        };
+
+        expect(payload.bookImages).toHaveLength(1);
+        expect(payload.bookImages[0].suggestedTarget).toEqual(suggestedTarget);
     });
 });
 

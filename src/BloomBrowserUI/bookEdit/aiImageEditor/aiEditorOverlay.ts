@@ -101,9 +101,17 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 id: string;
                 src: string;
                 pageLabel?: string;
-                width?: number;
-                height?: number;
                 isPlaceholder?: boolean;
+                // The resolution C# worked out this slot wants, from the size the image
+                // container occupies on the page and the book's output medium. The AI Image
+                // Editor offers it as its Upscale tool's "Auto" option and shows `memo`
+                // verbatim; null/absent when C# could not tell, and then there is no Auto.
+                // Rides through the `...launchData` spread below.
+                suggestedTarget?: {
+                    width: number;
+                    height: number;
+                    memo?: string;
+                } | null;
             }>;
             references?: Array<{
                 id: string;

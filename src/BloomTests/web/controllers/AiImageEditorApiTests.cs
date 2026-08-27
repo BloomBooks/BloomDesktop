@@ -1687,5 +1687,329 @@ namespace BloomTests.web.controllers
             Assert.That(attributes.creator, Is.EqualTo(img.GetAttribute("data-creator")));
             Assert.That(attributes.license, Is.EqualTo(img.GetAttribute("data-license")));
         }
+
+        // ------------------------------------------------------------------
+        // suggestedTarget: the resolution Bloom asks the AI image editor to aim for, worked out
+        // from the size the image container occupies on the page and the book's output medium.
+        // ------------------------------------------------------------------
+
+        private static readonly ImagePublishSettings _defaultDigitalImageSettings =
+            new ImagePublishSettings();
+
+        [Test]
+        public void ComputeSuggestedTarget_PaperPage_Wants300DpiForTheContainersPhysicalSize()
+        {
+            // 480 x 320 CSS px is 5 x 3.333 inches (96 px to the inch), so 300dpi wants
+            // 1500 x 1000.
+            var target = AiImageEditorApi.ComputeSuggestedTarget(
+                "A5Portrait",
+                480,
+                320,
+                _defaultDigitalImageSettings,
+                600,
+                400
+            );
+
+            Assert.That(target, Is.Not.Null);
+            Assert.That(target.width, Is.EqualTo(1500));
+            Assert.That(target.height, Is.EqualTo(1000));
+            Assert.That(
+                target.memo,
+                Is.EqualTo(
+                    "Upscale the existing 600 x 400 image to 1500 x 1000 in order to supply "
+                        + "300 dpi for this 127mm x 84.7mm image container."
+                )
+            );
+        }
+
+        [Test]
+        public void ComputeSuggestedTarget_NoExistingImageSize_MemoDropsThatClause()
+        {
+            // An empty placeholder slot, or an image whose header we couldn't read: there is
+            // nothing to say we are upscaling FROM.
+            var target = AiImageEditorApi.ComputeSuggestedTarget(
+                "A5Portrait",
+                480,
+                320,
+                _defaultDigitalImageSettings,
+                0,
+                0
+            );
+
+            Assert.That(
+                target.memo,
+                Is.EqualTo(
+                    "Upscale the image to 1500 x 1000 in order to supply 300 dpi for this "
+                        + "127mm x 84.7mm image container."
+                )
+            );
+        }
+
+        [TestCase(1500, 0, TestName = "ComputeSuggestedTarget_ExistingHeightMissing_DropsClause")]
+        [TestCase(0, 1627, TestName = "ComputeSuggestedTarget_ExistingWidthMissing_DropsClause")]
+        [TestCase(-1, -1, TestName = "ComputeSuggestedTarget_ExistingSizeNonsense_DropsClause")]
+        public void ComputeSuggestedTarget_HalfKnownExistingSize_MemoDropsThatClause(
+            int existingWidth,
+            int existingHeight
+        )
+        {
+            // Half a size is no use to a reader, so it is treated as no size at all rather
+            // than printed as "1500 x 0".
+            var target = AiImageEditorApi.ComputeSuggestedTarget(
+                "A5Portrait",
+                480,
+                320,
+                _defaultDigitalImageSettings,
+                existingWidth,
+                existingHeight
+            );
+
+            Assert.That(target.memo, Does.StartWith("Upscale the image to 1500 x 1000"));
+        }
+
+        [Test]
+        public void ComputeSuggestedTarget_PaperPage_RoundsToWholePixels()
+        {
+            // A real canvas element's inline size is fractional; the wire carries integers.
+            var target = AiImageEditorApi.ComputeSuggestedTarget(
+                "A5Portrait",
+                254.663,
+                231,
+                _defaultDigitalImageSettings
+            );
+
+            Assert.That(target.width, Is.EqualTo(796)); // 254.663 * 3.125 = 795.83
+            Assert.That(target.height, Is.EqualTo(722)); // 231 * 3.125 = 721.875
+        }
+
+        [Test]
+        public void ComputeSuggestedTarget_BigContainer_IsNotCappedAtBloomsMaximumImageSize()
+        {
+            // Bloom does shrink an oversized committed result, but the suggestion says what
+            // the page actually wants rather than pre-shrinking the request.
+            // Sanity: 2000 x 1200 px at 300dpi really is past the box, so this test isn't
+            // watching a number that would have survived a cap anyway.
+            Assert.That(6250, Is.GreaterThan(ImageUtils.MaxLength), "setup");
+
+            var target = AiImageEditorApi.ComputeSuggestedTarget(
+                "A4Landscape",
+                2000,
+                1200,
+                _defaultDigitalImageSettings
+            );
+
+            Assert.That(target.width, Is.EqualTo(6250));
+            Assert.That(target.height, Is.EqualTo(3750));
+            Assert.That(
+                target.memo,
+                Is.EqualTo(
+                    "Upscale the image to 6250 x 3750 in order to supply 300 dpi for this "
+                        + "529.2mm x 317.5mm image container."
+                )
+            );
+        }
+
+        // Both of these are page sizes that are only ever read on a screen, so 300dpi means
+        // nothing: the container gets its share of the 1280 x 720 a BloomPUB image is allowed,
+        // oriented like the page. The containers here are half of each page in both directions.
+        [TestCase(
+            "Device16x9Portrait",
+            189,
+            336,
+            360,
+            640,
+            720,
+            1280,
+            TestName = "ComputeSuggestedTarget_DigitalPortraitPage_ScalesTheBloomPubCeiling"
+        )]
+        [TestCase(
+            "PictureStoryLandscape",
+            336,
+            189,
+            640,
+            360,
+            1280,
+            720,
+            TestName = "ComputeSuggestedTarget_DigitalLandscapePage_OrientsTheBloomPubCeiling"
+        )]
+        public void ComputeSuggestedTarget_DigitalOnlyPage_ScalesTheBloomPubCeiling(
+            string pageSize,
+            double containerWidthPx,
+            double containerHeightPx,
+            int expectedWidth,
+            int expectedHeight,
+            int expectedBoxWidth,
+            int expectedBoxHeight
+        )
+        {
+            // Sanity: the defaults this rule rests on are what we think they are.
+            Assert.That(_defaultDigitalImageSettings.MaxWidth, Is.EqualTo(1280), "setup");
+            Assert.That(_defaultDigitalImageSettings.MaxHeight, Is.EqualTo(720), "setup");
+
+            var target = AiImageEditorApi.ComputeSuggestedTarget(
+                pageSize,
+                containerWidthPx,
+                containerHeightPx,
+                _defaultDigitalImageSettings,
+                1500,
+                1627
+            );
+
+            Assert.That(target, Is.Not.Null);
+            Assert.That(target.width, Is.EqualTo(expectedWidth));
+            Assert.That(target.height, Is.EqualTo(expectedHeight));
+            Assert.That(
+                target.memo,
+                Is.EqualTo(
+                    $"Upscale the existing 1500 x 1627 image to {expectedWidth} x "
+                        + $"{expectedHeight} to fill this image container at the digital "
+                        + $"publish size ({expectedBoxWidth} x {expectedBoxHeight})."
+                )
+            );
+        }
+
+        [Test]
+        public void ComputeSuggestedTarget_DigitalOnlyPageNoExistingSize_MemoDropsThatClause()
+        {
+            var target = AiImageEditorApi.ComputeSuggestedTarget(
+                "Device16x9Portrait",
+                189,
+                336,
+                _defaultDigitalImageSettings
+            );
+
+            Assert.That(
+                target.memo,
+                Is.EqualTo(
+                    "Upscale the image to 360 x 640 to fill this image container at the "
+                        + "digital publish size (720 x 1280)."
+                )
+            );
+        }
+
+        [TestCase(
+            "NoSuchPageSize",
+            480,
+            320,
+            TestName = "ComputeSuggestedTarget_UnknownPageSize_IsNull"
+        )]
+        [TestCase(null, 480, 320, TestName = "ComputeSuggestedTarget_NoPageSize_IsNull")]
+        [TestCase("A5Portrait", 0, 320, TestName = "ComputeSuggestedTarget_NoWidth_IsNull")]
+        [TestCase("A5Portrait", 480, 0, TestName = "ComputeSuggestedTarget_NoHeight_IsNull")]
+        [TestCase("A5Portrait", -10, 320, TestName = "ComputeSuggestedTarget_NegativeWidth_IsNull")]
+        public void ComputeSuggestedTarget_Unknowable_IsNull(
+            string pageSize,
+            double containerWidthPx,
+            double containerHeightPx
+        )
+        {
+            // Null means "no suggestion", which is what leaves the AI image editor with no
+            // "Auto" option. Guessing would be worse than saying nothing.
+            Assert.That(
+                AiImageEditorApi.ComputeSuggestedTarget(
+                    pageSize,
+                    containerWidthPx,
+                    containerHeightPx,
+                    _defaultDigitalImageSettings
+                ),
+                Is.Null
+            );
+        }
+
+        // Returns the img in a page built from the given markup, for the container-size tests.
+        private static Bloom.SafeXml.SafeXmlElement MakeImgInMarkup(string markup)
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page A5Portrait side-right' id='page1'><div class='marginBox'>"
+                    + markup
+                    + @"</div></div>
+                  </body></html>"
+            );
+            return (Bloom.SafeXml.SafeXmlElement)dom.RawDom.SelectSingleNode("//img");
+        }
+
+        [Test]
+        public void TryGetContainerSizeInCssPixels_CanvasElementWithInlinePx_ReadsIt()
+        {
+            var img = MakeImgInMarkup(
+                @"<div class='bloom-canvas'>
+                    <div class='bloom-canvas-element bloom-backgroundImage' style='width: 254.663px; top: 0px; left: 197.168px; height: 231px;'>
+                        <div class='bloom-imageContainer'><img src='pic.png'/></div>
+                    </div>
+                  </div>"
+            );
+
+            var ok = AiImageEditorApi.TryGetContainerSizeInCssPixels(
+                img,
+                out var widthPx,
+                out var heightPx
+            );
+
+            Assert.That(ok, Is.True);
+            Assert.That(widthPx, Is.EqualTo(254.663).Within(0.0001));
+            Assert.That(heightPx, Is.EqualTo(231).Within(0.0001));
+        }
+
+        [TestCase(
+            "<div class='bloom-canvas'><img src='pic.png'/></div>",
+            TestName = "TryGetContainerSizeInCssPixels_BareCanvas_Fails"
+        )]
+        [TestCase(
+            "<img src='pic.png'/>",
+            TestName = "TryGetContainerSizeInCssPixels_XMatterCoverImage_Fails"
+        )]
+        [TestCase(
+            "<div class='bloom-canvas-element'><img src='pic.png'/></div>",
+            TestName = "TryGetContainerSizeInCssPixels_CanvasElementWithNoStyle_Fails"
+        )]
+        [TestCase(
+            "<div class='bloom-canvas-element' style='width: 50%; height: 40%;'><img src='pic.png'/></div>",
+            TestName = "TryGetContainerSizeInCssPixels_PercentageSize_Fails"
+        )]
+        [TestCase(
+            "<div class='bloom-canvas-element' style='width: 254px; left: 0px;'><img src='pic.png'/></div>",
+            TestName = "TryGetContainerSizeInCssPixels_WidthButNoHeight_Fails"
+        )]
+        public void TryGetContainerSizeInCssPixels_NoInlinePxSize_Fails(string markup)
+        {
+            var ok = AiImageEditorApi.TryGetContainerSizeInCssPixels(
+                MakeImgInMarkup(markup),
+                out var widthPx,
+                out var heightPx
+            );
+
+            Assert.That(ok, Is.False, "there is no px size to read here");
+            Assert.That(widthPx * heightPx, Is.EqualTo(0), "a failure must yield no size");
+        }
+
+        [Test]
+        public void GetPageSizeAndOrientationClass_FindsTheOrientationClass()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page side-right A5Portrait bloom-monolingual' id='page1'></div>
+                  </body></html>"
+            );
+            var page = (Bloom.SafeXml.SafeXmlElement)dom.RawDom.SelectSingleNode("//div");
+
+            Assert.That(
+                AiImageEditorApi.GetPageSizeAndOrientationClass(page),
+                Is.EqualTo("A5Portrait")
+            );
+        }
+
+        [Test]
+        public void GetPageSizeAndOrientationClass_NoSuchClass_IsNull()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page side-right' id='page1'></div>
+                  </body></html>"
+            );
+            var page = (Bloom.SafeXml.SafeXmlElement)dom.RawDom.SelectSingleNode("//div");
+
+            Assert.That(AiImageEditorApi.GetPageSizeAndOrientationClass(page), Is.Null);
+        }
     }
 }

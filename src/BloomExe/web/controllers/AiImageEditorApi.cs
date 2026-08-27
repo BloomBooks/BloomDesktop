@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -9,6 +10,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
+using Bloom.Publish.Epub;
 using Bloom.SafeXml;
 using Newtonsoft.Json;
 using SIL.Core.ClearShare;
@@ -915,6 +917,230 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// The resolution one image slot wants, sent on each launch <c>bookImages</c> entry.
+        /// The AI image editor offers it as its Upscale tool's "Auto" option and shows
+        /// <see cref="memo"/> verbatim beside the number, never parsing it. Property names are
+        /// the wire (JSON) names and match the AI image editor's suggestedTarget.
+        /// </summary>
+        internal class SuggestedTarget
+        {
+            public int width { get; set; }
+            public int height { get; set; }
+
+            /// <summary>Free text saying how Bloom arrived at the number, e.g. "1234 x 567 in
+            /// order to achieve 300dpi for this 30mm x 20mm image container".</summary>
+            public string memo { get; set; }
+        }
+
+        // 1 CSS px is exactly 1/96 inch, which is the unit canvas elements' inline width/height
+        // are saved in.
+        private const double CssPixelsPerInch = 96.0;
+
+        // What a printed illustration is expected to achieve.
+        private const int PrintDpi = 300;
+
+        // Page sizes that exist only to be read on a screen, so there is no paper size to hit
+        // 300dpi on. See src/content/bookLayout/paperDimensions.less.
+        private static readonly HashSet<string> DigitalOnlyPageSizes = new HashSet<string>
+        {
+            "Device16x9Portrait",
+            "Device16x9Landscape",
+            "PictureStoryLandscape",
+            "Ebook2x3Portrait",
+            "Ebook7x5Landscape",
+        };
+
+        // Matches "width: 254.663px" (or height) as one declaration of an inline style
+        // attribute. Canvas elements are saved with their size in px; anything else (a
+        // percentage, or no size at all) leaves us with no size to compute from.
+        private static readonly Regex InlinePxDimension = new Regex(
+            @"(?:^|;)\s*(?<name>width|height)\s*:\s*(?<value>[0-9]*\.?[0-9]+)\s*px\s*(?=;|$)",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase
+        );
+
+        /// <summary>
+        /// The page-size-and-orientation class of a .bloom-page, e.g. "A5Portrait" — the one
+        /// class token that names an orientation. Null when the page has none. Returned
+        /// verbatim (not through <see cref="SizeAndOrientation"/>) because it is used as a
+        /// case-sensitive key into pageSizes.json, and Bloom writes those names canonically.
+        /// Internal for testing.
+        /// </summary>
+        internal static string GetPageSizeAndOrientationClass(SafeXmlElement page)
+        {
+            foreach (var part in (page.GetAttribute("class") ?? "").Split(' '))
+            {
+                var lower = part.ToLowerInvariant();
+                if (lower.Contains("portrait") || lower.Contains("landscape"))
+                    return part;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// The size in CSS pixels of the canvas element holding this image, read from the
+        /// inline width/height a canvas element is saved with. Returns false when there is no
+        /// such enclosing element or it has no px size — a bare .bloom-canvas or an xmatter
+        /// cover image, whose size only the layout engine knows. Internal for testing.
+        /// </summary>
+        internal static bool TryGetContainerSizeInCssPixels(
+            SafeXmlElement imageHolder,
+            out double widthPx,
+            out double heightPx
+        )
+        {
+            widthPx = 0;
+            heightPx = 0;
+            for (var element = imageHolder; element != null; element = element.ParentElement)
+            {
+                if (!element.HasClass("bloom-canvas-element"))
+                    continue;
+                var style = element.GetAttribute("style") ?? "";
+                foreach (Match match in InlinePxDimension.Matches(style))
+                {
+                    var value = double.Parse(
+                        match.Groups["value"].Value,
+                        CultureInfo.InvariantCulture
+                    );
+                    if (match.Groups["name"].Value.ToLowerInvariant() == "width")
+                        widthPx = value;
+                    else
+                        heightPx = value;
+                }
+                return widthPx > 0 && heightPx > 0;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// The resolution to suggest for the image slot at <paramref name="imageHolder"/> on
+        /// <paramref name="page"/>, or null when we cannot work one out. See
+        /// <see cref="ComputeSuggestedTarget"/> for the arithmetic and for what
+        /// <paramref name="existingImagePath"/> contributes (its pixel size, read from the
+        /// file's header, for the memo's "the existing W x H image"; null for an empty
+        /// placeholder slot).
+        /// </summary>
+        private static SuggestedTarget ComputeSuggestedTargetForSlot(
+            SafeXmlElement page,
+            SafeXmlElement imageHolder,
+            ImagePublishSettings digitalImageSettings,
+            string existingImagePath
+        )
+        {
+            if (!TryGetContainerSizeInCssPixels(imageHolder, out var widthPx, out var heightPx))
+                return null;
+            // (0,0) when the path is null or the format has no header we can read (e.g. an
+            // svg), which just drops the clause naming the current size.
+            var existing = ImageGalleryApi.GetImageDimensions(existingImagePath);
+            return ComputeSuggestedTarget(
+                GetPageSizeAndOrientationClass(page),
+                widthPx,
+                heightPx,
+                digitalImageSettings,
+                existing.width,
+                existing.height
+            );
+        }
+
+        /// <summary>
+        /// Works out the resolution an image slot wants from the size its container occupies on
+        /// the page and the book's output medium, and explains the number in
+        /// <see cref="SuggestedTarget.memo"/>. Null (no suggestion at all, so the AI image
+        /// editor offers no "Auto") when the container size or the page size is unknown.
+        ///
+        /// For a paper page size the answer is simply what <see cref="PrintDpi"/> needs for the
+        /// container's physical size. A digital-only page size has no physical size, so instead
+        /// we give the container its share of the image resolution a BloomPUB page gets
+        /// (<paramref name="digitalImageSettings"/>, 1280 x 720 by default, oriented like the
+        /// page). The raw number is what we ask for: Bloom does shrink an oversized committed
+        /// result, but it is more useful to say what the page actually wants than to pre-shrink
+        /// the request to what Bloom will keep.
+        ///
+        /// The existing image's pixel size, when known, only appears in the memo — it says what
+        /// the user is upscaling FROM, which is what makes the target meaningful. Pass 0 for
+        /// either dimension (an empty placeholder slot, or a file whose header we couldn't
+        /// read) and the memo simply leaves that clause out.
+        ///
+        /// Internal for testing.
+        /// </summary>
+        internal static SuggestedTarget ComputeSuggestedTarget(
+            string pageSizeAndOrientation,
+            double containerWidthPx,
+            double containerHeightPx,
+            ImagePublishSettings digitalImageSettings,
+            int existingImageWidth = 0,
+            int existingImageHeight = 0
+        )
+        {
+            if (containerWidthPx <= 0 || containerHeightPx <= 0)
+                return null;
+            if (
+                !EpubMaker.TryGetPageDimensions(
+                    pageSizeAndOrientation,
+                    out var pageWidthPx,
+                    out var pageHeightPx
+                )
+            )
+                return null;
+
+            var isDigitalOnly = DigitalOnlyPageSizes.Contains(pageSizeAndOrientation);
+            double wantedWidth;
+            double wantedHeight;
+            var digitalBoxWidth = 0;
+            var digitalBoxHeight = 0;
+            if (isDigitalOnly)
+            {
+                var longSide = (int)
+                    Math.Max(digitalImageSettings.MaxWidth, digitalImageSettings.MaxHeight);
+                var shortSide = (int)
+                    Math.Min(digitalImageSettings.MaxWidth, digitalImageSettings.MaxHeight);
+                var pageIsLandscape = pageWidthPx > pageHeightPx;
+                digitalBoxWidth = pageIsLandscape ? longSide : shortSide;
+                digitalBoxHeight = pageIsLandscape ? shortSide : longSide;
+                wantedWidth = containerWidthPx / pageWidthPx * digitalBoxWidth;
+                wantedHeight = containerHeightPx / pageHeightPx * digitalBoxHeight;
+            }
+            else
+            {
+                wantedWidth = containerWidthPx * PrintDpi / CssPixelsPerInch;
+                wantedHeight = containerHeightPx * PrintDpi / CssPixelsPerInch;
+            }
+
+            var width = (int)Math.Round(wantedWidth);
+            var height = (int)Math.Round(wantedHeight);
+            if (width <= 0 || height <= 0)
+                return null;
+
+            // "Upscale the existing 1500 x 1627 image to" when we know what is there now, else
+            // just "Upscale the image to".
+            var upscaleFrom =
+                existingImageWidth > 0 && existingImageHeight > 0
+                    ? $"Upscale the existing {existingImageWidth} x {existingImageHeight} image to"
+                    : "Upscale the image to";
+            string memo;
+            if (isDigitalOnly)
+                memo =
+                    $"{upscaleFrom} {width} x {height} to fill this image container at the "
+                    + $"digital publish size ({digitalBoxWidth} x {digitalBoxHeight}).";
+            else
+                memo =
+                    $"{upscaleFrom} {width} x {height} in order to supply {PrintDpi} dpi for "
+                    + $"this {FormatMillimeters(containerWidthPx)}mm x "
+                    + $"{FormatMillimeters(containerHeightPx)}mm image container.";
+
+            return new SuggestedTarget
+            {
+                width = width,
+                height = height,
+                memo = memo,
+            };
+        }
+
+        // Millimetres for a CSS pixel length, to at most one decimal place, in the invariant
+        // culture (this text goes into JSON, not onto a localized label).
+        private static string FormatMillimeters(double cssPixels) =>
+            (cssPixels * 25.4 / CssPixelsPerInch).ToString("0.#", CultureInfo.InvariantCulture);
+
+        /// <summary>
         /// Enumerates every image the user is allowed to change across the whole book — all
         /// pages including front cover and xmatter, including empty placeholder slots —
         /// excluding only branding and license images. Each entry is a reference (id +
@@ -925,6 +1151,9 @@ namespace Bloom.web.controllers
         {
             var images = new List<object>();
             var folderAsUrlPrefix = book.FolderPath.Replace("\\", "/");
+            // Only used for digital-only page sizes, but reading it once keeps the per-slot
+            // computation free of the book.
+            var digitalImageSettings = book.BookInfo.PublishSettings.BloomPub.ImageSettings;
             var pages = book
                 .OurHtmlDom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
                 .OfType<SafeXmlElement>();
@@ -958,6 +1187,8 @@ namespace Bloom.web.controllers
                     if (!IsImageFileName(relativePath))
                         continue;
 
+                    var isPlaceholder = ImageUtils.IsPlaceholderImageFilename(relativePath);
+
                     images.Add(
                         new
                         {
@@ -967,13 +1198,25 @@ namespace Bloom.web.controllers
                             // The AI image editor shows its own placeholder graphic for empty
                             // slots rather than trying to load the (book-less)
                             // placeHolder.png.
-                            isPlaceholder = ImageUtils.IsPlaceholderImageFilename(relativePath),
+                            isPlaceholder,
                             // The image's current credits, so a result derived from it can
                             // carry (or amend) them. The AI image editor owns the credit
                             // *decision* and hands back whatever it chose on commit; Bloom
                             // only embeds that into the file. Null when the image has no
                             // usable metadata.
                             credits = GetCreditsForImageFile(book.FolderPath, relativePath),
+                            // What resolution this slot wants, so the AI image editor can
+                            // offer to upscale to it. Null where we can't tell (see
+                            // ComputeSuggestedTarget); partial coverage across a book is
+                            // expected.
+                            suggestedTarget = ComputeSuggestedTargetForSlot(
+                                page,
+                                element,
+                                digitalImageSettings,
+                                // A placeholder slot holds no image to upscale FROM, so we
+                                // don't go reading placeHolder.png's size.
+                                isPlaceholder ? null : Path.Combine(book.FolderPath, relativePath)
+                            ),
                         }
                     );
                 }

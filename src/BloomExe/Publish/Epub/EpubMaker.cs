@@ -586,6 +586,28 @@ namespace Bloom.Publish.Epub
 
         public static void GetPageDimensions(string pageSize, out double width, out double height)
         {
+            if (TryGetPageDimensions(pageSize, out width, out height))
+                return;
+            // unknown: use A5Portrait
+            TryGetPageDimensions("A5Portrait", out width, out height);
+        }
+
+        /// <summary>
+        /// The width and height in CSS pixels (96 to the inch) of the named page size, e.g.
+        /// "A5Portrait", from pageSizes.json. Returns false, leaving both zero, when the name
+        /// is not one of the sizes listed there — which callers that must not silently
+        /// substitute another page size need to know.
+        /// </summary>
+        public static bool TryGetPageDimensions(
+            string pageSize,
+            out double width,
+            out double height
+        )
+        {
+            width = 0;
+            height = 0;
+            if (string.IsNullOrEmpty(pageSize))
+                return false;
             var path = FileLocationUtilities.GetFileDistributedWithApplication("pageSizes.json");
             var json = RobustFile.ReadAllText(path);
             var sizes = DynamicJson.Parse(json).sizes;
@@ -596,12 +618,10 @@ namespace Bloom.Publish.Epub
                 {
                     width = ConvertDimension(sizes[i].width);
                     height = ConvertDimension(sizes[i].height);
-                    return;
+                    return true;
                 }
             }
-            // unknown: use first (which should be A5Portrait)
-            width = ConvertDimension(sizes[0].width);
-            height = ConvertDimension(sizes[0].height);
+            return false;
         }
 
         // Method must parse the json input in a culture invariant manner, since the computer's culture may not match
