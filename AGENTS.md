@@ -224,6 +224,12 @@ then the PR title, then recent commit messages. Not every branch has a card — 
 cleanups, branding tweaks, tooling) is done without one, so finding no id is a normal outcome, not
 a reason to go hunting.
 
+**A `[6.X]` prefix on a card's summary names the target branch.** If a card's summary starts
+with something like `[6.4]` or `[6.5]`, the fix belongs on that `VersionX.Y` branch. Before
+starting, check the branch you are about to branch from and the PR base you plan to use; if
+they don't match the prefix, stop and confirm the target with the user rather than guessing.
+A card with no prefix has no branch requirement from this rule.
+
 # Skills
 Reusable, task-specific procedures for this repo live in `.github/skills/<name>/SKILL.md`.
 When a request matches one of these, READ the matching `SKILL.md` and follow it as the
