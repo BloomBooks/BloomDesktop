@@ -1055,6 +1055,17 @@ namespace Bloom
         /// Running a genuine loop instead makes the original intent true: the command's awaits resume on
         /// this STA thread, which is pumping messages, so a browser created here can finish initializing
         /// and can be used for the whole run.
+        ///
+        /// ⚠ The flip side, and the one thing to know before adding console code: because awaits now
+        /// come back to this thread, **sync-over-async on this thread can deadlock**, where under the old
+        /// DoEvents wait it could not. If a console verb blocks on a Task (<c>.Result</c>,
+        /// <c>.Wait()</c>, <c>GetAwaiter().GetResult()</c>) and that Task can only complete by running a
+        /// continuation posted back to this context, nothing will ever run it. The blocking calls on the
+        /// existing console paths were checked and are safe: they wait either on library tasks that use
+        /// <c>ConfigureAwait(false)</c> internally (the AWS SDK, HttpClient), or on work owned by another
+        /// thread (OffScreenBrowser completes its own), and <see cref="Bloom.Utils.AsyncUtil"/> pins its
+        /// work to <c>TaskScheduler.Default</c> for exactly this reason. New code that blocks on one of
+        /// Bloom's own async methods is the case to avoid — await it, or route it through AsyncUtil.
         /// </remarks>
         /// <param name="startCommand">
         /// Starts the command and returns its Task. It is invoked from inside the message loop, not
@@ -1105,8 +1116,16 @@ namespace Bloom
 
             if (startupError != null)
                 ExceptionDispatchInfo.Capture(startupError).Throw();
-            // The loop ended because the task completed, so reading Result here neither blocks nor
-            // deadlocks. As before, a command that failed surfaces its exception from this line.
+            // Normally the loop ended *because* the task completed, so reading Result below neither
+            // blocks nor deadlocks. But if something else ended the loop (a stray Application.Exit
+            // from inside a command, say), Result would block this thread forever. A console tool that
+            // hangs is the worst thing this method could do, so say what happened instead.
+            if (commandTask == null || !commandTask.IsCompleted)
+                throw new ApplicationException(
+                    "The console message loop ended before the command finished, so its exit code is"
+                        + " unavailable. Something other than the command ending stopped the loop."
+                );
+            // As before, a command that failed surfaces its exception from this line.
             return commandTask.Result;
         }
 
