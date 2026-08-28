@@ -66,20 +66,29 @@ namespace Bloom.FreezeDoctor
         /// <summary>
         /// Channels on which the simulator is allowed to act.
         ///
-        /// Developer builds are obvious. **Alpha is here deliberately**: reproducing a freeze usually means
-        /// working with somebody who is actually experiencing it, and those people are on Alpha, not running
-        /// a build from source. Excluding it would have left the simulator useful only on the machines where
-        /// we can least often reproduce the problem.
+        /// Developer builds are obvious. **Alpha and the internal channels are here deliberately**, because
+        /// they are where the Doctor is actually exercised: BetaInternal carries the bulk of our in-house
+        /// testing of a new version, and reproducing a freeze usually means working with somebody who is
+        /// experiencing it, who is on Alpha rather than running a build from source. Restricting this to
+        /// builds from source would leave the simulator useful only on the machines where we can least often
+        /// reproduce the problem.
         ///
-        /// Beta and Release are excluded, and the internal channels are not listed either — add them here if
-        /// that ever proves inconvenient, rather than loosening the test.
+        /// **Beta and Release are excluded, and that is the line that matters**: those are the channels a
+        /// member of the public is on, and nothing there may be broken on purpose. The internal channels are
+        /// named one by one rather than matched on a suffix, so a channel invented later is refused until
+        /// somebody decides otherwise.
+        ///
+        /// Note this is the second of two conditions - <see cref="EnvironmentVariable"/> has to be set as
+        /// well - so widening this list does not arm anything by itself.
         /// </summary>
         private static bool IsChannelWhereWeMayBreakBloomDeliberately(string channelName)
         {
             if (string.IsNullOrEmpty(channelName))
                 return false;
             return channelName.StartsWith("Developer", StringComparison.OrdinalIgnoreCase)
-                || channelName.Equals("Alpha", StringComparison.OrdinalIgnoreCase);
+                || channelName.Equals("Alpha", StringComparison.OrdinalIgnoreCase)
+                || channelName.Equals("BetaInternal", StringComparison.OrdinalIgnoreCase)
+                || channelName.Equals("ReleaseInternal", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -114,7 +123,7 @@ namespace Bloom.FreezeDoctor
             {
                 Logger.WriteEvent(
                     $"{EnvironmentVariable} is set but this is the '{channelName}' channel, so it is being "
-                        + "ignored. Deliberate breakage is for developer and Alpha builds only."
+                        + "ignored. Deliberate breakage is for developer, Alpha and internal builds only."
                 );
                 return false;
             }
