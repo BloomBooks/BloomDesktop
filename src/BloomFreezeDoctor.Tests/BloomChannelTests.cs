@@ -114,33 +114,66 @@ public class BloomChannelTests
     }
 
     [Test]
-    public void Automation_and_headless_runs_are_recognised()
+    public void Headless_console_verb_runs_are_recognised()
     {
         // These legitimately have no window, so without this check every one of them would look
         // like the zombie of plan section 3.6.
         Assert.That(
-            BloomChannel.IsHeadlessOrAutomationRun(
+            BloomChannel.IsHeadlessRun(@"""C:\...\Bloom.exe"" hydrate --bookpath foo"),
+            Is.True
+        );
+        Assert.That(BloomChannel.IsHeadlessRun(@"""C:\...\Bloom.exe"" upload C:\books"), Is.True);
+    }
+
+    [Test]
+    public void An_automation_run_is_not_treated_as_headless()
+    {
+        // `--automation` says nothing about whether there is a window: in Bloom it means multi-instance,
+        // print the ports for the launcher, and show them in the title. It shows the ordinary window.
+        //
+        // This is pinned because getting it wrong was silent and expensive: `go.sh` passes the flag on
+        // EVERY launch, so calling it headless made the Doctor ignore the one Bloom a developer watches
+        // their own changes in, and nothing anywhere looked broken.
+        Assert.That(
+            BloomChannel.IsHeadlessRun(
                 @"""C:\...\Bloom.dll"" --automation --label /x/ --vite-port 50928"
             ),
-            Is.True
+            Is.False
         );
+    }
+
+    [Test]
+    public void A_go_sh_Bloom_is_watched_but_still_never_files()
+    {
+        // The pair of facts that has to hold together after `--automation` stopped meaning headless:
+        // we watch such a Bloom (previous test), and it still cannot reach the tracker. The guard that
+        // does the second job is the CHANNEL - a source build lives in output/Debug - so it holds no
+        // matter what the command line says.
+        var facts = new BloomTargetFacts
+        {
+            ProcessId = 1234,
+            ExePath = @"C:\github\BloomDesktop\output\Debug\AnyCPU\Bloom.exe",
+            Channel = BloomChannel.DeriveFromExePath(
+                @"C:\github\BloomDesktop\output\Debug\AnyCPU\Bloom.exe"
+            ),
+            CommandLine =
+                @"""C:\github\BloomDesktop\output\Debug\AnyCPU\Bloom.dll"" --automation --label go/ --vite-port 50928",
+            StartTime = new DateTime(2026, 8, 28, 9, 0, 0, DateTimeKind.Local),
+        };
+
         Assert.That(
-            BloomChannel.IsHeadlessOrAutomationRun(@"""C:\...\Bloom.exe"" hydrate --bookpath foo"),
-            Is.True
+            BloomChannel.IsHeadlessRun(facts.CommandLine),
+            Is.False,
+            "a go.sh Bloom must be watched"
         );
-        Assert.That(
-            BloomChannel.IsHeadlessOrAutomationRun(@"""C:\...\Bloom.exe"" upload C:\books"),
-            Is.True
-        );
+        Assert.That(facts.NeverFile, Is.True, "and must still never file");
     }
 
     [Test]
     public void An_ordinary_launch_is_not_mistaken_for_a_headless_run()
     {
         Assert.That(
-            BloomChannel.IsHeadlessOrAutomationRun(
-                @"""C:\Users\jt\AppData\Local\Bloom\current\Bloom.exe"" "
-            ),
+            BloomChannel.IsHeadlessRun(@"""C:\Users\jt\AppData\Local\Bloom\current\Bloom.exe"" "),
             Is.False
         );
     }
@@ -151,7 +184,7 @@ public class BloomChannelTests
         // "upload" as a whole argument means the console verb; inside a path it means nothing. Get
         // this wrong and a user with an unlucky folder name gets no reports at all.
         Assert.That(
-            BloomChannel.IsHeadlessOrAutomationRun(
+            BloomChannel.IsHeadlessRun(
                 @"""C:\Bloom\current\Bloom.exe"" ""C:\Users\jt\Documents\Bloom\upload\my.bloomCollection"""
             ),
             Is.False

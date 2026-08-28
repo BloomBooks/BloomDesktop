@@ -24,7 +24,7 @@ public enum BundleState
     Filed,
 
     /// <summary>
-    /// Gathered but deliberately never to be filed: a developer or automation run, or a target seen
+    /// Gathered but deliberately never to be filed: a developer build or headless run, or a target seen
     /// under a debugger. Kept on disk because it is still the evidence, and it is how we test the
     /// gatherer without touching the tracker.
     /// </summary>

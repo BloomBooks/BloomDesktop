@@ -171,8 +171,15 @@ public class BloomTargetWatcherTests
     }
 
     [Test]
-    public void An_automation_run_is_never_filed_either()
+    public void An_automation_flag_does_not_by_itself_stop_an_installed_Bloom_filing()
     {
+        // The reversal of what this test used to assert, and deliberate. `--automation` is not a
+        // "this is a test run" flag: in Bloom it means take the multi-instance path, print the ports,
+        // and show them in the title. An installed Bloom carrying it is somebody's real Bloom, and a
+        // freeze in it is worth a card.
+        //
+        // What protects our own work is the CHANNEL, one test above: a `go.sh` Bloom carries this same
+        // flag but builds into output/Debug, so it is blocked as a developer build regardless.
         var probe = new ScriptedProbe();
         using var watcher = new BloomTargetWatcher(
             Facts(InstalledExe, "\"Bloom.exe\" --automation --label /x/"),
@@ -181,7 +188,29 @@ public class BloomTargetWatcherTests
 
         var reports = RunToFreeze(watcher, probe);
 
-        Assert.That(reports[0].MayFile, Is.False);
+        Assert.That(reports, Has.Count.EqualTo(1));
+        Assert.That(
+            reports[0].MayFile,
+            Is.True,
+            "an installed Bloom is a real Bloom, whatever flags it was launched with"
+        );
+    }
+
+    [Test]
+    public void A_headless_job_run_is_gathered_but_never_filed()
+    {
+        // The command-line verbs are the genuine never-file case on the command line: they serve no
+        // user, so a card about one would be a card about a script.
+        var probe = new ScriptedProbe();
+        using var watcher = new BloomTargetWatcher(
+            Facts(InstalledExe, "\"Bloom.exe\" hydrate --bookpath foo"),
+            probe
+        );
+
+        var reports = RunToFreeze(watcher, probe);
+
+        Assert.That(reports, Has.Count.EqualTo(1));
+        Assert.That(reports[0].MayFile, Is.False, "a headless job must never reach the tracker");
     }
 
     [Test]

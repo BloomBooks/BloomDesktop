@@ -72,15 +72,25 @@ public static class BloomChannel
         channel.StartsWith("Developer", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
-    /// True when a command line says this Bloom is doing a job rather than serving a user: the
-    /// command-line verbs, or an automated test run. Such a process legitimately has no window, so
-    /// without this check every headless run would look like the zombie of plan §3.6.
+    /// True when a command line says this Bloom is doing a job rather than serving a user: one of the
+    /// console verbs. Such a process legitimately has no window, so without this check every headless
+    /// run would look like the zombie of plan §3.6.
+    ///
+    /// **<c>--automation</c> is deliberately NOT one of these**, though it was until someone read what
+    /// the flag actually does. In Bloom it means three things, none of them about windows: take the
+    /// multi-instance path rather than the single-instance token (Program.Main), print
+    /// <c>BLOOM_AUTOMATION_READY</c> with the ports so the launcher can find this instance
+    /// (BloomServer.WriteAutomationStartupInfo), and show those ports in the title bar
+    /// (Shell.ShouldShowPortSummaryInWindowTitle). It shows the ordinary Shell window like any other
+    /// run, and there is no headless Bloom mode in this repo at all.
+    ///
+    /// That mattered because <c>go.sh</c>'s launcher passes <c>--automation</c> on **every** launch,
+    /// developer UI sessions included. So calling it windowless silenced the Doctor for the one Bloom a
+    /// developer actually watches their changes in, and left F5 the only way it ever got exercised.
     /// </summary>
-    public static bool IsHeadlessOrAutomationRun(string commandLine)
+    public static bool IsHeadlessRun(string commandLine)
     {
         var line = commandLine ?? "";
-        if (line.Contains("--automation", StringComparison.OrdinalIgnoreCase))
-            return true;
 
         // Bloom's console verbs, from Program.Main's command-line dispatch. They print to a console
         // and exit; none of them shows a window.

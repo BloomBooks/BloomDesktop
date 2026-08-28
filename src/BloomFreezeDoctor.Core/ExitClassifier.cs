@@ -68,7 +68,7 @@ public sealed record ExitEvidence
     /// </summary>
     public bool DebuggerCouldExplainIt { get; init; }
 
-    /// <summary>A developer or automation run, which is never filed whatever else is true.</summary>
+    /// <summary>A developer build or headless run, which is never filed whatever else is true.</summary>
     public bool NeverFile { get; init; }
 }
 

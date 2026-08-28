@@ -25,7 +25,7 @@ public sealed record GatheredReport
     /// <summary>How long the whole gather took.</summary>
     public required TimeSpan Duration { get; init; }
 
-    /// <summary>False for a developer or automation run, or a target seen under a debugger.</summary>
+    /// <summary>False for a developer build or headless run, or a target seen under a debugger.</summary>
     public required bool MayFile { get; init; }
 
     /// <summary>

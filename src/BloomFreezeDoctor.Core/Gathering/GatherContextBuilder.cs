@@ -133,7 +133,7 @@ public static class GatherContextBuilder
     }
 
     /// <summary>
-    /// Describes a running process as a target, reading its command line so automation runs can be
+    /// Describes a running process as a target, reading its command line so headless runs can be
     /// recognised. Returns null if the process went away while we were asking.
     /// </summary>
     public static BloomTargetFacts? DescribeRunningProcess(int processId)
