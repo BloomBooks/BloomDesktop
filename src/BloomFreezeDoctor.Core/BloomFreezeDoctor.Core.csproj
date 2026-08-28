@@ -23,11 +23,22 @@
     <ProjectReference Include="..\BloomFreezeDoctor.Protocol\BloomFreezeDoctor.Protocol.csproj" />
   </ItemGroup>
 
+  <!--
+    **Every package here that BloomExe also uses must be pinned to the SAME version BloomExe uses.**
+    Not a tidiness rule - the Doctor is installed into Bloom's own folder, which can hold only one copy
+    of any DLL. Disagree, and one of the two runs against a version its .deps.json never named.
+
+    It shows up first as a broken build. A running Doctor holds its DLLs open, and MSBuild skips copying
+    a file that is already identical - so a matched dependency is invisible, while a mismatched one is
+    rewritten on every Bloom build and fails with MSB3027 naming BloomFreezeDoctor. System.Management
+    was at 8.0.0 against BloomExe's 9.0.7 and did exactly that; nothing else collided, because nothing
+    else differed.
+  -->
   <ItemGroup>
     <!-- Reading the Windows Event Log for crash and unexpected-shutdown entries (plan 4.4). -->
     <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.1" />
     <!-- Reading another process's command line, to spot headless runs and the WebView2 debug port. -->
-    <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="System.Management" Version="9.0.7" />
     <!-- Walking managed stacks out of a dump, or out of a live process without suspending it. -->
     <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.1.512801" />
     <!-- Asking the target's own runtime to write its dump, over the diagnostics IPC pipe. -->
@@ -44,6 +55,12 @@
       source of truth for exactly this kind of thing.
     -->
     <PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
+    <!--
+      Not used here: SIL.Core.Desktop drags it in, so it lands in the folder either way. Pinned only to
+      match BloomExe, which asks for beta0005 while our transitive resolution settled on beta0004 - the
+      second half of the mismatch described above.
+    -->
+    <PackageReference Include="L10NSharp" Version="10.0.0-beta0005" />
   </ItemGroup>
 
 </Project>
