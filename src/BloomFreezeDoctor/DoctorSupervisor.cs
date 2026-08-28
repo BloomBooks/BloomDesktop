@@ -785,13 +785,13 @@ public sealed class DoctorSupervisor : IDisposable
                         // too; counting that as proof classified the failure as "Bloom shut down properly"
                         // and reported nothing.
                         //
-                        // The test is the shutdown PHASE, not the record's ForcedByDoctor flag, because
-                        // that flag means two different things: `_endedAtDoctorsRequest || phase == 0`. A
-                        // Doctor asking a healthy Bloom to quit gets a forced flag on a perfectly orderly
-                        // shutdown, and reporting that would be a card about our own request - the mistake
-                        // `_weAskedItToStop` exists to prevent, coming back in through a different door
-                        // whenever the asking and the examining are different Doctor processes. A phase of
-                        // None means the orderly path was never begun, which is the thing worth a card.
+                        // The test is the shutdown PHASE alone, and deliberately NOT the record's
+                        // EndedAtDoctorsRequest. A Doctor asking a healthy Bloom to quit produces a
+                        // perfectly orderly shutdown, and treating that as unproven would file a card about
+                        // our own request - the mistake `_weAskedItToStop` exists to prevent, coming back in
+                        // through a different door whenever the asking and the examining are different
+                        // Doctor processes. A phase of None means the orderly path was never begun, which is
+                        // the thing worth a card.
                         cleanExitProofPresent: session == null
                             ? null
                             : session.Exit != null

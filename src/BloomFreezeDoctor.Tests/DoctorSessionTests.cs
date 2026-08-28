@@ -191,7 +191,11 @@ public class DoctorSessionTests
 
         Assert.That(read!.Exit, Is.Not.Null);
         Assert.That(read.Exit!.ShutdownPhase, Is.EqualTo(BloomShutdownPhase.LogWritten));
-        Assert.That(read.Exit.ForcedByDoctor, Is.False, "this was an ordinary shutdown");
+        Assert.That(
+            read.Exit.EndedAtDoctorsRequest,
+            Is.False,
+            "this was an ordinary shutdown, and nobody asked for it"
+        );
         Assert.That(read.BloomAlreadyReported, Is.False);
     }
 
@@ -249,14 +253,14 @@ public class DoctorSessionTests
             {
                 AtUtc = DateTimeOffset.UtcNow,
                 ShutdownPhase = BloomShutdownPhase.None,
-                ForcedByDoctor = true,
+                EndedAtDoctorsRequest = true,
             },
         };
         DoctorSessionStore.TryWrite(session, _directory);
 
         var read = DoctorSessionStore.TryRead(558, _directory);
 
-        Assert.That(read!.Exit!.ForcedByDoctor, Is.True);
+        Assert.That(read!.Exit!.EndedAtDoctorsRequest, Is.True);
     }
 
     [Test]
@@ -285,6 +289,65 @@ public class DoctorSessionTests
             remaining[0].ProcessId,
             Is.EqualTo(1002),
             "the unexplained exit is precisely what a later Doctor comes looking for"
+        );
+    }
+
+    [Test]
+    public void Only_an_exit_that_was_both_orderly_and_unprompted_is_pruned()
+    {
+        // Two independent reasons to keep a file, and each has to work on its own — which is the whole
+        // reason the record stores the phase and the Doctor's involvement as separate facts. A single
+        // combined flag got this right by accident and could only ever be honestly named for one of them.
+        var orderly = Session(2101) with
+        {
+            Exit = new DoctorSessionExit
+            {
+                AtUtc = DateTimeOffset.UtcNow,
+                ShutdownPhase = BloomShutdownPhase.ProjectContextDisposed,
+            },
+        };
+        // A hard failure: it left a record, but never began the orderly path. Nobody asked it to go.
+        var hardFailure = Session(2102) with
+        {
+            Exit = new DoctorSessionExit
+            {
+                AtUtc = DateTimeOffset.UtcNow,
+                ShutdownPhase = BloomShutdownPhase.None,
+            },
+        };
+        // The other direction: it walked most of the orderly path and then wedged, and we ended it. The
+        // phase alone would call this explained.
+        var weEndedIt = Session(2103) with
+        {
+            Exit = new DoctorSessionExit
+            {
+                AtUtc = DateTimeOffset.UtcNow,
+                ShutdownPhase = BloomShutdownPhase.LogWritten,
+                EndedAtDoctorsRequest = true,
+            },
+        };
+        foreach (var session in new[] { orderly, hardFailure, weEndedIt })
+            DoctorSessionStore.TryWrite(session, _directory);
+        Assert.That(
+            DoctorSessionStore.ReadAll(_directory),
+            Has.Count.EqualTo(3),
+            "sanity: all three were written"
+        );
+
+        // None of the processes is alive any more, and none is near the age cutoff.
+        DoctorSessionStore.Prune(_ => false, TimeSpan.FromDays(7), _directory);
+
+        var kept = DoctorSessionStore.ReadAll(_directory).Select(s => s.ProcessId).ToList();
+        Assert.That(kept, Does.Not.Contain(2101), "an orderly, unprompted exit needs no keeping");
+        Assert.That(
+            kept,
+            Does.Contain(2102),
+            "a hard failure is evidence, however tidily it recorded itself"
+        );
+        Assert.That(
+            kept,
+            Does.Contain(2103),
+            "an exit we asked for is our own doing, not an explanation of why that Bloom went"
         );
     }
 

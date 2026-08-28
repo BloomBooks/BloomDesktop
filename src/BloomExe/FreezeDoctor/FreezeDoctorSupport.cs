@@ -526,12 +526,11 @@ namespace Bloom.FreezeDoctor
                         Exit = new DoctorSessionExit
                         {
                             AtUtc = DateTimeOffset.UtcNow,
+                            // Two independent facts, recorded as such: how far shutdown got, and whether
+                            // it was our idea. Combining them here would produce a flag that lies about one
+                            // of its meanings, and each reader wants a different combination anyway.
                             ShutdownPhase = _shutdownPhase,
-                            // Anything that did not walk the orderly path is marked as forced, by the same
-                            // phase test as the shared-memory flag above — so a WebView2 startup failure is
-                            // not filed away as a tidy shutdown.
-                            ForcedByDoctor =
-                                _endedAtDoctorsRequest || _shutdownPhase == BloomShutdownPhase.None,
+                            EndedAtDoctorsRequest = _endedAtDoctorsRequest,
                         },
                     };
                     DoctorSessionStore.TryWrite(_session);

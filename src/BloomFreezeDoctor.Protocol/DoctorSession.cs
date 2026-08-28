@@ -141,10 +141,16 @@ public sealed record DoctorSessionExit
     public BloomShutdownPhase ShutdownPhase { get; init; }
 
     /// <summary>
-    /// True when this exit was forced by the Doctor asking Bloom to go, rather than being an orderly
-    /// shutdown. Recorded so that ending a zombie is not later mistaken for proof that it shut down properly.
+    /// True when Bloom exited because the Doctor asked it to — ending a zombie, or clearing the way for a
+    /// restart. Recorded so that a Bloom we ended is not later mistaken for one that chose to leave.
+    ///
+    /// **One fact, not a verdict.** Whether an exit was ORDERLY is a different question, answered by
+    /// <see cref="ShutdownPhase"/>, and the two are independent: the Doctor can end a Bloom that had walked
+    /// most of the orderly path and then wedged, and Bloom can fail hard with no involvement from the Doctor
+    /// at all. Consumers want different combinations of the two, so the record keeps them apart rather than
+    /// pre-combining them into a flag whose name can then only be true for one of its meanings.
     /// </summary>
-    public bool ForcedByDoctor { get; init; }
+    public bool EndedAtDoctorsRequest { get; init; }
 }
 
 /// <summary>
@@ -294,7 +300,14 @@ public static class DoctorSessionStore
                 // "Explained" means an ORDERLY exit. An exit that was forced — a hard failure, or the Doctor
                 // ending a zombie — is not an explanation, it is the evidence; deleting it early would throw
                 // away the record of the very thing we exist to report.
-                var explained = session.Exit != null && !session.Exit.ForcedByDoctor;
+                // Both halves matter, and for different reasons. A phase of None means the orderly path was
+                // never begun — a hard failure, which is evidence. An exit we asked for is not an
+                // explanation either; it is the record of our own doing, and worth keeping for the window in
+                // which somebody might ask why that Bloom went.
+                var explained =
+                    session.Exit != null
+                    && session.Exit.ShutdownPhase != BloomShutdownPhase.None
+                    && !session.Exit.EndedAtDoctorsRequest;
                 if (tooOld || explained)
                     RobustFile.Delete(PathFor(session.ProcessId, directory));
             }
