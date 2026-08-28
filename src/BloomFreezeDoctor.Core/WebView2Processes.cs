@@ -143,7 +143,7 @@ public static class WebView2Processes
     }
 
     /// <summary>
-    /// Reads one process's command line. Used to spot automation runs (plan §3.3), which the process
+    /// Reads one process's command line. Used to spot headless runs (plan §3.3), which the process
     /// list alone cannot reveal.
     /// </summary>
     public static string ReadCommandLine(int processId)

@@ -17,19 +17,23 @@ public sealed record BloomTargetFacts
     /// <summary>Release channel, derived from <see cref="ExePath"/>.</summary>
     public required string Channel { get; init; }
 
-    /// <summary>The command line, which says whether this is an automation or headless run.</summary>
+    /// <summary>The command line, which says whether this is a headless job run.</summary>
     public required string CommandLine { get; init; }
 
     /// <summary>When the process started, used to identify its log file.</summary>
     public required DateTime StartTime { get; init; }
 
     /// <summary>
-    /// True when this Bloom must never produce a filed report: a developer build, or an automation
+    /// True when this Bloom must never produce a filed report: a developer build, or a headless job
     /// run. We still gather (and write to disk), because that is how we test the gatherer.
+    ///
+    /// Note what carries a `go.sh` Bloom: the **channel**, not the command line. Such a run builds into
+    /// `output/Debug|Release`, so it derives a Developer channel and is blocked here whatever else is
+    /// true - which is why dropping `--automation` from the headless test above widened what the Doctor
+    /// *watches* without widening what it *files*.
     /// </summary>
     public bool NeverFile =>
-        BloomChannel.IsDeveloperChannel(Channel)
-        || BloomChannel.IsHeadlessOrAutomationRun(CommandLine);
+        BloomChannel.IsDeveloperChannel(Channel) || BloomChannel.IsHeadlessRun(CommandLine);
 }
 
 /// <summary>Raised when the detector decides this Bloom is worth reporting.</summary>
@@ -260,7 +264,7 @@ public sealed class BloomTargetWatcher : IDisposable
     /// filed a real tracker card. Rehearsals reaching the tracker is the one outcome the simulated-failure
     /// guard exists to prevent, and the paths that ran when Bloom actually died were the ones without it.
     ///
-    /// The four: this target has been under a debugger at some point; it is a developer or automation run;
+    /// The four: this target has been under a debugger at some point; it is a developer build or a headless job;
     /// Bloom's own reporting has already told us about this problem, in which case a second card is noise
     /// about the same trouble; or the failure was deliberately simulated.
     ///
@@ -288,10 +292,8 @@ public sealed class BloomTargetWatcher : IDisposable
             );
         if (BloomChannel.IsDeveloperChannel(Target.Channel))
             reasons.Add("this is a developer build, which never files on its own");
-        else if (BloomChannel.IsHeadlessOrAutomationRun(Target.CommandLine))
-            reasons.Add(
-                "this Bloom is an automation or headless run, which never files on its own"
-            );
+        else if (BloomChannel.IsHeadlessRun(Target.CommandLine))
+            reasons.Add("this Bloom is a headless job run, which never files on its own");
         var simulated = SimulatedFailureKind();
         if (!string.IsNullOrEmpty(simulated))
             reasons.Add($"this Bloom was told to break itself on purpose (`{simulated}`)");

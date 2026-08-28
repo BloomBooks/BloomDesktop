@@ -26,7 +26,7 @@
   <ItemGroup>
     <!-- Reading the Windows Event Log for crash and unexpected-shutdown entries (plan 4.4). -->
     <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.1" />
-    <!-- Reading another process's command line, to spot automation runs and the WebView2 debug port. -->
+    <!-- Reading another process's command line, to spot headless runs and the WebView2 debug port. -->
     <PackageReference Include="System.Management" Version="8.0.0" />
     <!-- Walking managed stacks out of a dump, or out of a live process without suspending it. -->
     <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.1.512801" />

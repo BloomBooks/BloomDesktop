@@ -501,9 +501,13 @@ public sealed class DoctorSupervisor : IDisposable
             if (_watchers.ContainsKey(facts.ProcessId))
                 return;
 
-            // A headless or automation run legitimately has no window, so watching it would only produce
-            // false zombie reports (plan §3.3).
-            if (BloomChannel.IsHeadlessOrAutomationRun(facts.CommandLine))
+            // A headless run - one of Bloom's console verbs - legitimately has no window, so watching it
+            // would only produce false zombie reports (plan §3.3).
+            //
+            // This deliberately no longer excludes `--automation`, which `go.sh` passes on every launch:
+            // that flag says nothing about whether there is a window, so excluding it meant the Doctor
+            // ignored every Bloom launched from source. See BloomChannel.IsHeadlessRun.
+            if (BloomChannel.IsHeadlessRun(facts.CommandLine))
                 return;
 
             Process process;

@@ -11,7 +11,7 @@ public readonly record struct BloomLogCandidate
 
     /// <summary>
     /// The command line the log says Bloom was launched with, including the path to Bloom.dll. Also
-    /// tells us whether that run was an automation run.
+    /// tells us whether that run was a headless job.
     /// </summary>
     public required string? LaunchCommandLine { get; init; }
 
