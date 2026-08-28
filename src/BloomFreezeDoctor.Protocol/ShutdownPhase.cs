@@ -10,9 +10,13 @@ namespace BloomFreezeDoctor.Protocol;
 /// "still None" is how a hard failure is told from an orderly exit, and it needs no cooperation from each
 /// exit site, which is what makes the next such exit somebody adds covered automatically.
 ///
-/// The values are part of the wire format — they travel through the shared page and the session file — so
-/// they are written down explicitly and must not be renumbered. Appending a later phase is fine; a Doctor
-/// too old to know it says so rather than guessing (see <see cref="ShutdownPhaseDescription.Describe"/>).
+/// **Both the numbers and the names are frozen, and they break in opposite directions.** The NUMBER
+/// travels in the shared page as a raw int, so renumbering leaves every offset intact and every reader
+/// wrong — which makes it a <c>SchemaVersion</c> bump, not an edit. The NAME travels in the session file,
+/// which is JSON written with names, so renaming makes a session an older Bloom wrote unreadable, and
+/// there is no version to bump for that. Both halves are pinned by a test on each side; appending a later
+/// phase is the safe change, and a Doctor too old to know it says so rather than guessing (see
+/// <see cref="ShutdownPhaseDescription.Describe"/>).
 /// </summary>
 public enum BloomShutdownPhase
 {

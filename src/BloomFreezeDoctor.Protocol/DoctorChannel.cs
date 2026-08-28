@@ -21,7 +21,8 @@ namespace BloomFreezeDoctor.Protocol;
 //      DoctorChannelLayout.
 //    * MOVING, RESIZING or REPURPOSING a field breaks every existing reader, so it bumps SchemaVersion —
 //      which also changes the section's name, so old Doctors stop finding the channel rather than
-//      misreading it.
+//      misreading it. REPURPOSING includes changing what a field's VALUES mean and not only its extent:
+//      renumbering BloomShutdownPhase would leave every offset intact and every reader wrong.
 //
 //  Both are pinned by tests rather than trusted to discipline: the tests in this repo assert every offset
 //  by value, assert that PayloadBytes really is the end of the last field, and assert that the writer

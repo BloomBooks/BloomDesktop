@@ -37,6 +37,33 @@ public class DoctorSessionTests
         catch (Exception) { }
     }
 
+    [Test]
+    public void The_shutdown_phase_is_written_as_a_name_not_a_number()
+    {
+        // The name is the compatibility surface for THIS file, so it is worth asserting on the bytes
+        // rather than only on a round trip: a round trip would keep passing if the phases were renamed,
+        // since both halves would move together, while every session file already on disk became
+        // unreadable. Reading is tolerant of either form, so only writing needs pinning.
+        var session = Session(777) with
+        {
+            Exit = new DoctorSessionExit
+            {
+                AtUtc = DateTimeOffset.UtcNow,
+                ShutdownPhase = BloomShutdownPhase.SettingsSaved,
+            },
+        };
+
+        DoctorSessionStore.TryWrite(session, _directory);
+
+        var onDisk = File.ReadAllText(DoctorSessionStore.PathFor(777, _directory));
+        Assert.That(
+            onDisk,
+            Does.Contain("\"SettingsSaved\""),
+            "a person opening this file should read the phase, and an older file must stay readable"
+        );
+        Assert.That(onDisk, Does.Not.Contain("\"ShutdownPhase\": 2"), "not the bare number");
+    }
+
     private DoctorSession Session(int pid, DateTimeOffset? started = null) =>
         new()
         {

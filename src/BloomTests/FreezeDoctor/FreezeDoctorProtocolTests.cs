@@ -32,6 +32,28 @@ namespace BloomTests.FreezeDoctor
         private const int TestProcessId = 999_002;
 
         [Test]
+        public void ShutdownPhasesAreWhatBloomWasBuiltAgainst()
+        {
+            // Bloom's own copy of the pin in the Doctor's DoctorChannelTests, for the same reason the
+            // layout above is pinned twice: a package upgrade that renumbered these would otherwise make
+            // Bloom write phases the Doctor reads as something else, silently. The NUMBER is what goes
+            // into the shared page; the NAME is what goes into the session file. Neither may change.
+            var expected = new[]
+            {
+                "None=0",
+                "MessageLoopReturned=1",
+                "SettingsSaved=2",
+                "LogWritten=3",
+                "ProjectContextDisposed=4",
+            };
+            Assert.That(
+                Enum.GetValues<BloomShutdownPhase>().Select(p => $"{p}={(int)p}").ToArray(),
+                Is.EqualTo(expected),
+                "the shutdown phases, pinned by name AND number"
+            );
+        }
+
+        [Test]
         public void LayoutIsWhatBloomWasBuiltAgainst()
         {
             // If you are here because this failed, a package upgrade changed the layout. Do NOT just update

@@ -109,6 +109,34 @@ public class DoctorChannelTests
     }
 
     [Test]
+    public void The_shutdown_phases_are_what_both_sides_were_built_against()
+    {
+        // <see cref="BloomShutdownPhase"/> has TWO frozen surfaces, and they break in opposite
+        // directions, so both halves are pinned here:
+        //
+        //   * the NUMBER travels in the shared page as a raw int, so RENUMBERING makes every deployed
+        //     reader misread the field. That is a SchemaVersion bump, not an edit to this list.
+        //   * the NAME travels in the session file, which is JSON written with names, so RENAMING makes
+        //     a session written by an older Bloom unreadable. There is no version to bump for that: the
+        //     name is the compatibility surface, so it simply must not change.
+        //
+        // Appending a phase is the safe change, and means adding a line here — the intended friction.
+        var expected = new[]
+        {
+            "None=0",
+            "MessageLoopReturned=1",
+            "SettingsSaved=2",
+            "LogWritten=3",
+            "ProjectContextDisposed=4",
+        };
+        Assert.That(
+            Enum.GetValues<BloomShutdownPhase>().Select(p => $"{p}={(int)p}").ToArray(),
+            Is.EqualTo(expected),
+            "the shutdown phases, pinned by name AND number"
+        );
+    }
+
+    [Test]
     public void A_debugger_that_has_come_and_gone_is_still_remembered()
     {
         // The case this exists for. A developer attaches, sits at a breakpoint, detaches; Bloom carries on.
