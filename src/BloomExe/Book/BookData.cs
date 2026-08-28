@@ -1878,7 +1878,13 @@ namespace Bloom.Book
                     .Cast<SafeXmlElement>()
                     .ToArray();
                 foreach (var elt in nodesToProcessFirst)
+                {
+                    // Same reason as the IsStillInDocument check in the second pass below: an
+                    // earlier update in this very loop could have detached a later one of these.
+                    if (!IsStillInDocument(elt))
+                        continue;
                     UpdateOneElementFromDataSet(data, itemsToDelete, elt);
+                }
 
                 // After restoring custom page content from the data-div, prepare any bloom-editables
                 // for languages that weren't present in the saved version (e.g. a newly-added content
