@@ -394,8 +394,11 @@ namespace Bloom.Edit
             {
                 // This will rarely do anything. It's typically called from the OnTabChanged event, which is invoked after
                 // onTabAboutToChange, which (typically, in state Editing) initiates a Save with a pending action that returns null,
-                // which will also cause a change to NoPage. However, it will be ignored in states where it's not valid,
-                // and may be helpful in some cases (e.g., if somehow we're navigating), so I decided to put it in.
+                // which will also cause a change to NoPage. But it may be helpful in some cases
+                // (e.g., if somehow we're navigating), so I decided to put it in.
+                // Careful: it is *not* ignored in the states where emptying the page is invalid; it
+                // throws. So anything that leads here has to have made sure we are not mid-save
+                // first — see EditingModel.OnTabAboutToChange and BL-16766.
                 _model.StateMachine.ToNoPage();
                 SaveZoomSettingNow();
             }

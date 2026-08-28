@@ -410,7 +410,7 @@ namespace Bloom.Edit
                             _currentlyDisplayedBook = null;
                         }
                         else
-                            CurrentBook?.Save(); // we need it all the way saved before doing the PostponedWork
+                            CurrentBook?.Save(); // we need it all the way saved before completing the tab change
                         // This bizarre behavior prevents BL-2313 and related problems.
                         // For some reason I cannot discover, switching tabs when focus is in the Browser window
                         // causes Bloom to get deactivated, which prevents various controls from working.
@@ -418,21 +418,28 @@ namespace Bloom.Edit
                         // things get into a very bad state indeed. So arrange to re-activate ourselves as soon as the dust settles.
                         _oldActiveForm = Form.ActiveForm;
                         Application.Idle += ReactivateFormOnIdle;
-                        details.PostponedWork?.Invoke();
+                        details.CompleteTheChange?.Invoke();
                         return null; // leaving this tab, show blank page
                     },
                     () =>
                     {
-                        // We disable the tab control while we're in SavePending or SavedAndStripped.
-                        // We shouldn't be in NoPage while in the edit tab, but if we somehow are, we take the branch above.
-                        // If we're Editing, we will take the branch above.
-                        // So this is just the case where we're Navigating, either because we clicked on the Edit tab
-                        // and then immediately something else, or clicked another tab during the fraction of a second
-                        // while Bloom is navigating to a new page after doing some command. Abort the navigate, then go ahead.
-                        // Earlier versions of Bloom had a Debug guard against reaching this state, but it happened
-                        // often enough to be annoying, and the recovery code here seems to work adequately.
-                        // In particlar, we seem to get here after a Javascript error has been reported, and raising
-                        // an exception here tends to interfere with reporting the error we really want to see.
+                        // We get here when we could not start a save, so we're in Navigating,
+                        // SavePending or SavedAndStripped. (We shouldn't be in NoPage while in the
+                        // edit tab, but if we somehow are, we take the branch above; and if we're
+                        // Editing we take the branch above too.)
+                        //
+                        // We do ask for the tabs to be disabled while saving, but that doesn't take
+                        // effect soon enough to stop a second click on a tab, so SavePending really
+                        // does happen here — that was BL-16766. See WorkspaceView.SetTabsEnabled.
+                        //
+                        // Navigating: we clicked the Edit tab and then immediately something else,
+                        // or clicked another tab during the fraction of a second while Bloom is
+                        // navigating to a new page after doing some command. Abort the navigate,
+                        // then go ahead. Earlier versions of Bloom had a Debug guard against
+                        // reaching this state, but it happened often enough to be annoying, and the
+                        // recovery code here seems to work adequately. In particlar, we seem to get
+                        // here after a Javascript error has been reported, and raising an exception
+                        // here tends to interfere with reporting the error we really want to see.
                         if (StateMachine.Navigating)
                         {
                             StateMachine.ToNoPage();
@@ -448,9 +455,25 @@ namespace Bloom.Edit
                             CurrentBook?.ReloadFromDisk(null);
                             _currentlyDisplayedBook = null;
                         }
+                        // If we are here because a save is still in flight (someone else started
+                        // it, and the browser has not yet handed back the page content), we must
+                        // not let the tab change go ahead now: the tab-changed event would ask the
+                        // state machine to empty the page, which throws while a save is pending,
+                        // and would leave the workspace half switched between the two tabs
+                        // (BL-16766). Wait for the save to finish and then start the tab change
+                        // over from the beginning.
+                        // Note that the retry sees reloadFromDiskInsteadOfSaving as false, because
+                        // this attempt consumed the flag — so it takes the ordinary Save() branch
+                        // above rather than the reload branch. That is correct: the reload has
+                        // already happened, just above, and the discarded save cannot have merged
+                        // anything into the DOM, so the DOM still matches what the external process
+                        // wrote and saving it writes that same content back. There is also no
+                        // second in-flight save for the retry to discard.
+                        if (StateMachine.DeferUntilSaveCompletes(details.StartTheChangeOver))
+                            return;
                         _oldActiveForm = Form.ActiveForm;
                         Application.Idle += ReactivateFormOnIdle;
-                        details.PostponedWork?.Invoke();
+                        details.CompleteTheChange?.Invoke();
                     },
                     skipSaveToDisk: true
                 );
@@ -458,7 +481,7 @@ namespace Bloom.Edit
             else
             {
                 // If the old tab is not Edit, we don't need to save anything, so just do the postponed work.
-                details.PostponedWork?.Invoke();
+                details.CompleteTheChange?.Invoke();
             }
         }
 

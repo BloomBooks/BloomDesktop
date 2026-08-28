@@ -933,7 +933,7 @@ namespace Bloom.web.controllers
                         // and reload it from disk. We do NOT touch the editor for any other book, so a
                         // user editing an unrelated book never loses work.
                         // Note: when the Edit tab is live this schedules an async tab-switch (the actual
-                        // switch completes via PostponedWork after the browser returns page content). The
+                        // switch completes via CompleteTheChange after the browser returns page content). The
                         // collection reload below is safe to run immediately only because it doesn't read
                         // tab/selection state.
                         _editingModel.ReloadCurrentBookDiscardingEdits();
