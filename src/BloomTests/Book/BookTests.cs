@@ -7082,5 +7082,92 @@ namespace BloomTests.Book
                 Is.EqualTo(Path.Combine(_storage.Object.FolderPath, "the-cover.jpg"))
             );
         }
+
+        [Test]
+        public void GetCoverImagePathAndElt_MarkIsOnTheImg_UsesItEvenWhenAnotherContainerComesFirst()
+        {
+            // The ordinary case: the book marks its own cover picture and that picture is real.
+            // The mark must win even though the decoration sits earlier in the page, which is why
+            // the marked candidates are searched before the image containers rather than in one
+            // pass over the document (BL-16780).
+            SetDom(
+                @"
+<div id='bloomDataDiv'>
+	<div data-book='someOtherData' lang='*'>value</div>
+</div>
+<div class='bloom-page bloom-frontMatter outsideFrontCover'>
+	<div class='marginBox'>
+        <div class='bloom-canvas'>
+            <div class='bloom-imageContainer'>
+                <img src='decoration.png' id='decoration-image'/>
+            </div>
+		</div>
+        <div class='bloom-canvas'>
+            <div class='bloom-imageContainer'>
+                <img data-book='coverImage' src='the-cover.jpg' id='the-cover-image'/>
+            </div>
+		</div>
+	</div>
+</div>"
+            );
+            File.WriteAllText(Path.Combine(_storage.Object.FolderPath, "decoration.png"), "test");
+            File.WriteAllText(Path.Combine(_storage.Object.FolderPath, "the-cover.jpg"), "test");
+
+            var book = CreateBook();
+
+            // Sanity check: both files are there, so the choice is made by the mark, not by one of
+            // them being missing.
+            Assert.That(
+                File.Exists(Path.Combine(_storage.Object.FolderPath, "decoration.png")),
+                Is.True,
+                "test setup failed to write the decoration image"
+            );
+
+            var coverImgPath = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
+
+            Assert.That(coverImgElt.GetAttribute("id"), Is.EqualTo("the-cover-image"));
+            Assert.That(
+                coverImgPath,
+                Is.EqualTo(Path.Combine(_storage.Object.FolderPath, "the-cover.jpg"))
+            );
+        }
+
+        [Test]
+        public void GetCoverImagePathAndElt_ImageContainerCarriesThePicture_UsesTheContainer()
+        {
+            // A book old enough to use an obsolete image representation puts the picture on the
+            // image container itself, as a background image, with no img inside it. The container
+            // is a candidate in its own right so that such a book still gets a cover picture.
+            SetDom(
+                @"
+<div id='bloomDataDiv'>
+	<div data-book='someOtherData' lang='*'>value</div>
+</div>
+<div class='bloom-page bloom-frontMatter outsideFrontCover'>
+	<div class='marginBox'>
+        <div class='bloom-imageContainer' id='old-style-container' style=""background-image:url('old-cover.jpg')""></div>
+	</div>
+</div>"
+            );
+            File.WriteAllText(Path.Combine(_storage.Object.FolderPath, "old-cover.jpg"), "test");
+
+            var book = CreateBook();
+
+            // Sanity check: the file is there, so a null result would mean the container was not
+            // considered, not that the image is missing.
+            Assert.That(
+                File.Exists(Path.Combine(_storage.Object.FolderPath, "old-cover.jpg")),
+                Is.True,
+                "test setup failed to write the old style cover image"
+            );
+
+            var coverImgPath = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
+
+            Assert.That(coverImgElt.GetAttribute("id"), Is.EqualTo("old-style-container"));
+            Assert.That(
+                coverImgPath,
+                Is.EqualTo(Path.Combine(_storage.Object.FolderPath, "old-cover.jpg"))
+            );
+        }
     }
 }
