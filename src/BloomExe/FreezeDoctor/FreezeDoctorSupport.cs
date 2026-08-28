@@ -627,10 +627,7 @@ namespace Bloom.FreezeDoctor
         private static void WatchdogLoop()
         {
             var sinceSessionRefresh = TimeSpan.Zero;
-            // The Doctor sets this to ask us to exit under our own power when our UI is gone but we are
-            // still running. Waiting on it HERE is the point: this thread is still alive long after the UI
-            // thread has stopped, which is exactly the situation in which the request gets made.
-            var quitRequest = DoctorSignals.TryCreate(
+            var quitRequestSignal = DoctorSignals.TryCreate(
                 DoctorSignals.QuitRequestName(Process.GetCurrentProcess().Id)
             );
 
@@ -670,9 +667,9 @@ namespace Bloom.FreezeDoctor
 
                     // Sleep on the quit request rather than sleeping blindly, so one thread does both jobs
                     // and a request is acted on within a second rather than whenever we next wake.
-                    if (quitRequest != null)
+                    if (quitRequestSignal != null)
                     {
-                        if (quitRequest.WaitOne(WatchdogInterval))
+                        if (quitRequestSignal.WaitOne(WatchdogInterval))
                         {
                             ExitAtDoctorsRequest();
                             return;
