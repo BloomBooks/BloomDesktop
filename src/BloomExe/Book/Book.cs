@@ -3290,20 +3290,26 @@ namespace Bloom.Book
                     .Any(NonTrivialImageFileExists);
         }
 
-        private bool NonTrivialImageFileExists(SafeXmlElement image)
+        /// <summary>
+        /// True for the images that a branding or a license puts on a page: the branding logo, the
+        /// license image, and the QR code of the "Made with Bloom" badge (as much a part of the
+        /// branding as the badge image beside it). None of these belongs to the book itself, so
+        /// neither HasImages() nor the cover-image search should count them.
+        /// </summary>
+        private static bool IsBrandingOrLicenseImage(SafeXmlElement image)
         {
-            if (image.Name == "img")
-            {
-                // The QR code of the "Made with Bloom" badge is as much a part of the branding as
-                // the badge image itself (which has the "branding" class), so it doesn't count as
-                // one of the book's images.
-                if (
+            return image.Name == "img"
+                && (
                     image.HasClass("branding")
                     || image.HasClass("licenseImage")
                     || image.HasClass(BookStorage.kQrCodeClass)
-                )
-                    return false;
-            }
+                );
+        }
+
+        private bool NonTrivialImageFileExists(SafeXmlElement image)
+        {
+            if (IsBrandingOrLicenseImage(image))
+                return false;
             var imageUrl = HtmlDom.GetImageElementUrl(image);
             var file = imageUrl.PathOnly.NotEncoded;
             if (string.IsNullOrEmpty(file))
@@ -5318,20 +5324,29 @@ namespace Bloom.Book
                 }
             }
 
+            // Only a picture inside an image container is a candidate. A cover also carries images
+            // that belong to the branding or the license, never to the book, and those are never in
+            // an image container; without this restriction a branded book whose cover picture was
+            // still a placeholder took its branding logo as its cover image (BL-16780).
+            // We may not need to consider any options other than img, since anything that is old
+            // enough in format to use an obsolete image representation probably only has one image
+            // on the cover, properly designated with data-book. However, it's not much more work or
+            // complexity to handle the older cases here, too, and we do use this code in publish and
+            // preview situations, not only for editable books.
+            const string kImageContainer =
+                "div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]";
             foreach (
-                // we may not need to consider any options other than img, since anything that is old enough
-                // in format to use an obsolete image representation probably only has one image on the
-                // cover, properly designated with data-book. However, it's not much more work or complexity
-                // to handle the older cases here, too, and we do use this code in publish and preview situations,
-                // not only for editable books.
                 var candidate in outsideFrontCover
-                    .SafeSelectNodes(
-                        ".//img | .//div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]"
-                    )
+                    .SafeSelectNodes($".//{kImageContainer}//img | .//{kImageContainer}")
                     .Cast<SafeXmlElement>()
             )
             {
                 if (candidate == designatedCoverImage)
+                    continue;
+
+                // The image container is the main guard, but a branding pack supplies its own
+                // markup, so we do not control whether it wraps its logo in a container.
+                if (IsBrandingOrLicenseImage(candidate))
                     continue;
 
                 var candidatePath = GetImagePath(candidate);
