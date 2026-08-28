@@ -688,9 +688,11 @@ public sealed class StatusForm : Form
 
     private static string? FindBloomExecutable()
     {
-        // The installed layout: %LOCALAPPDATA%\Bloom{Channel}\current\Bloom{Channel}.exe
+        // The installed layout: %LOCALAPPDATA%\Bloom{Channel}\current\Bloom{Channel}.exe. The channel
+        // names come from the same list the Doctor sweeps for, so it cannot watch a Bloom it then fails to
+        // find here.
         var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        foreach (var folder in new[] { "Bloom", "BloomBeta", "BloomAlpha", "BloomBetaInternal" })
+        foreach (var folder in BloomChannel.InstalledBloomProcessNames)
         {
             var candidate = Path.Combine(local, folder, "current", folder + ".exe");
             if (RobustFile.Exists(candidate))

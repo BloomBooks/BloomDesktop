@@ -40,6 +40,30 @@ public static class BloomChannel
     }
 
     /// <summary>
+    /// The process names an installed Bloom can have, one per release channel — which are also the folder
+    /// names, since an installed Bloom lives in
+    /// <c>%LOCALAPPDATA%\Bloom{Channel}\current\Bloom{Channel}.exe</c> and Release is the one with no
+    /// suffix.
+    ///
+    /// **Kept in one place because two consumers must agree.** The Doctor sweeps for these to find Blooms
+    /// nobody told it about, and "Restart Bloom" searches the same names for something to launch; a list
+    /// that drifted would let the Doctor watch a channel it could not then restart.
+    ///
+    /// **Beta and Release are deliberately here**, although whether the Doctor will ship enabled for them
+    /// is not settled. Watching costs nothing until something goes wrong, and being able to try a report on
+    /// a real Beta is how that question gets answered rather than guessed. Filing from them is governed
+    /// separately, by <see cref="IsDeveloperChannel"/> and the guards around it.
+    /// </summary>
+    public static readonly string[] InstalledBloomProcessNames =
+    [
+        "Bloom", // Release: the channel with no suffix
+        "BloomAlpha",
+        "BloomBeta",
+        "BloomBetaInternal",
+        "BloomReleaseInternal",
+    ];
+
+    /// <summary>
     /// True when the channel is a developer build. Such a run is gathered and written to disk but
     /// never filed (plan §3.3), which is the first and most reliable of the four defences against
     /// reporting a developer stopping their debugger.
