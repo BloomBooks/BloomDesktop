@@ -81,6 +81,8 @@ House rules:
   invocation its own subtree, and make the error message say "another agent-dotnet command is
   using this tree" instead of a raw MSBuild copy failure.
 - **Context:** BloomDesktop, `/preflight` of PR #8107 (dev launcher control API).
+- **seen again 2026-08-26:** `/preflight` of PR #8239 (BL-16763). The failed copy was read as a
+  build break for a comment-only commit, which had already been pushed.
 
 ## 2026-07-27 — The component-tester uitest suites still aren't in CI
 

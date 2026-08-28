@@ -42,7 +42,7 @@ export const DEV_LIBRARIES = [
         // LINKED (b): the library's own Vite dev server (vite-plus). go.mjs reads the
         // chosen URL back from this env var and hands it to Bloom.
         devCommand: "pnpm dev",
-        devUrlEnv: "BLOOM_AI_EDITOR_URL",
+        devUrlEnv: "BLOOM_AI_IMAGE_EDITOR_URL",
     },
     {
         name: "bloom-image-gallery",

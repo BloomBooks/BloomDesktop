@@ -44,9 +44,9 @@ namespace Bloom.web.controllers
     ///            The build copies dist-app/ from the installed `bloom-ai-image-tools`
     ///            package into output/browser/aiImageEditor/ (a viteStaticCopy target,
     ///            mirroring the bloom-player copy); `./go.sh` stages the same at dev time
-    ///            (scripts/aiEditorBuild.mjs), falling back to building a local checkout
+    ///            (scripts/aiImageEditorBuild.mjs), falling back to building a local checkout
     ///            until the package is published and added as a dependency.
-    ///   LINKED : set BLOOM_AI_EDITOR_URL to the AI image editor's own Vite dev server (HMR).
+    ///   LINKED : set BLOOM_AI_IMAGE_EDITOR_URL to the AI image editor's own Vite dev server (HMR).
     ///            `./go.sh --with bloom-ai-image-tools` does this automatically (it starts
     ///            the dev server and points Bloom at it); GetAiImageEditorUrl honors it.
     ///
@@ -62,7 +62,7 @@ namespace Bloom.web.controllers
     ///        aiImageEditor/commit        apply the chosen replacements to the book.
     ///        aiImageEditor/saveCredentials  persist the user's OpenRouter API key.
     ///   2. window.postMessage on channel "bloom-ai-image-tools", between the overlay JS
-    ///      (aiEditorOverlay.ts, in the TOP window) and the AI image editor's iframe: ready /
+    ///      (aiImageEditorOverlay.ts, in the TOP window) and the AI image editor's iframe: ready /
     ///      init / commit / cancel / log / ack. The overlay JS — NOT this class — sends
     ///      `init` (built from the launch reply) and tears the overlay down. Image BYTES
     ///      never cross postMessage; they move only as files via aiImageEditor/file.
@@ -82,7 +82,7 @@ namespace Bloom.web.controllers
     ///   currently-open page is owned by the live browser, so those replacements are
     ///   returned as {oldSrc,newSrc,copyright,creator,license}; the overlay hands them to the
     ///   page frame's applyAiImageEditorReplacements(), which applies them via Bloom's
-    ///   changeImageByElement() (aiEditorPageCommands.ts).
+    ///   changeImageByElement() (aiImageEditorPageCommands.ts).
     ///
     /// AI IMAGE EDITOR REPO: bloom-ai-image-tools — App.tsx (mode=bloom-iframe),
     ///   services/host/BloomHostBridge.ts (createIframeBloomHostBridge),
@@ -113,7 +113,7 @@ namespace Bloom.web.controllers
         // handle. Single source of truth — AllowedFileName (below), IsImageFileName, the
         // history-result probe, the reused-source check, and the whole-book image list all
         // derive from this set, so the lists can't drift apart. Must stay in sync with the
-        // front-end's editable-format list (BloomBrowserUI/.../aiEditorImageFormats.ts).
+        // front-end's editable-format list (BloomBrowserUI/.../aiImageEditorImageFormats.ts).
         private static readonly HashSet<string> AllowedImageExtensions = new HashSet<string>(
             StringComparer.OrdinalIgnoreCase
         )
@@ -217,23 +217,67 @@ namespace Bloom.web.controllers
         private string GetAiImageEditorUrl()
         {
             // The AI image editor is served by BloomServer from output/browser/aiImageEditor/.
-            // The go.mjs launcher (scripts/aiEditorBuild.mjs) builds it from the local
+            // The go.mjs launcher (scripts/aiImageEditorBuild.mjs) builds it from the local
             // bloom-ai-image-tools checkout and stages it there, so `./go.sh` "just works"
             // with no separate dev server, in both Debug and Release.
             //
             // Someone working on the AI image editor itself, who wants hot-module reload, can
-            // instead point Bloom at its own Vite dev server by setting BLOOM_AI_EDITOR_URL,
-            // e.g. BLOOM_AI_EDITOR_URL=http://localhost:3000/ and running `pnpm dev` in the
+            // instead point Bloom at its own Vite dev server by setting BLOOM_AI_IMAGE_EDITOR_URL,
+            // e.g. BLOOM_AI_IMAGE_EDITOR_URL=http://localhost:3000/ and running `pnpm dev` in the
             // bloom-ai-image-tools checkout.
-            var overrideUrl = Environment.GetEnvironmentVariable("BLOOM_AI_EDITOR_URL");
+            var overrideUrl = GetLinkedEditorUrlOverride();
             if (!string.IsNullOrWhiteSpace(overrideUrl))
                 return overrideUrl;
             return $"{BloomServer.ServerUrl}/bloom/aiImageEditor/index.html";
         }
 
+        /// <summary>
+        /// The env var a developer sets to point Bloom at the AI image editor's own Vite dev
+        /// server instead of the staged build.
+        /// </summary>
+        internal const string kLinkedEditorUrlEnvironmentVariable = "BLOOM_AI_IMAGE_EDITOR_URL";
+
+        /// <summary>
+        /// The name this variable had before it was renamed to match the rest of the feature.
+        /// Still honored so that a developer who has the old name in a shell profile or launch
+        /// config keeps getting their linked dev server rather than silently falling back to
+        /// the staged build. Transitional: delete once nobody is using it.
+        /// </summary>
+        internal const string kLinkedEditorUrlObsoleteEnvironmentVariable = "BLOOM_AI_EDITOR_URL";
+
+        // So the deprecation notice appears once per run rather than once per read.
+        private static bool _warnedAboutObsoleteEditorUrlVariable;
+
+        /// <summary>
+        /// The linked-dev-server URL the developer asked for, or null if they didn't ask for
+        /// one. Prefers <see cref="kLinkedEditorUrlEnvironmentVariable"/> and falls back to
+        /// <see cref="kLinkedEditorUrlObsoleteEnvironmentVariable"/>, logging once when the
+        /// obsolete name is what supplied the value.
+        /// </summary>
+        internal static string GetLinkedEditorUrlOverride()
+        {
+            var url = Environment.GetEnvironmentVariable(kLinkedEditorUrlEnvironmentVariable);
+            if (!string.IsNullOrWhiteSpace(url))
+                return url;
+
+            url = Environment.GetEnvironmentVariable(kLinkedEditorUrlObsoleteEnvironmentVariable);
+            if (string.IsNullOrWhiteSpace(url))
+                return null;
+
+            if (!_warnedAboutObsoleteEditorUrlVariable)
+            {
+                _warnedAboutObsoleteEditorUrlVariable = true;
+                Logger.WriteEvent(
+                    $"{kLinkedEditorUrlObsoleteEnvironmentVariable} is obsolete; please rename it"
+                        + $" to {kLinkedEditorUrlEnvironmentVariable}. Using it for now."
+                );
+            }
+            return url;
+        }
+
         /// <summary>The image the user right-clicked, as the page frame sends it to
         /// <see cref="HandleSaveThenLaunch"/> and as we hand it back to the browser once the page
-        /// has been saved. See IAiImageEditorTarget in aiEditorShared.ts. The page frame sends only
+        /// has been saved. See IAiImageEditorTarget in aiImageEditorShared.ts. The page frame sends only
         /// the file name; we fill in the page id, since we are the ones who know which page we
         /// saved, and the overlay (in the top window) has no page DOM of its own to read it from.
         /// </summary>
@@ -259,7 +303,7 @@ namespace Bloom.web.controllers
         ///
         /// WHERE the overlay lives: not in the page iframe, which that navigation replaces every
         /// time — hence the top window, like the image-gallery and copyright/license commands (see
-        /// aiEditorOverlay.ts and the comments on those commands in canvasControlRegistry.ts).
+        /// aiImageEditorOverlay.ts and the comments on those commands in canvasControlRegistry.ts).
         ///
         /// WHEN we open it: once the browser has a page again, via
         /// EditingModel.RunAfterNextPageLoad. Opening from SaveThen's doAfterSaveToDisk directly is
@@ -283,7 +327,7 @@ namespace Bloom.web.controllers
         {
             // Must be read before SaveThen: by the time our callbacks run the request is complete.
             // Deliberately unguarded: the only caller is launchAiImageEditor in
-            // aiEditorPageCommands.ts, which always sends {imageFileName}, so a parse failure means
+            // aiImageEditorPageCommands.ts, which always sends {imageFileName}, so a parse failure means
             // we broke our own contract and we want to hear about it with the real exception rather
             // than a generic "invalid payload" that says nothing (see AGENTS.md, "Don't be overly
             // defensive about error handling").
@@ -346,7 +390,7 @@ namespace Bloom.web.controllers
         /// <summary>
         /// Tells the browser to open the AI image editor overlay on <paramref name="target"/>. The
         /// browser owns the overlay (only it can postMessage to the AI Image Editor's iframe), so all this
-        /// side does is call its entry point; see openAiImageEditor in aiEditorOverlay.ts.
+        /// side does is call its entry point; see openAiImageEditor in aiImageEditorOverlay.ts.
         /// Fire-and-forget, like EditingModel.UpdateImageInBrowser's call to changeImage: there is
         /// nothing here to wait for.
         ///
@@ -405,7 +449,7 @@ namespace Bloom.web.controllers
             // (e.g. a local checkout that hasn't been built/staged yet). Fail the launch with
             // a clear message rather than opening an overlay whose iframe would just 404.
             if (
-                string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("BLOOM_AI_EDITOR_URL"))
+                string.IsNullOrWhiteSpace(GetLinkedEditorUrlOverride())
                 && BloomFileLocator.GetBrowserFile(optional: true, "aiImageEditor", "index.html")
                     == null
             )
@@ -453,14 +497,56 @@ namespace Bloom.web.controllers
                     // HandleSaveCredentials also refuses to persist.
                     demoOnly = book.IsPlayground,
                     // Let the AI image editor reveal its developer/tester tools (e.g. the
-                    // "Local Dummy (No AI)" model, for cost-free testing) on developer AND
-                    // alpha/unstable builds, so human alpha testers can exercise it without
-                    // spending real AI credits. The AI image editor hides those tools unless
-                    // the host opts in, so release/beta builds (IsDevOrAlpha false) never
-                    // expose them to end users.
-                    showDeveloperTools = ApplicationUpdateSupport.IsDevOrAlpha,
+                    // "Local Dummy (No AI)" model, for cost-free testing). The AI image
+                    // editor hides those tools unless the host opts in, so ordinary
+                    // release/beta builds never expose them to end users.
+                    showDeveloperTools = ShouldShowDeveloperTools(),
                 }
             );
+        }
+
+        /// <summary>
+        /// Environment variable a tester can set to get the AI image editor's tester tools
+        /// (currently the "Local Dummy (No AI)" model) on a channel that would not normally
+        /// offer them, e.g. an installed beta. See <see cref="kTesterToolsOnValues"/> for
+        /// what counts as "on".
+        /// </summary>
+        internal const string kShowTesterToolsEnvironmentVariable =
+            "BLOOM_AI_IMAGE_EDITOR_TESTER_TOOLS";
+
+        /// <summary>
+        /// The values of <see cref="kShowTesterToolsEnvironmentVariable"/> that mean "on",
+        /// compared case-insensitively after trimming. We accept several spellings because
+        /// the people setting this are testers typing into a Windows environment-variable
+        /// box, not developers reading our source.
+        /// </summary>
+        internal static readonly string[] kTesterToolsOnValues = new[]
+        {
+            "true",
+            "t",
+            "y",
+            "yes",
+            "1",
+        };
+
+        /// <summary>
+        /// Whether to tell the AI image editor to reveal its developer/tester tools. The
+        /// "Local Dummy (No AI)" model is the one such tool today; it lets a tester exercise
+        /// the editor without spending real AI credits. These are always on for developer and
+        /// alpha/unstable builds. On any other channel (beta, release) a tester can opt in by
+        /// setting <see cref="kShowTesterToolsEnvironmentVariable"/>, which is how we let a
+        /// beta tester try the editor for free without shipping the tools to end users
+        /// (BL-16770).
+        /// </summary>
+        internal static bool ShouldShowDeveloperTools()
+        {
+            if (ApplicationUpdateSupport.IsDevOrAlpha)
+                return true;
+            var optIn = Environment
+                .GetEnvironmentVariable(kShowTesterToolsEnvironmentVariable)
+                ?.Trim();
+            return optIn != null
+                && kTesterToolsOnValues.Contains(optIn, StringComparer.OrdinalIgnoreCase);
         }
 
         private class SaveCredentialsRequest
@@ -1181,7 +1267,7 @@ namespace Bloom.web.controllers
             DeleteSupersededAiImageFiles(book.FolderPath, book.OurHtmlDom, supersededOffPageFiles);
 
             // The "AI Image Editor Closed" and "Change Picture" events are reported by
-            // aiEditorOverlay.ts when it gets this reply, not here. For a slot on the page the user
+            // aiImageEditorOverlay.ts when it gets this reply, not here. For a slot on the page the user
             // has open we only STAGE the replacement and hand it back; whether it actually landed
             // is something only the browser learns, so counting a staged slot as applied here
             // would report success we do not have.

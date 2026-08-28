@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Bloom;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.web.controllers;
@@ -173,7 +174,7 @@ namespace BloomTests.web.controllers
         // ------------------------------------------------------------------
 
         // Writes a PNG of the given size into a "source" folder OUTSIDE the book folder,
-        // standing in for the AI editor's history folder, and returns its full path.
+        // standing in for the AI image editor's history folder, and returns its full path.
         private string MakeSourcePng(string name, int width, int height)
         {
             var sourceFolder = Path.Combine(_bookFolder.Path, "source");
@@ -659,7 +660,7 @@ namespace BloomTests.web.controllers
             // GraphicsMagick does not preserve credits when it rewrites a PNG as a JPEG, and an
             // uploaded result can arrive with the user's own credits embedded in it. Nothing
             // downstream would put them back — EmbedCreditsInNewImageFile writes only the credits
-            // the AI editor explicitly sent — so losing them here would quietly strip a
+            // the AI image editor explicitly sent — so losing them here would quietly strip a
             // photographer's copyright.
             var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
             var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
@@ -1686,6 +1687,203 @@ namespace BloomTests.web.controllers
             Assert.That(attributes.copyright, Is.EqualTo(img.GetAttribute("data-copyright")));
             Assert.That(attributes.creator, Is.EqualTo(img.GetAttribute("data-creator")));
             Assert.That(attributes.license, Is.EqualTo(img.GetAttribute("data-license")));
+        }
+    }
+
+    /// <summary>
+    /// Tests for <see cref="AiImageEditorApi.GetLinkedEditorUrlOverride"/>, which honors the
+    /// obsolete BLOOM_AI_EDITOR_URL name so a developer who still has it set keeps getting
+    /// their linked dev server instead of silently falling back to the staged build.
+    /// </summary>
+    [TestFixture]
+    public class AiImageEditorLinkedUrlOverrideTests
+    {
+        private string _originalCurrent;
+        private string _originalObsolete;
+
+        [SetUp]
+        public void Setup()
+        {
+            _originalCurrent = Get(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable);
+            _originalObsolete = Get(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable);
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, null);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, null);
+            // Sanity: with neither name set we must start from "no override", or a test below
+            // could pass on a value left over from the developer's own environment.
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.Null,
+                "setup: neither variable should be in play at the start of a test"
+            );
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, _originalCurrent);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, _originalObsolete);
+        }
+
+        private static string Get(string name) => Environment.GetEnvironmentVariable(name);
+
+        private static void Set(string name, string value) =>
+            Environment.SetEnvironmentVariable(name, value);
+
+        [Test]
+        public void CurrentNameSet_IsUsed()
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, "http://localhost:3000/");
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://localhost:3000/")
+            );
+        }
+
+        [Test]
+        public void OnlyObsoleteNameSet_IsStillHonored()
+        {
+            Set(
+                AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable,
+                "http://localhost:4000/"
+            );
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://localhost:4000/"),
+                "the obsolete name must keep working during the transition"
+            );
+        }
+
+        [Test]
+        public void BothNamesSet_CurrentWins()
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, "http://current/");
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, "http://obsolete/");
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://current/")
+            );
+        }
+
+        [TestCase("")]
+        [TestCase("   ")]
+        public void CurrentNameBlank_FallsBackToObsolete(string blank)
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, blank);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, "http://obsolete/");
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://obsolete/"),
+                "a blank current name should not mask a usable obsolete one"
+            );
+        }
+
+        [TestCase("")]
+        [TestCase("   ")]
+        public void BothBlankOrUnset_ReturnsNull(string blank)
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, blank);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, blank);
+            Assert.That(AiImageEditorApi.GetLinkedEditorUrlOverride(), Is.Null);
+        }
+    }
+
+    /// <summary>
+    /// Tests for <see cref="AiImageEditorApi.ShouldShowDeveloperTools"/>, the opt-in that
+    /// lets a tester on a channel like beta see the AI image editor's tester tools
+    /// (currently the "Local Dummy (No AI)" model). See BL-16770.
+    /// </summary>
+    [TestFixture]
+    public class AiImageEditorDeveloperToolsOptInTests
+    {
+        private string _originalValue;
+
+        [SetUp]
+        public void Setup()
+        {
+            _originalValue = Environment.GetEnvironmentVariable(
+                AiImageEditorApi.kShowTesterToolsEnvironmentVariable
+            );
+            // Sanity: unit tests run on a channel that is neither developer nor alpha, so
+            // every "on" result below really comes from the environment variable and not
+            // from the channel check short-circuiting the method.
+            Assert.That(
+                ApplicationUpdateSupport.IsDevOrAlpha,
+                Is.False,
+                "setup: unit tests should not look like a dev/alpha channel"
+            );
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            SetVariable(_originalValue);
+        }
+
+        private static void SetVariable(string value)
+        {
+            Environment.SetEnvironmentVariable(
+                AiImageEditorApi.kShowTesterToolsEnvironmentVariable,
+                value
+            );
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("   ")]
+        [TestCase("0")]
+        [TestCase("f")]
+        [TestCase("n")]
+        [TestCase("no")]
+        [TestCase("false")]
+        [TestCase("please")]
+        [TestCase("truely")]
+        public void ShouldShowDeveloperTools_NotOptedIn_False(string value)
+        {
+            SetVariable(value);
+            Assert.That(AiImageEditorApi.ShouldShowDeveloperTools(), Is.False);
+        }
+
+        [TestCase("true")]
+        [TestCase("t")]
+        [TestCase("y")]
+        [TestCase("yes")]
+        [TestCase("1")]
+        // The same values as above, spelled the way a tester might actually type them.
+        [TestCase("TRUE")]
+        [TestCase("True")]
+        [TestCase("T")]
+        [TestCase("Y")]
+        [TestCase("Yes")]
+        [TestCase("YES")]
+        [TestCase(" 1 ")]
+        public void ShouldShowDeveloperTools_OptedIn_True(string value)
+        {
+            SetVariable(value);
+            Assert.That(AiImageEditorApi.ShouldShowDeveloperTools(), Is.True);
+        }
+
+        /// <summary>
+        /// Guards the list itself: every documented "on" value must actually turn the tools
+        /// on, so adding a spelling to kTesterToolsOnValues without a matching TestCase above
+        /// still can't ship broken.
+        /// </summary>
+        [Test]
+        public void ShouldShowDeveloperTools_EveryDocumentedOnValue_True()
+        {
+            Assert.That(
+                AiImageEditorApi.kTesterToolsOnValues,
+                Is.Not.Empty,
+                "setup: there should be some accepted values"
+            );
+            foreach (var value in AiImageEditorApi.kTesterToolsOnValues)
+            {
+                SetVariable(value);
+                Assert.That(
+                    AiImageEditorApi.ShouldShowDeveloperTools(),
+                    Is.True,
+                    $"'{value}' is documented as an accepted value"
+                );
+            }
         }
     }
 }

@@ -216,8 +216,7 @@ namespace Bloom.WebLibraryIntegration
             string metadataLang1Code,
             string metadataLang2Code,
             bool isForBulkUpload = false,
-            bool changeUploader = false,
-            Control controlToInvokeOn = null
+            bool changeUploader = false
         )
         {
             var htmlFile = BookStorage.FindBookHtmlInFolder(bookFolder);
@@ -299,7 +298,7 @@ namespace Bloom.WebLibraryIntegration
                     )
                     {
                         var stagingDirectory = stagingDirectoryTempFolder.FolderPath;
-                        await SetUpStagingAsync(
+                        SetUpStaging(
                             bookFolder,
                             stagingDirectory,
                             progress,
@@ -311,8 +310,7 @@ namespace Bloom.WebLibraryIntegration
                             metadataLang1Code,
                             metadataLang2Code,
                             collectionSettings?.SettingsFilePath,
-                            isForBulkUpload,
-                            controlToInvokeOn
+                            isForBulkUpload
                         );
 
                         string[] filesToUpload = null;
@@ -497,7 +495,7 @@ namespace Bloom.WebLibraryIntegration
         }
 
         // Copy the needed files to the staging directory and make any modifications needed before upload.
-        private async Task SetUpStagingAsync(
+        private void SetUpStaging(
             string pathToBloomBookDirectory,
             string stagingDirectory,
             IProgress progress,
@@ -509,8 +507,7 @@ namespace Bloom.WebLibraryIntegration
             string metadataLang1Code,
             string metadataLang2Code,
             string collectionSettingsPath = null,
-            bool isForBulkUpload = false,
-            Control controlToInvokeOn = null
+            bool isForBulkUpload = false
         )
         {
             var filter = new BookFileFilter(pathToBloomBookDirectory)
@@ -539,11 +536,7 @@ namespace Bloom.WebLibraryIntegration
                     metadataLang2Code
                 );
 
-            await PublishHelper.ReportInvalidFontsAsync(
-                stagingDirectory,
-                progress,
-                controlToInvokeOn
-            );
+            PublishHelper.ReportInvalidFonts(stagingDirectory, progress);
 
             // Really crop images, but leave in place the HTML structures that indicates they are cropped.
             // Really cropping them will typically reduce the space needed, and may also have value in
@@ -1058,8 +1051,7 @@ namespace Bloom.WebLibraryIntegration
                     book.BookData.MetadataLanguage1Tag,
                     book.BookData.MetadataLanguage2Tag,
                     bookParams.IsForBulkUpload,
-                    changeUploader,
-                    publishModel.View?.GetHostControlForInvoke()
+                    changeUploader
                 );
 
                 Debug.Assert(
