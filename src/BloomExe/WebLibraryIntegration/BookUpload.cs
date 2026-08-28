@@ -76,7 +76,10 @@ namespace Bloom.WebLibraryIntegration
             get
             {
                 // A unit test run must not depend on what the developer chose in the menu.
-                if (Program.RunningUnitTests)
+                // A build that does not show the menu must not obey a choice that it cannot
+                // change: user settings live in a folder named for the version, so a build
+                // without the menu could otherwise read a choice that another build wrote.
+                if (Program.RunningUnitTests || !UserCanChooseWebSite)
                     return UseSandboxWithoutUserChoice;
                 switch (Settings.Default.WebSiteDestinationOverride)
                 {
