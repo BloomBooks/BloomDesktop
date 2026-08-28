@@ -1,3 +1,5 @@
+using BloomFreezeDoctor.Protocol;
+
 namespace BloomFreezeDoctor;
 
 /// <summary>
@@ -18,7 +20,7 @@ public sealed record ExitEvidence
     public bool? CleanExitProofPresent { get; init; }
 
     /// <summary>How far Bloom's shutdown got, when the proof records it.</summary>
-    public int? ShutdownPhaseReached { get; init; }
+    public BloomShutdownPhase? ShutdownPhaseReached { get; init; }
 
     /// <summary>
     /// Bloom left an exit record, and that record says the orderly shutdown never began — a hard failure
@@ -190,7 +192,7 @@ public static class ExitClassifier
                 "Bloom recorded its own exit as forced rather than orderly"
                     + (
                         evidence.ShutdownPhaseReached.HasValue
-                            ? $" (it had reached shutdown phase {evidence.ShutdownPhaseReached})"
+                            ? $" ({evidence.ShutdownPhaseReached.Value.Describe()})"
                             : ""
                     )
             );
@@ -200,7 +202,7 @@ public static class ExitClassifier
                 ExitVerdict.Clean,
                 false,
                 evidence.ShutdownPhaseReached.HasValue
-                    ? $"Bloom shut down properly (shutdown phase {evidence.ShutdownPhaseReached})"
+                    ? $"Bloom shut down properly ({evidence.ShutdownPhaseReached.Value.Describe()})"
                     : "Bloom shut down properly"
             );
 
@@ -225,7 +227,7 @@ public static class ExitClassifier
                     "no orderly shutdown; no crash evidence; may be a user-initiated kill"
                         + (
                             evidence.ShutdownPhaseReached.HasValue
-                                ? $" (shutdown had reached phase {evidence.ShutdownPhaseReached})"
+                                ? $" ({evidence.ShutdownPhaseReached.Value.Describe()})"
                                 : ""
                         )
                 );

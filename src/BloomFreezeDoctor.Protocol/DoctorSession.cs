@@ -115,8 +115,8 @@ public sealed record DoctorSessionExit
     /// <summary>When it ended.</summary>
     public DateTimeOffset AtUtc { get; init; }
 
-    /// <summary>How far shutdown got. See Bloom's Program.Run for what the numbers mean.</summary>
-    public int ShutdownPhase { get; init; }
+    /// <summary>How far shutdown got.</summary>
+    public BloomShutdownPhase ShutdownPhase { get; init; }
 
     /// <summary>
     /// True when this exit was forced by the Doctor asking Bloom to go, rather than being an orderly
@@ -161,6 +161,9 @@ public static class DoctorSessionStore
     {
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        // Enums by name, so this file says "SettingsSaved" rather than "2". These sessions are read by
+        // people as often as by the Doctor, and a name also survives the phases being renumbered.
+        Converters = { new JsonStringEnumConverter() },
     };
 
     /// <summary>

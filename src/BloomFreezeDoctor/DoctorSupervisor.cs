@@ -790,13 +790,15 @@ public sealed class DoctorSupervisor : IDisposable
                         // Doctor asking a healthy Bloom to quit gets a forced flag on a perfectly orderly
                         // shutdown, and reporting that would be a card about our own request - the mistake
                         // `_weAskedItToStop` exists to prevent, coming back in through a different door
-                        // whenever the asking and the examining are different Doctor processes. Phase 0
-                        // means the orderly path was never begun, which is the thing actually worth a card.
+                        // whenever the asking and the examining are different Doctor processes. A phase of
+                        // None means the orderly path was never begun, which is the thing worth a card.
                         cleanExitProofPresent: session == null
                             ? null
-                            : session.Exit != null && session.Exit.ShutdownPhase > 0,
+                            : session.Exit != null
+                                && session.Exit.ShutdownPhase != Protocol.BloomShutdownPhase.None,
                         shutdownPhaseReached: session?.Exit?.ShutdownPhase,
-                        exitRecordedAsForced: session?.Exit is { ShutdownPhase: 0 },
+                        exitRecordedAsForced: session?.Exit
+                            is { ShutdownPhase: Protocol.BloomShutdownPhase.None },
                         exeFileName: SafeFileName(watcher.Target.ExePath)
                     );
 

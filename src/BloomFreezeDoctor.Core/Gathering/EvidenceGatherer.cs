@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using BloomFreezeDoctor.Protocol;
 
 namespace BloomFreezeDoctor.Gathering;
 
@@ -365,8 +366,8 @@ public sealed class EvidenceGatherer
         text.AppendLine(
             $"| Server workers | {state.ServerBusyWorkers} busy, {state.ServerBlockedWorkers} blocked |"
         );
-        if (state.ShutdownPhase > 0)
-            text.AppendLine($"| Shutdown had reached phase | {state.ShutdownPhase} |");
+        if (state.ShutdownPhase != BloomShutdownPhase.None)
+            text.AppendLine($"| Shutdown had begun | {state.ShutdownPhase.Describe()} |");
         if (state.LongOperationInProgress)
             text.AppendLine("| Bloom said it was | deliberately busy on a long operation |");
         text.AppendLine();

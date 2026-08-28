@@ -102,14 +102,18 @@ public class DoctorSessionTests
     {
         var session = Session(555) with
         {
-            Exit = new DoctorSessionExit { AtUtc = DateTimeOffset.UtcNow, ShutdownPhase = 3 },
+            Exit = new DoctorSessionExit
+            {
+                AtUtc = DateTimeOffset.UtcNow,
+                ShutdownPhase = BloomShutdownPhase.LogWritten,
+            },
         };
         DoctorSessionStore.TryWrite(session, _directory);
 
         var read = DoctorSessionStore.TryRead(555, _directory);
 
         Assert.That(read!.Exit, Is.Not.Null);
-        Assert.That(read.Exit!.ShutdownPhase, Is.EqualTo(3));
+        Assert.That(read.Exit!.ShutdownPhase, Is.EqualTo(BloomShutdownPhase.LogWritten));
         Assert.That(read.Exit.ForcedByDoctor, Is.False, "this was an ordinary shutdown");
         Assert.That(read.BloomAlreadyReported, Is.False);
     }
@@ -167,7 +171,7 @@ public class DoctorSessionTests
             Exit = new DoctorSessionExit
             {
                 AtUtc = DateTimeOffset.UtcNow,
-                ShutdownPhase = 0,
+                ShutdownPhase = BloomShutdownPhase.None,
                 ForcedByDoctor = true,
             },
         };
@@ -185,7 +189,11 @@ public class DoctorSessionTests
         // exit record is the evidence, so it must be the one that survives.
         var explained = Session(1001) with
         {
-            Exit = new DoctorSessionExit { AtUtc = DateTimeOffset.UtcNow, ShutdownPhase = 4 },
+            Exit = new DoctorSessionExit
+            {
+                AtUtc = DateTimeOffset.UtcNow,
+                ShutdownPhase = BloomShutdownPhase.ProjectContextDisposed,
+            },
         };
         var unexplained = Session(1002);
         DoctorSessionStore.TryWrite(explained, _directory);
