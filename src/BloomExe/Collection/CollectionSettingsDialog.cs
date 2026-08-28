@@ -50,8 +50,6 @@ namespace Bloom.Collection
         internal bool ShowExperimentalBookSourcesOption = false;
 
         internal bool PendingAllowTeamCollection;
-        internal bool PendingAllowAppBuilder;
-        internal bool PendingAllowAiImageEditing;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
@@ -118,12 +116,6 @@ namespace Bloom.Collection
             );
             PendingAllowTeamCollection = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
-            );
-            PendingAllowAppBuilder = ExperimentalFeatures.IsFeatureEnabled(
-                ExperimentalFeatures.kAppBuilder
-            );
-            PendingAllowAiImageEditing = ExperimentalFeatures.IsFeatureEnabled(
-                ExperimentalFeatures.kAiImageEditing
             );
 
             if (
@@ -282,7 +274,7 @@ namespace Bloom.Collection
                 PendingLanguage1.Tag = args.LanguageTag;
                 if (args.IsRtl.HasValue)
                     PendingLanguage1.IsRightToLeft = args.IsRtl.Value;
-                PendingLanguage1.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                PendingLanguage1.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage1.Tag, potentiallyCustomName);
@@ -299,7 +291,7 @@ namespace Bloom.Collection
                 PendingLanguage2.Tag = args.LanguageTag;
                 if (args.IsRtl.HasValue)
                     PendingLanguage2.IsRightToLeft = args.IsRtl.Value;
-                PendingLanguage2.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                PendingLanguage2.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage2.Tag, potentiallyCustomName);
@@ -316,7 +308,7 @@ namespace Bloom.Collection
                 PendingLanguage3.Tag = args.LanguageTag;
                 if (args.IsRtl.HasValue)
                     PendingLanguage3.IsRightToLeft = args.IsRtl.Value;
-                PendingLanguage3.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                PendingLanguage3.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage3.Tag, potentiallyCustomName);
@@ -341,8 +333,9 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingSignLanguage.Tag = args.LanguageTag;
-                var slIsCustom = args.DefaultName != args.DesiredName;
-                PendingSignLanguage.SetName(args.DesiredName, slIsCustom);
+                // Unlike Language1-3 above, args.IsRtl is deliberately ignored: a sign language
+                // has no text direction.
+                PendingSignLanguage.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingSignLanguage.Tag, potentiallyCustomName);
@@ -420,8 +413,6 @@ namespace Bloom.Collection
             Settings.Default.Save();
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
-            UpdateAppBuilderAllowed();
-            UpdateAiImageEditingAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -834,21 +825,6 @@ namespace Bloom.Collection
 
             if (wasTeamCollectionsEnabled != PendingAllowTeamCollection)
                 ChangeThatRequiresRestart();
-        }
-
-        private void UpdateAppBuilderAllowed()
-        {
-            // NB: This change does not require a restart.
-            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, PendingAllowAppBuilder);
-        }
-
-        private void UpdateAiImageEditingAllowed()
-        {
-            // NB: This change does not require a restart.
-            ExperimentalFeatures.SetValue(
-                ExperimentalFeatures.kAiImageEditing,
-                PendingAllowAiImageEditing
-            );
         }
     }
 }

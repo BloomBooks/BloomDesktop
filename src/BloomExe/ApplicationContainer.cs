@@ -82,6 +82,7 @@ namespace Bloom
                         typeof(NewCollectionWizardApi),
                         typeof(CollectionChooserApi),
                         typeof(I18NApi),
+                        typeof(ProgressDialogApi),
                     }.Contains(t)
                 );
 
@@ -119,6 +120,17 @@ namespace Bloom
             _container.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(server.ApiHandler);
             _container.Resolve<CollectionChooserApi>().RegisterWithApiHandler(server.ApiHandler);
             _container.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
+            // A progress dialog has to be possible before any collection is open: the "this
+            // collection needs a newer Bloom" dialog upgrades Bloom right there, and the dialog it
+            // shows while doing so talks over these endpoints. This belongs here rather than in
+            // ProjectContext (where it used to be) because all of ProgressDialogApi's handlers are
+            // static and know nothing about a project -- and because it can only be registered
+            // ONCE: RegisterEndpointHandler does a Dictionary.Add, which throws on a duplicate
+            // key, and application-level registrations are deliberately not cleared between
+            // collections, so a second registration would never go away.
+            _container
+                .Resolve<ProgressDialogApi>()
+                .RegisterWithApiHandler(server.ApiHandler);
             server.ApiHandler.RecordApplicationLevelHandlers();
         }
 

@@ -21,7 +21,6 @@ using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
@@ -216,8 +215,7 @@ namespace Bloom.WebLibraryIntegration
             string metadataLang1Code,
             string metadataLang2Code,
             bool isForBulkUpload = false,
-            bool changeUploader = false,
-            Control controlToInvokeOn = null
+            bool changeUploader = false
         )
         {
             var htmlFile = BookStorage.FindBookHtmlInFolder(bookFolder);
@@ -299,7 +297,7 @@ namespace Bloom.WebLibraryIntegration
                     )
                     {
                         var stagingDirectory = stagingDirectoryTempFolder.FolderPath;
-                        await SetUpStagingAsync(
+                        SetUpStaging(
                             bookFolder,
                             stagingDirectory,
                             progress,
@@ -311,8 +309,7 @@ namespace Bloom.WebLibraryIntegration
                             metadataLang1Code,
                             metadataLang2Code,
                             collectionSettings?.SettingsFilePath,
-                            isForBulkUpload,
-                            controlToInvokeOn
+                            isForBulkUpload
                         );
 
                         string[] filesToUpload = null;
@@ -376,7 +373,7 @@ namespace Bloom.WebLibraryIntegration
 
                     if (IsProductionRun) // don't make it seem like there are more uploads than there really are if this is just a tester pushing to the sandbox
                     {
-                        Analytics.Track(
+                        BloomAnalytics.Track(
                             "UploadBook-Success",
                             new Dictionary<string, string>()
                             {
@@ -411,7 +408,7 @@ namespace Bloom.WebLibraryIntegration
                         )
                     );
                     if (IsProductionRun)
-                        Analytics.Track("UploadBook-Failure-SystemTime");
+                        BloomAnalytics.Track("UploadBook-Failure-SystemTime");
                 }
                 else
                 {
@@ -458,7 +455,7 @@ namespace Bloom.WebLibraryIntegration
         private void ReportFailureToAnalytics(BookMetaData metadata, bool isNewBook, Exception e)
         {
             if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this is just a tester pushing to the sandbox
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "UploadBook-Failure",
                     new Dictionary<string, string>()
                     {
@@ -497,7 +494,7 @@ namespace Bloom.WebLibraryIntegration
         }
 
         // Copy the needed files to the staging directory and make any modifications needed before upload.
-        private async Task SetUpStagingAsync(
+        private void SetUpStaging(
             string pathToBloomBookDirectory,
             string stagingDirectory,
             IProgress progress,
@@ -509,8 +506,7 @@ namespace Bloom.WebLibraryIntegration
             string metadataLang1Code,
             string metadataLang2Code,
             string collectionSettingsPath = null,
-            bool isForBulkUpload = false,
-            Control controlToInvokeOn = null
+            bool isForBulkUpload = false
         )
         {
             var filter = new BookFileFilter(pathToBloomBookDirectory)
@@ -539,11 +535,7 @@ namespace Bloom.WebLibraryIntegration
                     metadataLang2Code
                 );
 
-            await PublishHelper.ReportInvalidFontsAsync(
-                stagingDirectory,
-                progress,
-                controlToInvokeOn
-            );
+            PublishHelper.ReportInvalidFonts(stagingDirectory, progress);
 
             // Really crop images, but leave in place the HTML structures that indicates they are cropped.
             // Really cropping them will typically reduce the space needed, and may also have value in
@@ -1052,8 +1044,7 @@ namespace Bloom.WebLibraryIntegration
                     book.BookData.MetadataLanguage1Tag,
                     book.BookData.MetadataLanguage2Tag,
                     bookParams.IsForBulkUpload,
-                    changeUploader,
-                    publishModel.View?.GetHostControlForInvoke()
+                    changeUploader
                 );
 
                 Debug.Assert(
@@ -1067,7 +1058,10 @@ namespace Bloom.WebLibraryIntegration
                 var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(bookObjectId);
                 book.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishWeb, url);
 
-                BloomWebSocketServer.Instance.SendEvent("booksOnBlorg", "reload");
+                // Instance is only set while a collection is open. An upload that finishes as the
+                // collection is closing has nothing left to tell, and no longer has a disposed
+                // server to tell it to, so say nothing rather than throw.
+                BloomWebSocketServer.Instance?.SendEvent("booksOnBlorg", "reload");
                 return bookObjectId;
             }
             finally

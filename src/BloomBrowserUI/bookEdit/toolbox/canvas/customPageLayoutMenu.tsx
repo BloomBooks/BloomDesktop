@@ -49,6 +49,14 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
         selection: "standard" | "custom",
         event: React.MouseEvent<Element>,
     ) => {
+        // These items are a radio-style selection, not toggles: clicking the one that
+        // already has the tick beside it must do nothing (BL-16725). Without this, such
+        // a click switched to the other layout, and clicking "Custom" while already on
+        // Custom therefore discarded the user's custom layout.
+        if (selection === (props.isCustom ? "custom" : "standard")) {
+            handleCloseMenu();
+            return;
+        }
         const keepCustomLayoutDataWhenSwitchingToStandard =
             selection === "standard" && event.shiftKey && event.ctrlKey;
         handleCloseMenu();

@@ -55,7 +55,7 @@ const cdpPort = opt("--cdp-port", String(Number(httpPort) + 2));
 const matchName = opt("--match", "ai-image"); // substring of the target image's src
 const shot = opt(
     "--shot",
-    path.join(repoRoot, "output/screenshots/ai-editor.png"),
+    path.join(repoRoot, "output/screenshots/ai-image-editor.png"),
 );
 
 const log = (...a) => console.log(...a);

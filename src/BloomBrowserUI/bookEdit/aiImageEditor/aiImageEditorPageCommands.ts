@@ -1,6 +1,6 @@
 // The PAGE-FRAME half of the AI Image Editor integration — the only two things that have
 // to run where the live page lives. The overlay and the whole conversation with the AI
-// image editor are in the top window (aiEditorOverlay.ts); read that file's header for the
+// image editor are in the top window (aiImageEditorOverlay.ts); read that file's header for the
 // full flow, and AiImageEditorApi.cs for the C# side.
 //
 //   launchAiImageEditor            the "Edit with AI…" menu command: report the clicked
@@ -17,13 +17,13 @@ import {
     GetRawImageUrl,
 } from "../js/bloomImages";
 import { changeImageByElement } from "../js/bloomEditing";
-import { matchReplacementsToElements } from "./aiEditorSlotMatching";
+import { matchReplacementsToElements } from "./aiImageEditorSlotMatching";
 import {
     fileNameOf,
     IAiImageEditorApplyOutcome,
     IAiImageEditorCommitResult,
     isCurrentPageSwap,
-} from "./aiEditorShared";
+} from "./aiImageEditorShared";
 
 // Starts "Edit with AI…" for the given image. `img` is the right-clicked image and
 // `imgContainer` its image container (if any).

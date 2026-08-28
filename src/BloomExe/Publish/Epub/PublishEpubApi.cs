@@ -9,7 +9,6 @@ using Bloom.Collection;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
-using DesktopAnalytics;
 using SIL.Reporting;
 
 namespace Bloom.Publish.Epub
@@ -306,7 +305,7 @@ namespace Bloom.Publish.Epub
 
         public void ReportAnalytics(string eventName)
         {
-            Analytics.Track(
+            BloomAnalytics.Track(
                 eventName,
                 new Dictionary<string, string>()
                 {

@@ -72,6 +72,24 @@ namespace Bloom.Api
         }
 
         /// <summary>
+        /// True if any handler registered by a project context is still registered. Used to check that
+        /// a project that failed to open really did take its handlers with it: if it did not, the next
+        /// project re-registers the same patterns and RegisterEndpointHandler throws. See BL-16678.
+        /// </summary>
+        internal bool HasProjectLevelHandlers
+        {
+            get
+            {
+                lock (_endpointRegistrationsLock)
+                {
+                    return _exactEndpointRegistrations.Keys.Any(key =>
+                        !_applicationLevelRegistrationKeys.Contains(key)
+                    );
+                }
+            }
+        }
+
+        /// <summary>
         /// Clear all handlers that were not marked as application level handlers
         /// </summary>
         public void ClearProjectLevelHandlers()

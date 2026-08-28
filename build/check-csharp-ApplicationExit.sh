@@ -4,7 +4,7 @@
 cd $(dirname $0)/..
 echo Checking for calling Application.Exit rather than Program.Exit.
 # 1) Get the list of C# files that have been staged for commit (added or modified)
-# 2) Screen out the one files that is allowed to use Application.Exit
+# 2) Screen out the files that are allowed to use Application.Exit
 # 3) Screen out all the test code since we don't need to worry about zombie processes there
 # 4) For any remaining files, look for possible uses of Application.Exit.
 # 5) If anything is found (grep returns 0), then we stop everything and complain.
@@ -16,6 +16,12 @@ if [ -s $filesToCheck ]; then
     case "$file" in
       src/BloomExe/ProgramExit.cs) continue;;
       src/BloomTests/*) continue;;
+      # WebView2PdfMaker is a separate little executable with its own static class
+      # Program and no Program.Exit to call instead, so this rule cannot apply to it.
+      # Its Application.Exit calls are long-standing and deliberate. Without this
+      # exemption the check fires on any commit that merely stages the file -- a merge
+      # of master, say -- for code the committer never touched.
+      src/WebView2PdfMaker/*) continue;;
     esac
     # Strip // line comments and /* ... */ single-line block comments before
     # searching, so a mention of Application.Exit in a comment doesn't trip this check.

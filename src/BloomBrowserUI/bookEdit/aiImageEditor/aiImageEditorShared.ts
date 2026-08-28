@@ -1,6 +1,6 @@
 // Types and helpers shared by the two halves of the AI Image Editor integration: the
-// overlay/session, which runs in the TOP window (aiEditorOverlay.ts), and the live-page
-// work, which must run in the PAGE frame (aiEditorPageCommands.ts). Deliberately pure —
+// overlay/session, which runs in the TOP window (aiImageEditorOverlay.ts), and the live-page
+// work, which must run in the PAGE frame (aiImageEditorPageCommands.ts). Deliberately pure —
 // no DOM, no api calls — so it is safe in every bundle either half lands in.
 
 // The image the user right-clicked, as the page frame reports it to C# and as C# hands it

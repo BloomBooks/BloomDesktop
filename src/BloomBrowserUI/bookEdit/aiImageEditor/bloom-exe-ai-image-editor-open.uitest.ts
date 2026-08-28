@@ -9,11 +9,11 @@ import { connectToBloomExe } from "../../react_components/component-tester/bloom
 // PRECONDITION: Bloom is running in the Edit tab with a book selected (the launch
 // endpoint needs a current book). Run it with the app up, e.g. from src/BloomBrowserUI:
 //   pnpm exec playwright test --config react_components/component-tester/playwright.bloom-exe.config.ts \
-//       bookEdit/toolbox/canvas/bloom-exe-ai-editor-open.uitest.ts
+//       bookEdit/aiImageEditor/bloom-exe-ai-image-editor-open.uitest.ts
 //
 // It deliberately stops short of driving the right-click menu (that is the heavier
 // "full UI" flow); instead it exercises the launch contract and confirms the editor
-// iframe boots, which is what "we can open the AI editor" really means.
+// iframe boots, which is what "we can open the AI image editor" really means.
 test.describe("Bloom exe CDP: AI Image Editor", () => {
     test("launches and the editor app boots in its iframe", async () => {
         const connection = await connectToBloomExe();
@@ -71,7 +71,7 @@ test.describe("Bloom exe CDP: AI Image Editor", () => {
                         reason: string;
                     }>((resolve) => {
                         const iframe = document.createElement("iframe");
-                        iframe.id = "ai-editor-smoke-iframe";
+                        iframe.id = "ai-image-editor-smoke-iframe";
                         // Keep it out of sight; we only care that it boots.
                         iframe.style.cssText =
                             "position:fixed;left:-99999px;top:0;width:1024px;height:768px;border:0;";

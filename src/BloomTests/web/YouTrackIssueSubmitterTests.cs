@@ -4,7 +4,11 @@ using NUnit.Framework;
 
 namespace BloomTests.web
 {
+    // These tests create (and then delete) real issues on the live YouTrack instance, so they
+    // need internet access. Exclude them from a quick local run with
+    // --filter TestCategory!=Integration.
     [TestFixture]
+    [Category("Integration")]
     public class YouTrackIssueSubmitterTests
     {
         [Test]

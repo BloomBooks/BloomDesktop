@@ -251,7 +251,7 @@ describe("EditableDivUtils Tests", () => {
         return div;
     }
 
-    it("mergeTextNodesSplitByBookmarks rejoins the text a removed bookmark split", () => {
+    it("mergeAdjacentTextNodes rejoins the text a removed bookmark split", () => {
         const div = makeParagraphSplitByABookmark("overfflow", 5);
         const p = div.firstChild as HTMLParagraphElement;
         // sanity check: the removed bookmark really did leave two text nodes.
@@ -259,7 +259,7 @@ describe("EditableDivUtils Tests", () => {
         expect(p.childNodes[0].textContent).toBe("overf");
         expect(p.childNodes[1].textContent).toBe("flow");
 
-        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+        EditableDivUtils.mergeAdjacentTextNodes(div);
 
         expect(p.childNodes.length).toBe(1);
         expect(p.childNodes[0].textContent).toBe("overfflow");
@@ -267,7 +267,7 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
-    it("mergeTextNodesSplitByBookmarks keeps the original text node rather than replacing it", () => {
+    it("mergeAdjacentTextNodes keeps the original text node rather than replacing it", () => {
         // Not a detail. Replacing the text node would collapse any live Range whose boundaries
         // were inside it, and the reader tools' and Talking Book's highlights are exactly that:
         // live Ranges over these text nodes, registered by the markup pass moments before this
@@ -279,7 +279,7 @@ describe("EditableDivUtils Tests", () => {
         // sanity check the setup
         expect(originalFirstNode.textContent).toBe("overf");
 
-        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+        EditableDivUtils.mergeAdjacentTextNodes(div);
 
         expect(p.childNodes.length).toBe(1);
         expect(p.childNodes[0].textContent).toBe("overfflow");
@@ -288,7 +288,7 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
-    it("mergeTextNodesSplitByBookmarks leaves no trace in the markup that gets saved", () => {
+    it("mergeAdjacentTextNodes leaves no trace in the markup that gets saved", () => {
         // It has to make Chromium re-shape the merged text, but whatever it does to achieve
         // that must not survive into the html: this runs on every pause in typing, and the
         // box's innerHTML is what Bloom saves into the book. Checking the serialized markup
@@ -298,7 +298,7 @@ describe("EditableDivUtils Tests", () => {
         // sanity check the setup
         expect(p.hasAttribute("style")).toBe(false);
 
-        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+        EditableDivUtils.mergeAdjacentTextNodes(div);
 
         expect(div.innerHTML).toBe("<p>overfflow</p>");
         expect(p.hasAttribute("style")).toBe(false);
@@ -306,12 +306,12 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
-    it("mergeTextNodesSplitByBookmarks keeps a paragraph's own inline style", () => {
+    it("mergeAdjacentTextNodes keeps a paragraph's own inline style", () => {
         const div = makeParagraphSplitByABookmark("overfflow", 5);
         const p = div.firstChild as HTMLParagraphElement;
         p.style.display = "inline-block";
 
-        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+        EditableDivUtils.mergeAdjacentTextNodes(div);
 
         expect(p.style.display).toBe("inline-block");
         expect(p.childNodes[0].textContent).toBe("overfflow");
@@ -319,7 +319,7 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
-    it("mergeTextNodesSplitByBookmarks merges only within a parent, and merges every run", () => {
+    it("mergeAdjacentTextNodes merges only within a parent, and merges every run", () => {
         const div = document.createElement("div");
         const p = document.createElement("p");
         p.appendChild(document.createTextNode("over"));
@@ -338,7 +338,7 @@ describe("EditableDivUtils Tests", () => {
 
         const originalEmFirstNode = em.childNodes[0];
 
-        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+        EditableDivUtils.mergeAdjacentTextNodes(div);
 
         // "over"+"f" merged, " and"+" more" merged, the <em> still between them
         expect(em.childNodes[0]).toBe(originalEmFirstNode); // ranges must survive here too
@@ -359,7 +359,7 @@ describe("EditableDivUtils Tests", () => {
     // the caret both at the split itself and immediately after a <strong>. jsdom does not
     // implement those range fixups, so a test here would fail on correct code and, worse, pass
     // on the hand-rolled save/restore this code used to have - which was itself the bug.
-    it("mergeTextNodesSplitByBookmarks leaves the text byte-for-byte unchanged, whatever it ends with", () => {
+    it("mergeAdjacentTextNodes leaves the text byte-for-byte unchanged, whatever it ends with", () => {
         // It forces a repaint by appending a space and immediately deleting it. A text node's
         // data is an exact string - html whitespace collapsing is a rendering rule, not a data
         // one - so that has to round-trip exactly even when the text already ends in
@@ -383,7 +383,7 @@ describe("EditableDivUtils Tests", () => {
             // sanity check the setup
             expect(p.childNodes.length).toBe(2);
 
-            EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+            EditableDivUtils.mergeAdjacentTextNodes(div);
 
             expect(p.childNodes.length).toBe(1);
             expect((p.firstChild as Text).data).toBe("overf" + ending);
@@ -391,7 +391,7 @@ describe("EditableDivUtils Tests", () => {
         }
     });
 
-    it("mergeTextNodesSplitByBookmarks copes with an empty text node at the head of a run", () => {
+    it("mergeAdjacentTextNodes copes with an empty text node at the head of a run", () => {
         // normalize() deletes empty text nodes outright, so the node a run collapses into is
         // its first NON-empty node. Getting that wrong would leave us holding a detached node
         // and the repaint would silently do nothing - the original bug all over again.
@@ -405,7 +405,7 @@ describe("EditableDivUtils Tests", () => {
         // sanity check the setup
         expect(p.childNodes.length).toBe(3);
 
-        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+        EditableDivUtils.mergeAdjacentTextNodes(div);
 
         expect(p.childNodes.length).toBe(1);
         expect(p.childNodes[0].textContent).toBe("overfflow");
@@ -416,7 +416,7 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
-    it("mergeTextNodesSplitByBookmarks copes with a run that is entirely empty nodes", () => {
+    it("mergeAdjacentTextNodes copes with a run that is entirely empty nodes", () => {
         const div = document.createElement("div");
         const p = document.createElement("p");
         p.appendChild(document.createTextNode(""));
@@ -425,7 +425,7 @@ describe("EditableDivUtils Tests", () => {
         document.body.appendChild(div);
         expect(p.childNodes.length).toBe(2);
 
-        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+        EditableDivUtils.mergeAdjacentTextNodes(div);
 
         // normalize() removes them all; we must not throw trying to poke a detached node.
         expect(p.childNodes.length).toBe(0);
@@ -433,7 +433,7 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
-    it("mergeTextNodesSplitByBookmarks only touches parents that actually have a run to merge", () => {
+    it("mergeAdjacentTextNodes only touches parents that actually have a run to merge", () => {
         // What we can assert is scope: every other node in the box comes out untouched, so
         // there is nothing for the browser to have to fix up in the first place.
         const div = makeParagraphSplitByABookmark("overfflow", 5);
@@ -442,7 +442,7 @@ describe("EditableDivUtils Tests", () => {
         div.appendChild(untouched);
         const untouchedTextNode = untouched.firstChild;
 
-        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+        EditableDivUtils.mergeAdjacentTextNodes(div);
 
         // the merge happened in the first paragraph...
         expect(div.firstChild!.childNodes.length).toBe(1);
@@ -455,12 +455,157 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
-    it("mergeTextNodesSplitByBookmarks leaves an already-normal paragraph alone", () => {
+    it("mergeAdjacentTextNodes merges a split it did not cause", () => {
+        // Nothing about the repair is specific to ckeditor bookmarks: Chromium's own
+        // backspace, and long-press inserting the character it composed, split a paragraph
+        // the same way and used to be left unrepaired (BL-16717).
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode("waf"));
+        p.appendChild(document.createTextNode("fle"));
+        div.appendChild(p);
+        document.body.appendChild(div);
+        // sanity check the setup
+        expect(p.childNodes.length).toBe(2);
+
+        EditableDivUtils.mergeAdjacentTextNodes(div);
+
+        expect(p.childNodes.length).toBe(1);
+        expect(p.childNodes[0].textContent).toBe("waffle");
+
+        div.remove();
+    });
+
+    // Make div look like a box whose ckeditor is tracking fillingCharNode as its filling char.
+    // ckeditor keeps that reference as custom data on the editable div and hands it back as a
+    // CKEDITOR.dom.text, whose `$` is the DOM node.
+    function stubCkEditorTracking(div: HTMLElement, fillingCharNode: Node) {
+        (div as HTMLElement & { bloomCkEditor?: object }).bloomCkEditor = {
+            editable: () => ({
+                getCustomData: (key: string) =>
+                    key === "cke-fillingChar"
+                        ? { $: fillingCharNode }
+                        : undefined,
+            }),
+        };
+    }
+
+    it("mergeAdjacentTextNodes leaves the box alone while ckeditor holds a filling char", () => {
+        // ckeditor's filling char is a zero-width space in a text node of its own, and
+        // ckeditor remembers that node so it can take the character out again. Merging the
+        // node away would leave ckeditor writing to a detached node, and the zero-width space
+        // would survive into the saved book - the BL-16490 hazard. The split is left for the
+        // next keystroke to repair, once the filling char has gone.
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode("waffle"));
+        p.appendChild(document.createTextNode(String.fromCharCode(0x200b)));
+        div.appendChild(p);
+        document.body.appendChild(div);
+        const fillingCharNode = p.childNodes[1];
+        // Stand in for the live ckeditor: what matters is that it is TRACKING the node, which
+        // is what it means for the character to be one we must not disturb. (A stray
+        // zero-width space nobody is tracking is a different thing, and is fine to merge.)
+        // ckeditor hands back a CKEDITOR.dom.text, whose `$` is the DOM node.
+        stubCkEditorTracking(div, fillingCharNode);
+        // sanity check the setup: there IS a split here, so without the filling char this
+        // would certainly merge.
+        expect(p.childNodes.length).toBe(2);
+
+        EditableDivUtils.mergeAdjacentTextNodes(div);
+
+        expect(p.childNodes.length).toBe(2);
+        expect(p.childNodes[1]).toBe(fillingCharNode);
+
+        div.remove();
+    });
+
+    it("mergeAdjacentTextNodes is not blocked by a filling char that has been orphaned", () => {
+        // ckeditor keeps the reference on the editable DIV, so anything that rewrites the box's
+        // innerHTML (doCkEditorCleanup, cleanUpNbsps) detaches the text node and leaves the
+        // reference dangling - the BL-16490 orphan. Nothing will write to that node any more,
+        // so it must not stop us repairing the box; a first version of this guard let it stop
+        // us indefinitely, which would have left letters unpainted (Devin caught it on #8217).
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode("waf"));
+        p.appendChild(document.createTextNode("fle"));
+        div.appendChild(p);
+        document.body.appendChild(div);
+        const orphan = document.createTextNode(String.fromCharCode(0x200b));
+        stubCkEditorTracking(div, orphan);
+        // sanity check the setup: the tracked node is NOT in the box, which is what makes it
+        // an orphan, and there is a split here that would otherwise be blocked.
+        expect(div.contains(orphan)).toBe(false);
+        expect(p.childNodes.length).toBe(2);
+
+        EditableDivUtils.mergeAdjacentTextNodes(div);
+
+        expect(p.childNodes.length).toBe(1);
+        expect(p.textContent).toBe("waffle");
+
+        div.remove();
+    });
+
+    it("mergeAdjacentTextNodes still repairs paragraphs the filling char is not in", () => {
+        // The guard is per-run, not per-box: a filling char parked in one paragraph must not
+        // stop the others being repaired.
+        const div = document.createElement("div");
+        div.innerHTML = "<p id='guarded'></p><p id='other'></p>";
+        const guarded = div.querySelector("#guarded") as HTMLElement;
+        const other = div.querySelector("#other") as HTMLElement;
+        guarded.appendChild(document.createTextNode("waf"));
+        const fillingCharNode = document.createTextNode(
+            String.fromCharCode(0x200b),
+        );
+        guarded.appendChild(fillingCharNode);
+        other.appendChild(document.createTextNode("shuf"));
+        other.appendChild(document.createTextNode("fle"));
+        document.body.appendChild(div);
+        stubCkEditorTracking(div, fillingCharNode);
+        // sanity check the setup
+        expect(guarded.childNodes.length).toBe(2);
+        expect(other.childNodes.length).toBe(2);
+
+        EditableDivUtils.mergeAdjacentTextNodes(div);
+
+        expect(guarded.childNodes.length).toBe(2); // left alone
+        expect(other.childNodes.length).toBe(1); // repaired
+        expect(other.textContent).toBe("shuffle");
+
+        div.remove();
+    });
+
+    it("mergeAdjacentTextNodes merges a zero-width space nobody is tracking", () => {
+        // The mirror image of the test above, and the reason it asks ckeditor rather than
+        // searching the text: Thai, Khmer and Myanmar use U+200B in real text as a word break,
+        // and treating the character itself as a filling char would have turned the repair off
+        // for a whole book in those languages.
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode("waf"));
+        p.appendChild(
+            document.createTextNode(`fle${String.fromCharCode(0x200b)}word`),
+        );
+        div.appendChild(p);
+        document.body.appendChild(div);
+        // sanity check the setup
+        expect(p.childNodes.length).toBe(2);
+
+        EditableDivUtils.mergeAdjacentTextNodes(div);
+
+        expect(p.childNodes.length).toBe(1);
+        expect(p.textContent).toBe(`waffle${String.fromCharCode(0x200b)}word`);
+
+        div.remove();
+    });
+
+    it("mergeAdjacentTextNodes leaves an already-normal paragraph alone", () => {
         const div = document.createElement("div");
         div.innerHTML = "<p>over<em>ff</em>low</p>";
         const before = div.innerHTML;
 
-        EditableDivUtils.mergeTextNodesSplitByBookmarks(div);
+        EditableDivUtils.mergeAdjacentTextNodes(div);
 
         // In particular, it must not merge text across an element boundary.
         expect(div.innerHTML).toBe(before);

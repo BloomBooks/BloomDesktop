@@ -48,8 +48,11 @@ and it negates most of the value of using Crowdin to begin with.
   cleared.  (This appears to be a corner case in Crowdin's code that may or not be intentional.)
 
 - Adding, removing, or reordering *trans-unit* elements in the English xliff file without
-  changing them merely causes the corresponding addition, removal, or reordering in the
-  translation xliff file.
+  changing them causes the corresponding addition, removal, or reordering in the translation
+  xliff file.  Note what the "removal" half of that means in practice: **deleting a
+  *trans-unit* from the English file deletes its translations too.**  That is why we normally
+  mark a string obsolete rather than deleting it — see "Why we can't just delete a string"
+  below.
 
 - I (AP, May 2026) am pretty sure this is affected by the `update_option` option in crowdin.yml.
   - What I think is true today with `update_option: update_without_changes` on master: Editing the *source* element content does not affect the translation.
@@ -98,9 +101,55 @@ and it negates most of the value of using Crowdin to begin with.
   uploading it to Crowdin has no effect on what you see on Crowdin.
 
 
+## Why we can't just delete a string
+
+This is the reasoning behind the "mark it obsolete, don't delete it" convention. It is written
+down **here and nowhere else**; `src/BloomBrowserUI/AGENTS.md` and
+`.github/skills/xlf-strings/SKILL.md` state the resulting rules and point back at this section.
+If you are about to argue that some particular deletion is safe, read this first — the wrong
+argument for it is an easy one to reach.
+
+**Translations only ever travel one route, and every leg of it runs through master:**
+
+1. Crowdin takes its **source** strings from the English xliff files **on master**. Remove an id
+   from master and Crowdin stops knowing about that string.
+2. Finished translations come **back into master** as the periodic `l10n_master` pull request
+   (see "Merging Crowdin pull requests" below).
+3. A release branch gets those translations **only** by cherry-picking that merge — we do this
+   for beta, and it is conceivable though not usual for a release.
+
+So an id deleted from master is gone from Crowdin, therefore absent from every later
+`l10n_master` merge, therefore absent from anything picked into `Version6.x`. **The release
+branch still listing the entry in its own copy of the file saves nothing** — its translations
+were never going to come from that copy; they were going to come from master. This is the trap:
+"but the 6.4 branch still has the entry" feels like a safety argument and is not one.
+
+That is also why a deletion is only *eventually* safe. Once the version in which the string went
+obsolete has shipped and no longer receives updates, nothing will ever need to pick translations
+for it again, and the entry can go. Judging that is a human call.
+
+### The exception: a string Crowdin never had
+
+New entries are added with `translate="no"`, which is what keeps them out of Crowdin until we
+say they are ready. An entry that carried `translate="no"` from the day it was added until the
+day it became unused was therefore never offered to a translator, has no translations anywhere,
+and appears in none of the language subdirectories. Deleting it loses nothing, and an obsolete
+note on it protects nothing.
+
+Establishing that is mechanical — print the entry's line as it stood in every commit that ever
+touched it, on master and on the current release branch, and confirm `translate="no"` on all of
+them; then confirm the id appears only under `en/`. `.github/skills/xlf-strings/SKILL.md` has
+the exact commands. Deciding to act on it is still the developer's call, and the evidence
+belongs in the commit message and in the PR-review reply, because a reviewer — human or bot —
+reading only the rule will otherwise flag the deletion, quite correctly.
+
 ## Restrictions on xliff file changes
 
 - ***Never*** change the *original* attribute of the *file* element in a source xliff file.
+
+- **Do not delete a *trans-unit* from a source xliff file.**  Mark it obsolete instead.  See
+  "Why we can't just delete a string" above for the reasoning and for the one exception, and
+  `.github/skills/xlf-strings/SKILL.md` for the note format itself.
 
 - Change the *product-version* attribute of the *file* element in a source xliff file only when
   you think it is really needed.
