@@ -92,6 +92,8 @@ namespace BloomTests.FreezeDoctor
                 "Reserved@68+4",
                 "Activity@72+256",
                 "DebuggerLastDetached@328+8",
+                "ServerWorkers@336+4",
+                "ServerQueued@340+4",
             };
             Assert.That(
                 DoctorChannelLayout.Fields.Select(f => $"{f.Name}@{f.Offset}+{f.Size}").ToArray(),
@@ -130,7 +132,7 @@ namespace BloomTests.FreezeDoctor
             // grows only PayloadBytes.
             Assert.That(
                 DoctorChannelLayout.BaselinePayloadBytes,
-                Is.EqualTo(336),
+                Is.EqualTo(344),
                 "the generation-1 floor"
             );
         }

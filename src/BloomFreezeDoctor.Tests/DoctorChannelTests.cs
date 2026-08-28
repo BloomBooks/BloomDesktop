@@ -88,6 +88,8 @@ public class DoctorChannelTests
                 ("Reserved", 68, 4),
                 ("Activity", 72, 256),
                 ("DebuggerLastDetached", 328, 8),
+                ("ServerWorkers", 336, 4),
+                ("ServerQueued", 340, 4),
             };
             Assert.That(
                 DoctorChannelLayout.Fields.Select(f => (f.Name, f.Offset, f.Size)),
@@ -96,13 +98,13 @@ public class DoctorChannelTests
             );
 
             Assert.That(DoctorChannelLayout.ActivityMaxBytes, Is.EqualTo(256), "activity room");
-            Assert.That(DoctorChannelLayout.PayloadBytes, Is.EqualTo(336), "payload extent");
+            Assert.That(DoctorChannelLayout.PayloadBytes, Is.EqualTo(344), "payload extent");
             // Equal to PayloadBytes only because generation 1 is still unreleased, so there is no older
             // vintage writing less. It freezes as soon as a Bloom ships writing this page; after that,
             // appending a field grows PayloadBytes and leaves this alone.
             Assert.That(
                 DoctorChannelLayout.BaselinePayloadBytes,
-                Is.EqualTo(336),
+                Is.EqualTo(344),
                 "the generation-1 floor"
             );
         });
@@ -335,7 +337,7 @@ public class DoctorChannelTests
         writer.SetLongOperation(true);
         writer.SetDebuggerAttached(true);
         writer.SetShutdownPhase(BloomShutdownPhase.LogWritten);
-        writer.SetServerWorkerCounts(5, 6);
+        writer.SetServerWorkerCounts(5, 6, workers: 8, queued: 2);
         writer.RecordCleanExit();
 
         var after = new byte[tailLength];
@@ -452,7 +454,7 @@ public class DoctorChannelTests
         writer.SetActivity("Publishing to BloomPUB: compressing images");
         writer.SetLongOperation(true);
         writer.SetDebuggerAttached(false);
-        writer.SetServerWorkerCounts(busy: 7, blocked: 3);
+        writer.SetServerWorkerCounts(busy: 7, blocked: 3, workers: 9, queued: 0);
         writer.SetShutdownPhase(BloomShutdownPhase.None);
         writer.RecordUiTick();
         writer.RecordWatchdogTick();
@@ -473,6 +475,8 @@ public class DoctorChannelTests
             Assert.That(snapshot.DebuggerAttached, Is.False);
             Assert.That(snapshot.ServerBusyWorkers, Is.EqualTo(7));
             Assert.That(snapshot.ServerBlockedWorkers, Is.EqualTo(3));
+            Assert.That(snapshot.ServerWorkers, Is.EqualTo(9));
+            Assert.That(snapshot.ServerQueuedRequests, Is.EqualTo(0));
             Assert.That(snapshot.UiTicks, Is.EqualTo(1));
             Assert.That(snapshot.WatchdogTicks, Is.EqualTo(1));
             Assert.That(snapshot.CleanExitRecorded, Is.False);
@@ -544,7 +548,7 @@ public class DoctorChannelTests
         // run over the next field.
         using var writer = new DoctorChannelWriter(TestProcessId);
         writer.SetActivity(new string('x', DoctorChannelLayout.ActivityMaxBytes * 3));
-        writer.SetServerWorkerCounts(busy: 5, blocked: 1);
+        writer.SetServerWorkerCounts(busy: 5, blocked: 1, workers: 6, queued: 0);
 
         DoctorChannelReader.TryRead(TestProcessId, out var snapshot);
 

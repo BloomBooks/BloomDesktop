@@ -227,6 +227,15 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
         );
         text.AppendLine();
 
+        var serverWorkers = threads
+            .Where(t => t.Frames.Any(f => f.Contains(ServerWorkerFrame, StringComparison.Ordinal)))
+            .ToList();
+        if (serverWorkers.Count > 0)
+        {
+            text.AppendLine(DescribeServerPool(serverWorkers.Select(t => t.Frames).ToList()));
+            text.AppendLine();
+        }
+
         string? headline = null;
         if (uiThread != null)
         {
@@ -259,12 +268,83 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
                 );
                 break;
             }
-            text.AppendLine($"Thread {thread.Thread.OSThreadId}:");
+            var label = serverWorkers.Contains(thread) ? " (a server worker)" : "";
+            text.AppendLine($"Thread {thread.Thread.OSThreadId}{label}:");
             AppendFrames(text, thread.Frames);
             text.AppendLine();
         }
         CollapsibleSections.Finish(text);
         return headline;
+    }
+
+    /// <summary>
+    /// The frame every BloomServer worker thread sits on top of. Threads are recognised by their stack
+    /// rather than by name because a name is not available here: it lives on the managed Thread object,
+    /// which is on the GC heap, and the dumps this walks deliberately do not include the heap.
+    /// </summary>
+    private const string ServerWorkerFrame = "BloomServer.RequestProcessorLoop";
+
+    /// <summary>What a worker is waiting for, as a category, or null if it is working rather than waiting.</summary>
+    private static string? WhatAWorkerIsWaitingFor(IReadOnlyList<string> frames)
+    {
+        foreach (var frame in frames)
+        {
+            // Innermost-first, so the first of these we meet is the actual wait. Control.Invoke is the
+            // interesting one: a worker sitting there is waiting for the UI thread, which is how a blocked
+            // UI thread drags the server pool down with it.
+            if (
+                frame.Contains("Control.Invoke", StringComparison.Ordinal)
+                || frame.Contains("Control.MarshaledInvoke", StringComparison.Ordinal)
+                || frame.Contains("WindowsFormsSynchronizationContext", StringComparison.Ordinal)
+            )
+                return "the UI thread";
+            if (frame.Contains("SemaphoreSlim", StringComparison.Ordinal))
+                return "an API lock";
+            if (frame.Contains("Monitor.", StringComparison.Ordinal))
+                return "a lock";
+            if (
+                frame.Contains("Task.Wait", StringComparison.Ordinal)
+                || frame.Contains("GetAwaiter().GetResult", StringComparison.Ordinal)
+            )
+                return "a task";
+            // Where a worker sits when it has no request: waiting for the queue to hand it one.
+            if (frame.Contains("RequestProcessorLoop", StringComparison.Ordinal))
+                return null;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// The server pool in a sentence, grouped by what its workers are waiting for.
+    ///
+    /// This is the sentence the counts Bloom publishes cannot produce. "6 blocked of 8" says the pool is
+    /// nearly out; "6 of 8 waiting on the UI thread" says WHY, and if the UI thread is itself blocked (the
+    /// headline above), the two together are the whole deadlock.
+    /// </summary>
+    private static string DescribeServerPool(IReadOnlyList<IReadOnlyList<string>> workerStacks)
+    {
+        var byWait = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        var working = 0;
+        foreach (var frames in workerStacks)
+        {
+            var waiting = WhatAWorkerIsWaitingFor(frames);
+            if (waiting == null)
+                working++;
+            else
+                byWait[waiting] = byWait.TryGetValue(waiting, out var count) ? count + 1 : 1;
+        }
+
+        var text = new StringBuilder($"{workerStacks.Count} of these are BloomServer workers");
+        if (byWait.Count == 0)
+            return text.Append(", none of them waiting on anything.").ToString();
+
+        text.Append(": ");
+        text.Append(
+            string.Join(", ", byWait.Select(pair => $"{pair.Value} waiting on {pair.Key}"))
+        );
+        if (working > 0)
+            text.Append($", {working} idle or working");
+        return text.Append('.').ToString();
     }
 
     /// <summary>

@@ -363,9 +363,7 @@ public sealed class EvidenceGatherer
         text.AppendLine(
             $"| Background heartbeat last beat | {Describe(state.WatchdogHeartbeatAge)} ago |"
         );
-        text.AppendLine(
-            $"| Server workers | {state.ServerBusyWorkers} busy, {state.ServerBlockedWorkers} blocked |"
-        );
+        text.AppendLine($"| Server workers | {DescribeServerWorkers(state)} |");
         if (state.ShutdownPhase != BloomShutdownPhase.None)
             text.AppendLine($"| Shutdown had begun | {state.ShutdownPhase.Describe()} |");
         if (state.LongOperationInProgress)
@@ -398,4 +396,28 @@ public sealed class EvidenceGatherer
 
     private static string Trim(string value, int max) =>
         value.Length <= max ? value : value.Substring(0, max - 1) + "…";
+
+    /// <summary>
+    /// The server pool in one phrase, with the judgement made rather than left to the reader. Public so the
+    /// judgement itself can be tested: the comparison is easy to write backwards, and a diagnostic that
+    /// says the opposite of the truth is worse than one that says nothing.
+    ///
+    /// The arithmetic is the whole point: BloomServer's own rule is that the pool is exhausted when every
+    /// live worker is blocked, so "3 blocked" means nothing until it is set against the pool size, and
+    /// whether anything is actually held up depends on the queue behind it.
+    /// </summary>
+    public static string DescribeServerWorkers(DoctorChannelSnapshot state)
+    {
+        var text =
+            $"{state.ServerWorkers} threads; {state.ServerBusyWorkers} busy, "
+            + $"{state.ServerBlockedWorkers} blocked; {state.ServerQueuedRequests} request(s) queued";
+        // The condition BloomServer itself acts on, said out loud. A pool that has run out while requests
+        // wait behind it is the shape of a server-side deadlock rather than a slow operation.
+        if (state.ServerWorkers > 0 && state.ServerBlockedWorkers >= state.ServerWorkers)
+            text +=
+                state.ServerQueuedRequests > 0
+                    ? " — **every worker is blocked and requests are waiting behind them**"
+                    : " — **every worker is blocked**";
+        return text;
+    }
 }
