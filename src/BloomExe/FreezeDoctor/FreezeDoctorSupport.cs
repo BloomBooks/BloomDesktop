@@ -632,19 +632,9 @@ namespace Bloom.FreezeDoctor
             );
 
             // Tidy up previous runs' session files here rather than at startup: this is file enumeration and
-            // deletion, and it belongs on a background thread rather than on Bloom's startup path. An
-            // unexplained session survives until it ages out, since that is precisely the evidence a Doctor
-            // installed after a crash comes looking for.
-            //
-            // **Once, before the loop, and cheap enough to run at this thread's raised priority.** Measured:
-            // a real developer folder of 14 files takes 1 ms, and 300 files - far more than retention
-            // allows for - takes 16 ms. So there is no case for pruning at normal priority first and then
-            // raising, which is the obvious thing to reach for and would buy nothing.
-            //
-            // A word of warning to anyone tempted to make the liveness check cheaper by enumerating all
-            // processes once instead of asking per file: it is SLOWER. Process.GetProcessById fails fast for
-            // a dead id - measured at 0.01 ms - while one Process.GetProcesses() sweep costs 19 ms on its
-            // own, because it builds an object per process on a machine running five hundred of them.
+            // deletion, and it belongs on a background thread rather than on Bloom's startup path. Once,
+            // before the loop, and cheap enough to do at this thread's raised priority - see
+            // DoctorSessionStore.Prune, which carries the measurements.
             try
             {
                 DoctorSessionStore.Prune(ProcessIsAlive, SessionRetention);
