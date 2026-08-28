@@ -292,49 +292,50 @@ public sealed class FreezeDetector
     /// (about once a second); the detector works entirely from the timestamps it is given, so a
     /// missed beat costs nothing.
     /// </summary>
-    public DetectorVerdict Observe(TargetObservation now)
+    public DetectorVerdict Observe(TargetObservation observation)
     {
         // Latched rather than merely copied: Bloom's own flag is sticky and survives, but our outside
         // sampling of a Bloom that publishes nothing is a series of instants, and an attach we saw once
         // must not be forgotten a second later.
-        _debuggerAttachedNow = now.DebuggerAttachedNow;
-        if (now.DebuggerAttachedNow || now.DebuggerEverAttached)
+        _debuggerAttachedNow = observation.DebuggerAttachedNow;
+        if (observation.DebuggerAttachedNow || observation.DebuggerEverAttached)
             _everDebugged = true;
         // Only ever moves forward to a *more recent* departure; a null here means "still attached" or
         // "unknowable", neither of which should erase a time we already learned.
-        if (now.DebuggerLastDetachedAge.HasValue)
-            _debuggerLastDetachedAge = now.DebuggerLastDetachedAge;
+        if (observation.DebuggerLastDetachedAge.HasValue)
+            _debuggerLastDetachedAge = observation.DebuggerLastDetachedAge;
 
         // A gap far larger than our cadence means the world stopped: the machine slept, or something
         // starved the Doctor. Elapsed unresponsive time measured across such a gap is meaningless, so
         // treat the target as freshly seen rather than accumulating a freeze it never had.
         var slept =
             _previousUptime.HasValue
-            && now.Uptime - _previousUptime.Value > _thresholds.ImplausibleGap;
+            && observation.Uptime - _previousUptime.Value > _thresholds.ImplausibleGap;
         if (slept)
         {
-            _lastRespondedAt = now.Uptime;
-            _lastHadWindowAt = now.Uptime;
+            _lastRespondedAt = observation.Uptime;
+            _lastHadWindowAt = observation.Uptime;
         }
-        _previousUptime = now.Uptime;
+        _previousUptime = observation.Uptime;
 
-        if (!now.IsAlive)
-            return ObserveDeadProcess(now);
+        if (!observation.IsAlive)
+            return ObserveDeadProcess(observation);
 
-        if (now.WindowResponds && !BelievesHeartbeatIsStale(now))
-            _lastRespondedAt = now.Uptime;
-        if (now.HasVisibleWindow)
-            _lastHadWindowAt = now.Uptime;
+        if (observation.WindowResponds && !BelievesHeartbeatIsStale(observation))
+            _lastRespondedAt = observation.Uptime;
+        if (observation.HasVisibleWindow)
+            _lastHadWindowAt = observation.Uptime;
 
         // First look. If the target can tell us how long it has already been unresponsive, believe it and
         // backdate accordingly, so a Doctor started BECAUSE Bloom is frozen reports at once instead of
         // making the user wait out a threshold that has in truth already passed. Without a published
         // heartbeat we have no way to know, and the clock has to start now.
-        _lastRespondedAt ??= now.Uptime - (now.AlreadyUnresponsiveFor ?? TimeSpan.Zero);
-        _lastHadWindowAt ??= now.Uptime;
+        _lastRespondedAt ??=
+            observation.Uptime - (observation.AlreadyUnresponsiveFor ?? TimeSpan.Zero);
+        _lastHadWindowAt ??= observation.Uptime;
 
-        var unresponsiveFor = now.Uptime - _lastRespondedAt.Value;
-        var windowlessFor = now.Uptime - _lastHadWindowAt.Value;
+        var unresponsiveFor = observation.Uptime - _lastRespondedAt.Value;
+        var windowlessFor = observation.Uptime - _lastHadWindowAt.Value;
 
         // How long something has been wrong, for the debugger-overlap question. The LONGER of the two,
         // deliberately: a longer episode is more easily excused by a departed debugger, so taking the
@@ -344,23 +345,23 @@ public sealed class FreezeDetector
 
         // Zombie is checked first, because a process with no window cannot meaningfully be called
         // unresponsive: there is nothing left to send a message to.
-        if (!now.HasVisibleWindow && windowlessFor >= _thresholds.Zombie)
+        if (!observation.HasVisibleWindow && windowlessFor >= _thresholds.Zombie)
             return Settle(
                 TargetState.Zombie,
                 ReportReason.Zombie,
                 $"alive with no visible window for {Describe(windowlessFor)}"
             );
 
-        var reportAfter = now.LongOperationInProgress
+        var reportAfter = observation.LongOperationInProgress
             ? _thresholds.ReportDuringLongOperation
             : _thresholds.Report;
 
         if (unresponsiveFor >= reportAfter)
         {
-            var why = BelievesHeartbeatIsStale(now)
+            var why = BelievesHeartbeatIsStale(observation)
                 ? $"UI-thread heartbeat stale for {Describe(unresponsiveFor)} with no forward progress"
                 : $"window has not answered for {Describe(unresponsiveFor)}";
-            if (now.LongOperationInProgress)
+            if (observation.LongOperationInProgress)
                 why += ", despite Bloom reporting a long operation";
             return Settle(TargetState.Frozen, ReportReason.Frozen, why);
         }
@@ -384,7 +385,7 @@ public sealed class FreezeDetector
         return Settle(TargetState.Healthy, ReportReason.None, "responding");
     }
 
-    private DetectorVerdict ObserveDeadProcess(TargetObservation now)
+    private DetectorVerdict ObserveDeadProcess(TargetObservation observation)
     {
         // Died while we already thought it was in trouble: that is one story, not two, and the
         // freeze is the interesting half.
@@ -405,8 +406,9 @@ public sealed class FreezeDetector
     /// A stale heartbeat is only believed when something else agrees, because WM_TIMER is the
     /// lowest-priority message and a busy-but-live UI can starve it (plan §3.1).
     /// </summary>
-    private static bool BelievesHeartbeatIsStale(TargetObservation now) =>
-        now.HeartbeatIsStale && (now.UiBlockCorroborated || !now.WindowResponds);
+    private static bool BelievesHeartbeatIsStale(TargetObservation observation) =>
+        observation.HeartbeatIsStale
+        && (observation.UiBlockCorroborated || !observation.WindowResponds);
 
     /// <summary>
     /// Records the new state and suppresses a repeat of a reason we have already reported, so one
