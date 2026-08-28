@@ -1602,6 +1602,26 @@
         <note>ID: EditTab.FormatDialog.DefaultStyles.Bubble-style</note>
         <note>Default style for comic bubbles</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.CalendarDayNote-style" translate="no">
+        <source xml:lang="en">Calendar Day Note</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.CalendarDayNote-style</note>
+        <note>Name of a style, shown in the Format dialog's style list. Used on the Wall Calendar template's month grid page for the note a user writes inside one day's box.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.CalendarDayNumber-style" translate="no">
+        <source xml:lang="en">Calendar Day Number</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.CalendarDayNumber-style</note>
+        <note>Name of a style, shown in the Format dialog's style list. Used on the Wall Calendar template's month grid page for the number of the day of the month (1-31) in each box.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.CalendarDayOfWeek-style" translate="no">
+        <source xml:lang="en">Calendar Day of Week</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.CalendarDayOfWeek-style</note>
+        <note>Name of a style, shown in the Format dialog's style list. Used on the Wall Calendar template's month grid page for the row of weekday names (Sun, Mon, ...) above the grid.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.CalendarMonth-style" translate="no">
+        <source xml:lang="en">Calendar Month</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.CalendarMonth-style</note>
+        <note>Name of a style, shown in the Format dialog's style list. Used on the Wall Calendar template's month grid page for the title showing the month and year.</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Cover-Default-style" sil:dynamic="true">
         <source xml:lang="en">Cover Default</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Cover-Default-style</note>

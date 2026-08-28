@@ -981,6 +981,19 @@ export function SetupElements(
             editBox.closest(".bloom-userCannotModifyStyles").length === 0
         ) {
             editor.AttachToBox(editBox.get(0));
+            return;
+        }
+        // Some elements are not bloom-editables but still want the Format dialog: for
+        // example the non-editable day numbers on the calendar grid page, which opt in
+        // with the bloom-styleable class. They are focusable (tabindex='0'), so a click
+        // brings us here.
+        const target = e.target as HTMLElement;
+        if (
+            !editBox.length &&
+            StyleEditor.shouldAllowNonEditableStyleDialogTarget(target) &&
+            target.closest(".bloom-userCannotModifyStyles") === null
+        ) {
+            editor.AttachToBox(target);
         }
     });
 

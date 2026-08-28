@@ -528,4 +528,41 @@ describe("StyleEditor", () => {
             expect.any(String),
         );
     });
+
+    it("shouldAllowNonEditableStyleDialogTarget allows a bloom-styleable element with a -style class, off a custom-layout page", () => {
+        $("body").append(
+            "<div class='bloom-page'><div id='testTarget' class='calendarDayNumber CalendarDayNumber-style bloom-styleable'>17</div></div>",
+        );
+        const target = $("#testTarget").get(0)!;
+        // sanity check: nothing here makes it eligible except the opt-in class
+        expect(target.closest(".bloom-customLayout")).toBeNull();
+        expect(
+            StyleEditor.shouldAllowNonEditableStyleDialogTarget(target),
+        ).toBe(true);
+    });
+
+    it("shouldAllowNonEditableStyleDialogTarget refuses an element without the bloom-styleable opt-in, off a custom-layout page", () => {
+        $("body").append(
+            "<div class='bloom-page'><div id='testTarget' class='calendarDayNumber CalendarDayNumber-style'>17</div></div>",
+        );
+        const target = $("#testTarget").get(0)!;
+        // sanity check: it does have a -style class, so only the missing opt-in can be why
+        expect(StyleEditor.GetStyleClassFromElement(target)).toBe(
+            "CalendarDayNumber-style",
+        );
+        expect(
+            StyleEditor.shouldAllowNonEditableStyleDialogTarget(target),
+        ).toBe(false);
+    });
+
+    it("shouldAllowNonEditableStyleDialogTarget refuses a bloom-editable even with the bloom-styleable opt-in", () => {
+        $("body").append(
+            "<div class='bloom-page'><div id='testTarget' class='bloom-editable CalendarDayNumber-style bloom-styleable'>17</div></div>",
+        );
+        expect(
+            StyleEditor.shouldAllowNonEditableStyleDialogTarget(
+                $("#testTarget").get(0)!,
+            ),
+        ).toBe(false);
+    });
 });
