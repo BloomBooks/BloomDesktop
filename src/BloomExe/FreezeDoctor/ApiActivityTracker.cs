@@ -281,11 +281,14 @@ namespace Bloom.FreezeDoctor
                     var ticket = Volatile.Read(ref _ticket);
                     if (ticket == 0)
                         return;
-                    // Replaced rather than mutated, because the entry is a struct. The read and the write
-                    // are not one atomic step, but the only writer of this entry is the request's own
-                    // thread, so there is nobody to race with.
+                    // Replaced rather than mutated, because the entry is a struct — and replaced with
+                    // TryUpdate rather than the indexer, which would write the entry back whether or not it
+                    // was still there. That matters because Dispose removes it: a lock note that arrived
+                    // after disposal would resurrect the entry with nothing left to remove it, and a phantom
+                    // in-flight request makes every later report claim something is stuck. Call-site
+                    // ordering makes that impossible today; this makes it impossible full stop.
                     if (_inFlight.TryGetValue(ticket, out var existing))
-                        _inFlight[ticket] = existing.With(state);
+                        _inFlight.TryUpdate(ticket, existing.With(state), existing);
                 }
                 catch (Exception)
                 {
