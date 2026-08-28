@@ -24,11 +24,24 @@ public static class SupportUploadCredentials
     public const string ConnectionsFileName = "connections.dll";
 
     /// <summary>
-    /// Which lines hold the keys for the support-uploads bucket: the third and fourth, shared with the
-    /// sandbox and unit-test buckets. Bloom's AccessKeys reads the other lines for its other buckets.
+    /// Which line holds what. The file is a pair of credentials per S3 user, in this order, and these are
+    /// the only names for those positions anywhere: Bloom's <c>AccessKeys</c> indexes the file through them
+    /// too, so a line inserted at the top is one edit here rather than a silent change of meaning in
+    /// whichever consumer nobody thought to look at.
+    ///
+    /// <c>uploader</c> owns the production bucket; <c>uploaderDev</c> owns the sandbox, the unit-test and
+    /// problem-book buckets, and the support uploads this class exists for.
     /// </summary>
-    private const int AccessKeyLine = 2;
-    private const int SecretLine = 3;
+    public const int UploaderAccessKeyLine = 0;
+
+    /// <summary>See <see cref="UploaderAccessKeyLine"/>.</summary>
+    public const int UploaderSecretLine = 1;
+
+    /// <summary>See <see cref="UploaderAccessKeyLine"/>.</summary>
+    public const int UploaderDevAccessKeyLine = 2;
+
+    /// <summary>See <see cref="UploaderAccessKeyLine"/>.</summary>
+    public const int UploaderDevSecretLine = 3;
 
     /// <summary>
     /// The keys, or null if the file is missing or too short — which is a real possibility rather than a
@@ -39,10 +52,10 @@ public static class SupportUploadCredentials
     public static (string AccessKey, string Secret)? ForSupportUploads()
     {
         var lines = TryReadLines();
-        if (lines == null || lines.Length <= SecretLine)
+        if (lines == null || lines.Length <= UploaderDevSecretLine)
             return null;
-        var accessKey = lines[AccessKeyLine].Trim();
-        var secret = lines[SecretLine].Trim();
+        var accessKey = lines[UploaderDevAccessKeyLine].Trim();
+        var secret = lines[UploaderDevSecretLine].Trim();
         if (accessKey.Length == 0 || secret.Length == 0)
             return null;
         return (accessKey, secret);
