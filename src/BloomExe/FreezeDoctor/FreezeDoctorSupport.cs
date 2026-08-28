@@ -69,7 +69,12 @@ namespace Bloom.FreezeDoctor
         /// <summary>Set once the first caller has asked for a crash dump. See RequestDumpBeforeDying.</summary>
         private static int _dumpAlreadyRequested;
 
-        private static int _shutdownPhase;
+        /// <summary>
+        /// How far Bloom's shutdown has got, as recorded by <see cref="SetShutdownPhase"/>. Still
+        /// <see cref="BloomShutdownPhase.None"/> is how a hard failure is told from an orderly exit; see the
+        /// enum, which is shared with the Doctor.
+        /// </summary>
+        private static BloomShutdownPhase _shutdownPhase;
         private static bool _started;
         private static DoctorSession _session;
 
@@ -132,22 +137,6 @@ namespace Bloom.FreezeDoctor
 
         /// <summary>How often that wait re-checks whether the Doctor is still there.</summary>
         private static readonly TimeSpan WaitSlice = TimeSpan.FromMilliseconds(500);
-
-        /// <summary>
-        /// How far Bloom's shutdown has got, as recorded by <see cref="SetShutdownPhase"/>. A Bloom that
-        /// dies part way out can then say *where* it stopped rather than only that it did, and zero — never
-        /// having reached the first of these — is how a hard failure is told from an orderly exit.
-        ///
-        /// Named rather than passed as bare numbers at the call sites, so that the sequence documents itself
-        /// and cannot drift away from a comment listing what each number meant.
-        /// </summary>
-        public static class ShutdownPhase
-        {
-            public const int MessageLoopReturned = 1;
-            public const int SettingsSaved = 2;
-            public const int LogWritten = 3;
-            public const int ProjectContextDisposed = 4;
-        }
 
         /// <summary>
         /// Starts publishing. Call once, on the UI thread, immediately before entering the message loop:
@@ -379,7 +368,7 @@ namespace Bloom.FreezeDoctor
         /// that a Bloom which dies mid-shutdown can say *where* it stopped rather than merely that it did
         /// — which is the same evidence the "UI gone but process alive" case needs.
         /// </summary>
-        public static void SetShutdownPhase(int phase) =>
+        public static void SetShutdownPhase(BloomShutdownPhase phase) =>
             Publish(() =>
             {
                 _shutdownPhase = phase;
@@ -397,13 +386,10 @@ namespace Bloom.FreezeDoctor
                 _channel?.SetShutdownPhase(_shutdownPhase);
                 // Only claim a clean exit when the shutdown sequence actually ran.
                 //
-                // ProcessExit fires for EVERY Environment.Exit, and Bloom has several that are hard failures
-                // rather than shutdowns — WebView2 failing to initialise, the non-message-loop branch of the
-                // fatal exception handler, and the Doctor asking a zombie to go. None of those reach
-                // Program.Run's phase markers, so a phase of 0 means the orderly path was never walked. Using
-                // that as the test needs no cooperation from each exit site, which matters because the next
-                // hard-failure exit somebody adds will be covered automatically.
-                if (_shutdownPhase > 0 && !_endedAtDoctorsRequest)
+                // ProcessExit fires for EVERY Environment.Exit, including Bloom's several hard-failure
+                // exits, so reaching here proves nothing on its own. The phase is what distinguishes them —
+                // see BloomShutdownPhase.None.
+                if (_shutdownPhase != BloomShutdownPhase.None && !_endedAtDoctorsRequest)
                     _channel?.RecordCleanExit();
                 // Also on disk, because the shared-memory page vanishes once the last handle closes and a
                 // Doctor may not have been watching. The file is what a Doctor started tomorrow will read.
@@ -543,7 +529,8 @@ namespace Bloom.FreezeDoctor
                             // Anything that did not walk the orderly path is marked as forced, by the same
                             // phase test as the shared-memory flag above — so a WebView2 startup failure is
                             // not filed away as a tidy shutdown.
-                            ForcedByDoctor = _endedAtDoctorsRequest || _shutdownPhase == 0,
+                            ForcedByDoctor =
+                                _endedAtDoctorsRequest || _shutdownPhase == BloomShutdownPhase.None,
                         },
                     };
                     DoctorSessionStore.TryWrite(_session);

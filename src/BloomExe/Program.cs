@@ -27,6 +27,7 @@ using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
+using BloomFreezeDoctor.Protocol;
 using BloomTemp;
 using CommandLine;
 using L10NSharp;
@@ -1474,9 +1475,7 @@ namespace Bloom
 
             // From here on we mark how far shutdown has got, so that a Bloom which dies part way through
             // can say WHERE it stopped rather than only that it did.
-            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(
-                FreezeDoctor.FreezeDoctorSupport.ShutdownPhase.MessageLoopReturned
-            );
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.MessageLoopReturned);
 
             try
             {
@@ -1494,9 +1493,7 @@ namespace Bloom
                 }
             }
 
-            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(
-                FreezeDoctor.FreezeDoctorSupport.ShutdownPhase.SettingsSaved
-            );
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.SettingsSaved);
             Sldr.Cleanup();
             Logger.WriteMinorEvent("shutting down logger, about to dispose project context");
             // Force the log file to include the minor events.  I don't know why this isn't the default. (BL-16290)
@@ -1507,15 +1504,11 @@ namespace Bloom
                 logPath = Path.Combine(Path.GetTempPath(), "SIL", "Bloom", "Log.txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logPath));
             RobustFile.WriteAllText(logPath, logText);
-            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(
-                FreezeDoctor.FreezeDoctorSupport.ShutdownPhase.LogWritten
-            );
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.LogWritten);
 
             if (_projectContext != null)
                 _projectContext.Dispose();
-            FreezeDoctor.FreezeDoctorSupport.SetShutdownPhase(
-                FreezeDoctor.FreezeDoctorSupport.ShutdownPhase.ProjectContextDisposed
-            );
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.ProjectContextDisposed);
         }
 
         /// <summary>

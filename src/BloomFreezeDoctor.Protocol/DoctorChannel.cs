@@ -86,10 +86,10 @@ public sealed record DoctorChannelSnapshot
     public required string Activity { get; init; }
 
     /// <summary>
-    /// How far shutdown has got, or 0 if it has not started. Lets a Bloom that dies mid-shutdown say
-    /// *where* it stopped rather than merely that it did.
+    /// How far shutdown has got. Lets a Bloom that dies mid-shutdown say *where* it stopped rather than
+    /// merely that it did.
     /// </summary>
-    public required int ShutdownPhase { get; init; }
+    public required BloomShutdownPhase ShutdownPhase { get; init; }
 
     /// <summary>True once Bloom has recorded that its shutdown ran to completion.</summary>
     public required bool CleanExitRecorded { get; init; }
@@ -429,7 +429,8 @@ public static class DoctorChannelReader
                 now
             ),
             Activity = DecodeString(activityBytes),
-            ShutdownPhase = view.ReadInt32(DoctorChannelLayout.OffsetShutdownPhase),
+            ShutdownPhase = (BloomShutdownPhase)
+                view.ReadInt32(DoctorChannelLayout.OffsetShutdownPhase),
             CleanExitRecorded = (flags & DoctorChannelLayout.FlagCleanExitRecorded) != 0,
             DebuggerAttached = (flags & DoctorChannelLayout.FlagDebuggerAttached) != 0,
             DebuggerEverAttached = (flags & DoctorChannelLayout.FlagDebuggerEverAttached) != 0,
@@ -618,8 +619,8 @@ public sealed class DoctorChannelWriter : IDisposable
         });
 
     /// <summary>Records how far shutdown has got.</summary>
-    public void SetShutdownPhase(int phase) =>
-        Write(view => view.Write(DoctorChannelLayout.OffsetShutdownPhase, phase));
+    public void SetShutdownPhase(BloomShutdownPhase phase) =>
+        Write(view => view.Write(DoctorChannelLayout.OffsetShutdownPhase, (int)phase));
 
     /// <summary>Records that shutdown ran to completion — the proof whose absence is itself evidence.</summary>
     public void RecordCleanExit() => SetFlag(DoctorChannelLayout.FlagCleanExitRecorded, true);

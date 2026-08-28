@@ -288,7 +288,7 @@ namespace BloomTests.FreezeDoctor
                 writer.SetLongOperation(true);
                 writer.RecordUiTick();
                 writer.RecordWatchdogTick();
-                writer.SetShutdownPhase(2);
+                writer.SetShutdownPhase(BloomShutdownPhase.SettingsSaved);
 
                 Assert.That(
                     DoctorChannelReader.TryRead(TestProcessId, out var snapshot),
@@ -299,7 +299,7 @@ namespace BloomTests.FreezeDoctor
                 Assert.That(snapshot.LongOperationInProgress, Is.True);
                 Assert.That(snapshot.UiTicks, Is.EqualTo(1));
                 Assert.That(snapshot.WatchdogTicks, Is.EqualTo(1));
-                Assert.That(snapshot.ShutdownPhase, Is.EqualTo(2));
+                Assert.That(snapshot.ShutdownPhase, Is.EqualTo(BloomShutdownPhase.SettingsSaved));
                 Assert.That(snapshot.CleanExitRecorded, Is.False, "we have not exited");
             }
         }

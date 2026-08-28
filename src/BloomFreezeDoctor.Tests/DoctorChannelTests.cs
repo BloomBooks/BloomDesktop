@@ -306,7 +306,7 @@ public class DoctorChannelTests
         writer.SetActivity("Publishing to BloomPUB");
         writer.SetLongOperation(true);
         writer.SetDebuggerAttached(true);
-        writer.SetShutdownPhase(3);
+        writer.SetShutdownPhase(BloomShutdownPhase.LogWritten);
         writer.SetServerWorkerCounts(5, 6);
         writer.RecordCleanExit();
 
@@ -425,7 +425,7 @@ public class DoctorChannelTests
         writer.SetLongOperation(true);
         writer.SetDebuggerAttached(false);
         writer.SetServerWorkerCounts(busy: 7, blocked: 3);
-        writer.SetShutdownPhase(0);
+        writer.SetShutdownPhase(BloomShutdownPhase.None);
         writer.RecordUiTick();
         writer.RecordWatchdogTick();
 
@@ -500,12 +500,12 @@ public class DoctorChannelTests
     public void The_clean_exit_proof_and_shutdown_phase_survive_for_the_reader()
     {
         using var writer = new DoctorChannelWriter(TestProcessId);
-        writer.SetShutdownPhase(3);
+        writer.SetShutdownPhase(BloomShutdownPhase.LogWritten);
         writer.RecordCleanExit();
 
         DoctorChannelReader.TryRead(TestProcessId, out var snapshot);
 
-        Assert.That(snapshot!.ShutdownPhase, Is.EqualTo(3));
+        Assert.That(snapshot!.ShutdownPhase, Is.EqualTo(BloomShutdownPhase.LogWritten));
         Assert.That(snapshot.CleanExitRecorded, Is.True);
     }
 

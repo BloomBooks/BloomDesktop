@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using BloomFreezeDoctor.Protocol;
 using SIL.IO;
 
 namespace BloomFreezeDoctor;
@@ -42,7 +43,7 @@ public sealed class WindowsExitEvidenceCollector
         bool debuggerCouldExplainIt,
         bool neverFile,
         bool? cleanExitProofPresent = null,
-        int? shutdownPhaseReached = null,
+        BloomShutdownPhase? shutdownPhaseReached = null,
         bool exitRecordedAsForced = false,
         string? exeFileName = null
     )

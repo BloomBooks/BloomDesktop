@@ -1,4 +1,5 @@
 using BloomFreezeDoctor;
+using BloomFreezeDoctor.Protocol;
 using NUnit.Framework;
 
 namespace BloomFreezeDoctor.Tests;
@@ -99,7 +100,7 @@ public class ExitClassifierTests
             {
                 ExitCode = 0,
                 CleanExitProofPresent = true,
-                ShutdownPhaseReached = 1,
+                ShutdownPhaseReached = BloomShutdownPhase.MessageLoopReturned,
             },
             Phase3
         );
@@ -108,8 +109,8 @@ public class ExitClassifierTests
         Assert.That(conclusion.ShouldReport, Is.False);
         Assert.That(
             conclusion.Explanation,
-            Does.Contain("phase 1"),
-            "the phase reached is worth saying"
+            Does.Contain("message loop had returned"),
+            "the phase reached is worth saying, and worth saying in words"
         );
     }
 
@@ -181,11 +182,11 @@ public class ExitClassifierTests
     [Test]
     public void A_developer_run_still_gets_a_report_gathered_even_though_it_is_never_filed()
     {
-        // These are two separate questions, and conflating them was a real bug: this classifier used to
-        // answer "do not report" for a developer run, so the supervisor gathered nothing at all — while
-        // logging that it had gathered and merely declined to file. The freeze path had always got this
-        // right, gathering to disk and refusing to file, and now both paths agree. Whether a report may be
-        // FILED is settled by the caller; this only answers whether the exit is worth reporting on.
+        // These are two separate questions, and conflating them is a real trap. Whether a report may be
+        // FILED is settled by the caller; this only answers whether the exit is worth reporting ON. Answer
+        // "do not report" for a developer run and the supervisor gathers nothing at all, while logging that
+        // it gathered and merely declined to file — so the evidence we most want from our own machines is
+        // the evidence we quietly throw away.
         var conclusion = ExitClassifier.Classify(
             new ExitEvidence { ExitCode = ExitClassifier.ExitCodeFailFast, NeverFile = true },
             Phase1
@@ -219,7 +220,7 @@ public class ExitClassifierTests
         {
             CleanExitProofPresent = false,
             ExitRecordedAsForced = true,
-            ShutdownPhaseReached = 0,
+            ShutdownPhaseReached = BloomShutdownPhase.None,
         };
 
         var conclusion = ExitClassifier.Classify(
@@ -235,8 +236,8 @@ public class ExitClassifierTests
         );
         Assert.That(
             conclusion.Explanation,
-            Does.Contain("forced").And.Contains("phase 0"),
-            "and it should say what Bloom told us, not guess at a user kill"
+            Does.Contain("forced").And.Contains("never began"),
+            "and it should say what Bloom told us, in words, not guess at a user kill"
         );
     }
 
@@ -249,7 +250,7 @@ public class ExitClassifierTests
         {
             CleanExitProofPresent = true,
             ExitRecordedAsForced = false,
-            ShutdownPhaseReached = 4,
+            ShutdownPhaseReached = BloomShutdownPhase.ProjectContextDisposed,
         };
 
         var conclusion = ExitClassifier.Classify(
@@ -273,7 +274,7 @@ public class ExitClassifierTests
         {
             CleanExitProofPresent = true,
             ExitRecordedAsForced = false,
-            ShutdownPhaseReached = 4,
+            ShutdownPhaseReached = BloomShutdownPhase.ProjectContextDisposed,
         };
 
         var conclusion = ExitClassifier.Classify(evidence, Phase3);
