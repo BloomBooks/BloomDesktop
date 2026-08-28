@@ -387,21 +387,32 @@ namespace Bloom.Edit
                         {
                             CurrentBook?.Save(); // we need it all the way saved before doing the PostponedWork
                         }
-                        finally
+                        catch (Exception e)
                         {
-                            // Change tabs even if the save threw. The exception still propagates, so the
-                            // user is told the page could not be saved, but a page that cannot be saved
-                            // must not lock them into the Edit tab indefinitely. See BL-16776.
-
-                            // This bizarre behavior prevents BL-2313 and related problems.
-                            // For some reason I cannot discover, switching tabs when focus is in the Browser window
-                            // causes Bloom to get deactivated, which prevents various controls from working.
-                            // Moreover, it seems (BL-2329) that if the user types Alt-F4 while whatever-it-is is active,
-                            // things get into a very bad state indeed. So arrange to re-activate ourselves as soon as the dust settles.
-                            _oldActiveForm = Form.ActiveForm;
-                            Application.Idle += ReactivateFormOnIdle;
-                            details.PostponedWork?.Invoke();
+                            // Tell the user, but change tabs anyway: a page that cannot be saved must
+                            // not lock them into the Edit tab indefinitely (BL-16776). We report rather
+                            // than letting this propagate so that we still finish on the same path a
+                            // successful save takes, rather than navigating a tab we have just left.
+                            // Note this is not the kind of swallowing we deliberately removed from
+                            // GetCleanCurrentPageFromBodyAndCss, where catching let a save carry on with
+                            // missing content. By the time we get here the page content has either
+                            // reached the DOM or thrown; all we abandon is writing it out.
+                            NonFatalProblem.Report(
+                                ModalIf.All,
+                                PassiveIf.All,
+                                "Bloom could not save the page you were editing",
+                                null,
+                                e
+                            );
                         }
+                        // This bizarre behavior prevents BL-2313 and related problems.
+                        // For some reason I cannot discover, switching tabs when focus is in the Browser window
+                        // causes Bloom to get deactivated, which prevents various controls from working.
+                        // Moreover, it seems (BL-2329) that if the user types Alt-F4 while whatever-it-is is active,
+                        // things get into a very bad state indeed. So arrange to re-activate ourselves as soon as the dust settles.
+                        _oldActiveForm = Form.ActiveForm;
+                        Application.Idle += ReactivateFormOnIdle;
+                        details.PostponedWork?.Invoke();
                         return null; // leaving this tab, show blank page
                     },
                     () =>
