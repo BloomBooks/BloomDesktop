@@ -49,19 +49,27 @@ namespace Bloom.FreezeDoctor
         private readonly struct InFlightRequest
         {
             public InFlightRequest(
-                string path,
+                string urlPath,
                 long startedAtMs,
                 int osThreadId,
                 string lockState = null
             )
             {
-                Path = path;
+                UrlPath = urlPath;
                 StartedAtMs = startedAtMs;
                 OsThreadId = osThreadId;
                 LockState = lockState;
             }
 
-            public string Path { get; }
+            /// <summary>
+            /// The API request's URL path — <c>api/publish/epub/save</c> and the like. NOT a file path,
+            /// which is what "path" alone would suggest to anyone reading Bloom; and not called
+            /// <c>Path</c>, which would sit here looking like <c>System.IO.Path</c>.
+            ///
+            /// It arrives lowercased, because that is the form the server matches endpoints on, which is
+            /// why a report shows it that way rather than in the casing the caller used.
+            /// </summary>
+            public string UrlPath { get; }
 
             /// <summary>From <see cref="Environment.TickCount64"/>, so it needs no wall clock.</summary>
             public long StartedAtMs { get; }
@@ -96,7 +104,7 @@ namespace Bloom.FreezeDoctor
 
             /// <summary>The same request, with its lock state replaced.</summary>
             public InFlightRequest With(string lockState) =>
-                new InFlightRequest(Path, StartedAtMs, OsThreadId, lockState);
+                new InFlightRequest(UrlPath, StartedAtMs, OsThreadId, lockState);
         }
 
         /// <summary>
@@ -112,13 +120,17 @@ namespace Bloom.FreezeDoctor
         /// because it means an exception or an early return cannot leave a phantom request in the table
         /// making a healthy Bloom look stuck.
         /// </summary>
-        public static ApiActivityScope Begin(string path)
+        /// <param name="urlPath">
+        /// The request's URL path, e.g. <c>api/publish/epub/save</c>. Not a file path; see
+        /// <see cref="InFlightRequest.UrlPath"/>.
+        /// </param>
+        public static ApiActivityScope Begin(string urlPath)
         {
             try
             {
                 var ticket = Interlocked.Increment(ref _nextTicket);
                 _inFlight[ticket] = new InFlightRequest(
-                    path,
+                    urlPath,
                     Environment.TickCount64,
                     GetCurrentThreadId()
                 );
@@ -161,7 +173,7 @@ namespace Bloom.FreezeDoctor
                     return null;
 
                 var others = snapshot.Length > 1 ? $" ({snapshot.Length} requests in flight)" : "";
-                return $"api {oldest.Path} running {Describe(elapsed)}{DescribeLock(oldest)} "
+                return $"api {oldest.UrlPath} running {Describe(elapsed)}{DescribeLock(oldest)} "
                     + $"on OS thread {oldest.OsThreadId}{others}";
             }
             catch (Exception)
@@ -207,7 +219,7 @@ namespace Bloom.FreezeDoctor
                 var described = interesting
                     .Take(MaxRequestsDescribed)
                     .Select(r =>
-                        $"{r.Path} — running {Describe(r.ElapsedAt(now))}{DescribeLock(r)} on OS "
+                        $"{r.UrlPath} — running {Describe(r.ElapsedAt(now))}{DescribeLock(r)} on OS "
                         + $"thread {r.OsThreadId}"
                     )
                     .ToList();
