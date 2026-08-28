@@ -485,7 +485,7 @@ public sealed class DoctorSupervisor : IDisposable
                 watcher.Dispose();
             }
 
-            PublishStatus();
+            RaiseStatusChanged();
             ConsiderExiting();
         }
         catch (Exception)
@@ -521,7 +521,7 @@ public sealed class DoctorSupervisor : IDisposable
             watcher.ReportWanted += OnReportWanted;
             watcher.Observed += (_, verdict) =>
             {
-                PublishStatus();
+                RaiseStatusChanged();
                 RespondToACrashingBloom(watcher);
                 ConsiderEndingAZombie(watcher, verdict);
                 ConsiderReportingAnExit(watcher, probe, verdict);
@@ -680,7 +680,7 @@ public sealed class DoctorSupervisor : IDisposable
                 : $"report gathered to disk only, not filed because {notFiledBecause}"
         );
         TryDeleteDirectory(artifacts);
-        PublishStatus();
+        RaiseStatusChanged();
 
         if (!report.MayFile)
         {
@@ -1091,7 +1091,7 @@ public sealed class DoctorSupervisor : IDisposable
                 Note($"filed {outcome.Filed} report(s)");
             else if (outcome.GatedOut)
                 Note("another Freeze Doctor is sending the queued reports");
-            PublishStatus();
+            RaiseStatusChanged();
             ConsiderExiting();
             return outcome.GatedOut;
         }
@@ -1141,7 +1141,7 @@ public sealed class DoctorSupervisor : IDisposable
         NothingLeftToDo?.Invoke(this, EventArgs.Empty);
     }
 
-    private void PublishStatus()
+    private void RaiseStatusChanged()
     {
         List<string> lines;
         lock (_lock)
@@ -1188,7 +1188,7 @@ public sealed class DoctorSupervisor : IDisposable
     {
         _lastEvent = $"{DateTime.Now:HH:mm:ss}  {message}";
         DoctorLog.Write(message);
-        PublishStatus();
+        RaiseStatusChanged();
     }
 
     private static bool IsAlive(int processId)
