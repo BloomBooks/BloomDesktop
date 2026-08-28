@@ -2004,11 +2004,11 @@ namespace Bloom.Book
             // these values.
             bookDom.Body.SetAttribute(
                 "data-decodablestage",
-                this.BookInfo.MetaData.DecodableReaderStage.ToString()
+                StageToRecordOnBody(bookDom).ToString()
             );
             bookDom.Body.SetAttribute(
                 "data-leveledreaderlevel",
-                this.BookInfo.MetaData.LeveledReaderLevel.ToString()
+                LevelToRecordOnBody(bookDom).ToString()
             );
         }
 
@@ -6105,16 +6105,50 @@ namespace Bloom.Book
             );
         }
 
+        /// <summary>
+        /// The leveled reader level to record on the body of the given DOM. The Leveled Reader
+        /// tool keeps its level after the user turns the "book is leveled" switch off, so the
+        /// tool state alone does not say whether the book has a level; the "leveled-reader" class
+        /// on the body says that, and BookData already uses it to decide whether to give the book
+        /// a levelOrStageNumber. Without this test the body kept a level the book no longer had,
+        /// and the ABC branding went on showing the grade for it (BL-16775).
+        /// </summary>
+        public int LevelToRecordOnBody(HtmlDom dom)
+        {
+            return dom.HasClassOnBody("leveled-reader") ? BookInfo.MetaData.LeveledReaderLevel : 0;
+        }
+
+        /// <summary>
+        /// The decodable reader stage to record on the body of the given DOM, on the same
+        /// principle as LevelToRecordOnBody.
+        /// </summary>
+        public int StageToRecordOnBody(HtmlDom dom)
+        {
+            return dom.HasClassOnBody("decodable-reader")
+                ? BookInfo.MetaData.DecodableReaderStage
+                : 0;
+        }
+
         public void SetIsDecodable(bool isDecodable)
         {
             OurHtmlDom.SetClassOnBody(isDecodable, "decodable-reader");
             OurHtmlDom.SetClassOnBody(!isDecodable, "decodable-reader-off");
+            // Keep the body attribute honest at once, rather than only when the book is next
+            // brought up to date.
+            OurHtmlDom.Body.SetAttribute(
+                "data-decodablestage",
+                StageToRecordOnBody(OurHtmlDom).ToString()
+            );
         }
 
         public void SetIsLeveled(bool isLeveled)
         {
             OurHtmlDom.SetClassOnBody(isLeveled, "leveled-reader");
             OurHtmlDom.SetClassOnBody(!isLeveled, "leveled-reader-off");
+            OurHtmlDom.Body.SetAttribute(
+                "data-leveledreaderlevel",
+                LevelToRecordOnBody(OurHtmlDom).ToString()
+            );
         }
 
         public bool HasL1Title()
