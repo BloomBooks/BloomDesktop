@@ -773,12 +773,28 @@ namespace Bloom.FreezeDoctor
                     var httpPort = Api.BloomServer.portForHttp;
                     // Composed on the CURRENT value inside the lock, so a note written by another thread a
                     // moment ago is carried forward rather than overwritten.
+                    // The requests in flight right now. This is the only part of the session that goes
+                    // stale, and it is here rather than on the shared page because the page has room for one
+                    // line. A freeze is not reported until the UI has been unresponsive for a minute (five
+                    // during a long operation), so by then this has been rewritten several times over and
+                    // the list describes requests that have been stuck for most of the freeze.
+                    //
+                    // It is also the one field that makes the write below fire regularly: while anything has
+                    // been running more than a second or two, the list differs each time and the session is
+                    // rewritten every ten seconds. That is the point — it is worth a small write while
+                    // something is slow — and an idle Bloom still writes nothing at all.
+                    var inFlight = ApiActivityTracker.DescribeStuckRequests();
                     var refreshed = _session with
                     {
                         LogPath = Logger.LogPath ?? _session.LogPath,
                         HttpPort = httpPort,
                         CdpPort = httpPort > 0 ? Api.BloomServer.RemoteDebuggingPort : 0,
                         CollectionName = SafeCollectionName(),
+                        InFlightRequests = inFlight,
+                        // Left null when there is nothing in flight, so that an idle Bloom compares equal to
+                        // its own last state and the write below is skipped.
+                        InFlightRequestsAtUtc =
+                            inFlight.Length > 0 ? DateTimeOffset.UtcNow : (DateTimeOffset?)null,
                     };
                     // Only touch the disk when something actually changed: this runs every ten seconds for
                     // the life of the process, and a pointless write every ten seconds is a pointless write.

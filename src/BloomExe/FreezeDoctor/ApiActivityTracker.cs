@@ -171,28 +171,56 @@ namespace Bloom.FreezeDoctor
         }
 
         /// <summary>
+        /// How many requests a report will name. A Bloom in real trouble can have a great many in flight,
+        /// and a report is read by a person; past this the list stops being evidence and starts being noise.
+        /// The count of what was dropped is reported rather than the list quietly ending.
+        /// </summary>
+        private const int MaxRequestsDescribed = 20;
+
+        /// <summary>
         /// Every request that has been in flight longer than <paramref name="longerThan"/>, **longest-running
         /// first** (which is oldest-started first), as text for a report — the one that has been stuck the
-        /// longest is the one a reader wants at the top. Separate from <see cref="DescribeCurrentActivity"/> because a report can afford
-        /// several lines where the activity field has room for one.
+        /// longest is the one a reader wants at the top. Separate from
+        /// <see cref="DescribeCurrentActivity"/> because a report can afford several lines where the activity
+        /// field has room for one.
         /// </summary>
-        public static string[] DescribeStuckRequests(TimeSpan longerThan)
+        /// <param name="longerThan">
+        /// Omit for <see cref="InterestingDuration"/>, which is the threshold below which a request is just
+        /// normal traffic.
+        /// </param>
+        public static string[] DescribeStuckRequests(TimeSpan? longerThan = null)
         {
             try
             {
+                var threshold = longerThan ?? InterestingDuration;
                 var now = Environment.TickCount64;
-                return _inFlight
-                    .Values.Where(r => r.ElapsedAt(now) > longerThan)
+                var interesting = _inFlight
+                    .Values.Where(r => r.ElapsedAt(now) > threshold)
                     .OrderBy(r => r.StartedAtMs)
+                    .ToArray();
+                if (interesting.Length == 0)
+                    // The shared cached instance, deliberately: the session record compares arrays by
+                    // reference, so returning a fresh empty array here would make an idle Bloom look
+                    // changed on every refresh and rewrite the session file for nothing.
+                    return Array.Empty<string>();
+
+                var described = interesting
+                    .Take(MaxRequestsDescribed)
                     .Select(r =>
                         $"{r.Path} — running {Describe(r.ElapsedAt(now))}{DescribeLock(r)} on OS "
                         + $"thread {r.OsThreadId}"
                     )
-                    .ToArray();
+                    .ToList();
+                if (interesting.Length > MaxRequestsDescribed)
+                    described.Add(
+                        $"({interesting.Length - MaxRequestsDescribed} further request(s) in flight, "
+                            + "not listed)"
+                    );
+                return described.ToArray();
             }
             catch (Exception)
             {
-                return new string[0];
+                return Array.Empty<string>();
             }
         }
 

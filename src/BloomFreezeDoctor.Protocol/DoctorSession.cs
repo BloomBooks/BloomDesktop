@@ -83,6 +83,28 @@ public sealed record DoctorSession
     public string? ReportedId { get; init; }
 
     /// <summary>
+    /// The API requests that were in flight when this file was last written, longest-running first.
+    ///
+    /// **This is the one part of the session that is about the present rather than the run.** The shared
+    /// memory page has room for a single line of activity, so without this a report can name the
+    /// longest-running request and nothing else — and in a freeze the other requests, and which lock each
+    /// one wants, are most of the picture. Bloom's watchdog thread rewrites this file while the UI is
+    /// wedged, which is what makes the list current enough to be worth reading; see
+    /// <see cref="InFlightRequestsAtUtc"/> for how current.
+    /// </summary>
+    public IReadOnlyList<string> InFlightRequests { get; init; } = Array.Empty<string>();
+
+    /// <summary>
+    /// When <see cref="InFlightRequests"/> was captured, or null when there was nothing to capture.
+    ///
+    /// Recorded because the list is a snapshot on a timer rather than a reading taken at the moment of
+    /// gathering, so a report has to be able to say how old it is. It is also what keeps an idle Bloom from
+    /// rewriting this file every ten seconds: with no requests there is no list and no timestamp, so
+    /// nothing has changed.
+    /// </summary>
+    public DateTimeOffset? InFlightRequestsAtUtc { get; init; }
+
+    /// <summary>
     /// The kind of failure Bloom was deliberately told to simulate — `stawait`, `zombie`, `mutexchain` and
     /// so on — or null, which is every real Bloom.
     ///
