@@ -10,9 +10,9 @@ using SIL.Reporting;
 namespace Bloom.FreezeDoctor
 {
     /// <summary>
-    /// Publishes just enough about Bloom's health for the Bloom Freeze Doctor (which lives in this
-    /// repository, under src/BloomFreezeDoctor) to tell a frozen Bloom from a busy one, and a crash from an
-    /// orderly shutdown.
+    /// Makes just enough of Bloom's health visible to the Bloom Freeze Doctor (which lives in this
+    /// repository, under src/BloomFreezeDoctor) for it to tell a frozen Bloom from a busy one, and a crash
+    /// from an orderly shutdown.
     ///
     /// **Why Bloom has to help at all.** Watching from outside cannot detect the freeze we most expect.
     /// A UI thread blocked in a managed wait on an STA thread — `WaitHandle.WaitOne`, `Task.Wait`, anything
@@ -25,7 +25,7 @@ namespace Bloom.FreezeDoctor
     ///
     /// **The rules this code lives by**, since it runs on the UI thread and in Bloom's shutdown path:
     ///
-    /// - It must never throw. Every entry point swallows its own failures; see <see cref="Publish"/>.
+    /// - It must never throw. Every entry point swallows its own failures; see <see cref="DoSafely"/>.
     /// - It must never block. Nothing here waits on anything.
     /// - It must never matter. If the channel cannot be created, Bloom carries on exactly as before and the
     ///   Doctor falls back to watching from outside, as it does for every Bloom already in the field.
@@ -51,7 +51,7 @@ namespace Bloom.FreezeDoctor
         /// wedged — a garbage collection that will not finish, or a suspended process.
         ///
         /// Slower than the UI heartbeat because nothing is measured against *its* resolution: it needs to
-        /// be reliably alive, not finely sampled. It also does real work each tick — publishes what Bloom is
+        /// be reliably alive, not finely sampled. It also does real work each tick — records what Bloom is
         /// doing, polls for a debugger, and every tenth time rewrites the session file. It doubles as the
         /// latency of the Doctor's quit request, which this thread waits on rather than sleeping blindly, so
         /// one second is also how long a stuck Bloom takes to notice it has been asked to leave.
@@ -139,9 +139,9 @@ namespace Bloom.FreezeDoctor
         private static readonly TimeSpan WaitSlice = TimeSpan.FromMilliseconds(500);
 
         /// <summary>
-        /// Starts publishing. Call once, on the UI thread, immediately before entering the message loop:
-        /// the UI heartbeat is a WinForms timer, so it only ticks once messages are being pumped, which is
-        /// exactly the property that makes it a useful signal.
+        /// Starts reporting Bloom's health. Call once, on the UI thread, immediately before entering the
+        /// message loop: the UI heartbeat is a WinForms timer, so it only ticks once messages are being
+        /// pumped, which is exactly the property that makes it a useful signal.
         /// </summary>
         public static void Start()
         {
@@ -212,7 +212,7 @@ namespace Bloom.FreezeDoctor
                     RequestDumpBeforeDying();
 
                 Logger.WriteEvent(
-                    "Freeze Doctor channel opened; publishing health to any Doctor watching"
+                    "Freeze Doctor channel opened; reporting health to any Doctor watching"
                 );
             }
             catch (Exception e)
@@ -228,24 +228,24 @@ namespace Bloom.FreezeDoctor
         /// BloomPUB", "Saving Foo.htm". Truncated if very long; safe to call from any thread.
         /// </summary>
         public static void SetActivity(string activity) =>
-            Publish(() =>
+            DoSafely(() =>
             {
-                // Remembered as well as published, because the watchdog rewrites the same slot once a
-                // second; published alone, the message would survive less than a second. The watchdog
+                // Remembered as well as written to the channel, because the watchdog rewrites the same slot once
+                // a second; written to the channel alone, the message would survive less than a second. The watchdog
                 // composes this with the in-flight request text instead.
                 Volatile.Write(ref _statedActivity, activity ?? "");
                 _channel?.SetActivity(activity);
             });
 
         /// <summary>
-        /// Runs one publishing step, swallowing whatever it throws.
+        /// Runs one step, swallowing whatever it throws.
         ///
         /// Every entry point here goes through this. Diagnostics that can break the application they
         /// diagnose are worse than no diagnostics, and there is nothing any caller could usefully do with a
         /// failure to write a health field — so rather than each method repeating the same empty catch and
         /// the same explanation, the rule lives here once.
         /// </summary>
-        private static void Publish(Action step)
+        private static void DoSafely(Action step)
         {
             try
             {
@@ -272,7 +272,7 @@ namespace Bloom.FreezeDoctor
         /// cannot tell legitimately-slow from wedged. Hence a deliberate call at the few places that know.
         /// </summary>
         public static void SetLongOperation(bool inProgress) =>
-            Publish(() => _channel?.SetLongOperation(inProgress));
+            DoSafely(() => _channel?.SetLongOperation(inProgress));
 
         /// <summary>
         /// How many long operations are running. Counted rather than a bare boolean because these nest —
@@ -300,9 +300,10 @@ namespace Bloom.FreezeDoctor
         ///
         /// Which operations get this is a judgement about how Bloom behaves, not something to infer from the
         /// code: "a request has run for a minute" is the same signal as a freeze, so nothing automatic can
-        /// tell legitimately-slow from wedged. The set is deliberately just the major publishing operations — BloomPUB, ePUB, video and app creation, and uploading to or downloading
-        /// from Bloom Library — because those routinely take minutes on a large book or a slow connection
-        /// and are the ones that would otherwise be reported as freezes.
+        /// tell legitimately-slow from wedged. The set is deliberately just the major publishing
+        /// operations — BloomPUB, ePUB, video and app creation, and uploading to or downloading from Bloom
+        /// Library — because those routinely take minutes on a large book or a slow connection and are the
+        /// ones that would otherwise be reported as freezes.
         /// </summary>
         /// <param name="whatBloomIsDoing">
         /// Plain words for the report, e.g. "making a BloomPUB". This becomes the activity line, so it is
@@ -318,20 +319,20 @@ namespace Bloom.FreezeDoctor
             private readonly string _previousActivity;
 
             /// <summary>
-            /// What this scope itself put in the slot, so that on the way out it can tell whether the slot
-            /// is still its to restore. Two long operations on different threads do not have to nest
-            /// tidily, and without this check the one that finished first put back the activity from
-            /// *before* it started — overwriting the description of an operation that was still running,
-            /// and then being overwritten in turn by a description of work already finished.
+            /// What this scope itself put in the shared activity slot, so that on the way out it can tell
+            /// whether the slot is still its to restore. Two long operations on different threads do not
+            /// have to nest tidily, and without this check the one that finished first put back the activity
+            /// from *before* it started — overwriting the description of an operation that was still
+            /// running, and then being overwritten in turn by a description of work already finished.
             /// </summary>
-            private readonly string _whatIPublished;
+            private readonly string _myActivity;
             private bool _disposed;
 
             public LongOperationScope(string whatBloomIsDoing)
             {
                 _previousActivity = Volatile.Read(ref _statedActivity);
-                _whatIPublished = whatBloomIsDoing ?? "";
-                Publish(() =>
+                _myActivity = whatBloomIsDoing ?? "";
+                DoSafely(() =>
                 {
                     SetActivity(whatBloomIsDoing);
                     if (Interlocked.Increment(ref _longOperationDepth) == 1)
@@ -344,19 +345,19 @@ namespace Bloom.FreezeDoctor
                 if (_disposed)
                     return; // a double Dispose must not decrement twice and cancel somebody else's patience
                 _disposed = true;
-                Publish(() =>
+                DoSafely(() =>
                 {
                     if (Interlocked.Decrement(ref _longOperationDepth) == 0)
                         SetLongOperation(false);
                     // Only put the old activity back if the slot still holds what we put there. If
                     // somebody else has since described their own operation, theirs is the one still
-                    // running and ours is the stale news — see _whatIPublished.
+                    // running and ours is the stale news — see _myActivity.
                     if (
                         Interlocked.CompareExchange(
                             ref _statedActivity,
                             _previousActivity,
-                            _whatIPublished
-                        ) == _whatIPublished
+                            _myActivity
+                        ) == _myActivity
                     )
                         _channel?.SetActivity(_previousActivity);
                 });
@@ -369,7 +370,7 @@ namespace Bloom.FreezeDoctor
         /// — which is the same evidence the "UI gone but process alive" case needs.
         /// </summary>
         public static void SetShutdownPhase(BloomShutdownPhase phase) =>
-            Publish(() =>
+            DoSafely(() =>
             {
                 _shutdownPhase = phase;
                 _channel?.SetShutdownPhase(phase);
@@ -649,7 +650,7 @@ namespace Bloom.FreezeDoctor
                 try
                 {
                     _channel?.RecordWatchdogTick();
-                    PublishWhatBloomIsDoing();
+                    RecordWhatBloomIsDoing();
                     _channel?.SetDebuggerAttached(IsDebuggerAttached());
                     sinceSessionRefresh += WatchdogInterval;
                     if (sinceSessionRefresh >= SessionRefreshInterval)
@@ -688,7 +689,7 @@ namespace Bloom.FreezeDoctor
         }
 
         /// <summary>
-        /// Publishes what Bloom is doing right now, worked out from the in-flight API requests, along with
+        /// Records what Bloom is doing right now, worked out from the in-flight API requests, along with
         /// the server's worker counts.
         ///
         /// This is where the Doctor's most useful sentence comes from. A stack trace says the UI thread is
@@ -740,7 +741,7 @@ namespace Bloom.FreezeDoctor
             };
         }
 
-        private static void PublishWhatBloomIsDoing()
+        private static void RecordWhatBloomIsDoing()
         {
             try
             {
@@ -919,7 +920,7 @@ namespace Bloom.FreezeDoctor
             }
         }
 
-        private static void RecordUiTick() => Publish(() => _channel?.RecordUiTick());
+        private static void RecordUiTick() => DoSafely(() => _channel?.RecordUiTick());
 
         private static void TryLog(string message, Exception e)
         {
