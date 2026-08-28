@@ -372,6 +372,14 @@ export default class StyleEditor {
         switch (ruleId) {
             case "BigWords":
                 return "Big Words";
+            case "CalendarMonth":
+                return "Calendar Month";
+            case "CalendarDayOfWeek":
+                return "Calendar Day of Week";
+            case "CalendarDayNumber":
+                return "Calendar Day Number";
+            case "CalendarDayNote":
+                return "Calendar Day Note";
             case "Cover-Default":
                 return "Cover Default";
             case "Credits-Page":
@@ -1168,8 +1176,9 @@ export default class StyleEditor {
 
     private uiLang: string;
 
-    // We allow read-only fields to have a style dialog on custom-layout pages
-    // for elements that have a -style class to edit.
+    // We allow read-only fields to have a style dialog when they have a -style class to edit
+    // and either (a) the element opts in with the bloom-styleable class (as the day numbers
+    // on the calendar grid page do), or (b) it is on a custom-layout page.
     public static shouldAllowNonEditableStyleDialogTarget(
         targetBox: HTMLElement,
     ): boolean {
@@ -1180,6 +1189,7 @@ export default class StyleEditor {
             return false;
         }
         return (
+            targetBox.classList.contains("bloom-styleable") ||
             targetBox.closest(
                 ".bloom-page.bloom-customLayout[data-custom-layout-id]",
             ) !== null
@@ -1299,6 +1309,15 @@ export default class StyleEditor {
         //    return;
         //}
 
+        // For a non-editable target (e.g. a calendar day number), the browser's
+        // default mousedown would move the focus away, and the focusin handler
+        // would then re-attach the gear to whatever gained it, destroying this
+        // button before its click event could fire. Keep the focus where it is.
+        if (StyleEditor.shouldAllowNonEditableStyleDialogTarget(targetBox)) {
+            formatButton?.addEventListener("mousedown", (e) =>
+                e.preventDefault(),
+            );
+        }
         formatButton?.addEventListener("click", () =>
             this.runFormatDialog(targetBox),
         );

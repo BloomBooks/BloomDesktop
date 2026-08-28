@@ -1,6 +1,11 @@
 /*These tell Bloom what choices to give the user as far as Page, Orientation, & Layout options:
+Landscape only, on purpose: the Calendar Month Grid page is seven bloom-table columns, and a
+column cannot be narrower than 60px, so a calendar needs at least 420px of marginBox width.
+Every landscape paper size Bloom offers (see the default list in SizeAndOrientation.cs and the
+dimensions in bookLayout/paperDimensions.less) clears that; no portrait size does, and the
+device/ebook sizes are not something you print and hang on a wall.
 STARTLAYOUTS
-{"layouts":     ["A5Landscape"]  }
+{"layouts":     ["A6Landscape", "A5Landscape", "A4Landscape", "A3Landscape", "QuarterLetterLandscape", "HalfLetterLandscape", "LetterLandscape", "LegalLandscape", "Size6x9Landscape"]  }
 ENDLAYOUTS
 */
 /*Top with Picture and a little text*/
@@ -113,6 +118,61 @@ ENDLAYOUTS
             max-width: 100% !important;
         }
     }
+}
+
+/*The Calendar Month Grid page (the modern, bloom-table one). Note that everything about the
+	grid itself -- track sizes, borders, spans -- comes from the table's data-* attributes, so
+	the rules here only cover what the table library leaves to the host: the page margins and
+	the layout of the contents we author inside a day cell.
+*/
+.bloom-page.calendarMonthGrid {
+    /*Like the old calendar pages, use narrow, equal side margins so the grid gets as much of
+		the paper as possible and the left and right pages of the fold match.
+	*/
+    --page-margin-left: @Border;
+    --page-margin-right: @Border;
+}
+
+/*A day cell holds a day number and a notes field. The notes field fills the whole cell, so
+	the user can type anywhere in it; the number sits on top of it in the corner, and the
+	first line of the notes is indented to start beside the number, at the top.
+*/
+.calendarDayCellContents {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    /*Breathing room for the typed notes. The day number is position:absolute, so this
+		padding moves only the notes text; the number keeps its corner position (an
+		absolutely positioned child is placed relative to the padding box, not the
+		content box).
+	*/
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.calendarDayNumber {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    padding: 1px 0 0 4px;
+    text-align: left;
+}
+
+.calendarDayCell .bloom-translationGroup {
+    width: 100%;
+    height: 100%;
+}
+
+.calendarDayCell .bloom-editable > p:first-child {
+    text-indent: 2.3em;
+}
+
+/*Defeat bloom-table's default of centering a cell's single child: the day cell's contents
+	should fill it.
+*/
+.calendarDayCell {
+    align-items: stretch;
 }
 
 /* bilingual */

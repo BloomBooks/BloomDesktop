@@ -206,6 +206,16 @@ the branch rather than the version in that path.
   `DoctorLauncher.FindTheDoctor` finds nothing and `RequestDumpBeforeDying` returns before it logs.
   Only the orphaned session json (no `Exit` block) recorded that the run ended badly. If the Doctor
   is meant to be usable in dev, go.mjs/init.sh need to build and place it and the setting needs a dev default.
+## 2026-08-27 — No front-end test runs in a worktree until bloom-table is linked
+
+- **Cut:** In a fresh worktree, *every* vitest file that reaches `bloomEditing.ts` dies with
+  `Failed to resolve import "bloom-table"`, because `bloom-table` is not on npm and
+  `src/BloomBrowserUI/package.json` only mentions it in a comment key. Nothing in AGENTS.md's
+  "front-end checks are always safe — run them freely" says the suite cannot run at all yet.
+- **Idea:** Have `init.sh` link `bloom-table` (or say so in AGENTS.md next to `pnpm test`).
+  `New-Item -ItemType Junction node_modules/bloom-table -> D:\bloom-table` also works and,
+  unlike `pnpm link`, leaves `package.json` clean.
+- **Context:** `grid-calendar`, adding a StyleEditor spec.
 
 ## 2026-08-24 — The book folder's own basePage.css can be older than the one you just built
 
