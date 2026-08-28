@@ -64,7 +64,38 @@ namespace Bloom.WebLibraryIntegration
         /// Implicitly use the sandbox as the destination target.  Can be explicitly overridden
         /// on the command line in upload commands.  See <see cref="Destination"/>.
         /// </summary>
+        /// <remarks>
+        /// On a developer, alpha, unstable, or internal beta build, the user can choose the
+        /// destination with the "Use dev.BloomLibrary.org" item of the top bar context menu.
+        /// We store that choice only while it differs from
+        /// <see cref="UseSandboxWithoutUserChoice"/>, so the "BloomSandbox" environment
+        /// variable controls Bloom again as soon as the user agrees with it.
+        /// </remarks>
         internal static bool UseSandboxByDefault
+        {
+            get
+            {
+                // A unit test run must not depend on what the developer chose in the menu.
+                if (Program.RunningUnitTests)
+                    return UseSandboxWithoutUserChoice;
+                switch (Settings.Default.WebSiteDestinationOverride)
+                {
+                    case UploadDestination.Development:
+                        return true;
+                    case UploadDestination.Production:
+                        return false;
+                    default:
+                        return UseSandboxWithoutUserChoice;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The destination that this build uses when the user makes no choice in the
+        /// "Use dev.BloomLibrary.org" menu item: a DEBUG build, or any build that has the
+        /// "BloomSandbox" environment variable set to yes, true, y, or t.
+        /// </summary>
+        internal static bool UseSandboxWithoutUserChoice
         {
             get
             {
@@ -79,6 +110,38 @@ namespace Bloom.WebLibraryIntegration
 #endif
             }
         }
+
+        /// <summary>
+        /// Records the user's choice from the "Use dev.BloomLibrary.org" menu item, and returns
+        /// true if the choice differs from the destination of the current run.  The caller
+        /// restarts Bloom when it does, because <see cref="Destination"/> and the saved login
+        /// belong to one run only.
+        /// </summary>
+        /// <remarks>
+        /// If the choice matches what this build would do on its own, we clear the setting
+        /// instead of storing it.  See the remarks on <see cref="UseSandboxByDefault"/>.
+        /// </remarks>
+        public static bool SetUserChoiceOfDevWebSite(bool useDevSite)
+        {
+            var wasUsingSandbox = UseSandbox;
+            if (useDevSite == UseSandboxWithoutUserChoice)
+                Settings.Default.WebSiteDestinationOverride = "";
+            else
+                Settings.Default.WebSiteDestinationOverride = useDevSite
+                    ? UploadDestination.Development
+                    : UploadDestination.Production;
+            Settings.Default.Save();
+            return useDevSite != wasUsingSandbox;
+        }
+
+        /// <summary>
+        /// True on the builds that let the user choose between bloomlibrary.org and
+        /// dev.bloomlibrary.org: a developer, alpha, or unstable build, and the internal beta
+        /// build.  A public beta build and a release build always use bloomlibrary.org.
+        /// </summary>
+        public static bool UserCanChooseWebSite =>
+            ApplicationUpdateSupport.IsDevOrAlpha
+            || ApplicationUpdateSupport.ChannelName.ToLowerInvariant().Contains("betainternal");
 
         /// <summary>
         /// whereas we can *download* from anywhere regardless of production, debug, or unit test,

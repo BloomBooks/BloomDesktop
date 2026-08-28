@@ -14,6 +14,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.Extensions;
 using SIL.Reporting;
@@ -555,6 +556,31 @@ namespace Bloom
             {
                 FileMeddlerManager.Stop();
             }
+        }
+
+        /// <summary>
+        /// Records the user's choice between bloomlibrary.org and dev.bloomlibrary.org, then
+        /// restarts Bloom if the choice differs from the web site of this run.  A restart is
+        /// necessary because the upload destination and the login belong to one run only.
+        /// </summary>
+        /// <remarks>
+        /// The restart waits for the idle loop, as the change of the user interface language
+        /// does in WorkspaceView.SetUiLanguage.  We are on the user interface thread inside an
+        /// API request that holds the server's lock, and a restart closes the collection, which
+        /// makes more API requests.
+        /// </remarks>
+        public void SetUseDevBloomLibrary(bool useDevSite)
+        {
+            if (!BookUpload.SetUserChoiceOfDevWebSite(useDevSite))
+                return;
+            Application.Idle -= RestartForWebSiteChange;
+            Application.Idle += RestartForWebSiteChange;
+        }
+
+        private void RestartForWebSiteChange(object sender, EventArgs e)
+        {
+            Application.Idle -= RestartForWebSiteChange;
+            Program.RestartBloom(false);
         }
 
         private void UpdatePerformanceMeasurementStatus()
