@@ -2677,6 +2677,14 @@ namespace Bloom.Api
         /// </summary>
         internal int BusyWorkerCount => _busyThreads;
 
+        /// <summary>
+        /// How many requests are waiting for a worker. Read without the lock for the same reason as
+        /// <see cref="BusyWorkerCount"/>, and it is the reading that tells a shortage of workers from work
+        /// actually being held up: every worker blocked matters much more when requests are queued behind
+        /// them.
+        /// </summary>
+        internal int QueuedRequestCount => _queue.Count;
+
         // Ordinal deliberately: the default overloads of both StartsWith and IndexOf(string) are
         // culture-sensitive, which is the wrong kind of comparison for a thread name we generated
         // ourselves -- and slower.

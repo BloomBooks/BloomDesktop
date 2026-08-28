@@ -750,7 +750,9 @@ namespace Bloom.FreezeDoctor
                 if (server != null)
                     _channel?.SetServerWorkerCounts(
                         server.BusyWorkerCount,
-                        server.BlockedWorkerCount
+                        server.BlockedWorkerCount,
+                        server.WorkerCount,
+                        server.QueuedRequestCount
                     );
             }
             catch (Exception) { }

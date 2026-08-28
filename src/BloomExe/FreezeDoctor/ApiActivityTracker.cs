@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Bloom.FreezeDoctor
@@ -47,11 +48,17 @@ namespace Bloom.FreezeDoctor
         /// <summary>One request that has started and not yet finished.</summary>
         private readonly struct InFlightRequest
         {
-            public InFlightRequest(string path, long startedAtMs, int threadId)
+            public InFlightRequest(
+                string path,
+                long startedAtMs,
+                int osThreadId,
+                string lockState = null
+            )
             {
                 Path = path;
                 StartedAtMs = startedAtMs;
-                ThreadId = threadId;
+                OsThreadId = osThreadId;
+                LockState = lockState;
             }
 
             public string Path { get; }
@@ -59,7 +66,25 @@ namespace Bloom.FreezeDoctor
             /// <summary>From <see cref="Environment.TickCount64"/>, so it needs no wall clock.</summary>
             public long StartedAtMs { get; }
 
-            public int ThreadId { get; }
+            /// <summary>
+            /// The OS thread id, NOT the managed one. This is the number that joins a request to a stack:
+            /// the Doctor walks stacks with ClrMD, which reports OS thread ids, so a managed id here would
+            /// put two unrelated numbering spaces side by side in one report and invite a reader to match
+            /// the wrong stack to the request that is stuck.
+            ///
+            /// It is the thread the request STARTED on. A request that has since awaited may be continuing
+            /// somewhere else, so the join is exact for the requests that matter most — the ones stuck in a
+            /// synchronous wait, which never left this thread — and a starting point for the rest.
+            /// </summary>
+            public int OsThreadId { get; }
+
+            /// <summary>
+            /// Which of the API's mutual-exclusion locks this request is waiting for or holding, or null for
+            /// the requests that need none. Naming it is what turns "3 workers blocked" into a diagnosis:
+            /// several requests waiting on the one lock a fourth is holding is the shape of an API deadlock,
+            /// and Windows' wait-chain analysis cannot see it, since SemaphoreSlim is invisible there.
+            /// </summary>
+            public string LockState { get; }
 
             /// <summary>
             /// How long this request has been running, given a reading of the tick count. Clamped at zero:
@@ -68,14 +93,26 @@ namespace Bloom.FreezeDoctor
             /// </summary>
             public TimeSpan ElapsedAt(long nowMs) =>
                 TimeSpan.FromMilliseconds(Math.Max(0, nowMs - StartedAtMs));
+
+            /// <summary>The same request, with its lock state replaced.</summary>
+            public InFlightRequest With(string lockState) =>
+                new InFlightRequest(Path, StartedAtMs, OsThreadId, lockState);
         }
+
+        /// <summary>
+        /// The OS thread id of the calling thread. A TEB read behind a thin P/Invoke, so it is cheap enough
+        /// for the request path; see <see cref="InFlightRequest.OsThreadId"/> for why the managed id will
+        /// not do.
+        /// </summary>
+        [DllImport("kernel32.dll")]
+        private static extern int GetCurrentThreadId();
 
         /// <summary>
         /// Records that a request has started. Dispose the result when it finishes — a `using` is the point,
         /// because it means an exception or an early return cannot leave a phantom request in the table
         /// making a healthy Bloom look stuck.
         /// </summary>
-        public static IDisposable Begin(string path)
+        public static ApiActivityScope Begin(string path)
         {
             try
             {
@@ -83,14 +120,15 @@ namespace Bloom.FreezeDoctor
                 _inFlight[ticket] = new InFlightRequest(
                     path,
                     Environment.TickCount64,
-                    Thread.CurrentThread.ManagedThreadId
+                    GetCurrentThreadId()
                 );
-                return new Scope(ticket);
+                return new ApiActivityScope(ticket);
             }
             catch (Exception)
             {
-                // Never let bookkeeping fail a request.
-                return NoScope.Instance;
+                // Never let bookkeeping fail a request. Ticket 0 is the "not recorded" scope, so the caller
+                // needs no special case and every method on it is a no-op.
+                return new ApiActivityScope(0);
             }
         }
 
@@ -123,7 +161,8 @@ namespace Bloom.FreezeDoctor
                     return null;
 
                 var others = snapshot.Length > 1 ? $" ({snapshot.Length} requests in flight)" : "";
-                return $"api {oldest.Path} running {Describe(elapsed)} on thread {oldest.ThreadId}{others}";
+                return $"api {oldest.Path} running {Describe(elapsed)}{DescribeLock(oldest)} "
+                    + $"on OS thread {oldest.OsThreadId}{others}";
             }
             catch (Exception)
             {
@@ -146,7 +185,8 @@ namespace Bloom.FreezeDoctor
                     .Values.Where(r => r.ElapsedAt(now) > longerThan)
                     .OrderBy(r => r.StartedAtMs)
                     .Select(r =>
-                        $"{r.Path} — running {Describe(r.ElapsedAt(now))} on thread {r.ThreadId}"
+                        $"{r.Path} — running {Describe(r.ElapsedAt(now))}{DescribeLock(r)} on OS "
+                        + $"thread {r.OsThreadId}"
                     )
                     .ToArray();
             }
@@ -156,19 +196,61 @@ namespace Bloom.FreezeDoctor
             }
         }
 
+        /// <summary>The lock clause for a report line, or nothing for a request that needs no lock.</summary>
+        private static string DescribeLock(InFlightRequest request) =>
+            string.IsNullOrEmpty(request.LockState) ? "" : $", {request.LockState}";
+
         private static string Describe(TimeSpan elapsed) =>
             elapsed.TotalSeconds < 90
                 ? $"{elapsed.TotalSeconds:F0}s"
                 : $"{elapsed.TotalMinutes:F1} minutes";
 
-        /// <summary>Removes one request from the table, once, however the request ended.</summary>
-        private sealed class Scope : IDisposable
+        /// <summary>
+        /// One tracked request: removes it from the table when disposed, and lets the handler say what the
+        /// request is waiting for in the meantime.
+        ///
+        /// A ticket of 0 means the request was never recorded, so every method here does nothing — which is
+        /// why the caller needs neither a null check nor a special case.
+        /// </summary>
+        public sealed class ApiActivityScope : IDisposable
         {
             private long _ticket;
 
-            public Scope(long ticket)
+            internal ApiActivityScope(long ticket)
             {
                 _ticket = ticket;
+            }
+
+            /// <summary>
+            /// Says this request is now waiting to acquire one of the API's mutual-exclusion locks. Called
+            /// on the request's own thread, immediately before the wait.
+            /// </summary>
+            public void NoteWaitingForLock(string lockName) =>
+                SetLockState("waiting for " + lockName);
+
+            /// <summary>
+            /// Says this request now HOLDS the lock. The pair matters more than either half: a report
+            /// showing one request holding a lock and three waiting for it has named the deadlock.
+            /// </summary>
+            public void NoteHoldingLock(string lockName) => SetLockState("holding " + lockName);
+
+            private void SetLockState(string state)
+            {
+                try
+                {
+                    var ticket = Volatile.Read(ref _ticket);
+                    if (ticket == 0)
+                        return;
+                    // Replaced rather than mutated, because the entry is a struct. The read and the write
+                    // are not one atomic step, but the only writer of this entry is the request's own
+                    // thread, so there is nobody to race with.
+                    if (_inFlight.TryGetValue(ticket, out var existing))
+                        _inFlight[ticket] = existing.With(state);
+                }
+                catch (Exception)
+                {
+                    // Diagnostics must never break the request they describe.
+                }
             }
 
             public void Dispose()
@@ -179,14 +261,6 @@ namespace Bloom.FreezeDoctor
                 if (ticket != 0)
                     _inFlight.TryRemove(ticket, out _);
             }
-        }
-
-        /// <summary>Handed out when we could not record the request, so callers need no special case.</summary>
-        private sealed class NoScope : IDisposable
-        {
-            public static readonly NoScope Instance = new NoScope();
-
-            public void Dispose() { }
         }
     }
 }

@@ -136,6 +136,19 @@ public sealed record DoctorChannelSnapshot
     /// avoidance; surfacing it costs nothing and says a great deal about a frozen publish.
     /// </summary>
     public required int ServerBlockedWorkers { get; init; }
+
+    /// <summary>
+    /// How many worker threads the pool holds. Without it the two counts above cannot be judged: "3
+    /// blocked" is unremarkable in a pool of twelve and total starvation in a pool of three, and the
+    /// server's own rule for growing the pool is that every live worker is blocked.
+    /// </summary>
+    public required int ServerWorkers { get; init; }
+
+    /// <summary>
+    /// How many requests are waiting for a worker. This is what separates a pool that is merely busy from
+    /// one that is holding work up.
+    /// </summary>
+    public required int ServerQueuedRequests { get; init; }
 }
 
 /// <summary>
@@ -248,6 +261,17 @@ public static class DoctorChannelLayout
     internal const int OffsetDebuggerLastDetached = 328;
 
     /// <summary>
+    /// How many worker threads the server pool holds, and how many requests are waiting for one.
+    ///
+    /// These are what make <see cref="OffsetServerBusy"/> and <see cref="OffsetServerBlocked"/> readable.
+    /// "3 blocked" says nothing on its own; "3 blocked of 3" is the server's own starvation condition —
+    /// BloomServer grows the pool exactly when every live worker is blocked — and a queue depth alongside
+    /// it says whether anything is actually stuck behind the shortage.
+    /// </summary>
+    internal const int OffsetServerWorkers = 336;
+    internal const int OffsetServerQueued = 340;
+
+    /// <summary>
     /// How much room the activity string gets. Public because it is part of the contract a caller has to
     /// respect: anything longer is truncated rather than allowed to run into the next field.
     ///
@@ -260,7 +284,7 @@ public static class DoctorChannelLayout
     /// One past the last byte a writer of THIS build ever writes, recorded in the page so a reader can
     /// tell how much of it is real. Grows as fields are appended; see the long note above.
     /// </summary>
-    public const int PayloadBytes = OffsetDebuggerLastDetached + sizeof(long);
+    public const int PayloadBytes = OffsetServerQueued + sizeof(int);
 
     /// <summary>
     /// The floor for generation 1: the least any writer of this generation provides, so a reader can read
@@ -303,6 +327,8 @@ public static class DoctorChannelLayout
             new FieldExtent("Reserved", OffsetReserved, sizeof(int)),
             new FieldExtent("Activity", OffsetActivity, ActivityMaxBytes),
             new FieldExtent("DebuggerLastDetached", OffsetDebuggerLastDetached, sizeof(long)),
+            new FieldExtent("ServerWorkers", OffsetServerWorkers, sizeof(int)),
+            new FieldExtent("ServerQueued", OffsetServerQueued, sizeof(int)),
         };
 
     internal const int FlagCleanExitRecorded = 1 << 0;
@@ -442,6 +468,8 @@ public static class DoctorChannelReader
             LongOperationInProgress = (flags & DoctorChannelLayout.FlagLongOperation) != 0,
             ServerBusyWorkers = view.ReadInt32(DoctorChannelLayout.OffsetServerBusy),
             ServerBlockedWorkers = view.ReadInt32(DoctorChannelLayout.OffsetServerBlocked),
+            ServerWorkers = view.ReadInt32(DoctorChannelLayout.OffsetServerWorkers),
+            ServerQueuedRequests = view.ReadInt32(DoctorChannelLayout.OffsetServerQueued),
         };
     }
 
@@ -627,11 +655,13 @@ public sealed class DoctorChannelWriter : IDisposable
     public void RecordCleanExit() => SetFlag(DoctorChannelLayout.FlagCleanExitRecorded, true);
 
     /// <summary>Publishes the server's worker counts, which say a great deal about a frozen publish.</summary>
-    public void SetServerWorkerCounts(int busy, int blocked) =>
+    public void SetServerWorkerCounts(int busy, int blocked, int workers, int queued) =>
         Write(view =>
         {
             view.Write(DoctorChannelLayout.OffsetServerBusy, busy);
             view.Write(DoctorChannelLayout.OffsetServerBlocked, blocked);
+            view.Write(DoctorChannelLayout.OffsetServerWorkers, workers);
+            view.Write(DoctorChannelLayout.OffsetServerQueued, queued);
         });
 
     private void SetFlag(int flag, bool value) =>

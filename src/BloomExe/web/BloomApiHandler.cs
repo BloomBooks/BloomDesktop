@@ -387,16 +387,22 @@ namespace Bloom.Api
             // dispatch because this is where the work — and the waiting on the sync locks in the method below —
             // actually happens, which is where a hung request sits. The tracker is deliberately incapable
             // of failing a request; see its class comment.
-            using (FreezeDoctor.ApiActivityTracker.Begin(localPathLc))
+            using (var activity = FreezeDoctor.ApiActivityTracker.Begin(localPathLc))
             {
-                return await ProcessRequestInnerAsync(endpointRegistration, info, localPathLc);
+                return await ProcessRequestInnerAsync(
+                    endpointRegistration,
+                    info,
+                    localPathLc,
+                    activity
+                );
             }
         }
 
         private async Task<bool> ProcessRequestInnerAsync(
             BaseEndpointRegistration endpointRegistration,
             IRequestInfo info,
-            string localPathLc
+            string localPathLc,
+            FreezeDoctor.ApiActivityTracker.ApiActivityScope activity
         )
         {
             if (endpointRegistration.RequiresSync)
@@ -415,6 +421,12 @@ namespace Bloom.Api
                 // other api requests, so it seems safe to have one lock that prevents working on multiple
                 // thumbnails/previews at the same time, and one that prevents working on other api requests at the same time.
                 var syncOn = SyncObj;
+                // Named as well as chosen, purely so a Freeze Doctor report can say WHICH lock a stuck
+                // request is waiting on. Three requests waiting on the lock a fourth is holding is the
+                // signature of an API deadlock, and it is invisible otherwise: the blocked-thread count
+                // does not distinguish the locks, and Windows' wait-chain analysis cannot see a
+                // SemaphoreSlim at all.
+                var syncName = "the main API lock";
                 if (
                     localPathLc.StartsWith(
                         "api/pagetemplatethumbnail",
@@ -424,9 +436,15 @@ namespace Bloom.Api
                     || localPathLc == "api/publish/bloompub/updatepreview"
                     || localPathLc == "api/publish/epub/updatepreview"
                 )
+                {
                     syncOn = ThumbnailsAndPreviewsSyncObj;
+                    syncName = "the thumbnail/preview lock";
+                }
                 else if (localPathLc.StartsWith("api/i18n/"))
+                {
                     syncOn = I18NLock;
+                    syncName = "the i18n lock";
+                }
 
                 // We report the thread as blocked around ACQUIRING the lock -- not around holding it, since
                 // once we have it we are working rather than waiting.
@@ -436,11 +454,13 @@ namespace Bloom.Api
                 try
                 {
                     // Try to acquire lock
+                    activity.NoteWaitingForLock(syncName);
                     using (BloomServer._theOneInstance.ReportThreadBlocking())
                     {
                         syncOn.Wait();
                         lockAcquired = true;
                     }
+                    activity.NoteHoldingLock(syncName);
 
                     // Lock has been acquired.
                     await ApiRequest.Handle(
