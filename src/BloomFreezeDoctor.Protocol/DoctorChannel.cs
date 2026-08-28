@@ -254,6 +254,18 @@ public static class DoctorChannelLayout
     internal const int OffsetActivity = 72;
 
     /// <summary>
+    /// How much room the activity string gets, and so the reason the next offset jumps by 256 rather than
+    /// by the handful of bytes the offsets above move by.
+    ///
+    /// Public because it is part of the contract a caller has to respect: anything longer is truncated
+    /// rather than allowed to run into the next field.
+    ///
+    /// Changing this number resizes an existing field, so it is a <see cref="SchemaVersion"/> bump and not
+    /// an additive change.
+    /// </summary>
+    public const int ActivityMaxBytes = 256;
+
+    /// <summary>
     /// When a debugger was last detached, as <see cref="Environment.TickCount64"/>, or 0 if none ever has
     /// been. Appended after the activity block, which is why the four reserved bytes above matter: this is
     /// a 64-bit field and it lands 8-byte aligned.
@@ -270,15 +282,6 @@ public static class DoctorChannelLayout
     /// </summary>
     internal const int OffsetServerWorkers = 336;
     internal const int OffsetServerQueued = 340;
-
-    /// <summary>
-    /// How much room the activity string gets. Public because it is part of the contract a caller has to
-    /// respect: anything longer is truncated rather than allowed to run into the next field.
-    ///
-    /// Changing this number resizes an existing field, so it is a <see cref="SchemaVersion"/> bump and not
-    /// an additive change.
-    /// </summary>
-    public const int ActivityMaxBytes = 256;
 
     /// <summary>
     /// One past the last byte a writer of THIS build ever writes, recorded in the page so a reader can
