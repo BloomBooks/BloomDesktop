@@ -6955,7 +6955,7 @@ namespace BloomTests.Book
             // own cover picture. Neither sits in an image container, and only what is in an image
             // container is a picture of the book, so neither may stand in for a placeholder cover
             // image. The ABC brandings make this bite: their logo is an SVG, and PalasoImage throws
-            // on an SVG, which killed the thumbnail (BL-16780).
+            // on an SVG, which killed the thumbnail (BL-16780). This is the reported case.
             SetDom(
                 @"
 <div id='bloomDataDiv'>
@@ -6996,11 +6996,11 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void GetCoverImagePathAndElt_BrandingIsInsideAnImageContainer_KeepsThePlaceholder()
+        public void GetCoverImagePathAndElt_RealImageIsNotInAnImageContainer_KeepsThePlaceholder()
         {
-            // A branding pack supplies its own markup, so it may put its logo in an image
-            // container. The class must then keep the logo out of the cover-image search, because
-            // the image container no longer does (BL-16780).
+            // Only what is in an image container, or what the book marks as its cover, counts as a
+            // picture of the book. A loose img on the cover is decoration or branding, so it may
+            // not stand in for a placeholder cover image, even though its file is real (BL-16780).
             SetDom(
                 @"
 <div id='bloomDataDiv'>
@@ -7013,30 +7013,74 @@ namespace BloomTests.Book
                 <img data-book='coverImage' src='placeHolder.png' id='cover-placeholder'/>
             </div>
 		</div>
-        <div data-book='cover-branding-bottom-html' lang='*'>
-            <div class='bloom-imageContainer'>
-                <img class='branding' src='ABC-BARMM.png' id='branding-image'/>
-            </div>
-        </div>
+        <img src='loose.png' id='loose-image'/>
 	</div>
 </div>"
             );
-            File.WriteAllText(Path.Combine(_storage.Object.FolderPath, "ABC-BARMM.png"), "test");
+            File.WriteAllText(Path.Combine(_storage.Object.FolderPath, "loose.png"), "test");
 
             var book = CreateBook();
 
-            // Sanity check: the branding file really is there, so the only reason to reject it is
-            // the rule under test, not a missing file.
+            // Sanity check: the loose file really is there, so the only reason to reject it is the
+            // rule under test, not a missing file.
             Assert.That(
-                File.Exists(Path.Combine(_storage.Object.FolderPath, "ABC-BARMM.png")),
+                File.Exists(Path.Combine(_storage.Object.FolderPath, "loose.png")),
                 Is.True,
-                "test setup failed to write the branding image"
+                "test setup failed to write the loose image"
             );
 
             var coverImgPath = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
 
             Assert.That(coverImgElt.GetAttribute("id"), Is.EqualTo("cover-placeholder"));
-            Assert.That(coverImgPath, Does.Not.Contain("ABC-BARMM.png"));
+            Assert.That(coverImgPath, Does.Not.Contain("loose.png"));
+        }
+
+        [Test]
+        public void GetCoverImagePathAndElt_MarkIsOnTheImageContainer_UsesTheImageInThatContainer()
+        {
+            // Marking the image container, rather than the img in it, came in on Version6.5, which
+            // is downstream of this branch. A cover with two image containers must still honour the
+            // mark and not simply take the first container it meets (BL-16780).
+            SetDom(
+                @"
+<div id='bloomDataDiv'>
+	<div data-book='someOtherData' lang='*'>value</div>
+</div>
+<div class='bloom-page bloom-frontMatter outsideFrontCover'>
+	<div class='marginBox'>
+        <div class='bloom-canvas'>
+            <div class='bloom-imageContainer'>
+                <img src='decoration.png' id='decoration-image'/>
+            </div>
+		</div>
+        <div class='bloom-canvas'>
+            <div class='bloom-imageContainer' data-book='coverImage'>
+                <img src='the-cover.jpg' id='the-cover-image'/>
+            </div>
+		</div>
+	</div>
+</div>"
+            );
+            File.WriteAllText(Path.Combine(_storage.Object.FolderPath, "decoration.png"), "test");
+            File.WriteAllText(Path.Combine(_storage.Object.FolderPath, "the-cover.jpg"), "test");
+
+            var book = CreateBook();
+
+            // Sanity check: both files are there, so the choice is made by the mark, not by one of
+            // them being missing.
+            Assert.That(
+                File.Exists(Path.Combine(_storage.Object.FolderPath, "decoration.png")),
+                Is.True,
+                "test setup failed to write the decoration image"
+            );
+
+            var coverImgPath = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
+
+            Assert.That(coverImgElt.GetAttribute("id"), Is.EqualTo("the-cover-image"));
+            Assert.That(
+                coverImgPath,
+                Is.EqualTo(Path.Combine(_storage.Object.FolderPath, "the-cover.jpg"))
+            );
         }
     }
 }

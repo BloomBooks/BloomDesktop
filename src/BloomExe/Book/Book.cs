@@ -3290,26 +3290,20 @@ namespace Bloom.Book
                     .Any(NonTrivialImageFileExists);
         }
 
-        /// <summary>
-        /// True for the images that a branding or a license puts on a page: the branding logo, the
-        /// license image, and the QR code of the "Made with Bloom" badge (as much a part of the
-        /// branding as the badge image beside it). None of these belongs to the book itself, so
-        /// neither HasImages() nor the cover-image search should count them.
-        /// </summary>
-        private static bool IsBrandingOrLicenseImage(SafeXmlElement image)
+        private bool NonTrivialImageFileExists(SafeXmlElement image)
         {
-            return image.Name == "img"
-                && (
+            if (image.Name == "img")
+            {
+                // The QR code of the "Made with Bloom" badge is as much a part of the branding as
+                // the badge image itself (which has the "branding" class), so it doesn't count as
+                // one of the book's images.
+                if (
                     image.HasClass("branding")
                     || image.HasClass("licenseImage")
                     || image.HasClass(BookStorage.kQrCodeClass)
-                );
-        }
-
-        private bool NonTrivialImageFileExists(SafeXmlElement image)
-        {
-            if (IsBrandingOrLicenseImage(image))
-                return false;
+                )
+                    return false;
+            }
             var imageUrl = HtmlDom.GetImageElementUrl(image);
             var file = imageUrl.PathOnly.NotEncoded;
             if (string.IsNullOrEmpty(file))
@@ -5297,58 +5291,42 @@ namespace Bloom.Book
             if (outsideFrontCover == null)
                 return null;
 
-            // Prefer the designated cover image if it is present and not placeholder.
-            var designatedCoverImage = outsideFrontCover
-                .SafeSelectNodes(
-                    ".//img[@data-book='coverImage'] | .//div[@data-book='coverImage']"
-                )
-                .Cast<SafeXmlElement>()
-                .FirstOrDefault();
-
-            SafeXmlElement bestPlaceholderElt = null;
-            string bestPlaceholderPath = null;
-
-            if (designatedCoverImage != null)
-            {
-                var designatedPath = GetImagePath(designatedCoverImage);
-                if (designatedPath != null)
-                {
-                    if (!ImageUtils.IsPlaceholderImageFilename(designatedPath))
-                    {
-                        coverImgElt = designatedCoverImage;
-                        return designatedPath;
-                    }
-
-                    bestPlaceholderElt = designatedCoverImage;
-                    bestPlaceholderPath = designatedPath;
-                }
-            }
-
-            // Only a picture inside an image container is a candidate. A cover also carries images
-            // that belong to the branding or the license, never to the book, and those are never in
-            // an image container; without this restriction a branded book whose cover picture was
-            // still a placeholder took its branding logo as its cover image (BL-16780).
-            // We may not need to consider any options other than img, since anything that is old
-            // enough in format to use an obsolete image representation probably only has one image
-            // on the cover, properly designated with data-book. However, it's not much more work or
-            // complexity to handle the older cases here, too, and we do use this code in publish and
-            // preview situations, not only for editable books.
+            // We take the image the book marks as its cover, and failing that an image out of an
+            // image container. Everything else on the cover is off limits: the branding logo, the
+            // license image, and the QR code of the "Made with Bloom" badge belong to the branding
+            // or the license, never to the book, and none of them sits in an image container. We
+            // used to accept any img on the cover, so a branded book whose cover picture was still
+            // a placeholder took the branding logo instead. For the ABC brandings that logo is an
+            // SVG, which PalasoImage cannot load, so such a book had no thumbnail at all (BL-16780).
+            //
+            // Take the mark from either the img or the container. On this branch only the img
+            // carries it; marking the image container came in on Version6.5, which is downstream of
+            // here, so accepting both is what lets this survive the merge forward.
+            //
+            // The container itself is a candidate as well as the imgs inside it, because a book old
+            // enough to use an obsolete image representation carries the picture on the container.
+            // We handle those here rather than only for editable books, because publish and preview
+            // use this code too.
             const string kImageContainer =
                 "div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]";
-            foreach (
-                var candidate in outsideFrontCover
-                    .SafeSelectNodes($".//{kImageContainer}//img | .//{kImageContainer}")
-                    .Cast<SafeXmlElement>()
-            )
+            var markedAsTheCover = outsideFrontCover
+                .SafeSelectNodes(
+                    ".//img[@data-book='coverImage'] | .//div[@data-book='coverImage']"
+                        + " | .//div[@data-book='coverImage']//img"
+                )
+                .Cast<SafeXmlElement>();
+            var inAnImageContainer = outsideFrontCover
+                .SafeSelectNodes($".//{kImageContainer} | .//{kImageContainer}//img")
+                .Cast<SafeXmlElement>();
+            var candidates = markedAsTheCover.Concat(inAnImageContainer);
+
+            // A placeholder means "no picture chosen yet", so keep looking for a real one. Ending
+            // up with the placeholder is a fine answer; ending up with the branding logo is not.
+            SafeXmlElement placeholderElt = null;
+            string placeholderPath = null;
+
+            foreach (var candidate in candidates)
             {
-                if (candidate == designatedCoverImage)
-                    continue;
-
-                // The image container is the main guard, but a branding pack supplies its own
-                // markup, so we do not control whether it wraps its logo in a container.
-                if (IsBrandingOrLicenseImage(candidate))
-                    continue;
-
                 var candidatePath = GetImagePath(candidate);
                 if (candidatePath == null)
                     continue;
@@ -5359,15 +5337,15 @@ namespace Bloom.Book
                     return candidatePath;
                 }
 
-                if (bestPlaceholderPath == null)
+                if (placeholderPath == null)
                 {
-                    bestPlaceholderElt = candidate;
-                    bestPlaceholderPath = candidatePath;
+                    placeholderElt = candidate;
+                    placeholderPath = candidatePath;
                 }
             }
 
-            coverImgElt = bestPlaceholderElt;
-            return bestPlaceholderPath;
+            coverImgElt = placeholderElt;
+            return placeholderPath;
         }
 
         private string GetImagePath(SafeXmlElement imageElement)
