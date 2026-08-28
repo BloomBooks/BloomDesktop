@@ -460,6 +460,11 @@ namespace BloomTests.FreezeDoctor
                     "a stray environment variable must not be able to break a Release Bloom"
                 );
                 Assert.That(FreezeSimulator.ArmIfRequested("Beta"), Is.False, "nor a Beta one");
+                Assert.That(
+                    FreezeSimulator.ArmIfRequested("SomethingNew"),
+                    Is.False,
+                    "nor a channel nobody has considered; the list is named, not pattern-matched"
+                );
             }
             finally
             {
@@ -468,12 +473,14 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void FreezeSimulatorArmsOnAlphaAndDeveloperChannels()
+        public void FreezeSimulatorArmsOnAlphaInternalAndDeveloperChannels()
         {
-            // Alpha is allowed on purpose: reproducing a freeze usually means working with somebody who is
-            // actually experiencing one, and those people are running Alpha, not a build from source. This
-            // is the other half of the safeguard above — the pair of tests together say exactly which
-            // channels may be broken deliberately, so widening or narrowing that set breaks a test.
+            // Alpha and the internal channels are allowed on purpose, because they are where the Doctor is
+            // actually exercised: BetaInternal carries the bulk of in-house testing of a new version, and
+            // reproducing a freeze usually means working with somebody experiencing one, who is on Alpha
+            // rather than a build from source. This is the other half of the safeguard above — the pair of
+            // tests together say exactly which channels may be broken deliberately, so widening or
+            // narrowing that set breaks a test.
             var saved = Environment.GetEnvironmentVariable(FreezeSimulator.EnvironmentVariable);
             try
             {
@@ -489,6 +496,16 @@ namespace BloomTests.FreezeDoctor
                     FreezeSimulator.ArmIfRequested("Developer/Debug"),
                     Is.True,
                     "developer"
+                );
+                Assert.That(
+                    FreezeSimulator.ArmIfRequested("BetaInternal"),
+                    Is.True,
+                    "BetaInternal, where most in-house testing of a new version happens"
+                );
+                Assert.That(
+                    FreezeSimulator.ArmIfRequested("ReleaseInternal"),
+                    Is.True,
+                    "ReleaseInternal, in-house for the same reason"
                 );
             }
             finally
