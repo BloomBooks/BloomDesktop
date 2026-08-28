@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -1487,6 +1487,48 @@ namespace BloomTests.Book
                         + "='audio/SoundTrack1.mp3' and @"
                         + HtmlDom.musicVolumeName
                         + "='0.17']",
+                    1
+                );
+        }
+
+        [Test]
+        public void UpdateVariablesAndDataDivThroughDOM_ImgOrphanedByUpdatingItsParent_DoesNotThrow()
+        {
+            // A branding html value can itself contain an image marked as the cover image (BL-16776).
+            // Restoring the branding element replaces everything inside it, which orphans the img
+            // that we collected before that happened. We must not then try to update the orphan.
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='coverImage' lang='*' src='zebra.png'
+						data-canvas-element-style='width: 468px; height: 484px; top: 0px; left: 0px;'
+						data-canvas-imgsizebasedon='469,484'>zebra.png</div>
+					<div data-book='cover-branding-bottom-html' lang='*'><img class='branding' src='zebra.png' data-book='coverImage'/></div>
+				</div>
+				<div class='bloom-page' id='frontCover'>
+					<div class='marginBox'>
+						<div data-book='cover-branding-bottom-html' lang='*'><img class='branding' src='zebra.png' data-book='coverImage'/></div>
+					</div>
+				</div>
+				</body></html>"
+            );
+            // Sanity check: the page really does start out with an img inside the element that is
+            // about to be rewritten, which is what makes this test meaningful.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='marginBox']/div[@data-book='cover-branding-bottom-html']/img[@data-book='coverImage']",
+                    1
+                );
+
+            var data = new BookData(dom, _collectionSettings, null);
+            Assert.DoesNotThrow(() => data.UpdateVariablesAndDataDivThroughDOM());
+
+            // The branding content should have been restored from the data-div.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='marginBox']/div[@data-book='cover-branding-bottom-html']/img[@class='branding']",
                     1
                 );
         }
