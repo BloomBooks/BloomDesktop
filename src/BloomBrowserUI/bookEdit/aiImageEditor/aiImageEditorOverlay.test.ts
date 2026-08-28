@@ -6,13 +6,12 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 // Two things this half is responsible for, both of which used to be tangled up with the
 // live page and are pinned here:
 //
-//  - The edit target. C# hands over the page id and file name of the image the user
+//  - The edit target. C# hands over the page id and slot index of the image the user
 //    right-clicked (it survived a page save, which reloaded the page frame), and the overlay
-//    matches that against the book image list to fill the "Image to Edit" slot (BL-16682).
-//  - Saving after a commit. The current-page swaps only touched the LIVE DOM, so unless we
-//    save, a second commit in the same session would read its oldSrc from a saved page still
-//    showing the pre-edit image and match nothing. Because this overlay lives in the top
-//    window, we can save immediately: the page reload underneath leaves its controls alone.
+//    uses that to fill the "Image to Edit" slot (BL-16682).
+//  - Not saving after a commit. The current-page swaps touch only the LIVE DOM and register
+//    an image undo there, so saving now would reload the page frame and discard that undo
+//    (the same reasoning as BL-16330 for an ordinary image change).
 
 const post = vi.fn();
 const postJson = vi.fn();
@@ -35,7 +34,7 @@ vi.mock("../js/workspaceFrames", () => ({
     getEditablePageBundleExports: () => getEditablePageBundleExports(),
 }));
 
-import { openAiImageEditor } from "./aiEditorOverlay";
+import { openAiImageEditor } from "./aiImageEditorOverlay";
 
 const kEditorUrl = "http://localhost:8089/bloom/aiImageEditor/index.html";
 const kPageId = "page1";
@@ -69,7 +68,7 @@ const openAgainstABookWithOneImage = (
         },
     });
 
-    const overlay = document.getElementById("ai-editor-overlay");
+    const overlay = document.getElementById("ai-image-editor-overlay");
     if (!overlay)
         throw new Error("setup: the overlay should have been created");
     const iframe = overlay.querySelector("iframe") as HTMLIFrameElement;
@@ -164,7 +163,7 @@ beforeEach(() => {
     document.body.innerHTML = "";
 });
 
-describe("aiEditorOverlay: the edit target", () => {
+describe("aiImageEditorOverlay: the edit target", () => {
     test("the image C# names becomes the AI Image Editor's edit target", () => {
         const { iframe, postFromEditor } = openAgainstABookWithOneImage();
 
@@ -257,7 +256,7 @@ describe("aiEditorOverlay: the edit target", () => {
     });
 });
 
-describe("aiEditorOverlay: the live page is NOT saved after a commit", () => {
+describe("aiImageEditorOverlay: the live page is NOT saved after a commit", () => {
     // A current-page swap registers an image undo in the page frame, and a save would
     // reload that frame and discard the undo (BL-16330's reasoning for ordinary image
     // changes). So the overlay must never post the save event: the page saves by the
@@ -270,7 +269,7 @@ describe("aiEditorOverlay: the live page is NOT saved after a commit", () => {
         // Sanity: the current-page swap really was requested of the page frame, so the
         // assertions below aren't just watching a no-op.
         expect(applyAiImageEditorReplacements).toHaveBeenCalledTimes(1);
-        expect(document.getElementById("ai-editor-overlay")).toBeNull();
+        expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
         expect(postThatMightNavigate).not.toHaveBeenCalled();
     });
 
@@ -280,11 +279,29 @@ describe("aiEditorOverlay: the live page is NOT saved after a commit", () => {
         commitAndReplyFromHost(postFromEditor, false);
 
         // The overlay stays up so the user can read the error about the slot that failed.
-        expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
+        expect(
+            document.getElementById("ai-image-editor-overlay"),
+        ).not.toBeNull();
         expect(postThatMightNavigate).not.toHaveBeenCalled();
 
         closeButton.click();
-        expect(document.getElementById("ai-editor-overlay")).toBeNull();
+        expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
+        expect(postThatMightNavigate).not.toHaveBeenCalled();
+    });
+
+    test("a commit that changed nothing on this page never saves", () => {
+        applyAiImageEditorReplacements.mockReturnValue({
+            applied: 0,
+            expected: 0,
+        });
+        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+
+        // C# applied everything itself (all the slots were off-page), so there is no
+        // live-DOM change here to persist.
+        commitAndReplyFromHost(postFromEditor, true);
+
+        expect(postThatMightNavigate).not.toHaveBeenCalled();
+        closeButton.click();
         expect(postThatMightNavigate).not.toHaveBeenCalled();
     });
 
@@ -393,7 +410,7 @@ describe("aiEditorOverlay: the live page is NOT saved after a commit", () => {
     });
 });
 
-describe("aiEditorOverlay: analytics", () => {
+describe("aiImageEditorOverlay: analytics", () => {
     // One "AI Image Editor Closed" event per session, sent when the session settles. An
     // appliedCount of zero is what makes it the abandoned case: it says how much AI work was
     // thrown away, so it must be zero when a session ends without committing, and must NOT be
@@ -720,7 +737,9 @@ describe("aiEditorOverlay: analytics", () => {
         post.mockClear();
         openAgainstABookWithOneImage();
         // Sanity: the new session is up and is the one the window would tear down.
-        expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
+        expect(
+            document.getElementById("ai-image-editor-overlay"),
+        ).not.toBeNull();
 
         onSuccess({
             data: {
@@ -738,7 +757,9 @@ describe("aiEditorOverlay: analytics", () => {
             },
         });
 
-        expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
+        expect(
+            document.getElementById("ai-image-editor-overlay"),
+        ).not.toBeNull();
         expect(
             (window as Window & { __bloomAiImageEditorCleanup?: () => void })
                 .__bloomAiImageEditorCleanup,
@@ -765,7 +786,7 @@ describe("aiEditorOverlay: analytics", () => {
 
         // Sanity: the commit really did close the overlay, so this is not just a session
         // that never ended.
-        expect(document.getElementById("ai-editor-overlay")).toBeNull();
+        expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
         expect(abandonedEvents()).toHaveLength(0);
     });
 });
@@ -778,7 +799,7 @@ describe("aiEditorOverlay: analytics", () => {
 //
 // The counts arrive when the SESSION settles, not when a commit is answered, so a test whose
 // commit leaves the overlay up has to close it before there is anything to assert on.
-describe("aiEditorOverlay: reporting what a commit achieved", () => {
+describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
     const closedEvents = () =>
         trackEvent.mock.calls.filter(
             (call) => call[0] === "AI Image Editor Closed",
@@ -956,7 +977,9 @@ describe("aiEditorOverlay: reporting what a commit achieved", () => {
             ],
         );
         // Sanity: the overlay is still up, so nothing has been reported yet.
-        expect(document.getElementById("ai-editor-overlay")).not.toBeNull();
+        expect(
+            document.getElementById("ai-image-editor-overlay"),
+        ).not.toBeNull();
         expect(closedEvents()).toHaveLength(0);
 
         closeButton.click();

@@ -439,7 +439,7 @@ namespace BloomTests.ImageProcessing
                 Assert.That(
                     ImageUtils.HasTransparency(bitmap),
                     Is.True,
-                    "an interior-only cutout must be found, or the AI editor would flatten it"
+                    "an interior-only cutout must be found, or the AI image editor would flatten it"
                 );
             }
         }

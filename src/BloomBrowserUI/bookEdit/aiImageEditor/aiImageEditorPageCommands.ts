@@ -1,6 +1,6 @@
 // The PAGE-FRAME half of the AI Image Editor integration — the only two things that have
 // to run where the live page lives. The overlay and the whole conversation with the AI
-// image editor are in the top window (aiEditorOverlay.ts); read that file's header for the
+// image editor are in the top window (aiImageEditorOverlay.ts); read that file's header for the
 // full flow, and AiImageEditorApi.cs for the C# side.
 //
 //   launchAiImageEditor            the "Edit with AI…" menu command: report the clicked
@@ -19,7 +19,7 @@ import {
     IAiImageEditorApplyOutcome,
     IAiImageEditorCommitResult,
     isCurrentPageSwap,
-} from "./aiEditorShared";
+} from "./aiImageEditorShared";
 
 // Starts "Edit with AI…" for the given image. `img` is the right-clicked image and
 // `imgContainer` its image container (if any).
@@ -30,7 +30,7 @@ import {
 // changeImage/changeImageByElement deliberately do not save (BL-16330). Launching against
 // that stale DOM opened the editor with an empty "Image to Edit" slot (BL-16682). So we
 // hand the clicked image to C#, which saves the page and then opens the overlay itself
-// (AiImageEditorApi.HandleSaveThenLaunch). Only the file name travels: saving reloads this
+// (AiImageEditorApi.HandleSaveThenLaunch). Only the slot index travels: saving reloads this
 // frame, so a live element reference would not survive.
 export function launchAiImageEditor(
     img: HTMLImageElement,

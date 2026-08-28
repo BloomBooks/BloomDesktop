@@ -39,7 +39,7 @@ vi.mock("../js/bloomImages", () => ({
 import {
     applyAiImageEditorReplacements,
     launchAiImageEditor,
-} from "./aiEditorPageCommands";
+} from "./aiImageEditorPageCommands";
 
 const kPageId = "page1";
 
@@ -79,7 +79,7 @@ const currentPageResult = (
     license: "",
 });
 
-describe("aiEditorPageCommands: the menu command", () => {
+describe("aiImageEditorPageCommands: the menu command", () => {
     beforeEach(() => {
         postJson.mockClear();
         document.body.innerHTML = "";
@@ -195,7 +195,7 @@ describe("aiEditorPageCommands: the menu command", () => {
     });
 });
 
-describe("aiEditorPageCommands: applying current-page replacements", () => {
+describe("aiImageEditorPageCommands: applying current-page replacements", () => {
     beforeEach(() => {
         changeImageByElement.mockClear();
         setActiveElementToClosest.mockClear();
