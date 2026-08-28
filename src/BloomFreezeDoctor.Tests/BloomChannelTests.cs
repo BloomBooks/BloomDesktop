@@ -1,3 +1,4 @@
+using System.Linq;
 using BloomFreezeDoctor;
 using NUnit.Framework;
 
@@ -27,6 +28,61 @@ public class BloomChannelTests
     public void Channel_comes_out_of_the_path(string exePath, string expected)
     {
         Assert.That(BloomChannel.DeriveFromExePath(exePath), Is.EqualTo(expected));
+    }
+
+    /// <summary>Where an installed Bloom of the given channel lives.</summary>
+    private static string InstalledPath(string processName) =>
+        $@"C:\Users\jt\AppData\Local\{processName}\current\{processName}.exe";
+
+    [Test]
+    public void Every_installed_channel_has_a_process_name_the_Doctor_sweeps_for()
+    {
+        // The list is what the Doctor searches for to find Blooms nobody told it about, and what "Restart
+        // Bloom" searches to relaunch one. A channel missing from it is a channel the Doctor never watches
+        // at all - which is silent, because there is nothing to see when a tool correctly does nothing.
+        // ReleaseInternal was missing exactly that way.
+        //
+        // Pinned by value, so adding a channel is a deliberate edit here as well. The right-hand side is
+        // what Bloom's own ApplicationUpdateSupport.ChannelName reports for that install.
+        var expected = new[]
+        {
+            "Bloom=Release",
+            "BloomAlpha=Alpha",
+            "BloomBeta=Beta",
+            "BloomBetaInternal=BetaInternal",
+            "BloomReleaseInternal=ReleaseInternal",
+        };
+
+        // Derived from the installed layout, so this also proves the names and the channel derivation agree:
+        // a name in the list that DeriveFromExePath read differently would be a Bloom we watch and then
+        // mislabel on its own card.
+        var actual = BloomChannel
+            .InstalledBloomProcessNames.Select(name =>
+                $"{name}={BloomChannel.DeriveFromExePath(InstalledPath(name))}"
+            )
+            .ToArray();
+
+        Assert.That(
+            actual,
+            Is.EqualTo(expected),
+            "the installed channels the Doctor knows how to find"
+        );
+    }
+
+    [Test]
+    public void No_swept_channel_is_mistaken_for_a_developer_build()
+    {
+        // Every name here is an INSTALLED Bloom, so none of them may look like a developer build: that
+        // would silently stop the Doctor filing from a real user's machine.
+        foreach (var name in BloomChannel.InstalledBloomProcessNames)
+        {
+            var channel = BloomChannel.DeriveFromExePath(InstalledPath(name));
+            Assert.That(
+                BloomChannel.IsDeveloperChannel(channel),
+                Is.False,
+                $"{name} derived the channel '{channel}', which reads as a developer build"
+            );
+        }
     }
 
     [Test]

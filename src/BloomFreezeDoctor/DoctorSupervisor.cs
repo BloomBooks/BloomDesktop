@@ -188,10 +188,10 @@ public sealed class DoctorSupervisor : IDisposable
         // watch that real Bloom, and with `--force` would be willing to file cards about it.
         if (!targetNameWasGiven && targetProcessName == DefaultTargetProcessName)
         {
-            // The same channel folders StatusForm.FindBloomExecutable already looks in.
-            _targetProcessNames.Add("BloomAlpha");
-            _targetProcessNames.Add("BloomBeta");
-            _targetProcessNames.Add("BloomBetaInternal");
+            // Every installed channel, from the one list StatusForm's restart search also uses. The default
+            // name added above is Release's, so this mostly adds the suffixed channels.
+            foreach (var name in BloomChannel.InstalledBloomProcessNames)
+                _targetProcessNames.Add(name);
         }
         _forceFiling = forceFiling;
         _outbox = outbox ?? new ReportOutbox();
