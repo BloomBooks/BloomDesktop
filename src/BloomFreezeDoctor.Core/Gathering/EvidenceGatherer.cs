@@ -387,6 +387,44 @@ public sealed class EvidenceGatherer
                     + "thread — a garbage collection that will not finish, or a suspended process."
             );
         text.AppendLine();
+
+        AppendRequestsInFlight(text, context);
+    }
+
+    /// <summary>
+    /// Every API request Bloom had in flight, from the session file rather than the shared page — the page
+    /// has room for one line of activity, and in a freeze the requests it cannot name are most of the
+    /// picture: which paths, how long each, and which of them are queued behind a lock another is holding.
+    ///
+    /// **How current this is.** Bloom's watchdog thread rewrites the session every ten seconds and keeps
+    /// doing so while the UI is wedged, and a freeze is not reported until the UI has been unresponsive for
+    /// a minute — five during a long operation — so by then the list has been rewritten several times over.
+    /// The age is printed anyway, for the two cases where it matters: a whole-process wedge, where the
+    /// watchdog has stopped too and the reading is as old as the wedge, and a request that began after the
+    /// last write and so is missing entirely.
+    /// </summary>
+    private static void AppendRequestsInFlight(StringBuilder text, GatherContext context)
+    {
+        var requests = context.Session?.InFlightRequests;
+        if (requests == null || requests.Count == 0)
+            return;
+
+        text.AppendLine("**API requests in flight**, longest-running first:");
+        text.AppendLine();
+        foreach (var request in requests)
+            text.AppendLine($"- {request}");
+        text.AppendLine();
+
+        var capturedAt = context.Session!.InFlightRequestsAtUtc;
+        if (capturedAt != null)
+        {
+            var age = DateTimeOffset.UtcNow - capturedAt.Value;
+            text.AppendLine(
+                $"*Read {Describe(age < TimeSpan.Zero ? TimeSpan.Zero : age)} before this report was "
+                    + "gathered; Bloom records it every ten seconds.*"
+            );
+            text.AppendLine();
+        }
     }
 
     private static string Describe(TimeSpan age) =>

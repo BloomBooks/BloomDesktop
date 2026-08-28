@@ -64,6 +64,56 @@ public class DoctorSessionTests
         Assert.That(onDisk, Does.Not.Contain("\"ShutdownPhase\": 2"), "not the bare number");
     }
 
+    [Test]
+    public void The_requests_in_flight_survive_the_round_trip()
+    {
+        // The one part of a session that describes the present rather than the run, and the only route by
+        // which a report learns about more than one request: the shared page has room for a single line.
+        var session = Session(888) with
+        {
+            InFlightRequests = new[]
+            {
+                "api/publish/epub/updatepreview — running 61s, holding the thumbnail/preview lock on OS thread 9184",
+                "api/branding/image — running 58s, waiting for the thumbnail/preview lock on OS thread 9190",
+            },
+            InFlightRequestsAtUtc = DateTimeOffset.UtcNow,
+        };
+
+        DoctorSessionStore.TryWrite(session, _directory);
+        var read = DoctorSessionStore.TryRead(888, _directory);
+
+        Assert.That(read!.InFlightRequests.Count, Is.EqualTo(2));
+        Assert.That(
+            read.InFlightRequests[0],
+            Does.Contain("holding the thumbnail/preview lock"),
+            "which lock a request holds is the half that names the deadlock"
+        );
+        Assert.That(
+            read.InFlightRequests[1],
+            Does.Contain("waiting for the thumbnail/preview lock")
+        );
+        Assert.That(
+            read.InFlightRequestsAtUtc,
+            Is.Not.Null,
+            "a report has to be able to say how old this reading is"
+        );
+    }
+
+    [Test]
+    public void A_session_with_nothing_in_flight_says_so_without_a_timestamp()
+    {
+        // An idle Bloom must compare equal to its own last state, or it rewrites this file every ten
+        // seconds for the life of the process. That rests on there being no timestamp when there is no list.
+        var session = Session(889);
+        Assert.That(session.InFlightRequests, Is.Empty, "sanity: nothing in flight by default");
+
+        DoctorSessionStore.TryWrite(session, _directory);
+        var read = DoctorSessionStore.TryRead(889, _directory);
+
+        Assert.That(read!.InFlightRequests, Is.Empty);
+        Assert.That(read.InFlightRequestsAtUtc, Is.Null);
+    }
+
     private DoctorSession Session(int pid, DateTimeOffset? started = null) =>
         new()
         {
