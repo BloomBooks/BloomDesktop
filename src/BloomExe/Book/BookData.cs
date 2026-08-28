@@ -1897,10 +1897,17 @@ namespace Bloom.Book
                 {
                     // if we already processed it, we should not do so again,
                     // since doing so might replace some of the nodes in our list with new ones.
-                    if (!nodesToProcessFirst.Contains(elt))
-                    {
-                        UpdateOneElementFromDataSet(data, itemsToDelete, elt);
-                    }
+                    if (nodesToProcessFirst.Contains(elt))
+                        continue;
+                    // Updating one element can replace the entire content of an ancestor of another
+                    // element in this list (for example, restoring a branding html value replaces
+                    // everything inside that element), leaving the descendant orphaned. An orphan is
+                    // no longer part of the book, so there is nothing in it worth updating, and the
+                    // update code rightly assumes it still has the parents it was collected with.
+                    // See BL-16776.
+                    if (!IsStillInDocument(elt))
+                        continue;
+                    UpdateOneElementFromDataSet(data, itemsToDelete, elt);
                 }
             }
             catch (Exception error)
@@ -1913,6 +1920,22 @@ namespace Bloom.Book
                     error
                 );
             }
+        }
+
+        /// <summary>
+        /// True if the node is still attached to its document, that is, we can reach the document's
+        /// root element by following parents. A node we collected earlier may since have been
+        /// detached by an update to one of its ancestors.
+        /// </summary>
+        internal static bool IsStillInDocument(SafeXmlNode node)
+        {
+            var root = node.OwnerDocument.DocumentElement;
+            for (var current = node; current != null; current = current.ParentNode)
+            {
+                if (current == root)
+                    return true;
+            }
+            return false;
         }
 
         private void UpdateOneElementFromDataSet(
