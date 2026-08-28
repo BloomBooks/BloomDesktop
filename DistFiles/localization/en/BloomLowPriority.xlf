@@ -15,7 +15,7 @@
       <trans-unit id="Errors.CorruptImageFile">
         <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
         <note>ID: Errors.CorruptImageFile</note>
-        <note>The placeholder {0} represents the name of the corrupt file. The placeholder {0} represents a message describing the problem with the file.</note>
+        <note>The placeholder {0} represents the name of the corrupt file. The placeholder {1} represents a message describing the problem with the file.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
@@ -24,7 +24,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
-        <note>After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another.</note>
+        <note>After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specifies a mapping which is used to convert the script for one language into the script for another.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
         <source xml:lang="en">eSpeak failed.</source>
@@ -237,12 +237,12 @@
       <trans-unit id="Feature.Canvas">
         <source xml:lang="en">Canvas</source>
         <note>ID: Feature.Canvas</note>
-        <note>This is the name of a feature in BLoom</note>
+        <note>This is the name of a feature in Bloom</note>
       </trans-unit>
       <trans-unit id="Feature.Spreadsheet">
         <source xml:lang="en">Spreadsheet Import/Export</source>
         <note>ID: Feature.Spreadsheet</note>
-        <note>This is the name of a feature in BLoom</note>
+        <note>This is the name of a feature in Bloom</note>
       </trans-unit>
       <!-- TODO: add other features -->
 

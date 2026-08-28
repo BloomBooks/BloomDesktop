@@ -5,7 +5,9 @@ import Avatar, { Cache, ConfigProvider } from "react-avatar";
 import { getMd5 } from "../bookEdit/toolbox/talkingBook/md5Util";
 
 export const BloomAvatar: React.FunctionComponent<{
-    email: string;
+    // Nullable on purpose: some callers get this from data that genuinely has no user
+    // recorded, such as a book history event written by an older Bloom (BL-16757).
+    email: string | null | undefined;
     name: string;
     borderColor?: string;
     avatarSizeInt?: number;
@@ -45,7 +47,11 @@ export const BloomAvatar: React.FunctionComponent<{
             >
                 <ConfigProvider cache={cache}>
                     <Avatar
-                        md5Email={getMd5(props.email)}
+                        // A history event written by an older Bloom can have a null userid
+                        // (BL-16757), and getMd5 throws on null. No email means there is no
+                        // gravatar to look up, so react-avatar falls back to the initials
+                        // generated from `name`.
+                        md5Email={props.email ? getMd5(props.email) : undefined}
                         name={props.name}
                         size={avatarSize}
                         maxInitials={3}
