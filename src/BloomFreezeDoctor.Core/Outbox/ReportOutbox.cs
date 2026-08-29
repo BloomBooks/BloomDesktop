@@ -12,10 +12,19 @@ namespace BloomFreezeDoctor.Outbox;
 /// announces failure for a report that is about to be filed perfectly well.
 /// </summary>
 /// <param name="Filed">How many bundles were actually accepted by the tracker.</param>
-/// <param name="GatedOut">
-/// True if another drain held the gate and we left the queue to it, having sent nothing.
+/// <param name="AnotherProcessIsSending">
+/// True when another Doctor process was already draining, so we sent nothing and left the queue to it.
+///
+/// Named for what HAPPENED rather than for the mechanism that caused it. The mechanism - a cross-process
+/// gate, with an in-process semaphore above it - is an implementation detail two layers down, and a reader
+/// meeting "gated out" here has to go and find out which gate, and then what being on the wrong side of it
+/// means for the reports. What it means is the part worth saying: nothing is stuck or lost, somebody else
+/// is sending them.
+///
+/// It does NOT promise that our own bundle is in the batch that process is sending; it may have listed the
+/// queue before ours arrived. That is what <c>StillQueued</c> is for, and a later drain picks it up.
 /// </param>
-public readonly record struct DrainOutcome(int Filed, bool GatedOut);
+public readonly record struct DrainOutcome(int Filed, bool AnotherProcessIsSending);
 
 /// <summary>One queued report on disk.</summary>
 public sealed record QueuedBundle
@@ -431,7 +440,7 @@ public sealed class ReportOutbox
                 // Somebody else is draining, so those bundles are theirs to send. Saying so, rather than
                 // just reporting zero filed, is what lets "Report now" tell the user their report is
                 // QUEUED instead of implying it failed.
-                return new DrainOutcome(Filed: 0, GatedOut: true);
+                return new DrainOutcome(Filed: 0, AnotherProcessIsSending: true);
             }
         }
         catch (OperationCanceledException)
@@ -449,7 +458,7 @@ public sealed class ReportOutbox
         try
         {
             var filed = await DrainInnerAsync(submitter, cancellation).ConfigureAwait(false);
-            return new DrainOutcome(filed, GatedOut: false);
+            return new DrainOutcome(filed, AnotherProcessIsSending: false);
         }
         finally
         {
