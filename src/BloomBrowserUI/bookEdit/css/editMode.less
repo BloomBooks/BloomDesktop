@@ -1446,7 +1446,8 @@ body {
 // context controls beneath the element, would name the language of one cell for
 // the whole table and leave no way to reach the format dialog of the others.
 // Each cell therefore keeps its own format button and language name, as a text
-// box on an ordinary page does.
+// box on an ordinary page does. (A cell too small to hold them is the exception;
+// see the rules at the end of this file.)
 .bloom-canvas-element .bloom-table {
     #formatButton {
         display: block;
@@ -1457,13 +1458,55 @@ body {
 // condition the rule near the top of this file puts on them everywhere else.
 // The display here beats the rule that hides a canvas element's language names
 // unless the bloom-canvas itself is hovered; in a table they belong to the cells,
-// so they follow the page like the ones on an ordinary page do.
+// so they follow the page like the ones on an ordinary page do. A cell too small
+// to hold a language name is the exception; see the rules just below.
 .bloom-page:hover,
 body:has(#canvas-element-context-controls:hover) .bloom-page {
     .bloom-canvas-element .bloom-table [data-languageTipContent]:after {
         content: attr(data-languageTipContent) !important;
         display: block !important;
     }
+}
+
+// A text box smaller than the thresholds in translationGroupSizeMarking.ts gets
+// this class, and gives up the two affordances Bloom draws inside a text box:
+// the grey language name in the corner, and the format cog of the editable that
+// has focus. In a box a couple of centimetres across, such as a cell of a
+// calendar month grid, those two cover the text. They appear instead in the
+// toolbar just below the box, which SmallTranslationGroupToolbar.tsx puts there
+// while an editable of the box has focus.
+.bloom-tooSmallForInBoxAffordances {
+    [data-languageTipContent]:after {
+        content: "" !important;
+        display: none !important;
+    }
+    #formatButton {
+        display: none !important;
+    }
+}
+
+// The rule above is written with !important, so it beats every ordinary rule
+// whatever its specificity. The one exception is the rule a few lines up, which
+// gives a table cell on a canvas its own in-box language name and is itself
+// !important; naming the same four classes here is what lets this one win.
+.bloom-page
+    .bloom-canvas-element
+    .bloom-table
+    .bloom-tooSmallForInBoxAffordances
+    [data-languageTipContent]:after {
+    content: "" !important;
+    display: none !important;
+}
+
+// The toolbar of a text box too small for its own affordances. Like the canvas
+// element context controls, it sits in the body rather than in the page, and is
+// positioned and scaled from JavaScript; only the bar inside it is clickable.
+#small-translation-group-toolbar {
+    position: absolute;
+    transform-origin: top left;
+    z-index: 1000;
+    pointer-events: none;
+    visibility: hidden;
 }
 
 // hideAllCKEditors is toggled by bloomEditing.ts to prevent bl-12448

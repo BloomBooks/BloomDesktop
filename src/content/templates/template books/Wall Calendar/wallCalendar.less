@@ -8,23 +8,8 @@ STARTLAYOUTS
 {"layouts":     ["A6Landscape", "A5Landscape", "A4Landscape", "A3Landscape", "QuarterLetterLandscape", "HalfLetterLandscape", "LetterLandscape", "LegalLandscape", "Size6x9Landscape"]  }
 ENDLAYOUTS
 */
-/*Top with Picture and a little text*/
-@base-image-height: 365px;
 @A5PageHeight: 14.8cm;
 @A5PageWidth: 21cm;
-
-.calendarMonthTop .bloom-canvas {
-    height: @base-image-height;
-}
-
-.bloom-translationGroup.calendarBelowBigPictureText {
-    /*+placement:anchor-bottom-left 0 0;*/
-    position: absolute;
-    left: 0;
-    text-align: center;
-    width: 100%;
-    padding-top: 20px; // fudge since without display: table + table-cell we can't get vertical-alignment: bottom
-}
 
 /*Bottom with day grid*/
 .month table {
@@ -120,10 +105,11 @@ ENDLAYOUTS
     }
 }
 
-/*The Calendar Month Grid page (the modern, bloom-table one). Note that everything about the
-	grid itself -- track sizes, borders, spans -- comes from the table's data-* attributes, so
-	the rules here only cover what the table library leaves to the host: the page margins and
-	the layout of the contents we author inside a day cell.
+/*The Calendar Month Grid page (the modern, bloom-table one). Everything about the grid
+	itself -- track sizes, borders -- comes from the table's data-* attributes, and the layout
+	of the contents inside its cells is in bookLayout/basePage.less, because a grid can also
+	sit on a canvas in a book that has never heard of this template. What is left to the rules
+	here is what belongs to the page: the margins, and the title above the grid.
 */
 .bloom-page.calendarMonthGrid {
     /*Like the old calendar pages, use narrow, equal side margins so the grid gets as much of
@@ -133,54 +119,36 @@ ENDLAYOUTS
     --page-margin-right: @Border;
 }
 
-/*A day cell holds a day number and a notes field. The notes field fills the whole cell, so
-	the user can type anywhere in it; the number sits on top of it in the corner, and the
-	first line of the notes is indented to start beside the number, at the top.
+/*The title of a month grid page: the month name. The hidden year and first-day-of-week
+	elements ride along in the same block, which is where the data-div can find them.
 */
-.calendarDayCellContents {
+.calendarTitleRowContents {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.4em;
     width: 100%;
-    height: 100%;
-    position: relative;
-    /*Breathing room for the typed notes. The day number is position:absolute, so this
-		padding moves only the notes text; the number keeps its corner position (an
-		absolutely positioned child is placed relative to the padding box, not the
-		content box).
-	*/
-    padding: 5px;
-    box-sizing: border-box;
 }
 
-.calendarDayNumber {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 5;
-    padding: 1px 0 0 4px;
-    text-align: left;
-}
-
-.calendarDayCell .bloom-translationGroup {
-    width: 100%;
-    height: 100%;
-}
-
-.calendarDayCell .bloom-editable > p:first-child {
-    text-indent: 2.3em;
-}
-
-/*Defeat bloom-table's default of centering a cell's single child: the day cell's contents
-	should fill it.
+/*The month name is a translationGroup, which would otherwise stretch across the whole
+	title. The min-width keeps it clickable while it is still empty (a new book in a
+	language the template does not seed).
 */
-.calendarDayCell {
-    align-items: stretch;
+.calendarTitleRowContents .bloom-translationGroup {
+    width: auto;
+    min-width: 4em;
 }
 
-/* bilingual */
-.calendarMonthTop.bloom-bilingual .bloom-canvas {
-    height: @base-image-height - 45;
+/*The year is book-level state carried on the page only so that Bloom's data-div machinery
+	keeps it in step across the twelve grid pages.
+*/
+.calendarYear {
+    display: none;
 }
 
-/* trilingual */
-.calendarMonthTop.bloom-trilingual .bloom-canvas {
-    height: @base-image-height - 85;
+/*The first day of the week is book-level state carried on the page only so that Bloom's
+	data-div machinery keeps it in step across the twelve grid pages.
+*/
+.calendarFirstDayOfWeek {
+    display: none;
 }

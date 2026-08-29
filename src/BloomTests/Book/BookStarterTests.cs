@@ -232,8 +232,7 @@ namespace BloomTests.Book
                     );
                 },
                 (path) => new BookStorage(path, _fileLocator, null, collectionSettings),
-                () => _starter,
-                null
+                () => _starter
             );
             return server;
         }

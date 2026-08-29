@@ -23,6 +23,7 @@ import {
     getTableChangeOrder,
     shouldUndoGoToTable,
 } from "./js/undoOrdering";
+import { RerenderTables } from "./js/tableEditing";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -81,6 +82,7 @@ export interface IPageFrameExports {
     tableShouldHandleUndo(): boolean;
     tableCanUndo(): boolean;
     tableUndo(): void;
+    rerenderTables(container: HTMLElement): void;
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
@@ -394,6 +396,13 @@ export function tableUndo(): void {
     tableHistoryManager.undoLast();
 }
 
+// Draw the tables within `container` again. Called cross-frame by the book tooling in the
+// outer frame, which changes a table's borders directly and then needs the library, which
+// lives in this iframe, to paint them.
+export function rerenderTables(container: HTMLElement): void {
+    RerenderTables(container);
+}
+
 for (let j = 0; j < styleSheets.length; j++) {
     // This doesn't work any more because we are now loading this code as a module,
     // which means it is loaded after the document is parsed.
@@ -480,6 +489,7 @@ interface EditablePageBundleApi {
     tableShouldHandleUndo: typeof tableShouldHandleUndo;
     tableCanUndo: typeof tableCanUndo;
     tableUndo: typeof tableUndo;
+    rerenderTables: typeof rerenderTables;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
     removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
     e2eSetActiveCanvasElementByIndex: typeof e2eSetActiveCanvasElementByIndex;
@@ -563,6 +573,7 @@ window.editablePageBundle = {
     tableShouldHandleUndo,
     tableCanUndo,
     tableUndo,
+    rerenderTables,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
     e2eSetActiveCanvasElementByIndex,

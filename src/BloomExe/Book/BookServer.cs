@@ -1,7 +1,5 @@
 using System;
 using System.IO;
-using System.Windows.Forms;
-using Bloom.Edit;
 using Bloom.TeamCollection;
 using SIL.Reporting;
 
@@ -12,21 +10,18 @@ namespace Bloom.Book
         private readonly Book.Factory _bookFactory;
         private readonly BookStorage.Factory _storageFactory;
         private readonly BookStarter.Factory _bookStarterFactory;
-        private readonly Configurator.Factory _configuratorFactory;
         private TeamCollectionManager _tcManager;
 
         public BookServer(
             Book.Factory bookFactory,
             BookStorage.Factory storageFactory,
             BookStarter.Factory bookStarterFactory,
-            Configurator.Factory configuratorFactory,
             TeamCollectionManager tcManager = null
         )
         {
             _bookFactory = bookFactory;
             _storageFactory = storageFactory;
             _bookStarterFactory = bookStarterFactory;
-            _configuratorFactory = configuratorFactory;
             _tcManager = tcManager;
         }
 
@@ -66,17 +61,6 @@ namespace Bloom.Book
                     sourceBookFolder,
                     containingDestinationFolder
                 );
-                if (Configurator.IsConfigurable(pathToFolderOfNewBook))
-                {
-                    var c = _configuratorFactory(containingDestinationFolder);
-                    if (DialogResult.Cancel == c.ShowConfigurationDialog(pathToFolderOfNewBook))
-                    {
-                        SIL.IO.RobustIO.DeleteDirectory(pathToFolderOfNewBook, true);
-                        return null; // the template had a configuration page and they clicked "cancel"
-                    }
-                    c.ConfigureBook(BookStorage.FindBookHtmlInFolder(pathToFolderOfNewBook));
-                }
-
                 // We're creating a new book, so for now, it can certainly be saved. However, this bookInfo might
                 // survive past where it gets checked in, so hook up the proper SaveContext.
                 var sc =

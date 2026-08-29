@@ -11,6 +11,7 @@ export type CanvasElementType =
     | "speech"
     | "caption"
     | "table"
+    | "calendar"
     | "book-link-grid"
     | "navigation-image-button"
     | "navigation-image-with-label-button"

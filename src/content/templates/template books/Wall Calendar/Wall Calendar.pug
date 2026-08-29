@@ -8,20 +8,84 @@ mixin pageWithJustPageSize
 	.A5Landscape&attributes(attributes)
 		block
 
-//- generates a translationGroup with any classes on the internal div
-mixin field-classOnChild(internalClass)
-	- requireOneArgument('field-classOnChild', arguments)
-	.bloom-translationGroup&attributes(attributes)
-		block
-		+editable(kLanguageForPrototypeOnly)(class=internalClass)
+//- ---------------------------------------------------------------------------------------
+//- Calendar content shared by the twelve month-grid pages the template ships and by the
+//- 'extra' Calendar Month Grid page that Add Page offers to other books.
+//- ---------------------------------------------------------------------------------------
 
-mixin image-largePage
-	- requireZeroArguments('image', arguments);
-	.bloom-canvas.bloom-has-canvas-element(style="opacity: 1; overflow: hidden;")
-		.bloom-canvas-element.bloom-backgroundImage(style="width:100%; height:100%;")
-			.bloom-imageContainer
-				img(src="placeHolder.png")
-		block
+-
+	var kCalendarColumnCount = 7;
+	var kCalendarDayRowCount = 6;
+	var kLine = { weight: 1, style: 'solid', color: '#000' };
+	var kNone = { weight: 0, style: 'none', color: '#000' };
+	var kNoEdgeV = { west: kNone, east: kNone };
+	var kNoEdgeH = { north: kNone, south: kNone };
+	//- The same grid tracks bloom-table's render() computes for the 'fill' and 'hug' tokens
+	//- (table-renderer.ts: 'fill' = minmax(60px,1fr), 'hug' = minmax(20px,max-content)),
+	//- authored inline so the page lays out with no JavaScript, e.g. in the Add Page
+	//- thumbnail and in publish previews.
+	var calendarGridStyle = 'grid-template-columns: ' + Array(kCalendarColumnCount).fill('minmax(60px,1fr)').join(' ') + '; grid-template-rows: minmax(20px,max-content) ' + Array(kCalendarDayRowCount).fill('minmax(20px,1fr)').join(' ') + ';';
+	var kCalendarRowHeights = 'hug,' + Array(kCalendarDayRowCount).fill('fill').join(',');
+	var kCalendarColumnWidths = Array(kCalendarColumnCount).fill('fill').join(',');
+	//- The five languages the month and weekday names ship in. English is first because
+	//- TranslationGroupManager clones the first bloom-editable of a group (and strips its
+	//- text) when it makes the empty slot for the book's own language.
+	var kCalendarSeedLanguages = ['en', 'fr', 'es', 'id', 'pt'];
+	//- KEEP IN STEP: the same two tables are in
+	//- src/BloomBrowserUI/bookEdit/calendarSetup/calendarSeedNames.ts (kMonthSeedNames and
+	//- kWeekdaySeedNames), which is what a grid built on a canvas seeds itself from. Change
+	//- one copy and you must change the other.
+	var kCalendarMonthNames = {
+		en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+		fr: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
+		es: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
+		id: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
+		pt: ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+	};
+	//- Sunday first. The front-end tooling rotates these groups into the user's chosen
+	//- first day of the week when it lays a page out.
+	var kCalendarWeekdayNames = {
+		en: ['Sun', 'Mon', 'Tues', 'Wed', 'Thur', 'Fri', 'Sat'],
+		fr: ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'],
+		es: ['dom.', 'lun.', 'mar.', 'mié.', 'jue.', 'vie.', 'sáb.'],
+		id: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+		pt: ['dom.', 'seg.', 'ter.', 'qua.', 'qui.', 'sex.', 'sáb.']
+	};
+	//- Two pages per month, in the order they appear in the book: the picture page first,
+	//- then the month grid. These ids never change, so a book keeps its page identities
+	//- across template updates.
+	var kCalendarPageIds = [
+		'1e319814-4ffe-4d3d-9cff-0f52fd604a2f', 'fcfd78d3-6241-44bf-91b6-a3686793aa79',
+		'b4bae54e-0e11-4401-b0ad-f304e2178fd4', '2c3e8591-1db7-402e-bb0d-97b53c4775c1',
+		'b56d0198-2924-4517-bbc5-a075bf8d4060', '0792efc9-c2f0-45a5-a006-e2fb6ee96e0d',
+		'34cac6fd-3334-411c-a39f-39dc59ecce4c', '4140948d-591d-4f95-809d-30ccf4ac6644',
+		'00e9557f-8271-4806-bd32-00648805bab7', '2e0f558d-38ab-4c37-87a9-40780535367f',
+		'9704ff79-2a83-4d3b-92aa-2ba47713da4d', '92339ece-bba8-4cd5-b515-10bfbb4181bc',
+		'12df1476-cc80-4aad-b9dc-9d7c8130270b', '4580edee-6a15-453c-a13a-3da46687956e',
+		'c808b74a-4954-4951-9511-d62ef128714a', '90732b60-ab0d-421e-9091-04886546d516',
+		'da5f4a80-2c35-49a0-9945-6f2e1b0b2a1d', '60467577-6307-45ae-b58b-910c6c37c11c',
+		'e983801b-16af-4805-ba05-f2d99222d83e', '11636178-e8b4-45c7-a1b9-1146e616eeb9',
+		'e881164f-db40-44f2-b293-5b489deab266', '0fec3094-84b2-4d59-b178-079cab29f6ce',
+		'c394e469-9302-4993-85ad-2e907b79bb44', '0a50672f-b6e9-430f-843a-3c2a780733af'
+	];
+
+//- One day cell. hasDayNumber says whether to write the day-number element at all: the
+//- Add Page grid leaves it out of the cells that fall outside its month, while the pages
+//- the template ships write an empty one in every cell for the tooling to fill in.
+mixin calendarDayCell(hasDayNumber, dayNumberText, isOutsideMonth)
+	.bloom-cell.calendarDayCell(class=(isOutsideMonth ? 'calendarUnusedDay' : null), data-content-type='text', data-pad='0')
+		.calendarDayCellContents
+			if hasDayNumber
+				.calendarDayNumber.CalendarDayNumber-style.bloom-styleable(tabindex='0')= dayNumberText
+			+field('auto').CalendarDayNote-style
+
+//- A translationGroup carrying the same name in each of the five seed languages. The
+//- book's own language gets an empty editable when the book is made, because
+//- TranslationGroupManager copies the first child and strips its text.
+mixin calendarSeededField(internalClass, namesByLanguage, index)
+	.bloom-translationGroup&attributes(attributes)
+		each languageCode in kCalendarSeedLanguages
+			+editable(languageCode)(class=internalClass)= namesByLanguage[languageCode][index]
 
 html
 	head
@@ -29,6 +93,9 @@ html
 		meta(name='bloomBookId', content='94AA1CB6-067C-45EB-A7E4-4D6496BA3D05')
 		meta(name='canChangeOriginalAcknowledgments', content='false')
 		meta(name='defaultBookletLayout', content='Calendar')
+		//- Binds every book made from this template to the front-end 'calendar' tooling
+		//- module, which lays out each month grid as the user arrives at its page.
+		meta(name='bookTooling', content='calendar')
 		meta(name='pageTemplateSource', content='Wall Calendar')
 		meta(name='experimental', content='true')
 		title Calendar
@@ -45,151 +112,157 @@ html
 			| .CalendarDayNumber-style { font-size: 14pt !important; font-style: italic !important; }
 			= '\n'
 			| .CalendarDayNote-style { font-size: 9pt !important; }
-		+script('jquery-1.10.1.js')
-		+script('configure.js')
 	body
 		+dataDiv
 			+bookVariable-title('en', 'Wall Calendar')
 			+bookVariable-title('tpi', 'Kalenda')
 			+bookVariable-title('id', 'Kalender')
 		+preview-outsideFrontCover
-		.bloom-page.calendarMonthTop.templateOnly.bloom-monolingual.bloom-content1.A5Landscape#3e049bff-797f-4a17-9c06-064955ae73cc(data-page='required spread-start')
-			.marginBox
-				+image-largePage
-				+field-classOnChild('calendarPictureCaption-style').calendarBelowBigPictureText
-					label.placeholder some nice text for the month
-		.bloom-page.calendarMonthBottom.templateOnly.bloom-monolingual.bloom-content1.A5Landscape#553165c2-be6c-4cf2-885e-d8f3159170fe(data-page='required')
-			.marginBox
-				p(class='centered calendarBottomPageHeader') January 2099
-				table
-					thead
-						tr
-							th Sun
-							th Mon
-							th Tue
-							th Wed
-							th Thu
-							th Fri
-							th Sat
-					tbody
-						tr
-							td
-								.bloom-content1 1
-							// NB: the actual contents are created by javascript. This first line has been modified to remind us what the javascript actually enters
-							td 2
-							td 3
-							td 4
-							td 5
-							td 6
-							td 7
-						tr
-							td 8
-							td 9
-							td 10
-							td 11
-							td 12
-							td 13
-							td 14
-						tr
-							td 15
-							td 16
-							td 17
-							td 18
-							td 19
-							td 20
-							td 21
-						tr
-							td 22
-							td 23
-							td 24
-							td 25
-							td 26
-							td 27
-							td 28
-						tr
-							td 29
-							td 30
-							td 31
-							td
-							td
-							td
-							td
 
-		//- A modern, static January 2027 month grid. Unlike the two templateOnly pages above,
-		//- this page's content is authored here rather than generated by configure.js, and it
-		//- is data-page='extra', so the wizard (which expects exactly its two templateOnly
-		//- pages) never sees it: BookStarter strips 'extra' pages at book creation, which
-		//- leaves this page reachable only through Add Page.
-		//- The whole page is one bloom-table (title row, weekday row, six day rows) sitting
-		//- directly in the marginBox as the origami container. All sizing is in 'fill'/'hug'
-		//- tokens, so the grid adapts to every landscape page size with no rescaling.
+		//- The twelve months. Every page is data-page='required', so BookStarter copies
+		//- all 24 of them into each new book. The grid pages ship unconfigured: no day
+		//- numbers, uniform borders, and an empty year. The 'calendar' tooling fills a
+		//- grid in when the user opens its page.
+		each monthIndex in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+			//- The picture page is a plain 'Just an Image' page (see standardPage-JustPicture
+			//- in standard-page-mixins.pug): one image filling the marginBox, inside an
+			//- origami container, so the user can change its layout like any other page.
+			//- calendarMonthTop is kept only for the publishing margins in wallCalendar.less.
+			+page('Just an Image')(id=kCalendarPageIds[monthIndex * 2], data-page='required spread-start').calendarMonthTop.customPage
+				.split-pane-component-inner
+					+image
+			//- data-bloom-no-auto-focus: opening the page must not put the cursor anywhere;
+			//- the automatic choice would land in the month name and pop its source bubble.
+			+page('Calendar Month Grid', 'A month of days in a grid.')(id=kCalendarPageIds[monthIndex * 2 + 1], data-page='required', data-bloom-no-auto-focus='true').calendarMonthGrid.customPage
+				//- An origami fold: the month name across the top, the grid of days
+				//- below. The title is ordinary page content, not part of the grid, so the user
+				//- can drag the divider, and so the grid is the same thing here as it is when it
+				//- sits on a canvas in some other book.
+				+stack
+					+upper(85)
+						.calendarTitleRowContents
+							+calendarSeededField('CalendarMonth-style', kCalendarMonthNames, monthIndex).calendarMonthName
+							//- The year and the first day of the week carry data-book attributes, so
+							//- Bloom's data-div keeps them in step across all twelve grid pages.
+							//- Neither one shows: they are plumbing the tooling reads, not text the
+							//- user could have typed.
+							.calendarYear(data-book='calendarYear', lang='*')
+							.calendarFirstDayOfWeek(data-book='calendarFirstDayOfWeek', lang='*')
+					+lower(85)
+						//- Unconfigured borders: every internal edge of the day grid is a line.
+						//- The tooling reopens the edges past the end of the month once it knows
+						//- the year and the first day of the week.
+						//- Each boundary names its painting side (west/east, north/south), the
+						//- same way computeEdgesV/computeEdgesH do, so every segment of one line
+						//- is painted by the same row or column of cells and the line stays
+						//- straight. See IEdgeV in layOutCalendarMonthPage.ts.
+						-
+							var unconfiguredEdgesV = [];
+							unconfiguredEdgesV.push(Array(kCalendarColumnCount + 1).fill(kNoEdgeV));
+							for (var unconfiguredRow = 0; unconfiguredRow < kCalendarDayRowCount; unconfiguredRow++) {
+								var unconfiguredRowBoundaries = [{ west: kNone, east: kLine }];
+								for (var unconfiguredVBoundary = 1; unconfiguredVBoundary <= kCalendarColumnCount; unconfiguredVBoundary++)
+									unconfiguredRowBoundaries.push({ west: kLine, east: kNone });
+								unconfiguredEdgesV.push(unconfiguredRowBoundaries);
+							}
+							var unconfiguredEdgesH = [];
+							unconfiguredEdgesH.push(Array(kCalendarColumnCount).fill(kNoEdgeH));
+							for (var unconfiguredBoundary = 0; unconfiguredBoundary <= kCalendarDayRowCount; unconfiguredBoundary++)
+								unconfiguredEdgesH.push(Array(kCalendarColumnCount).fill(unconfiguredBoundary === kCalendarDayRowCount ? { north: kLine, south: kNone } : { north: kNone, south: kLine }));
+						//- data-calendar-month is on the table, not on the page: the grid itself is
+						//- what is for a month, and a grid can also sit on a canvas in some other
+						//- book. The tooling reads it from here.
+						.bloom-table(data-calendar-month=String(monthIndex), data-column-widths=kCalendarColumnWidths, data-row-heights=kCalendarRowHeights, data-edges-v=unconfiguredEdgesV, data-edges-h=unconfiguredEdgesH, style=calendarGridStyle)
+							//- Weekday row, Sunday first.
+							each weekdayIndex in [0, 1, 2, 3, 4, 5, 6]
+								.bloom-cell(data-content-type='text')
+									+calendarSeededField('CalendarDayOfWeek-style', kCalendarWeekdayNames, weekdayIndex)
+							//- Six rows of seven day cells, all empty.
+							each dayCellIndex in Array(kCalendarColumnCount * kCalendarDayRowCount).fill(0)
+								+calendarDayCell(true, '', false)
+
+		//- A modern, static January 2027 month grid. Unlike the pages above, this one is
+		//- data-page='extra', so BookStarter strips it at book creation, which leaves it
+		//- reachable only through Add Page: it is what other books get when they insert a
+		//- calendar month.
+		//- The page is an origami fold: the title across the top, and below it one bloom-table
+		//- (weekday row, six day rows). All sizing is in 'fill'/'hug' tokens, so the grid adapts
+		//- to every landscape page size with no rescaling.
 		//- bloom-table keeps the borders on the table, not on the cells (see the header comment
 		//- of standardPage-AlphabetBook in standard-page-mixins.pug): data-edges-v is one entry
 		//- per table row, each with eight entries for the seven columns' left and right
 		//- boundaries (entry 0 is the left edge of the table, entry 7 the right); data-edges-h
-		//- is nine boundaries of seven entries, one per column (boundary 0 is the top of the
-		//- table, boundary 8 the bottom). Every entry is explicit, because an empty entry falls
+		//- is eight boundaries of seven entries, one per column (boundary 0 is the top of the
+		//- table, boundary 7 the bottom). Every entry is explicit, because an empty entry falls
 		//- back to the table default and would draw a line we don't want.
 		-
-			var kCalendarColumnCount = 7;
-			var kCalendarDayRowCount = 6;
 			//- January 2027 begins on a Friday (Sunday = 0) and has 31 days, so day 31 sits
 			//- alone in column 0 of the last row.
 			var kCalendarFirstWeekdayIndex = 5;
 			var kCalendarDaysInMonth = 31;
-			var kCalendarWeekdayNames = ['Sun', 'Mon', 'Tues', 'Wed', 'Thur', 'Fri', 'Sat'];
-			var kLine = { weight: 1, style: 'solid', color: '#000' };
-			var kNone = { weight: 0, style: 'none', color: '#000' };
 			var calendarDays = [];
 			for (var i = 0; i < kCalendarColumnCount * kCalendarDayRowCount; i++) {
 				var day = i - kCalendarFirstWeekdayIndex + 1;
-				calendarDays.push({ day: day, used: day >= 1 && day <= kCalendarDaysInMonth, trailing: day > kCalendarDaysInMonth });
+				calendarDays.push({ day: day, used: day >= 1 && day <= kCalendarDaysInMonth });
 			}
-			//- The title and weekday rows have no vertical lines at all; the day rows are fully
-			//- boxed, except that the last row draws only around day 31, leaving the unused
-			//- remainder of the month open (no interior lines and no perimeter).
+			//- The weekday row has no lines at all. The day area always gets its
+			//- full rectangular perimeter. An interior boundary is drawn only where a used
+			//- cell touches it, so the blanks before day 1 and the cells past day 31 have no
+			//- lines between them. Each boundary names its painting side so its segments all
+			//- come from the same cells and the line stays straight. This is the same rule
+			//- computeEdgesV/computeEdgesH apply in layOutCalendarMonthPage.ts, which
+			//- produces this page for January 2027.
+			var calendarCellIsUsed = function (cell) { return cell >= 0 && cell < calendarDays.length && calendarDays[cell].used; };
 			var calendarEdgesV = [];
-			calendarEdgesV.push(Array(kCalendarColumnCount + 1).fill(kNone));
-			calendarEdgesV.push(Array(kCalendarColumnCount + 1).fill(kNone));
-			for (var row = 0; row < kCalendarDayRowCount - 1; row++)
-				calendarEdgesV.push(Array(kCalendarColumnCount + 1).fill(kLine));
-			calendarEdgesV.push([kLine, kLine].concat(Array(kCalendarColumnCount - 1).fill(kNone)));
-			//- Horizontally: nothing above or below the title, then a line along the top of the
-			//- grid and between every pair of day rows; the bottom of the table is drawn only
-			//- under day 31.
+			calendarEdgesV.push(Array(kCalendarColumnCount + 1).fill(kNoEdgeV));
+			for (var row = 0; row < kCalendarDayRowCount; row++) {
+				var rowBoundaries = [];
+				for (var boundary = 0; boundary <= kCalendarColumnCount; boundary++) {
+					if (boundary === 0) {
+						rowBoundaries.push({ west: kNone, east: kLine });
+						continue;
+					}
+					var vDrawn = boundary === kCalendarColumnCount
+						|| calendarCellIsUsed(row * kCalendarColumnCount + boundary - 1)
+						|| calendarCellIsUsed(row * kCalendarColumnCount + boundary);
+					rowBoundaries.push({ west: vDrawn ? kLine : kNone, east: kNone });
+				}
+				calendarEdgesV.push(rowBoundaries);
+			}
 			var calendarEdgesH = [];
-			calendarEdgesH.push(Array(kCalendarColumnCount).fill(kNone));
-			calendarEdgesH.push(Array(kCalendarColumnCount).fill(kNone));
-			for (var boundary = 0; boundary < kCalendarDayRowCount; boundary++)
-				calendarEdgesH.push(Array(kCalendarColumnCount).fill(kLine));
-			calendarEdgesH.push([kLine].concat(Array(kCalendarColumnCount - 1).fill(kNone)));
-			//- The same grid tracks bloom-table's render() computes for these tokens
-			//- (table-renderer.ts: 'fill' = minmax(60px,1fr), 'hug' = minmax(20px,max-content)),
-			//- authored inline so the page lays out with no JavaScript, e.g. in the Add Page
-			//- thumbnail and in publish previews.
-			var calendarGridStyle = 'grid-template-columns: ' + Array(kCalendarColumnCount).fill('minmax(60px,1fr)').join(' ') + '; grid-template-rows: minmax(20px,max-content) minmax(20px,max-content) ' + Array(kCalendarDayRowCount).fill('minmax(20px,1fr)').join(' ') + ';';
-		+page('Calendar Month Grid', 'A month of days in a grid.')(data-page='extra').calendarMonthGrid#adff8f90-4b9b-4a32-92b5-f138c4fc4ffb
-			.split-pane-component-inner
-				.bloom-table(data-column-widths=Array(kCalendarColumnCount).fill('fill').join(','), data-row-heights='hug,hug,' + Array(kCalendarDayRowCount).fill('fill').join(','), data-edges-v=calendarEdgesV, data-edges-h=calendarEdgesH, style=calendarGridStyle)
-					//- Title row: one cell spanning all seven columns, followed by the six
-					//- 'skip' cells the span model requires (bloom-table.css hides them).
-					.bloom-cell(data-content-type='text', data-span-x='7', style='--span-x: 7')
+			calendarEdgesH.push(Array(kCalendarColumnCount).fill(kNoEdgeH));
+			for (var hBoundary = 0; hBoundary <= kCalendarDayRowCount; hBoundary++) {
+				if (hBoundary === kCalendarDayRowCount) {
+					calendarEdgesH.push(Array(kCalendarColumnCount).fill({ north: kLine, south: kNone }));
+					continue;
+				}
+				var columns = [];
+				for (var column = 0; column < kCalendarColumnCount; column++) {
+					var hDrawn = hBoundary === 0
+						|| calendarCellIsUsed((hBoundary - 1) * kCalendarColumnCount + column)
+						|| calendarCellIsUsed(hBoundary * kCalendarColumnCount + column);
+					columns.push({ north: kNone, south: hDrawn ? kLine : kNone });
+				}
+				calendarEdgesH.push(columns);
+			}
+		+page('Calendar Month Grid', 'A month of days in a grid.')(data-page='extra', data-bloom-no-auto-focus='true').calendarMonthGrid.customPage#adff8f90-4b9b-4a32-92b5-f138c4fc4ffb
+			+stack
+				+upper(85)
+					.calendarTitleRowContents
 						+field-withEnglishText.CalendarMonth-style
 							| January 2027
-					each column in Array(kCalendarColumnCount - 1).fill(0)
-						.bloom-cell.bloom-skip
-					//- Weekday row
-					each weekdayName in kCalendarWeekdayNames
-						.bloom-cell(data-content-type='text')
-							+field-withEnglishText.CalendarDayOfWeek-style
-								= weekdayName
-					//- Six rows of day cells. The day number is a plain, non-editable div, never
-					//- inside a translationGroup, so TranslationGroupManager leaves it alone;
-					//- bloom-styleable and tabindex are what let the user open the Format dialog
-					//- on it. The notes field below it replaces the old <textarea>.
-					each entry in calendarDays
-						.bloom-cell.calendarDayCell(class=(entry.trailing ? 'calendarUnusedDay' : null), data-content-type='text', data-pad='0')
-							.calendarDayCellContents
-								if entry.used
-									.calendarDayNumber.CalendarDayNumber-style.bloom-styleable(tabindex='0')= entry.day
-								+field('auto').CalendarDayNote-style
+				+lower(85)
+					//- This grid is January, so the tooling can lay it out again for whatever year
+					//- the book it is added to is for.
+					.bloom-table(data-calendar-month='0', data-column-widths=kCalendarColumnWidths, data-row-heights=kCalendarRowHeights, data-edges-v=calendarEdgesV, data-edges-h=calendarEdgesH, style=calendarGridStyle)
+						//- Weekday row
+						each weekdayName in kCalendarWeekdayNames.en
+							.bloom-cell(data-content-type='text')
+								+field-withEnglishText.CalendarDayOfWeek-style
+									= weekdayName
+						//- Six rows of day cells. The day number is a plain, non-editable div, never
+						//- inside a translationGroup, so TranslationGroupManager leaves it alone;
+						//- bloom-styleable and tabindex are what let the user open the Format dialog
+						//- on it. The notes field below it replaces the old <textarea>.
+						each entry in calendarDays
+							+calendarDayCell(entry.used, entry.day, !entry.used)

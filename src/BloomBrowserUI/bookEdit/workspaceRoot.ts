@@ -62,6 +62,8 @@ export interface IWorkspaceExports {
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
     showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
     openAiImageEditor(target: IAiImageEditorTarget): void;
+    notifyBookToolingPageOpened(pageElement: HTMLElement): Promise<void>;
+    notifyBookToolingPageSaved(pageElement: HTMLElement): void;
 }
 
 export function SayHello() {
@@ -103,6 +105,15 @@ import { showImageGalleryDialog as doShowImageGalleryDialog } from "../react_com
 // page reloads that iframe and would strand the overlay; C# calls this once it has saved.
 // See aiImageEditorOverlay.ts.
 import { openAiImageEditor } from "./aiImageEditor/aiImageEditorOverlay";
+// The book tooling registry and its modules. The page iframe calls the two notify functions
+// as each page loads and as each page is saved; importing the calendar module here is what
+// puts it in the registry, so a book whose bookTooling meta says "calendar" finds it.
+import {
+    notifyBookToolingPageOpened,
+    notifyBookToolingPageSaved,
+} from "./bookTooling/bookToolingRegistry";
+import "./calendarSetup/calendarTooling";
+export { notifyBookToolingPageOpened, notifyBookToolingPageSaved };
 import type { IAiImageEditorTarget } from "./aiImageEditor/aiImageEditorShared";
 export { openAiImageEditor };
 import { renderRoot } from "../utils/reactRender";
@@ -481,6 +492,8 @@ interface WorkspaceBundleApi {
     showAdjustTimingsDialogFromWorkspaceRoot: typeof showAdjustTimingsDialogFromWorkspaceRoot;
     showImageGalleryDialog: typeof showImageGalleryDialog;
     openAiImageEditor: typeof openAiImageEditor;
+    notifyBookToolingPageOpened: typeof notifyBookToolingPageOpened;
+    notifyBookToolingPageSaved: typeof notifyBookToolingPageSaved;
     setZoom: typeof setZoom;
     getToolboxBundleExports: typeof getToolboxBundleExports;
     getEditablePageBundleExports: typeof getEditablePageBundleExports;
@@ -528,6 +541,8 @@ window.workspaceBundle = {
         showAdjustTimingsDialogFromWorkspaceRoot,
     showImageGalleryDialog,
     openAiImageEditor,
+    notifyBookToolingPageOpened,
+    notifyBookToolingPageSaved,
     setZoom,
     // re-exported cross-frame helpers
     getToolboxBundleExports,

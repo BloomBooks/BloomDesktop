@@ -1026,3 +1026,78 @@ The buffer would be absent if the marginBox had a border or the page has a backg
 // bloom-table-edit.css, loaded only in the editing context by tableEditing.ts.
 @import (inline)
     "../../BloomBrowserUI/node_modules/bloom-table/dist/bloom-table.css";
+
+// The contents of a calendar month grid: the weekday header cells and the day cells, which
+// is all the grid is. Everything about the grid itself -- track sizes, borders -- comes from
+// the table's data-* attributes, so these rules only cover the contents we author inside the
+// cells. They live here rather than in the Wall Calendar template's own stylesheet because a
+// month grid can also be put on a canvas in any book. The month name and the year are not
+// part of the grid, so their rules stay with the template that puts them on a page.
+
+/*A weekday header cell holds its translationGroup directly. When every visible editable
+	in it is empty, the group would shrink to zero width inside the cell's flex row, and
+	there would be nothing to click. Make it fill the cell. The title and day cells are
+	unaffected: their groups sit inside wrapper divs, not directly in the cell.
+*/
+.bloom-table[data-calendar-month] > .bloom-cell > .bloom-translationGroup {
+    width: 100%;
+}
+
+/*A day cell holds a day number and a notes field. The notes field fills the whole cell, so
+	the user can type anywhere in it; the number sits on top of it in the corner, and the
+	first line of the notes is indented to start beside the number, at the top.
+*/
+.calendarDayCellContents {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    /*Breathing room for the typed notes. The day number is position:absolute, so this
+		padding moves only the notes text; the number keeps its corner position (an
+		absolutely positioned child is placed relative to the padding box, not the
+		content box).
+	*/
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+/*On a grid that the calendar tooling has not laid out yet, every day-number element is
+	empty. Give it a size anyway, so the user can click it to open the Format dialog and so
+	the notes field's first-line indent still has something to sit beside.
+*/
+.calendarDayNumber:empty {
+    min-width: 1.5em;
+    min-height: 1em;
+}
+
+.calendarDayNumber {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    padding: 1px 0 0 4px;
+    text-align: left;
+}
+
+/*A date of the previous or the next month, which the grid shows only when the user asks for
+	it. It is a real date of a real day, but not of this month, so its number shows faintly, to
+	keep this month's own dates the ones the eye lands on.
+*/
+.calendarDayCell.calendarNeighborDay .calendarDayNumber {
+    opacity: 0.35;
+}
+
+.calendarDayCell .bloom-translationGroup {
+    width: 100%;
+    height: 100%;
+}
+
+.calendarDayCell .bloom-editable > p:first-child {
+    text-indent: 2.3em;
+}
+
+/*Defeat bloom-table's default of centering a cell's single child: the day cell's contents
+	should fill it.
+*/
+.calendarDayCell {
+    align-items: stretch;
+}

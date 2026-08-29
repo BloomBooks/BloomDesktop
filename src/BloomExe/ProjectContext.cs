@@ -211,6 +211,7 @@ namespace Bloom
                                 typeof(RabPublishApi),
                                 typeof(AccessibilityCheckApi),
                                 typeof(CollectionSettingsApi),
+                                typeof(CalendarSettingsApi),
                                 typeof(SubscriptionSettingsEditorApi),
                                 typeof(E2eTestingApi),
                                 typeof(FeatureStatusApi),
@@ -484,6 +485,7 @@ namespace Bloom
             _scope.Resolve<PublishEpubApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<AccessibilityCheckApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<CalendarSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope
                 .Resolve<SubscriptionSettingsEditorApi>()
                 .RegisterWithApiHandler(server.ApiHandler);

@@ -374,6 +374,8 @@ export default class StyleEditor {
                 return "Big Words";
             case "CalendarMonth":
                 return "Calendar Month";
+            case "CalendarYear":
+                return "Calendar Year";
             case "CalendarDayOfWeek":
                 return "Calendar Day of Week";
             case "CalendarDayNumber":

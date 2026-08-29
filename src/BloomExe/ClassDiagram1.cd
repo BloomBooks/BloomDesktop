@@ -532,20 +532,6 @@
 	  <FileName>CollectionTab\ListHeader.cs</FileName>
 	</TypeIdentifier>
   </Class>
-  <Class Name="Bloom.Edit.ConfigurationDialog" Collapsed="true">
-	<Position X="36.5" Y="1.5" Width="1.5" />
-	<TypeIdentifier>
-	  <HashCode>AAAAQAAAECAIAAAAJACCAEACAIAAAAAAAAQAAQAAABQ=</HashCode>
-	  <FileName>Edit\ConfigurationDialog.cs</FileName>
-	</TypeIdentifier>
-  </Class>
-  <Class Name="Bloom.Edit.Configurator" Collapsed="true">
-	<Position X="38.25" Y="1.5" Width="1.5" />
-	<TypeIdentifier>
-	  <HashCode>EAAACAAAAAACAAAAAMQAAAAIACogQAAAAAAAAAEQAQA=</HashCode>
-	  <FileName>Edit\Configurator.cs</FileName>
-	</TypeIdentifier>
-  </Class>
   <Class Name="Bloom.Edit.ConfirmRemovePageDialog" Collapsed="true">
 	<Position X="40" Y="1.5" Width="1.5" />
 	<TypeIdentifier>
