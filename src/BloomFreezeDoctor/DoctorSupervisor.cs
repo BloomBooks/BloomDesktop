@@ -620,11 +620,14 @@ public sealed class DoctorSupervisor : IDisposable
     /// outcome - offline, over the daily cap, or another process is sending it - and it must not be
     /// reported to a user as a failure.
     /// </param>
-    /// <param name="WasGatedOut">True when another process was already draining, so we sent nothing.</param>
+    /// <param name="AnotherProcessIsSending">
+    /// True when another Doctor process was already draining, so we sent nothing and left the queue to it.
+    /// See <see cref="DrainOutcome"/>, whose field of the same name this carries up.
+    /// </param>
     private readonly record struct GatherOutcome(
         string? IssueId,
         bool StillQueued,
-        bool WasGatedOut
+        bool AnotherProcessIsSending
     );
 
     private async Task<GatherOutcome> GatherFileAndRecordAsync(
@@ -703,17 +706,21 @@ public sealed class DoctorSupervisor : IDisposable
             // automation run. Not queued, and not a failure either - but somebody has to be TOLD, or a
             // successful gather is indistinguishable from the Doctor having done nothing at all.
             ReportSavedWithoutFiling?.Invoke(this, bundle.Directory);
-            return new GatherOutcome(null, StillQueued: false, WasGatedOut: false);
+            return new GatherOutcome(null, StillQueued: false, AnotherProcessIsSending: false);
         }
 
-        var gatedOut = await DrainAsync(cancellation).ConfigureAwait(false);
+        var anotherProcessIsSending = await DrainAsync(cancellation).ConfigureAwait(false);
         var issueId = _outbox
             .List()
             .FirstOrDefault(b => b.Directory == bundle.Directory)
             ?.Metadata.IssueId;
         // Deliberately returned rather than stashed in a field: several gathers can be in flight at once
         // (one per watched Bloom), so a field here would be read by the wrong caller.
-        return new GatherOutcome(issueId, StillQueued: issueId == null, WasGatedOut: gatedOut);
+        return new GatherOutcome(
+            issueId,
+            StillQueued: issueId == null,
+            AnotherProcessIsSending: anotherProcessIsSending
+        );
     }
 
     /// <summary>
@@ -1081,9 +1088,10 @@ public sealed class DoctorSupervisor : IDisposable
     private readonly SemaphoreSlim _drainGate = new(1, 1);
 
     /// <summary>
-    /// Drains, and says whether another process was already doing it. See the note on
-    /// <see cref="DrainOutcome"/> for why "nothing filed" and "somebody else is filing it" must not be
-    /// the same answer.
+    /// Drains. **Returns true when another Doctor process was already sending the queue**, not when this
+    /// drain succeeded - so read the result as an answer to "did somebody else have it?". See the note on
+    /// <see cref="DrainOutcome"/> for why "nothing filed" and "somebody else is filing it" must not be the
+    /// same answer.
     /// </summary>
     private async Task<bool> DrainAsync(CancellationToken cancellation)
     {
@@ -1104,11 +1112,11 @@ public sealed class DoctorSupervisor : IDisposable
                 .ConfigureAwait(false);
             if (outcome.Filed > 0)
                 Note($"filed {outcome.Filed} report(s)");
-            else if (outcome.GatedOut)
+            else if (outcome.AnotherProcessIsSending)
                 Note("another Freeze Doctor is sending the queued reports");
             RaiseStatusChanged();
             ConsiderExiting();
-            return outcome.GatedOut;
+            return outcome.AnotherProcessIsSending;
         }
         catch (OperationCanceledException) { }
         catch (Exception e)

@@ -203,7 +203,7 @@ internal static class Program
         // Distinguish the two, or support reads "filed 0" and concludes something is broken when in fact
         // a Doctor is running and already sending these.
         Console.WriteLine(
-            outcome.GatedOut
+            outcome.AnotherProcessIsSending
                 ? "another Freeze Doctor is already sending these; nothing done here"
                 : $"filed {outcome.Filed}"
         );
