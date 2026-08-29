@@ -47,6 +47,17 @@ Important:
 - The VS Code bash terminals in this workspace have shown bracketed-paste/shell-integration problems where ad hoc WMIC commands appear to hang or are injected incorrectly. The checked-in Node wrappers avoid that by calling WMIC directly without going through shell redirection.
 - Only fall back to raw Windows commands if the checked-in wrappers themselves are broken and you are explicitly debugging them. If you do that, prefer `cmd /c` over bash redirection.
 
+### Keep this skill current
+
+This file is the team's accumulated knowledge about controlling Bloom from an agent, and it only
+stays useful if every agent that learns something feeds it back. When you hit a Bloom-control
+problem during automation — a state you couldn't explain, a helper that misled you, a sequence
+that wedges the app — and you work out what actually happened, **record it in this file in the
+same session**, in the style of the existing gotcha sections: symptom first, then cause, then
+the recovery and the prevention. If you ran out of time to diagnose it, log it as a papercut
+instead (see the papercut convention in TEAM-AGENTS.md) so someone can pick it up. Do not leave
+what you learned only in a chat transcript.
+
 ### Status
 
 ```bash
@@ -217,6 +228,90 @@ await evalJs(`fetch('/bloom/api/editView/jumpToPage',{method:'POST',body:'${page
 ```
 
 The edit-view page lives in the iframe named `page`; poll `document.getElementById('page').contentDocument.querySelector('.bloom-page').className` to confirm the layout class changed and the right page id is showing before you screenshot. Note this is the API-driven exception to the "drive via clicks" rule — use it for scripted batch operations (e.g. cycling every page size), not to fake a single user action you could click.
+
+## Wedged workspace states (all hit agent sessions disproportionately)
+
+### Tabs permanently disabled while Edit still works
+
+**Symptom:** Collections and Publish are greyed out and never come back; the Edit tab itself
+still edits fine. No dialog is visible. The process is alive and the HTTP API answers.
+
+**Cause (field-verified, root cause traced):** front-end dialogs POST
+`editView/setModalState` `true` when they open and `false` when they close, and C# keeps a
+**depth counter** (`EditingView.SetModalState`); navigation stays locked while it is above
+zero. A Vite full page reload — which every agent edit to a `.tsx` file can trigger — that
+lands while any dialog or MUI menu is open destroys the page before the `false` is posted, so
+the counter never comes back down. One diagnosed instance had the counter stuck at 4: four
+dialogs had died in reloads over one coding session.
+
+**Recovery (no restart needed):** post `false` until the tabs re-enable, from inside the app
+page (see the Runtime.evaluate pattern above):
+
+```js
+await fetch("/bloom/api/editView/setModalState", {
+  method: "POST", headers: { "Content-Type": "application/json" }, body: "false" });
+```
+
+Check `[role='tab']` elements' `aria-disabled` between posts; a handful of posts at most.
+
+**Prevention:** before editing front-end source (which can reload the page), close any dialog
+or menu your automation opened. If you know a reload happened while a dialog was up, run the
+recovery posts proactively.
+
+### Blank editor after a forced tab switch
+
+**Symptom:** the Edit tab is active but the editor area is blank and the app page URL shows
+`pageSrc=about%3Ablank`.
+
+**Known trigger (field-verified):** forcing the workspace tab with `switchWorkspaceTab.mjs`
+(or a direct tab click) at a moment the app would never offer it to a real user — e.g. jumping
+straight to Edit right after creating or selecting a book through the HTTP API. The tab click
+lands, but the Edit model never got a book through its normal entry, so it has nothing to load.
+
+**Prevention:** enter Edit the way the UI's own button does, not by clicking the tab:
+
+```js
+// from inside the app page (see the Runtime.evaluate pattern above):
+await fetch("/bloom/api/collections/selected-book?path=<url-encoded folderPath>&collection-id=<id>", { method: "POST" });
+await fetch("/bloom/api/app/makeOrEditBook", { method: "POST" });
+```
+
+`app/makeOrEditBook` raises the same `EditBookCommand` the "Edit this book" button raises, so
+the workspace switches itself once the book is actually ready. Reserve `switchWorkspaceTab.mjs`
+for moving between tabs that are already live and enabled.
+
+**Recovery:** this one does not clear itself. Restart Bloom through the launcher:
+
+```bash
+node .github/skills/bloom-automation/launcherControl.mjs --restart --wait-ready --json
+```
+
+### Spinner for ever after a book switch posted from the Edit tab
+
+**Symptom:** the editor area shows nothing but a spinner and never finishes. The CDP target
+list has shrunk to one page, there is no iframe named `page` any more, and that one page's URL
+still names the book you switched **away** from. The HTTP API answers normally.
+
+**Cause:** the two posts under "Blank editor after a forced tab switch" —
+`collections/selected-book` followed by `app/makeOrEditBook` — were sent while the Edit tab was
+already open on a different book. The Edit view tears its old book down and never gets the new
+one hooked up, so it waits for a book that is not coming.
+
+**Prevention:** never post that pair while the Edit tab is showing another book. Do one of two
+things first:
+
+- switch to the Collections tab (`switchWorkspaceTab.mjs --http-port <port> --tab collection`),
+  which is what a real user does before choosing another book; or
+- do the switch immediately after a launcher restart, while the app is still on Collections and
+  no edit view exists yet.
+
+**Recovery:** the tabs themselves may also be locked, and `setModalState` `false` posts free
+those (see the first wedged state above), but the edit view does not come back that way. It
+needs a launcher restart:
+
+```bash
+node .github/skills/bloom-automation/launcherControl.mjs --restart --wait-ready --json
+```
 
 ## Minimal Running Bloom Attach Workflow
 
@@ -435,7 +530,24 @@ These patterns were verified driving the real Bloom.exe WebView2 via `dev-browse
 - **Capture console errors** while exercising React UI: `page.on('console', m => { if (m.type()==='error') errors.push(m.text()); })` — the cheapest check for "multiple React"/hook/MUI problems.
 - **dev-browser script gotchas.** Scripts run in a QuickJS sandbox (no Node/`require`/`fs`). Keep them small and single-purpose; end by logging the state you need. Bump `--timeout` (e.g. 40–50) for multi-step scripts. Avoid stray bare expressions (e.g. a lone `window` line) — they can abort the script.
 - **After relinking/rebuilding a linked front-end dependency**, restart the whole `go.sh` session rather than relying on hot reload; otherwise the page runs the stale copy. A launcher `/restart` is *not* enough: it restarts Bloom.exe but the Vite dev server started by the first `go.sh` keeps running and keeps serving the module it transformed at startup (`curl http://localhost:<vitePort>/@id/<dep>` and grep for your change to confirm). Do not kill the Vite process on its own either, because that takes the launcher down with it and the control API disappears. Stop the session and start `./go.sh` again; the new session picks new Vite and control ports, so re-read `output/bloom-launcher.json`.
+- **Reach a submenu item sideways, never diagonally.** A menu built of MUI nested items opens
+  each submenu on hover, so a straight move from the parent item to an item inside its submenu
+  crosses the parent items below it; the submenu one of those opens then covers the point you
+  were aiming at, and the click lands in the wrong submenu with no sign anything went wrong.
+  Move horizontally into the submenu at the parent item's own height first, then down the
+  submenu. Re-read the item's rectangle after the sideways move.
+- **A hover-only affordance needs the pointer parked away first, with a pause.** Moving to
+  (10, 10), waiting about 300 ms, then moving onto the target with `{steps: 15}` makes the
+  enter/leave pair fire; moving straight there from wherever the pointer was leaves the button
+  hidden. It is still not certain: poll the button's computed `visibility` and repeat the whole
+  approach a few times before clicking.
 - **Locator coordinates are top-level, not frame-relative.** `locator.boundingBox()` on an element inside the page iframe already returns main-frame viewport coordinates, so `appPage.mouse.click(box.x + box.width/2, box.y + box.height/2)` lands on the element. Adding the iframe's own offset makes the click miss.
+  **`frame.evaluate(() => el.getBoundingClientRect())` is the opposite**: it gives frame-relative coordinates, which `page.mouse` then puts hundreds of pixels away from the element. Scraping a menu's rectangles that way and moving the mouse to them fails silently: the hover never lands, the submenu never opens, and the only sign is a paper count that stays at 1. Take every rectangle you intend to drive the mouse with from `locator.boundingBox()`.
+- **A page-level MUI menu lives in the page iframe, not the app page.** The calendar grid's
+  menu (`CalendarGridMenu.tsx`) runs as part of the page's own setup, so its portal lands in
+  the page frame's body. Locate its items through the frame named `page`
+  (`frame.locator("[role='menuitem']")`); the same query on the top-level page finds eight
+  empty menuitems belonging to the shell and then times out waiting for the one you named.
 
 ## Change Layout (adding a section to a custom page)
 

@@ -38,6 +38,7 @@ import {
     CanvasElementItemRegion,
     CanvasElementItemRow,
     CanvasElementLinkGridItem,
+    CanvasElementCalendarItem,
     CanvasElementTableItem,
     NavigationImageButtonPaletteItem,
     CanvasElementTextItem,
@@ -1195,6 +1196,17 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                                 }
                                             >
                                                 <CanvasElementTableItem />
+                                            </BloomTooltip>
+                                        )}
+                                        {isTableFeatureEnabled && (
+                                            <BloomTooltip
+                                                id="calendarPaletteItem"
+                                                placement="top-end"
+                                                tip={
+                                                    <Div l10nKey="EditTab.Toolbox.CanvasTool.Calendar"></Div>
+                                                }
+                                            >
+                                                <CanvasElementCalendarItem />
                                             </BloomTooltip>
                                         )}
                                     </CanvasElementItemRow>

@@ -278,7 +278,19 @@ jobs:
               if: ${{ !cancelled() && steps.setup_visual_regression.outcome == 'success' }}
               working-directory: src/BloomVisualRegressionTests
               shell: bash
-              run: pnpm test --reporter=default --reporter=junit --outputFile=../../output/Tests/visual-regression-junit.xml
+              run: pnpm run testScreenshots --reporter=default --reporter=junit --outputFile=../../output/Tests/visual-regression-junit.xml
+
+            # calendar.spec.ts lives in the same folder and reuses its Bloom-launching helper, but
+            # it compares no screenshots: it makes a Wall Calendar book and checks what the
+            # front-end calendar tooling does to it. Its own step, gated on the SETUP step rather
+            # than on the screenshot run, so the two report separately and a screenshot failure
+            # (or the intermittent hang above) does not hide a calendar failure.
+            - name: Run the Wall Calendar end-to-end test
+              id: calendar_e2e
+              if: ${{ !cancelled() && steps.setup_visual_regression.outcome == 'success' }}
+              working-directory: src/BloomVisualRegressionTests
+              shell: bash
+              run: pnpm run testCalendar --reporter=default --reporter=junit --outputFile=../../output/Tests/calendar-e2e-junit.xml
 
             # When the visual-regression step fails, the most useful clue is usually Bloom's own
             # log (it launches a real Bloom.exe and talks to it over HTTP). Bloom writes to

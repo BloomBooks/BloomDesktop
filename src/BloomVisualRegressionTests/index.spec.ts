@@ -1,5 +1,11 @@
-import { execFile, execFileSync, ChildProcess } from "child_process";
+import { execFileSync } from "child_process";
 import fetch from "node-fetch";
+import {
+    cleanupTempCollections,
+    getTempCollectionsRoot,
+    launchDedicatedBloom,
+    stopBloom,
+} from "./bloomInstance";
 import chalk from "chalk";
 import {
     Browser,
@@ -11,7 +17,6 @@ import {
 import { afterAll, beforeAll, describe, test } from "vitest";
 import { argosScreenshot } from "@argos-ci/playwright";
 import * as fs from "fs";
-import * as os from "os";
 import { PNG } from "pngjs";
 import Pixelmatch from "pixelmatch";
 import * as Path from "path";
@@ -27,26 +32,6 @@ let bloomOrigin = "http://localhost:8089";
 // the "accept the new render" workflow needs a stable path), so the two are decoupled: Bloom operates
 // on the temp copy (see toTempBookFolder); screenshots are read/written in the repo copy.
 const repoCollectionsRoot = Path.join(process.cwd(), "collections");
-let tempCollectionsRoot: string | null = null;
-// The dedicated Bloom we launch, kept so we can shut it down afterwards.
-let bloomProcess: ChildProcess | null = null;
-// Everything Bloom writes to stdout/stderr, kept so that when a launch fails (Bloom crashed, or its
-// server never came up) we can report WHY instead of an opaque "did not open within 90s" timeout.
-// Capped so a chatty-but-healthy Bloom can't grow this unbounded.
-let bloomOutput = "";
-const MAX_BLOOM_OUTPUT = 20000;
-function recordBloomOutput(chunk: string) {
-    bloomOutput = (bloomOutput + chunk).slice(-MAX_BLOOM_OUTPUT);
-}
-// Set if the Bloom process we spawned exits before it starts serving our collection. Distinguishes a
-// crash-on-startup (fail fast with the exit code) from a still-running-but-not-ready poll.
-let bloomExit: { code: number | null; signal: NodeJS.Signals | null } | null =
-    null;
-// The PID of the Bloom actually serving our temp collection. Bloom can relaunch into a new process
-// after startup, so the process we spawned is not necessarily the one serving — killing only the
-// spawned PID left orphaned Blooms holding the temp folder open. We read the real PID from
-// instanceInfo and kill that too.
-let bloomServingPid: number | null = null;
 
 // How many times we will load a page looking for a render that is complete enough to screenshot.
 // More than one because the first request can catch Bloom still busy with the book; bounded
@@ -175,7 +160,13 @@ describe("All books", () => {
     let context: BrowserContext;
 
     beforeAll(async () => {
-        await launchDedicatedBloom();
+        bloomOrigin = (
+            await launchDedicatedBloom({
+                tempFolderPrefix: "bloom-vr-",
+                collectionName: "basic",
+                populate: populateTempCollections,
+            })
+        ).origin;
         browser = await chromium.launch();
         context = await browser.newContext();
         page = await context.newPage();
@@ -659,65 +650,16 @@ function writeDirectionalDiff(reference: PNG, current: PNG, diffPath: string) {
     fs.writeFileSync(diffPath, PNG.sync.write(out) as Uint8Array);
 }
 
-// Ports Bloom uses: it takes the next free block starting at 8089 (8089, 8092, 8095, ...). We probe
-// these to find the port our launched instance opened on. A developer's own Bloom may also be on one
-// of these ports, so we match on the open collection folder (below) rather than assuming a port.
-const CANDIDATE_PORTS = [8089, 8092, 8095, 8098, 8101, 8104];
-
 // Map a repo book folder to the corresponding folder in the temp copy that Bloom actually has open.
 // selectBook must point Bloom at the temp copy; screenshots stay under the repo book folder.
 function toTempBookFolder(repoBookFolder: string): string {
-    if (!tempCollectionsRoot)
+    const tempRoot = getTempCollectionsRoot();
+    if (!tempRoot)
         throw new Error("Temp collection copy has not been created yet");
     return Path.join(
-        tempCollectionsRoot,
+        tempRoot,
         Path.relative(repoCollectionsRoot, repoBookFolder),
     );
-}
-
-// Resolve a path to its canonical on-disk form. On Windows this is essential because os.tmpdir()
-// returns an 8.3 short path (e.g. C:\Users\JOHNTH~1\...) while Bloom reports the long form
-// (C:\Users\JohnThomson\...); realpathSync.native expands the short name and fixes casing so the two
-// actually compare equal. Falls back to Path.resolve if the path does not exist yet.
-function canonicalPath(p: string): string {
-    try {
-        return fs.realpathSync.native(p);
-    } catch (e) {
-        return Path.resolve(p);
-    }
-}
-
-// Windows paths compare case-insensitively; canonicalize (see above) then lowercase before comparing.
-function samePath(a: string, b: string): boolean {
-    return canonicalPath(a).toLowerCase() === canonicalPath(b).toLowerCase();
-}
-
-// Return the origin (e.g. "http://localhost:8092") of the running Bloom whose open editable
-// collection is wantFolder, or null if none is found yet. Matching the collection folder (rather
-// than just the collection name "basic") is what distinguishes our temp-copy instance from a Bloom
-// the developer may already have open on the repo copy.
-async function findBloomServingCollection(
-    wantFolder: string,
-): Promise<{ origin: string; processId?: number } | null> {
-    for (const port of CANDIDATE_PORTS) {
-        const origin = `http://localhost:${port}`;
-        try {
-            const r = await fetch(`${origin}/bloom/api/common/instanceInfo`);
-            if (!r.ok) continue;
-            const info = (await r.json()) as {
-                editableCollectionFolder?: string;
-                processId?: number;
-            };
-            if (
-                info.editableCollectionFolder &&
-                samePath(info.editableCollectionFolder, wantFolder)
-            )
-                return { origin, processId: info.processId };
-        } catch (e) {
-            // Nothing responding on that port; keep looking.
-        }
-    }
-    return null;
 }
 
 // Populate the throwaway temp collection that Bloom will open. By default we export the *committed*
@@ -808,178 +750,4 @@ function warnIfWorkingTreeBookChanges() {
     } catch (e) {
         // best-effort; a warning is not worth failing the run over
     }
-}
-
-// Populate a throwaway temp collection (committed HEAD by default; see populateTempCollections) and
-// launch a dedicated Bloom on it, then wait until that instance is serving it. We always launch our
-// own (rather than reusing a developer's Bloom) so the run is deterministic and never touches the
-// repo collection.
-async function launchDedicatedBloom() {
-    // Canonicalize immediately: os.tmpdir() is an 8.3 short path on Windows, but Bloom reports the
-    // long form, so we normalize here (and in samePath) to make the discovery match work.
-    tempCollectionsRoot = canonicalPath(
-        fs.mkdtempSync(Path.join(os.tmpdir(), "bloom-vr-")),
-    );
-    populateTempCollections(tempCollectionsRoot);
-    // Backstop: tidy up even if the run is aborted (e.g. by an unhandled rejection) before afterAll.
-    process.once("exit", cleanupOnExit);
-
-    const collection = Path.join(
-        tempCollectionsRoot,
-        "basic",
-        "basic.bloomCollection",
-    );
-    // The exe lands in a config/platform-specific folder depending on the build; try the known
-    // locations. Release is included because CI runs the suite against Release builds. Debug is
-    // listed first for the common local (go.sh) case; a clean CI checkout only has the config it built.
-    const exeCandidates = [
-        "../../output/Debug/x64/Bloom.exe",
-        "../../output/Debug/AnyCPU/Bloom.exe",
-        "../../output/Debug/Bloom.exe",
-        "../../output/Release/x64/Bloom.exe",
-        "../../output/Release/AnyCPU/Bloom.exe",
-        "../../output/Release/Bloom.exe",
-    ];
-    const exe = exeCandidates.find((c) => fs.existsSync(c));
-    if (!exe) {
-        throw new Error(
-            `Could not find a built Bloom.exe (looked in: ${exeCandidates.join(", ")}). ` +
-                `Build Bloom, then re-run.`,
-        );
-    }
-    console.log(`Launching ${exe} on ${collection}`);
-    // --e2e: skip the DEBUG "Attach debugger now" prompt and suppress modal error dialogs so a
-    // Bloom problem fails the test instead of hanging the run. --automation: allow this instance to
-    // run alongside a Bloom the developer already has open (bypasses the single-instance token).
-    bloomProcess = execFile(exe, [collection, "--e2e", "--automation"]);
-    // Capture Bloom's output and watch for an early exit. Without this a launch failure (crash on
-    // startup, missing WebView2 runtime, first-run dialog) is invisible: the poll below just runs
-    // out the full 90s and reports "seen: none" with no clue why. Echo to our own stderr too so the
-    // CI step log shows Bloom's startup output inline. execFile (no stdio:'ignore') gives us pipes.
-    bloomProcess.stdout?.on("data", (d) => {
-        const s = d.toString();
-        recordBloomOutput(s);
-        process.stderr.write(`[bloom stdout] ${s}`);
-    });
-    bloomProcess.stderr?.on("data", (d) => {
-        const s = d.toString();
-        recordBloomOutput(s);
-        process.stderr.write(`[bloom stderr] ${s}`);
-    });
-    // 'error' fires when the exe can't even be spawned (e.g. not found / not executable).
-    bloomProcess.on("error", (err) =>
-        recordBloomOutput(`\n[spawn error] ${err.message}\n`),
-    );
-    bloomProcess.on("exit", (code, signal) => {
-        bloomExit = { code, signal };
-    });
-
-    // Discover which port our instance opened on by matching the collection folder it has open.
-    const wantFolder = Path.join(tempCollectionsRoot, "basic");
-    const startTime = Date.now();
-    while (Date.now() - startTime < 90000) {
-        const match = await findBloomServingCollection(wantFolder);
-        if (match) {
-            bloomOrigin = match.origin;
-            bloomServingPid = match.processId ?? null;
-            console.log(
-                `Dedicated Bloom is ready at ${bloomOrigin} (pid ${bloomServingPid ?? "?"})`,
-            );
-            return;
-        }
-        // Fail fast if Bloom died on startup instead of waiting out the full timeout: the exit code
-        // plus captured output tells us it crashed rather than that discovery merely couldn't see it.
-        if (bloomExit) {
-            throw new Error(
-                `The dedicated Bloom exited before serving the temp collection ` +
-                    `(code ${bloomExit.code}, signal ${bloomExit.signal}).\n` +
-                    `  exe: ${exe}\n` +
-                    `  wanted: ${wantFolder}\n` +
-                    formatBloomOutput(),
-            );
-        }
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-    }
-    // Timed out: report which instances we could see so a mismatch is diagnosable rather than opaque.
-    const seen: string[] = [];
-    for (const port of CANDIDATE_PORTS) {
-        try {
-            const r = await fetch(
-                `http://localhost:${port}/bloom/api/common/instanceInfo`,
-            );
-            if (!r.ok) continue;
-            const info = (await r.json()) as {
-                editableCollectionFolder?: string;
-            };
-            if (info.editableCollectionFolder)
-                seen.push(`${port} -> ${info.editableCollectionFolder}`);
-        } catch (e) {
-            // nothing on this port
-        }
-    }
-    throw new Error(
-        `The dedicated Bloom did not open the temp collection within 90s.\n` +
-            `  exe: ${exe}\n` +
-            `  wanted: ${wantFolder}\n` +
-            `  still running: ${bloomExit ? "no (already exited)" : "yes"}\n` +
-            `  Bloom instances seen: ${seen.length ? seen.join("; ") : "none"}\n` +
-            formatBloomOutput(),
-    );
-}
-
-// Render the tail of Bloom's captured stdout/stderr for inclusion in a launch-failure error, so the
-// CI log shows what Bloom actually said. Kept separate so both failure paths format it identically.
-function formatBloomOutput(): string {
-    const trimmed = bloomOutput.trim();
-    if (!trimmed) return `  Bloom output: (none captured)`;
-    return `  Bloom output (last ${MAX_BLOOM_OUTPUT} chars):\n${trimmed}`;
-}
-
-// Kill the dedicated Bloom we launched, along with its WebView2 child processes. We kill both the
-// PID we spawned and the PID actually serving our collection: Bloom can relaunch into a new process
-// after startup, so those can differ, and killing only the spawned one left an orphaned Bloom
-// holding the temp folder open (which then failed to delete). Idempotent.
-function stopBloom() {
-    const pids = [bloomProcess?.pid, bloomServingPid].filter(
-        (p): p is number => typeof p === "number",
-    );
-    bloomProcess = null;
-    bloomServingPid = null;
-    for (const pid of pids) {
-        try {
-            if (process.platform === "win32")
-                // /T kills the whole tree (Bloom spawns WebView2 child processes); /F forces it.
-                execFileSync("taskkill", ["/pid", String(pid), "/t", "/f"], {
-                    stdio: "ignore",
-                });
-            else process.kill(pid, "SIGTERM");
-        } catch (e) {
-            // Already gone; nothing to do.
-        }
-    }
-}
-
-// Delete the throwaway collection copy. Bloom may release file handles slightly after it dies, so
-// let rmSync retry a few times. Idempotent.
-function cleanupTempCollections() {
-    const dir = tempCollectionsRoot;
-    tempCollectionsRoot = null;
-    if (!dir) return;
-    try {
-        fs.rmSync(dir, {
-            recursive: true,
-            force: true,
-            maxRetries: 20,
-            retryDelay: 500,
-        });
-    } catch (e) {
-        console.warn(`Could not remove temp collection copy at ${dir}: ${e}`);
-    }
-}
-
-// Synchronous last-resort cleanup for the process 'exit' event (afterAll may not run if the run is
-// aborted). Both helpers are synchronous, as an 'exit' handler requires.
-function cleanupOnExit() {
-    stopBloom();
-    cleanupTempCollections();
 }

@@ -79,6 +79,15 @@ export const inferCanvasElementType = (
         return "rectangle";
     }
 
+    // A calendar month grid is a table too, so it has to be recognised before the
+    // plain-table test below, which would otherwise claim it.
+    if (
+        canvasElement.querySelector(".bloom-table[data-calendar-month]") !==
+        null
+    ) {
+        return "calendar";
+    }
+
     // Test for a table before the image and text tests below: a cell can hold a
     // bloom-canvas or a translationGroup, and those would otherwise win.
     if (canvasElement.getElementsByClassName("bloom-table").length > 0) {

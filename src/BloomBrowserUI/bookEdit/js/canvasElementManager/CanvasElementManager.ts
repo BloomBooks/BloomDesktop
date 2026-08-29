@@ -787,8 +787,14 @@ export class CanvasElementManager {
                     }
                 }
             });
-        } else {
-            // Focus something!
+        } else if (
+            !document
+                .getElementsByClassName("bloom-page")[0]
+                ?.hasAttribute("data-bloom-no-auto-focus")
+        ) {
+            // Focus something! (Unless the page asks, with data-bloom-no-auto-focus, that
+            // nothing be focused automatically when it opens; the Wall Calendar's month-grid
+            // pages do, because focusing their month name pops its source bubble.)
             // BL-8073: if Comic Tool is open, this 'turnOnCanvasElementEditing()' method will get run.
             // If this particular page has no canvas elements, we can actually arrive here with the 'body'
             // as the document's activeElement. So we focus the first visible focusable element

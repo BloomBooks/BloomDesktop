@@ -380,6 +380,8 @@ namespace Bloom.web.controllers
                     return "Big Words";
                 case "CalendarMonth":
                     return "Calendar Month";
+                case "CalendarYear":
+                    return "Calendar Year";
                 case "CalendarDayOfWeek":
                     return "Calendar Day of Week";
                 case "CalendarDayNumber":

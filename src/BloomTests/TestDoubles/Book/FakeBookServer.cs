@@ -11,7 +11,7 @@ namespace BloomTests.TestDoubles.Book
     class FakeBookServer : BookServer
     {
         public FakeBookServer()
-            : base(null, null, null, null) { }
+            : base(null, null, null) { }
 
         /// <summary>
         /// A dumbed down implementation that is able to return a book with the BookInfo and set the book's FolderPath.

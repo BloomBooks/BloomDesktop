@@ -46,6 +46,31 @@ namespace Bloom
         // finished, overwriting the saved RestoreBounds before they are applied.
         private bool _finishedLoading;
 
+        // During an automation run (--automation, e.g. the Playwright suites) the window must
+        // not steal the user's keyboard focus when it is shown.
+        protected override bool ShowWithoutActivation => Program.StartupAutomation;
+
+        /// <summary>
+        /// The screen that an automation run (--automation) should open windows on: the one
+        /// chosen by the BLOOM_AUTOMATION_MONITOR environment variable (a 1-based index into
+        /// Screen.AllScreens), or the primary screen when the variable is absent or out of
+        /// range. Without this, Windows opens each test-launched window on whichever monitor
+        /// the user is currently working on.
+        /// </summary>
+        public static Screen GetAutomationScreen()
+        {
+            var setting = Environment.GetEnvironmentVariable("BLOOM_AUTOMATION_MONITOR");
+            if (
+                int.TryParse(setting, out var oneBasedIndex)
+                && oneBasedIndex >= 1
+                && oneBasedIndex <= Screen.AllScreens.Length
+            )
+            {
+                return Screen.AllScreens[oneBasedIndex - 1];
+            }
+            return Screen.PrimaryScreen;
+        }
+
         public Shell(
             Func<WorkspaceView> projectViewFactory,
             CollectionSettings collectionSettings,
@@ -397,11 +422,16 @@ namespace Bloom
         /// </summary>
         public void ReallyComeToFront()
         {
-            //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
-            TopMost = true;
-            Focus();
-            BringToFront();
-            TopMost = false;
+            // During an automation run, grabbing focus would yank the user's keyboard away
+            // from whatever they are doing on another monitor while tests run.
+            if (!Program.StartupAutomation)
+            {
+                //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
+                TopMost = true;
+                Focus();
+                BringToFront();
+                TopMost = false;
+            }
 
             _finishedLoading = true;
         }
@@ -415,7 +445,18 @@ namespace Bloom
             {
                 SuspendLayout();
 
-                if (Settings.Default.WindowSizeAndLocation == null)
+                if (Program.StartupAutomation)
+                {
+                    // An automation run must not open on whichever monitor the user is
+                    // currently working on, and must not disturb the saved window placement.
+                    // Pin the window to the automation screen (see GetAutomationScreen).
+                    StartPosition = FormStartPosition.Manual;
+                    WindowState = FormWindowState.Normal;
+                    Bounds = GetAutomationScreen().WorkingArea;
+                    // Maximizing keeps the window on the screen that contains its bounds.
+                    WindowState = FormWindowState.Maximized;
+                }
+                else if (Settings.Default.WindowSizeAndLocation == null)
                 {
                     StartPosition = FormStartPosition.WindowsDefaultLocation;
                     WindowState = FormWindowState.Maximized;
@@ -426,7 +467,11 @@ namespace Bloom
                 // This feature is not yet a normal part of Bloom, since we think just maximizing is more rice-farmer-friendly.
                 // However, we added the ability to remember this stuff at the request of the person making videos, who needs
                 // Bloom to open in the same place / size each time.
-                if (Settings.Default.MaximizeWindow == false)
+                if (Program.StartupAutomation)
+                {
+                    // Placement is already pinned above; leave the user's saved placement alone.
+                }
+                else if (Settings.Default.MaximizeWindow == false)
                 {
                     Settings.Default.WindowSizeAndLocation.InitializeForm(this);
                 }

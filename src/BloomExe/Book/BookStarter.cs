@@ -124,7 +124,7 @@ namespace Bloom.Book
             {
                 var msg = new StringBuilder();
                 msg.AppendLineFormat(
-                    "There should only be a single htm(l) file in each folder ({0}). [not counting configuration.html or ReadMe-*.htm]:",
+                    "There should only be a single htm(l) file in each folder ({0}). [not counting ReadMe-*.htm]:",
                     folder
                 );
                 foreach (var f in candidates)
@@ -141,17 +141,10 @@ namespace Bloom.Book
             // For both, "*.htm?" should work, but it doesn't return *.htm on Linux [Mono4 bug?].
             var candidates =
                 from x in Directory.GetFiles(folder, "*.htm")
-                where
-                    !(
-                        Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.htm")
-                        || IsPathToReadMeHtm(x)
-                    )
+                where !IsPathToReadMeHtm(x)
                 select x;
             if (!candidates.Any())
-                candidates =
-                    from x in Directory.GetFiles(folder, "*.html")
-                    where !(Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.html"))
-                    select x;
+                candidates = Directory.GetFiles(folder, "*.html");
             return candidates;
         }
 

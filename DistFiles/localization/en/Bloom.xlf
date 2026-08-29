@@ -1620,7 +1620,12 @@
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.CalendarMonth-style" translate="no">
         <source xml:lang="en">Calendar Month</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.CalendarMonth-style</note>
-        <note>Name of a style, shown in the Format dialog's style list. Used on the Wall Calendar template's month grid page for the title showing the month and year.</note>
+        <note>Name of a style, shown in the Format dialog's style list. Used on the Wall Calendar template's month grid page for the title showing the name of the month.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.CalendarYear-style" translate="no">
+        <source xml:lang="en">Calendar Year</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.CalendarYear-style</note>
+        <note>Name of a style, shown in the Format dialog's style list. Used on the Wall Calendar template's month grid page for the year, which sits beside the name of the month.</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Cover-Default-style" sil:dynamic="true">
         <source xml:lang="en">Cover Default</source>
@@ -6562,6 +6567,7 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Setup</source>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
         <note>This is the dialog used to set up the wall calendar</note>
+        <note>obsolete as of 6.6: the WinForms setup wizard was replaced by the Calendar Setup dialog, which uses CalendarSetup.Title.</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true">
         <source xml:lang="en">Put a possible answer here. Check it if it is correct.</source>

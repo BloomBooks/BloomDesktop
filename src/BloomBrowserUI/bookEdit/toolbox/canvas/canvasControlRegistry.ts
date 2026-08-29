@@ -67,6 +67,20 @@ import { MissingMetadataIcon } from "../../js/MissingMetadataIcon";
 import StyleEditor from "../../StyleEditor/StyleEditor";
 import { editLinkGrid } from "../../js/linkGrid";
 import {
+    getFirstDayOfWeekOfGrid,
+    getGridOfCanvasElement,
+    getGridShowsNeighborDays,
+    getMonthNamesToOffer,
+    getMonthOfGrid,
+    getWeekdayNamesToOffer,
+    getYearOfGrid,
+    getYearsToOffer,
+    setFirstDayOfWeekOfGrid,
+    setGridShowsNeighborDays,
+    setMonthOfGrid,
+    setYearOfGrid,
+} from "../../calendarSetup/calendarGridActions";
+import {
     copyAndPlaySoundAsync,
     makeDuplicateOfDragBubble,
     makeTargetForDraggable,
@@ -1135,6 +1149,127 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             editLinkGrid(linkGrid);
         },
     },
+    calendarMonth: {
+        kind: "command",
+        id: "calendarMonth",
+        l10nId: "EditTab.CalendarGrid.Month",
+        englishLabel: "Month",
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx, _runtime) => {
+                const grid = getGridOfCanvasElement(ctx.canvasElement);
+                const currentMonth = grid ? getMonthOfGrid(grid) : -1;
+                return {
+                    id: "calendarMonth",
+                    l10nId: "EditTab.CalendarGrid.Month",
+                    englishLabel: "Month",
+                    onSelect: () => {},
+                    // The month names are already in Bloom's user interface language, so each
+                    // row carries no l10nId and is shown as it is.
+                    subMenuItems: getMonthNamesToOffer().map((name, month) => ({
+                        englishLabel: name,
+                        icon:
+                            month === currentMonth
+                                ? React.createElement(CheckIcon, null)
+                                : undefined,
+                        onSelect: () => {
+                            if (grid) setMonthOfGrid(grid, month);
+                        },
+                    })),
+                };
+            },
+        },
+    },
+    calendarYear: {
+        kind: "command",
+        id: "calendarYear",
+        l10nId: "EditTab.CalendarGrid.Year",
+        englishLabel: "Year",
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx, _runtime) => {
+                const grid = getGridOfCanvasElement(ctx.canvasElement);
+                const currentYear = grid ? getYearOfGrid(grid) : undefined;
+                return {
+                    id: "calendarYear",
+                    l10nId: "EditTab.CalendarGrid.Year",
+                    englishLabel: "Year",
+                    onSelect: () => {},
+                    // A year is a number rather than a word of the user interface, so each
+                    // row carries no l10nId and is shown as it is.
+                    subMenuItems: (grid ? getYearsToOffer(grid) : []).map(
+                        (year) => ({
+                            englishLabel: String(year),
+                            icon:
+                                year === currentYear
+                                    ? React.createElement(CheckIcon, null)
+                                    : undefined,
+                            onSelect: () => {
+                                if (grid) setYearOfGrid(grid, year);
+                            },
+                        }),
+                    ),
+                };
+            },
+        },
+    },
+    calendarFirstDayOfWeek: {
+        kind: "command",
+        id: "calendarFirstDayOfWeek",
+        l10nId: "EditTab.CalendarGrid.FirstDayOfWeek",
+        englishLabel: "First Day of Week",
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx, _runtime) => {
+                const grid = getGridOfCanvasElement(ctx.canvasElement);
+                const currentDay = grid
+                    ? getFirstDayOfWeekOfGrid(grid)
+                    : undefined;
+                return {
+                    id: "calendarFirstDayOfWeek",
+                    l10nId: "EditTab.CalendarGrid.FirstDayOfWeek",
+                    englishLabel: "First Day of Week",
+                    onSelect: () => {},
+                    // The weekday names are already in Bloom's user interface language, so
+                    // each row carries no l10nId and is shown as it is.
+                    subMenuItems: getWeekdayNamesToOffer().map((name, day) => ({
+                        englishLabel: name,
+                        icon:
+                            day === currentDay
+                                ? React.createElement(CheckIcon, null)
+                                : undefined,
+                        onSelect: () => {
+                            if (grid) setFirstDayOfWeekOfGrid(grid, day);
+                        },
+                    })),
+                };
+            },
+        },
+    },
+    calendarShowNeighborDays: {
+        kind: "command",
+        id: "calendarShowNeighborDays",
+        l10nId: "EditTab.CalendarGrid.ShowNeighboringMonthDates",
+        englishLabel: "Show Neighboring Month Dates",
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx, _runtime) => {
+                const grid = getGridOfCanvasElement(ctx.canvasElement);
+                const showing = grid ? getGridShowsNeighborDays(grid) : false;
+                return {
+                    id: "calendarShowNeighborDays",
+                    l10nId: "EditTab.CalendarGrid.ShowNeighboringMonthDates",
+                    englishLabel: "Show Neighboring Month Dates",
+                    icon: showing
+                        ? React.createElement(CheckIcon, null)
+                        : undefined,
+                    onSelect: () => {
+                        if (grid) setGridShowsNeighborDays(grid, !showing);
+                    },
+                };
+            },
+        },
+    },
     duplicate: {
         kind: "command",
         id: "duplicate",
@@ -1289,6 +1424,17 @@ export const controlSections: Record<SectionId, IControlSection> = {
         id: "linkGrid",
         controlsBySurface: {
             menu: ["linkGridChooseBooks"],
+        },
+    },
+    calendar: {
+        id: "calendar",
+        controlsBySurface: {
+            menu: [
+                "calendarFirstDayOfWeek",
+                "calendarMonth",
+                "calendarYear",
+                "calendarShowNeighborDays",
+            ],
         },
     },
     url: {

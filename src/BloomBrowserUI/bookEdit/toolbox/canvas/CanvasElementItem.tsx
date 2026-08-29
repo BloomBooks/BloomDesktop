@@ -629,6 +629,25 @@ export const CanvasElementTableItem: React.FunctionComponent = (props) => {
     );
 };
 
+export const CanvasElementCalendarItem: React.FunctionComponent = () => {
+    return (
+        <CanvasElementSvgItem
+            canvasElementType="calendar"
+            addClasses={""}
+            showOuterRectangle={false}
+        >
+            <img
+                css={css`
+                    width: 50px;
+                    height: 50px;
+                    cursor: grab;
+                `}
+                src="/bloom/bookEdit/toolbox/canvas/calendarPaletteItem.svg"
+            />
+        </CanvasElementSvgItem>
+    );
+};
+
 export const NavigationImageButtonPaletteItem: React.FunctionComponent = (
     props,
 ) => {

@@ -62,9 +62,6 @@ namespace Bloom.Book
                 // Since we're trying to include everything we need to go on working on the book,
                 // we naturally need everything we need for the most demanding mode of publishing it.
                 IncludeFilesNeededForBloomPlayer = true;
-                // So far this is only used for storing month names etc. in Wall Calendar,
-                // but that's enough reason to include it. BookStarter uses it if present.
-                _specialCases["configuration.html"] = true;
                 // markdown files are sometimes used to describe templates.
                 BookLevelFileExtensionsLowerCase.Add(".md");
                 // In case the book is a template, we want at least the thumbnails

@@ -368,3 +368,89 @@ collection tab (`switchWorkspaceTab.mjs --running-bloom --tab edit`).
 
 **Idea:** either add `D:/bloom-table/dist` to `server.watch`, or have `go.sh` run bloom-table's
 `build:watch` when it is linked, so a `vp pack` there triggers the invalidation Vite needs.
+
+## An NUnit test that reads a factory template silently tests a stale build
+
+**2026-08-28, BL-16777-table-calendar.** `BloomFileLocator.GetFactoryBookTemplateDirectory`
+resolves to `output/browser/templates/template books/<name>/`, which only the content build
+populates. Agents are told not to run `pnpm build` (it wipes `output/browser` under the
+developer's running Bloom), and `build/agent-dotnet.sh` does not build content, so a new test
+that creates a book from a template runs against whatever the developer last built. In this case
+`Wall Calendar.html` there was two hours old and `meta.json` predated the change under test, so
+the test reported page counts for the old template and a `meta.json` edit appeared to do nothing.
+Nothing in the failure says "stale artifact"; it reads as a bug in the markup you just wrote.
+
+What worked: compile the one template by hand into `output/browser` the way the watch does, and
+copy the non-pug files across:
+
+```bash
+OUT="output/browser/templates/template books/Wall Calendar"
+SRC="src/content/templates/template books/Wall Calendar"
+src/content/node_modules/.bin/pug "$SRC/Wall Calendar.pug" --pretty --out "$OUT"
+src/content/node_modules/.bin/lessc "$SRC/wallCalendar.less" "$OUT/wallCalendar.css"
+cp "$SRC/meta.json" "$OUT/meta.json"
+```
+
+Deleted source files also linger in `$OUT`, because `cpx` only copies.
+
+**Idea:** a `build/agent-content.sh` that rebuilds one template folder (pug + less + file copy +
+prune) into `output/browser` without `clean.js`, and a line in AGENTS.md saying that any test
+touching `GetFactoryBookTemplateDirectory` needs it first.
+
+## Changing the selected book over the API while the Edit tab is open kills a Debug Bloom
+
+`POST collections/selectAndEditBook` (and `collections/selected-book`) while the Edit tab is
+already open on a *different* book leaves the edit view showing the old book: the handler ends
+with `ChangeTab(edit)`, which is a no-op when that tab is already active (the BL-8382 guard), so
+only the model moves. The next page request then fails a null guard in
+`EditingModel.GetEditPageIframeContents` (`Value cannot be null. (Parameter 'Could not find
+expected page')`), and on a Debug build that `Debug.Fail` is `Environment.FailFast`: the whole
+process dies, taking the launcher stack with it. The Event Log (`.NET Runtime` provider) has the
+message; the app window just vanishes. This killed Bloom three times in one afternoon before the
+pattern was spotted.
+
+What works: drive the human order, one step at a time — `POST workspace/selectTab
+{tab:"collection"}`, poll `GET workspace/tabs` until `tabStates.collection == "active"` (leaving
+Edit saves the page first, and "active" appears only after that save), then change the selected
+book, then `selectTab` back to `edit`. `calendar.spec.ts`'s `reopenTheCalendarBook` /
+`selectTabAndWait` are a worked example. A fix inside the API (leave the tab, then select once
+the save completes) was written and then backed out on 2026-08-28 at John's request; if this
+keeps biting, that is the shape it took.
+
+## Three ways one shared Bloom bites several agents at once
+
+All three of these hit one session on 2026-08-29, in which six agents drove a single `go.sh`
+Bloom.
+
+**A book switch over the API wedges the edit view.** This is the papercut above, met head on:
+selecting `Book-2c0df36d` and posting `app/makeOrEditBook` while the Edit tab was open on
+another agent's book left the edit WebView2 showing only a spinner, with one CDP target whose
+URL still named the *other* book and no `page` iframe. Posting `editView/setModalState false`
+twice cleared `navigationLocked` and re-enabled the tabs, but the edit view itself never came
+back; only `launcherControl.mjs --restart` fixed it. **So the agent instructions that hand out
+the two-POST recipe must carry the "leave Edit first" order**: `workspace/selectTab
+{tab:"collection"}`, poll `workspace/tabs` until collection is active, change the selected book,
+then `selectTab` back to edit. Driven that way, the same switch worked every time afterwards.
+
+**A menu left open by a crashed script silently redirects the next script's clicks.** A MUI menu
+puts an invisible backdrop over the whole page. A script that throws part way through (a locator
+timeout, a detached frame) leaves the menu up, and the *next* script's "click the grid's button"
+lands on whatever menu item sits at those coordinates. That produced a string of changes nobody
+asked for: a first day of the week set to Sunday, a year set to 2028. It looks exactly like a
+racing teammate, and it is not. **Start every automation script by pressing Escape and confirming
+no menu is painted** (`.MuiPopover-root:not([aria-hidden="true"])` — a closed MUI menu still has
+a bounding box, so measuring width is not a test of whether it is open).
+
+**`frame.locator("button").nth(i)` does not mean the i-th visible button.** Indices gathered from
+a filtered list of visible buttons do not line up with the unfiltered `nth()` order, so the
+"click the last button" idiom clicked Delete instead of the "..." menu and removed a calendar
+grid from a teammate's cover page. Recovery: Bloom's Undo did nothing ("There is nothing to
+undo"), but the deletion was only in the DOM, so the saved `.htm` still had the element; lifting
+its markup out of the file and inserting it back into `.bloom-canvas` restored the page exactly,
+and the next save wrote it back. **Identify a control by something that names it** (here
+`svg[data-testid='MoreHorizSharpIcon']` versus `DeleteOutlineIcon`), never by position in a list.
+
+**Also worth knowing:** a nested item of the canvas element's context menu opens its submenu on
+click, while the page grid's own button menu opens on hover; and another agent editing front-end
+source detaches the `page` frame every few minutes through Vite reloads, so any script that must
+survive that has to re-acquire the frame and retry rather than hold one reference.

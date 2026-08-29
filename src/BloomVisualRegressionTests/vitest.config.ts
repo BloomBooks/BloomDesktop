@@ -9,10 +9,18 @@ export default defineConfig({
         // a full BloomPUB staging, and several player-page captures (each with a networkidle wait
         // and a settle delay). Without this, healthy-but-slow cases fail as spurious timeouts.
         // Override per-run with --test-timeout when debugging under a breakpoint (see testPatient).
-        testTimeout: 120000,
+        // The calendar suite pushes this further still: making a book from the 24-page Wall
+        // Calendar template and opening it in the edit tab has been seen to take over a minute
+        // on its own, before the case does anything.
+        testTimeout: 400000,
         // beforeAll may launch Bloom (up to ~60s) and afterAll resets branding/theme on every book,
         // so the setup/teardown hooks also need far more than the 10s default.
         hookTimeout: 180000,
+        // One spec file at a time. Each of these suites launches a Bloom.exe of its own on a
+        // throwaway collection copy; two of them starting at once would be two Blooms competing
+        // for the same block of ports and for whatever the machine has, which is neither what
+        // they are testing nor something we want a run to depend on.
+        fileParallelism: false,
     },
     server: {
         watch: {

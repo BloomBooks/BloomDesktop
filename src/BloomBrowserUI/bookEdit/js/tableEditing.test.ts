@@ -15,6 +15,7 @@ import {
     SetupTableEditing,
     TeardownTableEditing,
 } from "./tableEditing";
+import { attachToCkEditor } from "./bloomEditing";
 
 // jsdom has no ResizeObserver, which attachSingleTable installs to keep cell
 // pictures fitted. Nothing here resizes, so a do-nothing stand-in is enough.
@@ -33,19 +34,38 @@ class NoopResizeObserver {
 });
 
 // CKEditor is loaded into the real editing page by a script tag, and
-// attachToCkEditor is what makes a bloom-editable a live editor. All this
-// stand-in has to do is let that call run to the end without a browser.
+// attachToCkEditor is what makes a bloom-editable a live editor. This stand-in
+// has to let that call run to the end without a browser, and it keeps the one
+// rule of the real CKEDITOR.inline() that Bloom code has to respect: an element
+// may hold only one editor, and asking for a second one throws.
+const attachedEditors = new Map<unknown, { name: string }>();
 (globalThis as unknown as { CKEDITOR: unknown }).CKEDITOR = {
     // A palette of its own keeps attachToCkEditor from asking Bloom's server
     // for one.
     config: { colorButton_colors: "FFFFFF,FF0000" },
-    inline: () => ({
-        id: "stubEditor",
-        config: {},
-        on: () => {},
-        addCommand: () => {},
-        ui: { addButton: () => {} },
-    }),
+    dom: {
+        element: {
+            get: (element: unknown) => ({
+                getEditor: () => attachedEditors.get(element),
+            }),
+        },
+    },
+    inline: (element: unknown) => {
+        if (attachedEditors.has(element))
+            throw `The editor instance "${
+                attachedEditors.get(element)!.name
+            }" is already attached to the provided element.`;
+        const editor = {
+            name: "stubEditor" + attachedEditors.size,
+            id: "stubEditor",
+            config: {},
+            on: () => {},
+            addCommand: () => {},
+            ui: { addButton: () => {} },
+        };
+        attachedEditors.set(element, editor);
+        return editor;
+    },
 };
 
 describe("AttachNewTableThatFillsItsSpace", () => {
@@ -201,5 +221,26 @@ describe("video cells", () => {
         expect(postMock).not.toHaveBeenCalled();
 
         TeardownTableEditing(document.body);
+    });
+});
+
+describe("attachToCkEditor", () => {
+    it("leaves an element that already has an editor alone", () => {
+        document.body.innerHTML = "";
+        const editable = document.createElement("div");
+        editable.classList.add("bloom-editable");
+        document.body.appendChild(editable);
+
+        attachToCkEditor(editable);
+        // Sanity check: the first call is the one that makes the editor.
+        expect(attachedEditors.has(editable)).toBe(true);
+        const firstEditor = attachedEditors.get(editable);
+
+        // Two paths wire up a new calendar grid's cells: the code that builds
+        // the grid, and the pass over the visible editables of the canvas
+        // element it lands on. The second call must not throw.
+        attachToCkEditor(editable);
+
+        expect(attachedEditors.get(editable)).toBe(firstEditor);
     });
 });

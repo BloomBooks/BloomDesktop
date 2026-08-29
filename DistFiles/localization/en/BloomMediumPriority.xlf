@@ -49,6 +49,81 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.Tables</note>
         <note>Label of a checkbox in the Experimental Features list of the Advanced tab of Collection Settings. Turning it on lets the user add a table to a custom page.</note>
       </trans-unit>
+      <trans-unit id="CalendarSetup.Title" translate="no">
+        <source xml:lang="en">Calendar Setup</source>
+        <note>ID: CalendarSetup.Title</note>
+        <note>Title of the dialog that appears when the user first opens a Wall Calendar book, asking for the year and the first day of the week.</note>
+      </trans-unit>
+      <trans-unit id="CalendarSetup.Year" translate="no">
+        <source xml:lang="en">Year</source>
+        <note>ID: CalendarSetup.Year</note>
+        <note>Label of the box where the user types the four-digit year, in the Setup dialog that appears when they first open a Wall Calendar book.</note>
+      </trans-unit>
+      <trans-unit id="CalendarSetup.FirstDayOfWeek" translate="no">
+        <source xml:lang="en">First day of the week</source>
+        <note>ID: CalendarSetup.FirstDayOfWeek</note>
+        <note>Label of the list where the user chooses which day each week of the calendar starts on, in the Setup dialog that appears when they first open a Wall Calendar book. The choices are the seven CalendarSetup day names below.</note>
+      </trans-unit>
+      <trans-unit id="CalendarSetup.Sunday" translate="no">
+        <source xml:lang="en">Sunday</source>
+        <note>ID: CalendarSetup.Sunday</note>
+        <note>One of the seven choices in the "First day of the week" list of the Wall Calendar Setup dialog. This is the full name of the day, not the abbreviation shown in the calendar grid itself.</note>
+      </trans-unit>
+      <trans-unit id="CalendarSetup.Monday" translate="no">
+        <source xml:lang="en">Monday</source>
+        <note>ID: CalendarSetup.Monday</note>
+        <note>One of the seven choices in the "First day of the week" list of the Wall Calendar Setup dialog. This is the full name of the day, not the abbreviation shown in the calendar grid itself.</note>
+      </trans-unit>
+      <trans-unit id="CalendarSetup.Tuesday" translate="no">
+        <source xml:lang="en">Tuesday</source>
+        <note>ID: CalendarSetup.Tuesday</note>
+        <note>One of the seven choices in the "First day of the week" list of the Wall Calendar Setup dialog. This is the full name of the day, not the abbreviation shown in the calendar grid itself.</note>
+      </trans-unit>
+      <trans-unit id="CalendarSetup.Wednesday" translate="no">
+        <source xml:lang="en">Wednesday</source>
+        <note>ID: CalendarSetup.Wednesday</note>
+        <note>One of the seven choices in the "First day of the week" list of the Wall Calendar Setup dialog. This is the full name of the day, not the abbreviation shown in the calendar grid itself.</note>
+      </trans-unit>
+      <trans-unit id="CalendarSetup.Thursday" translate="no">
+        <source xml:lang="en">Thursday</source>
+        <note>ID: CalendarSetup.Thursday</note>
+        <note>One of the seven choices in the "First day of the week" list of the Wall Calendar Setup dialog. This is the full name of the day, not the abbreviation shown in the calendar grid itself.</note>
+      </trans-unit>
+      <trans-unit id="CalendarSetup.Friday" translate="no">
+        <source xml:lang="en">Friday</source>
+        <note>ID: CalendarSetup.Friday</note>
+        <note>One of the seven choices in the "First day of the week" list of the Wall Calendar Setup dialog. This is the full name of the day, not the abbreviation shown in the calendar grid itself.</note>
+      </trans-unit>
+      <trans-unit id="CalendarSetup.Saturday" translate="no">
+        <source xml:lang="en">Saturday</source>
+        <note>ID: CalendarSetup.Saturday</note>
+        <note>One of the seven choices in the "First day of the week" list of the Wall Calendar Setup dialog. This is the full name of the day, not the abbreviation shown in the calendar grid itself.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CalendarGrid.ButtonTooltip" translate="no">
+        <source xml:lang="en">Calendar grid options</source>
+        <note>ID: EditTab.CalendarGrid.ButtonTooltip</note>
+        <note>Tooltip on the small round button that appears at the top right corner of a calendar month grid in the Edit tab when the mouse is over the grid. The button opens a menu with the "Month" and "Show Neighboring Month Dates" items below.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CalendarGrid.FirstDayOfWeek" translate="no">
+        <source xml:lang="en">First Day of Week</source>
+        <note>ID: EditTab.CalendarGrid.FirstDayOfWeek</note>
+        <note>Item on the menu of a calendar month grid in the Edit tab. It opens a submenu of the seven weekday names, where the user chooses which day the grid's first column is. The weekday names themselves are the user's own and are not translated here.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CalendarGrid.Month" translate="no">
+        <source xml:lang="en">Month</source>
+        <note>ID: EditTab.CalendarGrid.Month</note>
+        <note>Item on the menu of a calendar month grid in the Edit tab. It opens a submenu of the twelve month names, where the user chooses which month the grid shows. The month names themselves are the user's own and are not translated here.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CalendarGrid.ShowNeighboringMonthDates" translate="no">
+        <source xml:lang="en">Show Neighboring Month Dates</source>
+        <note>ID: EditTab.CalendarGrid.ShowNeighboringMonthDates</note>
+        <note>Item on the menu of a calendar month grid in the Edit tab. It is a checkable on/off command. When it is on, the empty boxes before the first day and after the last day of the month show the dates of the previous and the next month instead of being blank.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CalendarGrid.Year" translate="no">
+        <source xml:lang="en">Year</source>
+        <note>ID: EditTab.CalendarGrid.Year</note>
+        <note>Item on the menu of a calendar month grid in the Edit tab. It opens a submenu of three or four years, where the user chooses which year the calendar is for. The years are numbers and are not translated.</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing" translate="no">
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>
@@ -63,6 +138,11 @@
         <source xml:lang="en">No Indent</source>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
         <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. It is a checkable on/off command that removes the first-line indent from just that one paragraph, overriding the indent that the paragraph's style gives it. Typically used on a paragraph continued from the previous page.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellOptions" translate="no">
+        <source xml:lang="en">Cell options</source>
+        <note>ID: EditTab.Table.CellOptions</note>
+        <note>Tooltip on the "..." button of the little toolbar that appears below a table cell too small to hold its own controls, in the Edit tab. The button opens the same menu a right-click in the cell opens, whose title is "Cell".</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
@@ -616,6 +696,11 @@
         <source xml:lang="en">A table of rows and columns, which can hold text or pictures</source>
         <note>ID: EditTab.Toolbox.CanvasTool.Table</note>
         <note>Tooltip on the table icon in the Canvas Tool. The user drags the icon onto a page to add a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Calendar" translate="no">
+        <source xml:lang="en">A calendar grid for one month, which you can set to any month</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Calendar</note>
+        <note>Tooltip on the calendar icon in the Canvas Tool. The user drags the icon onto a page to add a calendar month grid.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true">
         <source xml:lang="en">Set Destination</source>

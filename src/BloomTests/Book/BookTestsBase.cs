@@ -435,9 +435,7 @@ namespace BloomTests.Book
                     return storage;
                 },
                 // book starter factory
-                () => starter,
-                // configurator factory
-                null
+                () => starter
             );
         }
     }

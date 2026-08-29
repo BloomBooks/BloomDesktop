@@ -17,7 +17,24 @@ import { CanvasElementType } from "../../toolbox/canvas/canvasElementTypes";
 import { kDraggableIdAttribute } from "../../toolbox/canvas/canvasElementDraggables";
 import { changeImageInfo } from "../bloomEditing";
 import { addSkeletonIfEmpty } from "../linkGrid";
-import { AttachNewTableThatFillsItsSpace } from "../tableEditing";
+import {
+    AttachNewCalendarGrid,
+    AttachNewTableThatFillsItsSpace,
+    RerenderTables,
+} from "../tableEditing";
+import { buildCalendarGridTable } from "../../calendarSetup/buildCalendarGridTable";
+import { ensureCalendarStylesAreDefined } from "../../calendarSetup/calendarNamedStyles";
+import { normalizeCalendarSettings } from "../../calendarSetup/calendarNames";
+import {
+    addBookLanguageEditablesToGrid,
+    writeSavedWeekdayNamesIntoGrid,
+} from "../../calendarSetup/calendarGrids";
+import {
+    ICalendarMonthLayout,
+    kCalendarFirstDayAttribute,
+    layOutCalendarMonthPage,
+} from "../../calendarSetup/layOutCalendarMonthPage";
+import { getAsync } from "../../../utils/bloomApi";
 import { kImageContainerClass, kImageContainerSelector } from "../bloomImages";
 import { getExactClientSize } from "../../../utils/elementUtils";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
@@ -32,6 +49,17 @@ import $ from "jquery";
 // without covering much of the page.
 const kDefaultTableWidth = 300;
 const kDefaultTableHeight = 200;
+
+// A new calendar month grid must start out bigger than the grid can shrink to, or the table
+// paints outside the element's frame and a stray border line shows beside it. The floors are
+// 420px wide (seven columns of minmax(60px, 1fr)) and 140px tall (the weekday row plus six day
+// rows of 20px). These leave room above both.
+const kDefaultCalendarGridWidth = 560;
+const kDefaultCalendarGridHeight = 320;
+
+// The day the week starts on in a grid the user has just made. The collection's own choice
+// replaces it as soon as the server answers; see useTheCollectionsFirstDayOfWeek.
+const kDefaultFirstDayOfWeek = 0;
 
 export interface IFinishAddingCanvasElementOptions {
     comicalBubbleStyle?: string;
@@ -277,6 +305,13 @@ export class CanvasElementFactories {
         }
         if (canvasElementType === "table") {
             return this.addTableCanvasElement(
+                positionInBloomCanvas,
+                bloomCanvas,
+                rightTopOffset,
+            );
+        }
+        if (canvasElementType === "calendar") {
+            return this.addCalendarGridCanvasElement(
                 positionInBloomCanvas,
                 bloomCanvas,
                 rightTopOffset,
@@ -905,6 +940,101 @@ export class CanvasElementFactories {
             },
         );
         return result;
+    }
+
+    /**
+     * Make a canvas element holding a calendar month grid for the current month, so that a
+     * book which was not made from the Wall Calendar template can have one.
+     *
+     * The grid starts out as this month of this year, with the week starting on Sunday and
+     * without the dates of the neighboring months; the button the grid carries is how the user
+     * changes the month afterwards. The collection's own first day of the week is asked for
+     * once the element exists, because that answer comes from the server.
+     */
+    public addCalendarGridCanvasElement(
+        location: Point,
+        bloomCanvasJQuery: JQuery,
+        rightTopOffset?: string,
+    ): HTMLElement {
+        // The tabindex here is necessary to allow the table to be focused.
+        const html =
+            "<div tabindex='0' class='bloom-table bloom-leadingElement'></div>";
+        const today = new Date();
+        const layout = {
+            year: today.getFullYear(),
+            month: today.getMonth(),
+            firstDayOfWeek: kDefaultFirstDayOfWeek,
+            showNeighborDays: false,
+        };
+        const result = this.finishAddingCanvasElement(
+            bloomCanvasJQuery,
+            html,
+            location,
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+                size: {
+                    width: kDefaultCalendarGridWidth,
+                    height: kDefaultCalendarGridHeight,
+                },
+                limitToCanvasBounds: true,
+                // Build the grid here, and not after finishAddingCanvasElement returns, for
+                // the reason addTableCanvasElement gives: that call ends by finding an empty
+                // bloom-table div and attaching a plain table of its own to it.
+                doAfterElementCreated: (newElement: HTMLElement) => {
+                    // The cells hold translationGroups, so without this the element would
+                    // grow and shrink with the text in them, fighting the row heights that
+                    // the grid itself maintains.
+                    newElement.classList.add("bloom-noAutoHeight");
+                    const tableDiv = newElement.getElementsByClassName(
+                        "bloom-table",
+                    )[0] as HTMLElement;
+                    buildCalendarGridTable(tableDiv, layout);
+                    // Before the grid is wired for editing, so that the editables this adds
+                    // get the same wiring as the ones the builder made.
+                    addBookLanguageEditablesToGrid(
+                        tableDiv,
+                        GetSettings().languageForNewTextBoxes,
+                        [],
+                    );
+                    ensureCalendarStylesAreDefined(tableDiv.ownerDocument);
+                    AttachNewCalendarGrid(tableDiv);
+                    this.useTheCollectionsCalendarSettings(tableDiv, layout);
+                },
+            },
+        );
+        return result;
+    }
+
+    /**
+     * Give a newly-made grid the first day of the week and the weekday names the collection
+     * has saved. Asking the server is what makes this a separate step: the grid is on the page
+     * and drawn before the answer arrives.
+     */
+    private useTheCollectionsCalendarSettings(
+        tableDiv: HTMLElement,
+        layout: ICalendarMonthLayout,
+    ): void {
+        getAsync("calendarSettings").then((result) => {
+            const settings = normalizeCalendarSettings(result.data);
+            writeSavedWeekdayNamesIntoGrid(tableDiv, settings.dayNames);
+            if (
+                settings.firstDayOfWeek === null ||
+                settings.firstDayOfWeek === layout.firstDayOfWeek
+            ) {
+                return;
+            }
+            tableDiv.setAttribute(
+                kCalendarFirstDayAttribute,
+                String(settings.firstDayOfWeek),
+            );
+            layOutCalendarMonthPage(tableDiv, {
+                ...layout,
+                firstDayOfWeek: settings.firstDayOfWeek,
+            });
+            RerenderTables(tableDiv);
+        });
     }
 
     private makeImageContainerHtml(): string {

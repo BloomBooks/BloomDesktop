@@ -28,6 +28,7 @@ import {
     AddLanguageTags,
     attachToCkEditor,
 } from "./bloomEditing";
+import { observeTranslationGroupSizes } from "./translationGroupSizeMarking";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
@@ -158,6 +159,10 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
     if (root.matches(imageCellSelector)) imageCells.push(root);
     imageCells.forEach((cell) => SetupImagesInContainer(cell));
     observeImageCells(root);
+    // A cell is usually far too small for the language name and the format cog that Bloom
+    // draws inside a text box, and these cells were built after the page-load pass that
+    // decides that for every other box on the page.
+    observeTranslationGroupSizes(root);
     wireVideoContainersOfNewCells(root);
 }
 
@@ -371,6 +376,44 @@ export function AttachNewTableThatFillsItsSpace(tableDiv: HTMLElement): void {
         setRowHeight(tableDiv, row, "fill");
     }
     attachSingleTable(tableDiv);
+}
+
+/**
+ * Attach a single newly-created bloom-table that already holds all its cells and carries its
+ * own row and column sizes: a calendar month grid, which buildCalendarGridTable has filled in
+ * and laid out. Called from addCalendarGridCanvasElement in CanvasElementFactories.ts.
+ *
+ * Unlike AttachNewTableThatFillsItsSpace, this adds no rows or columns: the grid has its seven
+ * columns and its day rows already, and asking for more would put them on the end of it.
+ */
+export function AttachNewCalendarGrid(tableDiv: HTMLElement): void {
+    ensureContentTypesRegistered();
+    attachSingleTable(tableDiv);
+    // Our own code built these cells rather than the library, so they have had none of
+    // Bloom's editing wiring. This is what makes the weekday names and the day notes
+    // typable, and gives them CKEditor and their language tags.
+    wireBloomContentOfNewCells(tableDiv);
+}
+
+/**
+ * Draw `container` and every bloom-table within it again, after something outside the library
+ * changed the attributes a table's appearance comes from (its borders, its row and column
+ * sizes). The library renders a table when it attaches it and after each of its own
+ * operations, and exports no renderer of its own, so re-attaching is how a caller asks for a
+ * fresh render. Used by the calendar code, which rewrites a month grid's borders as the user
+ * arrives at its page or changes what the grid shows; that caller hands us the grid itself,
+ * which is why the container counts as one of the tables to draw.
+ */
+export function RerenderTables(container: HTMLElement): void {
+    const tableDivs = Array.from(
+        container.querySelectorAll<HTMLElement>(".bloom-table"),
+    );
+    if (container.classList.contains("bloom-table"))
+        tableDivs.unshift(container);
+    tableDivs.forEach((tableDiv) => {
+        detachTable(tableDiv);
+        attachTable(tableDiv);
+    });
 }
 
 /**

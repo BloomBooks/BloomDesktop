@@ -5,6 +5,8 @@
     "type": "module",
     "scripts": {
         "test": "vitest run",
+        "testScreenshots": "vitest run index.spec.ts",
+        "testCalendar": "vitest run calendar.spec.ts",
         "testPatient": "vitest run --test-timeout=5000000",
         "upload": "pnpm exec argos upload ./screenshots"
     },

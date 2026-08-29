@@ -21,6 +21,15 @@ import {
 import { SetupWidgetEditing } from "./bloomWidgets";
 import { setupOrigami, cleanupOrigami } from "./origami";
 import { SetupTableEditing, TeardownTableEditing } from "./tableEditing";
+import { setupCalendarGrids } from "../calendarSetup/CalendarGridMenu";
+import {
+    observeTranslationGroupSizes,
+    stopObservingTranslationGroupSizes,
+} from "./translationGroupSizeMarking";
+import {
+    setupSmallTranslationGroupToolbar,
+    teardownSmallTranslationGroupToolbar,
+} from "./SmallTranslationGroupToolbar";
 import { removeTableEditingArtifacts } from "bloom-table";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
@@ -54,6 +63,7 @@ import "../../lib/long-press/jquery.longpress.js";
 import {
     doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
+    tryGetWorkspaceBundleExports,
 } from "./workspaceFrames";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
@@ -332,6 +342,31 @@ function AddEditKeyHandlers(container) {
     // so that it can be caught even when the focus isn't on the browser
 }
 
+/**
+ * The name to show for the language of one editable, or undefined when we show no name at
+ * all: the lang attribute is missing or a placeholder, or it is the "z" of a prototype
+ * block, or something on the page has asked for no language names.
+ *
+ * Split out of AddLanguageTags so that other affordances can name a language the same way
+ * it does. AddLanguageTags gives no data-languageTipContent to a narrow box (see the width
+ * test below), so a box that small has to work the name out from here; the toolbar of a box
+ * too small for an in-box language name is exactly that case.
+ */
+export function getLanguageNameToShow(
+    editable: HTMLElement,
+): string | undefined {
+    const key = editable.getAttribute("lang") ?? undefined;
+    //seeing a "*" was confusing even to me
+    if (key === undefined || key === "*" || key.length < 1) return undefined;
+    // z is not a real language, it is used for prototype blocks, which are NEVER visible.
+    // Searching for it causes missing-localization toasts if attempted.
+    if (key === "z") return undefined;
+    // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
+    // first usage (for instance) was turning off language tags for a whole page
+    if (editable.closest(".bloom-hideLanguageNameDisplay")) return undefined;
+    return theOneLocalizationManager.getText(key) || key; //just show the code
+}
+
 // Add little language tags. (At one point we limited this to visible .bloom-editable divs,
 // probably as an optimization since there can be other-language divs present but hidden.
 // But there may be yet others that are not visible when we run this but which soon will be,
@@ -353,35 +388,17 @@ export function AddLanguageTags(container) {
             // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
             // August 2024: for canvas elements, the language is now displayed in the context controls box, and isn't
             // a problem for small text boxes.
+            // 2026: a box below the thresholds in translationGroupSizeMarking.ts likewise
+            // names its language in the toolbar below it rather than in the box, and that
+            // toolbar calls getLanguageNameToShow itself rather than reading the attribute
+            // this would not have set.
             if ($this.width() < 100 && !this.closest(kCanvasElementSelector)) {
                 return;
             }
 
-            const key = $this.attr("lang");
-            if (key !== undefined && (key === "*" || key.length < 1)) {
-                return; //seeing a "*" was confusing even to me
-            }
-            // z is not a real language, it is used for prototype blocks, which are NEVER visible.
-            // Searching for it causes missing-localization toasts if attempted.
-            if (key === "z") {
+            const whatToSay = getLanguageNameToShow(this);
+            if (whatToSay === undefined) {
                 return;
-            }
-
-            // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
-            // first usage (for instance) was turning off language tags for a whole page
-            if (
-                $this.hasClass("bloom-hideLanguageNameDisplay") ||
-                $this.parents(".bloom-hideLanguageNameDisplay").length !== 0
-            ) {
-                return;
-            }
-
-            let whatToSay = "";
-            if (key !== undefined) {
-                whatToSay = theOneLocalizationManager.getText(key);
-                if (!whatToSay) {
-                    whatToSay = key; //just show the code
-                }
             }
 
             // Put whatToSay into data attribute for pickup by the css
@@ -579,7 +596,14 @@ export function SetupElements(
 
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
+    // Before SetupTableEditing: a calendar month grid is a table, and laying it out first
+    // means the table library's first drawing of it is already the right one.
+    setupCalendarGrids(container);
     SetupTableEditing(container);
+    // After the tables have been laid out, so that a cell is already the size it will be
+    // when we decide whether it can hold a language name and a format cog.
+    observeTranslationGroupSizes(container);
+    setupSmallTranslationGroupToolbar(container);
     initializeCanvasElementManager();
     initChoiceWidgetsForEditing();
 
@@ -882,6 +906,19 @@ export function SetupElements(
             //     // Make sure the active element is cleared if we're not setting it.
             //     theOneCanvasElementManager.setActiveElement(undefined);
             // }
+
+            // A page can ask that nothing be focused automatically when it opens. The Wall
+            // Calendar's month-grid pages do: the automatic choice would land in the month
+            // name, and focusing that pops its source bubble over the title. An element we
+            // were given a specific reason to focus still wins.
+            if (
+                !elementToFocus &&
+                document
+                    .getElementsByClassName("bloom-page")[0]
+                    ?.hasAttribute("data-bloom-no-auto-focus")
+            ) {
+                elementToFocus = "none";
+            }
 
             if (elementToFocus !== "none") {
                 // the check for visibility-code-on here prevents focusing a bloom-editable that we are just
@@ -1260,6 +1297,18 @@ export function bootstrap() {
     // We currently suppress errors for pages which are in the process of going away, but better
     // not to generate them than suppress them if we can help it.
     setupWheelZooming();
+
+    notifyBookToolingThisPageIsOpen();
+}
+
+// Tell the module that looks after this kind of book, if there is one, that a page has
+// loaded. The registry lives in the outer frame, because this iframe is thrown away and
+// rebuilt for every page. Off-screen (process-book) there is no outer frame, and no tooling
+// runs: those pages are being republished, not edited.
+function notifyBookToolingThisPageIsOpen(): void {
+    const page = document.querySelector<HTMLElement>(".bloom-page");
+    if (!page) return;
+    tryGetWorkspaceBundleExports()?.notifyBookToolingPageOpened(page);
 }
 // Attach a function to implement zooming on mouse wheel with ctrl.
 // Setting this up should be one of the last things we do when loading the page...
@@ -1343,6 +1392,10 @@ function removeEditingDebris() {
     removeTransientVideoTimestampParams(document.body);
     removeTableEditingArtifacts(document);
     TeardownTableEditing(document.body);
+    // The marker class this takes off is on the bloom-translationGroup, which is part of
+    // what Bloom saves, so it has to go before the page content is captured.
+    stopObservingTranslationGroupSizes(document.body);
+    teardownSmallTranslationGroupToolbar(document.body);
     cleanupNiceScroll(); // don't leave the nicescroll debris around
 }
 
@@ -1437,6 +1490,11 @@ export function requestPageContent() {
 // uses a fresh disposable browser per page. Don't call this from a context where the page must stay
 // live and editable afterward.
 function extractAndStripPageContentForSave(): string {
+    // Last look at the page before it becomes a string: a book's tooling module gets to see
+    // what the user typed. As with the toolbox below, there is no outer frame off-screen, so
+    // this does nothing there.
+    const page = document.querySelector<HTMLElement>(".bloom-page");
+    if (page) tryGetWorkspaceBundleExports()?.notifyBookToolingPageSaved(page);
     // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports(). (Off-screen,
     // e.g. process-book, there is no toolbox iframe, so this is a no-op there.)
     getToolboxBundleExports()?.removeToolboxMarkup();
@@ -1960,6 +2018,19 @@ export function attachToCkEditor(element) {
     const mapCkeditDiv = new Object();
 
     if (!element) {
+        return;
+    }
+
+    // Don't attach a second editor to the same element; CKEDITOR.inline() throws
+    // ("The editor instance ... is already attached to the provided element.") if we try.
+    // Some elements are wired up by the code that creates them (e.g. the cells of a new
+    // calendar grid) and then again by the general pass over the visible editables of a
+    // canvas element. getEditor() is the very check CKEDITOR.inline() itself makes: it
+    // searches the live CKEDITOR.instances for one whose element is this element, so it
+    // stops reporting an editor as soon as that editor is destroyed and a later re-attach
+    // still works. The cke_editable class is not a safe test, because it stays on the
+    // element after the editor goes away.
+    if (CKEDITOR.dom.element.get(element).getEditor()) {
         return;
     }
 

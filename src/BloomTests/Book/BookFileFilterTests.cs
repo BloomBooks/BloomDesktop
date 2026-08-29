@@ -11,12 +11,10 @@ namespace BloomTests.Book
     public class BookFileFilterTests
     {
         // The 'normal' book has an html file whose name matches the folder.
-        // Relatively unusually, it also has a configuration.html (which should get copied
-        // only when ForEditing is true) and another HTML file (which should not ever).
+        // It also has another HTML file, which should never get copied.
         private TemporaryFolder _normalBookFolder;
         private string _normalBookFolderPath;
         private string _normalBookPath;
-        private string _configHtmlPath;
         private string _otherHtmlPath;
         private int _normalBookPrefixLength;
         private BookFileFilter _normalFilter; // initialized to filter normal book
@@ -34,7 +32,6 @@ namespace BloomTests.Book
                 _normalBookFolderPath,
                 Path.GetFileName(_normalBookFolderPath) + ".htm"
             );
-            _configHtmlPath = Path.Combine(_normalBookFolderPath, "configuration.html");
             _otherHtmlPath = Path.Combine(_normalBookFolderPath, "other.html");
             var normalHtmlContent =
                 $@"<html><head></head><body>
@@ -66,10 +63,9 @@ namespace BloomTests.Book
 						</div>
 					</div>
 				</body></html>";
-            var configHtmlContent = $@"<html><head></head><body></body></html>";
+            var otherHtmlContent = $@"<html><head></head><body></body></html>";
             RobustFile.WriteAllText(_normalBookPath, normalHtmlContent);
-            RobustFile.WriteAllText(_configHtmlPath, configHtmlContent);
-            RobustFile.WriteAllText(_otherHtmlPath, configHtmlContent);
+            RobustFile.WriteAllText(_otherHtmlPath, otherHtmlContent);
             _normalFilter = new BookFileFilter(_normalBookFolderPath);
             _filterForEdit = new BookFileFilter(_normalBookFolderPath)
             {
@@ -126,12 +122,6 @@ namespace BloomTests.Book
             );
             Assert.That(
                 _normalFilter.ShouldAllowRelativePath(
-                    _configHtmlPath.Substring(_normalBookPrefixLength)
-                ),
-                Is.False
-            );
-            Assert.That(
-                _normalFilter.ShouldAllowRelativePath(
                     _otherHtmlPath.Substring(_normalBookPrefixLength)
                 ),
                 Is.False
@@ -139,17 +129,11 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void ShouldAllow_ForEdit_PassesRootHtmlFileAndConfig()
+        public void ShouldAllow_ForEdit_PassesOnlyRootHtmlFile()
         {
             Assert.That(
                 _filterForEdit.ShouldAllowRelativePath(
                     _normalBookPath.Substring(_normalBookPrefixLength)
-                ),
-                Is.True
-            );
-            Assert.That(
-                _filterForEdit.ShouldAllowRelativePath(
-                    _configHtmlPath.Substring(_normalBookPrefixLength)
                 ),
                 Is.True
             );

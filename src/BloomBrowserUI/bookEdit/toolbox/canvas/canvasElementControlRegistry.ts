@@ -161,6 +161,19 @@ export const tableCanvasElementControls: ICanvasElementControlConfiguration = {
     availabilityRules: wholeElementAvailabilityRules,
 };
 
+export const calendarCanvasElementControls: ICanvasElementControlConfiguration =
+    {
+        type: "calendar",
+        // A calendar month grid is a table, and carries the same in-page affordances a table
+        // does, so the canvas adds only what belongs to the element as a whole. The Calendar
+        // section is what the grid itself needs: which month it is for, and whether it shows
+        // the dates of the neighboring months.
+        menuSections: ["calendar", "wholeElement"],
+        toolbar: ["duplicate", "delete"],
+        toolPanel: [],
+        availabilityRules: wholeElementAvailabilityRules,
+    };
+
 export const bookLinkGridControls: ICanvasElementControlConfiguration = {
     type: "book-link-grid",
     menuSections: ["linkGrid", "wholeElement"],
@@ -304,6 +317,7 @@ export const canvasElementControlRegistry: Record<
     speech: speechCanvasElementControls,
     caption: captionCanvasElementControls,
     table: tableCanvasElementControls,
+    calendar: calendarCanvasElementControls,
     "book-link-grid": bookLinkGridControls,
     "navigation-image-button": navigationImageButtonControls,
     "navigation-image-with-label-button":
