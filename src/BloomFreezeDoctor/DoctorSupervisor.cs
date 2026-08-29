@@ -620,15 +620,7 @@ public sealed class DoctorSupervisor : IDisposable
     /// outcome - offline, over the daily cap, or another process is sending it - and it must not be
     /// reported to a user as a failure.
     /// </param>
-    /// <param name="AnotherProcessIsSending">
-    /// True when another Doctor process was already draining, so we sent nothing and left the queue to it.
-    /// See <see cref="DrainOutcome"/>, whose field of the same name this carries up.
-    /// </param>
-    private readonly record struct GatherOutcome(
-        string? IssueId,
-        bool StillQueued,
-        bool AnotherProcessIsSending
-    );
+    private readonly record struct GatherOutcome(string? IssueId, bool StillQueued);
 
     private async Task<GatherOutcome> GatherFileAndRecordAsync(
         BloomTargetFacts facts,
@@ -706,21 +698,17 @@ public sealed class DoctorSupervisor : IDisposable
             // automation run. Not queued, and not a failure either - but somebody has to be TOLD, or a
             // successful gather is indistinguishable from the Doctor having done nothing at all.
             ReportSavedWithoutFiling?.Invoke(this, bundle.Directory);
-            return new GatherOutcome(null, StillQueued: false, AnotherProcessIsSending: false);
+            return new GatherOutcome(null, StillQueued: false);
         }
 
-        var anotherProcessIsSending = await DrainAsync(cancellation).ConfigureAwait(false);
+        await DrainAsync(cancellation).ConfigureAwait(false);
         var issueId = _outbox
             .List()
             .FirstOrDefault(b => b.Directory == bundle.Directory)
             ?.Metadata.IssueId;
         // Deliberately returned rather than stashed in a field: several gathers can be in flight at once
         // (one per watched Bloom), so a field here would be read by the wrong caller.
-        return new GatherOutcome(
-            issueId,
-            StillQueued: issueId == null,
-            AnotherProcessIsSending: anotherProcessIsSending
-        );
+        return new GatherOutcome(issueId, StillQueued: issueId == null);
     }
 
     /// <summary>
@@ -1088,12 +1076,19 @@ public sealed class DoctorSupervisor : IDisposable
     private readonly SemaphoreSlim _drainGate = new(1, 1);
 
     /// <summary>
-    /// Drains. **Returns true when another Doctor process was already sending the queue**, not when this
-    /// drain succeeded - so read the result as an answer to "did somebody else have it?". See the note on
-    /// <see cref="DrainOutcome"/> for why "nothing filed" and "somebody else is filing it" must not be the
-    /// same answer.
+    /// Drains, and tells the log what came of it.
+    ///
+    /// Returns nothing on purpose. It used to hand back "another Doctor process was already sending",
+    /// which no caller ever read: the two background callers discard the result, and the one that looked
+    /// like it wanted the answer - a gather deciding what to tell the user - gets everything it needs from
+    /// whether its own bundle came back with an issue id. A bool falling out of a method called DrainAsync
+    /// invites exactly the wrong reading anyway ("did the drain work?"), so there is nothing to be gained
+    /// by keeping it for a caller that may never come.
+    ///
+    /// The distinction itself is not lost - see the note on <see cref="DrainOutcome"/>, which is where it
+    /// matters and where it is still made.
     /// </summary>
-    private async Task<bool> DrainAsync(CancellationToken cancellation)
+    private async Task DrainAsync(CancellationToken cancellation)
     {
         try
         {
@@ -1101,12 +1096,12 @@ public sealed class DoctorSupervisor : IDisposable
         }
         catch (OperationCanceledException)
         {
-            return false;
+            return;
         }
         try
         {
             if (_outbox.Pending().Count == 0)
-                return false;
+                return;
             var outcome = await _outbox
                 .DrainAsync(new YouTrackSubmitter(), cancellation)
                 .ConfigureAwait(false);
@@ -1116,7 +1111,6 @@ public sealed class DoctorSupervisor : IDisposable
                 Note("another Freeze Doctor is sending the queued reports");
             RaiseStatusChanged();
             ConsiderExiting();
-            return outcome.AnotherProcessIsSending;
         }
         catch (OperationCanceledException) { }
         catch (Exception e)
@@ -1127,7 +1121,6 @@ public sealed class DoctorSupervisor : IDisposable
         {
             _drainGate.Release();
         }
-        return false;
     }
 
     /// <summary>

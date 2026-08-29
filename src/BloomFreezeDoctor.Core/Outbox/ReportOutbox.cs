@@ -417,6 +417,21 @@ public sealed class ReportOutbox
 
     private readonly TimeSpan _drainGateWait;
 
+    /// <summary>
+    /// Sends every report the outbox is holding, oldest first, and says what happened.
+    ///
+    /// **"Draining" is emptying the queue**, and it is the second half of the split this whole class
+    /// exists for: gathering a report only ever writes it to disk, and getting it to the tracker is
+    /// always this, separately and later. That is what lets a report survive being gathered while the
+    /// machine is offline, while it is over the daily cap, or moments before it shuts down.
+    ///
+    /// Nothing is dropped for failing to send. A bundle that cannot go keeps its place and records its
+    /// last error; one held back by the daily cap, or waiting on a sibling's card, is skipped without
+    /// stopping the queue behind it. Every one of them is simply picked up by a later drain.
+    ///
+    /// See <see cref="DrainOutcome"/> for why "filed none" and "another process is sending them" have to
+    /// be different answers.
+    /// </summary>
     public async Task<DrainOutcome> DrainAsync(
         IReportSubmitter submitter,
         CancellationToken cancellation = default
