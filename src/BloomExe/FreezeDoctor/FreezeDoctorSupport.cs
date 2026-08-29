@@ -489,6 +489,10 @@ namespace Bloom.FreezeDoctor
                     // independently, so the two cannot drift apart.
                     CdpPort = httpPort > 0 ? Api.BloomServer.RemoteDebuggingPort : 0,
                     CollectionName = SafeCollectionName(),
+                    // Settled long before we get here - Program acquires (or declines) the token during
+                    // startup, and Start() is called well after that - so this is right the first time and
+                    // never changes for the life of the process.
+                    OwnsSingleInstanceToken = Program.OwnsSingleInstanceToken,
                 };
                 lock (_sessionLock)
                 {
