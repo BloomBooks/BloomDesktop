@@ -191,6 +191,19 @@ internal static class Program
         return 0;
     }
 
+    /// <summary>
+    /// Sends the reports waiting in the outbox to the tracker, and prints what happened. This is the
+    /// manual `--drain`, for support.
+    ///
+    /// **"Draining" is emptying that queue.** A gathered report is always written to disk first and sent
+    /// afterwards, never in one step, so that nothing is lost to a machine that was offline, over the
+    /// daily cap, or shut down before the send finished. Whatever cannot go now keeps its place and its
+    /// last error, and waits for a later drain. This command is one of those later drains, run by hand.
+    ///
+    /// It deliberately works whether or not a Doctor is running - which is why the outbox guards itself
+    /// across processes, and why "another Doctor is already sending these" is a distinct thing to print
+    /// rather than a way of saying nothing was filed.
+    /// </summary>
     private static int Drain(CommandLineOptions options)
     {
         AttachConsole(-1);
