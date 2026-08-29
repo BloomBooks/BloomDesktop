@@ -20,9 +20,6 @@ namespace BloomFreezeDoctor;
 /// <param name="Queued">True if it is safely on disk and will be sent later.</param>
 public readonly record struct ReportNowResult(string? IssueId, bool Queued);
 
-/// <summary>One still-running Bloom the Doctor is watching, and the state it is in.</summary>
-public readonly record struct LiveBloom(int ProcessId, TargetState State);
-
 /// <summary>What the window needs to render, published by the supervisor as things change.</summary>
 public sealed record DoctorStatus
 {
@@ -260,13 +257,27 @@ public sealed class DoctorSupervisor : IDisposable
     /// </summary>
     public IReadOnlyList<LiveBloom> LiveWatchedBlooms()
     {
+        // Two steps, and the split is deliberate: whether a Bloom holds the single-instance token comes
+        // from its session file, and reading files under the supervisor lock is how the watchdog ends up
+        // waiting on a disk. Snapshot under the lock, read outside it.
+        List<(int ProcessId, TargetState State)> snapshot;
         lock (_lock)
         {
-            return _watchers
+            snapshot = _watchers
                 .Values.Where(watcher => IsAlive(watcher.Target.ProcessId))
-                .Select(watcher => new LiveBloom(watcher.Target.ProcessId, watcher.State))
+                .Select(watcher => (watcher.Target.ProcessId, watcher.State))
                 .ToList();
         }
+
+        return snapshot
+            .Select(bloom => new LiveBloom(
+                bloom.ProcessId,
+                bloom.State,
+                // Null when there is no session file, or one written by a Bloom too old to have this
+                // field. Both mean "did not say", which RestartBlockers reads as possibly blocking.
+                Protocol.DoctorSessionStore.TryRead(bloom.ProcessId)?.OwnsSingleInstanceToken
+            ))
+            .ToList();
     }
 
     /// <summary>Starts watching. Drains the outbox first, which is the moment that matters most.</summary>

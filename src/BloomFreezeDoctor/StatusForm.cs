@@ -535,7 +535,12 @@ public sealed class StatusForm : Form
             // token: it starts, finds it held, and exits a few seconds later. Starting one regardless is
             // worse than doing nothing, because what the user sees is "Bloom will not start" - the very
             // complaint that brought them to the Doctor.
-            var inTheWay = _supervisor.LiveWatchedBlooms();
+            //
+            // But only the Blooms actually HOLDING the token are in the way, which is not the same as
+            // every Bloom we watch: an --automation run bypasses the token entirely, so a developer with
+            // two worktrees open would otherwise be asked to kill a healthy Bloom that was blocking
+            // nothing. See RestartBlockers, including why "did not say" counts as blocking.
+            var inTheWay = RestartBlockers.InTheWay(_supervisor.LiveWatchedBlooms());
             if (inTheWay.Count == 0)
             {
                 StartBloomNow();
@@ -610,16 +615,19 @@ public sealed class StatusForm : Form
     /// </summary>
     private bool AskPermissionToEnd(IReadOnlyList<LiveBloom> inTheWay)
     {
-        var which = string.Join(", ", inTheWay.Select(bloom => bloom.ProcessId));
+        // Each one described by what it is actually doing. The old wording called every blocker "frozen",
+        // which a healthy Bloom holding the token is not - and telling somebody their working Bloom is
+        // frozen is how you lose their trust in everything else the Doctor says.
+        var which = string.Join(", ", inTheWay.Select(RestartBlockers.Describe));
         var message =
-            $"Bloom (process {which}) is still running, and Bloom will not start a second copy, so a new "
-            + "Bloom cannot start until that one ends.\n\nEnd it and start a new Bloom?";
-        if (inTheWay.Any(bloom => bloom.State != TargetState.Zombie))
+            $"Bloom ({which}) is still running, and Bloom will not start a second copy, so a new Bloom "
+            + "cannot start until that one ends.\n\nEnd it and start a new Bloom?";
+        if (inTheWay.Any(bloom => bloom.State == TargetState.Frozen))
         {
             message +=
-                "\n\nThat Bloom is frozen rather than window-less. Anything it has not saved will be lost "
-                + "- though a frozen Bloom cannot save anything anyway. Be aware that a frozen Bloom does "
-                + "sometimes start responding again on its own.";
+                "\n\nA frozen Bloom will lose anything it has not saved - though a frozen Bloom cannot "
+                + "save anything anyway. Be aware that a frozen Bloom does sometimes start responding "
+                + "again on its own.";
         }
         return MessageBox.Show(
                 this,

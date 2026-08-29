@@ -2467,6 +2467,15 @@ namespace Bloom
         private static bool _ownsSingleInstanceToken;
 
         /// <summary>
+        /// Whether this Bloom holds the single-instance token, which the channels deliberately share, so
+        /// that at most one Bloom is normally running. Published in the Doctor's session file: it is what
+        /// tells the Doctor which running Bloom is actually standing in the way of a restart, as against
+        /// the ones that bypassed the token (an --automation run) or never took it (a Ctrl-held launch
+        /// that was not first).
+        /// </summary>
+        internal static bool OwnsSingleInstanceToken => _ownsSingleInstanceToken;
+
+        /// <summary>
         /// Decides whether a Sentry event is the benign "unobserved Task socket/IO abort" noise
         /// that we want to drop rather than report. Used by the BeforeSend filter installed in
         /// SetUpErrorHandling.
