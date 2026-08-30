@@ -28,9 +28,24 @@ namespace Bloom
             Invoke((Action)(() => _fadeOutTimer.Enabled = true));
         }
 
+        // During an automation run (--automation) the splash must not steal the user's
+        // keyboard focus when it is shown.
+        protected override bool ShowWithoutActivation => Program.StartupAutomation;
+
         private SplashScreen()
         {
             InitializeComponent();
+            if (Program.StartupAutomation)
+            {
+                // An automation run must not open on whichever monitor the user is currently
+                // working on. Center the splash on the automation screen instead.
+                StartPosition = FormStartPosition.Manual;
+                var area = Shell.GetAutomationScreen().WorkingArea;
+                Location = new System.Drawing.Point(
+                    area.Left + (area.Width - Width) / 2,
+                    area.Top + (area.Height - Height) / 2
+                );
+            }
             _shortVersionLabel.Text = Shell.GetShortVersionInfo();
             _longVersionInfo.Text = "";
             _feedbackStatusLabel.Visible = !DesktopAnalytics.Analytics.AllowTracking;
@@ -95,14 +110,20 @@ namespace Bloom
 
         private void SplashScreen_Load(object sender, EventArgs e)
         {
-            //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
-            TopMost = true;
-            Focus();
+            // During an automation run, grabbing focus would yank the user's keyboard away
+            // from whatever they are doing on another monitor while tests run.
+            if (!Program.StartupAutomation)
+            {
+                //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
+                TopMost = true;
+                Focus();
+            }
             var channel = ApplicationUpdateSupport.ChannelName;
             _channelLabel.Visible = channel.ToLowerInvariant() != "release";
             _channelLabel.Text = channel; // No need to localize this: seen only by testers or special users (BL-4451)
             _copyrightlabel.Text = $"© 2011-{DateTime.Now.Year} SIL Global";
-            BringToFront();
+            if (!Program.StartupAutomation)
+                BringToFront();
         }
 
         private void SplashScreen_Paint(object sender, PaintEventArgs e)
