@@ -136,6 +136,10 @@ export class CanvasElementManager {
 
     private activeElement: HTMLElement | undefined;
     public isCanvasElementEditingOn: boolean = false;
+    // Every bloom-canvas we have given the pointer handlers to, so that one we are shown
+    // twice does not get a second set of them. A canvas built for a table cell reaches us
+    // once when it is built and again from the page-load pass after the page is reopened.
+    private bloomCanvasesWired = new WeakSet<HTMLElement>();
     private thingsToNotifyOfCanvasElementChange: {
         // identifies the source that requested the notification; allows us to remove the
         // right one when no longer needed, and prevent multiple notifiers to the same client.
@@ -697,37 +701,7 @@ export class CanvasElementManager {
         const bloomCanvases: HTMLElement[] = this.getAllBloomCanvasesOnPage();
 
         bloomCanvases.forEach((bloomCanvas) => {
-            setupBackgroundImageAttributes(
-                this.backgroundImageManagerState,
-                bloomCanvas,
-                () => this.activeElement,
-                this.alignControlFrameWithActiveElement,
-            );
-            this.adjustCanvasElementsForCurrentLanguage(bloomCanvas);
-            this.ensureCanvasElementsIntersectParent(bloomCanvas);
-            // image containers are already set by CSS to overflow:hidden, so they
-            // SHOULD never scroll. But there's also a rule that when something is
-            // focused, it has to be scrolled to. If we set focus to a canvas element that's
-            // sufficiently (almost entirely?) off-screen, the browser decides that
-            // it MUST scroll to show it. For a reason I haven't determined, the
-            // element it picks to scroll seems to be the bloom-canvas. This puts
-            // the display in a confusing state where the text that should be hidden
-            // is visible, though the canvas has moved over and most of the canvas element
-            // is still hidden (BL-11646).
-            // Another solution would be to find the code that is focusing the
-            // canvas element after page load, and give it the option {preventScroll: true}.
-            // But (a) this is not supported in Gecko (added in FF68), and (b) you
-            // can get a similar bad effect by moving the cursor through text that
-            // is supposed to be hidden. This drastic approach prevents both.
-            // We're basically saying, if this element scrolls its content for
-            // any reason, undo it.
-            bloomCanvas.addEventListener("scroll", () => {
-                bloomCanvas.scrollLeft = 0;
-                bloomCanvas.scrollTop = 0;
-            });
-            if (bloomCanvas.getAttribute("data-tool-id") === kCanvasToolId) {
-                SetupClickToShowCanvasTool(bloomCanvas);
-            }
+            this.setUpBloomCanvasForEditing(bloomCanvas);
         });
 
         // todo: select the right one...in particular, currently we just select the last one.
@@ -808,47 +782,125 @@ export class CanvasElementManager {
         // turn on various behaviors for each image
         Array.from(this.getAllBloomCanvasesOnPage()).forEach(
             (bloomCanvas: HTMLElement) => {
-                bloomCanvas.addEventListener("click", (event) => {
-                    // The goal here is that if the user clicks outside any comical canvas element,
-                    // we want none of the canvas elements selected, so that
-                    // (after moving the mouse away to get rid of hover effects)
-                    // the user can see exactly what the final comic will look like.
-                    // This is a difficult and horrible kludge.
-                    // First problem is that this click handler is fired for a click
-                    // ANYWHERE in the image...none of the canvas element-related
-                    // click handlers preventDefault(). So we have to figure out
-                    // whether the click was simply on the picture, or on something
-                    // inside it. A first step is to ignore any clicks where the target
-                    // is one of the picture's children. Even that's complicated...
-                    // the Comical canvas covers the whole picture, so the target
-                    // is NEVER the picture itself. But we can at least check that
-                    // the target is the comical canvas itself, not something overlayed
-                    // on it.
-                    if (
-                        (event.target as HTMLElement).classList.contains(
-                            "comical-editing",
-                        )
-                    ) {
-                        // OK, we clicked on the canvas, but we may still have clicked on
-                        // some part of a canvas element rather than away from it.
-                        // We now use a Comical function to determine whether we clicked
-                        // on a Comical object.
-                        const x = event.offsetX;
-                        const y = event.offsetY;
-                        if (!Comical.somethingHit(bloomCanvas, x, y)) {
-                            // If we click on the background of the bloom-canvas, we
-                            // don't want anything to have focus. This prevents any source
-                            // bubbles interfering with seeing the full content of the
-                            // bloom-canvas. BL-14295.
-                            this.removeFocus();
-                        }
-                    }
-                });
-                this.setDragAndDropHandlers(bloomCanvas);
-                this.pointerInteractions.setMouseDragHandlers(bloomCanvas);
+                this.setUpBloomCanvasPointerHandling(bloomCanvas);
             },
         );
     }
+
+    /**
+     * The page-load setup of one bloom-canvas, other than its pointer handling.
+     */
+    private setUpBloomCanvasForEditing(bloomCanvas: HTMLElement): void {
+        setupBackgroundImageAttributes(
+            this.backgroundImageManagerState,
+            bloomCanvas,
+            () => this.activeElement,
+            this.alignControlFrameWithActiveElement,
+        );
+        this.adjustCanvasElementsForCurrentLanguage(bloomCanvas);
+        this.ensureCanvasElementsIntersectParent(bloomCanvas);
+        // image containers are already set by CSS to overflow:hidden, so they
+        // SHOULD never scroll. But there's also a rule that when something is
+        // focused, it has to be scrolled to. If we set focus to a canvas element that's
+        // sufficiently (almost entirely?) off-screen, the browser decides that
+        // it MUST scroll to show it. For a reason I haven't determined, the
+        // element it picks to scroll seems to be the bloom-canvas. This puts
+        // the display in a confusing state where the text that should be hidden
+        // is visible, though the canvas has moved over and most of the canvas element
+        // is still hidden (BL-11646).
+        // Another solution would be to find the code that is focusing the
+        // canvas element after page load, and give it the option {preventScroll: true}.
+        // But (a) this is not supported in Gecko (added in FF68), and (b) you
+        // can get a similar bad effect by moving the cursor through text that
+        // is supposed to be hidden. This drastic approach prevents both.
+        // We're basically saying, if this element scrolls its content for
+        // any reason, undo it.
+        bloomCanvas.addEventListener("scroll", () => {
+            bloomCanvas.scrollLeft = 0;
+            bloomCanvas.scrollTop = 0;
+        });
+        if (bloomCanvas.getAttribute("data-tool-id") === kCanvasToolId) {
+            SetupClickToShowCanvasTool(bloomCanvas);
+        }
+    }
+
+    /**
+     * Give one bloom-canvas the handlers that let the user click and drag what is in it.
+     * Without these a click on the picture does nothing at all: it is these that select
+     * the canvas element under the mouse and so bring up the context controls.
+     */
+    private setUpBloomCanvasPointerHandling(bloomCanvas: HTMLElement): void {
+        this.bloomCanvasesWired.add(bloomCanvas);
+        bloomCanvas.addEventListener("click", (event) => {
+            // The goal here is that if the user clicks outside any comical canvas element,
+            // we want none of the canvas elements selected, so that
+            // (after moving the mouse away to get rid of hover effects)
+            // the user can see exactly what the final comic will look like.
+            // This is a difficult and horrible kludge.
+            // First problem is that this click handler is fired for a click
+            // ANYWHERE in the image...none of the canvas element-related
+            // click handlers preventDefault(). So we have to figure out
+            // whether the click was simply on the picture, or on something
+            // inside it. A first step is to ignore any clicks where the target
+            // is one of the picture's children. Even that's complicated...
+            // the Comical canvas covers the whole picture, so the target
+            // is NEVER the picture itself. But we can at least check that
+            // the target is the comical canvas itself, not something overlayed
+            // on it.
+            if (
+                (event.target as HTMLElement).classList.contains(
+                    "comical-editing",
+                )
+            ) {
+                // OK, we clicked on the canvas, but we may still have clicked on
+                // some part of a canvas element rather than away from it.
+                // We now use a Comical function to determine whether we clicked
+                // on a Comical object.
+                const x = event.offsetX;
+                const y = event.offsetY;
+                if (!Comical.somethingHit(bloomCanvas, x, y)) {
+                    // If we click on the background of the bloom-canvas, we
+                    // don't want anything to have focus. This prevents any source
+                    // bubbles interfering with seeing the full content of the
+                    // bloom-canvas. BL-14295.
+                    this.removeFocus();
+                }
+            }
+        });
+        this.setDragAndDropHandlers(bloomCanvas);
+        this.pointerInteractions.setMouseDragHandlers(bloomCanvas);
+    }
+
+    /**
+     * Give a bloom-canvas that appeared after the page loaded the same treatment the ones
+     * present at page load got, so that clicking its picture selects it and brings up the
+     * canvas element context controls.
+     *
+     * The table library builds one of these whenever the user gives a cell the Image content
+     * type, which is long after turnOnCanvasElementEditing has run its one pass over the page.
+     * Until this is called the picture is inert: no mousedown handler, so no selection, so no
+     * way for the user to reach the menu that would let them choose the picture at all.
+     *
+     * Safe to call more than once on the same canvas; the second call does nothing.
+     */
+    public wireBloomCanvasAddedAfterPageLoad(bloomCanvas: HTMLElement): void {
+        // Nothing to wire onto if the page is not in canvas element editing mode at all;
+        // when it is turned on it will find this canvas along with all the others.
+        if (!this.isCanvasElementEditingOn) return;
+        if (this.bloomCanvasesWired.has(bloomCanvas)) return;
+        this.setUpBloomCanvasForEditing(bloomCanvas);
+        this.setUpBloomCanvasPointerHandling(bloomCanvas);
+        // Comical draws the canvas that the click handling above works in terms of, and it
+        // only knows about the canvases it was given when editing started.
+        Comical.setUserInterfaceProperties({ tailHandleColor: kBloomBlue });
+        Comical.startEditing([bloomCanvas]);
+        bloomCanvas
+            .querySelectorAll<HTMLElement>(kCanvasElementSelector)
+            .forEach((canvasElement) =>
+                this.addEventsToFocusableElements(canvasElement, false),
+            );
+    }
+
     removeFocus() {
         if (document.activeElement) {
             (document.activeElement as HTMLElement)?.blur();

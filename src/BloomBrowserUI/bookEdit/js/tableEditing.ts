@@ -29,6 +29,11 @@ import {
     attachToCkEditor,
 } from "./bloomEditing";
 import { observeTranslationGroupSizes } from "./translationGroupSizeMarking";
+// calendarGrids deliberately imports nothing from this module, so a calendar grid can be laid
+// out from here without the two importing each other. The layout code that would need
+// RerenderTables is in calendarGridActions, which is not what this reaches for.
+import { layOutGridAgain } from "../calendarSetup/calendarGrids";
+import { kCalendarMonthAttribute } from "../calendarSetup/layOutCalendarMonthPage";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
@@ -157,7 +162,18 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
         root.querySelectorAll<HTMLElement>(imageCellSelector),
     );
     if (root.matches(imageCellSelector)) imageCells.push(root);
-    imageCells.forEach((cell) => SetupImagesInContainer(cell));
+    imageCells.forEach((cell) => {
+        SetupImagesInContainer(cell);
+        // A cell has exactly one picture of its own. The canvas element manager wired every
+        // bloom-canvas it found when the page loaded, which was before this one existed, so
+        // without this a click on the picture does nothing and the user has no way to reach
+        // the menu that would let them choose what picture it shows.
+        const bloomCanvas = cell.querySelector<HTMLElement>(".bloom-canvas");
+        if (bloomCanvas)
+            theOneCanvasElementManager.wireBloomCanvasAddedAfterPageLoad(
+                bloomCanvas,
+            );
+    });
     observeImageCells(root);
     // A cell is usually far too small for the language name and the format cog that Bloom
     // draws inside a text box, and these cells were built after the page-load pass that
@@ -209,6 +225,31 @@ function onTableCellContentChanged(e: Event): void {
     // whose own cells the library filled with Bloom's default cell content, so
     // rather than switch on the content type we wire whatever is in there.
     wireBloomContentOfNewCells(cell);
+    relayOutTheCalendarGridOfCell(cell);
+}
+
+/**
+ * If this cell is a day of a calendar month grid, lay that grid out again.
+ *
+ * The library rebuilds a cell from its content type's own template when the type changes, and
+ * that takes with it the wrapper the calendar keeps the day number in. Laying the grid out
+ * again puts both back around whatever the library has just built, so a cell the user has
+ * turned into a picture shows its date again straight away rather than at whatever they happen
+ * to do next.
+ *
+ * The layout call is the one that does not ask whether it is needed: nothing the signature is
+ * made of has changed, so the grid still says it is up to date.
+ */
+function relayOutTheCalendarGridOfCell(cell: HTMLElement): void {
+    if (!cell.classList.contains("calendarDayCell")) return;
+    const grid = cell.closest<HTMLElement>(
+        `.bloom-table[${kCalendarMonthAttribute}]`,
+    );
+    const pageElement = grid?.closest<HTMLElement>(".bloom-page");
+    if (!grid || !pageElement) return;
+    // The library dispatches this event once its own history entry has closed, saying handlers
+    // may safely run further table operations, so the redraw can happen here and now.
+    if (layOutGridAgain(grid, pageElement)) RerenderTables(grid);
 }
 
 /** Handle the library finishing a table operation. Attached via SetupTableEditing. */
@@ -268,7 +309,13 @@ function refitImageCellPictures(): void {
         if (!theOneCanvasElementManager) return;
         theOneCanvasElementManager.adjustAfterContainerResize();
         document
-            .querySelectorAll<HTMLElement>(".bloom-cell > .bloom-canvas")
+            .querySelectorAll<HTMLElement>(
+                // The second is a calendar day cell, which keeps everything it holds inside a
+                // wrapper, so its picture is a grandchild. Both are the cell's own picture; a
+                // bloom-canvas deeper than this belongs to a canvas element the user placed,
+                // which adjustAfterContainerResize above has already dealt with.
+                ".bloom-cell > .bloom-canvas, .bloom-cell > .calendarDayCellContents > .bloom-canvas",
+            )
             .forEach((bloomCanvas) => {
                 // A cell mid-layout has no area to fit anything to, and asking
                 // would only start the picture off from meaningless numbers.

@@ -424,6 +424,32 @@ export function rotateWeekdayCells(
 }
 
 /**
+ * The wrapper inside a day cell that holds the day number and whatever else the cell shows.
+ * The table library requires a cell to have exactly one child, so everything a day cell holds
+ * goes inside this one element.
+ *
+ * A day cell has one from the template. It loses it when the user changes the cell's content
+ * type: the library rebuilds the cell from that type's own template, which throws the wrapper
+ * away and the day number with it. So when there is no wrapper we put one back around whatever
+ * the library has just built. The caller then finds no day number and makes a new one, which is
+ * how a cell the user has turned into a picture gets its date back and keeps the picture.
+ *
+ * This is a repair rather than a migration: it happens the next time the grid is laid out, so
+ * a book already carrying a cell like this heals as the user arrives at it.
+ */
+function getOrMakeDayCellContents(cell: HTMLElement): HTMLElement {
+    const existing = cell.querySelector<HTMLElement>(
+        ".calendarDayCellContents",
+    );
+    if (existing) return existing;
+    const contents = cell.ownerDocument.createElement("div");
+    contents.className = "calendarDayCellContents";
+    while (cell.firstChild) contents.appendChild(cell.firstChild);
+    cell.appendChild(contents);
+    return contents;
+}
+
+/**
  * Give one day cell the day it now holds. A cell with no day, before day 1 or past the end
  * of the month, loses its day-number element altogether and becomes a calendarUnusedDay, the
  * marker for a cell outside the drawn borders. A cell holding a date of the previous or the
@@ -440,14 +466,7 @@ function setDayOfCell(
 ): void {
     cell.classList.toggle("calendarUnusedDay", day === 0);
     cell.classList.toggle("calendarNeighborDay", isNeighbor);
-    const contents = cell.querySelector<HTMLElement>(
-        ".calendarDayCellContents",
-    );
-    if (!contents) {
-        throw new Error(
-            "layOutCalendarMonthPage: a day cell has no calendarDayCellContents",
-        );
-    }
+    const contents = getOrMakeDayCellContents(cell);
     let numberElement =
         contents.querySelector<HTMLElement>(".calendarDayNumber");
     if (day === 0) {

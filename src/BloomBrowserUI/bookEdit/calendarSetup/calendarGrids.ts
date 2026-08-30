@@ -131,6 +131,26 @@ export function layOutGridIfNeeded(
 }
 
 /**
+ * Lay this grid out again whether or not it says it needs it. Says whether it could, which is
+ * to say whether the book has told it what month and year it is for yet.
+ *
+ * The signature layOutGridIfNeeded compares describes what the grid is for, not what its cells
+ * currently hold, so it cannot see damage to the cells themselves. Changing a day cell's
+ * content type is exactly that: the table library rebuilds the cell from the new type's own
+ * template, taking the day number with it, while every attribute the signature is made of stays
+ * as it was. A caller that knows the cells have changed asks for the layout outright.
+ */
+export function layOutGridAgain(
+    table: HTMLElement,
+    pageElement: HTMLElement,
+): boolean {
+    const layout = resolveGridLayout(table, pageElement);
+    if (!layout) return false;
+    layOutCalendarMonthPage(table, layout);
+    return true;
+}
+
+/**
  * Give every translationGroup of a grid an editable in the book's own language.
  *
  * A grid comes out of buildCalendarGridTable holding only the five seed-language editables.
