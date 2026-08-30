@@ -845,3 +845,108 @@ describe("the dates of the neighboring months", () => {
         ).toBe(true);
     });
 });
+
+describe("a day cell the table library has rebuilt", () => {
+    // January 2027, Sunday first: five leading cells, so cell 5 holds day 1 and cell 0 holds
+    // no day of this month.
+    const januaryLayout: ICalendarMonthLayout = {
+        year: 2027,
+        month: 0,
+        firstDayOfWeek: kSundayFirst,
+        showNeighborDays: false,
+    };
+
+    /**
+     * Do to one cell what the table library does when the user gives it another content type:
+     * throw away everything in it and put that type's own template there instead. This is
+     * setupContentsOfCell in bloom-table, which does `cell.innerHTML = content.templateHtml`,
+     * and it takes the calendarDayCellContents wrapper and the day number with it.
+     */
+    function makeCellAPicture(cell: HTMLElement): HTMLElement {
+        cell.setAttribute("data-content-type", "image");
+        cell.innerHTML = `<div class="bloom-canvas" data-test="the picture"></div>`;
+        return cell.querySelector<HTMLElement>(".bloom-canvas")!;
+    }
+
+    it("gets its wrapper and its day number back, and keeps the picture", () => {
+        const table = makeUnconfiguredGridTable(0);
+        layOutCalendarMonthPage(table, januaryLayout);
+        // Sanity check the fixture: cell 5 is day 1, and it starts out properly built.
+        expect(getShownDayNumbers(table)[5]).toBe("1");
+        const cell = getDayCells(table)[5];
+        const canvas = makeCellAPicture(cell);
+        expect(cell.querySelector(".calendarDayCellContents")).toBeNull();
+        expect(cell.querySelector(".calendarDayNumber")).toBeNull();
+
+        layOutCalendarMonthPage(table, januaryLayout);
+
+        const contents = cell.querySelector<HTMLElement>(
+            ".calendarDayCellContents",
+        );
+        expect(contents).not.toBeNull();
+        // The picture is the same element, now inside the wrapper rather than thrown away.
+        expect(canvas.parentElement).toBe(contents);
+        expect(canvas.getAttribute("data-test")).toBe("the picture");
+        const numberElement =
+            contents!.querySelector<HTMLElement>(".calendarDayNumber");
+        expect(numberElement?.textContent).toBe("1");
+        // The cell still has the one child the table library requires of it.
+        expect(cell.children.length).toBe(1);
+    });
+
+    it("gives the number the classes that let the user format it", () => {
+        const table = makeUnconfiguredGridTable(0);
+        layOutCalendarMonthPage(table, januaryLayout);
+        makeCellAPicture(getDayCells(table)[5]);
+
+        layOutCalendarMonthPage(table, januaryLayout);
+
+        const numberElement =
+            getDayCells(table)[5].querySelector<HTMLElement>(
+                ".calendarDayNumber",
+            )!;
+        expect(numberElement.className).toBe(
+            "calendarDayNumber CalendarDayNumber-style bloom-styleable",
+        );
+        expect(numberElement.getAttribute("tabindex")).toBe("0");
+    });
+
+    it("puts no number in a cell that holds no day of this month", () => {
+        const table = makeUnconfiguredGridTable(0);
+        layOutCalendarMonthPage(table, januaryLayout);
+        // Sanity check the fixture: cell 0 is one of the five before day 1.
+        expect(getShownDayNumbers(table)[0]).toBe("");
+        const cell = getDayCells(table)[0];
+        const canvas = makeCellAPicture(cell);
+
+        layOutCalendarMonthPage(table, januaryLayout);
+
+        const contents = cell.querySelector<HTMLElement>(
+            ".calendarDayCellContents",
+        );
+        expect(contents).not.toBeNull();
+        expect(canvas.parentElement).toBe(contents);
+        expect(contents!.querySelector(".calendarDayNumber")).toBeNull();
+        expect(cell.classList.contains("calendarUnusedDay")).toBe(true);
+    });
+
+    it("leaves a cell that still has its wrapper exactly as it was", () => {
+        const table = makeUnconfiguredGridTable(0);
+        layOutCalendarMonthPage(table, januaryLayout);
+        const cell = getDayCells(table)[5];
+        const contentsBefore = cell.querySelector(".calendarDayCellContents");
+        const noteBefore = cell.querySelector(".bloom-editable");
+        // Sanity check: there is a wrapper and a note to leave alone.
+        expect(contentsBefore).not.toBeNull();
+        expect(noteBefore).not.toBeNull();
+
+        layOutCalendarMonthPage(table, januaryLayout);
+
+        expect(cell.querySelector(".calendarDayCellContents")).toBe(
+            contentsBefore,
+        );
+        expect(cell.querySelector(".bloom-editable")).toBe(noteBefore);
+        expect(cell.children.length).toBe(1);
+        expect(getShownDayNumbers(table)[5]).toBe("1");
+    });
+});
