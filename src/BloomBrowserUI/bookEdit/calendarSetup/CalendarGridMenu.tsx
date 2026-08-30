@@ -255,9 +255,13 @@ const CalendarGridMenu: React.FunctionComponent<{ grid: HTMLElement }> = (
                         />
                     ))}
                 </LocalizableNestedMenuItem>
+                {/* The row is labelled with the month the grid is already for, rather than the
+                    word "Month", so the user can see what the grid says without opening the
+                    submenu. The name is already in the user interface language, so the row
+                    carries no l10nId and is shown as it is. */}
                 <LocalizableNestedMenuItem
-                    english="Month"
-                    l10nId="EditTab.CalendarGrid.Month"
+                    english={monthNames[month]}
+                    l10nId={null}
                 >
                     {Array.from({ length: kMonthCount }, (unused, index) => (
                         // The name is already in the user interface language, so the row
@@ -271,9 +275,14 @@ const CalendarGridMenu: React.FunctionComponent<{ grid: HTMLElement }> = (
                         />
                     ))}
                 </LocalizableNestedMenuItem>
+                {/* Likewise the year the grid is already for. An unconfigured Wall Calendar has
+                    no year yet, and there the row keeps the word, because there is nothing to
+                    show in its place. A year is a number, so it is never localized. */}
                 <LocalizableNestedMenuItem
-                    english="Year"
-                    l10nId="EditTab.CalendarGrid.Year"
+                    english={year === undefined ? "Year" : String(year)}
+                    l10nId={
+                        year === undefined ? "EditTab.CalendarGrid.Year" : null
+                    }
                 >
                     {getYearsToOffer(props.grid).map((offeredYear) => (
                         // A year is a number, not a word of the user interface, so it is
