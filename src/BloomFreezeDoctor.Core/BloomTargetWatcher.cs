@@ -298,24 +298,27 @@ public sealed class BloomTargetWatcher : IDisposable
         if (!string.IsNullOrEmpty(simulated))
             reasons.Add($"this Bloom was told to break itself on purpose (`{simulated}`)");
         if (BloomAlreadyReported())
-            reasons.Add("Bloom has already reported a problem itself during this run");
+            reasons.Add("Bloom reported a problem itself in the last few minutes");
         return reasons;
     }
 
     /// <summary>
-    /// True when Bloom has already reported a problem for this run. Bloom writes this into its session file
-    /// the moment one of its own reports succeeds, so a user who filed a problem report by hand and a Doctor
+    /// True when Bloom has itself reported a problem recently. Bloom writes this into its session file the
+    /// moment one of its own reports succeeds, so a user who filed a problem report by hand and a Doctor
     /// that noticed the same trouble do not produce two cards about it.
     ///
+    /// **Recently, not "this run"** - see <see cref="BloomsOwnReport"/> for why the suppression expires.
+    ///
     /// Read fresh each time rather than cached: the interesting case is Bloom reporting *while* we are
-    /// deciding, which is precisely when the two would otherwise collide.
+    /// deciding, which is precisely when the two would otherwise collide - and, now that it expires, the
+    /// answer genuinely changes as the Bloom keeps running.
     /// </summary>
     private bool BloomAlreadyReported()
     {
         try
         {
             var session = Protocol.DoctorSessionStore.TryRead(Target.ProcessId);
-            return session?.BloomAlreadyReported == true;
+            return BloomsOwnReport.StillAccountsForTheTrouble(session, DateTimeOffset.UtcNow);
         }
         catch (Exception)
         {
