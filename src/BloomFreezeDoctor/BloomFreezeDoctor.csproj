@@ -1,7 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    The Doctor itself. WinExe rather than Exe so there is no console flash when Bloom launches it; the
+    The Doctor's window and entry point, and DELIBERATELY NOTHING ELSE. Everything the Doctor actually
+    does lives in BloomFreezeDoctor.Core, whose project file explains the rule and why it is a hard one:
+    a test project cannot sensibly reference this WinExe, so whatever is added here can only ever be
+    exercised by running the application. Add a file here only if it is Windows Forms or Main.
+
+    WinExe rather than Exe so there is no console flash when Bloom launches it; the
     queue-inspection switches attach to the parent console when they need to print.
 
     NO INSTALLER OF ITS OWN, and therefore no Velopack. BloomFreezeDoctor.exe is built into Bloom's own
