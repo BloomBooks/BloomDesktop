@@ -1,9 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    The Doctor's decision-making, deliberately separated from everything that touches a real
-    process or a window. Detection logic is where the subtle mistakes live (see
-    docs/SPIKE-FINDINGS.md), so it must be testable without a frozen Bloom to hand.
+    **Everything the Doctor does lives here. Only its window and its entry point live in the
+    BloomFreezeDoctor project.**
+
+    The reason is testing, and it is a hard boundary rather than a preference: BloomFreezeDoctor is a
+    WinExe with UseWindowsForms whose output goes into Bloom's own folder with the target framework
+    stripped off the path, and a test project cannot sensibly reference that. Code on that side of the
+    line can only ever be exercised by running the application; code on this side can be unit-tested.
+
+    So the rule for a new file: it belongs in BloomFreezeDoctor only if it is Windows Forms, or the
+    process entry point. Everything else belongs here - including the parts that talk to processes,
+    files and the network. Note what this project is therefore NOT: it is not "the pure logic". It holds
+    WindowsTargetProbe, ReportOutbox and YouTrackSubmitter, which do all three. Detection logic is where
+    the subtle mistakes live (see docs/SPIKE-FINDINGS.md) and must be testable without a frozen Bloom to
+    hand, but that is an argument for keeping such code here, not for keeping anything else out.
+
+    DoctorSupervisor is why this note exists. It sat in the exe for no better reason than that it was
+    written there, putting 1,257 lines of ordinary logic - and every type declared alongside it - out of
+    reach of the tests. That is how testing RestartBlockers came to require moving a type first.
+
+    Both projects use RootNamespace BloomFreezeDoctor, so moving a file across the line changes no
+    `using` and no call site anywhere.
   -->
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -17,8 +35,18 @@
 
   <ItemGroup>
     <!--
-      The wire format Bloom and the Doctor share. Its own project because it is also published as its
-      own package, which is how BloomDesktop gets it instead of keeping a copy.
+      So the tests can reach `internal` members. Used sparingly, for helpers whose behaviour has a stated
+      consequence somewhere else - SafeFileName's null-versus-empty, for instance, which decides whether
+      an Event Log search matches the right process or every message ever written.
+    -->
+    <InternalsVisibleTo Include="BloomFreezeDoctor.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The wire format Bloom and the Doctor share. Its own project so that Bloom can reference just the
+      wire format without dragging in the Doctor's diagnostics - ClrMD, the AWS SDK, the Event Log
+      reader - none of which Bloom has any use for.
     -->
     <ProjectReference Include="..\BloomFreezeDoctor.Protocol\BloomFreezeDoctor.Protocol.csproj" />
   </ItemGroup>

@@ -871,15 +871,11 @@ public sealed class DoctorSupervisor : IDisposable
     }
 
     /// <summary>
-    /// Bloom is crashing and has asked to be dumped while it still exists. This is the one time the Doctor
-    /// has to be quick: Bloom is holding its own death open for about three seconds waiting for us.
-    /// </summary>
-    /// <summary>
     /// The exe's file name, or null if we never learned the path. Null rather than empty: the Event Log
     /// reader reads "unknown" as "accept any of the channel names the installer produces", where an empty
     /// string would match every message ever written.
     /// </summary>
-    private static string? SafeFileName(string? path)
+    internal static string? SafeFileName(string? path)
     {
         try
         {
@@ -892,6 +888,10 @@ public sealed class DoctorSupervisor : IDisposable
         }
     }
 
+    /// <summary>
+    /// Bloom is crashing and has asked to be dumped while it still exists. This is the one time the Doctor
+    /// has to be quick: Bloom is holding its own death open for about three seconds waiting for us.
+    /// </summary>
     private void RespondToACrashingBloom(BloomTargetWatcher watcher)
     {
         try
