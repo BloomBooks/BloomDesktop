@@ -427,6 +427,9 @@ namespace Bloom.FreezeDoctor
                     {
                         BloomAlreadyReported = true,
                         ReportedId = reportedId,
+                        // The Doctor stops filing for a few minutes after this, not for the rest of the
+                        // run, so it needs to know when rather than only whether.
+                        ReportedAtUtc = DateTimeOffset.UtcNow,
                     };
                     DoctorSessionStore.TryWrite(_session);
                 }

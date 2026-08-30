@@ -692,8 +692,8 @@ public sealed class DoctorSupervisor : IDisposable
             notFiledBecause = $"this failure was deliberately simulated ({simulated})";
         else if (facts.NeverFile)
             notFiledBecause = "this is a developer or automation build";
-        else if (context.Session?.BloomAlreadyReported == true)
-            notFiledBecause = "Bloom has already reported this problem itself";
+        else if (BloomsOwnReport.StillAccountsForTheTrouble(context.Session, DateTimeOffset.UtcNow))
+            notFiledBecause = "Bloom reported a problem itself a few minutes ago";
         else
             notFiledBecause = "a debugger was attached";
         Note(
@@ -824,13 +824,18 @@ public sealed class DoctorSupervisor : IDisposable
                         exeFileName: SafeFileName(watcher.Target.ExePath)
                     );
 
-                    // Bloom telling us it already reported the problem outranks everything: a second card
+                    // Bloom telling us it just reported the problem outranks everything: a second card
                     // about the same trouble is noise.
-                    if (session?.BloomAlreadyReported == true)
+                    //
+                    // Bounded like every other use of this flag. A Bloom that crashes hours after somebody
+                    // filed a report about something unrelated deserves its own card - and while a crash
+                    // that soon after a report is usually the same trouble, "usually" is not a reason to
+                    // stay silent once the session has moved on. See BloomsOwnReport.
+                    if (BloomsOwnReport.StillAccountsForTheTrouble(session, DateTimeOffset.UtcNow))
                     {
                         Note(
-                            $"Bloom {watcher.Target.ProcessId} exited having already reported the problem "
-                                + $"itself ({session.ReportedId}); saying nothing"
+                            $"Bloom {watcher.Target.ProcessId} exited having just reported the problem "
+                                + $"itself ({session?.ReportedId}); saying nothing"
                         );
                         return;
                     }

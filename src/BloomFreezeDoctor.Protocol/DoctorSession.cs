@@ -98,6 +98,16 @@ public sealed record DoctorSession
     public string? ReportedId { get; init; }
 
     /// <summary>
+    /// When Bloom filed it. The Doctor's suppression expires, so it needs the time and not only the fact:
+    /// a user reports something non-fatal and keeps working, and an unrelated freeze two hours later is
+    /// worth a card of its own. See BloomsOwnReport.
+    ///
+    /// Null means a Bloom too old to say. That is not the same as "never reported", which is
+    /// <see cref="BloomAlreadyReported"/> being false.
+    /// </summary>
+    public DateTimeOffset? ReportedAtUtc { get; init; }
+
+    /// <summary>
     /// The API requests that were in flight when this file was last written, longest-running first.
     ///
     /// **This is the one part of the session that is about the present rather than the run.** The shared
