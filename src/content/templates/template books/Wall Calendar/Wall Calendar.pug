@@ -252,9 +252,12 @@ html
 						+field-withEnglishText.CalendarMonth-style
 							| January 2027
 				+lower(85)
-					//- This grid is January, so the tooling can lay it out again for whatever year
-					//- the book it is added to is for.
-					.bloom-table(data-calendar-month='0', data-column-widths=kCalendarColumnWidths, data-row-heights=kCalendarRowHeights, data-edges-v=calendarEdgesV, data-edges-h=calendarEdgesH, style=calendarGridStyle)
+					//- This grid says which month, year and first day of the week it is for, so
+					//- that a book with no calendar data-div of its own -- any book Add Page
+					//- offers this page to -- still has everything the tooling needs to lay it
+					//- out again. It deliberately carries no data-calendar-laid-out: the first
+					//- open lays it out, and what that produces is what is drawn here.
+					.bloom-table(data-calendar-month='0', data-calendar-year='2027', data-calendar-first-day='0', data-column-widths=kCalendarColumnWidths, data-row-heights=kCalendarRowHeights, data-edges-v=calendarEdgesV, data-edges-h=calendarEdgesH, style=calendarGridStyle)
 						//- Weekday row
 						each weekdayName in kCalendarWeekdayNames.en
 							.bloom-cell(data-content-type='text')

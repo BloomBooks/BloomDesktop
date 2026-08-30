@@ -145,14 +145,18 @@ namespace BloomTests.Book
             }
         }
 
+        /// <summary>
+        /// The year element is plumbing, not text the user types or formats: it carries the
+        /// value the data-div hands to all twelve grid pages, and wallCalendar.less hides it.
+        /// So it is a plain div with the class the style sheet hides, and it starts out empty,
+        /// which is how the tooling knows the book has not been set up yet.
+        /// </summary>
         [Test]
-        public void CreatedBook_YearElementIsStyleableAndEmpty()
+        public void CreatedBook_YearElementIsHiddenPlumbingAndEmpty()
         {
             var year = Select("//div[@data-book='calendarYear']").First();
             Assert.That(year.GetAttribute("class"), Does.Contain("calendarYear"));
-            Assert.That(year.GetAttribute("class"), Does.Contain("CalendarYear-style"));
-            Assert.That(year.GetAttribute("class"), Does.Contain("bloom-styleable"));
-            Assert.That(year.GetAttribute("tabindex"), Is.EqualTo("0"));
+            Assert.That(year.GetAttribute("lang"), Is.EqualTo("*"));
             Assert.That(year.InnerText.Trim(), Is.Empty);
         }
 

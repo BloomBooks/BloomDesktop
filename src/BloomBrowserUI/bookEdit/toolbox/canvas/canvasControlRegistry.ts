@@ -1159,14 +1159,20 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             buildMenuItem: (ctx, _runtime) => {
                 const grid = getGridOfCanvasElement(ctx.canvasElement);
                 const currentMonth = grid ? getMonthOfGrid(grid) : -1;
+                const monthNames = getMonthNamesToOffer();
                 return {
                     id: "calendarMonth",
-                    l10nId: "EditTab.CalendarGrid.Month",
-                    englishLabel: "Month",
+                    // The row says which month the grid is already for, rather than the word
+                    // "Month", so the user can see what the grid says without opening the
+                    // submenu. That name is already in the user interface language, so the row
+                    // carries no l10nId, the same way its submenu rows do. A grid we could not
+                    // find keeps the word.
+                    l10nId: grid ? undefined : "EditTab.CalendarGrid.Month",
+                    englishLabel: grid ? monthNames[currentMonth] : "Month",
                     onSelect: () => {},
                     // The month names are already in Bloom's user interface language, so each
                     // row carries no l10nId and is shown as it is.
-                    subMenuItems: getMonthNamesToOffer().map((name, month) => ({
+                    subMenuItems: monthNames.map((name, month) => ({
                         englishLabel: name,
                         icon:
                             month === currentMonth
@@ -1192,8 +1198,16 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 const currentYear = grid ? getYearOfGrid(grid) : undefined;
                 return {
                     id: "calendarYear",
-                    l10nId: "EditTab.CalendarGrid.Year",
-                    englishLabel: "Year",
+                    // Likewise the year the grid is already for. A grid whose book has named no
+                    // year yet keeps the word, because there is nothing to show in its place.
+                    l10nId:
+                        currentYear === undefined
+                            ? "EditTab.CalendarGrid.Year"
+                            : undefined,
+                    englishLabel:
+                        currentYear === undefined
+                            ? "Year"
+                            : String(currentYear),
                     onSelect: () => {},
                     // A year is a number rather than a word of the user interface, so each
                     // row carries no l10nId and is shown as it is.
