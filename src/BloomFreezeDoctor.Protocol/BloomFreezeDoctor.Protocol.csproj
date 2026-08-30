@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The protocol Bloom and the Freeze Doctor share: the shared-memory health page, the session file, and
+    the named events they use to reach each other.
+
+    Both consumers - BloomExe and BloomFreezeDoctor.Core - reference this project directly, so there is one
+    definition compiled into both sides from the same source every build. Drift is therefore not merely
+    detected but impossible, which matters because drift here produces confident, wrong reports rather than
+    an error. Nothing is packaged or versioned: no NuGet package, no API key, no version to keep in step.
+  -->
+  <PropertyGroup>
+    <!--
+      net8.0-windows rather than plain net8.0, and not merely by inheritance from its consumers: the named
+      kernel objects this uses - a named EventWaitHandle, a memory-mapped file in the `Local\` namespace -
+      are annotated Windows-only in .NET, so a neutral target reports every use as a platform warning, and
+      warnings are errors here. Both consumers are Windows-only anyway.
+    -->
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>BloomFreezeDoctor.Protocol</RootNamespace>
+    <AssemblyName>BloomFreezeDoctor.Protocol</AssemblyName>
+    <Platforms>x64;ARM64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      libpalaso, for SIL.IO.RobustFile: DoctorSession writes and reads a file on a user's disk, and this
+      repository's rule is that such writes retry rather than fail the first time a virus scanner happens to
+      be holding the file. S3, for uploading a support file too large for a tracker attachment; see
+      SupportUpload.cs.
+
+      Every version here must match BloomExe.csproj, kept in step by hand: both projects land in one output
+      directory, so two versions of the same assembly is a problem worth avoiding. If this layout settles,
+      they belong in Directory.Build.props alongside VelopackVersion.
+    -->
+    <PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
+    <PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />
+    <PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
+  </ItemGroup>
+
+</Project>

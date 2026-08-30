@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.FreezeDoctor;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
@@ -328,8 +329,23 @@ namespace Bloom.Publish.Video
         /// We get a notification through the API when bloom player has loaded the first page content
         /// and is in a good state for us to start recording video from the window content.
         /// </summary>
+        /// <summary>
+        /// What Bloom says it is doing while a recording runs, for a Freeze Doctor report.
+        ///
+        /// Recording needs no <c>LongOperation</c> mark, because the window has to keep rendering for
+        /// ffmpeg to capture it, so the UI heartbeat keeps ticking and the Doctor never mistakes it for a
+        /// freeze. But nothing else describes it either: the request that starts a recording returns at
+        /// once, and the next one arrives only when the book finishes playing — so without this, a report
+        /// gathered during a recording says "no request in flight" for however many minutes it ran, and a
+        /// crash in the middle of one would produce a card that never mentions the video.
+        /// </summary>
+        private const string RecordingActivity = "recording a video";
+
         public void StartFfmpegForVideoCapture()
         {
+            // Said before the early return below, because an MP3 recording still plays the whole book.
+            FreezeDoctorSupport.SetActivity(RecordingActivity);
+
             // Enhance: what on earth should we do if it's not found??
 
             // If we're doing audio there's no more to do just now; we will play the book
@@ -465,6 +481,12 @@ namespace Bloom.Publish.Video
 
             ClearPreventSleepTimer();
             Close();
+
+            // The encode-and-merge is the slow part, and being CPU-bound it could be taken for a freeze.
+            // Opened after the Close above, deliberately: closing raises OnClosed, which retires the
+            // recording note, and a scope spanning that would capture the note as the activity to restore
+            // and leave it stated long after the video was finished.
+            using var _longOperation = FreezeDoctorSupport.LongOperation("making a video");
 
             await BrowserProgressDialog.DoWorkWithProgressDialogAsync(
                 _webSocketServer,
@@ -1354,6 +1376,17 @@ namespace Bloom.Publish.Video
             // properly, BEFORE we do the next stage of processing the video; don't clean
             // up anything we will need for that. See code at start of StopRecordingAsync,
             // which sets things up so that Close will not mess things up.
+            // Retire the recording note here rather than at the end of StopRecordingAsync, because this
+            // runs on every path out, including the user closing the window to cancel. A stated activity has
+            // no natural expiry, so a path that forgot to clear it would leave every later report claiming
+            // Bloom was recording a video.
+            //
+            // Note this blanks the slot rather than retiring only our own note, so it would also drop the
+            // text of a long operation running at the same moment. Nothing in the Publish tab can produce
+            // that overlap, and the cost if it ever did is a report with less to say rather than one that
+            // says something false.
+            FreezeDoctorSupport.SetActivity("");
+
             _saveReceived = false;
             if (_webSocketServer != null)
                 _webSocketServer.SendString("recordVideo", "recording", "false");

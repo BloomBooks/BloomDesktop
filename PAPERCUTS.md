@@ -19,6 +19,22 @@ House rules:
 
 ---
 
+## 2026-08-26 — A Bloom launched by ./go.sh cannot be watched by the Freeze Doctor
+
+- **Cut:** `go.sh` runs Bloom with `--automation`, and the Doctor deliberately refuses to watch any
+  run whose command line carries that flag (such runs legitimately have no window, so watching them
+  would manufacture zombie reports). So the repo’s sanctioned dev launcher produces the one kind of
+  Bloom the Doctor ignores, and an agent following AGENTS.md cannot test the Doctor at all. Launching
+  the built exe directly instead dies at Velopack init when given no arguments ("Bloom Problem"
+  immediately), though the same binary starts fine with go.sh’s own arguments. F5 works, which is why
+  every successful manual test of this feature so far has been F5.
+- **Idea:** either have go.sh omit `--automation` (or offer a flag to), or say in AGENTS.md that testing
+  the Freeze Doctor needs F5 rather than go.sh, and why. Also worth noting that go.sh builds to
+  `output/Debug/AnyCPU` while launch.json runs `output/Debug/x64`.
+- **Context:** BL-16719, trying to run a crash test unattended. A related false start: 
+  `build/agent-dotnet.sh` builds into `output/agent/<key>/`, so `output/Debug/x64` was eleven commits
+  stale and the first attempt silently exercised old code.
+
 ## 2026-07-30 — Visual regression suite reports only the first stale image per case
 - **Cut:** Each case in `src/BloomVisualRegressionTests/index.spec.ts` compares the book preview
   and then every bloom-player page in sequence, and every comparison throws on failure — so the

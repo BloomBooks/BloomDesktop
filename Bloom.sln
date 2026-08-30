@@ -1,3 +1,4 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34003.232
@@ -28,6 +29,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebView2PdfMaker", "src\WebView2PdfMaker\WebView2PdfMaker.csproj", "{F697DD7A-2D74-4850-8381-7E4ADB1E4431}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomFreezeDoctor.Protocol", "src\BloomFreezeDoctor.Protocol\BloomFreezeDoctor.Protocol.csproj", "{BC16B558-A063-411A-8BF0-C259CBD62E48}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,12 +66,21 @@ Global
 		{F697DD7A-2D74-4850-8381-7E4ADB1E4431}.Release|x64.Build.0 = Release|x64
 		{F697DD7A-2D74-4850-8381-7E4ADB1E4431}.Release|ARM64.ActiveCfg = Release|ARM64
 		{F697DD7A-2D74-4850-8381-7E4ADB1E4431}.Release|ARM64.Build.0 = Release|ARM64
+		{BC16B558-A063-411A-8BF0-C259CBD62E48}.Debug|x64.ActiveCfg = Debug|x64
+		{BC16B558-A063-411A-8BF0-C259CBD62E48}.Debug|x64.Build.0 = Debug|x64
+		{BC16B558-A063-411A-8BF0-C259CBD62E48}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{BC16B558-A063-411A-8BF0-C259CBD62E48}.Debug|ARM64.Build.0 = Debug|ARM64
+		{BC16B558-A063-411A-8BF0-C259CBD62E48}.Release|x64.ActiveCfg = Release|x64
+		{BC16B558-A063-411A-8BF0-C259CBD62E48}.Release|x64.Build.0 = Release|x64
+		{BC16B558-A063-411A-8BF0-C259CBD62E48}.Release|ARM64.ActiveCfg = Release|ARM64
+		{BC16B558-A063-411A-8BF0-C259CBD62E48}.Release|ARM64.Build.0 = Release|ARM64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D38FC737-8C27-46CB-B490-3CB2E7AB3C99} = {04AF3A87-C943-4731-BE3D-659EA705171D}
+		{BC16B558-A063-411A-8BF0-C259CBD62E48} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AFDCD471-511E-432D-B6B3-2F9D5AD1ACED}
