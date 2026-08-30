@@ -117,23 +117,36 @@ public static class ZombieEnder
     /// shutdown is written. Killing is the fallback for a Bloom too far gone to answer — which, since we
     /// only do this to a zombie, is a real possibility.
     /// </summary>
-    public static ZombieEndOutcome End(int processId)
+    public static ZombieEndOutcome End(int processId, DateTime startedAt)
     {
+        // Before anything else, prove this id is still the Bloom we mean. Windows reuses process ids, and
+        // everything below acts on the id alone: the quit signal is named after it, and the kill takes it
+        // straight from the process table. Both would land on whatever inherited the id.
+        //
+        // This is not theoretical for the quit signal in particular. A NEW Bloom handed the dead one's id
+        // would be listening on exactly that event name and would dutifully shut itself down - the user
+        // watching their working Bloom close for no reason they could see.
+        if (!ProcessIdentity.IsStillTheSameProcess(processId, startedAt))
+            return ZombieEndOutcome.AlreadyGone;
+
         // Ask first. Bloom's watchdog thread waits on this, and that thread is still running even when the
         // UI thread has been gone for minutes.
         if (DoctorSignals.TrySignal(DoctorSignals.QuitRequestName(processId)))
         {
-            if (WaitForExit(processId, SelfExitTimeout))
+            if (WaitForExit(processId, startedAt, SelfExitTimeout))
                 return ZombieEndOutcome.ExitedOnRequest;
         }
 
         // Nobody listening, or it did not manage it. Kill it: a zombie is useless to the user and is
-        // actively in their way.
+        // actively in their way. Re-check identity: the wait above can have let it exit and the id be
+        // handed on in the meantime, which is precisely the window that makes this worth doing twice.
         try
         {
+            if (!ProcessIdentity.IsStillTheSameProcess(processId, startedAt))
+                return ZombieEndOutcome.AlreadyGone;
             using var process = Process.GetProcessById(processId);
             process.Kill();
-            return WaitForExit(processId, TimeSpan.FromSeconds(10))
+            return WaitForExit(processId, startedAt, TimeSpan.FromSeconds(10))
                 ? ZombieEndOutcome.Killed
                 : ZombieEndOutcome.CouldNotEnd;
         }
@@ -148,13 +161,20 @@ public static class ZombieEnder
         }
     }
 
-    private static bool WaitForExit(int processId, TimeSpan timeout)
+    /// <summary>
+    /// Waits for that particular process to go. Watches the identity, not just the id: an id that has been
+    /// reused would otherwise read as "still running" for ever, and we would report CouldNotEnd about a
+    /// Bloom that died on request.
+    /// </summary>
+    private static bool WaitForExit(int processId, DateTime startedAt, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;
         while (DateTime.UtcNow < deadline)
         {
             try
             {
+                if (!ProcessIdentity.IsStillTheSameProcess(processId, startedAt))
+                    return true;
                 using var process = Process.GetProcessById(processId);
                 if (process.HasExited)
                     return true;

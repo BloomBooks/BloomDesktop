@@ -257,6 +257,19 @@ public sealed class WindowsTargetProbe : ITargetProbe, IDisposable
         return window != IntPtr.Zero && IsHungAppWindow(window);
     }
 
+    /// <summary>
+    /// Notes whether a debugger is attached.
+    ///
+    /// **It also, as a side effect, pins the process id.** Touching <c>_process.Handle</c> makes .NET open
+    /// and keep a handle to the process object, and Windows will not reuse an id while any handle to it is
+    /// open. So from the first probe until this object is disposed, nothing else on the machine can be
+    /// handed this Bloom's id.
+    ///
+    /// That is worth knowing but must not be relied on, which is why the code that acts on an id checks
+    /// identity for itself (see <see cref="ProcessIdentity"/>). Nothing here is trying to pin anything -
+    /// rewrite this method with an API that opens and closes its own handle and the pinning silently
+    /// disappears, with no test to notice. The reading below is the purpose; the pin is an accident.
+    /// </summary>
     private void SampleDebugger()
     {
         if (_everDebugged)

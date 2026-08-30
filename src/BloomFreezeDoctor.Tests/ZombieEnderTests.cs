@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using BloomFreezeDoctor;
 using NUnit.Framework;
 
@@ -118,12 +119,46 @@ public class ZombieEnderTests
     public void Ending_a_process_that_has_already_gone_is_not_a_failure()
     {
         // A pid that no longer exists is the outcome we wanted, however it came about.
-        var outcome = ZombieEnder.End(999_999_9);
+        var outcome = ZombieEnder.End(999_999_9, DateTime.Now);
 
         Assert.That(
             outcome,
             Is.EqualTo(ZombieEndOutcome.AlreadyGone),
             "a Bloom that ended itself while we deliberated is a success, not an error"
+        );
+    }
+
+    [Test]
+    public void A_reused_process_id_is_left_alone_rather_than_killed()
+    {
+        // The dangerous case, and the reason End takes a start time at all. Windows hands process ids out
+        // of a pool, so an id we are holding for a dead Bloom can belong to somebody else by the time we
+        // act on it. Here the id is real and running - it is THIS process - but the start time says it is
+        // not the process we meant.
+        //
+        // If this ever regresses, the test run dies: End would signal, and then kill, the test host. That
+        // is uncomfortable but honest - it is exactly what the bug does to a user's machine.
+        var thisProcess = Process.GetCurrentProcess();
+        var notWhenItStarted = thisProcess.StartTime.AddMinutes(-5);
+
+        // Sanity check first: the id really is live, so a passing result cannot come from it being absent.
+        Assert.That(
+            ProcessIdentity.IsStillTheSameProcess(thisProcess.Id, thisProcess.StartTime),
+            Is.True,
+            "sanity check: this process must be recognised as itself"
+        );
+
+        var outcome = ZombieEnder.End(thisProcess.Id, notWhenItStarted);
+
+        Assert.That(
+            outcome,
+            Is.EqualTo(ZombieEndOutcome.AlreadyGone),
+            "an id that has been handed on is treated as gone, never as ours to end"
+        );
+        Assert.That(
+            ProcessIdentity.IsStillTheSameProcess(thisProcess.Id, thisProcess.StartTime),
+            Is.True,
+            "and the process that actually owns the id is untouched"
         );
     }
 }
