@@ -200,9 +200,10 @@ public sealed class StatusForm : Form
             }
         }
         var showing = value && !_stayHidden;
-        // Every route that makes this form visible or invisible comes through here, which makes it the one
-        // place worth recording it - the supervisor's thread cannot safely read Control.Visible.
-        _windowIsShowing = showing;
+        // Recorded rather than read live, because the supervisor's thread cannot safely read
+        // Control.Visible. Note this is NOT the only route that changes whether the user can see the
+        // window - minimising leaves Visible true - so OnResize maintains it too.
+        _windowIsShowing = showing && WindowState != FormWindowState.Minimized;
         base.SetVisibleCore(showing);
     }
 
@@ -229,12 +230,21 @@ public sealed class StatusForm : Form
         Location = new Point(area.Right - Width - 24, area.Bottom - Height - 24);
     }
 
-    /// <summary>Minimising hides the window into the tray, which is what "shrink it away" means here.</summary>
+    /// <summary>
+    /// Minimising hides the window into the tray, which is what "shrink it away" means here.
+    ///
+    /// It must also record that the window is no longer on screen, and that is easy to miss because
+    /// minimising does not change <c>Visible</c> and so never reaches <c>SetVisibleCore</c>. Missing it
+    /// left <c>_windowIsShowing</c> true for ever, which pins <c>MustNotQuitYet</c> true and makes the
+    /// Doctor unable to exit even once every Bloom has gone - while to the user, minimise and close look
+    /// like the same thing, since both end at the tray.
+    /// </summary>
     protected override void OnResize(EventArgs e)
     {
         base.OnResize(e);
         if (WindowState == FormWindowState.Minimized)
             ShowInTaskbar = false;
+        _windowIsShowing = Visible && !_stayHidden && WindowState != FormWindowState.Minimized;
     }
 
     /// <summary>

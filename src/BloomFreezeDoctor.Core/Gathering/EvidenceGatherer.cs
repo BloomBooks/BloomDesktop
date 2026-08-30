@@ -162,6 +162,13 @@ public sealed class EvidenceGatherer
     /// <summary>
     /// Runs one collector inside its own budget. A collector that overruns is abandoned rather than
     /// allowed to hold up the report — its section says so, which is itself a useful signal.
+    ///
+    /// **Abandoned really means abandoned**, which needs `WaitAsync` and not merely a cancelled token.
+    /// Several collectors reach synchronous Windows calls that take no cancellation at all -
+    /// `WriteDump`, `AttachToProcess`, `GetThreadWaitChain` - so against a process that is suspended or
+    /// whose runtime is itself wedged, the call simply never returns. Awaiting it directly would hang the
+    /// whole gather forever, and with it the Doctor: the work-in-flight count never falls, so it can
+    /// never decide it has nothing left to do and exit. The runaway task is left to finish into nothing.
     /// </summary>
     private static async Task<ReportSection> RunOneAsync(
         IEvidenceCollector collector,
@@ -174,7 +181,10 @@ public sealed class EvidenceGatherer
         var timer = Stopwatch.StartNew();
         try
         {
-            return await collector.CollectAsync(context, scope.Token).ConfigureAwait(false);
+            return await collector
+                .CollectAsync(context, scope.Token)
+                .WaitAsync(scope.Token)
+                .ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
