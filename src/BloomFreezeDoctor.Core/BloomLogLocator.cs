@@ -73,9 +73,10 @@ public static class BloomLogLocator
             )
                 continue;
 
-            var difference = (
-                candidate.LaunchedAtTimeOfDay.Value - processStartTime.TimeOfDay
-            ).Duration();
+            var difference = HowFarApart(
+                candidate.LaunchedAtTimeOfDay.Value,
+                processStartTime.TimeOfDay
+            );
             if (difference > LaunchTimeTolerance)
                 continue;
 
@@ -86,9 +87,10 @@ public static class BloomLogLocator
                 best = candidate;
                 continue;
             }
-            var bestDifference = (
-                best.Value.LaunchedAtTimeOfDay!.Value - processStartTime.TimeOfDay
-            ).Duration();
+            var bestDifference = HowFarApart(
+                best.Value.LaunchedAtTimeOfDay!.Value,
+                processStartTime.TimeOfDay
+            );
             if (
                 difference < bestDifference
                 || (
@@ -206,6 +208,21 @@ public static class BloomLogLocator
         // Unquoted: everything up to the first " --" style argument, or the whole thing.
         var argument = line.IndexOf(" --", StringComparison.Ordinal);
         return argument > 0 ? line.Substring(0, argument) : line;
+    }
+
+    /// <summary>
+    /// How far apart two times of day are, the short way round the clock.
+    ///
+    /// A plain subtraction is wrong across midnight, and wrong by enough to matter: a Bloom started at
+    /// 23:59:30 whose log line is stamped 00:00:20 is fifty seconds later, not twenty-three hours and
+    /// fifty-nine minutes earlier. Taking the difference literally put every Bloom launched within a
+    /// minute or so of midnight outside the tolerance, so its report said no log could be found.
+    /// </summary>
+    private static TimeSpan HowFarApart(TimeSpan a, TimeSpan b)
+    {
+        var apart = (a - b).Duration();
+        var day = TimeSpan.FromDays(1);
+        return apart <= day - apart ? apart : day - apart;
     }
 
     private static string FolderOf(string path)

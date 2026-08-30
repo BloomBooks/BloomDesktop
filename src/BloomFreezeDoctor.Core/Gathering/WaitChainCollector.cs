@@ -71,7 +71,7 @@ public sealed class WaitChainCollector : IEvidenceCollector
                     !GetThreadWaitChain(
                         session,
                         IntPtr.Zero,
-                        0,
+                        FollowChainsOutOfTheProcess,
                         thread.Id,
                         ref count,
                         nodes,
@@ -259,6 +259,22 @@ public sealed class WaitChainCollector : IEvidenceCollector
 
     [DllImport("advapi32.dll")]
     private static extern void CloseThreadWaitChainSession(IntPtr session);
+
+    /// <summary>
+    /// The flags that make this worth calling at all, and passing 0 instead cost us the whole point of
+    /// the collector.
+    ///
+    /// Every chain the Doctor asks about crosses a process boundary - it is always looking at Bloom from
+    /// outside - and by default WCT stops at that boundary. `WCT_OUT_OF_PROC_FLAG` follows the chain into
+    /// the other process, `WCT_OUT_OF_PROC_COM_FLAG` follows it through COM, and
+    /// `WCT_OUT_OF_PROC_CS_FLAG` resolves critical sections owned there. Without them a UI thread stuck
+    /// in a SendMessage into WebView2 - the exact freeze this collector exists to name - produced a
+    /// one-node chain, which the `count <= 1` filter below then discarded as uninteresting.
+    ///
+    /// Nothing looked wrong, because the one rehearsal that did work was the `mutexchain` simulation,
+    /// where both ends are inside Bloom and no boundary is crossed.
+    /// </summary>
+    private const uint FollowChainsOutOfTheProcess = 0x1 | 0x2 | 0x4;
 
     [DllImport("advapi32.dll", SetLastError = true)]
     private static extern bool GetThreadWaitChain(

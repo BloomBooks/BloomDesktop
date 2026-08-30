@@ -26,6 +26,37 @@ public class BloomLogLocatorTests
         };
 
     [Test]
+    public void A_Bloom_started_just_before_midnight_still_finds_its_log()
+    {
+        // The log line carries a time of day and nothing else, so the comparison has to go the short way
+        // round the clock. Subtracting literally made these fifty seconds look like nearly twenty-four
+        // hours, putting every Bloom launched within a minute or so of midnight outside the tolerance -
+        // and the report then said, wrongly and with no hint of why, that no log could be found.
+        var candidates = new[]
+        {
+            Candidate(
+                @"C:\Temp\SIL\Bloom\Log.txt",
+                "00:00:20",
+                @"C:\Program Files\Bloom\Bloom.dll",
+                "2026-08-18 00:05"
+            ),
+        };
+
+        var chosen = BloomLogLocator.ChooseFor(
+            candidates,
+            @"C:\Program Files\Bloom\Bloom.exe",
+            DateTime.Parse("2026-08-17 23:59:30")
+        );
+
+        Assert.That(
+            chosen,
+            Is.Not.Null,
+            "fifty seconds apart across midnight is a match, not a day's difference"
+        );
+        Assert.That(chosen!.Value.Path, Does.EndWith("Log.txt"));
+    }
+
+    [Test]
     public void Picks_the_log_whose_launch_line_matches_the_process()
     {
         var candidates = new[]
