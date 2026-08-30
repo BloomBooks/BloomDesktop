@@ -242,9 +242,19 @@ public sealed class DoctorSupervisor : IDisposable
     /// </summary>
     public ZombieEndOutcome EndBloomAtSomebodysRequest(int processId)
     {
+        // The identity comes from the watcher rather than the caller, and an id we are NOT watching is
+        // refused outright. This is the one path in the Doctor that kills a process a person named, and by
+        // the time the click arrives the Bloom may already have gone - so "no watcher" means "we cannot say
+        // what this id is any more", and killing on that basis is how you end somebody's unrelated program.
+        DateTime startedAt;
         lock (_lock)
+        {
+            if (!_watchers.TryGetValue(processId, out var watcher))
+                return ZombieEndOutcome.AlreadyGone;
+            startedAt = watcher.Target.StartTime;
             _weAskedItToStop.Add(processId);
-        return ZombieEnder.End(processId);
+        }
+        return ZombieEnder.End(processId, startedAt);
     }
 
     /// <summary>
@@ -264,7 +274,9 @@ public sealed class DoctorSupervisor : IDisposable
         lock (_lock)
         {
             snapshot = _watchers
-                .Values.Where(watcher => IsAlive(watcher.Target.ProcessId))
+                .Values.Where(watcher =>
+                    IsAlive(watcher.Target.ProcessId, watcher.Target.StartTime)
+                )
                 .Select(watcher => (watcher.Target.ProcessId, watcher.State))
                 .ToList();
         }
@@ -631,7 +643,7 @@ public sealed class DoctorSupervisor : IDisposable
         Action? targetNoLongerNeeded = null
     )
     {
-        var alive = IsAlive(facts.ProcessId);
+        var alive = IsAlive(facts.ProcessId, facts.StartTime);
         var artifacts = Path.Combine(
             Path.GetTempPath(),
             "BloomFreezeDoctor",
@@ -1012,7 +1024,7 @@ public sealed class DoctorSupervisor : IDisposable
                 _weAskedItToStop.Add(watcher.Target.ProcessId);
             _ = Task.Run(() =>
             {
-                var outcome = ZombieEnder.End(watcher.Target.ProcessId);
+                var outcome = ZombieEnder.End(watcher.Target.ProcessId, watcher.Target.StartTime);
                 Note($"stuck Bloom {watcher.Target.ProcessId}: {Describe(outcome)}");
                 ZombieEnded?.Invoke(this, outcome);
             });
@@ -1207,18 +1219,12 @@ public sealed class DoctorSupervisor : IDisposable
         RaiseStatusChanged();
     }
 
-    private static bool IsAlive(int processId)
-    {
-        try
-        {
-            using var process = Process.GetProcessById(processId);
-            return !process.HasExited;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
-    }
+    /// <summary>
+    /// Whether the Bloom we mean is still running. Takes the start time as well as the id because an id on
+    /// its own can have been handed to somebody else; see <see cref="ProcessIdentity"/>.
+    /// </summary>
+    internal static bool IsAlive(int processId, DateTime startedAt) =>
+        ProcessIdentity.IsStillTheSameProcess(processId, startedAt);
 
     private static void TryDeleteDirectory(string path)
     {
