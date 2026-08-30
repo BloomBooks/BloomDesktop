@@ -102,6 +102,12 @@ namespace Bloom.FreezeDoctor
         private static string _statedActivity = "";
 
         /// <summary>
+        /// What Bloom was saying before the outermost long operation opened, so the last one to close can
+        /// put it back. See LongOperationScope.Dispose for why the scope's own saved value will not do.
+        /// </summary>
+        private static string _activityBeforeAnyScope = "";
+
+        /// <summary>
         /// What Bloom says it is doing before it has done anything. Named because two places have to agree
         /// on it: the one that states it, and <see cref="ComposeCurrentActivity"/>, which retires it.
         /// </summary>
@@ -289,6 +295,9 @@ namespace Bloom.FreezeDoctor
         /// </summary>
         internal static int LongOperationDepth => Volatile.Read(ref _longOperationDepth);
 
+        /// <summary>What Bloom currently says it is doing. For tests.</summary>
+        internal static string StatedActivity => Volatile.Read(ref _statedActivity);
+
         /// <summary>
         /// Marks a stretch of work that is *deliberately* slow, so the Doctor waits five minutes rather than
         /// one before deciding Bloom has frozen, and says what Bloom is doing while it runs.
@@ -336,7 +345,12 @@ namespace Bloom.FreezeDoctor
                 {
                     SetActivity(whatBloomIsDoing);
                     if (Interlocked.Increment(ref _longOperationDepth) == 1)
+                    {
+                        // What Bloom was saying before ANY scope opened, remembered here because the
+                        // last scope to close cannot work it out for itself - see Dispose.
+                        Volatile.Write(ref _activityBeforeAnyScope, _previousActivity);
                         SetLongOperation(true);
+                    }
                 });
             }
 
@@ -347,19 +361,34 @@ namespace Bloom.FreezeDoctor
                 _disposed = true;
                 DoSafely(() =>
                 {
-                    if (Interlocked.Decrement(ref _longOperationDepth) == 0)
+                    var stillRunning = Interlocked.Decrement(ref _longOperationDepth);
+                    if (stillRunning == 0)
                         SetLongOperation(false);
-                    // Only put the old activity back if the slot still holds what we put there. If
-                    // somebody else has since described their own operation, theirs is the one still
-                    // running and ours is the stale news — see _myActivity.
+
+                    // What to say now that we have finished. If any scope is still running, the sensible
+                    // answer is whatever was showing when we started; if we were the last, it is whatever
+                    // Bloom was saying before any scope opened.
+                    //
+                    // The distinction matters because scopes can OVERLAP without nesting: A starts, B
+                    // starts, A finishes, B finishes. Restoring "whatever was showing when I started"
+                    // unconditionally made B put A back - naming work that had already completed, so a
+                    // report gathered afterwards described the wrong operation. Falling back to the empty
+                    // string instead would be wrong in the other direction: a standing activity set
+                    // outside any scope (a video recording says what it is doing, then opens a scope to
+                    // merge) would be silently thrown away.
+                    var restoreTo =
+                        stillRunning > 0
+                            ? _previousActivity
+                            : Volatile.Read(ref _activityBeforeAnyScope);
+
+                    // Only change the slot if it still holds what we put there. If somebody else has since
+                    // described their own operation, theirs is the one still running and ours is the stale
+                    // news — see _myActivity.
                     if (
-                        Interlocked.CompareExchange(
-                            ref _statedActivity,
-                            _previousActivity,
-                            _myActivity
-                        ) == _myActivity
+                        Interlocked.CompareExchange(ref _statedActivity, restoreTo, _myActivity)
+                        == _myActivity
                     )
-                        _channel?.SetActivity(_previousActivity);
+                        _channel?.SetActivity(restoreTo);
                 });
             }
         }

@@ -181,6 +181,69 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
+        public void OverlappingLongOperationsDoNotLeaveFinishedWorkOnDisplay()
+        {
+            // Scopes do not always nest. A starts, B starts, A finishes, B finishes - and B's notion of
+            // "what was showing when I started" is A, which by then has been over for some time. Putting
+            // that back made the card name work that had already completed, which is exactly the class of
+            // wrongness the activity string exists to avoid.
+            Assert.That(
+                FreezeDoctorSupport.LongOperationDepth,
+                Is.Zero,
+                "setup: nothing long is running yet"
+            );
+
+            var a = FreezeDoctorSupport.LongOperation("making a BloomPUB");
+            var b = FreezeDoctorSupport.LongOperation("uploading to Bloom Library");
+            Assert.That(
+                FreezeDoctorSupport.StatedActivity,
+                Is.EqualTo("uploading to Bloom Library"),
+                "setup: the later operation is the one on display"
+            );
+
+            a.Dispose();
+            Assert.That(
+                FreezeDoctorSupport.StatedActivity,
+                Is.EqualTo("uploading to Bloom Library"),
+                "the one that finished must not disturb the one still running"
+            );
+
+            b.Dispose();
+
+            Assert.That(
+                FreezeDoctorSupport.StatedActivity,
+                Is.Empty,
+                "with both finished, Bloom must not still claim to be making a BloomPUB"
+            );
+        }
+
+        [Test]
+        public void ALongOperationGivesBackTheActivityItInterrupted()
+        {
+            // The other direction, and the reason the fix is not simply "clear it when the last scope
+            // closes": recording a video says what it is doing, and only then opens a scope to merge the
+            // result. That standing description has to survive the scope it contains.
+            FreezeDoctorSupport.SetActivity("recording a video");
+            try
+            {
+                using (FreezeDoctorSupport.LongOperation("making a video"))
+                {
+                    Assert.That(FreezeDoctorSupport.StatedActivity, Is.EqualTo("making a video"));
+                }
+
+                Assert.That(
+                    FreezeDoctorSupport.StatedActivity,
+                    Is.EqualTo("recording a video"),
+                    "the standing activity must come back, not be cleared"
+                );
+            }
+            finally
+            {
+                FreezeDoctorSupport.SetActivity("");
+            }
+        }
+
+        [Test]
         public void DisposingALongOperationTwiceDoesNotStealSomebodyElsesPatience()
         {
             // A double Dispose is easy to arrange by accident, and an unguarded decrement would drive the
