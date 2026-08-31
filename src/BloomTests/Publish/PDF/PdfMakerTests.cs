@@ -20,32 +20,15 @@ namespace BloomTests.Publish.PDF
     public class PdfMakerTests
     {
         [Test]
-        public void GetNullLayoutBleedOffsetMm_FullBleedWithoutCropMarks_IsJustBleedInset()
-        {
-            Assert.AreEqual(3, PdfMaker.GetNullLayoutBleedOffsetMm(true, false));
-        }
-
-        [Test]
-        public void GetNullLayoutBleedOffsetMm_FullBleedWithCropMarks_IncludesCropMargin()
-        {
-            Assert.AreEqual(3, PdfMaker.GetNullLayoutBleedOffsetMm(true, true));
-        }
-
-        [Test]
-        public void GetNullLayoutBleedOffsetMm_NotFullBleed_IsZero()
-        {
-            Assert.AreEqual(0, PdfMaker.GetNullLayoutBleedOffsetMm(false, true));
-            Assert.AreEqual(0, PdfMaker.GetNullLayoutBleedOffsetMm(false, false));
-        }
-
-        [Test]
         public void NullLayoutMethod_FullBleedWithCropMarks_KeepsTrimAtFinalPageSize()
         {
             using (var input = TempFile.WithExtension("pdf"))
             using (var output = TempFile.WithExtension("pdf"))
             {
-                CreateSinglePagePdf(input.Path, 216, 303);
-                var method = new NullLayoutMethod(PdfMaker.GetNullLayoutBleedOffsetMm(true, true));
+                // Full-bleed source pages carry explicit trim/bleed boxes, exactly as
+                // PdfMaker sets them before the dotImpose handoff.
+                CreateSinglePagePdf(input.Path, 216, 303, fullBleedBoxes: true);
+                var method = new NullLayoutMethod();
 
                 method.Layout(
                     XPdfForm.FromFile(input.Path),
@@ -400,13 +383,20 @@ namespace BloomTests.Publish.PDF
             return eventArgs.Result as System.Exception;
         }
 
-        private static void CreateSinglePagePdf(string path, double widthMm, double heightMm)
+        private static void CreateSinglePagePdf(
+            string path,
+            double widthMm,
+            double heightMm,
+            bool fullBleedBoxes = false
+        )
         {
             using (var doc = new PdfDocument())
             {
                 var page = doc.AddPage();
                 page.Width = XUnit.FromMillimeter(widthMm);
                 page.Height = XUnit.FromMillimeter(heightMm);
+                if (fullBleedBoxes)
+                    PdfMaker.SetFullBleedPageBoxes(page);
                 doc.Save(path);
             }
         }

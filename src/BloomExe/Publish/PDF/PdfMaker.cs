@@ -221,7 +221,7 @@ namespace Bloom.Publish.PDF
             //Bloom.Utils.MemoryManagement.CheckMemory(true, "done checking for blank pages in full bleed PDF file", false);
         }
 
-        private static void SetFullBleedPageBoxes(PdfPage page)
+        internal static void SetFullBleedPageBoxes(PdfPage page)
         {
             var bleedMargin = XUnit.FromMillimeter(kFullBleedInsetMillimeters);
             var trimWidth = page.MediaBox.Width - (2 * bleedMargin.Point);
@@ -387,9 +387,10 @@ namespace Bloom.Publish.PDF
                 switch (specs.BooketLayoutMethod)
                 {
                     case PublishModel.BookletLayoutMethod.NoBooklet:
-                        method = new NullLayoutMethod(
-                            GetNullLayoutBleedOffsetMm(specs.PrintWithFullBleed, ShowCropMarks)
-                        );
+                        // Full-bleed source pages carry explicit trim/bleed boxes
+                        // (see SetFullBleedPageBoxes), so NullLayoutMethod needs no
+                        // synthetic trim inset.
+                        method = new NullLayoutMethod();
                         break;
                     case PublishModel.BookletLayoutMethod.SideFold:
                         // To keep the GUI simple, we assume that A6 page size for booklets
@@ -464,18 +465,6 @@ namespace Bloom.Publish.PDF
             }
         }
 
-        internal static double GetNullLayoutBleedOffsetMm(
-            bool printWithFullBleed,
-            bool showCropMarks
-        )
-        {
-            if (!printWithFullBleed)
-                return 0;
-
-            // Full-bleed input pages are already trim + 3mm on each edge, so we
-            // inset trim from bleed by 3mm regardless of crop mark visibility.
-            return kFullBleedInsetMillimeters;
-        }
     }
 
     internal class CancellableNullProgress : NullProgress
