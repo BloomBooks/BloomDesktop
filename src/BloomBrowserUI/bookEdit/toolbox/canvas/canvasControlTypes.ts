@@ -119,7 +119,7 @@ export interface IControlContext {
     // True when the image slot is an empty placeholder (it shows placeHolder.png).
     // Distinct from !hasRealImage, which is also true for an image that failed to
     // load: an empty slot is a normal state a user can fill, a broken image is not.
-    isPlaceholderImage: boolean;
+    hasPlaceholderImage: boolean;
     hasVideo: boolean;
     hasPreviousVideoContainer: boolean;
     hasNextVideoContainer: boolean;

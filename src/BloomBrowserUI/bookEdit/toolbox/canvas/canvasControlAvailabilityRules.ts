@@ -46,7 +46,7 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
         visible: (ctx) => ctx.aiImageEditingAvailable && ctx.hasImage,
         enabled: (ctx) =>
             ctx.canModifyImage &&
-            (ctx.isPlaceholderImage ||
+            (ctx.hasPlaceholderImage ||
                 (ctx.hasRealImage && ctx.imageIsAiEditableFormat)),
     },
     missingMetadata: {

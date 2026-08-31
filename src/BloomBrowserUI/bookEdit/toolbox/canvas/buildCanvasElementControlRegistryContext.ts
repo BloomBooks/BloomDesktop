@@ -174,7 +174,7 @@ export const buildCanvasElementControlRegistryContext = (
         elementType,
         hasImage,
         hasRealImage: hasRealImage(img ?? undefined),
-        isPlaceholderImage:
+        hasPlaceholderImage:
             hasImage && isPlaceHolderImage(img?.getAttribute("src")),
         hasVideo,
         hasPreviousVideoContainer: videoContainer

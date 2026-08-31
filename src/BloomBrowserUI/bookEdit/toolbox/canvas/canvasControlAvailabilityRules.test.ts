@@ -18,7 +18,7 @@ function makeCtx(overrides: Partial<IControlContext>): IControlContext {
         aiImageEditingAvailable: false,
         hasImage: false,
         hasRealImage: false,
-        isPlaceholderImage: false,
+        hasPlaceholderImage: false,
         canModifyImage: false,
         imageIsAiEditableFormat: false,
     };
@@ -101,7 +101,7 @@ describe("imageAvailabilityRules.editWithAi", () => {
                     rule.enabled,
                     makeCtx({
                         hasRealImage: false,
-                        isPlaceholderImage: true,
+                        hasPlaceholderImage: true,
                         canModifyImage: true,
                         imageIsAiEditableFormat: true,
                     }),
@@ -117,7 +117,7 @@ describe("imageAvailabilityRules.editWithAi", () => {
                     rule.enabled,
                     makeCtx({
                         hasRealImage: false,
-                        isPlaceholderImage: true,
+                        hasPlaceholderImage: true,
                         canModifyImage: true,
                         imageIsAiEditableFormat: false,
                     }),
@@ -131,7 +131,7 @@ describe("imageAvailabilityRules.editWithAi", () => {
                     rule.enabled,
                     makeCtx({
                         hasRealImage: false,
-                        isPlaceholderImage: true,
+                        hasPlaceholderImage: true,
                         canModifyImage: false,
                         imageIsAiEditableFormat: true,
                     }),
@@ -145,7 +145,7 @@ describe("imageAvailabilityRules.editWithAi", () => {
                     rule.enabled,
                     makeCtx({
                         hasRealImage: false,
-                        isPlaceholderImage: false,
+                        hasPlaceholderImage: false,
                         canModifyImage: true,
                         imageIsAiEditableFormat: true,
                     }),
