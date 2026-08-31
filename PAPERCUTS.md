@@ -454,3 +454,70 @@ and the next save wrote it back. **Identify a control by something that names it
 click, while the page grid's own button menu opens on hover; and another agent editing front-end
 source detaches the `page` frame every few minutes through Vite reloads, so any script that must
 survive that has to re-acquire the frame and retry rather than hold one reference.
+
+**A second rebuild of a linked front-end library does not reach the running Bloom, and the
+symptom is a spinner that never ends.** The Vite dev server that `go.sh` starts serves a linked
+dependency's built module by absolute path (`/@fs/D:/bloom-table/dist/bloom-table.mjs`) and caches
+the transform under a query of its own (`?t=<timestamp>`). Rollup replaces that file on each
+build rather than writing it in place, so Vite's watcher stops following it after the first
+change; the first `pnpm run build` in the library did reach Bloom, and the second did not.
+Bloom then sits on the startup spinner with nothing in the console, because the failure is a
+rejected dynamic import inside the ReactControl page's own `main()`. Importing the entry by hand
+in that page names the real problem: `does not provide an export named '<the new export>'`.
+Diagnosis takes two curls, the plain module URL and the same URL with `?v=probe` added; fresh
+content only from the second one means the cache is stale. The only cure found was to stop the
+whole session (`POST /shutdown`) and run `./go.sh` again, which costs about five minutes and
+changes the Vite and control ports. Worth fixing at the source: either add the linked
+dependency's built files to `server.watch` in the Vite config, or give the launcher control API a
+`/restart-vite` endpoint, since `/restart` restarts only Bloom.exe.
+
+**`POST /restart` on the launcher control API can take the whole `go.sh` session with it.** One
+restart, asked for to be sure a rebuilt linked library was really loaded, killed Bloom (the log
+says PID did not close gracefully within 10 s, force-killing), started launch 2, and then
+`dotnet exited before Bloom reported automation-ready startup info` followed by
+`Bloom exe flow exited with code 3221225794` (0xC0000142, a DLL initialisation failure) and
+`[go] Shutting down`. The launcher then deletes `output/bloom-launcher.json`, so the control port
+stops answering and every probe fails with connection refused, which reads as "Bloom is wedged"
+rather than "there is no session any more". Recovery is to run `./go.sh` again, which takes about
+a minute and gives new Vite and control ports; check `output/bloom-launcher.json` for them rather
+than reusing the old numbers. So prefer not to restart at all: the previous entry's spinner trap
+did not recur this time, and the dev server log showed `page reload D:/bloom-table/dist/bloom-table.mjs`,
+meaning the second library rebuild did reach the running Bloom on its own.
+
+**Vite listens on `::1` only, so `curl http://127.0.0.1:<vitePort>/...` fails with connection
+refused.** `netstat` shows `TCP [::1]:60069 LISTENING` and nothing on the IPv4 address. Use
+`http://localhost:<port>/` for the curl-the-module check (it resolves to `::1`), even though
+`127.0.0.1` is right for the launcher control API and Bloom's own HTTP server. Inside the page
+frame a relative `/@fs/...` import fails too, because that frame is served from Bloom's server on
+port 8089, not from Vite: import the absolute `http://localhost:<vitePort>/@fs/...` URL there.
+
+**Importing a Vite module from inside the page frame makes Bloom raise "Cannot Find File".** The
+edit view's `page` frame is served by Bloom's own server on port 8089, so a relative
+`import("/@fs/D:/bloom-table/dist/bloom-table.mjs")` goes to Bloom, not to Vite.
+`BloomServer.ReportMissingFile` then reports `Cannot Find File` for
+`@fs/D:/bloom-table/dist/bloom-table.mjs` (`NonFatalProblem.Report(ModalIf.Beta, …)`, which is
+modal on a Debug build), and the report dialog lands on top of the developer's screen. Use the
+absolute `http://localhost:<vitePort>/@fs/...` URL for that check. Worse, `dismissProblemDialog.mjs`
+could not see the dialog: every WebView2 asks for the same remote-debugging port, only the first
+window binds it, and the dialog's window opened later, so `/json/list` showed one page and the
+helper said no dialog was showing. The log and the visible-window list are the checks that work;
+see the note added to `.github/skills/bloom-automation/SKILL.md`.
+
+**A `.tsx` edit can leave Bloom's whole window blank on a spinner, and only a relaunch brings it
+back.** Editing `bookEdit/js/canvasElementManager/CanvasElementContextControls.tsx` gave Vite a
+full page reload of the app shell, and the shell then sat forever on its dark spinner: no window
+title change, no error overlay, nothing in the console. What had failed was the shell's one
+`await import('http://localhost:<vitePort>/app/App.entry.tsx')`, and everything about the
+diagnosis pointed the wrong way. `fetch` of that same URL returned 200 with
+`content-type: text/javascript`; a crawl of all 705 modules in the entry's graph found not one
+non-200; leaf modules and the optimized deps imported fine; and importing the entry again with a
+fresh `?retry=` query failed just the same, so it is not the browser remembering a failed module
+either. Only the top-level document was affected, so this is not a broken file: `pnpm typecheck`,
+`pnpm lint` and all 871 front-end tests were green throughout, and the same code loaded correctly
+after a relaunch. Do not go looking for the guilty module. Recovery, and prefer it over
+`POST /restart` (see the entry above, which killed the `go.sh` session): `POST /quit-bloom` then
+`POST /start` on the launcher control port, which relaunches on the same ports in about a minute,
+and then `POST /bloom/api/app/makeOrEditBook` plus `POST /bloom/api/pageList/pageClicked` to get
+back to the page under test. Symptom worth remembering: the CDP target list holds a single page
+titled `ReactControl (Vite appBundle)` whose only frame is unnamed, with no `page`, `toolbox` or
+`pageList` frames.
