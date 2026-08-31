@@ -260,6 +260,15 @@ brand-new worktree (`Version6.4-2`). Two things blocked that, neither documented
 Worth writing down somewhere: the minimum steps to make a new worktree test-capable, and
 whether an agent may run a one-time front-end build for that purpose.
 
+**seen again 2026-08-31 (BL-15958):** same cut, this time as `Could not find the directory
+output\browser\appearanceMigrations` in `AppearanceSettingsTests`. The sequence that finally
+made a fresh worktree testable: `build/getDependencies-windows.sh` (its CS0246 error names
+`PodcastUtilities.PortableDevices`, which reads as a missing NuGet package, not a fetch step),
+then `pnpm install` in `src/BloomBrowserUI` **and separately** in `src/content` (without the
+second one the build stops at `checkForNodeModules.js`), then a full
+`pnpm -C src/BloomBrowserUI build`. `build/agent-vite.sh` is not enough: it skips the
+content-copy steps the tests need.
+
 ## 2026-07-30 — The AI-editor CDP driver breaks on editor-UI drift, silently
 
 `driveAiImageEditor.mjs dummy-edit` drives the `bloom-ai-image-tools` overlay by
