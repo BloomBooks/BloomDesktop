@@ -7352,5 +7352,34 @@ namespace BloomTests.Book
             );
             Assert.That(coverImgElt.GetAttribute("id"), Is.EqualTo("front-real-image"));
         }
+
+        [Test]
+        public void SetIsLeveled_TurnedOff_ClearsTheLevelOnTheBody()
+        {
+            // A branding stylesheet reads the grade from this attribute, so it has to say the book
+            // has no level as soon as the user says the book is not leveled. The Leveled Reader
+            // tool keeps its level, so the tool state alone cannot answer that (BL-16775).
+            var book = CreateBook();
+            var levelState = Bloom.Edit.ToolboxToolState.CreateFromToolId("leveledReader");
+            levelState.State = "7";
+            levelState.Enabled = true;
+            book.BookInfo.Tools.Add(levelState);
+
+            book.SetIsLeveled(true);
+
+            // Sanity check: with the book leveled, the tool's level does reach the body.
+            Assert.That(
+                book.OurHtmlDom.Body.GetAttribute("data-leveledreaderlevel"),
+                Is.EqualTo("7"),
+                "test setup failed to put the level on the body"
+            );
+
+            book.SetIsLeveled(false);
+
+            Assert.That(
+                book.OurHtmlDom.Body.GetAttribute("data-leveledreaderlevel"),
+                Is.EqualTo("0")
+            );
+        }
     }
 }

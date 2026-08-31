@@ -1425,6 +1425,73 @@ namespace BloomTests.Book
                 );
         }
 
+        [Test]
+        public void UpdateVariablesAndDataDivThroughDOM_LeveledTurnedOff_ClearsTheNumberOnThePage()
+        {
+            // The user has clicked "book is not leveled", which leaves the Leveled Reader tool
+            // with its level. The pages still show the number the book had. Both the data div and
+            // the pages must lose it, or the ABC branding goes on showing that grade (BL-16775).
+            // Note also that the class is "leveled-reader-off", which contains the string
+            // "leveled-reader"; a substring test says such a book is leveled.
+            var dom = new HtmlDom(
+                @"<html ><head></head><body class='leveled-reader-off decodable-reader-off'>
+				<div id='bloomDataDiv'>
+					<div data-book='levelOrStageNumber' lang='*'>3</div>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover'>
+					<div data-book='levelOrStageNumber' lang='*'>3</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            var info = GetLeveledDecodableInfo();
+            // Sanity check: the tool really does still hold a level, so a fix that simply found
+            // no level would prove nothing.
+            Assert.That(
+                info.Tools.Single(t => t.ToolId == "leveledReader").State,
+                Is.EqualTo("3"),
+                "test setup failed to give the book a leveled reader level"
+            );
+
+            data.UpdateVariablesAndDataDivThroughDOM(info);
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='levelOrStageNumber']"
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[contains(@class,'bloom-page')]//div[@data-book='levelOrStageNumber' and normalize-space(text())!='']"
+                );
+        }
+
+        [Test]
+        public void UpdateVariablesAndDataDivThroughDOM_LeveledOffButDecodableOn_UsesTheStage()
+        {
+            // A book can be decodable and not leveled. It then takes its number from the stage.
+            var dom = new HtmlDom(
+                @"<html ><head></head><body class='decodable-reader leveled-reader-off'>
+				<div id='bloomDataDiv'>
+					<div data-book='levelOrStageNumber' lang='*'>3</div>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover'>
+					<div data-book='levelOrStageNumber' lang='*'>3</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            data.UpdateVariablesAndDataDivThroughDOM(GetLeveledDecodableInfo());
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='levelOrStageNumber' and @lang='*' and text()='4']",
+                    1
+                );
+        }
+
         private BookInfo GetLeveledDecodableInfo()
         {
             // an arbitrary temp folder where we won't find any metadata, to create an empty default BookInfo.

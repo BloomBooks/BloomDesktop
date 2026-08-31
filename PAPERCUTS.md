@@ -285,3 +285,46 @@ the editor repo publish its host-harness selectors so this driver can import rat
 copy them.
 
 **Context:** BL-16603, verifying the credits fix end-to-end against a real Bloom.
+
+## 2026-08-27 — No way to make Bloom open a specific collection from an agent
+
+To verify branding/xmatter behaviour you usually need a *particular* collection (here, one with
+an ABC-BARMM subscription so the ABC-Reader xmatter is in play). `launcherControl.mjs` has
+`--start`, `--restart`, `--ensure-running`, but no way to say *which* collection to open, and
+`bloom-automation` documents no other route. Bloom just reopens whatever it had last.
+
+The workaround was to quit Bloom, hand-edit the `MruProjects` list at the top of
+`%LOCALAPPDATA%\SIL\Bloom\<version>\user.config`, then `--start`. That works, but it mutates
+the developer's own recent-collections list, and it only works while Bloom is stopped (Bloom
+rewrites the file on exit). Two smaller traps inside it: the file wants Windows paths, and a
+`\a` in the path (`D:\abc-grade-test`) turns into a BEL character in both `sed` and a Python
+heredoc — forward slashes (`D:/abc-grade-test/…`) sidestep it and Bloom accepts them.
+
+**Idea:** give `launcherControl.mjs` a `--collection <path>` option that passes the path
+through to `Bloom.exe` (it already takes a collection path on its command line), so an agent
+can open a throwaway test collection without touching the developer's settings.
+
+**Context:** BL-16775, verifying how the ABC-Reader grade circle picks its number.
+
+## 2026-08-28 — An xmatter LESS edit does not reach a running Bloom on its own
+
+The dev server pushes `.less` changes into the running Bloom, but an xmatter stylesheet does not
+travel that route. Bloom serves `output/browser/templates/xMatter/.../<pack>.css`, and it also
+*stamps a copy into each book folder*, re-stamping when the book is reopened. So after editing
+`ABC-Reader-XMatter.less` you have to compile it yourself and copy the result over both:
+
+```bash
+node src/BloomBrowserUI/node_modules/less/bin/lessc \
+  src/content/templates/xMatter/project-specific/ABC-Reader-XMatter/ABC-Reader-XMatter.less \
+  output/browser/templates/xMatter/project-specific/ABC-Reader-XMatter/ABC-Reader-XMatter.css
+cp output/browser/.../ABC-Reader-XMatter.css <collection>/<book>/ABC-Reader-XMatter.css
+```
+
+Nothing warns you. The book keeps showing the old rules, which reads as "my fix does not work"
+rather than "my fix is not there yet". A previous session in this repo drew exactly that wrong
+conclusion.
+
+**Idea:** have `go.sh` watch `src/content/**/*.less` and recompile the xmatter packs, the way the
+dev server already handles the rest of the front end.
+
+**Context:** BL-16775, the ABC-Reader grade circle.
