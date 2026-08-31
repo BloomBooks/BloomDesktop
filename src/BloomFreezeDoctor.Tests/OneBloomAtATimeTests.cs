@@ -107,7 +107,15 @@ public class OneBloomAtATimeTests
             Has.Count.EqualTo(1),
             "the tick that adopted this process must not also have decided it had gone"
         );
-        Assert.That(afterFirstTick[0].ProcessId, Is.EqualTo(pid));
+        // Deliberately NOT asserting WHICH process it adopted. The sweep looks up by process name, and on
+        // a machine running more than one test host (or two of these runs at once) there is more than one
+        // process of this name - so pinning the id made this fail for a reason the test is not about. What
+        // the test is about is that the tick which adopted did not also decide the adopted Bloom had gone.
+        Assert.That(
+            afterFirstTick[0].ProcessId,
+            Is.GreaterThan(0),
+            "and it should be watching a real process"
+        );
 
         // A second tick, which takes the other branch - we now have a target, so it checks rather than
         // adopts. It must leave a live process alone.

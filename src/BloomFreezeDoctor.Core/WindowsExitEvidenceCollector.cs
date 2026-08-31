@@ -50,7 +50,7 @@ public sealed class WindowsExitEvidenceCollector
         string? exeFileName = null
     )
     {
-        var crashEntry = LookForCrashEntry(processId, diedAt, exeFileName);
+        var crash = ScanForCrashEntries(processId, diedAt, exeFileName);
         return new ExitEvidence
         {
             ExitCode = exitCode,
@@ -60,8 +60,8 @@ public sealed class WindowsExitEvidenceCollector
             ExitRecordedAsForced = exitRecordedAsForced,
             // One pass, two answers: whether Windows logged a crash for this Bloom, and - when the
             // entry is a managed one - which crash it was. See ExitEvidence.CrashSignature.
-            HasEventLogCrashEntry = crashEntry != null,
-            CrashSignature = CrashSignature.FromEventLogMessage(crashEntry),
+            HasEventLogCrashEntry = crash.Found,
+            CrashSignature = crash.Signature,
             HasWerReport = LookForWerReport(diedAt),
             LogShowsForcedShutdown = LogEndsWithForcedShutdown(logPath),
         };
@@ -83,19 +83,44 @@ public sealed class WindowsExitEvidenceCollector
         int processId,
         DateTime around,
         string? exeFileName = null
-    ) => CrashSignature.FromEventLogMessage(LookForCrashEntry(processId, around, exeFileName));
+    ) => ScanForCrashEntries(processId, around, exeFileName).Signature;
 
     /// <summary>
-    /// Looks for a Windows "Application Error" (1000), "Application Hang" (1002) or .NET Runtime entry
-    /// naming Bloom, close to when the process died.
+    /// One walk of the Application log, answering two questions: did Windows log a crash for this Bloom,
+    /// and - if any of those entries is a managed one - which crash was it.
     ///
-    /// <paramref name="exeFileName"/> is the file name of the Bloom that died, because there is no one
-    /// name to look for: the installer renames the exe per channel, so a release machine has
-    /// <c>Bloom.exe</c> but an alpha has <c>BloomAlpha.exe</c>. Matching the literal "Bloom.exe" found
-    /// neither of the renamed ones.
+    /// **It must not stop at the first match**, and that is the whole reason this is one method returning
+    /// two things rather than a lookup returning one entry. Windows writes several entries for a single
+    /// crash and this walk sees the newest first, which measurably means:
+    ///
+    /// <code>
+    /// 15:18:59  Windows Error Reporting 1001   Fault bucket 2085764476734548794, type 4
+    /// 15:18:55  Application Error       1000   Faulting application name: Bloom.exe, version: 6.5.0.0
+    /// 15:18:55  .NET Runtime            1026   Application: Bloom.exe ... Exception Info: System...
+    /// </code>
+    ///
+    /// The Application Error entry names Bloom and so matches, but carries no exception - only the 1026
+    /// entry four lines later does. Returning the first match therefore always yielded an unparseable
+    /// message, the crash identity was always null, and the fingerprint fix that depends on it silently did
+    /// nothing at all: a real run still produced the old degenerate 1ec8760ad8a5. So the walk carries on
+    /// after its first match, looking for one that actually identifies the fault, and stops as soon as it
+    /// has both answers.
+    ///
+    /// <paramref name="exeFileName"/> is the file name of the Bloom that died, because there is no one name
+    /// to look for: the installer renames the exe per channel, so a release machine has <c>Bloom.exe</c>
+    /// but an alpha has <c>BloomAlpha.exe</c>. Matching the literal "Bloom.exe" found neither of the
+    /// renamed ones.
     /// </summary>
-    private static string? LookForCrashEntry(int processId, DateTime diedAt, string? exeFileName)
+    private static (bool Found, string? Signature) ScanForCrashEntries(
+        int processId,
+        DateTime diedAt,
+        string? exeFileName
+    )
     {
+        // Collected rather than judged in the loop, so the judging is a pure function with its own tests -
+        // see PickTheCrashThatIdentifiesItself. There are only ever a handful of these: entries naming
+        // Bloom within five minutes of its death.
+        var candidates = new List<string>();
         try
         {
             using var log = new EventLog("Application");
@@ -125,16 +150,45 @@ public sealed class WindowsExitEvidenceCollector
                 if (!isCrashSource)
                     continue;
 
-                if (EntryNamesThisBloom(entry.Message ?? "", processId, exeFileName))
-                    return entry.Message ?? "";
+                if (!EntryNamesThisBloom(entry.Message ?? "", processId, exeFileName))
+                    continue;
+
+                candidates.Add(entry.Message ?? "");
             }
         }
         catch (Exception)
         {
             // Unreadable Event Log: indistinguishable from no entry, which Phase 1 already treats as
-            // "say nothing".
+            // "say nothing". Whatever the walk managed before failing still counts.
         }
-        return null;
+        return PickTheCrashThatIdentifiesItself(candidates);
+    }
+
+    /// <summary>
+    /// Given the entries that name this Bloom, newest first: was there a crash entry at all, and which
+    /// crash was it.
+    ///
+    /// Separated from the walk above purely so it can be tested, because the bug it fixes lived exactly
+    /// here and was invisible from the code - taking the first match looks obviously right, and produced a
+    /// null identity every single time on a real machine. See the walk's own comment for the measured
+    /// entry order.
+    /// </summary>
+    internal static (bool Found, string? Signature) PickTheCrashThatIdentifiesItself(
+        IEnumerable<string> namingThisBloomNewestFirst
+    )
+    {
+        var found = false;
+        string? signature = null;
+        foreach (var message in namingThisBloomNewestFirst)
+        {
+            // Any match answers "did Windows log a crash", which is all the classifier needs.
+            found = true;
+            // Only a managed one answers "which crash", so keep looking past the ones that cannot.
+            signature ??= CrashSignature.FromEventLogMessage(message);
+            if (signature != null)
+                break;
+        }
+        return (found, signature);
     }
 
     /// <summary>
