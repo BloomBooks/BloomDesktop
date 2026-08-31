@@ -97,9 +97,18 @@ namespace BloomTests.SubscriptionAndFeatures
             bool expectedExpired
         )
         {
-            var expiration = DateTime.Now.Date.AddDays(daysFromToday);
+            var dayTestStarted = DateTime.Now.Date;
+            var expiration = dayTestStarted.AddDays(daysFromToday);
             var code = MakeCodeExpiringOn(expiration);
             var subscription = new Subscription(code);
+            var isExpired = subscription.IsExpired();
+            var tier = subscription.Tier;
+
+            // We built the code relative to today, but Subscription reads the clock again for
+            // itself, so if midnight happened in between, the answers we just captured are about
+            // the wrong day. That is a property of the test, not a bug in Subscription.
+            if (DateTime.Now.Date != dayTestStarted)
+                Assert.Ignore("The date changed while this test was running; rerun it.");
 
             // sanity checks: if we didn't build a well-formed code for the intended date,
             // the assertions below would pass or fail for the wrong reason.
@@ -110,11 +119,11 @@ namespace BloomTests.SubscriptionAndFeatures
             );
             Assert.AreEqual(expiration, subscription.ExpirationDate);
 
-            Assert.AreEqual(expectedExpired, subscription.IsExpired());
+            Assert.AreEqual(expectedExpired, isExpired);
             // The tier is what actually disables the subscription-only tools.
             Assert.AreEqual(
                 expectedExpired ? SubscriptionTier.Basic : SubscriptionTier.Enterprise,
-                subscription.Tier
+                tier
             );
         }
 
