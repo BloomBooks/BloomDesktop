@@ -12,23 +12,48 @@ namespace BloomFreezeDoctor.Tests;
 /// exactly like watching the first, right up to the point where "Restart Bloom" offers to kill somebody
 /// else's work, or a stale note about one process attaches itself to another.
 ///
-/// These adopt the TEST PROCESS as a stand-in for Bloom, which is safe here and deliberately so: the
-/// supervisor is constructed with zombie-ending switched off, and ending a Bloom needs gathered evidence
-/// first in any case, so nothing in this fixture can decide to end the test host.
+/// These use REAL CHILD PROCESSES as stands-in for Bloom. They used to adopt the test host itself, which
+/// was convenient and is now forbidden: a Doctor refuses to watch its own process, because one was seen
+/// doing exactly that. A separate process is also the more faithful stand-in - the test host is the one
+/// process whose lifetime cannot tell us anything about watching another.
 /// </summary>
 [TestFixture]
 public class OneBloomAtATimeTests
 {
-    private static DoctorSupervisor Inert(string outboxRoot) =>
+    private string _outbox = null!;
+    private readonly List<Process> _children = new();
+
+    /// <summary>
+    /// A process that will sit there for a minute without a window, so the Doctor has something real to
+    /// adopt. Registered for teardown, so a failing test cannot leave one behind.
+    /// </summary>
+    private Process StartAStandIn()
+    {
+        var child = Process.Start(
+            new ProcessStartInfo("ping.exe", "-n 60 127.0.0.1")
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true,
+            }
+        )!;
+        _children.Add(child);
+        Assert.That(
+            child.HasExited,
+            Is.False,
+            "setup: the stand-in must actually be running, or the test proves nothing"
+        );
+        return child;
+    }
+
+    private DoctorSupervisor WatchingOnly(string processName) =>
         new(
             project: "AUT",
-            targetProcessName: "no-such-process-at-all",
-            outbox: new ReportOutbox(outboxRoot),
+            targetProcessName: processName,
+            outbox: new ReportOutbox(_outbox),
             neverEndZombies: true,
             targetNameWasGiven: true
         );
-
-    private string _outbox = null!;
 
     [SetUp]
     public void SetUp()
@@ -44,6 +69,17 @@ public class OneBloomAtATimeTests
     [TearDown]
     public void TearDown()
     {
+        foreach (var child in _children)
+        {
+            try
+            {
+                if (!child.HasExited)
+                    child.Kill();
+                child.Dispose();
+            }
+            catch (Exception) { }
+        }
+        _children.Clear();
         try
         {
             if (Directory.Exists(_outbox))
@@ -53,19 +89,33 @@ public class OneBloomAtATimeTests
     }
 
     [Test]
+    public void The_Doctor_refuses_to_watch_itself()
+    {
+        // Seen in a real doctor.log: "[25736] watching Bloom 25736 (Release)". The log prefix is the writing
+        // process's own id, so that Doctor had adopted itself. How it got there was never established,
+        // which is the point of a guard rather than a fix: watching our own process is nonsense whatever
+        // route reaches it, and it would report on that process's "death" as we exited.
+        using var supervisor = WatchingOnly("no-such-process-at-all");
+
+        supervisor.Adopt(Process.GetCurrentProcess().Id);
+
+        Assert.That(supervisor.LiveWatchedBlooms(), Is.Empty);
+    }
+
+    [Test]
     public void Adopting_the_same_process_twice_leaves_one_watcher()
     {
-        var pid = Process.GetCurrentProcess().Id;
-        using var supervisor = Inert(_outbox);
+        var standIn = StartAStandIn();
+        using var supervisor = WatchingOnly(standIn.ProcessName);
 
-        supervisor.Adopt(pid);
+        supervisor.Adopt(standIn.Id);
         Assert.That(
             supervisor.LiveWatchedBlooms(),
             Has.Count.EqualTo(1),
             "setup: the first adoption must take, or this test proves nothing"
         );
 
-        supervisor.Adopt(pid);
+        supervisor.Adopt(standIn.Id);
 
         Assert.That(supervisor.LiveWatchedBlooms(), Has.Count.EqualTo(1));
     }
@@ -83,19 +133,12 @@ public class OneBloomAtATimeTests
         // the spurious departure had already claimed the one examination.
         //
         // Calling Discover directly is why it is internal. Waiting on its five-second timer would make
-        // this test slow and flaky for no gain; what needs asserting is what one tick does.
-        // The supervisor must do the ADOPTING itself, which means letting its sweep find us: pre-adopting
-        // by hand takes the other branch of Discover entirely, and that is why the first version of this
-        // test passed against the bug it was written for.
-        var self = Process.GetCurrentProcess();
-        var pid = self.Id;
-        using var supervisor = new DoctorSupervisor(
-            project: "AUT",
-            targetProcessName: self.ProcessName,
-            outbox: new ReportOutbox(_outbox),
-            neverEndZombies: true,
-            targetNameWasGiven: true
-        );
+        // this test slow and flaky for no gain; what needs asserting is what one tick does. The supervisor
+        // must do the ADOPTING itself, which means letting its sweep find the stand-in by name:
+        // pre-adopting by hand takes the other branch of Discover entirely, and that is why the first
+        // version of this test passed against the bug it was written for.
+        var standIn = StartAStandIn();
+        using var supervisor = WatchingOnly(standIn.ProcessName);
 
         // One tick, which both adopts and then decides whether the adopted Bloom has gone. With the bug
         // those happened in the same pass and the second undid the first, so this comes back empty.
@@ -105,17 +148,12 @@ public class OneBloomAtATimeTests
         Assert.That(
             afterFirstTick,
             Has.Count.EqualTo(1),
-            "the tick that adopted this process must not also have decided it had gone"
+            "the tick that adopted must not also have decided the process had gone"
         );
-        // Deliberately NOT asserting WHICH process it adopted. The sweep looks up by process name, and on
-        // a machine running more than one test host (or two of these runs at once) there is more than one
-        // process of this name - so pinning the id made this fail for a reason the test is not about. What
-        // the test is about is that the tick which adopted did not also decide the adopted Bloom had gone.
-        Assert.That(
-            afterFirstTick[0].ProcessId,
-            Is.GreaterThan(0),
-            "and it should be watching a real process"
-        );
+        // Deliberately NOT asserting WHICH process. The sweep looks up by name, and another of these can be
+        // running - a second test host, or somebody's own ping - so pinning the id made this fail for a
+        // reason the test is not about.
+        Assert.That(afterFirstTick[0].ProcessId, Is.GreaterThan(0));
 
         // A second tick, which takes the other branch - we now have a target, so it checks rather than
         // adopts. It must leave a live process alone.
@@ -133,50 +171,30 @@ public class OneBloomAtATimeTests
         // The case that matters: a developer with two worktrees open, or an alpha tester running two
         // channels. Before this, both were watched and both appeared in the list "Restart Bloom" offers to
         // end - so clearing the way for one Bloom meant being asked to kill the other.
-        var self = Process.GetCurrentProcess().Id;
-        // `ping -n 60` rather than `pause`: pause needs a console to wait on, and with none attached it
-        // exits at once - which made an earlier version of this test pass for the wrong reason, because
-        // there was no second process left to adopt by the time we tried.
-        using var other = Process.Start(
-            new ProcessStartInfo("cmd.exe", "/c ping -n 60 127.0.0.1")
-            {
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true,
-            }
-        )!;
-        try
-        {
-            using var supervisor = Inert(_outbox);
-            supervisor.Adopt(self);
-            Assert.That(
-                supervisor.LiveWatchedBlooms(),
-                Has.Count.EqualTo(1),
-                "setup: watching the first"
-            );
-            Assert.That(
-                other.HasExited,
-                Is.False,
-                "setup: the second process must still be alive, or there is nothing to refuse"
-            );
+        var first = StartAStandIn();
+        var second = StartAStandIn();
+        using var supervisor = WatchingOnly(first.ProcessName);
 
-            supervisor.Adopt(other.Id);
+        supervisor.Adopt(first.Id);
+        Assert.That(
+            supervisor.LiveWatchedBlooms(),
+            Has.Count.EqualTo(1),
+            "setup: watching the first"
+        );
+        Assert.That(
+            second.HasExited,
+            Is.False,
+            "setup: the second process must still be alive, or there is nothing to refuse"
+        );
 
-            var watched = supervisor.LiveWatchedBlooms();
-            Assert.That(watched, Has.Count.EqualTo(1), "a second Bloom must not be adopted");
-            Assert.That(
-                watched[0].ProcessId,
-                Is.EqualTo(self),
-                "and the one already being watched is the one we keep"
-            );
-        }
-        finally
-        {
-            try
-            {
-                other.Kill();
-            }
-            catch (Exception) { }
-        }
+        supervisor.Adopt(second.Id);
+
+        var watched = supervisor.LiveWatchedBlooms();
+        Assert.That(watched, Has.Count.EqualTo(1), "a second Bloom must not be adopted");
+        Assert.That(
+            watched[0].ProcessId,
+            Is.EqualTo(first.Id),
+            "and the one already being watched is the one we keep"
+        );
     }
 }

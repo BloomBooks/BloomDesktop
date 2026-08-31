@@ -391,14 +391,24 @@ public sealed class DoctorSupervisor : IDisposable
     /// </summary>
     public void Adopt(int processId)
     {
-        var facts = GatherContextBuilder.DescribeRunningProcess(processId);
+        var facts = GatherContextBuilder.DescribeRunningProcess(processId, out var whyNot);
         if (facts == null)
+        {
+            // Worth a line, because this is Bloom telling us which process it is - the one adoption route
+            // that is not a guess - and it failing silently leaves a Doctor that Bloom started sitting
+            // there watching nothing, with the log showing only that it never adopted anything.
+            Note(
+                $"asked to watch process {processId}, but cannot read it: {whyNot ?? "no reason recorded"}"
+            );
             return;
+        }
         // Learn this Bloom's actual process name before the first discovery tick, or that tick will look
         // for the wrong name, conclude this Bloom is gone, and take the Doctor down with it. See
         // _targetProcessNames.
         RememberProcessName(facts.ExePath);
-        AdoptFacts(facts);
+        var refused = AdoptFacts(facts);
+        if (refused is { Length: > 0 })
+            Note($"asked to watch Bloom {processId}, but {refused}");
     }
 
     /// <summary>
@@ -695,6 +705,15 @@ public sealed class DoctorSupervisor : IDisposable
                 // Already said above, in its own words; nothing for the sweep to add.
                 return "";
             }
+
+            // A Doctor watching itself is nonsense, and it has been SEEN: a doctor.log line reads
+            // "[25736] watching Bloom 25736 (Release)" - the log prefix is the writing process's own id, so
+            // that process adopted itself. How it got there is still unknown, which is exactly why this
+            // guard is worth having: whatever route reaches here with our own id now stops, and says so,
+            // instead of quietly watching a process that can never be Bloom and reporting on its "death"
+            // when we exit.
+            if (facts.ProcessId == Environment.ProcessId)
+                return "that is this Doctor itself, which cannot be the Bloom we are watching";
 
             // A headless run - one of Bloom's console verbs - legitimately has no window, so watching it
             // would only produce false zombie reports (plan §3.3).

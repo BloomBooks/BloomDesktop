@@ -97,6 +97,8 @@ internal static class Program
 
     private static int Run(CommandLineOptions options)
     {
+        SayWhatWeAre(options);
+
         using var supervisor = new DoctorSupervisor(
             options.Project,
             options.TargetProcessName,
@@ -252,6 +254,37 @@ internal static class Program
 /// <summary>The Doctor's command line. Small on purpose; the window is the interface.</summary>
 internal sealed record CommandLineOptions
 {
+    /// <summary>
+    /// One line at startup saying which Doctor this is and what it was told to do.
+    ///
+    /// Every Doctor on the machine writes to the same doctor.log, and until now nothing identified them or
+    /// recorded when one started - so a log containing two instances could not be read at all. A real case
+    /// made that concrete: four lines appeared from a process nobody could account for, and there was no way
+    /// to tell where it came from, what arguments it had, or which Bloom it thought it was watching. This
+    /// line answers all of that for the price of one write per run.
+    ///
+    /// The exe path matters as much as the arguments: it is what BloomChannel derives the channel from, and
+    /// therefore the difference between a Doctor built from this worktree and one from an installed Bloom.
+    /// </summary>
+    private static void SayWhatWeAre(CommandLineOptions options)
+    {
+        var wanted = new List<string> { $"project {options.Project}" };
+        wanted.Add(
+            options.TargetNameWasGiven
+                ? $"only processes named {options.TargetProcessName}"
+                : "any installed Bloom channel"
+        );
+        if (options.ForceFiling)
+            wanted.Add("filing forced");
+        if (options.AdoptProcessId.HasValue)
+            wanted.Add($"asked to watch {options.AdoptProcessId.Value}");
+
+        DoctorLog.Write(
+            $"Freeze Doctor starting: {Environment.ProcessPath ?? "(unknown path)"} - "
+                + string.Join(", ", wanted)
+        );
+    }
+
     /// <summary>`--adopt &lt;pid&gt;`: Bloom telling us which process it is. Also means "start minimised".</summary>
     public int? AdoptProcessId { get; init; }
 
