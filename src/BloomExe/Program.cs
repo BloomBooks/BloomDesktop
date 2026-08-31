@@ -1901,6 +1901,16 @@ namespace Bloom
 
                 StartupScreenManager.PutSplashAbove(_projectContext.ProjectWindow);
 
+                // At first startup, closing the splash screen brings the main window to the front, and
+                // doing it here as well would put the main window on top of the dialogs that startup
+                // puts up. But every later time we open a collection -- above all when the user switches
+                // collections -- there is no splash screen and nothing else that will do it, and the new
+                // Shell has only Show()'s implicit activation to rely on. Windows refuses that once
+                // another application (Chrome, say) took the foreground as our previous window closed,
+                // and Bloom comes up invisible behind it. BL-16784.
+                if (!StartupScreenManager.WillBringMainWindowToFrontWhenSplashCloses)
+                    (_projectContext.ProjectWindow as Shell)?.ReallyComeToFront();
+
                 if (BloomThreadCancelService != null)
                     BloomThreadCancelService.Dispose();
                 BloomThreadCancelService = new CancellationTokenSource();

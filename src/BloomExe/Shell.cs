@@ -394,15 +394,16 @@ namespace Bloom
         }
 
         /// <summary>
-        /// we let the Program call this after it closes the splash screen
+        /// we let the Program call this after it closes the splash screen, and after opening a
+        /// collection at a time when there is no splash screen to close (see OpenProjectWindow).
         /// </summary>
         public void ReallyComeToFront()
         {
-            //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
-            TopMost = true;
-            Focus();
-            BringToFront();
-            TopMost = false;
+            // Hold topmost for a moment rather than toggling it instantly: the window we are racing
+            // may raise itself just after we do, and an instant toggle loses to that. BringToFrontNow
+            // explains why the late drop wins either way. (An instant toggle is what we used to do
+            // here, and it is why Bloom could come up behind Chrome. BL-16784)
+            this.BringToFrontNow();
 
             _finishedLoading = true;
         }
