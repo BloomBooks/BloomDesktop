@@ -20,10 +20,11 @@ namespace Bloom.WebLibraryIntegration
         /// collection settings and a default one does not.
         /// </summary>
         /// <remarks>
-        /// This asks "is the name custom?". PublishApi's sign-language handler asks a different
-        /// question -- whether the name differs from the one already stored in the collection --
-        /// and so can answer differently for the same selection. See
-        /// BloomTests/web/controllers/LanguageChangeEventArgsTests, which pins both.
+        /// This is the only rule any caller should use. It compares the two names the chooser
+        /// itself sent, so it answers the question the user actually decided. Deriving a "default"
+        /// name some other way -- e.g. reading WritingSystem.Name back after setting its Tag, which
+        /// PublishApi's sign-language handler used to do (BL-16760) -- asks LibPalaso instead, and
+        /// LibPalaso and the chooser do not always agree on a language's name.
         /// </remarks>
         public bool IsCustomName => DesiredName != DefaultName;
     }
