@@ -249,11 +249,7 @@ internal static class Program
 
     [System.Runtime.InteropServices.DllImport("kernel32.dll")]
     private static extern bool AttachConsole(int processId);
-}
 
-/// <summary>The Doctor's command line. Small on purpose; the window is the interface.</summary>
-internal sealed record CommandLineOptions
-{
     /// <summary>
     /// One line at startup saying which Doctor this is and what it was told to do.
     ///
@@ -284,7 +280,11 @@ internal sealed record CommandLineOptions
                 + string.Join(", ", wanted)
         );
     }
+}
 
+/// <summary>The Doctor's command line. Small on purpose; the window is the interface.</summary>
+internal sealed record CommandLineOptions
+{
     /// <summary>`--adopt &lt;pid&gt;`: Bloom telling us which process it is. Also means "start minimised".</summary>
     public int? AdoptProcessId { get; init; }
 
