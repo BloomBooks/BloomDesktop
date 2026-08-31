@@ -433,7 +433,7 @@ public sealed class DoctorSupervisor : IDisposable
     }
 
     /// <summary>Looks for Blooms we are not yet watching, and forgets ones that have gone.</summary>
-    private void Discover()
+    internal void Discover()
     {
         try
         {
@@ -500,26 +500,38 @@ public sealed class DoctorSupervisor : IDisposable
             BloomTargetWatcher? departed = null;
             WindowsTargetProbe? departedProbe = null;
             var departedWasOurDoing = false;
-            var departedAlreadyClaimed = false;
-            lock (_lock)
+
+            // Only a Bloom we CHECKED can be a Bloom that has gone. Guarding on `watchedIsStillWithUs`
+            // alone was wrong, and wrong in a way that broke everything: on a tick that adopts, the check
+            // above never runs - we took the other branch - so the flag was still false, and the Bloom we
+            // had just adopted was immediately treated as departed. Every adopting tick un-adopted, which
+            // is why the log filled with "watching Bloom NNNN" five seconds apart for ever.
+            if (watchedId != 0 && !watchedIsStillWithUs)
             {
-                if (_watcher != null)
+                lock (_lock)
                 {
-                    _lastBloomSeenAt = DateTimeOffset.UtcNow;
-                    if (!watchedIsStillWithUs)
+                    // Still the same one we checked; a tick that swapped the target underneath us must not
+                    // have its watcher taken away on the strength of a check about a different process.
+                    if (_watcher != null && _watcher.Target.ProcessId == watchedId)
                     {
                         departed = _watcher;
                         departedProbe = _probe;
+                        // Read under the lock and carried out. NOT cleared: with a single target there is
+                        // nothing to clear it for, and clearing it here is what let a watcher tick arriving
+                        // moments later read "nobody asked" about a death we had caused. That was Fable's
+                        // race, and not clearing is a smaller fix than claiming the examination early -
+                        // which is what the previous attempt did, and it stopped exits being examined at
+                        // all, because ConsiderReportingAnExit refuses a death already claimed.
                         departedWasOurDoing = _weAskedItToStop;
-                        // Claim the examination HERE, in the same lock that reads the flag above. The
-                        // watcher goes on ticking until it is disposed below, and a tick landing in the gap
-                        // used to find the flag cleared and file a card about a death we had caused.
-                        departedAlreadyClaimed = _exitExamined;
-                        _exitExamined = true;
                         _watcher = null;
                         _probe = null;
                     }
                 }
+            }
+            else if (watchedId != 0)
+            {
+                lock (_lock)
+                    _lastBloomSeenAt = DateTimeOffset.UtcNow;
             }
 
             // Give each departed Bloom its exit examination before letting go of its watcher.
@@ -536,7 +548,7 @@ public sealed class DoctorSupervisor : IDisposable
             // because it starts background work.
             if (departed != null)
             {
-                if (departedProbe != null && !departedAlreadyClaimed)
+                if (departedProbe != null)
                     ConsiderReportingAnExit(
                         departed,
                         departedProbe,

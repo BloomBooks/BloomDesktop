@@ -71,6 +71,55 @@ public class OneBloomAtATimeTests
     }
 
     [Test]
+    public void A_discovery_tick_does_not_drop_the_Bloom_it_just_adopted()
+    {
+        // This is the test that was missing, and its absence cost a whole manual run.
+        //
+        // The one-Bloom rewrite decided whether the watched Bloom had gone from a flag that was only set
+        // in the "we already have a target" branch. On a tick that ADOPTED, that branch never ran, so the
+        // flag was still false and the freshly adopted Bloom was treated as departed - every adopting tick
+        // un-adopted. Two symptoms, both seen on a real run: the log filled with "watching Bloom NNNN"
+        // every five seconds, and the death of a real crashing Bloom was never examined at all, because
+        // the spurious departure had already claimed the one examination.
+        //
+        // Calling Discover directly is why it is internal. Waiting on its five-second timer would make
+        // this test slow and flaky for no gain; what needs asserting is what one tick does.
+        // The supervisor must do the ADOPTING itself, which means letting its sweep find us: pre-adopting
+        // by hand takes the other branch of Discover entirely, and that is why the first version of this
+        // test passed against the bug it was written for.
+        var self = Process.GetCurrentProcess();
+        var pid = self.Id;
+        using var supervisor = new DoctorSupervisor(
+            project: "AUT",
+            targetProcessName: self.ProcessName,
+            outbox: new ReportOutbox(_outbox),
+            neverEndZombies: true,
+            targetNameWasGiven: true
+        );
+
+        // One tick, which both adopts and then decides whether the adopted Bloom has gone. With the bug
+        // those happened in the same pass and the second undid the first, so this comes back empty.
+        supervisor.Discover();
+
+        var afterFirstTick = supervisor.LiveWatchedBlooms();
+        Assert.That(
+            afterFirstTick,
+            Has.Count.EqualTo(1),
+            "the tick that adopted this process must not also have decided it had gone"
+        );
+        Assert.That(afterFirstTick[0].ProcessId, Is.EqualTo(pid));
+
+        // A second tick, which takes the other branch - we now have a target, so it checks rather than
+        // adopts. It must leave a live process alone.
+        supervisor.Discover();
+        Assert.That(
+            supervisor.LiveWatchedBlooms(),
+            Has.Count.EqualTo(1),
+            "and a later tick must not drop a Bloom that is still running"
+        );
+    }
+
+    [Test]
     public void A_second_process_is_not_adopted()
     {
         // The case that matters: a developer with two worktrees open, or an alpha tester running two
