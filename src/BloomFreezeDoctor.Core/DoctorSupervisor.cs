@@ -630,9 +630,20 @@ public sealed class DoctorSupervisor : IDisposable
             RaiseStatusChanged();
             ConsiderExiting();
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            // Discovery failing must never stop the Doctor; the next tick will try again.
+            // Discovery failing must never stop the Doctor; the next tick will try again. But it must not
+            // fail SILENTLY, which is what this did, and it is now the last unexplained silence in the
+            // Doctor: three separate runs saw a Bloom sit unadopted for 83, 54 and 110 seconds with not one
+            // line in the log, and every other path through the sweep now says something. The third of
+            // those cost the crash dump outright - Bloom only asks to be dumped if a Doctor is already
+            // watching, and it asked twenty seconds before we noticed it existed.
+            //
+            // Suppressed by repetition, like the other decline notes, because a fault here repeats every
+            // five seconds for as long as it lasts. Keyed on 0: this is the sweep itself failing, not a
+            // particular process being declined.
+            if (_declined.ShouldSay(0, $"{e.GetType().Name}: {e.Message}", DateTimeOffset.UtcNow))
+                Note($"looking for Bloom failed, will try again: {e.GetType().Name}: {e.Message}");
         }
     }
 
