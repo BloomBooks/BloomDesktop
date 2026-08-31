@@ -62,14 +62,13 @@ public sealed record DoctorSession
     /// way of a restart - and most running Blooms are not: a `--automation` run bypasses the token by
     /// design, and a Ctrl-held launch only takes it if it happened to be first.
     ///
-    /// **Nullable, and the null case is the point.** Null means this Bloom did not say, which is not the
-    /// same as saying no. An older Bloom writes no session file at all, and one built before this field
-    /// existed writes a session without it; either can be the very process holding the token, since the
-    /// channels deliberately share one mutex. Callers must read null as "possibly in the way" - reading
-    /// it as false would let the Doctor leave the real blocker running and start a Bloom that quietly
-    /// exits, which is the "Bloom will not start" complaint that brought the user to the Doctor.
+    /// Not nullable: every Bloom that writes this file at all states it. The "we cannot tell" case still
+    /// exists and still matters, but it belongs one level up - a Bloom that wrote NO session file yields no
+    /// value here, and callers must read that absence as "possibly in the way". Reading it as false would
+    /// let the Doctor leave the real blocker running and start a Bloom that quietly exits, which is the
+    /// "Bloom will not start" complaint that brought the user to the Doctor in the first place.
     /// </summary>
-    public bool? OwnsSingleInstanceToken { get; init; }
+    public bool OwnsSingleInstanceToken { get; init; }
 
     /// <summary>Bloom's own HTTP port, which cannot be discovered from outside because http.sys owns it.</summary>
     public int HttpPort { get; init; }
@@ -99,8 +98,8 @@ public sealed record DoctorSession
     /// a user reports something non-fatal and keeps working, and an unrelated freeze two hours later is
     /// worth a card of its own. See BloomsOwnReport.
     ///
-    /// Null means a Bloom too old to say. That is not the same as "never reported", which is
-    /// <see cref="BloomAlreadyReported"/> being false.
+    /// Null when Bloom has not reported anything, which is the same thing
+    /// <see cref="BloomAlreadyReported"/> says as false.
     /// </summary>
     public DateTimeOffset? ReportedAtUtc { get; init; }
 

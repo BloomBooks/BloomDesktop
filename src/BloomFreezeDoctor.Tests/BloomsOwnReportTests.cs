@@ -84,18 +84,6 @@ public class BloomsOwnReportTests
     }
 
     [Test]
-    public void A_report_with_no_time_keeps_the_old_all_run_suppression()
-    {
-        // Only a Bloom built before the timestamp existed. It cannot tell us when it reported, and
-        // inventing a time would be guessing, so it gets exactly the behaviour it had before this change.
-        Assert.That(
-            BloomsOwnReport.StillAccountsForTheTrouble(Reported(null), Now),
-            Is.True,
-            "silence for the run is what such a Bloom has always had"
-        );
-    }
-
-    [Test]
     public void A_report_stamped_in_the_future_ages_out_like_any_other()
     {
         // Clocks move backwards - a time-zone change, an NTP correction - and a naive subtraction would

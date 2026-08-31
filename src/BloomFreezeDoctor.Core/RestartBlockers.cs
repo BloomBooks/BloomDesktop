@@ -36,11 +36,11 @@ public static class RestartBlockers
     /// <summary>
     /// Whether this Bloom must go before a new one can start.
     ///
-    /// **Null counts as blocking.** Null is "this Bloom did not tell us", and the Blooms that cannot tell
-    /// us are precisely the old ones - which write no session file, or one written before the field
-    /// existed - and an old Bloom is every bit as capable of holding the shared token as a new one. Read
-    /// null as "no" and the Doctor leaves the real blocker running, starts a Bloom that finds the token
-    /// held and quietly exits, and the user watches "Bloom will not start" happen again.
+    /// **Null counts as blocking.** Null means this Bloom wrote no session file - it predates the Doctor
+    /// entirely, or died before it got that far - and such a Bloom is every bit as capable of holding the
+    /// shared token as one that reports. Read null as "no" and the Doctor leaves the real blocker running,
+    /// starts a Bloom that finds the token held and quietly exits, and the user watches "Bloom will not
+    /// start" happen again.
     ///
     /// The opposite mistake only costs a confirmation dialog naming a Bloom that need not have died - and
     /// that dialog says which ones we are unsure about, so the person decides.
@@ -69,7 +69,7 @@ public static class RestartBlockers
         var certainty =
             bloom.HoldsSingleInstanceToken == true
                 ? ""
-                : ", which is too old to tell us whether it is the one blocking a restart";
+                : ", which left no report saying whether it is the one blocking a restart";
         return $"process {bloom.ProcessId} ({state}{certainty})";
     }
 }

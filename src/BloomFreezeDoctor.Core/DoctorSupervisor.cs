@@ -285,8 +285,8 @@ public sealed class DoctorSupervisor : IDisposable
             .Select(bloom => new LiveBloom(
                 bloom.ProcessId,
                 bloom.State,
-                // Null when there is no session file, or one written by a Bloom too old to have this
-                // field. Both mean "did not say", which RestartBlockers reads as possibly blocking.
+                // Null when the Bloom wrote no session file, which RestartBlockers reads as possibly
+                // blocking - see there for why that is the safe direction.
                 Protocol.DoctorSessionStore.TryRead(bloom.ProcessId)?.OwnsSingleInstanceToken
             ))
             .ToList();

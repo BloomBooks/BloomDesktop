@@ -146,50 +146,6 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void A_session_written_before_the_token_field_existed_reads_as_unknown_not_as_no()
-    {
-        // The compatibility case John raised: a Bloom that knows about this file can be contending with
-        // an older one that does not. If the missing field deserialized to false, the Doctor would decide
-        // the old Bloom was not blocking anything, leave it running, and start a Bloom that finds the
-        // token held and quietly exits. So the absence has to survive as null all the way through.
-        // Derived from a real session rather than hand-written, so every other field is exactly what
-        // the writer produces and the only difference is the one under test.
-        var path = DoctorSessionStore.PathFor(5102, _directory);
-        DoctorSessionStore.TryWrite(
-            Session(5102) with
-            {
-                OwnsSingleInstanceToken = true,
-            },
-            _directory
-        );
-        var asWritten = File.ReadAllText(path);
-        Assert.That(
-            asWritten,
-            Does.Contain("OwnsSingleInstanceToken"),
-            "sanity check: the field must be there before we take it away"
-        );
-
-        var lines = File.ReadAllLines(path);
-        File.WriteAllLines(path, lines.Where(line => !line.Contains("OwnsSingleInstanceToken")));
-
-        var read = DoctorSessionStore.TryRead(5102, _directory);
-
-        Assert.That(read, Is.Not.Null, "the file must still be readable - sanity check");
-        Assert.That(
-            read!.OwnsSingleInstanceToken,
-            Is.Null,
-            "a Bloom that never mentioned the token has not told us it holds none"
-        );
-        Assert.That(
-            RestartBlockers.IsInTheWay(
-                new LiveBloom(5102, TargetState.Frozen, read.OwnsSingleInstanceToken)
-            ),
-            Is.True,
-            "and so it must still count as possibly blocking a restart"
-        );
-    }
-
-    [Test]
     public void A_session_survives_a_round_trip()
     {
         Assert.That(DoctorSessionStore.TryWrite(Session(4242), _directory), Is.True);

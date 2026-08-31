@@ -37,16 +37,14 @@ public static class BloomsOwnReport
     /// A session with no report at all, or one whose report has aged out, returns false - the Doctor is
     /// free to file, subject to every other guard.
     ///
-    /// **A report with no timestamp keeps the old all-run suppression.** That means a Bloom built before
-    /// the timestamp existed, which cannot tell us when it reported; suppressing for the run is exactly
-    /// what such a Bloom got before this change, and inventing a time for it would be guessing.
+    /// A report claiming to exist with no time on it cannot happen - Bloom writes both together - so it is
+    /// treated as not suppressing rather than given a branch of its own. That errs the way this file errs
+    /// everywhere: a duplicate card is a smaller loss than silence about a real freeze.
     /// </summary>
     public static bool StillAccountsForTheTrouble(DoctorSession? session, DateTimeOffset now)
     {
-        if (session?.BloomAlreadyReported != true)
+        if (session?.BloomAlreadyReported != true || session.ReportedAtUtc == null)
             return false;
-        if (session.ReportedAtUtc == null)
-            return true;
         // Guard the clock going backwards (a time-zone change, an NTP correction) as well as forwards: a
         // report stamped in the future would otherwise suppress for as long as the skew lasts.
         return (now - session.ReportedAtUtc.Value).Duration() < Window;

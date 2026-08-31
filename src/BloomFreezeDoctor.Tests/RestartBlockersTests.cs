@@ -41,9 +41,9 @@ public class RestartBlockersTests
     [Test]
     public void A_Bloom_that_did_not_say_is_treated_as_being_in_the_way()
     {
-        // The asymmetry is the whole design. A Bloom that cannot tell us is an OLD Bloom - no session file,
-        // or one written before the field existed - and an old Bloom holds the shared token just as well as
-        // a new one. Guess "no" and we leave the real blocker running.
+        // The asymmetry is the whole design. A Bloom that cannot tell us is one that wrote no session file
+        // - it predates the Doctor entirely, or died before it got that far - and such a Bloom holds the
+        // shared token just as well as one that reports. Guess "no" and we leave the real blocker running.
         Assert.That(
             RestartBlockers.IsInTheWay(Bloom(102, TargetState.Frozen, holdsToken: null)),
             Is.True,
@@ -59,7 +59,7 @@ public class RestartBlockersTests
             Bloom(1, TargetState.Healthy, holdsToken: false), // an --automation run
             Bloom(2, TargetState.Frozen, holdsToken: true), // the real blocker
             Bloom(3, TargetState.Healthy, holdsToken: false), // another worktree
-            Bloom(4, TargetState.Zombie, holdsToken: null), // too old to say
+            Bloom(4, TargetState.Zombie, holdsToken: null), // wrote no session file
         };
 
         var inTheWay = RestartBlockers.InTheWay(watched);
@@ -95,9 +95,9 @@ public class RestartBlockersTests
 
         Assert.That(
             guessed,
-            Does.Contain("too old to tell us"),
+            Does.Contain("left no report saying"),
             "ending this one may achieve nothing, so the person deciding should be told"
         );
-        Assert.That(known, Does.Not.Contain("too old to tell us"));
+        Assert.That(known, Does.Not.Contain("left no report saying"));
     }
 }
