@@ -24,7 +24,6 @@ import { kBloomDisabledOpacity } from "../../../utils/colorUtils";
 import { getAsync, useApiObject } from "../../../utils/bloomApi";
 import { audioExistsForIdsAsync } from "../../toolbox/talkingBook/audioUtils";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
-import { canvasElementControlRegistry } from "../../toolbox/canvas/canvasElementControlRegistry";
 import { buildCanvasElementControlRegistryContext } from "../../toolbox/canvas/buildCanvasElementControlRegistryContext";
 import {
     IControlContext,
@@ -33,9 +32,12 @@ import {
     IControlRuntime,
 } from "../../toolbox/canvas/canvasControlTypes";
 import {
+    getControlConfiguration,
     getMenuSections,
     getToolbarItems,
 } from "../../toolbox/canvas/canvasControlResolution";
+import { localizeTableCellMenuLabel } from "../../toolbox/canvas/tableCellMenuLabels";
+import { CellMenuItems, openCellMenu } from "bloom-table";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -257,6 +259,17 @@ const CanvasElementContextControls: React.FunctionComponent<{
         // This prevents focus leaving the text box.
         e.preventDefault();
         e.stopPropagation();
+        // The content of a table cell has no menu of Bloom's; its configuration
+        // sends this button to the bloom-table library's Cell menu, so that the
+        // button and a right-click on the cell open one and the same menu.
+        if (definition.opensTableCellMenu && controlContext.tableCell) {
+            const button = e.currentTarget.getBoundingClientRect();
+            openCellMenu(controlContext.tableCell, {
+                x: button.left,
+                y: button.bottom,
+            });
+            return;
+        }
         setMenuOpen(true); // Review: better on mouse down? But then the mouse up may be missed, if the menu is on top...
     };
     // editable and langName are computed earlier, but keep them here for the UI below.
@@ -469,20 +482,28 @@ const CanvasElementContextControls: React.FunctionComponent<{
         aiImageEditingAvailable: aiImageEditingStatus?.visible ?? false,
     };
 
-    const definition =
-        canvasElementControlRegistry[controlContext.elementType] ??
-        canvasElementControlRegistry.none;
+    const definition = getControlConfiguration(controlContext);
+
+    const menuSectionsOfRows: IControlMenuRow[][] = getMenuSections(
+        definition,
+        controlContext,
+        controlRuntime,
+    ).map((section) =>
+        section
+            .map((item) => item.menuRow)
+            .filter((row): row is IControlMenuRow => !!row),
+    );
+    // The content of a table cell whose menu Bloom composes ends that menu with the
+    // items the bloom-table library gives for the cell, so one menu carries both what
+    // the element is and what the cell is. See cellContentControls.
+    const tableCellOfComposedMenu =
+        definition.includesTableCellMenuItems && controlContext.tableCell
+            ? controlContext.tableCell
+            : undefined;
 
     menuOptions = joinMenuSectionsWithSingleDividers(
-        getMenuSections(definition, controlContext, controlRuntime).map(
-            (section) =>
-                convertControlMenuRows(
-                    section
-                        .map((item) => item.menuRow)
-                        .filter((row): row is IControlMenuRow => !!row),
-                    controlContext,
-                    controlRuntime,
-                ),
+        menuSectionsOfRows.map((rows) =>
+            convertControlMenuRows(rows, controlContext, controlRuntime),
         ),
     );
 
@@ -620,79 +641,110 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             const menuHasShortcuts = menuOptions.some(
                                 (o) => !!o.shortcutDisplay,
                             );
-                            return menuOptions.map((option, index) => {
-                                if (option.l10nId === "-") {
-                                    return (
-                                        <Divider
-                                            key={index}
-                                            variant="middle"
-                                            component="li"
-                                        />
-                                    );
-                                }
-                                if (option.subMenu) {
-                                    const subMenuHasShortcuts =
-                                        option.subMenu.some(
-                                            (o) => !!o.shortcutDisplay,
+                            const rows: React.ReactNode[] = menuOptions.map(
+                                (option, index) => {
+                                    if (option.l10nId === "-") {
+                                        return (
+                                            <Divider
+                                                key={index}
+                                                variant="middle"
+                                                component="li"
+                                            />
                                         );
-                                    return (
-                                        <LocalizableNestedMenuItem
-                                            {...option}
-                                            key={option.l10nId}
-                                            truncateMainLabel={true}
-                                        >
-                                            {option.subMenu.map(
-                                                (subOption, subIndex) => {
-                                                    if (
-                                                        subOption.l10nId === "-"
-                                                    ) {
+                                    }
+                                    if (option.subMenu) {
+                                        const subMenuHasShortcuts =
+                                            option.subMenu.some(
+                                                (o) => !!o.shortcutDisplay,
+                                            );
+                                        return (
+                                            <LocalizableNestedMenuItem
+                                                {...option}
+                                                key={option.l10nId}
+                                                truncateMainLabel={true}
+                                            >
+                                                {option.subMenu.map(
+                                                    (subOption, subIndex) => {
+                                                        if (
+                                                            subOption.l10nId ===
+                                                            "-"
+                                                        ) {
+                                                            return (
+                                                                <Divider
+                                                                    key={
+                                                                        subIndex
+                                                                    }
+                                                                    variant="middle"
+                                                                    component="li"
+                                                                />
+                                                            );
+                                                        }
                                                         return (
-                                                            <Divider
-                                                                key={subIndex}
-                                                                variant="middle"
-                                                                component="li"
+                                                            <LocalizableMenuItem
+                                                                key={
+                                                                    subOption.l10nId
+                                                                }
+                                                                {...subOption}
+                                                                onClick={
+                                                                    subOption.onClick
+                                                                }
+                                                                leaveSpaceForShortcut={
+                                                                    subMenuHasShortcuts
+                                                                }
+                                                                css={css`
+                                                                    max-width: ${maxMenuWidth}px;
+                                                                    white-space: wrap;
+                                                                    // Styles for subLabels
+                                                                    p {
+                                                                        // Determined empirically...
+                                                                        // Styling in NestedMenuItem is impossibly difficult.
+                                                                        left: -8px;
+                                                                    }
+                                                                `}
                                                             />
                                                         );
-                                                    }
-                                                    return (
-                                                        <LocalizableMenuItem
-                                                            key={
-                                                                subOption.l10nId
-                                                            }
-                                                            {...subOption}
-                                                            onClick={
-                                                                subOption.onClick
-                                                            }
-                                                            leaveSpaceForShortcut={
-                                                                subMenuHasShortcuts
-                                                            }
-                                                            css={css`
-                                                                max-width: ${maxMenuWidth}px;
-                                                                white-space: wrap;
-                                                                // Styles for subLabels
-                                                                p {
-                                                                    // Determined empirically...
-                                                                    // Styling in NestedMenuItem is impossibly difficult.
-                                                                    left: -8px;
-                                                                }
-                                                            `}
-                                                        />
-                                                    );
-                                                },
-                                            )}
-                                        </LocalizableNestedMenuItem>
+                                                    },
+                                                )}
+                                            </LocalizableNestedMenuItem>
+                                        );
+                                    }
+                                    return (
+                                        <LocalizableMenuItem
+                                            key={option.l10nId}
+                                            {...option}
+                                            onClick={option.onClick}
+                                            variant="body1"
+                                            leaveSpaceForShortcut={
+                                                menuHasShortcuts
+                                            }
+                                        />
+                                    );
+                                },
+                            );
+                            // The cell's own items, drawn by the bloom-table
+                            // library's own component, so this menu and the
+                            // library's popup show one control and not two
+                            // designs of it. Bloom supplies only the wording.
+                            if (tableCellOfComposedMenu) {
+                                if (rows.length > 0) {
+                                    rows.push(
+                                        <Divider
+                                            key="above-cell-items"
+                                            variant="middle"
+                                            component="li"
+                                        />,
                                     );
                                 }
-                                return (
-                                    <LocalizableMenuItem
-                                        key={option.l10nId}
-                                        {...option}
-                                        onClick={option.onClick}
-                                        variant="body1"
-                                        leaveSpaceForShortcut={menuHasShortcuts}
-                                    />
+                                rows.push(
+                                    <CellMenuItems
+                                        key="cell-items"
+                                        cell={tableCellOfComposedMenu}
+                                        localize={localizeTableCellMenuLabel}
+                                        closeMenu={() => setMenuOpen(false)}
+                                    />,
                                 );
-                            });
+                            }
+                            return rows;
                         })()}
                     </Menu>
                 </div>

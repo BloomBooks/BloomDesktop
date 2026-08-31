@@ -16,6 +16,7 @@ import {
 } from "./canvasElementConstants";
 import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { inferCanvasElementType } from "./canvasElementTypeInference";
+import { getTableCellOfCellContent } from "./canvasElementTableCells";
 import { canvasElementControlRegistry } from "./canvasElementControlRegistry";
 import { CanvasElementType } from "./canvasElementTypes";
 import { IControlContext } from "./canvasControlTypes";
@@ -172,6 +173,7 @@ export const buildCanvasElementControlRegistryContext = (
         canvasElement,
         page,
         elementType,
+        tableCell: getTableCellOfCellContent(canvasElement),
         hasImage,
         hasRealImage: hasRealImage(img ?? undefined),
         hasVideo,

@@ -8,9 +8,13 @@ import {
     registerCellContentType,
     setColumnWidth,
     setDefaultCellContentTypeId,
+    setCellMenuItemFilter,
+    setCellMenuOpenHandler,
     setRowHeight,
+    setStructuralChromeGate,
     kTableCellContentChangedEvent,
 } from "bloom-table";
+import type { CellMenuItemId } from "bloom-table";
 // Edit-only table styles (selection highlight, boundary hints). These must NOT
 // reach published output, so they are loaded here in the editing context rather
 // than via basePage.less. This injects into the page iframe (this module is part
@@ -23,6 +27,11 @@ import { post } from "../../utils/bloomApi";
 import $ from "jquery";
 import BloomField from "../bloomField/BloomField";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
+import { renderCanvasElementContextControls } from "./canvasElementManager/CanvasElementContextControls";
+import {
+    bloomBuildsMenuForCell,
+    getCellContentCanvasElement,
+} from "../toolbox/canvas/canvasElementTableCells";
 import {
     activateLongPressFor,
     AddLanguageTags,
@@ -42,7 +51,7 @@ import { kCalendarMonthAttribute } from "../calendarSetup/layOutCalendarMonthPag
 // may need Bloom's wiring.
 const kTableHistoryUpdatedEvent = "tableHistoryUpdated";
 
-let contentTypesRegistered = false;
+let libraryConfigured = false;
 
 /**
  * Replace one of the library's built-in cell content types with the Bloom
@@ -67,10 +76,96 @@ function replaceCellContentType(
     );
 }
 
-/** Register Bloom-specific cell content types with the bloom-table library. */
-function ensureContentTypesRegistered(): void {
-    if (contentTypesRegistered) return;
-    contentTypesRegistered = true;
+/**
+ * Bloom's answer to the library's question "does this table get the chrome that
+ * changes its structure?", meaning the row and column clusters ("..." pill plus
+ * "+" button) and the table menu pill.
+ *
+ * Only a calendar month grid is refused. Its shape is Bloom's: seven weekday
+ * columns and the day rows buildCalendarGridTable made, which the layout code in
+ * calendarGrids.ts works against. Adding or deleting a row or column would leave
+ * a grid that no longer holds a month, so offering it is a trap. What the Cell
+ * menu offers is a separate question, answered by cellMenuOffersItemInBloom.
+ */
+export const tableGetsStructuralChrome = (table: HTMLElement): boolean =>
+    !table.hasAttribute(kCalendarMonthAttribute);
+
+/**
+ * Everything the Cell menu of a calendar month grid keeps: the Content Type row,
+ * offering Text and Image. This is a list of what to keep rather than a list of
+ * what to remove, so a row a later version of bloom-table adds stays out until
+ * someone names it here.
+ */
+const kCalendarCellMenuItems = [
+    "contentType",
+    "contentType:text",
+    "contentType:image",
+];
+
+/**
+ * Bloom's answer to the library's question "does this cell's menu offer this
+ * item?", asked once per item as a menu is built.
+ *
+ * A cell of a calendar month grid offers the Content Type row alone, and that
+ * row lists Text and Image only. The rest of the menu works against the grid:
+ * Merge would leave fewer cells than a month needs, and the Format section's
+ * borders and padding fight the edges and spacing calendarGrids.ts writes. Every
+ * other table offers everything, as it did before Bloom installed this.
+ *
+ * The answer covers every cell of the grid, weekday header cells included. A
+ * weekday name is text, and a picture in its place is a choice the layout
+ * tolerates, so nothing here needs to tell the two kinds of cell apart.
+ */
+export const cellMenuOffersItemInBloom = (
+    itemId: CellMenuItemId,
+    _cell: HTMLElement | null,
+    table: HTMLElement | null,
+): boolean =>
+    table?.hasAttribute(kCalendarMonthAttribute)
+        ? kCalendarCellMenuItems.includes(itemId)
+        : true;
+
+/**
+ * Bloom's answer to the library's question "are you opening this cell's menu
+ * yourself?", asked of every right-click on a cell.
+ *
+ * Bloom answers yes for a picture in a calendar month grid, and no everywhere else,
+ * which leaves the library's own Cell menu the menu for every other cell. That one
+ * picture needs the image commands beside the cell's items, and only Bloom can put up
+ * a menu holding both; it does so by selecting the picture and re-rendering the canvas
+ * context controls with their menu open at the click, which is what a right-click on
+ * any other canvas element does. The menu itself is composed in
+ * canvasElementControlRegistry.ts, from the same items the library would have shown.
+ */
+const bloomOpensCellMenu = (
+    cell: HTMLElement,
+    _table: HTMLElement,
+    position: { x: number; y: number },
+): boolean => {
+    if (!bloomBuildsMenuForCell(cell)) return false;
+    const content = getCellContentCanvasElement(cell);
+    if (!content) return false;
+
+    theOneCanvasElementManager.setActiveElement(content);
+    renderCanvasElementContextControls(content, true, {
+        left: position.x,
+        top: position.y,
+    });
+    return true;
+};
+
+/**
+ * Tell the bloom-table library the things it cannot work out for itself: which
+ * content a Bloom cell holds, and which tables Bloom lays out itself. Every
+ * entry point below calls this before it touches a table.
+ */
+function ensureLibraryConfiguredForBloom(): void {
+    if (libraryConfigured) return;
+    libraryConfigured = true;
+
+    setStructuralChromeGate(tableGetsStructuralChrome);
+    setCellMenuItemFilter(cellMenuOffersItemInBloom);
+    setCellMenuOpenHandler(bloomOpensCellMenu);
 
     // Text cells hold a bloom-translationGroup rather than the library's bare
     // contenteditable, so text in a table participates in Bloom's multilingual
@@ -353,7 +448,7 @@ function attachSingleTable(tableDiv: HTMLElement): void {
  * found inside it.
  */
 export function SetupTableEditing(container: HTMLElement): void {
-    ensureContentTypesRegistered();
+    ensureLibraryConfiguredForBloom();
     container.addEventListener(
         kTableCellContentChangedEvent,
         onTableCellContentChanged,
@@ -380,7 +475,7 @@ export function SetupTableEditing(container: HTMLElement): void {
  * needed here.
  */
 export function AttachNewTable(tableDiv: HTMLElement): void {
-    ensureContentTypesRegistered();
+    ensureLibraryConfiguredForBloom();
     attachSingleTable(tableDiv);
 }
 
@@ -405,7 +500,7 @@ const kNewTableRowCount = 2;
  * library to render again.
  */
 export function AttachNewTableThatFillsItsSpace(tableDiv: HTMLElement): void {
-    ensureContentTypesRegistered();
+    ensureLibraryConfiguredForBloom();
     tableDiv.setAttribute("data-column-widths", "");
     tableDiv.setAttribute("data-row-heights", "");
     for (let i = 0; i < kNewTableColumnCount; i++) {
@@ -434,7 +529,7 @@ export function AttachNewTableThatFillsItsSpace(tableDiv: HTMLElement): void {
  * columns and its day rows already, and asking for more would put them on the end of it.
  */
 export function AttachNewCalendarGrid(tableDiv: HTMLElement): void {
-    ensureContentTypesRegistered();
+    ensureLibraryConfiguredForBloom();
     attachSingleTable(tableDiv);
     // Our own code built these cells rather than the library, so they have had none of
     // Bloom's editing wiring. This is what makes the weekday names and the day notes

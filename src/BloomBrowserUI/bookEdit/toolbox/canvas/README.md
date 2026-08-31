@@ -65,6 +65,25 @@ That component:
 3. Builds menu-item arrays for each section (e.g. `urlMenuItems`, `imageMenuItems`, …).
 4. Assembles them in a fixed order and filters by the registry.
 
+### Where the element sits, not only what it is
+
+A canvas element gets its controls from `getControlConfiguration()` in `canvasControlResolution.ts`, not from indexing the registry directly. That is the one place that decides which configuration an element gets, and two things about the element decide it:
+
+- **what the element is**: the inferred type, which the registry maps to a configuration;
+- **where it sits**: an element that is the content of a table cell (`getTableCellOfCellContent()` in `canvasElementTableCells.ts`, which puts the cell on `IControlContext.tableCell`) gets `cellContentControls(...)` instead.
+
+`cellContentControls` keeps the toolbar of the element's own type, because those buttons act on the content itself, and the menu becomes the cell's. That is also how the rows that act on an element as a whole (duplicate, delete, become background) stop being offered for a cell's picture — the configuration lists no sections of its own, rather than anything hiding rows one by one.
+
+There are two ways to give the user the cell's menu, and which cell it is decides between them (`bloomBuildsMenuForCell()` in `canvasElementTableCells.ts`).
+
+For most cells, Bloom composes no menu at all: `menuSections: []` and `opensTableCellMenu: true` send the "..." button to `openCellMenu(cell, …)` in the bloom-table library, the same Cell menu a right-click on the cell opens. There is one such menu, and the library asks Bloom what it offers through `setCellMenuItemFilter` (installed in `tableEditing.ts`), so the cell-options pill, a right-click and this button all show the same rows.
+
+A picture in a calendar month grid needs more than that menu holds: the user expects the image commands as well. So there Bloom composes the menu, from `menuSections: ["image"]` plus `includesTableCellMenuItems: true`. `CanvasElementContextControls.tsx` then ends the menu with the library's `CellMenuItems` component, after a divider, giving it the cell. The component draws its own "Table Cell" heading under that divider, so the user can see which part of the menu acts on the cell rather than on the picture. The right-click reaches this menu through `setCellMenuOpenHandler` (installed in `tableEditing.ts`), which selects the picture and re-renders the context controls with their menu open at the click; the library opens nothing for that cell.
+
+Bloom does not draw those items. The library's component is the one renderer of them, in Bloom's menu and in the library's own popup alike, so the user meets one control and not two designs of it: the Content Type row of icon toggles with the chosen one pressed is the library's, and choosing a type leaves the menu open the way its popup does. Bloom supplies two things and nothing else — the wording, through the `localize` prop (`localizeTableCellMenuLabel` in `tableCellMenuLabels.ts`, which is where an item id gets a Bloom string), and `closeMenu`, so a command closes this menu before it acts. What a cell's menu offers is still Bloom's to say, through `setCellMenuItemFilter`.
+
+Add a context here rather than an `if` in `CanvasElementContextControls.tsx`: every surface is resolved from the configuration this function returns, so the surfaces cannot disagree about the element.
+
 ### Deterministic ordering and dividers
 
 `CanvasElementContextControls.tsx` uses a single helper that guarantees:

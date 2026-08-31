@@ -156,7 +156,7 @@ export function layOutGridAgain(
  * A grid comes out of buildCalendarGridTable holding only the five seed-language editables.
  * None of them is marked as the book's language and none is marked visible, so the user sees
  * an empty grid and cannot type in it. This adds the missing editable to each group, as a new
- * table cell gets one (see ensureContentTypesRegistered in tableEditing.ts).
+ * table cell gets one (see ensureLibraryConfiguredForBloom in tableEditing.ts).
  *
  * The text of a weekday editable is the name the collection last saved for that day; failing
  * that, the seed name of the day when the book's language is one of the seed languages;

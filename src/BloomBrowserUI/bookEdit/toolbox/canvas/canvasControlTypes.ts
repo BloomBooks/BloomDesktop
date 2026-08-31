@@ -117,6 +117,12 @@ export interface IControlContext {
     canvasElement: HTMLElement;
     page: HTMLElement | null;
     elementType: CanvasElementType;
+    // The table cell whose content this canvas element is, or undefined when the
+    // element is not the content of a cell. Set from the page's own markup by
+    // getTableCellOfCellContent (canvasElementTableCells.ts). This is what makes
+    // the resolution give such an element the cell's controls rather than the
+    // ones its own type would give it.
+    tableCell: HTMLElement | undefined;
     hasImage: boolean;
     hasRealImage: boolean;
     hasVideo: boolean;
@@ -311,6 +317,17 @@ export interface ICanvasToolsPanelState {
 export interface ICanvasElementControlConfiguration {
     type: CanvasElementType;
     menuSections: SectionId[];
+    // When true, the "..." button opens the bloom-table library's Cell menu for
+    // IControlContext.tableCell, which is the same menu a right-click on the cell
+    // opens, rather than a menu Bloom composes from menuSections. A configuration
+    // that sets this leaves menuSections empty; see cellContentControls in
+    // canvasElementControlRegistry.ts.
+    opensTableCellMenu?: boolean;
+    // When true, the menu Bloom composes from menuSections ends with the items the
+    // bloom-table library gives for IControlContext.tableCell, so one menu carries
+    // both. This is the other way a cell's content can be handled: a configuration
+    // sets either this or opensTableCellMenu, never both.
+    includesTableCellMenuItems?: boolean;
     toolbar: Array<CommandControlId | "spacer">;
     toolPanel: SectionId[];
     availabilityRules: Partial<

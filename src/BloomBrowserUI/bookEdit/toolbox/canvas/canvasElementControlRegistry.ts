@@ -20,6 +20,7 @@ import {
     ICanvasElementControlConfiguration,
     AvailabilityRulesMap,
 } from "./canvasControlTypes";
+import { bloomBuildsMenuForCell } from "./canvasElementTableCells";
 import {
     audioAvailabilityRules,
     bubbleAvailabilityRules,
@@ -304,6 +305,54 @@ export const noneCanvasElementControls: ICanvasElementControlConfiguration = {
         textAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
+};
+
+/**
+ * The controls for a canvas element that is the content of a table cell, built from
+ * the controls its own type would give it.
+ *
+ * The toolbar is kept as it is, because its buttons act on the content itself:
+ * choosing the picture a picture cell shows, pasting one, fitting it to the cell.
+ * The menu becomes the cell's. The rows an element's own type puts there act on the
+ * element as a whole, and a cell's content is not free to be acted on that way:
+ * duplicating or deleting it, or making it the page's background, would leave the
+ * cell holding something other than the one piece of content of the type it says it
+ * has.
+ *
+ * There are two ways to give the user the cell's menu, and which cell it is decides
+ * between them.
+ *
+ * For most cells the menu is the bloom-table library's own Cell menu, the one a
+ * right-click on the cell opens, and Bloom composes no menu at all: menuSections is
+ * empty and opensTableCellMenu sends the "..." button to the library.
+ *
+ * A picture in a calendar month grid needs more than that menu holds: the user
+ * expects the image commands as well. So there Bloom composes the menu, from the
+ * image section it already has plus the items the library gives for the cell (see
+ * includesTableCellMenuItems), and one menu carries both. The section brings
+ * becomeBackground, which a cell's picture must not do: it is already the background
+ * image of the cell's own bloom-canvas.
+ */
+export const cellContentControls = (
+    controlsForItsOwnType: ICanvasElementControlConfiguration,
+    tableCell: HTMLElement,
+): ICanvasElementControlConfiguration => {
+    if (bloomBuildsMenuForCell(tableCell)) {
+        return {
+            ...controlsForItsOwnType,
+            menuSections: ["image"],
+            includesTableCellMenuItems: true,
+            availabilityRules: {
+                ...controlsForItsOwnType.availabilityRules,
+                becomeBackground: "exclude",
+            },
+        };
+    }
+    return {
+        ...controlsForItsOwnType,
+        menuSections: [],
+        opensTableCellMenu: true,
+    };
 };
 
 export const canvasElementControlRegistry: Record<

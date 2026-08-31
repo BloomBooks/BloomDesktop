@@ -12,7 +12,9 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => ({
 import {
     AttachNewTable,
     AttachNewTableThatFillsItsSpace,
+    cellMenuOffersItemInBloom,
     SetupTableEditing,
+    tableGetsStructuralChrome,
     TeardownTableEditing,
 } from "./tableEditing";
 import { attachToCkEditor } from "./bloomEditing";
@@ -242,5 +244,103 @@ describe("attachToCkEditor", () => {
         attachToCkEditor(editable);
 
         expect(attachedEditors.get(editable)).toBe(firstEditor);
+    });
+});
+
+describe("tableGetsStructuralChrome", () => {
+    const makeTable = (calendarMonth?: string): HTMLElement => {
+        const table = document.createElement("div");
+        table.classList.add("bloom-table");
+        if (calendarMonth !== undefined) {
+            table.setAttribute("data-calendar-month", calendarMonth);
+        }
+        return table;
+    };
+
+    it("refuses a calendar month grid, whose rows and columns Bloom fixes", () => {
+        const grid = makeTable("2");
+        // Sanity check: the attribute the answer turns on is really there.
+        expect(grid.hasAttribute("data-calendar-month")).toBe(true);
+
+        expect(tableGetsStructuralChrome(grid)).toBe(false);
+    });
+
+    it("allows an ordinary table, whose rows and columns are the user's", () => {
+        expect(tableGetsStructuralChrome(makeTable())).toBe(true);
+    });
+
+    it("reads the attribute, not the month, so month 0 is still refused", () => {
+        expect(tableGetsStructuralChrome(makeTable("0"))).toBe(false);
+    });
+});
+
+describe("cellMenuOffersItemInBloom", () => {
+    const makeCellIn = (table: HTMLElement): HTMLElement => {
+        const cell = document.createElement("div");
+        cell.classList.add("bloom-cell");
+        table.appendChild(cell);
+        return cell;
+    };
+    const makeTable = (calendarMonth?: string): HTMLElement => {
+        const table = document.createElement("div");
+        table.classList.add("bloom-table");
+        if (calendarMonth !== undefined) {
+            table.setAttribute("data-calendar-month", calendarMonth);
+        }
+        return table;
+    };
+
+    // The ids bloom-table asks about as it builds a Cell menu.
+    const kEveryItem = [
+        "contentType",
+        "contentType:text",
+        "contentType:image",
+        "contentType:video",
+        "alignment",
+        "padding",
+        "fill",
+        "borderStyle",
+        "borderWeight",
+        "corners",
+        "paintFormat",
+        "merge",
+        "split",
+    ];
+    const offeredIn = (cell: HTMLElement | null, table: HTMLElement | null) =>
+        kEveryItem.filter((id) => cellMenuOffersItemInBloom(id, cell, table));
+
+    it("offers a calendar cell the Content Type row alone, with text and image", () => {
+        const grid = makeTable("2");
+        const cell = makeCellIn(grid);
+        // Sanity check: the attribute the answer turns on is really there.
+        expect(grid.hasAttribute("data-calendar-month")).toBe(true);
+
+        expect(offeredIn(cell, grid)).toEqual([
+            "contentType",
+            "contentType:text",
+            "contentType:image",
+        ]);
+    });
+
+    it("treats a weekday header cell the same as a day cell", () => {
+        const grid = makeTable("2");
+        const header = makeCellIn(grid);
+        const dayCell = makeCellIn(grid);
+        dayCell.classList.add("calendarDayCell");
+        // Sanity check: the two cells really do differ in the way the calendar
+        // markup distinguishes them.
+        expect(header.classList.contains("calendarDayCell")).toBe(false);
+
+        expect(offeredIn(header, grid)).toEqual(offeredIn(dayCell, grid));
+    });
+
+    it("offers everything on an ordinary table", () => {
+        const plain = makeTable();
+
+        expect(offeredIn(makeCellIn(plain), plain)).toEqual(kEveryItem);
+    });
+
+    it("offers everything when there is no table at all", () => {
+        expect(offeredIn(null, null)).toEqual(kEveryItem);
     });
 });
