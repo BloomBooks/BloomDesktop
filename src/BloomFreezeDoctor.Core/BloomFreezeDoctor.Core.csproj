@@ -4,10 +4,22 @@
     **Everything the Doctor does lives here. Only its window and its entry point live in the
     BloomFreezeDoctor project.**
 
-    The reason is testing, and it is a hard boundary rather than a preference: BloomFreezeDoctor is a
-    WinExe with UseWindowsForms whose output goes into Bloom's own folder with the target framework
-    stripped off the path, and a test project cannot sensibly reference that. Code on that side of the
-    line can only ever be exercised by running the application; code on this side can be unit-tested.
+    The reason is testing, but NOT because the exe cannot be referenced. It can: a ProjectReference from
+    the test project to BloomFreezeDoctor.csproj compiles, the WinExe's public types resolve, and the
+    tests build, run and pass with WinForms loaded into the test host. That was claimed here as a hard
+    constraint and it was simply wrong; it was measured and is not.
+
+    What is true is softer and still worth keeping. Two things:
+
+    * **What lives in the exe is untestable by nature, not by reference rules.** Program.cs is a process
+      entry point that takes a singleton mutex and pumps a message loop; StatusForm is a window with
+      modal dialogs and tray interaction. Nothing there can be asserted on without driving a UI. The
+      reference would resolve; there would just be nothing useful to call.
+    * **Neither this project nor the test project enables UseWindowsForms, and that is worth defending.**
+      Referencing the exe would pull WinForms into the dependency closure of everything the tests touch,
+      and the pressure would then be to reach for a Control or a MessageBox in code that has no business
+      needing one. Keeping the line where it is keeps that temptation out of reach rather than merely
+      discouraged.
 
     So the rule for a new file: it belongs in BloomFreezeDoctor only if it is Windows Forms, or the
     process entry point. Everything else belongs here - including the parts that talk to processes,

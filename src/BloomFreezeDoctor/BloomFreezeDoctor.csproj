@@ -2,9 +2,13 @@
 
   <!--
     The Doctor's window and entry point, and DELIBERATELY NOTHING ELSE. Everything the Doctor actually
-    does lives in BloomFreezeDoctor.Core, whose project file explains the rule and why it is a hard one:
-    a test project cannot sensibly reference this WinExe, so whatever is added here can only ever be
-    exercised by running the application. Add a file here only if it is Windows Forms or Main.
+    does lives in BloomFreezeDoctor.Core, whose project file explains why. Add a file here only if it is
+    Windows Forms or Main.
+
+    Note what the reason is NOT: a test project CAN reference this WinExe - measured, it builds and the
+    tests pass. The point is that a message loop and a window with modal dialogs cannot be asserted on
+    whatever you reference, and that keeping WinForms out of the tested layer's dependencies keeps it out
+    of reach rather than merely discouraged.
 
     WinExe rather than Exe so there is no console flash when Bloom launches it; the
     queue-inspection switches attach to the parent console when they need to print.
