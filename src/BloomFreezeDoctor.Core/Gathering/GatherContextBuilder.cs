@@ -35,6 +35,15 @@ public static class GatherContextBuilder
         // is systematically wrong in the restart-after-a-freeze case (see BloomLogLocator).
         var session = Protocol.DoctorSessionStore.TryRead(target.ProcessId);
 
+        // The report names Bloom's command line, and this is the right place to pay for it: gathering
+        // already takes seconds and is not racing anything, whereas adoption is. See
+        // DescribeRunningProcess for why it is not read there.
+        if (string.IsNullOrEmpty(target.CommandLine))
+            target = target with
+            {
+                CommandLine = WebView2Processes.ReadCommandLine(target.ProcessId, target.StartTime),
+            };
+
         return new GatherContext
         {
             Target = target,
@@ -157,11 +166,14 @@ public static class GatherContextBuilder
         try
         {
             using var process = Process.GetProcessById(processId);
-            return BloomTargetWatcher.DescribeProcess(
-                process,
-                WebView2Processes.ReadCommandLine(processId, process.StartTime),
-                out whyNot
-            );
+            // **No command line here, deliberately, and this is the fix for a measured 19-second delay.**
+            // Reading it means a WMI Win32_Process query, and for a process that has only just started -
+            // which is exactly when we want to adopt it - that query took 18,903 milliseconds on a measured
+            // run, all of it on the adoption path. Enumerating every process on the machine to find Bloom
+            // costs about 12 milliseconds by comparison; the sweeps that found nothing all came in under
+            // five seconds, and the one that found Bloom took nineteen. Whoever needs the command line asks
+            // for it themselves, when they can afford to wait.
+            return BloomTargetWatcher.DescribeProcess(process, "", out whyNot);
         }
         catch (Exception e)
         {

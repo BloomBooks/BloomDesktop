@@ -804,14 +804,11 @@ public sealed class DoctorSupervisor : IDisposable
             if (facts.ProcessId == Environment.ProcessId)
                 return "that is this Doctor itself, which cannot be the Bloom we are watching";
 
-            // A headless run - one of Bloom's console verbs - legitimately has no window, so watching it
-            // would only produce false zombie reports (plan §3.3).
-            //
-            // This deliberately no longer excludes `--automation`, which `go.sh` passes on every launch:
-            // that flag says nothing about whether there is a window, so excluding it meant the Doctor
-            // ignored every Bloom launched from source. See BloomChannel.IsHeadlessRun.
-            if (BloomChannel.IsHeadlessRun(facts.CommandLine))
-                return $"it looks like a headless run: {Shorten(facts.CommandLine)}";
+            // The headless check USED to be here, and it cost nineteen seconds of adoption latency,
+            // because deciding it needs the command line and reading that needs WMI. It now happens after
+            // adoption instead - see LetGoIfItIsAHeadlessRun. Adopting a console verb for a few seconds is
+            // harmless: nothing is reported until a Bloom has been unwell for twenty seconds at the very
+            // least, and the zombie rule waits thirty.
 
             Process process;
             try
@@ -864,7 +861,80 @@ public sealed class DoctorSupervisor : IDisposable
         // return early, which is right - there is nothing to notify anyone about.
         if (!string.IsNullOrWhiteSpace(facts.ExePath))
             WatchingBloomAt?.Invoke(this, facts.ExePath);
+
+        LetGoIfItIsAHeadlessRun(facts);
         return null;
+    }
+
+    /// <summary>
+    /// Finds out, without holding up adoption, whether the Bloom we have just taken on is really one of
+    /// Bloom's console verbs - and lets go of it if so.
+    ///
+    /// A headless run legitimately has no window, so watching one would eventually produce a false zombie
+    /// report (plan §3.3). Deciding it needs the command line, and reading THAT is a WMI query which took
+    /// 18.9 seconds on a measured run for a process that had only just started. Paying that before adopting
+    /// is what delayed adoption, and the delay had a cost of its own: on one run Bloom asked to be dumped as
+    /// it crashed twenty seconds before the Doctor had noticed it existed, so the dump was never taken.
+    ///
+    /// Doing it afterwards is safe because nothing is reported quickly: the freeze rules need twenty seconds
+    /// of silence before they even suspect, sixty before they report, and thirty for a zombie. Letting go
+    /// after a few seconds - or even after nineteen - lands well inside that.
+    ///
+    /// Note what this deliberately does NOT do: exclude `--automation`, which `go.sh` passes on every
+    /// launch. That flag says nothing about whether there is a window, and excluding it once meant the
+    /// Doctor ignored every Bloom launched from source. See BloomChannel.IsHeadlessRun.
+    /// </summary>
+    private void LetGoIfItIsAHeadlessRun(BloomTargetFacts facts)
+    {
+        Interlocked.Increment(ref _workInFlight);
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                var commandLine = WebView2Processes.ReadCommandLine(
+                    facts.ProcessId,
+                    facts.StartTime
+                );
+                if (!BloomChannel.IsHeadlessRun(commandLine))
+                    return;
+
+                BloomTargetWatcher? letGo = null;
+                lock (_lock)
+                {
+                    // Only if it is still the same Bloom. By the time this answers, that Bloom may have
+                    // gone and another been adopted, and dropping THAT one would leave the Doctor watching
+                    // nothing while believing it had done the right thing.
+                    if (_watcher != null && _watcher.Target.ProcessId == facts.ProcessId)
+                    {
+                        letGo = _watcher;
+                        _watcher = null;
+                        _probe?.Dispose();
+                        _probe = null;
+                    }
+                }
+                if (letGo == null)
+                    return;
+                Note(
+                    $"letting go of {facts.ProcessId}: it is a headless run, not a Bloom with a window "
+                        + $"({Shorten(commandLine)})"
+                );
+                letGo.Dispose();
+                RaiseStatusChanged();
+            }
+            catch (Exception e)
+            {
+                // Keep watching. A command line we cannot read is not evidence of anything, and the cost of
+                // being wrong this way is one spurious card, against silently ignoring a real Bloom.
+                Note(
+                    $"could not tell whether {facts.ProcessId} is a headless run: {e.GetType().Name}"
+                );
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _workInFlight);
+                ConsiderExiting();
+            }
+        });
     }
 
     /// <summary>
