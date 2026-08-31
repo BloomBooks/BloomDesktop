@@ -11,7 +11,16 @@ namespace BloomFreezeDoctor.Outbox;
 /// it", and the caller that asks a user-facing question - "Report now" - needs to tell those apart, or it
 /// announces failure for a report that is about to be filed perfectly well.
 /// </summary>
-/// <param name="Filed">How many bundles were actually accepted by the tracker.</param>
+/// <param name="FiledIssueIds">
+/// The card each filed bundle landed on, which is what lets the Doctor offer to OPEN the card it just
+/// filed. This used to be a bare count, and the ids were known here and thrown away - so the only path
+/// that could light up the "Open card" button was a report filed inline during gathering. Everything the
+/// Doctor gathers is queued and sent by a later drain, which is to say: almost always, the Doctor said
+/// "filed 1 report" and then could not tell you which one.
+///
+/// An id appears here whether the bundle opened a new card or commented on an existing one; either way
+/// there is a card worth showing.
+/// </param>
 /// <param name="AnotherProcessIsSending">
 /// True when another Doctor process was already draining, so we sent nothing and left the queue to it.
 ///
@@ -24,7 +33,17 @@ namespace BloomFreezeDoctor.Outbox;
 /// It does NOT promise that our own bundle is in the batch that process is sending; it may have listed the
 /// queue before ours arrived. That is what <c>StillQueued</c> is for, and a later drain picks it up.
 /// </param>
-public readonly record struct DrainOutcome(int Filed, bool AnotherProcessIsSending);
+public readonly record struct DrainOutcome(
+    IReadOnlyList<string> FiledIssueIds,
+    bool AnotherProcessIsSending
+)
+{
+    /// <summary>
+    /// How many bundles were actually accepted by the tracker. Derived rather than stored, so the count
+    /// and the ids cannot disagree.
+    /// </summary>
+    public int Filed => FiledIssueIds.Count;
+}
 
 /// <summary>One queued report on disk.</summary>
 public sealed record QueuedBundle
@@ -455,7 +474,10 @@ public sealed class ReportOutbox
                 // Somebody else is draining, so those bundles are theirs to send. Saying so, rather than
                 // just reporting zero filed, is what lets "Report now" tell the user their report is
                 // QUEUED instead of implying it failed.
-                return new DrainOutcome(Filed: 0, AnotherProcessIsSending: true);
+                return new DrainOutcome(
+                    FiledIssueIds: Array.Empty<string>(),
+                    AnotherProcessIsSending: true
+                );
             }
         }
         catch (OperationCanceledException)
@@ -521,13 +543,14 @@ public sealed class ReportOutbox
         }
     }
 
-    private async Task<int> DrainInnerAsync(
+    private async Task<List<string>> DrainInnerAsync(
         IReportSubmitter submitter,
         CancellationToken cancellation
     )
     {
         ReclaimAbandonedUploads();
-        var filed = 0;
+        // The cards we filed onto, not merely a count of them - see DrainOutcome.FiledIssueIds.
+        var filed = new List<string>();
         var filedToday = CountFiledToday();
 
         foreach (var bundle in Pending().OrderBy(b => b.Metadata.GatheredAtUtc))
@@ -590,7 +613,16 @@ public sealed class ReportOutbox
                             LastError = null,
                         }
                     );
-                    filed++;
+                    // Throwing rather than skipping, because the count now comes from this list: a Filed
+                    // outcome without a card id would silently under-report what we sent. It cannot
+                    // happen - the submitter only says Filed once a card exists - and if that ever stops
+                    // being true we want to hear about it.
+                    filed.Add(
+                        result.IssueId
+                            ?? throw new InvalidOperationException(
+                                "a bundle was filed but no card id came back"
+                            )
+                    );
                     // Only an unsolicited new card spends any of the daily allowance.
                     if (result.CreatedNewCard && !metadata.UserRequested)
                         filedToday++;

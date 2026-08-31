@@ -833,27 +833,39 @@ public sealed class DoctorSupervisor : IDisposable
             // second examination through. Only the test-and-claim is inside the lock; the work is not.
             lock (_lock)
             {
-                // The same "we caused this" guard as OnReportWanted, and it has to be here too because
-                // this path files its own report without going through that one. It matters most exactly
-                // when we had to KILL rather than ask: a killed process runs no ProcessExit handler, so it
-                // leaves no proof of a clean exit, which is precisely what this examination reports as
-                // "exited without shutting down properly" - a second card about our own doing, and with a
-                // different reason from the first, so the outbox could not have merged them either.
-                if (weAskedItToStop || _weAskedItToStop)
+                // See WhoReportsTheDeath for the decision itself, and for the two bugs that put it in a
+                // tested table of its own rather than leaving it as flags read in sequence here.
+                var whoseItIs = WhoReportsTheDeath.Decide(
+                    weEndedIt: weAskedItToStop || _weAskedItToStop,
+                    aDumpIsBeingReported: _dumpRequested,
+                    alreadyClaimed: _exitExamined
+                );
+
+                // Every stand-down except AlreadyClaimed has to claim the death and release the probe.
+                // Claim, because otherwise a later pass examines a death somebody else is reporting;
+                // release, because nothing else will now - see WindowsTargetProbe.Dispose for why that is
+                // ours here and not the watcher's. AlreadyClaimed is the exception on both counts: the pass
+                // that claimed it owns the probe.
+                if (whoseItIs == ExitExamination.AlreadyClaimed)
+                    return;
+
+                if (whoseItIs != ExitExamination.Examine)
                 {
                     _exitExamined = true;
                     _probe = null;
                     Note(
-                        $"Bloom {watcher.Target.ProcessId} has gone, as we asked it to; not examining that as a problem"
+                        whoseItIs == ExitExamination.WeCausedIt
+                            // Matters most when we had to KILL rather than ask: a killed process runs no
+                            // ProcessExit handler, so it leaves no proof of a clean exit - which is exactly
+                            // what this examination would report as "exited without shutting down
+                            // properly", a card about our own doing.
+                            ? $"Bloom {watcher.Target.ProcessId} has gone, as we asked it to; not examining that as a problem"
+                            : $"Bloom {watcher.Target.ProcessId} has gone; its crash dump is already being reported"
                     );
-                    // We have claimed this death and are not going to examine it, so nothing else will
-                    // release the handle. See WindowsTargetProbe.Dispose for why that is ours to do here
-                    // and not the watcher's.
                     probe.Dispose();
                     return;
                 }
-                if (_exitExamined)
-                    return; // one examination per death, and the one that claimed it owns the probe
+
                 _exitExamined = true;
                 // Claimed. From here the background task below owns the probe and releases it when it has
                 // finished reading the dead process's exit code.
@@ -1198,7 +1210,18 @@ public sealed class DoctorSupervisor : IDisposable
                 .DrainAsync(new YouTrackSubmitter(), cancellation)
                 .ConfigureAwait(false);
             if (outcome.Filed > 0)
-                Note($"filed {outcome.Filed} report(s)");
+            {
+                // Name the cards. "filed 1 report(s)" was all this said, which is no use to somebody
+                // reading the log after the fact and trying to find what was filed.
+                Note(
+                    $"filed {outcome.Filed} report(s): {string.Join(", ", outcome.FiledIssueIds)}"
+                );
+                // And tell the window, so it can offer to open the card. This is the ONLY place that can:
+                // gathering queues its report and returns without a card id, so every path except an
+                // inline filing used to announce "filed a report" with no way to see it. The last id is
+                // the newest, which is the one an "Open card" button should go to.
+                ReportFiled?.Invoke(this, outcome.FiledIssueIds[^1]);
+            }
             else if (outcome.AnotherProcessIsSending)
                 Note("another Freeze Doctor is sending the queued reports");
             RaiseStatusChanged();

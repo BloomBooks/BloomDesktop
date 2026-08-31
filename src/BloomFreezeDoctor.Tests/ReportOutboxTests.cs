@@ -130,16 +130,33 @@ public class ReportOutboxTests
         /// <summary>Stand in for a tracker that already has a card, so every send is a comment.</summary>
         public bool CommentsOnly { get; set; }
 
+        /// <summary>
+        /// Give each filing its own card id, so a test can tell WHICH cards a drain reported. Off by
+        /// default because other tests here assert on the fixed id.
+        /// </summary>
+        public bool DistinctIds { get; set; }
+
+        private int _cardsFiled;
+
         public List<string> Submitted { get; } = new();
 
         public Task<SubmitResult> SubmitAsync(QueuedBundle bundle, CancellationToken cancellation)
         {
             Submitted.Add(bundle.Metadata.Fingerprint);
+            string? issueId = null;
+            if (Outcome == SubmitOutcome.Filed)
+            {
+                _cardsFiled++;
+                if (DistinctIds)
+                    issueId = $"AUT-1000{_cardsFiled}";
+                else
+                    issueId = "BL-99999";
+            }
             return Task.FromResult(
                 new SubmitResult
                 {
                     Outcome = Outcome,
-                    IssueId = Outcome == SubmitOutcome.Filed ? "BL-99999" : null,
+                    IssueId = issueId,
                     Error = Outcome == SubmitOutcome.Filed ? null : "pretend failure",
                     // Stands in for opening a new card, which is the only thing the daily cap counts. Left
                     // at its default of false, this fake silently spent none of the allowance and the cap
@@ -828,5 +845,51 @@ public class ReportOutboxTests
             Contains.Item("something-new"),
             "and a genuinely new problem must still get a card"
         );
+    }
+
+    [Test]
+    public async Task A_drain_reports_which_cards_it_filed()
+    {
+        // Not a nicety: this is the only way anything downstream can learn a card id, and its absence was
+        // a user-visible bug. Everything the Doctor gathers is QUEUED and sent by a later drain, so the
+        // drain is where card ids come into existence - and the outcome carried only a count. The window
+        // therefore announced "filed 1 report" and could not offer to open it, because nothing had ever
+        // told it which card. The one path that did work was an inline filing during gathering, which is
+        // the rare case.
+        var outbox = NewOutbox();
+        var submitter = new FakeSubmitter { DistinctIds = true };
+        outbox.Enqueue(Report("first-problem"), "AUT", "Alpha", "Frozen");
+        outbox.Enqueue(Report("second-problem"), "AUT", "Alpha", "Frozen");
+        Assert.That(outbox.Pending(), Has.Count.EqualTo(2), "setup: two bundles should be waiting");
+
+        var outcome = await outbox.DrainAsync(submitter);
+
+        Assert.That(outcome.Filed, Is.EqualTo(2), "setup: both should have been filed");
+        Assert.That(
+            outcome.FiledIssueIds,
+            Is.EqualTo(new[] { "AUT-10001", "AUT-10002" }),
+            "the outcome must name the cards, in the order they were filed"
+        );
+        Assert.That(
+            outcome.Filed,
+            Is.EqualTo(outcome.FiledIssueIds.Count),
+            "and the count must be the ids' count, not a separate number that could drift from it"
+        );
+    }
+
+    [Test]
+    public async Task A_drain_that_files_nothing_names_no_cards()
+    {
+        // The other half of the property above: no ids without a filing. Worth pinning because the caller
+        // reads FiledIssueIds[^1] to offer "Open card", so a stray id here would point the button at a
+        // card that does not exist.
+        var outbox = NewOutbox();
+        var submitter = new FakeSubmitter { Outcome = SubmitOutcome.NetworkUnavailable };
+        outbox.Enqueue(Report("cannot-send-this"), "AUT", "Alpha", "Frozen");
+
+        var outcome = await outbox.DrainAsync(submitter);
+
+        Assert.That(outcome.Filed, Is.Zero, "setup: the submitter refused it");
+        Assert.That(outcome.FiledIssueIds, Is.Empty);
     }
 }
