@@ -147,6 +147,14 @@ public sealed class DoctorSupervisor : IDisposable
     /// Returns null for a freeze without touching the event log - there is nothing there to find, and a
     /// scan of the Application log is not free.
     /// </summary>
+    /// <summary>A command line cut to a length that belongs in a log line.</summary>
+    private static string Shorten(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return "(no command line)";
+        return text!.Length <= 120 ? text : text.Substring(0, 120) + "...";
+    }
+
     private static string? LateCrashIdentity(GatherContext context)
     {
         if (context.Verdict.State != TargetState.Exited)
@@ -514,7 +522,21 @@ public sealed class DoctorSupervisor : IDisposable
                 foreach (var id in ids.Distinct())
                 {
                     var facts = GatherContextBuilder.DescribeRunningProcess(id, out var whyNot);
-                    if (facts == null)
+                    if (facts != null)
+                    {
+                        var refused = AdoptFacts(facts);
+                        // Adopted, or refused for a reason that will not change on the next id - but say
+                        // which, because a silent refusal here is indistinguishable from not having looked.
+                        if (refused is { Length: > 0 })
+                        {
+                            if (_declined.ShouldSay(id, refused, DateTimeOffset.UtcNow))
+                                Note($"not watching Bloom {id} - {refused}");
+                        }
+                        lock (_lock)
+                            if (_watcher != null)
+                                break;
+                        continue;
+                    }
                     {
                         // Said once per reason rather than every tick, and worth saying at all because the
                         // alternative is what we had: a Bloom running for eighty-three seconds while the
@@ -532,12 +554,6 @@ public sealed class DoctorSupervisor : IDisposable
                             );
                         continue;
                     }
-                    AdoptFacts(facts);
-                    // Adopted, or refused for a reason that will not change on the next id. Either way we
-                    // are done looking: this Doctor watches one Bloom.
-                    lock (_lock)
-                        if (_watcher != null)
-                            break;
                 }
             }
 
@@ -620,7 +636,15 @@ public sealed class DoctorSupervisor : IDisposable
         }
     }
 
-    private void AdoptFacts(BloomTargetFacts facts)
+    /// <summary>
+    /// Takes on this Bloom, or says why not.
+    ///
+    /// Returns null when it adopted, and otherwise the reason - because every one of these refusals used to
+    /// be a bare `return`, and a Bloom can therefore run for a minute with the Doctor declining it every
+    /// five seconds and the log showing nothing at all. Measured twice: 83 seconds once and 54 the next
+    /// time, both unexplained. A reason nobody can read is not much better than no reason.
+    /// </summary>
+    private string? AdoptFacts(BloomTargetFacts facts)
     {
         lock (_lock)
         {
@@ -636,7 +660,8 @@ public sealed class DoctorSupervisor : IDisposable
                             + $"{_watcher.Target.ProcessId}, and this Doctor watches one at a time"
                     );
                 }
-                return;
+                // Already said above, in its own words; nothing for the sweep to add.
+                return "";
             }
 
             // A headless run - one of Bloom's console verbs - legitimately has no window, so watching it
@@ -646,16 +671,16 @@ public sealed class DoctorSupervisor : IDisposable
             // that flag says nothing about whether there is a window, so excluding it meant the Doctor
             // ignored every Bloom launched from source. See BloomChannel.IsHeadlessRun.
             if (BloomChannel.IsHeadlessRun(facts.CommandLine))
-                return;
+                return $"it looks like a headless run: {Shorten(facts.CommandLine)}";
 
             Process process;
             try
             {
                 process = Process.GetProcessById(facts.ProcessId);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return;
+                return $"it went away while we were looking at it: {e.GetType().Name}";
             }
 
             var probe = new WindowsTargetProbe(process);
@@ -691,8 +716,13 @@ public sealed class DoctorSupervisor : IDisposable
         // Outside the lock: the handler marshals to the UI thread, and holding a lock across that is how
         // deadlocks are made. Every route into a watcher passes here, which is the point - see
         // WatchingBloomAt.
+        //
+        // So the success path must NOT return from inside the lock above, however tempting: doing that made
+        // this notification unreachable, and the window would never learn where Bloom is. The refusals do
+        // return early, which is right - there is nothing to notify anyone about.
         if (!string.IsNullOrWhiteSpace(facts.ExePath))
             WatchingBloomAt?.Invoke(this, facts.ExePath);
+        return null;
     }
 
     /// <summary>

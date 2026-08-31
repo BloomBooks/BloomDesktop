@@ -33,16 +33,49 @@ public static class RecurrenceArtifacts
     /// card already carries one and a second adds noise rather than evidence.
     /// </summary>
     /// <param name="artifactPaths">The recurrence bundle's artifacts, as full paths.</param>
-    /// <param name="namesAlreadyOnTheCard">File names of the card's existing attachments.</param>
+    /// <param name="cardAlreadyHasADump">
+    /// Whether the card already carries a dump BY ANY ROUTE - attached, or linked in the support bucket
+    /// because it was too large to attach.
+    ///
+    /// Asking only about attachments was wrong, and wrong in the way that produces a confident false
+    /// statement rather than a missing one. A dump a few hundred bytes over the attachment ceiling is
+    /// uploaded to the bucket and linked from a comment, so the card HAS the dump and has no attachment;
+    /// the recurrence then saw no attachment, uploaded a second copy, and announced that the card had none.
+    /// Measured: 8,389,030 bytes went to the bucket, and the next run's 8,054,542 was attached beside it.
+    /// </param>
     public static IReadOnlyList<string> WorthAttaching(
         IEnumerable<string> artifactPaths,
-        IEnumerable<string> namesAlreadyOnTheCard
+        bool cardAlreadyHasADump
     )
     {
-        if (namesAlreadyOnTheCard.Any(IsADump))
+        if (cardAlreadyHasADump)
             return Array.Empty<string>();
         return artifactPaths.Where(path => IsADump(Path.GetFileName(path))).ToList();
     }
+
+    /// <summary>
+    /// Whether any of these - a card's attachment names, and the text of its description and comments -
+    /// shows that it already carries a crash dump.
+    /// </summary>
+    public static bool ShowsADump(IEnumerable<string> attachmentNames, IEnumerable<string> cardText)
+    {
+        if (attachmentNames.Any(IsADump))
+            return true;
+        // A dump too large to attach appears as a link into the support bucket. Both halves are required:
+        // the bucket name alone would match a book somebody uploaded, and ".dmp" alone would match this
+        // very comment's own prose about a dump that could NOT be sent.
+        return cardText.Any(text =>
+            text.Contains(SupportBucketMarker, StringComparison.OrdinalIgnoreCase)
+            && text.Contains(".dmp", StringComparison.OrdinalIgnoreCase)
+        );
+    }
+
+    /// <summary>
+    /// Enough of the support bucket's URL to recognise a link into it. Matches
+    /// SupportFileUploader.BucketName, and is a literal here for the same reason that one is: this project
+    /// does not depend on Bloom.
+    /// </summary>
+    private const string SupportBucketMarker = "bloom-problem-books";
 
     /// <summary>
     /// Whether a file name is a crash dump. Extension only: the Doctor names its own dumps

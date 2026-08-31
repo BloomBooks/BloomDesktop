@@ -109,11 +109,9 @@ public sealed class YouTrackSubmitter : IReportSubmitter
                 // A short note, not the whole report again - see BuildRecurrenceComment. A recurrence
                 // uploads almost nothing, the exception being a dump for a card that has none: see
                 // RecurrenceArtifacts for why that exception is needed and why it is only dumps.
-                var alreadyThere = await AttachmentNamesOnAsync(existing, cancellation)
-                    .ConfigureAwait(false);
                 var missingEvidence = RecurrenceArtifacts.WorthAttaching(
                     SortArtifacts(bundle).ToAttach,
-                    alreadyThere
+                    await CardAlreadyHasADumpAsync(existing, cancellation).ConfigureAwait(false)
                 );
                 var commentFailure = await CommentAsync(
                         existing,
@@ -219,6 +217,61 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     /// An empty list on failure, which errs towards attaching: a duplicate dump on a card is untidy, a
     /// missing one is unrecoverable once the user's machine has cleared its outbox.
     /// </summary>
+    /// <summary>
+    /// Whether this card already carries a crash dump, by any route - attached, or linked in the support
+    /// bucket because it was too big to attach. See RecurrenceArtifacts.ShowsADump.
+    ///
+    /// False on failure, which errs towards attaching: a duplicate dump on a card is untidy, a missing one
+    /// is unrecoverable once the user's outbox clears.
+    /// </summary>
+    private async Task<bool> CardAlreadyHasADumpAsync(
+        string issueId,
+        CancellationToken cancellation
+    ) =>
+        RecurrenceArtifacts.ShowsADump(
+            await AttachmentNamesOnAsync(issueId, cancellation).ConfigureAwait(false),
+            await CardTextAsync(issueId, cancellation).ConfigureAwait(false)
+        );
+
+    /// <summary>
+    /// The card's description and the text of its comments - where a dump too large to attach is recorded
+    /// as a link rather than as a file.
+    /// </summary>
+    private async Task<IReadOnlyList<string>> CardTextAsync(
+        string issueId,
+        CancellationToken cancellation
+    )
+    {
+        try
+        {
+            using var response = await _http
+                .GetAsync(
+                    $"{BaseUrl}/issues/{issueId}?fields=description,comments(text)",
+                    cancellation
+                )
+                .ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+                return Array.Empty<string>();
+            var json = await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false);
+            var card = JsonNode.Parse(json);
+            var text = new List<string>();
+            var description = card?["description"]?.GetValue<string>();
+            if (!string.IsNullOrEmpty(description))
+                text.Add(description!);
+            foreach (var comment in card?["comments"]?.AsArray() ?? new JsonArray())
+            {
+                var body = comment?["text"]?.GetValue<string>();
+                if (!string.IsNullOrEmpty(body))
+                    text.Add(body!);
+            }
+            return text;
+        }
+        catch (Exception)
+        {
+            return Array.Empty<string>();
+        }
+    }
+
     private async Task<IReadOnlyList<string>> AttachmentNamesOnAsync(
         string issueId,
         CancellationToken cancellation
@@ -408,10 +461,13 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         // for a dump that is not there - or told a dump is "near enough a copy" of nothing at all.
         if (contributingADump)
         {
+            // Says WHAT is true, not why. The earlier wording guessed the reason - "the first report was
+            // made after the process had already gone, when no dump could be taken" - and the guess was
+            // wrong the first time it was ever printed: that card's dump had been taken perfectly well and
+            // was sitting in the support bucket, 422 bytes over the attachment ceiling.
             text.AppendLine(
-                "**The crash dump from this occurrence is attached**, because the card had none: the "
-                    + "first report for this problem was made after the process had already gone, when no "
-                    + "dump could be taken."
+                "**The crash dump from this occurrence is attached**, because the card was not already "
+                    + "carrying one."
             );
             text.AppendLine();
             text.AppendLine(
