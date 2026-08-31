@@ -74,7 +74,7 @@
   <Import Project="../.nuget/NuGet.targets" />
   <Target Name="RestoreBuildTasks" DependsOnTargets="CheckPrerequisites">
     <Message Text="RestartBuild=$(RestartBuild)"/>
-    <Exec Command='$(NuGetCommand) install SIL.BuildTasks -excludeVersion -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
+    <Exec Command='$(NuGetCommand) install SIL.BuildTasks -version 3.2.0 -excludeVersion -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
     <Exec Command='$(NuGetCommand) install SIL.BuildTasks.AWS -excludeVersion -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="BuildInternal"
 			Properties="Configuration=$(Configuration)" Condition="$(RestartBuild)" />
