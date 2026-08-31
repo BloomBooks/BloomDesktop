@@ -158,6 +158,12 @@ public sealed class DoctorSupervisor : IDisposable
         );
     }
 
+    /// <summary>
+    /// What we have already said about a process we could not describe. See <see cref="DeclineNotes"/> for
+    /// why a silent `continue` here was worth replacing.
+    /// </summary>
+    private readonly DeclineNotes _declined = new();
+
     /// <summary>True once we have started its crash dump, so one crash produces one dump.</summary>
     private bool _dumpRequested;
 
@@ -507,9 +513,25 @@ public sealed class DoctorSupervisor : IDisposable
 
                 foreach (var id in ids.Distinct())
                 {
-                    var facts = GatherContextBuilder.DescribeRunningProcess(id);
+                    var facts = GatherContextBuilder.DescribeRunningProcess(id, out var whyNot);
                     if (facts == null)
+                    {
+                        // Said once per reason rather than every tick, and worth saying at all because the
+                        // alternative is what we had: a Bloom running for eighty-three seconds while the
+                        // Doctor looked straight past it and the log showed nothing whatsoever.
+                        if (
+                            _declined.ShouldSay(
+                                id,
+                                whyNot ?? "no reason recorded",
+                                DateTimeOffset.UtcNow
+                            )
+                        )
+                            Note(
+                                $"not watching process {id} yet - cannot read it: "
+                                    + (whyNot ?? "no reason recorded")
+                            );
                         continue;
+                    }
                     AdoptFacts(facts);
                     // Adopted, or refused for a reason that will not change on the next id. Either way we
                     // are done looking: this Doctor watches one Bloom.
@@ -657,7 +679,13 @@ public sealed class DoctorSupervisor : IDisposable
             _exitExamined = false;
             _notedASecondBloom = false;
             watcher.Start();
-            Note($"watching Bloom {facts.ProcessId} ({facts.Channel})");
+            // If we had been declining this one, say how long for. That number is the whole point of the
+            // bookkeeping: "watching Bloom 53468 (Developer/Debug), 83s after first seeing it" turns an
+            // unexplained gap into a measurement.
+            var waited = _declined.HowLongWeWereDeclining(facts.ProcessId, DateTimeOffset.UtcNow);
+            var after =
+                waited == null ? "" : $", {waited.Value.TotalSeconds:F0}s after first seeing it";
+            Note($"watching Bloom {facts.ProcessId} ({facts.Channel}){after}");
         }
 
         // Outside the lock: the handler marshals to the UI thread, and holding a lock across that is how

@@ -144,18 +144,28 @@ public static class GatherContextBuilder
     /// Describes a running process as a target, reading its command line so headless runs can be
     /// recognised. Returns null if the process went away while we were asking.
     /// </summary>
-    public static BloomTargetFacts? DescribeRunningProcess(int processId)
+    public static BloomTargetFacts? DescribeRunningProcess(int processId) =>
+        DescribeRunningProcess(processId, out _);
+
+    /// <summary>
+    /// As above, and says why when it cannot - so a caller that keeps meeting the same process can report
+    /// what is wrong with it instead of silently passing over it every few seconds.
+    /// </summary>
+    public static BloomTargetFacts? DescribeRunningProcess(int processId, out string? whyNot)
     {
+        whyNot = null;
         try
         {
             using var process = Process.GetProcessById(processId);
             return BloomTargetWatcher.DescribeProcess(
                 process,
-                WebView2Processes.ReadCommandLine(processId)
+                WebView2Processes.ReadCommandLine(processId),
+                out whyNot
             );
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            whyNot = $"{e.GetType().Name}: {e.Message}";
             return null;
         }
     }

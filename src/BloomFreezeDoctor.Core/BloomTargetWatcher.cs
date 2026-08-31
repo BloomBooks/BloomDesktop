@@ -378,8 +378,21 @@ public sealed class BloomTargetWatcher : IDisposable
     /// Gathers the facts about a running Bloom process. Returns null if the process went away while we
     /// were asking, which is entirely possible and not an error.
     /// </summary>
-    public static BloomTargetFacts? DescribeProcess(Process process, string commandLine)
+    public static BloomTargetFacts? DescribeProcess(Process process, string commandLine) =>
+        DescribeProcess(process, commandLine, out _);
+
+    /// <summary>
+    /// As above, and says why when it cannot. The reason matters to the discovery sweep: reading
+    /// MainModule of a process that is still starting fails in ways worth seeing, and for a long time this
+    /// returned a bare null that the sweep turned into a silent `continue`.
+    /// </summary>
+    public static BloomTargetFacts? DescribeProcess(
+        Process process,
+        string commandLine,
+        out string? whyNot
+    )
     {
+        whyNot = null;
         try
         {
             var exe = process.MainModule?.FileName ?? "";
@@ -392,8 +405,9 @@ public sealed class BloomTargetWatcher : IDisposable
                 StartTime = process.StartTime,
             };
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            whyNot = $"{e.GetType().Name}: {e.Message}";
             return null;
         }
     }
