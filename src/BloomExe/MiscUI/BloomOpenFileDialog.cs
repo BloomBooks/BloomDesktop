@@ -15,11 +15,25 @@ namespace Bloom.MiscUI
             Multiselect = false;
             CheckFileExists = true;
             CheckPathExists = true;
+            // The Windows file dialog otherwise leaves the process's current working directory
+            // wherever the user last browsed, for the rest of the session. Bloom looks for some of
+            // the files it ships with relative to that directory, so letting a dialog move it can
+            // break those lookups long after the dialog is closed. See BL-16577 and BL-16230.
+            // (This only restores the process directory; the dialog still opens where the shell or
+            // our InitialDirectory says it should.)
+            RestoreDirectory = true;
             _dialog.FileOk += (sender, args) =>
             {
                 // Truly enforce the filter. See BL-12929 and BL-13552.
-                if (!DoubleCheckFileFilter(_dialog.Filter, _dialog.FileName))
-                    args.Cancel = true;
+                // When Multiselect is on, check every selected file, not just the first one.
+                foreach (var path in _dialog.FileNames)
+                {
+                    if (!DoubleCheckFileFilter(_dialog.Filter, path))
+                    {
+                        args.Cancel = true;
+                        return;
+                    }
+                }
             };
         }
 
@@ -75,6 +89,15 @@ namespace Bloom.MiscUI
         {
             get { return _dialog.FileName; }
             set { _dialog.FileName = value; }
+        }
+
+        /// <summary>
+        /// The full paths of all files the user selected. When Multiselect is false this
+        /// contains just the single selected file (or is empty if none was chosen).
+        /// </summary>
+        public string[] FileNames
+        {
+            get { return _dialog.FileNames; }
         }
 
         public DialogResult ShowDialog()

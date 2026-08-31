@@ -36,10 +36,11 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
  * have to set the top, left, right, and bottom to what would be the padding value
  * in order to get the correct layout.  We also really want to restrict this rule
  * to only "Just Text" pages. The ":has()" pseudo-class does that since the "Just
- * a Picture" page will not have an immediate child with the .bloom-translationGroup
- * class.  (BL-15611, BL-15720)
+ * a Picture" page will not have an immediate child with a visible
+ * .bloom-translationGroup class.  (BL-15611, BL-15720)
  */
-.marginBox > .split-pane-component-inner:has(> .bloom-translationGroup) {
+.marginBox
+    > .split-pane-component-inner:has(> .bloom-translationGroup:not(.box-header-off)) {
     position: absolute;
     top: var(--marginBox-padding);
     left: var(--marginBox-padding);

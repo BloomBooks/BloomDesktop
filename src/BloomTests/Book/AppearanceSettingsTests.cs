@@ -112,6 +112,57 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void ToCss_RoundedBorderTheme_LeavesPageNumberDefaultsOnPageNotPseudo()
+        {
+            var appearance = new AppearanceSettings();
+            appearance.CssThemeName = "rounded-border-ebook";
+
+            var css = appearance.ToCss();
+
+            // The theme factors the Ebook* and Device* page sizes into a single :is() per
+            // selector (see appearance-theme-rounded-border-ebook.css), so the page rule is
+            // written once for both sizes rather than duplicated per size.
+            Assert.That(
+                css,
+                Does.Contain(
+                    ":is([class*=\"Ebook\"], [class*=\"Device\"]).numberedPage:not(\r\n        .bloom-interactive-page\r\n    ) {"
+                )
+            );
+            Assert.That(css, Does.Contain("--pageNumber-background-color: #ffffff;"));
+            Assert.That(css, Does.Contain("--pageNumber-outline-color: white;"));
+            Assert.That(
+                css,
+                Does.Not.Contain(
+                    ":is([class*=\"Ebook\"], [class*=\"Device\"]).numberedPage:not(\r\n        .bloom-interactive-page\r\n    )::after {\r\n    --pageNumber-bottom: var(--page-margin-bottom);\r\n    --pageNumber-top: unset;\r\n    --pageNumber-font-size: 11pt;\r\n    --pageNumber-border-radius: 50%;\r\n    --pageNumber-background-color: #ffffff;"
+                )
+            );
+            Assert.That(
+                css,
+                Does.Not.Contain(
+                    ":is([class*=\"Ebook\"], [class*=\"Device\"]).numberedPage:not(\r\n        .bloom-interactive-page\r\n    )::after {\r\n    --pageNumber-bottom: var(--page-margin-bottom);\r\n    --pageNumber-top: unset;\r\n    --pageNumber-font-size: 11pt;\r\n    --pageNumber-outline-color: white;"
+                )
+            );
+        }
+
+        [Test]
+        public void ToCss_ZeroMarginTheme_LeavesPageNumberOutlineDefaultOnPageNotPseudo()
+        {
+            var appearance = new AppearanceSettings();
+            appearance.CssThemeName = "zero-margin-ebook";
+
+            var css = appearance.ToCss();
+
+            Assert.That(css, Does.Contain(".numberedPage {"));
+            Assert.That(css, Does.Contain("--pageNumber-outline-color: white;"));
+            Assert.That(
+                css,
+                Does.Not.Contain(
+                    ".Device16x9Landscape.numberedPage::after {\r\n    --pageNumber-bottom: 0mm;\r\n    --pageNumber-top: unset;\r\n    --pageNumber-font-size: 11pt;\r\n    --pageNumber-outline-color: white;"
+                )
+            );
+        }
+
+        [Test]
         public void GetCssOwnPropsDeclaration_ItemVisibility_ChildOverrides_UsesChildValue()
         {
             var collectionAppearance = new AppearanceSettingsTest();
@@ -289,6 +340,25 @@ namespace BloomTests.Book
             Assert.That(fromSettings, Does.Contain("--cover-languageName-show: none;"));
         }
 
+        [Test]
+        public void ToCss_ContainsPageNumberColorOverridesFromJson()
+        {
+            var settings = new AppearanceSettings();
+            settings.UpdateFromJson(
+                @"
+{
+  ""cssThemeName"": ""default"",
+  ""pageNumber-color"": ""#123456"",
+  ""pageNumber-outline-color"": ""#FFFFFF""
+}"
+            );
+
+            var css = settings.ToCss();
+
+            Assert.That(css, Does.Contain("--pageNumber-color: #123456;"));
+            Assert.That(css, Does.Contain("--pageNumber-outline-color: #FFFFFF;"));
+        }
+
         [TestCase(@"""pageNumber-position"": ""automatic""", true)]
         [TestCase(@"""pageNumber-position"": ""left""", true)]
         [TestCase(@"""pageNumber-position"": ""center""", true)]
@@ -326,14 +396,14 @@ namespace BloomTests.Book
         [TestCase(@"""pageNumber-position"": ""automatic""", "unset", "unset")]
         [TestCase(
             @"""pageNumber-position"": ""left""",
-            "calc(var(--page-margin-left) + var(--pageNumber-full-bleed-extra-margin, 0px))",
+            "calc(var(--pageNumber-side-left-inset, var(--page-margin-left)) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))",
             "deliberately-invalid"
         )]
         [TestCase(@"""pageNumber-position"": ""center""", "50%", "50%")]
         [TestCase(
             @"""pageNumber-position"": ""right""",
             "deliberately-invalid",
-            "calc(var(--page-margin-right) + var(--pageNumber-full-bleed-extra-margin, 0px))"
+            "calc(var(--pageNumber-side-right-inset, var(--page-margin-right)) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))"
         )]
         [TestCase(@"""pageNumber-position"": ""hidden""", "unset", "unset")]
         // [TestCase(null, null, null)]

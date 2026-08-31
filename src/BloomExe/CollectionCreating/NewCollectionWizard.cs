@@ -9,7 +9,6 @@ using Bloom.Properties;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
@@ -109,6 +108,7 @@ namespace Bloom.CollectionCreating
             string languageTag,
             string desiredName,
             string defaultName,
+            bool? isRtl,
             string country
         )
         {
@@ -116,6 +116,8 @@ namespace Bloom.CollectionCreating
                 return;
 
             _collectionInfo.Language1.Tag = languageTag;
+            if (isRtl.HasValue)
+                _fontDetails.RightToLeft = isRtl.Value;
             _collectionInfo.Language1.SetName(desiredName, desiredName != defaultName);
             _collectionInfo.Country = country;
             SetNextButtonState(true, languageTag != null);
@@ -296,7 +298,7 @@ namespace Bloom.CollectionCreating
             _collectionInfo.SetAnalyticsProperties();
 
             Logger.WriteEvent("Finshed New Collection Wizard");
-            Analytics.Track("Create New Vernacular Collection");
+            BloomAnalytics.Track("Create New Vernacular Collection");
 
             Close();
         }

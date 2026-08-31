@@ -2,6 +2,10 @@
 //which we're doing for convenience so that we don't have to get it in the installer and then import it explictly
 @import (less) "../../node_modules/toastr/toastr.less";
 @import "../../bloomUI.less";
+// The UI @font-face declarations. toolbox.css is linked in toolbox.pug's <head> (present
+// before first paint), making it the ONE source of these declarations for the toolbox
+// document. See bloomUIFontFaces.css for why they must appear only once per document.
+@import (less) "../../bloomUIFontFaces.css";
 
 @toolboxBackgroundColor: @bloom-panelBackground;
 @helpLinkTopMargin: 45px;
@@ -17,6 +21,10 @@ div.toolboxRoot {
     display: inline-block;
     background-color: @toolboxBackgroundColor;
     color: white;
+    // I think this is obsolete...React code makes the root of the toolbox 11px,
+    // while x-small works out to 10px...but for now I'm keeping it in case it
+    // still controls something we care about. (It was probably obsolete even
+    // under the old jquery toolbox, where some jquery stylesheet make the root 11px).
     font-size: x-small;
     position: fixed;
     top: 25px; // leaves room for pure-drawer control for showing and hiding toolbox
@@ -95,6 +103,15 @@ div.ui-accordion-content:not([data-toolid="leveledReaderTool"]):not(
     margin: 0 !important;
     top: 0 !important;
 }
+// Reserve space for the vertical scrollbar on the reader tools, so that when
+// their content grows tall enough to need one, the scrollbar's appearance
+// doesn't shrink the content width and reflow/crowd everything. (The dark
+// scrollbar *styling* now comes from the shared `bloomDarkScrollbars` class on
+// the toolbox root — see bloomUI.less — rather than a rule here.) (BL-16585)
+div.ui-accordion-content[data-toolid="leveledReaderTool"],
+div.ui-accordion-content[data-toolid="decodableReaderTool"] {
+    scrollbar-gutter: stable;
+}
 
 .h1 {
     padding-top: 20px;
@@ -140,30 +157,6 @@ div.checkbox {
     line-height: 4px;
     cursor: pointer;
     -moz-user-select: none;
-}
-
-div.toolbox-checkbox-label {
-    position: relative;
-    -moz-user-select: none;
-    cursor: default;
-    margin: 2px 0px 0px 0px;
-    width: 100%;
-    display: flex;
-    gap: 12px;
-    padding-right: calc(12px - @toolboxContentPaddingThin);
-}
-
-.toolbox-checkbox-label-text {
-    flex-grow: 1;
-}
-
-.toolbox-settings-content {
-    padding: @toolboxContentPadding @toolboxContentPaddingThin;
-    height: @toolboxContentHeight;
-}
-
-div.checkbox-and-label {
-    display: flex;
 }
 
 .ui-accordion h3 {

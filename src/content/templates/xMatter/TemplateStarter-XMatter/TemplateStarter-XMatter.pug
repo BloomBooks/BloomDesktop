@@ -9,9 +9,11 @@ html
 		+stylesheets('TemplateStarter-XMatter.css')
 	body
 		+page-cover('Image For Thumbnail')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#36e4a8d9-c61c-496d-9f37-2cc274d28b34
-			.bloom-canvas
+			.bloom-canvas.bloom-has-canvas-element
 				label.bubble Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.
-				img(src='placeHolder.png' data-book='coverImage')
+				.bloom-canvas-element.bloom-backgroundImage(style="width:100%; height:100%;")
+					.bloom-imageContainer
+						img(data-book="coverImage", src="placeHolder.png")
 
 		+page-xmatter("About").bloom-frontMatter(data-export='front-matter-about',data-xmatter-page="about")#26e4a8d9-c61c-496d-9f37-2cc274d28b32
 			| Template Title

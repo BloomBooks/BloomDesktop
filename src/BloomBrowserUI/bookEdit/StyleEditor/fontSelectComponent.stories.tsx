@@ -5,7 +5,9 @@ import FontInformationPane from "../../react_components/fontInformationPane";
 import { IFontMetaData } from "./fontSelectComponent";
 import { Typography } from "@mui/material";
 
-const Frame: React.FunctionComponent = ({ children }) => (
+const Frame: React.FunctionComponent<{
+    children?: React.ReactNode;
+}> = ({ children }) => (
     <div
         css={css`
             width: 320px;

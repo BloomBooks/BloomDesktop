@@ -1,27 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionChoosing;
 using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.SafeXml;
+using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
-using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.IO;
@@ -38,6 +37,7 @@ namespace Bloom.web.controllers
         private BookThumbNailer _thumbNailer;
         private BloomWebSocketServer _webSocketServer;
         private readonly EditBookCommand _editBookCommand;
+        private readonly CollectionTabView _collectionTabView;
         private Timer _clickTimer = new Timer();
 
         private int _thumbnailEventsToWaitFor = -1;
@@ -50,7 +50,8 @@ namespace Bloom.web.controllers
             BookSelection bookSelection,
             EditBookCommand editBookCommand,
             BookThumbNailer thumbNailer,
-            BloomWebSocketServer webSocketServer
+            BloomWebSocketServer webSocketServer,
+            CollectionTabView collectionTabView
         )
         {
             _settings = settings;
@@ -59,6 +60,7 @@ namespace Bloom.web.controllers
             _editBookCommand = editBookCommand;
             _thumbNailer = thumbNailer;
             _webSocketServer = webSocketServer;
+            _collectionTabView = collectionTabView;
             _clickTimer.Interval = SystemInformation.DoubleClickTime;
             _clickTimer.Tick += _clickTimer_Tick;
         }
@@ -129,6 +131,16 @@ namespace Bloom.web.controllers
                     request.ReplyWithJson(json);
                 },
                 true
+            );
+
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "collectionPaneReady",
+                request =>
+                {
+                    _collectionTabView.ProcessPendingBookLabelUpdate();
+                    request.PostSucceeded();
+                },
+                true // interacts with data stored on the UI thread
             );
 
             // Note: the get part of this doesn't need to run on the UI thread, or even requiresSync. If it gets called a lot, consider
@@ -264,10 +276,11 @@ namespace Bloom.web.controllers
                 (request) =>
                 {
                     var collection = GetCollectionOfRequest(request);
-                    if (_collectionModel.DeleteBook(GetBookObjectFromPost(request), collection))
-                        request.PostSucceeded();
-                    else
-                        request.Failed();
+                    _collectionModel.DeleteBook(GetBookObjectFromPost(request), collection);
+                    // There are valid reasons for DeleteBook to return false (such as user cancel).
+                    // It shouldn't be considered a failure. Always report success.
+                    // A real exception will throw and cause the request to fail generally.
+                    request.PostSucceeded();
                 },
                 true
             );
@@ -296,6 +309,63 @@ namespace Bloom.web.controllers
                     request.PostSucceeded();
                 },
                 true
+            );
+
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "chooseBloomSourceFilesToImport/",
+                (request) =>
+                {
+                    // Opens the file picker so the user can select the .bloomSource file(s) to import,
+                    // and replies with everything the collection screen needs to show the one dialog
+                    // that fits the batch: the chosen file paths (empty if the user cancelled),
+                    // whether any chosen book is already in the collection (so it knows whether to ask
+                    // how duplicates should be handled), and — when it is — whether every such
+                    // duplicate may currently be replaced (false when, in a Team Collection, any is
+                    // not checked out here, so the screen disables "Replace"). The front-end holds the
+                    // returned paths and passes them back to importBloomSource; nothing is remembered
+                    // on this side between calls.
+                    var files = _collectionModel.ChooseBloomSourceFilesToImport();
+                    request.ReplyWithJson(
+                        new
+                        {
+                            files,
+                            anyDuplicates = _collectionModel.AnyBloomSourceIsAlreadyInCollection(
+                                files
+                            ),
+                            canReplace = _collectionModel.AllBloomSourceDuplicatesAreReplaceable(
+                                files
+                            ),
+                        }
+                    );
+                },
+                true
+            );
+
+            apiHandler.RegisterAsyncEndpointHandler(
+                kApiUrlPart + "importBloomSource/",
+                async (request) =>
+                {
+                    // Imports the .bloomSource file(s) whose paths the front-end passes in the POST
+                    // body (the ones it got from chooseBloomSourceFilesToImport) into the current
+                    // editable collection. The collection screen has since shown the one dialog that
+                    // fit the batch: when no chosen book was already present it asked
+                    // edit-vs-derivative ("mode"); when any was present it asked replace-vs-add-copy
+                    // ("onDuplicate", always mode=edit). Each single choice applies to every chosen
+                    // file. Runs behind the collection tab's progress dialog on a background thread
+                    // (not the UI thread) so a large batch neither freezes the screen nor lets this
+                    // request time out.
+                    var paths = request.RequiredPostObject<string[]>();
+                    var makeDerivatives = request.RequiredParam("mode") == "derivative";
+                    var replaceExistingDuplicates =
+                        request.GetParamOrNull("onDuplicate") == "replace";
+                    await _collectionModel.ImportBloomSourceFilesWithProgressAsync(
+                        paths,
+                        makeDerivatives,
+                        replaceExistingDuplicates
+                    );
+                    request.PostSucceeded();
+                },
+                handleOnUiThread: false
             );
 
             apiHandler.RegisterEndpointHandler(
@@ -339,11 +409,6 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "removeSourceFolder",
-                HandleRemoveSourceFolder,
-                true
-            );
-            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "getBookOnBloomBadgeInfo",
                 GetBookOnBloomBadgeInfo,
                 false
@@ -384,32 +449,12 @@ namespace Bloom.web.controllers
             }
         }
 
-        bool _updateAfterExplorerOpened;
-
-        private void HandleRemoveSourceFolder(ApiRequest request)
-        {
-            var collectionFolderPath = request.RequiredPostString();
-            if (Directory.Exists(collectionFolderPath))
-            {
-                request.PostSucceeded();
-                _updateAfterExplorerOpened = true;
-                ProcessExtra.SafeStartInFront(collectionFolderPath);
-            }
-            else
-            {
-                request.Failed();
-                return;
-            }
-        }
-
-        // Currently only used by Books on Blorg Progress Bar; if a Sign Language is defined, we use that.
+        // Currently only used by Books on Blorg Progress Bar
         private void HandleGetBookCountByLanguage(ApiRequest request)
         {
             if (request.HttpMethod == HttpMethods.Post)
                 return; // should be Get
-            var langTag = string.IsNullOrEmpty(_settings.SignLanguageTag)
-                ? _settings.Language1Tag
-                : _settings.SignLanguageTag;
+            var langTag = _settings.PrimaryLangTagWithSignPrioritized;
             var bloomLibraryApiClient = new BloomLibraryBookApiClient();
             int count;
             try
@@ -426,7 +471,7 @@ namespace Bloom.web.controllers
 
         internal void CheckForCollectionUpdates()
         {
-            if (_updateAfterExplorerOpened)
+            if (CollectionChooserApi.UpdateAfterExplorerOpened)
             {
                 // trigger a list request?.
                 _collectionModel.ReloadCollections();
@@ -439,7 +484,7 @@ namespace Bloom.web.controllers
 
         internal void ResetUpdatingList()
         {
-            _updateAfterExplorerOpened = false;
+            CollectionChooserApi.UpdateAfterExplorerOpened = false;
         }
 
         private void HandleAddSourceCollection(ApiRequest request)
@@ -618,6 +663,13 @@ namespace Bloom.web.controllers
                             ignoreFolderName: true
                         );
                     }
+                    else if (
+                        String.IsNullOrEmpty(info.Title)
+                        && !String.IsNullOrEmpty(info.ThumbnailLabel)
+                    )
+                    {
+                        title = info.ThumbnailLabel;
+                    }
                     return new
                     {
                         id = info.Id,
@@ -689,9 +741,11 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            string fullImagePath = _collectionModel
+            string fullImagePath;
+            SafeXmlElement imgElement;
+            fullImagePath = _collectionModel
                 .GetBookFromBookInfo(bookInfo)
-                .GetCoverImagePathAndElt(out SafeXmlElement imgElement);
+                .GetCoverImagePathAndElt(out imgElement);
             if (string.IsNullOrEmpty(fullImagePath))
             {
                 HandleThumbnailRequest(request);
@@ -794,8 +848,8 @@ namespace Bloom.web.controllers
 
         private void HandleBookFileRequest(ApiRequest request)
         {
-            var bookId = System.Web.HttpUtility.UrlDecode(request.RequiredParam("book-id"));
-            var fileParam = System.Web.HttpUtility.UrlDecode(request.RequiredParam("file"));
+            var bookId = request.RequiredParam("book-id");
+            var fileParam = request.RequiredParam("file");
 
             if (string.IsNullOrWhiteSpace(fileParam))
             {

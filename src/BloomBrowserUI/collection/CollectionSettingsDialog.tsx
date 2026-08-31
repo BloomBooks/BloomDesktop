@@ -1,6 +1,7 @@
 import { css } from "@emotion/react";
 import * as React from "react";
 import {
+    ConfigrValues,
     ConfigrGroup,
     ConfigrPage,
     ConfigrPane,
@@ -17,6 +18,7 @@ import {
     DialogCancelButton,
     DialogOkButton,
 } from "../react_components/BloomDialog/commonDialogComponents";
+import { useL10n } from "../react_components/l10nHooks";
 import { get, postJson } from "../utils/bloomApi";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
@@ -27,10 +29,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         propsForBloomDialog,
     } = useEventLaunchedBloomDialog("CollectionSettingsDialog");
 
-    const [settings, setSettings] = React.useState<object | undefined>(
-        undefined,
-    );
-
     const [settingsString, setSettingsString] = React.useState<string>("{}");
     // Fetch collection settings when the dialog opens so we sync with host state.
     React.useEffect(() => {
@@ -40,32 +38,23 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             });
     }, [propsForBloomDialog.open]);
 
-    const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
-        string | object | undefined
-    >(undefined);
-
-    const normalizeConfigrSettings = (
-        settingsValue: string | object | undefined,
-    ): object | undefined => {
-        if (!settingsValue) {
+    const settings = React.useMemo((): ConfigrValues | undefined => {
+        if (settingsString === "{}") {
             return undefined;
         }
-        if (typeof settingsValue === "string") {
-            return JSON.parse(settingsValue) as object;
-        }
-        return settingsValue;
-    };
-    // Parse the settings JSON for Configr's initial values once it arrives.
-    React.useEffect(() => {
-        if (settingsString === "{}") {
-            return; // leave settings as undefined
-        }
         if (typeof settingsString === "string") {
-            setSettings(JSON.parse(settingsString));
-        } else {
-            setSettings(settingsString);
+            return JSON.parse(settingsString) as ConfigrValues;
         }
+        return settingsString as unknown as ConfigrValues;
     }, [settingsString]);
+
+    const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
+        ConfigrValues | undefined
+    >(undefined);
+    const dialogTitle = useL10n(
+        "Collection Settings",
+        "CollectionSettingsDialog.Title",
+    );
 
     return (
         <BloomDialog
@@ -77,7 +66,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             draggable={false}
             maxWidth={false}
         >
-            <DialogTitle title="Collection Settings"></DialogTitle>
+            <DialogTitle title={dialogTitle}></DialogTitle>
             <DialogMiddle>
                 <div
                     css={css`
@@ -88,7 +77,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 >
                     {settings && (
                         <ConfigrPane
-                            label={"Collection Settings"}
+                            label={dialogTitle}
                             showAppBar={false}
                             showSearch={true}
                             // showJson={true} // useful for debugging
@@ -150,11 +139,11 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 <DialogOkButton
                     default={true}
                     onClick={() => {
-                        const settingsToPost = normalizeConfigrSettings(
-                            settingsToReturnLater,
-                        );
-                        if (settingsToPost) {
-                            postJson("collection/settings", settingsToPost);
+                        if (settingsToReturnLater) {
+                            postJson(
+                                "collection/settings",
+                                settingsToReturnLater,
+                            );
                         }
                         closeDialog();
                     }}

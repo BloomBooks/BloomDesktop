@@ -37,7 +37,7 @@ namespace Bloom.Api
         // It would be nice to use something from .Net's System.Collections.Concurrent namespace, but none of the options
         // seem to fit our needs (i.e. remove a particular connection when it wants to close). To get around this, we will
         // lock the thread whenever we're changing or reading the collection.
-        private List<IWebSocketConnection> _allSockets;
+        private List<IWebSocketConnection> _allSockets = new List<IWebSocketConnection>();
 
         // I (gjm) prefer to use a private object for locking, rather than locking on the list itself.
         // See https://stackoverflow.com/questions/38653739/locking-on-the-object-that-is-being-synchronized-or-using-a-dedicated-lock-objec
@@ -351,6 +351,15 @@ namespace Bloom.Api
                     _server = null;
                 }
             }
+
+            // Stop advertising ourselves once we can no longer carry a message. Without this,
+            // Instance goes on pointing at this disposed server after its collection closes, so
+            // the two places that ask "is there a server already?" -- WorkspaceView's language
+            // chooser and the minimum-version upgrade dialog -- are told yes and then talk to
+            // something that will never answer. In the dialog's case that means a progress window
+            // that never fills in and, having no close box, cannot be dismissed.
+            if (ReferenceEquals(Instance, this))
+                Instance = null;
         }
     }
 }

@@ -18,7 +18,7 @@
             <!-- Windows 8.1 -->
             <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
             <!-- Windows Vista -->
-            <supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}"/> 
+            <supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}"/>
             <!-- Windows 7 -->
             <supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/>
             <!-- Windows 8 -->
@@ -27,11 +27,13 @@
 	</application>
   </compatibility>
 
-  <asmv3:application xmlns="urn:schemas-microsoft-com:asm.v3">
-    <windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
-      <ws2:longPathAware>true</ws2:longPathAware>
-    </windowsSettings>
-  </asmv3:application>
+	<asmv3:application xmlns="urn:schemas-microsoft-com:asm.v3">
+		<windowsSettings
+			xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings"
+		>
+			<ws2:longPathAware>true</ws2:longPathAware>
+		</windowsSettings>
+	</asmv3:application>
 	<!-- Enable themes for Windows common controls and dialogs (Windows XP and later) -->
   <!-- <dependency>
 	<dependentAssembly>

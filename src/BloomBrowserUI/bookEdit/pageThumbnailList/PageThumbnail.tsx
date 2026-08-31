@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import "../../lib/errorHandler";
 import { get } from "../../utils/bloomApi";
 import { IPage } from "./pageThumbnailList";
+import { layoutScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 
 // Global information across all PageThumbnails...see comments in requestPage()
 let lastPageRequestTime = 0;
@@ -44,6 +45,12 @@ export const PageThumbnail: React.FunctionComponent<{
     // a fast desktop for a complex page...mainly because of XhtmlToHtml conversion.
     // So we do it lazily after setting up the initial framework of pages.
     const requestPage = useCallback(() => {
+        if (props.page.key === "placeholder") {
+            // Placeholder entries still go through the effect that increments the
+            // pending count, so balance it before skipping the request.
+            pendingPageRequestCount--;
+            return;
+        }
         // We don't want a lot of page requests running at the same time.
         // There are various limits on simultaneous requests, including
         // the number of threads in the BloomServer and the number of active
@@ -93,7 +100,9 @@ export const PageThumbnail: React.FunctionComponent<{
     const reForOverflow = /^[^>]*class="[^"]*pageOverflows/;
     const overflowing = reForOverflow.test(content); // enhance: memo?
 
-    const scrollingWillBeAvailable = props.pageLayout.indexOf("Device") > -1;
+    const scrollingWillBeAvailable = layoutScrollsInsteadOfOverflowing(
+        props.pageLayout,
+    );
 
     useEffect(() => {
         if (Math.abs(Date.now() - lastPageRequestTime) > 5000) {

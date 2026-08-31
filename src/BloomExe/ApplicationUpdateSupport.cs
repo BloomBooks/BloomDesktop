@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -7,13 +8,14 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Bloom.MiscUI;
 using Bloom.Properties;
+using Bloom.web;
 using L10NSharp;
+using SIL.IO;
 using SIL.PlatformUtilities;
+using SIL.Reporting;
 #if !__MonoCS__
 using Bloom.ErrorReporter;
-using SIL.Reporting;
 using Velopack;
 #endif
 
@@ -72,6 +74,44 @@ namespace Bloom
         private static Exception _updateException;
 
         /// <summary>
+        /// True while a check for updates, or the download one led to, is still running. Bloom
+        /// starts a check of its own a minute after a collection opens, so someone can ask for an
+        /// upgrade while one is already under way; the minimum-version dialog waits this out
+        /// rather than being told Bloom is busy (BL-16690).
+        /// </summary>
+        internal static bool IsBusyCheckingOrDownloading =>
+            _status == UploadStatus.LookingForUpdates || _status == UploadStatus.Downloading;
+
+        /// <summary>
+        /// How far along the current download is, for the same dialog to show real progress while
+        /// it waits: the wait can be twenty minutes on the connections where it happens at all, and
+        /// a bar sitting at 0% that whole time reads as a hang. Gated on the status so a finished
+        /// or cancelled download's last value cannot show up in a later attempt.
+        /// </summary>
+        internal static int CurrentDownloadPercent =>
+            _status == UploadStatus.Downloading ? _lastDownloadPercent : 0;
+
+        private static int _lastDownloadPercent;
+
+        /// <summary>
+        /// True once we have arranged to install a downloaded update as Bloom exits. We must only do
+        /// that once: applying the same update twice is how an upgrade fails, or restarts Bloom when
+        /// nobody asked it to.
+        /// </summary>
+        private static bool _willInstallUpdateOnExit;
+
+        // These three are all "this should not happen" cases, so we have never localized them.
+        // They are constants only because each is said twice: once to the user, and once to the
+        // caller through UpdateReporter.Finished, so that a caller which has to repeat it says
+        // exactly what we said.
+        private const string kRestartToTryAgainMessage =
+            "Restart Bloom to try checking for updates again";
+        private const string kUnableToCheckMessage =
+            "Bloom was unable to check for updates. Restart to try again.";
+        private const string kUnableToDownloadMessage =
+            "Bloom was unable to download and install updates. Restart to try again.";
+
+        /// <summary>
         /// See if any updates are available and if approved, download them. Once they are ready a notification
         /// pops up and the user can restart Bloom to run the new version. (Or if you don't, they will get installed
         /// when Bloom quits.)
@@ -80,11 +120,18 @@ namespace Bloom
         /// <param name="restartBloom">An action that is executed if the user clicks the toast that suggests
         /// a restart. This is the responsibility of the caller (the workspace view). It
         /// just shuts down Bloom; the update and restart are managed automatically by Velopack.</param>
+        /// <param name="reporter">Where to say what is happening, and where to report the outcome.
+        /// Toasts, if not given, which is the normal case.</param>
+        /// <param name="userHasAlreadyAgreedToUpdate">Skip the "updates are available, do you want
+        /// them?" step: the user has said yes somewhere else, so asking again would be odd.</param>
         internal static async void CheckForAVelopackUpdate(
             BloomUpdateMessageVerbosity verbosity,
-            Action restartBloom
+            Action restartBloom,
+            UpdateReporter reporter = null,
+            bool userHasAlreadyAgreedToUpdate = false
         )
         {
+            reporter = reporter ?? new ToastUpdateReporter();
             // In Bloom 6.3, we updated to DotNet 8. So at this point, there's no reason to check OS versions;
             // This Velopack-based update code only runs in 6.3, and 6.3 (at least by the time we release a beta)
             // only runs on an OS that is at least 10; in fact, it has to be quite a recent 10. But that check
@@ -124,35 +171,50 @@ namespace Bloom
                     // The rest of this method looks for them and deals with the results
                     break;
                 case UploadStatus.Failed:
-                    // Hopefully we don't get into this state. Don't think it's worth localizing.
-                    ShowToastForError("Restart Bloom to try checking for updates again");
+                    // Hopefully we don't get into this state.
+                    ReportFailure(reporter, kRestartToTryAgainMessage);
                     return;
                 case UploadStatus.LookingForUpdates:
                     // We don't need this message if the caller is the timer (presumably AFTER the user already
                     // asked us to check).
                     if (verbosity == BloomUpdateMessageVerbosity.Verbose)
                     {
-                        var message = LocalizationManager.GetString(
-                            "CollectionTab.UpdateCheckInProgress",
-                            "Bloom is already working on checking for updates."
-                        );
-                        var workingNotifier = new ToastNotifier();
-                        workingNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
-                        workingNotifier.Show(message, "", 5);
+                        reporter.Say(AlreadyCheckingMessage());
                     }
 
+                    reporter.Finished(UpdateAttemptOutcome.Failed, null, AlreadyCheckingMessage());
                     return;
                 // Conceivably the appropriate toast is still up. Very likely in the last case, since that
                 // one doesn't go away. But it's harmless to show it again, and maybe the new animation will
                 // help the user notice it.
                 case UploadStatus.FoundUpdates:
-                    ShowToastForFoundUpdates(verbosity, restartBloom);
+                    // Unless the user has already said yes elsewhere, in which case asking again by
+                    // toast would be strange -- go straight to downloading what we found.
+                    if (userHasAlreadyAgreedToUpdate)
+                    {
+                        DownloadAndApplyUpdates(restartBloom, reporter);
+                        return;
+                    }
+                    OfferFoundUpdates(reporter, restartBloom);
+                    reporter.Finished(UpdateAttemptOutcome.Offered, null, null);
                     return;
                 case UploadStatus.Downloading:
-                    ShowToastForDownloading();
+                    reporter.Say(DownloadingMessage());
+                    reporter.Finished(UpdateAttemptOutcome.Failed, null, AlreadyCheckingMessage());
                     return;
                 case UploadStatus.DownloadedWaitingForRestart:
-                    ShowToastForDownloadedWaitingForRestart(restartBloom);
+                    OfferRestartToApplyDownload(
+                        reporter,
+                        _newVersion.TargetFullRelease.Version.ToString(),
+                        restartBloom
+                    );
+                    // Already downloaded and already arranged to install on exit, so as far as the
+                    // caller is concerned this is a success: quitting will install it.
+                    reporter.Finished(
+                        UpdateAttemptOutcome.Downloaded,
+                        _newVersion?.TargetFullRelease?.Version?.ToString(),
+                        null
+                    );
                     return;
             }
 
@@ -166,8 +228,13 @@ namespace Bloom
                 // bit of code gets even more so. I decided that if we've detected a new version,
                 // we won't actually look again during this run.)
 
-                if (!GetUpdateUrl(verbosity, out var updateUrl))
+                if (!GetUpdateUrl(verbosity, reporter, out var updateUrl))
+                {
+                    // Overwhelmingly the reason we can't work out where to look is that we can't
+                    // reach the server.
+                    reporter.Finished(UpdateAttemptOutcome.Failed, null, CannotConnectMessage());
                     return; // we can stay in NothingKnown state, allow user to try again.
+                }
 
                 // Now we're starting stuff we don't want to overlap with other update efforts.
                 // Thus the other states all display a message and return above.
@@ -182,56 +249,128 @@ namespace Bloom
                 _newVersion = await _bloomUpdateManager.CheckForUpdatesAsync();
                 if (_newVersion == null)
                 {
-                    ShowToastForUpToDate(verbosity);
+                    if (verbosity == BloomUpdateMessageVerbosity.Verbose)
+                    {
+                        // Only say this if the user manually initiated the check.
+                        reporter.Say(UpToDateMessage());
+                    }
                     _bloomUpdateManager = null; // no updates, so no need to keep this object around
                     _status = UploadStatus.NothingKnown; // allows user to try again
+                    reporter.Finished(UpdateAttemptOutcome.NothingNewer, null, null);
                     return;
                 }
 
                 // There are updates available. If the user is not installing updates automatically,
-                // ask whether to download them.
-                if (!Settings.Default.AutoUpdate)
+                // ask whether to download them -- unless they have already said yes somewhere else.
+                if (!Settings.Default.AutoUpdate && !userHasAlreadyAgreedToUpdate)
                 {
                     _status = UploadStatus.FoundUpdates;
-                    ShowToastForFoundUpdates(verbosity, restartBloom);
+                    OfferFoundUpdates(reporter, restartBloom);
+                    reporter.Finished(UpdateAttemptOutcome.Offered, null, null);
                     return;
                 }
             }
             catch (Exception e)
             {
-                // Hopefully this is very rare. Don't think it's worth localizing.
-                // But we do want some indication of a problem if we can't get updates.
+                // Hopefully this is very rare. But we do want some indication of a problem if we
+                // can't get updates.
                 // Review: should we go straight to "NotifyUserOfProblem" if verbosity
                 // is verbose (i.e., called by Check for Updates user action)?
-                ShowToastForError(
-                    "Bloom was unable to check for updates. Restart to try again.",
-                    e
-                );
+                ReportFailure(reporter, kUnableToCheckMessage, e);
                 return;
             }
 
             // If autoupdate is true, we just go ahead and download the updates.
-            DownloadAndApplyUpdates(restartBloom);
+            DownloadAndApplyUpdates(restartBloom, reporter);
 #endif
         }
 
-        private static async void DownloadAndApplyUpdates(Action restartBloom)
+        private static async void DownloadAndApplyUpdates(
+            Action restartBloom,
+            UpdateReporter reporter
+        )
         {
 #if !__MonoCS__
+            // One download at a time. The switch in CheckForAVelopackUpdate guards the way in, but
+            // not this method, which the "Update Now" toast also calls straight from its click. A
+            // toast left on screen from an earlier check plus the upgrade dialog -- which skips the
+            // asking step -- can now both arrive here, and two DownloadUpdatesAsync calls on one
+            // UpdateManager is not something we want to find out about in the field.
+            if (_status == UploadStatus.DownloadedWaitingForRestart)
+            {
+                // Not a failure: it is already downloaded and already arranged to install when
+                // Bloom exits. Telling the caller otherwise would send someone who asked to be
+                // upgraded away to pick another collection, when the new Bloom is sitting ready.
+                reporter.Finished(
+                    UpdateAttemptOutcome.Downloaded,
+                    _newVersion?.TargetFullRelease?.Version?.ToString(),
+                    null
+                );
+                return;
+            }
+            if (_status == UploadStatus.Downloading)
+            {
+                reporter.Say(DownloadingMessage());
+                reporter.Finished(UpdateAttemptOutcome.Failed, null, AlreadyCheckingMessage());
+                return;
+            }
+
             try
             {
                 _status = UploadStatus.Downloading;
-                ShowToastForDownloading();
+                _lastDownloadPercent = 0;
+                reporter.Say(DownloadingMessage());
 
-                await _bloomUpdateManager.DownloadUpdatesAsync(_newVersion);
+                await _bloomUpdateManager.DownloadUpdatesAsync(
+                    _newVersion,
+                    percent =>
+                    {
+                        _lastDownloadPercent = percent;
+                        reporter.Percent(percent);
+                    },
+                    reporter.CancellationToken
+                );
+
+                // The transfer can finish in the very instant the user cancels, in which case the
+                // await returns normally rather than throwing, and everything below would go on to
+                // arrange an install they had just said no to. Checking here is what makes Cancel
+                // mean it even in that sliver: the bits may be on disk, but no exit handler is
+                // registered, so nothing installs.
+                if (reporter.CancellationToken.IsCancellationRequested)
+                {
+                    _status = UploadStatus.NothingKnown;
+                    reporter.Finished(UpdateAttemptOutcome.Cancelled, null, null);
+                    return;
+                }
+
                 _status = UploadStatus.DownloadedWaitingForRestart;
-                ShowToastForDownloadedWaitingForRestart(restartBloom);
+                OfferRestartToApplyDownload(
+                    reporter,
+                    _newVersion.TargetFullRelease.Version.ToString(),
+                    restartBloom
+                );
 
                 // When we exit, apply the updates. (If autoupdate is false, this is still appropriate,
                 // because the user responded to the message about updates available by clicking "Update Now",
                 // so we're just completing something already approved).
+                // Only ever register one exit handler, however many times we come through here:
+                // applying the same update twice is how an upgrade fails or restarts Bloom when
+                // nobody asked it to.
+                if (_willInstallUpdateOnExit)
+                {
+                    reporter.Finished(
+                        UpdateAttemptOutcome.Downloaded,
+                        _newVersion?.TargetFullRelease?.Version?.ToString(),
+                        null
+                    );
+                    return;
+                }
+                _willInstallUpdateOnExit = true;
                 Application.ApplicationExit += (sender, args) =>
                 {
+                    // Write a file so that if the update fails (e.g., a running process prevents it),
+                    // we can detect it on the next launch and warn the user.
+                    WriteUpdateAttemptFile(_newVersion.TargetFullRelease.Version.ToString());
                     if (!_restartingAfterToastClicked)
                     {
                         // If the user clicked the toast, we already made the call to WaitExitThenApplyUpdates,
@@ -241,136 +380,186 @@ namespace Bloom
                         _bloomUpdateManager.WaitExitThenApplyUpdates(null, true, false);
                     }
                 };
+
+                reporter.Finished(
+                    UpdateAttemptOutcome.Downloaded,
+                    _newVersion?.TargetFullRelease?.Version?.ToString(),
+                    null
+                );
+            }
+            catch (OperationCanceledException)
+            {
+                // The user pressed Cancel, so Velopack abandoned the transfer. Leave no trace: no
+                // exit handler was registered (we never got that far), nothing is downloaded, and
+                // putting the status back to NothingKnown means a later attempt this session starts
+                // cleanly rather than being told an update is already in progress.
+                _status = UploadStatus.NothingKnown;
+                reporter.Finished(UpdateAttemptOutcome.Cancelled, null, null);
             }
             catch (Exception e)
             {
-                // Hopefully this is very rare. Don't think it's worth localizing. But it's dangerous not
-                // to catch all exceptions in an async void method, according to a VS popup.
-                ShowToastForError(
-                    "Bloom was unable to download and install updates. Restart to try again.",
-                    e
-                );
+                // Hopefully this is very rare. But it's dangerous not to catch all exceptions in an
+                // async void method, according to a VS popup.
+                ReportFailure(reporter, kUnableToDownloadMessage, e);
             }
 #endif
         }
 
-        private static void ShowToastForUpToDate(BloomUpdateMessageVerbosity verbosity)
-        {
-            if (verbosity == BloomUpdateMessageVerbosity.Verbose)
-            {
-                // Only show this if the user manually initiated the check.
-                var message = LocalizationManager.GetString(
-                    "CollectionTab.UpToDate",
-                    "Your Bloom is up to date."
-                );
-                var noneNotifier = new ToastNotifier();
-                noneNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
-                noneNotifier.Show(message, "", 5);
-            }
-        }
-
-        private static void ShowToastForFoundUpdates(
-            BloomUpdateMessageVerbosity verbosity,
-            Action restartBloom
+        /// <summary>
+        /// Say that the attempt has failed, and remember that it has: having got here we are not
+        /// confident of being in a state where it is safe to try again this session.
+        /// </summary>
+        private static void ReportFailure(
+            UpdateReporter reporter,
+            string message,
+            Exception e = null
         )
         {
-            var msgAvail = LocalizationManager.GetString(
-                "CollectionTab.UpdatesAvailable",
-                "A new version of Bloom is available."
-            );
-            var actionInstall = LocalizationManager.GetString(
-                "CollectionTab.UpdateNow",
-                "Update Now"
-            );
-            var notifierAvail = new ToastNotifier();
-            notifierAvail.Image.Image = Resources.Bloom;
-            notifierAvail.ToastClicked += (sender, args) =>
-            {
-                DownloadAndApplyUpdates(restartBloom);
-            };
-            notifierAvail.Show(msgAvail, actionInstall, 10);
-        }
-
-        private static void ShowToastForError(string msg, Exception e = null)
-        {
-            // I'm not confident of getting back to a state where it's safe to try again.
             _status = UploadStatus.Failed;
             if (e != null)
                 _updateException = e;
-            var notifierError = new ToastNotifier();
-            notifierError.Image.Image = Resources.Bloom; // or error icon? But wants to be recognizable as Bloom.
-            notifierError.ToastClicked += (sender, args) =>
-            {
-                ErrorReport.NotifyUserOfProblem(_updateException, msg);
-            };
-            notifierError.Show(msg, "", 10);
+            // _updateException rather than e, deliberately. The one caller that passes no exception
+            // is the "restart Bloom to try again" case, which only happens BECAUSE an earlier
+            // attempt failed -- so the exception already on file is exactly the one a problem
+            // report should carry.
+            reporter.SayProblem(message, _updateException);
+            reporter.Finished(UpdateAttemptOutcome.Failed, null, message);
         }
 
-        private static bool _restartingAfterToastClicked = false;
+        // ------------------------------------------------------------------------------------
+        // The words. Each of these is worked out once, here, and then given to whichever
+        // UpdateReporter is in use, so that the toast route and the progress-dialog route say the
+        // same thing without either knowing about the other.
+        // ------------------------------------------------------------------------------------
 
-        private static void ShowToastForDownloading()
+        private static string UpToDateMessage() =>
+            LocalizationManager.GetString("CollectionTab.UpToDate", "Your Bloom is up to date.");
+
+        // Internal so the minimum-version dialog can say the same (already translated) thing
+        // while it waits out a check another caller started.
+        internal static string AlreadyCheckingMessage() =>
+            LocalizationManager.GetString(
+                "CollectionTab.UpdateCheckInProgress",
+                "Bloom is already working on checking for updates."
+            );
+
+        private static string CannotConnectMessage() =>
+            LocalizationManager.GetString(
+                "CollectionTab.UnableToCheckForUpdate",
+                "Could not connect to the server to check for an update. Are you connected to the internet?",
+                "Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc."
+            );
+
+        private static string UpdatesAvailableMessage() =>
+            LocalizationManager.GetString(
+                "CollectionTab.UpdatesAvailable",
+                "A new version of Bloom is available."
+            );
+
+        private static string DownloadingMessage()
         {
-            // Show a notification that we're downloading the update.
-            // We could show a progress bar, but it would be hard to get it right.
-
             // Velopack may use a more sophisticated algorithm to decide which to download,
             // but this should be good enough to give the user an idea.
             var fullSize = _newVersion.TargetFullRelease.Size;
             var deltasSize = _newVersion.DeltasToTarget.Sum(d => d.Size);
-            var downloadSize = deltasSize;
-            if (_newVersion.DeltasToTarget.Length > 0 && fullSize < deltasSize)
-                downloadSize = fullSize;
-            var updatingMsg = String.Format(
+            // With no deltas to add up we have to quote the full release, or we claim the download
+            // is 0K. That is what happened for every full download, and Bloom asks for a full one
+            // whenever the user is more than MaximumDeltasBeforeFallback builds behind -- so an
+            // ordinary two-releases-behind user saw "(0K)". It only ever flashed past in a
+            // five-second toast before; now it is what they read while they wait.
+            var downloadSize =
+                _newVersion.DeltasToTarget.Length == 0 ? fullSize : Math.Min(deltasSize, fullSize);
+            return DownloadingMessage(
+                _newVersion.TargetFullRelease.Version.ToString(),
+                downloadSize / 1024
+            );
+        }
+
+        private static string DownloadingMessage(string version, long sizeInK) =>
+            String.Format(
                 LocalizationManager.GetString(
                     "CollectionTab.Updating",
                     "Downloading update to {0} ({1}K)"
                 ),
-                _newVersion.TargetFullRelease.Version.ToString(),
-                downloadSize / 1024
+                version,
+                sizeInK
             );
 
-            var updatingNotifier = new ToastNotifier();
-            updatingNotifier.Image.Image = Resources.Bloom;
-            // Since it's not conveying any new information, I don't think it needs to
-            // hang around. The user can "check for updates" again if they want to,
-            // and get the same message.
-            updatingNotifier.Show(updatingMsg, "", 5);
-        }
-
-        private static void ShowToastForDownloadedWaitingForRestart(Action restartBloom)
-        {
-            var msg = String.Format(
+        private static string DownloadedMessage(string version) =>
+            String.Format(
                 LocalizationManager.GetString(
                     "CollectionTab.UpdateInstalled",
                     "Update for {0} is ready",
                     "Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom."
                 ),
-                _newVersion.TargetFullRelease.Version
+                version
             );
-            var action = String.Format(
+
+        // ------------------------------------------------------------------------------------
+        // The two things we say that come with something for the user to click.
+        // ------------------------------------------------------------------------------------
+
+        private static void OfferFoundUpdates(UpdateReporter reporter, Action restartBloom)
+        {
+            reporter.OfferToDownload(
+                UpdatesAvailableMessage(),
+                LocalizationManager.GetString("CollectionTab.UpdateNow", "Update Now"),
+                () => DownloadAndApplyUpdates(restartBloom, reporter)
+            );
+        }
+
+        private static bool _restartingAfterToastClicked = false;
+
+        private static void OfferRestartToApplyDownload(
+            UpdateReporter reporter,
+            string version,
+            Action restartBloom
+        )
+        {
+            reporter.OfferToRestart(
+                DownloadedMessage(version),
                 LocalizationManager.GetString(
                     "CollectionTab.RestartToUpdate",
                     "Restart Bloom to Update",
                     "Restart the Bloom program, not Windows"
-                )
+                ),
+                () =>
+                {
+                    ArrangeToApplyUpdateAndRestart();
+                    restartBloom();
+                }
             );
-            // Unfortunately, there's no good time to dispose of this object...according to its own comments
-            // it's not even safe to close it. It moves itself out of sight eventually if ignored.
-            var notifier = new ToastNotifier();
-            notifier.Image.Image = Resources.Bloom;
-            notifier.ToastClicked += (sender, args) =>
-            {
-                _restartingAfterToastClicked = true;
-                _bloomUpdateManager.WaitExitThenApplyUpdates(null);
-                Logger.WriteMinorEvent("shutting Bloom down in order to apply updates");
-                restartBloom();
-            };
-            notifier.Show(msg, action, -1); //stay up until clicked
+        }
+
+        /// <summary>
+        /// Hand the downloaded update to Velopack the way the "Restart Bloom to Update" toast does:
+        /// with the arguments that show Velopack's own progress bar while it installs and then bring
+        /// Bloom back by itself. The caller shuts Bloom down straight afterwards.
+        ///
+        /// The alternative, which the exit handler uses, applies the update quietly and does NOT
+        /// relaunch. That is right when the user was quitting anyway and wrong when they have just
+        /// asked to be upgraded, because it leaves them looking at a closed program having to start
+        /// it again themselves.
+        /// </summary>
+        internal static void ArrangeToApplyUpdateAndRestart()
+        {
+#if !__MonoCS__
+            // Only once. On the mid-session path both routes to this exist at the same time -- the
+            // restart toast the workspace can show, and the upgrade dialog -- and handing the same
+            // update to Velopack twice is how an install fails or Bloom relaunches when nobody
+            // asked it to.
+            if (_restartingAfterToastClicked)
+                return;
+            _restartingAfterToastClicked = true;
+            _bloomUpdateManager?.WaitExitThenApplyUpdates(null);
+            Logger.WriteMinorEvent("shutting Bloom down in order to apply updates");
+#endif
         }
 
         // returns true if we should proceed with the update check.
         private static bool GetUpdateUrl(
             BloomUpdateMessageVerbosity verbosity,
+            UpdateReporter reporter,
             out string updateUrl
         )
         {
@@ -408,12 +597,7 @@ namespace Bloom
                     // but if they did, try and give them a hint about what went wrong
                     if (result.IsConnectivityError)
                     {
-                        var failMsg = LocalizationManager.GetString(
-                            "CollectionTab.UnableToCheckForUpdate",
-                            "Could not connect to the server to check for an update. Are you connected to the internet?",
-                            "Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc."
-                        );
-                        ShowFailureNotification(failMsg);
+                        reporter.SayWarning(CannotConnectMessage());
                     }
                     else if (
                         result.Error == null
@@ -426,7 +610,7 @@ namespace Bloom
                     }
                     else
                     {
-                        ShowFailureNotification(result.Error.Message);
+                        reporter.SayWarning(result.Error.Message);
                     }
 
                     return false;
@@ -437,11 +621,154 @@ namespace Bloom
             return true;
         }
 
-        private static void ShowFailureNotification(string failMsg)
+        /// <summary>
+        /// Gets the path to the file we write when Bloom is about to exit for a Velopack update.
+        /// The channel name is included so that parallel installations on different channels
+        /// (e.g. Alpha and Release) do not interfere with each other.
+        /// </summary>
+        private static string UpdateAttemptFilePath
         {
-            var failNotifier = new ToastNotifier();
-            failNotifier.Image.Image = Resources.Bloom;
-            failNotifier.Show(failMsg, "", 5);
+            get
+            {
+                // Sanitize the channel name so it is safe to use in a file name.
+                var safeChannel = Regex.Replace(ChannelName, @"[^A-Za-z0-9\-]", "-");
+                var fileName = $"pending-velopack-update-{safeChannel}.txt";
+                return Path.Combine(ProjectContext.GetBloomAppDataFolder(), fileName);
+            }
+        }
+
+        /// <summary>
+        /// Writes a file recording the current and target versions when Bloom is about to exit
+        /// for a Velopack update. If the update fails, CheckForFailedUpdate() will detect it on
+        /// the next launch and notify the user.
+        /// </summary>
+        private static void WriteUpdateAttemptFile(string targetVersion)
+        {
+            try
+            {
+                var fromVersion = Shell.GetShortVersionInfo();
+                RobustFile.WriteAllText(
+                    UpdateAttemptFilePath,
+                    fromVersion + Environment.NewLine + targetVersion
+                );
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("Could not write Velopack update attempt file", e);
+            }
+        }
+
+        /// <summary>
+        /// Called at startup to check whether a previous Velopack update attempt failed (e.g.,
+        /// because a running process prevented it). If so, sends an analytics event and shows a
+        /// warning toast.
+        /// </summary>
+        internal static void CheckForFailedUpdate()
+        {
+#if !__MonoCS__
+            var filePath = UpdateAttemptFilePath;
+            if (!RobustFile.Exists(filePath))
+                return;
+
+            string fromVersion = null;
+            string targetVersion = null;
+            try
+            {
+                var lines = RobustFile.ReadAllLines(filePath);
+                if (lines.Length >= 2)
+                {
+                    fromVersion = lines[0].Trim();
+                    targetVersion = lines[1].Trim();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("Could not read Velopack update attempt file", e);
+            }
+
+            // Always delete the file — whether the update succeeded or not we only want to
+            // check once per recorded attempt.
+            try
+            {
+                RobustFile.Delete(filePath);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("Could not delete Velopack update attempt file", e);
+            }
+
+            if (fromVersion == null || targetVersion == null)
+                return;
+
+            // Check whether we have successfully updated to at least the expected version.
+            var currentVersion = Shell.GetShortVersionInfo();
+            if (
+                Version.TryParse(currentVersion, out var current)
+                && Version.TryParse(targetVersion, out var target)
+                && current >= target
+            )
+            {
+                // Update succeeded; nothing to report.
+                return;
+            }
+
+            var sentryMessage =
+                "Velopack update failed: from "
+                + fromVersion
+                + " to "
+                + targetVersion
+                + "; running version "
+                + currentVersion;
+            NonFatalProblem.ReportSentryOnly(sentryMessage);
+
+            var msg = String.Format(
+                LocalizationManager.GetString(
+                    "CollectionTab.VelopackUpdateFailed",
+                    "Bloom failed to update from version {0} to version {1}. If this continues to happen, try restarting your computer. If it still happens, please Report a Problem."
+                ),
+                fromVersion,
+                targetVersion
+            );
+            ToastService.ShowToast(ToastType.Warning, text: msg, durationSeconds: 20);
+#endif
+        }
+
+        internal static void DebugShowToastScenario(string scenario, Action restartBloom = null)
+        {
+            restartBloom ??= () => { };
+            var reporter = new ToastUpdateReporter();
+
+            switch (scenario)
+            {
+                case "looking":
+                    reporter.Say(AlreadyCheckingMessage());
+                    return;
+                case "upToDate":
+                    reporter.Say(UpToDateMessage());
+                    return;
+                case "foundUpdates":
+                    OfferFoundUpdates(reporter, restartBloom);
+                    return;
+                case "downloading":
+                    reporter.Say(DownloadingMessage("9.9.9", 123));
+                    return;
+                case "downloadedWaitingForRestart":
+                    OfferRestartToApplyDownload(reporter, "9.9.9", restartBloom);
+                    return;
+                case "error":
+                    reporter.SayProblem(
+                        kUnableToDownloadMessage,
+                        new ApplicationException("Debug update error")
+                    );
+                    return;
+                case "failure":
+                    reporter.SayWarning(CannotConnectMessage());
+                    return;
+                default:
+                    throw new ArgumentException(
+                        $"Unknown update toast debug scenario '{scenario}'"
+                    );
+            }
         }
 
         internal const string kChannelNameForUnitTests = "TestChannel";
@@ -505,51 +832,6 @@ namespace Bloom
                         return channelName.Replace("-arm64", "");
                 }
                 return "Release";
-            }
-        }
-
-        internal enum UpdateOutcome
-        {
-            GotNewVersion,
-            AlreadyUpToDate,
-            InstallFailed,
-        }
-
-        internal class UpdateResult
-        {
-            public string NewInstallDirectory;
-            public UpdateOutcome Outcome;
-        }
-
-        private static void UpdateProgress(
-            ToastNotifier updatingNotifier,
-            string updatingMsg,
-            string progressMsg,
-            int x
-        )
-        {
-            if (updatingNotifier.IsHandleCreated) // Must have a handle to Invoke anything!
-            {
-                try
-                {
-                    updatingNotifier.Invoke(
-                        (Action)(
-                            () =>
-                            {
-                                updatingNotifier.UpdateMessage(
-                                    updatingMsg + " " + string.Format(progressMsg, x)
-                                );
-                            }
-                        )
-                    );
-                }
-                catch (InvalidOperationException)
-                {
-                    // This can be caused by someone clicking on the progress Toast display (BL-2465).
-                    // Ignore it.  (It's possible that the IsHandleCreated above removes the possibility
-                    // of this error, but I've always been a belt AND suspenders type guy when it comes
-                    // to bugfixing.)
-                }
             }
         }
     }

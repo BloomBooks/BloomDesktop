@@ -32,7 +32,7 @@ namespace BloomTests.Spreadsheet
         [OneTimeSetUp]
         public async Task OneTimeSetup()
         {
-            _testFolder = new TemporaryFolder("SpreadsheetImporterWithBookTests");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
             // We need 2 layers of temp folder because BringBookUpToDate will change the name of the book
             // folder to match an imported title.
             _bookFolder = new TemporaryFolder(_testFolder, "Book");
@@ -122,7 +122,7 @@ namespace BloomTests.Spreadsheet
         <div data-book=""topic"" lang=""en"">
             Health
 		</div>
-		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly."">
+		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This image, placeHolder.png, is missing or was loading too slowly."">
 			cover.png
 		</div>
 		<div data-book=""licenseImage"" lang= ""*"" >
@@ -161,7 +161,7 @@ namespace BloomTests.Spreadsheet
             <div class=""bloom-canvas bloom-background-image-in-style-attr"" data-book=""coverImage"" style=""background-image:url('some image.jpg')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd""></div>
 
             <div class=""bottomBlock"">
-                <img class=""branding"" src=""/bloom/api/branding/image?id=cover-bottom-left.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img> 
+                <img class=""branding"" src=""/bloom/api/branding/image?id=cover-bottom-left.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img>
 
                 <div class=""bottomTextContent"">
                     <div class=""creditsRow"" data-hint=""You may use this space for author/illustrator, or anything else."">
@@ -178,7 +178,7 @@ namespace BloomTests.Spreadsheet
                             Bafia
                         </div>
 
-                        <div class=""coverBottomBookTopic bloom-userCannotModifyStyles bloom-alwaysShowBubble Cover-Default-style"" data-derived=""topic"" data-functiononhintclick=""ShowTopicChooser()"" data-hint=""Click to choose topic""></div>
+                        <div class=""coverBottomBookTopic bloom-userCannotModifyStyles bloom-alwaysShowBubble Cover-Default-style"" data-derived=""topic"" data-functiononhintclick=""ShowTopicChooser()"" data-hint=""Choose topic""></div>
                     </div>
                 </div>
             </div>
@@ -187,8 +187,8 @@ namespace BloomTests.Spreadsheet
 
         public static string pageWithJustText =
             @"<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang="""">
-			<div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-				Basic Text &amp; Picture
+			<div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+				Basic Text &amp; Image
 			</div>
 
 			<div class=""pageDescription"" lang=""en""></div>

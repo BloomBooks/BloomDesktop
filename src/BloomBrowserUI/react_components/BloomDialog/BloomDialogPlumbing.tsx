@@ -34,6 +34,7 @@ export const normalDialogEnvironmentForStorybook: IBloomDialogEnvironmentParams 
 export const StorybookDialogWrapper: React.FunctionComponent<{
     id: string;
     params: object;
+    children?: React.ReactNode;
 }> = (props) => {
     useEffect(() => {
         // I'm not certain this delay is needed, but I do want to make sure the dialog
@@ -57,18 +58,30 @@ export function useEventLaunchedBloomDialog(idForLaunchingFromServer: string) {
         initiallyOpen: false,
         dialogFrameProvidedExternally: false,
     });
+    const showDialog = dialogEnvironment.showDialog;
     // for c# server
     useWebSocketListener("LaunchDialog", (event) => {
         if (event.id === idForLaunchingFromServer) {
-            dialogEnvironment.showDialog(event);
+            showDialog(event);
         }
     });
-    // for storybook
-    document.addEventListener("LaunchDialog", (event: any) => {
-        if (event.detail.id === idForLaunchingFromServer) {
-            dialogEnvironment.showDialog(event.detail);
-        }
-    });
+    useEffect(() => {
+        const storybookLaunchListener = (event: Event) => {
+            const launchEvent = event as CustomEvent<{ id: string }>;
+            if (launchEvent.detail.id === idForLaunchingFromServer) {
+                showDialog(launchEvent.detail);
+            }
+        };
+
+        // This effect is required because the document event is an external subscription outside React.
+        document.addEventListener("LaunchDialog", storybookLaunchListener);
+        return () => {
+            document.removeEventListener(
+                "LaunchDialog",
+                storybookLaunchListener,
+            );
+        };
+    }, [showDialog, idForLaunchingFromServer]);
     return dialogEnvironment;
 }
 

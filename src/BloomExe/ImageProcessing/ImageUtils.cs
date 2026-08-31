@@ -7,6 +7,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
@@ -16,6 +17,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using BloomTemp;
 using L10NSharp;
+using SIL.Code;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -31,6 +33,22 @@ using TempFile = SIL.IO.TempFile;
 
 namespace Bloom.ImageProcessing
 {
+    /// <summary>
+    /// Controls whether (and how) a background-transparency pass is applied to an image.
+    /// </summary>
+    /// <notes> Should be kept in sync with the definition of TransparencyMode in bloomImages.ts. </notes>
+    public enum ImageTransparencyMode
+    {
+        /// <summary>Do not apply transparency (bloom-opaque class, or white/no page background).</summary>
+        None,
+
+        /// <summary>Apply transparency only when the image is detected as line art (transparent=yes).</summary>
+        Auto,
+
+        /// <summary>Always apply transparency, bypassing the line-art check (transparent=force).</summary>
+        Force,
+    }
+
     static class ImageUtils
     {
         public const int MaxLength = 3840; // equals Ultra HD ("4K") long dimension (max width for landscape, height for portrait)
@@ -71,79 +89,489 @@ namespace Bloom.ImageProcessing
             return false;
         }
 
-        private class ColorInfo
-        {
-            public Color color;
-            public bool isGrayish;
-            public bool isNearWhite;
-        }
+        // Thresholds for the in-process dominant-color line-art check.
+        // To be a line-art background, a color must have a perceptual brightness
+        // of at least LineArtBackgroundMinBrightness and a chroma (max-min channel) of at
+        // most LineArtBackgroundMaxChroma.
+        private const double LineArtBackgroundMinBrightness = 235.0;
+        private const int LineArtBackgroundMaxChroma = 6;
+
+        // An "ink" palette entry whose chroma (max-min channel) is at or below this counts as
+        // grayscale ink, regardless of overall hue. Above this we additionally require that all
+        // non-grayscale ink entries share a single hue direction (so e.g. shades of dark green
+        // ink on white still qualify, but a mix of red and blue text does not).
+        private const int LineArtInkGrayscaleChromaThreshold = 8;
+
+        // Inks with radius (1 - brightness) below this are treated as hue-neutral: they are
+        // too pale to meaningfully constrain the ink color, so they pass regardless of direction.
+        // sin(15°) ≈ 0.259 was the previous implicit auto-pass radius; 0.12 is stricter.
+        private const float LineArtInkAutoPassRadius = 0.12f;
+
+        // Maximum perpendicular distance (from the origin-reference line) that a chromatic ink
+        // may have and still be considered the same hue family as the reference ink.
+        // Equivalent to sin(~8.6°) at radius 1.  The previous value was sin(15°) ≈ 0.259.
+        private const float LineArtInkHueTolerance = 0.15f;
 
         /// <summary>
         /// Check whether we should try to make the background of this image transparent.
-        /// Return true only if this is a two-color image with one of the colors being white.
-        /// (or a grayscale picture with one of the colors being white)
-        /// Return false also if any pixel encountered in scanning the picture is transparent
-        /// at all.
+        /// Returns true when the image looks like line art on a (near-)white background: that
+        /// is, every dominant color is either near-white or a grayscale ink, or every non-gray
+        /// ink shares a single hue (e.g., shades of one dark color).
+        /// Returns false if the image already has any transparent pixels.
         /// </summary>
         public static bool ShouldMakeBackgroundTransparent(PalasoImage imageInfo)
         {
-            // We want to make the white background of Black and White pictures transparent.
-            // JPEG pictures generally never meet that criteria and cannot be made transparent anyway.
-            if (!AppearsToBePng(imageInfo))
+            // We want to make the white background of line-art pictures transparent.
+            // We support PNG and JPEG input; other formats (BMP, TIFF, etc.) are not line art.
+            var appearsToBePng = AppearsToBePng(imageInfo);
+            var appearsToBeJpeg = AppearsToBeJpeg(imageInfo);
+            if (!appearsToBePng && !appearsToBeJpeg)
                 return false;
-            var colors = new List<ColorInfo>();
+
             if ((imageInfo.Image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
             {
                 var palette = imageInfo.Image.Palette;
                 if (palette != null && palette.Entries != null)
-                {
-                    bool whiteFound = false;
-                    foreach (var color in palette.Entries)
-                    {
-                        if (color.A < 255)
-                            return false; // already have transparent pixels
-                        if (!IsThisColorForLineDrawing(color, colors, ref whiteFound))
-                            return false; // have a 3rd distinct non-gray color
-                    }
-                    return colors.Count == 2 && whiteFound;
-                }
+                    return IsLineArtPalette(palette.Entries.Select(c => (c, 1)));
             }
-            // Harder to check if not indexed...
-            if (imageInfo.Image is Bitmap bitmapImage)
+
+            if (!(imageInfo.Image is Bitmap bitmapImage))
+                return false;
+
+            // If the image already has any even partially transparent pixels, leave it alone.
+            if (HasTransparency(bitmapImage))
+                return false;
+
+            // Summarize the image as a handful of dominant colors and check whether they
+            // look like line art. Bucketing averages out anti-aliasing artifacts and slight
+            // channel asymmetries that a strict per-pixel color check would mis-classify.
+            return IsLineArtPalette(GetDominantColors(bitmapImage));
+        }
+
+        /// <summary>
+        /// Decide whether a palette of (color, count) pairs looks like line art on a near-white
+        /// background. Used both for indexed-palette images (all counts set to 1) and for the
+        /// dominant-color buckets returned by <see cref="GetDominantColors"/>.
+        /// </summary>
+        private static bool IsLineArtPalette(IEnumerable<(Color color, int count)> paletteEntries)
+        {
+            var seen = new HashSet<int>();
+            var inks = new List<(Color color, int count)>();
+            bool whiteFound = false;
+            int totalDistinct = 0;
+            foreach (var (c, count) in paletteEntries)
             {
-                var whiteFound = false;
-                // Yes, this is as expensive as it looks.  But we only sample 100 pixels
-                // spread through the picture, stopping as soon as we hit either a
-                // transparent pixel or a 3rd distinct non-gray color.
-                int yDelta = Math.Max(bitmapImage.Height / 10, 2);
-                int xDelta = Math.Max(bitmapImage.Width / 10, 2);
-                var randomXFix = GenerateRandomAdjustments(271828182, xDelta);
-                var randomYFix = GenerateRandomAdjustments(271828182, yDelta);
-                for (int j = 0, y = yDelta / 2; y < bitmapImage.Height; y += yDelta, ++j)
+                if (c.A < 255)
+                    return false; // already has transparent pixels
+                int key = (c.R << 16) | (c.G << 8) | c.B;
+                if (!seen.Add(key))
+                    continue;
+                totalDistinct++;
+                if (IsLineArtBackground(c))
                 {
-                    j = Math.Min(j, 9);
-                    for (int i = 0, x = xDelta / 2; x < bitmapImage.Width; x += xDelta, ++i)
-                    {
-                        i = Math.Min(i, 9);
-                        var y1 = y + randomYFix[j, i];
-                        var x1 = x + randomXFix[j, i];
-                        y1 = Math.Min(Math.Max(y1, 0), bitmapImage.Height - 1);
-                        x1 = Math.Min(Math.Max(x1, 0), bitmapImage.Width - 1);
-                        var color = bitmapImage.GetPixel(x1, y1);
-                        if (color.A < 255)
-                            return false; // already have transparent pixels
-                        if (!IsThisColorForLineDrawing(color, colors, ref whiteFound))
-                            return false; // have a 3rd distinct non-gray color
-                    }
+                    whiteFound = true;
                 }
-                // At least two colors encountered, likely black and white or greyscale in intent.
-                // But if none of the colors is white, return false. (Our code wouldn't make anything
-                // transparent anyway.)
-                return colors.Count == 2 && whiteFound;
+                else
+                {
+                    inks.Add((c, count));
+                }
             }
-            // we can't tell, so err on the side of caution.
+            if (!whiteFound || totalDistinct < 2)
+                return false;
+            return InksShareConsistentHue(inks);
+        }
+
+        /// <summary>
+        /// Returns true if all non-background palette entries look like they belong to a single
+        /// line-art ink: every entry must either be grayscale (chroma at or below
+        /// <see cref="LineArtInkGrayscaleChromaThreshold"/>) or share the same hue direction as
+        /// the other non-grayscale entries.
+        /// </summary>
+        private static bool InksShareConsistentHue(List<(Color color, int count)> inks)
+        {
+            // Use 2D hue/brightness geometry:
+            // - angle: hue
+            // - radius: 1 - brightness (black=1, white=0)
+            // Then compare each point to the line through the origin and reference point.
+            // This means that the more brilliant the color, the closer it has to be
+            // to the reference hue.
+
+            // First, determine a reference color as the basis for deciding whether
+            // inks share a hue.
+            // Score each candidate reference color by chroma × √(proportion of ink samples),
+            // so a dominant ink wins over an equally saturated but rare one, independent
+            // of image size (raw counts grow with resolution; proportions don't).
+            // The sqrt dampens the weight given to count differences relative to chroma.
+            int totalInkSamples = 0;
+            foreach (var (_, cnt) in inks)
+                totalInkSamples += cnt;
+
+            // Only chromatic inks (those that survive the grayscale and auto-pass-radius
+            // filters) are eligible as the reference; pale/neutral inks don't define a hue.
+            Color referenceColor = default;
+            double bestScore = -1;
+            foreach (var (c, count) in inks)
+            {
+                if (!TryGetHueBrightnessPoint(c, out _, out _))
+                    continue;
+                int max = Math.Max(c.R, Math.Max(c.G, c.B));
+                int min = Math.Min(c.R, Math.Min(c.G, c.B));
+                double score = (max - min) * Math.Sqrt((double)count / totalInkSamples);
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    referenceColor = c;
+                }
+            }
+
+            if (!TryGetHueBrightnessPoint(referenceColor, out var refX, out var refY))
+                return true;
+
+            float refLenSq = (refX * refX) + (refY * refY);
+            if (refLenSq <= 0)
+                return true;
+
+            float threshold = LineArtInkHueTolerance;
+
+            foreach (var (c, _) in inks)
+            {
+                if (!TryGetHueBrightnessPoint(c, out var x, out var y))
+                    continue; // grayscale ink — compatible with any hue
+
+                float dot = (x * refX) + (y * refY);
+                float distance;
+                if (dot > 0)
+                {
+                    // Same side as reference: perpendicular distance to origin-reference line.
+                    float cross = (x * refY) - (y * refX);
+                    distance = Math.Abs(cross) / (float)Math.Sqrt(refLenSq);
+                }
+                else
+                {
+                    // Opposite side: measure distance to origin instead.
+                    distance = (float)Math.Sqrt((x * x) + (y * y));
+                }
+
+                if (distance > threshold)
+                    return false;
+            }
+
+            return true;
+
+            bool TryGetHueBrightnessPoint(Color color, out float x, out float y)
+            {
+                int max = Math.Max(color.R, Math.Max(color.G, color.B));
+                int min = Math.Min(color.R, Math.Min(color.G, color.B));
+                if (max - min <= LineArtInkGrayscaleChromaThreshold)
+                {
+                    x = y = 0;
+                    return false;
+                }
+
+                float hueRadians = (float)(color.GetHue() * Math.PI / 180.0);
+                float brightness = color.GetBrightness();
+                float radius = 1f - brightness;
+                if (radius < LineArtInkAutoPassRadius)
+                {
+                    x = y = 0;
+                    return false;
+                }
+                x = radius * (float)Math.Cos(hueRadians);
+                y = radius * (float)Math.Sin(hueRadians);
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the color is bright enough (and free of significant hue)
+        /// to be considered a line art background.
+        /// </summary>
+        private static bool IsLineArtBackground(Color c)
+        {
+            // Perceptual brightness formula: 0.299*R + 0.587*G + 0.114*B
+            // Threshold: all channels 235 => brightness = 0.299*235 + 0.587*235 + 0.114*235 = 235
+            // So threshold is 235
+            double brightness = 0.299 * c.R + 0.587 * c.G + 0.114 * c.B;
+            int max = Math.Max(c.R, Math.Max(c.G, c.B));
+            int min = Math.Min(c.R, Math.Min(c.G, c.B));
+            return brightness >= LineArtBackgroundMinBrightness
+                && (max - min) <= LineArtBackgroundMaxChroma;
+        }
+
+        /// <summary>
+        /// Sample 100 pixels scattered across the image and return true iff any of them
+        /// are not fully opaque.  This isn't foolproof, but it is much faster than looking
+        /// at the whole image and good enough for our purposes in practice.  The transparent
+        /// images we care about are usually line art with a transparent background, so they
+        /// are more than 50% transparent and should be detected by this sampling.
+        /// </summary>
+        private static bool HasAnyTransparentSampledPixel(Bitmap bitmap)
+        {
+            int yDelta = Math.Max(bitmap.Height / 10, 2);
+            int xDelta = Math.Max(bitmap.Width / 10, 2);
+            var randomXFix = GenerateRandomAdjustments(271828182, xDelta);
+            var randomYFix = GenerateRandomAdjustments(271828182, yDelta);
+            for (int j = 0, y = yDelta / 2; y < bitmap.Height; y += yDelta, ++j)
+            {
+                j = Math.Min(j, 9);
+                for (int i = 0, x = xDelta / 2; x < bitmap.Width; x += xDelta, ++i)
+                {
+                    i = Math.Min(i, 9);
+                    var y1 = Math.Min(Math.Max(y + randomYFix[j, i], 0), bitmap.Height - 1);
+                    var x1 = Math.Min(Math.Max(x + randomXFix[j, i], 0), bitmap.Width - 1);
+                    if (bitmap.GetPixel(x1, y1).A < 255)
+                        return true;
+                }
+            }
             return false;
         }
+
+        /// <summary>
+        /// Sample the image on an irregular grid, average a 5×5 pixel neighborhood at each
+        /// sample point to suppress isolated anti-aliasing color artifacts, bucket the averaged
+        /// colors into coarse RGB bins, and return all distinct bins as representative Color values.
+        /// Results are roughly equivalent to GraphicsMagick's color quantization but run entirely
+        /// in-process with no subprocess or temporary files.
+        /// Earlier code ran GM with "convert \"{0}\" -colors {1} +dither -type Palette -depth 8",
+        /// but this took ~20x longer, and we still had to do a separate random check for transparency.
+        /// For example, on my computer for a 2800x2800 image, this approach takes about 44ms; the old
+        /// one took 943ms.
+        /// The 5×5 neighborhood average means that isolated 1–4 pixel color artifacts (JPEG
+        /// anti-aliasing noise) are pulled toward the surrounding white/black pixels and lose
+        /// most of their chroma, while genuine large color regions survive largely unchanged.
+        /// Returns a single <see cref="Color.Transparent"/> entry if the center of any sample
+        /// window is already transparent, causing <see cref="IsLineArtPalette"/> to return false.
+        /// </summary>
+        private static (Color color, int count)[] GetDominantColors(Bitmap bitmapImage)
+        {
+            // Preferred step: sample every Nth pixel in each dimension.
+            const int kSampleStep = 10;
+
+            // Minimum steps per dimension: ensures small images still get enough coverage.
+            // A 20×20 grid = 400 samples, giving well over one sample per expected bucket
+            // even in the worst case where all 512 bins are occupied.
+            const int kMinGridSize = 20;
+
+            // Reduce step for small images so neither dimension has fewer than kMinGridSize
+            // steps. For a 40×40 image this gives step=2; for a 20×20 image, step=1.
+            int step = Math.Min(
+                kSampleStep,
+                Math.Max(
+                    1,
+                    Math.Min(bitmapImage.Width / kMinGridSize, bitmapImage.Height / kMinGridSize)
+                )
+            );
+
+            // Divide the RGB cube into 32-unit bins (5 bits discarded per channel,
+            // yielding 8×8×8 = 512 possible bin keys).
+            const int kBucketShift = 5; // 2^5 = 32 units per bin
+            const int kBitsPerBucket = 8 - kBucketShift; // 3 bits kept per channel
+
+            // Random offsets (deterministic seed) reduce the chance of systematically
+            // missing thin features aligned with the sampling grid.
+            var randomXFix = GenerateRandomAdjustments(271828182, step);
+            var randomYFix = GenerateRandomAdjustments(271828182, step);
+
+            var buckets = new Dictionary<int, (long r, long g, long b, int count)>();
+
+            // LockBits + Marshal.Copy gives direct array access to pixel data, making the
+            // 5×5 neighborhood average affordable compared to repeated GetPixel calls.
+            int imageWidth = bitmapImage.Width;
+            int imageHeight = bitmapImage.Height;
+            var bitmapData = bitmapImage.LockBits(
+                new Rectangle(0, 0, imageWidth, imageHeight),
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format32bppArgb
+            );
+            try
+            {
+                int stride = bitmapData.Stride;
+                byte[] pixels = new byte[stride * imageHeight];
+                System.Runtime.InteropServices.Marshal.Copy(
+                    bitmapData.Scan0,
+                    pixels,
+                    0,
+                    pixels.Length
+                );
+                for (int j = 0, y = step / 2; y < imageHeight; y += step, ++j)
+                {
+                    j = Math.Min(j, 9);
+                    for (int i = 0, x = step / 2; x < imageWidth; x += step, ++i)
+                    {
+                        i = Math.Min(i, 9);
+                        var y1 = Math.Min(Math.Max(y + randomYFix[j, i], 0), imageHeight - 1);
+                        var x1 = Math.Min(Math.Max(x + randomXFix[j, i], 0), imageWidth - 1);
+
+                        // Check alpha of the center pixel only.
+                        if (pixels[y1 * stride + x1 * 4 + 3] < 255)
+                            return new[] { (color: Color.Transparent, count: 1) };
+
+                        // Average a 5×5 neighborhood. Isolated 1–4 pixel color noise is pulled
+                        // toward the surrounding white/black background and loses most of its
+                        // chroma; genuine large-region colors are unaffected.
+                        const int kHalfWindow = 2; // (2*2+1)² = 25 pixels
+                        long rSum = 0,
+                            gSum = 0,
+                            bSum = 0;
+                        for (int dy = -kHalfWindow; dy <= kHalfWindow; dy++)
+                        {
+                            int py = Math.Min(Math.Max(y1 + dy, 0), imageHeight - 1);
+                            for (int dx = -kHalfWindow; dx <= kHalfWindow; dx++)
+                            {
+                                int px = Math.Min(Math.Max(x1 + dx, 0), imageWidth - 1);
+                                int ofs = py * stride + px * 4;
+                                // Format32bppArgb memory layout: B, G, R, A
+                                bSum += pixels[ofs];
+                                gSum += pixels[ofs + 1];
+                                rSum += pixels[ofs + 2];
+                            }
+                        }
+                        const int kWindowArea = (2 * kHalfWindow + 1) * (2 * kHalfWindow + 1);
+                        int r = (int)(rSum / kWindowArea);
+                        int g = (int)(gSum / kWindowArea);
+                        int b = (int)(bSum / kWindowArea);
+
+                        int key =
+                            ((r >> kBucketShift) << (2 * kBitsPerBucket))
+                            | ((g >> kBucketShift) << kBitsPerBucket)
+                            | (b >> kBucketShift);
+                        if (buckets.TryGetValue(key, out var entry))
+                            buckets[key] = (entry.r + r, entry.g + g, entry.b + b, entry.count + 1);
+                        else
+                            buckets[key] = (r, g, b, 1);
+                    }
+                }
+            }
+            finally
+            {
+                bitmapImage.UnlockBits(bitmapData);
+            }
+
+            if (buckets.Count == 0)
+                return Array.Empty<(Color color, int count)>();
+
+            // Drop bins with too few samples — they represent isolated pixels (anti-aliasing
+            // or JPEG compression noise) rather than genuine color regions.  A threshold
+            // proportional to 1/1700 of total samples filters 1–3 sample noise clusters in
+            // large images while the floor of 1 ensures no filtering occurs for small images
+            // (where a single sample can represent a genuine but small color region).
+            int totalSamples = 0;
+            foreach (var b in buckets.Values)
+                totalSamples += b.count;
+            int minCount = Math.Max(1, totalSamples / 1700);
+
+            return buckets
+                .Where(kv => kv.Value.count >= minCount)
+                .Select(kv =>
+                    (
+                        color: Color.FromArgb(
+                            (int)(kv.Value.r / kv.Value.count),
+                            (int)(kv.Value.g / kv.Value.count),
+                            (int)(kv.Value.b / kv.Value.count)
+                        ),
+                        kv.Value.count
+                    )
+                )
+                .ToArray();
+        }
+
+        // To visualize color buckets for any image, uncomment this method and the
+        // DiagnoseLineArtColorBuckets test in ImageUtilsTests.cs, then run that test
+        // explicitly. It writes an HTML page to the system temp folder showing each
+        // bucket as a colored swatch with its hex value, sample count, and BG/INK label.
+#if false
+        /// <summary>
+        /// Diagnostic version of <see cref="GetDominantColors"/> for use from tests.
+        /// Uses the same 5×5 neighborhood averaging algorithm as the production method.
+        /// Returns all color buckets ordered by pixel count descending, including the count
+        /// and whether each color qualifies as a line-art background.
+        /// </summary>
+        internal static (Color color, int count, bool isBackground)[] GetDominantColorBucketsForDiagnostics(
+            Bitmap bitmapImage
+        )
+        {
+            const int kSampleStep = 10;
+            const int kMinGridSize = 20;
+            int step = Math.Min(
+                kSampleStep,
+                Math.Max(1, Math.Min(bitmapImage.Width / kMinGridSize, bitmapImage.Height / kMinGridSize))
+            );
+            const int kBucketShift = 5;
+            const int kBitsPerBucket = 8 - kBucketShift;
+            var randomXFix = GenerateRandomAdjustments(271828182, step);
+            var randomYFix = GenerateRandomAdjustments(271828182, step);
+            var buckets = new Dictionary<int, (long r, long g, long b, int count)>();
+
+            var bitmapData = bitmapImage.LockBits(
+                new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height),
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format32bppArgb);
+            try
+            {
+                int stride = bitmapData.Stride;
+                byte[] pixels = new byte[stride * bitmapImage.Height];
+                System.Runtime.InteropServices.Marshal.Copy(
+                    bitmapData.Scan0, pixels, 0, pixels.Length);
+
+                for (int j = 0, y = step / 2; y < bitmapImage.Height; y += step, ++j)
+                {
+                    j = Math.Min(j, 9);
+                    for (int i = 0, x = step / 2; x < bitmapImage.Width; x += step, ++i)
+                    {
+                        i = Math.Min(i, 9);
+                        var y1 = Math.Min(Math.Max(y + randomYFix[j, i], 0), bitmapImage.Height - 1);
+                        var x1 = Math.Min(Math.Max(x + randomXFix[j, i], 0), bitmapImage.Width - 1);
+
+                        if (pixels[y1 * stride + x1 * 4 + 3] < 255)
+                            return new[] { (Color.Transparent, 0, false) };
+
+                        const int kHalfWindow = 2;
+                        long rSum = 0, gSum = 0, bSum = 0;
+                        for (int dy = -kHalfWindow; dy <= kHalfWindow; dy++)
+                        {
+                            int py = Math.Min(Math.Max(y1 + dy, 0), bitmapImage.Height - 1);
+                            for (int dx = -kHalfWindow; dx <= kHalfWindow; dx++)
+                            {
+                                int px = Math.Min(Math.Max(x1 + dx, 0), bitmapImage.Width - 1);
+                                int ofs = py * stride + px * 4;
+                                bSum += pixels[ofs];
+                                gSum += pixels[ofs + 1];
+                                rSum += pixels[ofs + 2];
+                            }
+                        }
+                        const int kWindowArea = (2 * kHalfWindow + 1) * (2 * kHalfWindow + 1);
+                        int r = (int)(rSum / kWindowArea);
+                        int g = (int)(gSum / kWindowArea);
+                        int b = (int)(bSum / kWindowArea);
+
+                        int key = ((r >> kBucketShift) << (2 * kBitsPerBucket))
+                                | ((g >> kBucketShift) << kBitsPerBucket)
+                                |  (b >> kBucketShift);
+                        if (buckets.TryGetValue(key, out var entry))
+                            buckets[key] = (entry.r + r, entry.g + g, entry.b + b, entry.count + 1);
+                        else
+                            buckets[key] = (r, g, b, 1);
+                    }
+                }
+            }
+            finally
+            {
+                bitmapImage.UnlockBits(bitmapData);
+            }
+
+            return buckets
+                .OrderByDescending(kv => kv.Value.count)
+                .Select(kv =>
+                {
+                    var c = Color.FromArgb(
+                        (int)(kv.Value.r / kv.Value.count),
+                        (int)(kv.Value.g / kv.Value.count),
+                        (int)(kv.Value.b / kv.Value.count));
+                    return (c, kv.Value.count, IsLineArtBackground(c));
+                })
+                .ToArray();
+        }
+#endif
 
         private static void ConfigureGraphicsForHighQualityScaling(Graphics g)
         {
@@ -169,66 +597,6 @@ namespace Bloom.ImageProcessing
             //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
             //g.SmoothingMode = SmoothingMode.HighQuality;
             //g.CompositingQuality = CompositingQuality.HighQuality;
-        }
-
-        /// <summary>
-        /// Check whether this color is near white or grayish, and store the first two colors
-        /// encountered.  Return false if we encounter a third color and any of the three colors
-        /// are neither near white nor grayish.  (If only two colors are encountered, one of them
-        /// must be near white, but the other does not have to be grayish.)  It would be nice to
-        /// allow, for example, shades of purple, but that's too hard to do reliably.
-        /// </summary>
-        private static bool IsThisColorForLineDrawing(
-            Color color,
-            List<ColorInfo> colors,
-            ref bool whiteFound
-        )
-        {
-            var whitish = IsNearWhite(color);
-            var grayish = IsGrayish(color);
-            if (colors.Count == 0)
-            {
-                colors.Add(
-                    new ColorInfo
-                    {
-                        color = color,
-                        isGrayish = grayish,
-                        isNearWhite = whitish,
-                    }
-                );
-            }
-            else if (colors.Count == 1 && color != colors[0].color)
-            {
-                colors.Add(
-                    new ColorInfo
-                    {
-                        color = color,
-                        isGrayish = grayish,
-                        isNearWhite = whitish,
-                    }
-                );
-            }
-            else if (colors.Count == 2 && color != colors[0].color && color != colors[1].color)
-            {
-                // NearWhite is not guaranteed to be Grayish, so we have to check both.
-                if (
-                    !(colors[0].isGrayish || colors[0].isNearWhite)
-                    || !(colors[1].isGrayish || colors[1].isNearWhite)
-                    || !(grayish || whitish)
-                )
-                {
-                    // we have at least 3 colors, at least one of which is neither white nor gray
-                    return false;
-                }
-            }
-            // Enhance: store all distinct colors encountered, not just the first two, and store a
-            // count of how often they were found (for the bitmap check).  Then the caller could
-            // check all of them for grayishness and whiteness, or do a more sophisticated analysis
-            // for being shades of a given color, or (for the bitmap) look at the ratio of white vs
-            // non-white colors for line drawing detection.  (Of course, then the name of the method
-            // might no longer be appropriate and the return value wouldn't exist.)
-            whiteFound |= whitish;
-            return true;
         }
 
         private static int[,] GenerateRandomAdjustments(int seed, int range)
@@ -257,6 +625,29 @@ namespace Bloom.ImageProcessing
         internal static bool IsGrayish(Color color)
         {
             return color.R == color.G && color.G == color.B;
+        }
+
+        internal static bool ShouldMakeTransparentForPageBackground(string pageBackgroundColor)
+        {
+            if (string.IsNullOrWhiteSpace(pageBackgroundColor))
+                return false;
+
+            if (!TryCssColorFromString(pageBackgroundColor, out var color))
+                return false;
+
+            return !IsNearWhite(color);
+        }
+
+        private static void MakeSavedImageBackgroundTransparent(string destinationPath)
+        {
+            if (!IsPngFile(destinationPath))
+                return;
+
+            using (var tempFile = TempFile.WithExtension(".png"))
+            {
+                if (MakeTransparentBackgroundIfNeeded(destinationPath, tempFile.Path))
+                    RobustFile.Copy(tempFile.Path, destinationPath, true);
+            }
         }
 
         public static bool IsJpegFile(string path)
@@ -348,10 +739,11 @@ namespace Bloom.ImageProcessing
         }
 
         /// <summary>
-        /// Ensure the image does not exceed the maximum size we've set with MaxLength and MaxBreadth.
-        /// Ensure that non-jpeg files have an opaque background.
-        /// Make the image a png if it's not a jpeg.  Make large png images into jpeg images to save space.
-        /// Save the processed image in the book's folder.
+        /// Save a copy of the image into the book's folder with minimal processing.
+        /// Non-web formats (BMP, TIFF, etc.) are converted to PNG so browsers can display them;
+        /// very high-resolution images are downscaled..
+        /// All other processing (more resizing, format optimization, transparency) is deferred to
+        /// display time via <see cref="AdjustImageForDisplay"/>.
         ///
         /// If the image has a filename, that name is used in creating any new files.
         /// WARNING: imageInfo.Image could be replaced (causing the original to be disposed)
@@ -360,13 +752,12 @@ namespace Bloom.ImageProcessing
         public static string ProcessAndSaveImageIntoFolder(
             PalasoImage imageInfo,
             string bookFolderPath,
-            bool isSameFile
+            bool isSameFile,
+            bool resizeFileIfNeeded = true
         )
         {
-            //LogMemoryUsage();
-
             // As of BL-15441, we aren't using real placeHolder image files anymore. But if one is there,
-            // don't go through all the processing and saving machinations for it.
+            // don't go through all the saving machinations for it.
             if (
                 !string.IsNullOrEmpty(imageInfo.OriginalFilePath)
                 && IsPlaceholderImageFilename(imageInfo.OriginalFilePath)
@@ -375,67 +766,71 @@ namespace Bloom.ImageProcessing
                 return Path.GetFileName(imageInfo.OriginalFilePath);
             }
             if (!Directory.Exists(bookFolderPath))
-                throw new DirectoryNotFoundException(bookFolderPath + " does not exist"); // may as well check this early
+                throw new DirectoryNotFoundException(bookFolderPath + " does not exist");
             bool isEncodedAsJpeg = false;
             try
             {
-                var originalCurrentPath = imageInfo.GetCurrentFilePath();
-                var imageRemade = false;
-                var size = GetDesiredImageSize(imageInfo.Image.Width, imageInfo.Image.Height);
-
-                if (
-                    size.Width < imageInfo.Image.Width
-                    || size.Height < imageInfo.Image.Height
-                    || !(AppearsToBeJpeg(imageInfo) || AppearsToBePng(imageInfo))
-                )
-                {
-                    // Either need to shrink the image since it's larger than our maximum allowed size,
-                    // or need to convert from a BMP or TIFF file to a PNG file (or both).
-                    // NB: the original imageInfo.Image is disposed of in the setter below.
-                    // As of now (9/2016) this is safe because there are no other references to it higher in the stack.
-                    var img = TryResizeImageWithGraphicsMagick(imageInfo, size);
-                    if (img != null)
-                    {
-                        imageInfo.Image = img;
-                        imageRemade = true;
-                    }
-                }
-                var needToStripMetadata = imageInfo.Metadata.ExceptionCaughtWhileLoading != null;
-
                 isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
-                bool isEncodedAsPng = !isEncodedAsJpeg && AppearsToBePng(imageInfo);
-
-                string jpegFilePath = Path.Combine(
-                    bookFolderPath,
-                    GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, true)
-                );
-                var convertedToJpeg =
-                    !isEncodedAsJpeg
-                    && !HasTransparency(imageInfo.Image)
-                    && TryChangeFormatToJpegIfHelpful(imageInfo, jpegFilePath);
-                if (convertedToJpeg)
-                    return Path.GetFileName(jpegFilePath);
+                var isPng = AppearsToBePng(imageInfo);
+                var isWebFormat = isEncodedAsJpeg || isPng;
+                // Non-web formats get saved as PNG so browsers can display them
+                var saveAsJpeg = isEncodedAsJpeg;
 
                 string imageFileName;
                 if (isSameFile)
-                    imageFileName = imageInfo.FileName;
+                {
+                    var expectedExtension = saveAsJpeg ? ".jpg" : ".png";
+                    var hasExpectedExtension = string.Equals(
+                        Path.GetExtension(imageInfo.FileName),
+                        expectedExtension,
+                        StringComparison.InvariantCultureIgnoreCase
+                    );
+                    imageFileName = hasExpectedExtension
+                        ? imageInfo.FileName
+                        : GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, saveAsJpeg);
+                }
                 else
                     imageFileName = GetFileNameToUseForSavingImage(
                         bookFolderPath,
                         imageInfo,
-                        isEncodedAsJpeg
+                        saveAsJpeg
                     );
+
                 var sourcePath = imageInfo.GetCurrentFilePath();
-                if (imageRemade & sourcePath == originalCurrentPath)
-                {
-                    // We don't want to copy the original file if we have remade the image.  (BL-15708)
-                    // If graphicsmagick succeeds, it produces a temp file with a random name and changes
-                    // the current path setting.
-                    sourcePath = null;
-                }
                 var destinationPath = Path.Combine(bookFolderPath, imageFileName);
-                if (isEncodedAsJpeg || isEncodedAsPng)
+                var reusingSameFilename =
+                    isSameFile
+                    && imageInfo.FileName.Equals(
+                        imageFileName,
+                        StringComparison.InvariantCultureIgnoreCase
+                    );
+                var needToStripMetadata = imageInfo.Metadata.ExceptionCaughtWhileLoading != null;
+
+                // I _think_ isSameFile is true only when we copy an image and paste it back in the same place.
+                // In that case, we don't need to save it again.
+                if (!reusingSameFilename)
                 {
+                    if (resizeFileIfNeeded)
+                    {
+                        // Resize if the image is larger than our limit.
+                        var importSize = GetDesiredImageSize(
+                            imageInfo.Image.Width,
+                            imageInfo.Image.Height
+                        );
+                        if (
+                            importSize.Width < imageInfo.Image.Width
+                            || importSize.Height < imageInfo.Image.Height
+                        )
+                        {
+                            var resized = TryResizeImageWithGraphicsMagick(imageInfo, importSize);
+                            if (resized != null)
+                            {
+                                imageInfo.Image = resized;
+                                sourcePath = imageInfo.GetCurrentFilePath();
+                            }
+                        }
+                    }
+
                     if (needToStripMetadata)
                     {
                         if (
@@ -447,30 +842,22 @@ namespace Bloom.ImageProcessing
                         )
                             imageInfo.Image.Save(
                                 destinationPath,
-                                isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
+                                saveAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
                             );
                     }
-                    // I _think_ isSameFile is true only when we copy an image and paste it back in the same place.
-                    // In that case, we don't need to save it again. I checked that when we
-                    // use the old cropping tool to create a different image, it doesn't take this path.
-                    // As far as I can tell isSameFile is only true if we are copying the file on top of
-                    // itself, and that can't ever be useful.
-                    else if (!isSameFile)
+                    else if (sourcePath != null && isWebFormat)
                     {
-                        // Pasting an image can result in sourcePath being null.
-                        // So can graphicsmagick failures where we had to remake the image. (BL-15708)
-                        if (sourcePath == null)
-                            imageInfo.Image.Save(
-                                destinationPath,
-                                isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
-                            );
-                        else
-                            RobustFile.Copy(sourcePath, destinationPath);
+                        // Copy the original file unchanged to preserve full quality
+                        RobustFile.Copy(sourcePath, destinationPath);
                     }
-                }
-                else
-                {
-                    imageInfo.Image.Save(destinationPath, ImageFormat.Png); // destinationPath already has .png extension
+                    else
+                    {
+                        // Clipboard paste (no source file) or non-web format: save from image data
+                        imageInfo.Image.Save(
+                            destinationPath,
+                            saveAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
+                        );
+                    }
                 }
                 if (_createdTempImageFile != null)
                 {
@@ -484,24 +871,18 @@ namespace Bloom.ImageProcessing
             {
                 throw; //these are informative on their own
             }
-            /* No. OutOfMemory is almost meaningless when it comes to image errors. Better not to confuse people
-         * catch (OutOfMemoryException error)
-        {
-            //Enhance: it would be great if we could bring up that problem dialog ourselves, and offer this picture as an attachment
-            throw new ApplicationException("Bloom ran out of memory while trying to import the picture. We suggest that you quit Bloom, run it again, and then try importing this picture again. If that fails, please go to the Help menu and choose 'Report a Problem'", error);
-        }*/
             catch (Exception error)
             {
                 if (
-                    !String.IsNullOrEmpty(imageInfo.FileName)
+                    !string.IsNullOrEmpty(imageInfo.FileName)
                     && RobustFile.Exists(imageInfo.OriginalFilePath)
                 )
                 {
                     var megs = new FileInfo(imageInfo.OriginalFilePath).Length / (1024 * 1000);
                     if (megs > 2)
                     {
-                        var msg = String.Format(
-                            "Bloom was not able to prepare that picture for including in the book. \r\nThis is a rather large image to be adding to a book --{0} Megs--.",
+                        var msg = string.Format(
+                            "Bloom was not able to prepare that image for including in the book. \r\nThis is a rather large image to be adding to a book --{0} Megs--.",
                             megs
                         );
                         if (isEncodedAsJpeg)
@@ -514,11 +895,181 @@ namespace Bloom.ImageProcessing
                 }
 
                 throw new ApplicationException(
-                    "Bloom was not able to prepare that picture for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?"
+                    "Bloom was not able to prepare that image for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?"
                         + Environment.NewLine
                         + imageInfo.FileName,
                     error
                 );
+            }
+        }
+
+        private static bool IsIndexedColorPngFile(string filePath)
+        {
+            var header = new byte[26];
+            try
+            {
+                using (var file = RobustFile.OpenRead(filePath))
+                {
+                    file.Read(header, 0, 26);
+                }
+
+                // Check PNG Signature (First 8 bytes == "\x89PNG\r\n\x1a\n")
+                var isPng =
+                    header[0] == 0x89
+                    && header[1] == 0x50
+                    && header[2] == 0x4E
+                    && header[3] == 0x47
+                    && header[4] == 0x0D
+                    && header[5] == 0x0A
+                    && header[6] == 0x1A
+                    && header[7] == 0x0A;
+                if (!isPng)
+                    return false;
+
+                // Check Color Type byte (3 = indexed color) from the IHDR chunk (Offset 25)
+                var colorType = header[25];
+                return colorType == 3;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Create a display-ready processed version of an image in <paramref name="destDir"/>:
+        /// resize if too large, convert format if beneficial (JPEG→PNG for transparent line art,
+        /// PNG→JPEG for photographic content), and optionally make backgrounds transparent.
+        /// This may duplicate some processing that is done at import time by
+        /// <see cref="ProcessAndSaveImageIntoFolder"/>, but this method is also called when
+        /// publishing to possibly adjust the images even further.
+        /// After import processing, the book folder always stores something as close as we think
+        /// reasonable to the original/unmodified file and that is suitable for good quality print
+        /// publication.  The result of this method is not stored in the book folder, but is used
+        /// for display in the Bloom UI or for ebook publication.
+        /// </summary>
+        /// <param name="sourcePath">Path to the image file in the book folder.</param>
+        /// <param name="destDir">Directory in which to write the processed copy.</param>
+        /// <param name="transparencyMode">
+        /// Controls whether to make the background transparent. If <see cref="ImageTransparencyMode.Auto"/>,
+        /// the decision is made here based on an attempt to judge whether the image content looks like line art.
+        /// </param>
+        /// <returns>
+        /// Path of the processed image inside <paramref name="destDir"/>, or <c>null</c> if the
+        /// original can be served as-is or if processing failed.
+        /// </returns>
+        /// <remarks>
+        /// Care must be taken that any processing here that duplicates what is done at import time does not
+        /// slow down the UI.  For example, if the image is already a web format and small enough, we should
+        /// use it as-is.  Methods that may process the image with GraphicsMagick should avoid processing if
+        /// the result would be the same as the original. (BL-16424)
+        /// </remarks>
+        public static string AdjustImageForDisplay(
+            string sourcePath,
+            string destDir,
+            ImageTransparencyMode transparencyMode = ImageTransparencyMode.None,
+            int maxShortSide = 0,
+            int maxLongSide = 0,
+            bool transparencyOnly = false
+        )
+        {
+            try
+            {
+                using var imageInfo = PalasoImage.FromFileRobustly(sourcePath);
+                var size =
+                    maxShortSide > 0 && maxLongSide > 0
+                        ? GetDesiredImageSize(
+                            imageInfo.Image.Width,
+                            imageInfo.Image.Height,
+                            maxShortSide,
+                            maxLongSide
+                        )
+                        : GetDesiredImageSize(imageInfo.Image.Width, imageInfo.Image.Height);
+                // When transparencyOnly, we must not resize — we only want to apply transparency.
+                var needsResize =
+                    !transparencyOnly
+                    && (size.Width < imageInfo.Image.Width || size.Height < imageInfo.Image.Height);
+                var isJpeg = AppearsToBeJpeg(imageInfo);
+                var isPng = AppearsToBePng(imageInfo);
+                var isWebFormat = isJpeg || isPng;
+                var shouldMakeTransparent =
+                    transparencyMode == ImageTransparencyMode.Force
+                    || transparencyMode == ImageTransparencyMode.Auto
+                        && ShouldMakeBackgroundTransparent(imageInfo);
+                // Would a PNG→JPEG size-saving conversion be worth trying? Skip when transparencyOnly
+                // because we're here only to apply transparency, not to optimize format.
+                // Deliberately NOT gated on needsResize: an oversized photo needs both treatments,
+                // and the conversion attempt below the resize is the only one it can reach (the
+                // early-return version a few lines down requires !needsResize). Excluding resized
+                // images here publishes every large photo as a resized PNG instead of a JPEG,
+                // several times bigger than it needs to be, in every ebook and BloomPUB.
+                var tryJpegConversion =
+                    !transparencyOnly
+                    && !shouldMakeTransparent
+                    // One or two stray pixels of transparency in a photographic image can be ignored;
+                    // the random sampling will usually miss them and allow the image to be converted
+                    // to the smaller JPEG format.  The random sampling is fine grained enough to almost
+                    // always encounter any major patch of transparency.  (This code has been used for
+                    // some time without any user complaints.)
+                    && !HasTransparency(imageInfo.Image);
+
+                // When transparencyOnly, skip all processing for images that don't need transparency.
+                // The null return causes GetPathToAdjustedImage to cache this as a no-op, so
+                // subsequent requests for the same image return immediately without reloading it.
+                if (transparencyOnly && !shouldMakeTransparent)
+                    return null;
+
+                // If only a JPEG conversion is being considered (no resize, already web format,
+                // no transparency), attempt it and bail out either way — no point copying a file
+                // that is already optimal.
+                if (!needsResize && isWebFormat && !shouldMakeTransparent && tryJpegConversion)
+                {
+                    if (!Directory.Exists(destDir))
+                        Directory.CreateDirectory(destDir);
+                    var jpegOnlyPath = Path.Combine(destDir, Path.GetRandomFileName() + ".jpg");
+                    return TryChangeFormatToJpegIfHelpful(imageInfo, jpegOnlyPath)
+                        ? jpegOnlyPath
+                        : null;
+                }
+
+                // If nothing needs changing, serve the original.
+                if (!needsResize && isWebFormat && !shouldMakeTransparent)
+                    return null;
+
+                // Resize if needed, or convert from non-web format (BMP, TIFF, …)
+                if (needsResize || !isWebFormat)
+                {
+                    var resized = TryResizeImageWithGraphicsMagick(imageInfo, size);
+                    if (resized != null)
+                        imageInfo.Image = resized;
+                }
+
+                // JPEG cannot carry transparency; switch to PNG for transparent line art
+                var saveAsJpeg = isJpeg && !shouldMakeTransparent;
+
+                if (!Directory.Exists(destDir))
+                    Directory.CreateDirectory(destDir);
+
+                // Try PNG→JPEG for photographic content that doesn't need transparency
+                if (tryJpegConversion)
+                {
+                    var jpegPath = Path.Combine(destDir, Path.GetRandomFileName() + ".jpg");
+                    if (TryChangeFormatToJpegIfHelpful(imageInfo, jpegPath))
+                        return jpegPath;
+                }
+
+                var ext = saveAsJpeg ? ".jpg" : ".png";
+                var destPath = Path.Combine(destDir, Path.GetRandomFileName() + ext);
+                imageInfo.Image.Save(destPath, saveAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
+
+                if (shouldMakeTransparent)
+                    ApplyBloomTransparencyToFile(destPath);
+
+                return destPath;
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 
@@ -552,7 +1103,6 @@ namespace Bloom.ImageProcessing
                 {
                     Size = new Size(0, 0),
                     MakeOpaque = false,
-                    MakeTransparent = false,
                     JpegQuality = 0,
                     ProfilesToStrip = profiles,
                 };
@@ -957,7 +1507,12 @@ namespace Bloom.ImageProcessing
                 // Very large PNG files can cause "out of memory" errors here, while making thumbnails,
                 // and when creating ePUBs or BloomPub books.  So, we check for sizes bigger than our
                 // maximum and reduce the image here if needed.
-                var tagFile = RobustFileIO.CreateTaglibFile(path);
+                var tagFile = TryCreateTaglibFileForImage(path);
+                if (tagFile == null)
+                {
+                    ++completed;
+                    continue;
+                }
                 if (tagFile.Properties != null && tagFile.Properties.Description.Contains("PNG"))
                 {
                     var size = GetDesiredImageSize(
@@ -1022,7 +1577,12 @@ namespace Bloom.ImageProcessing
                 // Very large JPG files can cause "out of memory" errors while making thumbnails and
                 // when creating ePUBs or BloomPub books.  So, we check for sizes bigger than our
                 // maximum and reduce the image here if needed.
-                var tagFile = RobustFileIO.CreateTaglibFile(path);
+                var tagFile = TryCreateTaglibFileForImage(path);
+                if (tagFile == null)
+                {
+                    ++completed;
+                    continue;
+                }
                 if (tagFile.Properties != null && tagFile.Properties.Description.Contains("JFIF"))
                 {
                     var size = GetDesiredImageSize(
@@ -1045,6 +1605,36 @@ namespace Bloom.ImageProcessing
                     }
                 }
                 ++completed;
+            }
+        }
+
+        /// <summary>
+        /// Read a book image's metadata, or return null if the file cannot be read as the kind of
+        /// image its extension claims it is.
+        /// </summary>
+        /// <remarks>
+        /// Book folders really do contain mislabeled image files: see the comment on
+        /// RobustFileIO.MetadataFromFile, which works around JPEG files that have been given .png
+        /// extensions.  TagLib throws on those, and on any file that is not an image at all.
+        /// NeedToShrinkImages already shrugs such a file off and carries on; before BL-16647 the
+        /// fix-up did not, so one bad file could throw out of the middle of
+        /// FixSizeAndTransparencyOfImagesInFolder, leaving the rest of the folder's oversized
+        /// images unshrunk and aborting whatever asked for the fix-up (the book-open migration, or
+        /// BookProcessor.ProcessBook).  Skipping just the unreadable file is what the caller wants:
+        /// we cannot resize an image we cannot read, and it is not worth failing the whole book over.
+        /// </remarks>
+        private static TagLib.File TryCreateTaglibFileForImage(string path)
+        {
+            try
+            {
+                return RobustFileIO.CreateTaglibFile(path);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent(
+                    $"ImageUtils could not read {path} as an image, so it was left alone: {e.Message}"
+                );
+                return null;
             }
         }
 
@@ -1102,7 +1692,6 @@ namespace Bloom.ImageProcessing
                 {
                     Size = size,
                     MakeOpaque = makeOpaque,
-                    MakeTransparent = makeTransparent,
                     JpegQuality = 0,
                     ProfilesToStrip = null,
                 };
@@ -1110,10 +1699,14 @@ namespace Bloom.ImageProcessing
                 if (result.ExitCode == 0)
                 {
                     RobustFile.Copy(tempCopy, path, true);
+                    if (makeTransparent)
+                        ApplyBloomTransparencyToFile(path);
                     // Copy metadata from older file to the new one.  GraphicsMagick does a poor job on metadata.
-                    var newMeta = RobustFileIO.CreateTaglibFile(path);
-                    CopyTags(oldMetaData, newMeta);
-                    newMeta.Save();
+                    using (var newMeta = RobustFileIO.CreateTaglibFile(path))
+                    {
+                        CopyTags(oldMetaData, newMeta);
+                        RobustFileIO.SaveTaglibFile(newMeta);
+                    }
                     if (progress != null)
                         Application.DoEvents(); // allow progress report to work
                     return true;
@@ -1281,8 +1874,37 @@ namespace Bloom.ImageProcessing
         /// Check whether the image has any transparency.
         /// If it becomes too difficult or expensive to determine, we punt and return false.
         /// </summary>
-        public static bool HasTransparency(Image image)
+        /// <param name="samplePixels">
+        /// True (the default) to answer from a sample: fast, but it can miss a small transparent
+        /// patch. False to read every pixel, for a caller that cannot afford a wrong "opaque".
+        /// </param>
+        /// <remarks>
+        /// An indexed image is judged exactly either way, from its palette. For a non-indexed
+        /// bitmap the two modes differ in what a "false" is worth:
+        /// <para>
+        /// Sampling reads the top-left corner block and then up to a hundred more pixels on the
+        /// jittered grid <see cref="HasAnyTransparentSampledPixel"/> walks, so a "true" is certain
+        /// but a "false" means only "none of the pixels we looked at was transparent" — a picture
+        /// transparent in some small patch between the sampled points is reported opaque.
+        /// </para>
+        /// <para>
+        /// The exhaustive mode reads every pixel's alpha byte, so a "false" is definite. It costs
+        /// about 10ms on an image at Bloom's maximum size, which is nothing beside the
+        /// GraphicsMagick call its callers are deciding whether to make.
+        /// </para>
+        /// So a caller that does something irreversible on a "false" — the AI image editor deletes
+        /// the original once it is told a picture is opaque — should pass samplePixels: false.
+        /// </remarks>
+        public static bool HasTransparency(Image image, bool samplePixels = true)
         {
+            // An indexed image keeps its transparency in its palette, not in an alpha channel, and
+            // it has to be asked about FIRST. Every indexed pixel format (Format8bppIndexed and
+            // friends, which is how GDI+ loads a PNG-8 or a GIF) leaves the Alpha and PAlpha flags
+            // clear, so the "no alpha channel" shortcut below would answer "opaque" for all of them
+            // and this palette check would never run at all. That was harmless while the answer
+            // only chose a display format, but the AI image editor now deletes the original when
+            // told a picture is opaque, so a palette-transparent picture would have been flattened
+            // for good (BL-16645).
             if ((image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
             {
                 foreach (var color in image.Palette.Entries)
@@ -1292,19 +1914,81 @@ namespace Bloom.ImageProcessing
                 }
                 return false;
             }
+            // If there is no alpha channel, there cannot be any transparency.
+            if (
+                (image.PixelFormat & PixelFormat.Alpha) != PixelFormat.Alpha
+                && (image.PixelFormat & PixelFormat.PAlpha) != PixelFormat.PAlpha
+            )
+                return false;
 
             if (image is Bitmap bitmapImage)
             {
-                // Yes, this is as expensive as it looks. But we take advantage of the fact that almost all
-                // transparent images which someone would use in Bloom would be transparent in the corner.
-                // Leave a little fudge for a non-transparent border.
-                int maxPixelsFromCorner = 15;
-                for (int y = 0; y < bitmapImage.Height && y < maxPixelsFromCorner; ++y)
-                for (int x = 0; x < bitmapImage.Width && x < maxPixelsFromCorner; ++x)
-                    if (bitmapImage.GetPixel(x, y).A != 255)
-                        return true;
+                if (samplePixels)
+                {
+                    // Yes, this is as expensive as it looks. But we take advantage of the fact that almost all
+                    // transparent images which someone would use in Bloom would be transparent in the corner.
+                    // Leave a little fudge for a non-transparent border.
+                    int maxPixelsFromCorner = 15;
+                    for (int y = 0; y < bitmapImage.Height && y < maxPixelsFromCorner; ++y)
+                    for (int x = 0; x < bitmapImage.Width && x < maxPixelsFromCorner; ++x)
+                        if (bitmapImage.GetPixel(x, y).A != 255)
+                            return true;
 
-                return false;
+                    // The corner said nothing, but a picture can be transparent only in its interior —
+                    // a subject knocked out of an otherwise opaque canvas, for instance. So spend the
+                    // hundred-odd pixels this helper samples across the whole image before calling it
+                    // opaque. Its jitter seed is hardcoded, which matters here: a caller that deletes
+                    // the original on a "no" must get the same answer for the same picture every time,
+                    // and an answer that varied between runs would be harder to trust, and to
+                    // reproduce, than one that is merely a sample.
+                    if (HasAnyTransparentSampledPixel(bitmapImage))
+                        return true;
+                }
+                else
+                {
+                    // The caller has asked for a definite answer rather than a sample, so look at
+                    // every pixel's alpha byte. Reading them through LockBits, a row at a time,
+                    // makes that cheap enough not to matter: measured at 10ms for a fully opaque
+                    // image at MaxLength x MaxBreadth, which is both the largest we keep and the
+                    // worst case, since an opaque image never lets the scan stop early. Set that
+                    // against the hundreds of milliseconds of the GraphicsMagick call the callers
+                    // are deciding whether to make. (Per-pixel GetPixel would be orders of
+                    // magnitude slower, because each call locks and unlocks its own one-pixel
+                    // region.)
+                    // Locking as Format32bppArgb has GDI+ give us one known layout whatever the
+                    // bitmap's own format is: four bytes per pixel, alpha last. Note that asking
+                    // for a format the bitmap isn't already in makes GDI+ build a whole converted
+                    // copy in unmanaged memory (~43MB at MaxLength x MaxBreadth), so the row buffer
+                    // below keeps the *managed* cost to one row, not the total cost. That copy is
+                    // transient and GetDominantColors above already does the same thing.
+                    var data = bitmapImage.LockBits(
+                        new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height),
+                        ImageLockMode.ReadOnly,
+                        PixelFormat.Format32bppArgb
+                    );
+                    try
+                    {
+                        var bytesPerRow = data.Width * 4;
+                        var row = new byte[bytesPerRow];
+                        for (int y = 0; y < data.Height; ++y)
+                        {
+                            // Row y begins at Scan0 + y * Stride. Stride is negative for a
+                            // bottom-up bitmap and that arithmetic is still correct when it is;
+                            // taking only bytesPerRow also skips any end-of-row padding.
+                            Marshal.Copy(data.Scan0 + y * data.Stride, row, 0, bytesPerRow);
+                            for (int alpha = 3; alpha < bytesPerRow; alpha += 4)
+                            {
+                                if (row[alpha] != 255)
+                                    return true;
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        bitmapImage.UnlockBits(data);
+                    }
+                    return false;
+                }
             }
 
             // Too hard / expensive to determine transparency/opacity
@@ -1327,14 +2011,39 @@ namespace Bloom.ImageProcessing
             bool makeOpaque = false
         )
         {
+            var sourcePath = imageInfo.GetCurrentFilePath();
+            var indexedPNG =
+                (imageInfo.Image.RawFormat.Guid == ImageFormat.Png.Guid)
+                && (imageInfo.Image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed;
+            // pixel information is not preserved loading from clipboard, so check the file itself.
+            if (!indexedPNG && !string.IsNullOrEmpty(sourcePath))
+                indexedPNG = IsIndexedColorPngFile(sourcePath);
+            if (indexedPNG && !makeOpaque)
+            {
+                // Don't try to resize indexed PNGs unless we're making them opaque, or unless the shrinkage
+                // looks like it will be worthwhile. (BL-16424)
+                // GraphicsMagick will convert indexed PNGs to non-indexed PNGs, which can make the file bigger.
+                // We compare the raw image sizes based on dimensions and pixel size.  These estimates are very
+                // approximate, and may overestimate the size of the indexed PNGs (which may have 1, 2, 4, or 8
+                // bits per pixel), but it should be good enough to avoid most unnecessary conversions.
+                var currentArea =
+                    (long)imageInfo.Image.Size.Height * (long)imageInfo.Image.Size.Width; // 1 byte per pixel for indexed PNGs
+                var newArea = (long)size.Height * (long)size.Width * 4; // 4 bytes per pixel for non-indexed PNGs (assume alpha channel)
+                if (currentArea <= newArea)
+                    return null; // don't bother trying to shrink the image: it probably isn't worth the effort.
+            }
             var graphicsMagickPath = GetGraphicsMagickPath();
             if (RobustFile.Exists(graphicsMagickPath))
             {
-                var sourcePath = imageInfo.GetCurrentFilePath();
                 var isJpegImage = AppearsToBeJpeg(imageInfo);
+                // Track whether we created sourcePath ourselves so we know it's safe to delete.
+                // Pre-existing book images (including those in export staging folders under GetTempPath)
+                // must never be deleted here.
+                var weCreatedSourceFile = false;
                 if (String.IsNullOrEmpty(sourcePath) || !RobustFile.Exists(sourcePath))
                 {
                     sourcePath = CreateSourceFileForImage(imageInfo, isJpegImage);
+                    weCreatedSourceFile = true;
                 }
                 var destPath = TempFileUtils.GetTempFilepathWithExtension(
                     isJpegImage ? ".jpg" : ".png"
@@ -1345,7 +2054,6 @@ namespace Bloom.ImageProcessing
                     {
                         Size = size,
                         MakeOpaque = makeOpaque,
-                        MakeTransparent = false,
                         JpegQuality = 0,
                         ProfilesToStrip = null,
                     };
@@ -1377,11 +2085,10 @@ namespace Bloom.ImageProcessing
                     // Ignore any errors deleting temp files.  If we leak, we leak...
                     try
                     {
-                        // don't need this any longer if it's a temp file and not used for the current image
-                        if (
-                            sourcePath.StartsWith(Path.GetTempPath())
-                            && sourcePath != imageInfo.GetCurrentFilePath()
-                        )
+                        // Only delete sourcePath if WE created it via CreateSourceFileForImage.
+                        // Pre-existing book images must not be deleted even if they live under
+                        // GetTempPath() (export staging folders live there too).
+                        if (weCreatedSourceFile && sourcePath != imageInfo.GetCurrentFilePath())
                             RobustFile.Delete(sourcePath);
                     }
                     catch (Exception e)
@@ -1452,7 +2159,6 @@ namespace Bloom.ImageProcessing
         {
             internal Size Size; // if (0,0), don't resize
             internal bool MakeOpaque;
-            internal bool MakeTransparent;
             internal int JpegQuality; // 0 means use input jpeg's quality
             internal string ProfilesToStrip; // null means don't strip any profiles
             internal Rectangle cropRectangle;
@@ -1514,7 +2220,6 @@ namespace Bloom.ImageProcessing
             {
                 Size = new Size(0, 0), // preserve current size (no scaling)
                 MakeOpaque = false,
-                MakeTransparent = false,
                 JpegQuality = 0, // same as input
                 ProfilesToStrip = null,
                 cropRectangle = cropRectangle,
@@ -1523,12 +2228,9 @@ namespace Bloom.ImageProcessing
             if (result.ExitCode != 0)
             {
                 LogGraphicsMagickFailure(result);
+                return result;
             }
-
-            var metadata = RobustFileIO.MetadataFromFile(sourcePath);
-            if (metadata != null && metadata.ExceptionCaughtWhileLoading == null)
-                metadata.Write(destPath);
-
+            CopyCoreMetadata(sourcePath, destPath);
             return result;
         }
 
@@ -1538,11 +2240,6 @@ namespace Bloom.ImageProcessing
             GraphicsMagickOptions options
         )
         {
-            Debug.Assert(
-                !(options.MakeOpaque && options.MakeTransparent),
-                "makeOpaque and makeTransparent cannot both be true."
-            );
-
             return WithSafeFilePath(
                 sourcePath,
                 safeSourcePath =>
@@ -1555,10 +2252,6 @@ namespace Bloom.ImageProcessing
                             argsBldr.AppendFormat("convert \"{0}\"", safeSourcePath);
                             if (options.MakeOpaque)
                                 argsBldr.Append(" -background white -extent 0x0 +matte");
-                            else if (options.MakeTransparent)
-                                argsBldr.Append(
-                                    " -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
-                                );
                             if (options.cropRectangle != Rectangle.Empty)
                             {
                                 argsBldr.AppendFormat(
@@ -1628,6 +2321,22 @@ namespace Bloom.ImageProcessing
                     );
                 }
             );
+        }
+
+        private static void ApplyBloomTransparencyToFile(string imagePath)
+        {
+            if (!imagePath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
+                return;
+
+            using (var imageInfo = PalasoImage.FromFileRobustly(imagePath))
+            using (
+                var transparentImage = RuntimeImageProcessor.MakePngBackgroundTransparent(imageInfo)
+            )
+            using (var tempFile = TempFile.WithExtension(".png"))
+            {
+                RobustImageIO.SaveImage(transparentImage, tempFile.Path, ImageFormat.Png);
+                RobustFile.Copy(tempFile.Path, imagePath, true);
+            }
         }
 
         /// <summary>
@@ -1701,7 +2410,6 @@ namespace Bloom.ImageProcessing
                     {
                         Size = new Size(0, 0), // preserve current size (no scaling)
                         MakeOpaque = false,
-                        MakeTransparent = false,
                         JpegQuality = 92, // High quality (but not extreme)
                         ProfilesToStrip = null,
                     };
@@ -2171,10 +2879,16 @@ namespace Bloom.ImageProcessing
         public static void ReallyCropImages(
             SafeXmlDocument bookDom,
             string imageSourceFolder,
-            string imageDestFolder
+            string imageDestFolder,
+            bool alsoTrimMetadataForUncroppedImages = false,
+            bool preserveCropStyleForUpload = false
         )
         {
-            var images = bookDom.SafeSelectNodes("//img").Cast<SafeXmlElement>().ToArray();
+            var images = bookDom.SafeSelectElements("//img").ToList();
+            var bloomDataDivEntriesByDataBook = bookDom
+                .SafeSelectElements("//div[@id='bloomDataDiv']/*[@data-book]")
+                .GroupBy(x => x.GetAttribute("data-book"))
+                .ToDictionary(group => group.Key, group => group.First());
             // src values that occur in uncropped images. Note, it is NOT the case that an img whose src
             // is in this set never cropped; it just means that at least one occurrence of it is not
             // cropped, which makes the image name unavailable to use for a cropped image.
@@ -2216,42 +2930,148 @@ namespace Bloom.ImageProcessing
                 var canvasElement = imgContainer?.ParentNode as SafeXmlElement;
                 var canvasElementStyle = canvasElement?.GetAttribute("style");
                 if (!SignifiesCropping(style) || canvasElementStyle == null)
-                    continue;
-                var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
-                var canvasElementHeight = GetNumberFromPx("height", canvasElementStyle);
-
-                var key = $"{src}|{style}|{canvasElementWidth}|{canvasElementHeight}";
-                if (cropped.TryGetValue(key, out string fileName))
                 {
-                    // This is a duplicate. We can use the same cropped image file.
-                    img.SetAttribute("src", fileName);
-                    continue;
+                    if (alsoTrimMetadataForUncroppedImages)
+                        TrimTheMetadata(
+                            imageSourceFolder,
+                            imageDestFolder,
+                            cropped,
+                            img,
+                            src,
+                            style,
+                            bloomDataDivEntriesByDataBook
+                        );
                 }
-
-                var needNewName = uncroppedSrcNames.Contains(src) || srcUsageCount[src] > 1;
-
-                var croppedFileName = ReallyCropImage(
-                    img,
-                    imageSourceFolder,
-                    imageDestFolder,
-                    needNewName
-                );
-
-                // Track if we replaced an original file with a new one
-                if (croppedFileName != null && needNewName && croppedFileName != src)
+                else
                 {
-                    replacedOriginals.Add(src);
+                    CropTheImageAndMetadata(
+                        imageSourceFolder,
+                        imageDestFolder,
+                        uncroppedSrcNames,
+                        cropped,
+                        srcUsageCount,
+                        replacedOriginals,
+                        preserveCropStyleForUpload,
+                        img,
+                        src,
+                        style,
+                        canvasElementStyle,
+                        bloomDataDivEntriesByDataBook
+                    );
                 }
-
-                cropped[key] = croppedFileName;
             }
             DeleteOrphanedImageFiles(imageSourceFolder, imageDestFolder, images, replacedOriginals);
+        }
+
+        private static void TrimTheMetadata(
+            string imageSourceFolder,
+            string imageDestFolder,
+            Dictionary<string, string> cropped,
+            SafeXmlElement img,
+            string src,
+            string style,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+        )
+        {
+            var key = $"{src}|{style}|0|0";
+            if (cropped.TryGetValue(key, out string fileName))
+            {
+                // This is a duplicate. We can use the same metadata-cropped image file.
+                SetImageSrcAndSyncDataDiv(img, fileName, bloomDataDivEntriesByDataBook);
+                return;
+            }
+            TrimMetadataInImage(img, imageSourceFolder, imageDestFolder);
+            cropped[key] = src;
+        }
+
+        private static void CropTheImageAndMetadata(
+            string imageSourceFolder,
+            string imageDestFolder,
+            HashSet<string> uncroppedSrcNames,
+            Dictionary<string, string> cropped,
+            Dictionary<string, int> srcUsageCount,
+            HashSet<string> replacedOriginals,
+            bool preserveCropStyleForUpload,
+            SafeXmlElement img,
+            string src,
+            string style,
+            string canvasElementStyle,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+        )
+        {
+            var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
+            var canvasElementHeight = GetNumberFromPx("height", canvasElementStyle);
+
+            var key = $"{src}|{style}|{canvasElementWidth}|{canvasElementHeight}";
+            if (cropped.TryGetValue(key, out string fileName))
+            {
+                // This is a duplicate. We can use the same cropped image file.
+                SetImageSrcAndSyncDataDiv(img, fileName, bloomDataDivEntriesByDataBook);
+                UpdateCropStyleForAlreadyCroppedImage(
+                    img,
+                    imageDestFolder,
+                    fileName,
+                    preserveCropStyleForUpload
+                );
+                return;
+            }
+
+            var needNewName = uncroppedSrcNames.Contains(src) || srcUsageCount[src] > 1;
+
+            var croppedFileName = ReallyCropImage(
+                img,
+                imageSourceFolder,
+                imageDestFolder,
+                needNewName,
+                preserveCropStyleForUpload,
+                bloomDataDivEntriesByDataBook
+            );
+
+            // Track if we replaced an original file with a new one
+            if (needNewName && croppedFileName != src)
+            {
+                replacedOriginals.Add(src);
+            }
+            cropped[key] = croppedFileName;
+        }
+
+        private static void UpdateCropStyleForAlreadyCroppedImage(
+            SafeXmlElement img,
+            string imageDestFolder,
+            string src,
+            bool preserveCropStyleForUpload
+        )
+        {
+            if (!preserveCropStyleForUpload)
+            {
+                // With that src, it's already cropped, so remove the style to avoid
+                // applying the cropping again to the already-cropped image.
+                img.RemoveAttribute("style");
+                return;
+            }
+
+            var cropMetadata = TryGetCropMetadata(img);
+            if (cropMetadata == null)
+            {
+                img.RemoveAttribute("style");
+                return;
+            }
+
+            var decodedSrc = src;
+            var croppedPath = UrlPathString.GetFullyDecodedPath(imageDestFolder, ref decodedSrc);
+            if (!TryGetImageSize(croppedPath, out var croppedImageSize))
+            {
+                img.RemoveAttribute("style");
+                return;
+            }
+
+            UpdateStyleToCoverCanvasElement(img, cropMetadata, croppedImageSize);
         }
 
         private static void DeleteOrphanedImageFiles(
             string imageSourceFolder,
             string imageDestFolder,
-            SafeXmlElement[] images,
+            List<SafeXmlElement> images,
             HashSet<string> replacedOriginals
         )
         {
@@ -2312,17 +3132,122 @@ namespace Bloom.ImageProcessing
             return width > 0;
         }
 
+        /// <summary>
+        /// Copy the handful of intellectual-property and collection fields Bloom cares about from
+        /// one image file onto another, discarding everything else the source carried. Used both
+        /// when trimming an image on its way into a publication and to carry an image's credits
+        /// across a re-encode that would otherwise lose them — GraphicsMagick does not preserve
+        /// them when it rewrites a PNG as a JPEG (BL-16645).
+        /// </summary>
+        /// <remarks>
+        /// Never throws: whatever goes wrong is logged, because losing the credits is bad but
+        /// failing the operation that was copying them is worse.
+        /// </remarks>
+        public static string CopyCoreMetadata(string srcPath, string destPath)
+        {
+            // Try to reduce the metadata to just what we want for intellectual property and
+            // collection information.
+            try
+            {
+                var metadata = RobustFileIO.MetadataFromFile(srcPath);
+                if (metadata != null && metadata.ExceptionCaughtWhileLoading == null)
+                {
+                    try
+                    {
+                        // Remove all metadata that came from the source file and then restore the
+                        // minimal metadata we care about.  The existing metadata can sometimes
+                        // cause problems in the the TagSharp library.  (BL-16058)
+                        using (var tagFile = RobustFileIO.CreateTaglibFile(destPath))
+                        {
+                            tagFile.RemoveTags(TagTypes.AllTags);
+                            RobustFileIO.SaveTaglibFile(tagFile);
+                        }
+                        var newMeta = new Metadata
+                        {
+                            Creator = metadata.Creator,
+                            License = metadata.License,
+                            CopyrightNotice = metadata.CopyrightNotice,
+                            AttributionUrl = metadata.AttributionUrl,
+                            CollectionName = metadata.CollectionName,
+                            CollectionUri = metadata.CollectionUri,
+                        };
+                        newMeta.WriteIntellectualPropertyOnly(destPath);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.WriteError(
+                            $"Error copying metadata from {srcPath} to {destPath}. ",
+                            e
+                        );
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                // This can happen in unit tests that have fake data.
+                Debug.WriteLine(
+                    $"Exception caught while trying to copy metadata from {srcPath} to {destPath}.",
+                    e
+                );
+            }
+            return destPath;
+        }
+
+        private static string TrimMetadataInImage(
+            SafeXmlElement img,
+            string imageSourceFolder,
+            string imageDestFolder
+        )
+        {
+            var src = img.GetAttribute("src");
+            var srcPath = UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
+            if (!RobustFile.Exists(srcPath))
+                return null;
+
+            var ext = Path.GetExtension(srcPath).ToLowerInvariant();
+            if (ext == ".svg")
+            {
+                // SVG files don't have metadata to trim.
+                return null;
+            }
+            var trimmedFilePath = Path.ChangeExtension(
+                Path.Combine(imageDestFolder, Guid.NewGuid().ToString()),
+                ext
+            );
+
+            // We need an output file even if it's an identical copy.
+            RobustFile.Copy(srcPath, trimmedFilePath, true);
+
+            CopyCoreMetadata(srcPath, trimmedFilePath);
+            // Capture this before we unencode, since it wants
+            // to be a value we can put in a src attribute (if it doesn't get changed)
+            // to lead to the file we may put at an unchanged file name.
+            var result = img.GetAttribute("src");
+            // We don't need the path here, but this function may correct 'src' (e.g.,
+            // removing some url encoding to find the actual file). And since we're not
+            // using a new name, we want to exactly overwrite the original image file.
+            UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
+            var destPath = Path.Combine(imageDestFolder, src);
+            RobustFile.Move(trimmedFilePath, destPath, true);
+            // If it failed, it should have already logged the reason. I think all we can do
+            // is leave the image alone.
+            return result;
+        }
+
         private static string ReallyCropImage(
             SafeXmlElement img,
             string imageSourceFolder,
             string imageDestFolder,
-            bool useNewName
+            bool useNewName,
+            bool preserveCropStyleForUpload,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
         )
         {
+            var cropMetadata = preserveCropStyleForUpload ? TryGetCropMetadata(img) : null;
             var croppedImagePath = MakeCroppedImage(img, imageSourceFolder, imageDestFolder);
             var src = img.GetAttribute("src");
             // a good default if we can't produce a cropped image for any reason.
-            // (The tests in MakeCroppedImage are a bit more robus than the ones we do before
+            // (The tests in MakeCroppedImage are a bit more robust than the ones we do before
             // deciding to call this method.) Capture this before we unencode, since it wants
             // to be a value we can put in a src attribute (if it doesn't get changed)
             // to lead to the file we may put at an unchanged file name.
@@ -2331,6 +3256,7 @@ namespace Bloom.ImageProcessing
             // removing some url encoding to find the actual file). And if we're not
             // using a new name, we want to exactly overwrite the original image file.
             UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
+            var finalCroppedImagePath = string.Empty;
             if (croppedImagePath != null)
             {
                 if (useNewName)
@@ -2344,7 +3270,8 @@ namespace Bloom.ImageProcessing
                     // All images with this name and crop should use this
                     result = Path.GetFileName(croppedImagePath);
                     // Including the current image
-                    img.SetAttribute("src", result);
+                    SetImageSrcAndSyncDataDiv(img, result, bloomDataDivEntriesByDataBook);
+                    finalCroppedImagePath = croppedImagePath;
                 }
                 else
                 {
@@ -2352,10 +3279,142 @@ namespace Bloom.ImageProcessing
                     RobustFile.Move(croppedImagePath, destPath, true);
                     // If it failed, it should have already logged the reason. I think all we can do
                     // is leave the image alone.
+                    finalCroppedImagePath = destPath;
                 }
             }
-            img.RemoveAttribute("style"); // so nothing can possibly think it needs more cropping
+
+            if (
+                preserveCropStyleForUpload
+                && cropMetadata != null
+                && !string.IsNullOrEmpty(finalCroppedImagePath)
+                && TryGetImageSize(finalCroppedImagePath, out var croppedImageSize)
+            )
+            {
+                UpdateStyleToCoverCanvasElement(img, cropMetadata, croppedImageSize);
+            }
+            else
+            {
+                // so nothing can possibly think it needs more cropping
+                img.RemoveAttribute("style");
+            }
+
             return result;
+        }
+
+        // It's tempting to just remove the style, or at least the cropping-related
+        // parts of it, since we've made the image fit almost exactly. And for publishing
+        // (Bloompub, etc) we actually do that, though code elsewhere adds a class that
+        // makes it use object-fit:cover instead of object-fit:contain, which is
+        // important when trying to cover an entire page without a stray pixel.
+        // For upload, where further editing is expected, it is better to keep the
+        // structure of the cropped canvas element, but adjust it so there is no
+        // actual cropping. This also prevents stray lines of uncovered background,
+        // but does not put the book into a special state that might complicate
+        // continued editing.
+        private static void UpdateStyleToCoverCanvasElement(
+            SafeXmlElement img,
+            CropMetadata cropMetadata,
+            Size croppedImageSize
+        )
+        {
+            if (
+                cropMetadata.CanvasElementWidth <= 0
+                || cropMetadata.CanvasElementHeight <= 0
+                || croppedImageSize.Width <= 0
+                || croppedImageSize.Height <= 0
+            )
+            {
+                img.RemoveAttribute("style");
+                return;
+            }
+
+            var coverScale = Math.Max(
+                cropMetadata.CanvasElementWidth / croppedImageSize.Width,
+                cropMetadata.CanvasElementHeight / croppedImageSize.Height
+            );
+            var scaledWidth = croppedImageSize.Width * coverScale;
+            var scaledHeight = croppedImageSize.Height * coverScale;
+
+            var left = (cropMetadata.CanvasElementWidth - scaledWidth) / 2;
+            var top = (cropMetadata.CanvasElementHeight - scaledHeight) / 2;
+
+            // It's particularly important that we keep a width, because that's what
+            // our CSS looks for to suppress the old object-fit:contain rule.
+            var updatedStyle = ReplaceOrAppendPxStyle(
+                img.GetAttribute("style"),
+                "width",
+                scaledWidth
+            );
+            updatedStyle = ReplaceOrAppendPxStyle(updatedStyle, "left", left);
+            updatedStyle = ReplaceOrAppendPxStyle(updatedStyle, "top", top);
+            img.SetAttribute("style", updatedStyle);
+        }
+
+        private static string ReplaceOrAppendPxStyle(
+            string style,
+            string propertyName,
+            double value
+        )
+        {
+            var cleanValue = Math.Abs(value) < 0.0005 ? 0 : value;
+            var valueText = $"{cleanValue.ToString("0.###", CultureInfo.InvariantCulture)}px";
+            if (string.IsNullOrWhiteSpace(style))
+            {
+                return $"{propertyName}: {valueText};";
+            }
+
+            var styleParts = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+
+            var outputParts = new List<string>();
+            var found = false;
+            foreach (var part in styleParts)
+            {
+                var separatorIndex = part.IndexOf(':');
+                if (separatorIndex < 0)
+                {
+                    outputParts.Add(part);
+                    continue;
+                }
+
+                var key = part.Substring(0, separatorIndex).Trim();
+                var currentValue = part.Substring(separatorIndex + 1).Trim();
+                if (key.Equals(propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    outputParts.Add($"{propertyName}: {valueText}");
+                    found = true;
+                }
+                else
+                {
+                    outputParts.Add($"{key}: {currentValue}");
+                }
+            }
+
+            if (!found)
+                outputParts.Add($"{propertyName}: {valueText}");
+
+            return string.Join("; ", outputParts) + ";";
+        }
+
+        private static void SetImageSrcAndSyncDataDiv(
+            SafeXmlElement img,
+            string src,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+        )
+        {
+            img.SetAttribute("src", src);
+            var dataBook = img.GetAttribute("data-book");
+            if (string.IsNullOrWhiteSpace(dataBook))
+                return;
+
+            if (bloomDataDivEntriesByDataBook.TryGetValue(dataBook, out var dataDivElement))
+            {
+                dataDivElement.SetAttribute("src", src);
+                dataDivElement.InnerText = src;
+            }
         }
 
         /// <summary>
@@ -2580,6 +3639,35 @@ namespace Bloom.ImageProcessing
             {
                 return null;
             }
+        }
+
+        internal static bool MakeTransparentBackgroundIfNeeded(
+            string sourcePath,
+            string destinationPath
+        )
+        {
+            using (var imageInfo = PalasoImage.FromFileRobustly(sourcePath))
+            {
+                if (ShouldMakeBackgroundTransparent(imageInfo))
+                {
+                    RobustFile.Copy(sourcePath, destinationPath, true);
+                    ApplyBloomTransparencyToFile(destinationPath);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Like <see cref="MakeTransparentBackgroundIfNeeded"/> but always applies the
+        /// transparency algorithm, bypassing the line-art detection check.
+        /// Used when an image has the <c>bloom-transparent</c> class (<c>transparent=force</c>).
+        /// </summary>
+        internal static bool MakeTransparentBackground(string sourcePath, string destinationPath)
+        {
+            RobustFile.Copy(sourcePath, destinationPath, true);
+            ApplyBloomTransparencyToFile(destinationPath);
+            return true;
         }
     }
 }

@@ -23,7 +23,7 @@ namespace BloomTests.web
         [TearDown]
         public void Teardown()
         {
-            _server.Dispose();
+            RetiredTestServers.Retire(_server);
             _server = null;
             Monitor.Exit(_portMonitor);
         }
@@ -35,7 +35,6 @@ namespace BloomTests.web
                 _server,
                 endPoint: "test",
                 query: "color=blue",
-                returnType: ApiTest.ContentType.Text,
                 handler: request =>
                 {
                     Assert.That(request.RequiredParam("color"), Is.EqualTo("blue"));
@@ -69,7 +68,6 @@ namespace BloomTests.web
                 _server,
                 endPoint: "parent/child",
                 query: "color=blue",
-                returnType: ApiTest.ContentType.Text,
                 handler: request => request.PostSucceeded()
             );
             Assert.That(result, Is.EqualTo("OK"));
@@ -90,7 +88,7 @@ namespace BloomTests.web
         [Test]
         public void Get_Unrecognized_Throws()
         {
-            Assert.Throws<System.Net.WebException>(() =>
+            Assert.Throws<System.Net.Http.HttpRequestException>(() =>
                 ApiTest.GetString(
                     _server,
                     endPoint: "foo88bar",

@@ -11,12 +11,12 @@ using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Xml;
 using Bloom.Api;
+using Bloom.ImageProcessing;
 using Bloom.Publish; // for DynamicJson
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
@@ -607,8 +607,14 @@ namespace Bloom.Book
             e.RemoveAttribute("dir");
         }
 
-        public static void RemoveClassesBeginningWith(SafeXmlElement xmlElement, string classPrefix)
+        public static void RemoveClassesBeginningWith(
+            SafeXmlElement xmlElement,
+            string classPrefix,
+            HashSet<string> classesToKeep = null
+        )
         {
+            if (classesToKeep == null)
+                classesToKeep = new HashSet<string>();
             var oldClasses = xmlElement.GetClasses();
 
             if (oldClasses.Length == 0)
@@ -617,7 +623,7 @@ namespace Bloom.Book
             var classes = "";
             foreach (var part in oldClasses)
             {
-                if (!part.StartsWith(classPrefix))
+                if (!part.StartsWith(classPrefix) || classesToKeep.Contains(part))
                     classes += part + " ";
             }
             xmlElement.SetAttribute("class", classes.Trim());
@@ -727,8 +733,18 @@ namespace Bloom.Book
             // Remember, Linux filenames are case sensitive!
             stylesheetsToIgnore.Add("basePage"); // will work for basePage.css, basePage-legacy-5-6.css, etc.
             stylesheetsToIgnore.Add("editMode.css");
+            // Like editMode.css, editPaneGlobal.css is an edit-time stylesheet, and
+            // RemoveModeStyleSheets strips it whenever a book is saved. If we treat it as a
+            // template stylesheet, AddStylesheetFromAnotherBook re-adds it on every page
+            // inserted from a template that links it (e.g. Basic Book), and so reports the
+            // book's stylesheet collection as changed on every insert, forcing a needless
+            // full reload of the page thumbnail list each time.
+            stylesheetsToIgnore.Add("editPaneGlobal.css");
             stylesheetsToIgnore.Add("previewMode.css");
             stylesheetsToIgnore.Add("XMatter");
+            // origami.css is one of BookStorage.CssFilesThatAreAlwaysWanted: storage links it
+            // into every stored book itself, so a template never needs to contribute it.
+            stylesheetsToIgnore.Add("origami.css");
             stylesheetsToIgnore.AddRange(BookStorage.CssFilesThatAreDynamicallyUpdated);
 
             foreach (var link in _dom.SafeSelectNodes("//link[@rel='stylesheet']"))
@@ -867,7 +883,7 @@ namespace Bloom.Book
                 var props = new Dictionary<string, string>();
                 props["newLayout"] = templateId;
                 props["oldLineage"] = oldLineage;
-                Analytics.Track("Change Page Layout", props);
+                BloomAnalytics.Track("Change Page Layout", props);
                 return true;
             }
             return false;
@@ -1880,6 +1896,335 @@ namespace Bloom.Book
         public const string musicAttrName = "data-backgroundaudio";
         public const string musicVolumeName = musicAttrName + "volume";
 
+        /* Why do we whitelist? Agent says:
+        Bloom already has history of bad results from copying inline style too broadly.
+        The nearby element-level comment in BookData.cs:2073 explains one concrete example:
+        inline display rules copied into saved content caused visibility regressions on covers, while some inline style still had to
+         be preserved for legitimate cases like image cropping. Same pattern here: don’t ban style completely,
+         but only allow the specific inline properties that represent intentional persisted settings.
+
+        These five properties are exactly the ones the Page Settings UI writes onto the page element in PageSettingsConfigrPages.tsx:191.
+        Everything else about page appearance is supposed to come from theme CSS and userModifiedStyles, not from arbitrary leftovers in
+        the page’s inline style.
+
+        Summary: we whitelist because page.style is a noisy transport layer coming back from the live editor,
+        not a durable format. Without the whitelist, saving a page would risk persisting accidental editor state and causing hard-to-debug visual
+        regressions.*/
+        private static readonly string[] kPageStylePropertiesToPersist =
+        {
+            "--page-background-color",
+            "--pageNumber-color",
+            "--pageNumber-outline-color",
+            "--pageNumber-background-color",
+        };
+
+        private static string GetPersistedPageStyleValue(SafeXmlElement editedPageDiv)
+        {
+            var style = editedPageDiv.GetAttribute("style");
+            if (string.IsNullOrWhiteSpace(style))
+                return string.Empty;
+
+            var persistedStyleSegments = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Trim())
+                .Where(segment => !string.IsNullOrEmpty(segment))
+                .Where(segment =>
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex <= 0)
+                        return false;
+
+                    var propertyName = segment.Substring(0, colonIndex).Trim();
+                    return kPageStylePropertiesToPersist.Contains(
+                        propertyName,
+                        StringComparer.OrdinalIgnoreCase
+                    );
+                })
+                .ToArray();
+
+            return persistedStyleSegments.Any()
+                ? string.Join("; ", persistedStyleSegments)
+                : string.Empty;
+        }
+
+        public static void RemovePageBackgroundColorStyles(SafeXmlDocument dom)
+        {
+            foreach (
+                SafeXmlElement pageDiv in dom.SafeSelectNodes(
+                    "//div[contains(@class,'bloom-page')]"
+                )
+            )
+            {
+                RemoveStyleProperties(pageDiv, "--page-background-color");
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the given bloom-page div has a non-white, non-transparent background
+        /// color, meaning images on this page should have their backgrounds made transparent.
+        /// Considers --page-background-color in the page's inline style (content pages set via
+        /// Page Settings) and the coverColor class (cover pages, reading the cover color from
+        /// AppearanceSettings when available, then falling back to GetCoverBackgroundColorFromOldInlineStyle).
+        /// This should be consistent with bloomImages.getOwningPageBackgroundColor().
+        /// </summary>
+        /// <param name="settings">Optional AppearanceSettings from BookInfo; pass when publishing
+        /// so that modern non-legacy books get the cover color from AppearanceSettings rather than
+        /// only from the legacy CSS rule.</param>
+        public static bool PageNeedsTransparentImages(
+            SafeXmlElement pageDiv,
+            AppearanceSettings settings = null
+        )
+        {
+            // Content pages: --page-background-color is written directly into the page div's style.
+            var style = pageDiv.GetAttribute("style");
+            if (!string.IsNullOrEmpty(style))
+            {
+                foreach (
+                    var segment in style.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                )
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex <= 0)
+                        continue;
+                    if (
+                        segment
+                            .Substring(0, colonIndex)
+                            .Trim()
+                            .Equals("--page-background-color", StringComparison.OrdinalIgnoreCase)
+                    )
+                        return ImageUtils.ShouldMakeTransparentForPageBackground(
+                            segment.Substring(colonIndex + 1).Trim()
+                        );
+                }
+            }
+
+            // Cover pages: background comes from AppearanceSettings (modern non-legacy books) or
+            // from the CSS rule written into the document's <style> element by
+            // SetBackwardsCompatibleCoverBackgroundColor (legacy books).
+            if (pageDiv.HasClass("coverColor"))
+            {
+                string coverColor = null;
+                if (settings != null && settings.CssThemeName != "legacy-5-6")
+                    coverColor = settings.GetStringPropertyValueOrDefault(
+                        "cover-background-color",
+                        null
+                    );
+                coverColor ??= GetCoverBackgroundColorFromOldInlineStyle(pageDiv.OwnerDocument);
+                return ImageUtils.ShouldMakeTransparentForPageBackground(coverColor);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the active cover background color: first checks AppearanceSettings for
+        /// non-legacy books, then falls back to the CSS rule in the document's style element.
+        /// </summary>
+        public string GetCoverColor(AppearanceSettings settings)
+        {
+            if (settings != null && settings.CssThemeName != "legacy-5-6")
+            {
+                var color = settings.GetStringPropertyValueOrDefault(
+                    "cover-background-color",
+                    null
+                );
+                if (color != null)
+                    return color;
+            }
+            return GetCoverBackgroundColorFromOldInlineStyle(RawDom);
+        }
+
+        /// <summary>
+        /// Reads the cover background color from the CSS rule written into the document's
+        /// &lt;style&gt; element by SetBackwardsCompatibleCoverBackgroundColor.
+        /// Returns "#FFFFFF" if no rule is found.
+        /// </summary>
+        public static string GetCoverBackgroundColorFromOldInlineStyle(SafeXmlDocument dom)
+        {
+            foreach (
+                SafeXmlElement stylesheet in dom.SafeSelectNodes("//style").Cast<SafeXmlElement>()
+            )
+            {
+                var content = stylesheet.InnerText;
+                var match = new Regex(
+                    @".*\.bloom-page\.coverColor\s*{.*?background-color:\s*(#[0-9a-fA-F]*|[a-z]*)",
+                    RegexOptions.Singleline
+                ).Match(content);
+                if (match.Success)
+                    return match.Groups[1].Value;
+            }
+            return "#FFFFFF";
+        }
+
+        /// <summary>
+        /// Returns the transparency mode for a specific image, given its class and whether the page
+        /// needs transparent images (i.e., has a non-white background).
+        /// bloom-opaque and bloom-transparent classes override the page background check, but in the
+        /// absence of those, we use the page background to determine whether we will (later) apply
+        /// our algorithm to decide whether the image looks like line art.
+        /// </summary>
+        internal static ImageTransparencyMode GetImageTransparencyMode(
+            SafeXmlElement img,
+            bool pageNeedsTransparent
+        )
+        {
+            // bloom-opaque is an explicit user override: never apply transparency.
+            if (img.HasClass("bloom-opaque"))
+                return ImageTransparencyMode.None;
+            // bloom-transparent is an explicit user override: always force transparency,
+            // even for images that don't look (at least to our algorithm) like line art.
+            // This can also 'erase' very light-colored parts of an image, even on a white page.
+            if (img.HasClass("bloom-transparent"))
+                return ImageTransparencyMode.Force;
+            if (!pageNeedsTransparent)
+                return ImageTransparencyMode.None;
+            return ImageTransparencyMode.Auto;
+        }
+
+        /// <summary>
+        /// For each image that needs transparent rendering, append the appropriate
+        /// <c>transparent</c> query parameter to the img src:
+        /// <c>transparent=yes</c> for auto-detect mode, <c>transparent=force</c> to
+        /// bypass the line-art check (bloom-transparent class). Images with bloom-opaque
+        /// or on white pages (unless they have bloom-transparent) receive no parameter.
+        /// When <paramref name="suppressBackgroundColors"/> is true every page is treated
+        /// as having a white background, so only bloom-transparent images get a parameter.
+        /// Returns a list of modified (element, original-src) pairs so the caller can
+        /// restore them with <see cref="RestoreImageSrcs"/>, typically after making
+        /// HTML out of the temporarily modified DOM..
+        /// </summary>
+        internal static List<(SafeXmlElement img, string src)> AddTransparencyParamToImages(
+            HtmlDom dom,
+            bool suppressBackgroundColors = false
+        )
+        {
+            var modified = new List<(SafeXmlElement, string)>();
+            foreach (
+                SafeXmlElement pageDiv in dom.SafeSelectNodes(
+                        "//div[contains(@class,'bloom-page')]"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var pageNeedsTransparent =
+                    !suppressBackgroundColors && PageNeedsTransparentImages(pageDiv);
+                foreach (
+                    SafeXmlElement img in pageDiv
+                        .SafeSelectNodes(".//img[@src]")
+                        .Cast<SafeXmlElement>()
+                )
+                {
+                    if (img.HasClass("branding") || img.HasClass("bloom-qrcode"))
+                        continue;
+                    var mode = GetImageTransparencyMode(img, pageNeedsTransparent);
+                    if (mode == ImageTransparencyMode.None)
+                        continue;
+                    var src = img.GetAttribute("src");
+                    if (string.IsNullOrEmpty(src))
+                        continue;
+                    modified.Add((img, src));
+                    var paramValue = mode == ImageTransparencyMode.Force ? "force" : "yes";
+                    img.SetAttribute("src", GetSrcWithTransparencyParam(src, paramValue));
+                }
+            }
+            return modified;
+        }
+
+        /// <summary>Restore image srcs saved by <see cref="AddTransparencyParamToImages"/>.</summary>
+        internal static void RestoreImageSrcs(List<(SafeXmlElement img, string src)> modifications)
+        {
+            foreach (var (img, src) in modifications)
+                img.SetAttribute("src", src);
+        }
+
+        /// <summary>
+        /// Returns <paramref name="src"/> with the <c>transparent</c> query parameter set to
+        /// <paramref name="paramValue"/> ("yes" or "force"), replacing any existing value.
+        /// When <paramref name="src"/> has no query string (the common case) this is a simple append.
+        /// </summary>
+        internal static string GetSrcWithTransparencyParam(string src, string paramValue)
+        {
+            var qIndex = src.IndexOf('?');
+            if (qIndex < 0)
+                return $"{src}?transparent={paramValue}";
+
+            // Strip any pre-existing transparent= param, then append the new one.
+            var path = src[..qIndex];
+            var remaining = string.Join(
+                "&",
+                src[(qIndex + 1)..]
+                    .Split('&')
+                    .Where(p => !p.StartsWith("transparent=", StringComparison.OrdinalIgnoreCase))
+            );
+            return remaining.Length > 0
+                ? $"{path}?{remaining}&transparent={paramValue}"
+                : $"{path}?transparent={paramValue}";
+        }
+
+        /// <summary>
+        /// Remove any <c>transparent=yes</c> or <c>transparent=force</c> query parameter
+        /// from img srcs in <paramref name="pageDiv"/>. Call this when page content is
+        /// received back from the browser before saving it permanently to the book DOM.
+        /// </summary>
+        internal static void RemoveTransparencyParamFromImages(SafeXmlElement pageDiv)
+        {
+            foreach (
+                SafeXmlElement img in pageDiv.SafeSelectNodes(".//img[@src]").Cast<SafeXmlElement>()
+            )
+            {
+                var src = img.GetAttribute("src");
+                if (src == null || !src.Contains("transparent="))
+                    continue;
+
+                var qIndex = src.IndexOf('?');
+                if (qIndex < 0)
+                    continue; // no query string; nothing to remove
+                var path = src[..qIndex];
+                var remaining = string.Join(
+                    "&",
+                    src[(qIndex + 1)..]
+                        .Split('&')
+                        .Where(p =>
+                            !p.StartsWith("transparent=", StringComparison.OrdinalIgnoreCase)
+                        )
+                );
+                img.SetAttribute("src", remaining.Length > 0 ? path + "?" + remaining : path);
+            }
+        }
+
+        private static void RemoveStyleProperties(
+            SafeXmlElement element,
+            params string[] propertyNames
+        )
+        {
+            var style = element.GetAttribute("style");
+            if (string.IsNullOrWhiteSpace(style))
+                return;
+
+            var filteredSegments = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Trim())
+                .Where(segment => !string.IsNullOrEmpty(segment))
+                .Where(segment =>
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex < 0)
+                        return true;
+
+                    var propertyName = segment.Substring(0, colonIndex).Trim();
+                    return !propertyNames.Contains(propertyName);
+                })
+                .ToArray();
+
+            if (filteredSegments.Length == 0)
+            {
+                element.RemoveAttribute("style");
+                return;
+            }
+
+            element.SetAttribute("style", string.Join("; ", filteredSegments) + ";");
+        }
+
         public static void ProcessPageAfterEditing(
             SafeXmlElement destinationPageDiv,
             SafeXmlElement edittedPageDiv
@@ -1904,6 +2249,7 @@ namespace Bloom.Book
                 node.ParentNode.RemoveChild(node);
             RemoveTemplateEditingMarkup(edittedPageDiv);
             RemoveCkEditorMarkup(edittedPageDiv);
+            RemoveTransparencyParamFromImages(edittedPageDiv);
 
             destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 
@@ -1914,6 +2260,14 @@ namespace Bloom.Book
             //back to the html in keeping with our goal of having the page look right if you were to just open the
             //html file in a browser.
             destinationPageDiv.SetAttribute("lang", edittedPageDiv.GetAttribute("lang"));
+
+            // Save only the page color custom properties we manage in Page Settings.
+            // If all are missing, remove any previously-saved page-level custom properties.
+            var style = GetPersistedPageStyleValue(edittedPageDiv);
+            if (string.IsNullOrEmpty(style))
+                destinationPageDiv.RemoveAttribute("style");
+            else
+                destinationPageDiv.SetAttribute("style", style);
 
             // Copy the two background audio attributes which can be set using the music toolbox.
             // Ensuring that volume is missing unless the main attribute is non-empty is
@@ -1995,6 +2349,13 @@ namespace Bloom.Book
                 var element in topElement.SafeSelectNodes(".//a").Cast<SafeXmlElement>().ToArray()
             )
             {
+                var branding = element.ChildNodes.FirstOrDefault(n =>
+                    n is SafeXmlElement e
+                    && n.Name.ToLowerInvariant() == "img"
+                    && e.HasClass("branding")
+                );
+                if (branding != null)
+                    continue; // Don't remove an <a> that contains a branding image, even if it has no text.
                 if (element.InnerText == "")
                     element.ParentNode.RemoveChild(element);
                 else if (element.HasAttribute("data-cke-saved-href"))
@@ -2516,6 +2877,10 @@ namespace Bloom.Book
                 audioOrDivWithBackgroundMusic.GetAttribute("data-backgroundaudio") ?? String.Empty;
             if (backgroundAudioFileName != String.Empty)
             {
+                // data-backgroundaudio really IS URL-encoded -- the music tool writes it through
+                // encodeAndSetPageAttr (encodeURIComponent). Do not "correct" this to match its
+                // neighbours data-sound / data-correct-sound / data-wrong-sound, which are plain.
+                // See the encoding conventions note on UrlPathString.
                 return UrlPathString.CreateFromUrlEncodedString(backgroundAudioFileName);
             }
 
@@ -3377,7 +3742,7 @@ namespace Bloom.Book
 
         /// <summary>
         /// Check if the alt text looks like Bloom Editor placeholder alt text (which we don't want in the published version)
-        /// Looks like: "The picture, {0}, is missing or was loading too slowly"
+        /// Looks like: "The image, {0}, is missing or was loading too slowly"
         /// </summary>
         /// <param name="altText"></param>
         /// <returns>True if it appears to be some sort of placeholder alt text, false otherwise</returns>
@@ -3401,7 +3766,7 @@ namespace Bloom.Book
             // Check for an exact match on localized string.
             string localizedFormatString = LocalizationManager.GetString(
                 "EditTab.Image.AltMsg",
-                "This picture, {0}, is missing or was loading too slowly."
+                "This image, {0}, is missing or was loading too slowly."
             );
             string localizedString = String.Format(
                 localizedFormatString,
@@ -3471,6 +3836,47 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// If the element has an attribute 'style' with a declaration for the specified subfield,
+        /// remove that declaration from the style attribute. For example, if subfieldName is "display"
+        /// and style is "display: none; color: red;", then the style attribute will be changed to "color: red;".
+        /// If style is "display:block", then the style attribute will be removed entirely.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="subfieldName"></param>
+        public static void RemoveInlineStyleSubfield(SafeXmlElement element, string subfieldName)
+        {
+            if (element == null || String.IsNullOrWhiteSpace(subfieldName))
+                return;
+
+            var existingStyle = element.GetAttribute("style");
+            if (String.IsNullOrWhiteSpace(existingStyle))
+                return;
+
+            var filteredStyleDeclarations = existingStyle
+                .Split(';')
+                .Select(part => part.Trim())
+                .Where(part => !String.IsNullOrWhiteSpace(part))
+                .Where(part =>
+                {
+                    var colonIndex = part.IndexOf(':');
+                    if (colonIndex < 0)
+                        return true;
+                    var propertyName = part.Substring(0, colonIndex).Trim();
+                    return !propertyName.Equals(subfieldName, StringComparison.OrdinalIgnoreCase);
+                })
+                .ToList();
+
+            if (filteredStyleDeclarations.Any())
+            {
+                element.SetAttribute("style", String.Join("; ", filteredStyleDeclarations));
+            }
+            else if (element.HasAttribute("style"))
+            {
+                element.RemoveAttribute("style");
+            }
+        }
+
+        /// <summary>
         /// Reorder any div elements that need to be reordered for proper use in publications.
         /// The different-language children of a translation group are ordered in Bloom's displays by flex-box CSS
         /// that puts the div with class bloom-content1 before the one with bloom-content2 etc.  Since we don't
@@ -3523,7 +3929,13 @@ namespace Bloom.Book
             return xClass.Substring(idx);
         }
 
-        public static bool IsNodePartOfDataBookOrDataCollection(SafeXmlNode node)
+        /// <summary>
+        /// Returns true if the node is part of something that would cause it to be copied to the bloomDataDiv.
+        /// Such nodes are allowed to contain duplicate audio ids, because for one thing they are duplicated in the
+        /// bloomDataDiv itself, and for another, they may (like title on the cover and title page) be deliberately
+        /// duplicated in actual pages.
+        /// </summary>
+        public static bool DoesNodeGetCopiedToDataDiv(SafeXmlNode node)
         {
             bool isMatch = DoesSelfOrAncestorMatchCondition(
                 node,
@@ -3539,6 +3951,12 @@ namespace Bloom.Book
                     }
                     else if (n.GetOptionalStringAttribute("data-collection", null) != null)
                     {
+                        return true;
+                    }
+                    else if (n is SafeXmlElement element && element.HasClass("bloom-customLayout"))
+                    {
+                        // Custom-layout page content can intentionally duplicate ids that also
+                        // appear in separately persisted data-book/data-derived entries.
                         return true;
                     }
 
@@ -3787,6 +4205,12 @@ namespace Bloom.Book
         )
         {
             var result = new List<Tuple<string, string>>();
+            // Don't save any of this data for an image in the custom margin box. We don't
+            // need it for reconstructing that image, because it is saved with all its parents
+            // in the data-div entry for the custom margin box. And we don't want to transfer
+            // its layout settings to the standard one.
+            if (IsInCustomLayoutPage(node))
+                return result;
             var ce = node.ParentElement?.ParentElement;
             if (ce != null)
             {
@@ -3828,6 +4252,13 @@ namespace Bloom.Book
             string[] backgroundImgValues
         )
         {
+            // We don't need to do this to the cover image that is on a page with custom layout,
+            // because its containers with the style on the bloom-canvas-element
+            // and the data-imgsizebasedon of the bloom-canvas are saved as part of the content
+            // of the custom margin box. (We won't find one in the data-div copy, because we rename
+            // the data-book attribute there.)
+            if (IsInCustomLayoutPage(node))
+                return;
             // The situation we want to establish is that the image is inside an imageContainer
             // inside a canvasElement inside a bloomCanvas. That may not be true initially.
             var imageContainer = node.ParentElement;
@@ -3870,6 +4301,11 @@ namespace Bloom.Book
             bloomCanvas.AddClass("bloom-has-canvas-element"); // probably only necessary if we added the canvas element
             bloomCanvas.SetAttribute("data-imgsizebasedon", backgroundImgValues[0]);
             canvasElement.SetAttribute("style", backgroundImgValues[1]);
+        }
+
+        public static bool IsInCustomLayoutPage(SafeXmlElement node)
+        {
+            return node.ParentWithClass("bloom-customLayout") != null;
         }
     }
 }

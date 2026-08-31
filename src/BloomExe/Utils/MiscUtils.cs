@@ -410,6 +410,30 @@ namespace Bloom.Utils
         }
 
         /// <summary>
+        /// Get the spelling of a path that matches what is really on disk. (but case insensitive on Windows)
+        /// </summary>
+        /// <remarks>
+        /// Windows silently drops trailing periods and spaces when it creates a folder, so a
+        /// collection whose name ends with one (BL-16679) leaves us holding a path string that no
+        /// folder literally matches: the name lives on in the .bloomCollection file name, but the
+        /// folder lost it. Ordinary File/Directory APIs hide this from us because they normalize the
+        /// path before using it, but FileSystemWatcher does not: .NET prefixes a path ending in a
+        /// period or space with \\?\, which turns Windows normalization OFF, so StartRaisingEvents
+        /// fails with "Error reading the ... directory". Normalizing at the few places where a
+        /// collection path enters Bloom keeps every later consumer (the watchers included) working
+        /// with the folder that exists.
+        /// Note that Path.GetFullPath also resolves relative paths, which is a no-op for the absolute
+        /// collection paths we pass it. This is about trailing periods and spaces only -- it is not a
+        /// general "spelling on disk" fixer: it does not correct the case of a name, or expand a short
+        /// (8.3) name. It is also effectively a no-op on Linux, where such folder names are legal and
+        /// are therefore what is really on disk, and where FileSystemWatcher has no trouble with them.
+        /// </remarks>
+        public static string GetFullPath(string path)
+        {
+            return string.IsNullOrEmpty(path) ? path : Path.GetFullPath(path);
+        }
+
+        /// <summary>
         /// Check whether the path is inside either the installed collection folder or inside the folder
         /// containing factory template books.  If either condition is true, the collection cannot be edited.
         /// </summary>
@@ -442,7 +466,11 @@ namespace Bloom.Utils
                     dlg.DefaultExt = defaultExtension;
                     dlg.FileName = initialFilename;
                     dlg.Filter = filter;
-                    dlg.RestoreDirectory = false;
+                    // True so the dialog does not leave the process's current working directory
+                    // wherever the user browsed; see the comment in BloomOpenFileDialog's
+                    // constructor (BL-16577). Where the dialog opens is controlled by
+                    // InitialDirectory below, not by this.
+                    dlg.RestoreDirectory = true;
                     dlg.OverwritePrompt = true;
                     dlg.InitialDirectory = initialFolder;
                     dlg.FileOk += (sender, args) =>
@@ -914,6 +942,47 @@ namespace Bloom.Utils
             for (int i = index - 1; i < stacklines.Length; i++)
                 sb.AppendLine(stacklines[i]);
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Return a list of all child processes of the current process.
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<Process> GetChildProcesses()
+        {
+            if (Platform.IsWindows)
+            {
+                using (var currentProc = Process.GetCurrentProcess())
+                {
+                    int parentId = currentProc.Id;
+                    // Search for all processes where parentId matches current PID
+                    string query =
+                        $"SELECT ProcessId FROM Win32_Process WHERE ParentProcessId = {parentId}";
+                    using (var searcher = new ManagementObjectSearcher(query))
+                    {
+                        using (var results = searcher.Get())
+                        {
+                            foreach (var obj in results)
+                            {
+                                Process proc;
+                                try
+                                {
+                                    int childId = Convert.ToInt32(obj["ProcessId"]);
+                                    obj.Dispose();
+                                    proc = Process.GetProcessById(childId);
+                                }
+                                catch (ArgumentException)
+                                {
+                                    // Process might have exited between query and retrieval
+                                    continue;
+                                }
+                                yield return proc;
+                            }
+                        }
+                    }
+                }
+            }
+            yield break;
         }
     }
 }

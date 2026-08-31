@@ -9,8 +9,8 @@ When working in the front-end, cd to src/BloomBrowserUI
 - react
 - MUI
 - Emotion
-- yarn 1.22.22
-- Never use npm commands
+- pnpm 11.5.2
+- Never use npm or yarn commands
 - Never use CDNs. This is an offline app.
 - WebView2 112
 
@@ -35,39 +35,12 @@ When working in the front-end, cd to src/BloomBrowserUI
 
 
 ## About React useEffect
-Rule 1 — Use useEffect when synchronizing with external systems:
 
-Subscriptions, timers, or event listeners.
+See {repository root}/.github/skills/react-useeffect
 
-API calls or other asynchronous external operations.
+If you read that and decide that a useEffect is warranted, you must add a comment justifying why it is necessary.
 
-Updates to things outside React control (e.g., document.title, localStorage).
-
-Any side effect that cannot be computed during render.
-
-Rule 2 — Avoid useEffect when data can be derived or handled internally:
-
-State can be derived from props, context, or other state — compute in render.
-
-User interactions can be handled directly in event handlers.
-
-Local state reset/initialization can be handled by component keys or conditional rendering.
-
-Computed values can use useMemo or useCallback instead of syncing in an effect.
-
-Rule 3 — Validation heuristic:
-
-If removing the effect does not break external behavior, the effect is unnecessary.
-
-Implementation Tip for AI:
-
-Prefer pure render computation first.
-
-Add useEffect only when necessary for external side effects.
-
-Keep effects minimal and specific to their purpose; avoid overuse.
-
-Always include a comment before a useEffect explaining what it does and why it is necessary.
+When the effect should run only on mount (and optionally clean up on unmount), prefer the `useMountEffect` helper in `utils/useMountEffect.ts` over a bare `useEffect(..., [])`. It states the "run on mount" intent clearly and keeps the empty-dependency-array eslint suppression in one place.
 
 ## UI Tests
 
@@ -83,6 +56,42 @@ Don't use timeouts in tests, that slows things down and is fragile. If a timeout
 ## Troubleshooting UI Problems
 
 Usually if you get stuck, the best thing to do is to get the component showing in a browser and use chrome-devtools-mcp to to check the DOM, the console, and if necessary a screenshot. You can add console messages that should show, then read the browser's console to test your assumptions. If you want access to chrome-devtools-mcp and don't have it, stop and ask me. When the backend is running, you can open http://localhost:8089/bloom/CURRENTPAGE to inspect and interact with the screen.
+
+## Localization
+
+Localizable strings live in xlf files under `DistFiles/localization/`. We write the English in
+`en/Bloom*.xlf`; translators work in Crowdin, and their work lands in the other language
+subdirectories.
+
+**Two documents own this subject; read the relevant one rather than working from memory.**
+
+- **`.github/skills/xlf-strings/SKILL.md`** — how to add, change, review, or retire a string:
+  which priority file to use, the note conventions, and the checks each operation needs. Open it
+  whenever you touch an XLF entry.
+- **`DistFiles/localization/README.md`** — how Crowdin actually works, and *why* these rules
+  exist: what each kind of xliff edit does to existing translations, and (in "Why we can't just
+  delete a string") the route translations travel from Crowdin through master to a release
+  branch. Read it before concluding that any deletion or id change is harmless.
+
+The rules themselves, which apply whether or not you have opened those:
+
+- **Only ever edit `DistFiles/localization/en/`.** Never touch the other language subdirectories,
+  and never touch an existing translation.
+- **Do not change the `@id` of a `<trans-unit>`** unless it is marked `@translate="no"`. Changing
+  an id loses its translations. If asked to do it anyway, refuse; if you notice it during a
+  review, point it out.
+- **Do not delete a `<trans-unit>` that is no longer used.** Mark it obsolete instead; the
+  skill has the exact note format and where to read the current version number.
+- **Only mark an entry obsolete once nothing references it.** Check first — code (`l10nKey` /
+  `l10nId` / `useL10n` / `GetString`), shipped content under `src/content` (sample shells are
+  `.htm`, and page label ids are composed at runtime as `"TemplateBooks.PageLabel." + label`),
+  and the rest of the XLF. A note claiming a live string is obsolete is worse than no note: it
+  invites the next person to delete a string we are still using.
+- **Never delete an entry on your own initiative**, even an obsolete one, and even when you are
+  confident it is safe. There is exactly one case where deletion loses nothing — a string that
+  was always `translate="no"` and so never reached Crowdin — and even then it is the developer's
+  decision, the evidence has to go in the commit message and the PR reply, and the skill has the
+  commands that establish it.
 
 ## Other notes
 

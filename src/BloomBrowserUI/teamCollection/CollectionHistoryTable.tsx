@@ -12,12 +12,19 @@ interface IBookHistoryEvent {
     When: string;
     Message: string;
     Type: number;
-    UserId: string;
+    // The server's userid column is nullable, and older Blooms did leave it null, so this
+    // has to admit null or we are back to the crash in BL-16757: declaring it a plain string
+    // is what let a null through typechecking and into a render in the first place.
+    // `null` rather than the `undefined` this project usually prefers (see AGENTS.md), because
+    // this interface describes JSON we don't control: the field arrives as a literal `null`, so
+    // saying `undefined` would be untrue and would invite an `=== undefined` test that never fires.
+    UserId: string | null;
     UserName: string;
 }
 
 const HeaderCell: React.FunctionComponent<{
     colSpan?: number;
+    children?: React.ReactNode;
 }> = (props) => {
     return (
         <td
@@ -36,6 +43,7 @@ const HeaderCell: React.FunctionComponent<{
 const TextCell: React.FunctionComponent<{
     className?: string;
     colSpan?: number;
+    children?: React.ReactNode;
 }> = (props) => {
     return (
         <td

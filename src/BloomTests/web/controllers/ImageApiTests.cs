@@ -82,7 +82,7 @@ namespace BloomTests.web.controllers
 	</div>
 	<div class='bloom-page numberedPage' lang='' data-page-number='2'>
 		<div data-after-content='' class='pageLabel' lang='en'>
-			Basic Text &amp; Picture
+			Basic Text &amp; Image
 		</div >
 		<div class='marginBox'>
 <!-- extra 'split-pane' div layers removed here and elsewhere -->
@@ -138,7 +138,7 @@ namespace BloomTests.web.controllers
 	 but we aren't actually testing the code that creates the numbers here, so we should be fine. -->
 	<div class='bloom-page numberedPage' lang='' data-page-number='10'>
 		<div data-after-content='' class='pageLabel' lang='en'>
-			Basic Text &amp; Picture
+			Basic Text &amp; Image
 		</div >
 		<div class='marginBox'>
 			<div class='bloom-translationGroup'></div>
@@ -256,7 +256,7 @@ namespace BloomTests.web.controllers
 	</div>
 	<div class=""bloom-page numberedPage"" lang="""" data-page-number=""১"">
 		<div data-after-content="""" class=""pageLabel"" lang=""en"">
-			Basic Text &amp; Picture
+			Basic Text &amp; Image
 		</div >
 		<div class=""marginBox"">
 <!-- extra 'split-pane' div layers removed here and elsewhere -->
@@ -273,7 +273,7 @@ namespace BloomTests.web.controllers
 	</div>
 	<div class=""bloom-page numberedPage"" lang="""" data-page-number=""২"">
 		<div data-after-content="""" class=""pageLabel"" lang=""en"">
-			Basic Text &amp; Picture
+			Basic Text &amp; Image
 		</div >
 		<div class=""marginBox"">
 			<div title=""The Moon and The Cap_Page 041.jpg 105.32 KB 1500 x 1236 357 DPI (should be 300-600) Bit Depth: 24"" class=""bloom-canvas"">
@@ -284,7 +284,7 @@ namespace BloomTests.web.controllers
 	</div>
 	<div class=""bloom-page numberedPage"" lang="""" data-page-number=""৩"">
 		<div data-after-content="""" class=""pageLabel"" lang=""en"">
-			Basic Text &amp; Picture
+			Basic Text &amp; Image
 		</div >
 		<div class=""marginBox"">
 			<div class=""bloom-translationGroup""></div>
@@ -303,7 +303,7 @@ namespace BloomTests.web.controllers
 	</div>
 	<div class=""bloom-page numberedPage"" lang="""" data-page-number=""৪"">
 		<div data-after-content="""" class=""pageLabel"" lang=""en"">
-			Basic Text &amp; Picture
+			Basic Text &amp; Image
 		</div >
 		<div class=""marginBox"">
 			<div class=""bloom-translationGroup""></div>
@@ -387,6 +387,89 @@ namespace BloomTests.web.controllers
                 dom.SelectSingleNode("//body")
             );
             Assert.AreEqual(0, imageNameToPages.Keys.Count, "Unique image is not on a bloom-page");
+        }
+
+        [Test]
+        public void GetCreditableImageFileNamesInBook_FiltersAndOrders()
+        {
+            const string xhtml =
+                @"
+<body>
+	<div class='bloom-page bloom-frontMatter cover' data-page-number=''>
+		<div data-after-content='' class='pageLabel' lang='en'>
+			Front Cover
+		</div >
+		<div class='marginBox'>
+			<div class='bloom-canvas bloom-background-image-in-style-attr' style='background-image:url(""AOR_aa013m.png"")'/>
+		</div>
+	</div>
+	<div class='bloom-page bloom-frontMatter' data-page-number=''>
+		<div data-after-content='' class='pageLabel' lang='en'>
+			Credits Page
+		</div >
+		<div class='marginBox'>
+			<div class='bloom-metaData licenseAndCopyrightBlock' lang='en'>
+				<div class='licenseBlock'>
+					<img class='licenseImage' src='license.png'/>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class='bloom-page numberedPage' lang='' data-page-number='1'>
+		<div class='marginBox'>
+			<div class='bloom-canvas'>
+				<img data-license='cc-by' src='The%20Moon%20and%20The%20Cap_Page%20041.jpg'/>
+			</div>
+			<div class='bloom-canvas'>
+				<img src='placeHolder.png'/>
+			</div>
+		</div>
+	</div>
+	<div class='bloom-page numberedPage' lang='' data-page-number='2'>
+		<div class='marginBox'>
+			<div class='bloom-canvas'>
+				<img data-license='cc-by-nd' src='AOR_EAG00864.png'/>
+			</div>
+			<!-- repeat of an earlier image should not appear twice -->
+			<div class='bloom-canvas'>
+				<img data-license='cc-by' src='The%20Moon%20and%20The%20Cap_Page%20041.jpg'/>
+			</div>
+		</div>
+	</div>
+</body>";
+
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(xhtml);
+            // Sanity check: the raw (unfiltered) list still includes the images we expect to be filtered.
+            var unfiltered = ImageApi.GetWhichImagesAreUsedOnWhichPages(
+                dom.SelectSingleNode("//body"),
+                new[] { "en" }
+            );
+            Assert.IsTrue(
+                unfiltered.ContainsKey("license.png"),
+                "Setup check: license.png should be in the unfiltered list"
+            );
+            Assert.IsTrue(
+                unfiltered.ContainsKey("placeHolder.png"),
+                "Setup check: placeHolder.png should be in the unfiltered list"
+            );
+
+            var names = ImageApi.GetCreditableImageFileNamesInBook(
+                dom.SelectSingleNode("//body"),
+                new[] { "en" }
+            );
+
+            Assert.AreEqual(
+                new List<string>
+                {
+                    "AOR_aa013m.png",
+                    "The Moon and The Cap_Page 041.jpg",
+                    "AOR_EAG00864.png",
+                },
+                names,
+                "Should return creditable images once each, in order of first occurrence, "
+                    + "with license and placeholder images filtered out"
+            );
         }
 
         [Test]

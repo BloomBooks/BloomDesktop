@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -46,6 +46,11 @@ namespace Bloom
             get { return _thumbnailProvider; }
         }
 
+        private static Image CreateDisposableErrorThumbnail()
+        {
+            return Resources.Error70x70.Clone() as Image;
+        }
+
         private void GetThumbNailOfBookCover(
             Book.Book book,
             HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
@@ -56,14 +61,14 @@ namespace Bloom
         {
             if (book is ErrorBook)
             {
-                callback(Resources.Error70x70);
+                callback(CreateDisposableErrorThumbnail());
                 return;
             }
             try
             {
                 if (book.HasFatalError) //NB: we might not know yet... we don't fully load every book just to show its thumbnail
                 {
-                    callback(Resources.Error70x70);
+                    callback(CreateDisposableErrorThumbnail());
                     return;
                 }
                 GenerateImageForWeb(book);
@@ -79,7 +84,7 @@ namespace Bloom
                 var dom = book.GetPreviewXmlDocumentForFirstPage();
                 if (dom == null)
                 {
-                    callback(Resources.Error70x70);
+                    callback(CreateDisposableErrorThumbnail());
                     return;
                 }
                 string folderForCachingThumbnail;
@@ -97,13 +102,13 @@ namespace Bloom
 #else
                 if (!CreateThumbnailOfCoverImage(book, thumbnailOptions, callback))
                 {
-                    callback(Resources.Error70x70);
+                    callback(CreateDisposableErrorThumbnail());
                 }
 #endif
             }
             catch (Exception err)
             {
-                callback(Resources.Error70x70);
+                callback(CreateDisposableErrorThumbnail());
                 errorCallback(err);
                 Debug.Fail(err.Message);
             }
@@ -208,17 +213,6 @@ namespace Bloom
                 return true;
         }
 
-        private static readonly HashSet<Type> kExceptionsToRetryWhenSavingImage = new HashSet<Type>
-        {
-            Type.GetType("System.IO.IOException"),
-            Type.GetType("System.Runtime.InteropServices.ExternalException"),
-            // PalasoImage.SaveImageSafely can also throw ApplicationExceptions
-            // (See https://github.com/sillsdev/libpalaso/blob/f2482a5b3c6c75b50ec5672b1eb731b1a040a05a/SIL.Windows.Forms/ImageToolbox/PalasoImage.cs#L155)
-            // This very well may be temporary (if it's a different Bloom thread that has it locked) and retrying it would likely succeed.
-            // For ideas about more fundamental fixes, see https://issues.bloomlibrary.org/youtrack/issue/BL-12359/The-program-could-not-replace-the-image-C...Book-2thumbnail.png-perhaps-because-this-program-or-another-locked-it#focus=Comments-102-50093.0-0
-            Type.GetType("System.ApplicationException"),
-        };
-
         /// <summary>
         /// Creates a thumbnail of just the cover image (no title, language name, etc.)
         /// </summary>
@@ -309,10 +303,7 @@ namespace Bloom
                             ImageUtils.SaveAsTopQualityJpeg(coverImage.Image, destFilePath);
                             break;
                         default:
-                            coverImage.SaveImageRobustly(
-                                destFilePath,
-                                kExceptionsToRetryWhenSavingImage
-                            );
+                            PalasoImage.SaveImageRobustly(coverImage, destFilePath);
                             break;
                     }
                     if (callback != null)
@@ -469,7 +460,8 @@ namespace Bloom
         }
 
         /// <summary>
-        /// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
+        /// Will call either 'callback' or 'errorCallback'.
+        /// The callback receives an image that the callback must dispose when done.
         /// </summary>
         /// <param name="book"></param>
         /// <param name="thumbnailOptions"></param>
@@ -498,7 +490,7 @@ namespace Bloom
             RebuildThumbNail(
                 book,
                 thumbnailOptions,
-                (info, image) => { },
+                (info, image) => image?.Dispose(),
                 (info, ex) =>
                 {
                     throw ex;
@@ -517,7 +509,8 @@ namespace Bloom
         }
 
         /// <summary>
-        /// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
+        /// Will call either 'callback' or 'errorCallback'.
+        /// The callback receives an image that the callback must dispose when done.
         /// </summary>
         /// <param name="book"></param>
         /// <param name="thumbnailOptions"></param>

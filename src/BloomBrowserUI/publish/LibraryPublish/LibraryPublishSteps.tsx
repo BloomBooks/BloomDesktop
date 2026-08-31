@@ -23,6 +23,7 @@ import {
 } from "../../react_components/Progress/progressBox";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { useL10n } from "../../react_components/l10nHooks";
+import { useLoginState } from "../../react_components/useLoginState";
 import { kWebSocketContext } from "./LibraryPublishScreen";
 import {
     useSubscribeToWebSocketForEvent,
@@ -60,9 +61,12 @@ interface IReadonlyBookInfo {
 
 const kWebSocketEventId_uploadSuccessful: string = "uploadSuccessful";
 const kWebSocketEventId_uploadCanceled: string = "uploadCanceled";
-const kWebSocketEventId_loginSuccessful: string = "loginSuccessful";
 
-export const LibraryPublishSteps: React.FunctionComponent = () => {
+export const LibraryPublishSteps: React.FunctionComponent<{
+    // Called with true once the user commits to an upload and false when it is over. See the
+    // effect below for why the publish-tab host may only OR this into its lock.
+    onUploadingChange?: (uploading: boolean) => void;
+}> = (props) => {
     const selectedBookContext = React.useContext(SelectedBookContext);
     const [bookshelfHasProblem, setBookshelfHasProblem] = useState(false);
     const {
@@ -128,7 +132,6 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [bookInfo, setBookInfo] = useState<IReadonlyBookInfo>();
     useEffect(() => {
-        post("libraryPublish/checkForLoggedInUser");
         getBoolean("libraryPublish/agreementsAccepted", (result) => {
             setAgreedPreviously(result);
             setAgreementsAccepted(result);
@@ -191,15 +194,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         else hasRenderedRef.current = true;
     }, [agreementsAccepted]);
 
-    const [loggedInEmail, setLoggedInEmail] = useState<string>();
-
-    useSubscribeToWebSocketForStringMessage(
-        kWebSocketContext,
-        kWebSocketEventId_loginSuccessful,
-        (email) => {
-            setLoggedInEmail(email);
-        },
-    );
+    const { email: loggedInEmail, signIn, signOut } = useLoginState();
 
     function isReadyForUpload(): boolean {
         return isReadyForAgreements() && agreementsAccepted;
@@ -227,28 +222,62 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     const [conflictIndex, setConflictIndex] = useState<number>(0);
 
     const [isUploading, setIsUploading] = useState<boolean>(false);
+    // Tell the publish-tab host as soon as the user commits to an upload, so it can lock the
+    // publish-tool switcher for the whole operation and not just the part C# knows about. C#
+    // takes its lock inside UploadBookAsync, but by then we have already made two API round
+    // trips (the subscription check and the "existing copy on server" query), during which the
+    // screen shows Cancel and a progress log while the tools were still live (BL-16654).
+    // The host OR-s this with C#'s lock rather than replacing it. That direction matters: this
+    // flag is not trustworthy as an *unlock* signal — clicking Cancel clears it while C# keeps
+    // working, and so does any error line in the progress log — but as an extra *lock* term it
+    // can only ever lock more than C# would, never less, so the unreliability is harmless here
+    // and C# stays the authority on when things reopen.
+    //
+    // Why an effect rather than doing this in the handler that starts the upload: isUploading has
+    // no single originating handler. It is set in uploadOneBook and cleared from four unrelated
+    // places — the Cancel button, the uploadSuccessful websocket, an error line in the progress
+    // box, and the collision dialog's cancel — so a render keyed on the resulting value is the
+    // only place that observes every transition. What we are doing is synchronizing an external
+    // system (the publish-tab host) to this state, which is what effects are for.
+    useEffect(() => {
+        props.onUploadingChange?.(isUploading);
+        // Never leave the host locked if this screen goes away mid-upload.
+        return () => props.onUploadingChange?.(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isUploading]);
     function uploadOneBook() {
         setIsUploadComplete(false);
         setIsUploading(true);
-        get("libraryPublish/checkSubscriptionMatch", (result) => {
-            if (result.data.error) {
-                // The API already sent an error message
-                return;
-            }
-            get(
-                "libraryPublish/getUploadCollisionInfo?index=" + conflictIndex,
-                (result) => {
-                    if (result.data.error) {
-                        // The API already sent an error message
-                        return;
-                    }
-                    if (result.data.shouldShow) {
-                        setUploadCollisionInfo(result.data);
-                        showUploadCollisionDialog();
-                    } else post("libraryPublish/upload");
-                },
-            );
-        });
+        // If either pre-upload request dies at the transport level we get no reply and no progress
+        // message, so nothing else would ever clear isUploading. That used to leave only a stale
+        // Cancel button, but now it would also keep the other publish tools disabled, so clear it
+        // here. (An error *reported by* the API still arrives as a progress message and is handled
+        // by handleUploadError.)
+        get(
+            "libraryPublish/checkSubscriptionMatch",
+            (result) => {
+                if (result.data.error) {
+                    // The API already sent an error message
+                    return;
+                }
+                get(
+                    "libraryPublish/getUploadCollisionInfo?index=" +
+                        conflictIndex,
+                    (result) => {
+                        if (result.data.error) {
+                            // The API already sent an error message
+                            return;
+                        }
+                        if (result.data.shouldShow) {
+                            setUploadCollisionInfo(result.data);
+                            showUploadCollisionDialog();
+                        } else post("libraryPublish/upload");
+                    },
+                    handleUploadError,
+                );
+            },
+            handleUploadError,
+        );
     }
 
     const changeConflictIndex = (index: number) => {
@@ -266,6 +295,10 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     };
 
     const [isCanceling, setIsCanceling] = useState<boolean>(false);
+    const handleUploadError = React.useCallback(() => {
+        setIsUploading(false);
+    }, []);
+
     useSubscribeToWebSocketForEvent(
         kWebSocketContext,
         kWebSocketEventId_uploadCanceled,
@@ -589,7 +622,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                         isReadyForUpload() && !isPlaygroundBook
                                     }
                                     l10nKey="PublishTab.Upload.SignIn"
-                                    onClick={() => post("libraryPublish/login")}
+                                    onClick={signIn}
                                 >
                                     Sign in or sign up to BloomLibrary.org
                                 </BloomButton>
@@ -618,10 +651,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                     l10nKey="PublishTab.Upload.SignOut"
                                     l10nComment="The %0 will be replaced with the email address of the user."
                                     l10nParam0={loggedInEmail}
-                                    onClick={() => {
-                                        post("libraryPublish/logout");
-                                        setLoggedInEmail(undefined);
-                                    }}
+                                    onClick={signOut}
                                 >
                                     Sign out (%0)
                                 </BloomButton>
@@ -638,9 +668,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             <ProgressBox
                                 ref={progressBoxRef}
                                 webSocketContext={kWebSocketContext}
-                                onGotErrorMessage={() => {
-                                    setIsUploading(false);
-                                }}
+                                onGotErrorMessage={handleUploadError}
                                 css={css`
                                     height: 200px;
                                 `}
@@ -838,7 +866,9 @@ const AgreementCheckbox: React.FunctionComponent<{
     );
 };
 
-const WarningMessage: React.FunctionComponent = (props) => {
+const WarningMessage: React.FunctionComponent<{
+    children?: React.ReactNode;
+}> = (props) => {
     return (
         <div
             css={css`

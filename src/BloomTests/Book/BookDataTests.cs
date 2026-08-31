@@ -67,7 +67,6 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/Bloom",
                 null,
-                "",
                 new string[] { }
             );
             _palasoLocalizationManager = LocalizationManagerWinforms.Create(
@@ -78,7 +77,6 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/Palaso",
                 null,
-                "",
                 new string[] { }
             );
         }
@@ -159,18 +157,18 @@ namespace BloomTests.Book
 				</div>
 				<div class='bloom-page' id='guid2'>
 					<div class='bloom-translationGroup bloom-clearWhenMakingDerivative'>
-						<div class='bloom-editable' data-book='printingInfo' lang='es'><p>First Edition 2020<br />Second Edition 2023</p></div>
-						<div class='bloom-editable' data-book='printingInfo' lang='z'></div>
-						<div class='bloom-editable' data-book='printingInfo' lang='en'>English here</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='printingInfo' lang='es'><p>First Edition 2020<br />Second Edition 2023</p></div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='printingInfo' lang='z'></div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='printingInfo' lang='en'>English here</div>
 					</div>
 					<div class='bloom-translationGroup'><!-- No 'clear out derivative stuff' class here. -->
-						<div class='bloom-editable' data-book='randomOtherInfo' lang='es'>Something weird here</div>
-						<div class='bloom-editable' data-book='randomOtherInfo' lang='z'></div>
-						<div class='bloom-editable' data-book='randomOtherInfo' lang='en'>Some other stuff.</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='randomOtherInfo' lang='es'>Something weird here</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='randomOtherInfo' lang='z'></div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='randomOtherInfo' lang='en'>Some other stuff.</div>
 					</div>
 					<div class='bloom-translationGroup bloom-clearWhenMakingDerivative'>
-						<div class='bloom-editable' data-book='newNonDerivField' lang='es'>Something that oughta be removed in a new book.</div>
-						<div class='bloom-editable' data-book='newNonDerivField' lang='z'></div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='newNonDerivField' lang='es'>Something that oughta be removed in a new book.</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='newNonDerivField' lang='z'></div>
 					</div>
 				</div>
 			 </body></html>"
@@ -597,13 +595,13 @@ namespace BloomTests.Book
             HtmlDom bookDom = new HtmlDom(
                 @"<html ><head></head><body>
 				<div id='bloomDataDiv'>
-					<div data-book='bookTitle' lang='dcc'>DccTitle</div>
-					<div data-book='bookTitle' lang='en'>EnTitle</div>
+                    <div class='bloom-visibility-code-on' data-book='bookTitle' lang='dcc'>DccTitle</div>
+                    <div class='bloom-visibility-code-on' data-book='bookTitle' lang='en'>EnTitle</div>
 				</div>
 				<div class='bloom-page cover' id='guid4'>
 					<div class='bloom-translationGroup'>
-						<div class='bloom-editable' data-book='bookTitle' lang='dcc'>DccTitle</div>
-						<div class='bloom-editable' data-book='bookTitle' lang='en'>EnTitle</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='dcc'>DccTitle</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='en'>EnTitle</div>
 					</div>
 				</div>
 				<div class='bloom-page titlePage' id='guid5'>
@@ -621,8 +619,8 @@ namespace BloomTests.Book
                 @"<html ><head></head><body>
 				<div class='bloom-page cover' id='guid4'>
 					<div class='bloom-translationGroup'>
-						<div class='bloom-editable' data-book='bookTitle' lang='dcc'>DccTitle</div>
-						<div class='bloom-editable' data-book='bookTitle' lang='en'><p></p></div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='dcc'>DccTitle</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='en'><p></p></div>
 					</div>
 				</div>
 			 </body></html>"
@@ -2406,6 +2404,65 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void MergeBrandingSettings_WithBadgeToken_ExpandsInPlaceAndComposesWithOtherMarkup()
+        {
+            var tempFolder = new TemporaryFolder("MergeBrandingSettingsBadgeTest");
+            var mergeTestDir = Path.Combine(tempFolder.Path, "merge-test");
+            Directory.CreateDirectory(mergeTestDir);
+            var brandingFilePath = Path.Combine(mergeTestDir, "branding.json");
+
+            // Deliberately surround the token with other markup so we prove it expands
+            // wherever it appears in the content, not only when it is the whole value.
+            var brandingJson =
+                @"{
+              ""presets"": [
+                {
+            ""data-book"": ""outside-back-cover-branding-top-html"",
+            ""lang"": ""*"",
+            ""content"": ""<p>intro</p>{bloom-badge-default}<p>outro</p>"",
+            ""condition"": ""always""
+                }
+              ]
+            }";
+            File.WriteAllText(brandingFilePath, brandingJson);
+
+            try
+            {
+                var htmlDom = new HtmlDom();
+                var settings = CreateCollection(Language1LangTag: "en", Language1Name: "English");
+                var bookData = new BookData(htmlDom, settings, null);
+
+                // Sanity check the setup: the token is present and unexpanded before merging.
+                Assert.That(
+                    File.ReadAllText(brandingFilePath),
+                    Does.Contain("{bloom-badge-default}"),
+                    "test setup problem: branding.json should contain the token before merging"
+                );
+
+                bookData.MergeBrandingSettings(mergeTestDir);
+
+                var result = bookData
+                    .GetVariableOrNull("outside-back-cover-branding-top-html", "*")
+                    .Xml;
+
+                var expectedBadgeHtml = BookStorage.BrandingBadgeHtmlByToken["bloom-badge-default"];
+                Assert.That(
+                    result,
+                    Does.Not.Contain("{bloom-badge-default}"),
+                    "the token should have been replaced"
+                );
+                Assert.That(
+                    result,
+                    Is.EqualTo("<p>intro</p>" + expectedBadgeHtml + "<p>outro</p>")
+                );
+            }
+            finally
+            {
+                tempFolder.Dispose();
+            }
+        }
+
+        [Test]
         public void MigrateData_TopicInTokPisinButNotEnglish_ChangesLangToEnglish()
         {
             var bookDom = new HtmlDom(
@@ -3235,6 +3292,139 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void SynchronizeDataItemsThroughoutDOM_StripsDisplayFromStyleAttribute()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					 <div data-book='bookTitle' lang='tpi' style='display:block; color: red; font-weight:bold'><p>something</p></div>
+				</div>
+				<div class='bloom-page'>
+					 <div findMe='target' data-book='bookTitle' lang='tpi' style='display:none; background: blue' class='bloom-editable'><p/></div>
+				</div>
+				</body></html>"
+            );
+
+            var data = new BookData(dom, _collectionSettings, null);
+            data.SynchronizeDataItemsThroughoutDOM();
+
+            var target = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='target']");
+            var style = target.GetAttribute("style");
+            Assert.That(style, Does.Not.Contain("display"));
+            Assert.That(style, Does.Contain("color: red"));
+            Assert.That(style, Does.Contain("font-weight:bold"));
+        }
+
+        [Test]
+        public void GatherDataItemsFromXElement_BloomEditableTrailingEmptyDiv_NormalizesStoredValue()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+                <div class='bloom-page'>
+                     <div class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='en'><p>title EN</p><div>&#160;</div></div>
+                </div>
+                </body></html>"
+            );
+            var dataSet = new DataSet();
+            var bookData = new BookData(
+                new HtmlDom("<html><body></body></html>"),
+                _collectionSettings,
+                null
+            );
+
+            bookData.GatherDataItemsFromXElement(dataSet, dom.RawDom.DocumentElement);
+
+            var storedForm = dataSet
+                .TextVariables["bookTitle"]
+                .TextAlternatives.GetExactAlternative("en");
+            Assert.That(storedForm, Does.Not.Contain("<div"));
+            Assert.That(storedForm, Does.Contain("title EN"));
+        }
+
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_BloomEditableTrailingEmptyDiv_NormalizesAppliedValue()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+                <div id='bloomDataDiv'>
+                     <div data-book='bookTitle' lang='en'><p>title EN</p><div>&#160;</div></div>
+                </div>
+                <div class='bloom-page'>
+                     <div findMe='target' class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='en'><p/></div>
+                </div>
+                </body></html>"
+            );
+
+            var data = new BookData(dom, _collectionSettings, null);
+            data.SynchronizeDataItemsThroughoutDOM();
+
+            var target = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='target']");
+            Assert.That(target.InnerXml, Does.Not.Contain("<div"));
+            Assert.That(target.InnerXml, Does.Contain("title EN"));
+        }
+
+        [Test]
+        public void GatherDataItemsFromXElement_BloomEditableAudioSpans_PreservesSpaceBetweenAdjacentSpans()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+                <div class='bloom-page'>
+                     <div class='bloom-editable bloom-visibility-code-on audio-sentence bloom-postAudioSplit' data-book='coverImageDescription' lang='en' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='6.200 12.080'><p><span class='bloom-highlightSegment'>Gentle waves on a beach.</span> <span class='bloom-highlightSegment'>Large rocks, houses and trees are seen in the distance.</span></p></div>
+                </div>
+                </body></html>",
+                true
+            );
+            var dataSet = new DataSet();
+            var bookData = new BookData(
+                new HtmlDom("<html><body></body></html>"),
+                _collectionSettings,
+                null
+            );
+
+            bookData.GatherDataItemsFromXElement(dataSet, dom.RawDom.DocumentElement);
+
+            var storedForm = dataSet
+                .TextVariables["coverImageDescription"]
+                .TextAlternatives.GetExactAlternative("en");
+            Assert.That(
+                storedForm,
+                Does.Contain(
+                    "</span> <span class=\"bloom-highlightSegment\">Large rocks, houses and trees are seen in the distance."
+                )
+            );
+        }
+
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_BloomEditableAudioSpans_PreservesSpaceBetweenAdjacentSpans()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+                <div id='bloomDataDiv'>
+                     <div data-book='coverImageDescription' lang='en' class='bloom-editable audio-sentence bloom-postAudioSplit' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='6.200 12.080'><p><span class='bloom-highlightSegment'>Gentle waves on a beach.</span> <span class='bloom-highlightSegment'>Large rocks, houses and trees are seen in the distance.</span></p></div>
+                </div>
+                <div class='bloom-page'>
+                     <div findMe='target' class='bloom-editable bloom-visibility-code-on audio-sentence bloom-postAudioSplit' data-book='coverImageDescription' lang='en' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='6.200 12.080'><p/></div>
+                </div>
+                </body></html>",
+                true
+            );
+
+            var data = new BookData(dom, _collectionSettings, null);
+            data.SynchronizeDataItemsThroughoutDOM();
+
+            var target = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='target']");
+            Assert.That(
+                target.InnerXml,
+                Does.Contain(
+                    "</span> <span class=\"bloom-highlightSegment\">Large rocks, houses and trees are seen in the distance."
+                )
+            );
+        }
+
+        [Test]
         public void GatherDataItemsFromXElement_OmitsDataPageNumber()
         {
             var dom = new HtmlDom(
@@ -3266,6 +3456,411 @@ namespace BloomTests.Book
             dataPage = data.GetXmatterPageDataAttributeValue("outsideBackCover", "data-page");
             Assert.That(pageNumber, Is.EqualTo(""));
             Assert.That(dataPage, Is.EqualTo("required singleton"));
+        }
+
+        [Test]
+        public void SuckInDataFromEditedDom_CustomLayoutTextStyle_DoesNotTransferToStandardField()
+        {
+            var bookDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'>
+                    <div data-book='contentLanguage1' lang='*'>en</div>
+                    <div data-book='bookTitle' lang='en'><p>Standard Title</p></div>
+                </div>
+				<div class='bloom-page' id='titlePage'>
+                    <div class='bloom-editable Title-On-Title-Page-style' data-book='bookTitle' lang='en'><p/></div>
+				</div>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+                    <div class='marginBox'></div>
+				</div>
+			</body></html>"
+            );
+            var data = new BookData(bookDom, _collectionSettings, null);
+
+            var editedPageDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+					<div class='marginBox'>
+                        <div class='bloom-editable Title-On-Cover-style bloom-visibility-code-on' data-book='bookTitle' lang='en' data-audiorecordingmode='TextBox' style='color: red; -webkit-text-stroke-color: rgb(0, 0, 0); -webkit-text-stroke-width: 2px; paint-order: stroke;'><p>Custom Title</p></div>
+					</div>
+				</div>
+			</body></html>"
+            );
+
+            data.SuckInDataFromEditedDom(editedPageDom);
+
+            var standardTitle = (SafeXmlElement)
+                bookDom.SelectSingleNodeHonoringDefaultNS(
+                    "//*[@id='titlePage']//*[@data-book='bookTitle' and @lang='en']"
+                );
+            var savedTitle = (SafeXmlElement)
+                bookDom.SelectSingleNodeHonoringDefaultNS(
+                    "//*[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']"
+                );
+            var customTitle = (SafeXmlElement)
+                bookDom.SelectSingleNodeHonoringDefaultNS(
+                    "//*[@id='customCover1']//*[@data-book='bookTitle' and @lang='en']"
+                );
+
+            Assert.That(standardTitle.HasAttribute("style"), Is.False);
+            Assert.That(savedTitle.HasAttribute("style"), Is.False);
+            Assert.That(
+                standardTitle.GetAttribute("data-audiorecordingmode"),
+                Is.EqualTo("TextBox")
+            );
+            Assert.That(
+                customTitle.GetAttribute("style"),
+                Does.Contain("-webkit-text-stroke-color")
+            );
+        }
+
+        [Test]
+        public void SuckInDataFromEditedDom_CustomLayoutPage_InactivatesNestedDataAndClassesInDataDiv_ButRestoresInLiveDom()
+        {
+            var bookDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'>
+                    <div data-book='contentLanguage1' lang='*'>xyz</div>
+                    <div data-book='contentLanguage2' lang='*'>en</div>
+                    <div data-book='contentLanguage3' lang='*'>fr</div>
+                </div>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+                    <div class='marginBox'></div>
+				</div>
+			</body></html>"
+            );
+            var data = new BookData(bookDom, _collectionSettings, null);
+
+            var editedPageDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+					<div class='marginBox'>
+                        <div data-derived='topic'>Topic Placeholder</div>
+                        <div class='bloom-translationGroup someOtherClass'>
+                            <div class='bloom-editable bloom-visibility-code-on otherClass' data-book='bookTitle' lang='en'>My Title</div>
+						</div>
+						<div data-collection='x'>Collection Value</div>
+						<div data-library='y'>Library Value</div>
+						<div data-xmatter-page='frontCover'>xmatter</div>
+					</div>
+				</div>
+			</body></html>"
+            );
+
+            // SUT. This function first copies the data into the bloomDataDiv, then updates the live DOM to match
+            // So we expect that after this function, the bloomDataDiv will have the inactivated data,
+            // but the live DOM have the normal data in BOTH elements that have the data-book attribute.
+            data.SuckInDataFromEditedDom(editedPageDom);
+
+            // Validate that the bloomDataDiv has the inactivated data and classes
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//*[@data-book or @data-derived or @data-collection or @data-library or @data-xmatter-page]"
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//*[@data-book-inactive]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//*[@data-derived-inactive]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//*[@data-collection-inactive]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//*[@data-library-inactive]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//*[@data-xmatter-page-inactive]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//*[contains(concat(' ', normalize-space(@class), ' '), ' tg-inactive ')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//*[contains(concat(' ', normalize-space(@class), ' '), ' edit-inactive ')]",
+                    1
+                );
+
+            // Validate that the live DOM has the normal data and classes in the custom-layout page.
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[contains(concat(' ', normalize-space(@class), ' '), ' bloom-translationGroup ')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[contains(concat(' ', normalize-space(@class), ' '), ' bloom-editable ')]",
+                    3
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book='bookTitle' and @lang='xyz']",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book='bookTitle' and @lang='en']",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book='bookTitle' and @lang='fr']",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book='bookTitle' and contains(concat(' ', normalize-space(@class), ' '), ' bloom-visibility-code-on ')]",
+                    3
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book='bookTitle' and not(contains(concat(' ', normalize-space(@class), ' '), ' bloom-visibility-code-on '))]",
+                    0
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book-inactive or @data-derived-inactive or @data-collection-inactive or @data-library-inactive or @data-xmatter-page-inactive]"
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book='bookTitle']",
+                    3
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-derived='topic']",
+                    1
+                );
+        }
+
+        [Test]
+        public void SuckInDataFromEditedDom_CustomLayoutPageWithImage_UpdatesSavedMarginBoxImageMetadata()
+        {
+            var bookDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='customOutsideFrontCover' lang='*'>
+						<div class='marginBox'>
+							<img src='cover.png' data-copyright='Old Copyright' data-creator='Old Creator' data-license='Old License'/>
+						</div>
+					</div>
+				</div>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+					<div class='marginBox'>
+						<img src='cover.png' data-copyright='Old Copyright' data-creator='Old Creator' data-license='Old License'/>
+					</div>
+				</div>
+			</body></html>"
+            );
+            var data = new BookData(bookDom, _collectionSettings, null);
+
+            var editedPageDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+					<div class='marginBox'>
+						<img src='cover.png' data-copyright='New Copyright' data-creator='New Creator' data-license='New License'/>
+					</div>
+				</div>
+			</body></html>"
+            );
+
+            var editedPage = (SafeXmlElement)
+                editedPageDom.RawDom.SelectSingleNode(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']"
+                );
+
+            data.SuckInDataFromEditedDom(editedPage);
+
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//img[@src='cover.png' and @data-copyright='New Copyright' and @data-creator='New Creator' and @data-license='New License']",
+                    1
+                );
+        }
+
+        [Test]
+        public void SuckInDataFromEditedDom_CustomLayoutPage_DataBookEntriesKeepTalkingBookAttributes()
+        {
+            var bookDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'>
+                    <div data-book='contentLanguage1' lang='*'>xyz</div>
+                    <div data-book='contentLanguage2' lang='*'>en</div>
+                </div>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+                    <div class='marginBox'></div>
+				</div>
+			</body></html>"
+            );
+            var data = new BookData(bookDom, _collectionSettings, null);
+
+            var editedPageDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+					<div class='marginBox'>
+                        <div class='bloom-translationGroup'>
+                            <div class='bloom-editable bloom-visibility-code-on audio-sentence' data-book='bookTitle' lang='en' id='i6a720491' data-audiorecordingmode='TextBox' recordingmd5='5b5efdab7f705554614a6383ae6d9469' data-duration='5.839433'><p>My Title</p></div>
+						</div>
+                        <img id='transientImageId' src='cover.png'/>
+                        <div data-book='customNote' lang='en'><p><span class='audio-sentence' id='nestedSentenceId'>Nested sentence</span></p></div>
+                        <p><span class='audio-sentence' id='plainSentenceId'>Unbound sentence</span></p>
+					</div>
+				</div>
+			</body></html>"
+            );
+
+            data.SuckInDataFromEditedDom(editedPageDom);
+
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and @id='i6a720491' and @data-audiorecordingmode='TextBox' and @recordingmd5='5b5efdab7f705554614a6383ae6d9469' and @data-duration='5.839433']",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//*[@data-book-inactive='bookTitle' and @data-id-inactive='i6a720491' and not(@id) and not(@id-inactive)]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//span[contains(@class,'audio-sentence') and @id='plainSentenceId' and not(@data-id-inactive) and not(@id-inactive)]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//div[@data-book-inactive='customNote']//span[contains(@class,'audio-sentence') and @data-id-inactive='nestedSentenceId' and not(@id) and not(@id-inactive)]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//img[@src='cover.png' and not(@id) and not(@data-id-inactive) and not(@id-inactive)]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//span[contains(@class,'audio-sentence') and @id='plainSentenceId']",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//span[contains(@class,'audio-sentence') and @id='nestedSentenceId']",
+                    1
+                );
+        }
+
+        [Test]
+        public void GetInactiveAttributeNamesToRestore_Id_IncludesLegacyName()
+        {
+            var names = BookData.GetInactiveAttributeNamesToRestore("id");
+
+            Assert.That(names, Is.EqualTo(new[] { "data-id-inactive", "id-inactive" }));
+        }
+
+        [Test]
+        public void GatherDataItemsFromXElement_CustomLayoutPageWithXmatterPage_GathersXmatterAttributes()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' data-xmatter-page='frontCover' data-someattribute='someValue'>
+                    <div class='marginBox'>
+                        <div data-book='bookTitle' lang='en'>My Title</div>
+                    </div>
+				</div>
+			</body></html>"
+            );
+            var dataSet = new DataSet();
+            var bookData = new BookData(
+                new HtmlDom("<html><body></body></html>"),
+                _collectionSettings,
+                null
+            );
+
+            bookData.GatherDataItemsFromXElement(dataSet, dom.RawDom.DocumentElement);
+
+            Assert.That(
+                dataSet.XmatterPageDataAttributeSets.TryGetValue(
+                    "frontCover",
+                    out var xmatterAttributes
+                ),
+                Is.True
+            );
+            Assert.That(
+                xmatterAttributes.Single(x => x.Key == "data-someattribute").Value,
+                Is.EqualTo("someValue")
+            );
+            Assert.That(xmatterAttributes.Any(x => x.Key == "data-custom-layout-id"), Is.False);
+            Assert.That(dataSet.TextVariables.ContainsKey("customOutsideFrontCover"), Is.True);
+        }
+
+        [Test]
+        public void UpdateDomFromDataset_CustomLayoutPageWithXmatterPage_RestoresXmatterAttributes()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'>
+                    <div data-xmatter-page='frontCover' data-someattribute='someValue'></div>
+                </div>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' data-xmatter-page='frontCover'>
+                    <div class='marginBox'>
+                        <div data-book='bookTitle' lang='en'>My Title</div>
+                    </div>
+				</div>
+			</body></html>"
+            );
+
+            var bookData = new BookData(dom, _collectionSettings, null);
+            var customPage = (SafeXmlElement)
+                dom.RawDom.SelectSingleNode(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']"
+                );
+            customPage.RemoveAttribute("data-someattribute");
+
+            bookData.UpdateDomFromDataset();
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover' and @data-xmatter-page='frontCover' and @data-someattribute='someValue']",
+                    1
+                );
         }
 
         public static CollectionSettings CreateCollection(

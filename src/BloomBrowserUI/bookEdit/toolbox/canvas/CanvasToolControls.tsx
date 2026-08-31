@@ -1,14 +1,16 @@
 import { css, ThemeProvider } from "@emotion/react";
+import tinycolor from "tinycolor2";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import "./canvasTool.less";
-import { getEditTabBundleExports } from "../../js/bloomFrames";
+import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
 import {
     CanvasElementManager,
     ITextColorInfo,
-} from "../../js/CanvasElementManager";
+    ITextOutlineColorInfo,
+} from "../../js/canvasElementManager/CanvasElementManager";
 import { Bubble, BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import FormControl from "@mui/material/FormControl";
@@ -47,9 +49,9 @@ import {
     kImageFitModeAttribute,
     kImageFitModeContainValue,
     kImageFitModeCoverValue,
-} from "./canvasElementUtils";
+} from "./canvasElementPageBridge";
+import { getPersistedCanvasColor } from "./canvasColorUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
-import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
 import { ToolBox } from "../toolbox";
 import BloomSelect from "../../../react_components/bloomSelect";
 import {
@@ -67,6 +69,18 @@ type ImageFillMode =
     | typeof kImageFillModePaddedValue
     | typeof kImageFitModeContainValue
     | typeof kImageFitModeCoverValue;
+
+const getBubbleTypeFromManager = (
+    mgr: CanvasElementManager | undefined,
+): "text" | "image" | "video" | undefined => {
+    if (!mgr) {
+        return undefined;
+    }
+    if (mgr.isActiveElementPictureCanvasElement()) {
+        return "image";
+    }
+    return mgr.isActiveElementVideoCanvasElement() ? "video" : "text";
+};
 
 const getImageFillModeForElement = (element: HTMLElement): ImageFillMode => {
     const currentFillMode = element.getAttribute(kImageFitModeAttribute);
@@ -96,9 +110,19 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const [imageFillMode, setImageFillMode] = useState<ImageFillMode>(
         kImageFillModePaddedValue,
     );
-    const [isXmatter, setIsXmatter] = useState(true);
+    // This is generally true if the page is xmatter (tools are forbidden).
+    // There is a special case where it is false for custom page layouts (tools are allowed).
+    // Currently it will be true for game pages, although in fact we
+    // don't currently allow it to be used; it is partly historical,
+    // and partly we want to show a special message if someone tries to use it there.
+    const [pageTypeForbidsCanvasTools, setPageTypeForbidsCanvasTools] =
+        useState(
+            ToolboxToolReactAdaptor.isXmatter({
+                returnFalseForCustomPage: true,
+            }),
+        );
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
-    const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
+    const [_pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
 
     // While renaming Comic -> Overlay, I (gjm) intentionally left several (21) "keys" with
     // the old "ComicTool" to avoid the whole deprecate/invalidate/retranslate issue.
@@ -108,6 +132,14 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const textColorTitle = useL10n(
         "Text Color",
         "EditTab.Toolbox.ComicTool.Options.TextColor",
+    );
+    const textOutlineColorTitle = useL10n(
+        "Text Outline Color",
+        "EditTab.Toolbox.ComicTool.Options.TextOutlineColor",
+    );
+    const noneLabel = useL10n(
+        "None",
+        "EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None",
     );
     const backgroundColorTitle = useL10n(
         "Background Color",
@@ -124,6 +156,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
         defaultTextColors[0],
     );
     const [textColorIsDefault, setTextColorIsDefault] = useState(true);
+    const [textOutlineColorSwatch, setTextOutlineColorSwatch] = useState(
+        getColorInfoFromSpecialNameOrColorString("transparent"),
+    );
+    const [textOutlineColorIsDefault, setTextOutlineColorIsDefault] =
+        useState(true);
 
     // Background color swatch
     // defaults to "white" background color
@@ -133,12 +170,35 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     // If canvasElementType is not undefined, corresponds to the active canvas element's family.
     // Otherwise, corresponds to the most recently active canvas element's family.
-    const [currentBubble, setCurrentBubble] = useState<Bubble | undefined>(
+    const [currentBubble, setCurrentBubbleState] = useState<Bubble | undefined>(
         undefined,
+    );
+    const lastPolledTypeRef = useRef<CanvasElementType>(undefined);
+    const lastPolledBubbleRef = useRef<Bubble | undefined>(undefined);
+
+    function setCurrentBubble(bubble: Bubble | undefined) {
+        lastPolledBubbleRef.current = bubble;
+        setCurrentBubbleState(bubble);
+    }
+
+    const getBubbleType = useCallback(
+        (mgr: CanvasElementManager | undefined): CanvasElementType => {
+            if (!mgr) {
+                return undefined;
+            }
+            if (!mgr.getActiveElement()) {
+                return undefined;
+            }
+            if (mgr.isActiveElementPictureCanvasElement()) {
+                return "image";
+            }
+            return mgr.isActiveElementVideoCanvasElement() ? "video" : "text";
+        },
+        [],
     );
 
     // Callback to initialize bubbleEditing and get the initial bubbleSpec
-    const bubbleSpecInitialization = () => {
+    const bubbleSpecInitialization = useCallback(() => {
         const canvasElementManager = getCanvasElementManager();
         if (!canvasElementManager) {
             console.assert(
@@ -159,26 +219,97 @@ const CanvasToolControls: React.FunctionComponent = () => {
             "canvasElement",
             (bubble: Bubble | undefined) => {
                 setCurrentBubble(bubble);
+                setCanvasElementType(getBubbleType(canvasElementManager));
             },
         );
 
         setCurrentBubble(bubble);
-    };
+        setCanvasElementType(getBubbleType(canvasElementManager));
+    }, [getBubbleType]);
 
-    // Enhance: if we don't want to have a static, or don't want
-    // this function to know about CanvasTool, we could just pass
-    // a setter for this as a property.
-    // In production, CanvasTool.theOneCanvasTool is always defined here.
-    // During hot module reloading in dev mode, somehow it is sometimes not.
-    // In such cases the initialization should already have been done.
-    if (CanvasTool.theOneCanvasTool) {
-        CanvasTool.theOneCanvasTool.callOnNewPageReady = () => {
-            bubbleSpecInitialization();
-            setIsXmatter(ToolboxToolReactAdaptor.isXmatter());
-            const count = pageRefreshIndicator;
-            setPageRefreshIndicator(count + 1);
+    // We want the code in this method to execute when a new page is loaded
+    // and the toolbox is also loaded. Depending on the exact sequence of events
+    // as the various iframes are loaded and tools and pages are changed, knowing
+    // when everything is ready to do this is tricky. The following useEffect
+    // makes sure it gets called at the right time.
+    // (This got added when we went to a single browser. Not sure whether it
+    // became necessary then, or whether it just made an existing race condition
+    // more likely to happen.)
+    const refreshFromCurrentPage = useCallback(() => {
+        bubbleSpecInitialization();
+        setPageTypeForbidsCanvasTools(
+            ToolboxToolReactAdaptor.isXmatter({
+                returnFalseForCustomPage: true,
+            }),
+        );
+        setPageRefreshIndicator((count) => count + 1);
+    }, [bubbleSpecInitialization]);
+
+    useEffect(() => {
+        // This variable tracks whether we have successfully wired up the CanvasTool
+        // to call our refreshFromCurrentPage callback when a new page is ready.
+        let wiredCanvasTool: CanvasTool | undefined;
+        let retryTimer: number | undefined;
+
+        const wireCanvasTool = (): boolean => {
+            const canvasTool = CanvasTool.theOneCanvasTool;
+            if (!canvasTool) {
+                return false;
+            }
+
+            canvasTool.callOnNewPageReady = refreshFromCurrentPage;
+            wiredCanvasTool = canvasTool;
+
+            // Make sure the initial mount reflects the current page state even if
+            // newPageReady fired before this component finished mounting.
+            refreshFromCurrentPage();
+            return true;
         };
-    }
+
+        if (!wireCanvasTool()) {
+            retryTimer = window.setInterval(() => {
+                if (wireCanvasTool() && retryTimer !== undefined) {
+                    window.clearInterval(retryTimer);
+                    retryTimer = undefined;
+                }
+            }, 200);
+        }
+
+        return () => {
+            if (retryTimer !== undefined) {
+                window.clearInterval(retryTimer);
+            }
+            if (wiredCanvasTool) {
+                wiredCanvasTool.callOnNewPageReady = () => undefined;
+            }
+        };
+    }, [refreshFromCurrentPage]);
+
+    // Keep controls synced with current canvas selection, even if a focus/click path
+    // fails to trigger the usual canvasElement change notification.
+    // This was also added when we went to single-browser; it may have been coincidence
+    // that testing that found some corner cases where things did not end up in sync.
+    useEffect(() => {
+        const pollTimer = window.setInterval(() => {
+            const manager = getCanvasElementManager();
+            const polledType = getBubbleType(manager);
+            if (polledType !== lastPolledTypeRef.current) {
+                lastPolledTypeRef.current = polledType;
+                setCanvasElementType(polledType);
+            }
+
+            const polledBubble = manager?.getPatriarchBubbleOfActiveElement();
+            if (
+                polledBubble?.content !== lastPolledBubbleRef.current?.content
+            ) {
+                setCurrentBubble(polledBubble);
+            }
+        }, 250);
+
+        return () => {
+            window.clearInterval(pollTimer);
+        };
+    }, [getBubbleType]);
 
     // Reset UI when current bubble spec changes (e.g. user clicked on a bubble).
     useEffect(() => {
@@ -205,7 +336,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
             setBackgroundColorSwatch(newSwatch);
 
             const canvasElementManager = getCanvasElementManager();
-            setCanvasElementType(getBubbleType(canvasElementManager));
+            setCanvasElementType(
+                getBubbleTypeFromManager(canvasElementManager),
+            );
             setImageFillMode(getImageFillModeForElement(currentBubble.content));
             if (canvasElementManager) {
                 // Get the current canvas element's textColor and set it
@@ -218,24 +351,29 @@ const CanvasToolControls: React.FunctionComponent = () => {
                     canvasElementTextColorInformation.color,
                 );
                 setTextColorSwatch(newSwatch);
+
+                const canvasElementTextOutlineColorInformation: ITextOutlineColorInfo =
+                    canvasElementManager.getTextOutlineColorInformation();
+                setTextOutlineColorIsDefault(
+                    canvasElementTextOutlineColorInformation.isDefault,
+                );
+                if (canvasElementTextOutlineColorInformation.isDefault) {
+                    setTextOutlineColorSwatch(
+                        getColorInfoFromSpecialNameOrColorString("transparent"),
+                    );
+                } else {
+                    setTextOutlineColorSwatch(
+                        getColorInfoFromSpecialNameOrColorString(
+                            canvasElementTextOutlineColorInformation.color,
+                        ),
+                    );
+                }
             }
         } else {
-            setCanvasElementType(undefined);
+            setCanvasElementType(getBubbleType(getCanvasElementManager()));
             setImageFillMode(kImageFillModePaddedValue);
         }
-    }, [currentBubble]);
-
-    const getBubbleType = (
-        mgr: CanvasElementManager | undefined,
-    ): CanvasElementType => {
-        if (!mgr) {
-            return undefined;
-        }
-        if (mgr.isActiveElementPictureCanvasElement()) {
-            return "image";
-        }
-        return mgr.isActiveElementVideoCanvasElement() ? "video" : "text";
-    };
+    }, [currentBubble, getBubbleType]);
 
     // Callback for style changed
     const handleStyleChanged = (event) => {
@@ -252,14 +390,30 @@ const CanvasToolControls: React.FunctionComponent = () => {
             };
 
             // BL-8537: If we are choosing "caption" style, we make sure that the background color is opaque.
-            const backgroundColorArray =
-                currentBubble?.getBubbleSpec()?.backgroundColors;
+            // (We need this to cover the black rectangle that produces the shadow effect.)
+            const backgroundColorArray = currentBubble
+                ?.getBubbleSpec()
+                ?.backgroundColors?.slice();
             if (
                 newStyle === "caption" &&
                 backgroundColorArray &&
                 backgroundColorArray.length === 1
             ) {
-                backgroundColorArray[0] = setOpaque(backgroundColorArray[0]);
+                // transparent becomes black when made opaque, which is probably not useful,
+                // so go with what is probably expected for a caption.
+                if (isFullyTransparent(backgroundColorArray[0])) {
+                    const defaultCaptionBackgroundColors =
+                        getDefaultCaptionBackgroundColors();
+                    backgroundColorArray.splice(
+                        0,
+                        backgroundColorArray.length,
+                        ...defaultCaptionBackgroundColors,
+                    );
+                } else {
+                    backgroundColorArray[0] = setOpaque(
+                        backgroundColorArray[0],
+                    );
+                }
             }
 
             // Avoid setting backgroundColorArray if it's just undefined.
@@ -388,7 +542,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     // We come into this from chooser change
     const updateTextColor = (newColor: IColorInfo) => {
-        const color = newColor.colors[0]; // text color is always monochrome
+        const color = getPersistedCanvasColor(newColor);
         const canvasElementManager = getCanvasElementManager();
         if (canvasElementManager) {
             // Update the toolbox controls
@@ -405,6 +559,31 @@ const CanvasToolControls: React.FunctionComponent = () => {
         if (canvasElementManager) {
             setTextColorIsDefault(true);
             canvasElementManager.setTextColor(""); // sets canvas element to use style default
+            updateReactFromComical(canvasElementManager);
+        }
+    };
+
+    // We come into this from chooser change
+    const updateTextOutlineColor = (newColor: IColorInfo) => {
+        const color = getPersistedCanvasColor(newColor);
+        const canvasElementManager = getCanvasElementManager();
+        if (canvasElementManager) {
+            setTextOutlineColorIsDefault(false);
+            setTextOutlineColorSwatch(newColor);
+
+            canvasElementManager.setTextOutlineColor(color);
+            updateReactFromComical(canvasElementManager);
+        }
+    };
+
+    const defaultTextOutlineColorClicked = () => {
+        const canvasElementManager = getCanvasElementManager();
+        if (canvasElementManager) {
+            setTextOutlineColorIsDefault(true);
+            setTextOutlineColorSwatch(
+                getColorInfoFromSpecialNameOrColorString("transparent"),
+            );
+            canvasElementManager.setTextOutlineColor("");
             updateReactFromComical(canvasElementManager);
         }
     };
@@ -512,22 +691,52 @@ const CanvasToolControls: React.FunctionComponent = () => {
     };
 
     const launchTextColorChooser = () => {
+        launchTextStyleChooser(
+            textColorTitle,
+            textColorSwatch,
+            updateTextColor,
+            defaultTextColorClicked,
+        );
+    };
+
+    const launchTextOutlineColorChooser = () => {
+        launchTextStyleChooser(
+            textOutlineColorTitle,
+            textOutlineColorIsDefault
+                ? defaultTextColors[0]
+                : textOutlineColorSwatch,
+            updateTextOutlineColor,
+            defaultTextOutlineColorClicked,
+            noneLabel,
+        );
+    };
+
+    const launchTextStyleChooser = (
+        localizedTitle: string,
+        initialColor: IColorInfo,
+        onChange: (color: IColorInfo) => void,
+        onDefaultClick: () => void,
+        defaultButtonLabel?: string,
+    ) => {
         const colorPickerDialogProps: IColorPickerDialogProps = {
-            transparency: false,
+            transparency: true,
             noGradientSwatches: true,
-            localizedTitle: textColorTitle,
-            initialColor: textColorSwatch,
+            localizedTitle,
+            initialColor,
             palette: BloomPalette.Text,
             isForCanvasElement: true,
-            onChange: (color) => updateTextColor(color),
+            onChange: (color) => onChange(color),
             onInputFocus: noteInputFocused,
             includeDefault: true,
-            onDefaultClick: defaultTextColorClicked,
+            onDefaultClick,
+            defaultButtonLabel,
             //defaultColor???
         };
-        getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
+        getWorkspaceBundleExports().showColorPickerDialog(
+            colorPickerDialogProps,
+        );
         ToolBox.addWhenClosingToolTask(() => {
-            getEditTabBundleExports().hideColorPickerDialog();
+            getWorkspaceBundleExports().hideColorPickerDialog();
         });
     };
 
@@ -550,9 +759,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-9922.
         if (colorPickerDialogProps.initialColor.opacity === 0)
             colorPickerDialogProps.initialColor.opacity = 100;
-        getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
+        getWorkspaceBundleExports().showColorPickerDialog(
+            colorPickerDialogProps,
+        );
         ToolBox.addWhenClosingToolTask(() => {
-            getEditTabBundleExports().hideColorPickerDialog();
+            getWorkspaceBundleExports().hideColorPickerDialog();
         });
     };
 
@@ -621,8 +832,26 @@ const CanvasToolControls: React.FunctionComponent = () => {
             />
         </FormControl>
     );
+    const textOutlineColorControl = (
+        <FormControl variant="standard">
+            <InputLabel htmlFor="text-outline-color-bar" shrink={true}>
+                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextOutlineColor">
+                    Text Outline Color
+                </Span>
+            </InputLabel>
+            <ColorBar
+                id="text-outline-color-bar"
+                onClick={launchTextOutlineColorChooser}
+                colorInfo={textOutlineColorSwatch}
+                text={textOutlineColorIsDefault ? "- - -" : undefined}
+                alignTextLeft={textOutlineColorIsDefault}
+            />
+        </FormControl>
+    );
 
     const activeElement = canvasElementManager?.getActiveElement();
+    const effectiveCanvasElementType =
+        getBubbleType(canvasElementManager) ?? canvasElementType;
     const isButton =
         activeElement?.classList.contains(kBloomButtonClass) ?? false;
     const hasImage =
@@ -700,11 +929,12 @@ const CanvasToolControls: React.FunctionComponent = () => {
             return (
                 <>
                     {hasText && textColorControl}
+                    {hasText && textOutlineColorControl}
                     {backgroundColorControl}
                     {hasImage && imageFillControl}
                 </>
             );
-        switch (canvasElementType) {
+        switch (effectiveCanvasElementType) {
             case "image":
             case "video":
                 return noControlsSection;
@@ -714,8 +944,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
                     <form autoComplete="off">
                         <FormControl variant="standard">
                             <InputLabel htmlFor="canvasElement-style-dropdown">
-                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
-                                    Style
+                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.ElementType">
+                                    Element Type
                                 </Span>
                             </InputLabel>
                             <ThemeProvider theme={toolboxMenuPopupTheme}>
@@ -803,6 +1033,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                             />
                         </FormControl>
                         {textColorControl}
+                        {textOutlineColorControl}
                         {backgroundColorControl}
                         <FormControl
                             variant="standard"
@@ -922,7 +1153,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
                             >
                                 <CanvasElementItemRegion
                                     theme="blueOnTan"
-                                    className={!isXmatter ? "" : "disabled"}
+                                    className={
+                                        pageTypeForbidsCanvasTools
+                                            ? "disabled"
+                                            : ""
+                                    }
                                 >
                                     <CanvasElementItemRow>
                                         <CanvasElementItem
@@ -1023,7 +1258,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 <div
                                     id={"canvasToolControlOptionsRegion"}
                                     className={
-                                        canvasElementType && !isXmatter
+                                        effectiveCanvasElementType &&
+                                        !pageTypeForbidsCanvasTools
                                             ? ""
                                             : "disabled"
                                     }
@@ -1032,7 +1268,6 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 </div>
                                 <div id="canvasToolControlFillerRegion" />
                                 <div id={"canvasToolControlFooterRegion"}>
-                                    <CanvasElementKeyHints />
                                     <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Canvas_Tool/Canvas_Tool_overview.htm" />
                                 </div>
                             </div>
@@ -1049,9 +1284,23 @@ function setOpaque(color: string) {
     firstColor.setAlpha(1.0);
     return firstColor.toHexString();
 }
+
+function isFullyTransparent(color: string): boolean {
+    return new tinycolor(color).getAlpha() === 0;
+}
+
+function getDefaultCaptionBackgroundColors(): string[] {
+    const whiteToCalico = TextBackgroundColors.find(
+        (item) => item.name === "whiteToCalico",
+    );
+    return whiteToCalico?.colors
+        ? [...whiteToCalico.colors]
+        : ["white", "#DFB28B"];
+}
+
 function isBubble(item: BubbleSpec | undefined): boolean {
     // "none" is the style assigned to the plain text box.
-    return !!item && item.style != "none" && item.style != "caption";
+    return !!item && item.style !== "none" && item.style !== "caption";
 }
 
 export default CanvasToolControls;

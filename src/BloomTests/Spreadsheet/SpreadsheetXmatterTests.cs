@@ -68,7 +68,7 @@ namespace BloomTests.Spreadsheet
             <p>English Microwave</p>
         </div>
 
-        <div data-book=""coverImage"" lang=""*"" src=""wrongImage.png"" alt=""This picture, microwave1.png, is missing or was loading too slowly."" data-copyright="""" data-creator="""" data-license="""">
+        <div data-book=""coverImage"" lang=""*"" src=""wrongImage.png"" alt=""This image, microwave1.png, is missing or was loading too slowly."" data-copyright="""" data-creator="""" data-license="""">
             microwave1.png
         </div>
 
@@ -126,6 +126,7 @@ namespace BloomTests.Spreadsheet
         private List<ContentRow> _rowsFromExport;
         private InternalSpreadsheet _sheetFromFile;
         private List<ContentRow> _rowsFromFile;
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _spreadsheetFolder;
 
         [OneTimeSetUp]
@@ -133,7 +134,8 @@ namespace BloomTests.Spreadsheet
         {
             var dom = new HtmlDom(dataDivBook, true);
 
-            _spreadsheetFolder = new TemporaryFolder("SpreadsheetXmatterTests");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _spreadsheetFolder = new TemporaryFolder(_testFolder, "Spreadsheet");
             var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
             mockLangDisplayNameResolver
                 .Setup(x => x.GetLanguageDisplayName("en"))
@@ -160,7 +162,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _spreadsheetFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         void SetupFor(string source)

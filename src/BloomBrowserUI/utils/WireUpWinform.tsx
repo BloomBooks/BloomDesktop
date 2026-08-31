@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "./reactRender";
 import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
@@ -28,12 +28,14 @@ export function WireUpForWinforms(
 
         props = AddDialogPropsWhenWrappedByWinforms(props);
         const c = React.createElement(component, props, null);
-        ReactDOM.render(<ThemedRoot>{c}</ThemedRoot>, root);
+        renderRoot(<ThemedRoot>{c}</ThemedRoot>, root);
         hookupLinkHandler();
     };
 }
 
-const ThemedRoot: React.FunctionComponent = (props) => {
+const ThemedRoot: React.FunctionComponent<{
+    children?: React.ReactNode;
+}> = (props) => {
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={lightTheme}>{props.children}</ThemeProvider>

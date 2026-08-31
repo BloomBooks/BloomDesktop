@@ -15,9 +15,9 @@ namespace Bloom.Book
         private bool _loading = true;
         private string _filePath;
         private int _mostRecentPage;
-        private bool _reducePdfMemory;
         private string _colorProfileForPdf;
         private bool _fullBleed;
+        private bool _includeBackgroundColors;
         private string _spreadsheetFolder;
         private bool _uploadAgreementsAccepted;
 
@@ -94,17 +94,6 @@ namespace Bloom.Book
             }
         }
 
-        [JsonProperty("reducePdfMemory")]
-        public bool ReducePdfMemoryUse
-        {
-            get { return _reducePdfMemory; }
-            set
-            {
-                _reducePdfMemory = value;
-                Save();
-            }
-        }
-
         [JsonProperty("colorProfileForPdf")]
         public string ColorProfileForPdf
         {
@@ -123,6 +112,17 @@ namespace Bloom.Book
             set
             {
                 _fullBleed = value;
+                Save();
+            }
+        }
+
+        [JsonProperty("includeBackgroundColors")]
+        public bool IncludeBackgroundColors
+        {
+            get { return _includeBackgroundColors; }
+            set
+            {
+                _includeBackgroundColors = value;
                 Save();
             }
         }

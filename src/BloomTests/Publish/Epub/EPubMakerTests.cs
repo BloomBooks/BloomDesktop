@@ -14,7 +14,7 @@ namespace BloomTests.Publish.Epub
         public void HandleImageDescriptions_LicenseAlt_SetToDefault()
         {
             string inputImageHtml =
-                "<img class=\"licenseImage\" src=\"a.png\" alt=\"This picture, a.png, is missing or was loading too slowly.\" />";
+                "<img class=\"licenseImage\" src=\"a.png\" alt=\"This image, a.png, is missing or was loading too slowly.\" />";
             var htmlDom = new HtmlDom(
                 $"<html><body><div data-book=\"outside-back-cover-branding-bottom-html\">{inputImageHtml}</div></body></html>"
             );
@@ -55,7 +55,7 @@ namespace BloomTests.Publish.Epub
         public void HandleImageDescriptions_BrandingAlt_Placeholder_SetToDefault()
         {
             string inputImageHtml =
-                "<img src=\"a.png\" alt=\"This picture, a.png, is missing or was loading too slowly.\" />";
+                "<img src=\"a.png\" alt=\"This image, a.png, is missing or was loading too slowly.\" />";
             var htmlDom = new HtmlDom(
                 $"<html><body><div data-book=\"outside-back-cover-branding-bottom-html\">{inputImageHtml}</div></body></html>"
             );
@@ -278,6 +278,8 @@ namespace BloomTests.Publish.Epub
         [TestCase("A5Portrait", 559.37, 793.7)] // gets most common case right
         [TestCase("A5Landscape", 793.7, 559.37)] // make sure orientation matters
         [TestCase("LetterPortrait", 816, 1056)] // one where dimensions are inches
+        [TestCase("Ebook2x3Portrait", 475, 700)] // dimensions given in exact px
+        [TestCase("Ebook7x5Landscape", 959, 690)] // px, and different aspect ratio than portrait
         [TestCase("Garbage", 559.37, 793.7)] // default to A5Portrait
         public void GetPageDimensions(string name, double expectedWidth, double expectedHeight)
         {

@@ -5,12 +5,13 @@
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
-import { theOneCanvasElementManager } from "../js/CanvasElementManager";
+import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
-import { kBloomButtonClass } from "../toolbox/canvas/canvasElementUtils";
+import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
+import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -408,8 +409,23 @@ export default class OverflowChecker {
         // doesn't overflow internally (i.e. has too much stuff to fit in itself).
         // 2-We also need to check that this element and any OTHER elements on the page
         // haven't been pushed outside the margins
+        OverflowChecker.AdjustSizeAndMarkSelfOverflow(
+            editable,
+            doNotShrink,
+            growAsMuchAsPossible,
+        );
+        OverflowChecker.CheckPageAncestorOverflow(editable);
+    } // end AdjustSizeOrMarkOverflow
 
-        // Type 1 Overflow
+    // Type 1 overflow handling: checks/resizes the element's containing canvas element and
+    // marks whether the element overflows its own box. This is the per-element part of
+    // overflow handling and can be called in a loop over multiple elements before calling
+    // CheckPageAncestorOverflow once at the end.
+    public static AdjustSizeAndMarkSelfOverflow(
+        editable: HTMLElement,
+        doNotShrink?: boolean,
+        growAsMuchAsPossible?: boolean,
+    ) {
         const $editable = $(editable);
         if ($editable.hasClass("overflow")) {
             OverflowChecker.RemoveOverflowQtip($editable);
@@ -472,7 +488,6 @@ export default class OverflowChecker {
             overflowY = 0;
         }
 
-        let skipType2Overflow = false;
         if (isInDragActivity(editable)) {
             // We decided that overflow was just causing too many problems as we tried to wrap
             // up drag activities. So for now, we are just turning off overflow reporting completely
@@ -481,7 +496,6 @@ export default class OverflowChecker {
             // point, it is integrated with the code which resizes the canvas element.
             // That's also why we can't just filter out these elements in getElementsThatCanOverflowOrNeedToBeResized.
             overflowY = 0;
-            skipType2Overflow = true;
         }
 
         if (overflowY > 0 || overflowX > 0) {
@@ -492,8 +506,11 @@ export default class OverflowChecker {
             }
             const isButton =
                 $editable.closest("." + kBloomButtonClass).length > 0;
-            if ($editable.parents("[class*=Device]").length === 0 || isButton) {
-                // don't show an overflow warning if we have scrolling available (unless it's a button)
+            // don't show an overflow warning if we have scrolling available (unless it's a button)
+            const scrollingWillBeAvailable =
+                !!page[0] &&
+                OverflowChecker.GetScrollInsteadOfOverflow(page[0]);
+            if (!scrollingWillBeAvailable || isButton) {
                 theOneLocalizationManager
                     .asyncGetText(
                         "EditTab.Overflow",
@@ -524,9 +541,22 @@ export default class OverflowChecker {
                 OverflowChecker.fixScrollBarsSoon(page[0]);
             }
         }
+    }
 
-        if (skipType2Overflow) return;
+    // Type 2 overflow handling: scans all editable elements on the page (within the same
+    // marginBox as `editable`) and marks any that overflow past their ancestor containers.
+    // This is the page-level part of overflow handling. When processing multiple elements
+    // (e.g. in a style-change loop) call AdjustSizeAndMarkSelfOverflow for each element
+    // first, then call this once at the end.
+    public static CheckPageAncestorOverflow(editable: HTMLElement) {
+        if (isInDragActivity(editable)) {
+            // We decided that overflow was just causing too many problems as we tried to wrap
+            // up drag activities. So for now, we are just turning off overflow reporting completely
+            // in drag activities. See BL-14783.
+            return;
+        }
 
+        const $editable = $(editable);
         const container = $editable.closest(".marginBox");
         const quizPage = $(container).closest(".simple-comprehension-quiz");
         const editablePageElements = $(
@@ -616,7 +646,7 @@ export default class OverflowChecker {
             }
         });
         OverflowChecker.UpdatePageOverflow(container.closest(".bloom-page"));
-    } // end AdjustSizeOrMarkOverflow
+    }
 
     // Fix the NiceScroll scrollbars after a short delay to prevent flickering
     // as the mouse drags the size of the element.
@@ -684,15 +714,11 @@ export default class OverflowChecker {
     }
 
     private static GetScrollInsteadOfOverflow(page: HTMLElement): boolean {
-        const $page = $(page);
-        return (
-            $page.hasClass("Device16x9Portrait") ||
-            $page.hasClass("Device16x9Landscape")
-        );
+        return pageScrollsInsteadOfOverflowing(page);
     }
     // Make sure there are no boxes with class 'overflow' or 'thisOverflowingParent' on the page before removing
     // the page-level overflow marker 'pageOverflows', or add it if there are.
-    private static UpdatePageOverflow(page) {
+    private static UpdatePageOverflow(page: JQuery) {
         // TODO: Investigate BL-6686. It seems that it takes more clicks to propagate the pageOverflows class onto a FrontCover page than a normal page??? Repro in both 4.4 and 4.5
         const $page = $(page);
         if (
@@ -702,8 +728,14 @@ export default class OverflowChecker {
             $page.removeClass("pageOverflows");
         else $page.addClass("pageOverflows");
 
-        // BL-11949: books with device layouts can ignore overflows because we'll show a scrollbar
-        if (this.GetScrollInsteadOfOverflow(page)) {
+        // BL-11949: books with device layouts can ignore overflows because we'll show a scrollbar.
+        // GetScrollInsteadOfOverflow needs the DOM element; our caller passes a jQuery
+        // object, so unwrap it. $page can be empty here because this runs on a deferred
+        // (1s) timer — by the time it fires, the element may have been detached (page
+        // switched or deleted), leaving no .bloom-page ancestor. That's a valid "nothing
+        // to do" case the rest of this module already no-ops on, so guard rather than
+        // crash. See BL-16503.
+        if ($page[0] && this.GetScrollInsteadOfOverflow($page[0])) {
             $page.removeClass("pageOverflows");
             // note, we don't yet remove the bubble that says there is too much text. This code is already spaghetti enough, I didn't want to pay that price at this time. --JH
         }

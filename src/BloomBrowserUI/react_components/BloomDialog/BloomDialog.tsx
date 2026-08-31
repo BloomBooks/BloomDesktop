@@ -77,6 +77,13 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                     background-color: white;
                     display: flex;
                     flex-direction: column;
+                    flex: 1 1 auto;
+                    min-height: 0;
+                    min-width: 0;
+                    ${props.dialogFrameProvidedExternally
+                        ? ""
+                        : "max-width: calc(100vw - 16px); max-height: calc(100vh - 16px);"}
+                    box-sizing: border-box;
                     padding-left: ${kDialogSidePadding};
                     padding-right: ${kDialogSidePadding};
                     padding-bottom: ${kDialogBottomPadding};
@@ -208,6 +215,9 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                                     [role="dialog"] {
                                         overflow: hidden; // only the middle should scroll. The DialogTitle and DialogBottomButtons should not.
                                     }
+                                    .MuiDialog-paperScrollPaper {
+                                        max-height: calc(100vh - 16px);
+                                    }
                                     // without this, you can't get the dialog close to the edge
                                     // because there is a huge invisible margin around the dialog
                                     // Note that we want to restrict this to just this top-level paper thing, not *all* off them
@@ -245,6 +255,7 @@ export const DialogTitle: FunctionComponent<{
     title: string; // note, this is prop instead of just a child so that we can ensure vertical alignment and bar height, which are easy to mess up.
     // true: no close button. otherwise: close button iff BloomDialogContext has onCancel.
     preventCloseButton?: boolean;
+    children?: React.ReactNode;
 }> = (props) => {
     const color = props.color || "black";
     const background = props.backgroundColor || "transparent";
@@ -308,6 +319,10 @@ export const DialogTitle: FunctionComponent<{
                 css={css`
                     margin-top: auto;
                     margin-bottom: auto;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    min-width: 0;
                 `}
             >
                 {props.title}
@@ -338,7 +353,9 @@ DialogTitle.displayName = "DialogTitle";
 
 // The height of this is determined by what is inside of it. If the content might grow (e.g. a progress box), then it's up to the
 // client to set maxes or fixed dimensions. See <ProgressDialog> for an example.
-export const DialogMiddle: FunctionComponent = (props) => {
+export const DialogMiddle: FunctionComponent<{
+    children?: React.ReactNode;
+}> = (props) => {
     return (
         <div
             id="draggable-dialog-middle"
@@ -370,7 +387,9 @@ export const DialogMiddle: FunctionComponent = (props) => {
 };
 
 // should be a child of DialogBottomButtons
-export const DialogBottomLeftButtons: FunctionComponent = (props) => (
+export const DialogBottomLeftButtons: FunctionComponent<{
+    children?: React.ReactNode;
+}> = (props) => (
     <div
         css={css`
             margin-right: auto;
@@ -394,7 +413,9 @@ export const DialogBottomLeftButtons: FunctionComponent = (props) => (
 );
 
 // normally one or more buttons. 1st child can also be <DialogBottomLeftButtons> if you have left-aligned buttons to show
-export const DialogBottomButtons: FunctionComponent = (props) => {
+export const DialogBottomButtons: FunctionComponent<{
+    children?: React.ReactNode;
+}> = (props) => {
     return (
         <div
             css={css`

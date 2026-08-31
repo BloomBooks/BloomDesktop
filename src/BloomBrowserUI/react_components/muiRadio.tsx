@@ -9,6 +9,9 @@ import { ILocalizationProps } from "./l10nComponents";
 export const MuiRadio: React.FunctionComponent<
     ILocalizationProps & {
         label: string;
+        // An optional, already-localized secondary line shown in smaller, muted text
+        // beneath the main label (e.g. to explain the consequence of the choice).
+        description?: string;
         value?: string;
         disabled?: boolean;
         onChanged?: (v: boolean | undefined) => void;
@@ -24,10 +27,33 @@ export const MuiRadio: React.FunctionComponent<
         props.l10nParam1,
     );
 
+    const labelContent =
+        props.description === undefined ? (
+            localizedLabel
+        ) : (
+            <div
+                css={css`
+                    display: flex;
+                    flex-direction: column;
+                `}
+            >
+                <span>{localizedLabel}</span>
+                <span
+                    css={css`
+                        font-size: 0.85em;
+                        opacity: 0.7;
+                    `}
+                >
+                    {props.description}
+                </span>
+            </div>
+        );
+
     // Work has been done below to ensure that a multiline (wrapped) label will align with the control correctly.
     // If messing with the layout, be sure you didn't break this by checking the storybook story.
     return (
         <FormControlLabel
+            disabled={props.disabled}
             css={css`
                 align-items: baseline !important; // !important needed to override MUI default
             `}
@@ -49,7 +75,7 @@ export const MuiRadio: React.FunctionComponent<
                     />
                 </div>
             }
-            label={localizedLabel}
+            label={labelContent}
         />
     );
 };

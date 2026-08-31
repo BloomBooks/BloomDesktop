@@ -349,6 +349,7 @@ namespace BloomTests.Spreadsheet
     {
         private HtmlDom _dom;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
         private TemporaryFolder _otherImagesFolder;
         private ProgressSpy _progressSpy;
@@ -363,8 +364,8 @@ namespace BloomTests.Spreadsheet
         {
             return string.Format(
                 @"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -384,7 +385,14 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{2}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>{4}</div>
+                    <div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{2}"">
+						<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+							<div class=""bloom-imageContainer"">
+								<img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+							</div>
+						</div>
+						{4}
+					</div>
                 </div>
             </div>
         </div>
@@ -401,8 +409,8 @@ namespace BloomTests.Spreadsheet
         {
             return string.Format(
                 @"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -432,11 +440,16 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{2}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                    <div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{2}"">
+						<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+							<div class=""bloom-imageContainer"">
+								<img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+							</div>
+						</div>
+					</div>
                 </div>
             </div>
-			<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
-                <div class=""split-pane-component position-top"">
+			<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">\n                <div class=""split-pane-component position-top"">
                     <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
                         <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-test-id=""tg{3}"">
                            <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
@@ -451,7 +464,13 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{4}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                    <div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{4}"">
+						<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+							<div class=""bloom-imageContainer"">
+								<img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+							</div>
+						</div>
+					</div>
                 </div>
             </div>
         </div>
@@ -513,7 +532,13 @@ namespace BloomTests.Spreadsheet
         static string BloomCanvas(int icNumber)
         {
             return String.Format(
-                @"<div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{0}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>",
+                @"<div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{0}"">
+            <div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+                <div class=""bloom-imageContainer"">
+                    <img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+                </div>
+            </div>
+        </div>",
                 icNumber
             );
         }
@@ -533,8 +558,8 @@ namespace BloomTests.Spreadsheet
         {
             return string.Format(
                     @"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -638,8 +663,8 @@ namespace BloomTests.Spreadsheet
         {
             return string.Format(
                 @"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -669,8 +694,8 @@ namespace BloomTests.Spreadsheet
         {
             return string.Format(
                 @"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -684,6 +709,28 @@ namespace BloomTests.Spreadsheet
 		                    <div class=""bloom-editable ImageDescriptionEdit-style"" lang=""z"" contenteditable=""true"" data-book=""coverImageDescription""></div>
 		                </div>
 					</div>
+                </div>
+            </div>
+        </div>
+    </div>",
+                pageNumber,
+                icNumber
+            );
+        }
+
+        public static string PageWithLegacyImageStructure(int pageNumber, int icNumber)
+        {
+            return string.Format(
+                @"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""split-pane-component marginBox"" style="""">
+			<div class=""split-pane-component position-top"">
+                <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px""><div class=""bloom-canvas bloom-leadingElement"" title=""legacy image container"" data-test-id=""ic{1}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license="""" height=""100"" width=""200""></img></div>
                 </div>
             </div>
         </div>
@@ -740,7 +787,7 @@ namespace BloomTests.Spreadsheet
                             Bafia
                         </div>
 
-                        <div class=""coverBottomBookTopic bloom-userCannotModifyStyles bloom-alwaysShowBubble Cover-Default-style"" data-derived=""topic"" data-functiononhintclick=""ShowTopicChooser()"" data-hint=""Click to choose topic""></div>
+                        <div class=""coverBottomBookTopic bloom-userCannotModifyStyles bloom-alwaysShowBubble Cover-Default-style"" data-derived=""topic"" data-functiononhintclick=""ShowTopicChooser()"" data-hint=""Choose topic""></div>
                     </div>
                 </div>
             </div>
@@ -805,7 +852,7 @@ namespace BloomTests.Spreadsheet
         <div data-book=""topic"" lang=""en"">
             Health
 		</div>
-		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly."">
+		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This image, placeHolder.png, is missing or was loading too slowly."">
 			cover.png
 		</div>
 		<div data-book=""licenseImage"" lang= ""*"" >
@@ -836,8 +883,10 @@ namespace BloomTests.Spreadsheet
                     "src/BloomTests/ImageProcessing"
                 );
 
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+
             // A place to put an image that is not in the spreadsheet folder so we can test absolute path import.
-            _otherImagesFolder = new TemporaryFolder("other images folder");
+            _otherImagesFolder = new TemporaryFolder(_testFolder, "other images folder");
 
             // Create an HtmlDom for a template to import into
             var xml = string.Format(
@@ -979,7 +1028,7 @@ namespace BloomTests.Spreadsheet
             contentRow15.AddCell(InternalSpreadsheet.PageContentRowLabel);
             contentRow15.SetCell(columnForEn, "This will go on a new just-text page at the end");
 
-            _bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportTests");
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // This test class has a test (HasCorrectSideClass) that needs the Importer to have a
             // CollectionSettings object. So we create a basic set of CollectionSettings, but we don't need
@@ -1017,8 +1066,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
-            _otherImagesFolder.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase(0, "tg1", "this is page 1")]
@@ -1092,7 +1141,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[@data-test-id='{tag}']/img[@src='{text}']",
+                    $".//div[@data-test-id='{tag}']//img[@src='{text}']",
                     1
                 );
         }
@@ -1104,7 +1153,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{src}']",
                     1
                 );
             // This is the ID for the standard "Just a picture" page
@@ -1136,7 +1185,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{src}']",
                     1
                 );
             AssertThatXmlIn
@@ -1263,13 +1312,73 @@ namespace BloomTests.Spreadsheet
         }
 
         [TestCase("by copying the last page")]
-        [TestCase("Adding page 7 using a Just a Picture")]
+        [TestCase("Adding page 7 using a Just an Image")]
         [TestCase("Updating page 3")]
         [TestCase("was not found")]
         [TestCase("Done")]
         public void GotProgressMessage(string message)
         {
             Assert.That(_progressSpy.Messages, Has.Some.Property("Item1").Contains(message));
+        }
+    }
+
+    public class SpreadsheetImportIntoLegacyImagePageTests
+    {
+        private HtmlDom _dom;
+        private TemporaryFolder _testFolder;
+        private TemporaryFolder _bookFolder;
+
+        [OneTimeSetUp]
+        public async Task OneTimeSetUp()
+        {
+            var xml = string.Format(
+                SpreadsheetImageAndTextImportTests.templateDom,
+                SpreadsheetImageAndTextImportTests.coverPage
+                    + SpreadsheetImageAndTextImportTests.PageWithLegacyImageStructure(1, 1)
+                    + SpreadsheetImageAndTextImportTests.insideBackCoverPage
+                    + SpreadsheetImageAndTextImportTests.backCoverPage
+            );
+            _dom = new HtmlDom(xml, true);
+
+            var ss = new InternalSpreadsheet();
+            var columnForImage = ss.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+
+            var contentRow = new ContentRow(ss);
+            contentRow.AddCell(InternalSpreadsheet.PageContentRowLabel);
+            contentRow.SetCell(columnForImage, "images/shirt.png");
+
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
+            var spreadsheetFolder =
+                SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                    "src/BloomTests/ImageProcessing"
+                );
+
+            var importer = new TestSpreadsheetImporter(
+                null,
+                _dom,
+                spreadsheetFolder,
+                _bookFolder.FolderPath
+            );
+            await importer.ImportAsync(ss);
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
+        }
+
+        [Test]
+        public void ImageImportedIntoLegacyCanvas()
+        {
+            AssertThatXmlIn
+                .Dom(_dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@data-test-id='ic1']/img[@src='shirt.png']",
+                    1
+                );
         }
     }
 
@@ -1281,14 +1390,15 @@ namespace BloomTests.Spreadsheet
     {
         private HtmlDom _dom;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         public static string PageWithNothing(int pageNumber)
         {
             return string.Format(
                 @"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -1351,9 +1461,8 @@ namespace BloomTests.Spreadsheet
             contentRow3.AddCell(InternalSpreadsheet.PageContentRowLabel);
             contentRow3.SetCell(columnForImage, "images/man.png");
 
-            _bookFolder = new TemporaryFolder(
-                "SpreadsheetImageAndTextImportToBookWithEmptyLastPageTests"
-            );
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(
@@ -1382,7 +1491,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase(2, "man.png")]
@@ -1391,7 +1501,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{src}']",
                     1
                 );
             // This is the ID for the standard "Just a picture" page
@@ -1412,7 +1522,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{src}']",
                     1
                 );
             AssertThatXmlIn
@@ -1486,6 +1596,7 @@ namespace BloomTests.Spreadsheet
     {
         private HtmlDom _dom;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
         private List<SafeXmlElement> _contentPages;
         private string _spreadsheetFolder;
@@ -1529,7 +1640,8 @@ namespace BloomTests.Spreadsheet
             contentRow2.AddCell(InternalSpreadsheet.PageContentRowLabel);
             contentRow2.SetCell(columnForEn, "this is page 2");
 
-            _bookFolder = new TemporaryFolder("SpreadsheetImportWithNoZLanguageTests");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(
@@ -1553,7 +1665,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase(0)]
@@ -1577,6 +1690,7 @@ namespace BloomTests.Spreadsheet
     {
         private HtmlDom _dom;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         private List<SafeXmlElement> _contentPages;
@@ -1631,9 +1745,8 @@ namespace BloomTests.Spreadsheet
             contentRow3.SetCell(columnForEn, "this is the first block on page 2");
             contentRow3.SetCell(columnForImage, "images/man.png");
 
-            _bookFolder = new TemporaryFolder(
-                "SpreadsheetImageAndTextImportToBookWithComplexLastPageTests"
-            );
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(
@@ -1662,7 +1775,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase(0, "tg1", "this is page 1")]
@@ -1700,7 +1814,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[@data-test-id='{tag}']/img[@src='{text}']",
+                    $".//div[@data-test-id='{tag}']//img[@src='{text}']",
                     1
                 );
         }
@@ -1718,6 +1832,7 @@ namespace BloomTests.Spreadsheet
     {
         private HtmlDom _dom;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         private List<SafeXmlElement> _contentPages;
@@ -1761,9 +1876,8 @@ namespace BloomTests.Spreadsheet
             contentRow1.SetCell(columnForImage, "images/lady24b.png");
             contentRow1.SetCell(columnForEn, "this is page 1");
 
-            _bookFolder = new TemporaryFolder(
-                "SpreadsheetImageAndTextImportToBookWithComplexLastPageTests"
-            );
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(
@@ -1792,7 +1906,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         // This is the main point of this test class. The other tests just make sure nothing got broken
@@ -1826,7 +1941,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[@data-test-id='{tag}']/img[@src='{text}']",
+                    $".//div[@data-test-id='{tag}']//img[@src='{text}']",
                     1
                 );
         }
@@ -1941,6 +2056,7 @@ namespace BloomTests.Spreadsheet
 </html>
 ";
         private HtmlDom _dom;
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         [OneTimeSetUp]
@@ -1962,7 +2078,8 @@ namespace BloomTests.Spreadsheet
             contentRow1.SetCell(columnForStart, "Copyright C 2021, Someone else");
             contentRow1.SetCell(columnForEn, "This should not be read");
 
-            _bookFolder = new TemporaryFolder("SpreadsheetImportRemovingLicenseTests");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
@@ -1974,7 +2091,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [Test]
@@ -2011,6 +2129,7 @@ namespace BloomTests.Spreadsheet
     public class SpreadsheetImportKeepLicenseUrlandNotesIfNoCopyright
     {
         private HtmlDom _dom;
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         [OneTimeSetUp]
@@ -2030,7 +2149,8 @@ namespace BloomTests.Spreadsheet
             contentRow1.AddCell("[title]");
             contentRow1.SetCell(columnForStar, "Some arbitrary title, just so the SS isn't empty");
 
-            _bookFolder = new TemporaryFolder("SpreadsheetImportRemovingLicenseTests");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
@@ -2042,7 +2162,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase("copyright", "Copyright C 2022 Somone")]
@@ -2062,6 +2183,7 @@ namespace BloomTests.Spreadsheet
     public class SpreadsheetImportModifyLicenseDataEvenIfNoCopyright
     {
         private HtmlDom _dom;
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
 
         [OneTimeSetUp]
@@ -2086,7 +2208,8 @@ namespace BloomTests.Spreadsheet
             contentRow2.AddCell("[licenseNotes]");
             contentRow2.SetCell(columnForStar, "Be very generous to the author");
 
-            _bookFolder = new TemporaryFolder("SpreadsheetImportRemovingLicenseTests");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             // Do the import
             var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
@@ -2098,7 +2221,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase("copyright", "Copyright C 2022 Somone")]

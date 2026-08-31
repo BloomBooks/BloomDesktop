@@ -37,6 +37,9 @@ export interface IUILanguageAwareProps {
     currentUILanguage?: string;
     hidden?: boolean;
     className?: string;
+    // @types/react 18 no longer adds children implicitly, so localized components
+    // (which receive their English source as children) must declare it.
+    children?: React.ReactNode;
 }
 
 export interface ILocalizationProps extends IUILanguageAwareProps {
@@ -242,6 +245,7 @@ export class LocalizableElement<
     }
 
     public componentWillUnmount() {
+        this.isComponentMounted = false;
         //todo: we ought to have a way of cancelling this, using axios's CancelToken.
         // we can then get rid of the isMounted antipattern. But we would need to add
         // a parameter to pass that token to the theOneLocalizationManager.asyncGetText()

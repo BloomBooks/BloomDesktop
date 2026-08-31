@@ -42,6 +42,42 @@ namespace BloomTests
             }
         }
 
+        /// <summary>
+        /// BL-16669: importing a file whose name contains a '%' followed by two hex digits
+        /// (e.g. "photo%41.jpg") used to hand the browser a src of "photoA.jpg", because the
+        /// name was mistaken for URL-encoded text and decoded. The src must instead be the
+        /// encoded form of the name we actually wrote into the book folder.
+        /// </summary>
+        [Test]
+        public void ChangePicture_FileNameLooksUrlEncoded_SrcMatchesTheFileWeWrote()
+        {
+            using (var src = new TemporaryFolder("bloom pictures test source"))
+            using (var dest = new TemporaryFolder("bloom picture tests dest"))
+            using (var original = MakeSamplePngImage(src.Combine("photo%41.png")))
+            {
+                // Sanity check: the name really does reach ChangePicture with the '%' in it.
+                Assert.That(original.FileName, Is.EqualTo("photo%41.png"));
+
+                var result = PageEditingModel.ChangePicture(
+                    dest.Path,
+                    "pretendImageId",
+                    UrlPathString.CreateFromUnencodedString("old.png"),
+                    original
+                );
+
+                Assert.That(
+                    File.Exists(dest.Combine("photo%41.png")),
+                    "the file should have been copied in under its own name"
+                );
+                Assert.That(result.src, Is.EqualTo("photo%2541.png"));
+                // ...which is what the browser will ask us for, and it resolves to the real file.
+                Assert.That(
+                    UrlPathString.CreateFromUrlEncodedString(result.src).NotEncoded,
+                    Is.EqualTo("photo%41.png")
+                );
+            }
+        }
+
         /*
             /// <summary>
             /// With this, we test the secenario where someone grabs, say "untitled.png", then does

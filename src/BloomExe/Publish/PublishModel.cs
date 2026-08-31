@@ -15,7 +15,6 @@ using Bloom.SubscriptionAndFeatures;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using BloomTemp;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
@@ -301,7 +300,7 @@ namespace Bloom.Publish
         )
         {
             if (owner == null)
-                owner = View;
+                owner = View?.GetHostControlForInvoke();
             Debug.Assert(owner != null || Program.RunningInConsoleMode); // must pass if we don't have a view.
             try
             {
@@ -325,7 +324,6 @@ namespace Bloom.Publish
                             OutputPdfPath = PdfFilePath,
                             PaperSizeName = PageLayout.SizeAndOrientation.PageSizeName,
                             Landscape = PageLayout.SizeAndOrientation.IsLandScape,
-                            SaveMemoryMode = _currentlyLoadedBook.UserPrefs.ReducePdfMemoryUse,
                             LayoutPagesForRightToLeft = LayoutPagesForRightToLeft,
                             BooketLayoutMethod = layoutMethod,
                             BookletPortion = BookletPortion,
@@ -426,7 +424,7 @@ namespace Bloom.Publish
             PageLayout.UpdatePageSplitMode(dom.RawDom);
 
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
-            dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
+            dom.UseOriginalImages = true; // don't want low-res images in PDF.
             var pages = dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
                 .Cast<SafeXmlElement>()
                 .ToList();
@@ -444,7 +442,8 @@ namespace Bloom.Publish
 
             return BloomServer.MakeInMemoryHtmlFileInBookFolder(
                 dom,
-                source: InMemoryHtmlFileSource.Pub
+                source: InMemoryHtmlFileSource.Pub,
+                suppressBackgroundColors: !_currentlyLoadedBook.UserPrefs.IncludeBackgroundColors
             );
         }
 
@@ -567,6 +566,9 @@ namespace Bloom.Publish
                         && size != "B5"
                         && size != "Letter"
                         && size != "Device16x9"
+                        // Ebook2x3/Ebook7x5 are screen/ebook sizes, like Device16x9; booklets don't make sense for them.
+                        && size != "Ebook2x3"
+                        && size != "Ebook7x5"
                     );
             }
         }
@@ -676,7 +678,7 @@ namespace Bloom.Publish
                     // we want the simple PDF we already made.
                     RobustFile.Copy(PdfFilePath, destFileName, true);
                 }
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "Save PDF",
                     new Dictionary<string, string>()
                     {

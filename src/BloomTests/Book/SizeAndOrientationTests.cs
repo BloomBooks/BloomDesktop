@@ -90,5 +90,57 @@ namespace BloomTests.Book
             );
             Assert.IsTrue(SizeAndOrientation.GetSizeAndOrientation(dom, "A5Portrait").IsLandScape);
         }
+
+        [TestCase("Ebook2x3Portrait", "Ebook2x3", false)]
+        [TestCase("Ebook7x5Landscape", "Ebook7x5", true)]
+        public void FromString_EbookLayouts_RoundTrip(
+            string layout,
+            string expectedPageSizeName,
+            bool expectedLandscape
+        )
+        {
+            var sizeAndOrientation = SizeAndOrientation.FromString(layout);
+
+            Assert.That(sizeAndOrientation.PageSizeName, Is.EqualTo(expectedPageSizeName));
+            Assert.That(sizeAndOrientation.IsLandScape, Is.EqualTo(expectedLandscape));
+            // ToString() is PageSizeName + OrientationName; this is the exact class used in the
+            // markup and the pageSizes.json / CSS keys, so it must match case-for-case.
+            Assert.That(sizeAndOrientation.ToString(), Is.EqualTo(layout));
+        }
+
+        [TestCase("Ebook9x16Portrait", "Device16x9Portrait", false)]
+        [TestCase("EBook16x9Landscape", "Device16x9Landscape", true)]
+        public void FromString_Ebook16x9Aliases_NormalizeToDevice16x9(
+            string layout,
+            string expectedCanonicalLayout,
+            bool expectedLandscape
+        )
+        {
+            var sizeAndOrientation = SizeAndOrientation.FromString(layout);
+
+            Assert.That(sizeAndOrientation.PageSizeName, Is.EqualTo("Device16x9"));
+            Assert.That(sizeAndOrientation.IsLandScape, Is.EqualTo(expectedLandscape));
+            Assert.That(sizeAndOrientation.ToString(), Is.EqualTo(expectedCanonicalLayout));
+        }
+
+        // Ebook2x3/Ebook7x5 are screen/ebook sizes, so they should be treated like the Device family.
+        [TestCase("Ebook2x3Portrait")]
+        [TestCase("Ebook7x5Landscape")]
+        [TestCase("Device16x9Portrait")]
+        public void IsDeviceLayout_TrueForEbookAndDeviceSizes(string layout)
+        {
+            var sizeAndOrientation = SizeAndOrientation.FromString(layout);
+            var bloomLayout = new Layout { SizeAndOrientation = sizeAndOrientation };
+            Assert.That(bloomLayout.IsDeviceLayout, Is.True);
+        }
+
+        [TestCase("A5Portrait")]
+        [TestCase("LetterLandscape")]
+        public void IsDeviceLayout_FalseForPaperSizes(string layout)
+        {
+            var sizeAndOrientation = SizeAndOrientation.FromString(layout);
+            var bloomLayout = new Layout { SizeAndOrientation = sizeAndOrientation };
+            Assert.That(bloomLayout.IsDeviceLayout, Is.False);
+        }
     }
 }

@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.MiscUI;
@@ -40,31 +43,35 @@ namespace Bloom.Workspace
         private readonly LocalizationChangedEvent _localizationChangedEvent;
         private readonly CollectionSettings _collectionSettings;
         private EditingView _editingView;
+        private Browser _mainBrowser;
+        private ReactControl _workspaceReactControl;
         private PublishView _publishView;
         private CollectionTabView _collectionTabView;
-        private Control _previouslySelectedControl;
+        private IBloomTabArea _previouslySelectedTabArea;
         public event EventHandler ReopenCurrentProject;
         public static float DPIOfThisAccount;
         private ZoomModel _zoomModel;
         private bool _tabsEnabled = true;
-        private readonly ContextMenuStrip _uiLanguageContextMenu = new ContextMenuStrip();
-        private readonly ContextMenuStrip _helpContextMenu = new ContextMenuStrip();
 
         public delegate WorkspaceView Factory();
 
         private TeamCollectionManager _tcManager;
         private BookSelection _bookSelection;
-        private ToastNotifier _returnToCollectionTabNotifier;
         private BloomWebSocketServer _webSocketServer;
         private BookServer _bookServer;
         private WorkspaceTabSelection _tabSelection;
         private CollectionApi _collectionApi;
         private AudioRecording _audioRecording;
         private CollectionSettingsApi _collectionSettingsApi;
-
         private NewCollectionWizardApi _newCollectionWizardApi;
 
-        internal ReactControl TopBarReactControl => _topBarReactControl;
+        internal Browser MainBrowser => _mainBrowser;
+
+        /// <summary>
+        /// The currently active WorkspaceView, or null when no project is loaded (e.g. at startup).
+        /// Used by CollectionChooserApi to distinguish startup mode from mid-session.
+        /// </summary>
+        public static WorkspaceView Current { get; private set; }
 
         //autofac uses this
 
@@ -95,6 +102,7 @@ namespace Bloom.Workspace
             TeamCollectionApi teamCollectionApi
         )
         {
+            Current = this;
             _model = model;
             _settingsDialogFactory = settingsDialogFactory;
             _selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
@@ -141,9 +149,7 @@ namespace Bloom.Workspace
             float scaleFactor = 1.1f; // determined experimentally
             this.Scale(new SizeF(scaleFactor, scaleFactor));
 
-            _checkForNewVersionMenuItem.Visible = Platform.IsWindows;
-
-            editBookCommand.Subscribe(OnEditBook);
+            editBookCommand.Subscribe(HandleEditBookCommand);
 
             Application.Idle += new EventHandler(Application_Idle);
             Text = _model.ProjectName;
@@ -154,42 +160,48 @@ namespace Bloom.Workspace
             // and that is done by the EditingView constructor.
             //
             this._editingView = editingViewFactory();
-            this._editingView.Dock = DockStyle.Fill;
-            this._editingView.Model.EnableSwitchingTabs = (enabled) =>
+            this._editingView.WorkspaceView = this;
+
+            if (!Program.RunningHarvesterMode)
             {
-                _tabsEnabled = enabled;
-                SendTopBarState();
-            };
+                var workspaceAdditionalHtml = GetWorkspaceAdditionalHtml();
+                _workspaceReactControl = new ReactControl
+                {
+                    JavascriptBundleName = "appBundle",
+                    BackColor = Palette.GeneralBackground,
+                    Dock = DockStyle.Fill,
+                    AdditionalHtml = workspaceAdditionalHtml,
+                    TabStop = false, // Prevent unwanted focus indicator on first dom control (BL-16061)
+                };
+
+                RegisterWorkspaceRootForDebugging(workspaceAdditionalHtml);
+
+                _workspaceReactControl.BrowserCreated += (unused, args) =>
+                {
+                    _mainBrowser = _workspaceReactControl.Browser;
+                    _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
+                    _editingView.InitializeMainBrowserForEditMode();
+                    MaybeOpenMainBrowserDevTools();
+                };
+                if (!_containerPanel.Controls.Contains(_workspaceReactControl))
+                {
+                    _containerPanel.Controls.Add(_workspaceReactControl);
+                }
+            }
 
             _collectionTabView = collectionsTabViewFactory();
-            _collectionTabView.Dock = DockStyle.Fill;
-            _collectionTabView.BackColor = System.Drawing.Color.FromArgb(
-                ((int)(((byte)(87)))),
-                ((int)(((byte)(87)))),
-                ((int)(((byte)(87))))
-            );
+            _collectionTabView.WorkspaceView = this;
             _tabSelection.ActiveTab = WorkspaceTab.collection;
 
             //
             // _pdfView
             //
             this._publishView = publishViewFactory();
-            this._publishView.Dock = DockStyle.Fill;
+            this._publishView.WorkspaceView = this;
 
-            // Temporary: while Help/UI language menus are WinForms menus and tabs run in separate browsers,
-            // listen for browser clicks from each main browser so those WinForms menus can close.
-            // Remove once menus are in the single browser UI.
-            if (_editingView.Browser != null)
-                _editingView.Browser.OnBrowserClick += HandleAnyBrowserClick;
-            if (_collectionTabView != null)
-                _collectionTabView.BrowserClick += HandleAnyBrowserClick;
-            if (_publishView != null)
-                _publishView.BrowserClick += HandleAnyBrowserClick;
-
-            SelectTab(_collectionTabView);
+            ChangeTab(_collectionTabView);
 
             SetupZoomModel();
-            SetupTopBarReactControl();
             SendZoomInfo();
             CommonApi.WorkspaceView = this;
 
@@ -200,6 +212,13 @@ namespace Bloom.Workspace
             // We'll need to do something even trickier if there start to be slow things that
             // happen in response to the book selection changed websocket message.
             bookSelection.SelectionChangedHighPriority += HandleBookSelectionChanged;
+
+            // Remembering the selection for the next launch belongs here rather than in
+            // SelectBook() (BL-16660). It goes on the ordinary (low) priority list because saving
+            // settings writes a file, and per the comment above the button highlighting must not
+            // wait for that.
+            bookSelection.SelectionChanged += PersistSelectedBookPath;
+
             bookStatusChangeEvent.Subscribe(args =>
             {
                 HandleBookStatusChange(args);
@@ -209,14 +228,22 @@ namespace Bloom.Workspace
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+
+            // Convenient place to call this, after the workspace is installed in its parent form.
+            _editingView?.HookupHostFormEvents();
+
+            StartupScreenManager.ClearStartupMilestone("collectionButtonsDrawn");
+            StartupScreenManager.ClearStartupMilestone("teamSyncCompleted");
+            StartupScreenManager.ClearStartupMilestone("startupBookSelectionReady");
+            if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
+            {
+                StartupScreenManager.StartupMilestoneReached("teamSyncCompleted");
+                _collectionTabView.ReadyToShowCollections();
+            }
             // If we're loading a team collection, we need to do that...with its progress dialog...
             // before anything else, and we'll need to close the splash screen to make room for
             // that dialog.
-            // Note, this not put into _startupActions...it should never be disabled.
-            if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
-            {
-                ReadyToShowCollections();
-            }
+            // Note, we don't save the result of AddStartupAction; this action should never be disabled.
             else
             {
                 StartupScreenManager.AddStartupAction(
@@ -224,7 +251,9 @@ namespace Bloom.Workspace
                     {
                         // Don't do anything else after this as part of this idle task.
                         // See the comment near the end of HandleTeamStuffBeforeGetBookCollections.
-                        _model.HandleTeamStuffBeforeGetBookCollections(ReadyToShowCollections);
+                        _model.HandleTeamStuffBeforeGetBookCollections(
+                            _collectionTabView.ReadyToShowCollections
+                        );
                     },
                     shouldHideSplashScreen: true
                 );
@@ -235,22 +264,309 @@ namespace Bloom.Workspace
             // needs to be checked out before BringBookUpToDate renames it here.
             StartupScreenManager.AddStartupAction(
                 () => SelectBookAtStartup(),
-                // We want to delay this until the buttons get drawn,
+                // startupBookSelectionReady is set only after BOTH teamSyncCompleted and
+                // collectionButtonsDrawn are reached.
+                // We need to wait for the teamSyncCompleted because in the case of a remote rename,
+                // the book we want to show as selected may not have all its files until then.
+                // We also want to delay selecting the book until the buttons get drawn,
                 // since it ties up the UI thread for a while.
-                // Enhance: the code in CollectionsApi that raises this event is crude; it just
+                // Enhance: the code in CollectionApi that raises collectionButtonsDrawn is crude; it just
                 // looks for the first two button thumbnails to be requested. It would be better if
                 // we had some way of knowing when the collection panes were fully rendered.
-                // It would be better still if most of the work of SelectPreviouslySelectedBook could
+                // It would be better still if most of the work of SelectBookAtStartup could
                 // be done on a background thread so it could make progress as quickly as possible
                 // without holding up drawing the collection panes.
-                waitForMilestone: "collectionButtonsDrawn",
+                waitForMilestone: "startupBookSelectionReady",
                 shouldHideSplashScreen: true
             ); // possibility of error message boxes (BL-12155)
         }
 
-        private void ReadyToShowCollections()
+        internal void ReloadWorkspaceRootDocument()
         {
-            _collectionTabView.ReadyToShowCollections();
+            _workspaceReactControl?.Reload();
+        }
+
+        /// <summary>
+        /// If the selected Team Collection book was renamed remotely, update the saved current path
+        /// to the repo's current name before reloading the project.
+        /// </summary>
+        private void UpdateCurrentBookPathForTeamCollectionReload()
+        {
+            var selectedBook = _bookSelection.CurrentSelection;
+            var teamCollection = _tcManager?.CurrentCollectionEvenIfDisconnected;
+            if (selectedBook == null || teamCollection == null)
+                return;
+
+            var currentBookPath = Settings.Default.CurrentBookPath;
+            if (!ShouldConsiderUpdatingCurrentBookPath(selectedBook.ID, currentBookPath))
+                return;
+
+            try
+            {
+                var resolvedPath = teamCollection.GetLikelyLocalPathForBookId(selectedBook.ID);
+                if (string.IsNullOrEmpty(resolvedPath))
+                {
+                    ClearCurrentBookPathIfMissing();
+                    return;
+                }
+
+                if (!Directory.Exists(resolvedPath))
+                {
+                    ClearCurrentBookPathIfMissing();
+                    return;
+                }
+
+                if (
+                    !TryGetBookIdFromFolder(resolvedPath, out var resolvedId)
+                    || resolvedId != selectedBook.ID
+                )
+                {
+                    ClearCurrentBookPathIfMissing();
+                    return;
+                }
+
+                SaveCurrentBookPath(resolvedPath);
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                Logger.WriteError(
+                    "Unable to update current book path while reloading Team Collection.",
+                    e
+                );
+                ClearCurrentBookPathIfMissing();
+            }
+        }
+
+        private static bool ShouldConsiderUpdatingCurrentBookPath(
+            string selectedBookId,
+            string currentBookPath
+        )
+        {
+            if (string.IsNullOrEmpty(currentBookPath) || !Directory.Exists(currentBookPath))
+                return true;
+
+            if (!TryGetBookIdFromFolder(currentBookPath, out var currentBookId))
+                return true;
+
+            return currentBookId != selectedBookId;
+        }
+
+        private static bool TryGetBookIdFromFolder(string folderPath, out string bookId)
+        {
+            bookId = null;
+            try
+            {
+                bookId = BookMetaData.FromFolder(folderPath)?.Id;
+                return !string.IsNullOrEmpty(bookId);
+            }
+            catch (Exception e)
+                when (e is IOException || e is UnauthorizedAccessException || e is FileException)
+            {
+                Logger.WriteError(
+                    "Unable to read book metadata while checking current book path.",
+                    e
+                );
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Remember the newly selected book, so that SelectBookAtStartup can restore it next time.
+        /// </summary>
+        /// <remarks>
+        /// BookSelection.SelectBook() used to do this itself, which meant that anything selecting a
+        /// book wrote global, persisted settings: unit tests left later tests looking at books in
+        /// deleted temporary folders, and the command-line bulk uploader replaced the user's
+        /// remembered book with each book it uploaded. See BL-16660. Doing it here means only the
+        /// running UI persists a selection, and only one that startup could actually make use of.
+        /// </remarks>
+        private void PersistSelectedBookPath(object sender, BookSelectionChangedEventArgs e)
+        {
+            // We are one link in the SelectionChanged chain, so anything that escapes from here
+            // escapes from SelectBook() to whoever selected the book. Deciding whether the book is
+            // worth remembering reads the collection folders from disk, so it can fail for reasons
+            // that have nothing to do with the user's actual task; and failing to remember the
+            // book is not worth interrupting that task over.
+            try
+            {
+                var book = _bookSelection.CurrentSelection;
+                if (book == null)
+                {
+                    // Nothing is selected (e.g. the selected book was just deleted), so there is
+                    // nothing to restore next time.
+                    SaveCurrentBookPath(null);
+                    return;
+                }
+                // SelectBookAtStartup applies this same test and refuses to restore a book that
+                // fails it, so storing such a path could only do harm: a path we can't use is a
+                // known source of trouble (BL-11678, BL-16327). We leave any good value already
+                // stored alone rather than clearing it, because the main way to get here is the
+                // stale selection left over from the previous collection while we are switching
+                // collections (BL-14313).
+                if (IsSelectedBookObsoleteOrInvalid(book.FolderPath))
+                    return;
+                SaveCurrentBookPath(book.FolderPath);
+            }
+            catch (Exception error)
+                when (error is IOException
+                    || error is UnauthorizedAccessException
+                    || error is ArgumentException
+                    || error is COMException
+                )
+            {
+                // ArgumentException because IsSelectedBookObsoleteOrInvalid calls
+                // Path.GetDirectoryName, and COMException because listing the source collections
+                // resolves .lnk shortcuts. Note this is belt-and-braces rather than the thing
+                // standing between the user and a crash: HandleBookSelectionChanged is on the
+                // high-priority list, so it calls the same predicate, unguarded, before we run.
+                Logger.WriteError("Unable to work out which book to remember.", error);
+            }
+        }
+
+        /// <summary>
+        /// Store a new value for the remembered book path, doing nothing if it is already correct.
+        /// Pass null or "" to mean "nothing to restore"; they are stored identically, so that
+        /// callers using one don't cause a pointless rewrite for callers using the other.
+        /// </summary>
+        private static void SaveCurrentBookPath(string path)
+        {
+            path = path ?? "";
+            if ((Settings.Default.CurrentBookPath ?? "") == path)
+                return; // no change, so no need to rewrite the settings file
+            var previous = Settings.Default.CurrentBookPath;
+            try
+            {
+                Settings.Default.CurrentBookPath = path;
+                Settings.Default.Save();
+            }
+            catch (Exception e)
+                when (e is IOException
+                    || e is UnauthorizedAccessException
+                    || e is ArgumentException
+                    || e is ConfigurationErrorsException
+                )
+            {
+                // Failing to remember the book is not worth interrupting the user's work over.
+                // ArgumentException belongs here because Save() throws it when the path contains a
+                // surrogate pair, i.e. the book's folder name contains an emoji or similar; the
+                // shutdown code at the end of Program.Run has to cope with the same thing. Without
+                // this, selecting such a book would throw out of SelectBook to whoever called it,
+                // and the recovery path in SelectBookAtStartup below could not do its job.
+                // Put the old value back: Save() writes the whole settings object, so leaving the
+                // value we could not save in it would make every later Settings.Default.Save()
+                // anywhere in Bloom fail the same way, turning this into a broken Collection
+                // Settings dialog, publish tab, or rename. The old value saved before, so it is
+                // safe to go back to.
+                Settings.Default.CurrentBookPath = previous;
+                Logger.WriteError("Unable to save the current book path.", e);
+            }
+        }
+
+        private static void ClearCurrentBookPathIfMissing()
+        {
+            var currentBookPath = Settings.Default.CurrentBookPath;
+            if (string.IsNullOrEmpty(currentBookPath) || Directory.Exists(currentBookPath))
+                return;
+
+            SaveCurrentBookPath(null);
+        }
+
+        private static ReactControlAdditionalHtml GetWorkspaceAdditionalHtml()
+        {
+            const string workspaceCssLinks =
+                @"<link rel='stylesheet' href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/bookEdit/toolbox/toolbox.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/bookEdit/css/bloomDialog.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/lib/pure-drawer.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/lib/long-press/longpress.css' type='text/css'>";
+
+            const string workspaceProdOnlyScriptTags =
+                @"<script src='/bloom/jquery.min.js'></script>";
+
+            const string workspaceInitializationFailureScript =
+                @"<script>
+window.showWorkspaceInitializationFailure = function(message) {
+    const docEl = document.documentElement;
+    while (docEl.firstChild) {
+        docEl.removeChild(docEl.firstChild);
+    }
+
+    const head = document.createElement('head');
+    const meta = document.createElement('meta');
+    meta.setAttribute('charset', 'utf-8');
+    head.appendChild(meta);
+
+    const body = document.createElement('body');
+    body.textContent = message || 'loading failed';
+
+    docEl.appendChild(head);
+    docEl.appendChild(body);
+};
+</script>";
+
+            return new ReactControlAdditionalHtml
+            {
+                HeadHtml =
+                    workspaceCssLinks
+                    + "\n"
+                    + workspaceProdOnlyScriptTags
+                    + "\n"
+                    + workspaceInitializationFailureScript,
+                BodyEndHtml = "",
+                ViteDevHeadHtml =
+                    workspaceCssLinks + "\n" + workspaceInitializationFailureScript + "\n",
+                ViteDevBodyEndHtml = "",
+            };
+        }
+
+        private static void RegisterWorkspaceRootForDebugging(
+            ReactControlAdditionalHtml workspaceAdditionalHtml
+        )
+        {
+            var html = ReactControl.GetHtmlForReactBundle(
+                "appBundle",
+                null,
+                Palette.GeneralBackground,
+                hideVerticalOverflow: false,
+                additionalHtml: workspaceAdditionalHtml
+            );
+            var workspaceRootUrl = BloomServer.PutFixedSimulatedHtmlForId(
+                "workspaceRoot",
+                html,
+                InMemoryHtmlFileSource.Frame
+            );
+            BloomServer.SetWorkspaceRootUrlForDebugging(workspaceRootUrl);
+        }
+
+        private void MaybeOpenMainBrowserDevTools()
+        {
+            // This code is useful if you get in a really weird state where you can't get dev tools open,
+            // or to save time if you are starting up frequently and always want them. It causes dev tools
+            // to open on the main workspace browser as soon as Bloom starts.
+            // const int maxAttempts = 100;
+            // var attempts = 0;
+            // var timer = new Timer { Interval = 100 };
+            // timer.Tick += (unused, args) =>
+            // {
+            //     attempts++;
+            //     var coreWebView = (_mainBrowser as WebView2Browser)?.InternalBrowser?.CoreWebView2;
+            //     if (coreWebView != null)
+            //     {
+            //         timer.Stop();
+            //         timer.Dispose();
+            //         coreWebView.OpenDevToolsWindow();
+            //         return;
+            //     }
+
+            //     if (attempts >= maxAttempts)
+            //     {
+            //         timer.Stop();
+            //         timer.Dispose();
+            //     }
+            // };
+            // timer.Start();
         }
 
         /// <summary>
@@ -284,6 +600,20 @@ namespace Bloom.Workspace
         {
             try
             {
+                // This runs after Team Collection sync has completed, so any remote rename should
+                // already be reflected in the local collection. In case the selected book has been
+                // remotely renamed, this will attempt to update the selected book path so that the
+                // same book stays selected. Minimally, it makes sure that we are not left with
+                // a selected book record pointing at something that doesn't exist, which can cause
+                // problems (e.g. BL-16327).
+                // It's a bit questionable that this method makes use of the current _bookselection,
+                // which as the next comment notes, may be obsolete. However, this method only makes
+                // use of the bookId from the current selection, and only updates the current book
+                // path if there's a problem with leaving it the way it is AND we can find a book
+                // in the current repo (and hence the current collection) with the right ID. That
+                // should not be a problem.
+                UpdateCurrentBookPathForTeamCollectionReload();
+
                 // Now that _bookSelection is an application-level object, it's possible that it retains a
                 // value from a previous collection when we switch collections while Bloom is running.
                 // In such situations, we're restarting almost everything else, so we don't need notifications
@@ -326,8 +656,8 @@ namespace Bloom.Workspace
                 // We certainly don't want to crash because we had a problem doing so.
                 // One scenario we know of which causes this is if the book at
                 // Settings.Default.CurrentBookPath gets corrupted, such as having no .htm file.
-                // See BL-11678.
-                Settings.Default.CurrentBookPath = null;
+                // See BL-11678. Save it, or we would meet the same book again next launch.
+                SaveCurrentBookPath(null);
 
                 MiscUtils.SuppressUnusedExceptionVarWarning(e);
             }
@@ -439,8 +769,6 @@ namespace Bloom.Workspace
                 return; // change is not to the book we're interested in.
             if (_tabSelection.ActiveTab == WorkspaceTab.collection)
                 return; // this toast is all about returning to the collection tab
-            if (_returnToCollectionTabNotifier != null)
-                return; // notification already up
             if (_tcManager.CurrentCollection == null)
                 return;
             if (_tcManager.CurrentCollection.HasClobberProblem(bookName))
@@ -450,23 +778,19 @@ namespace Bloom.Workspace
                     this,
                     false,
                     true,
-                    () =>
-                    {
-                        var msg = LocalizationManager.GetString(
-                            "TeamCollection.ClobberProblem",
-                            "The Team Collection has a newer version of this book. Return to the Collection Tab for more information."
-                        );
-                        _returnToCollectionTabNotifier = new ToastNotifier();
-                        _returnToCollectionTabNotifier.Image.Image = Resources.Error32x32;
-                        _returnToCollectionTabNotifier.ToastClicked += (sender, _) =>
-                        {
-                            _returnToCollectionTabNotifier.CloseSafely();
-                            ChangeTab(WorkspaceTab.collection);
-                        };
-                        _returnToCollectionTabNotifier.Show(msg, "", -1);
-                    }
+                    ShowTeamCollectionClobberToast
                 );
             }
+        }
+
+        internal void ShowTeamCollectionClobberToast()
+        {
+            ToastService.ShowToast(
+                ToastType.Error,
+                text: "The Team Collection has a newer version of this book. Return to the Collection Tab for more information.",
+                action: new ToastAction { Callback = () => ChangeTab(WorkspaceTab.collection) },
+                toastId: "team-collection-clobber"
+            );
         }
 
         private void SetupZoomModel()
@@ -493,29 +817,7 @@ namespace Bloom.Workspace
             SendZoomInfo();
         }
 
-        private void SetupTopBarReactControl()
-        {
-            _topBarReactControl.SetLocalizationChangedEvent(_localizationChangedEvent);
-            _topBarReactControl.ReplaceContextMenu = () =>
-            {
-                Shell.GetShellOrNull()?.ShowContextMenuAt(MousePosition);
-            };
-            // Temporary: top bar is currently hosted as a separate browser from other tabs.
-            // Remove once menus and top bar run in one browser UI.
-            _topBarReactControl.OnBrowserClick += HandleAnyBrowserClick;
-        }
-
-        // Temporary helper used to close WinForms menus from browser click notifications.
-        // Remove once menus are rendered in the single browser UI.
-        private void HandleAnyBrowserClick(object sender, EventArgs e)
-        {
-            if (_uiLanguageContextMenu.Visible)
-                _uiLanguageContextMenu.Close();
-            if (_helpContextMenu.Visible)
-                _helpContextMenu.Close();
-        }
-
-        public dynamic GetTabInfoForClient()
+        public dynamic GetTabInfo()
         {
             dynamic tabInfo = new DynamicJson();
 
@@ -525,6 +827,14 @@ namespace Bloom.Workspace
             tabInfo.tabStates.collection = GetTabStateForUi("collection", activeTabId);
             tabInfo.tabStates.edit = GetTabStateForUi("edit", activeTabId);
             tabInfo.tabStates.publish = GetTabStateForUi("publish", activeTabId);
+            // True while something has locked navigation to make itself modal: a BloomLibrary
+            // upload, a Reading App Builder action, or an Edit-tab modal dialog. The tabStates
+            // above already encode this for the main tabs, but the Publish tab also has its own
+            // switcher between publish tools (in a different browser control, so nothing we do
+            // here disables it for free). Reporting the lock itself, rather than making the
+            // Publish tab infer it from the tab states, lets that switcher lock and unlock in
+            // exact step with the main tabs. See BL-16654.
+            tabInfo.navigationLocked = !_tabsEnabled;
             return tabInfo;
         }
 
@@ -563,7 +873,7 @@ namespace Bloom.Workspace
 
         private void SendTopBarState()
         {
-            _webSocketServer?.SendBundle("workspace", "tabs", GetTabInfoForClient());
+            _webSocketServer?.SendBundle("workspace", "tabs", GetTabInfo());
         }
 
         public dynamic GetZoomInfo()
@@ -579,7 +889,7 @@ namespace Bloom.Workspace
             return zoomInfo;
         }
 
-        public string GetCurrentUiLanguageLabel()
+        public static string GetCurrentUiLanguageLabel()
         {
             var lang = Settings.Default.UserInterfaceLanguage;
             if (String.IsNullOrEmpty(lang))
@@ -594,7 +904,10 @@ namespace Bloom.Workspace
             if (onlyActiveItem)
             {
                 if (String.IsNullOrEmpty(Settings.Default.UserInterfaceLanguage))
+                {
                     Settings.Default.UserInterfaceLanguage = "en"; // See BL-13545.
+                    Settings.Default.Save();
+                }
                 items.Add(CreateLanguageItem(Settings.Default.UserInterfaceLanguage));
             }
             else
@@ -615,66 +928,101 @@ namespace Bloom.Workspace
             return items;
         }
 
-        public void ShowUiLanguageMenu()
+        public static object GetAvailableUiLanguageNames()
         {
-            SetupUiLanguageMenu();
-            ShowContextMenu(_uiLanguageContextMenu);
+            var languageItems = GetLanguageItems(onlyActiveItem: false);
+            return languageItems.Select(item => item.MenuText).ToList();
         }
 
-        public void ShowHelpMenu()
+        public static void HandleUiLanguageAction(string action, string languageName = null)
         {
-            BuildHelpContextMenu();
-            ShowContextMenu(_helpContextMenu);
-        }
+            if (String.IsNullOrEmpty(action))
+                return;
 
-        private void BuildHelpContextMenu()
-        {
-            _helpContextMenu.Items.Clear();
-            _helpContextMenu.Items.AddRange(
-                new ToolStripItem[]
-                {
-                    _documentationMenuItem,
-                    _bloomDocsMenuItem,
-                    _trainingVideosMenuItem,
-                    _buildingReaderTemplatesMenuItem,
-                    _usingReaderTemplatesMenuItem,
-                    _toolStripSeparator1,
-                    _askAQuestionMenuItem,
-                    _requestAFeatureMenuItem,
-                    _reportAProblemMenuItem,
-                    _divider1,
-                    _releaseNotesMenuItem,
-                    _checkForNewVersionMenuItem,
-                    _registrationMenuItem,
-                    _divider2,
-                    _webSiteMenuItem,
-                    _aboutBloomMenuItem,
-                }
-            );
-        }
-
-        private void ShowContextMenu(ContextMenuStrip menu)
-        {
-            // Align the menu's right edge with the window's right edge.
-            // Ensures it stays on the same monitor.
-            // But also, it provides more consistency than having it shift left/right
-            // depending on where the mouse is.
-            var host = FindForm();
-            var windowRight = host?.Bounds.Right ?? MousePosition.X;
-            var menuWidth = menu.Width > 0 ? menu.Width : menu.GetPreferredSize(Size.Empty).Width;
-            var x = windowRight - menuWidth;
-            var y = MousePosition.Y + 8;
-
-            var timer = new System.Windows.Forms.Timer { Interval = 10 };
-            timer.Tick += (s, a) =>
+            if (action == "setLanguage")
             {
-                menu.Left = x;
-                menu.Top = y;
-                menu.Show(x, y);
-                timer.Stop();
-                timer.Dispose();
-            };
-            timer.Start();
+                if (String.IsNullOrEmpty(languageName))
+                    return;
+                var langTag = GetLanguageItems(onlyActiveItem: false)
+                    .FirstOrDefault(item => item.MenuText == languageName)
+                    ?.LangTag;
+                if (String.IsNullOrEmpty(langTag))
+                    return;
+                var current = Current;
+                if (current != null)
+                    current.SetUiLanguage(langTag); // reopens the project for full localization refresh
+                else
+                    ApplyUiLanguageChange(langTag); // startup: apply the change, no project to reopen
+                return;
+            }
+
+            if (action == "toggleShowUnapprovedTranslations")
+            {
+                ToggleShowingOnlyApprovedTranslations();
+                return;
+            }
+
+            if (action == "helpTranslate")
+            {
+                ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
+            }
+        }
+
+        public static bool GetShowUnapprovedTranslations()
+        {
+            return Settings.Default.ShowUnapprovedLocalizations;
+        }
+
+        public static void SetShowUnapprovedTranslations(bool showUnapproved)
+        {
+            if (Settings.Default.ShowUnapprovedLocalizations == showUnapproved)
+                return;
+
+            ToggleShowingOnlyApprovedTranslations();
+        }
+
+        public void HandleHelpAction(string method, string argument = null)
+        {
+            if (String.IsNullOrEmpty(method))
+                return;
+
+            var resolvedArgument = ResolveHelpActionArgument(argument);
+
+            switch (method)
+            {
+                case "showHelp":
+                    HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
+                    break;
+                case "safeStart":
+                    if (String.IsNullOrEmpty(resolvedArgument))
+                        return;
+                    SIL.Program.Process.SafeStart(resolvedArgument);
+                    break;
+                case "safeStartInFront":
+                    if (String.IsNullOrEmpty(resolvedArgument))
+                        return;
+                    ProcessExtra.SafeStartInFront(resolvedArgument);
+                    break;
+                case "showTrainingVideos":
+                    ShowTrainingVideos();
+                    break;
+            }
+        }
+
+        private static string ResolveHelpActionArgument(string argument)
+        {
+            if (String.IsNullOrEmpty(argument))
+                return argument;
+
+            const string urlTypePrefix = "urlType:";
+            if (argument.StartsWith(urlTypePrefix, StringComparison.Ordinal))
+            {
+                var urlTypeString = argument.Substring(urlTypePrefix.Length);
+                if (Enum.TryParse(urlTypeString, true, out UrlType urlType))
+                    return UrlLookup.LookupUrl(urlType, null);
+            }
+
+            return argument;
         }
 
         private void SendZoomInfo()
@@ -688,7 +1036,7 @@ namespace Bloom.Workspace
             if (
                 !Debugger.IsAttached
                 && Platform.IsWindows
-                && !InstallerSupport.SharedByAllUsers()
+                && !InstallerSupport.SharedByAllUsers() // currently always false; see its comment
                 && !ApplicationUpdateSupport.IsDev
             )
             {
@@ -697,38 +1045,6 @@ namespace Bloom.Workspace
                     () => RestartBloom()
                 );
             }
-        }
-
-        ToolStripMenuItem _showAllTranslationsItem;
-
-        private void SetupUiLanguageMenu()
-        {
-            var items = GetLanguageItems(onlyActiveItem: false);
-            var tooltipFormat = GetUiLanguageTooltipFormat();
-            var current = GetAndNormalizeCurrentUiLanguage();
-            _uiLanguageContextMenu.Items.Clear();
-            AddUiLanguageMenuItems(
-                _uiLanguageContextMenu.Items,
-                items,
-                current,
-                tooltipFormat,
-                checkCurrentItem: true,
-                (langItem) => SetUiLanguage(langItem.LangTag),
-                onCurrentItemAdded: null
-            );
-
-            _uiLanguageContextMenu.Items.Add(new ToolStripSeparator());
-            _showAllTranslationsItem = new ToolStripMenuItem(
-                GetShowUnapprovedTranslationsMenuText()
-            )
-            {
-                Checked = Settings.Default.ShowUnapprovedLocalizations,
-            };
-            _showAllTranslationsItem.Click += (sender, args) =>
-                ToggleShowingOnlyApprovedTranslations();
-            _uiLanguageContextMenu.Items.Add(_showAllTranslationsItem);
-
-            AddHelpTranslateMenuItem(_uiLanguageContextMenu.Items);
         }
 
         private static string GetUiLanguageTooltipFormat()
@@ -744,8 +1060,12 @@ namespace Bloom.Workspace
         {
             var current = Settings.Default.UserInterfaceLanguage;
             if (String.IsNullOrEmpty(current))
+            {
+                // Store the default we are falling back to, so the rest of Bloom sees it too.
                 current = "en";
-            Settings.Default.UserInterfaceLanguage = current;
+                Settings.Default.UserInterfaceLanguage = current;
+                Settings.Default.Save();
+            }
             return current;
         }
 
@@ -792,7 +1112,7 @@ namespace Bloom.Workspace
                 ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
         }
 
-        private void ToggleShowingOnlyApprovedTranslations()
+        private static void ToggleShowingOnlyApprovedTranslations()
         {
             Settings.Default.ShowUnapprovedLocalizations = !Settings
                 .Default
@@ -800,11 +1120,13 @@ namespace Bloom.Workspace
             LocalizationManager.ReturnOnlyApprovedStrings = !Settings
                 .Default
                 .ShowUnapprovedLocalizations;
-            SetupUiLanguageMenu();
-            FinishUiLanguageMenuItemClick(); // apply newly revealed/hidden localizations
-            // until L10nSharp changes to allow dynamic response to setting change
+            Current?.FinishUiLanguageMenuItemClick(); // apply newly revealed/hidden localizations
             Settings.Default.Save();
-            Program.RestartBloom(false);
+            // until L10nSharp changes to allow dynamic response to setting change
+            // Skip the restart at startup (no project loaded); CollectionChooserApi
+            // handles that case by reopening the dialog to refresh the language list.
+            if (Current != null)
+                Program.RestartBloom(false);
         }
 
         /// <summary>
@@ -853,7 +1175,7 @@ namespace Bloom.Workspace
             );
         }
 
-        private static void ApplyUiLanguageChange(string langTag)
+        internal static void ApplyUiLanguageChange(string langTag)
         {
             try
             {
@@ -892,9 +1214,7 @@ namespace Bloom.Workspace
             {
                 using (var server = new BloomWebSocketServer())
                 {
-                    server.Init(
-                        (BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture)
-                    );
+                    server.Init(BloomServer.WebSocketPort.ToString(CultureInfo.InvariantCulture));
                     server.SendString("app", "uiLanguageChanged", langTag);
                 }
             }
@@ -922,12 +1242,22 @@ namespace Bloom.Workspace
         public void SetUiLanguage(string langTag)
         {
             ApplyUiLanguageChange(langTag);
-            FinishUiLanguageMenuItemClick();
+
+            // In the single-browser architecture, many UI surfaces don't fully refresh their
+            // localized strings without a full workspace reload. Reopening the current project
+            // gives us behavior similar to collection switching and guarantees consistency.
+            Application.Idle -= ReopenProjectAfterUiLanguageChange;
+            Application.Idle += ReopenProjectAfterUiLanguageChange;
+        }
+
+        private void ReopenProjectAfterUiLanguageChange(object sender, EventArgs e)
+        {
+            Application.Idle -= ReopenProjectAfterUiLanguageChange;
+            Invoke(ReopenCurrentProject);
         }
 
         private void FinishUiLanguageMenuItemClick()
         {
-            _showAllTranslationsItem.Text = GetShowUnapprovedTranslationsMenuText();
             _localizationChangedEvent.Raise(null);
         }
 
@@ -1007,7 +1337,7 @@ namespace Bloom.Workspace
             }
         }
 
-        private void OnEditBook(Book.Book book)
+        private void HandleEditBookCommand(Book.Book book)
         {
             ChangeTab(WorkspaceTab.edit);
         }
@@ -1035,45 +1365,64 @@ namespace Bloom.Workspace
             SendBookSelectionChanged(forceNotSaveable: true);
         }
 
-        public void OpenCreateCollection()
+        /// <summary>
+        /// Switches directly to the specified collection without showing the chooser dialog.
+        /// Called from the React-based collection chooser when the user clicks a collection card.
+        /// </summary>
+        public void OpenSpecificCollection(string collectionPath)
         {
+            var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
             _selectedTabAboutToChangeEvent.Raise(
-                new TabChangedDetails() { From = _previouslySelectedControl, To = null }
+                new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
-
             _selectedTabChangedEvent.Raise(
-                new TabChangedDetails() { From = _previouslySelectedControl, To = null }
+                new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
 
-            var oldSelectedControl = _previouslySelectedControl;
-            _previouslySelectedControl = null;
+            Invoke(() =>
+                Program.SwitchToCollection(collectionPath, Shell.GetShellOrOtherOpenForm() as Shell)
+            );
+        }
 
-            Invoke(
-                (Action)(
-                    () =>
-                    {
-                        var didOpen = Program.ChooseACollection(
-                            Shell.GetShellOrOtherOpenForm() as Shell
-                        );
-                        if (!didOpen)
-                        {
-                            // We want to resume whatever tab we were in.
-                            // There is some overkill here...the old tab can only be the collection tab,
-                            // and currently it doesn't care about these events. The critical thing is to
-                            // restore _previouslySelectedControl, which is required so we can remove it
-                            // if we subsequently switch to another tab. But it seemed best to be consistent.
-                            // If we're not shutting down, we're switching the previously selected tab back on.
-                            _selectedTabAboutToChangeEvent.Raise(
-                                new TabChangedDetails() { From = null, To = oldSelectedControl }
-                            );
-                            _selectedTabChangedEvent.Raise(
-                                new TabChangedDetails() { From = null, To = oldSelectedControl }
-                            );
-                            _previouslySelectedControl = oldSelectedControl;
-                        }
-                    }
+        /// <summary>
+        /// Runs the New Collection Wizard and, if the user completes it, opens the new collection.
+        /// Called from the React-based collection chooser "Create New Collection" button.
+        /// </summary>
+        public void CreateNewCollection()
+        {
+            var shell = Shell.GetShellOrOtherOpenForm() as Shell;
+            var path = NewCollectionWizard.CreateNewCollection(null, shell);
+            if (path != null)
+                OpenSpecificCollection(path);
+        }
+
+        /// <summary>
+        /// Shows a file picker for .bloomCollection files and opens the selected collection.
+        /// Called from the React-based collection chooser "Browse" button.
+        /// </summary>
+        public void BrowseForAndOpenCollection()
+        {
+            if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
+                Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
+
+            string selectedPath;
+            using (var dlg = new BloomOpenFileDialog())
+            {
+                dlg.Title = LocalizationManager.GetString(
+                    "CollectionTab.ChooseCollection",
+                    "Choose Collection",
+                    "Title of the file-open dialog for choosing a Bloom collection"
+                );
+                dlg.Filter = CollectionSettings.GetFileDialogFilterString();
+                dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
+                if (
+                    dlg.ShowDialog() == DialogResult.Cancel
+                    || MiscUtils.ReportIfInvalidCollection(dlg.FileName)
                 )
-            );
+                    return;
+                selectedPath = dlg.FileName;
+            }
+            OpenSpecificCollection(selectedPath);
         }
 
         private CollectionSettingsDialog _currentlyOpenSettingsDialog;
@@ -1109,6 +1458,7 @@ namespace Bloom.Workspace
                 else
                 {
                     _collectionSettingsApi.PrepareToShowDialog();
+                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                     using (var dlg = _settingsDialogFactory())
                     {
                         dlg.FixingEnterpriseSubscriptionCode = forFixingEnterpriseSubscription;
@@ -1143,46 +1493,74 @@ namespace Bloom.Workspace
             );
         }
 
-        private void SelectTab(Control view)
+        private static WorkspaceTab? GetWorkspaceTab(IBloomTabArea view)
+        {
+            if (view is EditingView)
+                return WorkspaceTab.edit;
+
+            if (view is CollectionTabView)
+                return WorkspaceTab.collection;
+
+            if (view is PublishView)
+                return WorkspaceTab.publish;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Changes the active tab in the workspace.
+        /// Todo: we can probably merge the two ChangeTab methods, but I want to wait for 6.5 to
+        /// attempt this, also merging the comments with some care. I'm not sure whether we should keep
+        /// the argument as an IBloomTabArea of a WorkspaceTab value. If the latter, _previouslySelectedTabArea
+        /// probably wants to change too, and perhaps other things.
+        /// Note that we don't want to make any actual changes of state until the CompleteTheChange callback runs
+        /// after we raise _selectedTabAboutToChangeEvent. The allows the current tab to shut down cleanly,
+        /// before any changes that might do things like cleaning out its iframe. In particular, we have to wait
+        /// until any changes are saved if we are leaving the edit tab.
+        /// </summary>
+        private void ChangeTab(IBloomTabArea view)
         {
             // Already on the desired tab: nothing to do.  And possible problems if we do do something.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8382.
-            if (view == _previouslySelectedControl)
+            if (view == _previouslySelectedTabArea)
                 return;
 
-            CurrentTabView = view as IBloomTabArea;
+            var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
+            var currentTab = GetWorkspaceTab(view);
             // Warn the user if we're starting to use too much memory.
             //MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
 
-            if (_previouslySelectedControl != null)
+            if (_previouslySelectedTabArea is EditingView)
             {
-                _containerPanel.Controls.Remove(_previouslySelectedControl);
-                if (_previouslySelectedControl is EditingView)
-                {
-                    // I wish this was unnecessary; ideally, we'd get the notification to
-                    // stop monitoring from the stopMonitoring function in audioRecording.ts.
-                    // We should be able to achieve that when the tabs are embedded in a single
-                    // Browser control. For now, the shutdown of the EditingView seems to
-                    // preempt it, so we handle it here.
-                    _audioRecording.PauseMonitoringAudio(false);
-                }
+                // I wish this was unnecessary; ideally, we'd get the notification to
+                // stop monitoring from the stopMonitoring function in audioRecording.ts.
+                // We should be able to achieve that when the tabs are embedded in a single
+                // Browser control. For now, the shutdown of the EditingView seems to
+                // preempt it, so we handle it here.
+                _audioRecording.PauseMonitoringAudio(false);
             }
-
-            view.Dock = DockStyle.Fill;
-            _containerPanel.Controls.Add(view);
 
             _selectedTabAboutToChangeEvent.Raise(
                 new TabChangedDetails()
                 {
-                    From = _previouslySelectedControl,
-                    To = view,
-                    PostponedWork = () =>
+                    FromTab = previousTab,
+                    ToTab = currentTab,
+                    CompleteTheChange = () =>
                     {
+                        CurrentTabView = view;
+
+                        // Mark the tab active only when we actually complete the change.
+                        // When leaving Edit this is delayed until pending save completes.
+                        if (currentTab.HasValue)
+                        {
+                            _tabSelection.ActiveTab = currentTab.Value;
+                        }
+
                         _selectedTabChangedEvent.Raise(
-                            new TabChangedDetails() { From = _previouslySelectedControl, To = view }
+                            new TabChangedDetails() { FromTab = previousTab, ToTab = currentTab }
                         );
 
-                        _previouslySelectedControl = view;
+                        _previouslySelectedTabArea = view;
                         _collectionApi.ResetUpdatingList();
 
                         var zoomManager = CurrentTabView as IZoomManager;
@@ -1192,83 +1570,67 @@ namespace Bloom.Workspace
                         }
                         SendZoomInfo();
                         SendTopBarState();
+                        if (currentTab == WorkspaceTab.collection)
+                        {
+                            ApplyPostCollectionTabBehavior();
+                        }
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
                     },
+                    // Starting over means re-running this whole method, so the "already on the
+                    // desired tab" check at the top makes it a no-op if some other path has
+                    // meanwhile switched to the tab we wanted. See BL-16766.
+                    StartTheChangeOver = () => ChangeTab(view),
                 }
             );
         }
 
         protected IBloomTabArea CurrentTabView { get; set; }
 
-        public void ChangeTab(WorkspaceTab newTab)
+        private IBloomTabArea GetTabArea(WorkspaceTab tab)
         {
-            _tabSelection.ActiveTab = newTab;
-            switch (newTab)
+            switch (tab)
             {
                 case WorkspaceTab.edit:
-                    SelectTab(_editingView);
-                    break;
+                    return _editingView;
                 case WorkspaceTab.collection:
-                    SelectTab(_collectionTabView);
-                    if (_returnToCollectionTabNotifier != null)
-                    {
-                        _returnToCollectionTabNotifier.CloseSafely();
-                        _returnToCollectionTabNotifier = null;
-                    }
-                    if (_collectionTabView != null)
-                    {
-                        if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
-                        {
-                            _collectionTabView.UpdateBloomLibraryStatus(
-                                Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId
-                            );
-                            Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded = false;
-                            Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId = null;
-                        }
-                    }
-                    break;
+                    return _collectionTabView;
                 case WorkspaceTab.publish:
-                    SelectTab(_publishView);
-                    break;
+                    return _publishView;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(tab), tab, null);
             }
         }
 
-        private void OnAboutBoxClick(object sender, EventArgs e)
+        private void ApplyPostCollectionTabBehavior()
         {
-            if (InEditMode)
-                _editingView.ShowAboutDialog();
-            else
-                _webSocketServer.LaunchDialog("AboutDialog");
+            if (_collectionTabView != null)
+            {
+                if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
+                {
+                    _collectionTabView.UpdateBloomLibraryStatus(
+                        Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId
+                    );
+                    Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded = false;
+                    Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId = null;
+                }
+            }
         }
 
-        private void _documentationMenuItem_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Changes the active tab in the workspace.
+        /// </summary>
+        /// <note>This requires that the workspace is already loaded,
+        /// which is normally the case since we start loading it very early in the application startup process,
+        /// and in that case we won't be changing tabs until some user does so, which can only be done using
+        /// controls that must be loaded into the workspace. When a page is refreshing, code may automatically
+        /// change the tab, but that can't happen until the code that does it is loaded! So I think we are
+        /// safe, but be aware of this issue if you are adding some new code that opens a different tab
+        /// at startup.
+        /// </note>
+        /// <param name="newTab">The tab to activate.</param>
+        public void ChangeTab(WorkspaceTab newTab)
         {
-            HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
-        }
-
-        private void _bloom_docs_Click(object sender, EventArgs e)
-        {
-            SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org");
-        }
-
-        private void _webSiteMenuItem_Click(object sender, EventArgs e)
-        {
-            ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LibrarySite, null));
-        }
-
-        private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
-        {
-            SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org/Release-Notes");
-        }
-
-        private void _requestAFeatureMenuItem_Click(object sender, EventArgs e)
-        {
-            ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.UserSuggestions, null));
-        }
-
-        private void _askAQuestionMenuItem_Click(object sender, EventArgs e)
-        {
-            ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.Support, null));
+            ChangeTab(GetTabArea(newTab));
         }
 
         // Currently not used, but I'm leaving the method in case we want to put it
@@ -1284,11 +1646,19 @@ namespace Bloom.Workspace
 
         private void WorkspaceView_Load(object sender, EventArgs e)
         {
-            CheckDPISettings();
+            _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
             ShowAutoUpdateDialogIfNeeded();
             ShowForumInvitationDialogIfNeeded();
+            // Check whether the last Velopack update attempt actually succeeded. Shows a toast if not.
+            StartupScreenManager.AddStartupAction(
+                () => ApplicationUpdateSupport.CheckForFailedUpdate(),
+                shouldHideSplashScreen: false,
+                lowPriority: true
+            );
             // Whether we showed the dialog or not we'll check for a new version in 1 minute.
             _applicationUpdateCheckTimer.Enabled = true;
+            // Dev only: does nothing unless the go.sh launcher started this Bloom.
+            DevLauncher.StartMonitoringForSourceChanges();
             SendTopBarState();
         }
 
@@ -1297,6 +1667,11 @@ namespace Bloom.Workspace
         private void ShowAutoUpdateDialogIfNeeded()
         {
             if (Platform.IsLinux)
+                return;
+            // An automated run has nobody to dismiss a modal dialog. This one is shown as a startup
+            // action, so it would sit on the UI thread in its own message loop for the whole run --
+            // exactly the "dialog nobody can dismiss" that Program.RunningE2eTests exists to avoid.
+            if (Program.RunningE2eTests)
                 return;
             // If Bloom is newly installed or we only had old versions before, this should be 0.
             var isShown = Settings.Default.AutoUpdateDialogShown;
@@ -1312,8 +1687,7 @@ namespace Bloom.Workspace
                             var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle", "Auto Update")
                         )
                         {
-                            dlg.Height = 250;
-                            dlg.Width = 500;
+                            dlg.SetScaledSize(500, 250);
                             dlg.ShowDialog(this);
                         }
                     },
@@ -1384,45 +1758,6 @@ namespace Bloom.Workspace
             }
         }
 
-        private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
-        {
-            ShowRegistrationDialog();
-        }
-
-        public void ShowRegistrationDialog()
-        {
-            if (InEditMode)
-                _editingView.ShowRegistrationDialog();
-            else
-            {
-                dynamic messageBundle = new DynamicJson();
-                _webSocketServer.LaunchDialog("RegistrationDialog", messageBundle);
-            }
-        }
-
-        private void CheckDPISettings()
-        {
-            Graphics g = this.CreateGraphics();
-            try
-            {
-                var dx = g.DpiX;
-                DPIOfThisAccount = dx;
-                var dy = g.DpiY;
-                if (dx != 96 || dy != 96)
-                {
-                    ErrorReport.NotifyUserOfProblem(
-                        new ShowOncePerSessionBasedOnExactMessagePolicy(),
-                        "The \"text size (DPI)\" or \"Screen Magnification\" of the display on this computer is set to a special value, {0}. With that setting, some thing won't look right in Bloom. Possibly books won't lay out correctly. If this is a problem, change the DPI back to 96 (the default on most computers), using the 'Display' Control Panel.",
-                        dx
-                    );
-                }
-            }
-            finally
-            {
-                g.Dispose();
-            }
-        }
-
         public void CheckForCollectionUpdates()
         {
             _collectionApi.CheckForCollectionUpdates();
@@ -1430,15 +1765,16 @@ namespace Bloom.Workspace
 
         public void CheckForUpdates()
         {
-            Invoke((Action)(() => _checkForNewVersionMenuItem_Click(this, new EventArgs())));
+            Invoke((Action)(() => CheckForUpdatesImpl()));
         }
 
-        private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
+        private void CheckForUpdatesImpl()
         {
             if (Debugger.IsAttached)
             {
                 MessageBox.Show(this, "Sorry, you cannot check for updates from the debugger.");
             }
+            // Currently dead: SharedByAllUsers is always false now (see its comment).
             else if (InstallerSupport.SharedByAllUsers())
             {
                 MessageBox.Show(
@@ -1485,17 +1821,7 @@ namespace Bloom.Workspace
             );
         }
 
-        private void buildingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
-        {
-            OpenInfoFile("Building and Distributing Reader Templates in Bloom.pdf");
-        }
-
-        private void usingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
-        {
-            OpenInfoFile("Using Bloom Reader Templates.pdf");
-        }
-
-        private void _reportAProblemMenuItem_Click(object sender, EventArgs e)
+        public void ReportProblem()
         {
             // Screen shots were showing the menu still open on Linux, so delay a bit by starting the
             // dialog on the next idle loop.  Also allow one repaint event to be handled immediately.
@@ -1515,21 +1841,12 @@ namespace Bloom.Workspace
                 if (InEditMode)
                 {
                     _editingView.Model.SaveThen(
-                        () =>
+                        () => _editingView.Model.CurrentPage.Id,
+                        ReportAndLogProblem, // wrong state: show dialog without saving
+                        doAfterSaveToDisk: () =>
                         {
-                            // To test the Problem Dialog with a fatal error, uncomment this next line.
-                            // throw new ApplicationException("I just felt like an error!");
-
-                            // To test the Problem Dialog with a nonfatal error, uncomment this next line.
-                            // NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
-                            // To test clicking 'Report' in a toast, uncomment the line above, but use ModalIf.None.
-
-                            // To test the old ErrorReport.NotifyUserOfProblem, uncomment this next line.
-                            // ErrorReport.NotifyUserOfProblem(new ApplicationException("internal exception message"), "My main message");
                             ReportAndLogProblem();
-                            return _editingView.Model.CurrentPage.Id;
-                        },
-                        () => { } // wrong state, do nothing
+                        }
                     );
                 }
                 else
@@ -1550,13 +1867,38 @@ namespace Bloom.Workspace
             ProblemReportApi.ShowProblemDialog(this, null);
         }
 
+        /// <summary>
+        /// Ask the tab bar to stop offering the tabs (or to offer them again).
+        /// </summary>
+        /// <remarks>
+        /// ADVISORY, not a lock: this only pushes new tab states to the React top bar over a
+        /// websocket, and nothing checks _tabsEnabled when a workspace/selectTab request arrives.
+        /// So a click made (or already in flight) before the browser catches up still gets acted
+        /// on — see BL-16766. Whatever must not happen mid-operation has to be handled where it
+        /// happens, not assumed to have been prevented here.
+        /// </remarks>
         public void SetTabsEnabled(bool enable)
         {
             _tabsEnabled = enable;
             SendTopBarState();
+            // Display a log message to track down who called this method with what value and when. (BL-16290)
+            // Trim the stack trace to remove the top two redundant lines and limit the number of lines shown to 5.
+            // The further down the stack trace, the less relevant it is to figure out what called this method.
+            // (The top two lines are always this method and a stracktrace method.)
+            var stackLines = Environment.StackTrace.Split(Environment.NewLine);
+            var stackList = new List<string>();
+            for (int i = 2; i < Math.Min(7, stackLines.Length); i++)
+                stackList.Add(stackLines[i]);
+            var stackTop = string.Join(Environment.NewLine, stackList);
+            var msg =
+                $"WorkSpaceView.SetTabsEnabled({enable}) - {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff")}"
+                + Environment.NewLine
+                + stackTop;
+            Logger.WriteMinorEvent(msg);
+            Debug.WriteLine(msg);
         }
 
-        private void _trainingVideosMenuItem_Click(object sender, EventArgs e)
+        private void ShowTrainingVideos()
         {
             //note: markdown processors pass raw html through unchanged.  Bloom's localization process
             // is designed to produce HTML files, not Markdown files.

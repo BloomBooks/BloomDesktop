@@ -1,16 +1,21 @@
 @import "../branding-base.less";
 
-[data-book="outside-back-cover-branding-bottom-html"] {
+// The "vanilla" flavor (branding[vanilla].json) puts the shared "Made with Bloom"
+// badge in this same slot, and wants it to look exactly as it does under the
+// Default branding. So every rule here is scoped to the case where SIL Niger's
+// own logo is present: :has(> img.logo) on the container, and a child combinator
+// on the images. Without that, the badge would be sized as if it were the logo
+// (it has its own img.branding, nested in a .bloom-branding-wrapper; see the
+// note in branding-base.less) and would sit higher on the page.
+[data-book="outside-back-cover-branding-bottom-html"]:has(> img.logo) {
     flex-direction: row;
     justify-content: space-evenly;
-    img.branding {
-        &:not(.bloom-badge) {
-            height: 4cm;
-        }
+    > img.branding {
+        height: 4cm;
     }
 }
 
-.marginBox [data-book="outside-back-cover-branding-bottom-html"] {
+.marginBox [data-book="outside-back-cover-branding-bottom-html"]:has(> img.logo) {
     margin-top: auto !important;
     margin-bottom: 0.5cm;
 
@@ -18,7 +23,7 @@
 
     justify-content: center;
 
-    img {
+    > img {
         margin-left: unset;
         margin-right: unset;
 

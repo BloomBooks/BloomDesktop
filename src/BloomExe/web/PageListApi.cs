@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +8,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Bloom.Utils;
 using SIL.Reporting;
@@ -259,9 +259,6 @@ namespace Bloom.web
         ///   book-id - optional book id. If not given, uses the collections "current" book.
         public void HandlePagesRequest(ApiRequest request)
         {
-            //var watch = new Stopwatch();
-            //watch.Start();
-
             var book = _collectionModel.GetRequestedBookOrDefaultOrNull(
                 request.GetParamOrNull("book-id")
             );
@@ -284,8 +281,6 @@ namespace Bloom.web
             answer.selectedPageId = isCurrentBook && SelectedPage != null ? SelectedPage.Id : "";
             answer.pageLayout = book?.GetLayout()?.SizeAndOrientation?.ClassName ?? "A5Portrait";
             request.ReplyWithJson(answer);
-            //watch.Stop();
-            //Debug.WriteLine($"Generating JSON for thumbnails took {watch.ElapsedMilliseconds}ms");
         }
 
         // Requests the content that should be displayed in a single page thumbnail.
@@ -294,8 +289,6 @@ namespace Bloom.web
         //    book-id - the book ID (optional)
         public void HandlePageContentRequest(ApiRequest request)
         {
-            var watch = new Stopwatch();
-            watch.Start();
             var id = request.RequiredParam("page-id");
             var book = _collectionModel.GetRequestedBookOrDefaultOrNull(
                 request.GetParamOrNull("book-id")
@@ -315,7 +308,6 @@ namespace Bloom.web
             dynamic answer = new ExpandoObject();
             answer.content = GetPageContentForThumbnail(page);
             request.ReplyWithJson(answer);
-            watch.Stop();
         }
 
         private static string GetPageContentForThumbnail(IPage page)
@@ -333,6 +325,27 @@ namespace Bloom.web
             }
 
             MarkImageNodesForThumbnail(pageElement);
+
+            var pageNeedsTransparent = HtmlDom.PageNeedsTransparentImages(pageElement);
+            foreach (
+                SafeXmlElement img in pageElement
+                    .SafeSelectNodes(".//img[@src]")
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                if (img.HasClass("branding") || img.HasClass("bloom-qrcode"))
+                    continue;
+                var mode = HtmlDom.GetImageTransparencyMode(img, pageNeedsTransparent);
+                if (mode == ImageTransparencyMode.None)
+                    continue;
+                var src = img.GetAttribute("src");
+                if (!string.IsNullOrEmpty(src))
+                {
+                    var paramValue = mode == ImageTransparencyMode.Force ? "force" : "yes";
+                    img.SetAttribute("src", HtmlDom.GetSrcWithTransparencyParam(src, paramValue));
+                }
+            }
+
             // For WebView2, this prevents any interaction with elements in the page thumbnail.
             // We put an overlay over it to try to prevent such interaction, but this is more
             // reliable. Nothing in the page will ever get focus, be tabbed to, be read by
@@ -345,7 +358,7 @@ namespace Bloom.web
 
         // As a further form of optimization, mark img elements as being thumbnails. The server
         // produces miniatures that take up less memory.
-        private static void MarkImageNodesForThumbnail(SafeXmlElement pageElementForThumbnail)
+        internal static void MarkImageNodesForThumbnail(SafeXmlElement pageElementForThumbnail)
         {
             var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(
                 pageElementForThumbnail
@@ -359,7 +372,12 @@ namespace Bloom.web
                     if (imageElementUrl.NotEncoded.Contains("/api/"))
                         continue;
 
-                    var filename = imageElementUrl.PathOnly.UrlEncoded;
+                    // UrlEncodedForHttpPath rather than UrlEncoded, because the latter escapes the
+                    // path separators themselves ('/' as %2f, ':' as %3a). For an ordinary book
+                    // image the two are identical -- a Windows file name can contain neither
+                    // character -- but for a src that really is a path (say "/bloom/branding/x.png",
+                    // which the "/api/" test above doesn't catch) only this form stays requestable.
+                    var filename = imageElementUrl.PathOnly.UrlEncodedForHttpPath;
                     if (!string.IsNullOrWhiteSpace(filename))
                     {
                         var url = filename + "?thumbnail=1";
@@ -371,11 +389,23 @@ namespace Bloom.web
                             // gets interpreted as part of the filename.
                             url = filename + query.NotEncoded + "&thumbnail=1";
                         }
-                        // It's not strictly true that url here is unencoded. In fact it contains a file path that IS
-                        // encoded. But also a query that isn't. So we need to treat it as unencoded.
+                        // At this point url is exactly what we want in the src attribute: an
+                        // already-URL-encoded path followed by a literal (unencoded) query. So we
+                        // must neither encode nor decode it on the way out (BL-16658).
+                        // - urlEncode:false, because re-encoding the whole string would turn the ?
+                        //   into %3f and bury the thumbnail param in the path, invisible to
+                        //   GetQueryParameters().
+                        // - CreateFromUnencodedString rather than CreateFromPossiblyEncodedString,
+                        //   because the latter would see the %XX escapes in the path and decode
+                        //   them, and we would then write out a raw filename like
+                        //   "This Image !@#$%^&()2.jpg?thumbnail=1", where the browser treats the
+                        //   # as the start of a fragment and never requests the real file. (This
+                        //   is the one place where "unencoded" is a slight fiction: what we hold
+                        //   is encoded, and the point is precisely that we must not touch it.)
                         HtmlDom.SetImageElementUrl(
                             imgNode,
-                            UrlPathString.CreateFromUnencodedString(url)
+                            UrlPathString.CreateFromUnencodedString(url),
+                            urlEncode: false
                         );
                     }
                 }

@@ -12,13 +12,13 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
+using Bloom.Edit;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Spreadsheet;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
@@ -34,18 +34,21 @@ namespace Bloom.web.controllers
         private BookSelection _bookSelection;
         private readonly SpreadsheetApi _spreadsheetApi;
         private readonly BloomWebSocketServer _webSocketServer;
+        private readonly EditingModel _editingModel;
 
         public BookCommandsApi(
             CollectionModel collectionModel,
             BloomWebSocketServer webSocketServer,
             BookSelection bookSelection,
-            SpreadsheetApi spreadsheetApi
+            SpreadsheetApi spreadsheetApi,
+            EditingModel editingModel
         )
         {
             _collectionModel = collectionModel;
             _webSocketServer = webSocketServer;
             _bookSelection = bookSelection;
             this._spreadsheetApi = spreadsheetApi;
+            _editingModel = editingModel;
             _collectionModel.BookCommands = this;
         }
 
@@ -423,7 +426,7 @@ namespace Bloom.web.controllers
 
                 _collectionModel.ExportDocFormat(destPath);
                 ProcessExtra.SafeStartInFront(destPath);
-                Analytics.Track("Exported To Doc format");
+                BloomAnalytics.Track("Exported To Doc format");
             }
             catch (IOException error)
             {
@@ -432,12 +435,12 @@ namespace Bloom.web.controllers
                     error.Message,
                     "Could not export the book"
                 );
-                Analytics.ReportException(error);
+                BloomAnalytics.ReportException(error);
             }
             catch (Exception error)
             {
                 SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
-                Analytics.ReportException(error);
+                BloomAnalytics.ReportException(error);
             }
         }
 
@@ -506,6 +509,13 @@ namespace Bloom.web.controllers
                 // Currently this works on the current book, so the argument is ignored.
                 // That's OK for now as currently the book passed will always be the current one.
                 _collectionModel.BringBookUpToDate();
+
+                // In addition to the whole-book update above, visit every page as if the user had
+                // clicked on each one in the Edit tab, saving each. This applies the edit-tab page
+                // setup/update code to every page, so users no longer have to "go to edit and click
+                // on each page" themselves (BL-16595). This runs asynchronously: it switches to the
+                // Edit tab, steps through the pages, and returns to the Collection tab when done.
+                _editingModel.StartUpdatingAllPages();
             }
             catch (Exception error)
             {

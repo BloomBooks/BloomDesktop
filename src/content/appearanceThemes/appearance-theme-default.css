@@ -39,6 +39,9 @@
     --pageNumber-background-width: unset; /* for when we need to have a colored background, e.g. a circle */
     /* background-color: value in .numberedPage:after to display the page number */
     --pageNumber-background-color: transparent;
+    /* color: value in .numberedPage:after to display the page number */
+    --pageNumber-color: black;
+    --pageNumber-outline-color: white;
     /* border-radius: value in .numberedPage:after to display the page number */
     --pageNumber-border-radius: 0px;
     /* left: value in .numberedPage.side-left:after to display the page number */
@@ -67,6 +70,9 @@
      *  Valid values would include auto (a keyword), 5px, or 8%.
      *  The unset keyword removes having any value associated with this variable. */
     --pageNumber-always-left-margin: unset;
+
+    /* background-color: value in .bloom-page when a theme wants a decorative shell behind the page surface */
+    /* DO WE NEED THIS? --page-frame-color: unset;*/
 
     /* background-color: value in .bloom-page */
     --page-background-color: white;
@@ -107,8 +113,11 @@
 
     /* background-color: value in .numberedPage .marginBox */
     /* This is not just for text boxes, but for everything inside the page margins.
-       (For example, the space between text boxes or the background of partly transparent images.) */
-    --marginBox-background-color: white; /* it is not transparent because at edit time we set the parent (the translationGroup) color to show padding
+         (For example, the space between text boxes or the background of partly transparent images.)
+         It defaults to the page surface color rather than transparent, because in edit mode we set
+         the parent translationGroup color to show padding and still need the editable content area
+         itself to paint like the page surface. */
+    --marginBox-background-color: var(--page-background-color);
     /* padding: value in .numberedPage .marginBox */
     --marginBox-padding: 0px;
     /* border-radius: value in .numberedPage .marginBox */
@@ -121,8 +130,9 @@
     --marginBox-border-width: medium; /* must not be 0px/0mm/0in to have a border. 'medium' is a keyword. */
 
     /* In some themes, at edit-
-    time, the format button lands under the page number. See BL-13206. The name is is intentionally vague about direction and what we do with it. */
-    --formatButton-pageNumber-dodge: 0;
+    time, the format button lands under the page number. See BL-13206. The name is is intentionally vague about direction and what we do with it.
+    Must have a unit: this feeds a calc() with px, where a unitless 0 makes the whole expression invalid (BL-14901). */
+    --formatButton-pageNumber-dodge: 0px;
 }
 
 /* this rule might not always be what we need for every kind of interactive page, but it's a good default.
@@ -164,10 +174,12 @@
 .Cm13Landscape {
     --page-margin: 5mm;
 }
+.bloom-page[class*="Ebook"],
 .bloom-page[class*="Device"] {
     --page-margin: 10px;
 }
 
+.bloom-page[class*="Ebook"],
 .bloom-page[class*="Device"],
 .bloomPlayer-page .bloom-page {
     /* Deliberately set both of these, which combines with a special device/bloom-player rule
@@ -178,6 +190,7 @@
     --pageNumber-always-left-margin: 0px;
 }
 
+.numberedPage[class*="Ebook"],
 .numberedPage[class*="Device"] {
     /* These page sizes have small margins, so we need extra height on numbered ones.
     (Note that this disappears if page numbers are turned off, because --pageNumber-show-multiplicand is 0.) */

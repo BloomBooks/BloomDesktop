@@ -486,6 +486,30 @@ namespace Bloom.Book
         )
         {
             HtmlDom.RemoveClassesBeginningWith(editable, "bloom-content");
+            if (editable.ParentWithClass("bloom-customLayout") != null)
+            {
+                // On a custom layout page, assign bloom-contentFirst/Second/Third based on the
+                // data-default-languages attribute of the parent group and whether the element
+                // is visible. This ensures correctness after language changes or derivative creation.
+                // It's also important not to remove these from the copy in the data-div;
+                // we prevent that by renaming bloom-editable and bloom-translationGroup.
+                if (IsVisible(editable))
+                {
+                    var group = editable.ParentNode as SafeXmlElement;
+                    switch (group?.GetAttribute("data-default-languages")?.Trim())
+                    {
+                        case "V":
+                            editable.AddClass("bloom-contentFirst");
+                            break;
+                        case "N1":
+                            editable.AddClass("bloom-contentSecond");
+                            break;
+                        case "N2":
+                            editable.AddClass("bloom-contentThird");
+                            break;
+                    }
+                }
+            }
             var lang = editable.GetAttribute("lang");
 
             //These bloom-content* classes are used by some stylesheet rules, primarily to boost the font-size of some languages.

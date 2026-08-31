@@ -1,0 +1,18 @@
+# pnpm policy for the component-tester. See https://pnpm.io/settings
+#
+# This file also marks the component-tester as its own pnpm root so that, even
+# though it lives inside BloomBrowserUI, pnpm installs it independently rather
+# than folding it into the BloomBrowserUI install.
+#
+# Dependency-risk hardening:
+#  - minimumReleaseAge: ignore any package version published less than 7 days
+#    (10080 minutes) ago, so a freshly-published (possibly compromised) version
+#    can't be pulled into a build until it has had time to be noticed/yanked.
+#  - savePrefix "": save exact versions so `pnpm add` keeps installs reproducible.
+minimumReleaseAge: 10080
+savePrefix: ""
+
+# Build-script allowlist. esbuild needs its postinstall to place its
+# platform-specific binary; nothing else here needs a build script.
+allowBuilds:
+    esbuild: true

@@ -182,6 +182,22 @@ body.publishingWithoutFullBleed {
                 ) *
                 25.4;
         }
+
+        // The ebook sizes are defined in exact pixels, which are already on WebView2's
+        // 1/96-inch PDF grid (1px = 1/96in), so they don't need the mm->grid rounding above.
+        &.Ebook2x3Portrait {
+            min-width: @Ebook2x3Portrait-Width;
+            max-width: @Ebook2x3Portrait-Width;
+            min-height: @Ebook2x3Portrait-Height;
+            max-height: @Ebook2x3Portrait-Height;
+        }
+
+        &.Ebook7x5Landscape {
+            min-width: @Ebook7x5Landscape-Width;
+            max-width: @Ebook7x5Landscape-Width;
+            min-height: @Ebook7x5Landscape-Height;
+            max-height: @Ebook7x5Landscape-Height;
+        }
     }
 }
 
@@ -339,5 +355,16 @@ body.publishingWithoutFullBleed {
     .SetPageDimensions(
         @PictureStoryLandscape-Width,
         @PictureStoryLandscape-Height
+    );
+}
+
+.Ebook2x3Portrait {
+    .SetPageDimensions(@Ebook2x3Portrait-Width, @Ebook2x3Portrait-Height);
+}
+
+.Ebook7x5Landscape {
+    .SetPageDimensions(
+        @Ebook7x5Landscape-Width,
+        @Ebook7x5Landscape-Height
     );
 }

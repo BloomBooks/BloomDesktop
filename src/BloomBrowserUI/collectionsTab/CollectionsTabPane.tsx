@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { get, post, postString } from "../utils/bloomApi";
+import { get, post, postData, postString } from "../utils/bloomApi";
 import { BooksOfCollection, IBookInfo } from "./BooksOfCollection";
 import { makeMenuItems, MenuItemSpec } from "./menuHelpers";
 import { Transition } from "react-transition-group";
@@ -13,13 +13,8 @@ import useEventListener from "@use-it/event-listener";
 import { BookSelectionManager } from "./bookSelectionManager";
 import ShowAfterDelay from "../react_components/showAfterDelay";
 import { forceCheck as convertAnyVisibleLazyLoads } from "react-lazyload";
-import { IconButton, Divider, Menu } from "@mui/material";
+import { IconButton, Menu } from "@mui/material";
 import GreyTriangleMenuIcon from "../react_components/icons/GreyTriangleMenuIcon";
-import {
-    LocalizableCheckboxMenuItem,
-    LocalizableMenuItem,
-    LocalizableNestedMenuItem,
-} from "../react_components/localizableMenuItem";
 import { TeamCollectionDialogLauncher } from "../teamCollection/TeamCollectionDialog";
 import { SpreadsheetExportDialogLauncher } from "./spreadsheet/SpreadsheetExportDialog";
 import { RegistrationDialogEventLauncher } from "../react_components/registration/registrationDialogLauncher";
@@ -30,10 +25,12 @@ import { EmbeddedProgressDialog } from "../react_components/Progress/ProgressDia
 import { useSubscribeToWebSocketForObject } from "../utils/WebSocketManager";
 import CloseIcon from "@mui/icons-material/Close";
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
+import { ImportIcon } from "../react_components/icons/ImportIcon";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { BloomTooltip } from "../react_components/BloomToolTip";
 import { Link } from "../react_components/link";
 import { ForumInvitationDialogLauncher } from "../react_components/forumInvitationDialog";
+import { SignInInvitationDialogLauncher } from "../react_components/signInInvitationDialog";
 import { CollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
 import { BooksOnBlorgProgressBar } from "../booksOnBlorg/BooksOnBlorgProgressBar";
 import { SubscriptionStatus } from "./SubscriptionStatus";
@@ -42,7 +39,16 @@ import {
     showMakeReaderTemplateBloomPackDialog,
 } from "../react_components/makeReaderTemplateBloomPackDialog";
 import { AboutDialogLauncher } from "../react_components/aboutDialog";
-import { RegistrationDialogLauncher } from "../react_components/registration/registrationDialog";
+import { RadioChoiceDialog } from "./RadioChoiceDialog";
+import { ExternalBusyOverlay } from "./ExternalBusyOverlay";
+import { CollectionChooserDialog } from "../collection/CollectionChooserDialog";
+import {
+    kMinPaneSizePx,
+    restoreSizes,
+    savePersistedSplitterSizes,
+    SplitterSizes,
+    usePersistedSplitterSizes,
+} from "../utils/persistedSplitterSizes";
 
 const kResizerSize = 10;
 
@@ -55,6 +61,22 @@ type CollectionInfo = {
     isRemovableFolder: boolean;
     filter?: (book: IBookInfo) => boolean;
 };
+
+// These give the two panes about the same ratio as in the Legacy view.
+const kDefaultSplitterSizes: SplitterSizes = {
+    widths: [31, 50],
+    heights: [1, 1],
+};
+
+// Used instead of the saved heights when there are no source collections to show, so that
+// the bottom pane gets no space at all.
+const kNoBottomPaneHeights = [1, 0];
+
+// App.tsx renders only the active tab, so this pane is unmounted and remounted every time the
+// user leaves the Collections tab and comes back. Keeping the splitter sizes outside the
+// component is what makes a custom layout survive that (BL-16768); saving them in this user
+// setting is what makes it survive restarting Bloom.
+const kSplitterSizesSettingName = "CollectionTabSplitterSizes";
 
 export const CollectionsTabPane: React.FunctionComponent = () => {
     // Temporary: notify c# about clicks so WinForms menus can close.
@@ -155,12 +177,15 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         CollectionInfo | undefined
     >();
 
-    const removeSourceFolder = (id: string) => {
-        // This opens a file explorer on the given folder, giving the user
+    const openCollectionFolderInExplorer = (collectionFolderPath: string) => {
+        // This opens a file explorer in the given folder, giving the user
         // the option of deleting it.  We can't depend on waiting long enough
         // so we just ignore the return from the post and listen on a socket
         // for any update information.
-        postString("collections/removeSourceFolder", id);
+        postString(
+            "collections/openCollectionFolderInExplorer?updateAfter=true",
+            collectionFolderPath,
+        );
     };
 
     useSubscribeToWebSocketForObject<{
@@ -171,19 +196,20 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     });
 
     const [draggingSplitter, setDraggingSplitter] = useState(false);
+    const [collectionChooserOpen, setCollectionChooserOpen] = useState(false);
 
-    // Initially (when Bloom first starts, until we persist splitter settings) the vertical
-    // splitter between the editable collection and the others is set to give them equal space.
-    // When the user drags the splitter, we use a callback to update this, so it will be right
-    // if we need to use it again.
-    // It is passed to the vertical splitter as the "initialSizes", which is ignored except
+    // The sizes the splitters should have: whatever the user last chose.
+    // They are passed to the splitters as their "initialSizes", which is ignored except
     // for the very first render of a particular SplitPane. So to get it to take effect later,
     // we have to modify the key of the SplitPane, forcing React to create a whole new one.
     // The only time we currently need to do this is when Bloom is restored from being
-    // minimized, which somehow puts the vertical splitter into a weird state where apparently
+    // minimized, which somehow puts the top/bottom splitter into a weird state where apparently
     // both panes are collapsed and there is nothing to see. As far as I can tell, all other
     // changes to window size are handled nicely by the SplitPane.
-    const [splitHeights, setSplitHeights] = useState([1, 1]);
+    const savedSplitterSizes = usePersistedSplitterSizes(
+        kSplitterSizesSettingName,
+        kDefaultSplitterSizes,
+    );
     const [generation, setGeneration] = useState(0);
     useSubscribeToWebSocketForEvent("window", "restored", () => {
         setGeneration((old) => old + 1);
@@ -202,6 +228,89 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
           }
         | undefined
     >();
+
+    // The .bloomSource import decision. The file(s) are chosen first (via C#), which in the same
+    // reply tells us whether any chosen book is already in the collection; based on that we show the
+    // user exactly one dialog for the whole batch. If none are present, Dialog 1 asks whether to edit
+    // the book(s) or make derivatives. If any are present, Dialog 2 asks whether to replace the
+    // existing book(s) or add the imported ones as new copies. The user never sees both. We hold the
+    // chosen paths here and pass them back to the import call; the backend keeps no state between
+    // calls.
+    const [importFiles, setImportFiles] = useState<string[]>([]);
+    const [showImportSourceChoiceDialog, setShowImportSourceChoiceDialog] =
+        useState(false);
+    const [showImportDuplicateDialog, setShowImportDuplicateDialog] =
+        useState(false);
+    // Whether the "Replace" duplicate choice is allowed for this batch. In a Team Collection a book
+    // can only be replaced if it is checked out here; when any duplicate isn't, Replace is disabled.
+    const [importCanReplace, setImportCanReplace] = useState(true);
+
+    const importChoiceTitle = useL10n(
+        "Import books",
+        "CollectionTab.ImportBloomSource.ChoiceTitle",
+    );
+    const importEditChoiceLabel = useL10n(
+        "Import for editing",
+        "CollectionTab.ImportBloomSource.EditChoice",
+    );
+    const importEditChoiceDescription = useL10n(
+        "Preserve everything.",
+        "CollectionTab.ImportBloomSource.EditChoiceDescription",
+    );
+    const importDerivativeChoiceLabel = useL10n(
+        "Import as derivatives — new books based on the originals",
+        "CollectionTab.ImportBloomSource.DerivativeChoice",
+    );
+    const importDerivativeChoiceDescription = useL10n(
+        "Use a new book ID & make room for new copyright and credits while preserving those of the original.",
+        "CollectionTab.ImportBloomSource.DerivativeChoiceDescription",
+    );
+    const importDuplicateMessage = useL10n(
+        "Some of these books are already in this collection.",
+        "CollectionTab.ImportBloomSource.DuplicatePrompt",
+    );
+    const importReplaceLabel = useL10n(
+        "Replace the existing books",
+        "CollectionTab.ImportBloomSource.Replace",
+    );
+    const importReplaceDescription = useL10n(
+        "The current copies will be overwritten.",
+        "CollectionTab.ImportBloomSource.ReplaceDescription",
+    );
+    const importReplaceNeedsCheckoutDescription = useL10n(
+        "All books must be checked out",
+        "CollectionTab.ImportBloomSource.ReplaceNeedsCheckout",
+    );
+    const importAddCopyLabel = useL10n(
+        "Add them as new copies",
+        "CollectionTab.ImportBloomSource.AddCopy",
+    );
+    const importAddCopyDescription = useL10n(
+        "The existing books stay as they are.",
+        "CollectionTab.ImportBloomSource.AddCopyDescription",
+    );
+
+    // Dialog 1 (shown only when no chosen book is already in the collection): the user chose to
+    // edit the book(s) as-is or make derivatives (or cancelled). Neither path has a duplicate to
+    // resolve, so import immediately.
+    const handleImportSourceChoice = (choice?: string) => {
+        setShowImportSourceChoiceDialog(false);
+        if (!choice) return;
+        const mode = choice === "derivative" ? "derivative" : "edit";
+        postData(`collections/importBloomSource?mode=${mode}`, importFiles);
+    };
+
+    // Dialog 2 (shown only when at least one chosen book is already in the collection): the user
+    // chose to replace the existing book(s) or add the imported ones as new copies. That single
+    // choice applies to every duplicate in the batch.
+    const handleImportDuplicateChoice = (choice?: string) => {
+        setShowImportDuplicateDialog(false);
+        if (!choice) return;
+        postData(
+            `collections/importBloomSource?mode=edit&onDuplicate=${choice}`,
+            importFiles,
+        );
+    };
 
     const setAdjustedContextMenuPoint = (x: number, y: number) => {
         setContextMousePoint({
@@ -236,16 +345,26 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         });
     }, []);
     const haveNoSources = collections && collections.length === 1;
+    // If we've got the list of collections and there are no source collections,
+    // we want to set the splitter to hide the bottom pane. That is our own doing rather
+    // than a size the user chose, so it deliberately skips the minimum in restoreSizes().
+    const splitHeights = haveNoSources
+        ? kNoBottomPaneHeights
+        : savedSplitterSizes &&
+          restoreSizes(savedSplitterSizes.heights, window.innerHeight);
+    const splitWidths =
+        savedSplitterSizes &&
+        restoreSizes(savedSplitterSizes.widths, window.innerWidth);
     useEffect(() => {
-        // If we've got the list of collections and there are no source collections,
-        // we want to set the splitter to hide the bottom pane.
+        // A new key is the only way to make a SplitPane notice a change of initialSizes.
         if (haveNoSources) {
-            setSplitHeights([1, 0]);
             setGeneration((old) => old + 1);
         }
     }, [haveNoSources]);
 
-    if (!collections) {
+    // We can't render the splitters until we know what sizes to give them, because a
+    // SplitPane only pays attention to its initialSizes on its very first render.
+    if (!collections || !splitHeights || !splitWidths) {
         return <div />;
     }
 
@@ -280,7 +399,37 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         {
             label: "Open or Create Another Collection",
             l10nId: "CollectionTab.OpenCreateCollectionMenuItem",
-            command: "workspace/openOrCreateCollection",
+            onClick: () => {
+                handleClose();
+                setCollectionChooserOpen(true);
+            },
+            addEllipsis: true,
+        },
+        {
+            label: "Import .bloomSource File(s)",
+            l10nId: "CollectionTab.ImportBloomSource",
+            icon: <ImportIcon />,
+            onClick: () => {
+                handleClose();
+                // Choose the file(s) first; the reply tells us both the chosen paths and whether any
+                // chosen book is already in the collection, so we can show the one dialog that fits.
+                //
+                // Note that when a chosen book is already in the collection we deliberately do NOT
+                // offer the edit-vs-derivative choice: the duplicate dialog always imports in edit
+                // mode, so you can't make a derivative of a book that's already in your collection. We
+                // couldn't think of a plausible scenario where you have a book and a true derivative
+                // of it in the same collection, so this path isn't worth the extra complexity. Easy
+                // to reverse if that turns out to be wrong.
+                post("collections/chooseBloomSourceFilesToImport", (r) => {
+                    const files: string[] = r.data.files;
+                    if (!files || files.length === 0) return; // the user cancelled the picker
+                    setImportFiles(files);
+                    if (r.data.anyDuplicates) {
+                        setImportCanReplace(r.data.canReplace);
+                        setShowImportDuplicateDialog(true);
+                    } else setShowImportSourceChoiceDialog(true);
+                });
+            },
             addEllipsis: true,
         },
         {
@@ -362,7 +511,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                 isRemovableFolder={c.isRemovableFolder}
                 manager={manager}
                 onRemoveSourceCollection={removeSourceCollection}
-                onRemoveSourceFolder={removeSourceFolder}
+                onRemoveSourceFolder={openCollectionFolderInExplorer}
                 filter={c.filter}
             />
         );
@@ -375,8 +524,10 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
 
     return (
         <div
+            // Dark panel: opt into Bloom's shared dark scrollbar style (bloomUI.less).
+            className="bloomDarkScrollbars"
             css={css`
-                height: 100vh; // I don't understand why 100% doesn't do it (nor why 100vh over-does it)
+                height: 100%;
                 background-color: ${kPanelBackground};
                 color: white;
 
@@ -396,6 +547,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
 
                 .SplitPane {
                     position: relative !important; // we may find this messes things up... but the "absolute" positioning default is ridiculous.
+                    height: 100%;
 
                     .Pane.horizontal {
                         overflow-y: auto;
@@ -409,9 +561,8 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         >
             <SplitPane
                 split="vertical"
-                // This gives the two panes about the same ratio as in the Legacy view.
-                // Enhance: we'd like to save the user's chosen width.
-                initialSizes={[31, 50]}
+                initialSizes={splitWidths}
+                minSizes={kMinPaneSizePx}
                 resizerOptions={{
                     css: {
                         width: `${kResizerSize}px`,
@@ -427,6 +578,11 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                     onDragStarted: () => {
                         setDraggingSplitter(true);
                     },
+                    onSaveSizes: (sizes) => {
+                        savePersistedSplitterSizes(kSplitterSizesSettingName, {
+                            widths: sizes,
+                        });
+                    },
                 }}
                 // onDragFinished={() => {
                 //     alert("stopped dragging");
@@ -439,6 +595,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                     // TODO: the splitter library lets us specify a height, but it doesn't apply it correctly an so the pane that follows
                     // does not get pushed down to make room for the thicker resizer
                     initialSizes={splitHeights}
+                    minSizes={kMinPaneSizePx}
                     resizerOptions={{
                         css: {
                             height: `${kResizerSize}px`,
@@ -454,7 +611,10 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                             setDraggingSplitter(true);
                         },
                         onSaveSizes: (sizes) => {
-                            setSplitHeights(sizes);
+                            savePersistedSplitterSizes(
+                                kSplitterSizesSettingName,
+                                { heights: sizes },
+                            );
                         },
                     }}
                 >
@@ -587,11 +747,55 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <TeamCollectionDialogLauncher />
             <SpreadsheetExportDialogLauncher />
             <ForumInvitationDialogLauncher />
+            <SignInInvitationDialogLauncher />
             <RegistrationDialogEventLauncher />
             <AboutDialogLauncher />
             <CollectionSettingsDialog />
             <EmbeddedProgressDialog id="collectionTab" />
             <MakeReaderTemplateBloomPackDialog />
+            <ExternalBusyOverlay />
+            <CollectionChooserDialog
+                open={collectionChooserOpen}
+                onClose={() => setCollectionChooserOpen(false)}
+            />
+            <RadioChoiceDialog
+                open={showImportSourceChoiceDialog}
+                title={importChoiceTitle}
+                options={[
+                    {
+                        value: "edit",
+                        label: importEditChoiceLabel,
+                        description: importEditChoiceDescription,
+                    },
+                    {
+                        value: "derivative",
+                        label: importDerivativeChoiceLabel,
+                        description: importDerivativeChoiceDescription,
+                    },
+                ]}
+                onClose={handleImportSourceChoice}
+            />
+            <RadioChoiceDialog
+                open={showImportDuplicateDialog}
+                title={importChoiceTitle}
+                message={importDuplicateMessage}
+                options={[
+                    {
+                        value: "replace",
+                        label: importReplaceLabel,
+                        description: importCanReplace
+                            ? importReplaceDescription
+                            : importReplaceNeedsCheckoutDescription,
+                        disabled: !importCanReplace,
+                    },
+                    {
+                        value: "addCopy",
+                        label: importAddCopyLabel,
+                        description: importAddCopyDescription,
+                    },
+                ]}
+                onClose={handleImportDuplicateChoice}
+            />
         </div>
     );
 };

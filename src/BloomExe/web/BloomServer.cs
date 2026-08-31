@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Policy;
 using System.Text;
 using System.Threading;
@@ -27,8 +28,9 @@ using Bloom.Publish.Epub;
 using Bloom.SafeXml;
 using Bloom.web;
 using Bloom.web.controllers;
-using DesktopAnalytics;
+using Bloom.WebLibraryIntegration;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Code;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -41,8 +43,11 @@ namespace Bloom.Api
     // when it doesn't want to spin up a real one.
     public interface IBloomServer
     {
-        void RegisterThreadBlocking();
-        void RegisterThreadUnblocked();
+        /// <summary>
+        /// See BloomServer.ReportThreadBlocking. Dispose the result when the blocking work is done;
+        /// there is deliberately no separate "unblocked" call to forget or to get wrong.
+        /// </summary>
+        IDisposable ReportThreadBlocking();
 
         // ENHANCE: Add other methods as needed
     }
@@ -56,6 +61,20 @@ namespace Bloom.Api
     public class BloomServer : IBloomServer, IDisposable
     {
         public static int portForHttp;
+        public const int kNumberOfConsecutivePortsToReserve = 3;
+
+        /// <summary>
+        /// How many ports EnsureListening will try before giving up — and giving up means
+        /// ProgramExit.Exit, not an exception someone can catch. Class-level and internal rather
+        /// than a local, so that the tests can assert against the real number: they hold listeners
+        /// open deliberately (see BloomTests' RetiredTestServers) and their budget has to be
+        /// checked against this, not against a copy of it that could silently fall out of step.
+        /// </summary>
+        internal const int kNumberOfPortsToTry = 20;
+
+        public static int WebSocketPort => portForHttp + 1;
+
+        public static int RemoteDebuggingPort => portForHttp + 2;
 
         public static string ServerUrl
         {
@@ -128,6 +147,15 @@ namespace Bloom.Api
         /// Pool of threads that pull a request from the _queue and processes it.
         /// This is a ConcurrentDictionary (ManagedThreadId to thread) just so we can add and remove
         /// things from it without worrying about locking (or deadlocking).
+        ///
+        /// Two properties of this collection that other code relies on, so take care before changing
+        /// either. Additions are made only under lock (_queue) (see SpinUpAWorker), which is what lets a
+        /// caller re-check a count and act on it without another thread adding a worker underneath it. And
+        /// an entry is only ever REMOVED for a thread that has already died (see the pruning in
+        /// EnqueueIncomingRequests) -- nothing removes a live worker. That second property is what makes it
+        /// safe for EnsureAWorkerCanStillTakeWork to count live workers WITHOUT the lock: a concurrent
+        /// removal can only take away something that was not going to be counted as live anyway, so it
+        /// cannot inflate the answer.
         /// </summary>
         private readonly ConcurrentDictionary<int, Thread> _workers = new();
 
@@ -143,7 +171,7 @@ namespace Bloom.Api
 
         /// <summary>
         /// Keeps track of the number of worker threads that are blocked
-        /// Note: This is NOT automatically computed. Other code should call RegisterThreadAboutToBlock() and RegisterThreadUnblocked()
+        /// Note: This is NOT automatically computed. Other code should call ReportThreadBlocking() and dispose the scope it returns
         ///        whenever it causes a thread which is or potentially is a server worker thread to block.
         /// Note: This is different than _busyThreads, because a thread may be busy but not blocked.
         /// </summary>
@@ -154,6 +182,7 @@ namespace Bloom.Api
         private bool _useCache;
 
         private const string SimulatedFileUrlMarker = "-memsim-";
+        private const string FixedSimulatedPathPrefix = "fixed-simulated/";
         static Dictionary<string, string> _urlToSimulatedPageContent =
             new Dictionary<string, string>(); // see comment on MakeInMemoryHtmlFileInBookFolder
         private BloomFileLocator _fileLocator;
@@ -191,6 +220,8 @@ namespace Bloom.Api
             _useCache = Settings.Default.ImageHandler != "off";
             ApiHandler = new BloomApiHandler(bookSelection);
             _theOneInstance = this;
+            if (_bookSelection != null) // maybe null in some tests?
+                _bookSelection.SelectionChanged += (_, _) => _cache?.ClearAll();
         }
 
 #if DEBUG
@@ -220,10 +251,122 @@ namespace Bloom.Api
             _fileLocator = null;
         }
 
-        private static string _keyToCurrentPage;
+        // I wish the server didn't have this knowledge about the current state of the workspace,
+        // but have not yet found a way to make things like CURRENTPAGE.htm work without them.
+        // In the long run, the CurrentPage and all similar URLs should probably have enough information
+        // (path to book folder) to determine their state without relying on this knowledge being injected,
+        // into the server, but that will be a big change.
+        private static volatile string _keyToCurrentPage;
+        private static volatile string _keyToWorkspaceRootForDebugging;
+        private static volatile string _currentEditPageUrlForDebugging;
+        private static volatile string _currentPageListUrlForDebugging;
+        private static readonly string _jsAssetVersion = GetJsAssetVersion();
+
+        /// <summary>
+        /// We stick this as a param on JS asset URLs to force the browser to get a new version
+        /// after a rebuild. In debug mode, we use the current time so that we get a new version
+        /// on every run. In release mode, we use the assembly version so that we get a new version
+        /// whenever we ship a new release, but not on every run. (Vite dev uses another strategy
+        /// that is built-in to Vite.)
+        private static string GetJsAssetVersion()
+        {
+#if DEBUG
+            return DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+#else
+            return typeof(BloomServer).Assembly.GetName().Version?.ToString() ?? "0";
+#endif
+        }
 
         public string CurrentPageContent { get; set; }
         public string ToolboxContent { get; set; }
+
+        public static void SetCurrentEditPageUrlForDebugging(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return;
+
+            _currentEditPageUrlForDebugging = url;
+        }
+
+        public static void SetCurrentPageListUrlForDebugging(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return;
+
+            _currentPageListUrlForDebugging = url;
+        }
+
+        public static void SetWorkspaceRootUrlForDebugging(string urlOrPath)
+        {
+            if (string.IsNullOrWhiteSpace(urlOrPath))
+                return;
+
+            _keyToWorkspaceRootForDebugging = urlOrPath.FromLocalhost();
+        }
+
+        private static string SanitizeFixedSimulatedId(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                throw new ArgumentNullException(nameof(id));
+
+            return id.Replace("/", "_").Replace("\\", "_").Replace(" ", "_");
+        }
+
+        internal static string GetFixedSimulatedKeyForId(
+            string id,
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Frame
+        )
+        {
+            var safeId = SanitizeFixedSimulatedId(id);
+            return $"{FixedSimulatedPathPrefix}{safeId}{SimulatedFileUrlMarker}{source}.html";
+        }
+
+        internal static string GetFixedSimulatedUrlForId(
+            string id,
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Frame
+        )
+        {
+            return GetFixedSimulatedKeyForId(id, source).ToLocalhost();
+        }
+
+        internal static string PutFixedSimulatedHtmlForId(
+            string id,
+            string html,
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Frame
+        )
+        {
+            var key = GetFixedSimulatedKeyForId(id, source);
+            lock (_urlToSimulatedPageContent)
+            {
+                _urlToSimulatedPageContent[key] = html ?? "";
+            }
+
+            return key.ToLocalhost();
+        }
+
+        internal static string PutFixedSimulatedDomForId(
+            string id,
+            HtmlDom dom,
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Frame
+        )
+        {
+            if (dom == null)
+                throw new ArgumentNullException(nameof(dom));
+
+            XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
+
+            if (
+                source == InMemoryHtmlFileSource.Thumb
+                || source == InMemoryHtmlFileSource.Pagelist
+                || source == InMemoryHtmlFileSource.JustCheckingPage
+            )
+            {
+                ReplaceAnyVideoElementsWithPlaceholder(dom);
+            }
+
+            dom.Title = InMemoryHtmlFile.GetTitleForProcessExplorer(source) + " (InMemoryHtmlFile)";
+            return PutFixedSimulatedHtmlForId(id, dom.getHtmlStringDisplayOnly(), source);
+        }
 
         public Book.Book CurrentBook => _bookSelection?.CurrentSelection;
 
@@ -266,7 +409,8 @@ namespace Bloom.Api
             HtmlDom dom,
             bool isCurrentPageContent = false,
             bool setAsCurrentPageForDebugging = false,
-            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Normal
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Normal,
+            bool suppressBackgroundColors = false
         )
         {
             var simulatedPageFileName = Path.ChangeExtension(
@@ -306,7 +450,11 @@ namespace Bloom.Api
             {
                 // We need to UrlEncode the single and double quote characters, and the space character,
                 // so they will play nicely with HTML.
-                var urlPath = UrlPathString.CreateFromUnencodedString(url);
+                // PossiblyEncoded, not Unencoded: ToLocalhost() above has already escaped each
+                // path component, so we hand this an ENCODED string and rely on it being decoded
+                // before UrlEncodedForHttpPath re-encodes it. Saying "unencoded" here would
+                // double-encode the whole url.
+                var urlPath = UrlPathString.CreateFromPossiblyEncodedString(url);
                 url = urlPath.UrlEncodedForHttpPath;
             }
             if (setAsCurrentPageForDebugging)
@@ -325,7 +473,19 @@ namespace Bloom.Api
                 ReplaceAnyVideoElementsWithPlaceholder(dom);
             }
             dom.Title = InMemoryHtmlFile.GetTitleForProcessExplorer(source) + " (InMemoryHtmlFile)"; // makes this show up in Windows Process Explorer WebView2 listing
-            var html5String = dom.getHtmlStringDisplayOnly();
+            var transparencyModifications = HtmlDom.AddTransparencyParamToImages(
+                dom,
+                suppressBackgroundColors
+            );
+            string html5String;
+            try
+            {
+                html5String = dom.getHtmlStringDisplayOnly();
+            }
+            finally
+            {
+                HtmlDom.RestoreImageSrcs(transparencyModifications);
+            }
             lock (_theOneInstance._queue)
             {
                 foreach (var item in _theOneInstance._idleTasks)
@@ -418,7 +578,9 @@ namespace Bloom.Api
             string pageId
         )
         {
-            var urlPath = UrlPathString.CreateFromUnencodedString(
+            // PossiblyEncoded because UrlForCurrentBookPage ends in ToLocalhost(), which has
+            // already escaped the path components; see the note on CreateFromPossiblyEncodedString.
+            var urlPath = UrlPathString.CreateFromPossiblyEncodedString(
                 UrlForCurrentBookPage(bookFolderPath, pageId)
             );
             return urlPath.UrlEncodedForHttpPath;
@@ -440,6 +602,25 @@ namespace Bloom.Api
                     .Replace('\\', '/');
 
             var localPath = GetLocalPathWithoutQuery(request);
+
+            // In external browsers (especially Chrome), stale cached ES module chunks can be mixed
+            // with newer chunks after a rebuild, causing import/export mismatch errors.
+            // Route all JS requests through a process-versioned URL once per startup.
+            if (localPath.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
+            {
+                var query = request.GetQueryParameters();
+                if (string.IsNullOrWhiteSpace(query?.Get("assetv")))
+                {
+                    var separator = request.RawUrl.Contains("?", StringComparison.Ordinal)
+                        ? "&"
+                        : "?";
+                    request.WriteRedirect(
+                        request.RawUrl + separator + "assetv=" + _jsAssetVersion,
+                        permanent: false
+                    );
+                    return true;
+                }
+            }
 
             // root of our UI from a web browser pointed at localhost:8089
             if (localPath == "")
@@ -485,9 +666,19 @@ namespace Bloom.Api
                 if (localPath == "book-preview/index.htm")
                 {
                     request.ResponseContentType = "text/html";
-                    var html = CurrentBook
-                        .GetPreviewHtmlFileForWholeBook()
-                        .getHtmlStringDisplayOnly();
+                    var previewDom = CurrentBook.GetPreviewHtmlFileForWholeBook();
+                    var transparencyModifications = HtmlDom.AddTransparencyParamToImages(
+                        previewDom
+                    );
+                    string html;
+                    try
+                    {
+                        html = previewDom.getHtmlStringDisplayOnly();
+                    }
+                    finally
+                    {
+                        HtmlDom.RestoreImageSrcs(transparencyModifications);
+                    }
                     request.WriteCompleteOutput(html);
                     return true;
                 }
@@ -563,9 +754,72 @@ namespace Bloom.Api
             if (ProcessImageFileRequest(request))
                 return true;
 
-            if (localPath.Contains("CURRENTPAGE")) //useful when debugging. E.g. http://localhost:8089/bloom/CURRENTPAGE.htm will always show the page we're on.
+            if (localPath.Contains("CURRENTPAGE"))
             {
-                localPath = _keyToCurrentPage;
+                // This is a 'magic' URL that is useful in e2e tests and when debugging.
+                // E.g. http://localhost:8089/bloom/CURRENTPAGE.htm will always show what the workspace is
+                // currently showing in the main window, exactly like the 'open in Edge' command.
+                // We do a redirect rather than trying to figure out exactly what the current root page
+                // content should be because we need at least the mode param to make the startup code
+                // put us in the right mode (collection, book, or page), and we already have code
+                // that handles params for the current page and page list iframe sources,
+                // so we may as well take advantage of it. This also means that CURRENTPAGE and
+                // open-in-edge work the same way (in fact the URL we produce here is exactly the
+                // same as the one open-in-edge produces).
+                var hasCurrentPageKey = !string.IsNullOrWhiteSpace(_keyToCurrentPage);
+                var hasWorkspaceRootKey = !string.IsNullOrWhiteSpace(
+                    _keyToWorkspaceRootForDebugging
+                );
+
+                if (!hasCurrentPageKey && !hasWorkspaceRootKey)
+                {
+                    request.ResponseContentType = "text/html";
+                    request.WriteCompleteOutput(
+                        "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Bloom Not Initialized</title></head><body>Bloom is not sufficiently initialized to use CURRENTPAGE</body></html>"
+                    );
+                    return true;
+                }
+
+                var query = request.GetQueryParameters();
+                var existingQuery = string.Empty;
+                var rawUrlQueryStart = request.RawUrl.IndexOf("?", StringComparison.Ordinal);
+                if (rawUrlQueryStart >= 0)
+                {
+                    existingQuery = request.RawUrl.Substring(rawUrlQueryStart);
+                }
+
+                var redirectBaseKey = hasWorkspaceRootKey
+                    ? _keyToWorkspaceRootForDebugging
+                    : _keyToCurrentPage;
+                var redirectBaseUrl = redirectBaseKey.ToLocalhost();
+
+                var redirectUrl = redirectBaseUrl + existingQuery;
+                if (
+                    string.IsNullOrWhiteSpace(query?.Get("pageListSrc"))
+                    && !string.IsNullOrWhiteSpace(_currentPageListUrlForDebugging)
+                )
+                {
+                    var separator = redirectUrl.Contains("?", StringComparison.Ordinal) ? "&" : "?";
+                    redirectUrl +=
+                        separator
+                        + "pageListSrc="
+                        + Uri.EscapeDataString(_currentPageListUrlForDebugging);
+                }
+
+                if (
+                    string.IsNullOrWhiteSpace(query?.Get("pageSrc"))
+                    && !string.IsNullOrWhiteSpace(_currentEditPageUrlForDebugging)
+                )
+                {
+                    var separator = redirectUrl.Contains("?", StringComparison.Ordinal) ? "&" : "?";
+                    redirectUrl +=
+                        separator
+                        + "pageSrc="
+                        + Uri.EscapeDataString(_currentEditPageUrlForDebugging);
+                }
+
+                request.WriteRedirect(redirectUrl, permanent: false);
+                return true;
             }
             if (localPath.ToLower().Contains("current-bloompub-url")) //useful when debugging. E.g. http://localhost:8089/bloom/current-bloompub-url will always show the page we're on.
             {
@@ -595,6 +849,14 @@ namespace Bloom.Api
             {
                 request.ResponseContentType = "text/html";
                 request.WriteCompleteOutput(content ?? "");
+                return true;
+            }
+
+            if (localPath.StartsWith(FixedSimulatedPathPrefix, StringComparison.Ordinal))
+            {
+                // Stable in-memory iframe URL exists but has not been populated yet.
+                request.ResponseContentType = "text/html";
+                request.WriteCompleteOutput("");
                 return true;
             }
 
@@ -713,7 +975,6 @@ namespace Bloom.Api
 
             if (imageFile.StartsWith(OriginalImageMarker + "/"))
             {
-                processImage = false;
                 imageFile = imageFile.Substring((OriginalImageMarker + "/").Length);
 
                 if (!RobustFileExistsWithCaseCheck(imageFile))
@@ -723,6 +984,48 @@ namespace Bloom.Api
                     // we were accidentally finding license.png in a template book. See BL-4290.
                     return false;
                 }
+
+                var transparentParam = info.GetQueryParameters()["transparent"];
+
+                // bloom-transparent (transparent=force) must always be honored, even when
+                // serving original images for PDF. Use the cache so format conversion
+                // (e.g. jpg → png) is handled correctly.
+                if (transparentParam == "force" && _useCache)
+                {
+                    var forcedFile = _cache.GetPathToAdjustedImage(
+                        imageFile,
+                        false,
+                        ImageTransparencyMode.Force
+                    );
+                    if (!string.IsNullOrEmpty(forcedFile))
+                    {
+                        info.ReplyWithImage(forcedFile, imageFile);
+                        return true;
+                    }
+                }
+
+                if (
+                    CurrentBook?.UserPrefs.IncludeBackgroundColors == true
+                    && transparentParam == "yes"
+                    && _useCache
+                )
+                {
+                    // Use transparencyOnly so AdjustImageForDisplay skips resize and JPEG
+                    // conversion and returns null (→ cached as a no-op) when the image isn't
+                    // line art, avoiding an expensive reload on every subsequent request.
+                    var autoFile = _cache.GetPathToAdjustedImage(
+                        imageFile,
+                        false,
+                        ImageTransparencyMode.Auto,
+                        transparencyOnly: true
+                    );
+                    // autoFile == imageFile means the cache confirmed this image is not line art;
+                    // either way we reply with whatever the cache decided is correct.
+                    info.ReplyWithImage(autoFile, imageFile);
+                    return true;
+                }
+                // IncludeBackgroundColors is off, or no transparent param — serve the original
+                // without any processing.
                 info.ReplyWithImage(imageFile);
                 return true;
             }
@@ -760,9 +1063,10 @@ namespace Bloom.Api
                     // in our source code.
 
                     // In this case the source is buried in the depths of ckeditor's implementation.
-                    if (imageFile.EndsWith("ckeditor/skins/flat/icons.png"))
+                    // (icons.png or icons_hidpi.png)  See BL-16474.
+                    if (imageFile.Contains("ckeditor/skins/flat/icons"))
                     {
-                        imageFile = imageFile.Replace("flat", "icy_orange");
+                        imageFile = imageFile.Replace("/flat/", "/icy_orange/");
                     }
                     // If the user does add a video or widget, these placeholder .svgs will get copied to the
                     // book folder and used from there. But we don't copy to the book folder while the user
@@ -807,33 +1111,31 @@ namespace Bloom.Api
                 //          want them. Running them through _cache.GetPathToAdjustedImage() is not necessary, and in PNG files
                 //          it converts all white areas to transparent. This is resulting in icons which only contain white
                 //          (because they are rendered on a dark background) becoming completely invisible.
-                // But things in the book folder should possibly be processed. The code below will still investigate
-                // whether it is really necessary; currently we're not resizing images except for thumbnails,
-                // and otherwise, only the cover image needs adjusting (to possibly provide a transparent background).
-                processImage = sourceDir == CurrentBook?.FolderPath;
+                // Things in the book folder are processed on demand: resized, format-converted, and optionally
+                // made transparent, with results cached by GetPathToAdjustedImage / AdjustImageForDisplay.
+                processImage = !isSvg && sourceDir == CurrentBook?.FolderPath;
             }
 
             var originalImageFile = imageFile;
             // Currently _useCache is always true. It appears likely that the intent
             // is not so much about caching, but whether we want image processing.
-            // If we go back to allowing this to be turned off, we may need to make
-            // use of a check like CurrentBook?.ImageFileIsForBookCover() to make sure
-            // it is not disabled there, where it is important for transparency as
-            // well as performance.
             if (processImage && _useCache)
             {
-                // thumbnail requests have the thumbnail parameter set in the query string
                 var thumb = info.GetQueryParameters()["thumbnail"] != null;
-                var isForCover = CurrentBook?.ImageFileIsForBookCover(imageFile) ?? false;
-                if (thumb || isForCover)
-                {
-                    imageFile = _cache.GetPathToAdjustedImage(imageFile, thumb, isForCover);
-                }
+                var transparentParam = info.GetQueryParameters()["transparent"];
+                var transparencyMode =
+                    transparentParam == "force" ? ImageTransparencyMode.Force
+                    : transparentParam == "yes" ? ImageTransparencyMode.Auto
+                    : ImageTransparencyMode.None;
 
-                if (String.IsNullOrEmpty(imageFile))
+                imageFile = _cache.GetPathToAdjustedImage(imageFile, thumb, transparencyMode);
+
+                if (string.IsNullOrEmpty(imageFile))
                     return false;
             }
 
+            // File served without image processing: either an SVG, a Bloom UI file (BL-2368),
+            // or processImage was false because the file was found in bloomRoot (not the book folder).
             info.ReplyWithImage(imageFile, originalImageFile);
             return true;
         }
@@ -848,7 +1150,7 @@ namespace Bloom.Api
         }
 
         static HashSet<string> _imageExtensions = new HashSet<string>(
-            new[] { ".jpg", "jpeg", ".png", ".svg" }
+            new[] { ".jpg", ".jpeg", ".png", ".svg" }
         );
 
         internal static bool IsImageTypeThatCanBeReturned(string path)
@@ -928,6 +1230,23 @@ namespace Bloom.Api
         {
             if (localPath.Contains("favicon.ico")) // browsers ask for this
                 return BloomFileLocator.GetBrowserFile(false, "images", "favicon.ico");
+
+            // Prefer JS files that exist directly under BrowserRoot (typically output/browser).
+            // This avoids module-chunk collisions with generic names like "index.js" that may
+            // also exist in other searchable locations such as node_modules.
+            // Keep this narrow so we don't change long-standing lookup behavior for other types.
+            if (
+                !Path.IsPathRooted(modPath)
+                && Path.GetExtension(modPath).Equals(".js", StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                // AbsoluteBrowserRoot, not BrowserRoot: the latter is relative, so this test would
+                // resolve against the process's current working directory, which Bloom does not
+                // control and which is often not the application folder (BL-16577, BL-16230).
+                var browserFilePath = Path.Combine(BloomFileLocator.AbsoluteBrowserRoot, modPath);
+                if (RobustFileExistsWithCaseCheck(browserFilePath))
+                    return browserFilePath;
+            }
 
             // Is this request the full path to an image file? For most images, we just have the filename. However, in at
             // least one use case, the image we want isn't in the folder of the PDF we're looking at. That case is when
@@ -1197,12 +1516,48 @@ namespace Bloom.Api
                     "Cannot Find File"
                 );
                 var detailMsg = String.Format(
-                    "Server could not find the file {0}. LocalPath was {1}{2}",
+                    "Server could not find the file {0}. LocalPath was {1}{2}{3}",
                     path,
                     localPath,
+                    GetBareNameDiagnostics(localPath),
                     Environment.NewLine
                 );
                 NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, userMsg, detailMsg);
+            }
+        }
+
+        /// <summary>
+        /// Extra detail for the report when the request had no directory at all, e.g. "Checkbox.js".
+        /// Those are almost always files we ship: a bundle we inject into a page at the server root
+        /// (see Book.AddJavascriptFile) imports its sibling chunks by bare name, so they arrive here
+        /// as a bare name too. Such a file should always be found under BrowserRoot, so if it isn't
+        /// we want to know what the process's working directory was (some of our lookups used to
+        /// resolve BrowserRoot against it) and whether the file is really absent from the install.
+        /// See BL-16577. Returns the empty string for ordinary requests, which carry a directory.
+        /// </summary>
+        private static string GetBareNameDiagnostics(string localPath)
+        {
+            try
+            {
+                if (!String.IsNullOrEmpty(Path.GetDirectoryName(localPath)))
+                    return "";
+                var browserRoot = BloomFileLocator.AbsoluteBrowserRoot;
+                var expectedPath = Path.Combine(browserRoot, localPath);
+                return String.Format(
+                    "{0}The request had no directory. BrowserRoot is {1} (exists: {2}); {3} exists: {4}; current directory is {5}",
+                    Environment.NewLine,
+                    browserRoot,
+                    Directory.Exists(browserRoot),
+                    expectedPath,
+                    RobustFile.Exists(expectedPath),
+                    Directory.GetCurrentDirectory()
+                );
+            }
+            catch (Exception e)
+            {
+                // This is only diagnostics for a problem we are already reporting; never let it
+                // become the thing that fails.
+                return Environment.NewLine + "Could not gather diagnostics: " + e.Message;
             }
         }
 
@@ -1321,13 +1676,11 @@ namespace Bloom.Api
             if (_listener?.IsListening == true)
                 return;
             const int kStartingPort = 8089;
-            const int kNumberOfPortsToTry = 10;
             bool success = false;
-            const int kNumberOfPortsWeNeed = 2; //one for http, one for peakLevel webSocket
 
-            //Note: while this will find a port for the http, it does not actually know if the accompanying
-            //ports are available. It just assume they are.
-            //So while it's an improvement, it's not yet as solid as we would like it
+            // Note: this now checks whether the following ports in the block are available,
+            // but it still does not reserve them until the corresponding services start.
+            // So while it's an improvement, it's not yet as solid as we would like it
             //to be.  The ultimate solution is to run the websocket and http on the same port.
             //This could be done using this proxy thing that internally routes to different ports:
             // https://github.com/lifeemotions/websocketproxy
@@ -1336,7 +1689,15 @@ namespace Bloom.Api
             // switch to using an owin-compliant http server like NancyFx.
             for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
             {
-                BloomServer.portForHttp = kStartingPort + (i * kNumberOfPortsWeNeed);
+                BloomServer.portForHttp = kStartingPort + (i * kNumberOfConsecutivePortsToReserve);
+                if (
+                    !CanOpenConsecutivePorts(
+                        portForHttp + 1,
+                        kNumberOfConsecutivePortsToReserve - 1
+                    )
+                )
+                    continue;
+
                 success = AttemptToOpenPort();
             }
 
@@ -1344,7 +1705,7 @@ namespace Bloom.Api
             {
                 ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
                 Logger.WriteEvent("Error: Could not start up internal HTTP Server");
-                Analytics.ReportException(new ApplicationException("Could not start server."));
+                BloomAnalytics.ReportException(new ApplicationException("Could not start server."));
                 ProgramExit.Exit();
             }
 
@@ -1357,6 +1718,25 @@ namespace Bloom.Api
             }
 
             VerifyWeAreNowListening();
+            WriteAutomationStartupInfo();
+        }
+
+        private static void WriteAutomationStartupInfo()
+        {
+            if (!Program.StartupAutomation)
+                return;
+
+            Console.WriteLine(
+                "BLOOM_AUTOMATION_READY "
+                    + JsonConvert.SerializeObject(
+                        new
+                        {
+                            processId = Process.GetCurrentProcess().Id,
+                            httpPort = portForHttp,
+                            cdpPort = RemoteDebuggingPort,
+                        }
+                    )
+            );
         }
 
         private static int MinWorkerThreads => Math.Max(Environment.ProcessorCount, 2);
@@ -1364,6 +1744,42 @@ namespace Bloom.Api
         /// <summary>
         /// Tries to start listening on the currently proposed server url
         /// </summary>
+        internal static bool CanOpenConsecutivePorts(int startingPort, int numberOfPortsWeNeed)
+        {
+            if (numberOfPortsWeNeed <= 0)
+                return true;
+
+            if (
+                startingPort < IPEndPoint.MinPort
+                || startingPort > IPEndPoint.MaxPort - numberOfPortsWeNeed + 1
+            )
+            {
+                return false;
+            }
+
+            var listeners = new List<TcpListener>();
+            try
+            {
+                for (var offset = 0; offset < numberOfPortsWeNeed; offset++)
+                {
+                    var listener = new TcpListener(IPAddress.Loopback, startingPort + offset);
+                    listener.Start();
+                    listeners.Add(listener);
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            finally
+            {
+                foreach (var listener in listeners)
+                    listener.Stop();
+            }
+        }
+
         private bool AttemptToOpenPort()
         {
             try
@@ -1576,14 +1992,10 @@ namespace Bloom.Api
                 // Deal with a situation where all the workers are blocked,
                 // but there is a request in the queue that would unblock the current workers
                 // but that request can't run because it's stuck in queue
-                // and none of the existing worker threads are able to make progress anymore
-                if (_countBlockedThreads >= _workers.Count)
-                {
-                    // The worker should be spun up such that it can receive _ready.Set()
-                    SpinUpAWorker();
-
-                    // Note: Currently these workers are never stopped, so as not to complicate the code any further
-                }
+                // and none of the existing worker threads are able to make progress anymore.
+                // Any worker added here is added before the _ready.Set() below, so it receives it.
+                // (Monitor is reentrant, so it is fine that we already hold this lock.)
+                EnsureAWorkerCanStillTakeWork();
 
                 _ready.Set();
             }
@@ -1915,6 +2327,7 @@ namespace Bloom.Api
                 // of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
                 EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
                 BloomPubMaker.BRExportFolder.ToLowerInvariant(),
+                BookUpload.kUploadStagingFolder.ToLowerInvariant(),
                 // old quiz pages ask for this script, but it's now bundled with rest of edit code
                 "simplecomprehensionquiz.js",
                 // bloom-player always asks for questions.json for every book.
@@ -2044,63 +2457,231 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// Registers that the current thread is about to block.
-        /// This function should be called immediately before any server thread blocks
-        /// (e.g. waits for a lock, wait for a modal dialog to close, etc.)
-        /// Must be paired with RegisterThreadUnblocked() when done.
+        /// Reports that the calling thread is about to block -- waiting for a lock, for a modal dialog to
+        /// close, for an off-screen browser, and so on. Call it immediately before the blocking work and
+        /// dispose the result as soon as that work is done, normally with a `using` block.
         ///
-        /// This can be called by any code that at least sometimes (if not always)
-        /// is called by a BloomServer worker thread. The caller need not guarantee that
-        /// the current thread is a server thread. This method will check for that.
+        /// Any code that is *sometimes* run by a server worker may call this; it need not know whether the
+        /// current thread is one. Blocks reported by other threads are ignored, since they are not using up
+        /// a worker.
+        ///
+        /// Why this returns a scope instead of having a matching "unblocked" method: whether a block counts
+        /// depends on whether the caller is one of our workers, and that answer has to be REMEMBERED rather
+        /// than worked out again at the end. Blocking work that contains an await can resume on a different
+        /// thread -- a worker carries no synchronization context, so continuations land on the thread pool --
+        /// and asking "am I a worker?" there would answer no and silently skip the decrement, inflating the
+        /// count for the life of the process. The scope closes over the answer, so it cannot drift, and it
+        /// releases on every exit path including an exception. Both bugs were real: see BL-16612.
         /// </summary>
-        public void RegisterThreadBlocking()
+        public IDisposable ReportThreadBlocking()
         {
-            // Check if the current thread looks like a Server Worker
-            // If not, we can just ignore this request.
-            // Notably, ProblemReportApi can be invoked by both server and non-server code
-            if (IsWorkerThread(Thread.CurrentThread))
+            // Notably, ProblemReportApi can be invoked by both server and non-server code.
+            if (!IsWorkerThread(Thread.CurrentThread))
+                return NotBlockingAWorker;
+
+            Interlocked.Increment(ref _countBlockedThreads);
+            // Must not throw; if it did, the caller would never receive the scope that undoes the
+            // increment above. See the guarantee inside it.
+            EnsureAWorkerCanStillTakeWork();
+            return new BlockedWorkerScope(this);
+        }
+
+        // Shared, stateless scope handed to callers whose thread is not one of our workers, so those
+        // callers still get something disposable and need no special case.
+        private static readonly IDisposable NotBlockingAWorker = new DoNothingScope();
+
+        private sealed class DoNothingScope : IDisposable
+        {
+            public void Dispose() { }
+        }
+
+        /// <summary>
+        /// Undoes exactly one counted block, once. Holding the server (rather than re-deriving anything
+        /// from the current thread) is the whole point -- see ReportThreadBlocking.
+        /// </summary>
+        private sealed class BlockedWorkerScope : IDisposable
+        {
+            private BloomServer _server;
+
+            public BlockedWorkerScope(BloomServer server)
             {
-                // Note: So far only BloomApiHandler and problem report dialog have been analyzed to call this when needed.
-                Interlocked.Increment(ref _countBlockedThreads);
+                _server = server;
+            }
+
+            public void Dispose()
+            {
+                // Taking the reference away atomically makes a second Dispose -- e.g. a `using` inside a
+                // method whose caller also disposes -- harmless instead of double-decrementing.
+                var server = Interlocked.Exchange(ref _server, null);
+                if (server != null)
+                    Interlocked.Decrement(ref server._countBlockedThreads);
             }
         }
 
         /// <summary>
-        /// Registers that the current thread is no longer blocked.
-        /// Should be called as a pair with RegisterThreadBlocking(), after any blocking work returns.
+        /// If every worker is now blocked, add one, so that some worker is still able to take a request off
+        /// the queue. This matters because the request that would let the blocked workers finish is often
+        /// itself sitting in the queue: in BL-16612 a publish held an api lock while every other worker
+        /// waited for that same lock, so no worker was left to serve the page the publish was waiting for,
+        /// and the whole server deadlocked.
+        ///
+        /// This is called from ReportThreadBlocking rather than being offered as a separate method for
+        /// callers to remember, so that every caller which correctly reports that it is blocking gets the
+        /// top-up automatically. There is deliberately no way to register a block WITHOUT it -- reporting
+        /// the block is the only thing a caller has to get right.
+        ///
+        /// QueueRequest makes the same check as a request ARRIVES, which is not sufficient by itself: if
+        /// the request that would break the deadlock is already in the queue, no new request need ever
+        /// arrive to trigger the check. Checking here covers the other moment the pool can run out -- when
+        /// a worker becomes blocked.
+        ///
+        /// Deliberately has no shutdown guard, unlike QueueRequest, which gives up once the listener has
+        /// closed. A worker can therefore add one more worker while Dispose is joining threads. That is safe
+        /// only because Dispose signals _stop without disposing it or _ready, so the new worker wakes
+        /// immediately and exits -- see the note in Dispose, which must stay true for this to remain safe.
         /// </summary>
-        public void RegisterThreadUnblocked()
+        private void EnsureAWorkerCanStillTakeWork()
         {
-            // Check if the current thread looks like a Server Worker
-            // If not, we can just ignore this request.
-            // Notably, ProblemReportApi can be invoked by both server and non-server code
-            if (IsWorkerThread(Thread.CurrentThread))
+            // NOTHING in this method may throw, logging and the fast-path reads alike. The caller increments
+            // the blocked count and only receives the scope that undoes it AFTER this returns, so an
+            // exception escaping here would leak that count for the life of the process -- which would then
+            // make every later block add yet another worker. Adding a worker is a safety net; neither
+            // failing to add one nor failing to log it may turn into a failed request. The fast path is
+            // inside the try so that guarantee is structural, rather than resting on an argument about what
+            // ConcurrentDictionary.Count can do.
+            //
+            // REVIEWED DECISION (BL-16612): catching everything here, including around the logging in the
+            // catch below, is a deliberate exception to this repo's "fail fast, don't be defensive"
+            // guidance in AGENTS.md. Do not "clean this up" into a narrower catch without reading the rest
+            // of this comment, because the obvious objection to it has already been raised and answered.
+            //
+            // The immediate reason: the caller increments the blocked count and only receives the scope
+            // that undoes it after this returns, so an exception escaping here would leave that count
+            // permanently high -- the very condition this method exists to relieve.
+            //
+            // That is not the only way to arrange things, and a cheaper alternative than we first thought
+            // does exist: hand the caller its scope BEFORE calling this, dispose it and rethrow if this
+            // throws, and then this method would be free to fail fast. That touches only
+            // ReportThreadBlocking, not every call site. It was considered and declined, and the reason is
+            // a judgement rather than a constraint: topping up the pool is an opportunistic safety net, and
+            // a safety net failing is not itself a reason to fail the user's request that happened to
+            // trigger it. Publishing a book should not die because the server could not create a spare
+            // thread it may well not need. If you disagree with that trade, the restructure above is the
+            // way to change it -- but change it deliberately, not by narrowing this catch and reintroducing
+            // the leak.
+            try
             {
-                Interlocked.Decrement(ref _countBlockedThreads);
+                // Fast path that avoids _queue's lock, which the listener (enqueuing) and the workers
+                // (dequeuing) are already contending for; this runs on every api request that waits for a
+                // lock. Walking the workers to count the live ones is not free, but it is far cheaper than
+                // joining the queue behind those two.
+                //
+                // Why this counts LIVE workers even out here, where a cheap approximation would normally be
+                // fine: the only thing this test can do is SKIP the more careful check below, so the two
+                // directions of error are not symmetric.
+                //   Too LOW (say we race a SpinUpAWorker that has not added its thread yet): we decline to
+                //     return, take the lock, and get the better answer. Self-correcting -- and the reason
+                //     reading this unsynchronized is acceptable at all.
+                //   Too HIGH: we return here and the check below never runs. The raw entry count is
+                //     SYSTEMATICALLY too high, because a dead thread keeps its entry until the listener
+                //     prunes it, so using it here left the careful check unreachable.
+                // A concurrent removal cannot push us into that dangerous direction, because entries are
+                // only removed for threads that are already dead; see the note on _workers.
+                //
+                // Be clear about what a live count does NOT buy, though. It is a fact about the instant it
+                // was taken, and a worker can die immediately afterwards. The re-check under the lock is no
+                // better in that respect: the lock covers changes to _workers, not thread liveness. So
+                // neither reading is authoritative about how many workers are still alive by the time we
+                // act on it. What counting live workers removes is the systematic over-count from lingering
+                // dead entries -- not that race.
+                //
+                // Staleness in the blocked count is harmless: Interlocked.Increment gives the increments a
+                // total order, so whichever thread performs the last one reads a count including every
+                // earlier block. The worker that exhausts the pool therefore always sees the shortage, even
+                // if the ones before it did not.
+                if (Volatile.Read(ref _countBlockedThreads) < LiveWorkerCount())
+                    return;
+
+                var addedWorker = false;
+                // SpinUpAWorker requires this lock, since it modifies _workers. Re-checking here means we
+                // decide against a count taken after any concurrent add, rather than the one above -- but
+                // per the note above, not against a count guaranteed still true when we act on it.
+                lock (_queue)
+                {
+                    if (_countBlockedThreads >= LiveWorkerCount())
+                    {
+                        // REVIEWED DECISION (BL-16612): workers are never retired -- that predates this
+                        // code -- and we accepted that the pool can therefore end a session larger than it
+                        // started. During a long publish, several requests can queue behind the same lock
+                        // and each one can add a worker, so growth is bounded by how many are actually
+                        // waiting, not unbounded. We judged that a fair price for not deadlocking, but it
+                        // is why thread counts in a diagnostic may look higher than you expect. Retiring
+                        // idle workers would be the real fix and is a much larger change.
+                        SpinUpAWorker();
+                        addedWorker = true;
+                    }
+                }
+                // Logged after releasing our own lock (QueueRequest's caller may still hold it), since
+                // logging can be slow. This is the event to look for in a log when investigating a freeze,
+                // so it is worth a line even though it is not an error.
+                if (addedWorker)
+                    Logger.WriteEvent(
+                        "BloomServer: every worker was blocked, so added one to keep requests moving "
+                            + $"({_workers.Count} workers, {_countBlockedThreads} blocked)."
+                    );
+            }
+            catch (Exception e)
+            {
+                // This last attempt to record what went wrong could itself fail, and nothing may escape
+                // (see above), so it is deliberately allowed to fail silently.
+                try
+                {
+                    Logger.WriteEvent(
+                        "BloomServer: trouble adding a worker while one was blocking: " + e.Message
+                    );
+                }
+                catch { }
             }
         }
 
+        /// <summary>
+        /// How many workers are actually alive and so could still take a request off the queue. Bloom has
+        /// seen worker threads die (see the pruning in EnqueueIncomingRequests), and a dead one leaves its
+        /// entry in _workers until that pruning runs, so _workers.Count can overstate the pool.
+        ///
+        /// Counts the dictionary itself rather than its Values, which on a ConcurrentDictionary materialises
+        /// a snapshot list -- worth avoiding on something EnsureAWorkerCanStillTakeWork calls for every api
+        /// request that waits for a lock. Callers may hold lock (_queue) or not; see that method for why
+        /// counting without it is safe.
+        /// </summary>
+        private int LiveWorkerCount() => _workers.Count(kvp => kvp.Value?.IsAlive == true);
+
+        /// <summary>
+        /// The number of worker threads in the pool, alive or not. For tests, which need to observe that a
+        /// worker was added when they made every existing worker report itself blocked.
+        /// </summary>
+        internal int WorkerCount => _workers.Count;
+
+        /// <summary>
+        /// How many workers currently report themselves blocked. For tests, which need to prove that a
+        /// reported block is undone even when the scope is disposed on a different thread than reported it.
+        /// </summary>
+        internal int BlockedWorkerCount => _countBlockedThreads;
+
+        // Ordinal deliberately: the default overloads of both StartsWith and IndexOf(string) are
+        // culture-sensitive, which is the wrong kind of comparison for a thread name we generated
+        // ourselves -- and slower.
         private bool IsWorkerThread(Thread thread) =>
-            thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
+            thread?.Name?.StartsWith(WorkerThreadNamePrefix, StringComparison.Ordinal) == true;
 
         private string GetHtmlForRootOfBloomUI()
         {
-            return $@"<!DOCTYPE html>
-				<html>
-				<head>
-					<meta charset = 'UTF-8' />
-					<script src = '/appBundle.js' type='module'></script>
-					<script>
-						window.onload = () => {{
-							const rootDiv = document.getElementById('reactRoot');
-							window.wireUpRootComponentFromWinforms(rootDiv);
-						}};
-					</script>
-				</head>
-				<body>
-					<div id='reactRoot'>Component should replace this</div >
-				</body>
-				</html>";
+            return ReactControl.GetHtmlForReactBundle(
+                "appBundle",
+                null,
+                System.Drawing.Color.White,
+                false
+            );
         }
 
         /// <summary>
@@ -2152,10 +2733,16 @@ namespace Bloom.Api
 
             if (di.Parent != null)
             {
-                return Path.Combine(
-                    GetExactPathName(di.Parent.FullName),
-                    di.Parent.GetFileSystemInfos(di.Name)[0].Name
-                );
+                // The entry may not be found: the file can be deleted while we walk up the path,
+                // and a directory enumeration does not always see a file that was only just
+                // written. Indexing [0] blindly turned that into an IndexOutOfRangeException that
+                // crashed the caller -- which is only a Debug-time check of the filename's case,
+                // so it must never be the thing that brings a request (or a test) down. When we
+                // can't confirm the on-disk spelling, keep the name we were given; that just means
+                // the case check silently passes, which is the right way for a diagnostic to fail.
+                var entries = di.Parent.GetFileSystemInfos(di.Name);
+                var exactName = entries.Length > 0 ? entries[0].Name : di.Name;
+                return Path.Combine(GetExactPathName(di.Parent.FullName), exactName);
             }
             else
             {
@@ -2186,7 +2773,43 @@ namespace Bloom.Api
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Frees everything this server can free WITHOUT closing its HttpListener: it stops
+        /// accepting requests, stops and joins its threads (which are foreground threads, so
+        /// releasing them is what lets a process exit), and releases the image cache. Afterwards
+        /// the only thing the server still holds is the listener, and therefore its port.
+        ///
+        /// Why this is separable from Dispose (BL-16667): closing the listener is the one step
+        /// that can crash. A response body can still be going out after the worker that produced
+        /// it has finished -- RequestInfo hands the tail of the send to the framework, which
+        /// completes it on a callback whose only handler is `catch (Win32Exception)` -- and
+        /// closing the listener underneath that makes it throw ObjectDisposedException on a thread
+        /// none of our try/catch blocks cover, which kills the process. Everything in this method
+        /// is safe to do at any time; only CloseListener has to wait until nothing is in flight.
+        ///
+        /// Production still calls Dispose, which is PreDispose followed immediately by
+        /// CloseListener, so nothing about Bloom's behaviour changes. The tests use this to let
+        /// the listener be closed later, once the requests it served are long finished --
+        /// see BloomTests' RetiredTestServers.
+        /// </summary>
+        /// <remarks>
+        /// Note the seam, since it is invisible: this goes straight to the private overload, so a
+        /// subclass that overrode the protected virtual Dispose(bool) would be called on the real
+        /// Dispose path but NOT on this one. Nothing derives from BloomServer today. If something
+        /// ever does, make the two-argument overload the virtual one rather than leaving a subclass
+        /// silently half-invoked.
+        /// </remarks>
+        public void PreDispose()
+        {
+            Dispose(true, closeListener: false);
+        }
+
         protected virtual void Dispose(bool fDisposing)
+        {
+            Dispose(fDisposing, closeListener: true);
+        }
+
+        private void Dispose(bool fDisposing, bool closeListener)
         {
             Debug.WriteLineIf(
                 !fDisposing,
@@ -2208,6 +2831,23 @@ namespace Bloom.Api
                         // tell _listenerThread and the worker threads they should stop
                         _stop.Set();
 
+                        // Note (BL-16612): a worker part-way through a request can still report a block while
+                        // we are joining threads below, and EnsureAWorkerCanStillTakeWork has no shutdown
+                        // guard, so that can add a worker after the join has passed it. Two things make that
+                        // survivable, and BOTH have to stay true:
+                        //   1. We only SIGNAL _stop here and never dispose it or _ready, so a late worker's
+                        //      WaitAny returns at once and it exits. Dispose those handles and it would die
+                        //      instead of an ObjectDisposedException on a background thread, taking the
+                        //      process with it.
+                        //   2. We actually reach this line. Note that it is inside `if (_listener != null)`,
+                        //      so if CloseListener() ran first -- it is public, nulls _listener, and its own
+                        //      comment mentions the shutdown timer -- _stop is never signalled at all.
+                        // Caveat worth knowing about (2): workers are FOREGROUND threads, so a worker still
+                        // waiting on _ready/_stop keeps the process alive. Pre-existing workers have always
+                        // been exposed to that; what the top-up adds is the chance of creating a NEW one
+                        // during that window. Devin raised it; it is recorded rather than fixed here because
+                        // the fix (guard the top-up on shutdown, or make added workers background threads)
+                        // changes behaviour and was left for the developer to decide.
                         var secondsToWait = 2.0;
                         // wait for _listenerThread to stop
                         if (_listenerThread.ThreadState != ThreadState.Unstarted)
@@ -2240,7 +2880,9 @@ namespace Bloom.Api
                             }
                         }
 
-                        CloseListener();
+                        // The one step PreDispose leaves undone; see its comment.
+                        if (closeListener)
+                            CloseListener();
                     }
                     if (_cache != null)
                     {
@@ -2257,11 +2899,16 @@ namespace Bloom.Api
                     throw;
 #else
                     //just quietly report this
-                    DesktopAnalytics.Analytics.ReportException(e);
+                    BloomAnalytics.ReportException(e);
 #endif
                 }
             }
-            IsDisposed = true;
+            // Deliberately NOT set by PreDispose: the server still owns its listener, so a later
+            // real Dispose has to be allowed to run and close it. Everything above is safe to
+            // repeat -- _stop is already set, the threads are already joined, the cache is already
+            // gone -- so the second pass does nothing but the CloseListener that was skipped.
+            if (closeListener)
+                IsDisposed = true;
         }
 
         /// <summary>

@@ -16,6 +16,10 @@ export interface ILicenseInfo {
     licenseType: string;
     rightsStatement: string;
     creativeCommonsInfo: ICreativeCommonsInfo;
+    /** Exact CC license URL from stored metadata (e.g. "…/by-sa/3.0/"). Used only
+     *  for the "About" link; ignored by the save path, which derives the URL from the
+     *  controls. Absent when the license is not Creative Commons. */
+    licenseUrl?: string;
 }
 
 export interface ICreativeCommonsInfo {
@@ -304,7 +308,9 @@ export const LicensePanel: React.FunctionComponent<{
 };
 
 // Just a simple wrapper to indent components
-const SubPanel: React.FunctionComponent = (props) => {
+const SubPanel: React.FunctionComponent<{
+    children?: React.ReactNode;
+}> = (props) => {
     return (
         <div
             css={css`

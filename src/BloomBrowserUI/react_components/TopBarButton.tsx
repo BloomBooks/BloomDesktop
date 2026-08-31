@@ -18,6 +18,7 @@ export interface ITopBarButtonProps {
     backgroundColor: string;
     textColor: string;
     disabledTextColor?: string;
+    temporarilyDisableI18nWarning?: boolean;
 }
 
 export const TopBarButton: React.FunctionComponent<ITopBarButtonProps> = (
@@ -55,6 +56,7 @@ export const TopBarButton: React.FunctionComponent<ITopBarButtonProps> = (
                 ),
                 props.cssOverrides,
             ]}
+            temporarilyDisableI18nWarning={props.temporarilyDisableI18nWarning}
         >
             {props.labelEnglish}
         </BloomButton>

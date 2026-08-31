@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.web.controllers;
@@ -66,6 +67,9 @@ namespace Bloom
         /// ------------------------------------------------------------------------------------
         protected void HandleTopLevelError(object sender, ThreadExceptionEventArgs e)
         {
+            if (IsHarmlessInputLanguageCultureException(e.Exception))
+                return;
+
             if (!GetShouldHandleException(sender, e.Exception))
                 return;
 
@@ -80,7 +84,21 @@ namespace Bloom
 
             if (DisplayError(e.Exception))
             {
-                //Are we inside a Application.Run() statement?
+                // Are we inside an Application.Run() statement?
+                //
+                // Application.MessageLoop is per-thread: it answers "does the thread this
+                // exception arrived on have a WinForms message loop?", not "is the GUI app
+                // running?". Today that distinction cannot bite: Application.ThreadException
+                // only fires on a thread that is dispatching WinForms messages, and every such
+                // thread in Bloom (the main UI thread, OffScreenBrowser's thread) pumps via
+                // Application.Run, so MessageLoop is true whenever we get here with the GUI up.
+                // But if you ever add a thread that dispatches WinForms messages through a
+                // private Win32 pump instead of Application.Run, a crash on that thread would
+                // take the Environment.Exit branch below, which skips finally blocks —
+                // including the one in Program.Main that calls ReleaseBloomToken() — and can
+                // leave Bloom unable to restart. In that case replace this check with a
+                // "main message loop is running" flag set around Application.Run in
+                // Program.RunBloom; BL-16670 has the worked-out fix.
                 if (Application.MessageLoop)
                     ProgramExit.Exit();
                 else
@@ -96,6 +114,12 @@ namespace Bloom
         /// ------------------------------------------------------------------------------------
         protected new void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
+            // Note: we do NOT try to suppress the harmless input-language CultureNotFoundException
+            // here (see IsHarmlessInputLanguageCultureException / HandleTopLevelError). That crash
+            // arrives on the UI thread's WndProc and is delivered to Application.ThreadException,
+            // which lets us return and carry on. AppDomain.UnhandledException, by contrast, fires
+            // when the CLR is already terminating; returning early cannot prevent the exit, so
+            // swallowing it here would only hide the crash report without saving the process.
             if (!GetShouldHandleException(sender, e.ExceptionObject as Exception))
                 return;
 
@@ -114,6 +138,37 @@ namespace Bloom
                 DisplayError(new ApplicationException("Got unknown exception"));
         }
 
+        /// <summary>
+        /// Returns true for the harmless CultureNotFoundException that WinForms throws while
+        /// processing WM_INPUTLANGCHANGE when the user switches to a keyboard whose input language
+        /// reports a BCP-47 tag that .NET cannot turn into a CultureInfo (e.g. the Keyman IPA
+        /// keyboard's "und-Latn"). See BL-16536.
+        ///
+        /// BloomWebView2 already swallows this when the message reaches the WebView2 control itself,
+        /// but Windows delivers WM_INPUTLANGCHANGE to whichever window has focus, so the same
+        /// exception can surface from any of our WinForms controls (the stack shows a bare
+        /// UserControl.WndProc). Rather than subclass every control, we catch it here, at the
+        /// thread-exception level, so it can never take Bloom down. Bloom does all its text editing
+        /// inside WebView2, which tracks its own input language independently of WinForms, so there
+        /// is nothing to lose by ignoring WinForms' inability to represent the keyboard.
+        /// </summary>
+        private static bool IsHarmlessInputLanguageCultureException(Exception exception)
+        {
+            // The distinctive marker is a CultureNotFoundException whose stack runs through the
+            // WM_INPUTLANGCHANGE handling (WmInputLangChange / InputLanguageChangedEventArgs).
+            if (!(exception is CultureNotFoundException))
+                return false;
+            var stack = exception.StackTrace;
+            if (stack == null || !stack.Contains("InputLang"))
+                return false;
+
+            Logger.WriteMinorEvent(
+                "Ignoring unsupported input-language culture from keyboard (BL-16536): "
+                    + exception.Message
+            );
+            return true;
+        }
+
         protected override bool ShowUI
         {
             get { return false; }
@@ -121,6 +176,14 @@ namespace Bloom
 
         protected override bool DisplayError(Exception exception)
         {
+            if (Program.RunningE2eTests)
+            {
+                // No human is present during an e2e/visual-regression run to dismiss a modal, so
+                // showing the fatal-error dialog would hang the whole run. Log it instead and return
+                // true so the caller exits normally; the dead Bloom will fail the test.
+                Logger.WriteError("Fatal error during e2e run (dialog suppressed)", exception);
+                return true;
+            }
             ProblemReportApi.ShowProblemDialog(Form.ActiveForm, exception, "", "fatal");
             return true;
         }

@@ -11,8 +11,12 @@ import {
     DialogCancelButton,
     DialogOkButton,
 } from "../BloomDialog/commonDialogComponents";
-import { useWatchApiData, useApiString } from "../../utils/bloomApi";
-import { ShowEditViewDialog } from "../../bookEdit/editViewFrame";
+import {
+    useWatchApiData,
+    useApiString,
+    postBoolean,
+} from "../../utils/bloomApi";
+import { ShowEditViewDialog } from "../../bookEdit/workspaceRoot";
 import { BookGridSetup } from "./BookGridSetup";
 import { css } from "@emotion/react";
 import { BookInfoForLinks, Link } from "./BookLinkTypes";
@@ -38,6 +42,12 @@ export const BookGridSetupDialog: React.FunctionComponent<{
     const [selectedLinks, setSelectedLinks] = React.useState<Link[]>(
         props.initialLinks,
     );
+
+    React.useEffect(() => {
+        if (propsForBloomDialog.open !== undefined) {
+            postBoolean("editView/setModalState", propsForBloomDialog.open);
+        }
+    }, [propsForBloomDialog.open]);
 
     const unfilteredBooks = useWatchApiData<Array<IBookInfo>>(
         `collections/books?realTitle=true`,

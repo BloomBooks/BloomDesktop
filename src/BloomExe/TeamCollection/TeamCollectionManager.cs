@@ -27,6 +27,22 @@ namespace Bloom.TeamCollection
 
         bool UserMayChangeEmail { get; }
 
+        /// <summary>
+        /// Sends the bookContent/reload websocket event so the collection-tab preview
+        /// iframe refreshes its content, even when the selected book ID has not changed.
+        /// Call this after silently re-copying a book's content from the repo so the UI
+        /// reflects the updated files without requiring a manual Reload.
+        /// </summary>
+        void SendBookContentReload();
+
+        /// <summary>
+        /// Sends the bookTeamCollectionStatus/reload websocket event so the book status panel
+        /// re-reads status. Call this after changing something the panel displays without the
+        /// book's own checkout status having changed -- a book-status-changed event would be the
+        /// wrong signal for that. See BL-16691.
+        /// </summary>
+        void SendBookStatusReload();
+
         // ENHANCE: Add other properties and methods as needed
     }
 
@@ -113,7 +129,7 @@ namespace Bloom.TeamCollection
                     // But (a) we're not trying to be perfectly foolproof, and (b) we
                     // don't make the change that this case handles if the repo settings
                     // are newer than the most recent sync.
-                    var projectSettingsPath = CollectionSettings.GetSettingsFilePath(
+                    var projectSettingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         _localCollectionFolder
                     );
                     settings = ProjectContext.GetCollectionSettings(projectSettingsPath);
@@ -327,9 +343,10 @@ namespace Bloom.TeamCollection
             var localCollectionLinkPath = GetTcLinkPathFromLcPath(_localCollectionFolder);
             if (RobustFile.Exists(localCollectionLinkPath))
             {
+                string repoFolderPath = null;
                 try
                 {
-                    var repoFolderPath = RepoFolderPathFromLinkPath(localCollectionLinkPath);
+                    repoFolderPath = RepoFolderPathFromLinkPath(localCollectionLinkPath);
                     CurrentCollection = new FolderTeamCollection(
                         this,
                         _localCollectionFolder,
@@ -372,7 +389,37 @@ namespace Bloom.TeamCollection
                         true
                     );
                     CurrentCollection = null;
-                    CurrentCollectionEvenIfDisconnected = null;
+                    // Create a DisconnectedTeamCollection so we still have a TC object that prevents
+                    // undesirable operations like editing un-checked-out books. This handles cases where
+                    // the TC initialization fails, not just connection problems.
+                    if (repoFolderPath != null)
+                    {
+                        var disconnectedTC = new DisconnectedTeamCollection(
+                            this,
+                            _localCollectionFolder,
+                            repoFolderPath
+                        );
+                        disconnectedTC.SocketServer = SocketServer;
+                        disconnectedTC.TCManager = this;
+                        disconnectedTC.MessageLog.WriteMessage(
+                            MessageAndMilestoneType.Error,
+                            // MessageLog requires this API, but because TC is experimental, I haven't actually
+                            // created this item in the XLF yet..not even with 'translate=no', since we
+                            // expect this to be still experimental in the next release.
+                            "TeamCollection.InitializationFailure",
+                            "Bloom could not initialize the Team Collection. Some Team Collection operations will not be available.",
+                            null,
+                            null
+                        );
+                        disconnectedTC.MessageLog.NextTeamCollectionDialogShouldForceReloadButton =
+                            true;
+                        disconnectedTC.DisconnectedBecauseOfInitializationFailure = true;
+                        CurrentCollectionEvenIfDisconnected = disconnectedTC;
+                    }
+                    else
+                    {
+                        CurrentCollectionEvenIfDisconnected = null;
+                    }
                 }
             }
         }
@@ -518,6 +565,18 @@ namespace Bloom.TeamCollection
         public void RaiseBookStatusChanged(BookStatusChangeEventArgs eventInfo)
         {
             _bookStatusChangeEvent.Raise(eventInfo);
+        }
+
+        /// <inheritdoc />
+        public void SendBookContentReload()
+        {
+            _webSocketServer.SendEvent("bookContent", "reload");
+        }
+
+        /// <inheritdoc />
+        public void SendBookStatusReload()
+        {
+            _webSocketServer.SendEvent("bookTeamCollectionStatus", "reload");
         }
 
         /// <summary>

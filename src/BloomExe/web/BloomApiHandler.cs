@@ -72,6 +72,24 @@ namespace Bloom.Api
         }
 
         /// <summary>
+        /// True if any handler registered by a project context is still registered. Used to check that
+        /// a project that failed to open really did take its handlers with it: if it did not, the next
+        /// project re-registers the same patterns and RegisterEndpointHandler throws. See BL-16678.
+        /// </summary>
+        internal bool HasProjectLevelHandlers
+        {
+            get
+            {
+                lock (_endpointRegistrationsLock)
+                {
+                    return _exactEndpointRegistrations.Keys.Any(key =>
+                        !_applicationLevelRegistrationKeys.Contains(key)
+                    );
+                }
+            }
+        }
+
+        /// <summary>
         /// Clear all handlers that were not marked as application level handlers
         /// </summary>
         public void ClearProjectLevelHandlers()
@@ -302,7 +320,7 @@ namespace Bloom.Api
                 }
                 if (exactCount <= appLevelCount)
                 {
-                    // There is some history (BL-15716) of a request...specifically api/edit/pageControls/cleanup...
+                    // There is some history (BL-15716) of a request...specifically api/edit/pageControls/cleanup... (now removed in BL-15934)
                     // being sent during shutdown or while restarting, and not being found.
                     // We hope to have made this unlikely or impossible, but just in case,
                     // handle such failures gracefully. We don't launch browsers before registering handlers,
@@ -318,8 +336,11 @@ namespace Bloom.Api
                     info.WriteError(404, $"Server could not process {localPath}");
                     return true; // we sort of handled it.
                 }
-                // otherwise it's a programmer error we want to know about.
-                ReportMissingApiEndpoint(info, localPath);
+                if (ShouldReportMissingApiEndpoint(endpointPath))
+                {
+                    // otherwise it's a programmer error we want to know about.
+                    ReportMissingApiEndpoint(info, localPath);
+                }
                 // If the user continues from there, we need to pretend to have handled
                 // the request. Otherwise the caller will keep trying to handle it in
                 // other ways.
@@ -327,6 +348,16 @@ namespace Bloom.Api
                 return true;
             }
             return false;
+        }
+
+        private static bool ShouldReportMissingApiEndpoint(string endpointPath)
+        {
+            // There are older books out in the wild in which the src for branding images included
+            // this endpoint. We now handle getting branding images differently.
+            // Note that this will eventually result in a 404. That's ok because
+            // the docs in the wild have `onerror="this.style.display='none'"`,
+            // so we don't get the missing image indicator in the preview. See BL-16300.
+            return endpointPath != "branding/image";
         }
 
         private static void ReportMissingApiEndpoint(IRequestInfo info, string localPath)
@@ -380,22 +411,18 @@ namespace Bloom.Api
                 else if (localPathLc.StartsWith("api/i18n/"))
                     syncOn = I18NLock;
 
-                // We wrap RegisterThreadBlocking/Unblocked around acquiring the lock.
+                // We report the thread as blocked around ACQUIRING the lock -- not around holding it, since
+                // once we have it we are working rather than waiting.
                 // SemaphoreSlim is used instead of Monitor so we can safely await while the lock is held.
                 // See BL-15586.
                 bool lockAcquired = false;
                 try
                 {
                     // Try to acquire lock
-                    BloomServer._theOneInstance.RegisterThreadBlocking();
-                    try
+                    using (BloomServer._theOneInstance.ReportThreadBlocking())
                     {
                         syncOn.Wait();
                         lockAcquired = true;
-                    }
-                    finally
-                    {
-                        BloomServer._theOneInstance.RegisterThreadUnblocked();
                     }
 
                     // Lock has been acquired.

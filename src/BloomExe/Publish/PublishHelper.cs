@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,8 +43,6 @@ namespace Bloom.Publish
             _latestInstance = this;
         }
 
-        public Control ControlForInvoke { get; set; }
-
         public static void Cancel()
         {
             _latestInstance = null;
@@ -51,88 +50,36 @@ namespace Bloom.Publish
 
         public static bool InPublishTab { get; set; }
 
-        private Browser _browser;
-        public Browser BrowserForPageChecks
+        private OffScreenBrowser _pageChecksBrowser;
+
+        /// <summary>
+        /// Test hook: an externally-owned browser every PublishHelper uses for its page checks instead of
+        /// lazily creating its own. The owner retains ownership: ReleaseBrowser and Dispose leave it alone,
+        /// and the owner must dispose it. This lets one browser — with its expensive-to-start WebView2
+        /// environment and dedicated thread — be shared across the many PublishHelper instances created when
+        /// tests export dozens of epubs/bloompubs in a row (booting a browser per export dominated those
+        /// suites' time). Never set in production, where helpers deliberately release their browser as soon
+        /// as a batch of page checks is done (see ReleaseBrowser) rather than keep one idle.
+        /// </summary>
+        internal static OffScreenBrowser ExternalPageChecksBrowserForTests;
+
+        /// <summary>
+        /// The browser we use for the "page checks" (element visibility and font info). It is an off-screen
+        /// browser on its own dedicated thread, so we can drive it with blocking calls that never pump the main
+        /// UI message loop — avoiding the reentrancy that made RunJavascriptWithStringResult_Sync_Dangerous
+        /// dangerous (BL-12614 / BL-13120) — and never deadlock. Created lazily, unless the tests supplied
+        /// a shared one via <see cref="ExternalPageChecksBrowserForTests"/>. See <see cref="OffScreenBrowser"/>.
+        /// </summary>
+        private OffScreenBrowser GetOrCreatePageChecksBrowser()
         {
-            get
-            {
-                if (_browser == null)
-                {
-                    Debug.Assert(
-                        ControlForInvoke != null
-                            || Program.RunningUnitTests
-                            || Program.RunningOnUiThread
-                    );
-                    if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
-                    {
-                        ControlForInvoke.Invoke(
-                            (Action)(() => _browser = BrowserMaker.MakeBrowser())
-                        );
-                    }
-                    else
-                    {
-                        _browser = BrowserMaker.MakeBrowser();
-                    }
-                }
-                return _browser;
-            }
+            if (ExternalPageChecksBrowserForTests != null)
+                return ExternalPageChecksBrowserForTests;
+            return _pageChecksBrowser ??= new OffScreenBrowser();
         }
 
         // The only reason this isn't just ../* is performance. We could change it.  It comes from the need to actually
         // remove any elements that the style rules would hide, because epub readers ignore visibility settings.
         private const string kSelectThingsThatCanBeHidden = ".//div | .//img";
-
-        /// <summary>
-        /// Remove unwanted content from the XHTML of this book.  As a side-effect, store the fonts used in the remaining
-        /// content of the book.
-        /// </summary>
-        public void RemoveUnwantedContent(
-            HtmlDom dom,
-            Book.Book book,
-            bool removeInactiveLanguages,
-            Dictionary<string, int> omittedPages,
-            ISet<string> modifiedPageMessages,
-            PublishingMediums medium, // should normally only be one of them
-            EpubMaker epubMaker = null,
-            bool keepPageLabels = false
-        )
-        {
-            FontsUsed.Clear();
-            FontsAndLangsUsed.Clear();
-            // Removing unwanted content involves a real browser really navigating. I'm not sure exactly why,
-            // but things freeze up if we don't do it on the UI thread.
-            if (ControlForInvoke != null)
-            {
-                ControlForInvoke.Invoke(
-                    (Action)(
-                        delegate
-                        {
-                            RemoveUnwantedContentInternal(
-                                dom,
-                                book,
-                                removeInactiveLanguages,
-                                epubMaker,
-                                omittedPages,
-                                modifiedPageMessages,
-                                medium,
-                                keepPageLabels
-                            );
-                        }
-                    )
-                );
-            }
-            else
-                RemoveUnwantedContentInternal(
-                    dom,
-                    book,
-                    removeInactiveLanguages,
-                    epubMaker,
-                    omittedPages,
-                    modifiedPageMessages,
-                    medium,
-                    keepPageLabels
-                );
-        }
 
         /// <summary>
         /// This javascript function is run in the browser to get the display and font information
@@ -214,6 +161,11 @@ namespace Bloom.Publish
         /// This information will be loaded into two Dictionary objects, one mapping id to display
         /// and the other mapping id to font-family for faster lookup.
         /// </remarks>
+        // The fields below are assigned only by JSON deserialization (via reflection), so the
+        // compiler reports CS0649 ("never assigned, always default"). We could instead make them
+        // auto-properties ({ get; set; }), which Newtonsoft deserializes to identically and which
+        // don't trip the warning; for now we just suppress it around these data-transfer classes.
+#pragma warning disable CS0649
         private class ElementInfoArray
         {
             public ElementInfo[] results;
@@ -230,6 +182,7 @@ namespace Bloom.Publish
             public string fontStyle;
             public string fontWeight;
         }
+#pragma warning restore CS0649
 
         public class FontInfo
         {
@@ -292,20 +245,29 @@ namespace Bloom.Publish
         protected Dictionary<string, FontInfo> _mapIdToFontInfo =
             new Dictionary<string, FontInfo>();
 
-        private void RemoveUnwantedContentInternal(
+        /// <summary>
+        /// Remove unwanted content from the XHTML of this book.  As a side-effect, store the fonts used in the remaining
+        /// content of the book.
+        /// </summary>
+        /// <remarks>
+        /// This no longer needs to run on the UI thread: the browser it uses lives on its own dedicated thread
+        /// (see GetOrCreatePageChecksBrowser) and is driven by blocking calls that marshal onto that thread, so the DOM work
+        /// here is thread-agnostic and can run on whatever thread the caller is on.
+        /// </remarks>
+        public void RemoveUnwantedContent(
             HtmlDom dom,
             Book.Book book,
             bool removeInactiveLanguages,
-            EpubMaker epubMaker,
             Dictionary<string, int> omittedPages,
             ISet<string> modifiedPageMessages,
             PublishingMediums medium, // should normally only be one of them
+            EpubMaker epubMaker = null,
             bool keepPageLabels = false
         )
         {
+            FontsUsed.Clear();
+            FontsAndLangsUsed.Clear();
             var startRemoveTime = DateTime.Now;
-            // The ControlForInvoke can be null for tests.  If it's not null, we better not need an Invoke!
-            Debug.Assert(ControlForInvoke == null || !ControlForInvoke.InvokeRequired); // should be called on UI thread.
             Debug.Assert(dom != null && dom.Body != null);
 
             // Collect all the page divs.
@@ -373,7 +335,7 @@ namespace Bloom.Publish
                 div.RemoveAttribute("role"); // this isn't an editable textbox in an ebook
                 div.RemoveAttribute("aria-label"); // don't want this without a role
                 div.RemoveAttribute("spellcheck"); // too late for spell checking in an ebook
-                div.RemoveAttribute("content-editable"); // too late for editing in an ebook
+                div.RemoveAttribute("contenteditable"); // too late for editing in an ebook
             }
 
             // Clean up img elements (BL-6035/BL-6036 and BL-7218)
@@ -467,13 +429,8 @@ namespace Bloom.Publish
             if (this != _latestInstance)
                 return;
             if (
-                !BrowserForPageChecks.NavigateAndWaitTillDone(
-                    displayDom,
-                    10000,
-                    InMemoryHtmlFileSource.JustCheckingPage,
-                    () => this != _latestInstance,
-                    false
-                )
+                !GetOrCreatePageChecksBrowser()
+                    .Navigate(displayDom, 10000, () => this != _latestInstance)
             )
             {
                 // We started having problems with timeouts here (BL-7892).
@@ -488,9 +445,8 @@ namespace Bloom.Publish
                 return;
 
             // Get and store the display and font information for each element in the DOM.
-            var elementsInfo = BrowserForPageChecks.RunJavascriptWithStringResult_Sync_Dangerous(
-                GetElementDisplayAndFontInfoJavascript
-            );
+            var elementsInfo = GetOrCreatePageChecksBrowser()
+                .RunJavascript(GetElementDisplayAndFontInfoJavascript);
             var rawInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<ElementInfoArray>(
                 elementsInfo
             );
@@ -572,6 +528,11 @@ namespace Bloom.Publish
                 foreach (SafeXmlElement elt in page.SafeSelectNodes(".//div"))
                 {
                     StoreFontUsed(elt);
+                    // Only for ePUB: it is the one output that deletes lang="*" and so needs to
+                    // be told the font beforehand. Doing it unconditionally would leave the
+                    // attribute behind in BloomPub, where nothing consumes it.
+                    if (epubMaker != null)
+                        StoreComputedFontForLanguageIndependentText(elt);
                 }
                 //Debug.WriteLine($"Removing {toBeDeleted.Count} elements from page");
                 RemoveTempIds(page); // don't need temporary IDs any more.
@@ -751,7 +712,11 @@ namespace Bloom.Publish
             {
                 if (
                     !FeatureStatus
-                        .GetFeatureStatus(book.CollectionSettings.Subscription, FeatureName.Game)
+                        .GetFeatureStatus(
+                            book.CollectionSettings.Subscription,
+                            FeatureName.Game,
+                            book
+                        )
                         .Enabled
                 )
                     RobustFile.Delete(Path.Combine(book.FolderPath, "simpleComprehensionQuiz.js"));
@@ -790,6 +755,39 @@ namespace Bloom.Publish
             var fonts = fontFamily.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             // Fonts whose names contain spaces are quoted: remove the quotes.
             return fonts[0].Replace("\"", "");
+        }
+
+        /// <summary>
+        /// The font an element actually resolved to, recorded on the element itself so a later
+        /// step can use it after the browser is gone. See StoreComputedFontForLanguageIndependentText.
+        /// </summary>
+        internal const string kComputedFontAttr = "data-bloom-computed-font";
+
+        /// <summary>
+        /// ePUB export has to delete lang="*" attributes, because "*" is not a valid BCP 47 tag,
+        /// and it then writes the font inline so the text is not left fontless (BL-16624). Which
+        /// font is not something it can work out for itself: the answer depends on the whole
+        /// cascade, including a user's own choice, which StyleEditor stores as
+        /// `.SomeStyle[lang="*"] { font-family: X !important }` -- a rule that stops matching the
+        /// moment that attribute goes.
+        ///
+        /// We are the only part of publishing with a browser, we run before the attribute is
+        /// removed, and we have already measured this element. So record what it resolved to,
+        /// while its temp id still lets us look it up. EpubMaker.RemoveSpuriousLinks consumes the
+        /// attribute and removes it again.
+        /// </summary>
+        private void StoreComputedFontForLanguageIndependentText(SafeXmlElement elt)
+        {
+            if (elt.GetAttribute("lang") != "*")
+                return;
+            var id = elt.GetAttribute("id");
+            if (string.IsNullOrEmpty(id))
+                return;
+            if (!_mapIdToFontInfo.TryGetValue(id, out var fontInfo))
+                return; // e.g. an empty box, which the browser reports no font for; nothing to carry
+            var font = ExtractFontNameFromFontFamily(fontInfo.fontFamily);
+            if (!string.IsNullOrEmpty(font))
+                elt.SetAttribute(kComputedFontAttr, font);
         }
 
         /// <summary>
@@ -994,7 +992,8 @@ namespace Bloom.Publish
             string tempFolderPath,
             bool isTemplateBook,
             Dictionary<string, int> omittedPageLabels = null,
-            bool includeVideoAndActivities = true,
+            bool includeFilesNeededForBloomPlayer = true,
+            bool includeVideos = true,
             string[] narrationLanguages = null,
             bool wantMusic = false,
             bool wantFontFaceDeclarations = true,
@@ -1003,8 +1002,8 @@ namespace Bloom.Publish
         {
             var filter = new BookFileFilter(bookFolderPath)
             {
-                IncludeFilesNeededForBloomPlayer = includeVideoAndActivities,
-                WantVideo = includeVideoAndActivities,
+                IncludeFilesNeededForBloomPlayer = includeFilesNeededForBloomPlayer,
+                WantVideo = includeVideos,
                 NarrationLanguages = narrationLanguages,
                 WantMusic = true,
             };
@@ -1051,14 +1050,394 @@ namespace Bloom.Publish
             ImageUtils.ReallyCropImages(
                 modifiedBook.RawDom,
                 modifiedBook.FolderPath,
-                modifiedBook.FolderPath
+                modifiedBook.FolderPath,
+                true
             );
             // Must come after ReallyCropImages, because any cropping for background images is
             // destroyed by SimplifyBackgroundImages.
             SimplifyBackgroundImages(modifiedBook.RawDom);
-            modifiedBook.Save();
+            // Keep bloomDataDiv for metadata Bloom Player uses, but remove entries that contain
+            // custom-page content that can look like real page elements.
+            var dataDiv =
+                modifiedBook.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']") as SafeXmlElement;
+            if (dataDiv != null)
+            {
+                var childrenToRemove = dataDiv
+                    .ChildNodes.OfType<SafeXmlElement>()
+                    .Where(child =>
+                        child
+                            .ChildNodes.OfType<SafeXmlElement>()
+                            .FirstOrDefault()
+                            ?.HasClass("bloom-canvas")
+                        ?? false
+                    )
+                    .ToArray();
+                foreach (var child in childrenToRemove)
+                {
+                    dataDiv.RemoveChild(child);
+                }
+            }
+            modifiedBook.Save(true);
             modifiedBook.UpdateSupportFiles();
             return modifiedBook;
+        }
+
+        private sealed class MediaReference
+        {
+            public string RelativePath;
+            public Action<string> RewriteReference;
+        }
+
+        internal static void DeDuplicateMediaFiles(SafeXmlDocument dom, string folderPath)
+        {
+            DeDuplicateReferencedMedia(GetImageMediaReferences(dom, folderPath), folderPath);
+            DeDuplicateReferencedMedia(GetVideoMediaReferences(dom), folderPath);
+            // Narration files are tied to specific spans, so keep those one-to-one file names stable.
+            var talkingBookAudioFileNames = GetTalkingBookAudioFileNames(dom);
+            DeDuplicateReferencedMedia(
+                GetNonTalkingAudioMediaReferences(dom, talkingBookAudioFileNames),
+                folderPath
+            );
+        }
+
+        private static void DeDuplicateReferencedMedia(
+            IEnumerable<MediaReference> references,
+            string folderPath
+        )
+        {
+            var referencesByPath = new Dictionary<string, List<MediaReference>>();
+            var firstRelativePathByNormalizedPath = new Dictionary<string, string>();
+            var fullPathByNormalizedPath = new Dictionary<string, string>();
+            var normalizedPathsInEncounterOrder = new List<string>();
+
+            foreach (var reference in references)
+            {
+                if (string.IsNullOrWhiteSpace(reference.RelativePath))
+                    continue;
+
+                var relativePath = NormalizeSlashes(reference.RelativePath);
+                var caseNormalizedRelativePath = BookStorage.GetNormalizedPathForOS(relativePath); // for comparison
+                if (!referencesByPath.TryGetValue(caseNormalizedRelativePath, out var refsForPath))
+                {
+                    refsForPath = new List<MediaReference>();
+                    referencesByPath[caseNormalizedRelativePath] = refsForPath;
+                    firstRelativePathByNormalizedPath[caseNormalizedRelativePath] = relativePath;
+                    fullPathByNormalizedPath[caseNormalizedRelativePath] = ResolveMediaFilePath(
+                        folderPath,
+                        relativePath
+                    );
+                    normalizedPathsInEncounterOrder.Add(caseNormalizedRelativePath);
+                }
+
+                refsForPath.Add(reference);
+            }
+
+            var hashToCanonicalRelativePath = new Dictionary<string, string>();
+            var normalizedPathsToDelete = new HashSet<string>();
+            foreach (var normalizedRelativePath in normalizedPathsInEncounterOrder)
+            {
+                var filePath = fullPathByNormalizedPath[normalizedRelativePath];
+                if (!RobustFile.Exists(filePath))
+                    continue;
+
+                var hashString = ComputeFileHash(filePath);
+                if (
+                    hashToCanonicalRelativePath.TryGetValue(
+                        hashString,
+                        out var canonicalRelativePath
+                    )
+                )
+                {
+                    // Rewrite all references before deleting any duplicate file so later references to
+                    // the same duplicate path can still be resolved during this pass.
+                    foreach (var reference in referencesByPath[normalizedRelativePath])
+                    {
+                        reference.RewriteReference(canonicalRelativePath);
+                    }
+
+                    normalizedPathsToDelete.Add(normalizedRelativePath);
+                }
+                else
+                {
+                    hashToCanonicalRelativePath[hashString] = firstRelativePathByNormalizedPath[
+                        normalizedRelativePath
+                    ];
+                }
+            }
+
+            foreach (var normalizedRelativePath in normalizedPathsToDelete)
+            {
+                RobustFile.Delete(fullPathByNormalizedPath[normalizedRelativePath]);
+            }
+        }
+
+        private static IEnumerable<MediaReference> GetImageMediaReferences(
+            SafeXmlDocument dom,
+            string folderPath
+        )
+        {
+            foreach (
+                var imageElement in HtmlDom
+                    .SelectChildImgAndBackgroundImageElements(dom.DocumentElement)
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var relativePath = HtmlDom.GetImageElementUrl(imageElement).PathOnly.NotEncoded;
+                if (
+                    string.IsNullOrWhiteSpace(relativePath)
+                    || ImageUtils.IsPlaceholderImageFilename(relativePath)
+                )
+                {
+                    continue;
+                }
+
+                yield return new MediaReference
+                {
+                    RelativePath = relativePath,
+                    RewriteReference = canonicalRelativePath =>
+                        HtmlDom.SetImageElementUrl(
+                            imageElement,
+                            UrlPathString.CreateFromUnencodedString(canonicalRelativePath)
+                        ),
+                };
+            }
+
+            foreach (
+                var bookSetting in dom.SafeSelectNodes(
+                        "//div[@id='bloomDataDiv']/div[@data-book='coverImage' or @data-book='licenseImage']"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                // A bloomDataDiv image entry holds a plain file name, NOT a URL-encoded one --
+                // see the encoding conventions note on UrlPathString. This used to decode the
+                // value unconditionally, which disagreed with the rewrite below and with Book.cs,
+                // which both writes and normalizes these to the plain name.
+                //
+                // A handful of old books do break that rule and store an encoded name (BL-3901),
+                // so decode as far as it takes to actually find the file -- and no further, which
+                // is what leaves a real name like "photo%41.png" alone. Being wrong here means we
+                // don't recognize the reference, so the file it names can be deleted as a
+                // duplicate while this entry still points at it.
+                var relativePath = bookSetting.InnerText.Trim().Split('?')[0];
+                UrlPathString.GetFullyDecodedPath(folderPath, ref relativePath);
+                if (
+                    string.IsNullOrWhiteSpace(relativePath)
+                    || ImageUtils.IsPlaceholderImageFilename(relativePath)
+                )
+                {
+                    continue;
+                }
+
+                yield return new MediaReference
+                {
+                    RelativePath = relativePath,
+                    // Written as the plain file name, deliberately not URL-encoded, to match the
+                    // read above and what Book.cs writes and normalizes -- see the encoding
+                    // conventions note on UrlPathString. (The @src it also sets here is the
+                    // data-div's own bookkeeping copy, not an img that the browser ever loads.)
+                    RewriteReference = canonicalRelativePath =>
+                    {
+                        bookSetting.InnerText = canonicalRelativePath;
+                        if (bookSetting.GetAttribute("data-book") == "coverImage")
+                        {
+                            bookSetting.SetAttribute("src", canonicalRelativePath);
+                        }
+                    },
+                };
+            }
+        }
+
+        private static IEnumerable<MediaReference> GetVideoMediaReferences(SafeXmlDocument dom)
+        {
+            foreach (
+                var videoContainer in HtmlDom
+                    .SelectChildVideoElements(dom.DocumentElement)
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var relativePath = HtmlDom.GetVideoElementUrl(videoContainer).PathOnly.NotEncoded;
+                if (string.IsNullOrWhiteSpace(relativePath))
+                    continue;
+
+                yield return new MediaReference
+                {
+                    RelativePath = relativePath,
+                    RewriteReference = canonicalRelativePath =>
+                        HtmlDom.SetVideoElementUrl(
+                            videoContainer,
+                            UrlPathString.CreateFromUnencodedString(canonicalRelativePath)
+                        ),
+                };
+            }
+        }
+
+        private static IEnumerable<MediaReference> GetNonTalkingAudioMediaReferences(
+            SafeXmlDocument dom,
+            HashSet<string> talkingBookAudioFileNames
+        )
+        {
+            foreach (
+                var pageWithBackgroundMusic in HtmlDom
+                    .SelectChildBackgroundMusicElements(dom.DocumentElement)
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var reference = MakeAudioAttributeReference(
+                    pageWithBackgroundMusic,
+                    HtmlDom.musicAttrName,
+                    talkingBookAudioFileNames
+                );
+                if (reference != null)
+                    yield return reference;
+            }
+
+            foreach (
+                var soundElement in dom.SafeSelectNodes(".//*[@data-sound]").Cast<SafeXmlElement>()
+            )
+            {
+                var reference = MakeAudioAttributeReference(
+                    soundElement,
+                    "data-sound",
+                    talkingBookAudioFileNames
+                );
+                if (reference != null)
+                    yield return reference;
+            }
+
+            foreach (
+                var elementWithCorrectSound in dom.SafeSelectNodes(".//*[@data-correct-sound]")
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var reference = MakeAudioAttributeReference(
+                    elementWithCorrectSound,
+                    "data-correct-sound",
+                    talkingBookAudioFileNames
+                );
+                if (reference != null)
+                    yield return reference;
+            }
+
+            foreach (
+                var elementWithWrongSound in dom.SafeSelectNodes(".//*[@data-wrong-sound]")
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var reference = MakeAudioAttributeReference(
+                    elementWithWrongSound,
+                    "data-wrong-sound",
+                    talkingBookAudioFileNames
+                );
+                if (reference != null)
+                    yield return reference;
+            }
+        }
+
+        /// <summary>
+        /// Build a reference to the audio file named by one of the sound attributes.
+        /// </summary>
+        /// <remarks>
+        /// These attributes do NOT agree with each other about encoding, so each has to be read
+        /// and written in its own convention -- see the encoding conventions note on
+        /// UrlPathString. data-backgroundaudio is URL-encoded; data-sound, data-correct-sound and
+        /// data-wrong-sound hold the plain file name.
+        ///
+        /// Getting it wrong is worse than it looks: the name we produce is what
+        /// DeDuplicateReferencedMedia looks for on disk, so a mis-decoded name simply isn't found
+        /// and that reference is skipped -- and if another attribute names the same file under a
+        /// name that IS found, the file can be deleted as a duplicate while this attribute still
+        /// points at it.
+        /// </remarks>
+        private static MediaReference MakeAudioAttributeReference(
+            SafeXmlElement element,
+            string attributeName,
+            HashSet<string> talkingBookAudioFileNames
+        )
+        {
+            var rawValue = element.GetAttribute(attributeName);
+            if (string.IsNullOrWhiteSpace(rawValue) || rawValue == "none")
+                return null;
+
+            var isUrlEncoded = attributeName == HtmlDom.musicAttrName;
+            var fileName = isUrlEncoded
+                ? UrlPathString.CreateFromUrlEncodedString(rawValue).PathOnly.NotEncoded
+                : rawValue.Split('?')[0];
+            var normalizedFileName = BookStorage.GetNormalizedPathForOS(fileName);
+            if (talkingBookAudioFileNames.Contains(normalizedFileName))
+                return null;
+
+            return new MediaReference
+            {
+                RelativePath = MakeRelativePath("audio", fileName),
+                RewriteReference = canonicalRelativePath =>
+                {
+                    var newFileName = Path.GetFileName(canonicalRelativePath);
+                    element.SetAttribute(
+                        attributeName,
+                        isUrlEncoded
+                            ? UrlPathString.CreateFromUnencodedString(newFileName).UrlEncoded
+                            : newFileName
+                    );
+                },
+            };
+        }
+
+        private static HashSet<string> GetTalkingBookAudioFileNames(SafeXmlDocument dom)
+        {
+            // Match Bloom's narration selector so we skip exactly the files publish already treats as
+            // talking-book audio, including split TextBox recordings.
+            var fileNames = new HashSet<string>();
+            foreach (
+                var narrationElement in HtmlDom
+                    .SelectChildNarrationAudioElements(
+                        dom.DocumentElement,
+                        includeSplitTextBoxAudio: true,
+                        langsToExclude: null
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var narrationId = narrationElement.GetOptionalStringAttribute("id", null);
+                if (string.IsNullOrWhiteSpace(narrationId))
+                    continue;
+
+                foreach (var fileName in BookStorage.GetNarrationAudioFileNames(narrationId, true))
+                {
+                    fileNames.Add(BookStorage.GetNormalizedPathForOS(fileName));
+                }
+            }
+
+            return fileNames;
+        }
+
+        private static string ComputeFileHash(string filePath)
+        {
+            using (var stream = RobustFile.OpenRead(filePath))
+            {
+                return Convert.ToHexString(SHA256.HashData(stream));
+            }
+        }
+
+        private static string ResolveMediaFilePath(string folderPath, string relativePath)
+        {
+            var path = relativePath.Replace('/', Path.DirectorySeparatorChar);
+            return BookStorage.GetNormalizedPathForOS(Path.Combine(folderPath, path));
+        }
+
+        private static string NormalizeSlashes(string relativePath)
+        {
+            return relativePath.Replace('\\', '/');
+        }
+
+        private static string MakeRelativePath(params string[] parts)
+        {
+            return string.Join(
+                "/",
+                parts
+                    .Where(part => !string.IsNullOrWhiteSpace(part))
+                    .Select(part => part.Trim('/', '\\'))
+            );
         }
 
         /// <summary>
@@ -1084,9 +1463,8 @@ namespace Bloom.Publish
         /// represented as a canvas element to our pre-6.2 approach where it was a direct child of the bloom canvas.
         /// The canvas element div is removed, and the img that was in it is moved to an appropriate position
         /// as a direct child of the bloom-canvas.
-        /// We also do this when publishing to BloomLibrary; this saves the harvester needing to worry about
-        /// the background image canvas elements, and also saves our future code having to worry about blorg
-        /// books that have a mixture of old and new background images.
+        /// We don't do this when publishing to BloomLibrary, because really cropping images and then
+        /// switching to content-fit:contain can leave a pixel of the cover visible.
         /// </summary>
         public static void SimplifyBackgroundImages(SafeXmlDocument dom)
         {
@@ -1159,31 +1537,28 @@ namespace Bloom.Publish
                     bloomCanvas.RemoveClass("bloom-has-canvas-element");
                 }
             }
-
-            // We need to clear out these attributes from the data-div, or a later call to update things will try to restore
-            // the background image representation of any cover image.
-            var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']");
-            var bgImgDataAttrs = HtmlDom.BackgroundImgTupleNames;
-            if (dataDiv != null)
-            {
-                foreach (
-                    var elt in dataDiv
-                        .SafeSelectNodes($".//div[@{bgImgDataAttrs[0]}]")
-                        .Cast<SafeXmlElement>()
-                )
-                {
-                    foreach (var attr in bgImgDataAttrs)
-                    {
-                        if (elt.HasAttribute(attr))
-                            elt.RemoveAttribute(attr);
-                    }
-                }
-            }
         }
 
         #region IDisposable Support
         // This code added to correctly implement the disposable pattern.
         private bool _isDisposed = false; // To detect redundant calls
+
+        /// <summary>
+        /// Shut down the off-screen page-checks browser (its thread and WebView2 process) if we made one, so
+        /// it stops consuming resources once we are done with it. It will be lazily recreated if page checks
+        /// are needed again. Callers that finish a batch of page checks (e.g. EpubMaker at the end of staging)
+        /// should call this so the browser does not linger idle after the work is done. Must be called from a
+        /// thread that is not currently mid-call into the browser; OffScreenBrowser.Dispose posts teardown to
+        /// the browser's own thread and joins it.
+        /// </summary>
+        public void ReleaseBrowser()
+        {
+            // Don't use GetOrCreatePageChecksBrowser here — if we never created one, we don't want to make
+            // one now just to dispose it. An external browser (ExternalPageChecksBrowserForTests) belongs
+            // to its owner, so we never dispose it.
+            _pageChecksBrowser?.Dispose();
+            _pageChecksBrowser = null;
+        }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -1191,33 +1566,7 @@ namespace Bloom.Publish
             {
                 if (disposing)
                 {
-                    if (_browser != null) // Don't use BrowserForPageChecks here...if we don't have one we don't want to make it now!
-                    {
-                        if (
-                            ControlForInvoke != null
-                            && ControlForInvoke.IsHandleCreated
-                            && !ControlForInvoke.IsDisposed
-                        )
-                        {
-                            // Seems safest of all to invoke using the thing we use for all other invokes.
-                            // Also, seems our WebView2Browser may not actually get a handle, yet its
-                            // embedded WebView2 still needs to be disposed on the right thread.
-                            ControlForInvoke.Invoke((Action)(() => _browser.Dispose()));
-                        }
-                        else if (_browser.IsHandleCreated)
-                        {
-                            _browser.Invoke((Action)(() => _browser.Dispose()));
-                        }
-                        else
-                        {
-                            // We can't invoke if it doesn't have a handle...and we certainly don't want
-                            // to waste time getting it one...hopefully we can just dispose it on this
-                            // thread.
-                            _browser.Dispose();
-                        }
-                    }
-
-                    _browser = null;
+                    ReleaseBrowser();
                 }
                 _isDisposed = true;
             }
@@ -1305,6 +1654,41 @@ namespace Bloom.Publish
         public const string DefaultFont = "Andika";
 
         /// <summary>
+        /// The CSS generic font-family keywords. These are not real fonts that live in a file;
+        /// every browser resolves them to some installed font on its own. So when a book asks for
+        /// one of these (e.g. "font-family: serif") there is nothing for us to find, embed, or
+        /// substitute, and we must leave the keyword alone in the book's CSS so the reader's
+        /// browser can resolve it. See BL-16370.
+        /// </summary>
+        private static readonly HashSet<string> s_genericCssFontFamilies = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase
+        )
+        {
+            "serif",
+            "sans-serif",
+            "monospace",
+            "cursive",
+            "fantasy",
+            "system-ui",
+            "ui-serif",
+            "ui-sans-serif",
+            "ui-monospace",
+            "ui-rounded",
+            "math",
+            "emoji",
+            "fangsong",
+        };
+
+        /// <summary>
+        /// True if the given font-family name is a CSS generic keyword (serif, sans-serif, etc.)
+        /// rather than the name of an actual font that Bloom would need to find and embed.
+        /// </summary>
+        public static bool IsGenericCssFontFamily(string fontFamily)
+        {
+            return fontFamily != null && s_genericCssFontFamilies.Contains(fontFamily.Trim());
+        }
+
+        /// <summary>
         /// Checks the wanted fonts for being valid for  embedding, both for licensing and for the type of file
         /// (based on the filename extension).
         /// The list of rejected fonts is returned in badFonts and the list of files to copy for good fonts is
@@ -1342,6 +1726,13 @@ namespace Bloom.Publish
             var filesAlreadyAdded = new HashSet<string>();
             foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
+                // CSS generic font families (serif, sans-serif, monospace, ...) are not real
+                // fonts on disk; the reader's browser resolves them itself. There's nothing to
+                // find or embed, and we must NOT add them to badFonts, because that would cause
+                // us to rewrite the keyword to the default font in the book's CSS. Just leave
+                // the keyword alone and move on. See BL-16370.
+                if (IsGenericCssFontFamily(font.fontFamily))
+                    continue;
                 var fontFile = fontFileFinder.GetFileForFont(
                     font.fontFamily,
                     font.fontStyle,
@@ -1591,7 +1982,8 @@ namespace Bloom.Publish
         }
 
         /// <summary>
-        /// Fix the userModifiedStyles in the HTML DOM to replace any fonts listed in badFonts with the defaultFont
+        /// Fix the font references in the HTML DOM -- both the userModifiedStyles element and any
+        /// inline style attributes -- replacing any fonts listed in badFonts with the defaultFont
         /// value.  Note that ePUB uses namespaces in its XHTML files while BloomPub does not use namespaces.
         /// </summary>
         /// <returns><c>true</c> if any references for bad fonts were fixed, <c>false</c> otherwise.</returns>
@@ -1603,6 +1995,11 @@ namespace Bloom.Publish
             string nsPrefix = ""
         ) // these two arguments needed for processing ePUB files.
         {
+            var fixedSomething = FixInlineStyleReferencesForBadFonts(
+                bookDoc,
+                defaultFont,
+                badFonts
+            );
             // Now for styles defined in the dom...
             var xpath =
                 $"//{nsPrefix}head/{nsPrefix}style[@type='text/css' and @title='userModifiedStyles']";
@@ -1628,16 +2025,69 @@ namespace Bloom.Publish
                 if (cssText != cssTextOrig)
                 {
                     userStylesNode.InnerXml = cssText;
-                    return true;
+                    fixedSomething = true;
                 }
             }
-            return false;
+            return fixedSomething;
         }
 
-        public static async Task ReportInvalidFontsAsync(
+        /// <summary>
+        /// Replace any badFonts named by an element's own style attribute with defaultFont.
+        /// </summary>
+        /// <remarks>
+        /// ePUB export writes the font for language-independent (lang="*") text straight onto the
+        /// element, because the attribute its css rule keys off cannot survive into an ePUB
+        /// (BL-16624). That declaration has to take part in this substitution like every other font
+        /// reference; otherwise the one bit of text we just gave a font to would go on naming a
+        /// font the book is not allowed to package, and a reader would render it in whatever it
+        /// happened to have. Found by Devin on PR #8122.
+        /// </remarks>
+        private static bool FixInlineStyleReferencesForBadFonts(
+            SafeXmlDocument bookDoc,
+            string defaultFont,
+            HashSet<string> badFonts
+        )
+        {
+            var fixedSomething = false;
+            // No namespace prefix needed: "*" matches an element in any namespace, and an
+            // unprefixed attribute is in none.
+            foreach (var elt in bookDoc.SafeSelectNodes("//*[@style]").Cast<SafeXmlElement>())
+            {
+                var styleOrig = elt.GetAttribute("style");
+                if (string.IsNullOrEmpty(styleOrig) || !styleOrig.Contains("font-family"))
+                    continue;
+                var style = styleOrig;
+                foreach (var font in badFonts)
+                {
+                    var name = System.Text.RegularExpressions.Regex.Escape(font);
+                    // The name may be quoted or bare. When it is bare the match has to end at a
+                    // real boundary, or a bad "Andika" would eat the start of "Andika New Basic"
+                    // and leave `font-family: 'Andika' New Basic` behind. The boundary is a
+                    // semicolon, a comma (the name may head a fallback list), or the end of the
+                    // attribute -- an inline declaration often has no trailing semicolon, which is
+                    // why we cannot simply require one as the stylesheet versions above do.
+                    var regex = new System.Text.RegularExpressions.Regex(
+                        $"font-family:\\s*(?:(['\"]){name}\\1|{name}(?=\\s*(?:[;,]|$)))"
+                    );
+                    style = regex.Replace(style, $"font-family: '{defaultFont}'");
+                }
+                if (style != styleOrig)
+                {
+                    elt.SetAttribute("style", style);
+                    fixedSomething = true;
+                }
+            }
+            return fixedSomething;
+        }
+
+        /// <summary>
+        /// Report (via progress) any fonts used in the staged book that cannot be published.
+        /// Returns the set of font names actually requested by the book's content, which
+        /// lets a test verify that the browser-based scan really ran.
+        /// </summary>
+        public static IReadOnlyCollection<string> ReportInvalidFonts(
             string destDirName,
-            IProgress progress,
-            Control controlToInvokeOn
+            IProgress progress
         )
         {
             // Make a browser so we can accurately determine what fonts are actually requested by
@@ -1661,96 +2111,41 @@ namespace Bloom.Publish
                 editable.AddClass("bloom-visibility-code-on");
             }
 
-            // This function, which is what we want to do next, may be either invoked
-            // or simply run, depending on whether we need to force running it on the UI thread.
-            // We can only manipulate the browser on the UI thread (except in tests).
-            var getFontsAction = async () =>
+            // Ask a real browser which fonts the stylesheets actually request. We use an
+            // OffScreenBrowser (a WebView2 on its own dedicated thread, driven by blocking calls)
+            // rather than creating a WebView2Browser inline on the calling thread. The inline
+            // approach needed fragile thread juggling (see BL-15292), and in bulk upload it
+            // reliably wedged after a couple of books: each new inline WebView2 failed to finish
+            // initializing, so every subsequent book failed to upload with "The instance of
+            // CoreWebView2 is uninitialized" (BL-16767). This is the same mechanism
+            // RemoveUnwantedContent uses for its page checks.
+            using (var browser = new OffScreenBrowser())
             {
-                // This will usually be the main UI thread, but in tests it could be anything.
-                // In production, we must make sure we're on the UI thread to create and manipulate a browser,
-                // but we may no longer be after we await RunJavaScriptAsync. We have to be on the same
-                // thread to dispose it, so keep track of which thread it is.
-                var threadWhereWeMadeBrowser = Thread.CurrentThread;
-                // Even trying controlToInvokeOn.Invoke everywhere the browser is referenced, I couldn't get
-                // "await WebView2Browser.CreateAsync()" to produce a browser that would successfully navigate
-                // to the page for checking fonts.  The navigation would always time out and report failure,
-                // unless it crashed before the timeout and stopped the program with exit code 0x80000003.
-                // If it didn't crash, often the scan for fonts would return an empty array which looks
-                // innocuous (but possibly misleading) to the user.  When it didn't return an empty array,
-                // it returned an array full of nothing but "Times New Roman", the default browser font on
-                // Windows which is illegal to embed or distribute, and complained vociferously to the user.
-                // See BL-15292 for more details and discussion.
-                var browser = new WebView2Browser(); // NOT await WebView2Browser.CreateAsync();
-                try
+                if (!browser.Navigate(dom, 10000, () => false))
                 {
-                    // Logically, if any await can result in a thread switch, we might need to invoke again here.
-                    // (But invoking again here doesn't work!?)
-                    if (
-                        !browser.NavigateAndWaitTillDone(
-                            dom,
-                            10000,
-                            InMemoryHtmlFileSource.JustCheckingPage,
-                            () => false,
-                            false
-                        )
-                    )
-                    {
-                        // We had problems with timeouts here in similar code (BL-7892).
-                        // We may as well carry on and detect as many problem fonts as we can.
-                        Debug.WriteLine("Failed to navigate fully to ReportInvalidFontsAsync DOM");
-                        Logger.WriteEvent(
-                            "Failed to navigate fully to ReportInvalidFontsAsync DOM"
-                        );
-                    }
+                    // We had problems with timeouts here in similar code (BL-7892).
+                    // We may as well carry on and detect as many problem fonts as we can.
+                    Debug.WriteLine("Failed to navigate fully to ReportInvalidFonts DOM");
+                    Logger.WriteEvent("Failed to navigate fully to ReportInvalidFonts DOM");
+                }
 
-                    // Get and store the display and font information for each element in the DOM.
-                    var rawInfo = await browser.GetObjectFromJavascriptAsync(
-                        GetElementFontFamilyInfoJavascript
-                    );
-                    //Debug.WriteLine($"DEBUG ReportInvalidFontsAsync: rawInfo={rawInfo}");
-                    var fontFamilyInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(
-                        rawInfo
-                    );
+                // Get the font-family information for each element in the DOM.
+                var rawInfo = browser.RunJavascript(GetElementFontFamilyInfoJavascript);
+                var fontFamilyInfo = string.IsNullOrEmpty(rawInfo)
+                    ? null
+                    : Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(rawInfo);
 
-                    if (fontFamilyInfo != null)
+                if (fontFamilyInfo != null)
+                {
+                    foreach (var family in fontFamilyInfo)
                     {
-                        foreach (var family in fontFamilyInfo)
+                        var font = ExtractFontNameFromFontFamily(family);
+                        if (!string.IsNullOrEmpty(font))
                         {
-                            var font = ExtractFontNameFromFontFamily(family);
-                            if (!string.IsNullOrEmpty(font))
-                            {
-                                fontsFound.Add(font);
-                            }
+                            fontsFound.Add(font);
                         }
                     }
                 }
-                finally
-                {
-                    if (threadWhereWeMadeBrowser == Thread.CurrentThread)
-                    {
-                        // This seems to happen in tests. In live code, given the bizarre way
-                        // Windows.Forms implements await and resumes on a different thread,
-                        // we don't take this branch, but we normally have a controlToInvokeOn,
-                        // which is usually null in tests.
-                        browser.Dispose();
-                    }
-                    else if (controlToInvokeOn != null)
-                    {
-                        // If we made the browser on this control's thread, we can dispose of it properly by invoking
-                        // to that thread. This is the usual path in production.
-                        controlToInvokeOn.Invoke(() => browser.Dispose());
-                    }
-                    // Otherwise, we just can't dispose of it properly. Probably we're running tests
-                    // and it doesn't matter much.
-                }
-            };
-            if (controlToInvokeOn == null)
-            {
-                await getFontsAction();
-            }
-            else
-            {
-                await (Task)controlToInvokeOn.Invoke(getFontsAction);
             }
 
             // The old approach. Enhance: this is probably much faster to run. We think its only
@@ -1845,6 +2240,7 @@ namespace Bloom.Publish
                     //progress.WriteWarning("This book has a font, \"{0}\", which is not on this computer and whose license is unknown.", font);
                 }
             }
+            return fontsFound;
         }
 
         private const string AILangTagFragment = "-x-ai";

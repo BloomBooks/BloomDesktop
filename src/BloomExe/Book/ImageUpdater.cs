@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml;
 using Bloom.ErrorReporter;
+using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
@@ -12,7 +12,6 @@ using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
-using TagLib;
 
 namespace Bloom.Book
 {
@@ -34,11 +33,18 @@ namespace Bloom.Book
             //First update the images themselves
 
             int completed = 0;
-            var imgElements = GetImagePaths(folderPath);
+            // ToList matters, twice over. GetImagePaths is an iterator that reads the embedded
+            // metadata of every candidate file (to skip images from official collections), and the
+            // percentage below asks for its Count on every pass -- which re-ran the whole thing,
+            // so a 400-image book did ~160,000 metadata reads instead of 400 and appeared frozen
+            // for minutes. It also re-decided which files to include as it went, while this very
+            // loop is writing metadata INTO those files, so the count it divided by could change
+            // underneath it. Enumerate once, up front, and both problems go away.
+            var imgElements = GetImagePaths(folderPath).ToList();
             foreach (string path in imgElements)
             {
                 progress.ProgressIndicator.PercentCompleted = (int)(
-                    100.0 * (float)completed / imgElements.Count()
+                    100.0 * (float)completed / imgElements.Count
                 );
                 progress.WriteStatus("Copying to " + Path.GetFileName(path));
 
@@ -325,49 +331,6 @@ namespace Bloom.Book
                 UpdateImgMetadataAttributesToMatchImage(folderPath, img, progress);
                 completed++;
             }
-        }
-
-        /// <summary>
-        /// We don't want to allow users to change the metadata in stock images that come with games,
-        /// but we do want those images to report their metadata for credits.  See BL-14610.
-        /// </summary>
-        struct GameStockImageInfo
-        {
-            public string Name;
-            public string Creator;
-            public string License;
-        }
-
-        static GameStockImageInfo[] _stockGameImages =
-        {
-            new GameStockImageInfo
-            {
-                Name = "smiling-flowers.gif",
-                Creator = "Ilona Spaeder",
-                License = "Pixabay",
-            },
-            new GameStockImageInfo
-            {
-                Name = "sad-face.gif",
-                Creator = "Ilona Spaeder",
-                License = "Pixabay",
-            },
-        };
-
-        public static bool ImageIsStockGameImage(string filename, Metadata metadata)
-        {
-            foreach (var imageInfo in _stockGameImages)
-            {
-                if (
-                    filename == imageInfo.Name
-                    && metadata.Creator == imageInfo.Creator
-                    && metadata.License.RightsStatement.Contains(imageInfo.License)
-                )
-                {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

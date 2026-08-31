@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
@@ -32,6 +33,13 @@ namespace Bloom.WebLibraryIntegration
     // So we'll start with this and replace the parse-server-specific bits as we go.
     public class BloomLibraryBookApiClient
     {
+        /// <summary>
+        /// Raised whenever the logged-in state or account changes, i.e. after SetLoginData() or
+        /// Logout(). Subscribers (e.g. AccountApi) use this as the single source of truth for
+        /// broadcasting the current login state to the front end.
+        /// </summary>
+        public event EventHandler LoginDataChanged;
+
         const string kHost = "https://api.bloomlibrary.org";
 
         //const string kHost = "http://localhost:7071"; // For local testing
@@ -373,6 +381,11 @@ namespace Bloom.WebLibraryIntegration
                 request.AddQueryParameter("env", "dev");
         }
 
+        /// <summary>
+        /// Record a successful login: stores the account/session info both in memory and in the
+        /// persisted user Settings (so a later run of Bloom, or the command line, can restore it),
+        /// and raises LoginDataChanged so subscribers (e.g. AccountApi) can broadcast the new state.
+        /// </summary>
         public void SetLoginData(
             string account,
             string userId,
@@ -388,8 +401,47 @@ namespace Bloom.WebLibraryIntegration
             Settings.Default.Save();
             _userId = userId;
             _authenticationToken = sessionToken;
+            LoginDataChanged?.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Attempt to restore a previously-saved login from Settings, purely from persisted state
+        /// (no network call). Only succeeds if we have a saved session token and user id, AND the
+        /// saved login was for the same destination (sandbox vs. production) that is being requested
+        /// now -- a sandbox token is meaningless against production and vice versa. On success, this
+        /// calls SetLoginData (which will re-save the same values and raise LoginDataChanged) and
+        /// returns true. On failure, it does NOT clear any settings, because a mismatch here (e.g.
+        /// wrong destination) doesn't mean the saved data is invalid, just that it doesn't apply to
+        /// the destination requested this time.
+        /// </summary>
+        public bool TryRestoreSavedLogin(string destination)
+        {
+            if (
+                string.IsNullOrEmpty(Settings.Default.LastLoginSessionToken)
+                || string.IsNullOrEmpty(Settings.Default.LastLoginUserId)
+            )
+                return false;
+
+            if (Settings.Default.LastLoginDest != destination)
+                return false;
+
+            SetLoginData(
+                Settings.Default.WebUserId,
+                Settings.Default.LastLoginUserId,
+                Settings.Default.LastLoginSessionToken,
+                destination
+            );
+
+            return true;
+        }
+
+        /// <summary>
+        /// Used by the command-line uploader (BulkUploader) to sign in using the login most recently
+        /// performed from the Bloom UI, since the command line itself has no way to log in
+        /// interactively. Delegates the settings-only restore logic to TryRestoreSavedLogin, but adds
+        /// the extra validation and progress reporting that the command-line caller needs: the saved
+        /// email must match the -u argument, and failures are reported to the given IProgress.
+        /// </summary>
         public bool AttemptSignInAgainForCommandLine(
             string userEmail,
             string destination,
@@ -428,14 +480,20 @@ namespace Bloom.WebLibraryIntegration
                 return false;
             }
 
-            SetLoginData(
-                Settings.Default.WebUserId,
-                Settings.Default.LastLoginUserId,
-                Settings.Default.LastLoginSessionToken,
-                destination
-            );
+            return TryRestoreSavedLogin(destination);
+        }
 
-            return true;
+        /// <summary>
+        /// Validate the current session token against the server. This is currently a stub: there is
+        /// no "who am I" endpoint on api.bloomlibrary.org yet. TODO: once one exists (e.g.
+        /// GET v1/users/me), call it here, and if it gives a DEFINITIVE answer that the token is
+        /// invalid (e.g. an HTTP 401), call Logout(includeFirebaseLogout: false). A network failure or
+        /// being offline is NOT evidence the token is invalid, so it must not trigger a logout --
+        /// only a clear rejection from the server should.
+        /// </summary>
+        public Task ValidateTokenAsync()
+        {
+            return Task.CompletedTask;
         }
 
         // Don't even THINK of making this mutable so each unit test uses a different class.
@@ -555,14 +613,27 @@ namespace Bloom.WebLibraryIntegration
             return rawResult.results;
         }
 
+        /// <summary>
+        /// Log the user out: clears the in-memory login state as well as everything in Settings that
+        /// would allow TryRestoreSavedLogin/AttemptSignInAgainForCommandLine to sign back in
+        /// automatically. This is a security fix: since we now restore saved logins at startup,
+        /// leaving any of the saved login settings in place after logging out would let "sign out,
+        /// then restart Bloom" silently sign the user back in. Raises LoginDataChanged at the end so
+        /// subscribers (e.g. AccountApi) can broadcast the now-signed-out state.
+        /// </summary>
         public void Logout(bool includeFirebaseLogout = true)
         {
             Settings.Default.WebUserId = ""; // Should not be able to log in again just by restarting
+            Settings.Default.LastLoginSessionToken = "";
+            Settings.Default.LastLoginUserId = "";
+            Settings.Default.LastLoginDest = "";
+            Settings.Default.Save();
             _authenticationToken = null;
             Account = "";
             _userId = "";
             if (includeFirebaseLogout)
                 BloomLibraryAuthentication.Logout();
+            LoginDataChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>

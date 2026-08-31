@@ -285,7 +285,7 @@ namespace Bloom.Spreadsheet
                 bool extraRow = false;
                 string pageType = null;
                 if (pageTypeIndex >= 0)
-                    pageType = currentRow.GetCell(pageTypeIndex).Content.Trim();
+                    pageType = NormalizePageLabel(currentRow.GetCell(pageTypeIndex).Content.Trim());
 
                 if (rowTypeLabel == InternalSpreadsheet.PageContentRowLabel)
                 {
@@ -489,21 +489,59 @@ namespace Bloom.Spreadsheet
         public List<string> BookTemplatePaths;
         private List<string> _bookTemplatePaths;
 
+        // Spreadsheet page-type values and stored template page labels historically used the older
+        // English "Picture..." names as identifiers. Normalize those legacy values to the current
+        // "Image..." labels before matching layouts so older spreadsheets and books still import.
+        private static readonly Dictionary<string, string> _legacyPageLabelMap = new Dictionary<
+            string,
+            string
+        >(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Basic Text & Picture", "Basic Text & Image" },
+            { "Just a Picture", "Just an Image" },
+            { "Picture in Middle", "Image in Middle" },
+            { "Bilingual & Picture in Middle", "Bilingual & Image in Middle" },
+            { "Picture on Bottom", "Image on Bottom" },
+            { "Image On Bottom", "Image on Bottom" },
+            { "Picture on Left", "Image on Left" },
+            { "Picture on Right", "Image on Right" },
+            { "Picture & Word", "Image & Word" },
+            { "Picture & Video", "Image & Video" },
+            { "Big Picture Diglot", "Big Image Diglot" },
+            { "Big Picture Diglot Text Over Video", "Big Image Diglot Text Over Video" },
+            { "Choose Picture from Word", "Choose Image from Word" },
+            { "Choose Word from Picture", "Choose Word from Image" },
+        };
+
         // Books from which we've already used a page, and therefore, have imported any
         // special stylesheets it uses.
         HashSet<string> _importedBooks = new HashSet<string>();
 
+        private static string NormalizePageLabel(string label)
+        {
+            if (String.IsNullOrEmpty(label))
+                return label;
+
+            return _legacyPageLabelMap.TryGetValue(label, out var normalized) ? normalized : label;
+        }
+
         public static string GetLabelFromPage(SafeXmlElement page)
         {
-            var labelElt = page
-                ?.SafeSelectNodes(".//div[@class='pageLabel' and @lang='en']")
-                .Cast<SafeXmlElement>()
-                .FirstOrDefault();
+            var labelElt =
+                page == null
+                    ? null
+                    : SafeSelectNodesByClassName(
+                            page,
+                            ".//div",
+                            "pageLabel",
+                            additionalPredicate: "@lang='en'"
+                        )
+                        .FirstOrDefault();
             if (labelElt != null)
             {
-                // Note that while the file may show something like "Basic Text &amp; Picture",
-                // the InnerText property already converts this to "Basic Text & Picture".
-                return labelElt.InnerText.Trim();
+                // Note that while the file may show something like "Basic Text &amp; Image",
+                // the InnerText property already converts this to "Basic Text & Image".
+                return NormalizePageLabel(labelElt.InnerText.Trim());
             }
 
             return null;
@@ -516,7 +554,7 @@ namespace Bloom.Spreadsheet
         /// </summary>
         private SafeXmlElement GetPageForLabel(string label1)
         {
-            var label = label1.ToLowerInvariant();
+            var label = NormalizePageLabel(label1)?.ToLowerInvariant();
             if (_bookTemplatePaths == null)
             {
                 if (BookTemplatePaths == null)
@@ -551,10 +589,10 @@ namespace Bloom.Spreadsheet
                 var bookPath = _bookTemplatePaths[0];
                 _bookTemplatePaths.RemoveAt(0);
                 var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
-                var pages = dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
+                var pages = SafeSelectNodesByClassName(dom, "//div", "bloom-page");
                 foreach (SafeXmlElement page in pages)
                 {
-                    var pageLabel = GetLabelFromPage(page).ToLowerInvariant();
+                    var pageLabel = GetLabelFromPage(page)?.ToLowerInvariant();
                     // If we already found a page with this label, keep using the one we found first.
                     // This is so that if some random template contains a page with an unchanged
                     // label from one of our built-in templates, we will use the original on import.
@@ -862,11 +900,12 @@ namespace Bloom.Spreadsheet
 
             if (descriptionRow != null)
             {
-                var group = currentBloomCanvas
-                    .GetElementsByTagName("div")
-                    .FirstOrDefault(e =>
-                        e.GetAttribute("class").Contains("bloom-imageDescription")
-                    );
+                var group = SafeSelectNodesByClassName(
+                        currentBloomCanvas,
+                        ".//div",
+                        "bloom-imageDescription"
+                    )
+                    .FirstOrDefault();
                 if (group == null)
                 {
                     group = currentBloomCanvas.OwnerDocument.CreateElement("div");
@@ -939,7 +978,7 @@ namespace Bloom.Spreadsheet
 
         private SafeXmlElement GetImgFromContainer(SafeXmlElement container)
         {
-            return container.ChildNodes.FirstOrDefault(x => x.Name == "img") as SafeXmlElement;
+            return container.SafeSelectNodes(".//img").Cast<SafeXmlElement>().FirstOrDefault();
         }
 
         private bool _foundCopyright;
@@ -1214,13 +1253,7 @@ namespace Bloom.Spreadsheet
                         // Activity folder is the only one that might require us to copy a stylesheet
                         ImportStylesheetsIfNeeded(_activityTemplatePath);
                     }
-                    var pageLabel =
-                        templatePage
-                            .SafeSelectNodes(".//div[@class='pageLabel']")
-                            .Cast<SafeXmlElement>()
-                            .FirstOrDefault()
-                            ?.InnerText
-                        ?? "";
+                    var pageLabel = GetLabelFromPage(templatePage) ?? "";
                     Progress($"Adding page {PageNumberToReport} using a {pageLabel} layout");
                     return;
                 }
@@ -1253,19 +1286,19 @@ namespace Bloom.Spreadsheet
             // clear everything: this is useful in case it has slots we won't use.
             // They might have content either from the original last page, or from the
             // modifications we already made to it.
-            var editables = page.SafeSelectNodes(
-                    ".//div[contains(@class, 'bloom-editable') and @lang != 'z']"
+            var editables = SafeSelectNodesByClassName(
+                    page,
+                    ".//div",
+                    "bloom-editable",
+                    additionalPredicate: "@lang != 'z'"
                 )
-                .Cast<SafeXmlElement>()
                 .ToArray();
             foreach (var e in editables)
             {
                 var allInGroup = e
                     .ParentNode.ChildNodes.Cast<SafeXmlNode>()
                     .Where(x =>
-                        x != e
-                        && x is SafeXmlElement y
-                        && y.GetAttribute("class").Contains("bloom-editable")
+                        x != e && x is SafeXmlElement y && HasExactClassName(y, "bloom-editable")
                     );
                 if (allInGroup.Any())
                     e.ParentNode.RemoveChild(e);
@@ -1292,10 +1325,12 @@ namespace Bloom.Spreadsheet
 
             // This is not tested yet, but we want to remove video content if any from whatever last page we're copying.
             foreach (
-                var v in page.SafeSelectNodes(
-                        ".//div[contains(@class, 'bloom-videoContainer')]/video"
+                var v in SafeSelectNodesByClassName(
+                        page,
+                        ".//div",
+                        "bloom-videoContainer",
+                        trailingXPath: "/video"
                     )
-                    .Cast<SafeXmlElement>()
                     .ToList()
             )
             {
@@ -1305,10 +1340,12 @@ namespace Bloom.Spreadsheet
 
             // and widgets (also not tested)
             foreach (
-                var w in page.SafeSelectNodes(
-                        ".//div[contains(@class, 'bloom-widgetContainer')]/iframe"
+                var w in SafeSelectNodesByClassName(
+                        page,
+                        ".//div",
+                        "bloom-widgetContainer",
+                        trailingXPath: "/iframe"
                     )
-                    .Cast<SafeXmlElement>()
                     .ToList()
             )
             {
@@ -1320,15 +1357,19 @@ namespace Bloom.Spreadsheet
             {
                 // No answer should be marked correct unless a row specifies it
                 foreach (
-                    SafeXmlElement tg in page.SafeSelectNodes(
-                        ".//div[contains(@class, 'correct-answer')]"
+                    SafeXmlElement tg in SafeSelectNodesByClassName(
+                        page,
+                        ".//div",
+                        "correct-answer"
                     )
                 )
                     tg.RemoveClass("correct-answer");
                 // All the answers are, for the moment, empty, so mark them accordingly.
                 foreach (
-                    SafeXmlElement tg in page.SafeSelectNodes(
-                        ".//div[contains(@class, 'QuizAnswer-style')]"
+                    SafeXmlElement tg in SafeSelectNodesByClassName(
+                        page,
+                        ".//div",
+                        "QuizAnswer-style"
                     )
                 )
                     (tg.ParentNode.ParentNode as SafeXmlElement).AddClass("empty");
@@ -1628,28 +1669,45 @@ namespace Bloom.Spreadsheet
         private int CurrentRowIndexForMessages =>
             _sheet.GetIndexOfRow(_inputRows[_currentRowIndex]) + 1;
 
+        private static IEnumerable<SafeXmlElement> SafeSelectNodesByClassName(
+            SafeXmlNode ancestor,
+            string elementXPath,
+            string className,
+            string additionalPredicate = null,
+            string trailingXPath = null
+        )
+        {
+            var optionalPredicate = string.IsNullOrEmpty(additionalPredicate)
+                ? ""
+                : " and " + additionalPredicate;
+            return ancestor
+                .SafeSelectNodes(
+                    $"{elementXPath}[contains(concat(' ', normalize-space(@class), ' '), ' {className} '){optionalPredicate}]{trailingXPath ?? ""}"
+                )
+                .Cast<SafeXmlElement>();
+        }
+
+        private static bool HasExactClassName(SafeXmlElement element, string className)
+        {
+            return element
+                .GetAttribute("class")
+                .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Contains(className);
+        }
+
         private List<SafeXmlElement> GetBloomCanvases(SafeXmlElement ancestor)
         {
-            return ancestor
-                .SafeSelectNodes(".//div[contains(@class, 'bloom-canvas')]")
-                .Cast<SafeXmlElement>()
-                .ToList();
+            return SafeSelectNodesByClassName(ancestor, ".//div", "bloom-canvas").ToList();
         }
 
         private List<SafeXmlElement> GetVideoContainers(SafeXmlElement ancestor)
         {
-            return ancestor
-                .SafeSelectNodes(".//div[contains(@class, 'bloom-videoContainer')]")
-                .Cast<SafeXmlElement>()
-                .ToList();
+            return SafeSelectNodesByClassName(ancestor, ".//div", "bloom-videoContainer").ToList();
         }
 
         private List<SafeXmlElement> GetWidgetContainers(SafeXmlElement ancestor)
         {
-            return ancestor
-                .SafeSelectNodes(".//div[contains(@class, 'bloom-widgetContainer')]")
-                .Cast<SafeXmlElement>()
-                .ToList();
+            return SafeSelectNodesByClassName(ancestor, ".//div", "bloom-widgetContainer").ToList();
         }
 
         private void CollectElementsFromCurrentPage()
@@ -1667,7 +1725,7 @@ namespace Bloom.Spreadsheet
             // They are handled by special extra rows inserted after the row that has the image.
             var allGroups = TranslationGroupManager.SortedGroupsOnPage(currentPage, true);
             blocksOnPageCollector[translationGroupIndex] = allGroups
-                .Where(x => !x.GetAttribute("class").Contains("bloom-imageDescription"))
+                .Where(x => !HasExactClassName(x, "bloom-imageDescription"))
                 .ToList();
             blocksOnPageCollector[videoContainerIndex] = GetVideoContainers(currentPage);
             blocksOnPageCollector[widgetContainerIndex] = GetWidgetContainers(currentPage);
@@ -1768,7 +1826,7 @@ namespace Bloom.Spreadsheet
         /// <param name="group"></param>
         private async Task PutRowInGroupAsync(ContentRow row, SafeXmlElement group)
         {
-            if (group.GetAttribute("class").Contains("QuizAnswer-style"))
+            if (HasExactClassName(group, "QuizAnswer-style"))
             {
                 (group.ParentNode as SafeXmlElement).RemoveClass("empty");
             }
@@ -2221,7 +2279,7 @@ namespace Bloom.Spreadsheet
                 {
                     duration = GetDuration(src);
                 }
-                catch (InvalidDataException ex)
+                catch (InvalidDataException)
                 {
                     _progress.MessageWithParams(
                         "InvalidMp3",

@@ -32,13 +32,13 @@ export FFMPEG_CONFIGFLAGS="--enable-gpl \
 --enable-decoder=libvorbis \
 --disable-encoders --enable-encoder=rawvideo,libx264,libvpx_vp8,aac,libmp3lame,h263 \
 --disable-parsers --enable-parser=h264,vp8,mpegaudio \
---disable-protocols --enable-protocol=file,concat \
+--disable-protocols --enable-protocol=file,concat,pipe \
 --disable-demuxers \
 --enable-demuxer=mp4,mov,matroska,webm,avi,mpegvideo,h264,rawvideo,mp3,aac,wav,ogg \
 --enable-demuxer=concat,image2,mjpeg,m4a,3gp,3g2,mj2 \
 --enable-demuxer=h261,h263,mjpeg_2000,flac,gif,gdigrab \
---disable-muxers --enable-muxer=rawvideo,mp4,mp3,tgp \
---disable-filters --enable-filter=scale,adelay,afade,amix,aresample,volume \
+--disable-muxers --enable-muxer=rawvideo,mp4,mp3,tgp,webm \
+--disable-filters --enable-filter=scale,adelay,afade,amix,aresample,volume,fps \
 --disable-indevs --enable-indev=gdigrab \
 --disable-programs --enable-ffmpeg \
 --disable-hwaccels --disable-bsfs --disable-outdevs --disable-autodetect --disable-doc \
