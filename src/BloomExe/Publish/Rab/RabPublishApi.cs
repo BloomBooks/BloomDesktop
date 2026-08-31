@@ -215,6 +215,14 @@ namespace Bloom.Publish.Rab
                 if (status != null)
                 {
                     properties["bookCount"] = (status.TrackedBooks?.Length ?? 0).ToString();
+                    // apkSizeMB is whatever APK is newest in the project folder, which on a FAILED
+                    // action is the one an earlier successful build left behind -- so a failed
+                    // event can report a size it did not produce. Left that way deliberately: the
+                    // event says the build failed, so the size is self-evidently meaningless, and
+                    // anyone asking what sizes people's apps come out at has to filter to
+                    // successful builds regardless. 6.5 behaves identically (see PR #8228), and
+                    // making 6.4 differ would cost us the comparability that is the whole point of
+                    // having the same event in both.
                     if (status.ApkSizeBytes > 0)
                         properties["apkSizeMB"] = Math.Round(
                                 status.ApkSizeBytes / 1024.0 / 1024.0,
