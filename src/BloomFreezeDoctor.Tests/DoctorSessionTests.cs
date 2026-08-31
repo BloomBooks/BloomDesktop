@@ -121,7 +121,6 @@ public class DoctorSessionTests
             StartedAtUtc = started ?? DateTimeOffset.UtcNow,
             ExePath = @"C:\Users\jt\AppData\Local\Bloom\current\Bloom.exe",
             Version = "6.5.0",
-            Channel = "Release",
             CommandLine = "\"Bloom.exe\"",
             LogPath = @"C:\Temp\SIL\Bloom\Log.txt",
             HttpPort = 8089,

@@ -47,23 +47,6 @@ public sealed record DoctorSession
     /// <summary>Bloom's version.</summary>
     public string Version { get; init; } = "";
 
-    /// <summary>
-    /// Release channel as BLOOM sees it, from its own <c>ApplicationUpdateSupport.ChannelName</c>:
-    /// Release, Beta, Developer/Debug, and so on.
-    ///
-    /// **Currently written and never read**, and that is a duplication worth being honest about rather
-    /// than leaving to be discovered. The Doctor works the channel out for itself from the executable's
-    /// path (<c>BloomChannel.DeriveFromExePath</c>) and uses that everywhere - the filing guard, the card,
-    /// the fingerprint - so there are two answers to one question and only one of them is consulted.
-    ///
-    /// Deriving it independently is defensible for the FILING guard specifically: "may this Bloom file a
-    /// card?" is a question the watcher should not answer from the watched process's own say-so. It is
-    /// less defensible for merely labelling a card. Left as it is for now because unifying the two means
-    /// editing Bloom's ChannelName, which has 21 callers feeding analytics, Sentry and the update channel,
-    /// and no tests at all.
-    /// </summary>
-    public string Channel { get; init; } = "";
-
     /// <summary>The command line, which reveals an automation or headless run.</summary>
     public string CommandLine { get; init; } = "";
 

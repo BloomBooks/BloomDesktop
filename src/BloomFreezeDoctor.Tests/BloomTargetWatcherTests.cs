@@ -130,7 +130,6 @@ public class BloomTargetWatcherTests
         {
             ProcessId = TestPid,
             StartedAtUtc = DateTimeOffset.UtcNow,
-            Channel = "Alpha",
             SimulatedFailure = "stawait",
         };
         Assert.That(
@@ -282,7 +281,6 @@ public class BloomTargetWatcherTests
         {
             ProcessId = TestPid,
             StartedAtUtc = DateTimeOffset.UtcNow,
-            Channel = "Alpha",
             SimulatedFailure = "crashthread",
         };
         Assert.That(
@@ -335,7 +333,6 @@ public class BloomTargetWatcherTests
         {
             ProcessId = TestPid,
             StartedAtUtc = DateTimeOffset.UtcNow,
-            Channel = "Alpha",
             SimulatedFailure = "crashthread",
         };
         Assert.That(Protocol.DoctorSessionStore.TryWrite(session), Is.True, "setup");

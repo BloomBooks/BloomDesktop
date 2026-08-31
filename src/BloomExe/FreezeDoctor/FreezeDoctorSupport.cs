@@ -510,7 +510,6 @@ namespace Bloom.FreezeDoctor
                     StartedAtUtc = process.StartTime.ToUniversalTime(),
                     ExePath = SafeExePath(process),
                     Version = Shell.GetShortVersionInfo(),
-                    Channel = ApplicationUpdateSupport.ChannelName,
                     CommandLine = Environment.CommandLine,
                     // The point of the whole file: Bloom recreates Log.txt each run and only falls back to
                     // a random name when another Bloom holds it, so from outside the newest log is the

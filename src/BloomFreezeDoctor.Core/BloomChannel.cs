@@ -21,8 +21,15 @@ public static class BloomChannel
     /// two forms agreeing.
     ///
     /// This is a NARROWER function than Bloom's, not a copy of it: Bloom's also has a Linux branch and a
-    /// unit-test channel, neither of which a Windows-only watcher wants. See the note on
-    /// <c>DoctorSession.Channel</c> about the duplication that remains.
+    /// unit-test channel, neither of which a Windows-only watcher wants.
+    ///
+    /// **Why the Doctor works this out for itself rather than asking Bloom.** Bloom used to publish its
+    /// own channel in the session file and nothing read it, so that field is gone. Deriving it here is not
+    /// a duplication left to be teased out later: it is the only answer available for a Bloom that wrote no
+    /// session file - one built before the Doctor existed, or one that died before it got the chance -
+    /// which are exactly the runs the Doctor exists for. Unifying it with Bloom's own ChannelName would
+    /// also mean editing a method with 21 callers feeding Sentry, analytics and the update channel, and no
+    /// tests at all.
     /// </summary>
     public static string DeriveFromExePath(string exePath)
     {
