@@ -285,3 +285,23 @@ the editor repo publish its host-harness selectors so this driver can import rat
 copy them.
 
 **Context:** BL-16603, verifying the credits fix end-to-end against a real Bloom.
+
+## 2026-08-28 — Moving a worktree between master and Version6.5 changes which settings file Bloom reads
+
+`BloomExe.csproj` sets `<Version>` per branch: 6.6.0.0 on master, 6.5.0.0 on Version6.5.
+`CrossPlatformSettingsProvider` puts the user settings under
+`%LOCALAPPDATA%\SIL\Bloom\<version>\user.config`, so re-basing a worktree from master onto
+Version6.5 silently swaps Bloom onto a different settings file.
+
+The symptom names nothing: Bloom opens some old collection you have not used for weeks, and
+here it was one that crashes on open. Opening a good collection in another dev Bloom does not
+help, because that copy is 6.6.0.0 and writes the other file. `MruProjects` is only the most
+visible setting; every other user setting jumps too.
+
+**Workaround:** edit `%LOCALAPPDATA%\SIL\Bloom\6.5.0.0\user.config` and put the collection you
+want first in `MruProjects`, or delete the entries so Bloom shows the collection chooser.
+
+**Idea:** `./go.sh` could say which settings folder this build uses, or a dev build could name
+the branch rather than the version in that path.
+
+**Context:** BL-16781, after re-basing the `dev-blorgswitch` worktree onto Version6.5.
