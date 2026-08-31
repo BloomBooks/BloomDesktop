@@ -501,10 +501,29 @@ public sealed class DoctorSupervisor : IDisposable
     /// </summary>
     private int _sweepInProgress;
 
+    /// <summary>
+    /// How many discovery sweeps have actually run. Reported in the log for one specific reason: it is the
+    /// only thing that separates the two remaining explanations for the adoption delay.
+    ///
+    /// Five runs have measured a Bloom sitting unadopted for 34, 52, 54, 83 and 110 seconds, and every
+    /// instrumented path was silent - nothing declined, nothing thrown. So either the sweep ran and
+    /// genuinely found no process named Bloom while one existed, or the sweep was not running at all. The
+    /// log could not tell those apart, because "found nothing" is said once and then suppressed as a repeat,
+    /// and they call for completely different fixes.
+    ///
+    /// A count settles it. If Bloom was up for fifty seconds and the sweep number advanced by ten, the
+    /// timer was fine and the search itself is wrong; if it advanced by one, the timer stalled.
+    /// </summary>
+    private int _sweepsRun;
+
+    /// <summary>How often to repeat "still nothing", in sweeps. Twelve is about a minute.</summary>
+    private const int HeartbeatEverySweeps = 12;
+
     internal void Discover()
     {
         if (Interlocked.Exchange(ref _sweepInProgress, 1) == 1)
             return;
+        var sweep = Interlocked.Increment(ref _sweepsRun);
         try
         {
             // Two quite different jobs, and only one of them needs to look at every process on the
@@ -562,8 +581,15 @@ public sealed class DoctorSupervisor : IDisposable
                 if (ids.Count == 0)
                 {
                     var searched = string.Join(", ", namesToSearch);
-                    if (_sweepNotes.ShouldSay(-1, searched, DateTimeOffset.UtcNow))
-                        Note($"no Bloom running: nothing named {searched}");
+                    // Said on the first sweep that finds nothing, and then once a minute rather than never.
+                    // Never is what it was: suppressed as a repeat, so a log going quiet meant either "still
+                    // nothing" or "no longer sweeping" and there was no way to tell which - which is exactly
+                    // the question the adoption delay turns on.
+                    if (
+                        _sweepNotes.ShouldSay(-1, searched, DateTimeOffset.UtcNow)
+                        || sweep % HeartbeatEverySweeps == 0
+                    )
+                        Note($"no Bloom running: nothing named {searched} (sweep {sweep})");
                 }
 
                 foreach (var id in ids.Distinct())
@@ -784,7 +810,9 @@ public sealed class DoctorSupervisor : IDisposable
             var waited = _declined.HowLongWeWereDeclining(facts.ProcessId, DateTimeOffset.UtcNow);
             var after =
                 waited == null ? "" : $", {waited.Value.TotalSeconds:F0}s after first seeing it";
-            Note($"watching Bloom {facts.ProcessId} ({facts.Channel}){after}");
+            Note(
+                $"watching Bloom {facts.ProcessId} ({facts.Channel}){after} on sweep {_sweepsRun}"
+            );
         }
 
         // Outside the lock: the handler marshals to the UI thread, and holding a lock across that is how
