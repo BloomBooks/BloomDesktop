@@ -146,7 +146,45 @@ public static class WebView2Processes
     /// Reads one process's command line. Used to spot headless runs (plan §3.3), which the process
     /// list alone cannot reveal.
     /// </summary>
-    public static string ReadCommandLine(int processId)
+    /// <summary>
+    /// What we have already asked WMI, keyed by process id AND start time.
+    ///
+    /// The key includes the start time because a process id is reused: keyed on the id alone, a Bloom that
+    /// inherited a dead process's id would be handed that process's command line, and the one thing this is
+    /// used for is deciding whether a run is headless - so the wrong answer means either watching a console
+    /// verb or, worse, silently refusing to watch a real Bloom.
+    ///
+    /// Unbounded, and that is fine here: entries are only added for processes matching a Bloom name, of
+    /// which one Doctor sees a handful in its life.
+    /// </summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<
+        string,
+        string
+    > _commandLines = new();
+
+    /// <summary>
+    /// A process's command line, asked of WMI once and then remembered.
+    ///
+    /// **The caching is not an optimisation, it is the fix for a measured fault.** This query costs
+    /// 1.9-2.7 seconds on an idle machine - measured, repeatedly - and the discovery sweep called it for
+    /// every candidate every five seconds. Under the load of Bloom starting up it is far worse, and the
+    /// sweep's timer fires regardless of whether the last one finished, so the calls pile up on top of each
+    /// other and make WMI slower still. That is why a Bloom sat unadopted for 34, 54, 83 and 110 seconds on
+    /// four separate runs, and the 110-second one cost a crash dump outright: Bloom only asks to be dumped
+    /// if a Doctor is already watching, and it asked before we had noticed it existed.
+    ///
+    /// A command line cannot change while a process lives, so asking once is not merely cheaper, it is the
+    /// correct number of times to ask.
+    /// </summary>
+    public static string ReadCommandLine(int processId, DateTime startedAt) =>
+        _commandLines.GetOrAdd(
+            $"{processId}@{startedAt.Ticks}",
+            _ => AskWmiForCommandLine(processId)
+        );
+
+    /// <summary>The uncached query. See <see cref="ReadCommandLine"/> for why nothing should call this twice
+    /// for one process.</summary>
+    private static string AskWmiForCommandLine(int processId)
     {
         try
         {

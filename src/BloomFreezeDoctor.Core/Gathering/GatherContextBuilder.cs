@@ -159,7 +159,7 @@ public static class GatherContextBuilder
             using var process = Process.GetProcessById(processId);
             return BloomTargetWatcher.DescribeProcess(
                 process,
-                WebView2Processes.ReadCommandLine(processId),
+                WebView2Processes.ReadCommandLine(processId, process.StartTime),
                 out whyNot
             );
         }

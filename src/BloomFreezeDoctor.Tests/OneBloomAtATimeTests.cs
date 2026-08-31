@@ -30,7 +30,11 @@ public class OneBloomAtATimeTests
     private Process StartAStandIn()
     {
         var child = Process.Start(
-            new ProcessStartInfo("ping.exe", "-n 60 127.0.0.1")
+            // Ten minutes, not one. A minute was not enough: the sweep asks WMI about each candidate, which
+            // costs seconds, and one run took 76 seconds to reach its assertion - by which time the
+            // stand-in had exited and the test failed for a reason it is not about. It is killed in
+            // teardown, so the long life costs nothing.
+            new ProcessStartInfo("ping.exe", "-n 600 127.0.0.1")
             {
                 UseShellExecute = false,
                 RedirectStandardOutput = true,

@@ -487,8 +487,24 @@ public sealed class DoctorSupervisor : IDisposable
     }
 
     /// <summary>Looks for Blooms we are not yet watching, and forgets ones that have gone.</summary>
+    /// <summary>
+    /// Guards against a second discovery sweep starting while one is still running.
+    ///
+    /// The timer fires every five seconds whether or not the previous callback has returned, and a sweep can
+    /// take much longer than that: it asks WMI about each candidate, which costs seconds (see
+    /// WebView2Processes.ReadCommandLine). Overlapping sweeps then compete for the same slow resource and
+    /// make each other slower - a pile-up that gets worse the longer it lasts, which is the shape of the
+    /// adoption delays measured at 34, 54, 83 and 110 seconds.
+    ///
+    /// Skipping a tick costs nothing: the work it would have done is exactly what the sweep already running
+    /// is doing.
+    /// </summary>
+    private int _sweepInProgress;
+
     internal void Discover()
     {
+        if (Interlocked.Exchange(ref _sweepInProgress, 1) == 1)
+            return;
         try
         {
             // Two quite different jobs, and only one of them needs to look at every process on the
@@ -675,6 +691,13 @@ public sealed class DoctorSupervisor : IDisposable
             // particular process being declined.
             if (_sweepNotes.ShouldSay(0, $"{e.GetType().Name}: {e.Message}", DateTimeOffset.UtcNow))
                 Note($"looking for Bloom failed, will try again: {e.GetType().Name}: {e.Message}");
+        }
+        finally
+        {
+            // In a finally, and it has to be: a sweep that threw and did not release this would stop the
+            // Doctor looking for Bloom for the rest of its life - a far worse fault than the overlapping
+            // sweeps the guard exists to prevent.
+            Interlocked.Exchange(ref _sweepInProgress, 0);
         }
     }
 
