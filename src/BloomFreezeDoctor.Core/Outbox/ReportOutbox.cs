@@ -917,18 +917,35 @@ public sealed class ReportOutbox
     /// <summary>
     /// Drops bundles that are too old or too many. Runs on every enqueue, so the queue cannot grow
     /// without bound on a machine that never gets online.
+    ///
+    /// **Never touches a bundle that is being sent.** Pruning went purely by age and count, so a bundle
+    /// marked <see cref="BundleState.Uploading"/> - one with a network call in flight, reading files out of
+    /// the very directory being deleted - could be pulled out from under the sender. Two ways in: a report
+    /// that has been retried for weeks and is uploading when it finally crosses the age cutoff, or a queue
+    /// over <see cref="MaxBundles"/> where the one in flight is not among the newest. Losing that race
+    /// costs the report AND leaves nothing for ReclaimAbandonedUploads to put back, because the bundle it
+    /// would have recovered no longer exists.
     /// </summary>
     private void Prune()
     {
-        var all = List();
         var cutoff = _now() - MaxAge;
 
-        foreach (var bundle in all.Where(b => b.Metadata.GatheredAtUtc < cutoff))
+        foreach (
+            var bundle in List()
+                .Where(b => b.Metadata.State != BundleState.Uploading)
+                .Where(b => b.Metadata.GatheredAtUtc < cutoff)
+        )
             TryDelete(bundle.Directory);
 
-        // Keep the newest MaxBundles of whatever survived the age check.
+        // Keep the newest MaxBundles of whatever survived the age check. An uploading bundle still counts
+        // towards the total - it is really there, taking up room - it simply is not a candidate for
+        // deletion, so the surplus comes off the deletable ones instead.
         var surviving = List();
-        foreach (var bundle in surviving.Skip(MaxBundles))
+        foreach (
+            var bundle in surviving
+                .Skip(MaxBundles)
+                .Where(b => b.Metadata.State != BundleState.Uploading)
+        )
             TryDelete(bundle.Directory);
     }
 

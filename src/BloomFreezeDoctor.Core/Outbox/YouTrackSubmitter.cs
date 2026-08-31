@@ -477,6 +477,20 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             )
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
+
+        // And check it actually took. A non-success status throws above, which is what makes the
+        // delete-on-failure policy work - but a 200 that quietly did not apply the visibility would slip
+        // through, and the consequence is the one thing this method exists to prevent: a dump containing
+        // book text, file paths and the user's own details, readable by everyone who can see the card.
+        //
+        // The request already asks for `visibility($type)` back, so the check costs one parse. Throwing
+        // here lands in the same catch as a failed upload, which deletes the attachment.
+        var json = await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false);
+        var applied = JsonNode.Parse(json)?["visibility"]?["$type"]?.GetValue<string>();
+        if (applied != "LimitedVisibility")
+            throw new InvalidOperationException(
+                $"the tracker accepted the restriction but reports visibility as '{applied ?? "none"}'"
+            );
     }
 
     private async Task TryDeleteAttachmentAsync(string issueId, string attachmentId)
