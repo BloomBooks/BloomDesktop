@@ -2,20 +2,6 @@
 
 Small dev/agent/tooling friction points for this repo. See the `papercut` skill for format.
 
-## 2026-08-31 — AGENTS.md's vitest-wedge workaround (`--no-file-parallelism`) doesn't always work
-
-- **Cut:** AGENTS.md says that when `yarn test` wedges, re-running with `--no-file-parallelism`
-  completes the suite green. On this machine `yarn vitest run --no-file-parallelism` wedged
-  anyway — it stopped dead after 11 test files with no error and no further output, and was
-  still stuck 19 minutes later. Cost ~25 minutes of a preflight run before it was killed.
-- **Idea:** `yarn vitest run --no-file-parallelism --pool=threads` ran the whole suite to
-  completion (49 files, 532 tests, ~3.5 min). The default pool is `forks`; the wedge looks like
-  a fork-pool problem, so `--pool=threads` may be the better documented workaround — or the
-  config could just set `pool: "threads"`. Worth confirming on another machine before changing
-  the AGENTS.md advice.
-- **Context:** BL-16786 preflight, branch `BL-16786-expiry-day`, PR #8267.
-
-
 ## 2026-08-10 — check-csharp-ApplicationExit.sh greps whole files, not the diff
 
 - **Cut:** The pre-commit check greps each *staged file* for `Application.Exit`, so touching a
