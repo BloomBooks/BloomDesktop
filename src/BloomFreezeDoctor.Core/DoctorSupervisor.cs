@@ -172,6 +172,14 @@ public sealed class DoctorSupervisor : IDisposable
     /// </summary>
     private readonly DeclineNotes _declined = new();
 
+    /// <summary>
+    /// The same, for things the sweep says about ITSELF rather than about a particular process - finding no
+    /// candidates at all, or failing outright. A separate instance because each one remembers a single
+    /// subject: sharing one would have the two kinds of note evicting each other, so a run that alternated
+    /// between them would report both every five seconds.
+    /// </summary>
+    private readonly DeclineNotes _sweepNotes = new();
+
     /// <summary>True once we have started its crash dump, so one crash produces one dump.</summary>
     private bool _dumpRequested;
 
@@ -519,6 +527,19 @@ public sealed class DoctorSupervisor : IDisposable
                     }
                 }
 
+                // Three runs have had a Bloom sit unadopted for 34, 83 and 110 seconds with nothing in the
+                // log, and by now the other explanations are instrumented and were silent: no process was
+                // declined, and the sweep did not throw. That leaves this - the sweep looking and genuinely
+                // finding nothing - which was the one outcome with no voice at all. Saying which NAMES were
+                // searched matters as much as the count, because "found nothing while looking for the wrong
+                // name" and "found nothing while looking for the right one" call for different fixes.
+                if (ids.Count == 0)
+                {
+                    var searched = string.Join(", ", namesToSearch);
+                    if (_sweepNotes.ShouldSay(-1, searched, DateTimeOffset.UtcNow))
+                        Note($"no Bloom running: nothing named {searched}");
+                }
+
                 foreach (var id in ids.Distinct())
                 {
                     var facts = GatherContextBuilder.DescribeRunningProcess(id, out var whyNot);
@@ -642,7 +663,7 @@ public sealed class DoctorSupervisor : IDisposable
             // Suppressed by repetition, like the other decline notes, because a fault here repeats every
             // five seconds for as long as it lasts. Keyed on 0: this is the sweep itself failing, not a
             // particular process being declined.
-            if (_declined.ShouldSay(0, $"{e.GetType().Name}: {e.Message}", DateTimeOffset.UtcNow))
+            if (_sweepNotes.ShouldSay(0, $"{e.GetType().Name}: {e.Message}", DateTimeOffset.UtcNow))
                 Note($"looking for Bloom failed, will try again: {e.GetType().Name}: {e.Message}");
         }
     }

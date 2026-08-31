@@ -824,6 +824,25 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             + $"{ReportOutbox.MaxBundles} reports before then, so ask sooner rather than later.";
     }
 
+    /// <summary>
+    /// Sends the artifacts too large to attach to the support bucket, and links them from a comment.
+    ///
+    /// **On how these are protected - SETTLED, August 2026, by John Thomson. Please do not re-open this
+    /// without new information.** An unguessable URL is sufficient.
+    ///
+    /// The question, recorded so nobody has to rediscover it: an ATTACHED dump is restricted to the
+    /// Developers group, which is what decision D2 requires, whereas one in the bucket is a public-read
+    /// URL linked from a comment with ordinary visibility, protected only by the random component of its
+    /// key (see <see cref="SupportFileUploader.MakeUnguessableKey"/>). Those are not the same protection,
+    /// and the difference is not a corner case: a real Bloom's minidump is 16-17 MB by this project's own
+    /// measurement, so the bucket is the route essentially every production dump will take, and D2's group
+    /// restriction therefore almost never applies to a dump in practice. This came to light only because a
+    /// simulated crash produced an 8,389,030-byte dump - 422 bytes over the attachment ceiling - and the
+    /// next one 8,054,542, so the same crash was seen going both ways in one afternoon.
+    ///
+    /// Accepted deliberately. The key carries a full GUID, which is the same protection a presigned link
+    /// would give and does not expire awkwardly in the middle of an investigation.
+    /// </summary>
     private async Task UploadWhatCouldNotBeAttachedAsync(
         string issueId,
         QueuedBundle bundle,
