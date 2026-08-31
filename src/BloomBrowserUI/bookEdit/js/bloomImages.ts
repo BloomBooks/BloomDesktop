@@ -52,9 +52,20 @@ function isCustomLayoutOutsideFrontCoverPage(
     );
 }
 
-function getNonUiImages(page: HTMLElement): HTMLImageElement[] {
+// The images that belong to the book itself. A cover also carries images that belong to the
+// branding or the licence, and on a custom layout those sit in canvas elements inside the same
+// bloom-canvas as the real picture -- so being in the bloom-canvas tells them apart from nothing.
+// Only the book's own pictures are in an image container. We refuse branding, licence and QR
+// images by class as well, because a branding pack supplies its own markup and we do not control
+// whether it wraps its logo in a container. See BL-16776.
+function getContentImages(page: HTMLElement): HTMLImageElement[] {
     return Array.from(page.querySelectorAll("img")).filter(
-        (img) => !img.closest(".bloom-ui"),
+        (img) =>
+            !img.closest(".bloom-ui") &&
+            !!img.closest(kImageContainerSelector) &&
+            !img.classList.contains("branding") &&
+            !img.classList.contains("licenseImage") &&
+            !img.classList.contains("bloom-qrcode"),
     );
 }
 
@@ -76,20 +87,35 @@ export function normalizeCoverImageDesignation(page: HTMLElement): void {
         return;
     }
 
-    const nonUiImages = getNonUiImages(page);
+    const contentImages = getContentImages(page);
     const markedImages = Array.from(
         page.querySelectorAll('[data-book="coverImage"]'),
     ) as HTMLElement[];
-
-    const backgroundImage = getFirstNonPlaceholderImage(
-        nonUiImages.filter((img) => img.closest(`.${kBackgroundImageClass}`)),
+    // A mark on something that is not one of the book's own images is wrong however it got there,
+    // so it does not get a vote here, and the loop below strips it. That is what heals a book
+    // already saved with its branding logo marked as the cover image.
+    const markedContentImages = markedImages.filter((element) =>
+        contentImages.includes(element as HTMLImageElement),
     );
-    const markedRealImage = getFirstNonPlaceholderImage(markedImages);
-    const firstRealImage = getFirstNonPlaceholderImage(nonUiImages);
+    const backgroundImages = contentImages.filter((img) =>
+        img.closest(`.${kBackgroundImageClass}`),
+    );
 
-    // The one we want to be marked as the cover image
+    const backgroundImage = getFirstNonPlaceholderImage(backgroundImages);
+    const markedRealImage = getFirstNonPlaceholderImage(markedContentImages);
+    const firstRealImage = getFirstNonPlaceholderImage(contentImages);
+
+    // The one we want to be marked as the cover image. The last resort is the background image
+    // even when it is still a placeholder: on a custom cover that is the cover image's slot, so
+    // handing the mark back to it restores what a book looked like before it was mis-marked. We
+    // still never mark a placeholder that is not the background image, which would be inventing
+    // a cover image the book does not have.
     const chosenElement =
-        backgroundImage ?? markedRealImage ?? firstRealImage ?? markedImages[0];
+        backgroundImage ??
+        markedRealImage ??
+        firstRealImage ??
+        markedContentImages[0] ??
+        backgroundImages[0];
 
     for (const markedElement of markedImages) {
         if (markedElement !== chosenElement) {
