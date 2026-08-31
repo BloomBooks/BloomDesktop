@@ -200,7 +200,23 @@ namespace Bloom.TeamCollection
             // Linux and Windows. But that's OK, because .NET line reading accepts either line
             // break on either platform.
             var toPersist = message.ToPersistedForm + Environment.NewLine;
-            RobustFile.AppendAllText(_logFilePath, toPersist);
+            try
+            {
+                RobustFile.AppendAllText(_logFilePath, toPersist);
+            }
+            catch (Exception ex)
+            {
+                // The message is already in Messages (so the current session still shows it) and in
+                // the Logger above; it just won't survive a restart. Not being able to write it must
+                // not take Bloom down: this very method is called while reporting a TC initialization
+                // failure, and when the underlying problem is an unwritable collection folder
+                // (e.g. read-only files, BL-16772), throwing here turned a degraded-but-working
+                // Team Collection into a collection that could not open at all.
+                SIL.Reporting.Logger.WriteError(
+                    $"Could not persist Team Collection message to {_logFilePath}",
+                    ex
+                );
+            }
         }
 
         private bool MatchParams(string p1, string p2)
