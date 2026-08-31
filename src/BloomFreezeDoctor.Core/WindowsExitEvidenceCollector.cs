@@ -50,6 +50,7 @@ public sealed class WindowsExitEvidenceCollector
         string? exeFileName = null
     )
     {
+        var crashEntry = LookForCrashEntry(processId, diedAt, exeFileName);
         return new ExitEvidence
         {
             ExitCode = exitCode,
@@ -57,11 +58,32 @@ public sealed class WindowsExitEvidenceCollector
             CleanExitProofPresent = cleanExitProofPresent,
             ShutdownPhaseReached = shutdownPhaseReached,
             ExitRecordedAsForced = exitRecordedAsForced,
-            HasEventLogCrashEntry = LookForCrashEntry(processId, diedAt, exeFileName),
+            // One pass, two answers: whether Windows logged a crash for this Bloom, and - when the
+            // entry is a managed one - which crash it was. See ExitEvidence.CrashSignature.
+            HasEventLogCrashEntry = crashEntry != null,
+            CrashSignature = CrashSignature.FromEventLogMessage(crashEntry),
             HasWerReport = LookForWerReport(diedAt),
             LogShowsForcedShutdown = LogEndsWithForcedShutdown(logPath),
         };
     }
+
+    /// <summary>
+    /// Which crash Windows recorded for this Bloom, for a caller that is not classifying an exit and only
+    /// wants the identity - the crash-dump path, which reports a death it was told about rather than one it
+    /// examined afterwards.
+    ///
+    /// It is worth that path asking, because without it the dump-bearing report - the one that exists
+    /// precisely for crashes Bloom notices - keeps the old fingerprint, and every such crash on a build
+    /// still lands on one card. The runtime writes the event as it terminates the process, and this is
+    /// called at the END of gathering, several seconds later, so the entry is normally there; a measured
+    /// run had ten seconds between the two. When it is not, this returns null and the fingerprint falls
+    /// back to what it always used, which is the pre-existing behaviour and not a regression.
+    /// </summary>
+    public static string? CrashSignatureFor(
+        int processId,
+        DateTime around,
+        string? exeFileName = null
+    ) => CrashSignature.FromEventLogMessage(LookForCrashEntry(processId, around, exeFileName));
 
     /// <summary>
     /// Looks for a Windows "Application Error" (1000), "Application Hang" (1002) or .NET Runtime entry
@@ -72,7 +94,7 @@ public sealed class WindowsExitEvidenceCollector
     /// <c>Bloom.exe</c> but an alpha has <c>BloomAlpha.exe</c>. Matching the literal "Bloom.exe" found
     /// neither of the renamed ones.
     /// </summary>
-    private static bool LookForCrashEntry(int processId, DateTime diedAt, string? exeFileName)
+    private static string? LookForCrashEntry(int processId, DateTime diedAt, string? exeFileName)
     {
         try
         {
@@ -104,7 +126,7 @@ public sealed class WindowsExitEvidenceCollector
                     continue;
 
                 if (EntryNamesThisBloom(entry.Message ?? "", processId, exeFileName))
-                    return true;
+                    return entry.Message ?? "";
             }
         }
         catch (Exception)
@@ -112,7 +134,7 @@ public sealed class WindowsExitEvidenceCollector
             // Unreadable Event Log: indistinguishable from no entry, which Phase 1 already treats as
             // "say nothing".
         }
-        return false;
+        return null;
     }
 
     /// <summary>

@@ -136,6 +136,28 @@ public sealed class DoctorSupervisor : IDisposable
     // were sets keyed by process id, which is what a stale entry needs in order to attach itself to the
     // wrong Bloom later; with a single target there is nothing to key and nothing to go stale.
 
+    /// <summary>
+    /// Asked at the end of every gather what identifies this problem, and answers only for a crash whose
+    /// verdict did not already know.
+    ///
+    /// The crash-dump path is why this is resolved late rather than up front: it begins gathering while
+    /// Bloom is still alive and blocked waiting for its dump, so the event naming the exception does not
+    /// exist yet. It does by the time the collectors have finished.
+    ///
+    /// Returns null for a freeze without touching the event log - there is nothing there to find, and a
+    /// scan of the Application log is not free.
+    /// </summary>
+    private static string? LateCrashIdentity(GatherContext context)
+    {
+        if (context.Verdict.State != TargetState.Exited)
+            return null;
+        return WindowsExitEvidenceCollector.CrashSignatureFor(
+            context.Target.ProcessId,
+            DateTime.Now,
+            SafeFileName(context.Target.ExePath)
+        );
+    }
+
     /// <summary>True once we have started its crash dump, so one crash produces one dump.</summary>
     private bool _dumpRequested;
 
@@ -737,7 +759,7 @@ public sealed class DoctorSupervisor : IDisposable
             targetNoLongerNeeded: targetNoLongerNeeded
         );
 
-        var report = await new EvidenceGatherer()
+        var report = await new EvidenceGatherer(identifyLate: LateCrashIdentity)
             .GatherAsync(context, mayFile, cancellation)
             .ConfigureAwait(false);
 
@@ -945,6 +967,10 @@ public sealed class DoctorSupervisor : IDisposable
                                 State = TargetState.Exited,
                                 Report = ReportReason.ExitedWithoutProof,
                                 Explanation = conclusion.Explanation,
+                                // What makes THIS crash this crash, rather than every crash on this build.
+                                // Null when Windows left no managed crash entry to read, in which case the
+                                // fingerprint falls back to what it always used.
+                                IdentifyingDetail = evidence.CrashSignature,
                             },
                             mayFile: MayFile(watcher),
                             _stopping.Token,
@@ -1036,6 +1062,10 @@ public sealed class DoctorSupervisor : IDisposable
                                 Report = ReportReason.ExitedWithoutProof,
                                 Explanation =
                                     "Bloom was crashing and asked to be dumped before it died",
+                                // No IdentifyingDetail here, deliberately: Bloom is still ALIVE at this
+                                // point - it is blocked waiting for its dump - so the crash event does not
+                                // exist yet. It is resolved at the end of gathering instead; see
+                                // LateCrashIdentity.
                             },
                             mayFile: MayFile(watcher),
                             _stopping.Token,

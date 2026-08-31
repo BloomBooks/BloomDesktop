@@ -39,9 +39,15 @@ public static class WhoReportsTheDeath
     /// <summary>
     /// Which path should report this death.
     ///
-    /// Order matters, and it is the order of how much better the alternative is than a bare examination:
-    /// our own doing needs no report at all; a dump-bearing report beats a dumpless one; and failing both,
-    /// the first pass to claim it keeps it.
+    /// "Already claimed" is tested FIRST, and that ordering is load-bearing: an earlier pass has not just
+    /// decided, it has ACTED - logged its reason and released the process handle - so a later pass must do
+    /// nothing at all, whatever the reason would have been. Testing the reasons first instead let a second
+    /// pass re-take the same branch, which on a real run logged "its crash dump is already being reported"
+    /// twice a second apart and disposed an already-disposed handle. Harmless that time; not a property to
+    /// rely on.
+    ///
+    /// After that it is the order of how much better the alternative is than a bare examination: our own
+    /// doing needs no report at all, and a dump-bearing report beats a dumpless one.
     /// </summary>
     /// <param name="weEndedIt">We asked this Bloom to stop, or killed it.</param>
     /// <param name="aDumpIsBeingReported">
@@ -54,12 +60,12 @@ public static class WhoReportsTheDeath
         bool alreadyClaimed
     )
     {
+        if (alreadyClaimed)
+            return ExitExamination.AlreadyClaimed;
         if (weEndedIt)
             return ExitExamination.WeCausedIt;
         if (aDumpIsBeingReported)
             return ExitExamination.TheDumpHasIt;
-        if (alreadyClaimed)
-            return ExitExamination.AlreadyClaimed;
         return ExitExamination.Examine;
     }
 }

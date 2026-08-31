@@ -47,6 +47,18 @@ public sealed class EvidenceGatherer
     private readonly IReadOnlyList<IEvidenceCollector> _collectors;
 
     /// <summary>
+    /// Asked, at the end of gathering, what identifies this problem - when the verdict did not already
+    /// know. Null when nothing can be resolved late.
+    ///
+    /// This exists for one case with awkward timing. A crash's identity is its exception and faulting
+    /// frames, which Windows records in an event as it terminates the process - but the crash-dump path
+    /// starts gathering while Bloom is still alive, blocked waiting for its dump, so at that moment there
+    /// is nothing to read. By the time the collectors have finished, the process has gone and the entry is
+    /// there. So the question is asked here rather than up front.
+    /// </summary>
+    private readonly Func<GatherContext, string?>? _identifyLate;
+
+    /// <summary>
     /// Total time allowed for a whole gather. Individual collectors have their own smaller budgets;
     /// this is the backstop for the case where several are slow at once.
     /// </summary>
@@ -58,7 +70,7 @@ public sealed class EvidenceGatherer
     /// usually contain the answer, and the machine-and-network section last, because it usually only
     /// rules things out.
     /// </summary>
-    public EvidenceGatherer()
+    public EvidenceGatherer(Func<GatherContext, string?>? identifyLate = null)
         : this(
             new IEvidenceCollector[]
             {
@@ -68,13 +80,18 @@ public sealed class EvidenceGatherer
                 new WebViewCollector(),
                 new BloomLogCollector(),
                 new SystemEvidenceCollector(),
-            }
+            },
+            identifyLate
         ) { }
 
     /// <summary>Creates a gatherer with a specific set of collectors, for tests.</summary>
-    public EvidenceGatherer(IReadOnlyList<IEvidenceCollector> collectors)
+    public EvidenceGatherer(
+        IReadOnlyList<IEvidenceCollector> collectors,
+        Func<GatherContext, string?>? identifyLate = null
+    )
     {
         _collectors = collectors;
+        _identifyLate = identifyLate;
     }
 
     /// <summary>
@@ -109,7 +126,11 @@ public sealed class EvidenceGatherer
         {
             Summary = BuildSummary(context, headlines),
             Body = BuildBody(context, sections, headlines),
-            Fingerprint = ReportFingerprint.For(context, sections),
+            Fingerprint = ReportFingerprint.For(
+                context,
+                sections,
+                context.Verdict.IdentifyingDetail ?? _identifyLate?.Invoke(context)
+            ),
             Artifacts = sections.SelectMany(s => s.Artifacts).ToList(),
             Duration = overall.Elapsed,
             MayFile = mayFile,

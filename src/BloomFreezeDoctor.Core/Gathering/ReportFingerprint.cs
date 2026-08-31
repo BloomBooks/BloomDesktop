@@ -22,12 +22,32 @@ public static class ReportFingerprint
     /// Builds the fingerprint for a report. Also embedded in the card's text, so a tracker search can
     /// find the earlier card for the same problem.
     /// </summary>
-    public static string For(GatherContext context, IEnumerable<ReportSection> sections)
+    /// <param name="identifyingDetail">
+    /// What makes this problem this problem, when the reason alone is not enough - see
+    /// DetectorVerdict.IdentifyingDetail. Passed in rather than read off the verdict because for a crash it
+    /// can only be resolved once the process has gone, which is after gathering begins.
+    /// </param>
+    public static string For(
+        GatherContext context,
+        IEnumerable<ReportSection> sections,
+        string? identifyingDetail = null
+    )
     {
         var ingredients = new StringBuilder();
         ingredients.Append(context.Verdict.Report).Append('|');
         ingredients.Append(VersionOf(context.Target.ExePath)).Append('|');
         ingredients.Append(context.Target.Channel).Append('|');
+
+        // A crash brings its own identity and the UI thread's stack is not it: the fault was on another
+        // thread, so those frames are the message pump and are the same for every crash on this build.
+        // Hashing them made every unexplained crash on a build one card - measured, three unrelated
+        // simulated crashes all fingerprinted 1ec8760ad8a5. See DetectorVerdict.IdentifyingDetail.
+        var identity = identifyingDetail ?? context.Verdict.IdentifyingDetail;
+        if (!string.IsNullOrEmpty(identity))
+        {
+            ingredients.Append(identity);
+            return Hash(ingredients.ToString());
+        }
 
         var stacks = sections.FirstOrDefault(s => s.Title == "Managed stacks");
         foreach (var frame in TopFramesOfUiThread(stacks?.Body ?? ""))

@@ -194,6 +194,20 @@ public readonly record struct DetectorVerdict
     /// <summary>Human-readable justification, for the card and for the Doctor's own log.</summary>
     public required string Explanation { get; init; }
 
+    /// <summary>
+    /// Extra text identifying WHICH instance of this reason it is, folded into the report fingerprint so
+    /// that two different problems sharing a reason get two cards.
+    ///
+    /// Only crashes set it, and this is why it exists: the fingerprint's distinguishing ingredient is the
+    /// top of the UI thread's stack, which for a crash is the message pump - identical every time - so
+    /// unrelated crashes on one build collapsed onto one card. A crash's identity is the faulting thread's
+    /// exception and frames instead. Freezes leave this null and are fingerprinted exactly as before.
+    ///
+    /// Deliberately NOT the <see cref="Explanation"/>, which is prose and carries variable text; a
+    /// fingerprint ingredient has to be stable across machines and rebuilds.
+    /// </summary>
+    public string? IdentifyingDetail { get; init; }
+
     /// <summary>True when a report is being asked for.</summary>
     public bool ShouldReport => Report != ReportReason.None;
 }

@@ -55,6 +55,17 @@ public sealed record ExitEvidence
     /// </summary>
     public bool LogShowsForcedShutdown { get; init; }
 
+    /// <summary>
+    /// Which crash this was - the exception type and top frames of the FAULTING thread, from the .NET
+    /// Runtime event, or null when there was no managed crash entry to read one from.
+    ///
+    /// Not used to decide anything: <see cref="HasEventLogCrashEntry"/> is the evidence, and this is
+    /// identity. It exists because the report fingerprint hashes the UI thread's stack, which is the right
+    /// answer for a freeze and nearly useless for a crash - the fault is on another thread, so every crash
+    /// on a given build looked like the same problem. See <see cref="CrashSignature"/>.
+    /// </summary>
+    public string? CrashSignature { get; init; }
+
     /// <summary>A developer build or headless run, which is never filed whatever else is true.</summary>
     public bool NeverFile { get; init; }
 }

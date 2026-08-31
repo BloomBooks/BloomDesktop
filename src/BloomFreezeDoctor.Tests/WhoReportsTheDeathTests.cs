@@ -104,6 +104,28 @@ public class WhoReportsTheDeathTests
     }
 
     [Test]
+    public void A_claimed_death_stays_claimed_whatever_the_reason_would_have_been()
+    {
+        // Found in a real run's log: "its crash dump is already being reported" appeared twice, a second
+        // apart. Two passes reached the decision for one death, and because the reasons were tested before
+        // the claim, the second re-took the dump branch instead of standing down - logging again and
+        // disposing a process handle that the first pass had already released.
+        //
+        // A stand-down is not just a decision, it is an action: it logs, it claims, and it releases the
+        // handle. So once claimed, every reason must give the same answer.
+        foreach (var weEndedIt in new[] { false, true })
+        foreach (var aDumpIsBeingReported in new[] { false, true })
+        {
+            Assert.That(
+                WhoReportsTheDeath.Decide(weEndedIt, aDumpIsBeingReported, alreadyClaimed: true),
+                Is.EqualTo(ExitExamination.AlreadyClaimed),
+                $"weEndedIt={weEndedIt}, aDumpIsBeingReported={aDumpIsBeingReported} must not "
+                    + "re-take its own branch once the death is claimed"
+            );
+        }
+    }
+
+    [Test]
     public void Our_own_doing_outranks_the_dump()
     {
         // Both true happens when we killed a Bloom that was in the middle of crashing. Nothing should be
