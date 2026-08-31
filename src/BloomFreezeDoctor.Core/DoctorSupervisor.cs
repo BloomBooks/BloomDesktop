@@ -93,7 +93,25 @@ public sealed class DoctorSupervisor : IDisposable
         }
     }
     private readonly bool _forceFiling;
-    private readonly Dictionary<int, BloomTargetWatcher> _watchers = new();
+
+    /// <summary>
+    /// The one Bloom this Doctor watches, or null when it is watching none.
+    ///
+    /// **One, deliberately.** End users run a single Bloom - the channels share a single-instance mutex, so
+    /// running two at once takes either the Ctrl-key trick or `--automation`. Watching several was
+    /// therefore paying a real price for a case almost nobody is in: five dictionaries and sets keyed by
+    /// process id, each one a place where a stale entry silences a report or duplicates one, and both bugs
+    /// found in this area came from exactly that. A second Bloom is now simply not adopted; the Doctor says
+    /// so in its log rather than pretending it never saw it.
+    ///
+    /// What this costs, honestly: if a second Bloom is running and holds the single-instance token, the
+    /// Doctor cannot see it, so "Restart Bloom" may end the Bloom it watches and still fail to start a new
+    /// one. Previously it could see and offer to end them all.
+    /// </summary>
+    private BloomTargetWatcher? _watcher;
+
+    /// <summary>Whether we have already said in the log that a second Bloom is going unwatched.</summary>
+    private bool _notedASecondBloom;
 
     /// <summary>
     /// Each watched Bloom's probe, kept beside its watcher for two reasons: so the discovery sweep can
@@ -104,7 +122,7 @@ public sealed class DoctorSupervisor : IDisposable
     /// and takes over releasing the handle, because the handle is what supplies a dead process's exit code
     /// and must outlive the death by as long as the examination takes.
     /// </summary>
-    private readonly Dictionary<int, WindowsTargetProbe> _probes = new();
+    private WindowsTargetProbe? _probe;
     private readonly object _lock = new();
     private readonly CancellationTokenSource _stopping = new();
 
@@ -114,14 +132,18 @@ public sealed class DoctorSupervisor : IDisposable
     private System.Threading.Timer? _discovery;
     private System.Threading.Timer? _drain;
 
-    /// <summary>Processes whose crash dump we have already started, so one crash produces one dump.</summary>
-    private readonly HashSet<int> _dumpsRequested = new();
+    // The four flags below describe the ONE watched Bloom, and are reset when a new one is adopted. They
+    // were sets keyed by process id, which is what a stale entry needs in order to attach itself to the
+    // wrong Bloom later; with a single target there is nothing to key and nothing to go stale.
 
-    /// <summary>Zombies whose evidence has been gathered, and which may therefore be ended.</summary>
-    private readonly HashSet<int> _zombiesReported = new();
+    /// <summary>True once we have started its crash dump, so one crash produces one dump.</summary>
+    private bool _dumpRequested;
 
-    /// <summary>Zombies we have already tried to end, so we do not keep hammering at one.</summary>
-    private readonly HashSet<int> _zombiesEnded = new();
+    /// <summary>True once its zombie evidence is gathered, which is what unlocks ending it.</summary>
+    private bool _zombieReported;
+
+    /// <summary>True once we have tried to end it, so we do not keep hammering at it.</summary>
+    private bool _zombieEnded;
 
     /// <summary>
     /// Blooms we asked to stop - whether by our own zombie policy or because somebody pressed "Restart
@@ -132,10 +154,17 @@ public sealed class DoctorSupervisor : IDisposable
     /// reports "UI froze, then the process died" as a fresh problem - two cards for one incident, the
     /// second of them describing our own action as a bug.
     /// </summary>
-    private readonly HashSet<int> _weAskedItToStop = new();
+    private bool _weAskedItToStop;
 
-    /// <summary>Exits we have already examined, so one death produces one examination.</summary>
-    private readonly HashSet<int> _exitsExamined = new();
+    /// <summary>
+    /// True once its death has been claimed, so one death produces one examination.
+    ///
+    /// Claimed under the same lock that reads <see cref="_weAskedItToStop"/>, and that pairing is the fix
+    /// for a real race: the watcher keeps ticking until it is disposed, so a tick arriving between "the
+    /// sweep noticed the process had gone" and "the sweep examined it" used to find the asked-to-stop flag
+    /// already cleared and file a card about a death we had caused ourselves.
+    /// </summary>
+    private bool _exitExamined;
 
     /// <summary>
     /// How many gathers or examinations are in flight. The Doctor must not decide it has nothing left to do
@@ -249,10 +278,10 @@ public sealed class DoctorSupervisor : IDisposable
         DateTime startedAt;
         lock (_lock)
         {
-            if (!_watchers.TryGetValue(processId, out var watcher))
+            if (_watcher == null || _watcher.Target.ProcessId != processId)
                 return ZombieEndOutcome.AlreadyGone;
-            startedAt = watcher.Target.StartTime;
-            _weAskedItToStop.Add(processId);
+            startedAt = _watcher.Target.StartTime;
+            _weAskedItToStop = true;
         }
         return ZombieEnder.End(processId, startedAt);
     }
@@ -267,18 +296,18 @@ public sealed class DoctorSupervisor : IDisposable
     /// </summary>
     public IReadOnlyList<LiveBloom> LiveWatchedBlooms()
     {
+        // Still a list, though it can now hold only one: the callers want "is anything in my way", which
+        // reads the same whether the answer can be several or only ever one, and RestartBlockers already
+        // takes a sequence.
+        //
         // Two steps, and the split is deliberate: whether a Bloom holds the single-instance token comes
         // from its session file, and reading files under the supervisor lock is how the watchdog ends up
         // waiting on a disk. Snapshot under the lock, read outside it.
-        List<(int ProcessId, TargetState State)> snapshot;
+        List<(int ProcessId, TargetState State)> snapshot = new();
         lock (_lock)
         {
-            snapshot = _watchers
-                .Values.Where(watcher =>
-                    IsAlive(watcher.Target.ProcessId, watcher.Target.StartTime)
-                )
-                .Select(watcher => (watcher.Target.ProcessId, watcher.State))
-                .ToList();
+            if (_watcher != null && IsAlive(_watcher.Target.ProcessId, _watcher.Target.StartTime))
+                snapshot.Add((_watcher.Target.ProcessId, _watcher.State));
         }
 
         return snapshot
@@ -371,8 +400,8 @@ public sealed class DoctorSupervisor : IDisposable
     {
         lock (_lock)
         {
-            return _watchers.TryGetValue(processId, out var watcher)
-                ? watcher.ReasonsFilingWouldNormallyBeBlocked()
+            return _watcher != null && _watcher.Target.ProcessId == processId
+                ? _watcher.ReasonsFilingWouldNormallyBeBlocked()
                 : Array.Empty<string>();
         }
     }
@@ -408,72 +437,88 @@ public sealed class DoctorSupervisor : IDisposable
     {
         try
         {
-            // Take the ids and let the Process objects go at once. Each one holds an OS handle, and this
-            // runs every five seconds for as long as the Doctor lives - which can be hours - so keeping
-            // them until finalization accumulates handles in the one process that must stay healthy
-            // enough to diagnose everything else.
-            string[] namesToSearch;
-            lock (_lock)
-                namesToSearch = _targetProcessNames.ToArray();
-
-            var ids = new List<int>();
-            foreach (var name in namesToSearch)
-            {
-                var running = Process.GetProcessesByName(name);
-                try
-                {
-                    ids.AddRange(running.Select(p => p.Id));
-                }
-                finally
-                {
-                    foreach (var process in running)
-                        process.Dispose();
-                }
-            }
-            var runningIds = ids.Distinct().ToArray();
-
-            foreach (var id in runningIds)
-            {
-                var facts = GatherContextBuilder.DescribeRunningProcess(id);
-                if (facts != null)
-                    AdoptFacts(facts);
-            }
-
-            var departed =
-                new List<(
-                    BloomTargetWatcher Watcher,
-                    WindowsTargetProbe? Probe,
-                    bool WeAskedItToStop
-                )>();
+            // Two quite different jobs, and only one of them needs to look at every process on the
+            // machine. While we have a target, all we need to know is whether IT is still there; hunting
+            // for Blooms we would refuse to adopt anyway would be work for nothing, every five seconds,
+            // for as long as the Doctor lives.
+            var watchedIsStillWithUs = false;
+            int watchedId;
+            DateTime watchedStart;
             lock (_lock)
             {
-                if (_watchers.Count > 0)
-                    _lastBloomSeenAt = DateTimeOffset.UtcNow;
+                watchedId = _watcher?.Target.ProcessId ?? 0;
+                watchedStart = _watcher?.Target.StartTime ?? default;
+            }
 
-                // Collect the watchers whose process has gone. They are examined and disposed below,
-                // outside the lock.
-                foreach (var id in _watchers.Keys.ToList())
+            if (watchedId != 0)
+            {
+                // By identity, not merely by id: an id we are holding can have been handed to something
+                // else, and "still running" would then be about a stranger. See ProcessIdentity.
+                watchedIsStillWithUs = ProcessIdentity.IsStillTheSameProcess(
+                    watchedId,
+                    watchedStart
+                );
+            }
+            else
+            {
+                // Nothing to watch, so go looking. Take the ids and let the Process objects go at once:
+                // each holds an OS handle, and accumulating those in the one process that must stay
+                // healthy enough to diagnose everything else is the wrong kind of leak.
+                string[] namesToSearch;
+                lock (_lock)
+                    namesToSearch = _targetProcessNames.ToArray();
+
+                var ids = new List<int>();
+                foreach (var name in namesToSearch)
                 {
-                    if (runningIds.Contains(id))
+                    var running = Process.GetProcessesByName(name);
+                    try
+                    {
+                        ids.AddRange(running.Select(p => p.Id));
+                    }
+                    finally
+                    {
+                        foreach (var process in running)
+                            process.Dispose();
+                    }
+                }
+
+                foreach (var id in ids.Distinct())
+                {
+                    var facts = GatherContextBuilder.DescribeRunningProcess(id);
+                    if (facts == null)
                         continue;
-                    // The answer is CARRIED OUT of the lock rather than looked up below, because the very
-                    // next line makes looking it up impossible: the examination happens outside the lock,
-                    // by which time this id has been forgotten, and it would then read "nobody asked" about
-                    // a Bloom we ourselves ended.
-                    departed.Add(
-                        (
-                            _watchers[id],
-                            _probes.GetValueOrDefault(id),
-                            _weAskedItToStop.Contains(id)
-                        )
-                    );
-                    _watchers.Remove(id);
-                    _probes.Remove(id);
-                    // Forget that we asked this one to stop, now that it has. Windows recycles process ids
-                    // from a pool, and "Restart Bloom" is exactly the case that kills one and starts
-                    // another moments later - so a stale entry here could silence a genuine report about a
-                    // DIFFERENT Bloom that happened to be handed the dead one's id.
-                    _weAskedItToStop.Remove(id);
+                    AdoptFacts(facts);
+                    // Adopted, or refused for a reason that will not change on the next id. Either way we
+                    // are done looking: this Doctor watches one Bloom.
+                    lock (_lock)
+                        if (_watcher != null)
+                            break;
+                }
+            }
+
+            BloomTargetWatcher? departed = null;
+            WindowsTargetProbe? departedProbe = null;
+            var departedWasOurDoing = false;
+            var departedAlreadyClaimed = false;
+            lock (_lock)
+            {
+                if (_watcher != null)
+                {
+                    _lastBloomSeenAt = DateTimeOffset.UtcNow;
+                    if (!watchedIsStillWithUs)
+                    {
+                        departed = _watcher;
+                        departedProbe = _probe;
+                        departedWasOurDoing = _weAskedItToStop;
+                        // Claim the examination HERE, in the same lock that reads the flag above. The
+                        // watcher goes on ticking until it is disposed below, and a tick landing in the gap
+                        // used to find the flag cleared and file a card about a death we had caused.
+                        departedAlreadyClaimed = _exitExamined;
+                        _exitExamined = true;
+                        _watcher = null;
+                        _probe = null;
+                    }
                 }
             }
 
@@ -489,12 +534,12 @@ public sealed class DoctorSupervisor : IDisposable
             // Calling it here needs no coordination with the tick: the examination claims each process id
             // once, under the lock, so whichever path arrives second does nothing. Outside the lock
             // because it starts background work.
-            foreach (var (watcher, probe, weAskedItToStop) in departed)
+            if (departed != null)
             {
-                if (probe != null)
+                if (departedProbe != null && !departedAlreadyClaimed)
                     ConsiderReportingAnExit(
-                        watcher,
-                        probe,
+                        departed,
+                        departedProbe,
                         new DetectorVerdict
                         {
                             State = TargetState.Exited,
@@ -503,9 +548,11 @@ public sealed class DoctorSupervisor : IDisposable
                             Report = ReportReason.None,
                             Explanation = "the process is no longer running",
                         },
-                        weAskedItToStop
+                        departedWasOurDoing
                     );
-                watcher.Dispose();
+                else
+                    departedProbe?.Dispose();
+                departed.Dispose();
             }
 
             RaiseStatusChanged();
@@ -521,8 +568,20 @@ public sealed class DoctorSupervisor : IDisposable
     {
         lock (_lock)
         {
-            if (_watchers.ContainsKey(facts.ProcessId))
+            if (_watcher != null)
+            {
+                // Already watching one, and one is all we watch. Said out loud the first time, because a
+                // developer with two worktrees open will otherwise wonder why the second is ignored.
+                if (_watcher.Target.ProcessId != facts.ProcessId && !_notedASecondBloom)
+                {
+                    _notedASecondBloom = true;
+                    Note(
+                        $"not watching Bloom {facts.ProcessId} ({facts.Channel}): already watching "
+                            + $"{_watcher.Target.ProcessId}, and this Doctor watches one at a time"
+                    );
+                }
                 return;
+            }
 
             // A headless run - one of Bloom's console verbs - legitimately has no window, so watching it
             // would only produce false zombie reports (plan §3.3).
@@ -553,8 +612,16 @@ public sealed class DoctorSupervisor : IDisposable
                 ConsiderEndingAZombie(watcher, verdict);
                 ConsiderReportingAnExit(watcher, probe, verdict);
             };
-            _watchers[facts.ProcessId] = watcher;
-            _probes[facts.ProcessId] = probe;
+            _watcher = watcher;
+            _probe = probe;
+            // Everything we remember is about the Bloom we are watching, so a new one starts clean. This is
+            // the whole of the bookkeeping that used to be five dictionaries keyed by process id.
+            _dumpRequested = false;
+            _zombieReported = false;
+            _zombieEnded = false;
+            _weAskedItToStop = false;
+            _exitExamined = false;
+            _notedASecondBloom = false;
             watcher.Start();
             Note($"watching Bloom {facts.ProcessId} ({facts.Channel})");
         }
@@ -583,7 +650,7 @@ public sealed class DoctorSupervisor : IDisposable
         {
             lock (_lock)
             {
-                if (_weAskedItToStop.Contains(e.Target.ProcessId))
+                if (_weAskedItToStop)
                 {
                     Note(
                         $"Bloom {e.Target.ProcessId} has gone, as we asked it to; not reporting that as a problem"
@@ -676,7 +743,7 @@ public sealed class DoctorSupervisor : IDisposable
         // unlocks it.
         if (verdict.Report == ReportReason.Zombie)
             lock (_lock)
-                _zombiesReported.Add(facts.ProcessId);
+                _zombieReported = true;
         // Say WHICH of the reasons applies. The old wording listed them all at once and left the reader to
         // guess - and they are acted on quite differently: a developer build is permanent, a debugger can
         // be detached, and a simulated failure means nothing was wrong in the first place.
@@ -760,10 +827,10 @@ public sealed class DoctorSupervisor : IDisposable
                 // leaves no proof of a clean exit, which is precisely what this examination reports as
                 // "exited without shutting down properly" - a second card about our own doing, and with a
                 // different reason from the first, so the outbox could not have merged them either.
-                if (weAskedItToStop || _weAskedItToStop.Contains(watcher.Target.ProcessId))
+                if (weAskedItToStop || _weAskedItToStop)
                 {
-                    _exitsExamined.Add(watcher.Target.ProcessId);
-                    _probes.Remove(watcher.Target.ProcessId);
+                    _exitExamined = true;
+                    _probe = null;
                     Note(
                         $"Bloom {watcher.Target.ProcessId} has gone, as we asked it to; not examining that as a problem"
                     );
@@ -773,11 +840,12 @@ public sealed class DoctorSupervisor : IDisposable
                     probe.Dispose();
                     return;
                 }
-                if (!_exitsExamined.Add(watcher.Target.ProcessId))
-                    return; // one examination per process, and the one that claimed it owns the probe
+                if (_exitExamined)
+                    return; // one examination per death, and the one that claimed it owns the probe
+                _exitExamined = true;
                 // Claimed. From here the background task below owns the probe and releases it when it has
                 // finished reading the dead process's exit code.
-                _probes.Remove(watcher.Target.ProcessId);
+                _probe = null;
             }
             Note($"Bloom {watcher.Target.ProcessId} has gone; examining why");
 
@@ -912,8 +980,9 @@ public sealed class DoctorSupervisor : IDisposable
             // would mean dumping a crashing Bloom twice, while it is holding its own death open for us.
             lock (_lock)
             {
-                if (!_dumpsRequested.Add(watcher.Target.ProcessId))
+                if (_dumpRequested)
                     return;
+                _dumpRequested = true;
             }
 
             Note($"Bloom {watcher.Target.ProcessId} is crashing and asked for a dump");
@@ -986,10 +1055,11 @@ public sealed class DoctorSupervisor : IDisposable
             // threads both decide they were the one to end this process.
             lock (_lock)
             {
-                if (!_zombiesReported.Contains(watcher.Target.ProcessId))
+                if (!_zombieReported)
                     return; // the evidence has to be safely gathered first
-                if (!_zombiesEnded.Add(watcher.Target.ProcessId))
+                if (_zombieEnded)
                     return; // one attempt per process; we do not keep hammering at it
+                _zombieEnded = true;
             }
 
             var decision = ZombieEnder.Decide(
@@ -1010,7 +1080,7 @@ public sealed class DoctorSupervisor : IDisposable
                 // progress), and we should look again next tick rather than never.
                 lock (_lock)
                 {
-                    _zombiesEnded.Remove(watcher.Target.ProcessId);
+                    _zombieEnded = false;
                 }
                 return;
             }
@@ -1019,7 +1089,7 @@ public sealed class DoctorSupervisor : IDisposable
             // Recorded before we act, so that the death cannot be observed and reported as a problem in the
             // gap between asking and it happening. See _weAskedItToStop.
             lock (_lock)
-                _weAskedItToStop.Add(watcher.Target.ProcessId);
+                _weAskedItToStop = true;
             _ = Task.Run(() =>
             {
                 var outcome = ZombieEnder.End(watcher.Target.ProcessId, watcher.Target.StartTime);
@@ -1152,7 +1222,7 @@ public sealed class DoctorSupervisor : IDisposable
         DateTimeOffset? lastSeen;
         lock (_lock)
         {
-            if (_watchers.Count > 0)
+            if (_watcher != null)
                 return;
             lastSeen = _lastBloomSeenAt;
         }
@@ -1172,11 +1242,14 @@ public sealed class DoctorSupervisor : IDisposable
         List<string> lines;
         lock (_lock)
         {
-            lines = _watchers
-                .Values.Select(w =>
-                    $"Bloom {w.Target.ProcessId} ({w.Target.Channel}): {Describe(w.State)}"
-                )
-                .ToList();
+            lines =
+                _watcher == null
+                    ? new List<string>()
+                    : new List<string>
+                    {
+                        $"Bloom {_watcher.Target.ProcessId} ({_watcher.Target.Channel}): "
+                            + Describe(_watcher.State),
+                    };
         }
         if (lines.Count == 0)
             lines.Add("Bloom Status: Not running");
@@ -1246,14 +1319,12 @@ public sealed class DoctorSupervisor : IDisposable
         _drain?.Dispose();
         lock (_lock)
         {
-            foreach (var watcher in _watchers.Values)
-                watcher.Dispose();
-            _watchers.Clear();
-            // Only the probes still in here, which by construction are the ones no examination has
-            // claimed - a claim removes its probe from this dictionary and takes over releasing it.
-            foreach (var probe in _probes.Values)
-                probe.Dispose();
-            _probes.Clear();
+            _watcher?.Dispose();
+            _watcher = null;
+            // Only a probe still held here, which by construction means no examination has claimed this
+            // death - a claim takes the probe and takes over releasing it.
+            _probe?.Dispose();
+            _probe = null;
         }
         _stopping.Dispose();
         _drainGate.Dispose();
