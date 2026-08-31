@@ -13,9 +13,11 @@ public sealed record ExitEvidence
     public int? ExitCode { get; init; }
 
     /// <summary>
-    /// Phase 3 only: Bloom left proof that its shutdown ran (a <c>ProcessExit</c> handler wrote it).
-    /// Null means we are in Phase 1 and no proof mechanism existed, which is NOT the same as false —
-    /// see <see cref="ExitReportPolicy"/>.
+    /// Bloom left proof that its shutdown ran (a <c>ProcessExit</c> handler wrote it).
+    ///
+    /// Read only as an EXEMPTION - proof present means stay quiet - and never as a trigger. Its absence
+    /// says nothing: a Bloom too old to leave one, a Task Manager kill and a real crash all look alike
+    /// from here. Null means we could not tell, which is again no reason to act.
     /// </summary>
     public bool? CleanExitProofPresent { get; init; }
 
@@ -72,22 +74,6 @@ public sealed record ExitEvidence
     public bool NeverFile { get; init; }
 }
 
-/// <summary>Which of decision D4's two regimes to judge by.</summary>
-public enum ExitReportPolicy
-{
-    /// <summary>
-    /// Phase 1: Bloom leaves no proof of a clean exit, so an exit is only reportable when something
-    /// corroborates a crash. Silence is the default.
-    /// </summary>
-    RequiresCorroboratingEvidence,
-
-    /// <summary>
-    /// Phase 3: Bloom proves its clean exits, so the absence of proof is itself the evidence and the
-    /// default flips to reporting.
-    /// </summary>
-    RequiresProofOfCleanExit,
-}
-
 /// <summary>What we concluded about an exit.</summary>
 public enum ExitVerdict
 {
@@ -111,9 +97,6 @@ public enum ExitVerdict
 
     /// <summary>The machine went down. Not Bloom's doing.</summary>
     MachineWentDown,
-
-    /// <summary>We know too little to say anything useful.</summary>
-    Unknown,
 }
 
 /// <summary>The classifier's answer.</summary>
@@ -149,11 +132,40 @@ public static class ExitClassifier
     public const int ExitCodeAccessViolation = unchecked((int)0xC0000005);
 
     /// <summary>
-    /// Judges one exit. Order matters here, and the order is "explain it away before blaming Bloom":
-    /// a machine that went down, a run we never file, and a debugged process all win over any crash
-    /// evidence, because reporting those is worse than missing them.
+    /// Judges one exit.
+    ///
+    /// **The rule is "something must say this went wrong", never "nothing says it went right".** That is
+    /// narrower than it sounds, and it is narrower on purpose.
+    ///
+    /// There used to be two regimes: one that reported only on positive crash evidence, and one that
+    /// treated the ABSENCE of Bloom's clean-exit proof as the evidence. The second is gone. It cost more
+    /// than it bought:
+    ///
+    /// * It is where the bugs were. Reasoning from absence produced every defect found in this file - two
+    ///   from Devin, the conflation of "how far shutdown got" with "who asked for it", and a startup crash
+    ///   read as a machine restart. Absence has many causes and the code kept discovering another one.
+    /// * It could not tell a crash from somebody closing Bloom in Task Manager, and said so in the card's
+    ///   own text ("may be a user-initiated kill"). A card that admits it may be about nothing is a card
+    ///   that trains people to ignore the next one.
+    /// * It was not needed for the case it was justified by. **Measured** (2026-08-31) on an unhandled
+    ///   exception thrown on a thread the application does not control - the case that exits Bloom with no
+    ///   indication of why, and the reason this whole path exists:
+    ///
+    ///       ProcessExit handler ran     no        <- so there is indeed no clean-exit proof
+    ///       process exit code           0xE0434352 (ExitCodeUnhandledManagedException)
+    ///       .NET Runtime event 1026     yes
+    ///       Application Error 1000      yes
+    ///       WER report folder           yes
+    ///
+    ///   Four independent signals, and the first of them comes from the CLR rather than from any Windows
+    ///   feature an administrator could switch off. So the narrow rule still catches the case that
+    ///   motivated the wide one - it simply declines to guess when nothing at all is known.
+    ///
+    /// Order matters, and the order is "explain it away before blaming Bloom": a machine that went down and
+    /// a debugged process win over any crash evidence, because reporting those is worse than missing them.
+    /// Bloom's own first-hand accounts come next, because they outrank what Windows noticed afterwards.
     /// </summary>
-    public static ExitConclusion Classify(ExitEvidence evidence, ExitReportPolicy policy)
+    public static ExitConclusion Classify(ExitEvidence evidence)
     {
         if (evidence.MachineWentDown)
             return Conclude(
@@ -175,7 +187,10 @@ public static class ExitClassifier
         // together here would instead gather nothing at all while logging that it had. One axis per
         // question.
 
-        // Bloom's own forced exit identifies itself in the log, and is worth a card in either regime.
+        // Bloom's own forced exit identifies itself in the log, and this is the ONLY thing that identifies
+        // it: ProgramExit's safety net ends with Environment.Exit, so the ProcessExit handler runs and
+        // records a shutdown phase, and the session file therefore describes a perfectly clean exit. Drop
+        // this check and a stalled shutdown becomes invisible.
         if (evidence.LogShowsForcedShutdown)
             return Conclude(
                 ExitVerdict.ForcedAfterStalledShutdown,
@@ -214,34 +229,10 @@ public static class ExitClassifier
                 "Bloom crashed: " + string.Join("; ", crashSignals)
             );
 
-        // Nothing says crash. What that means depends entirely on whether Bloom was capable of
-        // proving a clean exit.
-        if (policy == ExitReportPolicy.RequiresProofOfCleanExit)
-        {
-            // Phase 3: proof was available and is absent, so this is reportable — but described for
-            // what it is, since a user ending a healthy Bloom in Task Manager looks identical.
-            if (evidence.CleanExitProofPresent == false)
-                return Conclude(
-                    ExitVerdict.NoOrderlyShutdown,
-                    true,
-                    "no orderly shutdown; no crash evidence; may be a user-initiated kill"
-                        + (
-                            evidence.ShutdownPhaseReached.HasValue
-                                ? $" ({evidence.ShutdownPhaseReached.Value.Describe()})"
-                                : ""
-                        )
-                );
-
-            return Conclude(
-                ExitVerdict.Unknown,
-                false,
-                "expected a clean-exit proof from this Bloom but found neither proof nor its absence"
-            );
-        }
-
-        // Phase 1: silence is the default, because a bare exit is indistinguishable from the user
-        // closing Bloom in a way we cannot see.
-        return Conclude(ExitVerdict.NoOrderlyShutdown, false, ExplainQuietPhase1(evidence));
+        // Nothing says this went wrong, so we say nothing. A bare exit with no crash signal and no
+        // first-hand account from Bloom is indistinguishable from somebody closing Bloom in a way we
+        // cannot see, and guessing is what the old second regime did.
+        return Conclude(ExitVerdict.NoOrderlyShutdown, false, ExplainWhyWeAreQuiet(evidence));
     }
 
     private static List<string> DescribeCrashSignals(ExitEvidence evidence)
@@ -270,7 +261,7 @@ public static class ExitClassifier
     /// Says why we are staying quiet, so the local record explains itself when someone comes looking
     /// for the report that never arrived.
     /// </summary>
-    private static string ExplainQuietPhase1(ExitEvidence evidence)
+    private static string ExplainWhyWeAreQuiet(ExitEvidence evidence)
     {
         var code = evidence.ExitCode;
         if (code == 0)

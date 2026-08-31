@@ -12,15 +12,12 @@ namespace BloomFreezeDoctor.Tests;
 [TestFixture]
 public class ExitClassifierTests
 {
-    private const ExitReportPolicy Phase1 = ExitReportPolicy.RequiresCorroboratingEvidence;
-    private const ExitReportPolicy Phase3 = ExitReportPolicy.RequiresProofOfCleanExit;
-
     [Test]
-    public void Phase1_stays_quiet_about_a_bare_exit()
+    public void A_bare_exit_stays_quiet()
     {
         // The whole point of the Phase 1 rule: a Bloom that simply vanished is indistinguishable from
         // the user closing it in a way we could not see.
-        var conclusion = ExitClassifier.Classify(new ExitEvidence { ExitCode = 1 }, Phase1);
+        var conclusion = ExitClassifier.Classify(new ExitEvidence { ExitCode = 1 });
 
         Assert.That(conclusion.ShouldReport, Is.False);
         Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.NoOrderlyShutdown));
@@ -34,9 +31,9 @@ public class ExitClassifierTests
     [TestCase(ExitClassifier.ExitCodeUnhandledManagedException, "0xE0434352")]
     [TestCase(ExitClassifier.ExitCodeFailFast, "0x80131623")]
     [TestCase(ExitClassifier.ExitCodeAccessViolation, "0xC0000005")]
-    public void A_crash_exit_code_is_reportable_even_in_Phase1(int exitCode, string expectedInText)
+    public void A_crash_exit_code_is_reportable(int exitCode, string expectedInText)
     {
-        var conclusion = ExitClassifier.Classify(new ExitEvidence { ExitCode = exitCode }, Phase1);
+        var conclusion = ExitClassifier.Classify(new ExitEvidence { ExitCode = exitCode });
 
         Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.Crashed));
         Assert.That(conclusion.ShouldReport, Is.True);
@@ -47,12 +44,10 @@ public class ExitClassifierTests
     public void Event_log_or_WER_evidence_is_enough_on_its_own()
     {
         var fromEventLog = ExitClassifier.Classify(
-            new ExitEvidence { ExitCode = 1, HasEventLogCrashEntry = true },
-            Phase1
+            new ExitEvidence { ExitCode = 1, HasEventLogCrashEntry = true }
         );
         var fromWer = ExitClassifier.Classify(
-            new ExitEvidence { ExitCode = 1, HasWerReport = true },
-            Phase1
+            new ExitEvidence { ExitCode = 1, HasWerReport = true }
         );
 
         Assert.That(fromEventLog.ShouldReport, Is.True);
@@ -66,8 +61,7 @@ public class ExitClassifierTests
         // Exit code 1, same as a Task Manager kill — but Bloom's log says which it was, and this is a
         // real bug we would otherwise never hear about.
         var conclusion = ExitClassifier.Classify(
-            new ExitEvidence { ExitCode = 1, LogShowsForcedShutdown = true },
-            Phase1
+            new ExitEvidence { ExitCode = 1, LogShowsForcedShutdown = true }
         );
 
         Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.ForcedAfterStalledShutdown));
@@ -76,24 +70,52 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void Phase3_reports_a_missing_proof_but_labels_it_honestly()
+    public void A_missing_clean_exit_proof_is_not_by_itself_worth_a_card()
     {
+        // The deliberate reversal. This case used to be reported, with the card's own text conceding it
+        // "may be a user-initiated kill" - which is exactly what it usually was. Absence of proof has too
+        // many innocent causes to act on: Task Manager, a Windows shutdown that force-closed Bloom, a
+        // power cut a moment before the machine noticed.
+        //
+        // Nothing is lost by declining, because a real crash does not present this way: see
+        // An_unhandled_exception_on_a_foreign_thread_is_reported below.
         var conclusion = ExitClassifier.Classify(
-            new ExitEvidence { ExitCode = -1, CleanExitProofPresent = false },
-            Phase3
+            new ExitEvidence { ExitCode = -1, CleanExitProofPresent = false }
         );
 
-        Assert.That(conclusion.ShouldReport, Is.True);
-        Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.NoOrderlyShutdown));
         Assert.That(
-            conclusion.Explanation,
-            Does.Contain("may be a user-initiated kill"),
-            "it must not dress a kill up as a crash"
+            conclusion.ShouldReport,
+            Is.False,
+            "an exit we cannot explain is not the same as an exit we can blame on Bloom"
         );
     }
 
     [Test]
-    public void Phase3_says_nothing_when_the_proof_is_present()
+    public void An_unhandled_exception_on_a_foreign_thread_is_reported()
+    {
+        // The case the whole exit path exists for: an exception thrown, and not caught, on a thread Bloom
+        // does not control. Bloom's own reporting never sees it and the process simply vanishes.
+        //
+        // Measured on 2026-08-31 with a minimal .NET 8 program throwing on a thread-pool thread: the
+        // ProcessExit handler did NOT run (so there is no clean-exit proof), and the process exit code was
+        // 0xE0434352, alongside a .NET Runtime event, an Application Error event and a WER report. The exit
+        // code comes from the CLR rather than from any Windows feature that can be switched off, which is
+        // why reporting on evidence rather than on absence still catches this.
+        var conclusion = ExitClassifier.Classify(
+            new ExitEvidence
+            {
+                ExitCode = ExitClassifier.ExitCodeUnhandledManagedException,
+                CleanExitProofPresent = false,
+            }
+        );
+
+        Assert.That(conclusion.ShouldReport, Is.True, "this is the case we must not miss");
+        Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.Crashed));
+        Assert.That(conclusion.Explanation, Does.Contain("unhandled managed exception"));
+    }
+
+    [Test]
+    public void Nothing_is_said_when_the_proof_is_present()
     {
         var conclusion = ExitClassifier.Classify(
             new ExitEvidence
@@ -101,8 +123,7 @@ public class ExitClassifierTests
                 ExitCode = 0,
                 CleanExitProofPresent = true,
                 ShutdownPhaseReached = BloomShutdownPhase.MessageLoopReturned,
-            },
-            Phase3
+            }
         );
 
         Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.Clean));
@@ -112,25 +133,6 @@ public class ExitClassifierTests
             Does.Contain("message loop had returned"),
             "the phase reached is worth saying, and worth saying in words"
         );
-    }
-
-    [Test]
-    public void A_missing_proof_in_Phase1_is_not_treated_as_evidence()
-    {
-        // The same evidence, judged under the two regimes, must reach opposite conclusions. This is
-        // the distinction the phasing rests on: in Phase 1 no proof mechanism existed, so its absence
-        // means nothing at all.
-        var evidence = new ExitEvidence { ExitCode = -1, CleanExitProofPresent = false };
-
-        var phase1 = ExitClassifier.Classify(evidence, Phase1);
-        var phase3 = ExitClassifier.Classify(evidence, Phase3);
-
-        Assert.That(
-            phase1.ShouldReport,
-            Is.False,
-            "Phase 1 cannot read anything into a missing proof"
-        );
-        Assert.That(phase3.ShouldReport, Is.True, "Phase 3 can, because Bloom would have left one");
     }
 
     [Test]
@@ -145,8 +147,7 @@ public class ExitClassifierTests
                 CleanExitProofPresent = false,
                 MachineWentDown = true,
                 HasEventLogCrashEntry = true,
-            },
-            Phase3
+            }
         );
 
         Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.MachineWentDown));
@@ -168,8 +169,7 @@ public class ExitClassifierTests
                 HasWerReport = true,
                 CleanExitProofPresent = false,
                 DebuggerCouldExplainIt = true,
-            },
-            Phase3
+            }
         );
 
         Assert.That(
@@ -188,8 +188,7 @@ public class ExitClassifierTests
         // it gathered and merely declined to file — so the evidence we most want from our own machines is
         // the evidence we quietly throw away.
         var conclusion = ExitClassifier.Classify(
-            new ExitEvidence { ExitCode = ExitClassifier.ExitCodeFailFast, NeverFile = true },
-            Phase1
+            new ExitEvidence { ExitCode = ExitClassifier.ExitCodeFailFast, NeverFile = true }
         );
 
         Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.Crashed));
@@ -201,9 +200,9 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void A_clean_exit_code_zero_is_quiet_in_Phase1()
+    public void A_clean_exit_code_zero_is_quiet()
     {
-        var conclusion = ExitClassifier.Classify(new ExitEvidence { ExitCode = 0 }, Phase1);
+        var conclusion = ExitClassifier.Classify(new ExitEvidence { ExitCode = 0 });
 
         Assert.That(conclusion.ShouldReport, Is.False);
         Assert.That(conclusion.Explanation, Does.Contain("code 0"));
@@ -223,10 +222,7 @@ public class ExitClassifierTests
             ShutdownPhaseReached = BloomShutdownPhase.None,
         };
 
-        var conclusion = ExitClassifier.Classify(
-            evidence,
-            ExitReportPolicy.RequiresProofOfCleanExit
-        );
+        var conclusion = ExitClassifier.Classify(evidence);
 
         Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.NoOrderlyShutdown));
         Assert.That(
@@ -253,10 +249,7 @@ public class ExitClassifierTests
             ShutdownPhaseReached = BloomShutdownPhase.ProjectContextDisposed,
         };
 
-        var conclusion = ExitClassifier.Classify(
-            evidence,
-            ExitReportPolicy.RequiresProofOfCleanExit
-        );
+        var conclusion = ExitClassifier.Classify(evidence);
 
         Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.Clean));
         Assert.That(conclusion.ShouldReport, Is.False, "nobody wants a card about quitting Bloom");
@@ -277,7 +270,7 @@ public class ExitClassifierTests
             ShutdownPhaseReached = BloomShutdownPhase.ProjectContextDisposed,
         };
 
-        var conclusion = ExitClassifier.Classify(evidence, Phase3);
+        var conclusion = ExitClassifier.Classify(evidence);
 
         Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.Clean));
         Assert.That(

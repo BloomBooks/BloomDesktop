@@ -840,12 +840,7 @@ public sealed class DoctorSupervisor : IDisposable
                         return;
                     }
 
-                    // Which regime to judge by depends on whether this Bloom could leave proof at all.
-                    var policy =
-                        session == null
-                            ? ExitReportPolicy.RequiresCorroboratingEvidence
-                            : ExitReportPolicy.RequiresProofOfCleanExit;
-                    var conclusion = ExitClassifier.Classify(evidence, policy);
+                    var conclusion = ExitClassifier.Classify(evidence);
 
                     Note(
                         $"Bloom {watcher.Target.ProcessId} exited: {conclusion.Verdict} — {conclusion.Explanation}"

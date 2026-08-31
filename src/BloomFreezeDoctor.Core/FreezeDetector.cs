@@ -168,8 +168,8 @@ public enum ReportReason
     Zombie,
 
     /// <summary>
-    /// Exited leaving no proof of an orderly shutdown. Phase 3 only: in Phase 1 an exit needs
-    /// separate corroboration, which the detector does not have and does not pretend to.
+    /// Exited, and something says it went wrong. The detector does not decide that - it has none of the
+    /// evidence - it only carries the reason so the report says what it is about; see ExitClassifier.
     /// </summary>
     ExitedWithoutProof,
 
