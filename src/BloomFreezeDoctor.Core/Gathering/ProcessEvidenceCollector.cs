@@ -55,7 +55,7 @@ public sealed class ProcessEvidenceCollector : IEvidenceCollector
         AppendBasics(text, process);
         AppendRespondingCaveat(text, process, context);
         var cpu = await SampleCpuAsync(process, cancellation).ConfigureAwait(false);
-        headline = AppendCpu(text, cpu, context.IsAboutAFreeze);
+        headline = AppendCpu(text, cpu.Deltas, cpu.Window, context.IsAboutAFreeze);
         AppendWindows(text, process);
         AppendWebViewChildren(text, context.Target.ProcessId);
         AppendUnexplainedModules(text, process);
@@ -134,12 +134,15 @@ public sealed class ProcessEvidenceCollector : IEvidenceCollector
     /// burning CPU. This is the difference between "spinning in a loop" and "deadlocked", and no
     /// amount of stack reading distinguishes them as clearly.
     /// </summary>
-    private static async Task<Dictionary<int, TimeSpan>> SampleCpuAsync(
+    private static async Task<(Dictionary<int, TimeSpan> Deltas, TimeSpan Window)> SampleCpuAsync(
         Process process,
         CancellationToken cancellation
     )
     {
         var before = SnapshotThreadTimes(process);
+        // Timed, because the interval we actually watched is what makes the numbers mean anything - and
+        // cancellation can cut it to nothing. See AppendCpu.
+        var watched = System.Diagnostics.Stopwatch.StartNew();
         try
         {
             await Task.Delay(CpuSampleWindow, cancellation).ConfigureAwait(false);
@@ -148,6 +151,7 @@ public sealed class ProcessEvidenceCollector : IEvidenceCollector
         {
             // Report whatever we can from a single sample rather than nothing.
         }
+        watched.Stop();
         try
         {
             process.Refresh();
@@ -161,16 +165,30 @@ public sealed class ProcessEvidenceCollector : IEvidenceCollector
             if (before.TryGetValue(id, out var was) && then > was)
                 deltas[id] = then - was;
         }
-        return deltas;
+        return (deltas, watched.Elapsed);
     }
 
     private static string? AppendCpu(
         StringBuilder text,
         Dictionary<int, TimeSpan> deltas,
+        TimeSpan window,
         bool isAboutAFreeze
     )
     {
-        text.AppendLine($"**CPU used per thread over {CpuSampleWindow.TotalSeconds:F0} seconds**");
+        // How long we ACTUALLY watched, not how long we meant to. Cancellation can cut the sample to
+        // almost nothing, and two snapshots taken microseconds apart show no CPU use for a process that is
+        // spinning flat out - which then read as the definite deduction "rules out a spin loop".
+        var sampleWasUseful = window >= CpuSampleWindow - TimeSpan.FromMilliseconds(500);
+        text.AppendLine($"**CPU used per thread over {window.TotalSeconds:F1} seconds**");
+        if (!sampleWasUseful)
+        {
+            text.AppendLine();
+            text.AppendLine(
+                $"The sample was cut short (it was meant to run for "
+                    + $"{CpuSampleWindow.TotalSeconds:F0} seconds), so nothing here can be read as evidence "
+                    + "either way about a spin loop."
+            );
+        }
         text.AppendLine();
         var busy = deltas
             .Where(d => d.Value > TimeSpan.FromMilliseconds(50))
@@ -182,7 +200,7 @@ public sealed class ProcessEvidenceCollector : IEvidenceCollector
             // The same observation, but only a freeze makes it a deduction. A crashing or exiting Bloom
             // has nothing to spin, so "this is a wait rather than a spin" would be arguing with the
             // report's own headline. See GatherContext.IsAboutAFreeze.
-            if (isAboutAFreeze)
+            if (isAboutAFreeze && sampleWasUseful)
             {
                 text.AppendLine(
                     "No thread used measurable CPU. That is consistent with a deadlock or a thread waiting "

@@ -435,6 +435,12 @@ public sealed class StatusForm : Form
         }
 
         _savedReportFolder = folder;
+        // The mirror image of what OnReportFiled does, and it was missing. Filing clears the saved folder
+        // so a later balloon does not offer a stale one; saving has to clear the filed id for the same
+        // reason. Without it, a saved-not-filed report announced after a filed one sent the balloon click
+        // off to the previous card in the browser, instead of opening the folder it had just named.
+        _filedIssueId = null;
+        _openCard.Visible = false;
         _showReport.Visible = true;
         _restartBloom.Visible = true;
         // Worth setting even though the next status update will overwrite it: it names the folder, which

@@ -53,7 +53,21 @@ public static class ReportFingerprint
                 inUiSection = true;
                 continue;
             }
-            if (inUiSection && line.StartsWith("###", StringComparison.Ordinal))
+            // End of the UI thread's frames. Two ways it ends, and only one of them was handled: the next
+            // `###` heading, OR a collapse marker, which is what actually follows the UI thread in the
+            // rendered stacks. Missing the marker let the loop keep going into the next thread, whose
+            // frames are indented identically - so whenever the UI thread yielded fewer than five usable
+            // frames (a shallow stack, or frames filtered as native or stubs), the hash was topped up from
+            // whichever other thread happened to sort first. That varies between runs, so the same freeze
+            // fingerprinted differently and the deduplication this exists for silently stopped working.
+            if (
+                inUiSection
+                && (
+                    line.StartsWith("###", StringComparison.Ordinal)
+                    || line.StartsWith(CollapsibleSections.BeginPrefix, StringComparison.Ordinal)
+                    || line.StartsWith(CollapsibleSections.End, StringComparison.Ordinal)
+                )
+            )
                 break;
             if (!inUiSection || !line.StartsWith("    ", StringComparison.Ordinal))
                 continue;
