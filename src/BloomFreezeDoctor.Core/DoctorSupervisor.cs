@@ -147,6 +147,19 @@ public sealed class DoctorSupervisor : IDisposable
     /// Returns null for a freeze without touching the event log - there is nothing there to find, and a
     /// scan of the Application log is not free.
     /// </summary>
+    /// <summary>
+    /// A duration rounded hard, so that repeated slow sweeps read as the same shape of slowness and get
+    /// reported once rather than every five seconds with a different number of milliseconds.
+    /// </summary>
+    private static string Bucket(long milliseconds)
+    {
+        if (milliseconds < 100)
+            return "fast";
+        if (milliseconds < 1000)
+            return "sub-second";
+        return $"{milliseconds / 1000}s";
+    }
+
     /// <summary>A command line cut to a length that belongs in a log line.</summary>
     private static string Shorten(string? text)
     {
@@ -524,6 +537,15 @@ public sealed class DoctorSupervisor : IDisposable
         if (Interlocked.Exchange(ref _sweepInProgress, 1) == 1)
             return;
         var sweep = Interlocked.Increment(ref _sweepsRun);
+        // Timed in two halves, because the two halves have completely different suspects and the whole
+        // point is to stop guessing between them. Measured facts so far: a new Bloom is visible to
+        // Process.GetProcessesByName within 350ms of starting - the identical call, timed from another
+        // process - yet sweeps ran 12.75 seconds apart while Bloom was starting, against a 5-second timer.
+        // So the delay is this method's own latency, and it is worth knowing whether that is spent LOOKING
+        // for Bloom or on the bookkeeping afterwards, which reads and deserialises every file in the
+        // outbox on every tick and has nothing to do with discovery.
+        var lookingWatch = System.Diagnostics.Stopwatch.StartNew();
+        long lookingMs = 0;
         try
         {
             // Two quite different jobs, and only one of them needs to look at every process on the
@@ -630,6 +652,8 @@ public sealed class DoctorSupervisor : IDisposable
                 }
             }
 
+            lookingMs = lookingWatch.ElapsedMilliseconds;
+
             BloomTargetWatcher? departed = null;
             WindowsTargetProbe? departedProbe = null;
             var departedWasOurDoing = false;
@@ -720,6 +744,22 @@ public sealed class DoctorSupervisor : IDisposable
         }
         finally
         {
+            // A sweep slower than its own timer period is the fault we are chasing, so say so - once per
+            // distinct shape of slowness, which in practice means when it starts and if it changes
+            // character. Below the period there is nothing to report.
+            var totalMs = lookingWatch.ElapsedMilliseconds;
+            if (totalMs > DiscoveryInterval.TotalMilliseconds)
+            {
+                var shape =
+                    $"looking {Bucket(lookingMs)}, bookkeeping {Bucket(totalMs - lookingMs)}";
+                if (_sweepNotes.ShouldSay(-2, shape, DateTimeOffset.UtcNow))
+                    Note(
+                        $"sweep {sweep} took {totalMs}ms, longer than the {DiscoveryInterval.TotalSeconds}s "
+                            + $"between sweeps: {lookingMs}ms looking for Bloom, "
+                            + $"{totalMs - lookingMs}ms on bookkeeping afterwards"
+                    );
+            }
+
             // In a finally, and it has to be: a sweep that threw and did not release this would stop the
             // Doctor looking for Bloom for the rest of its life - a far worse fault than the overlapping
             // sweeps the guard exists to prevent.
