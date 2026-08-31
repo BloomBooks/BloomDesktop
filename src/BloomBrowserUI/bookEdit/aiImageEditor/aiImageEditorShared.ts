@@ -10,7 +10,13 @@
 // match the click against the book image list.
 export interface IAiImageEditorTarget {
     pageId: string;
-    imageFileName: string;
+    // Which image slot of that page the user clicked, as its index among the page's image
+    // containers in document order. That index is the slot's whole identity: it is the
+    // ordinal in the book image's "{pageId}:{ordinal}" id, so the overlay names the clicked
+    // image by building that id rather than by looking for a file name. A file name could
+    // never have said which slot was clicked anyway, since every empty slot shows
+    // placeHolder.png and one photo can be used twice on a page.
+    slotIndex: number;
 }
 
 // One entry of aiImageEditor/commit's reply. The ones flagged isCurrentPage are the slots
@@ -52,23 +58,4 @@ export interface IAiImageEditorApplyOutcome {
     applied: number;
     expected: number;
     error?: string;
-}
-
-// Pull the file name off an image url. `encoded` says whether the url is percent-encoded:
-// live DOM srcs and host-served URLs are, but oldSrc in commit results arrives from C#
-// already decoded (PathOnly.NotEncoded) — decoding it again corrupts (or throws on)
-// filenames containing a literal '%'. On a failed decode fall back to the raw name rather
-// than "", so an oddly-encoded src degrades to a possible mismatch instead of matching
-// nothing ever.
-export function fileNameOf(
-    url?: string | null,
-    encoded: boolean = true,
-): string {
-    const raw = (url ?? "").split("?")[0].split("/").pop() ?? "";
-    if (!encoded) return raw;
-    try {
-        return decodeURIComponent(raw);
-    } catch {
-        return raw;
-    }
 }
