@@ -124,14 +124,18 @@ public sealed class YouTrackSubmitter : IReportSubmitter
                         cancellation
                     )
                     .ConfigureAwait(false);
-                // After the comment, so a card that already has the note is not left with an orphan
-                // attachment if the upload fails; and best effort, because the recurrence is recorded
-                // either way and a lost dump must not send the bundle round again to comment twice.
+                // Bail out BEFORE attaching if the comment did not post. This bundle stays pending and a
+                // later drain will comment again, so anything uploaded here would be uploaded twice - and
+                // the second pass would see its own dump on the card and decide, correctly by its own
+                // rule, that the card already had one.
+                if (commentFailure != null)
+                    return commentFailure.Value;
+                // After the comment, so a card is never left with an attachment and no note explaining it;
+                // and best effort, because the recurrence is now recorded either way and a failed upload
+                // must not send the bundle round again to comment twice.
                 if (missingEvidence.Count > 0)
                     await AttachTheseAsync(existing, bundle, missingEvidence, cancellation)
                         .ConfigureAwait(false);
-                if (commentFailure != null)
-                    return commentFailure.Value;
                 return new SubmitResult
                 {
                     Outcome = SubmitOutcome.Filed,
