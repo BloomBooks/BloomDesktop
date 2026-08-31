@@ -36,7 +36,8 @@ function readConfiguredPageSizes(): PageSize[] {
 }
 
 /**
- * Converts a CSS-style dimension string (e.g. "148mm", "8.5in") to millimeters.
+ * Converts a CSS-style dimension string (e.g. "148mm", "8.5in", "475px") to millimeters.
+ * Pixels are CSS pixels at 96 per inch.
  */
 function convertDimensionToMillimeters(value: string): number {
     if (value.endsWith("mm")) {
@@ -46,6 +47,11 @@ function convertDimensionToMillimeters(value: string): number {
     if (value.endsWith("in")) {
         const inches = Number.parseFloat(value.substring(0, value.length - 2));
         return inches * inchesToMillimeters;
+    }
+
+    if (value.endsWith("px")) {
+        const pixels = Number.parseFloat(value.substring(0, value.length - 2));
+        return (pixels / 96) * inchesToMillimeters;
     }
 
     throw new Error(`Unsupported page-size unit in '${value}'.`);
