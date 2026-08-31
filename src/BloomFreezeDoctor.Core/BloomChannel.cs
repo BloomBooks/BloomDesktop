@@ -10,14 +10,19 @@ namespace BloomFreezeDoctor;
 public static class BloomChannel
 {
     /// <summary>
-    /// Derives Bloom's release channel from the executable path, mirroring Bloom's own
-    /// <c>ApplicationUpdateSupport.ChannelName</c>.
+    /// Derives Bloom's release channel from the path its executable was launched from.
     ///
-    /// **One deliberate difference from Bloom's version, and it matters.** Bloom asks about its entry
-    /// assembly, so it tests for a path ending in <c>Bloom.dll</c>. From outside we see the *process*,
-    /// whose main module is <c>Bloom.exe</c>. Requiring the ".dll" ending here would classify every
-    /// developer build as "Release" — which is the dangerous direction, because it is exactly what
-    /// would make a developer's `pnpm go` session file cards on the tracker.
+    /// **Deliberately indifferent to the file extension.** It looks only at folders, so <c>Bloom.exe</c>
+    /// and <c>Bloom.dll</c> in the same directory give the same answer - which is what we need, because
+    /// Bloom's own <c>ApplicationUpdateSupport.ChannelName</c> asks its entry assembly and so sees a
+    /// <c>.dll</c>, while from outside we see the process, whose main module is the <c>.exe</c>. Bloom's
+    /// version additionally requires the <c>.dll</c> ending on its developer-build check; matching that
+    /// here would call every developer build "Release", which is the dangerous direction. A test pins the
+    /// two forms agreeing.
+    ///
+    /// This is a NARROWER function than Bloom's, not a copy of it: Bloom's also has a Linux branch and a
+    /// unit-test channel, neither of which a Windows-only watcher wants. See the note on
+    /// <c>DoctorSession.Channel</c> about the duplication that remains.
     /// </summary>
     public static string DeriveFromExePath(string exePath)
     {
