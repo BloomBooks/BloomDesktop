@@ -15,6 +15,10 @@ import {
     TopLevelControlId,
 } from "./canvasControlTypes";
 import { controlRegistry, controlSections } from "./canvasControlRegistry";
+import {
+    canvasElementControlRegistry,
+    cellContentControls,
+} from "./canvasElementControlRegistry";
 
 type ResolvedToolbarItem = {
     control: ICommandControlDefinition;
@@ -216,6 +220,24 @@ const applyDefaultMenuRowFields = (
     helpRowSeparatorAbove:
         row.helpRowSeparatorAbove ?? defaultRow.helpRowSeparatorAbove,
 });
+
+// The control configuration for the selected canvas element: which controls it gets
+// on each surface. Two things about the element decide it. What the element is, which
+// the registry maps from its inferred type; and where it sits, because an element that
+// is the content of a table cell gets the cell's controls instead of the ones its own
+// type would give it. Every surface (toolbar, menu, tool panel) is resolved from what
+// this returns, so the surfaces are never able to disagree about the element.
+export const getControlConfiguration = (
+    ctx: IControlContext,
+): ICanvasElementControlConfiguration => {
+    const controlsForItsOwnType =
+        canvasElementControlRegistry[ctx.elementType] ??
+        canvasElementControlRegistry.none;
+    if (ctx.tableCell) {
+        return cellContentControls(controlsForItsOwnType, ctx.tableCell);
+    }
+    return controlsForItsOwnType;
+};
 
 // Resolves a canvas-element control configuration into toolbar controls, applying
 // visibility/enabled rules and normalizing spacer placement.
