@@ -264,8 +264,19 @@ namespace Bloom.Publish.Rab
             catch (Exception e)
             {
                 // Deliberately swallowed: the channel we would report a logging failure on is the
-                // one that just failed.
-                Console.Error.WriteLine($"[analytics] could not log \"{message}\": {e.Message}");
+                // one that just failed. Standard error is the last thing left to try, so it is
+                // guarded too -- with nowhere to report to after that, the only correct thing this
+                // method can do is return, which is what "without throwing" has to mean here.
+                try
+                {
+                    Console.Error.WriteLine(
+                        $"[analytics] could not log \"{message}\": {e.Message}"
+                    );
+                }
+                catch
+                {
+                    // Nothing left to report on. See above; this is not an oversight.
+                }
             }
         }
     }
