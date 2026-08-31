@@ -37,7 +37,19 @@ public sealed class WebViewCollector : IEvidenceCollector
     public TimeSpan Budget => TimeSpan.FromSeconds(40);
 
     /// <inheritdoc />
-    public bool AppliesTo(GatherContext context) => context.CdpPort.HasValue;
+    ///
+    /// <remarks>
+    /// **Only for a process that was still alive**, which is the same guard ManagedStacksCollector,
+    /// ProcessEvidenceCollector and WaitChainCollector already carry - this one was the odd one out.
+    ///
+    /// A port number outlives the process that owned it. Connect to one after Bloom has gone and the
+    /// answers come from whatever holds that port NOW: on a developer machine, quite possibly their own
+    /// browser, whose page titles and URLs would then be quoted onto a Bloom card. Worse, the reply reads
+    /// as evidence - "WebView2 answers normally, so the block is in Bloom's .NET UI thread" - attributed
+    /// to a process that had already exited.
+    /// </remarks>
+    public bool AppliesTo(GatherContext context) =>
+        context.ProcessWasAlive && context.CdpPort.HasValue;
 
     /// <inheritdoc />
     public async Task<ReportSection> CollectAsync(

@@ -42,7 +42,9 @@ public static class GatherContextBuilder
             ProcessWasAlive = processWasAlive,
             ArtifactDirectory = artifactDirectory,
             BloomLogPath = FirstUsable(session?.LogPath, () => FindLog(target, logDirectory)),
-            CdpPort = session is { CdpPort: > 0 } ? session.CdpPort : FindCdpPort(target),
+            CdpPort = session is { CdpPort: > 0 }
+                ? session.CdpPort
+                : FindCdpPort(target, processWasAlive),
             Session = session,
             PublishedState = ReadPublishedState(target.ProcessId) ?? lastSeenPublishedState,
             TargetNoLongerNeeded = targetNoLongerNeeded,
@@ -112,8 +114,14 @@ public static class GatherContextBuilder
     /// looks like a 6.3: on a machine where something else owns 9222 we would otherwise interrogate a
     /// stranger's browser and put the answers on a Bloom card.
     /// </summary>
-    private static int? FindCdpPort(BloomTargetFacts target)
+    private static int? FindCdpPort(BloomTargetFacts target, bool processWasAlive)
     {
+        // Nothing to find, and worse than nothing to guess: a dead process has no WebView2 children, so
+        // the "no children means this is a 6.3" test below would be satisfied by every exited Bloom and
+        // hand back a port somebody else may now own. WebViewCollector refuses a dead process outright as
+        // well; this is the same rule at the other end, so neither has to rely on the other.
+        if (!processWasAlive)
+            return null;
         try
         {
             var fromCommandLine = WebView2Processes.FindDebuggingPort(target.ProcessId);

@@ -212,7 +212,25 @@ internal static class Program
         Console.WriteLine($"{pending} report(s) pending in {outbox.Root}");
         if (pending == 0)
             return 0;
-        var outcome = outbox.DrainAsync(new YouTrackSubmitter()).GetAwaiter().GetResult();
+        // Wrapped because this is a support tool and it must not die in front of whoever is using it.
+        // SubmitAsync no longer lets anything escape, so this is belt rather than braces - but a stack
+        // trace here tells the person nothing they can act on, whereas a line saying what went wrong and
+        // leaving the queue intact does.
+        DrainOutcome outcome;
+        try
+        {
+            outcome = outbox.DrainAsync(new YouTrackSubmitter()).GetAwaiter().GetResult();
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine(
+                $"could not send the queued reports: {e.GetType().Name}: {e.Message}"
+            );
+            Console.Error.WriteLine(
+                $"They are still in {outbox.Root} and nothing has been lost; try again later."
+            );
+            return 1;
+        }
         // Distinguish the two, or support reads "filed 0" and concludes something is broken when in fact
         // a Doctor is running and already sending these.
         Console.WriteLine(

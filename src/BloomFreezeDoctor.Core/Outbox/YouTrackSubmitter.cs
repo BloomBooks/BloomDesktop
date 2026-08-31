@@ -123,9 +123,30 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             if (created.IssueId == null)
                 return created;
 
-            await AttachArtifactsAsync(created.IssueId, bundle, cancellation).ConfigureAwait(false);
-            await UploadWhatCouldNotBeAttachedAsync(created.IssueId, bundle, cancellation)
-                .ConfigureAwait(false);
+            // **Once the card exists, the outcome is Filed whatever happens next.** Attaching and
+            // uploading used to run bare, so a connection dropping during them unwound into the catch
+            // below and returned NetworkUnavailable with no issue id - which is a lie with consequences:
+            // the bundle went back to Pending, the retry found the card by fingerprint and posted "This
+            // happened again" about its own first attempt, the recurrence path deliberately attaches
+            // nothing, and the S3 links for a minidump already uploaded existed only in a local variable
+            // and were lost with it. The dump stayed in the bucket with nothing pointing at it.
+            try
+            {
+                await AttachArtifactsAsync(created.IssueId, bundle, cancellation)
+                    .ConfigureAwait(false);
+                await UploadWhatCouldNotBeAttachedAsync(created.IssueId, bundle, cancellation)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                // The card is filed and carries the report; what we have lost is some of its attachments.
+                // Said in the log rather than swallowed, because "the card exists but is missing its dump"
+                // is exactly the confusion somebody will otherwise spend an afternoon on.
+                DoctorLog.Write(
+                    $"filed {created.IssueId} but could not attach everything: "
+                        + $"{e.GetType().Name}: {e.Message}"
+                );
+            }
             return created;
         }
         catch (HttpRequestException e)
@@ -143,6 +164,21 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             {
                 Outcome = SubmitOutcome.NetworkUnavailable,
                 Error = "timed out talking to the tracker: " + e.Message,
+            };
+        }
+        catch (Exception e)
+        {
+            // Anything else must not escape, and the case that made this necessary is not exotic: a
+            // captive portal or corporate proxy answers 200 with an HTML block page, JsonNode.Parse throws
+            // JsonException, and nothing here caught it. It unwound out of the drain, which left the bundle
+            // stuck in Uploading - invisible to every later drain until the reclaim timer - and out of
+            // `--drain`, which had no handler at all and simply died in front of whoever was using it.
+            //
+            // Treated as a network problem because that is what it behaves like: try again later.
+            return new SubmitResult
+            {
+                Outcome = SubmitOutcome.NetworkUnavailable,
+                Error = $"unexpected reply from the tracker: {e.GetType().Name}: {e.Message}",
             };
         }
     }
