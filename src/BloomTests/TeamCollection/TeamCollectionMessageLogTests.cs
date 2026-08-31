@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -557,6 +558,36 @@ namespace BloomTests.TeamCollection
                 _messageLog.TeamCollectionStatus,
                 Is.EqualTo(TeamCollectionStatus.ClobberPending)
             );
+        }
+
+        [Test]
+        public void WriteMessage_LogFileNotWritable_DoesNotThrowAndKeepsMessageInMemory()
+        {
+            // BL-16772: a user's collection folder had read-only files, and the exception from
+            // failing to persist a message escaped all the way up and prevented the collection
+            // from opening at all. The message log must survive an unwritable log file.
+            var attributes = File.GetAttributes(_logFile.Path);
+            File.SetAttributes(_logFile.Path, attributes | FileAttributes.ReadOnly);
+            try
+            {
+                // Sanity check that the file really is read-only now.
+                Assert.That(
+                    File.GetAttributes(_logFile.Path) & FileAttributes.ReadOnly,
+                    Is.EqualTo(FileAttributes.ReadOnly),
+                    "Setup failed: could not make the log file read-only"
+                );
+
+                MakeError1();
+
+                var messages = _messageLog.Messages;
+                Assert.That(messages, Has.Count.EqualTo(1));
+                AssertError1(messages, 0);
+            }
+            finally
+            {
+                // So TearDown can delete the file.
+                File.SetAttributes(_logFile.Path, attributes);
+            }
         }
 
         [Test]
