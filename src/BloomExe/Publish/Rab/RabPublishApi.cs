@@ -192,7 +192,9 @@ namespace Bloom.Publish.Rab
         {
             // Everything here is wrapped, not just the send: gathering the properties calls
             // GetStatus(), which reads and parses files, so it can fail on its own. Recording an
-            // event must never be able to affect what it is observing.
+            // event must never be able to affect what it is observing -- and note that this
+            // method must not throw at all, which is why the catch logs through
+            // LogAnalyticsWithoutThrowing rather than calling Logger directly. See its comment.
             try
             {
                 var properties = new Dictionary<string, string>
@@ -226,7 +228,7 @@ namespace Bloom.Publish.Rab
                 // sent" from "never fired" without shipping to alpha. Passed to WriteEvent as the
                 // whole message and never as a format string, so a brace arriving in an exception
                 // type name cannot turn into a FormatException.
-                Logger.WriteEvent(
+                LogAnalyticsWithoutThrowing(
                     $"[analytics] Publish App -- stage={stage}, result={result}"
                         + (
                             Analytics.AllowTracking
@@ -237,9 +239,33 @@ namespace Bloom.Publish.Rab
             }
             catch (Exception e)
             {
-                Logger.WriteEvent(
+                LogAnalyticsWithoutThrowing(
                     $"[analytics] FAILED to report the App Builder {stage} outcome: {e.Message}"
                 );
+            }
+        }
+
+        /// <summary>
+        /// Write one analytics line to the Bloom log without ever throwing.
+        ///
+        /// TrackRabAction runs after a build or install has finished but before the endpoint
+        /// answers the request, so an exception escaping it would leave the request unanswered and
+        /// make a completed build look to the user like a hung one. That makes the logging inside
+        /// it the one place where Bloom's usual unguarded Logger.WriteEvent is not good enough:
+        /// the catch that reports a failed send would otherwise re-run the very call that just
+        /// failed, and the second exception would escape.
+        /// </summary>
+        private static void LogAnalyticsWithoutThrowing(string message)
+        {
+            try
+            {
+                Logger.WriteEvent(message);
+            }
+            catch (Exception e)
+            {
+                // Deliberately swallowed: the channel we would report a logging failure on is the
+                // one that just failed.
+                Console.Error.WriteLine($"[analytics] could not log \"{message}\": {e.Message}");
             }
         }
     }
