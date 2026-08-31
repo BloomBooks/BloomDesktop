@@ -216,7 +216,7 @@ describe("All books", () => {
         "default",
         "legacy-5-6",
         "rounded-border-ebook",
-        "zero-margin-ebook",
+        "edge-to-edge",
     ];
 
     // We test each branding with the default theme, and each non-default theme with the default
