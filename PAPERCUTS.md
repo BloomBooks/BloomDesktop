@@ -19,6 +19,22 @@ House rules:
 
 ---
 
+## 2026-08-31 — AGENTS.md's vitest-wedge workaround (`--no-file-parallelism`) doesn't always work
+
+- **Cut:** AGENTS.md ("If the front-end test suite seems to hang, re-run it with
+  `--no-file-parallelism`") promises that re-running that way completes the suite green. It
+  didn't: `yarn vitest run --no-file-parallelism` stopped dead after 11 test files with no error
+  and no summary, and was still stuck 19 minutes later. Cost ~25 minutes of a preflight run
+  before it was killed. The advice is stated as a reliable fix, so the natural response is to
+  keep waiting rather than to try something else.
+- **Idea:** `yarn vitest run --no-file-parallelism --pool=threads` ran the whole suite in ~3.5
+  minutes (49 files, 532 tests). The default pool is `forks`, so the wedge looks fork-specific —
+  either document `--pool=threads` as the workaround or set `pool: "threads"` in
+  `vite.config.mts`. Worth reproducing on another machine before rewriting the AGENTS.md advice.
+- **Context:** BloomDesktop, during `/preflight` of PR #8267 (BL-16786). Not the same cut as the
+  2026-07-27 entry (C# host aborting alongside vitest): both the wedged run and the successful
+  `--pool=threads` run overlapped a `dotnet test`, so concurrency wasn't the differentiator here.
+
 ## 2026-07-30 — Visual regression suite reports only the first stale image per case
 - **Cut:** Each case in `src/BloomVisualRegressionTests/index.spec.ts` compares the book preview
   and then every bloom-player page in sequence, and every comparison throws on failure — so the
