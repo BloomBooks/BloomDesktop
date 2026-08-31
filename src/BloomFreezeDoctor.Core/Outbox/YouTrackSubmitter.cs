@@ -106,15 +106,30 @@ public sealed class YouTrackSubmitter : IReportSubmitter
                 : await FindExistingIssueAsync(bundle.Metadata, cancellation).ConfigureAwait(false);
             if (existing != null)
             {
-                // A short note, not the whole report again - see BuildRecurrenceComment. Note also what is
-                // NOT here: AttachArtifactsAsync runs only on the create path below, so a recurrence
-                // uploads nothing. The dump and log for it stay in the bundle folder named in the comment.
+                // A short note, not the whole report again - see BuildRecurrenceComment. A recurrence
+                // uploads almost nothing, the exception being a dump for a card that has none: see
+                // RecurrenceArtifacts for why that exception is needed and why it is only dumps.
+                var alreadyThere = await AttachmentNamesOnAsync(existing, cancellation)
+                    .ConfigureAwait(false);
+                var missingEvidence = RecurrenceArtifacts.WorthAttaching(
+                    SortArtifacts(bundle).ToAttach,
+                    alreadyThere
+                );
                 var commentFailure = await CommentAsync(
                         existing,
-                        BuildRecurrenceComment(bundle),
+                        BuildRecurrenceComment(
+                            bundle,
+                            contributingADump: missingEvidence.Count > 0
+                        ),
                         cancellation
                     )
                     .ConfigureAwait(false);
+                // After the comment, so a card that already has the note is not left with an orphan
+                // attachment if the upload fails; and best effort, because the recurrence is recorded
+                // either way and a lost dump must not send the bundle round again to comment twice.
+                if (missingEvidence.Count > 0)
+                    await AttachTheseAsync(existing, bundle, missingEvidence, cancellation)
+                        .ConfigureAwait(false);
                 if (commentFailure != null)
                     return commentFailure.Value;
                 return new SubmitResult
@@ -193,6 +208,41 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     /// Looks for a card already carrying this fingerprint. Restricted to the same project, so a test
     /// run in `AUT` can never comment on a real `BL` card.
     /// </summary>
+    /// <summary>
+    /// The file names of a card's existing attachments, so a recurrence can tell whether the evidence it
+    /// holds is already there. See <see cref="RecurrenceArtifacts"/>.
+    ///
+    /// An empty list on failure, which errs towards attaching: a duplicate dump on a card is untidy, a
+    /// missing one is unrecoverable once the user's machine has cleared its outbox.
+    /// </summary>
+    private async Task<IReadOnlyList<string>> AttachmentNamesOnAsync(
+        string issueId,
+        CancellationToken cancellation
+    )
+    {
+        try
+        {
+            using var response = await _http
+                .GetAsync($"{BaseUrl}/issues/{issueId}/attachments?fields=name", cancellation)
+                .ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+                return Array.Empty<string>();
+            var json = await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false);
+            var array = JsonNode.Parse(json)?.AsArray();
+            if (array == null)
+                return Array.Empty<string>();
+            return array
+                .Select(entry => entry?["name"]?.GetValue<string>())
+                .Where(name => !string.IsNullOrEmpty(name))
+                .Select(name => name!)
+                .ToList();
+        }
+        catch (Exception)
+        {
+            return Array.Empty<string>();
+        }
+    }
+
     private async Task<string?> FindExistingIssueAsync(
         BundleMetadata metadata,
         CancellationToken cancellation
@@ -333,7 +383,7 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     /// not attached either: they are near-duplicates of the first occurrence's at some 16 MB each, and the
     /// folder named below is how to get them if anyone ever wants to.
     /// </summary>
-    private static string BuildRecurrenceComment(QueuedBundle bundle)
+    private static string BuildRecurrenceComment(QueuedBundle bundle, bool contributingADump)
     {
         var text = new StringBuilder();
         text.AppendLine("**This happened again.**");
@@ -349,10 +399,34 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         if (!string.IsNullOrWhiteSpace(bundle.Metadata.RecurrenceNote))
             text.AppendLine(bundle.Metadata.RecurrenceNote);
         text.AppendLine();
+        var keptUntil = bundle.Metadata.GatheredAtUtc + ReportOutbox.MaxAge;
+        // Two quite different things to say, and saying the wrong one is how a reader gets sent looking
+        // for a dump that is not there - or told a dump is "near enough a copy" of nothing at all.
+        if (contributingADump)
+        {
+            text.AppendLine(
+                "**The crash dump from this occurrence is attached**, because the card had none: the "
+                    + "first report for this problem was made after the process had already gone, when no "
+                    + "dump could be taken."
+            );
+            text.AppendLine();
+            text.AppendLine(
+                $"The rest of the report is on that machine at `{bundle.Directory}` and is not attached - "
+                    + "it is near enough a copy of the one already on this card."
+            );
+        }
+        else
+        {
+            text.AppendLine(
+                $"The full report, with the crash dump and Bloom's log, is on that machine at "
+                    + $"`{bundle.Directory}` and is deliberately not attached here - it is near enough a "
+                    + "copy of the one already on this card."
+            );
+        }
+        text.AppendLine();
         text.AppendLine(
-            "The full report, with the crash dump and Bloom's log, is on that machine at "
-                + $"`{bundle.Directory}` and is deliberately not attached here - it is near enough a copy "
-                + "of the one already on this card."
+            $"*That folder is kept until about {keptUntil:yyyy-MM-dd} - or less if the Doctor gathers more "
+                + $"than {ReportOutbox.MaxBundles} reports before then, so ask sooner rather than later.*"
         );
         return text.ToString();
     }
@@ -406,14 +480,26 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     /// object. If that second call fails we delete the attachment rather than leave it unrestricted —
     /// failing to attach is a much smaller problem than exposing a dump.
     /// </summary>
-    private async Task AttachArtifactsAsync(
+    private Task AttachArtifactsAsync(
         string issueId,
         QueuedBundle bundle,
+        CancellationToken cancellation
+    ) => AttachTheseAsync(issueId, bundle, SortArtifacts(bundle).ToAttach, cancellation);
+
+    /// <summary>
+    /// Uploads exactly these files to the card, restricting each one as above. Split out from
+    /// <see cref="AttachArtifactsAsync"/> so the recurrence path can contribute a single missing dump
+    /// without also re-uploading everything else the card already has.
+    /// </summary>
+    private async Task AttachTheseAsync(
+        string issueId,
+        QueuedBundle bundle,
+        IReadOnlyList<string> paths,
         CancellationToken cancellation
     )
     {
         var failed = new List<string>();
-        foreach (var path in SortArtifacts(bundle).ToAttach)
+        foreach (var path in paths)
         {
             string? attachmentId = null;
             try
