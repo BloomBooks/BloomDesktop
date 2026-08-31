@@ -55,21 +55,6 @@ public sealed record ExitEvidence
     /// </summary>
     public bool LogShowsForcedShutdown { get; init; }
 
-    /// <summary>
-    /// The machine went down unexpectedly around the time the process vanished (Event Log 6008, or a
-    /// boot later than the process's death). Nothing to do with Bloom, and the Doctor died too, so
-    /// this is discovered when reconciling an orphaned session rather than watched live.
-    /// </summary>
-    public bool MachineWentDown { get; init; }
-
-    /// <summary>
-    /// A debugger can account for this exit — one was attached when the process died, or left too recently
-    /// to be ruled out. **Not** merely "was debugged at some point in its life": a debugger detached hours
-    /// earlier does not explain a crash now, and treating it as though it did meant a developer's machine
-    /// never reported anything again for the rest of the run.
-    /// </summary>
-    public bool DebuggerCouldExplainIt { get; init; }
-
     /// <summary>A developer build or headless run, which is never filed whatever else is true.</summary>
     public bool NeverFile { get; init; }
 }
@@ -94,9 +79,6 @@ public enum ExitVerdict
     /// that left no trace. Honestly labelled rather than called a crash.
     /// </summary>
     NoOrderlyShutdown,
-
-    /// <summary>The machine went down. Not Bloom's doing.</summary>
-    MachineWentDown,
 }
 
 /// <summary>The classifier's answer.</summary>
@@ -161,26 +143,28 @@ public static class ExitClassifier
     ///   feature an administrator could switch off. So the narrow rule still catches the case that
     ///   motivated the wide one - it simply declines to guess when nothing at all is known.
     ///
-    /// Order matters, and the order is "explain it away before blaming Bloom": a machine that went down and
-    /// a debugged process win over any crash evidence, because reporting those is worse than missing them.
-    /// Bloom's own first-hand accounts come next, because they outrank what Windows noticed afterwards.
+    /// **A whole class of exemptions went with that regime, and this is why.** Reporting on absence needed
+    /// every innocent cause of an absence to be recognised and excused, so there were checks for "the
+    /// machine went down" and "a debugger was attached". Neither has anything to do now: nothing is
+    /// reported unless something positively says Bloom failed, and neither of those events produces such a
+    /// signal. **Measured** (2026-08-31) - a `TerminateProcess` kill, which is exactly what "Stop
+    /// Debugging" and Task Manager both do:
+    ///
+    ///       exit code                   -1        <- not a crash code
+    ///       ProcessExit handler ran     no
+    ///       Application Error event     none
+    ///       WER report                  none
+    ///
+    /// So a developer stopping the debugger, a user killing Bloom in Task Manager and a machine losing
+    /// power are all quiet for the same reason: they leave nothing behind that says anything went wrong.
+    /// Removing those checks also removed the boot-time slack reasoning behind them, which is where
+    /// "startup crashes misread as a machine restart" came from.
+    ///
+    /// What remains is ordered "Bloom's own account first": its first-hand statements outrank what Windows
+    /// noticed afterwards, because they say what Bloom was doing rather than what the OS observed.
     /// </summary>
     public static ExitConclusion Classify(ExitEvidence evidence)
     {
-        if (evidence.MachineWentDown)
-            return Conclude(
-                ExitVerdict.MachineWentDown,
-                false,
-                "the machine shut down unexpectedly while Bloom was running, which explains the missing shutdown"
-            );
-
-        if (evidence.DebuggerCouldExplainIt)
-            return Conclude(
-                ExitVerdict.NoOrderlyShutdown,
-                false,
-                "a debugger was attached to this Bloom around the time it went, so its exit tells us nothing"
-            );
-
         // NOTE what is deliberately NOT here: a check on NeverFile. Whether a report may be *filed* is a
         // different question from whether this exit is worth reporting on, and it is settled elsewhere: a
         // developer run's evidence is gathered to disk and then declined for filing. Folding the two

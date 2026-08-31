@@ -136,31 +136,40 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void A_machine_that_went_down_is_never_blamed_on_Bloom()
+    public void A_process_terminated_from_outside_is_quiet_without_needing_to_be_excused()
     {
-        // Power loss leaves no proof and kills the Doctor too, so this is found when reconciling an
-        // orphaned session. Reporting it would be pure noise.
+        // This replaces two explicit exemptions - "the machine went down" and "a debugger could account
+        // for it" - which existed only to excuse an absence back when an absence was reportable. They are
+        // unnecessary now, and this is the shape of the case they used to catch.
+        //
+        // Measured on 2026-08-31: a TerminateProcess kill, which is exactly what "Stop Debugging" and Task
+        // Manager both do, gives exit code -1, no ProcessExit, no Application Error event and no WER
+        // report. A machine losing power leaves even less. So none of them reaches the crash signals at
+        // all, and nothing has to recognise them by name to stay quiet.
         var conclusion = ExitClassifier.Classify(
-            new ExitEvidence
-            {
-                ExitCode = null,
-                CleanExitProofPresent = false,
-                MachineWentDown = true,
-                HasEventLogCrashEntry = true,
-            }
+            new ExitEvidence { ExitCode = -1, CleanExitProofPresent = false }
         );
 
-        Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.MachineWentDown));
         Assert.That(
             conclusion.ShouldReport,
             Is.False,
-            "an unexpected shutdown outranks even crash evidence"
+            "no evidence of failure means no card, whatever the cause was"
         );
     }
 
     [Test]
-    public void A_debugged_target_is_never_reported_however_bad_it_looks()
+    public void Real_crash_evidence_is_reported_even_on_a_machine_that_has_been_debugging()
     {
+        // A deliberate change of behaviour, and worth being explicit about. The classifier used to refuse
+        // outright if a debugger had been near the process, however bad the evidence looked. It no longer
+        // knows about debuggers at all.
+        //
+        // Nothing reaches the tracker that should not: a debugged Bloom is blocked from FILING one level
+        // up, by BloomTargetWatcher.ReasonsFilingWouldNormallyBeBlocked - see
+        // BloomTargetWatcherTests.A_target_seen_under_a_debugger_is_never_filed_even_if_it_later_looks_clean.
+        // What changes is that the evidence is now gathered to disk instead of being thrown away, which is
+        // the right way round: a Bloom that genuinely called FailFast is worth looking at, and the person
+        // debugging it is the one best placed to.
         var conclusion = ExitClassifier.Classify(
             new ExitEvidence
             {
@@ -168,14 +177,14 @@ public class ExitClassifierTests
                 HasEventLogCrashEntry = true,
                 HasWerReport = true,
                 CleanExitProofPresent = false,
-                DebuggerCouldExplainIt = true,
             }
         );
 
+        Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.Crashed));
         Assert.That(
             conclusion.ShouldReport,
-            Is.False,
-            "a developer's debugging session must never reach the tracker, whatever the evidence says"
+            Is.True,
+            "deciding WHETHER to file is a separate question, asked elsewhere"
         );
     }
 

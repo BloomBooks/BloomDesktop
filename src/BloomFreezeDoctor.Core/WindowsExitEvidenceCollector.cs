@@ -33,14 +33,16 @@ public sealed class WindowsExitEvidenceCollector
     /// <summary>
     /// Assembles the evidence for one exit. <paramref name="diedAt"/> is when we noticed the process
     /// had gone, and <paramref name="logPath"/> the log we identified as this process's, if any.
+    ///
+    /// Note what it no longer gathers: whether the machine went down, and whether a debugger could account
+    /// for the exit. Both existed only to excuse an absence, and nothing is now reported on an absence -
+    /// see <see cref="ExitClassifier.Classify"/>.
     /// </summary>
     public ExitEvidence Collect(
         int processId,
         DateTime diedAt,
-        DateTime startedAt,
         string? logPath,
         int? exitCode,
-        bool debuggerCouldExplainIt,
         bool neverFile,
         bool? cleanExitProofPresent = null,
         BloomShutdownPhase? shutdownPhaseReached = null,
@@ -51,7 +53,6 @@ public sealed class WindowsExitEvidenceCollector
         return new ExitEvidence
         {
             ExitCode = exitCode,
-            DebuggerCouldExplainIt = debuggerCouldExplainIt,
             NeverFile = neverFile,
             CleanExitProofPresent = cleanExitProofPresent,
             ShutdownPhaseReached = shutdownPhaseReached,
@@ -59,7 +60,6 @@ public sealed class WindowsExitEvidenceCollector
             HasEventLogCrashEntry = LookForCrashEntry(processId, diedAt, exeFileName),
             HasWerReport = LookForWerReport(diedAt),
             LogShowsForcedShutdown = LogEndsWithForcedShutdown(logPath),
-            MachineWentDown = DidMachineGoDown(startedAt, diedAt),
         };
     }
 
@@ -336,52 +336,5 @@ public sealed class WindowsExitEvidenceCollector
             FileShare.None
         );
         source.CopyTo(target);
-    }
-
-    /// <summary>
-    /// True when the machine itself went down while Bloom was running: an unexpected-shutdown event
-    /// (6008), or a boot that happened after the process died, which can only mean we are looking at
-    /// the wreckage from before a restart.
-    /// </summary>
-    private static bool DidMachineGoDown(DateTime startedAt, DateTime diedAt)
-    {
-        try
-        {
-            var bootedAt = DateTime.Now - TimeSpan.FromMilliseconds(Environment.TickCount64);
-            // A boot comfortably after the process was last seen means the machine restarted in between.
-            // The slack has to run FORWARD: bootedAt is derived from a tick count and is approximate, and a
-            // boot is always in the past, so accepting one slightly EARLIER than the death would classify
-            // every Bloom that dies within the slack of startup as wreckage from before a restart - writing
-            // off startup crashes, which are among the ones we most want to hear about. A real restart
-            // clears 30 seconds easily, since shutting down takes longer than that and the death precedes
-            // it.
-            if (bootedAt > diedAt.AddSeconds(30))
-                return true;
-
-            using var log = new EventLog("System");
-            for (var i = log.Entries.Count - 1; i >= 0 && i > log.Entries.Count - 200; i--)
-            {
-                EventLogEntry entry;
-                try
-                {
-                    entry = log.Entries[i];
-                }
-                catch (Exception)
-                {
-                    continue;
-                }
-                if (entry.TimeGenerated < startedAt)
-                    break;
-                // 6008: "The previous system shutdown ... was unexpected."
-                if (entry.InstanceId == 6008 && entry.TimeGenerated >= startedAt)
-                    return true;
-            }
-        }
-        catch (Exception)
-        {
-            // If we cannot tell, we do not claim the machine went down: that would silence real
-            // crashes, which is the worse mistake.
-        }
-        return false;
     }
 }

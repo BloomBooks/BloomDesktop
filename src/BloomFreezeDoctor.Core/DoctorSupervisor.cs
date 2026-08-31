@@ -793,10 +793,8 @@ public sealed class DoctorSupervisor : IDisposable
                     var evidence = new WindowsExitEvidenceCollector().Collect(
                         watcher.Target.ProcessId,
                         diedAt,
-                        watcher.Target.StartTime,
                         session?.LogPath,
                         probe.TryGetExitCode(out var code) ? code : (int?)null,
-                        watcher.IsPoisonedByDebugger,
                         watcher.Target.NeverFile,
                         // A session file with no exit record is the absence of proof that section 3.5 treats
                         // as evidence — but only when Bloom was capable of leaving one. No session file at
