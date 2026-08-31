@@ -19,6 +19,15 @@ House rules:
 
 ---
 
+## 2026-08-10 — NoErrorForEmptyAudio fails when the temp path contains "17"
+- **Cut:** `SpreadsheetAudioImportTests.NoErrorForEmptyAudio` asserts no progress message matches
+  `.*17.*` (checking page 17 imported cleanly), but progress messages include full temp paths, and
+  `TestTempDirectory`'s session-scoped dir (`%TEMP%\BloomTests\<sessionkey>-p<pid>`) can contain
+  "17" in the session key (e.g. `a7817563`), so an unrelated "file not found" message matches and
+  fails the test.
+- **Idea:** tighten the assertion to `page 17` (or strip paths from messages before matching).
+- **Context:** hit 2026-08-10 during BL-15971 preflight on Andrew's machine.
+
 ## 2026-07-30 — Visual regression suite reports only the first stale image per case
 - **Cut:** Each case in `src/BloomVisualRegressionTests/index.spec.ts` compares the book preview
   and then every bloom-player page in sequence, and every comparison throws on failure — so the

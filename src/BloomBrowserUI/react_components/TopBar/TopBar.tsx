@@ -4,7 +4,14 @@ import { CollectionsTabIcon } from "./CollectionsTabIcon";
 import { EditTabIcon } from "./EditTabIcon";
 import { PublishTabIcon } from "./PublishTabIcon";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
-import { postJson, useWatchApiObject } from "../../utils/bloomApi";
+import { postJson } from "../../utils/bloomApi";
+import {
+    defaultWorkspaceTabState,
+    getActiveWorkspaceTab,
+    TabStates,
+    useWorkspaceTabInfo,
+    WorkspaceTabId,
+} from "./workspaceTabInfo";
 import { TopBarControls } from "./TopBarControls";
 import { Span } from "../l10nComponents";
 import {
@@ -15,22 +22,6 @@ import {
 } from "../../bloomMaterialUITheme";
 import { ScopedCssBaseline } from "@mui/material";
 import { TopBarContextMenu } from "./TopBarContextMenu";
-
-export type WorkspaceTabId = "collection" | "edit" | "publish";
-
-export type WorkspaceTabState = "active" | "enabled" | "disabled" | "hidden";
-
-export type TabStates = Record<WorkspaceTabId, WorkspaceTabState>;
-
-// What C# (WorkspaceView.GetTabInfo) tells us about workspace navigation.
-export interface IWorkspaceTabInfo {
-    tabStates: TabStates;
-    // True while some operation has made itself modal by locking navigation: a BloomLibrary
-    // upload, a Reading App Builder action, or an Edit-tab modal dialog. Screens with their own
-    // navigation (notably the Publish tab's switcher between publish tools) use this to lock in
-    // step with the main tabs.
-    navigationLocked: boolean;
-}
 
 interface ITabDefinition {
     id: WorkspaceTabId;
@@ -59,33 +50,6 @@ const tabDefinitions: Array<ITabDefinition> = [
         color: kBloomRed,
     },
 ];
-
-export function getActiveWorkspaceTab(tabStates: TabStates): WorkspaceTabId {
-    return (
-        tabDefinitions.find((t) => tabStates[t.id] === "active")?.id ??
-        "collection"
-    );
-}
-
-export const defaultWorkspaceTabState: IWorkspaceTabInfo = {
-    tabStates: {
-        collection: "active",
-        edit: "hidden",
-        publish: "hidden",
-    },
-    navigationLocked: false,
-};
-
-// Subscribes to what C# says about workspace navigation, kept in one place because several
-// screens in different browser controls need the same answer.
-export function useWorkspaceTabInfo(): IWorkspaceTabInfo {
-    return useWatchApiObject<IWorkspaceTabInfo>(
-        "workspace/tabs",
-        defaultWorkspaceTabState,
-        "workspace",
-        "tabs",
-    );
-}
 
 export const TopBar: React.FunctionComponent = () => {
     const state = useWorkspaceTabInfo();
