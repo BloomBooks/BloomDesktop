@@ -153,19 +153,31 @@ export function startProblemDialogWatcher(
         const found = await findProblemDialog(browser).catch(() => undefined);
         if (!found) return false;
         if (unclosable.has(found.page)) return false;
+        // Gather what we can, but a failure here must not stop the close below: the dialog is
+        // modal, and leaving it up would wedge every later test.
+        let gathered: { problem?: string; detail?: string };
         try {
-            const { problem, detail } = await gatherProblemDetail(found.page);
-            problems.push({ heading: found.heading, problem, detail });
+            gathered = await gatherProblemDetail(found.page);
+        } catch (error) {
+            gathered = {
+                problem: `A problem dialog appeared, but gathering its detail failed: ${error}`,
+            };
+        }
+        try {
             await closeProblemDialog(found.page);
         } catch (error) {
             unclosable.add(found.page);
-            problems.push({
-                heading: found.heading,
-                problem:
-                    `A problem dialog appeared, but gathering its detail or closing it ` +
-                    `failed: ${error}`,
-            });
+            gathered = {
+                ...gathered,
+                detail: [
+                    gathered.detail,
+                    `Also, the dialog could not be closed and may block later tests: ${error}`,
+                ]
+                    .filter(Boolean)
+                    .join("\n"),
+            };
         }
+        problems.push({ heading: found.heading, ...gathered });
         return true;
     };
 
