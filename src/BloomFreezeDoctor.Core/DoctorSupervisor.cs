@@ -1549,6 +1549,46 @@ public sealed class DoctorSupervisor : IDisposable
     /// The distinction itself is not lost - see the note on <see cref="DrainOutcome"/>, which is where it
     /// matters and where it is still made.
     /// </summary>
+    /// <summary>
+    /// Which tracker project this Doctor files into, so the window can name it before sending anything.
+    /// A Doctor Bloom started uses the real project, not the test one, and a developer about to send a
+    /// report by hand should be told which before they do it and not after.
+    /// </summary>
+    public string Project => _project;
+
+    /// <summary>
+    /// Sends a report that was gathered and deliberately NOT filed - a developer build, an automation run,
+    /// or a failure that was simulated on purpose.
+    ///
+    /// All three refusals are right by default and all three are ones a developer sometimes wants to
+    /// override for the report in front of them. The only way to file before this was "Report now", which
+    /// gathers a WHOLE NEW report: impossible once the Bloom in question has died, and about a different
+    /// moment even when it has not.
+    /// </summary>
+    public async Task<ReportNowResult> SendSavedReportAsync(
+        string bundleDirectory,
+        CancellationToken cancellation
+    )
+    {
+        if (!_outbox.SendThisAfterAll(bundleDirectory))
+            return new ReportNowResult(null, Queued: false);
+        Note(
+            $"sending a report that was saved but not filed, at somebody's request: {bundleDirectory}"
+        );
+        await DrainAsync(cancellation).ConfigureAwait(false);
+        // Read the answer back off the bundle rather than from the drain, which reports on everything it
+        // sent. What the person clicking wants to know is what happened to THEIR report.
+        var bundle = _outbox
+            .List()
+            .FirstOrDefault(b =>
+                string.Equals(b.Directory, bundleDirectory, StringComparison.OrdinalIgnoreCase)
+            );
+        return new ReportNowResult(
+            bundle?.Metadata.IssueId,
+            Queued: bundle?.Metadata.State == BundleState.Pending
+        );
+    }
+
     private async Task DrainAsync(CancellationToken cancellation)
     {
         try

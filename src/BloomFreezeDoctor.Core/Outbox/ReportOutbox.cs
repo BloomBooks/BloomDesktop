@@ -379,6 +379,31 @@ public sealed class ReportOutbox
         return new QueuedBundle { Directory = final, Metadata = metadata };
     }
 
+    /// <summary>
+    /// Promotes a report that was gathered but deliberately not queued for sending, so that the next drain
+    /// will send it after all. Returns false if there is no such bundle there to promote.
+    ///
+    /// The Doctor declines to file on a developer build, on an automation run, and whenever the failure was
+    /// deliberately simulated - all of which are right by default, and all of which a developer sometimes
+    /// wants to override for the report in front of them. Until now the only way was to gather a WHOLE NEW
+    /// report with "Report now", which cannot be done at all once the Bloom in question has died, and which
+    /// in any case reports on a different moment than the one that was interesting.
+    ///
+    /// Only NotForFiling is promoted. Anything already Pending, Uploading or Filed is left exactly as it
+    /// is: this is for lifting a deliberate refusal, not for re-sending or for jogging a stuck queue.
+    /// </summary>
+    public bool SendThisAfterAll(string bundleDirectory)
+    {
+        var bundle = List()
+            .FirstOrDefault(b =>
+                string.Equals(b.Directory, bundleDirectory, StringComparison.OrdinalIgnoreCase)
+            );
+        if (bundle == null || bundle.Metadata.State != BundleState.NotForFiling)
+            return false;
+        WriteMetadata(bundle.Directory, bundle.Metadata with { State = BundleState.Pending });
+        return true;
+    }
+
     /// <summary>Every bundle currently on disk, newest first. Never throws for one unreadable bundle.</summary>
     public List<QueuedBundle> List()
     {

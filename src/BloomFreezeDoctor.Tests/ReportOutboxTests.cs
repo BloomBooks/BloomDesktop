@@ -848,6 +848,56 @@ public class ReportOutboxTests
     }
 
     [Test]
+    public void A_report_held_back_can_be_sent_after_all()
+    {
+        // The Doctor declines to file on a developer build, on an automation run, and when the failure was
+        // simulated on purpose. All three are right by default and all three are ones a developer sometimes
+        // wants to override for the report in front of them - which until now meant gathering a WHOLE NEW
+        // report, impossible once that Bloom has died.
+        var outbox = NewOutbox();
+        var bundle = outbox.Enqueue(Report(mayFile: false), "AUT", "Developer/Debug", "Frozen");
+        Assert.That(
+            outbox.Pending(),
+            Is.Empty,
+            "setup: a report held back must not be queued for sending"
+        );
+
+        Assert.That(outbox.SendThisAfterAll(bundle.Directory), Is.True);
+
+        Assert.That(outbox.Pending(), Has.Count.EqualTo(1), "and now the next drain will send it");
+    }
+
+    [Test]
+    public void Sending_after_all_leaves_everything_else_alone()
+    {
+        // Only a deliberate refusal is lifted. This is not a way to re-send something already filed, nor to
+        // jog a queue that is merely slow - and a button that quietly re-sent a filed report would produce
+        // duplicate cards from a single click.
+        var outbox = NewOutbox();
+        var ordinary = outbox.Enqueue(Report("waiting-its-turn"), "AUT", "Alpha", "Frozen");
+        Assert.That(outbox.Pending(), Has.Count.EqualTo(1), "setup: it is pending, not held back");
+
+        Assert.That(
+            outbox.SendThisAfterAll(ordinary.Directory),
+            Is.False,
+            "a bundle that was already going to be sent is not ours to promote"
+        );
+        Assert.That(outbox.Pending(), Has.Count.EqualTo(1), "and it is untouched");
+    }
+
+    [Test]
+    public void Sending_a_bundle_that_is_not_there_says_so()
+    {
+        var outbox = NewOutbox();
+
+        Assert.That(
+            outbox.SendThisAfterAll(Path.Combine(_root, "no-such-bundle")),
+            Is.False,
+            "so the window can say the report could not be sent rather than claiming it was"
+        );
+    }
+
+    [Test]
     public async Task A_drain_reports_which_cards_it_filed()
     {
         // Not a nicety: this is the only way anything downstream can learn a card id, and its absence was

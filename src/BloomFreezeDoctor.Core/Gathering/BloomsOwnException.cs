@@ -48,6 +48,38 @@ public static class BloomsOwnException
     }
 
     /// <summary>
+    /// The reason passed to <c>Environment.FailFast</c>, from the .NET Runtime event Windows writes.
+    ///
+    /// FailFast is the one crash with no dump and nothing in Bloom's log - it runs no managed handlers at
+    /// all, by design - so this event text is the ONLY record of why the process was killed. Leaving it out
+    /// of the headlines made failfast the only crash kind whose report did not say what went wrong, while
+    /// the answer sat in the evidence a hundred lines below:
+    ///
+    ///     Description: The application requested process termination through System.Environment.FailFast.
+    ///     Message: FreezeSimulator was asked to fail fast
+    /// </summary>
+    public static string? FindFailFastReason(IEnumerable<string> eventMessages)
+    {
+        foreach (var message in eventMessages)
+        {
+            if (!message.Contains("FailFast", StringComparison.OrdinalIgnoreCase))
+                continue;
+            // Split on the line feed alone and Trim the rest: the event text arrives with CRLF on Windows
+            // and LF in the tests, and a split that only knew one of them would silently find nothing.
+            foreach (var line in message.Split('\n'))
+            {
+                var trimmed = line.Trim();
+                if (!trimmed.StartsWith("Message:", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                var reason = trimmed.Substring("Message:".Length).Trim();
+                if (reason.Length > 0)
+                    return reason;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
     /// A headline naming it, or null. Cut to a length that belongs at the top of a report: some exception
     /// messages carry a whole file path or a book's entire name, and the full text is in the log below.
     /// </summary>

@@ -36,7 +36,18 @@ public sealed class BloomLogCollector : IEvidenceCollector
 
         headline = AppendBloomLog(text, context, artifacts);
         AppendVelopackLog(text, artifacts);
-        AppendWindowsCrashRecords(text, context);
+        var windowsSaid = AppendWindowsCrashRecords(text, context);
+
+        // FailFast's reason, which exists nowhere else: it runs no managed handlers by design, so there is
+        // no dump and nothing in Bloom's own log. Without this, failfast was the only crash kind whose
+        // report never said what went wrong. Only if Bloom's log has not already supplied a headline -
+        // that one is closer to Bloom's own account of itself.
+        if (headline == null)
+        {
+            var failFast = BloomsOwnException.FindFailFastReason(windowsSaid);
+            if (failFast != null)
+                headline = $"Bloom called FailFast: {failFast}";
+        }
 
         return Task.FromResult(
             new ReportSection
@@ -229,10 +240,12 @@ public sealed class BloomLogCollector : IEvidenceCollector
     /// Windows' own record: Application Error / Application Hang / .NET Runtime entries naming Bloom or
     /// its WebView2 children, and any Windows Error Reporting folders written around the same time.
     /// </summary>
-    private static void AppendWindowsCrashRecords(StringBuilder text, GatherContext context)
+    private static List<string> AppendWindowsCrashRecords(StringBuilder text, GatherContext context)
     {
         text.AppendLine("**What Windows recorded**");
         text.AppendLine();
+        // Kept as well as printed: FailFast's reason lives only here, and it belongs in the headlines.
+        var messages = new List<string>();
         var found = 0;
         try
         {
@@ -267,6 +280,7 @@ public sealed class BloomLogCollector : IEvidenceCollector
                 text.AppendLine(
                     $"- {entry.TimeGenerated:HH:mm:ss} **{entry.Source}** (event {entry.InstanceId})"
                 );
+                messages.Add(message);
                 text.AppendLine("```");
                 text.AppendLine(Shorten(message, 1200));
                 text.AppendLine("```");
@@ -288,6 +302,7 @@ public sealed class BloomLogCollector : IEvidenceCollector
         text.AppendLine();
 
         AppendWerFolders(text);
+        return messages;
     }
 
     private static void AppendWerFolders(StringBuilder text)

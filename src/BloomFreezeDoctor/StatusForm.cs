@@ -21,6 +21,7 @@ public sealed class StatusForm : Form
     private readonly Label _lastEvent = new();
     private readonly Button _restartBloom = new();
     private readonly Button _showReport = new();
+    private readonly Button _sendItAnyway = new();
     private readonly Button _openCard = new();
     private readonly Button _reportNow = new();
     private readonly NotifyIcon _tray = new();
@@ -82,6 +83,16 @@ public sealed class StatusForm : Form
         _showReport.Visible = false;
         _showReport.Click += (_, _) => OpenSavedReportFolder();
 
+        // The Doctor refuses to file on a developer build, on an automation run, and when the failure was
+        // deliberately simulated. All three are right by default; all three are ones a developer sometimes
+        // wants to override for the report in front of them. Before this the only way was "Report now",
+        // which gathers a WHOLE NEW report - impossible once that Bloom has died, and about a different
+        // moment even when it has not.
+        _sendItAnyway.Text = "Send it anyway";
+        _sendItAnyway.AutoSize = true;
+        _sendItAnyway.Visible = false;
+        _sendItAnyway.Click += (_, _) => SendTheSavedReport();
+
         _openCard.Text = "Open card";
         _openCard.AutoSize = true;
         _openCard.Visible = false;
@@ -99,6 +110,7 @@ public sealed class StatusForm : Form
         };
         leftButtons.Controls.Add(_restartBloom);
         leftButtons.Controls.Add(_showReport);
+        leftButtons.Controls.Add(_sendItAnyway);
         leftButtons.Controls.Add(_openCard);
         layout.Controls.Add(leftButtons, 0, 2);
 
@@ -345,6 +357,7 @@ public sealed class StatusForm : Form
         // tracker, and type it in.
         _filedIssueId = issueId;
         _openCard.Visible = true;
+        _sendItAnyway.Visible = false;
         _restartBloom.Visible = true;
         _lastEvent.Text = $"Reported as {issueId}.";
         // Something has happened, so now the window may be seen. Until this moment the Doctor has been
@@ -442,6 +455,7 @@ public sealed class StatusForm : Form
         _filedIssueId = null;
         _openCard.Visible = false;
         _showReport.Visible = true;
+        _sendItAnyway.Visible = true;
         _restartBloom.Visible = true;
         // Worth setting even though the next status update will overwrite it: it names the folder, which
         // the button cannot. The button is what makes the report reachable afterwards.
@@ -500,6 +514,74 @@ public sealed class StatusForm : Form
         {
             // No browser, or the shell refused: the id is on screen either way, which is what this was
             // saving the user from having to use.
+        }
+    }
+
+    /// <summary>
+    /// Sends the report the Doctor gathered and deliberately did not file.
+    ///
+    /// It asks first, and names the project, because this creates a real card in a real tracker. A Doctor
+    /// that Bloom started uses the ordinary project rather than the test one - being a developer build is
+    /// exactly why the report was held back - so "send it" here is not a rehearsal, and the person clicking
+    /// should know that before rather than after.
+    /// </summary>
+    private async void SendTheSavedReport()
+    {
+        var folder = _savedReportFolder;
+        if (string.IsNullOrEmpty(folder))
+            return;
+
+        var answer = MessageBox.Show(
+            this,
+            "This report was gathered but not sent, because this is a developer or automation build, or "
+                + "the failure was simulated on purpose."
+                + Environment.NewLine
+                + Environment.NewLine
+                + $"Send it now? It will create a real card in {_supervisor.Project}.",
+            "Bloom Freeze Doctor",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning,
+            MessageBoxDefaultButton.Button2
+        );
+        if (answer != DialogResult.Yes)
+            return;
+
+        _sendItAnyway.Enabled = false;
+        try
+        {
+            var result = await _supervisor
+                .SendSavedReportAsync(folder!, CancellationToken.None)
+                .ConfigureAwait(true);
+            if (result.IssueId != null)
+            {
+                _sendItAnyway.Visible = false;
+                OnReportFiled(this, result.IssueId);
+                return;
+            }
+            MessageBox.Show(
+                this,
+                result.Queued
+                    ? "The report is queued to send. The Doctor will keep trying - the tracker or the "
+                        + "network may be unreachable just now."
+                    : "The report could not be sent, and is still in its folder. \"Show report\" opens it.",
+                "Bloom Freeze Doctor",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(
+                this,
+                "The report could not be sent: " + e.Message,
+                "Bloom Freeze Doctor",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+        finally
+        {
+            _sendItAnyway.Enabled = true;
         }
     }
 
