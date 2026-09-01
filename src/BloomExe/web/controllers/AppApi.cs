@@ -8,6 +8,7 @@ using Bloom.FreezeDoctor;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.web;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.IO;
 
@@ -183,6 +184,20 @@ namespace Bloom.Api
                     // that has been gathered but not yet filed. It quits by itself when Bloom goes, and
                     // it will not start with the next Bloom.
                 },
+                true
+            );
+            // True only on the builds that offer the "Use dev.BloomLibrary.org" menu item.
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "canChooseDevBloomLibrary",
+                request => request.ReplyWithBoolean(BookUpload.UserCanChooseWebSite),
+                false
+            );
+            // Reads the web site that this run of Bloom uses, and records the user's choice of
+            // the web site for this run and the runs that follow.  Changing it restarts Bloom.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kAppUrlPrefix + "useDevBloomLibrary",
+                request => BookUpload.UseSandbox,
+                (request, value) => GetShell()?.SetUseDevBloomLibrary(value),
                 true
             );
             apiHandler.RegisterEndpointHandler(
