@@ -67,6 +67,12 @@ only stable marker available. Fix direction: `data-testid="workspace-tab-collect
 (etc.) on each tab and one on the shell root, and drop the label matching.
 (Found 2026-09-01 while scaffolding src/BloomE2E.)
 
+seen again 2026-09-01, in the Edit tab's page thumbnail menu: the items
+`pageThumbnailList.tsx` renders carry no id, class or `data-testid` (all their styling is
+inline), so `src/BloomE2E/helpers/pageThumbnails.ts` has to find "Copy Page" and "Paste Page"
+by their English labels, exactly as the top bar does. Same fix: a `data-testid` per command,
+taken from the `commandId` the menu already has.
+
 ## The component-tester Playwright suites are not in CI
 
 `nightly.yml` runs vitest, C#, and visual-regression only; nothing runs
@@ -171,3 +177,36 @@ test can currently clear a box by any faster route. Fix direction: understand wh
 CKEditor does with a programmatic value change; a supported "set the text of this box"
 path would let long text be set at once.
 (Found 2026-09-01 automating Test Case ID 169.)
+
+## The page menu offers commands that silently do nothing while a page is loading
+
+Copy Page and Paste Page go through `EditingModel.SaveThen`, which quietly gives up when the
+editing state machine is not in Editing or NoPage (`EditingStateMachine.ToSavePending` returns
+false and `CopyPage` passes `() => { }` as its "wrong state" action). The menu does not know
+this: `PageThumbnailList.IsContextMenuCommandEnabled` disables commands during SavePending, but
+NOT during Navigating, so while a page is still loading both commands look available and both
+do nothing at all, with no error and no message. Copy Page itself then saves and reloads the
+page, which reopens the same window for the very next click.
+
+Cost, twice over. For a person: click Copy Page and then Paste Page quickly and the paste is
+lost with no feedback. For a test: `src/BloomE2E/helpers/pageThumbnails.ts` has to carry
+`markEditablePage` / `waitForEditablePageReload`, which stamp the page's document and wait for
+Bloom to replace it, purely to know when the model has come back to Editing — the page url
+cannot answer it, because Bloom reloads a page to the same in-memory url. Fix direction: make
+the enabled test cover the Navigating state too, so a command that cannot run is greyed out;
+or, better, queue the command instead of dropping it. Either would let the helper drop the
+document-marking dance.
+(Found 2026-09-01 while automating Test Case ID 348, copy page preserves everything.)
+
+## Copying a page between two Bloom instances cannot be tested at all
+
+The manual case "Copy Page Preserves Everything" (Test Case ID 348) ends by copying a page from
+one running Bloom into a second one. Bloom's page clipboard is a pair of fields on the one
+`EditingModel` instance (`_pageDivFromCopyPage`, `_bookPathFromCopyPage`), not the Windows
+clipboard, so nothing crosses a process boundary; the feature is known not to work in 6.5. The
+e2e fixture is also built around one Bloom per worker, so a test could not stage it today even
+if the feature worked. The automated test therefore covers the within-book and between-books
+cases only, and the Notion case stays Partial. Fix direction: decide whether cross-instance
+copy is a feature we want; if it is, put the page on the real clipboard, and give the launch
+fixture a way to run a second instance.
+(Found 2026-09-01 while automating Test Case ID 348.)
