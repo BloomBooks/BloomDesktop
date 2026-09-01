@@ -50,6 +50,11 @@
         <target xml:lang="ksw" state="needs-translation">Edit with AI...</target>
         <note>ID: EditTab.Image.EditWithAI</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.SlotLabel.CanvasBackground" translate="no">
+        <source xml:lang="en">Canvas Background</source>
+        <target xml:lang="ksw" state="needs-translation">Canvas Background</target>
+        <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
+      </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">No Indent</source>
         <target xml:lang="ksw" state="needs-translation">No Indent</target>
