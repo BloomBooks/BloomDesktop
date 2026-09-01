@@ -75,6 +75,18 @@ public sealed class DoctorSupervisor : IDisposable
     /// which needs no list kept up to date and cannot go stale. The seeded channel names below only matter
     /// for a Doctor started by hand with no Bloom to adopt, and `--target-name` narrows that when a
     /// developer's machine also runs a real Bloom of another channel.
+    ///
+    /// **A consequence, and it is deliberate - SETTLED, September 2026, by John Thomson.** Because the set
+    /// is not narrowed to the channel that started us, a Doctor Bloom launched will, once that Bloom has
+    /// gone, adopt whatever other Bloom it finds - including an install of a different channel. Observed:
+    /// a Doctor started by a development Bloom outlived it and took up the BetaInternal install that
+    /// happened to be running, which is not a developer channel, so a genuine freeze there would have been
+    /// filed as a real card about work nobody had asked us to watch.
+    ///
+    /// Left as it is on purpose: "we want to catch all the real freezes we can, including older Blooms that
+    /// happen to be adopted." A freeze we notice by accident is still a freeze we would otherwise never
+    /// have heard about, and that is the whole point of the tool. Please do not narrow this to the starting
+    /// executable without new information - it reads like a bug and is a decision.
     /// </summary>
     private readonly HashSet<string> _targetProcessNames = new(StringComparer.OrdinalIgnoreCase);
 
