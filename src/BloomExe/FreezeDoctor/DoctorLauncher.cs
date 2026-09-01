@@ -45,16 +45,21 @@ namespace Bloom.FreezeDoctor
         /// found us and it had bought nothing. It can go first because it needs nothing: one named event,
         /// set, and return.
         ///
-        /// Deliberately NOT gated on <see cref="Settings.RunFreezeDoctor"/>. That setting governs whether
-        /// Bloom STARTS a Doctor, not whether it cooperates with one already watching - and nothing else
-        /// consults it either: the heartbeat and the dying request for a dump both key off whether a Doctor
-        /// is listening. A Doctor runs with that setting off in exactly the case that matters most, where
-        /// support has asked a user to start one by hand.
+        /// Gated on <see cref="Settings.RunFreezeDoctor"/>, so it costs nothing at all for the users who
+        /// have never switched the Doctor on. It briefly was not, on the argument that support may have had
+        /// a user start a Doctor by hand with the setting off - which does not survive examination, as John
+        /// pointed out. Both support routes are covered without it: told to switch it on and relaunch, the
+        /// setting is on; told to start a Doctor while Bloom is already running, this has long since run and
+        /// the Doctor's own sweep is what finds Bloom. What ungating actually bought was at most one poll
+        /// interval in the narrow case of a Doctor left running while the setting is off, and that is not
+        /// worth a line in every user's startup.
         /// </summary>
         public static void AnnounceToAnyDoctor()
         {
             try
             {
+                if (!Settings.Default.RunFreezeDoctor)
+                    return;
                 DoctorSignals.Announce(DoctorSignals.BloomStartedName());
             }
             catch (Exception)

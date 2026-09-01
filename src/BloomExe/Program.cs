@@ -136,22 +136,22 @@ namespace Bloom
             _ownsSingleInstanceToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
             Logger.Init();
-            // Tell any Freeze Doctor already running that a Bloom has started, as close to the top of Main
-            // as it can be. It sets one named event and returns, needing no settings, no paths and nothing
-            // initialised, which is what lets it go here.
-            //
-            // The point of it being FIRST is the startup window. Announcing it from where the Doctor is
-            // launched, further down, was measured arriving 6.2 seconds in - by which time the Doctor's own
-            // five-second sweep had already found us, so it bought nothing at all. Everything before the
-            // announcement is time in which a hang or a crash cannot be doctored, because Bloom only asks
-            // for a dump if a Doctor is already watching.
-            DoctorLauncher.AnnounceToAnyDoctor();
             // Configure TempFile to create temp files with a "bloom" prefix so we can
             // catch stuff we make that doesn't get cleaned up properly, including in our
             // final call to CleanupTempFolder. Also prevents our temp files competing with
             // other programs for 64K available default temp file names.
             TempFile.NamePrefix = "bloom";
             CheckForCorruptUserConfig();
+            // Tell any Freeze Doctor already running that a Bloom has started, as early in Main as it can
+            // go, so it adopts us at once instead of at its next five-second sweep. Everything before this
+            // is time in which a hang or a crash cannot be doctored, because Bloom only asks for a dump if
+            // a Doctor is already watching. Announced from where the Doctor is launched instead, much
+            // further down, it was measured arriving 6.2 seconds in - by which time the sweep had already
+            // found us and it bought nothing.
+            //
+            // Not any earlier than this, though: it reads a setting, and CheckForCorruptUserConfig above is
+            // what makes reading one safe.
+            DoctorLauncher.AnnounceToAnyDoctor();
             // Ensure that the registration information is loaded early before Team Collection
             // needs it.
             Registration.Registration.Default.EnsureLoaded();
