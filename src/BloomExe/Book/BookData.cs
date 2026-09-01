@@ -1878,14 +1878,27 @@ namespace Bloom.Book
                     .Cast<SafeXmlElement>()
                     .ToArray();
                 foreach (var elt in nodesToProcessFirst)
+                {
+                    // Same reason as the IsStillInDocument check in the second pass below: an
+                    // earlier update in this very loop could have detached a later one of these.
+                    if (!IsStillInDocument(elt))
+                        continue;
                     UpdateOneElementFromDataSet(data, itemsToDelete, elt);
+                }
 
                 // After restoring custom page content from the data-div, prepare any bloom-editables
                 // for languages that weren't present in the saved version (e.g. a newly-added content
                 // language). Without this, the second pass below that updates e.g. bookTitle would
                 // find no destination elements for newly-added languages on the custom page.
                 foreach (var elt in nodesToProcessFirst)
+                {
+                    // Same guard as the loops either side: an update above may have detached one of
+                    // these. Nothing here walks to the document root, so an orphan would not crash,
+                    // but preparing elements in a page the book no longer has is pointless work.
+                    if (!IsStillInDocument(elt))
+                        continue;
                     TranslationGroupManager.PrepareElementsInPageOrDocument(elt, this);
+                }
 
                 // Run this query AFTER that update, so that we're updating the (possibly modified) set of nodes that
                 // result from doing it.
@@ -1897,10 +1910,17 @@ namespace Bloom.Book
                 {
                     // if we already processed it, we should not do so again,
                     // since doing so might replace some of the nodes in our list with new ones.
-                    if (!nodesToProcessFirst.Contains(elt))
-                    {
-                        UpdateOneElementFromDataSet(data, itemsToDelete, elt);
-                    }
+                    if (nodesToProcessFirst.Contains(elt))
+                        continue;
+                    // Updating one element can replace the entire content of an ancestor of another
+                    // element in this list (for example, restoring a branding html value replaces
+                    // everything inside that element), leaving the descendant orphaned. An orphan is
+                    // no longer part of the book, so there is nothing in it worth updating, and the
+                    // update code rightly assumes it still has the parents it was collected with.
+                    // See BL-16776.
+                    if (!IsStillInDocument(elt))
+                        continue;
+                    UpdateOneElementFromDataSet(data, itemsToDelete, elt);
                 }
             }
             catch (Exception error)
@@ -1913,6 +1933,22 @@ namespace Bloom.Book
                     error
                 );
             }
+        }
+
+        /// <summary>
+        /// True if the node is still attached to its document, that is, we can reach the document's
+        /// root element by following parents. A node we collected earlier may since have been
+        /// detached by an update to one of its ancestors.
+        /// </summary>
+        internal static bool IsStillInDocument(SafeXmlNode node)
+        {
+            var root = node.OwnerDocument.DocumentElement;
+            for (var current = node; current != null; current = current.ParentNode)
+            {
+                if (current == root)
+                    return true;
+            }
+            return false;
         }
 
         private void UpdateOneElementFromDataSet(
