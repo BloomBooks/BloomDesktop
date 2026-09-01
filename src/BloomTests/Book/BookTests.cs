@@ -6996,6 +6996,54 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void GetCoverImagePathAndElt_CustomLayoutCoverWithBrandingInTheCanvas_KeepsThePlaceholder()
+        {
+            // The same reported case, but on a cover in custom layout. There the whole margin box
+            // is one bloom-canvas and every element on the cover, branding included, is a canvas
+            // element inside it -- so "is it in an image container" does not tell the book's own
+            // picture from the branding, because bloom-canvas counts as an image container here.
+            // Only the branding class does. This is the shape of the Little Zebra book in BL-16776.
+            SetDom(
+                @"
+<div id='bloomDataDiv'>
+	<div data-book='someOtherData' lang='*'>value</div>
+</div>
+<div class='bloom-page bloom-frontMatter outsideFrontCover bloom-customLayout' data-custom-layout-id='customOutsideFrontCover'>
+	<div class='marginBox'>
+        <div class='bloom-canvas bloom-has-canvas-element'>
+            <div class='bloom-canvas-element bloom-backgroundImage'>
+                <div class='bloom-imageContainer'>
+                    <img data-book='coverImage' src='placeHolder.png' id='cover-placeholder'/>
+                </div>
+            </div>
+            <div class='bloom-canvas-element'>
+                <div data-book='cover-branding-bottom-html' lang='*'>
+                    <img class='branding' src='Little-Zebra.png' id='branding-image'/>
+                </div>
+            </div>
+		</div>
+	</div>
+</div>"
+            );
+            File.WriteAllText(Path.Combine(_storage.Object.FolderPath, "Little-Zebra.png"), "test");
+
+            var book = CreateBook();
+
+            // Sanity check: the branding file really is there, so the only reason to reject it is
+            // the rule under test, not a missing file.
+            Assert.That(
+                File.Exists(Path.Combine(_storage.Object.FolderPath, "Little-Zebra.png")),
+                Is.True,
+                "test setup failed to write the branding image"
+            );
+
+            var coverImgPath = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
+
+            Assert.That(coverImgPath, Does.Not.Contain("Little-Zebra.png"));
+            Assert.That(coverImgElt.GetAttribute("id"), Is.EqualTo("cover-placeholder"));
+        }
+
+        [Test]
         public void GetCoverImagePathAndElt_RealImageIsNotInAnImageContainer_KeepsThePlaceholder()
         {
             // Only what is in an image container, or what the book marks as its cover, counts as a

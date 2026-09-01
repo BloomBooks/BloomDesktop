@@ -5299,9 +5299,13 @@ namespace Bloom.Book
             // a placeholder took the branding logo instead. For the ABC brandings that logo is an
             // SVG, which PalasoImage cannot load, so such a book had no thumbnail at all (BL-16780).
             //
-            // Take the mark from either the img or the container. On this branch only the img
-            // carries it; marking the image container came in on Version6.5, which is downstream of
-            // here, so accepting both is what lets this survive the merge forward.
+            // Take the mark from either the img or the container. Both shapes are already here: the
+            // standard xmatter marks the img, while the Afghan Children Read xmatter marks the
+            // bloom-canvas itself (Afghan-Children-Read-XMatter-mixins.pug). We accept an img
+            // inside a marked container too. Nothing in this repo produces that shape today, but a
+            // book on disk or a project-specific xmatter kept elsewhere may, and a marked container
+            // has no image URL of its own, so without it the search would fall through to an
+            // earlier container and take the wrong picture.
             //
             // The container itself is a candidate as well as the imgs inside it, because a book old
             // enough to use an obsolete image representation carries the picture on the container.
