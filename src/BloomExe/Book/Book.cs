@@ -5292,33 +5292,51 @@ namespace Bloom.Book
                 return null;
 
             // We take the image the book marks as its cover, and failing that an image out of an
-            // image container. Everything else on the cover is off limits: the branding logo, the
-            // license image, and the QR code of the "Made with Bloom" badge belong to the branding
-            // or the license, never to the book, and none of them sits in an image container. We
-            // used to accept any img on the cover, so a branded book whose cover picture was still
-            // a placeholder took the branding logo instead. For the ABC brandings that logo is an
-            // SVG, which PalasoImage cannot load, so such a book had no thumbnail at all (BL-16780).
+            // image container. That is the whole rule: the branding logo, the license image and the
+            // QR code of the "Made with Bloom" badge belong to the branding or the license rather
+            // than to the book, and none of them is in an image container, so nothing needs to name
+            // them. We used to accept any img on the cover, so a branded book whose cover picture
+            // was still a placeholder took the branding logo instead. For the ABC brandings that
+            // logo is an SVG, which PalasoImage cannot load, so such a book had no thumbnail at all
+            // (BL-16780).
             //
-            // Take the mark from either the img or the container. On this branch only the img
-            // carries it; marking the image container came in on Version6.5, which is downstream of
-            // here, so accepting both is what lets this survive the merge forward.
+            // Take the mark from either the img or the container. Both shapes are already here: the
+            // standard xmatter marks the img, while the Afghan Children Read xmatter marks the
+            // bloom-canvas itself (Afghan-Children-Read-XMatter-mixins.pug). We accept an img
+            // inside a marked container too. Nothing in this repo produces that shape today, but a
+            // book on disk or a project-specific xmatter kept elsewhere may, and a marked container
+            // has no image URL of its own, so without it the search would fall through to an
+            // earlier container and take the wrong picture.
             //
             // The container itself is a candidate as well as the imgs inside it, because a book old
             // enough to use an obsolete image representation carries the picture on the container.
             // We handle those here rather than only for editable books, because publish and preview
             // use this code too.
+            // Match whole class names. "contains(@class, 'bloom-canvas')" is also true of
+            // bloom-canvas-element, which is not a container at all.
             const string kImageContainer =
-                "div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]";
-            var markedAsTheCover = outsideFrontCover
+                "div[contains(concat(' ', normalize-space(@class), ' '), ' bloom-imageContainer ')]";
+            const string kBloomCanvas =
+                "div[contains(concat(' ', normalize-space(@class), ' '), ' bloom-canvas ')]";
+            var markedAsTheCoverImage = outsideFrontCover
                 .SafeSelectNodes(
                     ".//img[@data-book='coverImage'] | .//div[@data-book='coverImage']"
                         + " | .//div[@data-book='coverImage']//img"
                 )
                 .Cast<SafeXmlElement>();
+            // An img anywhere inside an image container is one of the book's pictures, but under a
+            // bloom-canvas only a direct child is: on a custom-layout cover the whole margin box is
+            // one bloom-canvas and everything on the cover, branding included, is a canvas element
+            // inside it, so a descendant search there would sweep up the branding logo. A direct
+            // child of the bloom-canvas is the old shape, a background image not yet converted to a
+            // canvas element (see SetupImagesInContainer).
             var inAnImageContainer = outsideFrontCover
-                .SafeSelectNodes($".//{kImageContainer} | .//{kImageContainer}//img")
+                .SafeSelectNodes(
+                    $".//{kImageContainer} | .//{kImageContainer}//img"
+                        + $" | .//{kBloomCanvas} | .//{kBloomCanvas}/img"
+                )
                 .Cast<SafeXmlElement>();
-            var candidates = markedAsTheCover.Concat(inAnImageContainer);
+            var candidates = markedAsTheCoverImage.Concat(inAnImageContainer);
 
             // A placeholder means "no picture chosen yet", so keep looking for a real one. Ending
             // up with the placeholder is a fine answer; ending up with the branding logo is not.
