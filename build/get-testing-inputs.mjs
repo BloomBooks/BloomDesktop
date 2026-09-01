@@ -103,10 +103,13 @@ export function getTestingInputs() {
     console.log(`Fetching ${pin.commit} from ${pin.repo} into ${targetDir}`);
     git(["-C", targetDir, "fetch", "--depth", "1", pin.repo, pin.commit]);
     // --detach because this folder is a read-only materialization of one commit, not a branch
-    // anybody works on. Deliberately not --force: a checkout that refuses because someone edited a
-    // file here should say so rather than silently discard their work. Untracked files (the
-    // suite's own *-current.png / *-diff.png) do not block a checkout, so a normal run is unaffected.
-    git(["-C", targetDir, "checkout", "--detach", "FETCH_HEAD"]);
+    // anybody works on. --force because local strays must never block advancing the pin: the
+    // visual-regression suite captures a missing *-reference.png into this folder, and if that
+    // baseline later lands upstream, a plain checkout refuses to overwrite the untracked local
+    // copy. Nobody's real work lives here — authoring happens in a proper clone, pointed at with
+    // BLOOM_TESTING_INPUTS_DIR — so discarding is correct. Untracked files the commit does not
+    // contain (*-current.png / *-diff.png) are left alone.
+    git(["-C", targetDir, "checkout", "--detach", "--force", "FETCH_HEAD"]);
     console.log(`output/testing-inputs is now at ${pin.commit}.`);
 }
 

@@ -337,15 +337,17 @@ export async function launchBloom(
     }
 
     servingPid = found.info.processId;
-    if (!found.info.cdpPort)
+    if (!found.info.cdpPort) {
+        cleanUpOnExit();
+        process.removeListener("exit", cleanUpOnExit);
         throw new Error(
             `Bloom is serving ${collectionDir} on port ${found.httpPort} but reported no CDP port, ` +
                 `so tests cannot attach to its WebView2. Check that remote debugging is enabled in this build.`,
         );
+    }
 
     const httpPort = found.httpPort;
     const stop = async () => {
-        process.removeListener("exit", cleanUpOnExit);
         killProcessTree(
             [bloomProcess.pid, servingPid].filter(
                 (p): p is number => typeof p === "number",
@@ -370,6 +372,9 @@ export async function launchBloom(
             maxRetries: 20,
             retryDelay: 500,
         });
+        // Only after a fully successful teardown: if anything above threw, the exit handler
+        // stays armed and still kills the survivor and deletes the temp folder at process exit.
+        process.removeListener("exit", cleanUpOnExit);
     };
 
     return {
