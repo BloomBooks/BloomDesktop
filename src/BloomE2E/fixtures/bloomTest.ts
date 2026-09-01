@@ -64,6 +64,29 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const SHELL_MARKER = '[role="tablist"]';
 
 /**
+ * Connect to the WebView2's CDP endpoint, retrying while it comes up. Bloom's HTTP API reports
+ * the CDP port (via instanceInfo) as soon as the server is listening, but WebView2 opens its
+ * remote-debugging listener slightly later, so a single connect attempt races it and sometimes
+ * gets ECONNREFUSED.
+ */
+async function connectOverCdpWithRetry(cdpPort: number): Promise<Browser> {
+    const deadline = Date.now() + SHELL_READY_TIMEOUT_MS;
+    let lastError: unknown;
+    while (Date.now() < deadline) {
+        try {
+            return await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
+        } catch (error) {
+            lastError = error;
+            await delay(500);
+        }
+    }
+    throw new Error(
+        `Could not connect to Bloom's WebView2 CDP endpoint on 127.0.0.1:${cdpPort} within ` +
+            `${SHELL_READY_TIMEOUT_MS / 1000}s. Last error: ${lastError}`,
+    );
+}
+
+/**
  * Find Bloom's shell document among the CDP page targets. We identify it by the top bar's tab
  * strip rather than by URL, which also excludes the separately-hosted problem dialog and any
  * DevTools target. Polling matters: the WebView2 target exists, as about:blank, for a second or
@@ -108,9 +131,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                 // WebView2's debugging port does not answer there — you get an empty or wrong
                 // target list rather than an error. (Bloom's own HTTP server is the opposite: it
                 // rejects a 127.0.0.1 Host header. See helpers/api.ts.)
-                browser = await chromium.connectOverCDP(
-                    `http://127.0.0.1:${launched.cdpPort}`,
-                );
+                browser = await connectOverCdpWithRetry(launched.cdpPort);
                 const page = await findShellPage(browser);
                 await use({
                     page,
