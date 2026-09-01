@@ -55,7 +55,9 @@ public sealed class ProcessEvidenceCollector : IEvidenceCollector
         AppendBasics(text, process);
         AppendRespondingCaveat(text, process, context);
         var cpu = await SampleCpuAsync(process, cancellation).ConfigureAwait(false);
-        headline = AppendCpu(text, cpu.Deltas, cpu.Window, context.IsAboutAFreeze);
+        // Stuck, not merely "a freeze": a zombie's UI thread is pumping happily, so ruling out a spin
+        // tells the reader nothing and implies a block that is not there.
+        headline = AppendCpu(text, cpu.Deltas, cpu.Window, context.IsAboutTheUiBeingStuck);
         AppendWindows(text, process);
         AppendWebViewChildren(text, context.Target.ProcessId);
         AppendUnexplainedModules(text, process);

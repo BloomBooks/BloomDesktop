@@ -103,7 +103,13 @@ public sealed class WebViewCollector : IEvidenceCollector
             text.AppendLine($"- {target.Type}: \"{target.Title}\" — `{Shorten(target.Url)}`");
         text.AppendLine();
 
-        var headline = await ProbePagesAsync(text, pages, cancellation).ConfigureAwait(false);
+        var headline = await ProbePagesAsync(
+                context.IsAboutTheUiBeingStuck,
+                text,
+                pages,
+                cancellation
+            )
+            .ConfigureAwait(false);
 
         return new ReportSection
         {
@@ -118,7 +124,12 @@ public sealed class WebViewCollector : IEvidenceCollector
     /// Asks each page to evaluate a trivial expression, then listens on the first one that answers.
     /// Returns the headline for the report's summary.
     /// </summary>
+    /// <param name="theUiMightBeStuck">
+    /// Whether this report is about a UI thread suspected of being stuck, which decides whether a healthy
+    /// browser lets us CONCLUDE anything or is merely an observation. See GatherContext.IsAboutTheUiBeingStuck.
+    /// </param>
     private static async Task<string?> ProbePagesAsync(
+        bool theUiMightBeStuck,
         StringBuilder text,
         List<CdpTarget> pages,
         CancellationToken cancellation
@@ -178,8 +189,12 @@ public sealed class WebViewCollector : IEvidenceCollector
                 "> **Every page answered promptly.** The browser is healthy, so a frozen Bloom is frozen "
                     + "in its own .NET UI thread and the managed stacks are where the answer is."
             );
-            headline =
-                "WebView2 answers normally, so the block is in Bloom's .NET UI thread, not the browser.";
+            // The conclusion only follows if something IS blocked. On a zombie report - Bloom alive,
+            // pumping, and window-less - "the block is in Bloom's .NET UI thread" asserts a block that does
+            // not exist and sends the reader after a deadlock instead of a missing window.
+            headline = theUiMightBeStuck
+                ? "WebView2 answers normally, so the block is in Bloom's .NET UI thread, not the browser."
+                : "WebView2 answers normally.";
         }
 
         if (firstResponsive != null)

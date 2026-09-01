@@ -246,7 +246,13 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
                 // table both print. A different id here would be a puzzle rather than a pointer.
                 (int)uiThread.Thread.OSThreadId
             );
-            text.AppendLine("### The UI thread (the one running the message loop)");
+            // The id is in the heading because every other section that mentions a thread uses it: the
+            // wait chains name "thread 83756", the CPU table names "thread 109948", and the stack listing
+            // below prints one per thread. Without it here the reader cannot tell whether the thread in the
+            // wait chain IS the UI thread, which is usually the whole question.
+            text.AppendLine(
+                $"### The UI thread (thread {uiThread.Thread.OSThreadId}, the one running the message loop)"
+            );
             text.AppendLine();
             AppendFrames(text, uiThread.Frames);
             text.AppendLine();

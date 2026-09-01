@@ -94,6 +94,28 @@ public sealed record GatherContext
                 or ReportReason.DiedWhileFrozen
                 or ReportReason.Zombie;
 
+    /// <summary>
+    /// Narrower than <see cref="IsAboutAFreeze"/>: is the UI thread suspected of being STUCK.
+    ///
+    /// A zombie is not. Bloom is alive, its message loop is running perfectly, and its window has gone -
+    /// which is why the deductions that suit a freeze read as nonsense on a zombie report. A real one said:
+    ///
+    ///     Verdict: alive with no visible window for 31s
+    ///     No thread is burning CPU, so this is a wait rather than a spin.
+    ///     WebView2 answers normally, so the block is in Bloom's .NET UI thread, not the browser.
+    ///
+    /// There is no block. The second line asserts one, and a reader could easily come away hunting a
+    /// deadlock instead of asking where the window went. So the conclusions that presuppose a stuck UI
+    /// thread use this, while the phrasing that merely distinguishes a live process from a dying one -
+    /// "the UI thread is in its message loop", which for a zombie is the KEY finding rather than a
+    /// reassurance - still uses IsAboutAFreeze.
+    /// </summary>
+    public bool IsAboutTheUiBeingStuck =>
+        Verdict.Report
+            is ReportReason.Frozen
+                or ReportReason.RecoveredFromFreeze
+                or ReportReason.DiedWhileFrozen;
+
     /// <summary>True if the process was still running when gathering began.</summary>
     public required bool ProcessWasAlive { get; init; }
 
