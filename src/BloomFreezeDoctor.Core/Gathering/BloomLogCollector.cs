@@ -144,7 +144,14 @@ public sealed class BloomLogCollector : IEvidenceCollector
             // thing anybody wants, and before this it was only ever present 370 lines down inside the log
             // tail - see BloomsOwnException. It does not displace the shutdown headline above, which is a
             // rarer and more surprising finding.
-            headline ??= BloomsOwnException.Headline(lines);
+            //
+            // **Only on a crash report.** The log tail is a couple of hundred lines of a real session, and
+            // a real session logs handled exceptions that came to nothing. Headlining one on a FREEZE
+            // report would offer it as the explanation of a freeze it has nothing to do with - and a
+            // plausible wrong answer at the top of a report is worse than no answer, because it is where
+            // the reader starts. On a freeze the log is still right there in this section.
+            if (!context.IsAboutAFreeze)
+                headline ??= BloomsOwnException.Headline(lines);
 
             // Errors first: Bloom marks them with "***Error", and a reader should not have to hunt.
             var errors = lines
