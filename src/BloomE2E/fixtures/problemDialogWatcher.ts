@@ -132,12 +132,15 @@ async function closeProblemDialog(page: Page): Promise<void> {
 }
 
 /**
- * Start polling for problem dialogs on the given CDP connection. Each dialog found is recorded
+ * Start polling for problem dialogs. The connection comes from a getter rather than a Browser,
+ * because bloomApp.restart() replaces it: a watcher holding the first connection would silently
+ * stop seeing dialogs after a restart. The getter returns undefined while a restart is in flight,
+ * when there is nothing to scan. Each dialog found is recorded
  * (with its detail) and then closed, so the test can carry on far enough to fail with a message
  * that names the real exception.
  */
 export function startProblemDialogWatcher(
-    browser: Browser,
+    getBrowser: () => Browser | undefined,
     intervalMs = 750,
 ): IProblemDialogWatcher {
     const problems: IBloomProblem[] = [];
@@ -150,6 +153,8 @@ export function startProblemDialogWatcher(
     // One scan: find a dialog, record it, close it. Never throws: a failure to gather the
     // detail or to close still gets recorded as a problem, and the watcher keeps running.
     const checkOnce = async (): Promise<boolean> => {
+        const browser = getBrowser();
+        if (!browser) return false;
         const found = await findProblemDialog(browser).catch(() => undefined);
         if (!found) return false;
         if (unclosable.has(found.page)) return false;

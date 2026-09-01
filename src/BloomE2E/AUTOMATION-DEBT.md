@@ -26,6 +26,15 @@ force-foreground trick. Fix direction: move these surfaces to the web UI (the te
 direction anyway), or expose each dialog's WebView2 on a discoverable CDP port.
 (Promoted from PAPERCUTS 2026-07-11.)
 
+seen again 2026-09-01 (Test Case ID 169, `publish-text-languages.spec.ts`): the case
+turns on which languages the collection has, and there is no API for that either.
+`collectionSettings/changeLanguage` is not one: its only listener is the open WinForms
+`CollectionSettingsDialog` (`CollectionSettingsDialog.cs:368`), so a POST to it while
+the dialog is closed does nothing. The test therefore changes a collection language by
+stopping Bloom, rewriting the `.bloomCollection`, and starting again, which is what the
+new `bloomApp.restart(betweenStopAndStart)` fixture method is for. Each restart costs
+about six seconds and loses whatever the editor had not yet saved.
+
 ## Native OS dialogs hang automation
 
 File pickers, the Image Toolbox, and video capture open native windows Playwright
@@ -125,3 +134,40 @@ first" is itself the dangerous move; sibling scripts may share the shape. Fix
 direction: recognize `--help`/`-h` and reject unknown flags in every script that kills
 processes — and fold these helpers' jobs into the library's audited launch/teardown
 fixture over time. (Promoted from PAPERCUTS 2026-07-24.)
+
+## Adding a page needs the Add Page dialog, which offers nothing to automate against
+
+A book made from a template starts with front and back matter only, because every page
+of a template book is a template page. So almost any test that needs content has to add
+a page, and the only production route is the Add Page dialog: `edit/pageControls/addPage`
+opens it, and the thumbnails it shows are built by loading the template book's HTML in
+the dialog and reading the `.pageLabel` out of each page. Nothing in the API says which
+template pages exist or what they are called, so a test either drives that dialog or
+hard-codes a page GUID. The `e2e/templatePages` hook added for Test Case ID 169 reports
+each template page's id, label, and template book path, which is enough to call the
+production `addPage` endpoint. Fix direction: if the page chooser ever gets its list
+from C# instead of from the HTML, retire the hook and read that list.
+(Found 2026-09-01 automating Test Case ID 169.)
+
+## The Edit tab silently drops a jump to a page while it is loading
+
+`editView/jumpToPage` is the only way to move a test to a particular page, and it is
+also how a test saves what it typed, because Bloom writes a page only when the book
+leaves it. Coming back from the Publish tab, the Edit tab accepts the POST, replies
+success, and shows nothing: the page iframe stays empty until the test asks again. So
+`helpers/bookMaking.ts` asks up to three times. Two costs: a test that jumps at the
+wrong moment waits 20 seconds per attempt, and a real "this page will not load" bug
+would look like the same flake. Fix direction: have `jumpToPage` queue the request
+until the Edit tab is ready, or report that it refused it.
+(Found 2026-09-01 automating Test Case ID 169.)
+
+## Filling a text box directly leaves part of the old text behind
+
+A `.bloom-editable` is a CKEditor surface, and Playwright's `fill()` on one leaves a
+tail of what was there ("Deux" became "eux"), so `typeInGroup` clicks in, selects all,
+deletes, and types the new text one key at a time. That is closer to what a person does
+and it is reliable, but it is also slow for anything longer than a few words, and no
+test can currently clear a box by any faster route. Fix direction: understand what
+CKEditor does with a programmatic value change; a supported "set the text of this box"
+path would let long text be set at once.
+(Found 2026-09-01 automating Test Case ID 169.)
