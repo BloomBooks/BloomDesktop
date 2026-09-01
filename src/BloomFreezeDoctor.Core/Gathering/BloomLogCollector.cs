@@ -129,6 +129,12 @@ public sealed class BloomLogCollector : IEvidenceCollector
                     "Bloom's shutdown stalled and its 20-second safety net forced it to exit.";
             }
 
+            // What was thrown, if Bloom's own error handling recorded it. For a crash this is the first
+            // thing anybody wants, and before this it was only ever present 370 lines down inside the log
+            // tail - see BloomsOwnException. It does not displace the shutdown headline above, which is a
+            // rarer and more surprising finding.
+            headline ??= BloomsOwnException.Headline(lines);
+
             // Errors first: Bloom marks them with "***Error", and a reader should not have to hunt.
             var errors = lines
                 .Where(l => l.Contains("***Error", StringComparison.OrdinalIgnoreCase))

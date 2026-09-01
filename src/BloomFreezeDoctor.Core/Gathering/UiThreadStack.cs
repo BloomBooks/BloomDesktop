@@ -73,6 +73,14 @@ public static class UiThreadStack
     /// <param name="threadId">Named when the stack cannot be read, so the reader knows where to look.</param>
     public static string Describe(IReadOnlyList<string> frames, bool isAboutAFreeze, int threadId)
     {
+        // Bloom's fatal handler asks the Doctor for a dump and waits for it, so on a crash report the UI
+        // thread is genuinely blocked - in OUR OWN request. Reporting that as "blocked in
+        // WaitHandle.WaitOneCore" is true and useless, and invites a reader to go hunting a deadlock that
+        // is really this tool doing its job.
+        if (frames.Any(f => f.Contains("RequestDumpBeforeDying", StringComparison.Ordinal)))
+            return "The UI thread is inside Bloom's own fatal-error handler, waiting for this dump - so "
+                + "the stack below is the path to the crash, not a deadlock.";
+
         if (!SaysAnythingUseful(frames))
             return $"The UI thread's stack could not be read - which is itself a clue, because a stack "
                 + $"walk fails on a thread that is RUNNING far more often than on one that is waiting. "
