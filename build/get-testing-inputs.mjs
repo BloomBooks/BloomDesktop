@@ -92,6 +92,10 @@ export function currentCommit() {
 export function getTestingInputs() {
     const pin = readPin();
     if (currentCommit() === pin.commit) {
+        // Already at the pin, but still restore any locally modified or deleted tracked file:
+        // the folder is a materialization of the commit, and a test run against altered books
+        // would silently measure the wrong thing. Local-only files are untouched.
+        git(["-C", targetDir, "checkout", "--force", pin.commit, "--", "."]);
         console.log(
             `output/testing-inputs is already at the pinned commit ${pin.commit}.`,
         );

@@ -79,14 +79,22 @@ carries the API mechanics.
 - The long-term goal: every manual case either becomes `Automated` or is deliberately
   `Keep manual`; the inventory shows which is which.
 
-## Choosing or adding test inputs
+## Choosing or creating test inputs
 
-- Reuse an existing collection from `output/testing-inputs/collections/` when one
-  fits. `manifest.json` in that repo says what each collection is for.
-- To add or change a collection: clone bloom-testing-inputs, author the books **with
-  Bloom itself**, copy the folder in, add a `manifest.json` entry, run `pnpm validate`
-  there, open a PR there. After it merges, advance `build/testing-inputs.pin` in your
-  BloomDesktop PR. The two PRs land together: data first, then the pin.
+- **Default: a test creates its own collection** (and its own book, through the real UI,
+  which is journey coverage of book creation as a side effect). Shared fixtures make
+  tests fragile: when someone later edits a shared collection, its assumptions change
+  under every test that uses it.
+- **Use the inputs repo only for a fixture too expensive to build at run time** — for
+  example, a collection of 200 books — and for the reference baselines of the
+  visual-regression suite. `manifest.json` in that repo says what each collection is
+  for; the `basic` collection serves tests whose subject is not the content (e.g. the
+  workspace-tabs smoke test).
+- To add or change a collection there: clone bloom-testing-inputs, author the books
+  **with Bloom itself**, copy the folder in, add a `manifest.json` entry, run
+  `pnpm validate` there, open a PR there. After it merges, advance
+  `build/testing-inputs.pin` in your BloomDesktop PR. The two PRs land together: data
+  first, then the pin.
 - During local development, point the suite at your inputs checkout with
   `BLOOM_TESTING_INPUTS_DIR=<path>` instead of re-pinning on every edit.
 - Tests must never modify `output/testing-inputs/` — the fixture copies the

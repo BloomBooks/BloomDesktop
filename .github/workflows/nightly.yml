@@ -117,6 +117,9 @@ jobs:
             # shallow single-commit fetch, so it costs a couple of seconds. Done here with the other
             # dependency fetches rather than beside the suite, so a bad pin fails early and visibly.
             - name: Get testing inputs (test books and reference screenshots)
+              # Only the visual-regression suite consumes these, so a fetch failure must not
+              # block a run that has that suite switched off.
+              if: ${{ env.RUN_VISUAL_REGRESSION == 'true' }}
               shell: bash
               run: node build/get-testing-inputs.mjs
 

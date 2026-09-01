@@ -38,6 +38,12 @@ export interface IProblemDialogWatcher {
      * problem in this list must fail, whatever else it did.
      */
     takeProblems: () => IBloomProblem[];
+    /**
+     * Scan for a dialog right now, instead of waiting for the next poll. Call this before the
+     * final takeProblems of a test, so a dialog raised in the test's last moments is not lost
+     * or blamed on the next test.
+     */
+    scanNow: () => Promise<void>;
     /** Stop polling. */
     stop: () => void;
 }
@@ -137,21 +143,43 @@ export function startProblemDialogWatcher(
     const problems: IBloomProblem[] = [];
     let stopped = false;
 
+    // One scan: find a dialog, record it, close it. Never throws: a failure to gather the
+    // detail or to close still gets recorded as a problem, and the watcher keeps running.
+    const checkOnce = async (): Promise<boolean> => {
+        const found = await findProblemDialog(browser).catch(() => undefined);
+        if (!found) return false;
+        try {
+            const { problem, detail } = await gatherProblemDetail(found.page);
+            problems.push({ heading: found.heading, problem, detail });
+            await closeProblemDialog(found.page);
+        } catch (error) {
+            problems.push({
+                heading: found.heading,
+                problem:
+                    `A problem dialog appeared, but gathering its detail or closing it ` +
+                    `failed: ${error}`,
+            });
+        }
+        return true;
+    };
+
+    // Serialize scans, so the poll loop and scanNow never process the same dialog twice.
+    let chain: Promise<unknown> = Promise.resolve();
+    const scanExclusively = (): Promise<boolean> => {
+        const next = chain.then(checkOnce);
+        chain = next.catch(() => undefined);
+        return next;
+    };
+
     const poll = async () => {
         while (!stopped) {
             await delay(intervalMs);
             if (stopped) return;
-            const found = await findProblemDialog(browser).catch(
-                () => undefined,
-            );
-            if (!found) continue;
-            const { problem, detail } = await gatherProblemDetail(found.page);
-            problems.push({ heading: found.heading, problem, detail });
-            await closeProblemDialog(found.page);
-            // Give the dialog time to go away before we look again, so one problem is not counted
-            // twice. Bloom queues reports and shows them one at a time, so a second poll may well
-            // find the next one, which is what we want.
-            await delay(intervalMs);
+            const foundOne = await scanExclusively().catch(() => false);
+            // Give a found dialog time to go away before we look again, so one problem is not
+            // counted twice. Bloom queues reports and shows them one at a time, so a second poll
+            // may well find the next one, which is what we want.
+            if (foundOne) await delay(intervalMs);
         }
     };
     // Deliberately not awaited: this runs for the life of the worker alongside the tests.
@@ -159,6 +187,9 @@ export function startProblemDialogWatcher(
 
     return {
         takeProblems: () => problems.splice(0, problems.length),
+        scanNow: async () => {
+            await scanExclusively();
+        },
         stop: () => {
             stopped = true;
         },

@@ -176,6 +176,9 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
             // reported against the next.
             problemDialogWatcher.takeProblems();
             await use();
+            // One immediate scan, so a dialog raised in the test's last moments is charged to
+            // this test rather than lost or blamed on the next one.
+            await problemDialogWatcher.scanNow();
             const problems = problemDialogWatcher.takeProblems();
             if (problems.length > 0)
                 throw new Error(describeProblems(problems));

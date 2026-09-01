@@ -299,20 +299,32 @@ export async function launchBloom(
     const readyTimeoutMs = options.readyTimeoutMs ?? 120000;
     const startTime = Date.now();
     let found: { httpPort: number; info: IInstanceInfo } | undefined;
+    // When the process we spawned exits, that is USUALLY a startup crash, but Bloom can also
+    // hand off to another instance of itself (which is why servingPid can differ from the
+    // spawned pid). So an exit starts a short grace window in which discovery keeps looking
+    // for a successor; only when none appears do we treat the exit as a failure.
+    let spawnedExitedAt: number | undefined;
+    const handOffGraceMs = 10000;
     while (!found && Date.now() - startTime < readyTimeoutMs) {
         found = await findBloomServingCollection(collectionDir);
         if (found) break;
         // Fail fast when Bloom died on startup, rather than waiting out the whole timeout: the
         // exit code plus its output says it crashed, not merely that discovery could not see it.
         if (exitStatus) {
-            process.removeListener("exit", cleanUpOnExit);
-            fs.rmSync(tempRoot, { recursive: true, force: true });
-            throw new Error(
-                `Bloom exited before serving the temp collection ` +
-                    `(code ${exitStatus.code}, signal ${exitStatus.signal}).\n` +
-                    `  exe: ${exe}\n  wanted: ${collectionDir}\n` +
-                    formatOutput(),
-            );
+            spawnedExitedAt ??= Date.now();
+            if (Date.now() - spawnedExitedAt > handOffGraceMs) {
+                // cleanUpOnExit would also kill a successor we have not discovered yet; there is
+                // no pid to kill here beyond the one that already exited, so just delete.
+                process.removeListener("exit", cleanUpOnExit);
+                fs.rmSync(tempRoot, { recursive: true, force: true });
+                throw new Error(
+                    `Bloom exited before serving the temp collection, and no successor ` +
+                        `instance appeared within ${handOffGraceMs / 1000}s ` +
+                        `(code ${exitStatus.code}, signal ${exitStatus.signal}).\n` +
+                        `  exe: ${exe}\n  wanted: ${collectionDir}\n` +
+                        formatOutput(),
+                );
+            }
         }
         await delay(1000);
     }
