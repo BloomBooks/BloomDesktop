@@ -86,24 +86,101 @@ namespace Bloom.web.controllers
                 null, // read only
                 false // does not need the UI thread
             );
+
+            // GET returns the selected book's pages as JSON: id, caption, and whether the page is
+            // front or back matter. A test needs page ids to navigate (editView/jumpToPage takes
+            // one), and the page-list thumbnails do not expose which pages are xmatter, so without
+            // this a test has to guess from thumbnail markup.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "pages",
+                HandleGetPages,
+                false // does not need the UI thread
+            );
+
+            // GET returns the pages the Add Page dialog would offer for the selected book: the
+            // path of its template book, and the id and label of each template page. A test needs
+            // these to call the production "addPage" endpoint, and the dialog itself reads them
+            // out of the template book's HTML, so there is no other way to ask for them.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "templatePages",
+                HandleGetTemplatePages,
+                false // does not need the UI thread
+            );
         }
 
         /// <summary>
         /// True if the editable collection is loaded and its book list is available. Mirrors what
         /// selecting a book needs (see CollectionApi.GetCollectionOfRequest), so a test can wait
         /// for this before selecting. Any exception means "not ready yet", so we swallow it.
+        /// An EMPTY collection is ready: a test that creates its own collection starts with no
+        /// books and then makes one, so "has at least one book" would never come true for it.
         /// </summary>
         private bool IsCollectionReady()
         {
             try
             {
                 var editable = _collectionModel.TheOneEditableCollection;
-                return editable != null && editable.GetBookInfos().Any();
+                if (editable == null)
+                    return false;
+                // Enumerate the list rather than merely asking for it: that is the part that
+                // throws while the collection is still loading, which is what we are waiting out.
+                editable.GetBookInfos().ToList();
+                return true;
             }
             catch
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Reply with the pages of the selected book, in order. `isContentPage` is false for the
+        /// front and back matter, which a test normally wants to skip over.
+        /// </summary>
+        private void HandleGetPages(ApiRequest request)
+        {
+            var book = _bookSelection.CurrentSelection;
+            if (book == null)
+            {
+                request.ReplyWithJson(new object[0]);
+                return;
+            }
+            var pages = book.GetPages()
+                .Select(page => new
+                {
+                    id = page.Id,
+                    caption = page.Caption,
+                    isContentPage = !page.IsXMatter,
+                })
+                .ToArray();
+            request.ReplyWithJson(pages);
+        }
+
+        /// <summary>
+        /// Reply with the template pages available to the selected book, each with the path of the
+        /// template book that holds it. A book made from a template starts with no content page,
+        /// because every page of a template is a template page, so a test that needs one adds it.
+        /// </summary>
+        private void HandleGetTemplatePages(ApiRequest request)
+        {
+            var book = _bookSelection.CurrentSelection;
+            var templateBook = book?.FindTemplateBook();
+            if (templateBook == null)
+            {
+                request.ReplyWithJson(new object[0]);
+                return;
+            }
+            var templateBookPath = templateBook.GetPathHtmlFile().Replace('\\', '/');
+            var pages = templateBook
+                .GetTemplatePagesIdDictionary()
+                .Select(pair => new
+                {
+                    id = pair.Key,
+                    label = pair.Value.Caption,
+                    templateBookPath,
+                })
+                .ToArray();
+            request.ReplyWithJson(pages);
         }
 
         /// <summary>

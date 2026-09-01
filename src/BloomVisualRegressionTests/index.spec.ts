@@ -15,18 +15,46 @@ import * as os from "os";
 import { PNG } from "pngjs";
 import Pixelmatch from "pixelmatch";
 import * as Path from "path";
+import { fileURLToPath } from "url";
 
 // The Bloom HTTP origin the suite talks to. launchDedicatedBloom resolves this at startup to the
 // port our launched instance actually opened on, instead of assuming 8089.
 let bloomOrigin = "http://localhost:8089";
 
-// We must not let Bloom mutate the committed collections: opening a book brings it up to date
+// This spec file lives in <repoRoot>/src/BloomVisualRegressionTests. Resolve paths from the file
+// rather than from process.cwd() so they hold however vitest is invoked.
+const repoRoot = Path.resolve(
+    Path.dirname(fileURLToPath(import.meta.url)),
+    "..",
+    "..",
+);
+
+// The books and their reference screenshots are NOT in this repository. They live in
+// https://github.com/BloomBooks/bloom-testing-inputs, at the commit named by
+// build/testing-inputs.pin, which `node build/get-testing-inputs.mjs` materializes into
+// output/testing-inputs. Because that is one exact commit, a run is reproducible without this
+// suite doing anything clever. Set BLOOM_TESTING_INPUTS_DIR to a checkout of that repository to
+// render your own in-progress input changes instead (see readme.md).
+const testingInputsRoot =
+    process.env.BLOOM_TESTING_INPUTS_DIR ??
+    Path.join(repoRoot, "output", "testing-inputs");
+const sourceCollectionsRoot = Path.join(testingInputsRoot, "collections");
+if (!fs.existsSync(sourceCollectionsRoot)) {
+    throw new Error(
+        `Could not find the test-input collections at ${sourceCollectionsRoot}.\n` +
+            (process.env.BLOOM_TESTING_INPUTS_DIR
+                ? `BLOOM_TESTING_INPUTS_DIR is set to ${process.env.BLOOM_TESTING_INPUTS_DIR}; it must be a ` +
+                  `checkout of https://github.com/BloomBooks/bloom-testing-inputs (the folder containing collections/).`
+                : `Run: node build/get-testing-inputs.mjs`),
+    );
+}
+
+// We must not let Bloom mutate the source collections: opening a book brings it up to date
 // (rewriting .htm/.css), regenerates thumbnail.png, copies branding files into the book folder, etc.
 // So each run copies the collections to a throwaway temp folder and launches a dedicated Bloom on
-// THAT. Reference/current/diff images still live under the repo book folders (they are committed and
-// the "accept the new render" workflow needs a stable path), so the two are decoupled: Bloom operates
-// on the temp copy (see toTempBookFolder); screenshots are read/written in the repo copy.
-const repoCollectionsRoot = Path.join(process.cwd(), "collections");
+// THAT. Reference/current/diff images are read and written under the SOURCE book folders instead,
+// because updating a baseline means changing the inputs repository. So the two are decoupled: Bloom
+// operates on the temp copy (see toTempBookFolder); screenshots live in the source copy.
 let tempCollectionsRoot: string | null = null;
 // The dedicated Bloom we launch, kept so we can shut it down afterwards.
 let bloomProcess: ChildProcess | null = null;
@@ -176,7 +204,20 @@ describe("All books", () => {
 
     beforeAll(async () => {
         await launchDedicatedBloom();
-        browser = await chromium.launch();
+        // Text must rasterize the same way on every machine, or the reference images are only
+        // valid on whichever machine made them. By default Chrome anti-aliases text with LCD
+        // sub-pixel rendering, using the host's DirectWrite gamma/contrast settings, so the same
+        // glyphs come out with different colored fringes on a developer machine than on the CI
+        // runner. --disable-lcd-text forces grayscale anti-aliasing instead;
+        // --font-render-hinting=none removes the other host-dependent step; --force-color-profile
+        // pins the color space the result is converted through.
+        browser = await chromium.launch({
+            args: [
+                "--disable-lcd-text",
+                "--font-render-hinting=none",
+                "--force-color-profile=srgb",
+            ],
+        });
         context = await browser.newContext();
         page = await context.newPage();
         playerPage = await context.newPage();
@@ -193,11 +234,13 @@ describe("All books", () => {
     });
 
     // NB: currently, we don't have a way of making Bloom change collections, or re-running it with a different collection
-    // Our test "collections/" directory currently only has the one collection, so this is ok for now.
+    // The inputs repository currently holds only the one collection, so this is ok for now.
     const collectionFolders = fs
-        .readdirSync("collections")
-        .filter((f) => fs.statSync(Path.join("collections", f)).isDirectory())
-        .map((f) => Path.join(process.cwd(), "collections", f));
+        .readdirSync(sourceCollectionsRoot)
+        .filter((f) =>
+            fs.statSync(Path.join(sourceCollectionsRoot, f)).isDirectory(),
+        )
+        .map((f) => Path.join(sourceCollectionsRoot, f));
 
     const bookFolders = collectionFolders.flatMap((collectionPath) => {
         var paths = fs
@@ -257,7 +300,7 @@ describe("All books", () => {
         await waitForCollectionReady();
         // Select the book first, then set branding and theme: each of setBranding/setTheme brings
         // the currently-selected book up to date so it picks up the corresponding files/appearance.
-        // Bloom operates on the temp copy; screenshots (below) still go to the repo book folder.
+        // Bloom operates on the temp copy; screenshots (below) go to the source book folder.
         await selectBook(toTempBookFolder(testCase.bookFolder));
         await setBranding(testCase.branding);
         await setTheme(testCase.theme);
@@ -286,6 +329,9 @@ describe("All books", () => {
 
     // Create the reference image if it does not exist yet; otherwise capture a current image and
     // compare it to the reference. `shoot(path)` writes a screenshot to the given path.
+    // `screenshotsDir` is always in the SOURCE inputs tree (output/testing-inputs, or whatever
+    // BLOOM_TESTING_INPUTS_DIR names), never in the temp copy, so that an accepted new baseline is
+    // a file a developer can commit to the inputs repository. See readme.md.
     async function captureOrCompare(
         label: string,
         screenshotsDir: string,
@@ -664,14 +710,14 @@ function writeDirectionalDiff(reference: PNG, current: PNG, diffPath: string) {
 // of these ports, so we match on the open collection folder (below) rather than assuming a port.
 const CANDIDATE_PORTS = [8089, 8092, 8095, 8098, 8101, 8104];
 
-// Map a repo book folder to the corresponding folder in the temp copy that Bloom actually has open.
-// selectBook must point Bloom at the temp copy; screenshots stay under the repo book folder.
-function toTempBookFolder(repoBookFolder: string): string {
+// Map a source book folder to the corresponding folder in the temp copy that Bloom actually has
+// open. selectBook must point Bloom at the temp copy; screenshots stay under the source book folder.
+function toTempBookFolder(sourceBookFolder: string): string {
     if (!tempCollectionsRoot)
         throw new Error("Temp collection copy has not been created yet");
     return Path.join(
         tempCollectionsRoot,
-        Path.relative(repoCollectionsRoot, repoBookFolder),
+        Path.relative(sourceCollectionsRoot, sourceBookFolder),
     );
 }
 
@@ -720,100 +766,23 @@ async function findBloomServingCollection(
     return null;
 }
 
-// Populate the throwaway temp collection that Bloom will open. By default we export the *committed*
-// (HEAD) state of collections/, so a run is deterministic and immune to accidental working-tree
-// changes — Bloom's own book rewrites, or a stray Bloom editing the repo copy. The reference images
-// still live in the working tree (see capturePlayerPages/saveScreenshot), so the
-// regenerate -> eyeball -> commit workflow is unaffected by this. Set BLOOM_VR_WORKING_TREE=1 to
-// instead render your uncommitted working-tree changes (for deliberately modifying or adding test
-// books). If git or tar is unavailable, or any step of the export fails, we fall back to copying the
-// working tree so the suite still runs.
+// Populate the throwaway temp collection that Bloom will open, by copying the source collections.
+// A plain copy is enough for determinism now: output/testing-inputs is one exact commit of the
+// inputs repository (build/testing-inputs.pin), so there is no working tree to differ from it. The
+// screenshots/ folders are left out — they are baselines and outputs, read and written in the
+// source tree (see captureOrCompare), and copying 48 reference PNGs per book would only slow the
+// run down.
 function populateTempCollections(dest: string) {
-    if (process.env.BLOOM_VR_WORKING_TREE === "1") {
-        console.log(
-            "BLOOM_VR_WORKING_TREE=1: rendering the working-tree collection (uncommitted changes included).",
-        );
-        fs.cpSync(repoCollectionsRoot, dest, { recursive: true });
-        return;
-    }
-    try {
-        // Export the COMMITTED (HEAD) tracked files under collections/ straight from git. We avoid
-        // `git archive` + `tar`: the HEAD:<subtree> tree-ish comes back empty in a git worktree, and
-        // system `tar` varies by platform (GNU vs bsdtar; only GNU has --force-local; each treats a
-        // "C:" path differently) — both bit us. We copy tracked files only: Bloom regenerates the
-        // gitignored support files (origami.css, branding.css, ...) itself, and the screenshots/
-        // reference images are read from the repo working tree, not this temp copy. Any git failure
-        // (git not on PATH, not a repo, a staged-but-uncommitted new file, ...) throws to the catch.
-        const listed = execFileSync("git", [
-            "ls-files",
-            "-z",
-            "--",
-            "collections",
-        ])
-            .toString()
-            .split("\0")
-            .filter(Boolean)
-            .filter((rel) => !rel.includes("/screenshots/"));
-        if (listed.length === 0)
-            throw new Error("git ls-files found no tracked collection files");
-        for (const rel of listed) {
-            // rel is cwd-relative, e.g. "collections/basic/basic.bloomCollection". Write its
-            // committed content to the matching path under dest (dest/basic/...). Keep it a Buffer,
-            // not a string, so binary book images round-trip exactly.
-            const content = execFileSync("git", ["show", `HEAD:./${rel}`], {
-                maxBuffer: 256 * 1024 * 1024,
-            });
-            const outPath = Path.join(dest, Path.relative("collections", rel));
-            fs.mkdirSync(Path.dirname(outPath), { recursive: true });
-            fs.writeFileSync(outPath, content);
-        }
-        if (!fs.existsSync(Path.join(dest, "basic", "basic.bloomCollection")))
-            throw new Error(
-                "committed collection is missing basic/basic.bloomCollection",
-            );
-        warnIfWorkingTreeBookChanges();
-        console.log(
-            "Rendering the committed (HEAD) test collection. Set BLOOM_VR_WORKING_TREE=1 to render working-tree changes.",
-        );
-    } catch (e) {
-        console.warn(
-            `Could not export the committed collection from git (${(e as Error).message}); ` +
-                "falling back to a working-tree copy.",
-        );
-        fs.cpSync(repoCollectionsRoot, dest, { recursive: true });
-    }
+    fs.cpSync(sourceCollectionsRoot, dest, {
+        recursive: true,
+        filter: (source) => Path.basename(source) !== "screenshots",
+    });
+    console.log(`Rendering the test collections from ${sourceCollectionsRoot}`);
 }
 
-// Warn (never fail) when the working tree has uncommitted changes to book inputs under collections/,
-// so it is never a surprise that the default run ignored them (it renders committed HEAD). Reference
-// images (under screenshots/) are excluded — an uncommitted reference update is a normal state.
-function warnIfWorkingTreeBookChanges() {
-    try {
-        const out = execFileSync("git", [
-            "status",
-            "--porcelain",
-            "--",
-            "collections",
-        ]).toString();
-        const changed = out
-            .split("\n")
-            .map((line) => line.slice(3).trim())
-            .filter((p) => p && !p.includes("/screenshots/"));
-        if (changed.length > 0)
-            console.warn(
-                `Note: ignoring ${changed.length} uncommitted change(s) under collections/ ` +
-                    "(rendering committed HEAD; use BLOOM_VR_WORKING_TREE=1 to render them). e.g. " +
-                    changed.slice(0, 5).join(", "),
-            );
-    } catch (e) {
-        // best-effort; a warning is not worth failing the run over
-    }
-}
-
-// Populate a throwaway temp collection (committed HEAD by default; see populateTempCollections) and
-// launch a dedicated Bloom on it, then wait until that instance is serving it. We always launch our
-// own (rather than reusing a developer's Bloom) so the run is deterministic and never touches the
-// repo collection.
+// Populate a throwaway temp collection (see populateTempCollections) and launch a dedicated Bloom on
+// it, then wait until that instance is serving it. We always launch our own (rather than reusing a
+// developer's Bloom) so the run is deterministic and never touches the source collections.
 async function launchDedicatedBloom() {
     // Canonicalize immediately: os.tmpdir() is an 8.3 short path on Windows, but Bloom reports the
     // long form, so we normalize here (and in samePath) to make the discovery match work.
@@ -833,13 +802,13 @@ async function launchDedicatedBloom() {
     // locations. Release is included because CI runs the suite against Release builds. Debug is
     // listed first for the common local (go.sh) case; a clean CI checkout only has the config it built.
     const exeCandidates = [
-        "../../output/Debug/x64/Bloom.exe",
-        "../../output/Debug/AnyCPU/Bloom.exe",
-        "../../output/Debug/Bloom.exe",
-        "../../output/Release/x64/Bloom.exe",
-        "../../output/Release/AnyCPU/Bloom.exe",
-        "../../output/Release/Bloom.exe",
-    ];
+        "Debug/x64",
+        "Debug/AnyCPU",
+        "Debug",
+        "Release/x64",
+        "Release/AnyCPU",
+        "Release",
+    ].map((sub) => Path.join(repoRoot, "output", sub, "Bloom.exe"));
     const exe = exeCandidates.find((c) => fs.existsSync(c));
     if (!exe) {
         throw new Error(
