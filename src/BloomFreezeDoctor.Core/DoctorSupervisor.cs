@@ -405,7 +405,12 @@ public sealed class DoctorSupervisor : IDisposable
         // And listen for Bloom saying so, which turns a five-second wait into a few milliseconds. The timer
         // above stays exactly as it was: this is an accelerator, not a replacement, and it has to be - a
         // Bloom too old to announce itself is found only by sweeping.
-        _bloomStarted = Protocol.DoctorSignals.TryCreate(Protocol.DoctorSignals.BloomStartedName());
+        // A pulse, not a latch - see DoctorSignals.TryCreatePulse. With a manual-reset event this wait
+        // re-armed faster than the callback could reset it, and one announcement produced 103 wake-ups and
+        // 103 needless sweeps.
+        _bloomStarted = Protocol.DoctorSignals.TryCreatePulse(
+            Protocol.DoctorSignals.BloomStartedName()
+        );
         if (_bloomStarted != null)
         {
             _bloomStartedWait = ThreadPool.RegisterWaitForSingleObject(
@@ -560,8 +565,8 @@ public sealed class DoctorSupervisor : IDisposable
     /// <summary>
     /// Bloom has just started and said so. Look now.
     ///
-    /// The event is manual-reset, so it is reset here rather than by the wait itself; resetting first means
-    /// a second Bloom announcing itself during this sweep is not lost.
+    /// The event is auto-reset, so one announcement wakes this exactly once. A second Bloom announcing
+    /// itself while this runs sets it again and wakes it again, which is what should happen.
     ///
     /// If the sweep is already running, its re-entrancy guard turns this into a no-op - which is correct
     /// rather than a missed chance, since the sweep in flight is doing exactly the work this asked for. The
@@ -572,7 +577,8 @@ public sealed class DoctorSupervisor : IDisposable
     {
         try
         {
-            _bloomStarted?.Reset();
+            // No Reset here: the event is auto-reset, so waking IS the reset and the kernel does it
+            // atomically. Doing it by hand was the bug - it raced with the wait re-arming.
             Note("a Bloom has just started and said so; looking now rather than at the next sweep");
             Discover();
         }

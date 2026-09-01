@@ -30,6 +30,41 @@ namespace Bloom.FreezeDoctor
         private const string ExecutableName = "BloomFreezeDoctor.exe";
 
         /// <summary>
+        /// Tells any Doctor that is ALREADY RUNNING that a Bloom has started, so it adopts us now instead
+        /// of at its next five-second sweep.
+        ///
+        /// Needed as well as starting one below, because the two cover different cases: starting one covers
+        /// "no Doctor yet", and a Doctor Bloom starts when one is already running is a duplicate that exits
+        /// on the singleton mutex without ever telling the original that we exist. That is why adoption used
+        /// to wait for a poll.
+        ///
+        /// **Called from the very top of Program.Main, and that placement is the whole value.** Everything
+        /// before it is time in which a hang or a crash cannot be doctored at all, since Bloom only asks for
+        /// a dump when a Doctor is already watching. Announced from further down - where the Doctor is
+        /// launched - it was measured arriving 6.2 seconds into startup, by which time the sweep had already
+        /// found us and it had bought nothing. It can go first because it needs nothing: one named event,
+        /// set, and return.
+        ///
+        /// Deliberately NOT gated on <see cref="Settings.RunFreezeDoctor"/>. That setting governs whether
+        /// Bloom STARTS a Doctor, not whether it cooperates with one already watching - and nothing else
+        /// consults it either: the heartbeat and the dying request for a dump both key off whether a Doctor
+        /// is listening. A Doctor runs with that setting off in exactly the case that matters most, where
+        /// support has asked a user to start one by hand.
+        /// </summary>
+        public static void AnnounceToAnyDoctor()
+        {
+            try
+            {
+                DoctorSignals.Announce(DoctorSignals.BloomStartedName());
+            }
+            catch (Exception)
+            {
+                // Swallowed like everything else here. A diagnostic convenience must never be able to
+                // affect Bloom's startup.
+            }
+        }
+
+        /// <summary>
         /// Starts the Doctor if the user has asked for it, telling it which process to watch. Returns
         /// immediately and never throws: this is a diagnostic convenience, and it must not be able to
         /// affect Bloom's startup in any way a user would notice.
@@ -42,15 +77,13 @@ namespace Bloom.FreezeDoctor
         {
             try
             {
+                // Again, and not redundantly: this is also the debug-menu path, where a Doctor may have been
+                // started since Main announced. Setting an auto-reset event nobody is waiting on costs
+                // nothing and is thrown away by the next waiter.
+                AnnounceToAnyDoctor();
+
                 if (!Settings.Default.RunFreezeDoctor)
                     return;
-
-                // Tell any Doctor that is already running that a Bloom has appeared, so it adopts us now
-                // instead of at its next sweep. This is separate from starting one below, and both are
-                // needed: starting one covers "no Doctor yet", and a duplicate exits on the singleton mutex
-                // without ever telling the original that we exist - which is why adoption used to wait for
-                // a poll. See DoctorSignals.BloomStartedName.
-                DoctorSignals.Announce(DoctorSignals.BloomStartedName());
 
                 var exe = FindTheDoctor();
                 if (exe == null)

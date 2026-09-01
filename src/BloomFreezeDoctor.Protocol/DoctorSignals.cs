@@ -101,6 +101,33 @@ public static class DoctorSignals
         }
     }
 
+    /// <summary>
+    /// Creates (or opens) an AUTO-reset event by name. Used for one signal only, and the difference is not
+    /// cosmetic.
+    ///
+    /// Every other signal here is a latch: "a Doctor is watching this process", "the dump is complete". A
+    /// latch wants manual reset, because whoever asks later must still get the answer. The Bloom-has-started
+    /// announcement is the opposite - a pulse, meaningful once - and putting it on a manual-reset event was
+    /// measurably wrong: the Doctor waits with ThreadPool.RegisterWaitForSingleObject, which re-arms the wait
+    /// before the callback has run, so a set event fires the callback again and again until something resets
+    /// it. A measured run produced 103 wake-ups and 103 needless sweeps from one announcement.
+    ///
+    /// Auto-reset makes the kernel do it: one set releases exactly one wait and the event goes back to
+    /// unsignalled with no cooperation needed. Both sides must create it the same way, because the FIRST
+    /// creator fixes the mode - which is why Announce uses this too, rather than the manual-reset TryCreate.
+    /// </summary>
+    public static EventWaitHandle? TryCreatePulse(string name)
+    {
+        try
+        {
+            return new EventWaitHandle(false, EventResetMode.AutoReset, name);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
     /// <summary>Opens an existing event, or null if nobody has created it.</summary>
     public static EventWaitHandle? TryOpen(string name)
     {
@@ -141,16 +168,25 @@ public static class DoctorSignals
     ///
     /// Distinct from <see cref="TrySignal"/>, which only sets an event somebody is already listening on and
     /// reports "nobody there" otherwise. That is the right shape for the per-process signals, where the
-    /// listener creates the event and its absence is the answer to a real question. It is the wrong shape
-    /// for announcing that Bloom has started: the announcement is worth making even if the listener creates
-    /// its handle a moment later, and a manual-reset event stays set until read, so an announcement into an
-    /// empty room is still waiting when a Doctor arrives.
+    /// listener creates the event and its absence is the answer to a real question; here the caller does not
+    /// care who is listening and has nothing useful to do with the answer.
+    ///
+    /// **It does NOT keep an announcement for a Doctor that arrives later, and I first wrote that it did.**
+    /// A Windows named event lives only while a handle to it is open, so creating one, setting it and
+    /// disposing the handle - all of which this does - destroys it again on the way out. Announcing to an
+    /// empty room is exactly that: a no-op. Observed, not reasoned: a Bloom announcing itself 9 seconds
+    /// before a Doctor started was never heard, while the same Bloom's later announcement, made once the
+    /// Doctor held the event, arrived at once.
+    ///
+    /// That is a limitation and not a hole, because "no Doctor is running" is the case Bloom handles by
+    /// starting one, which then finds Bloom by its own sweep. What this is for is the other case: a Doctor
+    /// already running, which would otherwise not learn of a new Bloom until its next poll.
     /// </summary>
     public static bool Announce(string name)
     {
         try
         {
-            using var handle = TryCreate(name);
+            using var handle = TryCreatePulse(name);
             if (handle == null)
                 return false;
             handle.Set();

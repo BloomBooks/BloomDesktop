@@ -134,6 +134,16 @@ namespace Bloom
             _ownsSingleInstanceToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
             Logger.Init();
+            // Tell any Freeze Doctor already running that a Bloom has started, as close to the top of Main
+            // as it can be. It sets one named event and returns, needing no settings, no paths and nothing
+            // initialised, which is what lets it go here.
+            //
+            // The point of it being FIRST is the startup window. Announcing it from where the Doctor is
+            // launched, further down, was measured arriving 6.2 seconds in - by which time the Doctor's own
+            // five-second sweep had already found us, so it bought nothing at all. Everything before the
+            // announcement is time in which a hang or a crash cannot be doctored, because Bloom only asks
+            // for a dump if a Doctor is already watching.
+            DoctorLauncher.AnnounceToAnyDoctor();
             // Configure TempFile to create temp files with a "bloom" prefix so we can
             // catch stuff we make that doesn't get cleaned up properly, including in our
             // final call to CleanupTempFolder. Also prevents our temp files competing with
