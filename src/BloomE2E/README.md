@@ -1,0 +1,126 @@
+# BloomE2E
+
+Edge-to-edge tests that drive the real `Bloom.exe`.
+
+Each test launches its own Bloom on a known collection, clicks through the embedded WebView2 the
+way a person would, asserts, and tears the instance down. Nothing here talks to a mock, and nothing
+here reuses the Bloom you happen to have open.
+
+This is a product, not a pile of scripts. When Bloom is hard to drive, the fix is to make Bloom
+easier to automate; see [AUTOMATION-DEBT.md](AUTOMATION-DEBT.md), which is the visible backlog of
+that work. The procedure for adding a test lives in `.github/skills/add-e2e-test/SKILL.md`.
+
+## Writing a test
+
+```ts
+import { expect, test } from "../fixtures/bloomTest";
+import { selectBook } from "../helpers/collection";
+import { getTabs, switchTab } from "../helpers/workspace";
+
+test.use({ collectionName: "basic" });
+
+test("switching workspace tabs through the real top bar", async ({ page, bloomApp }) => {
+    expect((await getTabs(page)).tabStates.collection).toBe("active");
+    await selectBook(page, `${bloomApp.collectionDir}/A5 Portrait`);
+    await switchTab(page, "publish");
+    await switchTab(page, "edit");
+});
+```
+
+`test.use({ collectionName })` names a folder under `output/testing-inputs/collections`. The
+fixture copies that collection to a temp folder, launches Bloom on the copy, and attaches to the
+WebView2. One Bloom serves every test in a worker, because launching takes several seconds.
+
+## The fixture API
+
+`page` is Playwright's own `page` fixture, overridden to be Bloom's shell document: the top bar,
+and whatever tab is showing. Most tests need nothing else.
+
+`bloomApp` carries the rest of the launched instance:
+
+| Field           | What it is                                                             |
+| --------------- | ---------------------------------------------------------------------- |
+| `page`          | The same page as the `page` fixture.                                    |
+| `httpPort`      | The port Bloom's HTTP server opened on.                                 |
+| `cdpPort`       | The port the embedded WebView2 answers CDP on.                          |
+| `bloomPid`      | The process id of the Bloom serving this collection.                    |
+| `collectionDir` | The temp copy of the collection. Build book paths from this, never from `output/testing-inputs`. |
+
+Teardown kills the process tree, waits for the HTTP port to go dark, and deletes the temp copy.
+
+A background watcher polls for Bloom's "Bloom had a problem" dialog. When one appears it reads the
+exception from behind the dialog's own "Learn More" link, closes the dialog the way its Close
+button does, and fails the test with that text. It never clicks Submit, which would send a report,
+a screenshot, and the book to Bloom's servers. If the same problem keeps coming back, that is a
+real bug in the code under test; read the message and fix it rather than working around it.
+
+## The UI-vs-API policy
+
+- Every UI path gets **one dedicated journey test** that drives every click from launch to result.
+  If your test covers a path no journey test covers, write the journey test too.
+- **Every other test takes the fastest reliable path to its start state.** Bloom's HTTP API and the
+  `E2eTestingApi` hooks (`e2e/*`, registered only under `--e2e`) are fine for setup and navigation.
+  `helpers/api.ts` and `helpers/collection.ts` are there for exactly this.
+- **Assertions may read APIs.** `getTabs()` asks Bloom which tab is active rather than scraping the
+  DOM, which is both more accurate and less brittle.
+- **The action under test is never simulated through an API call.** A test of tab switching clicks
+  the tab; it does not post `workspace/selectTab`.
+
+## Helpers
+
+- `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Note that Bloom hides the
+  Edit and Publish tabs until a book is selected.
+- `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
+- `helpers/api.ts` — `apiGet`, `apiPost`, `apiGetJson`. These run `fetch` inside the page with a
+  relative URL, which is not a style choice: Bloom's server rejects a `127.0.0.1` Host header, and
+  the CDP endpoint does not answer on `localhost`. The file explains it.
+- `helpers/realClick.ts` — `realClick`, `realClickAt`. Book tiles, Settings, and PREVIEW ignore a
+  synthetic `element.click()`. Never hand-roll `Input.dispatchMouseEvent` in a test; add the
+  gesture here.
+
+Two things a test must never do: trigger a native OS dialog (file pickers, the WinForms Image
+Toolbox, video capture), because Playwright cannot dismiss one and the run hangs; and wait on a
+fixed sleep instead of a state (`expect.poll` an API, or await a selector).
+
+## The Notion test inventory
+
+The team's test inventory is the Notion database "Test Case Runs", one row per test case per
+release suite. A case's stable identity is its `Test Case ID` number. When an automated test covers
+a case, put that id in the test title so the code and the inventory stay tied:
+
+```ts
+test("change UI language repeatedly [Test Case ID 69]", async ({ page }) => { ... });
+```
+
+Then set the card's `Automation` property to `Automated`, or to `Partial` when the test covers only
+part of the steps. A new test with no manual card gets a new inventory row, so the inventory stays
+the inventory of all tests rather than only the human-run ones. `.github/skills/add-e2e-test/SKILL.md`
+has the details.
+
+## Running
+
+```bash
+pnpm install                         # once, in this folder
+pnpm test                            # the whole suite
+pnpm exec playwright test tests/workspace-tabs.spec.ts        # one file
+pnpm exec playwright test -g "switching workspace tabs"       # one test by title
+pnpm exec playwright test --debug    # step through it
+```
+
+A run opens a real Bloom window. That is expected; do not click in it.
+
+The suite needs a built `Bloom.exe` under `output/{Debug,Release}/{x64,AnyCPU,}/` and the test
+inputs at `output/testing-inputs`, fetched by `node build/get-testing-inputs.mjs` at the commit
+`build/testing-inputs.pin` names.
+
+To test against your own in-progress input collections instead of the pinned ones, point
+`BLOOM_TESTING_INPUTS_DIR` at a checkout of
+[bloom-testing-inputs](https://github.com/BloomBooks/bloom-testing-inputs) — the folder that
+contains `collections/`:
+
+```bash
+BLOOM_TESTING_INPUTS_DIR=D:/bloom-testing-inputs pnpm test
+```
+
+Either way the fixture copies the collection before Bloom opens it, so a run never modifies your
+inputs.
