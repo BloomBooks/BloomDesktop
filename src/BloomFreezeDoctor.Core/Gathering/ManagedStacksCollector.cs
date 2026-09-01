@@ -218,9 +218,9 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
             .Select(t => new { Thread = t, Frames = SafeFrames(t) })
             .ToList();
 
-        var uiThread = threads.FirstOrDefault(t =>
-            t.Frames.Any(f => f.Contains("RunMessageLoop", StringComparison.Ordinal))
-        );
+        // See UiThreadStack: matching only on the message-loop frame missed the UI thread exactly when it
+        // mattered most, because a SPINNING thread's upper frames do not survive the stack walk.
+        var uiThread = threads.FirstOrDefault(t => UiThreadStack.LooksLikeTheUiThread(t.Frames));
 
         text.AppendLine(
             $"{threads.Count} managed thread(s); {threads.Count(t => t.Frames.Count > 0)} with walkable stacks."
@@ -239,14 +239,13 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
         string? headline = null;
         if (uiThread != null)
         {
-            var blocking = DescribeBlockingCall(uiThread.Frames);
-            headline =
-                blocking != null ? $"The UI thread is blocked in {blocking}."
-                // Not blocked. On a freeze report that is a finding worth stating as one; on a crash it is
-                // just where the thread happened to be, and phrasing it as a verdict makes the report
-                // appear to argue with its own headline. See GatherContext.IsAboutAFreeze.
-                : isAboutAFreeze ? "The UI thread is in its message loop (idle or pumping)."
-                : "The UI thread was in its message loop when this snapshot was taken.";
+            headline = UiThreadStack.Describe(
+                uiThread.Frames,
+                isAboutAFreeze,
+                // The OS id, because that is what the thread listing below and the CPU-per-thread
+                // table both print. A different id here would be a puzzle rather than a pointer.
+                (int)uiThread.Thread.OSThreadId
+            );
             text.AppendLine("### The UI thread (the one running the message loop)");
             text.AppendLine();
             AppendFrames(text, uiThread.Frames);
