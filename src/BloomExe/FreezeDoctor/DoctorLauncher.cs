@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Properties;
+using BloomFreezeDoctor.Protocol;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -43,6 +44,13 @@ namespace Bloom.FreezeDoctor
             {
                 if (!Settings.Default.RunFreezeDoctor)
                     return;
+
+                // Tell any Doctor that is already running that a Bloom has appeared, so it adopts us now
+                // instead of at its next sweep. This is separate from starting one below, and both are
+                // needed: starting one covers "no Doctor yet", and a duplicate exits on the singleton mutex
+                // without ever telling the original that we exist - which is why adoption used to wait for
+                // a poll. See DoctorSignals.BloomStartedName.
+                DoctorSignals.Announce(DoctorSignals.BloomStartedName());
 
                 var exe = FindTheDoctor();
                 if (exe == null)

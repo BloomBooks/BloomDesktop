@@ -132,6 +132,16 @@ public sealed class DoctorSupervisor : IDisposable
     private System.Threading.Timer? _discovery;
     private System.Threading.Timer? _drain;
 
+    /// <summary>
+    /// The event Bloom sets when it starts, so we look immediately instead of at the next sweep. Held for
+    /// the Doctor's lifetime because we create it: Bloom announces into it whether or not anyone is
+    /// listening, and a handle of ours is what makes sure there is something to announce into.
+    /// </summary>
+    private EventWaitHandle? _bloomStarted;
+
+    /// <summary>Registration for the wait above, so it can be undone on the way out.</summary>
+    private RegisteredWaitHandle? _bloomStartedWait;
+
     // The four flags below describe the ONE watched Bloom, and are reset when a new one is adopted. They
     // were sets keyed by process id, which is what a stale entry needs in order to attach itself to the
     // wrong Bloom later; with a single target there is nothing to key and nothing to go stale.
@@ -391,6 +401,21 @@ public sealed class DoctorSupervisor : IDisposable
             TimeSpan.Zero,
             DiscoveryInterval
         );
+
+        // And listen for Bloom saying so, which turns a five-second wait into a few milliseconds. The timer
+        // above stays exactly as it was: this is an accelerator, not a replacement, and it has to be - a
+        // Bloom too old to announce itself is found only by sweeping.
+        _bloomStarted = Protocol.DoctorSignals.TryCreate(Protocol.DoctorSignals.BloomStartedName());
+        if (_bloomStarted != null)
+        {
+            _bloomStartedWait = ThreadPool.RegisterWaitForSingleObject(
+                _bloomStarted,
+                (_, _) => ABloomHasAnnouncedItself(),
+                state: null,
+                millisecondsTimeOutInterval: -1,
+                executeOnlyOnce: false
+            );
+        }
         _drain = new System.Threading.Timer(
             _ => _ = DrainAsync(_stopping.Token),
             null,
@@ -531,6 +556,32 @@ public sealed class DoctorSupervisor : IDisposable
 
     /// <summary>How often to repeat "still nothing", in sweeps. Twelve is about a minute.</summary>
     private const int HeartbeatEverySweeps = 12;
+
+    /// <summary>
+    /// Bloom has just started and said so. Look now.
+    ///
+    /// The event is manual-reset, so it is reset here rather than by the wait itself; resetting first means
+    /// a second Bloom announcing itself during this sweep is not lost.
+    ///
+    /// If the sweep is already running, its re-entrancy guard turns this into a no-op - which is correct
+    /// rather than a missed chance, since the sweep in flight is doing exactly the work this asked for. The
+    /// five-second timer remains the backstop for the remaining case: an announcement arriving in the
+    /// moment between a sweep listing the processes and finding ours not yet among them.
+    /// </summary>
+    private void ABloomHasAnnouncedItself()
+    {
+        try
+        {
+            _bloomStarted?.Reset();
+            Note("a Bloom has just started and said so; looking now rather than at the next sweep");
+            Discover();
+        }
+        catch (Exception)
+        {
+            // The sweep will find it in a few seconds regardless. Nothing here is worth risking the
+            // Doctor for.
+        }
+    }
 
     internal void Discover()
     {
@@ -1650,6 +1701,8 @@ public sealed class DoctorSupervisor : IDisposable
     public void Dispose()
     {
         _stopping.Cancel();
+        _bloomStartedWait?.Unregister(null);
+        _bloomStarted?.Dispose();
         _discovery?.Dispose();
         _drain?.Dispose();
         lock (_lock)

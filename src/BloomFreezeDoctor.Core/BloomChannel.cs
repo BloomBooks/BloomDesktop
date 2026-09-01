@@ -33,6 +33,17 @@ public static class BloomChannel
     /// </summary>
     public static string DeriveFromExePath(string exePath)
     {
+        // An unknown path is not Release. Falling through to it meant a Bloom whose executable we could not
+        // read was labelled Release on its card, in the Doctor's log, and - because the channel is one of
+        // the fingerprint's ingredients - merged with genuine Release reports. Seen in a real log as
+        // "watching Bloom 25736 (Release)" for processes that were nothing of the kind.
+        //
+        // Only the EMPTY case changes. A path we can read but do not recognise is still Release: that is
+        // what an ordinary installation looks like, and it is the answer the rest of this method exists to
+        // give.
+        if (string.IsNullOrWhiteSpace(exePath))
+            return "Unknown";
+
         var path = (exePath ?? "").Replace('\\', '/');
         if (path.Contains("/output/Debug/", StringComparison.OrdinalIgnoreCase))
             return "Developer/Debug";

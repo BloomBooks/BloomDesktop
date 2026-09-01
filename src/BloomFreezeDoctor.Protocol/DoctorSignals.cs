@@ -44,6 +44,24 @@ public static class DoctorSignals
     public static string QuitRequestName(int processId) =>
         $@"Local\BloomFreezeDoctor.quit.{processId}";
 
+    /// <summary>
+    /// Set by Bloom when it starts, to tell a Doctor that is ALREADY RUNNING to come and look now rather
+    /// than at its next sweep.
+    ///
+    /// The only signal here with no process id in its name, and it cannot have one: the Doctor is waiting
+    /// before it knows which Bloom will appear. That is also why it is the only one Bloom sets without
+    /// first checking whether anyone is listening - there is nobody to check for.
+    ///
+    /// Why it exists: adoption otherwise waits for the next poll, and that poll interval is a window in
+    /// which Bloom's own startup cannot be doctored at all. It is not merely a tidiness matter - on one
+    /// measured run Bloom crashed and asked to be dumped twenty seconds before the Doctor had noticed it
+    /// existed, and because Bloom only asks when a Doctor is already watching, the dump was never taken.
+    ///
+    /// Polling stays as the backstop, and must: a Bloom too old to know about any of this cannot announce
+    /// itself, and those are the Blooms most worth watching.
+    /// </summary>
+    public static string BloomStartedName() => @"LocalBloomFreezeDoctor.bloomstarted";
+
     /// <summary>Set by Bloom as it dies, to ask for a dump while the process still exists.</summary>
     public static string DumpRequestName(int processId) =>
         $@"Local\BloomFreezeDoctor.dumpme.{processId}";
@@ -116,6 +134,32 @@ public static class DoctorSignals
     {
         using var handle = TryOpen(name);
         return handle != null;
+    }
+
+    /// <summary>
+    /// Sets a named event whether or not anyone has created it yet, creating it if necessary.
+    ///
+    /// Distinct from <see cref="TrySignal"/>, which only sets an event somebody is already listening on and
+    /// reports "nobody there" otherwise. That is the right shape for the per-process signals, where the
+    /// listener creates the event and its absence is the answer to a real question. It is the wrong shape
+    /// for announcing that Bloom has started: the announcement is worth making even if the listener creates
+    /// its handle a moment later, and a manual-reset event stays set until read, so an announcement into an
+    /// empty room is still waiting when a Doctor arrives.
+    /// </summary>
+    public static bool Announce(string name)
+    {
+        try
+        {
+            using var handle = TryCreate(name);
+            if (handle == null)
+                return false;
+            handle.Set();
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
     /// <summary>Sets an existing event, if there is one. Returns whether anyone was listening.</summary>

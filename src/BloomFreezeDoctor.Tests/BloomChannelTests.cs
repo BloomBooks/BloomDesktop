@@ -190,4 +190,28 @@ public class BloomChannelTests
             Is.False
         );
     }
+
+    [Test]
+    public void A_path_we_could_not_read_is_not_called_Release()
+    {
+        // Seen in a real log as "watching Bloom 25736 (Release)" for processes that were nothing of the
+        // kind. Reading the executable's path can fail - a process still starting, or one we lack rights
+        // to - and the answer then fell through to Release, which is a statement rather than an absence:
+        // it goes on the card, into the Doctor's log, and into the fingerprint, where it merges an
+        // unidentified Bloom with genuine Release reports.
+        Assert.That(BloomChannel.DeriveFromExePath(""), Is.EqualTo("Unknown"));
+        Assert.That(BloomChannel.DeriveFromExePath(null!), Is.EqualTo("Unknown"));
+        Assert.That(BloomChannel.DeriveFromExePath("   "), Is.EqualTo("Unknown"));
+    }
+
+    [Test]
+    public void A_path_we_can_read_but_do_not_recognise_is_still_Release()
+    {
+        // The other half, and the reason only the empty case changed: an ordinary installation is exactly
+        // a path this method does not otherwise match, and Release is the right answer for it.
+        Assert.That(
+            BloomChannel.DeriveFromExePath(@"C:\Program Files\Bloom\Bloom.exe"),
+            Is.EqualTo("Release")
+        );
+    }
 }
