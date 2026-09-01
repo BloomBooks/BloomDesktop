@@ -17,7 +17,11 @@ import {
     type Browser,
     type Page,
 } from "@playwright/test";
-import { launchBloom, type ILaunchedBloom } from "./launchBloom";
+import {
+    launchBloom,
+    type ILaunchedBloom,
+    type ICollectionSpec,
+} from "./launchBloom";
 import { chromium } from "@playwright/test";
 import {
     describeProblems,
@@ -25,7 +29,10 @@ import {
     type IProblemDialogWatcher,
 } from "./problemDialogWatcher";
 
-/** What a test gets about the Bloom it is driving. */
+/**
+ * What a test gets about the Bloom it is driving. Every field except collectionDir is replaced by
+ * restart(), so read them from this object each time rather than copying them into a local.
+ */
 export interface IBloomApp {
     /** Bloom's shell document in the embedded WebView2: the top bar, and whatever tab is showing. */
     page: Page;
@@ -35,14 +42,33 @@ export interface IBloomApp {
     cdpPort: number;
     /** The process id of the Bloom serving this collection. */
     bloomPid: number;
-    /** The temp copy of the collection Bloom has open. Never the inputs repository itself. */
+    /** The collection folder Bloom has open: a temp folder, never the inputs repository itself. */
     collectionDir: string;
+    /**
+     * Quit Bloom and start it again on the same collection folder, and return the new shell page.
+     *
+     * `betweenStopAndStart` runs while no Bloom holds the folder, which is the only safe moment to
+     * rewrite the .bloomCollection; use it to change collection settings, which have no API and
+     * live in a WinForms dialog CDP cannot reach.
+     *
+     * A restart invalidates the `page` fixture and the old ports. Take the page this returns, or
+     * read bloomApp.page afterwards; the old Page object throws once its target is gone.
+     */
+    restart: (
+        betweenStopAndStart?: () => void | Promise<void>,
+    ) => Promise<Page>;
 }
 
 /** Worker-scoped fixtures: one Bloom per worker. */
 interface IBloomWorkerFixtures {
-    /** Which folder under <testing-inputs>/collections to open. Set it with test.use(). */
-    collectionName: string;
+    /**
+     * Which prepared folder under <testing-inputs>/collections to open. Set it with test.use().
+     * Use it only for a fixture too expensive to build at run time; otherwise set collectionSpec,
+     * so the test owns its collection and nobody else's change can move its assumptions.
+     */
+    collectionName: string | undefined;
+    /** A collection to create for this test alone. Set it with test.use(). Preferred. */
+    collectionSpec: ICollectionSpec | undefined;
     /** The launched Bloom. Prefer the `page` fixture unless you need a port or the folder. */
     bloomApp: IBloomApp;
     problemDialogWatcher: IProblemDialogWatcher;
@@ -119,27 +145,48 @@ async function findShellPage(browser: Browser): Promise<Page> {
 }
 
 export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
-    collectionName: ["basic", { scope: "worker", option: true }],
+    collectionName: [undefined, { scope: "worker", option: true }],
+    collectionSpec: [undefined, { scope: "worker", option: true }],
 
     bloomApp: [
-        async ({ collectionName }, use) => {
+        async ({ collectionName, collectionSpec }, use) => {
             let launched: ILaunchedBloom | undefined;
+            // Reassigned by restart(), and read by the teardown below, so the connection we close
+            // is always the current one.
             let browser: Browser | undefined;
             try {
-                launched = await launchBloom({ collectionName });
+                launched = await launchBloom({
+                    collectionName,
+                    collectionSpec,
+                });
                 // CDP must go to 127.0.0.1: on Windows "localhost" resolves to ::1 first, and
                 // WebView2's debugging port does not answer there — you get an empty or wrong
                 // target list rather than an error. (Bloom's own HTTP server is the opposite: it
                 // rejects a 127.0.0.1 Host header. See helpers/api.ts.)
                 browser = await connectOverCdpWithRetry(launched.cdpPort);
-                const page = await findShellPage(browser);
-                await use({
-                    page,
+                const bloomApp: IBloomApp = {
+                    page: await findShellPage(browser),
                     httpPort: launched.httpPort,
                     cdpPort: launched.cdpPort,
                     bloomPid: launched.bloomPid,
                     collectionDir: launched.collectionDir,
-                });
+                    restart: async (betweenStopAndStart) => {
+                        // Close the old CDP connection first: it holds a socket into the process
+                        // that is about to be killed.
+                        await browser?.close();
+                        browser = undefined;
+                        await launched!.restart(betweenStopAndStart);
+                        browser = await connectOverCdpWithRetry(
+                            launched!.cdpPort,
+                        );
+                        bloomApp.page = await findShellPage(browser);
+                        bloomApp.httpPort = launched!.httpPort;
+                        bloomApp.cdpPort = launched!.cdpPort;
+                        bloomApp.bloomPid = launched!.bloomPid;
+                        return bloomApp.page;
+                    },
+                };
+                await use(bloomApp);
             } finally {
                 // Close the CDP connection first: it keeps a socket into the process we are about
                 // to kill. Then kill Bloom and delete the temp collection.
@@ -152,12 +199,15 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
 
     problemDialogWatcher: [
         async ({ bloomApp }, use) => {
-            const browser = bloomApp.page.context().browser();
-            if (!browser)
+            if (!bloomApp.page.context().browser())
                 throw new Error(
                     "The Bloom page has no browser connection, so problem dialogs cannot be watched.",
                 );
-            const watcher = startProblemDialogWatcher(browser);
+            // Read the connection through bloomApp.page each scan rather than capturing it here:
+            // restart() replaces both, and a captured connection would go quietly deaf.
+            const watcher = startProblemDialogWatcher(
+                () => bloomApp.page.context().browser() ?? undefined,
+            );
             await use(watcher);
             watcher.stop();
         },
@@ -166,6 +216,9 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
 
     // Override Playwright's own `page`, so a test that just wants to click things says `page` and
     // never launches a browser of Playwright's own.
+    //
+    // This is bound once per worker, so a test that calls bloomApp.restart() must use the page
+    // that returns (or bloomApp.page) from then on: this one points at a dead target.
     page: async ({ bloomApp }, use) => {
         await use(bloomApp.page);
     },

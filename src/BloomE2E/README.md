@@ -27,9 +27,19 @@ test("switching workspace tabs through the real top bar", async ({ page, bloomAp
 });
 ```
 
-`test.use({ collectionName })` names a folder under `output/testing-inputs/collections`. The
-fixture copies that collection to a temp folder, launches Bloom on the copy, and attaches to the
-WebView2. One Bloom serves every test in a worker, because launching takes several seconds.
+A test says which collection it wants, in one of two ways, and never both:
+
+- `test.use({ collectionSpec: { name: "text-languages", languages: ["en", "de", "fr"] } })`
+  makes an empty collection with those languages. **This is the default choice.** The test then
+  makes the book it needs, which is journey coverage of book creation as a side effect. A test
+  that shares a prepared collection inherits somebody else's assumptions, and the next person to
+  edit that collection changes what the test means without reading it.
+- `test.use({ collectionName: "basic" })` names a folder under
+  `output/testing-inputs/collections`. Use this only for a fixture too expensive to build at run
+  time, such as a collection of 200 books.
+
+Either way the fixture launches Bloom on a temp copy and attaches to the WebView2. One Bloom
+serves every test in a worker, because launching takes several seconds.
 
 ## The fixture API
 
@@ -45,6 +55,15 @@ and whatever tab is showing. Most tests need nothing else.
 | `cdpPort`       | The port the embedded WebView2 answers CDP on.                          |
 | `bloomPid`      | The process id of the Bloom serving this collection.                    |
 | `collectionDir` | The temp copy of the collection. Build book paths from this, never from `output/testing-inputs`. |
+| `restart`       | Stop Bloom, run an optional callback, start it again on the same collection, and return the new page. |
+
+`restart(betweenStopAndStart)` is how a test changes something Bloom only reads at startup. The
+collection's languages are the case that needed it: the collection Settings dialog is a WinForms
+surface CDP cannot reach, and `collectionSettings/changeLanguage` only answers while that dialog
+is open, so the way to change a language is to stop Bloom, rewrite the `.bloomCollection` with
+`makeCollectionXml`, and start again. Bloom is killed rather than asked to quit, so leave the
+page being edited before restarting or what was typed on it is lost. Use the page `restart`
+returns; the old one is closed.
 
 Teardown kills the process tree, waits for the HTTP port to go dark, and deletes the temp copy.
 

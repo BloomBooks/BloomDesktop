@@ -104,8 +104,17 @@ carries the API mechanics.
 
 Put the file in `src/BloomE2E/tests/`, named after the behavior. Import `test` and
 `expect` from `../fixtures/bloomTest` (never from `@playwright/test` directly — that
-would give you Playwright's own browser instead of Bloom's WebView2), and name the
-collection with `test.use`:
+would give you Playwright's own browser instead of Bloom's WebView2), and say which
+collection you want with `test.use`. Ask for a new one with `collectionSpec`:
+
+```ts
+test.use({
+    collectionSpec: { name: "text-languages", languages: ["en", "de", "fr"] },
+});
+```
+
+Name a prepared one with `collectionName` only for a fixture too expensive to build at
+run time:
 
 ```ts
 import { expect, test } from "../fixtures/bloomTest";
@@ -126,14 +135,21 @@ The worker-scoped fixture launches Bloom on a temp copy of that collection and y
 
 - `page` — Playwright's `page`, overridden to be Bloom's shell document (the top bar and
   the showing tab). Most tests need nothing else.
-- `bloomApp` — `{ page, httpPort, cdpPort, bloomPid, collectionDir }`. Build book paths
-  from `collectionDir`, never from `output/testing-inputs`.
+- `bloomApp` — `{ page, httpPort, cdpPort, bloomPid, collectionDir, restart }`. Build book
+  paths from `collectionDir`, never from `output/testing-inputs`. `restart(callback)`
+  stops Bloom, runs the callback, and starts it again, which is how a test changes what
+  Bloom reads only at startup, such as the collection's languages.
 
 Helper modules:
 
 - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Bloom hides the
   Edit and Publish tabs until a book is selected.
 - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
+- `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `findBookFolder`,
+  `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`, `typeInGroup`. A book
+  made from a template starts with front and back matter only, so a test that needs
+  content calls `addPage`. Bloom writes a page only when the book leaves it, so `goToPage`
+  is also how a test saves what it typed.
 - `helpers/api.ts` — `apiGet`, `apiPost`, `apiGetJson`, which run `fetch` inside the page
   with a relative URL (Bloom's server rejects a `127.0.0.1` Host header; the CDP endpoint
   does not answer on `localhost`).

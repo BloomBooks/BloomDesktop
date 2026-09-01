@@ -33,12 +33,45 @@ export interface ILaunchedBloom {
     collectionDir: string;
     /** Kill the process tree, confirm the HTTP port went dark, and delete the temp copy. */
     stop: () => Promise<void>;
+    /**
+     * Shut Bloom down and start it again on the SAME collection folder, so the folder and
+     * everything in it survive. `betweenStopAndStart` runs while no Bloom holds the files, which
+     * is the only safe moment to rewrite the .bloomCollection: collection settings have no API,
+     * and their dialog is a WinForms surface CDP cannot reach (see AUTOMATION-DEBT.md).
+     *
+     * The ports change, so the caller must re-attach. This object's httpPort, cdpPort and
+     * bloomPid are updated in place; fixtures/bloomTest.ts reconnects over CDP.
+     */
+    restart: (
+        betweenStopAndStart?: () => void | Promise<void>,
+    ) => Promise<void>;
 }
 
-/** Options for launchBloom. Everything has a working default. */
+/**
+ * What languages a created collection has. Bloom fills in everything else itself the first time
+ * it opens the collection.
+ */
+export interface ICollectionSpec {
+    /** The collection's folder and file name, e.g. "text-languages". */
+    name: string;
+    /**
+     * Language tags for Language1, Language2 and Language3, in that order. Give one, two or
+     * three; two entries mean the collection has no Language3.
+     */
+    languages: string[];
+}
+
+/** Options for launchBloom. Give exactly one of collectionName and collectionSpec. */
 export interface ILaunchBloomOptions {
-    /** Name of a folder under <testing-inputs>/collections, e.g. "basic". */
-    collectionName: string;
+    /**
+     * Name of a prepared folder under <testing-inputs>/collections, e.g. "basic". Use this only
+     * for a fixture too expensive to build at run time, such as a collection of hundreds of
+     * books. A shared fixture couples every test that uses it: whoever changes it next changes
+     * the assumptions of tests they have never read. Otherwise use collectionSpec.
+     */
+    collectionName?: string;
+    /** Create a collection for this test alone. The default choice. */
+    collectionSpec?: ICollectionSpec;
     /** How long to wait for Bloom to start serving the collection. Default 120 seconds. */
     readyTimeoutMs?: number;
 }
@@ -183,6 +216,72 @@ function copyCollection(source: string, destination: string): void {
     });
 }
 
+/**
+ * Write a minimal .bloomCollection for a brand-new collection, and return its folder.
+ *
+ * Only the fields Bloom needs in order to open the collection are written; it supplies its own
+ * defaults for the rest and rewrites the file on first open.
+ */
+export function writeNewCollection(
+    parentFolder: string,
+    spec: ICollectionSpec,
+): string {
+    const collectionDir = Path.join(parentFolder, spec.name);
+    fs.mkdirSync(collectionDir, { recursive: true });
+    fs.writeFileSync(
+        Path.join(collectionDir, `${spec.name}.bloomCollection`),
+        makeCollectionXml(spec.languages),
+        "utf8",
+    );
+    return collectionDir;
+}
+
+/**
+ * The XML of a .bloomCollection with these languages. Exported because a test changes collection
+ * settings by rewriting this file between a stop and a start (see ILaunchedBloom.restart).
+ */
+export function makeCollectionXml(languages: string[]): string {
+    // Bloom treats Language2 as "same as Language1" when a collection names only one language,
+    // which is what its own new-collection code writes.
+    const [language1 = "en", language2 = languages[0] ?? "en", language3 = ""] =
+        languages;
+    const languageElements = [language1, language2, language3]
+        .map(
+            (tag, index) =>
+                `  <Language${index + 1}Name>${nameForTag(tag)}</Language${index + 1}Name>\n` +
+                `  <Language${index + 1}IsCustomName>false</Language${index + 1}IsCustomName>\n` +
+                `  <Language${index + 1}Iso639Code>${tag}</Language${index + 1}Iso639Code>\n` +
+                `  <DefaultLanguage${index + 1}FontName>Andika</DefaultLanguage${index + 1}FontName>`,
+        )
+        .join("\n");
+    return (
+        `<?xml version="1.0" encoding="utf-8"?>\n` +
+        `<Collection version="0.2">\n` +
+        languageElements +
+        `\n  <XMatterPack>Factory</XMatterPack>\n` +
+        `  <BrandingProjectName>Default</BrandingProjectName>\n` +
+        `  <AllowNewBooks>True</AllowNewBooks>\n` +
+        `  <PageNumberStyle>Decimal</PageNumberStyle>\n` +
+        `</Collection>\n`
+    );
+}
+
+/**
+ * The name Bloom should show for a language tag. Bloom knows these names itself, but the
+ * collection file wants one and a wrong name would show in the UI, so keep this to the languages
+ * the tests use and fall back to the tag.
+ */
+function nameForTag(tag: string): string {
+    const names: Record<string, string> = {
+        "": "",
+        en: "English",
+        fr: "French",
+        es: "Spanish",
+        de: "German",
+    };
+    return names[tag] ?? tag;
+}
+
 /** Find the .bloomCollection file in a collection folder. Throws if the folder has none. */
 function findCollectionFile(collectionDir: string): string {
     const file = fs
@@ -215,41 +314,32 @@ function killProcessTree(pids: number[]): void {
     }
 }
 
+/** One running Bloom process: the ports it opened and every pid worth killing. */
+interface IRunningBloom {
+    httpPort: number;
+    cdpPort: number;
+    servingPid: number;
+    pids: number[];
+}
+
+/** Type guard for the pid lists below, which hold `number | undefined`. */
+function isPid(pid: number | undefined): pid is number {
+    return typeof pid === "number";
+}
+
 /**
- * Launch a dedicated Bloom.exe on a temp copy of the named collection and wait until it is serving
- * it. The returned object carries the discovered ports and a stop() that tears everything down.
+ * Spawn Bloom.exe on an existing collection folder and wait until it is serving that folder.
+ * Both the first launch and restart() go through here, so the two cannot drift apart.
  *
  * Throws with Bloom's own captured output when the launch fails, so a broken run says WHY instead
- * of just timing out.
+ * of just timing out. Cleaning up the temp folder is the caller's job: this function does not
+ * know whether the folder is worth keeping.
  */
-export async function launchBloom(
-    options: ILaunchBloomOptions,
-): Promise<ILaunchedBloom> {
-    const sourceCollectionsRoot = getSourceCollectionsRoot();
-    const sourceCollection = Path.join(
-        sourceCollectionsRoot,
-        options.collectionName,
-    );
-    if (!fs.existsSync(sourceCollection)) {
-        const available = fs
-            .readdirSync(sourceCollectionsRoot)
-            .filter((f) =>
-                fs.statSync(Path.join(sourceCollectionsRoot, f)).isDirectory(),
-            );
-        throw new Error(
-            `There is no test-input collection named "${options.collectionName}". ` +
-                `Available collections: ${available.join(", ")}.`,
-        );
-    }
-
+async function startBloomOn(
+    collectionDir: string,
+    readyTimeoutMs: number,
+): Promise<IRunningBloom> {
     const exe = findBloomExe();
-    // Canonicalize immediately: os.tmpdir() is an 8.3 short path on Windows but Bloom reports the
-    // long form, and discovery below compares the two.
-    const tempRoot = canonicalPath(
-        fs.mkdtempSync(Path.join(os.tmpdir(), "bloom-e2e-")),
-    );
-    const collectionDir = Path.join(tempRoot, options.collectionName);
-    copyCollection(sourceCollection, collectionDir);
 
     // Everything Bloom says, kept so a failed launch can report the reason.
     let bloomOutput = "";
@@ -281,26 +371,10 @@ export async function launchBloom(
         exitStatus = { code, signal };
     });
 
-    // The pid of the Bloom actually serving our collection, read from instanceInfo once it is up.
-    // It is not always the pid we spawned; see killProcessTree.
-    let servingPid: number | undefined;
-
-    // Tear down even if the run is aborted before the fixture's teardown runs.
-    const cleanUpOnExit = () => {
-        killProcessTree(
-            [bloomProcess.pid, servingPid].filter(
-                (p): p is number => typeof p === "number",
-            ),
-        );
-        fs.rmSync(tempRoot, { recursive: true, force: true });
-    };
-    process.once("exit", cleanUpOnExit);
-
-    const readyTimeoutMs = options.readyTimeoutMs ?? 120000;
     const startTime = Date.now();
     let found: { httpPort: number; info: IInstanceInfo } | undefined;
     // When the process we spawned exits, that is USUALLY a startup crash, but Bloom can also
-    // hand off to another instance of itself (which is why servingPid can differ from the
+    // hand off to another instance of itself (which is why the serving pid can differ from the
     // spawned pid). So an exit starts a short grace window in which discovery keeps looking
     // for a successor; only when none appears do we treat the exit as a failure.
     let spawnedExitedAt: number | undefined;
@@ -308,23 +382,16 @@ export async function launchBloom(
     while (!found && Date.now() - startTime < readyTimeoutMs) {
         found = await findBloomServingCollection(collectionDir);
         if (found) break;
-        // Fail fast when Bloom died on startup, rather than waiting out the whole timeout: the
-        // exit code plus its output says it crashed, not merely that discovery could not see it.
         if (exitStatus) {
             spawnedExitedAt ??= Date.now();
-            if (Date.now() - spawnedExitedAt > handOffGraceMs) {
-                // cleanUpOnExit would also kill a successor we have not discovered yet; there is
-                // no pid to kill here beyond the one that already exited, so just delete.
-                process.removeListener("exit", cleanUpOnExit);
-                fs.rmSync(tempRoot, { recursive: true, force: true });
+            if (Date.now() - spawnedExitedAt > handOffGraceMs)
                 throw new Error(
-                    `Bloom exited before serving the temp collection, and no successor ` +
+                    `Bloom exited before serving the collection, and no successor ` +
                         `instance appeared within ${handOffGraceMs / 1000}s ` +
                         `(code ${exitStatus.code}, signal ${exitStatus.signal}).\n` +
                         `  exe: ${exe}\n  wanted: ${collectionDir}\n` +
                         formatOutput(),
                 );
-            }
         }
         await delay(1000);
     }
@@ -337,10 +404,9 @@ export async function launchBloom(
             if (info?.editableCollectionFolder)
                 seen.push(`${port} -> ${info.editableCollectionFolder}`);
         }
-        cleanUpOnExit();
-        process.removeListener("exit", cleanUpOnExit);
+        killProcessTree([bloomProcess.pid].filter(isPid));
         throw new Error(
-            `Bloom did not open the temp collection within ${readyTimeoutMs / 1000}s.\n` +
+            `Bloom did not open the collection within ${readyTimeoutMs / 1000}s.\n` +
                 `  exe: ${exe}\n  wanted: ${collectionDir}\n` +
                 `  still running: ${exitStatus ? "no (already exited)" : "yes"}\n` +
                 `  Bloom instances seen: ${seen.length ? seen.join("; ") : "none"}\n` +
@@ -348,52 +414,152 @@ export async function launchBloom(
         );
     }
 
-    servingPid = found.info.processId;
     if (!found.info.cdpPort) {
-        cleanUpOnExit();
-        process.removeListener("exit", cleanUpOnExit);
+        killProcessTree([bloomProcess.pid, found.info.processId].filter(isPid));
         throw new Error(
             `Bloom is serving ${collectionDir} on port ${found.httpPort} but reported no CDP port, ` +
                 `so tests cannot attach to its WebView2. Check that remote debugging is enabled in this build.`,
         );
     }
 
-    const httpPort = found.httpPort;
-    const stop = async () => {
-        killProcessTree(
-            [bloomProcess.pid, servingPid].filter(
-                (p): p is number => typeof p === "number",
-            ),
-        );
-        // Confirm the port really went dark before we try to delete the folder Bloom had open.
-        // taskkill has been seen to under-kill, and a survivor holds file handles.
-        const deadline = Date.now() + 15000;
-        while (Date.now() < deadline) {
-            if (!(await readInstanceInfo(httpPort))) break;
-            await delay(500);
-        }
-        if (await readInstanceInfo(httpPort))
-            throw new Error(
-                `A Bloom is still answering on port ${httpPort} after teardown. ` +
-                    `Kill pid ${servingPid ?? bloomProcess.pid} by hand before re-running.`,
-            );
-        // Bloom can release file handles slightly after it dies, so let rmSync retry.
-        fs.rmSync(tempRoot, {
-            recursive: true,
-            force: true,
-            maxRetries: 20,
-            retryDelay: 500,
-        });
-        // Only after a fully successful teardown: if anything above threw, the exit handler
-        // stays armed and still kills the survivor and deletes the temp folder at process exit.
-        process.removeListener("exit", cleanUpOnExit);
-    };
-
     return {
-        httpPort,
+        httpPort: found.httpPort,
         cdpPort: found.info.cdpPort,
-        bloomPid: servingPid ?? bloomProcess.pid!,
-        collectionDir,
-        stop,
+        servingPid: found.info.processId ?? bloomProcess.pid!,
+        pids: [bloomProcess.pid, found.info.processId].filter(isPid),
     };
+}
+
+/**
+ * Kill a running Bloom and wait until its HTTP port really goes dark. Shared by stop() and
+ * restart(): a survivor holds file handles on the collection, which breaks both the delete and
+ * the rewrite-then-relaunch.
+ */
+async function killAndWaitForPortToGoDark(
+    running: IRunningBloom,
+): Promise<void> {
+    killProcessTree(running.pids);
+    // Confirm rather than assume: taskkill has been seen to under-kill.
+    const deadline = Date.now() + 15000;
+    while (Date.now() < deadline) {
+        if (!(await readInstanceInfo(running.httpPort))) return;
+        await delay(500);
+    }
+    throw new Error(
+        `A Bloom is still answering on port ${running.httpPort} after teardown. ` +
+            `Kill pid ${running.servingPid} by hand before re-running.`,
+    );
+}
+
+/**
+ * Launch a dedicated Bloom.exe on a collection in a temp folder — one created for this test, or a
+ * copy of a prepared fixture — and wait until it is serving it. The returned object carries the
+ * discovered ports, a restart(), and a stop() that tears everything down.
+ */
+export async function launchBloom(
+    options: ILaunchBloomOptions,
+): Promise<ILaunchedBloom> {
+    if (!options.collectionName === !options.collectionSpec)
+        throw new Error(
+            "launchBloom needs exactly one of collectionName (a prepared fixture) and " +
+                "collectionSpec (a collection created for this test).",
+        );
+
+    // Canonicalize immediately: os.tmpdir() is an 8.3 short path on Windows but Bloom reports the
+    // long form, and discovery compares the two.
+    const tempRoot = canonicalPath(
+        fs.mkdtempSync(Path.join(os.tmpdir(), "bloom-e2e-")),
+    );
+
+    let collectionDir: string;
+    try {
+        collectionDir = options.collectionSpec
+            ? writeNewCollection(tempRoot, options.collectionSpec)
+            : copyPreparedCollection(tempRoot, options.collectionName!);
+    } catch (error) {
+        fs.rmSync(tempRoot, { recursive: true, force: true });
+        throw error;
+    }
+
+    const readyTimeoutMs = options.readyTimeoutMs ?? 120000;
+
+    // The Bloom running right now. restart() replaces it, so everything that kills or reports on
+    // Bloom reads this variable rather than capturing the first launch.
+    let running: IRunningBloom | undefined;
+
+    // Tear down even if the run is aborted before the fixture's teardown runs. Armed once, and it
+    // reads `running`, so it still names the right pids after a restart.
+    const cleanUpOnExit = () => {
+        if (running) killProcessTree(running.pids);
+        fs.rmSync(tempRoot, { recursive: true, force: true });
+    };
+    process.once("exit", cleanUpOnExit);
+
+    try {
+        running = await startBloomOn(collectionDir, readyTimeoutMs);
+    } catch (error) {
+        process.removeListener("exit", cleanUpOnExit);
+        fs.rmSync(tempRoot, { recursive: true, force: true });
+        throw error;
+    }
+
+    const launched: ILaunchedBloom = {
+        httpPort: running.httpPort,
+        cdpPort: running.cdpPort,
+        bloomPid: running.servingPid,
+        collectionDir,
+
+        restart: async (betweenStopAndStart) => {
+            await killAndWaitForPortToGoDark(running!);
+            // Bloom releases its file handles slightly after it dies, and the caller is usually
+            // about to rewrite one of the files it had open.
+            await delay(1000);
+            if (betweenStopAndStart) await betweenStopAndStart();
+            running = await startBloomOn(collectionDir, readyTimeoutMs);
+            launched.httpPort = running.httpPort;
+            launched.cdpPort = running.cdpPort;
+            launched.bloomPid = running.servingPid;
+        },
+
+        stop: async () => {
+            await killAndWaitForPortToGoDark(running!);
+            // Bloom can release file handles slightly after it dies, so let rmSync retry.
+            fs.rmSync(tempRoot, {
+                recursive: true,
+                force: true,
+                maxRetries: 20,
+                retryDelay: 500,
+            });
+            // Only after a fully successful teardown: if anything above threw, the exit handler
+            // stays armed and still kills the survivor and deletes the temp folder at process exit.
+            process.removeListener("exit", cleanUpOnExit);
+        },
+    };
+    return launched;
+}
+
+/**
+ * Copy a prepared collection from the inputs repository into the temp folder, and return the
+ * copy. Throws, naming the collections that do exist, when the name is not one of them.
+ */
+function copyPreparedCollection(
+    tempRoot: string,
+    collectionName: string,
+): string {
+    const sourceCollectionsRoot = getSourceCollectionsRoot();
+    const sourceCollection = Path.join(sourceCollectionsRoot, collectionName);
+    if (!fs.existsSync(sourceCollection)) {
+        const available = fs
+            .readdirSync(sourceCollectionsRoot)
+            .filter((f) =>
+                fs.statSync(Path.join(sourceCollectionsRoot, f)).isDirectory(),
+            );
+        throw new Error(
+            `There is no test-input collection named "${collectionName}". ` +
+                `Available collections: ${available.join(", ")}.`,
+        );
+    }
+    const collectionDir = Path.join(tempRoot, collectionName);
+    copyCollection(sourceCollection, collectionDir);
+    return collectionDir;
 }
