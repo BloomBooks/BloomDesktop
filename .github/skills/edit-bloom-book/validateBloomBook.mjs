@@ -247,8 +247,12 @@ const validateTranslationGroups = (document, errors) => {
 
         const owningPage = closestWithClass(editable, "bloom-page");
         const parentGroup = editable.parentElement;
+        // The Arithmetic template puts language-neutral (lang="*") editables directly
+        // inside a .numberRow with no translation group; Bloom itself produces that.
+        const inNumberRow = parentGroup && hasClass(parentGroup, "numberRow");
         if (
             owningPage &&
+            !inNumberRow &&
             (!parentGroup || !hasClass(parentGroup, "bloom-translationGroup"))
         ) {
             errors.push(

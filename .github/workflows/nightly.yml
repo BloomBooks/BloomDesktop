@@ -111,6 +111,15 @@ jobs:
               shell: bash
               run: ./build/getDependencies-windows.sh
 
+            # The books and reference screenshots the visual-regression suite renders live in
+            # https://github.com/BloomBooks/bloom-testing-inputs, at the commit named by
+            # build/testing-inputs.pin. This fetches that commit into output/testing-inputs. It is a
+            # shallow single-commit fetch, so it costs a couple of seconds. Done here with the other
+            # dependency fetches rather than beside the suite, so a bad pin fails early and visibly.
+            - name: Get testing inputs (test books and reference screenshots)
+              shell: bash
+              run: node build/get-testing-inputs.mjs
+
             - name: pnpm install
               shell: bash
               run: |
@@ -213,8 +222,9 @@ jobs:
 
             # ----- Visual regression tests -----
             # src/BloomVisualRegressionTests drives a real Release Bloom.exe (which it finds at
-            # output/Release/x64/Bloom.exe) over HTTP and compares rendered screenshots against
-            # committed reference images (pixelmatch). It needs BOTH builds: the C# build (the
+            # output/Release/x64/Bloom.exe) over HTTP and compares rendered screenshots against the
+            # reference images in output/testing-inputs (pixelmatch), fetched by the "Get testing
+            # inputs" step above. It needs BOTH builds: the C# build (the
             # Bloom.exe it launches) AND the front-end build (Bloom loads its UI from the built
             # browser assets that the C# build copies into its output). So both must have
             # succeeded — build_csharp already implies build_frontend (the C# chain is gated on
@@ -333,8 +343,8 @@ jobs:
                   if-no-files-found: ignore
 
             # The current + diff images, so a human can see what changed -- on FAILURE only. The
-            # committed *-reference.png baselines are already in the repo; *-current.png and
-            # *-diff.png are generated (gitignored). On a green run no *-diff.png exists at all
+            # *-reference.png baselines are already in the inputs repository; *-current.png and
+            # *-diff.png are generated beside them. On a green run no *-diff.png exists at all
             # (nothing mismatched) and the *-current.png set is a ~28 MB re-upload of baselines we
             # already have in git -- 98% of what this step used to upload, for none of the
             # information -- once a night, times retention-days. That is what was blowing out our
@@ -351,8 +361,8 @@ jobs:
               with:
                   name: visual-regression-diffs
                   path: |
-                      src/BloomVisualRegressionTests/collections/**/screenshots/*-current.png
-                      src/BloomVisualRegressionTests/collections/**/screenshots/*-diff.png
+                      output/testing-inputs/collections/**/screenshots/*-current.png
+                      output/testing-inputs/collections/**/screenshots/*-diff.png
                   # Four days, so a failure noticed after a weekend is still there to look at.
                   retention-days: 4
                   if-no-files-found: ignore
