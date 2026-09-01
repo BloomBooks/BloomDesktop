@@ -3290,26 +3290,20 @@ namespace Bloom.Book
                     .Any(NonTrivialImageFileExists);
         }
 
-        /// <summary>
-        /// True for the images a branding or a licence puts on a page: the branding logo, the
-        /// licence image, and the QR code of the "Made with Bloom" badge (as much a part of the
-        /// branding as the badge image beside it). None of these belongs to the book itself, so
-        /// neither HasImages() nor the cover-image search should count them.
-        /// </summary>
-        private static bool IsBrandingOrLicenseImage(SafeXmlElement image)
+        private bool NonTrivialImageFileExists(SafeXmlElement image)
         {
-            return image.Name == "img"
-                && (
+            if (image.Name == "img")
+            {
+                // The QR code of the "Made with Bloom" badge is as much a part of the branding as
+                // the badge image itself (which has the "branding" class), so it doesn't count as
+                // one of the book's images.
+                if (
                     image.HasClass("branding")
                     || image.HasClass("licenseImage")
                     || image.HasClass(BookStorage.kQrCodeClass)
-                );
-        }
-
-        private bool NonTrivialImageFileExists(SafeXmlElement image)
-        {
-            if (IsBrandingOrLicenseImage(image))
-                return false;
+                )
+                    return false;
+            }
             var imageUrl = HtmlDom.GetImageElementUrl(image);
             var file = imageUrl.PathOnly.NotEncoded;
             if (string.IsNullOrEmpty(file))
@@ -5351,17 +5345,6 @@ namespace Bloom.Book
 
             foreach (var candidate in candidates)
             {
-                // The image container is the main guard, but it cannot be the only one. On a cover
-                // in custom layout the whole margin box is a single bloom-canvas and every element
-                // on the cover is a canvas element inside it, branding included -- so being "in an
-                // image container" is true of the branding logo there too. A branding pack also
-                // supplies its own markup, so we do not control whether it wraps its logo in a
-                // container. Refusing these outright is what makes the rule hold in both cases,
-                // and it holds even for a book whose branding logo has wrongly been marked as the
-                // cover image (BL-16776).
-                if (IsBrandingOrLicenseImage(candidate))
-                    continue;
-
                 var candidatePath = GetImagePath(candidate);
                 if (candidatePath == null)
                     continue;
