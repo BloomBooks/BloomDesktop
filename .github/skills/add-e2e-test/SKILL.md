@@ -140,21 +140,6 @@ The worker-scoped fixture launches Bloom on a temp copy of that collection and y
   stops Bloom, runs the callback, and starts it again, which is how a test changes what
   Bloom reads only at startup, such as the collection's languages.
 
-Helper modules:
-
-- `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Bloom hides the
-  Edit and Publish tabs until a book is selected.
-- `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
-- `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `findBookFolder`,
-  `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`, `typeInGroup`. A book
-  made from a template starts with front and back matter only, so a test that needs
-  content calls `addPage`. Bloom writes a page only when the book leaves it, so `goToPage`
-  is also how a test saves what it typed.
-- `helpers/api.ts` — `apiGet`, `apiPost`, `apiGetJson`, which run `fetch` inside the page
-  with a relative URL (Bloom's server rejects a `127.0.0.1` Host header; the CDP endpoint
-  does not answer on `localhost`).
-- `helpers/realClick.ts` — `realClick`, `realClickAt`.
-
 The fixture also watches for the "Bloom had a problem" dialog and fails the test with the
 exception it scrapes from behind the dialog's own "Learn More" link. See
 `src/BloomE2E/README.md` for the whole story.
@@ -170,6 +155,101 @@ Rules that hold regardless of the final API:
 - NEVER submit a problem report. The fixture fails the test with gathered detail when
   a "Bloom had a problem" dialog appears; do not loop-dismiss it.
 - Waits are event/state-based (poll an API, await a selector), never fixed sleeps.
+
+## Every step is a helper call
+
+This suite will grow to a few thousand tests. It stays maintainable only if the knowledge
+of HOW to do each thing in Bloom lives in exactly one place. A test says WHAT happens; the
+helper layer in `src/BloomE2E/helpers/` says how.
+
+**A test spells out nothing that is not the behavior it measures.** If a test has to crop
+an image on the way to what it checks, it calls `cropImage(...)`. It does not find the
+crop handle, work out the drag, and wait for the result. When Bloom changes how an image is
+cropped, one helper changes, and every test that crops an image keeps working. The same
+holds for the step that IS under test: the journey test for cropping also calls the helper
+that drives the UI, so the click path is written once.
+
+### When you write a test
+
+1. **Look for the helper before you write a step.** There is one module per Bloom surface
+   (see the list below). Read the header comment of the module for the surface you are on,
+   then grep the folder for the concept, e.g. `grep -ri crop src/BloomE2E/helpers`.
+2. **If a helper nearly fits, extend it.** Add a parameter or an option. Do not copy the
+   helper into your test and change one line.
+3. **If no helper exists, write one in `helpers/`, in the same PR.** Put it in the module
+   for its surface, or start a module when the surface is new. Do this even when yours is
+   the only test that needs it today. The second test comes soon, and the person who writes
+   it will copy from yours.
+4. **Selectors, `data-testid`s, API paths, and Bloom's quirks live only in helpers.** A test
+   contains no CSS selector, no `getByTestId`, no `apiGet`/`apiPost`, and no retry loop. To
+   read Bloom's state for an assertion, call a named reading helper such as
+   `getLanguagesInBook`, so the API path is in one place. The one exception is the class of
+   a translation group, such as `.bookTitle`, passed to `typeInGroup`: that names book
+   content, not Bloom's UI.
+5. **A sequence that appears twice is a helper.** Two tests, or two places in one test,
+   that do the same three lines get one function. This includes sequences that only build
+   a start state, such as "a book with two content pages in two languages". A helper that
+   composes other helpers into a start state belongs in `helpers/` as well.
+6. **A repeated expected value gets a name.** When the same literal block of expected state
+   appears more than twice in a file, make it a constant or a small builder function at the
+   top of the file.
+7. **A file-local function is fine only for file-local knowledge**, such as the shape of
+   the one book this file builds. The moment it encodes how to drive Bloom, it moves to
+   `helpers/`.
+
+### What a helper must do
+
+Thousands of tests will lean on each helper, so each one meets this bar:
+
+- **Named for the user's intent, in the words the UI uses.** `openPublishDestination`,
+  `cropImage`, `setContentLanguages`. Not `clickThirdTab` or `postLanguageChange`.
+- **Takes `page` first, then what varies.** Nothing test-specific inside: no book titles,
+  no language lists, no page counts baked in.
+- **Waits for its own result before it returns**, by polling Bloom's state. `goToPage`
+  returns when the page is showing; `addPage` returns when Bloom reports the new page
+  count. A caller never adds a wait after a helper call.
+- **Fails with a message that names what Bloom offered instead.** When the template page
+  asked for does not exist, the error lists the pages that do. The existing helpers show
+  the pattern.
+- **Carries a doc comment** that says which user action it stands for, and names any quirk
+  it absorbs, with the `AUTOMATION-DEBT.md` entry if there is one.
+- **Puts both routes for one action side by side.** The API route for setup (`selectBook`)
+  and the UI route the journey test drives (a real click on the book tile) sit in the same
+  module. A UI change is then fixed in one file.
+- **Never sleeps for a fixed time.**
+
+### Layers
+
+Dependencies point down only:
+
+1. **Primitives**: `helpers/api.ts` (`apiGet`, `apiPost`, `apiGetJson`, which run `fetch`
+   inside the page with a relative URL, because Bloom's server rejects a `127.0.0.1` Host
+   header and the CDP endpoint does not answer on `localhost`) and `helpers/realClick.ts`
+   (`realClick`, `realClickAt`). Tests do not import these; surface modules wrap them.
+2. **One module per Bloom surface**, named after the surface:
+   - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Bloom hides the
+     Edit and Publish tabs until a book is selected.
+   - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
+   - `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `duplicateCurrentPage`,
+     `findBookFolder`, `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`,
+     `typeInGroup`, `waitForEditablePage`, `editablePageFrame`. A book made from a template
+     starts with front and back matter only, so a test that needs content calls `addPage`.
+     Bloom writes a page only when the book leaves it, so `goToPage` is also how a test
+     saves what it typed.
+   - `helpers/publish.ts` — `openPublishDestination`, `getTextLanguageRows`,
+     `expectTextLanguageRows`, `clickTextLanguage`, `showBloomPubPreview`,
+     `getPreviewLanguages`, `getLanguagesInBook`, `getTooltipForLanguage`.
+   This list is a map, not the index. The folder is the index: new modules appear there
+   before anyone updates this file.
+3. **Tests**, which call surface helpers and nothing lower.
+
+### When you change a helper, or the Bloom UI a helper drives
+
+- Grep `src/BloomE2E/tests/` for the helper's name and run every test that calls it before
+  you open the PR.
+- When you change a `data-testid`, an API endpoint, or a UI flow that a helper drives, grep
+  `src/BloomE2E/helpers/` for the old id or path and update the helper in the same PR. That
+  is the payoff of the whole rule: one change, in one file, and the suite follows.
 
 ## Running
 
@@ -193,6 +273,12 @@ the visual-regression job already does.
 ## Checklist before you call it done
 
 - [ ] Journey coverage exists for the UI path (yours or a pre-existing journey test).
+- [ ] The test contains no selector, test id, API path, or retry loop. Every step is a
+      helper call.
+- [ ] Every new helper is in `src/BloomE2E/helpers/`, has a doc comment, and waits for its
+      own result.
+- [ ] No sequence appears twice; no expected-value literal appears more than twice.
+- [ ] If you changed a helper, every test that calls it still passes.
 - [ ] The test passes locally, launched from a clean state (no Bloom running).
 - [ ] No Bloom.exe process survives the run.
 - [ ] New inputs: PR merged in bloom-testing-inputs, pin advanced here, both green.
