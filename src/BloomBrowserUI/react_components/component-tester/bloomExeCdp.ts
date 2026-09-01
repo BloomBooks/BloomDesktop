@@ -3,8 +3,6 @@
 // uses so the whole run shares one Playwright instance (mixing the two throws
 // "Requiring @playwright/test a second time").
 import { Browser, Page, chromium } from "playwright/test";
-import * as fs from "fs";
-import * as path from "path";
 
 type WorkspaceTabId = "collection" | "edit" | "publish";
 const configuredCdpPort = process.env.BLOOM_CDP_PORT;
@@ -13,11 +11,7 @@ const configuredCdpOrigin = process.env.BLOOM_CDP_ORIGIN;
 const derivedCdpPort = configuredHttpPort
     ? String(Number.parseInt(configuredHttpPort, 10) + 2)
     : undefined;
-// The CDP endpoints to try, best first. Exported so other bloom-exe tests that need
-// their own connect/retry logic (e.g. reconnecting after Bloom restarts) share the
-// same port derivation. IPv4 first: WebView2's CDP listens on 127.0.0.1, and Node can
-// resolve localhost to ::1.
-export const cdpEndpoints = configuredCdpOrigin
+const cdpEndpoints = configuredCdpOrigin
     ? [configuredCdpOrigin]
     : configuredCdpPort
       ? [
@@ -33,59 +27,6 @@ export const cdpEndpoints = configuredCdpOrigin
 const workspaceTabsUrl =
     process.env.BLOOM_WORKSPACE_TABS_URL ||
     `http://localhost:${configuredHttpPort || "8089"}/bloom/api/workspace/tabs`;
-
-// Builds the full URL for one of Bloom's API endpoints, for calling from the test
-// process (Node) rather than from inside the page. Deliberately uses localhost, not
-// 127.0.0.1: Bloom's server rejects requests whose Host header is 127.0.0.1.
-export const bloomApiUrl = (suffix: string): string =>
-    `http://localhost:${configuredHttpPort || "8089"}/bloom/api/${suffix}`;
-
-// Where the ./go.sh launcher advertises its control server (see scripts/watchBloomExe.mjs).
-const launcherDiscoveryFile = path.resolve(
-    __dirname,
-    "../../../..",
-    "output",
-    "bloom-launcher.json",
-);
-
-// Asks the ./go.sh launcher (if one is running) which ports its Bloom is currently on.
-// Bloom's ports are NOT stable across restarts: Bloom picks a free port at startup, so
-// after anything that relaunches it (for example, toggling "Show translations which have
-// not been approved yet") the new instance may be on different HTTP/CDP ports. Tests that
-// survive a restart must therefore re-discover the ports rather than trusting the
-// env-derived values above. Returns undefined when no launcher is running (e.g. Bloom was
-// started some other way); callers should then fall back to those env-derived values.
-export const discoverLauncherPorts = async (): Promise<
-    { httpPort: number; cdpPort: number } | undefined
-> => {
-    try {
-        const record = JSON.parse(
-            await fs.promises.readFile(launcherDiscoveryFile, "utf8"),
-        ) as { controlUrl?: string };
-        if (!record.controlUrl) {
-            return undefined;
-        }
-        // The discovery file survives a hard kill of the launcher, so only a live answer
-        // from its control server counts.
-        const response = await fetch(
-            `${record.controlUrl.replace(/\/+$/, "")}/status`,
-        );
-        if (!response.ok) {
-            return undefined;
-        }
-        const status = (await response.json()) as {
-            httpPort?: number;
-            cdpPort?: number;
-        };
-        if (!status.httpPort || !status.cdpPort) {
-            return undefined;
-        }
-        return { httpPort: status.httpPort, cdpPort: status.cdpPort };
-    } catch {
-        // No discovery file, or nobody listening at its controlUrl: no launcher.
-        return undefined;
-    }
-};
 
 export const connectToBloomExe = async (): Promise<{
     browser: Browser;

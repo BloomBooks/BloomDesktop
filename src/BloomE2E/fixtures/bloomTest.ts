@@ -57,6 +57,15 @@ export interface IBloomApp {
     restart: (
         betweenStopAndStart?: () => void | Promise<void>,
     ) => Promise<Page>;
+    /**
+     * Find Bloom's shell document again after an action that made Bloom rebuild it in the same
+     * process — changing the UI language, for example, reopens the whole project, which destroys
+     * the WebView2 page and creates a new one on the same ports. Updates bloomApp.page and
+     * returns it; the old Page object throws once its target is gone. The caller is responsible
+     * for making sure the old shell page has actually closed first (wait for its "close" event),
+     * or this can find the outgoing page.
+     */
+    reattachToShell: () => Promise<Page>;
 }
 
 /** Worker-scoped fixtures: one Bloom per worker. */
@@ -183,6 +192,17 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                         bloomApp.httpPort = launched!.httpPort;
                         bloomApp.cdpPort = launched!.cdpPort;
                         bloomApp.bloomPid = launched!.bloomPid;
+                        return bloomApp.page;
+                    },
+                    reattachToShell: async () => {
+                        // Reconnect rather than reuse: the reopen replaces the WebView2, and a
+                        // CDP connection made before it never learns about the new page - its
+                        // target list just stays empty.
+                        await browser?.close();
+                        browser = await connectOverCdpWithRetry(
+                            launched!.cdpPort,
+                        );
+                        bloomApp.page = await findShellPage(browser);
                         return bloomApp.page;
                     },
                 };

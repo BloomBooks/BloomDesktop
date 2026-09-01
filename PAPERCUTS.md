@@ -28,9 +28,9 @@ House rules:
   bloom-automation SKILL.md tells agents to use — silently breaks mid-session.
 - **Idea:** Add a warning to `.github/skills/bloom-automation/SKILL.md` and point at the
   discovery mechanism: the launcher's control server (`output/bloom-launcher.json` →
-  `/status`) reports current `httpPort`/`cdpPort`, wrapped by `discoverLauncherPorts()` in
-  `react_components/component-tester/bloomExeCdp.ts` (added for the UI-language e2e test).
-- **Context:** hit while building `bloom-exe-ui-language.uitest.ts` on branch automateTests.
+  `/status`) reports the current `httpPort`/`cdpPort`, so tooling should re-ask it around
+  anything that can restart Bloom rather than caching the ports.
+- **Context:** hit while building the UI-language e2e test on branch automateTests.
 
 ## 2026-09-01 — VR suite: a slow first preview load fails its case via Playwright's default 30s goto timeout
 

@@ -116,8 +116,11 @@ export function getSourceCollectionsRoot(): string {
 
 /**
  * Find the built Bloom.exe. The exe lands in a config/platform-specific folder depending on the
- * build, so try the known locations. Debug comes first for the common local case; CI builds and
- * runs Release. Throws naming every folder it looked in.
+ * build, so look in the known locations and take the MOST RECENTLY BUILT one. Recency, not list
+ * order, is what matters: a machine can hold a stale build from another configuration (say, an
+ * old Debug/x64 beside today's Debug/AnyCPU), and picking by fixed order silently runs the whole
+ * suite against weeks-old code — a test here that depended on a same-PR C# change once launched a
+ * two-week-old Bloom that way. Throws naming every folder it looked in.
  */
 export function findBloomExe(): string {
     const candidates = [
@@ -128,14 +131,18 @@ export function findBloomExe(): string {
         "Release/AnyCPU",
         "Release",
     ].map((sub) => Path.join(repoRoot, "output", sub, "Bloom.exe"));
-    const exe = candidates.find((c) => fs.existsSync(c));
-    if (!exe) {
+    const existing = candidates.filter((c) => fs.existsSync(c));
+    if (existing.length === 0) {
         throw new Error(
             `Could not find a built Bloom.exe (looked in: ${candidates.join(", ")}). ` +
                 `Build Bloom, then re-run.`,
         );
     }
-    return exe;
+    return existing.reduce((newest, candidate) =>
+        fs.statSync(candidate).mtimeMs > fs.statSync(newest).mtimeMs
+            ? candidate
+            : newest,
+    );
 }
 
 /**

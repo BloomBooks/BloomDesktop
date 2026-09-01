@@ -59,6 +59,31 @@ async function request(
     endpoint: string,
     options: { method: string; body?: string; contentType?: string },
 ): Promise<IApiResponse> {
+    // Bloom reloads the shell document when it switches workspace tabs (and rebuilds it
+    // entirely for things like a UI language change), so an evaluate that is in flight at that
+    // moment dies with "Execution context was destroyed". That is a transient of the reload,
+    // not a failure: retry briefly. A CLOSED page is a different matter - it stays closed - so
+    // that error is not retried.
+    const deadline = Date.now() + 15000;
+    for (;;) {
+        try {
+            return await attemptRequest(page, endpoint, options);
+        } catch (error) {
+            if (
+                !/Execution context was destroyed/i.test(String(error)) ||
+                Date.now() > deadline
+            )
+                throw error;
+            await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+    }
+}
+
+async function attemptRequest(
+    page: Page,
+    endpoint: string,
+    options: { method: string; body?: string; contentType?: string },
+): Promise<IApiResponse> {
     const result = await page.evaluate(
         async (call) => {
             const response = await fetch(`/bloom/api/${call.endpoint}`, {
