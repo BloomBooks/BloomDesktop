@@ -91,7 +91,7 @@ importers:
                 specifier: github:BloomBooks/bloom-image-gallery
                 version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e376463bcd21b1558750570b63269a2e133b46c0(@types/react@18.3.31)(supports-color@5.5.0)
             bloom-player:
-                specifier: 2.20.1-alpha.6
+                specifier: alpha
                 version: 2.20.1-alpha.6
             calculate-aspect-ratio:
                 specifier: 0.1.3
@@ -252,7 +252,7 @@ importers:
                 version: 7.18.5(supports-color@5.5.0)
             "@babel/preset-env":
                 specifier: 7.18.2
-                version: 7.18.2(@babel/core@7.18.5(supports-color@5.5.0))
+                version: 7.18.2(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
             "@babel/preset-react":
                 specifier: 7.17.12
                 version: 7.17.12(@babel/core@7.18.5(supports-color@5.5.0))
@@ -11123,7 +11123,7 @@ snapshots:
             regexpu-core: 6.4.0
             semver: 6.3.1
 
-    "@babel/helper-define-polyfill-provider@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))":
+    "@babel/helper-define-polyfill-provider@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)":
         dependencies:
             "@babel/core": 7.18.5(supports-color@5.5.0)
             "@babel/helper-compilation-targets": 7.29.7
@@ -11684,7 +11684,7 @@ snapshots:
             "@babel/helper-create-regexp-features-plugin": 7.29.7(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/helper-plugin-utils": 7.29.7
 
-    "@babel/preset-env@7.18.2(@babel/core@7.18.5(supports-color@5.5.0))":
+    "@babel/preset-env@7.18.2(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)":
         dependencies:
             "@babel/compat-data": 7.29.7
             "@babel/core": 7.18.5(supports-color@5.5.0)
@@ -11757,7 +11757,7 @@ snapshots:
             "@babel/plugin-transform-unicode-regex": 7.29.7(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/preset-modules": 0.1.6(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/types": 7.29.7
-            babel-plugin-polyfill-corejs2: 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
+            babel-plugin-polyfill-corejs2: 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
             babel-plugin-polyfill-corejs3: 0.5.3(@babel/core@7.18.5(supports-color@5.5.0))
             babel-plugin-polyfill-regenerator: 0.3.1(@babel/core@7.18.5(supports-color@5.5.0))
             core-js-compat: 3.49.0
@@ -13449,11 +13449,11 @@ snapshots:
             cosmiconfig: 7.1.0
             resolve: 1.22.12
 
-    babel-plugin-polyfill-corejs2@0.3.3(@babel/core@7.18.5(supports-color@5.5.0)):
+    babel-plugin-polyfill-corejs2@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0):
         dependencies:
             "@babel/compat-data": 7.29.7
             "@babel/core": 7.18.5(supports-color@5.5.0)
-            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
+            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
             semver: 6.3.1
         transitivePeerDependencies:
             - supports-color
@@ -13461,7 +13461,7 @@ snapshots:
     babel-plugin-polyfill-corejs3@0.5.3(@babel/core@7.18.5(supports-color@5.5.0)):
         dependencies:
             "@babel/core": 7.18.5(supports-color@5.5.0)
-            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
+            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
             core-js-compat: 3.49.0
         transitivePeerDependencies:
             - supports-color
@@ -13469,7 +13469,7 @@ snapshots:
     babel-plugin-polyfill-regenerator@0.3.1(@babel/core@7.18.5(supports-color@5.5.0)):
         dependencies:
             "@babel/core": 7.18.5(supports-color@5.5.0)
-            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
+            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
         transitivePeerDependencies:
             - supports-color
 
