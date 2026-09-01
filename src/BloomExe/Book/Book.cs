@@ -3290,20 +3290,26 @@ namespace Bloom.Book
                     .Any(NonTrivialImageFileExists);
         }
 
-        private bool NonTrivialImageFileExists(SafeXmlElement image)
+        /// <summary>
+        /// True for the images a branding or a licence puts on a page: the branding logo, the
+        /// licence image, and the QR code of the "Made with Bloom" badge (as much a part of the
+        /// branding as the badge image beside it). None of these belongs to the book itself, so
+        /// neither HasImages() nor the cover-image search should count them.
+        /// </summary>
+        private static bool IsBrandingOrLicenseImage(SafeXmlElement image)
         {
-            if (image.Name == "img")
-            {
-                // The QR code of the "Made with Bloom" badge is as much a part of the branding as
-                // the badge image itself (which has the "branding" class), so it doesn't count as
-                // one of the book's images.
-                if (
+            return image.Name == "img"
+                && (
                     image.HasClass("branding")
                     || image.HasClass("licenseImage")
                     || image.HasClass(BookStorage.kQrCodeClass)
-                )
-                    return false;
-            }
+                );
+        }
+
+        private bool NonTrivialImageFileExists(SafeXmlElement image)
+        {
+            if (IsBrandingOrLicenseImage(image))
+                return false;
             var imageUrl = HtmlDom.GetImageElementUrl(image);
             var file = imageUrl.PathOnly.NotEncoded;
             if (string.IsNullOrEmpty(file))
@@ -5292,12 +5298,13 @@ namespace Bloom.Book
                 return null;
 
             // We take the image the book marks as its cover, and failing that an image out of an
-            // image container. Everything else on the cover is off limits: the branding logo, the
-            // license image, and the QR code of the "Made with Bloom" badge belong to the branding
-            // or the license, never to the book, and none of them sits in an image container. We
-            // used to accept any img on the cover, so a branded book whose cover picture was still
-            // a placeholder took the branding logo instead. For the ABC brandings that logo is an
-            // SVG, which PalasoImage cannot load, so such a book had no thumbnail at all (BL-16780).
+            // image container, and we refuse branding and licence images outright (see the loop
+            // below). Everything else on the cover is off limits: the branding logo, the license
+            // image, and the QR code of the "Made with Bloom" badge belong to the branding or the
+            // license, never to the book. We used to accept any img on the cover, so a branded book
+            // whose cover picture was still a placeholder took the branding logo instead. For the
+            // ABC brandings that logo is an SVG, which PalasoImage cannot load, so such a book had
+            // no thumbnail at all (BL-16780).
             //
             // Take the mark from either the img or the container. Both shapes are already here: the
             // standard xmatter marks the img, while the Afghan Children Read xmatter marks the
@@ -5331,6 +5338,17 @@ namespace Bloom.Book
 
             foreach (var candidate in candidates)
             {
+                // The image container is the main guard, but it cannot be the only one. On a cover
+                // in custom layout the whole margin box is a single bloom-canvas and every element
+                // on the cover is a canvas element inside it, branding included -- so being "in an
+                // image container" is true of the branding logo there too. A branding pack also
+                // supplies its own markup, so we do not control whether it wraps its logo in a
+                // container. Refusing these outright is what makes the rule hold in both cases,
+                // and it holds even for a book whose branding logo has wrongly been marked as the
+                // cover image (BL-16776).
+                if (IsBrandingOrLicenseImage(candidate))
+                    continue;
+
                 var candidatePath = GetImagePath(candidate);
                 if (candidatePath == null)
                     continue;
