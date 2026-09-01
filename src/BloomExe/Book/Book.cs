@@ -5318,16 +5318,29 @@ namespace Bloom.Book
             // enough to use an obsolete image representation carries the picture on the container.
             // We handle those here rather than only for editable books, because publish and preview
             // use this code too.
+            // Match whole class names. "contains(@class, 'bloom-canvas')" is also true of
+            // bloom-canvas-element, which is not a container at all.
             const string kImageContainer =
-                "div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]";
+                "div[contains(concat(' ', normalize-space(@class), ' '), ' bloom-imageContainer ')]";
+            const string kBloomCanvas =
+                "div[contains(concat(' ', normalize-space(@class), ' '), ' bloom-canvas ')]";
             var markedAsTheCover = outsideFrontCover
                 .SafeSelectNodes(
                     ".//img[@data-book='coverImage'] | .//div[@data-book='coverImage']"
                         + " | .//div[@data-book='coverImage']//img"
                 )
                 .Cast<SafeXmlElement>();
+            // An img anywhere inside an image container is one of the book's pictures, but under a
+            // bloom-canvas only a direct child is: on a custom-layout cover the whole margin box is
+            // one bloom-canvas and everything on the cover, branding included, is a canvas element
+            // inside it, so a descendant search there would sweep up the branding logo. A direct
+            // child of the bloom-canvas is the old shape, a background image not yet converted to a
+            // canvas element (see SetupImagesInContainer).
             var inAnImageContainer = outsideFrontCover
-                .SafeSelectNodes($".//{kImageContainer} | .//{kImageContainer}//img")
+                .SafeSelectNodes(
+                    $".//{kImageContainer} | .//{kImageContainer}//img"
+                        + $" | .//{kBloomCanvas} | .//{kBloomCanvas}/img"
+                )
                 .Cast<SafeXmlElement>();
             var candidates = markedAsTheCover.Concat(inAnImageContainer);
 
