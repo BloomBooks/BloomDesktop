@@ -19,6 +19,19 @@ House rules:
 
 ---
 
+## 2026-09-01 — bloom-automation skill doesn't warn that Bloom's ports change across restarts
+
+- **Cut:** Bloom picks a free HTTP port at startup, so after `Program.RestartBloom` (e.g.
+  toggling "Show translations which have not been approved yet") the launcher-relaunched Bloom
+  can come back on different HTTP/CDP ports (observed 8089→8095→8092 in one session). Any
+  tooling holding `BLOOM_HTTP_PORT` or a fixed CDP endpoint — which is exactly what the
+  bloom-automation SKILL.md tells agents to use — silently breaks mid-session.
+- **Idea:** Add a warning to `.github/skills/bloom-automation/SKILL.md` and point at the
+  discovery mechanism: the launcher's control server (`output/bloom-launcher.json` →
+  `/status`) reports current `httpPort`/`cdpPort`, wrapped by `discoverLauncherPorts()` in
+  `react_components/component-tester/bloomExeCdp.ts` (added for the UI-language e2e test).
+- **Context:** hit while building `bloom-exe-ui-language.uitest.ts` on branch automateTests.
+
 ## 2026-08-31 — AGENTS.md's vitest-wedge workaround (`--no-file-parallelism`) doesn't always work
 
 - **Cut:** AGENTS.md ("If the front-end test suite seems to hang, re-run it with
