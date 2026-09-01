@@ -35,7 +35,7 @@ import {
     setUiStateViaApi,
     type IUiLanguageStrings,
 } from "../helpers/uiLanguage";
-import { switchTab, waitForActiveTab } from "../helpers/workspace";
+import { switchTab } from "../helpers/workspace";
 
 // The collection's own content is irrelevant here: every string checked comes from the workspace
 // shell or from the factory source collections, which any collection shows.
@@ -126,14 +126,12 @@ test("change UI language repeatedly [Test Case ID 69]", async ({
         // Turn on "Show translations which have not been approved yet"; the same strings must
         // now show their unapproved Turkish text.
         await setShowUnapprovedTranslations(bloomApp, true);
-        await waitForActiveTab(bloomApp.page, "collection");
         await expectUiStrings(bloomApp.page, stringsByLanguage.tr);
 
         // Back to English with the setting off again, through the same UI, which re-verifies
         // both directions of the gate.
         await chooseUiLanguage(bloomApp, "en");
         await setShowUnapprovedTranslations(bloomApp, false);
-        await waitForActiveTab(bloomApp.page, "collection");
         await expectUiStrings(bloomApp.page, stringsByLanguage.en);
     } catch (error) {
         bodyError = error;

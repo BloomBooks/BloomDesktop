@@ -22,11 +22,15 @@ export async function waitForCollectionReady(
             async () => {
                 try {
                     return (await apiGet(page, "e2e/isCollectionReady")).body;
-                } catch {
+                } catch (error) {
                     // The e2e endpoints are project-scoped, so they briefly answer 404 while
                     // the project is reopening (e.g. after a UI language change); that just
-                    // means "not ready yet".
-                    return "not ready yet";
+                    // means "not ready yet". Anything else - a closed page, a dead server -
+                    // is a real failure, and hiding it inside a generic timeout would only
+                    // obscure it.
+                    if (/returned 404/.test(String(error)))
+                        return "not ready yet";
+                    throw error;
                 }
             },
             {

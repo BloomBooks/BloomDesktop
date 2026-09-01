@@ -181,7 +181,12 @@ export async function setShowUnapprovedTranslations(
         .toBe(value);
     // The already-rendered UI still shows the strings from before the change; restarting Bloom
     // is what makes every surface reflect it, exactly as the production self-restart would.
-    return bloomApp.restart();
+    const newPage = await bloomApp.restart();
+    // Wait for the restarted Bloom to be usable before returning - the collection loaded and
+    // the Collections tab (where a fresh Bloom lands) active - so no caller needs its own wait.
+    await waitForCollectionReady(newPage);
+    await waitForActiveTab(newPage, "collection");
+    return newPage;
 }
 
 /**
