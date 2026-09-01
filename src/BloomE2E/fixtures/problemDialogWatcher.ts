@@ -143,16 +143,22 @@ export function startProblemDialogWatcher(
     const problems: IBloomProblem[] = [];
     let stopped = false;
 
+    // Pages whose dialog we recorded but could not close. The dialog is still showing there, so
+    // later scans would find and record the same problem again; skip such a page instead.
+    const unclosable = new WeakSet<Page>();
+
     // One scan: find a dialog, record it, close it. Never throws: a failure to gather the
     // detail or to close still gets recorded as a problem, and the watcher keeps running.
     const checkOnce = async (): Promise<boolean> => {
         const found = await findProblemDialog(browser).catch(() => undefined);
         if (!found) return false;
+        if (unclosable.has(found.page)) return false;
         try {
             const { problem, detail } = await gatherProblemDetail(found.page);
             problems.push({ heading: found.heading, problem, detail });
             await closeProblemDialog(found.page);
         } catch (error) {
+            unclosable.add(found.page);
             problems.push({
                 heading: found.heading,
                 problem:
