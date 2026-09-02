@@ -201,9 +201,9 @@ export async function expectUploadStepButtons(
 }
 
 /**
- * Click the Upload Book button. This is the click that starts an upload, so a test may only do it
- * where it knows Bloom will stop and ask something first (see the template warning below); a book
- * that is ready to go would be uploaded to a real server.
+ * Click the Upload Book button. Bloom refuses to upload at all under --e2e (see
+ * LibraryPublishApi.RefuseUploadWhileRunningE2eTests), so this cannot publish anything; what a
+ * test can see is what the screen does before that point, such as the template warning below.
  */
 export async function clickUploadBook(page: Page): Promise<void> {
     await page

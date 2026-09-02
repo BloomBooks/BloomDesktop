@@ -81,7 +81,9 @@ so none of those can be automated either. Fix direction: a test account plus a p
 store (a login the `--e2e` instance keeps to itself), so a run can sign in for real and upload to
 dev.bloomlibrary.org without touching the developer's settings. The per-instance half of that is
 the same fix "Every Bloom of one build shares one user.config" asks for, below; the test account
-is the rest.
+is the rest. Note that the pretense changes only what Bloom reports, so Bloom under `--e2e` now
+refuses to upload at all rather than let an automated click publish under the developer's real
+account.
 (Found 2026-09-02 automating Test Case ID 606, `upload-required-items.spec.ts`.)
 
 ## Visual-regression cases stop at the first failed comparison
