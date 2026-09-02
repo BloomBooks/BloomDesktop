@@ -35,6 +35,12 @@ stopping Bloom, rewriting the `.bloomCollection`, and starting again, which is w
 new `bloomApp.restart(betweenStopAndStart)` fixture method is for. Each restart costs
 about six seconds and loses whatever the editor had not yet saved.
 
+seen again 2026-09-01 (Test Case ID 349, `duplicate-page.spec.ts`): "Duplicate Page Many
+Times..." asks how many copies in `DuplicateManyDialog`, which is `WireUpForWinforms`, so the
+one step of that manual test that uses it ("make 3 duplicates") is not automated. The dialog
+only posts `editView/duplicatePageMany`, which `duplicateCurrentPage` already calls for setup,
+so the fix is the same as for every other WinForms dialog: host it in the web UI.
+
 ## Native OS dialogs hang automation
 
 File pickers, the Image Toolbox, and video capture open native windows Playwright
@@ -42,6 +48,15 @@ cannot dismiss; a test that triggers one hangs the run. Tests must avoid them (t
 `add-e2e-test` skill forbids it). Fix direction: `--e2e`-mode alternatives via
 `E2eTestingApi` for the common cases (choose image file, choose video), so journeys
 that need them become automatable.
+
+seen again 2026-09-01 (Test Case ID 349, `duplicate-page.spec.ts`): the manual test puts a
+picture, a recording, and a video on a page. The picture has a route: the image chooser is a
+web dialog now, and once a file is chosen it posts `imageGallery/imageGalleryResult` and then
+applies the answer with the page bundle's `changeImageByElement`, so `helpers/images.ts` does
+those two steps for a file the test supplies and never opens the picker. The recording and the
+video have none: the Talking Book tool records from a real microphone, and a video arrives only
+through the Sign Language tool's native file picker or camera, so those two sections of the
+manual test stay manual.
 
 ## Visual-regression cases stop at the first failed comparison
 

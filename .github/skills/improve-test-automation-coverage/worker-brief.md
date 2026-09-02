@@ -34,9 +34,10 @@ again.
   not start.
 - Keep the Orca card current: `orca worktree set --worktree active --comment "<state>" --json`
   after each checkpoint (feasibility decided, test written, test green, review round, PR open).
-- Follow the repo rules in `AGENTS.md`: never `pnpm build`; build C# through
-  `build/agent-dotnet.ps1`, with the one exception in step 0 (the wrapper builds no
-  `Bloom.exe`); never commit or push except inside the `preflight` skill in step 6.
+- Build Bloom whenever it helps, as the add-e2e-test skill's build section says: nobody runs
+  Bloom from your worktree, so nothing collides. Never commit or push except inside the
+  `preflight` skill in step 6. That step, not the skill's own "Ship" section, is how your PR
+  gets opened; the controller owns the PR's state, so leave it a draft.
 
 ## Steps
 
@@ -116,7 +117,7 @@ fixes, re-run step 4, and ask again. Repeat until the answer is `ship`. If the a
 resume it with `orca orchestration ask --resume <message_id> --timeout-ms 3600000 --json`; do not
 proceed without a `ship`.
 
-### 6. Ship
+### 6. Ship (this replaces the "Ship" section of add-e2e-test)
 
 1. Run the `preflight` skill (`Skill` tool, name `preflight`). It commits, pushes, opens a draft
    PR against `master`, and waits for the bots. Preflight looks for a `BL-` ticket in the branch
@@ -127,7 +128,9 @@ proceed without a `ship`.
    Automates Notion test case {{TEST_CASE_ID}} ({{CARD_TITLE}}): {{CARD_URL}}
    ```
 
-   Also say which Test Steps the test covers and which it does not.
+   Also say which Test Steps the test covers and which it does not, and give any change
+   outside `src/BloomE2E` its own **Bloom production code changes** heading, as the add-e2e-test
+   summary does.
 2. Set the card to `PR Pending` with the PR URL in the note. If the test covers only part of the
    steps, say which part in the same note:
 

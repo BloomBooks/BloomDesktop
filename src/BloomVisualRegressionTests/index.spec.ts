@@ -204,8 +204,25 @@ describe("All books", () => {
 
     beforeAll(async () => {
         await launchDedicatedBloom();
-        browser = await chromium.launch();
+        // Text must rasterize the same way on every machine, or the reference images are only
+        // valid on whichever machine made them. By default Chrome anti-aliases text with LCD
+        // sub-pixel rendering, using the host's DirectWrite gamma/contrast settings, so the same
+        // glyphs come out with different colored fringes on a developer machine than on the CI
+        // runner. --disable-lcd-text forces grayscale anti-aliasing instead;
+        // --font-render-hinting=none removes the other host-dependent step; --force-color-profile
+        // pins the color space the result is converted through.
+        browser = await chromium.launch({
+            args: [
+                "--disable-lcd-text",
+                "--font-render-hinting=none",
+                "--force-color-profile=srgb",
+            ],
+        });
         context = await browser.newContext();
+        andikaIsInstalled = await isFontInstalled(context, "Andika");
+        if (andikaIsInstalled) {
+            console.warn(chalk.black.bgYellow(ANDIKA_INSTALLED_WARNING));
+        }
         page = await context.newPage();
         playerPage = await context.newPage();
         await playerPage.setViewportSize({ width: 900, height: 1200 });
@@ -319,10 +336,13 @@ describe("All books", () => {
     // `screenshotsDir` is always in the SOURCE inputs tree (output/testing-inputs, or whatever
     // BLOOM_TESTING_INPUTS_DIR names), never in the temp copy, so that an accepted new baseline is
     // a file a developer can commit to the inputs repository. See readme.md.
+    // `isPlayerCapture` marks a bloom-player screenshot, whose text comes from whatever Andika the
+    // machine has (see andikaIsInstalled), as opposed to a book-preview one, which does not.
     async function captureOrCompare(
         label: string,
         screenshotsDir: string,
         shoot: (imagePath: string) => Promise<void>,
+        isPlayerCapture = false,
     ) {
         const referencePath = Path.join(
             screenshotsDir,
@@ -341,6 +361,9 @@ describe("All books", () => {
             referencePath,
             currentPath,
             Path.join(screenshotsDir, `${label}-diff.png`),
+            isPlayerCapture && andikaIsInstalled
+                ? ANDIKA_INSTALLED_WARNING
+                : undefined,
         );
     }
 
@@ -495,6 +518,52 @@ describe("All books", () => {
         return result.text();
     }
 
+    // The bloom-player captures must not depend on which fonts this machine has installed. When Bloom
+    // stages a BloomPUB it strips the book's own @font-face rules (BL-12594) and leaves the font to
+    // bloom-player, which declares Andika as `local("Andika")` first and the Bloom-served woff2 only
+    // as a fallback. So a machine with Andika installed renders every player page with its own copy of
+    // the font, and its glyphs differ from the reference images (which come from a machine without it,
+    // like the CI runner) by tens to hundreds of pixels per page. That has twice led someone to "fix"
+    // the suite by regenerating the baselines on their own machine, which just moved the failure to
+    // CI. The book-preview captures are unaffected: the staged book's own @font-face points at the
+    // served copy. So we don't refuse to run; we warn once up front, and when a player page then
+    // mismatches we say in the failure itself that the font is the likely cause, so nobody reads it
+    // as a regression or accepts it as a new baseline.
+    let andikaIsInstalled = false;
+    const ANDIKA_INSTALLED_WARNING =
+        `Andika is installed on this machine. bloom-player prefers an installed Andika over the copy ` +
+        `Bloom serves, so the bloom-player screenshots will be rendered with this machine's Andika and ` +
+        `will probably differ from the reference images (which are rendered without it, as on CI). ` +
+        `Player-page differences on this machine are probably that, not a regression, and must not be ` +
+        `accepted as new baselines. Uninstall Andika to make these comparisons meaningful; Bloom ` +
+        `does not need it installed.`;
+
+    // The probe is a @font-face whose only source is local(<family>): it loads if and only if the
+    // font is installed. Chrome may either resolve with no faces or reject when it is not.
+    async function isFontInstalled(
+        context: BrowserContext,
+        family: string,
+    ): Promise<boolean> {
+        const probe = await context.newPage();
+        try {
+            await probe.setContent(
+                `<style>@font-face { font-family: "bloom-vr-probe"; src: local("${family}"); }</style>`,
+            );
+            return await probe.evaluate(async () => {
+                try {
+                    const faces = await (globalThis as any).document.fonts.load(
+                        '16px "bloom-vr-probe"',
+                    );
+                    return faces.some((f: any) => f.status === "loaded");
+                } catch {
+                    return false;
+                }
+            });
+        } finally {
+            await probe.close();
+        }
+    }
+
     // Build the bloom-player URL for the staged book at a specific page (0-based). Mirrors what the
     // desktop app does (see RecordVideoWindow): the staged URL is already single-encoded, and
     // URLSearchParams encodes it again so it survives as a query parameter (see BL-11319).
@@ -615,14 +684,18 @@ describe("All books", () => {
                 async (imagePath) => {
                     await pageElement.screenshot({ path: imagePath });
                 },
+                true,
             );
         }
     }
 
+    // `likelyCause`, when given, is an explanation to attach to a mismatch (see andikaIsInstalled):
+    // something we know about this machine that makes the difference expected rather than a regression.
     async function comparePreviewImage(
         referencePath: string,
         testPath: string,
         diffPath: string,
+        likelyCause?: string,
     ) {
         const referenceImage = PNG.sync.read(fs.readFileSync(referencePath));
         const testImage = PNG.sync.read(fs.readFileSync(testPath));
@@ -652,7 +725,14 @@ describe("All books", () => {
                         `If the new version is correct, replace ${referencePath} with ${testPath}`,
                 ),
             );
-            expect(numberOfDifferentPixels).toBe(0);
+            // A thrown Error rather than expect(...).toBe(0), so the failure itself carries the
+            // diff path and, when we know one, the likely cause; the console lines above are lost in
+            // a long run's output.
+            throw new Error(
+                `${testPath} differed from the reference by ${numberOfDifferentPixels} pixels. ` +
+                    `The diff image is at ${diffPath}.` +
+                    (likelyCause ? `\n\n${likelyCause}` : ""),
+            );
         }
     }
 });

@@ -15,6 +15,17 @@ over HTTP, and shuts it down and deletes the temp folder afterward. Because it l
 `--automation`, it can run alongside a Bloom you already have open. Because it operates on a temp
 copy, a run never modifies the books it renders.
 
+# If Andika is installed on your machine
+
+bloom-player prefers an installed Andika (`local("Andika")`) over the copy Bloom serves, so with
+Andika installed the bloom-player screenshots come out with your machine's version of the font and
+differ from the reference images, which are rendered without it (as on the CI runner). The book
+previews are not affected. The suite detects this: it warns at the start of the run, and any
+player-page mismatch on such a machine says so in its failure message. Treat those failures as the
+font, not a regression, and do **not** fix them by regenerating the baselines on a machine that has
+Andika — that makes them wrong on CI and on everyone else's machine. To make the player comparisons
+meaningful, uninstall Andika; Bloom itself does not need it installed.
+
 # Where the test inputs come from
 
 The books and their reference screenshots are **not in this repository**. They live in
@@ -26,11 +37,11 @@ inputs and so that changing a test book does not churn BloomDesktop's history.
 (gitignored). Because it is one exact commit, a run is reproducible: the same BloomDesktop commit
 always renders the same books against the same reference images.
 
--   `node build/get-testing-inputs.mjs --check` reports whether `output/testing-inputs/` matches
-    the pin, and exits non-zero if it does not. Useful when a run renders something you did not
-    expect.
--   If the suite cannot find the inputs, it fails immediately and tells you to run
-    `node build/get-testing-inputs.mjs`.
+- `node build/get-testing-inputs.mjs --check` reports whether `output/testing-inputs/` matches
+  the pin, and exits non-zero if it does not. Useful when a run renders something you did not
+  expect.
+- If the suite cannot find the inputs, it fails immediately and tells you to run
+  `node build/get-testing-inputs.mjs`.
 
 ## Using your own checkout of the inputs
 
@@ -38,8 +49,8 @@ Set **`BLOOM_TESTING_INPUTS_DIR`** to the folder that contains `collections/` in
 bloom-testing-inputs. The suite then renders (and writes screenshots into) that checkout instead of
 `output/testing-inputs/`. This is how you edit a test book or accept a new baseline.
 
--   bash: `BLOOM_TESTING_INPUTS_DIR=/d/bloom-testing-inputs pnpm test`
--   PowerShell: `$env:BLOOM_TESTING_INPUTS_DIR="D:/bloom-testing-inputs"; pnpm test`
+- bash: `BLOOM_TESTING_INPUTS_DIR=/d/bloom-testing-inputs pnpm test`
+- PowerShell: `$env:BLOOM_TESTING_INPUTS_DIR="D:/bloom-testing-inputs"; pnpm test`
 
 # Test failures
 
@@ -85,5 +96,5 @@ Bloom on a different one; set branding/theme in the tests instead.
 
 # TODO
 
--   The diffs are fairly low-resolution.
--   Could test different XMatters.
+- The diffs are fairly low-resolution.
+- Could test different XMatters.
