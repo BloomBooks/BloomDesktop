@@ -19,7 +19,20 @@ House rules:
 
 ---
 
-## 2026-09-02 — BloomE2E fails opaquely when output/browser predates the checked-out front-end code
+## 2026-09-02 — Two BloomE2E sessions on one machine corrupt each other via the shared profile
+
+- **Cut:** BloomE2E runs from two worktrees at once (e.g. a developer session plus
+  improve-test-automation-coverage workers) share the machine-wide user.config for the exe
+  version and the same candidate port block. One session switching the UI language or blanking
+  the MRU changes it under the other mid-test: observed as a workspace-tabs Bloom coming up in
+  French (its English TAB_LABEL then never matches) and a launch timing out while probing ports
+  another session's Blooms held. These failures look like real regressions and cost hours.
+- **Idea:** A cross-session mutex (a lock file keyed on the profile path that launchBloom
+  waits on), or per-session profile isolation (point the launched Bloom at a private settings
+  folder under --e2e). The parallel-worktree automation flow needs one of these before it can
+  fan out safely.
+- **Context:** preflight of PR #8275; the colliding session's collection was
+  bloom-e2e-*/format-gear-positioning (another worktree's test).
 
 - **Cut:** Twice in one day, a BloomE2E spec failed on a missing `data-testid`
   (`text-languages-group`, then `duplicate-page-button`) because `output/browser` was built
