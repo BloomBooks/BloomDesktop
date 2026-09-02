@@ -347,26 +347,30 @@ test.describe("the Text Languages publish list", () => {
         await setContentLanguages(page, ["en"]);
     });
 
-    // KNOWN FLAKE, diagnosed, and BL-16806 is the card that fixes it -- so if you are here
-    // because a nightly went red on this test, that is the known cause and there is a fix in
-    // flight; nothing new to chase.
+    // NOT A FLAKE. This test fails on CI every time, and BL-16806 is the card that fixes it -- so
+    // if you are here because a nightly went red on this test, that is the known cause and there
+    // is a fix in flight; nothing new to chase.
     //
-    // The assertion captured: this test failed once in six full runs on
-    // 2026-09-01, and again on CI run 33665790357 (2026-09-02, 12 passed / 1 failed). The
-    // assertion that fails is the language NAME, and the whole point of the test:
+    // The assertion that fails is the language NAME, and the whole point of the test:
     //
     //     Expected: español      Received: espagnol
     //
-    // "espagnol" is French for Spanish. It is not a timing race in the publish list, and not the
-    // editView/topBar/contentLanguageUsageChange suspicion, which never explained it: Bloom asks
-    // LibPalaso for the name of the dropped language "in" the collection's metadata language, and
-    // that call memoizes into a process-wide static dictionary that can hand back a name which
-    // does not correspond to what was asked. So the answer depends on who asked for a language
-    // name earlier in that run of Bloom. BL-16806 has the evidence. Everything else about the row
-    // (unchecked, not incomplete, enabled) is right every time.
+    // "espagnol" is French for Spanish, and the answer depends on the MACHINE, not on the run.
+    // Bloom asks LibPalaso for the name of the dropped language "in" the collection's metadata
+    // language, which is French here; LibPalaso honors that request only where a native ICU
+    // library is findable, and Bloom ships icu.net but no icuuc.dll. So the CI runner answers
+    // "espagnol" (runs 33665790357 and 33685669405, both) while a developer machine ignores the
+    // request and gives the autonym "español" (checked by hand in the real Publish tab). It is
+    // not a timing race in the publish list, and not the
+    // editView/topBar/contentLanguageUsageChange suspicion, which never explained it. BL-16806 has
+    // the evidence. Everything else about the row (unchecked, not incomplete, enabled) is right.
     //
-    // Left running deliberately. It is a real nondeterminism in what Bloom shows a user, and the
-    // one test that catches it; silencing it would only hide the bug the nightly just found.
+    // The "failed once in six full runs on 2026-09-01" this was originally filed as was a
+    // DIFFERENT failure in this same test -- it has other steps that time out on a loaded machine,
+    // which is what a local run looks like when it dies before reaching this assertion.
+    //
+    // Left running deliberately: it is a real difference in what Bloom shows a user, and the one
+    // test that catches it.
     test("keeps a language that the collection no longer has, under its own name [Test Case ID 169]", async ({
         bloomApp,
     }) => {
