@@ -237,12 +237,16 @@ Dependencies point down only:
    - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Bloom hides the
      Edit and Publish tabs until a book is selected.
    - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
-   - `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `duplicateCurrentPage`,
-     `findBookFolder`, `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`,
-     `typeInGroup`, `waitForEditablePage`, `editablePageFrame`. A book made from a template
-     starts with front and back matter only, so a test that needs content calls `addPage`.
-     Bloom writes a page only when the book leaves it, so `goToPage` is also how a test
-     saves what it typed.
+   - `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `findBookFolder`,
+     `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`, `typeInGroup`,
+     `waitForEditablePage`, `editablePageFrame`. A book made from a template starts with
+     front and back matter only, so a test that needs content calls `addPage`. Bloom writes
+     a page only when the book leaves it, so `goToPage` is also how a test saves what it
+     typed.
+   - `helpers/pageList.ts` — `duplicatePageWithButton`, `duplicatePageWithContextMenu`,
+     `movePageToSlotOf`, and the API route `duplicateCurrentPage` for setup.
+   - `helpers/images.ts` — `chooseImageFile` (setup, no picker), `cropImage`,
+     `getImagePlacement`.
    - `helpers/publish.ts` — `openPublishDestination`, `getTextLanguageRows`,
      `expectTextLanguageRows`, `clickTextLanguage`, `showBloomPubPreview`,
      `getPreviewLanguages`, `getLanguagesInBook`, `getTooltipForLanguage`.

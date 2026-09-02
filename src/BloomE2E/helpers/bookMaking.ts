@@ -195,7 +195,15 @@ export function editablePageFrame(page: Page): Frame {
     return frame;
 }
 
-/** Wait until the Edit tab is showing a page with at least one editable box in it. */
+/**
+ * Wait until the Edit tab is showing a page with at least one editable box in it, and Bloom has
+ * finished loading that page and is editing it.
+ *
+ * The second half matters: while the Edit tab is still navigating to a page, Bloom silently ignores
+ * any command that begins with saving it (duplicate, delete, jump elsewhere). The page can look
+ * ready in the DOM a moment before Bloom is, so this asks Bloom as well, through the e2e hook that
+ * reports its editing state.
+ */
 export async function waitForEditablePage(
     page: Page,
     timeoutMs = 90000,
@@ -216,6 +224,13 @@ export async function waitForEditablePage(
             },
         )
         .toBeGreaterThan(0);
+    await expect
+        .poll(async () => (await apiGet(page, "e2e/isEditingPage")).body, {
+            timeout: timeoutMs,
+            message:
+                "Bloom never finished loading the page in the Edit tab (its editing state never became Editing).",
+        })
+        .toBe("true");
 }
 
 /** One page of the selected book, as e2e/pages reports it. */
@@ -321,6 +336,7 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
         await apiPost(page, "editView/jumpToPage", pageId, "text/plain");
         try {
             await expect.poll(showing, { timeout: 20000 }).toBe(1);
+            await waitForEditablePage(page);
             return;
         } catch {
             // fall through and ask again
@@ -329,30 +345,6 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
     throw new Error(
         `Bloom never showed page ${pageId} in the Edit tab, after three attempts.`,
     );
-}
-
-/**
- * Duplicate the page Bloom is showing, `times` times, and wait for the new pages to appear.
- * Used to give a book more than one content page without driving the Add Page dialog.
- */
-export async function duplicateCurrentPage(
-    page: Page,
-    times = 1,
-): Promise<void> {
-    const before = (await getPages(page)).length;
-    await apiPost(
-        page,
-        "editView/duplicatePageMany",
-        JSON.stringify({ numberOfTimes: times }),
-        "application/json",
-    );
-    await expect
-        .poll(async () => (await getPages(page)).length, {
-            timeout: 60000,
-            message: "Bloom never added the duplicated page(s).",
-        })
-        .toBe(before + times);
-    await waitForEditablePage(page);
 }
 
 /**
