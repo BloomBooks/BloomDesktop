@@ -143,3 +143,11 @@ BLOOM_TESTING_INPUTS_DIR=D:/bloom-testing-inputs pnpm test
 
 Either way the fixture copies the collection before Bloom opens it, so a run never modifies your
 inputs.
+
+## In CI
+
+`.github/workflows/nightly.yml` runs the whole suite every night against the Release build it has
+just made, and reports it as its own check run, "Nightly tests: BloomE2E (Playwright)". A failing
+night uploads Playwright's HTML report and traces as the `e2e-report` artifact. A manual run of
+that workflow can tick this suite alone, which is the quick way to see how a test behaves on the
+runner rather than on your machine.
