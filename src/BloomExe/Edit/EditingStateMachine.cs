@@ -144,6 +144,12 @@ public class EditingStateMachine
     public bool SavePending => _currentState == State.SavePending;
 
     /// <summary>
+    /// True if a page is loaded and being edited, so that a save (and anything that starts with
+    /// one, such as duplicating or deleting the page) will be acted on rather than ignored.
+    /// </summary>
+    public bool Editing => _currentState == State.Editing;
+
+    /// <summary>
     /// Called to initiate navigation to a new page (or the same one again).
     /// Should not be called when there are unsaved (or incompletely saved) changes.
     /// </summary>

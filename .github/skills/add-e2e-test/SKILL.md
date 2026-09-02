@@ -55,7 +55,8 @@ carries the API mechanics.
   inventory stay tied. Read the card's Test Steps checkboxes; they are the behavior
   contract. When the automated test lands, set the card's `Automation` property to
   `Automated` — or to `Partial` when the automated test covers only part of the steps,
-  and say which part in `Automation Notes`. The title string is the whole mechanism;
+  and say which part in `Automation Notes`. While the test is still in an open PR, the
+  card belongs in `PR Pending` instead, with the PR URL in `Automation Notes`. The title string is the whole mechanism;
   the library provides no helper or annotation for it, deliberately, so that grepping
   `Test Case ID` across `src/BloomE2E/tests/` finds every tie.
 - **Writing a new e2e test that has no manual card:** add a row to the inventory so it
@@ -63,14 +64,20 @@ carries the API mechanics.
   `Test Case ID`, fill in the title, Summary, and Areas, and set `Automation` to
   `Automated`.
 - **The `Automation` select property** holds the case's automation lifecycle:
-  `Manual` → `Planned` → `Building` → `Automated` (or `Partial`), with `Keep manual`
-  as the deliberate opt-out.
+  `Manual` → `Planned` → `Building` → `PR Pending` → `Automated` (or `Partial`), with
+  `Keep manual` as the deliberate opt-out.
   - Empty means the same as `Manual` — the legacy rows were not bulk-stamped.
   - `Planned` marks a case the team judged a good automation candidate. To find work,
     filter the current suite run on `Automation = Planned`.
   - `Building` means someone is automating it right now. Set it when you start, so two
     people or agents do not automate the same case; set `Automated` (or `Partial`,
     with the covered part named in `Automation Notes`) when the test lands.
+  - `PR Pending` means the test exists in an open PR that has not merged. Put the PR URL
+    in `Automation Notes`. The `improve-test-automation-coverage` skill leaves cards here;
+    a human (or a later sweep) moves them to `Automated` or `Partial` after the merge.
+  - `Has automation problems` means an automation attempt found the card not automatable as
+    written. `Automation Notes` says which step blocks it and what the card, or Bloom, needs.
+    The developer who owns the card fixes that and sets `Planned` again.
   - `Keep manual` is a deliberate decision that a case stays human-run (e.g. installer
     feel, print quality); do not propose those for automation.
 - Do not confuse `Test Case ID` (the number, stable, ours) with `Dokimion ID` (e.g.
@@ -230,12 +237,16 @@ Dependencies point down only:
    - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Bloom hides the
      Edit and Publish tabs until a book is selected.
    - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
-   - `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `duplicateCurrentPage`,
-     `findBookFolder`, `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`,
-     `typeInGroup`, `waitForEditablePage`, `editablePageFrame`. A book made from a template
-     starts with front and back matter only, so a test that needs content calls `addPage`.
-     Bloom writes a page only when the book leaves it, so `goToPage` is also how a test
-     saves what it typed.
+   - `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `findBookFolder`,
+     `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`, `typeInGroup`,
+     `waitForEditablePage`, `editablePageFrame`. A book made from a template starts with
+     front and back matter only, so a test that needs content calls `addPage`. Bloom writes
+     a page only when the book leaves it, so `goToPage` is also how a test saves what it
+     typed.
+   - `helpers/pageList.ts` — `duplicatePageWithButton`, `duplicatePageWithContextMenu`,
+     `movePageToSlotOf`, and the API route `duplicateCurrentPage` for setup.
+   - `helpers/images.ts` — `chooseImageFile` (setup, no picker), `cropImage`,
+     `getImagePlacement`.
    - `helpers/publish.ts` — `openPublishDestination`, `getTextLanguageRows`,
      `expectTextLanguageRows`, `clickTextLanguage`, `showBloomPubPreview`,
      `getPreviewLanguages`, `getLanguagesInBook`, `getTooltipForLanguage`.
