@@ -226,9 +226,10 @@ export async function waitForTemplateUploadWarning(
 }
 
 /**
- * Answer No to the template warning. That is the only answer a test may give: Yes starts a real
- * upload to a real server, which no automated run should do (see AUTOMATION-DEBT.md), so there is
- * deliberately no helper for it.
+ * Answer No to the template warning. There is deliberately no helper for Yes: Bloom refuses to
+ * upload under --e2e, so answering Yes would prove nothing beyond that refusal, and what the
+ * manual test is really checking — that a template is allowed through the copyright rule — is
+ * already settled by the warning appearing at all.
  */
 export async function declineTemplateUploadWarning(page: Page): Promise<void> {
     await templateUploadWarning(page)

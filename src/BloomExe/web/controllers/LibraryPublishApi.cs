@@ -467,6 +467,13 @@ namespace Bloom.web.controllers
 
         private async Task HandleUploadAfterChangingBookId(ApiRequest request)
         {
+            // Before ChangeBookInstanceId, not after: refusing later would still have given the
+            // book a new identity it never needed.
+            if (RefuseUploadWhileRunningE2eTests())
+            {
+                request.PostSucceeded();
+                return;
+            }
             if (!Model.ChangeBookInstanceId(_progress))
             {
                 request.Failed("Can't fix ID because in TC");
