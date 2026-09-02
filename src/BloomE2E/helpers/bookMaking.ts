@@ -8,7 +8,7 @@
 // reliable path through Bloom's API wherever there is one, per the UI-vs-API policy in README.md.
 // The text itself goes in through the real editor, because there is no API that writes it.
 
-import { expect, type Frame, type Page } from "@playwright/test";
+import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet, apiGetJson, apiPost } from "./api";
@@ -309,9 +309,14 @@ export function editablePageFrame(page: Page): Frame {
 }
 
 /**
- * Wait until the Edit tab is showing a page. Not every page has a text box (the "Image For
- * Thumbnail" page a new template starts on has none), so this waits for the page itself; a helper
- * that types waits for its own box.
+ * Wait until the Edit tab is showing a page, and Bloom has finished loading that page and is
+ * editing it. Not every page has a text box (the "Image For Thumbnail" page a new template starts
+ * on has none), so this waits for the page itself; a helper that types waits for its own box.
+ *
+ * The second half matters: while the Edit tab is still navigating to a page, Bloom silently ignores
+ * any command that begins with saving it (add a page, duplicate, delete, jump elsewhere). The page
+ * can look ready in the DOM a moment before Bloom is, so this asks Bloom as well, through the e2e
+ * hook that reports its editing state.
  */
 export async function waitForEditablePage(
     page: Page,
@@ -333,21 +338,13 @@ export async function waitForEditablePage(
             },
         )
         .toBeGreaterThan(0);
-    // The page being on screen is not the whole story: Bloom's editing model reaches its Editing
-    // state a moment later, and until then it drops anything that has to save the page first,
-    // such as adding another page. e2e/editingState reports that state.
     await expect
-        .poll(
-            async () =>
-                (await apiGetJson<{ state: string }>(page, "e2e/editingState"))
-                    .state,
-            {
-                timeout: timeoutMs,
-                message:
-                    "The Edit tab showed a page but never became ready to edit it.",
-            },
-        )
-        .toBe("Editing");
+        .poll(async () => (await apiGet(page, "e2e/isEditingPage")).body, {
+            timeout: timeoutMs,
+            message:
+                "Bloom never finished loading the page in the Edit tab (its editing state never became Editing).",
+        })
+        .toBe("true");
 }
 
 /** One page of the selected book, as e2e/pages reports it. */
@@ -473,6 +470,7 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
         await apiPost(page, "editView/jumpToPage", pageId, "text/plain");
         try {
             await expect.poll(showing, { timeout: 20000 }).toBe(1);
+            await waitForEditablePage(page);
             return;
         } catch {
             // fall through and ask again
@@ -484,27 +482,27 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
 }
 
 /**
- * Duplicate the page Bloom is showing, `times` times, and wait for the new pages to appear.
- * Used to give a book more than one content page without driving the Add Page dialog.
+ * Click in one language's box of one translation group on the page being shown, so that it has the
+ * focus, the way a person starts editing it. `groupSelector` picks the group, e.g. ".bookTitle" for
+ * the cover title. Waits until the box has the focus, and returns it.
+ *
+ * Focusing a box is also what makes Bloom show the box's format gear (see helpers/formatDialog.ts).
  */
-export async function duplicateCurrentPage(
+export async function clickInGroup(
     page: Page,
-    times = 1,
-): Promise<void> {
-    const before = (await getPages(page)).length;
-    await apiPost(
-        page,
-        "editView/duplicatePageMany",
-        JSON.stringify({ numberOfTimes: times }),
-        "application/json",
-    );
-    await expect
-        .poll(async () => (await getPages(page)).length, {
-            timeout: 60000,
-            message: "Bloom never added the duplicated page(s).",
-        })
-        .toBe(before + times);
-    await waitForEditablePage(page);
+    groupSelector: string,
+    languageTag: string,
+): Promise<Locator> {
+    const box = editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
+        .first();
+    await box.waitFor({ state: "visible", timeout: 30000 });
+    await box.click();
+    await expect(
+        box,
+        `Clicking in the "${languageTag}" box of "${groupSelector}" did not give it the focus.`,
+    ).toBeFocused({ timeout: 15000 });
+    return box;
 }
 
 /**
@@ -520,13 +518,9 @@ export async function typeInGroup(
     languageTag: string,
     text: string,
 ): Promise<void> {
-    const box = editablePageFrame(page)
-        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
-        .first();
-    await box.waitFor({ state: "visible", timeout: 30000 });
     // Click in, select what is there, and type over it. A box here is a CKEditor surface, and
     // filling it directly leaves part of the old text behind.
-    await box.click();
+    const box = await clickInGroup(page, groupSelector, languageTag);
     await box.press("Control+a");
     await box.press("Delete");
     if (text) await box.pressSequentially(text);

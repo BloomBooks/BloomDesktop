@@ -98,18 +98,15 @@ namespace Bloom.web.controllers
                 false // does not need the UI thread
             );
 
-            // GET returns the Edit tab's state as JSON: {"state": "Editing"} once the page being
-            // edited has loaded; "Navigating" while a page loads, "SavePending" while a save is in
-            // flight, "NoPage" with nothing loaded. An action that saves first (add a page, jump
-            // to a page, change layout) is silently dropped unless the state is Editing, and the
-            // page iframe showing a .bloom-page does not mean the state has got there yet, so a
-            // test that drives the Edit tab waits for this rather than for the DOM.
-            // Off the UI thread deliberately: a test polls this while the UI thread is busy
-            // loading the page, and reading the state is a single enum field.
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "editingState",
-                request =>
-                    request.ReplyWithJson(new { state = _editingModel.EditingState.ToString() }),
+            // GET returns true once the Edit tab has finished loading the page it shows and is
+            // editing it. While the Edit tab is still navigating to a page, it silently ignores any
+            // command that begins with saving the page (duplicate, delete, jump to another page),
+            // and a test that sends one in that window sees nothing happen. There is no signal in
+            // the UI for this, so a test polls this before such a command. Read-only.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kApiUrlPart + "isEditingPage",
+                request => _editingModel.StateMachine.Editing,
+                null, // read only
                 false // does not need the UI thread
             );
 

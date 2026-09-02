@@ -35,6 +35,12 @@ stopping Bloom, rewriting the `.bloomCollection`, and starting again, which is w
 new `bloomApp.restart(betweenStopAndStart)` fixture method is for. Each restart costs
 about six seconds and loses whatever the editor had not yet saved.
 
+seen again 2026-09-01 (Test Case ID 349, `duplicate-page.spec.ts`): "Duplicate Page Many
+Times..." asks how many copies in `DuplicateManyDialog`, which is `WireUpForWinforms`, so the
+one step of that manual test that uses it ("make 3 duplicates") is not automated. The dialog
+only posts `editView/duplicatePageMany`, which `duplicateCurrentPage` already calls for setup,
+so the fix is the same as for every other WinForms dialog: host it in the web UI.
+
 ## Native OS dialogs hang automation
 
 File pickers, the Image Toolbox, and video capture open native windows Playwright
@@ -42,6 +48,15 @@ cannot dismiss; a test that triggers one hangs the run. Tests must avoid them (t
 `add-e2e-test` skill forbids it). Fix direction: `--e2e`-mode alternatives via
 `E2eTestingApi` for the common cases (choose image file, choose video), so journeys
 that need them become automatable.
+
+seen again 2026-09-01 (Test Case ID 349, `duplicate-page.spec.ts`): the manual test puts a
+picture, a recording, and a video on a page. The picture has a route: the image chooser is a
+web dialog now, and once a file is chosen it posts `imageGallery/imageGalleryResult` and then
+applies the answer with the page bundle's `changeImageByElement`, so `helpers/images.ts` does
+those two steps for a file the test supplies and never opens the picker. The recording and the
+video have none: the Talking Book tool records from a real microphone, and a video arrives only
+through the Sign Language tool's native file picker or camera, so those two sections of the
+manual test stay manual.
 
 ## Visual-regression cases stop at the first failed comparison
 
@@ -172,10 +187,10 @@ seen again 2026-09-02 (Test Case ID 72, `derivative-keeps-template-pages.spec.ts
 same drop hits `addPage`. Every action that saves the page first goes through
 `EditingModel.SaveThen`, whose "not in the right state" branch does nothing and still
 replies success, and the state machine is not yet in `Editing` when the page iframe already
-shows a `.bloom-page`. Two page adds in a row therefore lost the second one. The new
-`e2e/editingState` hook reports the state machine's state, and `waitForEditablePage` now
-waits for `Editing`, so the helpers no longer act early; the production endpoints still
-reply success to a request they dropped.
+shows a `.bloom-page`. Two page adds in a row therefore lost the second one.
+`waitForEditablePage` now polls the `e2e/isEditingPage` hook as well as the DOM, so the
+helpers no longer act early; the production endpoints still reply success to a request they
+dropped.
 
 ## Filling a text box directly leaves part of the old text behind
 
@@ -187,3 +202,20 @@ test can currently clear a box by any faster route. Fix direction: understand wh
 CKEditor does with a programmatic value change; a supported "set the text of this box"
 path would let long text be set at once.
 (Found 2026-09-01 automating Test Case ID 169.)
+
+## Every Bloom of one build shares one user.config, so a run inherits another Bloom's settings
+
+Bloom keeps its user settings (UI language, page zoom, and the rest of `Settings.Default`) in
+`%LOCALAPPDATA%\SIL\Bloom\<version>\user.config`, one file per build version, and `--e2e` does
+nothing to change that. So the Bloom a test launches starts from whatever the last Bloom of the
+same version saved, and saves its own changes for the next one. The e2e lock keeps suites from
+running at once, but a developer's own Bloom from a worktree of the same version is outside the
+lock and shares the file all the same, and so does the previous run of any suite.
+
+Seen 2026-09-02 (Test Case ID 356, `format-gear-positioning.spec.ts`): two runs found every
+factory template named in Turkish, then in French, and failed in `makeBookFromTemplate`, which
+matches the English title; a Bloom nobody in the suite had started was running at the time, and
+the file said `en` again a moment later. The same test has to restore the zoom it changes, because
+that setting is shared too. Fix direction: under `--e2e`, point the settings provider at a
+per-instance folder (a sibling of the temp collection would do), so a test's Bloom starts from
+defaults and its changes die with it.

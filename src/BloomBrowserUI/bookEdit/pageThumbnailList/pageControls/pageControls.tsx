@@ -112,6 +112,7 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
                         enabled={this.state.canDuplicateState}
                         l10nKey="EditTab.DuplicatePageButton"
                         l10nComment="Button that tells Bloom to duplicate the currently selected page."
+                        data-testid="duplicate-page-button"
                         clickApiEndpoint="edit/pageControls/duplicatePage"
                         mightNavigate={true}
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/duplicatePage.svg"

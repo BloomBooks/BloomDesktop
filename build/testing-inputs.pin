@@ -18,4 +18,4 @@
 # Format: one `key=value` per line. Blank lines and lines starting with # are ignored.
 
 repo=https://github.com/BloomBooks/bloom-testing-inputs.git
-commit=ffdd2e4d935f63c53da803983377005e18227f97
+commit=3b69cfb30892202c9564f58290fa05a00f80f2ee

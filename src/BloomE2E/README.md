@@ -87,8 +87,12 @@ real bug in the code under test; read the message and fix it rather than working
 
 ## Helpers
 
-- `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Note that Bloom hides the
-  Edit and Publish tabs until a book is selected.
+- `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`, and the zoom control's
+  `getZoom`, `setZoom`. Note that Bloom hides the Edit and Publish tabs until a book is selected.
+- `helpers/formatDialog.ts` — the format gear beside the text box being edited, and the Format
+  dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
+  `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
+  screen.
 - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
 - `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
 - `helpers/addPageDialog.ts` — open, read, scroll and close the real Add Page dialog, and add a

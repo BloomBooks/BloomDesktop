@@ -138,16 +138,16 @@ public class EditingStateMachine
     public bool Navigating => _currentState == State.Navigating;
 
     /// <summary>
-    /// The state we are in. Automation reads this to know when the model will accept an action
-    /// that saves the page first, which it does only when Editing (or NoPage); see ToSavePending.
-    /// </summary>
-    public State CurrentState => _currentState;
-
-    /// <summary>
     /// True if we have initiated saving a page, but not yet received the html and user styles
     /// from the browser.
     /// </summary>
     public bool SavePending => _currentState == State.SavePending;
+
+    /// <summary>
+    /// True if a page is loaded and being edited, so that a save (and anything that starts with
+    /// one, such as duplicating or deleting the page) will be acted on rather than ignored.
+    /// </summary>
+    public bool Editing => _currentState == State.Editing;
 
     /// <summary>
     /// Called to initiate navigation to a new page (or the same one again).

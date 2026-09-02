@@ -19,6 +19,16 @@ House rules:
 
 ---
 
+## 2026-09-02 — notion_automation.py needs Python, which not every dev machine has
+
+- **Cut:** `.github/skills/improve-test-automation-coverage/notion_automation.py` is the only way the
+  add-e2e-test flow reads or updates a Notion test card, and both it and the skill text assume `py`.
+  On a machine with no Python (only the Windows Store stub) every `show`/`set` fails, and an agent
+  ends up hand-porting the script to Node before it can read the card.
+- **Idea:** Rewrite it as `notion_automation.mjs`: the repo already requires Node and the script is
+  stdlib-only (`urllib` → `fetch`), so nothing else changes; update the skill text and worker brief.
+- **Context:** Hit while automating Test Case ID 356 on a machine with no Python.
+
 ## 2026-09-01 — VR suite: a slow first preview load fails its case via Playwright's default 30s goto timeout
 
 - **Cut:** The first case after Bloom starts pays for the first book-preview load (~33s observed
