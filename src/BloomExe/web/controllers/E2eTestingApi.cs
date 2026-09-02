@@ -26,13 +26,15 @@ namespace Bloom.web.controllers
         private readonly PublishApi _publishApi;
         private readonly CollectionModel _collectionModel;
         private readonly EditingModel _editingModel;
+        private readonly AccountApi _accountApi;
 
         public E2eTestingApi(
             CollectionSettings collectionSettings,
             BookSelection bookSelection,
             PublishApi publishApi,
             CollectionModel collectionModel,
-            EditingModel editingModel
+            EditingModel editingModel,
+            AccountApi accountApi
         )
         {
             _collectionSettings = collectionSettings;
@@ -40,6 +42,7 @@ namespace Bloom.web.controllers
             _publishApi = publishApi;
             _collectionModel = collectionModel;
             _editingModel = editingModel;
+            _accountApi = accountApi;
         }
 
         /// <summary>
@@ -122,6 +125,31 @@ namespace Bloom.web.controllers
                 HandleGetTemplatePages,
                 false // does not need the UI thread
             );
+
+            // POST body is the email Bloom should report as signed in to Bloom Library, or the
+            // empty string for signed out. A test needs this because the real login lives in
+            // machine-wide settings shared with the developer's own Bloom: signing out for real
+            // would sign the developer out, and signing in needs an external browser and real
+            // credentials. This only changes what Bloom REPORTS, so a test can check that the
+            // upload screen offers Upload only to a signed-in user; an actual upload still needs
+            // a real login. Read-only as far as Bloom's own state goes, so no UI thread.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "loginState",
+                HandleSetLoginState,
+                false // does not need the UI thread
+            );
+        }
+
+        /// <summary>
+        /// POST e2e/loginState: report the posted email (or empty for signed out) as the Bloom
+        /// Library login state, instead of the real one. See AccountApi.SetLoginStateForE2eTests.
+        /// </summary>
+        private void HandleSetLoginState(ApiRequest request)
+        {
+            // An empty body is how a test says "signed out", and that arrives as either "" or null
+            // depending on how the request was made, so both mean the same thing here.
+            _accountApi.SetLoginStateForE2eTests(request.GetPostStringOrNull() ?? "");
+            request.PostSucceeded();
         }
 
         /// <summary>

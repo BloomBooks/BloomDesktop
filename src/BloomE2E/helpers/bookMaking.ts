@@ -196,13 +196,16 @@ export function editablePageFrame(page: Page): Frame {
 }
 
 /**
- * Wait until the Edit tab is showing a page with at least one editable box in it, and Bloom has
- * finished loading that page and is editing it.
+ * Wait until the Edit tab is showing a page, and Bloom has finished loading that page and is
+ * editing it.
  *
  * The second half matters: while the Edit tab is still navigating to a page, Bloom silently ignores
  * any command that begins with saving it (duplicate, delete, jump elsewhere). The page can look
  * ready in the DOM a moment before Bloom is, so this asks Bloom as well, through the e2e hook that
  * reports its editing state.
+ *
+ * The DOM half looks for the page itself, not for a text box on it: a "Just an Image" page has no
+ * editable text at all, and waiting for some would hang on every picture-only book.
  */
 export async function waitForEditablePage(
     page: Page,
@@ -214,13 +217,13 @@ export async function waitForEditablePage(
                 const frame = page.frame({ name: "page" });
                 if (!frame) return 0;
                 return frame
-                    .locator(".bloom-editable")
+                    .locator(".bloom-page")
                     .count()
                     .catch(() => 0);
             },
             {
                 timeout: timeoutMs,
-                message: "The Edit tab never showed a page with editable text.",
+                message: "The Edit tab never showed a page.",
             },
         )
         .toBeGreaterThan(0);
@@ -313,6 +316,22 @@ export async function addPage(
         })
         .toBe(before + times);
     await waitForEditablePage(page);
+}
+
+/**
+ * The id of the page the Edit tab is showing, or undefined when it is not showing one. A test uses
+ * this to check where Bloom took it, e.g. that "Click to fix" on a missing title opened the cover.
+ */
+export async function getShownPageId(page: Page): Promise<string | undefined> {
+    const frame = page.frame({ name: "page" });
+    if (!frame) return undefined;
+    return (
+        (await frame
+            .locator(".bloom-page")
+            .first()
+            .getAttribute("id")
+            .catch(() => null)) ?? undefined
+    );
 }
 
 /**
