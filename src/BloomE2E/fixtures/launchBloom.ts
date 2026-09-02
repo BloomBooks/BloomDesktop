@@ -1,4 +1,4 @@
-// Launch a dedicated Bloom.exe on a throwaway copy of a test-input collection, discover the ports
+﻿// Launch a dedicated Bloom.exe on a throwaway copy of a test-input collection, discover the ports
 // it actually opened, and shut the whole thing down again.
 //
 // This is the CI-proven loop from src/BloomVisualRegressionTests/index.spec.ts, factored out so
@@ -170,6 +170,7 @@ interface IInstanceInfo {
     editableCollectionFolder?: string;
     processId?: number;
     cdpPort?: number;
+    executablePath?: string;
 }
 
 /**
@@ -563,14 +564,25 @@ export interface ILaunchedChooserBloom {
 }
 
 /**
- * The user.config file of the Bloom this suite launches: the most recently written one under
- * %LOCALAPPDATA%/SIL/Bloom. (The version-numbered folder between them changes with the branch,
- * and the developer has normally run Bloom recently enough that newest-written names the right
- * one; a wrong guess here only means the chooser test sees a different profile's MRU.)
+ * The user.config file of the Bloom this suite launches: the profile folder is named for the
+ * version in BloomExe.csproj, which is the version of any Bloom.exe built from this repo — the
+ * only kind findBloomExe returns. When that folder has no user.config yet (a machine that never
+ * ran this Bloom version), fall back to the most recently written profile, and when there is
+ * none at all, there is nothing to back up: the MRU is effectively already empty.
  */
 function findUserConfig(): string | undefined {
     const root = Path.join(process.env.LOCALAPPDATA ?? "", "SIL", "Bloom");
     if (!process.env.LOCALAPPDATA || !fs.existsSync(root)) return undefined;
+    const versionMatch = fs
+        .readFileSync(
+            Path.join(repoRoot, "src", "BloomExe", "BloomExe.csproj"),
+            "utf8",
+        )
+        .match(/<Version>([^<]+)<\/Version>/);
+    if (versionMatch) {
+        const versioned = Path.join(root, versionMatch[1], "user.config");
+        if (fs.existsSync(versioned)) return versioned;
+    }
     const configs = fs
         .readdirSync(root)
         .map((d) => Path.join(root, d, "user.config"))
@@ -584,14 +596,48 @@ function findUserConfig(): string | undefined {
 }
 
 /**
+ * Put the three settings the chooser test disturbs - the MRU list, the UI language, and the
+ * unapproved-translations flag - back to what the original file had, while keeping whatever
+ * ELSE the current file says. Bloom rewrites the whole file on many occasions, and the
+ * developer's own Bloom may legitimately save settings while the test runs; restoring the
+ * original bytes wholesale would silently discard those concurrent changes.
+ * Falls back to the full original when the surgical splice cannot find its landmarks.
+ */
+function restoreDisturbedSettings(
+    userConfig: string,
+    originalText: string,
+): void {
+    const settingBlock = (name: string, text: string) =>
+        text.match(
+            new RegExp(`<setting name="${name}"[\\s\\S]*?</setting>`),
+        )?.[0];
+    let current = fs.readFileSync(userConfig, "utf8");
+    let spliced = 0;
+    for (const name of [
+        "MruProjects",
+        "UserInterfaceLanguage",
+        "ShowUnapprovedLocalizations",
+    ]) {
+        const original = settingBlock(name, originalText);
+        const currentBlock = settingBlock(name, current);
+        if (original && currentBlock) {
+            current = current.replace(currentBlock, original);
+            spliced++;
+        }
+    }
+    fs.writeFileSync(userConfig, spliced > 0 ? current : originalText);
+}
+
+/**
  * Launch Bloom with NO collection, so it opens the Choose Collection dialog — the only way to
  * exercise that dialog's controls, since an open collection auto-reopens at startup.
  *
  * Reaching the chooser requires an empty MRU list, and the MRU lives in the developer's
- * machine-wide user.config. So this backs the file up byte-for-byte, blanks the MRU, launches,
- * and stop() restores the original bytes after Bloom is dead — which also reverts every setting
- * the test changed (UI language included), since Bloom saves them all to the same file. A
- * process-exit hook restores it even when the run is aborted.
+ * machine-wide user.config. So this backs the file up, blanks the MRU (and normalizes the two
+ * UI-language settings the tests assume), and after Bloom is dead stop() splices those settings
+ * back into the file as they originally were — only those, so any concurrent saves from the
+ * developer's own Bloom survive (see restoreDisturbedSettings). A process-exit hook does the
+ * same when the run is aborted.
  *
  * The returned collectionToOpen names a collection created in a temp folder for this test, so
  * the test can leave the chooser by POSTing workspace/openCollection (the same call a click on
@@ -610,21 +656,20 @@ export async function launchBloomIntoChooser(
     // Back up the developer's settings file, then blank the MRU (so Bloom opens the chooser
     // rather than the last collection) and normalize the two UI-language settings the test's
     // assertions assume. <Path> elements occur only inside the MruProjects setting, so the
-    // text-level removal is safe; the byte-for-byte restore in stop() brings back the
-    // developer's MRU, language, and everything else exactly as they were.
+    // text-level removal is safe; stop() splices the developer's MRU and language settings
+    // back into the file exactly as they were.
     const userConfig = findUserConfig();
     const originalUserConfig = userConfig
-        ? fs.readFileSync(userConfig)
+        ? fs.readFileSync(userConfig, "utf8")
         : undefined;
     const restoreUserConfig = () => {
         if (userConfig && originalUserConfig)
-            fs.writeFileSync(userConfig, originalUserConfig);
+            restoreDisturbedSettings(userConfig, originalUserConfig);
     };
     if (userConfig && originalUserConfig) {
         fs.writeFileSync(
             userConfig,
             originalUserConfig
-                .toString("utf8")
                 .replace(/<Path>[\s\S]*?<\/Path>\s*/g, "")
                 .replace(
                     /(<setting name="UserInterfaceLanguage"[^>]*>\s*<value>)[^<]*(<\/value>)/,
@@ -663,9 +708,17 @@ export async function launchBloomIntoChooser(
         for (const httpPort of CANDIDATE_PORTS) {
             const info = await readInstanceInfo(httpPort);
             if (!info?.processId || !info.cdpPort) continue;
+            // Ours is the process we spawned - or, because Bloom can hand off to a successor
+            // process during startup, an instance from the SAME exe with no collection open,
+            // once the spawned process has exited. Requiring our exe path keeps a failed
+            // startup from adopting (and later killing) some unrelated Bloom that happens to
+            // be sitting at its own chooser.
             const isOurs =
                 info.processId === bloomProcess.pid ||
-                (exitStatus !== undefined && !info.editableCollectionFolder);
+                (exitStatus !== undefined &&
+                    !info.editableCollectionFolder &&
+                    !!info.executablePath &&
+                    samePath(info.executablePath, exe));
             if (isOurs) {
                 found = {
                     httpPort,

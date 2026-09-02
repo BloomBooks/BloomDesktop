@@ -3,7 +3,7 @@
 // repeatedly" (Test Case ID 69).
 //
 // The dialog only really matters when Bloom starts with no collection to reopen: the test
-// blanks the MRU list (backed up and restored byte-for-byte by launchBloomIntoChooser), starts
+// blanks the MRU list (backed up and restored by launchBloomIntoChooser), starts
 // Bloom, and lands in the chooser. There it operates the real language menu and verifies the
 // dialog's own strings change - the <h1> title (useL10n), the Create New Collection button (a
 // BloomButton LocalizableElement), and the language button's label (C#-localized data) - then
@@ -71,8 +71,8 @@ test("change UI language in the Choose Collection dialog [Test Case ID 69]", asy
         });
     } finally {
         await connection.browser.close().catch(() => undefined);
-        // Kills Bloom and restores the developer's settings file byte-for-byte, reverting the
-        // MRU blanking and the language this test set.
+        // Kills Bloom and splices the developer's MRU and language settings back into the
+        // settings file, reverting the MRU blanking and the language this test set.
         await launched.stop();
     }
 });
