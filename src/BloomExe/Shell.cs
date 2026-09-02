@@ -86,15 +86,25 @@ namespace Bloom
         public static Rectangle GetHeadlessBounds()
         {
             var size = GetAutomationScreen().WorkingArea.Size;
-            // -32000 is as far left as a window may go: Windows still places a window there, and
-            // anything beyond about -32768 runs into the 16-bit coordinates that some of the older
-            // window messages still carry. Far enough left of every monitor that nothing shows,
-            // and unlike a margin computed from the screen layout it does not depend on Windows
-            // and this process agreeing about how many pixels wide a monitor is (they disagree
-            // when the monitors have different scale factors). No monitor layout reaches this far
-            // left, so there is nothing to compute from the layout at all.
-            const int farLeftOfEveryScreen = -32000;
-            return new Rectangle(farLeftOfEveryScreen, 0, size.Width, size.Height);
+            // Two bounds, and the window has to respect both.
+            //
+            // The first is the leftmost monitor: the window's right edge has to be left of it, or
+            // part of the window shows. The 1000-pixel cushion is there because Windows and this
+            // process do not always agree about how many pixels wide a monitor is, which is what
+            // happens when the monitors have different scale factors.
+            //
+            // The second is -32000, as far left as a window may go: Windows still places a window
+            // there, and anything beyond about -32768 runs into the 16-bit coordinates that some
+            // of the older window messages still carry.
+            //
+            // On any real layout the first bound gives a few thousand pixels to the left, well
+            // inside the second. A leftward run of monitors more than about 30000 pixels wide
+            // would need a position that satisfies neither, and then the limit wins: a window at
+            // a coordinate Windows will not honour is worse than one that overlaps a monitor.
+            const int farLeftWindowsAllows = -32000;
+            var leftmostX = Screen.AllScreens.Min(screen => screen.Bounds.Left);
+            var x = Math.Max(farLeftWindowsAllows, leftmostX - size.Width - 1000);
+            return new Rectangle(x, 0, size.Width, size.Height);
         }
 
         public Shell(
