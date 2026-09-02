@@ -9,6 +9,12 @@
 // (AUTOMATION-DEBT.md: "Toolbox tool registration is a side effect of toolboxBootstrap".)
 
 import { ITool, ToolBox, getMasterToolList } from "./toolbox";
+import {
+    kCanvasToolId,
+    kGameToolId,
+    kMotionToolId,
+    kMusicToolId,
+} from "./toolIds";
 import { DecodableReaderTool } from "./readers/decodableReader/decodableReaderTool";
 import { LeveledReaderTool } from "./readers/leveledReader/leveledReaderTool";
 import { MusicToolAdaptor } from "./music/musicToolControls";
@@ -25,21 +31,27 @@ import { SettingsTool } from "./settings/settingsTool";
  * Make the one instance of each toolbox class and register it with the master toolbox. The
  * imports above also serve to ensure that each tool's code is part of the bundle.
  *
- * Calling this twice registers nothing the second time. See registerOnce for why the check is
- * per tool and reads the shared master list.
+ * Calling this twice registers nothing the second time, and makes no second instance either. See
+ * registerOnce for both.
  */
 export function registerAllToolboxTools(): void {
-    registerOnce(new DecodableReaderTool());
-    registerOnce(new LeveledReaderTool());
-    registerOnce(new MusicToolAdaptor());
-    registerOnce(new ImpairmentVisualizerAdaptor());
-    registerOnce(new MotionTool());
-    registerOnce(new TalkingBookTool());
-    registerOnce(new SignLanguageTool());
-    registerOnce(new ImageDescriptionAdapter());
-    registerOnce(new CanvasTool());
-    registerOnce(new GameTool());
-    registerOnce(new SettingsTool());
+    registerOnce("decodableReader", () => new DecodableReaderTool());
+    registerOnce("leveledReader", () => new LeveledReaderTool());
+    registerOnce(kMusicToolId, () => new MusicToolAdaptor());
+    registerOnce(
+        "impairmentVisualizer",
+        () => new ImpairmentVisualizerAdaptor(),
+    );
+    registerOnce(kMotionToolId, () => new MotionTool());
+    registerOnce("talkingBook", () => new TalkingBookTool());
+    registerOnce(SignLanguageTool.kToolID, () => new SignLanguageTool());
+    registerOnce(
+        ImageDescriptionAdapter.kToolID,
+        () => new ImageDescriptionAdapter(),
+    );
+    registerOnce(kCanvasToolId, () => new CanvasTool());
+    registerOnce(kGameToolId, () => new GameTool());
+    registerOnce("settings", () => new SettingsTool());
 }
 
 /**
@@ -54,9 +66,24 @@ export function registerAllToolboxTools(): void {
  * The check is per tool, not "is the list empty": a list holding some other tool is not evidence
  * that these eleven are registered, and skipping all of them on that evidence would leave the
  * toolbox missing every section.
+ *
+ * The caller passes the id and a factory rather than a tool, so that a tool the list already has
+ * is never constructed. CanvasTool and GameTool each point a static field at the instance being
+ * constructed (CanvasTool.theOneCanvasTool, GameTool.theOneDragActivityTool), so constructing one
+ * only to discard it as a duplicate leaves every reader of that field holding a tool the toolbox
+ * does not know about, and a canvas refresh or a game's state then goes nowhere.
  */
-function registerOnce(tool: ITool): void {
-    if (getMasterToolList().some((registered) => registered.id() === tool.id()))
+function registerOnce(id: string, makeTool: () => ITool): void {
+    if (getMasterToolList().some((registered) => registered.id() === id))
         return;
+    const tool = makeTool();
+    // The id above has to be the tool's own, or the duplicate check reads the wrong entry and a
+    // second call registers the tool again. Some of these tools name their id in a constant and
+    // some in a string literal, so nothing but this check ties the two together.
+    if (tool.id() !== id)
+        throw new Error(
+            `registerAllToolboxTools names the tool "${id}", but the tool calls itself ` +
+                `"${tool.id()}".`,
+        );
     ToolBox.registerTool(tool);
 }
