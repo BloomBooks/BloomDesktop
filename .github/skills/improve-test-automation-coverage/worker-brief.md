@@ -94,8 +94,7 @@ Use the task id and dispatch id from the dispatch preamble at the top of your pr
 ### 3. Implement the test
 
 Follow the add-e2e-test skill. Put `[Test Case ID {{TEST_CASE_ID}}]` in the test title. Prefer
-`collectionSpec` (the test builds its own collection). Cover every to_do step you can; if you
-cover only part, remember which part for the `Partial` note later.
+`collectionSpec` (the test builds its own collection). If you cannot implement each step, that is a problem. If a substantial portion can be automated and there is a clean split, then the notion test must be split into manual vs. automated. Otherwise,  you can just fail the implementation of this test and set the Automation property to "Has automation problems".
 
 ### 4. Run it through the lock, three times
 
