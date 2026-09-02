@@ -27,8 +27,9 @@ namespace Bloom.web.controllers
         private readonly ITeamCollectionManager _tcManager;
 
         // What an e2e test has told us to report as the login state, or null to report the real
-        // one. See SetLoginStateForE2eTests.
-        private string _e2eLoginOverride;
+        // one. See SetLoginStateForE2eTests. Volatile because the endpoint that sets it and the
+        // one that reads it run on different server threads.
+        private volatile string _e2eLoginOverride;
 
         // Whether we still owe the user the "please sign in" invitation described in
         // HandleSignInInvitationNeeded. It is used up once the front end reports having shown the
@@ -186,9 +187,10 @@ namespace Bloom.web.controllers
             _e2eLoginOverride ?? (_client.LoggedIn ? Settings.Default.WebUserId : "");
 
         /// <summary>
-        /// Make Bloom report the given login state (an email, or the empty string for signed out)
-        /// without touching the real Bloom Library login. Called only by the e2e test hook
-        /// (e2e/loginState), which exists only in e2e test mode.
+        /// Make Bloom report a pretended login state without touching the real Bloom Library
+        /// login: an email to report as signed in, the empty string to report as signed out, or
+        /// null to stop pretending and report the real state again. Called only by the e2e test
+        /// hook (e2e/loginState), which exists only in e2e test mode.
         ///
         /// A test needs this because the real login lives in machine-wide settings shared with the
         /// developer's own Bloom: signing out for real would sign the developer out, and signing in
@@ -196,9 +198,9 @@ namespace Bloom.web.controllers
         /// tested against a pretended state instead. Everything downstream of the actual upload
         /// still uses the real client, so nothing can be uploaded with a pretended login.
         /// </summary>
-        internal void SetLoginStateForE2eTests(string email)
+        internal void SetLoginStateForE2eTests(string emailOrNullToStopPretending)
         {
-            _e2eLoginOverride = email;
+            _e2eLoginOverride = emailOrNullToStopPretending;
             BroadcastLoginState();
         }
 

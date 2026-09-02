@@ -33,7 +33,8 @@ import {
     expectMissingRequirements,
     expectUploadStepButtons,
     openPublishToWeb,
-    setPretendLoginState,
+    pretendLoginState,
+    stopPretendingAboutLogin,
 } from "../helpers/libraryPublish";
 import { switchTab, waitForActiveTab } from "../helpers/workspace";
 
@@ -198,7 +199,7 @@ test.describe("the items a book needs before it can be uploaded", () => {
     }) => {
         // Nobody signed in. Until the agreements are ticked the Upload step is not even open, so
         // there is nothing to upload with and nothing to sign in with.
-        await setPretendLoginState(page, undefined);
+        await pretendLoginState(page, "");
         await expectUploadStepButtons(
             page,
             { signIn: "absent", uploadBook: "absent", signOut: "absent" },
@@ -215,14 +216,14 @@ test.describe("the items a book needs before it can be uploaded", () => {
         );
 
         // Signed in, everything else being ready: now, and only now, the book can be uploaded.
-        await setPretendLoginState(page, "e2e-tester@example.com");
+        await pretendLoginState(page, "e2e-tester@example.com");
         await expectUploadStepButtons(
             page,
             { signIn: "absent", uploadBook: "enabled", signOut: "enabled" },
             "A signed-in user with the agreements ticked was not offered the Upload Book button.",
         );
 
-        // Leave the pretended login as we found it, so nothing later in this Bloom sees it.
-        await setPretendLoginState(page, undefined);
+        // Stop pretending, so the rest of this Bloom sees the machine's real login state again.
+        await stopPretendingAboutLogin(page);
     });
 });

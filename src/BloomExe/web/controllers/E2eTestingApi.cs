@@ -126,13 +126,13 @@ namespace Bloom.web.controllers
                 false // does not need the UI thread
             );
 
-            // POST body is the email Bloom should report as signed in to Bloom Library, or the
-            // empty string for signed out. A test needs this because the real login lives in
-            // machine-wide settings shared with the developer's own Bloom: signing out for real
-            // would sign the developer out, and signing in needs an external browser and real
-            // credentials. This only changes what Bloom REPORTS, so a test can check that the
-            // upload screen offers Upload only to a signed-in user; an actual upload still needs
-            // a real login. Read-only as far as Bloom's own state goes, so no UI thread.
+            // POST {"email": ...}: which Bloom Library login state Bloom should REPORT. A test
+            // needs this because the real login lives in machine-wide settings shared with the
+            // developer's own Bloom: signing out for real would sign the developer out, and
+            // signing in needs an external browser and real credentials. Only the report changes,
+            // so a test can check that the upload screen offers Upload only to a signed-in user;
+            // an actual upload still needs a real login. It runs off the UI thread like the rest
+            // of the login state's plumbing (see AccountApi's own broadcasts).
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "loginState",
                 HandleSetLoginState,
@@ -141,14 +141,23 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// POST e2e/loginState: report the posted email (or empty for signed out) as the Bloom
-        /// Library login state, instead of the real one. See AccountApi.SetLoginStateForE2eTests.
+        /// What POST e2e/loginState takes: the email to report as signed in, the empty string to
+        /// report as signed out, or null (an absent member) to stop pretending altogether and
+        /// report the real login again. The three have to be distinguishable, so this is JSON
+        /// rather than a bare string, in which "signed out" and "no pretense" would both be empty.
+        /// </summary>
+        private class E2eLoginState
+        {
+            public string Email;
+        }
+
+        /// <summary>
+        /// POST e2e/loginState: report a pretended Bloom Library login state instead of the real
+        /// one. See AccountApi.SetLoginStateForE2eTests.
         /// </summary>
         private void HandleSetLoginState(ApiRequest request)
         {
-            // An empty body is how a test says "signed out", and that arrives as either "" or null
-            // depending on how the request was made, so both mean the same thing here.
-            _accountApi.SetLoginStateForE2eTests(request.GetPostStringOrNull() ?? "");
+            _accountApi.SetLoginStateForE2eTests(request.RequiredPostObject<E2eLoginState>().Email);
             request.PostSucceeded();
         }
 

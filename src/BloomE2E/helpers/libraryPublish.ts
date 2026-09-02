@@ -174,6 +174,17 @@ export async function getUploadStepButtons(
     };
 }
 
+/**
+ * The three button states as one comparable line, in a fixed order, so that comparing two of them
+ * cannot depend on the order a caller happened to write the fields in.
+ */
+function describeUploadStepButtons(buttons: IUploadStepButtons): string {
+    return (
+        `signIn: ${buttons.signIn}, uploadBook: ${buttons.uploadBook}, ` +
+        `signOut: ${buttons.signOut}`
+    );
+}
+
 /** Wait until the Upload step is offering exactly these buttons in these states. */
 export async function expectUploadStepButtons(
     page: Page,
@@ -181,16 +192,17 @@ export async function expectUploadStepButtons(
     message: string,
 ): Promise<void> {
     await expect
-        .poll(async () => JSON.stringify(await getUploadStepButtons(page)), {
-            timeout: 30000,
-            message,
-        })
-        .toBe(JSON.stringify(expected));
+        .poll(
+            async () =>
+                describeUploadStepButtons(await getUploadStepButtons(page)),
+            { timeout: 30000, message },
+        )
+        .toBe(describeUploadStepButtons(expected));
 }
 
 /**
- * Make Bloom report that this email is signed in to Bloom Library, or (with no email) that nobody
- * is, without touching the real login.
+ * Make Bloom report that this email is signed in to Bloom Library, or — with the empty string —
+ * that nobody is, without touching the real login. Undo it with stopPretendingAboutLogin.
  *
  * A test cannot use the real thing in either direction: signing in opens an external browser and
  * needs real credentials, and signing out would sign the developer's own Bloom out, because the
@@ -198,9 +210,28 @@ export async function expectUploadStepButtons(
  * to test the gate — the upload screen offers Upload only to a signed-in user — while an actual
  * upload would still need a real login. See AUTOMATION-DEBT.md.
  */
-export async function setPretendLoginState(
+export async function pretendLoginState(
     page: Page,
-    email?: string,
+    email: string,
 ): Promise<void> {
-    await apiPost(page, "e2e/loginState", email ?? "", "text/plain");
+    await postLoginState(page, email);
+}
+
+/**
+ * Stop pretending: Bloom reports the real login state again. A test that pretended should end
+ * this way, because the Bloom it is driving reads the developer's own machine-wide login, and the
+ * top bar's account control shows whatever this reports.
+ */
+export async function stopPretendingAboutLogin(page: Page): Promise<void> {
+    await postLoginState(page, null);
+}
+
+/** Post one of the hook's three states: an email, "" for signed out, or null for "stop pretending". */
+async function postLoginState(page: Page, email: string | null): Promise<void> {
+    await apiPost(
+        page,
+        "e2e/loginState",
+        JSON.stringify({ email }),
+        "application/json",
+    );
 }
