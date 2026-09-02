@@ -1874,11 +1874,22 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        const rule = this.getStyleRule(false);
+        // Like the other Characters-tab controls (bold, size, spacing...): the color always goes
+        // into the language-specific rule, and when the box being edited is in the collection's
+        // first language it goes into the language-independent rule as well, so that the other
+        // languages of the style pick it up too (BL-16803). Font family is the one deliberate
+        // exception to that pattern, because a font suits a script, not a style.
+        let rule = this.getStyleRule(false);
         if (rule != null) {
             rule.style.setProperty("color", color);
-            this.cleanupAfterStyleChange();
         }
+        if (this.shouldSetDefaultRule()) {
+            rule = this.getStyleRule(true);
+            if (rule != null) {
+                rule.style.setProperty("color", color);
+            }
+        }
+        this.cleanupAfterStyleChange();
         this.setColorButtonColor("colorSelectButton", color);
     }
 

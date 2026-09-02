@@ -496,6 +496,76 @@ describe("StyleEditor", () => {
         }
     });
 
+    // The Format dialog's Color control follows the same rule as bold, size and spacing: a change
+    // made on a box in the collection's first language is for the style as a whole, so it goes
+    // into the language-independent rule too (BL-16803). Font family is the deliberate exception.
+    it("changeColor on a first-language box writes the color to the language-specific and the language-independent rules", () => {
+        (globalThis as any).GetSettings = () => ({
+            languageForNewTextBoxes: "xyz",
+        });
+        try {
+            $("body").append(
+                "<div id='testTarget' class='foo-style' lang='xyz'></div>" +
+                    "<div id='colorSelectButton'></div>",
+            );
+            const editor = new StyleEditor(
+                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+            );
+            editor.boxBeingEdited = $("#testTarget").get(0);
+            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+                () => {},
+            );
+            // sanity check: nothing has written a color yet
+            expect(GetRuleMatchingSelector("color:")).toBeNull();
+
+            editor.changeColor("rgb(255, 22, 22)");
+
+            expect(
+                GetRuleMatchingSelector('.foo-style[lang="xyz"]')?.cssText,
+            ).toContain("color: rgb(255, 22, 22)");
+            expect(GetRuleMatchingSelector(".foo-style {")?.cssText).toContain(
+                "color: rgb(255, 22, 22)",
+            );
+            expect(
+                $("#colorSelectButton").attr("style"),
+                "the dialog's color button shows the new color",
+            ).toContain("rgb(255, 22, 22)");
+        } finally {
+            delete (globalThis as any).GetSettings;
+        }
+    });
+
+    it("changeColor on a box in another language writes the color only to that language's rule", () => {
+        (globalThis as any).GetSettings = () => ({
+            languageForNewTextBoxes: "xyz",
+        });
+        try {
+            $("body").append(
+                "<div id='testTarget' class='foo-style' lang='abc'></div>" +
+                    "<div id='colorSelectButton'></div>",
+            );
+            const editor = new StyleEditor(
+                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+            );
+            editor.boxBeingEdited = $("#testTarget").get(0);
+            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+                () => {},
+            );
+
+            editor.changeColor("rgb(255, 22, 22)");
+
+            expect(
+                GetRuleMatchingSelector('.foo-style[lang="abc"]')?.cssText,
+            ).toContain("color: rgb(255, 22, 22)");
+            expect(
+                GetRuleMatchingSelector(".foo-style {"),
+                "no language-independent rule should be written for a non-L1 box",
+            ).toBeNull();
+        } finally {
+            delete (globalThis as any).GetSettings;
+        }
+    });
+
     it("UpdateControlsToReflectAppliedStyle passes the real highlight colors to changeHiliteProps", () => {
         $("body").append(
             "<div id='testTarget' class='foo-style' lang='xyz'></div>",
