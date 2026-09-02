@@ -2024,10 +2024,32 @@ namespace Bloom
             string errorFilePath = FileException.GetFilePathIfPresent(error);
             // We want to skip over exceptions thrown by Autofac.
             originalError = MiscUtils.UnwrapUntilInterestingException(originalError);
+            // The FileException is usually inside the Autofac wrappers, not outside them
+            // (CollectionSettings is built by the project container), so look again now that
+            // they are gone. Without this the report says only "FileException" and the cause,
+            // which FileException deliberately keeps out of InnerException, is lost. (BL-16802)
+            if (originalError is FileException fileError)
+            {
+                errorFilePath = errorFilePath ?? fileError.FilePath;
+                originalError = fileError.OriginalException ?? originalError;
+            }
             Logger.WriteError(
                 $"*** Error loading collection {Path.GetFileNameWithoutExtension(projectPath)}, on filepath: {errorFilePath}",
                 originalError
             );
+
+            if (RunningE2eTests)
+            {
+                // No human is present during an e2e run to dismiss the dialog below, and each
+                // occurrence would file an error report. Put the cause where the test harness
+                // captures Bloom's output, then quit: without a collection the only thing left
+                // would be the collection chooser, which the harness cannot drive either, and a
+                // Bloom that exits before serving the collection is what fails the test. (BL-16802)
+                Console.Error.WriteLine(
+                    $"Error loading collection (e2e): {errorFilePath}{Environment.NewLine}{originalError}"
+                );
+                Environment.Exit(1);
+            }
 
             // Normally, NotifyUserOfProblem would take an exception and do this special-exception processing for us.
             // But in this case, we don't pass the exception to NotifyUserOfProblem because we may subsequently end up
