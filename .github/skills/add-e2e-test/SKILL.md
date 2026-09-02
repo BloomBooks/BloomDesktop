@@ -283,11 +283,12 @@ Dependencies point down only:
    header and the CDP endpoint does not answer on `localhost`) and `helpers/realClick.ts`
    (`realClick`, `realClickAt`). Tests do not import these; surface modules wrap them.
 2. **One module per Bloom surface**, named after the surface:
-   - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Bloom hides the
-     Edit and Publish tabs until a book is selected.
+   - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`, and the zoom
+     control's `getZoom`, `setZoom`. Bloom hides the Edit and Publish tabs until a book is
+     selected.
    - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
    - `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `findBookFolder`,
-     `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`, `typeInGroup`,
+     `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`, `clickInGroup`, `typeInGroup`,
      `waitForEditablePage`, `editablePageFrame`. A book made from a template starts with
      front and back matter only, so a test that needs content calls `addPage`. Bloom writes
      a page only when the book leaves it, so `goToPage` is also how a test saves what it
@@ -296,6 +297,10 @@ Dependencies point down only:
      `movePageToSlotOf`, and the API route `duplicateCurrentPage` for setup.
    - `helpers/images.ts` — `chooseImageFile` (setup, no picker), `cropImage`,
      `getImagePlacement`.
+   - `helpers/formatDialog.ts` — the format gear and the Format dialog it opens:
+     `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
+     `getFormatDialogPlacement`, `scrollFormatGearIntoView`, `scrollFormatGearPartlyIntoView`,
+     `zoomUntilFormatGearIsOutOfView`.
    - `helpers/publish.ts` — `openPublishDestination`, `getTextLanguageRows`,
      `expectTextLanguageRows`, `clickTextLanguage`, `showBloomPubPreview`,
      `getPreviewLanguages`, `getLanguagesInBook`, `getTooltipForLanguage`.

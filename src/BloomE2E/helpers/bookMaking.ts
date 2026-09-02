@@ -8,7 +8,7 @@
 // reliable path through Bloom's API wherever there is one, per the UI-vs-API policy in README.md.
 // The text itself goes in through the real editor, because there is no API that writes it.
 
-import { expect, type Frame, type Page } from "@playwright/test";
+import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiGet, apiGetJson, apiPost } from "./api";
 import { waitForCollectionReady } from "./collection";
 
@@ -348,6 +348,30 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
 }
 
 /**
+ * Click in one language's box of one translation group on the page being shown, so that it has the
+ * focus, the way a person starts editing it. `groupSelector` picks the group, e.g. ".bookTitle" for
+ * the cover title. Waits until the box has the focus, and returns it.
+ *
+ * Focusing a box is also what makes Bloom show the box's format gear (see helpers/formatDialog.ts).
+ */
+export async function clickInGroup(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<Locator> {
+    const box = editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
+        .first();
+    await box.waitFor({ state: "visible", timeout: 30000 });
+    await box.click();
+    await expect(
+        box,
+        `Clicking in the "${languageTag}" box of "${groupSelector}" did not give it the focus.`,
+    ).toBeFocused({ timeout: 15000 });
+    return box;
+}
+
+/**
  * Type text into one language's box of one translation group on the page being shown, the way a
  * person does. `groupSelector` picks the group, e.g. ".bookTitle" for the cover title.
  *
@@ -360,13 +384,9 @@ export async function typeInGroup(
     languageTag: string,
     text: string,
 ): Promise<void> {
-    const box = editablePageFrame(page)
-        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
-        .first();
-    await box.waitFor({ state: "visible", timeout: 30000 });
     // Click in, select what is there, and type over it. A box here is a CKEditor surface, and
     // filling it directly leaves part of the old text behind.
-    await box.click();
+    const box = await clickInGroup(page, groupSelector, languageTag);
     await box.press("Control+a");
     await box.press("Delete");
     if (text) await box.pressSequentially(text);

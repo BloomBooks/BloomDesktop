@@ -225,3 +225,20 @@ cases only, and the Notion case stays Partial. Fix direction: decide whether cro
 copy is a feature we want; if it is, put the page on the real clipboard, and give the launch
 fixture a way to run a second instance.
 (Found 2026-09-01 while automating Test Case ID 348.)
+
+## Every Bloom of one build shares one user.config, so a run inherits another Bloom's settings
+
+Bloom keeps its user settings (UI language, page zoom, and the rest of `Settings.Default`) in
+`%LOCALAPPDATA%\SIL\Bloom\<version>\user.config`, one file per build version, and `--e2e` does
+nothing to change that. So the Bloom a test launches starts from whatever the last Bloom of the
+same version saved, and saves its own changes for the next one. The e2e lock keeps suites from
+running at once, but a developer's own Bloom from a worktree of the same version is outside the
+lock and shares the file all the same, and so does the previous run of any suite.
+
+Seen 2026-09-02 (Test Case ID 356, `format-gear-positioning.spec.ts`): two runs found every
+factory template named in Turkish, then in French, and failed in `makeBookFromTemplate`, which
+matches the English title; a Bloom nobody in the suite had started was running at the time, and
+the file said `en` again a moment later. The same test has to restore the zoom it changes, because
+that setting is shared too. Fix direction: under `--e2e`, point the settings provider at a
+per-instance folder (a sibling of the temp collection would do), so a test's Bloom starts from
+defaults and its changes die with it.
