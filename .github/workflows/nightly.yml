@@ -1,28 +1,28 @@
 # Nightly build + full test run of everything on master.
 #
 # This is a health check, not a release: it builds the front-end and the C# solution and
-# runs all three test suites — front-end vitest, C# NUnit, and the visual regression suite —
-# but produces no installer, does no signing, and publishes nothing. It exists to catch
-# breakage that the PR checks miss — e.g. tests excluded from PR runs, or rot from
-# dependency/runner drift — on a predictable cadence.
+# runs all four test suites — front-end vitest, C# NUnit, the BloomE2E suite and the visual
+# regression suite — but produces no installer, does no signing, and publishes nothing. It
+# exists to catch breakage that the PR checks miss — e.g. tests excluded from PR runs, or rot
+# from dependency/runner drift — on a predictable cadence.
 #
-# Each suite publishes its own check run / job-summary section, so the commit shows three
+# Each suite publishes its own check run / job-summary section, so the commit shows four
 # independent results rather than one merged total. See the "Test reports" steps at the end.
 #
 # Schedule: 04:00 UTC daily. GitHub cron is always UTC (== GMT, no DST), so this is a
 # literal 4am GMT. Note GitHub may delay scheduled runs during peak load; exact timing is
 # best-effort. Can also be run on demand via the Actions "Run workflow" button.
 #
-# A manual run can pick which of the three suites to run; all three are ticked by default, so the
+# A manual run can pick which of the four suites to run; all four are ticked by default, so the
 # default manual run matches the scheduled one. Unticking the ones you don't need is how to iterate
 # quickly when chasing a failure in a single suite: the C# suite alone is ~9 minutes of a ~22-minute
 # run, so dropping it takes an attempt to ~12. That was added while hunting the intermittent
 # visual-regression hang in BL-16612.
 #
 # The two BUILDS always run and are not selectable, because they are prerequisites rather than
-# suites: the C# build needs the front-end build's output, and the visual-regression suite drives a
-# real Bloom.exe, so it needs both. Unticking every suite is therefore a valid "does it still build"
-# check.
+# suites: the C# build needs the front-end build's output, and the two suites that drive a real
+# Bloom.exe (BloomE2E and visual regression) need both. Unticking every suite is therefore a valid
+# "does it still build" check.
 #
 # Note this is a selection, not a reordering. Reordering the steps so a chosen suite runs earlier
 # would be safe on paper -- nothing gates on either test suite except its own publish step -- but the
@@ -44,6 +44,10 @@ on:
                 default: true
             run_csharp_tests:
                 description: "C# suite (NUnit) - the slowest, ~9 min"
+                type: boolean
+                default: true
+            run_e2e_tests:
+                description: "BloomE2E suite (clicks through a real Bloom)"
                 type: boolean
                 default: true
             run_visual_regression:
@@ -70,11 +74,12 @@ jobs:
             # VersionNumbers requires a 4-part BUILD_NUMBER; nightlies never publish, so a
             # throwaway value that just identifies the run is fine.
             BUILD_NUMBER: 0.0.${{ github.run_number }}.0
-            # Which suites this run should do. A scheduled run always does all three; a manual run does
+            # Which suites this run should do. A scheduled run always does all of them; a manual run does
             # whichever boxes were ticked. Resolved once here so the step conditions stay readable, and
             # compared as strings at the point of use because env values are always strings.
             RUN_FRONTEND_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_frontend_tests }}
             RUN_CSHARP_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_csharp_tests }}
+            RUN_E2E_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e_tests }}
             RUN_VISUAL_REGRESSION: ${{ github.event_name != 'workflow_dispatch' || inputs.run_visual_regression }}
 
         steps:
@@ -103,6 +108,7 @@ jobs:
                   cache-dependency-path: |
                       src/BloomBrowserUI/pnpm-lock.yaml
                       src/content/pnpm-lock.yaml
+                      src/BloomE2E/pnpm-lock.yaml
                       src/BloomVisualRegressionTests/pnpm-lock.yaml
 
             # ----- Dependencies (mirrors init.sh) -----
@@ -111,15 +117,16 @@ jobs:
               shell: bash
               run: ./build/getDependencies-windows.sh
 
-            # The books and reference screenshots the visual-regression suite renders live in
+            # The prepared collections the BloomE2E suite opens, and the books and reference
+            # screenshots the visual-regression suite renders, live in
             # https://github.com/BloomBooks/bloom-testing-inputs, at the commit named by
             # build/testing-inputs.pin. This fetches that commit into output/testing-inputs. It is a
             # shallow single-commit fetch, so it costs a couple of seconds. Done here with the other
             # dependency fetches rather than beside the suite, so a bad pin fails early and visibly.
             - name: Get testing inputs (test books and reference screenshots)
-              # Only the visual-regression suite consumes these, so a fetch failure must not
-              # block a run that has that suite switched off.
-              if: ${{ env.RUN_VISUAL_REGRESSION == 'true' }}
+              # Only the two Bloom-driving suites consume these, so a fetch failure must not block a
+              # run that has both of them switched off.
+              if: ${{ env.RUN_E2E_TESTS == 'true' || env.RUN_VISUAL_REGRESSION == 'true' }}
               shell: bash
               run: node build/get-testing-inputs.mjs
 
@@ -222,6 +229,71 @@ jobs:
                   msbuild Bloom.proj /t:TestOnly `
                     /p:BUILD_NUMBER=$env:BUILD_NUMBER `
                     /p:excludedCategories=SkipOnTeamCity
+
+            # ----- BloomE2E tests -----
+            # src/BloomE2E launches a real Bloom.exe on a throwaway copy of a collection, attaches
+            # Playwright to its embedded WebView2 over CDP, and clicks through the UI the way a
+            # person would. Nothing ran these until now, so the suite could rot silently between the
+            # days a developer happened to run it — exactly what the component-tester harness did.
+            #
+            # Like the visual-regression suite it needs BOTH builds (the Bloom.exe it launches, and
+            # the front-end assets that Bloom loads its UI from) and the testing inputs fetched
+            # above; workspace-tabs.spec.ts opens the prepared "basic" collection, and the fixture
+            # copies it before Bloom sees it. !cancelled() lets it run even when an earlier suite
+            # failed, so one bad night still reports every stack.
+            #
+            # It runs BEFORE the visual-regression group on purpose, even though that group was
+            # here first. Visual regression is the suite that hangs (BL-16612): when it does, it
+            # burns ~24 minutes and can take the job's whole timeout with it, so anything placed
+            # after it is hostage to a failure that has nothing to do with it. Running first means
+            # this suite always reports. It also keeps the Bloom logs the diagnostics steps collect
+            # for that hunt as the visual-regression Bloom's own: both suites write
+            # %TEMP%\SIL\Bloom\Log.txt, and whoever ran last is what is left there to collect.
+            #
+            # No `playwright install`: the fixture attaches to Bloom's WebView2 with
+            # chromium.connectOverCDP, so Playwright launches no browser of its own and needs no
+            # downloaded one.
+            - name: Set up BloomE2E tests
+              id: setup_e2e_tests
+              if: ${{ !cancelled() && steps.build_frontend.outcome == 'success' && steps.build_csharp.outcome == 'success' && env.RUN_E2E_TESTS == 'true' }}
+              working-directory: src/BloomE2E
+              shell: bash
+              run: pnpm install --frozen-lockfile
+
+            # Playwright takes its junit path from PLAYWRIGHT_JUNIT_OUTPUT_NAME, not from a CLI flag:
+            # it has no --outputFile (that is vitest's). The path is relative to the working
+            # directory, so it climbs back to the repo root's output/Tests like the other suites.
+            - name: Run BloomE2E tests
+              id: e2e_tests
+              if: ${{ !cancelled() && steps.setup_e2e_tests.outcome == 'success' }}
+              working-directory: src/BloomE2E
+              shell: bash
+              env:
+                  PLAYWRIGHT_JUNIT_OUTPUT_NAME: ../../output/Tests/e2e-junit.xml
+                  # The html reporter would otherwise try to serve the report at the end of a
+                  # failing run, which on a runner means a step that never returns.
+                  PLAYWRIGHT_HTML_OPEN: never
+              run: pnpm test --reporter=list,junit,html
+
+            # What explains an e2e failure: Playwright's HTML report, plus the trace and failure
+            # screenshot its config keeps (trace: retain-on-failure, screenshot: only-on-failure).
+            # On failure only: a green run's report says nothing a green check has not already said,
+            # the same reason the visual-regression screenshots below go up only on failure.
+            #
+            # !cancelled() is load-bearing, not decoration. A step `if:` with no status-check
+            # function in it gets an implicit `success()` AND-ed in, and success() is already false
+            # once the e2e step has failed -- so `outcome == 'failure'` alone would skip this upload
+            # on precisely the night we want the report, and show as "skipped" rather than red.
+            - name: Upload BloomE2E report
+              if: ${{ !cancelled() && steps.e2e_tests.outcome == 'failure' }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: e2e-report
+                  path: |
+                      src/BloomE2E/playwright-report/**
+                      src/BloomE2E/test-results/**
+                  retention-days: 4
+                  if-no-files-found: ignore
 
             # ----- Visual regression tests -----
             # src/BloomVisualRegressionTests drives a real Release Bloom.exe (which it finds at
@@ -358,8 +430,13 @@ jobs:
             # its screenshots; and the diagnostics that actually explain a hang go up either way.
             # if-no-files-found: ignore because a failure can also mean Bloom never launched, in
             # which case there are no screenshots to collect.
+            #
+            # !cancelled() for the reason given on the BloomE2E upload above: without a status-check
+            # function the implicit success() gate skipped this step on every failing night, so the
+            # diff images were never actually collected -- run 33607591898 (2026-09-02, scheduled,
+            # failed in this very suite) uploaded only nightly-test-results and bloom-diagnostics.
             - name: Upload visual regression screenshots
-              if: ${{ steps.visual_regression.outcome == 'failure' }}
+              if: ${{ !cancelled() && steps.visual_regression.outcome == 'failure' }}
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: visual-regression-diffs
@@ -417,6 +494,15 @@ jobs:
                   action_fail_on_inconclusive: true
                   files: output/Tests/Release/x64/TestResults.xml
 
+            - name: Publish BloomE2E test results
+              if: ${{ !cancelled() && steps.e2e_tests.outcome != 'skipped' }}
+              uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+              with:
+                  check_name: "Nightly tests: BloomE2E (Playwright)"
+                  comment_mode: "off"
+                  action_fail_on_inconclusive: true
+                  files: output/Tests/e2e-junit.xml
+
             - name: Publish visual regression test results
               if: ${{ !cancelled() && steps.visual_regression.outcome != 'skipped' }}
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
@@ -437,5 +523,6 @@ jobs:
                   path: |
                       output/Tests/Release/x64/TestResults.xml
                       output/Tests/vitest-junit.xml
+                      output/Tests/e2e-junit.xml
                       output/Tests/visual-regression-junit.xml
                   retention-days: 14
