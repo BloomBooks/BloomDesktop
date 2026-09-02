@@ -167,7 +167,8 @@ const Tab: React.FunctionComponent<{
             <a
                 role="tab"
                 // Automation clicks tabs by this id. The visible label is localized, so matching
-                // on it would confine every test to an English UI.
+                // on it would confine every test to an English UI -- including the
+                // Pseudo-English i18n-testing locale (BL-16748).
                 data-testid={`workspace-tab-${props.tab.id}`}
                 aria-selected={props.selected ? "true" : "false"}
                 aria-disabled={props.disabled ? "true" : "false"}
