@@ -159,22 +159,6 @@ function samePath(a: string, b: string): boolean {
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Whether the Bloom we launch should appear on a monitor. By default it does not: --headless puts
- * its window far outside every screen, so a run does not take the developer's desktop over.
- *
- * The window is moved off-screen rather than minimized or hidden because WebView2 stops painting a
- * minimized window: screenshots come back blank and the layout is the wrong size. Off-screen, the
- * window paints exactly as it would in front of a person, so keyboard input and rendering behave
- * the same (see Shell.GetHeadlessBounds).
- *
- * Set BLOOM_E2E_HEADED=1 to watch the run. Playwright's --debug (which sets PWDEBUG) implies it:
- * there is no point stepping through a test whose window you cannot see.
- */
-function shouldShowBloomOnScreen(): boolean {
-    return process.env.BLOOM_E2E_HEADED === "1" || !!process.env.PWDEBUG;
-}
-
-/**
  * The Vite dev server port the launched Bloom should load its React front end from, or undefined
  * to leave the choice to Bloom.
  *
@@ -397,9 +381,7 @@ async function startBloomOn(
 
     // --e2e: skip the DEBUG "attach debugger now" prompt and suppress modal error dialogs.
     // --automation: let this instance run alongside a Bloom the developer already has open.
-    // --headless: keep the window off every screen (see shouldShowBloomOnScreen).
     const args = [findCollectionFile(collectionDir), "--e2e", "--automation"];
-    if (!shouldShowBloomOnScreen()) args.push("--headless");
     // --vite-port: serve the React front end from a dev server, so the suite tests the working
     // tree rather than a stale output/browser (see getViteDevPort).
     const vitePort = getViteDevPort();

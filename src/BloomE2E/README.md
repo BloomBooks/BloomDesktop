@@ -138,18 +138,7 @@ pnpm exec playwright test -g "switching workspace tabs"       # one test by titl
 pnpm exec playwright test --debug    # step through it
 ```
 
-A run opens a real Bloom, but you will not see it: Bloom is launched with `--headless`, which puts
-its window far outside every monitor, so a run can go on while you work. The window is moved
-off-screen rather than minimized or hidden because WebView2 stops painting a minimized window,
-which would make every screenshot blank.
-
-To watch the run instead, set `BLOOM_E2E_HEADED=1`; `--debug` turns it on for you.
-
-```bash
-BLOOM_E2E_HEADED=1 pnpm exec playwright test tests/workspace-tabs.spec.ts
-```
-
-A headed run opens a real Bloom window. That is expected; do not click in it.
+A run opens a real Bloom window. That is expected; do not click in it.
 
 The suite needs a built `Bloom.exe` under `output/{Debug,Release}/{x64,AnyCPU,}/` and the test
 inputs at `output/testing-inputs`, fetched by `node build/get-testing-inputs.mjs` at the commit

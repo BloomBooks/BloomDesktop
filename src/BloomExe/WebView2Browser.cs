@@ -402,14 +402,6 @@ namespace Bloom
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
             }
-            if (Program.StartupHeadless)
-            {
-                // A headless run keeps Bloom's window far off-screen (see Shell.GetHeadlessBounds),
-                // so Windows reports the window as occluded and Chromium stops rendering it. A
-                // screenshot of an unrendered page comes back blank, so turn that behavior off.
-                featuresToDisable.Add("CalculateNativeWinOcclusion");
-                additionalBrowserArgs += " --disable-backgrounding-occluded-windows";
-            }
             if (RemoteDebuggingPort.HasValue && !Program.RunningUnitTests)
             {
                 // Expose a CDP endpoint so Playwright and other automation can attach to the real Bloom WebView2 surface.

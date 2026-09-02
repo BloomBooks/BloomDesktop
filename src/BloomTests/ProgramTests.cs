@@ -57,33 +57,6 @@ namespace BloomTests
         }
 
         [Test]
-        public void ParseStartupPortArguments_StoresHeadlessFlag()
-        {
-            var remainingArgs = Program.ParseStartupPortArguments(
-                new[] { "--automation", "--headless", @"C:\Temp\Example.bloomcollection" },
-                out var errorMessage
-            );
-
-            Assert.That(errorMessage, Is.Null);
-            Assert.That(Program.StartupHeadless, Is.True);
-            Assert.That(Program.StartupAutomation, Is.True);
-            Assert.That(
-                Program.StartupRequestedPortSummary,
-                Is.EqualTo("automation=true, headless=true")
-            );
-            Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
-        }
-
-        [Test]
-        public void ParseStartupPortArguments_LeavesHeadlessFalseWithoutTheFlag()
-        {
-            Program.ParseStartupPortArguments(new[] { "--automation" }, out var errorMessage);
-
-            Assert.That(errorMessage, Is.Null);
-            Assert.That(Program.StartupHeadless, Is.False);
-        }
-
-        [Test]
         public void ParseStartupPortArguments_VitePortAloneDoesNotEnableAutomation()
         {
             Program.ParseStartupPortArguments(
