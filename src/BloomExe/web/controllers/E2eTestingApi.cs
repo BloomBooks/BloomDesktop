@@ -172,6 +172,11 @@ namespace Bloom.web.controllers
         private void HandleGetEditState(ApiRequest request)
         {
             var model = Bloom.Edit.EditingModel.ModelForE2eTests;
+            // The UI thread can change these fields between one read and the next, so keep
+            // pageLoadAnnouncements last. A count read after the state can only be the same or
+            // higher, which makes a test see the count still rising and wait again. Read first, it
+            // could pair a stale count with a settled state, and a test would stop waiting too
+            // soon.
             request.ReplyWithJson(
                 new
                 {

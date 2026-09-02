@@ -1743,15 +1743,14 @@ namespace Bloom.Edit
         /// Show the page with this id in the Edit tab. The page being left is saved on the way,
         /// which is how anything typed on it reaches the file.
         ///
-        /// A jump can arrive when the Edit tab cannot act on it at once: the tab is not showing
-        /// yet, it is still navigating to a page, or a save is in flight. In each of those cases
-        /// the jump is remembered and done as soon as that finishes. Bloom used to drop it and
-        /// report success, which left the caller waiting for a page that was never coming (see
-        /// src/BloomE2E/AUTOMATION-DEBT.md).
+        /// A jump that arrives before the Edit tab is showing is remembered, and OnBecomeVisible
+        /// displays that page instead of the one it would otherwise choose.
         ///
-        /// Returns false when the jump can be neither started nor queued, so the caller can say so
-        /// rather than wait: there is no book, or the Edit tab is in the momentary state after a
-        /// save in which no transition is allowed.
+        /// Otherwise the jump either happens at once or is refused: this returns false when the
+        /// Edit tab is busy with a page (loading one, or saving one), when there is no book, and
+        /// when the tab is in the momentary state after a save in which no transition is allowed.
+        /// Bloom used to drop such a jump and report success, which left the caller waiting for a
+        /// page that was never coming (see src/BloomE2E/AUTOMATION-DEBT.md).
         /// </summary>
         public bool JumpToPage(string pageId)
         {
@@ -1766,13 +1765,20 @@ namespace Bloom.Edit
                 return true;
             }
 
-            // Ask to be run again when the Edit tab is done with what it is doing. We check the
-            // state before calling SaveThen so that the answer we give the caller is decided
-            // before any save starts.
-            if (_stateMachine.SavePending)
-                return _stateMachine.DeferUntilSaveCompletes(() => JumpToPage(pageId));
-            if (_stateMachine.Navigating)
-                return _stateMachine.DeferUntilPageIsLoaded(() => JumpToPage(pageId));
+            // The Edit tab is busy with a page: saving one, or loading one. Say so rather than
+            // queue the jump. A queued jump has to be released by some signal that the tab is
+            // ready, and the only signal available is a page announcing that its DOM has loaded,
+            // which a page does more than once. A jump released by the first announcement starts
+            // a save, the second announcement is then refused because a save is in flight, and
+            // the browser never answers the save request, which leaves the tab unable to change
+            // pages at all. See src/BloomE2E/AUTOMATION-DEBT.md.
+            if (_stateMachine.SavePending || _stateMachine.Navigating)
+            {
+                Logger.WriteEvent(
+                    $"EditingModel.JumpToPage({pageId}): the edit tab was busy with a page, so the jump was refused."
+                );
+                return false;
+            }
 
             var jumped = true;
             SaveThen(
@@ -2316,13 +2322,6 @@ namespace Bloom.Edit
             // move on to the next page. See StartUpdatingAllPages().
             if (nowEditing && _updatingAllPages)
                 AdvanceUpdatingAllPages(pageId);
-
-            // Last of all, a jump that arrived while we were navigating here (see JumpToPage).
-            // It saves this page and navigates off it, so everything above, which acts on the page
-            // that just loaded, has to happen first. If the work above left us navigating or
-            // saving again, JumpToPage queues itself once more.
-            if (nowEditing)
-                _stateMachine.TakeWorkDeferredUntilPageIsLoaded()?.Invoke();
         }
 
         // The one action queued by RunAfterNextPageLoad, or null.

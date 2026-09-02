@@ -252,10 +252,11 @@ interface IEditTabState {
  * Wait until the Edit tab is settled on a page: showing it, in the Editing state, and done
  * announcing that the page has loaded.
  *
- * Ask this before any request that changes the page. The Edit tab defers such a request while it
- * navigates, and a deferred one is lost (AUTOMATION-DEBT.md: "A page change asked for while the
- * Edit tab is still loading a page can be lost"). A page announces itself to Bloom more than once,
- * and a request that arrives between two of those announcements is lost as well, so waiting for
+ * Ask this before any request that changes the page. The Edit tab refuses such a request while it
+ * navigates, and a page announces itself to Bloom more than once, so a request that arrives
+ * between two of those announcements starts a save that the second announcement leaves unanswered
+ * (AUTOMATION-DEBT.md: "A page change asked for while the Edit tab is still loading a page can be
+ * lost"). Waiting for
  * the Editing state alone is not enough. Hence the second reading: the tab is settled once the
  * count of announcements has stopped rising.
  *
@@ -384,14 +385,31 @@ export async function addPage(
  * it is leaving, so text typed into a box reaches the file only once the book moves off that page.
  */
 export async function goToPage(page: Page, pageId: string): Promise<void> {
-    // Wait for the Edit tab first. It queues a jump that arrives while it is loading a page, and
-    // one of those queued jumps is lost (see waitForEditTabSettled). Asking at a moment when the
-    // tab acts on the jump at once avoids the whole queue.
-    await waitForEditTabSettled(page);
-    // Then one request is enough: the tab answers with an error if it can neither jump nor queue
-    // (EditingModel.JumpToPage). It used to drop such a jump and report success, which is why this
-    // helper used to ask three times.
-    await apiPost(page, "editView/jumpToPage", pageId, "text/plain");
+    // Wait for the Edit tab first. A jump asked for while it is still loading a page is refused,
+    // and one asked for between two announcements of one page load wedges it (see
+    // waitForEditTabSettled). Asking at a moment when the tab acts on the jump at once avoids
+    // both.
+    // Then ask, and ask again if the tab was busy after all. The tab answers with an error when
+    // it cannot jump (EditingModel.JumpToPage), rather than dropping the jump and reporting
+    // success as it used to, so a refusal is visible here instead of turning into a 60-second
+    // wait for a page that is not coming. Three tries, because the wait above closes the window
+    // for a refusal without quite shutting it: the tab can start loading the page list in the
+    // moment between the wait finishing and this request arriving.
+    let refusal: unknown;
+    for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) await waitForEditTabSettled(page);
+        refusal = undefined;
+        await apiPost(page, "editView/jumpToPage", pageId, "text/plain").catch(
+            (error) => {
+                refusal = error;
+            },
+        );
+        if (refusal === undefined) break;
+    }
+    if (refusal !== undefined)
+        throw new Error(
+            `The Edit tab refused to show page ${pageId} three times running: ${refusal}`,
+        );
     const showing = async () =>
         (await page
             .frame({ name: "page" })
@@ -417,7 +435,7 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
             .then((response) => response.body)
             .catch((error) => `(could not be read: ${error})`);
         // The state the Edit tab is stuck in says which of the two failures this is: a jump that
-        // was lost leaves the tab in SavePending or Navigating on the page it already had.
+        // wedged the tab leaves it in SavePending or Navigating on the page it already had.
         const editState = await apiGet(page, "e2e/editState")
             .then((response) => response.body)
             .catch((error) => `(could not be read: ${error})`);
