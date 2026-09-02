@@ -523,7 +523,17 @@ namespace Bloom
                 );
                 if (_useSharedEnvironment)
                     _sharedEnvironment = env;
-                if (Program.RunningE2eTests && Program.RunningOnUiThread)
+                // Only keep it when it actually carries a debugging port. The port lives in the
+                // options, which are fixed when the environment is made, so an environment built
+                // before BloomServer had its port would have none, and every UI-thread browser
+                // after it would inherit that: no browser in the run would ever listen, and the
+                // suite would report a startup timeout rather than a reason. No browser is built
+                // that early today, and this keeps it that way if one ever is.
+                if (
+                    Program.RunningE2eTests
+                    && Program.RunningOnUiThread
+                    && RemoteDebuggingPort.HasValue
+                )
                     _environmentForE2eTests = env;
             }
             await _webview.EnsureCoreWebView2Async(env);

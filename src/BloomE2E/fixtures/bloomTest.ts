@@ -190,6 +190,18 @@ async function findShellPage(
         }
         await delay(500);
     }
+    // Re-check it before handing it back. It was found on some earlier turn of the loop, possibly
+    // ninety seconds ago, and Bloom navigates the shell target while it starts up, so by now the
+    // page may be gone.
+    if (markerOnlyMatch) {
+        const stillThere = await markerOnlyMatch
+            .evaluate(
+                (marker) => !!document.querySelector(marker),
+                SHELL_MARKER,
+            )
+            .catch(() => false);
+        if (!stillThere) markerOnlyMatch = undefined;
+    }
     if (markerOnlyMatch && !hookEverAnswered) {
         console.warn(
             `Bloom never answered ${SHELL_URL_ENDPOINT}, so the shell document was chosen by ` +

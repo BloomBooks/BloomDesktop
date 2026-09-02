@@ -117,6 +117,11 @@ namespace Bloom.Edit
             _server = server;
             _webSocketServer = webSocketServer;
             _sourceCollectionsList = sourceCollectionsList;
+            // A run has one EditingModel, and E2eTestingApi has no way to be handed it: the
+            // container builds that api before any book is selected. So hand it over here, the
+            // same way WorkspaceView hands over its browser for e2e/shellUrl.
+            if (Program.RunningE2eTests)
+                ModelForE2eTests = this;
 
             _stateMachine = new EditingStateMachine(
                 // navigate,
@@ -1706,6 +1711,35 @@ namespace Bloom.Edit
         }
 
         /// <summary>
+        /// The one EditingModel of an e2e run, or null outside such a run. See the constructor.
+        /// </summary>
+        public static EditingModel ModelForE2eTests;
+
+        /// <summary>
+        /// What the Edit tab is doing, for the e2e suite to wait on (see e2e/editState). Editing
+        /// is the only state in which the tab accepts a request without deferring it.
+        /// </summary>
+        public State EditTabState => _stateMachine.CurrentState;
+
+        /// <summary>
+        /// The page EditTabState is about, or null.
+        /// </summary>
+        public string EditTabStatePageId => _stateMachine.CurrentPageId;
+
+        // How many times the page named by _announcedPageId has told us its DOM had loaded. See
+        // HandlePageDomLoadedEvent.
+        private string _announcedPageId;
+        private int _pageLoadAnnouncements;
+
+        /// <summary>
+        /// How many times the page now being shown has announced that its DOM had loaded. A page
+        /// does that more than once, and a request that changes the page is lost if it arrives
+        /// between two of those announcements (see src/BloomE2E/AUTOMATION-DEBT.md). So the e2e
+        /// suite waits for this to stop rising. For automation only.
+        /// </summary>
+        public int PageLoadAnnouncements => _pageLoadAnnouncements;
+
+        /// <summary>
         /// Show the page with this id in the Edit tab. The page being left is saved on the way,
         /// which is how anything typed on it reaches the file.
         ///
@@ -2256,6 +2290,16 @@ namespace Bloom.Edit
 
         public void HandlePageDomLoadedEvent(string pageId)
         {
+            // Count the announcement before acting on it. A page announces itself more than once,
+            // and the e2e suite has to know that the last one has been and gone before it asks
+            // this tab for anything (see the editState endpoint and PageLoadAnnouncements).
+            if (pageId != _announcedPageId)
+            {
+                _announcedPageId = pageId;
+                _pageLoadAnnouncements = 0;
+            }
+            _pageLoadAnnouncements++;
+
             var nowEditing = _stateMachine.ToEditing(pageId);
             if (nowEditing)
             {

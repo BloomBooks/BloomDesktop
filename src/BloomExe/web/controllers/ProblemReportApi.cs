@@ -1173,10 +1173,16 @@ namespace Bloom.web.controllers
                             {
                                 ResetScreenshotFile();
                             }
-                            else if (IsBloomProcessInForeground())
+                            else if (IsBloomProcessInForeground() && !Program.StartupHeadless)
                             {
                                 // Bloom is the foreground app: a plain screen copy is cheaper
                                 // and avoids re-triggering any paint-related bugs.
+                                //
+                                // Not under --headless, though. That run's window sits far
+                                // outside every monitor, so copying from those screen coordinates
+                                // would save whatever the desktop has there, which is nothing.
+                                // Render the window itself instead, the way the not-in-front case
+                                // already does.
                                 var scaledBounds = controlForScreenshotting.Bounds;
 #if !__MonoCS__
                                 scaledBounds =

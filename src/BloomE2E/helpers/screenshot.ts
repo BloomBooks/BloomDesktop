@@ -90,6 +90,22 @@ export async function captureElement(
         // element's own scroll size, plus where it sits, rather than the document's size: the
         // document includes page-list thumbnails and other chrome we are not capturing.
         const wanted = await elementExtent(locator, timeoutMs);
+        // An element bigger than the cap would be clipped to its full box against a window that
+        // was never made large enough, so the image would be a truncated element rather than a
+        // failure, and nothing downstream could tell: the box we measure afterwards is measured
+        // inside the too-small window, so it agrees with the truncated image. Say so instead.
+        if (
+            wanted.right > MAX_OVERRIDE_PIXELS ||
+            wanted.bottom > MAX_OVERRIDE_PIXELS
+        ) {
+            throw new Error(
+                `captureElement cannot capture this element: laying all of it out needs a window ` +
+                    `${Math.ceil(wanted.right)}x${Math.ceil(wanted.bottom)} pixels, and the ` +
+                    `largest this helper will ask WebView2 for is ${MAX_OVERRIDE_PIXELS}. ` +
+                    `Capture a smaller part of it, or raise MAX_OVERRIDE_PIXELS if WebView2 can ` +
+                    `still allocate that.`,
+            );
+        }
         const viewport = page.viewportSize();
         const overrideWidth = clampOverride(
             Math.max(wanted.right, viewport?.width ?? 0),
@@ -165,7 +181,13 @@ export async function captureElement(
     }
 }
 
-/** Keep an override within what WebView2 can reasonably allocate, and never ask for zero. */
+/**
+ * Keep an override within what WebView2 can reasonably allocate, and never ask for zero.
+ *
+ * The caller checks the element against MAX_OVERRIDE_PIXELS before calling this, so the cap here
+ * only ever applies to the viewport's own size. A silently capped element would be captured
+ * truncated rather than reported.
+ */
 function clampOverride(pixels: number): number {
     return Math.max(1, Math.min(MAX_OVERRIDE_PIXELS, Math.ceil(pixels)));
 }

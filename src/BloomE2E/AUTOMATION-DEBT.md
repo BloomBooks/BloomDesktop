@@ -158,6 +158,22 @@ setting the value leaves CKEditor in a state Bloom then saves correctly. Fix dir
 an `e2e/` hook, or a supported CKEditor path, that sets the text of one box outright.
 (Found 2026-09-01 automating Test Case ID 169.)
 
+## Typing in a text box raises no key events
+
+`typeInGroup` puts the whole string in with `keyboard.insertText`, which raises `input`
+and nothing else. So no test that types exercises anything in Bloom that listens for
+`keydown`, `keypress` or `keyup`, and the `toHaveText` check that follows cannot tell the
+difference: the text arrives either way. The pieces of Bloom that watch for a particular
+key, rather than for a change to the text, are therefore not covered by any test that
+types.
+
+This is a deliberate trade for speed, taken because a key press per character made every
+test that fills a book slower in proportion to how much it typed. Fix direction: a helper
+that presses one named key in a box, for the tests whose subject is the key press itself
+(Enter splitting a paragraph, Tab moving between boxes, a shortcut), and a note in that
+helper that `typeInGroup` is not the way to test those. (Found 2026-09-02, during the
+review of the headless work.)
+
 ## A test can attach to a shell document Bloom does not drive
 
 More than one document in a run carries the workspace root's markup, and therefore the
@@ -185,3 +201,46 @@ What remains: nobody knows why a run has a second workspace root document at all
 creates one `_workspaceReactControl`. Worth finding, because the duplicate is what makes
 the test-side check necessary.
 (Found 2026-09-01 while making `jumpToPage` queue a jump.)
+
+## A page change asked for while the Edit tab is still loading a page can be lost
+
+`editView/jumpToPage` accepts a jump that arrives while the Edit tab is navigating, and
+`EditingStateMachine.DeferUntilPageIsLoaded` runs it once that page loads
+(`EditingModel.HandlePageDomLoadedEvent`). That queued jump is sometimes lost, and the
+caller waits 60 seconds for a page that never comes.
+
+The cause is a page that announces itself to Bloom twice. Bloom's own log, from the run
+that found this on 2026-09-02:
+
+```
+Navigating(f45a2ef8) --> editing(f45a2ef8)
+Editing(f45a2ef8) --> savePending()
+Ignoring edit() request while in SavePending(f45a2ef8)
+```
+
+The first announcement moves the tab to Editing and releases the queued jump, which asks
+the browser for the page content so it can save the page it is leaving. The second
+announcement then arrives, is refused because a save is in flight, and the browser never
+answers the save request. The tab stays in SavePending, so the jump never navigates. The
+same three lines in the order that works read `--> editing`, `Ignoring edit()`, then
+`--> savePending`, and the save completes.
+
+The same thing happens to any request that changes the page, not only a jump. The run that
+found it lost a language change from `setContentLanguages`, and the Edit tab then held the
+tab switch that followed, so a Publish test failed instead.
+
+Worked around for tests, 2026-09-02: `e2e/editState` reports what the Edit tab is doing and
+how many times the page it shows has announced itself, and every helper that changes the
+page waits for `waitForEditTabSettled` first. That keeps the request out of the queue. The
+wait reads the state twice, 1500 ms apart, and needs Editing both times with the count
+unchanged: the state alone reads Editing between the two announcements, when a request
+would still be lost, and the gap between them has been seen to reach a second. No test can
+see any of this from the DOM, because Bloom leaves the previous page in the frame while it
+loads the next one.
+
+What remains: the Bloom defect itself. A user hits it whenever something asks for a page
+change in that window, and the Edit tab then stops responding to page changes altogether.
+Fix direction: either stop the browser announcing a page twice, or make the state machine
+treat a second announcement of the page it is saving as a reason to discard that save
+(`DiscardInFlightSave` already exists for BL-16766). Both change production save behavior,
+so this needs a decision rather than a quiet fix.

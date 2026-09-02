@@ -131,6 +131,40 @@ namespace Bloom.web.controllers
             // name, which is unique per document; the rest of the URL is escaped differently by
             // Bloom and by the debugging protocol. Needs the UI thread to read the browser.
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "shellUrl", HandleGetShellUrl, true);
+
+            // GET returns what the Edit tab is doing, as
+            // {state, pageId, visible, pageLoadAnnouncements}. A test must not ask that tab to
+            // change pages while it is still loading one: the request is queued until the page
+            // loads, and a page announces itself more than once, so a request released by the
+            // first announcement starts a save that the second one leaves unanswered. Nothing
+            // happens after that (see src/BloomE2E/AUTOMATION-DEBT.md). The DOM cannot tell a test
+            // any of this, because the frame still holds the page from before the tab switch, so
+            // the count of announcements is how a test knows the last one has been and gone. Off
+            // the UI thread on purpose: this reads three fields, and a test asks for them exactly
+            // when the UI thread is busy.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "editState",
+                HandleGetEditState,
+                false // does not need the UI thread
+            );
+        }
+
+        /// <summary>
+        /// Reply with what the Edit tab is doing (see the registration above). Before the first
+        /// book is selected there is no EditingModel, which reads as NoPage.
+        /// </summary>
+        private void HandleGetEditState(ApiRequest request)
+        {
+            var model = Bloom.Edit.EditingModel.ModelForE2eTests;
+            request.ReplyWithJson(
+                new
+                {
+                    state = (model?.EditTabState ?? State.NoPage).ToString(),
+                    pageId = model?.EditTabStatePageId ?? "",
+                    visible = model?.Visible ?? false,
+                    pageLoadAnnouncements = model?.PageLoadAnnouncements ?? 0,
+                }
+            );
         }
 
         /// <summary>

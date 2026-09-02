@@ -152,6 +152,18 @@ public class EditingStateMachine
     public bool SavePending => _currentState == State.SavePending;
 
     /// <summary>
+    /// The state we are in, and the page it is about. These exist for automation: the e2e suite
+    /// waits until the Edit tab is settled before it asks that tab for anything, and the DOM
+    /// cannot tell it that (see E2eTestingApi's editState endpoint). Read only.
+    /// </summary>
+    public State CurrentState => _currentState;
+
+    /// <summary>
+    /// The page the current state is about, or null. See CurrentState.
+    /// </summary>
+    public string CurrentPageId => _pageId;
+
+    /// <summary>
     /// Called to initiate navigation to a new page (or the same one again).
     /// Should not be called when there are unsaved (or incompletely saved) changes.
     /// </summary>
