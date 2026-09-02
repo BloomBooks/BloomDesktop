@@ -210,7 +210,20 @@ describe("All books", () => {
 
     beforeAll(async () => {
         await launchDedicatedBloom();
-        browser = await chromium.launch();
+        // Text must rasterize the same way on every machine, or the reference images are only
+        // valid on whichever machine made them. By default Chrome anti-aliases text with LCD
+        // sub-pixel rendering, using the host's DirectWrite gamma/contrast settings, so the same
+        // glyphs come out with different colored fringes on a developer machine than on the CI
+        // runner. --disable-lcd-text forces grayscale anti-aliasing instead;
+        // --font-render-hinting=none removes the other host-dependent step; --force-color-profile
+        // pins the color space the result is converted through.
+        browser = await chromium.launch({
+            args: [
+                "--disable-lcd-text",
+                "--font-render-hinting=none",
+                "--force-color-profile=srgb",
+            ],
+        });
         context = await browser.newContext();
         page = await context.newPage();
         playerPage = await context.newPage();
