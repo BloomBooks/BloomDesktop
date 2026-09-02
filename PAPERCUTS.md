@@ -19,7 +19,19 @@ House rules:
 
 ---
 
-## 2026-09-01 — bloom-automation skill doesn't warn that Bloom's ports change across restarts
+## 2026-09-02 — C# suite fails in L10NSharp setup when run alongside the BloomE2E suite
+
+- **Cut:** Running `agent-dotnet test` concurrently with the BloomE2E Playwright suite produced 3
+  failures (of 3324): `NullReferenceException` inside `XliffLocalizedStringCache..ctor` during
+  `LocalizationManagerWinforms.Create` in test Setup. The e2e Bloom was switching UI languages at
+  the time, which touches the same machine-global L10NSharp state (user-modified xliff /
+  language caches) the unit tests build their manager over. Solo runs of the identical tree pass
+  clean. Same family as the 2026-07-27 "C# host aborts alongside vitest" entry: the wrapper
+  isolates build outputs, not machine-global state.
+- **Idea:** Document "don't run the C# suite and the BloomE2E suite at the same time" in
+  AGENTS.md / the BloomE2E README, or point the test processes' L10NSharp writable folders at
+  the isolated temp dir the way TestTempDirectory already isolates %TEMP%.
+- **Context:** preflight of PR #8275, branch automateTests.
 
 - **Cut:** Bloom picks a free HTTP port at startup, so after `Program.RestartBloom` (e.g.
   toggling "Show translations which have not been approved yet") the launcher-relaunched Bloom

@@ -104,7 +104,9 @@ const SHELL_MARKER = '[role="tablist"]';
  * remote-debugging listener slightly later, so a single connect attempt races it and sometimes
  * gets ECONNREFUSED.
  */
-async function connectOverCdpWithRetry(cdpPort: number): Promise<Browser> {
+export async function connectOverCdpWithRetry(
+    cdpPort: number,
+): Promise<Browser> {
     const deadline = Date.now() + SHELL_READY_TIMEOUT_MS;
     let lastError: unknown;
     while (Date.now() < deadline) {

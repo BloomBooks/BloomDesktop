@@ -73,7 +73,18 @@ export async function makeBookFromTemplate(
         `collections/selected-book?path=${encodeURIComponent(template.folderPath)}` +
             `&collection-id=${encodeURIComponent(templates.id)}`,
     );
-    await apiPost(page, "app/makeFromSelectedBook");
+    // Bloom answers this and then reloads the shell document into the Edit tab, and under load
+    // that reload can abort our fetch before the reply arrives. The request itself got through
+    // - the poll below is what confirms the book really appeared - and a retry would make a
+    // second book, so tolerate exactly the two lost-reply errors a reload produces.
+    await apiPost(page, "app/makeFromSelectedBook").catch((error) => {
+        if (
+            !/Failed to fetch|Execution context was destroyed/i.test(
+                String(error),
+            )
+        )
+            throw error;
+    });
 
     // Bloom makes the book, selects it, and switches to the Edit tab. Wait for the book to exist
     // rather than for the tab, so the folder we return is real.

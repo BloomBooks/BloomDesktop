@@ -16,8 +16,13 @@
 // dedicated e2e Bloom writes the same profile the developer's Bloom reads. A test that changes
 // them must record what it found and put it back (see setUiStateViaApi), even when it fails.
 
-import { expect, type Locator, type Page } from "@playwright/test";
-import type { IBloomApp } from "../fixtures/bloomTest";
+import {
+    expect,
+    type Browser,
+    type Locator,
+    type Page,
+} from "@playwright/test";
+import { connectOverCdpWithRetry, type IBloomApp } from "../fixtures/bloomTest";
 import { apiGet, apiGetJson, apiPost } from "./api";
 import { waitForCollectionReady } from "./collection";
 import { waitForActiveTab } from "./workspace";
@@ -32,8 +37,11 @@ export interface IUiLanguageStrings {
     templates: string;
     /** The "Sources For New Books" heading - a LocalizableElement class component. */
     sources: string;
-    /** The Edit workspace tab - a <Span> LocalizableElement inside the top bar. */
-    editTab: string;
+    /**
+     * The Edit workspace tab - a <Span> LocalizableElement inside the top bar. Omit it when the
+     * collection has no selected book: the top bar hides the tab entirely then.
+     */
+    editTab?: string;
     /** The "Basic Book" button caption - localized in C# and delivered as API data. */
     basicBook: string;
     /** The UI-language menu button's label - C#-localized data (workspace/uiLanguageLabel). */
@@ -85,8 +93,12 @@ export async function getMenuTextForLanguageTag(
  */
 export async function openUiLanguageMenu(page: Page): Promise<Locator> {
     // A menu left open by an earlier failure would swallow the click on the button (its modal
-    // backdrop covers the screen); Escape closes any open menu and is harmless otherwise.
-    await page.keyboard.press("Escape");
+    // backdrop covers the screen), so close one with Escape - but ONLY when a menu is actually
+    // open. An unconditional Escape closes the Choose Collection dialog itself when this runs
+    // there, and with nothing chosen that quits Bloom.
+    if ((await page.locator("ul[role='menu']:visible").count()) > 0) {
+        await page.keyboard.press("Escape");
+    }
     await page.locator("#uiLanguageMenuButton").click();
     const menu = page.locator("ul[role='menu']:visible");
     await expect(menu, "the UI language menu should open").toHaveCount(1, {
@@ -299,10 +311,12 @@ export async function expectUiStrings(
         page.getByRole("heading", { level: 1, name: strings.sources }).first(),
         `book-sources heading (LocalizableElement) should read "${strings.sources}"`,
     ).toBeVisible({ timeout: 30000 });
-    await expect(
-        page.getByRole("tab", { name: strings.editTab, exact: true }),
-        `Edit tab (top bar Span) should read "${strings.editTab}"`,
-    ).toBeVisible({ timeout: 30000 });
+    if (strings.editTab !== undefined) {
+        await expect(
+            page.getByRole("tab", { name: strings.editTab, exact: true }),
+            `Edit tab (top bar Span) should read "${strings.editTab}"`,
+        ).toBeVisible({ timeout: 30000 });
+    }
     await expect(
         page
             .locator(".bookButton")
@@ -310,4 +324,191 @@ export async function expectUiStrings(
             .first(),
         `Basic Book button (C#-localized API data) should read "${strings.basicBook}"`,
     ).toBeVisible({ timeout: 30000 });
+}
+
+// ---------------------------------------------------------------------------------------------
+// The Choose Collection dialog (shown at startup when Bloom has no collection to reopen).
+// It renders the same UiLanguageMenu as the workspace, so openUiLanguageMenu and the reading
+// helpers above work on its page too. What differs: it is its own WebView2 page (no workspace
+// tab strip), and choosing a language makes Bloom close the dialog and construct a NEW one
+// (see CollectionChooserApi.CloseForLanguageChange), so a language change ends by re-finding
+// the dialog's page over a fresh CDP connection.
+// ---------------------------------------------------------------------------------------------
+
+/** The strings a chooser test verifies after a language change, all approved in French. */
+export interface IChooserStrings {
+    /** The dialog's own <h1> - OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle. */
+    title: string;
+    /** The "Create New Collection" button - OpenCreateNewCollectionsDialog.CreateNewCollection. */
+    createButton: string;
+    /** The UI-language menu button's label (C#-localized data). */
+    languageMenuButton: string;
+}
+
+/**
+ * Find the Choose Collection dialog's page among the CDP targets: the page with a dialog title
+ * bar but no workspace tab strip. Polls while the dialog's WebView2 comes up.
+ */
+export async function findChooserPage(browser: Browser): Promise<Page> {
+    const deadline = Date.now() + 90000;
+    let lastUrls: string[] = [];
+    while (Date.now() < deadline) {
+        const pages = browser
+            .contexts()
+            .flatMap((context) => context.pages())
+            .filter((page) => !page.url().startsWith("devtools://"));
+        lastUrls = pages.map((page) => page.url());
+        for (const page of pages) {
+            const isChooser = await page
+                .evaluate(
+                    () =>
+                        !!document.querySelector(
+                            "#draggable-dialog-title h1",
+                        ) && !document.querySelector('[role="tablist"]'),
+                )
+                .catch(() => false);
+            if (isChooser) return page;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    throw new Error(
+        `Never found the Choose Collection dialog's page within 90s. ` +
+            `Targets seen: ${lastUrls.join(", ") || "none"}.`,
+    );
+}
+
+/**
+ * Connect to the given CDP port and find the Choose Collection dialog's page. Used both for the
+ * first attach and after anything that makes Bloom rebuild the dialog, because a CDP connection
+ * from before the rebuild never sees the new page.
+ */
+export async function attachToChooser(
+    cdpPort: number,
+): Promise<{ browser: Browser; page: Page }> {
+    const browser = await connectOverCdpWithRetry(cdpPort);
+    const page = await findChooserPage(browser);
+    return { browser, page };
+}
+
+/**
+ * Change the UI language from inside the Choose Collection dialog, the way a user does: open
+ * the dialog's language menu and click the language. Bloom then closes the dialog and opens a
+ * brand-new one so every string re-fetches, so this waits out the teardown, re-attaches, and
+ * returns the new dialog page once Bloom reports the new language.
+ */
+export async function chooseUiLanguageInChooser(
+    chooser: { browser: Browser; page: Page },
+    cdpPort: number,
+    languageTag: string,
+): Promise<{ browser: Browser; page: Page }> {
+    const { menuText, resolvedTag } = await getMenuTextForLanguageTag(
+        chooser.page,
+        languageTag,
+    );
+    const menu = await openUiLanguageMenu(chooser.page);
+    const item = menu.locator("li[role='menuitem']").filter({
+        hasText: menuText,
+    });
+    await expect(
+        item,
+        `expected exactly one menu item matching "${menuText}"`,
+    ).toHaveCount(1);
+    const pageClosed = chooser.page.waitForEvent("close", { timeout: 60000 });
+    pageClosed.catch(() => undefined);
+    // See chooseUiLanguage: a "page closed" error means the click landed while the dialog was
+    // already being torn down.
+    await item.click().catch((error) => {
+        if (!/closed/i.test(String(error))) {
+            throw error;
+        }
+    });
+    await pageClosed;
+    await chooser.browser.close().catch(() => undefined);
+
+    const reattached = await attachToChooser(cdpPort);
+    await expect
+        .poll(() => getUiLanguageTag(reattached.page), {
+            timeout: 60000,
+            message: `Bloom never reported the UI language as "${resolvedTag}" after choosing "${menuText}" in the chooser.`,
+        })
+        .toBe(resolvedTag);
+    return reattached;
+}
+
+/**
+ * Assert the Choose Collection dialog shows these strings: its <h1> title (the useL10n hook),
+ * the Create New Collection button (a BloomButton LocalizableElement), and the language menu
+ * button's label (C#-localized data) - one string per localization pathway the dialog uses.
+ */
+export async function expectChooserStrings(
+    page: Page,
+    strings: IChooserStrings,
+): Promise<void> {
+    await expect(
+        page.locator("#uiLanguageMenuButton"),
+        `chooser language button should show "${strings.languageMenuButton}"`,
+    ).toContainText(strings.languageMenuButton, {
+        ignoreCase: true,
+        timeout: 30000,
+    });
+    await expect(
+        page.locator("#draggable-dialog-title h1"),
+        `chooser title should read "${strings.title}"`,
+    ).toHaveText(strings.title, { timeout: 30000 });
+    await expect(
+        page.getByRole("button", { name: strings.createButton }),
+        `Create New Collection button should read "${strings.createButton}"`,
+    ).toBeVisible({ timeout: 30000 });
+}
+
+/**
+ * Leave the chooser by opening the given .bloomCollection - the same call a click on one of the
+ * dialog's collection cards makes (the test's collection is not among the cards, which show the
+ * MRU and the default collections folder). The dialog closes and the workspace comes up; this
+ * re-attaches to the workspace's shell page over a fresh connection and returns it once the
+ * collection is ready.
+ */
+export async function openCollectionFromChooser(
+    chooser: { browser: Browser; page: Page },
+    cdpPort: number,
+    collectionPath: string,
+): Promise<{ browser: Browser; page: Page }> {
+    const pageClosed = chooser.page.waitForEvent("close", { timeout: 60000 });
+    pageClosed.catch(() => undefined);
+    await apiPost(chooser.page, "workspace/openCollection", collectionPath);
+    await pageClosed;
+    await chooser.browser.close().catch(() => undefined);
+
+    const browser = await connectOverCdpWithRetry(cdpPort);
+    const page = await findWorkspaceShellPage(browser);
+    await waitForCollectionReady(page);
+    return { browser, page };
+}
+
+/**
+ * Find the workspace shell page (the one with the top-bar tab strip) among the CDP targets.
+ * The chooser flow cannot use bloomApp.reattachToShell because there is no bloomApp fixture in
+ * a chooser test; this is the same marker-based scan.
+ */
+async function findWorkspaceShellPage(browser: Browser): Promise<Page> {
+    const deadline = Date.now() + 90000;
+    let lastUrls: string[] = [];
+    while (Date.now() < deadline) {
+        const pages = browser
+            .contexts()
+            .flatMap((context) => context.pages())
+            .filter((page) => !page.url().startsWith("devtools://"));
+        lastUrls = pages.map((page) => page.url());
+        for (const page of pages) {
+            const hasTabs = await page
+                .evaluate(() => !!document.querySelector('[role="tablist"]'))
+                .catch(() => false);
+            if (hasTabs) return page;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    throw new Error(
+        `The workspace shell page never appeared within 90s after leaving the chooser. ` +
+            `Targets seen: ${lastUrls.join(", ") || "none"}.`,
+    );
 }
