@@ -16,13 +16,11 @@
 // dedicated e2e Bloom writes the same profile the developer's Bloom reads. A test that changes
 // them must record what it found and put it back (see setUiStateViaApi), even when it fails.
 
-import {
-    expect,
-    type Browser,
-    type Locator,
-    type Page,
-} from "@playwright/test";
-import { connectOverCdpWithRetry, type IBloomApp } from "../fixtures/bloomTest";
+import { expect, type Locator, type Page } from "@playwright/test";
+import type {
+    IChooserBloomApp,
+    ICollectionBloomApp,
+} from "../fixtures/bloomTest";
 import { apiGet, apiGetJson, apiPost } from "./api";
 import { waitForCollectionReady } from "./collection";
 import { waitForActiveTab } from "./workspace";
@@ -114,7 +112,7 @@ export async function openUiLanguageMenu(page: Page): Promise<Locator> {
  * collection is ready. Returns the new shell page.
  */
 export async function chooseUiLanguage(
-    bloomApp: IBloomApp,
+    bloomApp: ICollectionBloomApp,
     languageTag: string,
 ): Promise<Page> {
     const page = bloomApp.page;
@@ -166,7 +164,7 @@ export async function chooseUiLanguage(
  * already has the wanted value.
  */
 export async function setShowUnapprovedTranslations(
-    bloomApp: IBloomApp,
+    bloomApp: ICollectionBloomApp,
     value: boolean,
 ): Promise<Page> {
     const page = bloomApp.page;
@@ -219,7 +217,7 @@ export async function setShowUnapprovedTranslations(
  * Bloom again. A test that needs the UI to reflect the change uses setShowUnapprovedTranslations.
  */
 export async function setUiStateViaApi(
-    bloomApp: IBloomApp,
+    bloomApp: ICollectionBloomApp,
     languageTag: string,
     showUnapproved: boolean,
 ): Promise<void> {
@@ -346,66 +344,22 @@ export interface IChooserStrings {
 }
 
 /**
- * Find the Choose Collection dialog's page among the CDP targets: the page with a dialog title
- * bar but no workspace tab strip. Polls while the dialog's WebView2 comes up.
- */
-export async function findChooserPage(browser: Browser): Promise<Page> {
-    const deadline = Date.now() + 90000;
-    let lastUrls: string[] = [];
-    while (Date.now() < deadline) {
-        const pages = browser
-            .contexts()
-            .flatMap((context) => context.pages())
-            .filter((page) => !page.url().startsWith("devtools://"));
-        lastUrls = pages.map((page) => page.url());
-        for (const page of pages) {
-            const isChooser = await page
-                .evaluate(
-                    () =>
-                        !!document.querySelector(
-                            "#draggable-dialog-title h1",
-                        ) && !document.querySelector('[role="tablist"]'),
-                )
-                .catch(() => false);
-            if (isChooser) return page;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-    throw new Error(
-        `Never found the Choose Collection dialog's page within 90s. ` +
-            `Targets seen: ${lastUrls.join(", ") || "none"}.`,
-    );
-}
-
-/**
- * Connect to the given CDP port and find the Choose Collection dialog's page. Used both for the
- * first attach and after anything that makes Bloom rebuild the dialog, because a CDP connection
- * from before the rebuild never sees the new page.
- */
-export async function attachToChooser(
-    cdpPort: number,
-): Promise<{ browser: Browser; page: Page }> {
-    const browser = await connectOverCdpWithRetry(cdpPort);
-    const page = await findChooserPage(browser);
-    return { browser, page };
-}
-
-/**
  * Change the UI language from inside the Choose Collection dialog, the way a user does: open
  * the dialog's language menu and click the language. Bloom then closes the dialog and opens a
- * brand-new one so every string re-fetches, so this waits out the teardown, re-attaches, and
- * returns the new dialog page once Bloom reports the new language.
+ * brand-new one so every string re-fetches, so this waits out the teardown, re-attaches
+ * (chooserApp.page from here on), and returns the new dialog page once Bloom reports the new
+ * language.
  */
 export async function chooseUiLanguageInChooser(
-    chooser: { browser: Browser; page: Page },
-    cdpPort: number,
+    chooserApp: IChooserBloomApp,
     languageTag: string,
-): Promise<{ browser: Browser; page: Page }> {
+): Promise<Page> {
+    const page = chooserApp.page;
     const { menuText, resolvedTag } = await getMenuTextForLanguageTag(
-        chooser.page,
+        page,
         languageTag,
     );
-    const menu = await openUiLanguageMenu(chooser.page);
+    const menu = await openUiLanguageMenu(page);
     const item = menu.locator("li[role='menuitem']").filter({
         hasText: menuText,
     });
@@ -413,7 +367,7 @@ export async function chooseUiLanguageInChooser(
         item,
         `expected exactly one menu item matching "${menuText}"`,
     ).toHaveCount(1);
-    const pageClosed = chooser.page.waitForEvent("close", { timeout: 60000 });
+    const pageClosed = page.waitForEvent("close", { timeout: 60000 });
     pageClosed.catch(() => undefined);
     // See chooseUiLanguage: a "page closed" error means the click landed while the dialog was
     // already being torn down.
@@ -423,16 +377,15 @@ export async function chooseUiLanguageInChooser(
         }
     });
     await pageClosed;
-    await chooser.browser.close().catch(() => undefined);
 
-    const reattached = await attachToChooser(cdpPort);
+    const newPage = await chooserApp.reattachToChooser();
     await expect
-        .poll(() => getUiLanguageTag(reattached.page), {
+        .poll(() => getUiLanguageTag(newPage), {
             timeout: 60000,
             message: `Bloom never reported the UI language as "${resolvedTag}" after choosing "${menuText}" in the chooser.`,
         })
         .toBe(resolvedTag);
-    return reattached;
+    return newPage;
 }
 
 /**
@@ -462,53 +415,26 @@ export async function expectChooserStrings(
 }
 
 /**
- * Leave the chooser by opening the given .bloomCollection - the same call a click on one of the
- * dialog's collection cards makes (the test's collection is not among the cards, which show the
- * MRU and the default collections folder). The dialog closes and the workspace comes up; this
- * re-attaches to the workspace's shell page over a fresh connection and returns it once the
- * collection is ready.
+ * Leave the chooser by opening chooserApp.collectionToOpen - the same call a click on one of
+ * the dialog's collection cards makes (the test's collection is not among the cards, which show
+ * the MRU and the default collections folder). The dialog closes and the workspace comes up;
+ * this re-attaches to the workspace's shell page (chooserApp.page from here on) and returns it
+ * once the collection is ready.
  */
 export async function openCollectionFromChooser(
-    chooser: { browser: Browser; page: Page },
-    cdpPort: number,
-    collectionPath: string,
-): Promise<{ browser: Browser; page: Page }> {
-    const pageClosed = chooser.page.waitForEvent("close", { timeout: 60000 });
+    chooserApp: IChooserBloomApp,
+): Promise<Page> {
+    const page = chooserApp.page;
+    const pageClosed = page.waitForEvent("close", { timeout: 60000 });
     pageClosed.catch(() => undefined);
-    await apiPost(chooser.page, "workspace/openCollection", collectionPath);
-    await pageClosed;
-    await chooser.browser.close().catch(() => undefined);
-
-    const browser = await connectOverCdpWithRetry(cdpPort);
-    const page = await findWorkspaceShellPage(browser);
-    await waitForCollectionReady(page);
-    return { browser, page };
-}
-
-/**
- * Find the workspace shell page (the one with the top-bar tab strip) among the CDP targets.
- * The chooser flow cannot use bloomApp.reattachToShell because there is no bloomApp fixture in
- * a chooser test; this is the same marker-based scan.
- */
-async function findWorkspaceShellPage(browser: Browser): Promise<Page> {
-    const deadline = Date.now() + 90000;
-    let lastUrls: string[] = [];
-    while (Date.now() < deadline) {
-        const pages = browser
-            .contexts()
-            .flatMap((context) => context.pages())
-            .filter((page) => !page.url().startsWith("devtools://"));
-        lastUrls = pages.map((page) => page.url());
-        for (const page of pages) {
-            const hasTabs = await page
-                .evaluate(() => !!document.querySelector('[role="tablist"]'))
-                .catch(() => false);
-            if (hasTabs) return page;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-    throw new Error(
-        `The workspace shell page never appeared within 90s after leaving the chooser. ` +
-            `Targets seen: ${lastUrls.join(", ") || "none"}.`,
+    await apiPost(
+        page,
+        "workspace/openCollection",
+        chooserApp.collectionToOpen,
     );
+    await pageClosed;
+
+    const newPage = await chooserApp.reattachToShell();
+    await waitForCollectionReady(newPage);
+    return newPage;
 }
