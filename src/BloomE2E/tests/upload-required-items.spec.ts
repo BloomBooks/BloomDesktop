@@ -30,12 +30,15 @@ import { chooseImageFile } from "../helpers/images";
 import {
     acceptAllAgreements,
     clickToFixMissingItem,
+    clickUploadBook,
+    declineTemplateUploadWarning,
     expectAgreementsShowing,
     expectMissingRequirements,
     expectUploadStepButtons,
     openPublishToWeb,
     pretendLoginState,
     stopPretendingAboutLogin,
+    waitForTemplateUploadWarning,
 } from "../helpers/libraryPublish";
 import { switchTab, waitForActiveTab } from "../helpers/workspace";
 
@@ -57,6 +60,7 @@ const IMAGE_FILE = Path.resolve(
 
 const TITLE = "A Book With A Title";
 const COPYRIGHT_HOLDER = "Test Publisher";
+const SIGNED_IN_EMAIL = "e2e-tester@example.com";
 
 /**
  * Make a book that has neither a title nor a copyright, which is what a book made from a template
@@ -217,7 +221,7 @@ test.describe("the items a book needs before it can be uploaded", () => {
         );
 
         // Signed in, everything else being ready: now, and only now, the book can be uploaded.
-        await pretendLoginState(page, "e2e-tester@example.com");
+        await pretendLoginState(page, SIGNED_IN_EMAIL);
         await expectUploadStepButtons(
             page,
             { signIn: "absent", uploadBook: "enabled", signOut: "enabled" },
@@ -225,6 +229,47 @@ test.describe("the items a book needs before it can be uploaded", () => {
         );
 
         // Stop pretending, so the rest of this Bloom sees the machine's real login state again.
+        await stopPretendingAboutLogin(page);
+    });
+
+    test("a template is let through without a copyright, after a warning [Test Case ID 606]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        // A book made from Template Starter is a template, and Bloom titles it for us, so this one
+        // is short of a copyright and nothing else.
+        await switchTab(page, "collection");
+        await makeBookFromTemplate(page, "Template Starter");
+        await openPublishToWeb(page);
+
+        await expectMissingRequirements(
+            page,
+            [],
+            "Publish: Web asked a template for something, but a template needs no copyright.",
+        );
+        await expectAgreementsShowing(
+            page,
+            true,
+            "The Agreements did not appear for a template with no copyright.",
+        );
+
+        await acceptAllAgreements(page);
+        await pretendLoginState(page, SIGNED_IN_EMAIL);
+        await expectUploadStepButtons(
+            page,
+            { signIn: "absent", uploadBook: "enabled", signOut: "enabled" },
+            "A template with no copyright was not offered the Upload Book button.",
+        );
+
+        // THE ACTION UNDER TEST: clicking Upload on a template. Bloom lets it through, but warns
+        // first, in case the book is a template by accident.
+        await clickUploadBook(page);
+        const warning = await waitForTemplateUploadWarning(page);
+        expect(warning).toContain("Do you want to go ahead?");
+
+        // Answering Yes would upload to a real server, so this is where an automated run stops:
+        // being offered the choice IS the "upload is allowed" the manual test looks for.
+        await declineTemplateUploadWarning(page);
         await stopPretendingAboutLogin(page);
     });
 });

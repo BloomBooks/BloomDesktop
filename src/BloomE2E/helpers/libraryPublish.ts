@@ -7,7 +7,7 @@
 // several of these helpers poll: what the screen shows follows libraryPublish/getBookInfo, which
 // is fetched after the screen mounts and re-fetched whenever the copyright is saved.
 
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { apiPost } from "./api";
 import { selectPublishDestination } from "./publish";
 
@@ -198,6 +198,52 @@ export async function expectUploadStepButtons(
             { timeout: 30000, message },
         )
         .toBe(describeUploadStepButtons(expected));
+}
+
+/**
+ * Click the Upload Book button. This is the click that starts an upload, so a test may only do it
+ * where it knows Bloom will stop and ask something first (see the template warning below); a book
+ * that is ready to go would be uploaded to a real server.
+ */
+export async function clickUploadBook(page: Page): Promise<void> {
+    await page
+        .getByTestId("upload-buttons")
+        .getByRole("button", { name: /^Upload Book/ })
+        .click();
+}
+
+/**
+ * Wait for the warning Bloom shows when the book being uploaded is a template — templates are the
+ * exception to the copyright rule, so Bloom lets them through but checks that the user meant it —
+ * and return what it says.
+ */
+export async function waitForTemplateUploadWarning(
+    page: Page,
+): Promise<string> {
+    const warning = templateUploadWarning(page);
+    await warning.waitFor({ state: "visible", timeout: 60000 });
+    return (await warning.innerText()).trim();
+}
+
+/**
+ * Answer No to the template warning. That is the only answer a test may give: Yes starts a real
+ * upload to a real server, which no automated run should do (see AUTOMATION-DEBT.md), so there is
+ * deliberately no helper for it.
+ */
+export async function declineTemplateUploadWarning(page: Page): Promise<void> {
+    await templateUploadWarning(page)
+        .getByRole("button", { name: "No", exact: true })
+        .click();
+    await expect(templateUploadWarning(page)).toHaveCount(0, {
+        timeout: 30000,
+    });
+}
+
+/** The template warning dialog, told apart from any other dialog by what it says. */
+function templateUploadWarning(page: Page): Locator {
+    return page
+        .getByRole("dialog")
+        .filter({ hasText: "seems to be a template" });
 }
 
 /**
