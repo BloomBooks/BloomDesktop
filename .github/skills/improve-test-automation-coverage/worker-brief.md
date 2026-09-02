@@ -94,8 +94,7 @@ Use the task id and dispatch id from the dispatch preamble at the top of your pr
 ### 3. Implement the test
 
 Follow the add-e2e-test skill. Put `[Test Case ID {{TEST_CASE_ID}}]` in the test title. Prefer
-`collectionSpec` (the test builds its own collection). Cover every to_do step you can; if you
-cover only part, remember which part for the `Partial` note later.
+`collectionSpec` (the test builds its own collection). If you cannot implement each step, that is a problem. If a substantial portion can be automated and there is a clean split, then the notion test must be split into manual vs. automated. Otherwise,  you can just fail the implementation of this test and set the Automation property to "Has automation problems".
 
 ### 4. Run it through the lock, three times
 
@@ -131,8 +130,11 @@ proceed without a `ship`.
    Also say which Test Steps the test covers and which it does not, and give any change
    outside `src/BloomE2E` its own **Bloom production code changes** heading, as the add-e2e-test
    summary does.
-2. Set the card to `PR Pending` with the PR URL in the note. If the test covers only part of the
-   steps, say which part in the same note:
+2. If the test covers only part of the card's steps, split the card first, as `add-e2e-test`
+   describes: the original keeps its `Test Case ID` and becomes `<title> [Automated portion]`;
+   the uncovered steps move to a new `<title> [Manual portion]` row. A card is never left half
+   automated. Then set the card to `PR Pending` with the PR URL in the note, and say in the same
+   note which steps the test covers:
 
    ```powershell
    py {{SKILL_DIR}}/notion_automation.py set {{TEST_CASE_ID}} "PR Pending" --note "[improve-test-automation-coverage {{TODAY}}] PR: <pr url>. Covers steps: <which>. Not covered: <which, or 'none'>."

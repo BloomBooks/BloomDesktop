@@ -87,27 +87,43 @@ carries the API mechanics.
   `test("change UI language repeatedly [Test Case ID 69]", ...)` — so the code and the
   inventory stay tied. Read the card's Test Steps checkboxes; they are the behavior
   contract. When the automated test lands, set the card's `Automation` property to
-  `Automated` — or to `Partial` when the automated test covers only part of the steps,
-  and say which part in `Automation Notes`. While the test is still in an open PR, the
-  card belongs in `PR Pending` instead, with the PR URL in `Automation Notes`. The title string is the whole mechanism;
+  `Automated`. While the test is still in an open PR, the card belongs in `PR Pending`
+  instead, with the PR URL in `Automation Notes`. The title string is the whole mechanism;
   the library provides no helper or annotation for it, deliberately, so that grepping
   `Test Case ID` across `src/BloomE2E/tests/` finds every tie.
+- **When the test covers only part of the card's steps, split the card.** A card marked
+  `Automated` while some of its steps are still human-run hides those steps: nobody reads
+  `Automation Notes` when planning a manual run. So a card is never half automated.
+  1. Rename the original to `<title> [Automated portion]`. It keeps its `Test Case ID`,
+     because the test source carries that id, and keeps only the steps the test covers.
+  2. Add a row `<title> [Manual portion]` with the next free `Test Case ID` and the same
+     `Test Suite Run`, `Areas`, `Priority`, and `Dokimion ID`. Move the uncovered steps into
+     it. Start its body with a callout that names the automated card and says, per step,
+     why it is not automated (microphone, native dialog, WinForms surface) and which
+     `AUTOMATION-DEBT.md` entry covers it. Its `Automation` is `Manual`, or `Keep manual`
+     when the steps can never be automated.
+  3. Link the two rows through the `Related Cases` relation property, in both directions,
+     and name the other card's id in each `Summary`.
+  Do this when you set `PR Pending`, not after the merge. Example: Test Case ID 349,
+  "Duplicate Page [Automated portion]", and its manual portion, Test Case ID 810.
 - **Writing a new e2e test that has no manual card:** add a row to the inventory so it
   remains the inventory of ALL tests, not only human-run ones. Allocate the next free
   `Test Case ID`, fill in the title, Summary, and Areas, and set `Automation` to
   `Automated`.
 - **The `Automation` select property** holds the case's automation lifecycle:
-  `Manual` → `Planned` → `Building` → `PR Pending` → `Automated` (or `Partial`), with
-  `Keep manual` as the deliberate opt-out.
+  `Manual` → `Planned` → `Building` → `PR Pending` → `Automated`, with `Keep manual` as
+  the deliberate opt-out.
   - Empty means the same as `Manual` — the legacy rows were not bulk-stamped.
   - `Planned` marks a case the team judged a good automation candidate. To find work,
     filter the current suite run on `Automation = Planned`.
   - `Building` means someone is automating it right now. Set it when you start, so two
-    people or agents do not automate the same case; set `Automated` (or `Partial`,
-    with the covered part named in `Automation Notes`) when the test lands.
+    people or agents do not automate the same case; set `Automated` when the test lands,
+    after splitting the card if the test covers only part of its steps.
   - `PR Pending` means the test exists in an open PR that has not merged. Put the PR URL
     in `Automation Notes`. The `improve-test-automation-coverage` skill leaves cards here;
-    a human (or a later sweep) moves them to `Automated` or `Partial` after the merge.
+    a human (or a later sweep) moves them to `Automated` after the merge.
+  - `Partial` is retired. A card that would have been `Partial` is split instead (see
+    above). A card still marked `Partial` is one that still needs the split.
   - `Has automation problems` means an automation attempt found the card not automatable as
     written. `Automation Notes` says which step blocks it and what the card, or Bloom, needs.
     The developer who owns the card fixes that and sets `Planned` again.
@@ -267,19 +283,36 @@ Dependencies point down only:
    header and the CDP endpoint does not answer on `localhost`) and `helpers/realClick.ts`
    (`realClick`, `realClickAt`). Tests do not import these; surface modules wrap them.
 2. **One module per Bloom surface**, named after the surface:
-   - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Bloom hides the
-     Edit and Publish tabs until a book is selected.
+   - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`, and the zoom
+     control's `getZoom`, `setZoom`. Bloom hides the Edit and Publish tabs until a book is
+     selected.
    - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
    - `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `findBookFolder`,
-     `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`, `typeInGroup`,
+     `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`, `clickInGroup`, `typeInGroup`,
      `waitForEditablePage`, `editablePageFrame`. A book made from a template starts with
      front and back matter only, so a test that needs content calls `addPage`. Bloom writes
      a page only when the book leaves it, so `goToPage` is also how a test saves what it
-     typed.
+     typed. `makeBookFromBookInCollection`, `getFactoryTemplateFolder` and
+     `getFactoryTemplatePageLabels` serve tests about templates and derivatives.
+     `waitForEditablePage` waits for Bloom's editing state machine (via `e2e/isEditingPage`)
+     as well as for the page, because an add or a jump asked for before that is silently
+     dropped.
    - `helpers/pageList.ts` — `duplicatePageWithButton`, `duplicatePageWithContextMenu`,
      `movePageToSlotOf`, and the API route `duplicateCurrentPage` for setup.
    - `helpers/images.ts` — `chooseImageFile` (setup, no picker), `cropImage`,
      `getImagePlacement`.
+   - `helpers/formatDialog.ts` — the format gear and the Format dialog it opens:
+     `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
+     `getFormatDialogPlacement`, `scrollFormatGearIntoView`, `scrollFormatGearPartlyIntoView`,
+     `zoomUntilFormatGearIsOutOfView`.
+   - `helpers/addPageDialog.ts` — `openAddPageDialog`, `getAddPageDialogGroups`,
+     `scrollAddPageDialog`, `closeAddPageDialog`, `addPageFromDialog`. The real Add Page
+     dialog, for tests whose subject is the dialog; `addPage` is the API route to a page.
+     Identify a group by its `templateBookFolder`, not its heading: the heading is localized
+     ("Basic Pages" for Basic Book), and the machine running the test can have downloaded
+     templates of its own in the list.
+   - `helpers/files.ts` — `fingerprintFolder`, `isInsideFolder`. Files on disk; nothing
+     here talks to Bloom.
    - `helpers/publish.ts` — `openPublishDestination`, `getTextLanguageRows`,
      `expectTextLanguageRows`, `clickTextLanguage`, `showBloomPubPreview`,
      `getPreviewLanguages`, `getLanguagesInBook`, `getTooltipForLanguage`.

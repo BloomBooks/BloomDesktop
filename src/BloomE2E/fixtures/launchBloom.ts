@@ -271,10 +271,18 @@ export function writeNewCollection(
 }
 
 /**
- * The XML of a .bloomCollection with these languages. Exported because a test changes collection
- * settings by rewriting this file between a stop and a start (see ILaunchedBloom.restart).
+ * The XML of a .bloomCollection with these languages and this front/back matter pack. Exported
+ * because a test changes collection settings by rewriting this file between a stop and a start
+ * (see ILaunchedBloom.restart).
+ *
+ * `xmatterPack` is the pack's key, the part of its folder name before "-XMatter": "Factory" (the
+ * pack the Settings dialog calls Paper Saver), "Traditional", "SuperPaperSaver", "Device",
+ * "SIL-PNG". The default is Factory, which is what the collections here have always had.
  */
-export function makeCollectionXml(languages: string[]): string {
+export function makeCollectionXml(
+    languages: string[],
+    xmatterPack = "Factory",
+): string {
     // Bloom treats Language2 as "same as Language1" when a collection names only one language,
     // which is what its own new-collection code writes.
     const [language1 = "en", language2 = languages[0] ?? "en", language3 = ""] =
@@ -292,7 +300,7 @@ export function makeCollectionXml(languages: string[]): string {
         `<?xml version="1.0" encoding="utf-8"?>\n` +
         `<Collection version="0.2">\n` +
         languageElements +
-        `\n  <XMatterPack>Factory</XMatterPack>\n` +
+        `\n  <XMatterPack>${xmatterPack}</XMatterPack>\n` +
         `  <BrandingProjectName>Default</BrandingProjectName>\n` +
         `  <AllowNewBooks>True</AllowNewBooks>\n` +
         `  <PageNumberStyle>Decimal</PageNumberStyle>\n` +

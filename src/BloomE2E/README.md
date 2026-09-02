@@ -86,9 +86,17 @@ real bug in the code under test; read the message and fix it rather than working
 
 ## Helpers
 
-- `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Note that Bloom hides the
-  Edit and Publish tabs until a book is selected.
+- `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`, and the zoom control's
+  `getZoom`, `setZoom`. Note that Bloom hides the Edit and Publish tabs until a book is selected.
+- `helpers/formatDialog.ts` — the format gear beside the text box being edited, and the Format
+  dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
+  `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
+  screen.
 - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`, `setCollectionLanguages`.
+- `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
+- `helpers/addPageDialog.ts` — open, read, scroll and close the real Add Page dialog, and add a
+  page through it. Tests that only need a page in their book call `addPage` instead.
+- `helpers/files.ts` — `fingerprintFolder`, `isInsideFolder`, for checks against the disk.
 - `helpers/api.ts` — `apiGet`, `apiPost`, `apiGetJson`. These run `fetch` inside the page with a
   relative URL, which is not a style choice: Bloom's server rejects a `127.0.0.1` Host header, and
   the CDP endpoint does not answer on `localhost`. The file explains it.
@@ -114,10 +122,11 @@ a case, put that id in the test title so the code and the inventory stay tied:
 test("change UI language repeatedly [Test Case ID 69]", async ({ page }) => { ... });
 ```
 
-Then set the card's `Automation` property to `Automated`, or to `Partial` when the test covers only
-part of the steps. A new test with no manual card gets a new inventory row, so the inventory stays
-the inventory of all tests rather than only the human-run ones. `.github/skills/add-e2e-test/SKILL.md`
-has the details.
+Then set the card's `Automation` property to `Automated`. If the test covers only part of the card's
+steps, split the card first into an `[Automated portion]` that keeps the id and a `[Manual portion]`
+with a new id, so no human-run step hides behind an automated card. A new test with no manual card
+gets a new inventory row, so the inventory stays the inventory of all tests rather than only the
+human-run ones. `.github/skills/add-e2e-test/SKILL.md` has the details.
 
 ## Running
 
@@ -184,3 +193,10 @@ quietly tests the built bundle, however old it is. Both halves are in AUTOMATION
 "A Vite dev server only reaches the whole UI on port 5173".
 
 So stop a Bloom that is already using 5173 before a run, rather than moving the dev server.
+## In CI
+
+`.github/workflows/nightly.yml` runs the whole suite every night against the Release build it has
+just made, and reports it as its own check run, "Nightly tests: BloomE2E (Playwright)". A failing
+night uploads Playwright's HTML report and traces as the `e2e-report` artifact. A manual run of
+that workflow can tick this suite alone, which is the quick way to see how a test behaves on the
+runner rather than on your machine.
