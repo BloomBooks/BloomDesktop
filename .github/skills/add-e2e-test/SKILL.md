@@ -338,9 +338,14 @@ pnpm exec playwright test tests/workspace-tabs.spec.ts   # one file
 pnpm exec playwright test -g "switching workspace tabs"  # one test by title
 ```
 
-A run opens a real Bloom window; that is expected. It needs a built `Bloom.exe` under
-`output/{Debug,Release}/{x64,AnyCPU,}/` (build it yourself; see "Build Bloom whenever it
-helps") and the inputs at `output/testing-inputs`. Point
+A run launches a real Bloom, but no window appears: the fixture passes `--headless`, which puts
+Bloom's window far outside every monitor, so a run does not take your desktop over. Set
+`BLOOM_E2E_HEADED=1` to watch it (`--debug` sets it for you). The window goes off-screen rather
+than minimized or hidden because WebView2 stops painting a minimized window, which makes every
+screenshot blank.
+
+A run needs a built `Bloom.exe` under `output/{Debug,Release}/{x64,AnyCPU,}/` (build it yourself;
+see "Build Bloom whenever it helps") and the inputs at `output/testing-inputs`. Point
 `BLOOM_TESTING_INPUTS_DIR` at a bloom-testing-inputs checkout to use your own in-progress
 collections instead of the pinned ones.
 

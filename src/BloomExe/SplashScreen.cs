@@ -29,13 +29,28 @@ namespace Bloom
         }
 
         // During an automation run (--automation) the splash must not steal the user's
-        // keyboard focus when it is shown.
-        protected override bool ShowWithoutActivation => Program.StartupAutomation;
+        // keyboard focus when it is shown. Neither must a headless run (--headless), whose
+        // windows all sit off-screen.
+        protected override bool ShowWithoutActivation =>
+            Program.StartupAutomation || Program.StartupHeadless;
 
         private SplashScreen()
         {
             InitializeComponent();
-            if (Program.StartupAutomation)
+            if (Program.StartupHeadless)
+            {
+                // A headless run shows nothing on any monitor, so the splash goes off-screen with
+                // the main window and out of the task bar with it. See Shell.GetHeadlessBounds.
+                //
+                // The splash normally has a task bar entry, and an off-screen window with one is
+                // worse than either: the developer gets a task bar button for a window they
+                // cannot bring into view.
+                StartPosition = FormStartPosition.Manual;
+                var headlessArea = Shell.GetHeadlessBounds();
+                Location = new System.Drawing.Point(headlessArea.Left, headlessArea.Top);
+                ShowInTaskbar = false;
+            }
+            else if (Program.StartupAutomation)
             {
                 // An automation run must not open on whichever monitor the user is currently
                 // working on. Center the splash on the automation screen instead.
@@ -111,8 +126,9 @@ namespace Bloom
         private void SplashScreen_Load(object sender, EventArgs e)
         {
             // During an automation run, grabbing focus would yank the user's keyboard away
-            // from whatever they are doing on another monitor while tests run.
-            if (!Program.StartupAutomation)
+            // from whatever they are doing on another monitor while tests run. A headless splash
+            // is off-screen, so bringing it to the front would take the foreground for nothing.
+            if (!Program.StartupAutomation && !Program.StartupHeadless)
             {
                 //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
                 TopMost = true;
@@ -122,7 +138,7 @@ namespace Bloom
             _channelLabel.Visible = channel.ToLowerInvariant() != "release";
             _channelLabel.Text = channel; // No need to localize this: seen only by testers or special users (BL-4451)
             _copyrightlabel.Text = $"© 2011-{DateTime.Now.Year} SIL Global";
-            if (!Program.StartupAutomation)
+            if (!Program.StartupAutomation && !Program.StartupHeadless)
                 BringToFront();
         }
 
