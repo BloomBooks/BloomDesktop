@@ -221,7 +221,8 @@ one running Bloom into a second one. Bloom's page clipboard is a pair of fields 
 clipboard, so nothing crosses a process boundary; the feature is known not to work in 6.5. The
 e2e fixture is also built around one Bloom per worker, so a test could not stage it today even
 if the feature worked. The automated test therefore covers the within-book and between-books
-cases only, and the Notion case stays Partial. Fix direction: decide whether cross-instance
+cases only, so the Notion card splits: the cross-instance step belongs on a manual portion
+row, per the card-splitting rule in `add-e2e-test`. Fix direction: decide whether cross-instance
 copy is a feature we want; if it is, put the page on the real clipboard, and give the launch
 fixture a way to run a second instance.
 (Found 2026-09-01 while automating Test Case ID 348.)
