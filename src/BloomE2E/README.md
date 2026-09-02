@@ -87,8 +87,12 @@ real bug in the code under test; read the message and fix it rather than working
 
 ## Helpers
 
-- `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Note that Bloom hides the
-  Edit and Publish tabs until a book is selected.
+- `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`, and the zoom control's
+  `getZoom`, `setZoom`. Note that Bloom hides the Edit and Publish tabs until a book is selected.
+- `helpers/formatDialog.ts` — the format gear beside the text box being edited, and the Format
+  dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
+  `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
+  screen.
 - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
 - `helpers/api.ts` — `apiGet`, `apiPost`, `apiGetJson`. These run `fetch` inside the page with a
   relative URL, which is not a style choice: Bloom's server rejects a `127.0.0.1` Host header, and

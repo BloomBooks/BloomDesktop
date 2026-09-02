@@ -1,4 +1,4 @@
-// Drive and read Bloom's top-bar workspace tabs.
+// Drive and read Bloom's top bar: the workspace tabs, and the zoom control at its right end.
 //
 // The WinForms shell, not the React top bar, owns which tab is active. So a test clicks the real
 // button (switchTab) but asks Bloom's own workspace/tabs API what happened (getTabs,
@@ -7,7 +7,8 @@
 // finished the switch rather than merely started it.
 
 import { expect, type Page } from "@playwright/test";
-import { apiGetJson } from "./api";
+import { apiGetJson, apiPost } from "./api";
+import { editablePageFrame } from "./bookMaking";
 
 /** The three workspace tabs, named as Bloom's API names them. */
 export type WorkspaceTabId = "collection" | "edit" | "publish";
@@ -69,4 +70,70 @@ export async function switchTab(
     await target.waitFor({ state: "visible", timeout: timeoutMs });
     await target.click();
     await waitForActiveTab(page, tab, timeoutMs);
+}
+
+/** What GET workspace/topRight/zoom replies with: the Edit tab's zoom, as a percentage. */
+export interface IZoomInfo {
+    zoom: number;
+    minZoom: number;
+    maxZoom: number;
+    /** False outside the Edit tab, where the top bar hides the zoom control. */
+    zoomEnabled: boolean;
+}
+
+/** Ask Bloom what the Edit tab's zoom is, and the range it allows. */
+export async function getZoom(page: Page): Promise<IZoomInfo> {
+    return apiGetJson<IZoomInfo>(page, "workspace/topRight/zoom");
+}
+
+/**
+ * Set the Edit tab's zoom to `percent`, by the same route as the top bar's + and − buttons post.
+ * This is the SETUP route for a test that needs the page drawn large or small; a test whose subject
+ * is the zoom control clicks the buttons instead.
+ *
+ * Returns once Bloom reports the new zoom and the page being edited is drawn at it. Bloom saves the
+ * zoom as a user setting, so a test that changes it should put it back when it is done.
+ */
+export async function setZoom(page: Page, percent: number): Promise<void> {
+    const info = await getZoom(page);
+    if (!info.zoomEnabled)
+        throw new Error(
+            "Bloom is not showing the Edit tab, so there is no page to zoom.",
+        );
+    if (percent < info.minZoom || percent > info.maxZoom)
+        throw new Error(
+            `Bloom's zoom goes from ${info.minZoom}% to ${info.maxZoom}%, so it cannot be set to ${percent}%.`,
+        );
+    await apiPost(
+        page,
+        "workspace/topRight/zoom",
+        JSON.stringify({ zoom: percent }),
+        "application/json",
+    );
+    await expect
+        .poll(async () => (await getZoom(page)).zoom, {
+            timeout: 30000,
+            message: `Bloom never reported the zoom as ${percent}%.`,
+        })
+        .toBe(percent);
+    // Bloom draws the zoom by scaling a container it wraps around the page (see SetupPageZoom in
+    // EditingModel.cs and setZoom in workspaceRoot.ts). Wait for that to show the new zoom, or a
+    // measurement taken right after this returns would see the old size.
+    await expect
+        .poll(
+            async () =>
+                editablePageFrame(page)
+                    .locator("#page-scaling-container")
+                    .evaluate((container) => {
+                        const match = /scale\(([\d.]+)\)/.exec(
+                            (container as HTMLElement).style.transform,
+                        );
+                        return match ? Math.round(Number(match[1]) * 100) : 0;
+                    }),
+            {
+                timeout: 30000,
+                message: `The page being edited was never drawn at ${percent}%.`,
+            },
+        )
+        .toBe(percent);
 }
