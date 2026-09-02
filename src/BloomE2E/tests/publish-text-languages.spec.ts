@@ -11,10 +11,7 @@
 // run before the test that clicks a box, and the file would quietly stop testing the defaults if
 // they were reordered.
 
-import * as fs from "node:fs";
-import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
-import { makeCollectionXml } from "../fixtures/launchBloom";
 import {
     addPage,
     findBookFolder,
@@ -26,6 +23,7 @@ import {
     typeInGroup,
 } from "../helpers/bookMaking";
 import { selectBook } from "../helpers/collection";
+import { restartWithCollectionSettings } from "../helpers/collectionSettings";
 import {
     clickTextLanguage,
     expectTextLanguageRows,
@@ -100,16 +98,9 @@ test.describe("the Text Languages publish list", () => {
         // Now swap German out for Spanish. Collection settings have no API and their dialog is a
         // WinForms surface CDP cannot reach, so the way to change them is to quit Bloom, rewrite
         // the .bloomCollection, and start again. See AUTOMATION-DEBT.md.
-        const newPage = await bloomApp.restart(() =>
-            fs.writeFileSync(
-                Path.join(
-                    bloomApp.collectionDir,
-                    `${COLLECTION_NAME}.bloomCollection`,
-                ),
-                makeCollectionXml(FINAL_LANGUAGES),
-                "utf8",
-            ),
-        );
+        const newPage = await restartWithCollectionSettings(bloomApp, {
+            languages: FINAL_LANGUAGES,
+        });
         bookFolder = await findBookFolder(newPage, BOOK_TITLE);
         await selectBook(newPage, bookFolder);
         await switchTab(newPage, "edit");
@@ -380,16 +371,9 @@ test.describe("the Text Languages publish list", () => {
         // Drop Spanish from the collection. The book still has Spanish text, so the language stays
         // in the list; but the collection no longer supplies a name for it, so Bloom falls back to
         // the name the language calls itself.
-        const withoutSpanish = await bloomApp.restart(() =>
-            fs.writeFileSync(
-                Path.join(
-                    bloomApp.collectionDir,
-                    `${COLLECTION_NAME}.bloomCollection`,
-                ),
-                makeCollectionXml(["en", "fr"]),
-                "utf8",
-            ),
-        );
+        const withoutSpanish = await restartWithCollectionSettings(bloomApp, {
+            languages: ["en", "fr"],
+        });
         await selectBook(withoutSpanish, bookFolder);
         await openPublishDestination(withoutSpanish, "Web");
         // In any order: where a language the collection no longer names sits in the list is not
@@ -420,16 +404,9 @@ test.describe("the Text Languages publish list", () => {
         );
 
         // Put Spanish back, for the test that follows.
-        const withSpanish = await bloomApp.restart(() =>
-            fs.writeFileSync(
-                Path.join(
-                    bloomApp.collectionDir,
-                    `${COLLECTION_NAME}.bloomCollection`,
-                ),
-                makeCollectionXml(FINAL_LANGUAGES),
-                "utf8",
-            ),
-        );
+        const withSpanish = await restartWithCollectionSettings(bloomApp, {
+            languages: FINAL_LANGUAGES,
+        });
         await selectBook(withSpanish, bookFolder);
     });
 

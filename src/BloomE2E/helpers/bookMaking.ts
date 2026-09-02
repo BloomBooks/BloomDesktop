@@ -45,16 +45,37 @@ export async function makeBookFromTemplate(
     templateTitle: string,
 ): Promise<string> {
     await waitForCollectionReady(page);
-    const collections = await apiGetJson<ICollectionInfo[]>(
-        page,
-        "collections/list",
-    );
-    const templates = collections.find((c) => c.name === "Templates");
-    if (!templates)
+    // collections/list leaves out every source collection whose books have not been read yet,
+    // and Bloom reads the factory templates in the background after the collection opens. So
+    // wait for "Templates" to be listed rather than reading the list once.
+    let collections: ICollectionInfo[] = [];
+    let templates: ICollectionInfo | undefined;
+    try {
+        // The message is built after the wait fails, so that it can name what WAS listed. A
+        // message passed to expect.poll would be built before the first poll, when nothing is.
+        await expect
+            .poll(
+                async () => {
+                    collections = await apiGetJson<ICollectionInfo[]>(
+                        page,
+                        "collections/list",
+                    );
+                    templates = collections.find((c) => c.name === "Templates");
+                    return !!templates;
+                },
+                { timeout: 60000 },
+            )
+            .toBe(true);
+    } catch {
         throw new Error(
-            `Bloom is not showing a "Templates" source collection, so there is no ` +
+            `Bloom never listed a "Templates" source collection, so there is no ` +
                 `"${templateTitle}" to make a book from. Collections: ` +
                 collections.map((c) => c.name).join(", "),
+        );
+    }
+    if (!templates)
+        throw new Error(
+            `Bloom listed "Templates" a moment ago and then lost it.`,
         );
     const books = await apiGetJson<IBookInfo[]>(
         page,
@@ -393,4 +414,58 @@ export async function typeInGroup(
     // Bloom's editor reacts to typing; confirm the box holds what we meant before moving on, so a
     // later failure cannot be blamed on text that never arrived.
     await expect(box).toHaveText(text, { timeout: 15000 });
+}
+
+/** One front or back matter page, as the Edit tab showed it. */
+export interface IShownXmatterPage {
+    /** The page list's caption for the page, e.g. "Front Cover". */
+    caption: string;
+    /**
+     * Which front or back matter page this is, as the pack names it in data-xmatter-page:
+     * "frontCover", "titlePage", "credits", "insideFrontCover", "insideBackCover",
+     * "outsideBackCover", or a pack's own name such as "spConfigurationPage".
+     */
+    xmatterPage: string | null;
+    /** The file names of the stylesheets the page was shown with, e.g. "Traditional-XMatter.css". */
+    stylesheets: string[];
+}
+
+/**
+ * Show every front and back matter page of the selected book in the Edit tab, in order, the way a
+ * person flips through them, and report what was shown on each: which xmatter page it is and which
+ * stylesheets Bloom gave it. The Edit tab must be showing.
+ *
+ * This is how a test checks which front/back matter pack a book has: the pack decides which pages
+ * exist and in what order, and it puts its own <Pack>-XMatter.css on every page.
+ */
+export async function visitXmatterPages(
+    page: Page,
+): Promise<IShownXmatterPage[]> {
+    const xmatterPages = (await getPages(page)).filter((p) => !p.isContentPage);
+    if (xmatterPages.length === 0)
+        throw new Error(
+            "The selected book has no front or back matter pages at all.",
+        );
+    const shown: IShownXmatterPage[] = [];
+    for (const xmatterPage of xmatterPages) {
+        await goToPage(page, xmatterPage.id);
+        const frame = editablePageFrame(page);
+        const kind = await frame
+            .locator(`.bloom-page[id="${xmatterPage.id}"]`)
+            .getAttribute("data-xmatter-page");
+        const hrefs = await frame
+            .locator('link[rel="stylesheet"]')
+            .evaluateAll((links) =>
+                links.map((link) => link.getAttribute("href") ?? ""),
+            );
+        shown.push({
+            caption: xmatterPage.caption,
+            xmatterPage: kind,
+            // Bloom serves a stylesheet by a path with a cache-busting query; keep the file name.
+            stylesheets: hrefs.map((href) =>
+                decodeURIComponent(href.split("?")[0].split("/").pop() ?? ""),
+            ),
+        });
+    }
+    return shown;
 }
