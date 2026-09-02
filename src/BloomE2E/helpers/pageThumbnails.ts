@@ -112,6 +112,9 @@ export async function selectPage(
  * its Navigating state, and several commands — Copy Page among them — quietly do nothing at all
  * in that state rather than failing. A test that clicks Copy Page too early gets no error and an
  * empty clipboard.
+ *
+ * So this waits on two things: the page's own document, and Bloom's editing state, which it reads
+ * through the e2e/isEditingPage hook. The document reaches its final state first.
  */
 export async function waitForEditablePage(
     page: Page,
@@ -139,6 +142,15 @@ export async function waitForEditablePage(
             },
         )
         .toBe("complete");
+    // The document can be complete a moment before Bloom is, so ask Bloom itself: until its
+    // editing model leaves Navigating, it silently ignores a command that starts by saving the
+    // page, and Copy Page is one of those.
+    await expect
+        .poll(async () => (await apiGet(page, "e2e/isEditingPage")).body, {
+            timeout: timeoutMs,
+            message: `Bloom never finished loading page ${pageId} in the Edit tab (its editing state never became Editing).`,
+        })
+        .toBe("true");
 }
 
 // Property name put on the editable page's document so a later poll can tell whether it is still
