@@ -90,7 +90,7 @@ taken from the `commandId` the menu already has.
 
 ## The component-tester Playwright suites are not in CI
 
-`nightly.yml` runs vitest, C#, and visual-regression only; nothing runs
+`nightly.yml` runs vitest, C#, visual-regression and BloomE2E; nothing runs
 `react_components/component-tester`'s suites, which is how the harness sat broken
 (React 17 pin + config bug) unnoticed until it was green again at 144 passed. It will
 rot again silently. Fix direction: a nightly job mirroring the visual-regression one

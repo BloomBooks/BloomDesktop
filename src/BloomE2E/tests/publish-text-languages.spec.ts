@@ -356,11 +356,22 @@ test.describe("the Text Languages publish list", () => {
         await setContentLanguages(page, ["en"]);
     });
 
-    // KNOWN FLAKE: this test failed once in six full runs on 2026-09-01, and the cause is not
-    // known. The failure was not reproduced, and the log kept only the tail, so the assertion that
-    // failed was not captured. Whoever sees it fail again: keep the whole log. This test does not
-    // change which languages the book shows, so the earlier suspicion about quick successive
-    // calls to editView/topBar/contentLanguageUsageChange does not explain it.
+    // KNOWN FLAKE, now with the assertion captured: this test failed once in six full runs on
+    // 2026-09-01, and again on CI run 33665790357 (2026-09-02, 12 passed / 1 failed). The
+    // assertion that fails is the language NAME, and the whole point of the test:
+    //
+    //     Expected: español      Received: espagnol
+    //
+    // "espagnol" is French for Spanish. At that moment the collection has been rewritten to
+    // en + fr, so Bloom is sometimes naming the dropped language in the collection's own French
+    // rather than falling back to the autonym. So this is not a timing race in the publish list
+    // and not the editView/topBar/contentLanguageUsageChange suspicion, which never explained it:
+    // it is the name lookup resolving against a different language on some runs than others,
+    // after the restart. Everything else about the row (unchecked, not incomplete, enabled) is
+    // right every time.
+    //
+    // Left running deliberately. It is a real nondeterminism in what Bloom shows a user, and the
+    // one test that catches it; silencing it would only hide the bug the nightly just found.
     test("keeps a language that the collection no longer has, under its own name [Test Case ID 169]", async ({
         bloomApp,
     }) => {
