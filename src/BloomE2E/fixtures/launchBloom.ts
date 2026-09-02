@@ -616,6 +616,10 @@ function restoreDisturbedSettings(
     for (const name of [
         "MruProjects",
         "UserInterfaceLanguage",
+        // Choosing a language marks it "explicitly chosen"; without restoring this flag, a
+        // profile that was following the operating-system language would come out pinned to
+        // one language instead.
+        "UserInterfaceLanguageSetExplicitly",
         "ShowUnapprovedLocalizations",
     ]) {
         const original = settingBlock(name, originalText);

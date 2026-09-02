@@ -19,6 +19,18 @@ House rules:
 
 ---
 
+## 2026-09-02 — BloomE2E fails opaquely when output/browser predates the checked-out front-end code
+
+- **Cut:** Twice in one day, a BloomE2E spec failed on a missing `data-testid`
+  (`text-languages-group`, then `duplicate-page-button`) because `output/browser` was built
+  before a merge brought the front-end code that adds it. The failure reads as a mysterious
+  30s locator timeout, not as "your bundle is stale", and `pnpm build` is a manual,
+  developer-only step that nothing prompts for after a merge.
+- **Idea:** Have the BloomE2E fixture fail fast with "run pnpm build" when the newest file
+  under `src/BloomBrowserUI` is newer than `output/browser`'s bundle, or have the suite's
+  README/skill call out "merged master? rebuild output/browser" prominently.
+- **Context:** preflight of PR #8275, branch automateTests.
+
 ## 2026-09-02 — C# suite fails in L10NSharp setup when run alongside the BloomE2E suite
 
 - **Cut:** Running `agent-dotnet test` concurrently with the BloomE2E Playwright suite produced 3
