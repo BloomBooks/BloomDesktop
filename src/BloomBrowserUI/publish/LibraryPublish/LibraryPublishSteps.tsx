@@ -248,6 +248,8 @@ export const LibraryPublishSteps: React.FunctionComponent<{
     function uploadOneBook() {
         setIsUploadComplete(false);
         setIsUploading(true);
+        cancelRequestedRef.current = false;
+        setHasAttemptBegun(false);
         // If either pre-upload request dies at the transport level we get no reply and no progress
         // message, so nothing else would ever clear isUploading. That used to leave only a stale
         // Cancel button, but now it would also keep the other publish tools disabled, so clear it
@@ -260,6 +262,10 @@ export const LibraryPublishSteps: React.FunctionComponent<{
                     // The API already sent an error message
                     return;
                 }
+                // C# has now marked the attempt as started, so a Cancel from here on cannot be
+                // wiped out by that same request arriving late. Only now do we let the user
+                // press Cancel. See the note on hasAttemptBegun.
+                setHasAttemptBegun(true);
                 get(
                     "libraryPublish/getUploadCollisionInfo?index=" +
                         conflictIndex,
@@ -268,6 +274,12 @@ export const LibraryPublishSteps: React.FunctionComponent<{
                             // The API already sent an error message
                             return;
                         }
+                        // The user cancelled while we were asking the server about an existing
+                        // copy. That reply is no longer wanted: showing the collision dialog now
+                        // would pop a dialog up over an attempt the user has abandoned, and
+                        // posting the upload would only be declined. Either way we say nothing
+                        // more -- C# has already reported the cancellation. (BL-16340)
+                        if (cancelRequestedRef.current) return;
                         if (result.data.shouldShow) {
                             setUploadCollisionInfo(result.data);
                             showUploadCollisionDialog();
@@ -294,9 +306,34 @@ export const LibraryPublishSteps: React.FunctionComponent<{
         );
     };
 
+    // True from the moment the user clicks Cancel until C# reports what became of the upload.
+    // While it is true, UPLOAD BOOK is greyed out, so every path that ends an upload has to
+    // clear it. Missing one leaves the user with no working button at all and no way back
+    // short of leaving the screen, which is how BL-16340 presented. The two things that clear
+    // it are the uploadCanceled event and uploadSuccessful, and C# now guarantees one of them
+    // on every ending of a cancelled upload.
+    //
+    // Deliberately NOT cleared here on an error line: this fires for ANY Error-kind progress
+    // message, not just a terminal one, so clearing it here would re-enable UPLOAD BOOK while
+    // a cancel-pending upload was still running -- and pressing it would then clear the pending
+    // cancel server-side and start a second upload alongside the first.
     const [isCanceling, setIsCanceling] = useState<boolean>(false);
+
+    // True once C# has acknowledged the start of this attempt (the subscription check has come
+    // back). Until then Cancel is shown but disabled, because a cancel sent before C# knows an
+    // attempt exists races with the request that begins it -- and if the cancel loses that race
+    // it is wiped out and the book uploads anyway. Waiting for the acknowledgement removes the
+    // race by construction rather than narrowing it. (BL-16340)
+    const [hasAttemptBegun, setHasAttemptBegun] = useState<boolean>(false);
+
+    // Whether the user has cancelled the attempt that is currently starting up. This is a ref,
+    // not state, because the pre-upload callbacks below close over their render's values and
+    // would not see a state update made after they were created.
+    const cancelRequestedRef = useRef(false);
+
     const handleUploadError = React.useCallback(() => {
         setIsUploading(false);
+        setHasAttemptBegun(false);
     }, []);
 
     useSubscribeToWebSocketForEvent(
@@ -304,6 +341,7 @@ export const LibraryPublishSteps: React.FunctionComponent<{
         kWebSocketEventId_uploadCanceled,
         () => {
             setIsCanceling(false);
+            setHasAttemptBegun(false);
         },
     );
 
@@ -339,6 +377,11 @@ export const LibraryPublishSteps: React.FunctionComponent<{
         kWebSocketEventId_uploadSuccessful,
         (results) => {
             setIsUploading(false);
+            // The user may have asked to cancel and C# finished anyway -- either the cancel
+            // arrived after the upload was committed, or it was delayed getting to C# at all.
+            // Whatever the reason, the upload is over, so the Cancel state has to end with it.
+            setIsCanceling(false);
+            setHasAttemptBegun(false);
             setBookUrl(results.url);
             setIsUploadComplete(true);
         },
@@ -629,9 +672,10 @@ export const LibraryPublishSteps: React.FunctionComponent<{
                             )}
                             {isUploading ? (
                                 <BloomButton
-                                    enabled={!isCanceling}
+                                    enabled={!isCanceling && hasAttemptBegun}
                                     l10nKey={"Common.Cancel"}
                                     onClick={() => {
+                                        cancelRequestedRef.current = true;
                                         setIsCanceling(true);
                                         setIsUploading(false);
                                         post("libraryPublish/cancel");
@@ -747,6 +791,7 @@ export const LibraryPublishSteps: React.FunctionComponent<{
                 {...uploadCollisionInfo}
                 onCancel={() => {
                     setIsUploading(false);
+                    setHasAttemptBegun(false);
                 }}
                 conflictIndex={conflictIndex}
                 setConflictIndex={changeConflictIndex}
