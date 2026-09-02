@@ -82,9 +82,9 @@ export async function captureElement(
     await locator.waitFor({ state: "visible", timeout: timeoutMs });
 
     const session = await page.context().newCDPSession(page);
-    // Set once the capture has produced an image, so the cleanup below can tell a clear failure
-    // that is the only thing wrong from one that is trailing a capture error.
-    let captured: IElementImage | undefined;
+    // The capture's own failure, kept so that a cleanup failure on top of it can carry it as a
+    // cause instead of hiding it.
+    let captureError: unknown;
     try {
         // How big the window has to be for the whole element to be laid out at once. Ask for the
         // element's own scroll size, plus where it sits, rather than the document's size: the
@@ -144,14 +144,16 @@ export async function captureElement(
 
         const png = Buffer.from(result.data, "base64");
         const size = readPngSize(png);
-        captured = {
+        return {
             png,
             width: size.width,
             height: size.height,
             elementWidth: box.width,
             elementHeight: box.height,
         };
-        return captured;
+    } catch (error) {
+        captureError = error;
+        throw error;
     } finally {
         // Always, including after a failed capture: the next test in this worker drives the same
         // Bloom, and an emulated 8000-pixel window would make everything it sees wrong.
@@ -167,16 +169,18 @@ export async function captureElement(
 
         if (clearError !== undefined) {
             // The window is still the size we made it, and the rest of this worker's tests would
-            // measure that Bloom rather than the real one. Fail rather than warn.
+            // measure that Bloom rather than the real one. Fail rather than warn, whether or not
+            // the capture itself got that far: a warning on standard error is easy to miss in a
+            // long run, and every later test in this worker is then wrong.
             //
-            // Only when the capture itself succeeded, though. If we are in this block because the
-            // capture threw, that error is the one the test needs to read, and throwing here would
-            // replace it. In that case the message is all we can give.
-            const message = `captureElement could not clear the window size override, so the rest of this worker's tests would drive a Bloom of the wrong size: ${clearError}`;
-            if (captured) {
-                throw new Error(message);
-            }
-            console.error(message);
+            // When the capture failed too, that error is the one the test author needs to read,
+            // so hand it on as the cause rather than let this one replace it.
+            throw new Error(
+                `captureElement could not clear the window size override, so the rest of this worker's tests would drive a Bloom of the wrong size: ${clearError}`,
+                captureError === undefined
+                    ? undefined
+                    : { cause: captureError },
+            );
         }
     }
 }

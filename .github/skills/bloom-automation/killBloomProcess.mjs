@@ -67,7 +67,11 @@ const parseArgs = () => {
         }
 
         if (arg === "--repo-root") {
-            options.repoRoot = args[i + 1] || options.repoRoot;
+            // A required value, checked the same way as every other option's. Taking
+            // `args[i + 1]` and falling back to the default would swallow the NEXT FLAG as
+            // this option's value, so `--repo-root --pid 123` would name no target at all and
+            // reach the default that kills every Bloom this worktree owns.
+            options.repoRoot = requireOptionValue(args, i, "--repo-root");
             i++;
             continue;
         }

@@ -8,7 +8,7 @@
 // both toolboxBootstrap.ts and react_components/ToolboxRootTestHarness call the function below.
 // (AUTOMATION-DEBT.md: "Toolbox tool registration is a side effect of toolboxBootstrap".)
 
-import { ToolBox, getMasterToolList } from "./toolbox";
+import { ITool, ToolBox, getMasterToolList } from "./toolbox";
 import { DecodableReaderTool } from "./readers/decodableReader/decodableReaderTool";
 import { LeveledReaderTool } from "./readers/leveledReader/leveledReaderTool";
 import { MusicToolAdaptor } from "./music/musicToolControls";
@@ -25,23 +25,38 @@ import { SettingsTool } from "./settings/settingsTool";
  * Make the one instance of each toolbox class and register it with the master toolbox. The
  * imports above also serve to ensure that each tool's code is part of the bundle.
  *
- * Calling this twice registers nothing the second time. ToolBox.registerTool is a bare push with
- * no check for duplicates, and the guard keys off the shared master list rather than a flag in
- * this module: a caller that is a React-Refresh boundary re-executes its own module during
- * `pnpm dev` while masterToolList, which lives in toolbox.ts, keeps its entries. A flag here
- * would reset and we would get eleven duplicate tools and duplicate accordion sections.
+ * Calling this twice registers nothing the second time. See registerOnce for why the check is
+ * per tool and reads the shared master list.
  */
 export function registerAllToolboxTools(): void {
-    if (getMasterToolList().length > 0) return;
-    ToolBox.registerTool(new DecodableReaderTool());
-    ToolBox.registerTool(new LeveledReaderTool());
-    ToolBox.registerTool(new MusicToolAdaptor());
-    ToolBox.registerTool(new ImpairmentVisualizerAdaptor());
-    ToolBox.registerTool(new MotionTool());
-    ToolBox.registerTool(new TalkingBookTool());
-    ToolBox.registerTool(new SignLanguageTool());
-    ToolBox.registerTool(new ImageDescriptionAdapter());
-    ToolBox.registerTool(new CanvasTool());
-    ToolBox.registerTool(new GameTool());
-    ToolBox.registerTool(new SettingsTool());
+    registerOnce(new DecodableReaderTool());
+    registerOnce(new LeveledReaderTool());
+    registerOnce(new MusicToolAdaptor());
+    registerOnce(new ImpairmentVisualizerAdaptor());
+    registerOnce(new MotionTool());
+    registerOnce(new TalkingBookTool());
+    registerOnce(new SignLanguageTool());
+    registerOnce(new ImageDescriptionAdapter());
+    registerOnce(new CanvasTool());
+    registerOnce(new GameTool());
+    registerOnce(new SettingsTool());
+}
+
+/**
+ * Register one tool, unless the master list already has a tool of that id.
+ *
+ * ToolBox.registerTool is a bare push with no check for duplicates, so something has to do the
+ * check. It reads the shared master list rather than a flag in this module because a caller that
+ * is a React-Refresh boundary re-executes its own module during `pnpm dev` while masterToolList,
+ * which lives in toolbox.ts, keeps its entries. A flag here would reset and we would get eleven
+ * duplicate tools and duplicate accordion sections.
+ *
+ * The check is per tool, not "is the list empty": a list holding some other tool is not evidence
+ * that these eleven are registered, and skipping all of them on that evidence would leave the
+ * toolbox missing every section.
+ */
+function registerOnce(tool: ITool): void {
+    if (getMasterToolList().some((registered) => registered.id() === tool.id()))
+        return;
+    ToolBox.registerTool(tool);
 }

@@ -91,11 +91,10 @@ namespace Bloom
             // window messages still carry. Far enough left of every monitor that nothing shows,
             // and unlike a margin computed from the screen layout it does not depend on Windows
             // and this process agreeing about how many pixels wide a monitor is (they disagree
-            // when the monitors have different scale factors).
+            // when the monitors have different scale factors). No monitor layout reaches this far
+            // left, so there is nothing to compute from the layout at all.
             const int farLeftOfEveryScreen = -32000;
-            var leftmostX = Screen.AllScreens.Min(screen => screen.Bounds.Left);
-            var x = Math.Min(farLeftOfEveryScreen, leftmostX - size.Width - 1000);
-            return new Rectangle(x, 0, size.Width, size.Height);
+            return new Rectangle(farLeftOfEveryScreen, 0, size.Width, size.Height);
         }
 
         public Shell(

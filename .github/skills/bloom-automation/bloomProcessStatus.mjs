@@ -53,7 +53,11 @@ const parseArgs = () => {
         }
 
         if (arg === "--repo-root") {
-            options.repoRoot = args[i + 1] || options.repoRoot;
+            // A required value, checked the same way as every other option's. Taking
+            // `args[i + 1]` and falling back to the default would swallow the next flag as
+            // this option's value. killBloomProcess.mjs has the same parser, where that
+            // mistake is destructive.
+            options.repoRoot = requireOptionValue(args, i, "--repo-root");
             i++;
             continue;
         }
