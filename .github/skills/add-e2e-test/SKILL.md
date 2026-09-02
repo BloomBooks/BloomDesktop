@@ -237,12 +237,23 @@ Dependencies point down only:
    - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Bloom hides the
      Edit and Publish tabs until a book is selected.
    - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
-   - `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `duplicateCurrentPage`,
-     `findBookFolder`, `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`,
-     `typeInGroup`, `waitForEditablePage`, `editablePageFrame`. A book made from a template
-     starts with front and back matter only, so a test that needs content calls `addPage`.
-     Bloom writes a page only when the book leaves it, so `goToPage` is also how a test
-     saves what it typed.
+   - `helpers/bookMaking.ts` — `makeBookFromTemplate`, `makeBookFromBookInCollection`,
+     `addPage`, `duplicateCurrentPage`, `findBookFolder`, `setContentLanguages`, `getPages`,
+     `getContentPages`, `goToPage`, `typeInGroup`, `waitForEditablePage`,
+     `editablePageFrame`, `getFactoryTemplateFolder`, `getFactoryTemplatePageLabels`. A book
+     made from a template starts with front and back matter only, so a test that needs
+     content calls `addPage`. Bloom writes a page only when the book leaves it, so `goToPage`
+     is also how a test saves what it typed. `waitForEditablePage` waits for Bloom's editing
+     state machine (via `e2e/editingState`) as well as for the page, because an add or a jump
+     asked for before that is silently dropped.
+   - `helpers/addPageDialog.ts` — `openAddPageDialog`, `getAddPageDialogGroups`,
+     `scrollAddPageDialog`, `closeAddPageDialog`, `addPageFromDialog`. The real Add Page
+     dialog, for tests whose subject is the dialog; `addPage` is the API route to a page.
+     Identify a group by its `templateBookFolder`, not its heading: the heading is localized
+     ("Basic Pages" for Basic Book), and the machine running the test can have downloaded
+     templates of its own in the list.
+   - `helpers/files.ts` — `fingerprintFolder`, `isInsideFolder`. Files on disk; nothing
+     here talks to Bloom.
    - `helpers/publish.ts` — `openPublishDestination`, `getTextLanguageRows`,
      `expectTextLanguageRows`, `clickTextLanguage`, `showBloomPubPreview`,
      `getPreviewLanguages`, `getLanguagesInBook`, `getTooltipForLanguage`.

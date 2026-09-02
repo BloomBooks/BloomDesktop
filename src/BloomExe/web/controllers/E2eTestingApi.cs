@@ -3,7 +3,9 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
+using Bloom.Edit;
 using Bloom.SubscriptionAndFeatures;
+using SIL.IO;
 using SIL.Progress;
 
 namespace Bloom.web.controllers
@@ -24,18 +26,27 @@ namespace Bloom.web.controllers
         private readonly BookSelection _bookSelection;
         private readonly PublishApi _publishApi;
         private readonly CollectionModel _collectionModel;
+        private readonly PageTemplatesApi _pageTemplatesApi;
+        private readonly SourceCollectionsList _sourceCollectionsList;
+        private readonly EditingModel _editingModel;
 
         public E2eTestingApi(
             CollectionSettings collectionSettings,
             BookSelection bookSelection,
             PublishApi publishApi,
-            CollectionModel collectionModel
+            CollectionModel collectionModel,
+            PageTemplatesApi pageTemplatesApi,
+            SourceCollectionsList sourceCollectionsList,
+            EditingModel editingModel
         )
         {
             _collectionSettings = collectionSettings;
             _bookSelection = bookSelection;
             _publishApi = publishApi;
             _collectionModel = collectionModel;
+            _pageTemplatesApi = pageTemplatesApi;
+            _sourceCollectionsList = sourceCollectionsList;
+            _editingModel = editingModel;
         }
 
         /// <summary>
@@ -84,6 +95,21 @@ namespace Bloom.web.controllers
                 kApiUrlPart + "isCollectionReady",
                 request => IsCollectionReady(),
                 null, // read only
+                false // does not need the UI thread
+            );
+
+            // GET returns the Edit tab's state as JSON: {"state": "Editing"} once the page being
+            // edited has loaded; "Navigating" while a page loads, "SavePending" while a save is in
+            // flight, "NoPage" with nothing loaded. An action that saves first (add a page, jump
+            // to a page, change layout) is silently dropped unless the state is Editing, and the
+            // page iframe showing a .bloom-page does not mean the state has got there yet, so a
+            // test that drives the Edit tab waits for this rather than for the DOM.
+            // Off the UI thread deliberately: a test polls this while the UI thread is busy
+            // loading the page, and reading the state is a single enum field.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "editingState",
+                request =>
+                    request.ReplyWithJson(new { state = _editingModel.EditingState.ToString() }),
                 false // does not need the UI thread
             );
 
@@ -157,27 +183,39 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Reply with the template pages available to the selected book, each with the path of the
+        /// Reply with the template pages the Add Page dialog would offer the selected book, in the
+        /// dialog's order: the book's own template first, then every other template book that has a
+        /// "template" folder (Basic Book and the rest). Each page carries the path and title of the
         /// template book that holds it. A book made from a template starts with no content page,
         /// because every page of a template is a template page, so a test that needs one adds it.
+        /// A template that is not on this machine is simply absent from the list.
         /// </summary>
         private void HandleGetTemplatePages(ApiRequest request)
         {
             var book = _bookSelection.CurrentSelection;
-            var templateBook = book?.FindTemplateBook();
-            if (templateBook == null)
+            if (book == null)
             {
                 request.ReplyWithJson(new object[0]);
                 return;
             }
-            var templateBookPath = templateBook.GetPathHtmlFile().Replace('\\', '/');
-            var pages = templateBook
-                .GetTemplatePagesIdDictionary()
-                .Select(pair => new
+            var pages = _pageTemplatesApi
+                .GetTemplateBookPathsForAddPage()
+                .Where(RobustFile.Exists)
+                .Select(path => _sourceCollectionsList.FindAndCreateTemplateBookByFullPath(path))
+                .Where(templateBook => templateBook != null)
+                .SelectMany(templateBook =>
                 {
-                    id = pair.Key,
-                    label = pair.Value.Caption,
-                    templateBookPath,
+                    var templateBookPath = templateBook.GetPathHtmlFile().Replace('\\', '/');
+                    var templateBookTitle = templateBook.Title;
+                    return templateBook
+                        .GetTemplatePagesIdDictionary()
+                        .Select(pair => new
+                        {
+                            id = pair.Key,
+                            label = pair.Value.Caption,
+                            templateBookPath,
+                            templateBookTitle,
+                        });
                 })
                 .ToArray();
             request.ReplyWithJson(pages);

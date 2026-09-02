@@ -62,6 +62,13 @@ namespace Bloom.Edit
         // These variables are not thread-safe. Access only on UI thread.
         internal bool InProcessOfSaving => _stateMachine.SavePending;
 
+        /// <summary>
+        /// The editing state machine's current state, for E2eTestingApi. A page is ready to be
+        /// edited, saved, or added after only in the Editing state; an action asked for while a
+        /// page is still loading is dropped (see SaveThen's doIfNotInRightStateToSave).
+        /// </summary>
+        public State EditingState => _stateMachine.CurrentState;
+
         // Perhaps a bit hack-ish, but this causes a full save to be done when our datadiv has been modified
         // but it's not obvious from the dataset changes. If we make new 'data-derived' divs someday, changing them
         // must set this flag to ensure the information gets saved properly.
