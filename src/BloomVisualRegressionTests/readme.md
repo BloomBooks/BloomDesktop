@@ -91,8 +91,12 @@ enforces that.
 
 # Collections
 
-There is only the one collection. Some code anticipates more, but there is no mechanism to relaunch
-Bloom on a different one; set branding/theme in the tests instead.
+This suite renders exactly one collection, `collections/basic` (`TESTED_COLLECTION` in
+`index.spec.ts`). There is no mechanism to relaunch Bloom on a different one, and a book that is
+not in the open collection cannot be selected, so books you add to any *other* collection of the
+inputs repository — `page-copy`, say, which belongs to the BloomE2E copy-page test — are ignored
+here rather than turning into tests that can never pass. To vary a book's look, set
+branding/theme in the tests instead.
 
 # TODO
 
