@@ -237,12 +237,16 @@ Dependencies point down only:
    - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Bloom hides the
      Edit and Publish tabs until a book is selected.
    - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
-   - `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `duplicateCurrentPage`,
-     `findBookFolder`, `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`,
-     `typeInGroup`, `waitForEditablePage`, `editablePageFrame`. A book made from a template
-     starts with front and back matter only, so a test that needs content calls `addPage`.
-     Bloom writes a page only when the book leaves it, so `goToPage` is also how a test
-     saves what it typed.
+   - `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `findBookFolder`,
+     `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`, `typeInGroup`,
+     `waitForEditablePage`, `editablePageFrame`. A book made from a template starts with
+     front and back matter only, so a test that needs content calls `addPage`. Bloom writes
+     a page only when the book leaves it, so `goToPage` is also how a test saves what it
+     typed.
+   - `helpers/pageList.ts` — `duplicatePageWithButton`, `duplicatePageWithContextMenu`,
+     `movePageToSlotOf`, and the API route `duplicateCurrentPage` for setup.
+   - `helpers/images.ts` — `chooseImageFile` (setup, no picker), `cropImage`,
+     `getImagePlacement`.
    - `helpers/publish.ts` — `openPublishDestination`, `getTextLanguageRows`,
      `expectTextLanguageRows`, `clickTextLanguage`, `showBloomPubPreview`,
      `getPreviewLanguages`, `getLanguagesInBook`, `getTooltipForLanguage`.
@@ -286,12 +290,16 @@ Bloom loads every React control from it. Set `PORT` as well as `--port`, or the 
 HMR and React-Refresh URLs still point at 5173 and the page fails to load its entry module.
 
 ```bash
-PORT=5199 pnpm exec vite --port 5199 --strictPort   # in src/BloomBrowserUI
-BLOOM_E2E_VITE_PORT=5199 pnpm test                  # in src/BloomE2E
+PORT=5173 pnpm exec vite --port 5173 --strictPort   # in src/BloomBrowserUI
+BLOOM_E2E_VITE_PORT=5173 pnpm test                  # in src/BloomE2E
 ```
 
-Leaving the variable unset does not mean "no dev server": a dev build of Bloom looks for one on
-5173 by itself, so what a run tests can depend on what else is running.
+**Use 5173, and set the variable.** The page list and the toolbox write `http://localhost:5173`
+into their own imports, so on any other port those two frames load nothing and come up empty,
+which reads as the feature being missing. And leaving the variable unset does not mean "no dev
+server": a dev build of Bloom probes 5173 by itself, so an unset variable and a server elsewhere
+means the run quietly tests the built bundle, however old it is. Stop a Bloom that already holds
+5173 rather than moving the dev server. See AUTOMATION-DEBT.md.
 
 `.github/workflows/nightly.yml` does not run this suite yet. The step it will need is the
 same `pnpm test` in that folder, after the Release build and the testing-inputs fetch that

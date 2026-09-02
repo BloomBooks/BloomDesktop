@@ -4,6 +4,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
+using Bloom.Edit;
 using Bloom.SubscriptionAndFeatures;
 using SIL.Progress;
 
@@ -25,18 +26,21 @@ namespace Bloom.web.controllers
         private readonly BookSelection _bookSelection;
         private readonly PublishApi _publishApi;
         private readonly CollectionModel _collectionModel;
+        private readonly EditingModel _editingModel;
 
         public E2eTestingApi(
             CollectionSettings collectionSettings,
             BookSelection bookSelection,
             PublishApi publishApi,
-            CollectionModel collectionModel
+            CollectionModel collectionModel,
+            EditingModel editingModel
         )
         {
             _collectionSettings = collectionSettings;
             _bookSelection = bookSelection;
             _publishApi = publishApi;
             _collectionModel = collectionModel;
+            _editingModel = editingModel;
         }
 
         /// <summary>
@@ -84,6 +88,18 @@ namespace Bloom.web.controllers
             apiHandler.RegisterBooleanEndpointHandler(
                 kApiUrlPart + "isCollectionReady",
                 request => IsCollectionReady(),
+                null, // read only
+                false // does not need the UI thread
+            );
+
+            // GET returns true once the Edit tab has finished loading the page it shows and is
+            // editing it. While the Edit tab is still navigating to a page, it silently ignores any
+            // command that begins with saving the page (duplicate, delete, jump to another page),
+            // and a test that sends one in that window sees nothing happen. There is no signal in
+            // the UI for this, so a test polls this before such a command. Read-only.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kApiUrlPart + "isEditingPage",
+                request => _editingModel.StateMachine.Editing,
                 null, // read only
                 false // does not need the UI thread
             );

@@ -34,6 +34,12 @@ needs (about six seconds, and it loses whatever the editor had not yet saved). N
 composes `.bloomCollection` XML any more. What remains is the dialog itself: nothing
 can drive or screenshot the Settings UI, so the journey test for it cannot be written.
 
+seen again 2026-09-01 (Test Case ID 349, `duplicate-page.spec.ts`): "Duplicate Page Many
+Times..." asks how many copies in `DuplicateManyDialog`, which is `WireUpForWinforms`, so the
+one step of that manual test that uses it ("make 3 duplicates") is not automated. The dialog
+only posts `editView/duplicatePageMany`, which `duplicateCurrentPage` already calls for setup,
+so the fix is the same as for every other WinForms dialog: host it in the web UI.
+
 ## Native OS dialogs hang automation
 
 File pickers, the Image Toolbox, and video capture open native windows Playwright
@@ -41,6 +47,15 @@ cannot dismiss; a test that triggers one hangs the run. Tests must avoid them (t
 `add-e2e-test` skill forbids it). Fix direction: `--e2e`-mode alternatives via
 `E2eTestingApi` for the common cases (choose image file, choose video), so journeys
 that need them become automatable.
+
+seen again 2026-09-01 (Test Case ID 349, `duplicate-page.spec.ts`): the manual test puts a
+picture, a recording, and a video on a page. The picture has a route: the image chooser is a
+web dialog now, and once a file is chosen it posts `imageGallery/imageGalleryResult` and then
+applies the answer with the page bundle's `changeImageByElement`, so `helpers/images.ts` does
+those two steps for a file the test supplies and never opens the picker. The recording and the
+video have none: the Talking Book tool records from a real microphone, and a video arrives only
+through the Sign Language tool's native file picker or camera, so those two sections of the
+manual test stay manual.
 
 ## Which front end the e2e suite tests depends on what else is running
 
@@ -244,3 +259,26 @@ Fix direction: either stop the browser announcing a page twice, or make the stat
 treat a second announcement of the page it is saving as a reason to discard that save
 (`DiscardInFlightSave` already exists for BL-16766). Both change production save behavior,
 so this needs a decision rather than a quiet fix.
+
+## A Vite dev server only reaches the whole UI on port 5173
+
+`--vite-port` tells Bloom's shell which dev server to load the front end from, but two of the
+Edit tab's frames ignore it. `bookEdit/pageThumbnailList/pageThumbnailList.vite-dev.pug` and
+`bookEdit/toolbox/toolbox.vite-dev.pug` write `http://localhost:5173/...` into every import
+they emit, so on any other port the page list and the toolbox load nothing and come up empty.
+
+That failure looks like the feature being missing, not like a port problem. A run on port 5199
+failed `duplicate-page.spec.ts` on 2026-09-02 with "waiting for
+getByTestId('duplicate-page-button') to be visible", 30 seconds, because `#PageControls` had
+never been filled. Nothing in the message points at the dev server.
+
+The same run showed the second half of it: `BLOOM_E2E_VITE_PORT` was unset, so Bloom fell back
+to probing 5173 by itself, found nothing there, and served the built `output/browser` instead.
+That bundle was a day old, so the suite silently tested yesterday's front end and reported the
+new test id as absent.
+
+So both halves say the same thing: **serve the dev server on 5173 and set
+`BLOOM_E2E_VITE_PORT=5173`.** Fix direction: emit the port into those two pug files the way the
+shell gets it, so `--vite-port` means what it says; and give Bloom an option that means "ignore
+any dev server", so a run can state which front end it is testing rather than inherit it from
+the machine. (Found 2026-09-02.)

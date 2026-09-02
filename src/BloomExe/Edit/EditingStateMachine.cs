@@ -152,6 +152,12 @@ public class EditingStateMachine
     public bool SavePending => _currentState == State.SavePending;
 
     /// <summary>
+    /// True if a page is loaded and being edited, so that a save (and anything that starts with
+    /// one, such as duplicating or deleting the page) will be acted on rather than ignored.
+    /// </summary>
+    public bool Editing => _currentState == State.Editing;
+
+    /// <summary>
     /// The state we are in, and the page it is about. These exist for automation: the e2e suite
     /// waits until the Edit tab is settled before it asks that tab for anything, and the DOM
     /// cannot tell it that (see E2eTestingApi's editState endpoint). Read only.
