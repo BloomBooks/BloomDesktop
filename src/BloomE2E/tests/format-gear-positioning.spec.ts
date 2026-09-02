@@ -102,8 +102,11 @@ const expectDialogEntirelyOnScreen = (placement: IFormatDialogPlacement) => {
 };
 
 test.describe("Format gear positioning", () => {
-    test.afterAll(async ({ page }) => {
-        if (startingZoom !== undefined) await setZoom(page, startingZoom);
+    // A suite hook takes the worker-scoped bloomApp rather than the test-scoped page: bloomApp is
+    // what a hook is meant to use, and its page is the live one even after a restart.
+    test.afterAll(async ({ bloomApp }) => {
+        if (startingZoom !== undefined)
+            await setZoom(bloomApp.page, startingZoom);
     });
 
     test("builds a book with a text box at the bottom of a page", async ({
