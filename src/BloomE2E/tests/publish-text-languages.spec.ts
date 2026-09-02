@@ -361,6 +361,13 @@ test.describe("the Text Languages publish list", () => {
     // failed was not captured. Whoever sees it fail again: keep the whole log. This test does not
     // change which languages the book shows, so the earlier suspicion about quick successive
     // calls to editView/topBar/contentLanguageUsageChange does not explain it.
+    // 2026-09-02, seen twice more (full logs kept this time): the failing assertion is the
+    // expectTextLanguageRowsInAnyOrder below - French comes back disabled: true, i.e. after the
+    // restart Bloom treats French as shown by the book. That points at the previous test's
+    // closing setContentLanguages(page, ["en"]) not being persisted to disk before restart()'s
+    // hard kill, so the reopened book still shows English+French and French stays required. If
+    // that is right, the fix is for the previous test (or restart itself) to wait for the
+    // content-language change to reach the book file before Bloom dies.
     test("keeps a language that the collection no longer has, under its own name [Test Case ID 169]", async ({
         bloomApp,
     }) => {

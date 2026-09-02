@@ -1,4 +1,4 @@
-// Launch a dedicated Bloom.exe on a throwaway copy of a test-input collection, discover the ports
+﻿// Launch a dedicated Bloom.exe on a throwaway copy of a test-input collection, discover the ports
 // it actually opened, and shut the whole thing down again.
 //
 // This is the CI-proven loop from src/BloomVisualRegressionTests/index.spec.ts, factored out so
@@ -116,8 +116,11 @@ export function getSourceCollectionsRoot(): string {
 
 /**
  * Find the built Bloom.exe. The exe lands in a config/platform-specific folder depending on the
- * build, so try the known locations. Debug comes first for the common local case; CI builds and
- * runs Release. Throws naming every folder it looked in.
+ * build, so look in the known locations and take the MOST RECENTLY BUILT one. Recency, not list
+ * order, is what matters: a machine can hold a stale build from another configuration (say, an
+ * old Debug/x64 beside today's Debug/AnyCPU), and picking by fixed order silently runs the whole
+ * suite against weeks-old code — a test here that depended on a same-PR C# change once launched a
+ * two-week-old Bloom that way. Throws naming every folder it looked in.
  */
 export function findBloomExe(): string {
     const candidates = [
@@ -128,14 +131,18 @@ export function findBloomExe(): string {
         "Release/AnyCPU",
         "Release",
     ].map((sub) => Path.join(repoRoot, "output", sub, "Bloom.exe"));
-    const exe = candidates.find((c) => fs.existsSync(c));
-    if (!exe) {
+    const existing = candidates.filter((c) => fs.existsSync(c));
+    if (existing.length === 0) {
         throw new Error(
             `Could not find a built Bloom.exe (looked in: ${candidates.join(", ")}). ` +
                 `Build Bloom, then re-run.`,
         );
     }
-    return exe;
+    return existing.reduce((newest, candidate) =>
+        fs.statSync(candidate).mtimeMs > fs.statSync(newest).mtimeMs
+            ? candidate
+            : newest,
+    );
 }
 
 /**
@@ -163,6 +170,7 @@ interface IInstanceInfo {
     editableCollectionFolder?: string;
     processId?: number;
     cdpPort?: number;
+    executablePath?: string;
 }
 
 /**
@@ -536,6 +544,293 @@ export async function launchBloom(
         },
     };
     return launched;
+}
+
+/** A Bloom launched with no collection, showing the Choose Collection dialog. */
+export interface ILaunchedChooserBloom {
+    /** The HTTP port Bloom's server opened on. */
+    httpPort: number;
+    /** The port the WebView2 hosting the chooser dialog answers CDP on. */
+    cdpPort: number;
+    /** The process id of the Bloom that is showing the chooser. */
+    bloomPid: number;
+    /**
+     * The .bloomCollection file of a collection created for this test, which the test can tell
+     * the chooser to open (POST workspace/openCollection with this path as the body).
+     */
+    collectionToOpen: string;
+    /** Kill the process tree, wait for the port to go dark, restore user.config, delete temp. */
+    stop: () => Promise<void>;
+}
+
+/**
+ * Where this repo's Bloom keeps (or will create) its user.config: the profile folder named for
+ * the version in BloomExe.csproj, which is the version of any Bloom.exe built from this repo —
+ * the only kind findBloomExe returns. Undefined only when the location cannot be computed.
+ */
+function versionedUserConfigPath(): string | undefined {
+    if (!process.env.LOCALAPPDATA) return undefined;
+    const versionMatch = fs
+        .readFileSync(
+            Path.join(repoRoot, "src", "BloomExe", "BloomExe.csproj"),
+            "utf8",
+        )
+        .match(/<Version>([^<]+)<\/Version>/);
+    if (!versionMatch) return undefined;
+    return Path.join(
+        process.env.LOCALAPPDATA,
+        "SIL",
+        "Bloom",
+        versionMatch[1],
+        "user.config",
+    );
+}
+
+/**
+ * The existing user.config of the Bloom this suite launches: the version-named profile when it
+ * exists (see versionedUserConfigPath); otherwise fall back to the most recently written
+ * profile. Undefined when no profile exists at all — then there is nothing to back up (the MRU
+ * is effectively already empty), and anything the run creates is test residue.
+ */
+function findUserConfig(): string | undefined {
+    const root = Path.join(process.env.LOCALAPPDATA ?? "", "SIL", "Bloom");
+    if (!process.env.LOCALAPPDATA || !fs.existsSync(root)) return undefined;
+    const versioned = versionedUserConfigPath();
+    if (versioned && fs.existsSync(versioned)) return versioned;
+    const configs = fs
+        .readdirSync(root)
+        .map((d) => Path.join(root, d, "user.config"))
+        .filter((f) => fs.existsSync(f));
+    if (configs.length === 0) return undefined;
+    return configs.reduce((newest, candidate) =>
+        fs.statSync(candidate).mtimeMs > fs.statSync(newest).mtimeMs
+            ? candidate
+            : newest,
+    );
+}
+
+/**
+ * Put the three settings the chooser test disturbs - the MRU list, the UI language, and the
+ * unapproved-translations flag - back to what the original file had, while keeping whatever
+ * ELSE the current file says. Bloom rewrites the whole file on many occasions, and the
+ * developer's own Bloom may legitimately save settings while the test runs; restoring the
+ * original bytes wholesale would silently discard those concurrent changes.
+ * Falls back to the full original when the surgical splice cannot find its landmarks.
+ */
+function restoreDisturbedSettings(
+    userConfig: string,
+    originalText: string,
+): void {
+    const settingBlock = (name: string, text: string) =>
+        text.match(
+            new RegExp(`<setting name="${name}"[\\s\\S]*?</setting>`),
+        )?.[0];
+    let current = fs.readFileSync(userConfig, "utf8");
+    let expected = 0;
+    let spliced = 0;
+    for (const name of [
+        "MruProjects",
+        "UserInterfaceLanguage",
+        // Choosing a language marks it "explicitly chosen"; without restoring this flag, a
+        // profile that was following the operating-system language would come out pinned to
+        // one language instead.
+        "UserInterfaceLanguageSetExplicitly",
+        "ShowUnapprovedLocalizations",
+    ]) {
+        const original = settingBlock(name, originalText);
+        if (!original) continue; // not in the original file: nothing to put back
+        expected++;
+        const currentBlock = settingBlock(name, current);
+        if (currentBlock) {
+            current = current.replace(currentBlock, original);
+            spliced++;
+        }
+    }
+    // All or nothing: a splice that only partly found its landmarks would leave some test
+    // values behind, so an incomplete one falls back to the full original file.
+    fs.writeFileSync(userConfig, spliced === expected ? current : originalText);
+}
+
+/**
+ * Launch Bloom with NO collection, so it opens the Choose Collection dialog — the only way to
+ * exercise that dialog's controls, since an open collection auto-reopens at startup.
+ *
+ * Reaching the chooser requires an empty MRU list, and the MRU lives in the developer's
+ * machine-wide user.config. So this backs the file up, blanks the MRU (and normalizes the two
+ * UI-language settings the tests assume), and after Bloom is dead stop() splices those settings
+ * back into the file as they originally were — only those, so any concurrent saves from the
+ * developer's own Bloom survive (see restoreDisturbedSettings). A process-exit hook does the
+ * same when the run is aborted.
+ *
+ * The returned collectionToOpen names a collection created in a temp folder for this test, so
+ * the test can leave the chooser by POSTing workspace/openCollection (the same call a click on
+ * a collection card makes) without any native file dialog.
+ */
+export async function launchBloomIntoChooser(
+    spec: ICollectionSpec,
+): Promise<ILaunchedChooserBloom> {
+    const readyTimeoutMs = 120000;
+    const tempRoot = canonicalPath(
+        fs.mkdtempSync(Path.join(os.tmpdir(), "bloom-e2e-chooser-")),
+    );
+    const collectionDir = writeNewCollection(tempRoot, spec);
+    const collectionToOpen = findCollectionFile(collectionDir);
+
+    // Back up the developer's settings file, then blank the MRU (so Bloom opens the chooser
+    // rather than the last collection) and normalize the two UI-language settings the test's
+    // assertions assume. <Path> elements occur only inside the MruProjects setting, so the
+    // text-level removal is safe; stop() splices the developer's MRU and language settings
+    // back into the file exactly as they were.
+    const userConfig = findUserConfig();
+    const originalUserConfig = userConfig
+        ? fs.readFileSync(userConfig, "utf8")
+        : undefined;
+    const restoreUserConfig = () => {
+        if (userConfig && originalUserConfig) {
+            restoreDisturbedSettings(userConfig, originalUserConfig);
+        } else {
+            // No profile existed before this run, so whatever the launched Bloom created at
+            // its own profile path is pure test residue (a temp collection in the MRU, the
+            // test's language settings): delete it, leaving the machine as found.
+            const created = versionedUserConfigPath();
+            if (created && fs.existsSync(created))
+                fs.rmSync(created, { force: true });
+        }
+    };
+    if (userConfig && originalUserConfig) {
+        fs.writeFileSync(
+            userConfig,
+            originalUserConfig
+                .replace(/<Path>[\s\S]*?<\/Path>\s*/g, "")
+                .replace(
+                    /(<setting name="UserInterfaceLanguage"[^>]*>\s*<value>)[^<]*(<\/value>)/,
+                    "$1en$2",
+                )
+                .replace(
+                    /(<setting name="ShowUnapprovedLocalizations"[^>]*>\s*<value>)[^<]*(<\/value>)/,
+                    "$1False$2",
+                ),
+        );
+    }
+    // The profile is modified (or about to be created by Bloom) from here on, so make sure it
+    // gets restored even when the launch itself throws before the discovery loop arms its own
+    // cleanup - findBloomExe, for one, throws when nothing is built.
+    const launchSection = async <T>(work: () => Promise<T>): Promise<T> => {
+        try {
+            return await work();
+        } catch (error) {
+            cleanUpOnExit();
+            process.removeListener("exit", cleanUpOnExit);
+            throw error;
+        }
+    };
+
+    // Armed BEFORE the launch and discovery (which can take two minutes): if the runner is
+    // killed anywhere in that window, the profile still gets restored and the spawned Bloom
+    // killed. pids fills in as processes become known.
+    const pids: number[] = [];
+    const cleanUpOnExit = () => {
+        killProcessTree(pids);
+        restoreUserConfig();
+        fs.rmSync(tempRoot, { recursive: true, force: true });
+    };
+    process.once("exit", cleanUpOnExit);
+
+    return launchSection(async () => {
+        const exe = findBloomExe();
+        let bloomOutput = "";
+        const bloomProcess: ChildProcess = execFile(exe, [
+            "--e2e",
+            "--automation",
+        ]);
+        if (isPid(bloomProcess.pid)) pids.push(bloomProcess.pid);
+        let exitStatus:
+            | { code: number | null; signal: string | null }
+            | undefined;
+        bloomProcess.stdout?.on("data", (d) => {
+            bloomOutput = (bloomOutput + String(d)).slice(-MAX_BLOOM_OUTPUT);
+        });
+        bloomProcess.stderr?.on("data", (d) => {
+            bloomOutput = (bloomOutput + String(d)).slice(-MAX_BLOOM_OUTPUT);
+        });
+        bloomProcess.on("exit", (code, signal) => {
+            exitStatus = { code, signal };
+        });
+
+        // Discovery cannot match on the open collection folder (there is none while the chooser
+        // shows), so match the process: our spawned pid, or — because Bloom can hand off to a
+        // successor process during startup — any instance with no collection open once the spawned
+        // process has exited.
+        const startTime = Date.now();
+        let found:
+            | { httpPort: number; cdpPort: number; processId: number }
+            | undefined;
+        while (!found && Date.now() - startTime < readyTimeoutMs) {
+            for (const httpPort of CANDIDATE_PORTS) {
+                const info = await readInstanceInfo(httpPort);
+                if (!info?.processId || !info.cdpPort) continue;
+                // Ours is the process we spawned - or, because Bloom can hand off to a successor
+                // process during startup, an instance from the SAME exe with no collection open,
+                // once the spawned process has exited. Requiring our exe path keeps a failed
+                // startup from adopting (and later killing) some unrelated Bloom that happens to
+                // be sitting at its own chooser.
+                const isOurs =
+                    info.processId === bloomProcess.pid ||
+                    (exitStatus !== undefined &&
+                        !info.editableCollectionFolder &&
+                        !!info.executablePath &&
+                        samePath(info.executablePath, exe));
+                if (isOurs) {
+                    found = {
+                        httpPort,
+                        cdpPort: info.cdpPort,
+                        processId: info.processId,
+                    };
+                    break;
+                }
+            }
+            if (!found) await delay(1000);
+        }
+
+        if (found && isPid(found.processId) && !pids.includes(found.processId))
+            pids.push(found.processId);
+
+        if (!found) {
+            cleanUpOnExit();
+            process.removeListener("exit", cleanUpOnExit);
+            throw new Error(
+                `Bloom never reached the Choose Collection dialog within ${readyTimeoutMs / 1000}s.\n` +
+                    `  exe: ${exe}\n  spawned pid: ${bloomProcess.pid}, exited: ${JSON.stringify(exitStatus) || "no"}\n` +
+                    (bloomOutput.trim()
+                        ? `  Bloom output:\n${bloomOutput.trim()}`
+                        : "  Bloom output: (none captured)"),
+            );
+        }
+
+        const running: IRunningBloom = {
+            httpPort: found.httpPort,
+            cdpPort: found.cdpPort,
+            servingPid: found.processId,
+            pids,
+        };
+        return {
+            httpPort: running.httpPort,
+            cdpPort: running.cdpPort,
+            bloomPid: running.servingPid,
+            collectionToOpen,
+            stop: async () => {
+                await killAndWaitForPortToGoDark(running);
+                restoreUserConfig();
+                fs.rmSync(tempRoot, {
+                    recursive: true,
+                    force: true,
+                    maxRetries: 20,
+                    retryDelay: 500,
+                });
+                process.removeListener("exit", cleanUpOnExit);
+            },
+        };
+    });
 }
 
 /**

@@ -19,6 +19,58 @@ House rules:
 
 ---
 
+## 2026-09-02 — Two BloomE2E sessions on one machine corrupt each other via the shared profile
+
+- **Cut:** BloomE2E runs from two worktrees at once (e.g. a developer session plus
+  improve-test-automation-coverage workers) share the machine-wide user.config for the exe
+  version and the same candidate port block. One session switching the UI language or blanking
+  the MRU changes it under the other mid-test: observed as a workspace-tabs Bloom coming up in
+  French (its English TAB_LABEL then never matches) and a launch timing out while probing ports
+  another session's Blooms held. These failures look like real regressions and cost hours.
+- **Idea:** A cross-session mutex (a lock file keyed on the profile path that launchBloom
+  waits on), or per-session profile isolation (point the launched Bloom at a private settings
+  folder under --e2e). The parallel-worktree automation flow needs one of these before it can
+  fan out safely.
+- **Context:** preflight of PR #8275; the colliding session's collection was
+  bloom-e2e-*/format-gear-positioning (another worktree's test).
+
+## 2026-09-02 — BloomE2E fails opaquely when output/browser predates the checked-out front-end code
+
+- **Cut:** Twice in one day, a BloomE2E spec failed on a missing `data-testid`
+  (`text-languages-group`, then `duplicate-page-button`) because `output/browser` was built
+  before a merge brought the front-end code that adds it. The failure reads as a mysterious
+  30s locator timeout, not as "your bundle is stale", and `pnpm build` is a manual,
+  developer-only step that nothing prompts for after a merge.
+- **Idea:** Have the BloomE2E fixture fail fast with "run pnpm build" when the newest file
+  under `src/BloomBrowserUI` is newer than `output/browser`'s bundle, or have the suite's
+  README/skill call out "merged master? rebuild output/browser" prominently.
+- **Context:** preflight of PR #8275, branch automateTests.
+
+## 2026-09-02 — C# suite fails in L10NSharp setup when run alongside the BloomE2E suite
+
+- **Cut:** Running `agent-dotnet test` concurrently with the BloomE2E Playwright suite produced 3
+  failures (of 3324): `NullReferenceException` inside `XliffLocalizedStringCache..ctor` during
+  `LocalizationManagerWinforms.Create` in test Setup. The e2e Bloom was switching UI languages at
+  the time, which touches the same machine-global L10NSharp state (user-modified xliff /
+  language caches) the unit tests build their manager over. Solo runs of the identical tree pass
+  clean. Same family as the 2026-07-27 "C# host aborts alongside vitest" entry: the wrapper
+  isolates build outputs, not machine-global state.
+- **Idea:** Document "don't run the C# suite and the BloomE2E suite at the same time" in
+  AGENTS.md / the BloomE2E README, or point the test processes' L10NSharp writable folders at
+  the isolated temp dir the way TestTempDirectory already isolates %TEMP%.
+- **Context:** preflight of PR #8275, branch automateTests.
+
+- **Cut:** Bloom picks a free HTTP port at startup, so after `Program.RestartBloom` (e.g.
+  toggling "Show translations which have not been approved yet") the launcher-relaunched Bloom
+  can come back on different HTTP/CDP ports (observed 8089→8095→8092 in one session). Any
+  tooling holding `BLOOM_HTTP_PORT` or a fixed CDP endpoint — which is exactly what the
+  bloom-automation SKILL.md tells agents to use — silently breaks mid-session.
+- **Idea:** Add a warning to `.github/skills/bloom-automation/SKILL.md` and point at the
+  discovery mechanism: the launcher's control server (`output/bloom-launcher.json` →
+  `/status`) reports the current `httpPort`/`cdpPort`, so tooling should re-ask it around
+  anything that can restart Bloom rather than caching the ports.
+- **Context:** hit while building the UI-language e2e test on branch automateTests.
+
 ## 2026-09-01 — VR suite: a slow first preview load fails its case via Playwright's default 30s goto timeout
 
 - **Cut:** The first case after Bloom starts pays for the first book-preview load (~33s observed
