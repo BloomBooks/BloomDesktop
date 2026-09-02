@@ -214,21 +214,25 @@ shows a `.bloom-page`. Two page adds in a row therefore lost the second one.
 helpers no longer act early; the production endpoints still reply success to a request they
 dropped.
 
-## Bloom sometimes names a dropped language in another language of the collection
+## Bloom sometimes names a dropped language in another language (BL-16806)
 
 `publish-text-languages.spec.ts` used to drop a language by rewriting the `.bloomCollection`,
 and it then expected the publish list to show that language's own name for itself, "español".
 That assertion failed about one run in seven, once on CI run 33665790357 (2026-09-02), with
-`Expected: español  Received: espagnol` — French for Spanish. The collection at that moment
-holds en + fr, so Bloom was naming the dropped language in the collection's own French on some
-runs and by its autonym on others. Everything else about the row was right every time.
+`Expected: español  Received: espagnol` — French for Spanish. Everything else about the row was
+right every time.
 
-No test covers this any more. The test now drops the language through
+The cause is known, and BL-16806 is the card that fixes it: Bloom asks LibPalaso for the name of
+the language "in" the collection's metadata language, and that call memoizes into a
+process-wide static dictionary that can hand back a name which does not correspond to what was
+asked. So the answer depends on who asked for a language name earlier in that run of Bloom. It is
+a real nondeterminism in what a user sees, not a test problem.
+
+No test on this branch covers it any more. The test now drops the language through
 `e2e/setCollectionLanguages`, the code the Settings dialog's OK button runs, which keeps the
 language's collection name, so the list reads "Spanish" every time and the lookup that wavers is
-never reached. Fix direction: find why the name lookup resolves against a different language
-from one run to the next; it is a real nondeterminism in what a user sees. (Found 2026-09-01,
-recorded here 2026-09-02 when the test stopped exercising it.)
+never reached. Recorded here so the coverage loss is visible; the defect itself belongs to
+BL-16806. (Found 2026-09-01, diagnosed on master 2026-09-02.)
 
 ## Filling a text box directly leaves part of the old text behind
 
