@@ -719,11 +719,22 @@ export async function launchBloomIntoChooser(
         try {
             return await work();
         } catch (error) {
-            restoreUserConfig();
-            fs.rmSync(tempRoot, { recursive: true, force: true });
+            cleanUpOnExit();
+            process.removeListener("exit", cleanUpOnExit);
             throw error;
         }
     };
+
+    // Armed BEFORE the launch and discovery (which can take two minutes): if the runner is
+    // killed anywhere in that window, the profile still gets restored and the spawned Bloom
+    // killed. pids fills in as processes become known.
+    const pids: number[] = [];
+    const cleanUpOnExit = () => {
+        killProcessTree(pids);
+        restoreUserConfig();
+        fs.rmSync(tempRoot, { recursive: true, force: true });
+    };
+    process.once("exit", cleanUpOnExit);
 
     return launchSection(async () => {
         const exe = findBloomExe();
@@ -732,6 +743,7 @@ export async function launchBloomIntoChooser(
             "--e2e",
             "--automation",
         ]);
+        if (isPid(bloomProcess.pid)) pids.push(bloomProcess.pid);
         let exitStatus:
             | { code: number | null; signal: string | null }
             | undefined;
@@ -780,13 +792,8 @@ export async function launchBloomIntoChooser(
             if (!found) await delay(1000);
         }
 
-        const pids = [bloomProcess.pid, found?.processId].filter(isPid);
-        const cleanUpOnExit = () => {
-            killProcessTree(pids);
-            restoreUserConfig();
-            fs.rmSync(tempRoot, { recursive: true, force: true });
-        };
-        process.once("exit", cleanUpOnExit);
+        if (found && isPid(found.processId) && !pids.includes(found.processId))
+            pids.push(found.processId);
 
         if (!found) {
             cleanUpOnExit();
