@@ -195,6 +195,10 @@ namespace Bloom.Api
                         }
                     }
                 }
+                // Numbers are excluded: they are not text we would ever localize, and IsInteger
+                // above has already turned this into the number itself.
+                if (!IsInteger(id))
+                    englishText = PseudoLocalizeIfPseudoLocale(langId, englishText);
                 request.ReplyWithJson(new { text = englishText, success = idFound });
             }
         }
@@ -341,6 +345,24 @@ namespace Bloom.Api
             return localizedString;
         }
 
+        /// <summary>
+        /// When the UI language is the pseudo-locale, a string that we are about to hand back as
+        /// plain, untransformed English -- because its id is not in the English XLIFF, so
+        /// L10NSharp never had a chance to pseudolocalize it -- would look exactly like a string
+        /// that was never internationalized at all. Since "plain English means hard-coded" is the
+        /// whole point of the pseudo-locale, run it through the same transform L10NSharp would
+        /// have used. See BL-16748.
+        /// </summary>
+        private static string PseudoLocalizeIfPseudoLocale(string langId, string text)
+        {
+            if (
+                langId != LocalizationManager.PseudoLocalizationLanguageId
+                || string.IsNullOrEmpty(text)
+            )
+                return text;
+            return LocalizationManager.PseudoLocalize(text);
+        }
+
         private static bool IsTemplateBookKey(string key)
         {
             return key.StartsWith("TemplateBooks.BookName")
@@ -423,6 +445,10 @@ namespace Bloom.Api
                         if (!IsTemplateBookKey(key))
                             ReportL10NMissingString(key, translation, comment);
                     }
+                    translation = PseudoLocalizeIfPseudoLocale(
+                        LocalizationManager.UILanguageId,
+                        translation
+                    );
                 }
             }
             return translation;

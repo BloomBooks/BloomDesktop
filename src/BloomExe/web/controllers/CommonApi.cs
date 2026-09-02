@@ -624,6 +624,11 @@ namespace Bloom.web.controllers
                 var langs = new List<object>();
                 foreach (var code in L10NSharp.LocalizationManager.GetAvailableLocalizedLanguages())
                 {
+                    // The hints the user writes in this dialog are stored in the book, so the
+                    // pseudo-locale (a UI-testing device, not a language anyone writes in) has
+                    // no business being offered here. See BL-16748.
+                    if (code == LocalizationManager.PseudoLocalizationLanguageId)
+                        continue;
                     var langItem = WorkspaceView.CreateLanguageItem(code);
                     langs.Add(new { label = langItem.MenuText, tag = code });
                 }

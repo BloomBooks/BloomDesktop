@@ -207,6 +207,15 @@ const getBloomPage = (browser) => {
 };
 
 const clickWorkspaceTab = async (page, tab) => {
+    // Prefer the stable attribute (see TopBar.tsx): the fallbacks below match on the visible
+    // English label, which fails in any other UI language -- including the Pseudo-English
+    // i18n-testing locale (BL-16748).
+    const taggedTab = page.locator(`[data-workspace-tab="${tab}"]`);
+    if ((await taggedTab.count()) > 0) {
+        await taggedTab.first().click();
+        return "top-level-data-workspace-tab";
+    }
+
     const tabLabel = getTabLabel(tab);
     const topLevelTab = page.getByRole("tab", { name: tabLabel });
     if ((await topLevelTab.count()) > 0) {

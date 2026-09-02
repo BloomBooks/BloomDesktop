@@ -162,6 +162,10 @@ const Tab: React.FunctionComponent<{
         <li role="presentation">
             <a
                 role="tab"
+                // A stable, language-independent handle for automation. Matching on the visible
+                // label breaks in any UI language other than English -- including the
+                // Pseudo-English i18n-testing locale (BL-16748).
+                data-workspace-tab={props.tab.id}
                 aria-selected={props.selected ? "true" : "false"}
                 aria-disabled={props.disabled ? "true" : "false"}
                 css={css`
