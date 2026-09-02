@@ -135,11 +135,18 @@ export async function captureElement(
     } finally {
         // Always, including after a failed capture: the next test in this worker drives the same
         // Bloom, and an emulated 8000-pixel window would make everything it sees wrong.
+        // Say so if the clear fails, rather than throwing: we may be here because the capture
+        // failed, and that error is the one the test needs to see. But the run is now driving a
+        // Bloom of the wrong size, so it must not pass in silence.
         await sendWithTimeout(
             session,
             "Emulation.clearDeviceMetricsOverride",
             {},
-        ).catch(() => undefined);
+        ).catch((error) =>
+            console.error(
+                `captureElement could not clear the window size override, so the rest of this worker's tests drive a Bloom of the wrong size: ${error}`,
+            ),
+        );
         await session.detach().catch(() => undefined);
     }
 }

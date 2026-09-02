@@ -7,6 +7,7 @@ import {
     killProcessIds,
     normalizeBloomInstanceInfo,
     requireOptionValue,
+    requireProcessIdOption,
     requireTcpPortOption,
 } from "./bloomProcessCommon.mjs";
 
@@ -89,24 +90,36 @@ const parseArgs = () => {
         }
 
         if (arg === "--pid") {
-            options.pid = Number(args[i + 1]);
+            options.pid = requireProcessIdOption(
+                "--pid",
+                requireOptionValue(args, i, "--pid"),
+            );
             i++;
             continue;
         }
 
         if (arg.startsWith("--pid=")) {
-            options.pid = Number(arg.slice("--pid=".length));
+            options.pid = requireProcessIdOption(
+                "--pid",
+                arg.slice("--pid=".length),
+            );
             continue;
         }
 
         if (arg === "--watch-pid") {
-            options.watchPid = Number(args[i + 1]);
+            options.watchPid = requireProcessIdOption(
+                "--watch-pid",
+                requireOptionValue(args, i, "--watch-pid"),
+            );
             i++;
             continue;
         }
 
         if (arg.startsWith("--watch-pid=")) {
-            options.watchPid = Number(arg.slice("--watch-pid=".length));
+            options.watchPid = requireProcessIdOption(
+                "--watch-pid",
+                arg.slice("--watch-pid=".length),
+            );
             continue;
         }
 
@@ -119,8 +132,14 @@ const parseArgs = () => {
 const options = parseArgs();
 const processState = classifyProcesses(options.repoRoot);
 const processIds = new Set();
+// Whether the caller named a target, not whether the value we parsed from it is usable. The
+// two are the same now that every target option is validated at parse time, and this says the
+// intended thing: a caller who asked for one process must never reach the default that kills
+// every Bloom this worktree owns.
 const exactTargetRequested =
-    !!options.httpPort || !!options.pid || !!options.watchPid;
+    options.httpPort !== undefined ||
+    options.pid !== undefined ||
+    options.watchPid !== undefined;
 let targetedInstance;
 let exactTargetResolutionError;
 

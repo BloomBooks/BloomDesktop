@@ -42,6 +42,28 @@ export const requireTcpPortOption = (optionName, value) => {
     return port;
 };
 
+/**
+ * A process id given on the command line, as a positive integer.
+ *
+ * This throws rather than returning undefined, because the caller that wants a process id wants
+ * to act on exactly that process. A killer script that read a malformed id as "no id given" would
+ * fall through to whatever its no-target default is, and killBloomProcess.mjs's default is to kill
+ * every Bloom the worktree owns.
+ */
+export const requireProcessIdOption = (optionName, value) => {
+    const normalized = value === undefined ? "" : String(value).trim();
+    const processId = /^\d+$/.test(normalized)
+        ? toPositiveInteger(normalized)
+        : undefined;
+    if (!processId) {
+        throw new Error(
+            `${optionName} must be a positive integer process id. Received: ${value}`,
+        );
+    }
+
+    return processId;
+};
+
 export const requireOptionValue = (args, index, optionName) => {
     const value = args[index + 1];
     if (!value || value.startsWith("--")) {
