@@ -34,6 +34,8 @@ House rules:
 - **Context:** preflight of PR #8275; the colliding session's collection was
   bloom-e2e-*/format-gear-positioning (another worktree's test).
 
+## 2026-09-02 — BloomE2E fails opaquely when output/browser predates the checked-out front-end code
+
 - **Cut:** Twice in one day, a BloomE2E spec failed on a missing `data-testid`
   (`text-languages-group`, then `duplicate-page-button`) because `output/browser` was built
   before a merge brought the front-end code that adds it. The failure reads as a mysterious
