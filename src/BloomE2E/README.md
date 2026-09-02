@@ -111,10 +111,11 @@ a case, put that id in the test title so the code and the inventory stay tied:
 test("change UI language repeatedly [Test Case ID 69]", async ({ page }) => { ... });
 ```
 
-Then set the card's `Automation` property to `Automated`, or to `Partial` when the test covers only
-part of the steps. A new test with no manual card gets a new inventory row, so the inventory stays
-the inventory of all tests rather than only the human-run ones. `.github/skills/add-e2e-test/SKILL.md`
-has the details.
+Then set the card's `Automation` property to `Automated`. If the test covers only part of the card's
+steps, split the card first into an `[Automated portion]` that keeps the id and a `[Manual portion]`
+with a new id, so no human-run step hides behind an automated card. A new test with no manual card
+gets a new inventory row, so the inventory stays the inventory of all tests rather than only the
+human-run ones. `.github/skills/add-e2e-test/SKILL.md` has the details.
 
 ## Running
 
