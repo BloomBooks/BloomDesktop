@@ -41,6 +41,15 @@ one step of that manual test that uses it ("make 3 duplicates") is not automated
 only posts `editView/duplicatePageMany`, which `duplicateCurrentPage` already calls for setup,
 so the fix is the same as for every other WinForms dialog: host it in the web UI.
 
+seen again 2026-09-02 (Test Case ID 66, `xmatter-packs.spec.ts`): the case tries each
+front/back matter pack, and the pack is chosen only in the same dialog. `settings/xmatter`
+is not an API for it either: its POST only records a pending choice on the open dialog
+(`CollectionSettingsApi.UpdatePendingXmatter`). So the test changes the pack the same way,
+now through `helpers/collectionSettings.ts` (`restartWithCollectionSettings`), and the
+journey of picking a pack in Settings stays untested. Story Producer is worse off: it is
+not in the dialog's list at all, only forced by its branding, so the test sets the branding
+through the `e2e/setBranding` hook.
+
 ## Native OS dialogs hang automation
 
 File pickers, the Image Toolbox, and video capture open native windows Playwright
@@ -90,7 +99,7 @@ taken from the `commandId` the menu already has.
 
 ## The component-tester Playwright suites are not in CI
 
-`nightly.yml` runs vitest, C#, and visual-regression only; nothing runs
+`nightly.yml` runs vitest, C#, visual-regression and BloomE2E; nothing runs
 `react_components/component-tester`'s suites, which is how the harness sat broken
 (React 17 pin + config bug) unnoticed until it was green again at 144 passed. It will
 rot again silently. Fix direction: a nightly job mirroring the visual-regression one
