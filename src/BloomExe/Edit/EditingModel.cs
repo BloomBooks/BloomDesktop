@@ -47,6 +47,10 @@ namespace Bloom.Edit
         private bool _reloadFromDiskOnLeavingEditTab;
 
         public bool Visible;
+
+        // A page a JumpToPage call asked for while the Edit tab was not showing. OnBecomeVisible
+        // displays this page instead of the one it would otherwise choose. See JumpToPage.
+        private string _pageIdToShowWhenVisible;
         private Book.Book _currentlyDisplayedBook;
         private Book.Book _bookForToolboxContent;
         private EditingView _view;
@@ -515,6 +519,8 @@ namespace Bloom.Edit
             // This edit tab can ignore changes that don't actually involve selecting a different book.
             if (_bookSelection.CurrentSelection == _currentlyDisplayedBook)
                 return;
+            // A jump queued for a page of the book we are leaving means nothing in the new one.
+            _pageIdToShowWhenVisible = null;
             //prevent trying to save this page in whatever comes next
             var hadPageToSave = _havePageToSave;
             _havePageToSave = false;
@@ -996,11 +1002,23 @@ namespace Bloom.Edit
 
             ErrorReportUtils.CheckForFakeTestErrorsIfNotRealUser(_currentlyDisplayedBook.Title);
 
-            // BL-2339: try to choose the last edited page
-            var page =
-                _currentlyDisplayedBook.GetPageByIndex(
-                    _currentlyDisplayedBook.UserPrefs.MostRecentPage
-                ) ?? _currentlyDisplayedBook.FirstPage;
+            // A jump asked for while this tab was not showing wins over the remembered page: it is
+            // the more recent request. See JumpToPage.
+            var requestedPageId = _pageIdToShowWhenVisible;
+            _pageIdToShowWhenVisible = null;
+            IPage page = null;
+            if (requestedPageId != null)
+                page = _currentlyDisplayedBook
+                    .GetPages()
+                    .FirstOrDefault(p => p.Id == requestedPageId);
+            if (page == null)
+            {
+                // BL-2339: try to choose the last edited page
+                page =
+                    _currentlyDisplayedBook.GetPageByIndex(
+                        _currentlyDisplayedBook.UserPrefs.MostRecentPage
+                    ) ?? _currentlyDisplayedBook.FirstPage;
+            }
 
             if (page != null)
                 _view.GoToPage(page);
@@ -1687,6 +1705,58 @@ namespace Bloom.Edit
             request.PostSucceeded();
         }
 
+        /// <summary>
+        /// Show the page with this id in the Edit tab. The page being left is saved on the way,
+        /// which is how anything typed on it reaches the file.
+        ///
+        /// A jump can arrive when the Edit tab cannot act on it at once: the tab is not showing
+        /// yet, it is still navigating to a page, or a save is in flight. In each of those cases
+        /// the jump is remembered and done as soon as that finishes. Bloom used to drop it and
+        /// report success, which left the caller waiting for a page that was never coming (see
+        /// src/BloomE2E/AUTOMATION-DEBT.md).
+        ///
+        /// Returns false when the jump can be neither started nor queued, so the caller can say so
+        /// rather than wait: there is no book, or the Edit tab is in the momentary state after a
+        /// save in which no transition is allowed.
+        /// </summary>
+        public bool JumpToPage(string pageId)
+        {
+            if (CurrentBook == null || string.IsNullOrEmpty(pageId))
+                return false;
+
+            if (!Visible)
+            {
+                // The Edit tab is not showing, so there is nothing to save and nowhere to
+                // navigate. OnBecomeVisible chooses the page to display, so hand it this one.
+                _pageIdToShowWhenVisible = pageId;
+                return true;
+            }
+
+            // Ask to be run again when the Edit tab is done with what it is doing. We check the
+            // state before calling SaveThen so that the answer we give the caller is decided
+            // before any save starts.
+            if (_stateMachine.SavePending)
+                return _stateMachine.DeferUntilSaveCompletes(() => JumpToPage(pageId));
+            if (_stateMachine.Navigating)
+                return _stateMachine.DeferUntilPageIsLoaded(() => JumpToPage(pageId));
+
+            var jumped = true;
+            SaveThen(
+                () => pageId,
+                doIfNotInRightStateToSave: () =>
+                {
+                    // We ruled out the two states that refuse a save above, so we are in the
+                    // momentary SavedAndStripped state, which an API call should not be able to
+                    // observe. Say so rather than drop the request silently.
+                    Logger.WriteEvent(
+                        $"EditingModel.JumpToPage({pageId}): the edit tab was not in a state to save, so the jump was refused."
+                    );
+                    jumped = false;
+                }
+            );
+            return jumped;
+        }
+
         private bool CannotSavePage()
         {
             return _bookSelection == null
@@ -2202,6 +2272,13 @@ namespace Bloom.Edit
             // move on to the next page. See StartUpdatingAllPages().
             if (nowEditing && _updatingAllPages)
                 AdvanceUpdatingAllPages(pageId);
+
+            // Last of all, a jump that arrived while we were navigating here (see JumpToPage).
+            // It saves this page and navigates off it, so everything above, which acts on the page
+            // that just loaded, has to happen first. If the work above left us navigating or
+            // saving again, JumpToPage queues itself once more.
+            if (nowEditing)
+                _stateMachine.TakeWorkDeferredUntilPageIsLoaded()?.Invoke();
         }
 
         // The one action queued by RunAfterNextPageLoad, or null.

@@ -48,8 +48,10 @@ namespace Bloom
         private bool _finishedLoading;
 
         // During an automation run (--automation, e.g. the Playwright suites) the window must
-        // not steal the user's keyboard focus when it is shown.
-        protected override bool ShowWithoutActivation => Program.StartupAutomation;
+        // not steal the user's keyboard focus when it is shown. The same goes for a headless run
+        // (--headless), whose window sits off-screen where the user cannot see it at all.
+        protected override bool ShowWithoutActivation =>
+            Program.StartupAutomation || Program.StartupHeadless;
 
         /// <summary>
         /// The screen that an automation run (--automation) should open windows on: the one
@@ -70,6 +72,30 @@ namespace Bloom
                 return Screen.AllScreens[oneBasedIndex - 1];
             }
             return Screen.PrimaryScreen;
+        }
+
+        /// <summary>
+        /// Where a headless run (--headless) puts its window: the size of the automation screen's
+        /// working area, but positioned to the left of every monitor, so that not one pixel of it
+        /// is on any screen.
+        ///
+        /// The window is moved rather than minimized or hidden because a minimized WebView2 stops
+        /// painting: screenshots come back blank and the layout is the wrong size. An off-screen
+        /// window of the normal size keeps painting, so a test sees exactly what a user would.
+        /// </summary>
+        public static Rectangle GetHeadlessBounds()
+        {
+            var size = GetAutomationScreen().WorkingArea.Size;
+            // -32000 is as far left as a window may go: Windows still places a window there, and
+            // anything beyond about -32768 runs into the 16-bit coordinates that some of the older
+            // window messages still carry. Far enough left of every monitor that nothing shows,
+            // and unlike a margin computed from the screen layout it does not depend on Windows
+            // and this process agreeing about how many pixels wide a monitor is (they disagree
+            // when the monitors have different scale factors).
+            const int farLeftOfEveryScreen = -32000;
+            var leftmostX = Screen.AllScreens.Min(screen => screen.Bounds.Left);
+            var x = Math.Min(farLeftOfEveryScreen, leftmostX - size.Width - 1000);
+            return new Rectangle(x, 0, size.Width, size.Height);
         }
 
         public Shell(
@@ -424,8 +450,10 @@ namespace Bloom
         public void ReallyComeToFront()
         {
             // During an automation run, grabbing focus would yank the user's keyboard away
-            // from whatever they are doing on another monitor while tests run.
-            if (!Program.StartupAutomation)
+            // from whatever they are doing on another monitor while tests run. A headless
+            // window must not come to the front either: it is off-screen on purpose, and
+            // TopMost/BringToFront on it would take the foreground away for nothing.
+            if (!Program.StartupAutomation && !Program.StartupHeadless)
             {
                 //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
                 TopMost = true;
@@ -446,7 +474,18 @@ namespace Bloom
             {
                 SuspendLayout();
 
-                if (Program.StartupAutomation)
+                if (Program.StartupHeadless)
+                {
+                    // A headless run keeps the window off every screen and out of the task bar,
+                    // so a test can run while the developer works. The window stays Normal (not
+                    // minimized) and full size, because WebView2 only paints a window that is
+                    // neither minimized nor hidden. See GetHeadlessBounds.
+                    StartPosition = FormStartPosition.Manual;
+                    WindowState = FormWindowState.Normal;
+                    Bounds = GetHeadlessBounds();
+                    ShowInTaskbar = false;
+                }
+                else if (Program.StartupAutomation)
                 {
                     // An automation run must not open on whichever monitor the user is
                     // currently working on, and must not disturb the saved window placement.
@@ -468,7 +507,7 @@ namespace Bloom
                 // This feature is not yet a normal part of Bloom, since we think just maximizing is more rice-farmer-friendly.
                 // However, we added the ability to remember this stuff at the request of the person making videos, who needs
                 // Bloom to open in the same place / size each time.
-                if (Program.StartupAutomation)
+                if (Program.StartupAutomation || Program.StartupHeadless)
                 {
                     // Placement is already pinned above; leave the user's saved placement alone.
                 }
@@ -529,6 +568,10 @@ namespace Bloom
             if (!_finishedLoading)
                 return;
             if (WindowState != FormWindowState.Normal)
+                return;
+            // A headless window is deliberately off every screen and is Normal rather than
+            // maximized, so saving its bounds would leave the developer's next Bloom invisible.
+            if (Program.StartupHeadless || Program.StartupAutomation)
                 return;
 
             Settings.Default.RestoreBounds = new Rectangle(Left, Top, Width, Height);

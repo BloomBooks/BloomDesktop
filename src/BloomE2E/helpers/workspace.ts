@@ -22,14 +22,11 @@ export interface IWorkspaceTabs {
     navigationLocked: boolean;
 }
 
-// The visible label on each tab in the top bar. These differ from the API's tab ids, which is why
-// a test names the id and this map does the translating. The labels are localized, so a run in
-// another UI language would need this to come from the l10n data instead.
-const TAB_LABEL: Record<WorkspaceTabId, string> = {
-    collection: "Collections",
-    edit: "Edit",
-    publish: "Publish",
-};
+// The test id on each tab in the top bar, set in react_components/TopBar/TopBar.tsx. The tab ids
+// here are Bloom's own API names, and the test ids are built from them, so this needs no map.
+function tabTestId(tab: WorkspaceTabId): string {
+    return `workspace-tab-${tab}`;
+}
 
 /** Ask Bloom which workspace tab is active and what state the others are in. */
 export async function getTabs(page: Page): Promise<IWorkspaceTabs> {
@@ -59,13 +56,15 @@ export async function waitForActiveTab(
  *
  * Bloom hides the Edit and Publish tabs entirely until a book is selected, so a test that wants
  * either of them must select a book first (see helpers/collection.ts).
+ *
+ * The tab is found by its test id, not by its label, so this works in any UI language.
  */
 export async function switchTab(
     page: Page,
     tab: WorkspaceTabId,
     timeoutMs = 30000,
 ): Promise<void> {
-    const target = page.getByRole("tab", { name: TAB_LABEL[tab] });
+    const target = page.getByTestId(tabTestId(tab));
     await target.waitFor({ state: "visible", timeout: timeoutMs });
     await target.click();
     await waitForActiveTab(page, tab, timeoutMs);

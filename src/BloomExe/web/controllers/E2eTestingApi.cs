@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
@@ -97,6 +98,21 @@ namespace Bloom.web.controllers
                 false // does not need the UI thread
             );
 
+            // POST body is a JSON array of one to three language tags, e.g. ["en","fr","es"], for
+            // Language1, Language2 and Language3. Sets the collection's languages and writes the
+            // .bloomCollection file, which a test otherwise has to compose by hand: the Collection
+            // Settings dialog is a WinForms surface CDP cannot reach, and its own
+            // collectionSettings/changeLanguage endpoint only answers while that dialog is open.
+            // Changing a collection's languages still needs the collection to be reopened, exactly
+            // as it does for a user who clicks OK in that dialog, so the caller must restart Bloom
+            // (src/BloomE2E/helpers/collection.ts setCollectionLanguages does both).
+            // Must run on the UI thread because it changes the settings the UI is showing.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "setCollectionLanguages",
+                HandleSetCollectionLanguages,
+                true
+            );
+
             // GET returns the pages the Add Page dialog would offer for the selected book: the
             // path of its template book, and the id and label of each template page. A test needs
             // these to call the production "addPage" endpoint, and the dialog itself reads them
@@ -106,6 +122,24 @@ namespace Bloom.web.controllers
                 HandleGetTemplatePages,
                 false // does not need the UI thread
             );
+
+            // GET returns the URL of the workspace root document Bloom drives, or an empty string
+            // before that browser exists. A run has more than one document carrying the workspace
+            // root's markup, so the top bar's test id alone does not identify the right one, and a
+            // test that attaches to the wrong one is silently broken: its own typing and clicking
+            // work, while every page Bloom loads goes somewhere it cannot see. Compare on the file
+            // name, which is unique per document; the rest of the URL is escaped differently by
+            // Bloom and by the debugging protocol. Needs the UI thread to read the browser.
+            apiHandler.RegisterEndpointHandler(kApiUrlPart + "shellUrl", HandleGetShellUrl, true);
+        }
+
+        /// <summary>
+        /// Reply with the URL of the workspace root document Bloom drives (see the registration
+        /// above), or an empty string if the main browser is not up yet.
+        /// </summary>
+        private void HandleGetShellUrl(ApiRequest request)
+        {
+            request.ReplyWithText(Workspace.WorkspaceView.MainBrowserForE2eTests?.Url ?? "");
         }
 
         /// <summary>
@@ -181,6 +215,76 @@ namespace Bloom.web.controllers
                 })
                 .ToArray();
             request.ReplyWithJson(pages);
+        }
+
+        /// <summary>
+        /// Set the collection's Language1, Language2 and Language3 to the tags in the POST body (a
+        /// JSON array of one to three tags), and save the .bloomCollection file. Fewer than three
+        /// tags leaves the languages that were not named empty, except that a collection naming
+        /// only one language repeats it as Language2, which is what Bloom's own new-collection code
+        /// writes.
+        ///
+        /// This does the same work as clicking OK in the Collection Settings dialog, including
+        /// keeping a language that is no longer one of the first three in the collection's list of
+        /// languages. Like that dialog, it needs the collection reopened before the change is
+        /// everywhere it should be; the caller restarts Bloom.
+        /// </summary>
+        private void HandleSetCollectionLanguages(ApiRequest request)
+        {
+            var tags = request.RequiredPostObject<string[]>();
+            if (tags == null || tags.Length < 1 || tags.Length > 3)
+                throw new ArgumentException(
+                    "e2e/setCollectionLanguages takes a JSON array of one to three language tags."
+                );
+            if (string.IsNullOrWhiteSpace(tags[0]))
+                throw new ArgumentException(
+                    "e2e/setCollectionLanguages needs a tag for Language1."
+                );
+
+            // Start from the collection's own writing systems, so that everything about each
+            // language except its tag (the font, the line height, the writing direction) keeps the
+            // value it had, then put the requested tag on each one.
+            //
+            // Each language is named in English ("French", not "français"), which is what a person
+            // gets by keeping the English name Bloom's language chooser offers. Bloom calls a name
+            // that is not the language's own name for itself a custom name, and a custom name is
+            // the one thing it shows verbatim everywhere; leaving the name uncustomized would make
+            // each screen name the language in whatever language it liked.
+            var pending = new WritingSystem[3];
+            for (var i = 0; i < 3; i++)
+            {
+                pending[i] = _collectionSettings.AllLanguages[i].Clone();
+                var tag = i < tags.Length ? tags[i].Trim() : string.Empty;
+                pending[i].ChangeTag(tag);
+                if (!string.IsNullOrEmpty(tag))
+                {
+                    // ChangeTag has already replaced the name with the one the language uses for
+                    // itself, but it leaves IsCustomName alone. So clear that flag before asking
+                    // for the English name: a language that arrived here with a custom name would
+                    // otherwise be told "you have a name a person chose", and hand back the name
+                    // ChangeTag just computed instead of the English one.
+                    pending[i].SetName(pending[i].Name, false);
+                    pending[i].SetName(pending[i].GetNameInLanguage("en"), true);
+                }
+            }
+            if (string.IsNullOrEmpty(pending[1].Tag))
+            {
+                pending[1].ChangeTag(pending[0].Tag);
+                // Same reason as the loop above: ChangeTag leaves IsCustomName alone, so a
+                // Language2 that arrived here with a custom name would keep the name of the
+                // language it just replaced.
+                pending[1].SetName(pending[1].Name, false);
+                pending[1].SetName(pending[1].GetNameInLanguage("en"), true);
+            }
+
+            CollectionSettingsDialog.UpdateLanguageSettings(
+                _collectionSettings.AllLanguages,
+                pending,
+                pending.Select(language => language.FontName).ToArray()
+            );
+            _collectionSettings.Save();
+
+            request.PostSucceeded();
         }
 
         /// <summary>

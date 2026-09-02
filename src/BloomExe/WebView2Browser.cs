@@ -309,6 +309,12 @@ namespace Bloom
         private static bool _useSharedEnvironment;
         private static CoreWebView2Environment _sharedEnvironment;
 
+        // The one environment every browser of an e2e run shares, so the run has a single browser
+        // process and therefore a single remote-debugging listener. See where it is used in
+        // InitWebView. Like the statics above it is unsynchronized, which is safe for the same
+        // reason: browser construction is marshalled to the UI thread.
+        private static CoreWebView2Environment _environmentForE2eTests;
+
         public static void BeginSharedEnvironmentBatch()
         {
             AssertSharedEnvironmentStaticsAreUiThreadOnly();
@@ -396,6 +402,14 @@ namespace Bloom
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
             }
+            if (Program.StartupHeadless)
+            {
+                // A headless run keeps Bloom's window far off-screen (see Shell.GetHeadlessBounds),
+                // so Windows reports the window as occluded and Chromium stops rendering it. A
+                // screenshot of an unrendered page comes back blank, so turn that behavior off.
+                featuresToDisable.Add("CalculateNativeWinOcclusion");
+                additionalBrowserArgs += " --disable-backgrounding-occluded-windows";
+            }
             if (RemoteDebuggingPort.HasValue && !Program.RunningUnitTests)
             {
                 // Expose a CDP endpoint so Playwright and other automation can attach to the real Bloom WebView2 surface.
@@ -475,6 +489,21 @@ namespace Bloom
             //  - _sharedEnvironment: the legacy on-UI-thread shared-environment batch (BookProcessor's old path).
             // Otherwise we fall through and create a fresh one.
             var env = _injectedEnvironment ?? (_useSharedEnvironment ? _sharedEnvironment : null);
+            // An e2e run attaches a test to ONE of these browser processes over the remote debugging
+            // port, and every environment we create is given that same port number, so only the
+            // process that starts first can listen on it. Which one that is depends on startup
+            // timing, so a test could attach to a browser Bloom is not driving: its scripts appeared
+            // to run (ExecuteScriptAsync reported success against the browser Bloom does drive)
+            // while the document the test was watching never changed. One environment for the whole
+            // run means one browser process, one listener, and every document visible to the test.
+            //
+            // Only for browsers built on the UI thread, which is every browser a test can see. A
+            // CoreWebView2Environment belongs to the thread that created it, so handing this one to
+            // a browser built on a server thread hangs that thread: publishing a BloomPUB, which
+            // makes its browsers on the thread serving the API call, waited forever and the preview
+            // never appeared.
+            if (env == null && Program.RunningE2eTests && Program.RunningOnUiThread)
+                env = _environmentForE2eTests;
             if (env == null)
             {
                 string dataFolder;
@@ -494,6 +523,8 @@ namespace Bloom
                 );
                 if (_useSharedEnvironment)
                     _sharedEnvironment = env;
+                if (Program.RunningE2eTests && Program.RunningOnUiThread)
+                    _environmentForE2eTests = env;
             }
             await _webview.EnsureCoreWebView2Async(env);
             // Added as a footnote to BL-15466 to prevent popups generated from title

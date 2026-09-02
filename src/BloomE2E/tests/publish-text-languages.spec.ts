@@ -11,10 +11,7 @@
 // run before the test that clicks a box, and the file would quietly stop testing the defaults if
 // they were reordered.
 
-import * as fs from "node:fs";
-import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
-import { makeCollectionXml } from "../fixtures/launchBloom";
 import {
     addPage,
     findBookFolder,
@@ -25,7 +22,7 @@ import {
     setContentLanguages,
     typeInGroup,
 } from "../helpers/bookMaking";
-import { selectBook } from "../helpers/collection";
+import { selectBook, setCollectionLanguages } from "../helpers/collection";
 import {
     clickTextLanguage,
     expectTextLanguageRows,
@@ -97,19 +94,9 @@ test.describe("the Text Languages publish list", () => {
         );
         await goToPage(page, coverBeforeRestart!.id);
 
-        // Now swap German out for Spanish. Collection settings have no API and their dialog is a
-        // WinForms surface CDP cannot reach, so the way to change them is to quit Bloom, rewrite
-        // the .bloomCollection, and start again. See AUTOMATION-DEBT.md.
-        const newPage = await bloomApp.restart(() =>
-            fs.writeFileSync(
-                Path.join(
-                    bloomApp.collectionDir,
-                    `${COLLECTION_NAME}.bloomCollection`,
-                ),
-                makeCollectionXml(FINAL_LANGUAGES),
-                "utf8",
-            ),
-        );
+        // Now swap German out for Spanish. Bloom reads the collection's languages when it opens
+        // the collection, so this restarts it; see setCollectionLanguages.
+        const newPage = await setCollectionLanguages(bloomApp, FINAL_LANGUAGES);
         bookFolder = await findBookFolder(newPage, BOOK_TITLE);
         await selectBook(newPage, bookFolder);
         await switchTab(newPage, "edit");
@@ -356,29 +343,27 @@ test.describe("the Text Languages publish list", () => {
         await setContentLanguages(page, ["en"]);
     });
 
-    // KNOWN FLAKE: this test failed once in six full runs on 2026-09-01, and the cause is not
-    // known. The failure was not reproduced, and the log kept only the tail, so the assertion that
-    // failed was not captured. Whoever sees it fail again: keep the whole log. This test does not
-    // change which languages the book shows, so the earlier suspicion about quick successive
-    // calls to editView/topBar/contentLanguageUsageChange does not explain it.
-    test("keeps a language that the collection no longer has, under its own name [Test Case ID 169]", async ({
+    // FORMER FLAKE: this test failed once in six full runs on 2026-09-01, and the cause was not
+    // known then. The likely cause was found later the same day: the fixture could attach to a
+    // workspace document Bloom was not driving, which fails the tests that come after a restart
+    // (the file runs serially). bloomTest.findShellPage now asks Bloom which document it drives.
+    // If this test fails again, keep the whole log; the first failure kept only the tail.
+    test("keeps a language that the collection no longer has, under the name the collection remembers [Test Case ID 169]", async ({
         bloomApp,
     }) => {
         test.setTimeout(180000);
 
         // Drop Spanish from the collection. The book still has Spanish text, so the language stays
-        // in the list; but the collection no longer supplies a name for it, so Bloom falls back to
-        // the name the language calls itself.
-        const withoutSpanish = await bloomApp.restart(() =>
-            fs.writeFileSync(
-                Path.join(
-                    bloomApp.collectionDir,
-                    `${COLLECTION_NAME}.bloomCollection`,
-                ),
-                makeCollectionXml(["en", "fr"]),
-                "utf8",
-            ),
-        );
+        // in the list, named "Spanish". Removing a language does not throw its settings away:
+        // CollectionSettingsDialog.UpdateLanguageSettings moves the displaced language to the end
+        // of the collection's list, name and font and all, so the name outlives the removal. (This
+        // test used to expect "español", the language's own name for itself, because it dropped
+        // the language by rewriting the .bloomCollection, which no part of Bloom does. Going
+        // through the same code the dialog's OK button runs is what changed the answer.)
+        const withoutSpanish = await setCollectionLanguages(bloomApp, [
+            "en",
+            "fr",
+        ]);
         await selectBook(withoutSpanish, bookFolder);
         await openPublishDestination(withoutSpanish, "Web");
         // In any order: where a language the collection no longer names sits in the list is not
@@ -399,25 +384,19 @@ test.describe("the Text Languages publish list", () => {
                     disabled: false,
                 },
                 {
-                    name: "español",
+                    name: "Spanish",
                     incomplete: false,
                     checked: false,
                     disabled: false,
                 },
             ],
-            "Spanish did not stay in the list, unchecked and under its own name.",
+            "Spanish did not stay in the list, unchecked and under the name the collection remembers.",
         );
 
         // Put Spanish back, for the test that follows.
-        const withSpanish = await bloomApp.restart(() =>
-            fs.writeFileSync(
-                Path.join(
-                    bloomApp.collectionDir,
-                    `${COLLECTION_NAME}.bloomCollection`,
-                ),
-                makeCollectionXml(FINAL_LANGUAGES),
-                "utf8",
-            ),
+        const withSpanish = await setCollectionLanguages(
+            bloomApp,
+            FINAL_LANGUAGES,
         );
         await selectBook(withSpanish, bookFolder);
     });

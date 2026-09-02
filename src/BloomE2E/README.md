@@ -58,12 +58,11 @@ and whatever tab is showing. Most tests need nothing else.
 | `restart`       | Stop Bloom, run an optional callback, start it again on the same collection, and return the new page. |
 
 `restart(betweenStopAndStart)` is how a test changes something Bloom only reads at startup. The
-collection's languages are the case that needed it: the collection Settings dialog is a WinForms
-surface CDP cannot reach, and `collectionSettings/changeLanguage` only answers while that dialog
-is open, so the way to change a language is to stop Bloom, rewrite the `.bloomCollection` with
-`makeCollectionXml`, and start again. Bloom is killed rather than asked to quit, so leave the
-page being edited before restarting or what was typed on it is lost. Use the page `restart`
-returns; the old one is closed.
+collection's languages are the case that needed it, and a test does not call `restart` itself for
+that: `setCollectionLanguages(bloomApp, tags)` posts the new languages to the `e2e/` hook that
+writes the `.bloomCollection`, then restarts Bloom and returns the new page. Bloom is killed
+rather than asked to quit, so leave the page being edited before restarting or what was typed on
+it is lost. Use the page `restart` returns; the old one is closed.
 
 Teardown kills the process tree, waits for the HTTP port to go dark, and deletes the temp copy.
 
@@ -89,13 +88,17 @@ real bug in the code under test; read the message and fix it rather than working
 
 - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Note that Bloom hides the
   Edit and Publish tabs until a book is selected.
-- `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
+- `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`, `setCollectionLanguages`.
 - `helpers/api.ts` — `apiGet`, `apiPost`, `apiGetJson`. These run `fetch` inside the page with a
   relative URL, which is not a style choice: Bloom's server rejects a `127.0.0.1` Host header, and
   the CDP endpoint does not answer on `localhost`. The file explains it.
 - `helpers/realClick.ts` — `realClick`, `realClickAt`. Book tiles, Settings, and PREVIEW ignore a
   synthetic `element.click()`. Never hand-roll `Input.dispatchMouseEvent` in a test; add the
   gesture here.
+- `helpers/screenshot.ts` — `captureCurrentBookPage`, `captureElement`, `readPngSize`. Captures an
+  element taller than the window. `Page.captureScreenshot` with `captureBeyondViewport` hangs in
+  WebView2, so this enlarges the window, clips, clears the override, and times out every CDP
+  request. Never open a CDP session in a test; add the capture here.
 
 Two things a test must never do: trigger a native OS dialog (file pickers, the WinForms Image
 Toolbox, video capture), because Playwright cannot dismiss one and the run hangs; and wait on a
@@ -126,7 +129,18 @@ pnpm exec playwright test -g "switching workspace tabs"       # one test by titl
 pnpm exec playwright test --debug    # step through it
 ```
 
-A run opens a real Bloom window. That is expected; do not click in it.
+A run opens a real Bloom, but you will not see it: Bloom is launched with `--headless`, which puts
+its window far outside every monitor, so a run can go on while you work. The window is moved
+off-screen rather than minimized or hidden because WebView2 stops painting a minimized window,
+which would make every screenshot blank.
+
+To watch the run instead, set `BLOOM_E2E_HEADED=1`; `--debug` turns it on for you.
+
+```bash
+BLOOM_E2E_HEADED=1 pnpm exec playwright test tests/workspace-tabs.spec.ts
+```
+
+A headed run opens a real Bloom window. That is expected; do not click in it.
 
 The suite needs a built `Bloom.exe` under `output/{Debug,Release}/{x64,AnyCPU,}/` and the test
 inputs at `output/testing-inputs`, fetched by `node build/get-testing-inputs.mjs` at the commit
@@ -143,3 +157,24 @@ BLOOM_TESTING_INPUTS_DIR=D:/bloom-testing-inputs pnpm test
 
 Either way the fixture copies the collection before Bloom opens it, so a run never modifies your
 inputs.
+
+## Testing a front-end change
+
+The launched Bloom serves its React UI from the built `output/browser`, so an edit to a `.tsx`
+file does not reach a run until somebody rebuilds that bundle. To test the working tree instead,
+start a Vite dev server and name its port in `BLOOM_E2E_VITE_PORT`; the fixture then passes
+`--vite-port` to Bloom, which loads every React control from the dev server.
+
+```bash
+# In one terminal, in src/BloomBrowserUI. Set PORT as well as --port: the port in
+# vite.config.mts comes from process.env.PORT, and --port alone leaves the HMR and
+# React-Refresh URLs pointing at 5173, which makes the page fail to load its entry module.
+PORT=5199 pnpm exec vite --port 5199 --strictPort
+
+# In another, in src/BloomE2E
+BLOOM_E2E_VITE_PORT=5199 pnpm exec playwright test
+```
+
+Pick a port other than 5173 if a Bloom is already running against a dev server there. Leaving the
+variable unset does NOT mean "no dev server": a dev build of Bloom looks for one on 5173 by
+itself, so what a run tests can depend on what else is running. See AUTOMATION-DEBT.md.

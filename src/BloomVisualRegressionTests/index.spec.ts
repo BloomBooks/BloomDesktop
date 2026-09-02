@@ -201,6 +201,12 @@ describe("All books", () => {
     let playerPage: Page;
     let browser: Browser;
     let context: BrowserContext;
+    // Every image comparison the CURRENT case has failed. A case compares one book-preview image
+    // and one image per bloom-player page, and a stale baseline usually affects several of them.
+    // Throwing on the first mismatch meant the later comparisons never even captured their
+    // images, so accepting a real layout change took one ~3-minute run per image (BL-16638 took
+    // three rounds). So collect them all and fail once, at the end of the case.
+    let comparisonFailures: string[] = [];
 
     beforeAll(async () => {
         await launchDedicatedBloom();
@@ -275,6 +281,7 @@ describe("All books", () => {
     });
 
     test.each(cases)("$title", async (testCase) => {
+        comparisonFailures = [];
         // Park the capture pages before we mutate this book. Otherwise the previous case's still-open
         // book-preview / bloom-player page keeps requesting book and staged-BloomPUB files while this
         // case rewrites them, which caused mid-run "file is being used by another process" and
@@ -312,6 +319,14 @@ describe("All books", () => {
         await selectTab("publish");
         const stagedUrl = await makeBloomPubPreview();
         await capturePlayerPages(stagedUrl, testCase.label, screenshotsDir);
+
+        // One failure for the whole case, listing every image that did not match, so a single run
+        // shows all the baselines that need looking at.
+        if (comparisonFailures.length > 0)
+            throw new Error(
+                `${comparisonFailures.length} of this case's images did not match their ` +
+                    `reference:\n  ${comparisonFailures.join("\n  ")}`,
+            );
     });
 
     // Create the reference image if it does not exist yet; otherwise capture a current image and
@@ -619,7 +634,26 @@ describe("All books", () => {
         }
     }
 
+    // Compare one captured image against its reference. This does NOT throw on a mismatch: it
+    // appends a description to comparisonFailures, and the test body fails the case once it has
+    // compared every image. Anything thrown while comparing (notably Pixelmatch's "Image sizes do
+    // not match", which is itself a real failure) is recorded the same way.
     async function comparePreviewImage(
+        referencePath: string,
+        testPath: string,
+        diffPath: string,
+    ) {
+        try {
+            await compareOrThrow(referencePath, testPath, diffPath);
+        } catch (error) {
+            comparisonFailures.push(
+                `${testPath}: ${error instanceof Error ? error.message : String(error)}`,
+            );
+        }
+    }
+
+    // The comparison itself: write a diff image and throw when the two images differ at all.
+    async function compareOrThrow(
         referencePath: string,
         testPath: string,
         diffPath: string,
@@ -652,7 +686,10 @@ describe("All books", () => {
                         `If the new version is correct, replace ${referencePath} with ${testPath}`,
                 ),
             );
-            expect(numberOfDifferentPixels).toBe(0);
+            throw new Error(
+                `differed from ${referencePath} by ${numberOfDifferentPixels} pixels; ` +
+                    `the diff image is at ${diffPath}`,
+            );
         }
     }
 });

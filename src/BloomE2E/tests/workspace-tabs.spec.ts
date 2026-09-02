@@ -22,7 +22,9 @@ test("switching workspace tabs through the real top bar", async ({
     bloomApp,
 }) => {
     // Sanity check the start state, so a failure below means a click failed rather than that we
-    // were already on the tab we were about to click.
+    // were already on the tab we were about to click. This reads the state once rather than waiting
+    // for it: a Bloom that is not on the collection tab here has been left that way by an earlier
+    // test sharing this worker's Bloom, and waiting would only turn that into a slow failure.
     expect((await getTabs(page)).tabStates.collection).toBe("active");
 
     // Setup, not the behavior under test: Bloom hides the Edit and Publish tabs until a book is

@@ -159,24 +159,36 @@ export async function clickTextLanguage(
 export async function showBloomPubPreview(page: Page): Promise<Frame> {
     await page.locator('[aria-label="refresh preview"]').click();
     let player: Frame | undefined;
-    await expect
-        .poll(
-            async () => {
-                player = page
-                    .frames()
-                    .find((f) => f.url().includes("bloomplayer.htm"));
-                if (!player) return 0;
-                return player
-                    .locator('[aria-label="Choose Language"]')
-                    .count()
-                    .catch(() => 0);
-            },
-            {
-                timeout: 120000,
-                message: "The BloomPUB preview never showed the book.",
-            },
-        )
-        .toBeGreaterThan(0);
+    try {
+        await expect
+            .poll(
+                async () => {
+                    player = page
+                        .frames()
+                        .find((f) => f.url().includes("bloomplayer.htm"));
+                    if (!player) return 0;
+                    return player
+                        .locator('[aria-label="Choose Language"]')
+                        .count()
+                        .catch(() => 0);
+                },
+                { timeout: 120000 },
+            )
+            .toBeGreaterThan(0);
+    } catch {
+        // Say which of the two steps did not happen: Bloom never gave the player a book to show,
+        // or the player has one and never finished loading it. Without this the failure looks the
+        // same either way, and the two have nothing to do with each other.
+        const frameUrls = page.frames().map((frame) => frame.url());
+        throw new Error(
+            `The BloomPUB preview never showed the book. ` +
+                (player
+                    ? `bloom-player is loaded at ${player.url()} but never offered the language ` +
+                      `menu, so it never finished showing a book.`
+                    : `No frame of this page is bloom-player, so Bloom never staged the ` +
+                      `publication. Frames: ${frameUrls.join(", ")}.`),
+        );
+    }
     return player!;
 }
 

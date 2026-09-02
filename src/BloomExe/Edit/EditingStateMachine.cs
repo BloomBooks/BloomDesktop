@@ -50,6 +50,10 @@ public class EditingStateMachine
     // save has completed and we are back in a state that allows transitions.
     // See DeferUntilSaveCompletes.
     private Action _workToDoAfterInFlightSave;
+
+    // Work that arrived while we were navigating to a page and could not be done then. It runs
+    // once that page has loaded. See DeferUntilPageIsLoaded.
+    private Action _workToDoAfterNavigation;
     private Action _hidePage;
 
     private Action<bool> _enableStateTransitions; // arg is (enabled)
@@ -105,6 +109,10 @@ public class EditingStateMachine
                     return true;
                 case State.Navigating:
                     LogShortcut("empty page");
+                    // The navigation this work was waiting for is over, and no page loaded, so
+                    // the work must not run: it belonged to a page we are no longer showing. This
+                    // is the path a switch away from the Edit tab takes.
+                    _workToDoAfterNavigation = null;
                     _hidePage();
                     _currentState = State.NoPage;
                     return true;
@@ -197,9 +205,32 @@ public class EditingStateMachine
     }
 
     /// <summary>
-    /// Called after we hear from the browser JS that the dom is finished loading
+    /// Called after we hear from the browser JS that the dom is finished loading.
+    /// Work that had to wait for this navigation does NOT run here; the caller takes it with
+    /// TakeWorkDeferredUntilPageIsLoaded once it has done its own work on the loaded page.
     /// </summary>
     public bool ToEditing(string pageId)
+    {
+        return ToEditingFromNavigating(pageId);
+    }
+
+    /// <summary>
+    /// Hand back the work that was deferred until a page loaded (see DeferUntilPageIsLoaded), and
+    /// forget it, so the caller can run it. Returns null when there is none.
+    ///
+    /// The caller runs it rather than ToEditing, because the code that hears "the page has loaded"
+    /// has its own work to do first: an action queued for the next page load, and the next step of
+    /// the Update Book pass. A jump that ran before those would save and navigate away from the
+    /// page they were about to act on. See EditingModel.HandlePageDomLoadedEvent.
+    /// </summary>
+    public Action TakeWorkDeferredUntilPageIsLoaded()
+    {
+        var deferredWork = _workToDoAfterNavigation;
+        _workToDoAfterNavigation = null;
+        return deferredWork;
+    }
+
+    private bool ToEditingFromNavigating(string pageId)
     {
         try
         {
@@ -405,6 +436,32 @@ public class EditingStateMachine
     }
 
     /// <summary>
+    /// For a caller whose work needs a loaded page, and which found us navigating to one (which is
+    /// why ToSavePending refused it). If we really are navigating, <paramref name="work"/> is
+    /// remembered and run once that page has loaded, and this returns true — the caller must then
+    /// do nothing else. Otherwise it returns false and the caller must handle its own request.
+    ///
+    /// A navigation that ends any other way than with a loaded page (a switch away from the Edit
+    /// tab, which comes through ToNoPage) throws the work away: it belonged to a page that is no
+    /// longer being shown.
+    ///
+    /// A jump to a page is the case this exists for: it arrives from an API call at any moment,
+    /// including while the Edit tab is loading the page it displays on becoming visible. Bloom used
+    /// to drop such a jump and tell the caller it had succeeded (see src/BloomE2E/AUTOMATION-DEBT.md).
+    ///
+    /// Only one piece of deferred work is kept: a later request supersedes an earlier one, since it
+    /// is the more recent thing that was asked for.
+    /// </summary>
+    public bool DeferUntilPageIsLoaded(Action work)
+    {
+        // We are not navigating, or there is nothing to do: the caller must handle it itself.
+        if (_currentState != State.Navigating || work == null)
+            return false;
+        _workToDoAfterNavigation = work;
+        return true;
+    }
+
+    /// <summary>
     /// Source: API call providing content of current page will request this after saving and before executing pending action
     /// (e.g. changing pages)
     /// </summary>
@@ -505,6 +562,11 @@ public class EditingStateMachine
     private void Log(string message)
     {
         Debug.WriteLine("[EditingStateMachine] " + message);
+        // Under --e2e these go into Bloom's log as well. A test that waits for a page the edit tab
+        // never shows is otherwise a mystery: nothing else records which state the tab was in or
+        // which request it turned down.
+        if (Bloom.Program.RunningE2eTests)
+            Logger.WriteEvent("[EditingStateMachine] " + message);
     }
 
     private void LogTransition(string nextState, string nextPageId)

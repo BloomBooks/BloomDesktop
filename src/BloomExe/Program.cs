@@ -108,6 +108,11 @@ namespace Bloom
         internal static string StartupLabel { get; private set; }
         internal static bool StartupAutomation { get; private set; }
 
+        // True when --headless was passed. An e2e run wants Bloom's window to paint (screenshots
+        // and keyboard input both need that) but not to appear on any monitor, so Shell places the
+        // window far outside every screen instead of minimizing or hiding it. See Shell_Load.
+        internal static bool StartupHeadless { get; private set; }
+
         // Control port of the dev launcher (scripts/watchBloomExe.mjs) that started
         // this Bloom, passed as --launcher-port. When present, DevLauncher watches for
         // pending C# changes and offers a dev-only toast that asks the launcher to
@@ -120,6 +125,7 @@ namespace Bloom
                 new[]
                 {
                     StartupAutomation ? "automation=true" : null,
+                    StartupHeadless ? "headless=true" : null,
                     StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
                     StartupLauncherPort.HasValue
                         ? $"launcherPort={StartupLauncherPort.Value}"
@@ -785,6 +791,7 @@ namespace Bloom
             StartupVitePort = null;
             StartupLabel = null;
             StartupAutomation = false;
+            StartupHeadless = false;
             StartupLauncherPort = null;
             RunningE2eTests = false;
 
@@ -824,6 +831,14 @@ namespace Bloom
                         "--automation",
                         () => StartupAutomation,
                         value => StartupAutomation = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupFlagArgument(
+                        args,
+                        ref i,
+                        "--headless",
+                        () => StartupHeadless,
+                        value => StartupHeadless = value,
                         out errorMessage
                     )
                     || TryHandleStartupFlagArgument(

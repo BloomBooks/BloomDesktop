@@ -305,30 +305,38 @@ export async function addPage(
  * it is leaving, so text typed into a box reaches the file only once the book moves off that page.
  */
 export async function goToPage(page: Page, pageId: string): Promise<void> {
-    // The Edit tab drops a jump that arrives while it is still loading a page, so wait for it to
-    // be showing one before asking for another.
-    await waitForEditablePage(page);
-
-    // Ask up to three times. Coming back from the Publish tab, the Edit tab can still swallow a
-    // jump after it looks ready, and asking again costs a few seconds where failing costs the run.
+    // One request is enough: the Edit tab queues a jump that arrives while it is loading a page or
+    // saving one, and answers with an error if it can do neither (EditingModel.JumpToPage). It used
+    // to drop such a jump and report success, which is why this helper used to ask three times.
+    await apiPost(page, "editView/jumpToPage", pageId, "text/plain");
     const showing = async () =>
         (await page
             .frame({ name: "page" })
             ?.locator(`.bloom-page[id="${pageId}"]`)
             .count()
             .catch(() => 0)) ?? 0;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-        await apiPost(page, "editView/jumpToPage", pageId, "text/plain");
-        try {
-            await expect.poll(showing, { timeout: 20000 }).toBe(1);
-            return;
-        } catch {
-            // fall through and ask again
-        }
+    try {
+        await expect.poll(showing, { timeout: 60000 }).toBe(1);
+    } catch {
+        // Say what the frame does hold. "Bloom never showed the page" on its own cannot tell a
+        // page that never arrived from a page that arrived and was replaced by another one.
+        const frame = page.frame({ name: "page" });
+        const heldPageIds = frame
+            ? await frame
+                  .locator(".bloom-page")
+                  .evaluateAll((pages) => pages.map((p) => p.id))
+                  .catch(() => ["(could not read the frame)"])
+            : [];
+        throw new Error(
+            `Bloom never showed page ${pageId} in the Edit tab. ` +
+                (frame
+                    ? `The 'page' frame is at ${frame.url()} and holds [${heldPageIds.join(", ")}].`
+                    : `There is no 'page' frame.`) +
+                ` Bloom drives the shell at ${(await apiGet(page, "e2e/shellUrl")).body}; ` +
+                `this test is watching ${page.url()}. If those name different documents, the test ` +
+                `attached to the wrong one and nothing Bloom does will ever appear (see AUTOMATION-DEBT.md).`,
+        );
     }
-    throw new Error(
-        `Bloom never showed page ${pageId} in the Edit tab, after three attempts.`,
-    );
 }
 
 /**
@@ -377,7 +385,10 @@ export async function typeInGroup(
     await box.click();
     await box.press("Control+a");
     await box.press("Delete");
-    if (text) await box.pressSequentially(text);
+    // One insertion rather than a key press per character: the box has focus, and CKEditor and
+    // Bloom's own markup code both work from the input event this raises, so the result is the
+    // same and the cost does not grow with the length of the text.
+    if (text) await page.keyboard.insertText(text);
     // Bloom's editor reacts to typing; confirm the box holds what we meant before moving on, so a
     // later failure cannot be blamed on text that never arrived.
     await expect(box).toHaveText(text, { timeout: 15000 });

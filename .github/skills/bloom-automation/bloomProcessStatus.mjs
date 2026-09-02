@@ -13,6 +13,18 @@ import {
     toWorkspaceTabsEndpoint,
 } from "./bloomProcessCommon.mjs";
 
+const usage = `Report the Bloom and launcher processes this machine is running.
+
+  node bloomProcessStatus.mjs [options]
+
+  --help, -h            Print this and exit.
+  --json                Report as JSON.
+  --running-bloom       Also probe each running Bloom's own HTTP server.
+  --repo-root <path>    The worktree to judge instances against (default: this checkout).
+  --http-port <port>    Report the instance whose server answers on this port.
+
+This script only reads; it never kills anything.`;
+
 const parseArgs = () => {
     const args = process.argv.slice(2);
     const options = {
@@ -24,6 +36,11 @@ const parseArgs = () => {
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
+
+        if (arg === "--help" || arg === "-h") {
+            console.log(usage);
+            process.exit(0);
+        }
 
         if (arg === "--json") {
             options.json = true;
@@ -57,6 +74,10 @@ const parseArgs = () => {
             );
             continue;
         }
+
+        // An unknown flag is a mistake, and silently ignoring it hides it.
+        console.error(`Unknown option ${arg}.\n\n${usage}`);
+        process.exit(2);
     }
 
     return options;
