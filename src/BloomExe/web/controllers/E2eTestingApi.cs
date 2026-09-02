@@ -5,6 +5,7 @@ using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.SubscriptionAndFeatures;
+using SIL.IO;
 using SIL.Progress;
 
 namespace Bloom.web.controllers
@@ -25,6 +26,8 @@ namespace Bloom.web.controllers
         private readonly BookSelection _bookSelection;
         private readonly PublishApi _publishApi;
         private readonly CollectionModel _collectionModel;
+        private readonly PageTemplatesApi _pageTemplatesApi;
+        private readonly SourceCollectionsList _sourceCollectionsList;
         private readonly EditingModel _editingModel;
         private readonly AccountApi _accountApi;
 
@@ -33,6 +36,8 @@ namespace Bloom.web.controllers
             BookSelection bookSelection,
             PublishApi publishApi,
             CollectionModel collectionModel,
+            PageTemplatesApi pageTemplatesApi,
+            SourceCollectionsList sourceCollectionsList,
             EditingModel editingModel,
             AccountApi accountApi
         )
@@ -41,6 +46,8 @@ namespace Bloom.web.controllers
             _bookSelection = bookSelection;
             _publishApi = publishApi;
             _collectionModel = collectionModel;
+            _pageTemplatesApi = pageTemplatesApi;
+            _sourceCollectionsList = sourceCollectionsList;
             _editingModel = editingModel;
             _accountApi = accountApi;
         }
@@ -210,27 +217,39 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Reply with the template pages available to the selected book, each with the path of the
+        /// Reply with the template pages the Add Page dialog would offer the selected book, in the
+        /// dialog's order: the book's own template first, then every other template book that has a
+        /// "template" folder (Basic Book and the rest). Each page carries the path and title of the
         /// template book that holds it. A book made from a template starts with no content page,
         /// because every page of a template is a template page, so a test that needs one adds it.
+        /// A template that is not on this machine is simply absent from the list.
         /// </summary>
         private void HandleGetTemplatePages(ApiRequest request)
         {
             var book = _bookSelection.CurrentSelection;
-            var templateBook = book?.FindTemplateBook();
-            if (templateBook == null)
+            if (book == null)
             {
                 request.ReplyWithJson(new object[0]);
                 return;
             }
-            var templateBookPath = templateBook.GetPathHtmlFile().Replace('\\', '/');
-            var pages = templateBook
-                .GetTemplatePagesIdDictionary()
-                .Select(pair => new
+            var pages = _pageTemplatesApi
+                .GetTemplateBookPathsForAddPage()
+                .Where(RobustFile.Exists)
+                .Select(path => _sourceCollectionsList.FindAndCreateTemplateBookByFullPath(path))
+                .Where(templateBook => templateBook != null)
+                .SelectMany(templateBook =>
                 {
-                    id = pair.Key,
-                    label = pair.Value.Caption,
-                    templateBookPath,
+                    var templateBookPath = templateBook.GetPathHtmlFile().Replace('\\', '/');
+                    var templateBookTitle = templateBook.Title;
+                    return templateBook
+                        .GetTemplatePagesIdDictionary()
+                        .Select(pair => new
+                        {
+                            id = pair.Key,
+                            label = pair.Value.Caption,
+                            templateBookPath,
+                            templateBookTitle,
+                        });
                 })
                 .ToArray();
             request.ReplyWithJson(pages);

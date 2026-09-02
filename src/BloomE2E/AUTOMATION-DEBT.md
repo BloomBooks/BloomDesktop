@@ -41,6 +41,15 @@ one step of that manual test that uses it ("make 3 duplicates") is not automated
 only posts `editView/duplicatePageMany`, which `duplicateCurrentPage` already calls for setup,
 so the fix is the same as for every other WinForms dialog: host it in the web UI.
 
+seen again 2026-09-02 (Test Case ID 66, `xmatter-packs.spec.ts`): the case tries each
+front/back matter pack, and the pack is chosen only in the same dialog. `settings/xmatter`
+is not an API for it either: its POST only records a pending choice on the open dialog
+(`CollectionSettingsApi.UpdatePendingXmatter`). So the test changes the pack the same way,
+now through `helpers/collectionSettings.ts` (`restartWithCollectionSettings`), and the
+journey of picking a pack in Settings stays untested. Story Producer is worse off: it is
+not in the dialog's list at all, only forced by its branding, so the test sets the branding
+through the `e2e/setBranding` hook.
+
 ## Native OS dialogs hang automation
 
 File pickers, the Image Toolbox, and video capture open native windows Playwright
@@ -70,7 +79,9 @@ covers neither the real sign-in and sign-out buttons nor anything that needs a r
 which is every manual case that uploads for real (#204, #205, #211-#213, #215, #217, #218, #220),
 so none of those can be automated either. Fix direction: a test account plus a per-instance login
 store (a login the `--e2e` instance keeps to itself), so a run can sign in for real and upload to
-dev.bloomlibrary.org without touching the developer's settings.
+dev.bloomlibrary.org without touching the developer's settings. The per-instance half of that is
+the same fix "Every Bloom of one build shares one user.config" asks for, below; the test account
+is the rest.
 (Found 2026-09-02 automating Test Case ID 606, `upload-required-items.spec.ts`.)
 
 ## Visual-regression cases stop at the first failed comparison
@@ -97,9 +108,15 @@ only stable marker available. Fix direction: `data-testid="workspace-tab-collect
 (etc.) on each tab and one on the shell root, and drop the label matching.
 (Found 2026-09-01 while scaffolding src/BloomE2E.)
 
+seen again 2026-09-01, in the Edit tab's page thumbnail menu: the items
+`pageThumbnailList.tsx` renders carry no id, class or `data-testid` (all their styling is
+inline), so `src/BloomE2E/helpers/pageThumbnails.ts` has to find "Copy Page" and "Paste Page"
+by their English labels, exactly as the top bar does. Same fix: a `data-testid` per command,
+taken from the `commandId` the menu already has.
+
 ## The component-tester Playwright suites are not in CI
 
-`nightly.yml` runs vitest, C#, and visual-regression only; nothing runs
+`nightly.yml` runs vitest, C#, visual-regression and BloomE2E; nothing runs
 `react_components/component-tester`'s suites, which is how the harness sat broken
 (React 17 pin + config bug) unnoticed until it was green again at 144 passed. It will
 rot again silently. Fix direction: a nightly job mirroring the visual-regression one
@@ -179,6 +196,13 @@ production `addPage` endpoint. Fix direction: if the page chooser ever gets its 
 from C# instead of from the HTML, retire the hook and read that list.
 (Found 2026-09-01 automating Test Case ID 169.)
 
+seen again 2026-09-02 (Test Case ID 72, `derivative-keeps-template-pages.spec.ts`): a
+fresh template made from Template Starter has no pages of its own, so the hook, which
+reported only the book's own template, offered nothing to add. It now reports every
+template book the dialog would show, each page tagged with its book's title, through
+`PageTemplatesApi.GetTemplateBookPathsForAddPage`. The dialog still parses the HTML
+itself; the hook only mirrors which books it is handed.
+
 ## The Edit tab silently drops a jump to a page while it is loading
 
 `editView/jumpToPage` is the only way to move a test to a particular page, and it is
@@ -191,6 +215,15 @@ would look like the same flake. Fix direction: have `jumpToPage` queue the reque
 until the Edit tab is ready, or report that it refused it.
 (Found 2026-09-01 automating Test Case ID 169.)
 
+seen again 2026-09-02 (Test Case ID 72, `derivative-keeps-template-pages.spec.ts`): the
+same drop hits `addPage`. Every action that saves the page first goes through
+`EditingModel.SaveThen`, whose "not in the right state" branch does nothing and still
+replies success, and the state machine is not yet in `Editing` when the page iframe already
+shows a `.bloom-page`. Two page adds in a row therefore lost the second one.
+`waitForEditablePage` now polls the `e2e/isEditingPage` hook as well as the DOM, so the
+helpers no longer act early; the production endpoints still reply success to a request they
+dropped.
+
 ## Filling a text box directly leaves part of the old text behind
 
 A `.bloom-editable` is a CKEditor surface, and Playwright's `fill()` on one leaves a
@@ -201,3 +234,54 @@ test can currently clear a box by any faster route. Fix direction: understand wh
 CKEditor does with a programmatic value change; a supported "set the text of this box"
 path would let long text be set at once.
 (Found 2026-09-01 automating Test Case ID 169.)
+
+## The page menu offers commands that silently do nothing while a page is loading
+
+Copy Page and Paste Page go through `EditingModel.SaveThen`, which quietly gives up when the
+editing state machine is not in Editing or NoPage (`EditingStateMachine.ToSavePending` returns
+false and `CopyPage` passes `() => { }` as its "wrong state" action). The menu does not know
+this: `PageThumbnailList.IsContextMenuCommandEnabled` disables commands during SavePending, but
+NOT during Navigating, so while a page is still loading both commands look available and both
+do nothing at all, with no error and no message. Copy Page itself then saves and reloads the
+page, which reopens the same window for the very next click.
+
+Cost, twice over. For a person: click Copy Page and then Paste Page quickly and the paste is
+lost with no feedback. For a test: `src/BloomE2E/helpers/pageThumbnails.ts` has to carry
+`markEditablePage` / `waitForEditablePageReload`, which stamp the page's document and wait for
+Bloom to replace it, purely to know when the model has come back to Editing — the page url
+cannot answer it, because Bloom reloads a page to the same in-memory url. Fix direction: make
+the enabled test cover the Navigating state too, so a command that cannot run is greyed out;
+or, better, queue the command instead of dropping it. Either would let the helper drop the
+document-marking dance.
+(Found 2026-09-01 while automating Test Case ID 348, copy page preserves everything.)
+
+## Copying a page between two Bloom instances cannot be tested at all
+
+The manual case "Copy Page Preserves Everything" (Test Case ID 348) ends by copying a page from
+one running Bloom into a second one. Bloom's page clipboard is a pair of fields on the one
+`EditingModel` instance (`_pageDivFromCopyPage`, `_bookPathFromCopyPage`), not the Windows
+clipboard, so nothing crosses a process boundary; the feature is known not to work in 6.5. The
+e2e fixture is also built around one Bloom per worker, so a test could not stage it today even
+if the feature worked. The automated test therefore covers the within-book and between-books
+cases only, so the Notion card splits: the cross-instance step belongs on a manual portion
+row, per the card-splitting rule in `add-e2e-test`. Fix direction: decide whether cross-instance
+copy is a feature we want; if it is, put the page on the real clipboard, and give the launch
+fixture a way to run a second instance.
+(Found 2026-09-01 while automating Test Case ID 348.)
+
+## Every Bloom of one build shares one user.config, so a run inherits another Bloom's settings
+
+Bloom keeps its user settings (UI language, page zoom, and the rest of `Settings.Default`) in
+`%LOCALAPPDATA%\SIL\Bloom\<version>\user.config`, one file per build version, and `--e2e` does
+nothing to change that. So the Bloom a test launches starts from whatever the last Bloom of the
+same version saved, and saves its own changes for the next one. The e2e lock keeps suites from
+running at once, but a developer's own Bloom from a worktree of the same version is outside the
+lock and shares the file all the same, and so does the previous run of any suite.
+
+Seen 2026-09-02 (Test Case ID 356, `format-gear-positioning.spec.ts`): two runs found every
+factory template named in Turkish, then in French, and failed in `makeBookFromTemplate`, which
+matches the English title; a Bloom nobody in the suite had started was running at the time, and
+the file said `en` again a moment later. The same test has to restore the zoom it changes, because
+that setting is shared too. Fix direction: under `--e2e`, point the settings provider at a
+per-instance folder (a sibling of the temp collection would do), so a test's Bloom starts from
+defaults and its changes die with it.
