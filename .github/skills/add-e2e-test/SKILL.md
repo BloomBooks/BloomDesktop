@@ -292,7 +292,11 @@ Dependencies point down only:
      `waitForEditablePage`, `editablePageFrame`. A book made from a template starts with
      front and back matter only, so a test that needs content calls `addPage`. Bloom writes
      a page only when the book leaves it, so `goToPage` is also how a test saves what it
-     typed.
+     typed. `makeBookFromBookInCollection`, `getFactoryTemplateFolder` and
+     `getFactoryTemplatePageLabels` serve tests about templates and derivatives.
+     `waitForEditablePage` waits for Bloom's editing state machine (via `e2e/isEditingPage`)
+     as well as for the page, because an add or a jump asked for before that is silently
+     dropped.
    - `helpers/pageList.ts` — `duplicatePageWithButton`, `duplicatePageWithContextMenu`,
      `movePageToSlotOf`, and the API route `duplicateCurrentPage` for setup.
    - `helpers/images.ts` — `chooseImageFile` (setup, no picker), `cropImage`,
@@ -301,6 +305,14 @@ Dependencies point down only:
      `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
      `getFormatDialogPlacement`, `scrollFormatGearIntoView`, `scrollFormatGearPartlyIntoView`,
      `zoomUntilFormatGearIsOutOfView`.
+   - `helpers/addPageDialog.ts` — `openAddPageDialog`, `getAddPageDialogGroups`,
+     `scrollAddPageDialog`, `closeAddPageDialog`, `addPageFromDialog`. The real Add Page
+     dialog, for tests whose subject is the dialog; `addPage` is the API route to a page.
+     Identify a group by its `templateBookFolder`, not its heading: the heading is localized
+     ("Basic Pages" for Basic Book), and the machine running the test can have downloaded
+     templates of its own in the list.
+   - `helpers/files.ts` — `fingerprintFolder`, `isInsideFolder`. Files on disk; nothing
+     here talks to Bloom.
    - `helpers/publish.ts` — `openPublishDestination`, `getTextLanguageRows`,
      `expectTextLanguageRows`, `clickTextLanguage`, `showBloomPubPreview`,
      `getPreviewLanguages`, `getLanguagesInBook`, `getTooltipForLanguage`.

@@ -179,6 +179,13 @@ production `addPage` endpoint. Fix direction: if the page chooser ever gets its 
 from C# instead of from the HTML, retire the hook and read that list.
 (Found 2026-09-01 automating Test Case ID 169.)
 
+seen again 2026-09-02 (Test Case ID 72, `derivative-keeps-template-pages.spec.ts`): a
+fresh template made from Template Starter has no pages of its own, so the hook, which
+reported only the book's own template, offered nothing to add. It now reports every
+template book the dialog would show, each page tagged with its book's title, through
+`PageTemplatesApi.GetTemplateBookPathsForAddPage`. The dialog still parses the HTML
+itself; the hook only mirrors which books it is handed.
+
 ## The Edit tab silently drops a jump to a page while it is loading
 
 `editView/jumpToPage` is the only way to move a test to a particular page, and it is
@@ -190,6 +197,15 @@ wrong moment waits 20 seconds per attempt, and a real "this page will not load" 
 would look like the same flake. Fix direction: have `jumpToPage` queue the request
 until the Edit tab is ready, or report that it refused it.
 (Found 2026-09-01 automating Test Case ID 169.)
+
+seen again 2026-09-02 (Test Case ID 72, `derivative-keeps-template-pages.spec.ts`): the
+same drop hits `addPage`. Every action that saves the page first goes through
+`EditingModel.SaveThen`, whose "not in the right state" branch does nothing and still
+replies success, and the state machine is not yet in `Editing` when the page iframe already
+shows a `.bloom-page`. Two page adds in a row therefore lost the second one.
+`waitForEditablePage` now polls the `e2e/isEditingPage` hook as well as the DOM, so the
+helpers no longer act early; the production endpoints still reply success to a request they
+dropped.
 
 ## Filling a text box directly leaves part of the old text behind
 

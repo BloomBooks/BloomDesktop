@@ -94,6 +94,10 @@ real bug in the code under test; read the message and fix it rather than working
   `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
   screen.
 - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
+- `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
+- `helpers/addPageDialog.ts` — open, read, scroll and close the real Add Page dialog, and add a
+  page through it. Tests that only need a page in their book call `addPage` instead.
+- `helpers/files.ts` — `fingerprintFolder`, `isInsideFolder`, for checks against the disk.
 - `helpers/api.ts` — `apiGet`, `apiPost`, `apiGetJson`. These run `fetch` inside the page with a
   relative URL, which is not a style choice: Bloom's server rejects a `127.0.0.1` Host header, and
   the CDP endpoint does not answer on `localhost`. The file explains it.
