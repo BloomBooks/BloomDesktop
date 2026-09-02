@@ -2,11 +2,12 @@
 // the agreements, and a signed-in user. Automates the manual test "Required Items Before Upload"
 // (Test Case ID 606).
 //
-// The manual test ends by actually uploading the book and looking at it on Blorg. That part is not
-// automated: it needs a real Bloom Library account and would put a book on a real server. The
-// login half of the sign-in step is automated against a pretended login state, because the real
-// login lives in machine-wide settings shared with the developer's own Bloom — signing out for
-// real would sign the developer out. See AUTOMATION-DEBT.md.
+// Every step of the card is covered. The one thing that is not real is the login: the test tells
+// Bloom what login state to report, because the real one lives in machine-wide settings shared
+// with the developer's own Bloom — a test signing out would sign the developer out, and signing in
+// needs an external browser and real credentials. So this proves the gate (a signed-out user is
+// offered Sign in, never Upload), not that a real account can upload; the cards that upload for
+// real (#204, #205, #211-#213, #215, #217, #218, #220) cover that. See AUTOMATION-DEBT.md.
 //
 // The tests are serial: each one starts from the book the one before it left behind, which is how
 // the manual test reads too.
