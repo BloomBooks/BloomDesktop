@@ -2248,21 +2248,20 @@ namespace BloomTests.Book
             );
             var data = new BookData(htmlDom, settings, null);
             Assert.That(data.GetDisplayNameForLanguage("de"), Is.EqualTo("Deutsch"));
-            // Which of these we find seems to depend on whether some ICU directory is found in the path.
-            // Not being too picky about it because we're getting pretty good about using the user-supplied language
-            // name, so I can't find anywhere this actually shows up.
+            // fr is this collection's Language3, so its name comes from that WritingSystem rather
+            // than from the not-in-this-collection fallback, and is still machine-sensitive: that
+            // path is not what this change touches, and in real collections the name is written in
+            // the .bloomCollection.
             Assert.That(
                 data.GetDisplayNameForLanguage("fr"),
                 Is.EqualTo("français").Or.EqualTo("Französisch")
             );
-            Assert.That(
-                data.GetDisplayNameForLanguage("en"),
-                Is.EqualTo("English").Or.EqualTo("Englisch")
-            );
-            Assert.That(
-                data.GetDisplayNameForLanguage("es"),
-                Is.EqualTo("español").Or.EqualTo("Spanisch")
-            );
+            // en and es are NOT languages of this collection, so these two come from the
+            // fallback, which looks the standard name up in the Ethnologue data -- the same answer
+            // on every machine. See the comment on
+            // CollectionSettings.GetDisplayNameForLanguage.
+            Assert.That(data.GetDisplayNameForLanguage("en"), Is.EqualTo("English"));
+            Assert.That(data.GetDisplayNameForLanguage("es"), Is.EqualTo("Spanish"));
         }
 
         [Test]
@@ -2278,10 +2277,93 @@ namespace BloomTests.Book
                 Language3Name: null
             );
             var data = new BookData(htmlDom, settings, null);
+            // de and es are not languages of this collection, so they come from the fallback,
+            // which gives these same standard names whatever the collection's own languages are.
+            // (Compare the German-metadata collection in the test above, which gets the same two.)
             Assert.That(data.GetDisplayNameForLanguage("de"), Is.EqualTo("German"));
+            Assert.That(data.GetDisplayNameForLanguage("es"), Is.EqualTo("Spanish"));
+            // fr and en ARE languages of this collection (Language3 and Language2), so these two
+            // come from their WritingSystems rather than from the fallback.
             Assert.That(data.GetDisplayNameForLanguage("fr"), Is.EqualTo("French"));
             Assert.That(data.GetDisplayNameForLanguage("en"), Is.EqualTo("English"));
+        }
+
+        /// <summary>
+        /// A language the collection does not name gets its standard name, and -- this is the
+        /// point -- the SAME name whatever the collection's other languages are.
+        ///
+        /// This is the regression test for what BloomE2E's publish-text-languages spec found: the
+        /// Publish tab's Text Languages list showed a book's Spanish as "espagnol" on the CI
+        /// runner and "español" on a developer machine. The name used to be requested "in" the
+        /// collection's metadata language, and LibPalaso honors that request only where a native
+        /// ICU library is findable -- which Bloom does not ship. So the name a user read was
+        /// decided by what else was installed on their machine.
+        /// </summary>
+        [TestCase("en", "English")]
+        [TestCase("fr", "French")]
+        [TestCase("de", "German")]
+        public void GetDisplayNameForLanguage_LanguageNotInCollection_SameNameWhateverTheMetadataLanguage(
+            string language2Tag,
+            string language2Name
+        )
+        {
+            var settings = CreateCollection(
+                Language1LangTag: "en",
+                Language1Name: "English",
+                Language2Tag: language2Tag,
+                Language2Name: language2Name,
+                Language3Tag: null,
+                Language3Name: null
+            );
+            var data = new BookData(new HtmlDom(), settings, null);
+
+            // Sanity check: es really is not one of this collection's languages, or the assertion
+            // below would be testing a user-supplied name instead of the fallback.
+            Assert.That(
+                new[]
+                {
+                    settings.Language1Tag,
+                    settings.Language2Tag,
+                    settings.Language3Tag,
+                    settings.SignLanguageTag,
+                },
+                Has.None.EqualTo("es"),
+                "es must not be a language of this collection for this test to mean anything."
+            );
+
             Assert.That(data.GetDisplayNameForLanguage("es"), Is.EqualTo("Spanish"));
+        }
+
+        /// <summary>
+        /// A language the collection does not name still shows its script/region distinction
+        /// (BL-8174). The lookup behind the fallback answers with the base language's name, so
+        /// without this a zh-TW row and a zh-CN row would both just say "Chinese".
+        /// </summary>
+        [TestCase("zh-TW", "Chinese-TW (Chinese)")]
+        [TestCase("nsk-Latn", "Naskapi-Latn (Naskapi)")]
+        public void GetDisplayNameForLanguage_LanguageNotInCollection_KeepsScriptVariantDistinctions(
+            string langTag,
+            string expected
+        )
+        {
+            var settings = CreateCollection(
+                Language1LangTag: "en",
+                Language1Name: "English",
+                Language2Tag: "fr",
+                Language2Name: "French",
+                Language3Tag: null,
+                Language3Name: null
+            );
+            var data = new BookData(new HtmlDom(), settings, null);
+
+            // Sanity check: the tag really is not one of this collection's languages.
+            Assert.That(
+                new[] { settings.Language1Tag, settings.Language2Tag, settings.Language3Tag },
+                Has.None.EqualTo(langTag),
+                "The tag must not be a language of this collection for this test to mean anything."
+            );
+
+            Assert.That(data.GetDisplayNameForLanguage(langTag), Is.EqualTo(expected));
         }
 
         [Test]

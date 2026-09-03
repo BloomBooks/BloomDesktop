@@ -347,38 +347,27 @@ test.describe("the Text Languages publish list", () => {
         await setContentLanguages(page, ["en"]);
     });
 
-    // NOT A FLAKE. This test fails on CI every time, and BL-16806 is the card that fixes it -- so
-    // if you are here because a nightly went red on this test, that is the known cause and there
-    // is a fix in flight; nothing new to chase.
+    // This assertion is the one that caught BL-16806, so it is worth saying what it caught. The
+    // name of a language the collection has stopped listing used to depend on the machine: the CI
+    // runner showed "espagnol" (nightly runs 33665790357 and 33685669405), a developer machine
+    // showed "español". Bloom asked LibPalaso for the name of Spanish "in" the collection's
+    // metadata language, which is French here, and LibPalaso honors that request only where a
+    // native ICU library is findable -- which Bloom does not ship. Bloom now looks the standard
+    // name up in the Ethnologue data, which every machine agrees on, and that is why this asserts
+    // "Spanish": see the fallback in CollectionSettings.GetDisplayNameForLanguage and
+    // BookDataTests.GetDisplayNameForLanguage_LanguageNotInCollection_SameNameWhateverTheMetadataLanguage.
     //
-    // The assertion that fails is the language NAME, and the whole point of the test:
-    //
-    //     Expected: español      Received: espagnol
-    //
-    // "espagnol" is French for Spanish, and the answer depends on the MACHINE, not on the run.
-    // Bloom asks LibPalaso for the name of the dropped language "in" the collection's metadata
-    // language, which is French here; LibPalaso honors that request only where a native ICU
-    // library is findable, and Bloom ships icu.net but no icuuc.dll. So the CI runner answers
-    // "espagnol" (runs 33665790357 and 33685669405, both) while a developer machine ignores the
-    // request and gives the autonym "español" (checked by hand in the real Publish tab). It is
-    // not a timing race in the publish list, and not the
-    // editView/topBar/contentLanguageUsageChange suspicion, which never explained it. BL-16806 has
-    // the evidence. Everything else about the row (unchecked, not incomplete, enabled) is right.
-    //
-    // The "failed once in six full runs on 2026-09-01" this was originally filed as was a
-    // DIFFERENT failure in this same test -- it has other steps that time out on a loaded machine,
-    // which is what a local run looks like when it dies before reaching this assertion.
-    //
-    // Left running deliberately: it is a real difference in what Bloom shows a user, and the one
-    // test that catches it.
-    test("keeps a language that the collection no longer has, under its own name [Test Case ID 169]", async ({
+    // Beware of reading a local failure of this test as the same thing. It has other steps that
+    // time out on a loaded machine, which is what a local run usually looks like when it dies
+    // before reaching this assertion.
+    test("keeps a language that the collection no longer has, under its standard name [Test Case ID 169]", async ({
         bloomApp,
     }) => {
         test.setTimeout(180000);
 
         // Drop Spanish from the collection. The book still has Spanish text, so the language stays
         // in the list; but the collection no longer supplies a name for it, so Bloom falls back to
-        // the name the language calls itself.
+        // the language's standard name.
         const withoutSpanish = await restartWithCollectionSettings(bloomApp, {
             languages: ["en", "fr"],
         });
@@ -402,13 +391,13 @@ test.describe("the Text Languages publish list", () => {
                     disabled: false,
                 },
                 {
-                    name: "español",
+                    name: "Spanish",
                     incomplete: false,
                     checked: false,
                     disabled: false,
                 },
             ],
-            "Spanish did not stay in the list, unchecked and under its own name.",
+            "Spanish did not stay in the list, unchecked and under its standard name.",
         );
 
         // Put Spanish back, for the test that follows.
