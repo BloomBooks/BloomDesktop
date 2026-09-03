@@ -54,6 +54,10 @@ on:
                 description: "Visual-regression suite (drives a real Bloom)"
                 type: boolean
                 default: true
+            post_to_zulip:
+                description: "Post this run's result to Zulip even if it passes (a live test of the notifier)"
+                type: boolean
+                default: false
 
 # Don't stack nightlies: if a manual run overlaps the scheduled one, let the first finish.
 concurrency:
@@ -532,3 +536,139 @@ jobs:
                       output/Tests/e2e-junit.xml
                       output/Tests/visual-regression-junit.xml
                   retention-days: 14
+
+            # ----- Failure notification -----
+            # Tell Zulip (channel "developers", topic "Nightly run failures") when the night went
+            # badly, and say nothing at all when it went well. A channel that only ever carries bad
+            # news is a channel people still read, and it means nobody has to remember to go and
+            # look at the Actions tab every morning.
+            #
+            # Two steps: compose the message here, hand it to Zulip's own action below. The split is
+            # not decoration -- deciding whether to speak up, and gathering the per-suite outcomes,
+            # is our logic; talking to the API is theirs.
+            #
+            # This pair is deliberately the LAST thing in the job, because failure()/cancelled()
+            # report the job as it stands when the step runs. By this point that includes the four
+            # publish-test-results steps above, which are what turn "a suite reported nothing at
+            # all" into a red run (action_fail_on_inconclusive). Put this any earlier and that
+            # entire class of failure -- the one the per-suite reports exist to catch -- would be
+            # reported to Zulip as a good night.
+            #
+            # Needs two repository secrets, from any Zulip account subscribed to the "developers"
+            # channel -- a bot (Zulip settings > Personal settings > Bots) or a person (Personal
+            # settings > Account & privacy > API key); the API is the same either way:
+            #   BLOOM_ZULIP_EMAIL  - the account's email
+            #   BLOOM_ZULIP_API_KEY - that account's API key
+            # A bot is the better long-term home for this: its key is scoped to the bot rather than
+            # granting everything a person can do, and the messages then read as coming from a robot
+            # rather than from whoever's key it is.
+            #
+            # Manual runs are the notifier's test rig. A scheduled run reports only bad nights; a
+            # manual run reports NOTHING unless you tick post_to_zulip, and then reports whatever
+            # happened -- pass included. That asymmetry is the point: a green test post is the only
+            # way to learn whether the secrets, the account's channel membership and the channel name
+            # are all actually right, short of waiting for a real failure and finding out on the
+            # morning we needed the message. Ticking the box cannot add noise to a scheduled run,
+            # which never reads the input.
+            - name: Compose the Zulip failure report
+              id: zulip_message
+              # Manual + ticked: always. Anything else: only a bad night, and never on a manual run.
+              # Naming failure()/cancelled() at all is what drops the implicit success() gate, which
+              # is what lets the manual branch fire on a green run.
+              if: ${{ (github.event_name == 'workflow_dispatch' && inputs.post_to_zulip) || ((failure() || cancelled()) && github.event_name != 'workflow_dispatch') }}
+              shell: pwsh
+              env:
+                  # Checked here rather than left to the send step, so a missing secret says so in
+                  # plain words instead of surfacing as an API rejection.
+                  BLOOM_ZULIP_EMAIL: ${{ secrets.BLOOM_ZULIP_EMAIL }}
+                  BLOOM_ZULIP_API_KEY: ${{ secrets.BLOOM_ZULIP_API_KEY }}
+                  # Everything the message needs, resolved here so the script is only formatting.
+                  # job.status, not cancelled(): the status FUNCTIONS (success/failure/cancelled)
+                  # are only legal in an `if`, and using one here fails the whole workflow at parse
+                  # time. The job context is legal in a step env, and carries the same fact.
+                  JOB_STATUS: ${{ job.status }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+                  BRANCH: ${{ github.ref_name }}
+                  FRONTEND_BUILD: ${{ steps.build_frontend.outcome }}
+                  CSHARP_BUILD: ${{ steps.build_csharp.outcome }}
+                  FRONTEND_TESTS: ${{ steps.frontend_tests.outcome }}
+                  CSHARP_TESTS: ${{ steps.csharp_tests.outcome }}
+                  E2E_TESTS: ${{ steps.e2e_tests.outcome }}
+                  VISUAL_REGRESSION: ${{ steps.visual_regression.outcome }}
+              run: |
+                  if (-not $env:BLOOM_ZULIP_EMAIL -or -not $env:BLOOM_ZULIP_API_KEY) {
+                      throw "The nightly failed, but BLOOM_ZULIP_EMAIL / BLOOM_ZULIP_API_KEY are not set as repository secrets, so it could not be reported."
+                  }
+
+                  # Read at a glance in the Zulip app. An outcome we did not anticipate shows as a
+                  # question mark rather than as a blank.
+                  $glyphs = @{ success = "✅"; failure = "❌"; skipped = "⏭️"; cancelled = "🚫" }
+                  function Format-Outcome([string] $label, [string] $outcome) {
+                      # An empty outcome means the step's condition was never even evaluated.
+                      if (-not $outcome) { $outcome = "did not run" }
+                      $glyph = $glyphs[$outcome]
+                      if (-not $glyph) { $glyph = "❓" }
+                      return "$glyph $label - $outcome"
+                  }
+
+                  # The two builds are prerequisites rather than suites, so they earn a line only
+                  # when they are the reason the suites below have nothing to say.
+                  $lines = @()
+                  if ($env:FRONTEND_BUILD -ne "success") { $lines += Format-Outcome "front-end build" $env:FRONTEND_BUILD }
+                  if ($env:CSHARP_BUILD -ne "success") { $lines += Format-Outcome "C# build" $env:CSHARP_BUILD }
+                  $lines += Format-Outcome "front-end tests (vitest)" $env:FRONTEND_TESTS
+                  $lines += Format-Outcome "C# tests (NUnit)" $env:CSHARP_TESTS
+                  $lines += Format-Outcome "BloomE2E tests (Playwright)" $env:E2E_TESTS
+                  $lines += Format-Outcome "visual regression tests" $env:VISUAL_REGRESSION
+
+                  # Three outcomes reach this step now, since a ticked manual run reports a pass too.
+                  if ($env:JOB_STATUS -eq "cancelled") {
+                      $headline = "Nightly run was cancelled"
+                  } elseif ($env:JOB_STATUS -eq "success") {
+                      $headline = "Nightly run passed (test post)"
+                  } else {
+                      $headline = "Nightly run failed"
+                  }
+                  $shortSha = $env:GITHUB_SHA.Substring(0, 7)
+
+                  # Built up as a list of lines and joined once, rather than as one array literal:
+                  # a comma-separated literal spanning several lines quietly mis-parses when one of
+                  # the elements is itself a piped expression, and yields a nested array.
+                  $message = @("**$headline** on $($env:BRANCH) at [$shortSha]($($env:COMMIT_URL))", "")
+                  $message += $lines | ForEach-Object { "* $_" }
+                  $message += ""
+                  $message += "[The run, with a report for each of the four suites]($($env:RUN_URL))"
+                  $content = $message -join "`n"
+
+                  Write-Host $content
+
+                  # A step output, so the send step below stays a pure "here is a message, post it".
+                  # A multi-line value needs the delimiter form.
+                  #
+                  # Written with .NET rather than Out-File because Out-File's `utf8` means BOM-less
+                  # only in PowerShell 7 and BOM-ful in 5.1, and a BOM here is silent poison: it
+                  # lands in front of the key, so the output becomes "﻿content" and the send
+                  # step below posts an empty message with no error anywhere.
+                  $block = "content<<ZULIP_MESSAGE_EOF`n$content`nZULIP_MESSAGE_EOF`n"
+                  [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, $block, [System.Text.UTF8Encoding]::new($false))
+
+            # Zulip's own documented GitHub Actions integration
+            # (https://zulip.com/integrations/doc/github-actions). Pinned by SHA like every other
+            # action here; that is v2.0.2, which the docs' `@v1` predates -- same inputs, but v1
+            # still runs on node20, which the runners are retiring.
+            #
+            # always() rather than a status check: the composing step above has already decided
+            # whether there is anything to say, so on a good night it is skipped and this is skipped
+            # with it. Naming a status here instead would drop the cancelled case.
+            - name: Report failure to Zulip
+              if: ${{ always() && steps.zulip_message.outcome == 'success' }}
+              uses: zulip/github-actions-zulip/send-message@f675f2b4eb2a95fae974215476dcb7ad8dfeff6b # v2.0.2
+              with:
+                  organization-url: https://sil-bloom.zulipchat.com
+                  email: ${{ secrets.BLOOM_ZULIP_EMAIL }}
+                  api-key: ${{ secrets.BLOOM_ZULIP_API_KEY }}
+                  type: stream
+                  to: developers
+                  topic: Nightly run failures
+                  content: ${{ steps.zulip_message.outputs.content }}
