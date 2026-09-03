@@ -4,10 +4,10 @@ import { getEditablePageBundleExports } from "../js/workspaceFrames";
 // that will make C# save it.
 //
 // C# has to save the current page before it can change pages, duplicate one, delete one, and so
-// on. Sending the content with the request lets it do all of that in one step. Otherwise it has
-// to ask the browser for the content and wait for the answer to arrive on a separate API, and
-// while it waits it is in a state where a further request of the same kind is silently thrown
-// away. (See EditingModel.SavePageInPlaceThen.)
+// on. Sending the content with the request lets it do that from the freshest possible copy: C#
+// otherwise uses the last snapshot the browser volunteered, which can be up to the debounce
+// interval old (see pageSnapshot.ts). Bloom used to have to ASK the browser and wait for the answer
+// on a separate API, and that is what this replaced; there is no longer any such wait.
 //
 // This is async because it must NOT read the page while asynchronous work whose results belong in
 // the saved page is still running -- image sizing, canvas-element fitting, a clipboard paste. That
@@ -18,18 +18,18 @@ import { getEditablePageBundleExports } from "../js/workspaceFrames";
 // Because the whole command waits on this, the command cannot start mid-change either: C# is not
 // asked to duplicate, delete or reorder anything until the page has settled.
 //
-// If we cannot collect it we return undefined and leave it out of the request; C# then falls back
-// to asking. That is the honest thing to do for the cases where there is nothing to collect (no
-// page loaded yet) or where the page is in a state we should not be reading (mid-navigation),
-// rather than sending something half-formed: this content is about to be written into the user's
-// book.
+// If we cannot collect it we return undefined and leave it out of the request; C# then uses the
+// snapshot the browser last volunteered. That is the honest thing to do for the cases where there
+// is nothing to collect (no page loaded yet) or where the page is in a state we should not be
+// reading (mid-navigation), rather than sending something half-formed: this content is about to be
+// written into the user's book.
 //
 // The promise we await belongs to the PAGE frame. If that frame navigates while we are waiting,
 // its timers and microtask queue go with it and the promise simply never settles -- and since the
 // whole command is waiting on us, the command would be dropped without a trace, which is worse
-// than doing it without the content. So we give up after a while and let C# ask for the content
-// the old way. The timer is ours, in this frame, precisely so that it survives the page frame
-// going away.
+// than doing it without the content. So we give up after a while and let the command go ahead on
+// the snapshot C# already holds. The timer is ours, in this frame, precisely so that it survives
+// the page frame going away.
 const kGiveUpWaitingMs = 6000; // comfortably past the page frame's own 4s cap
 
 export async function collectCurrentPageContent(

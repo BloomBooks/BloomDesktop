@@ -48,10 +48,11 @@ namespace Bloom.Edit
             // The only necessary action after saving is to go to the desired page, which is what
             // returning its ID from the first argument achieves.
             //
-            // When the click brought the outgoing page's content with it, SaveThen saves and goes
-            // in one step, so we never enter SavePending -- the state in which a further page click
-            // would be silently discarded. When it didn't, SaveThen asks the browser as it always
-            // did.
+            // The click usually brings the outgoing page's content with it, which is the freshest
+            // copy there is; when it does not, MergeCurrentPageThenSave uses the snapshot the
+            // browser last volunteered. Either way the save and the move happen in one step, with
+            // nothing to wait for in between -- which is what stopped a second page click being
+            // silently discarded.
             _model.MergeCurrentPageThenSave(
                 () => pageId,
                 pageContentFromBrowser: (e as PageSelectedChangedEventArgs)?.PageContentFromBrowser
