@@ -21,7 +21,6 @@ the identity here. Before you start on a marked entry, ask the owner of its bran
 
 | Branch | What it pays down |
 | --- | --- |
-| `BL-16799-automation-scripts` | The `bloom-automation` scripts answer `--help` without killing anything, and reject an unknown flag or a malformed process id. |
 | `BL-16799-vr-collect-failures` | A visual-regression case collects every failed comparison and fails once at the end. |
 | `BL-16799-component-tests-in-ci` | The component-tester Playwright suites get a nightly job. |
 | `BL-16799-vite-port` | `BLOOM_E2E_VITE_PORT` makes a run test the working tree's front end. Adds a new entry for what remains. |
@@ -216,18 +215,6 @@ run of the suite cannot go green, which makes local verification and baseline
 authoring painful. Fix direction: a small per-comparison pixel tolerance, or
 machine-profile baselines, or render fonts only from Bloom's own WOFF2 set in --e2e
 mode. (Found 2026-09-01 while verifying the bloom-testing-inputs rewire.)
-
-## Automation helper scripts run destructive defaults on unknown flags
-
-`node .github/skills/bloom-automation/killBloomProcess.mjs --help` killed the running
-Bloom: unknown flags are ignored and the destructive default runs, so "read the usage
-first" is itself the dangerous move; sibling scripts may share the shape. Fix
-direction: recognize `--help`/`-h` and reject unknown flags in every script that kills
-processes — and fold these helpers' jobs into the library's audited launch/teardown
-fixture over time. (Promoted from PAPERCUTS 2026-07-24.)
-
-being fixed on `BL-16799-automation-scripts`, for the `--help`, unknown-flag and
-malformed-process-id part. Folding the helpers into the fixture is not part of it.
 
 ## Adding a page needs the Add Page dialog, which offers nothing to automate against
 

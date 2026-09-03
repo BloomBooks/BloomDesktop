@@ -23,6 +23,7 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 import {
+    asksForHelp,
     fetchBloomInstanceInfo,
     getDefaultRepoRoot,
     normalizeBloomInstanceInfo,
@@ -32,8 +33,15 @@ import {
     toLocalOrigin,
 } from "./bloomProcessCommon.mjs";
 
+const usage =
+    "Usage: node .github/skills/bloom-automation/dismissProblemDialog.mjs --http-port <port> [--wait] [--timeout-ms <ms>] [--json]";
+
 const parseArgs = () => {
     const args = process.argv.slice(2);
+    if (asksForHelp(args)) {
+        console.log(usage);
+        process.exit(0);
+    }
     const options = {
         httpPort: undefined,
         wait: false,
@@ -79,12 +87,12 @@ const parseArgs = () => {
             continue;
         }
 
-        if (arg === "--help") {
-            console.log(
-                "Usage: node .github/skills/bloom-automation/dismissProblemDialog.mjs --http-port <port> [--wait] [--timeout-ms <ms>] [--json]",
-            );
-            process.exit(0);
-        }
+        // A typo must not be ignored: an option this script does not know is a request it
+        // cannot carry out, so say so rather than do something else.
+        console.error(`Unknown option ${arg}.
+
+${usage}`);
+        process.exit(2);
     }
 
     if (!options.httpPort) {
