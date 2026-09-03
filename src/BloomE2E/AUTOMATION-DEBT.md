@@ -21,7 +21,6 @@ and ask its author.
 
 | Pull request | Branch | What it pays down |
 | --- | --- | --- |
-| #8296 | `BL-16799-toolbox-registration` | One `registerAllToolboxTools()` that both the bootstrap and the test harness call. |
 | #8297 | `BL-16799-shell-document` | A test can no longer attach to a shell document Bloom does not drive: one WebView2 environment per run, plus the `e2e/shellUrl` hook. |
 | #8298 | `BL-16799-tab-test-ids` | `data-testid` on the workspace tabs, so no test matches a localized label. |
 | #8299 | `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
@@ -167,21 +166,16 @@ inline), so `src/BloomE2E/helpers/pageThumbnails.ts` has to find "Copy Page" and
 by their English labels, exactly as the top bar does. Same fix: a `data-testid` per command,
 taken from the `commandId` the menu already has.
 
-## Toolbox tool registration is a side effect of toolboxBootstrap
+## One toolbox harness test asserts on classes that do not exist
 
-`ToolboxRoot` only renders tools registered via importing `toolboxBootstrap.ts`, which
-also renders and clobbers globals, so the test harness duplicates the 11
-`ToolBox.registerTool(...)` calls with a "keep in sync" comment. Fix direction: extract
-a side-effect-free `registerAllToolboxTools()` both import — probably folded into the
-toolbox React refactor (BL-16608 / PR #8109). Related: one harness test is `test.fixme`
-because it asserts on `.subscription-badge` (legacy-toolbox-only) and
-`.toolbox-react-header-icon` (never existed); re-enabling it needs a decision on whether
-the React header renders badges/icons and what classes to expose.
-(Promoted from PAPERCUTS 2026-07-27.)
-
-being fixed on `BL-16799-toolbox-registration` (#8296), which extracts
-`bookEdit/toolbox/registerAllToolboxTools.ts`. The `test.fixme` half is not fixed there; it
-stays as an entry of its own.
+`react_components/ToolboxRootTestHarness`'s suite has one `test.fixme` because it asserts on
+`.subscription-badge` (which only the legacy toolbox has) and `.toolbox-react-header-icon` (which
+never existed). Re-enabling it needs a decision on whether the React toolbox header renders
+badges and icons at all, and what classes to expose for them. Fix direction: make that decision
+as part of the toolbox React refactor (BL-16608 / PR #8109), then rewrite the assertions against
+what the header really renders.
+(Was part of a larger entry about toolbox registration, whose other half was fixed 2026-09-01 by
+extracting `bookEdit/toolbox/registerAllToolboxTools.ts`.)
 
 ## One test's tab is the next test's starting state
 
