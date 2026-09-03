@@ -789,8 +789,117 @@ namespace BloomTests.Book
         {
             var book = CreateBook();
             var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            // This test used to hand the page back exactly as it came and still expect a write.
+            // Since BL-13502 a save that would not change the book does not happen at all, so it
+            // has to make the change its name always claimed it made.
+            var textarea =
+                dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']") as SafeXmlElement;
+            Assert.That(textarea, Is.Not.Null, "test setup: expected the first page's textarea");
+            Assert.That(
+                textarea.InnerText,
+                Is.EqualTo("tree"),
+                "test setup: expected the unedited value"
+            );
+            textarea.InnerText = "changed by the test";
+
             book.SavePage(dom);
+
             _storage.Verify(s => s.Save(), Times.AtLeastOnce());
+        }
+
+        [Test]
+        public void SavePage_SecondSaveWithNothingChanged_StorageNotToldToSave()
+        {
+            // The user-visible rule (BL-13502): opening a page and changing nothing must not write
+            // the book. The FIRST save is allowed to write, because opening a page can legitimately
+            // normalise it -- filling in editables for the collection's languages, say. What must
+            // not happen is that it keeps needing to be saved every time afterwards.
+            var book = CreateBook();
+
+            book.SavePage(book.GetEditableHtmlDomForPage(book.GetPages().First()));
+            Assert.That(
+                _storage.Invocations.Any(i => i.Method.Name == nameof(IBookStorage.Save)),
+                Is.True,
+                "test setup: expected the first, normalising save to write; if it did not, the "
+                    + "second save proving nothing about being skipped"
+            );
+            _storage.Invocations.Clear();
+
+            book.SavePage(book.GetEditableHtmlDomForPage(book.GetPages().First()));
+
+            _storage.Verify(s => s.Save(), Times.Never());
+        }
+
+        [Test]
+        public void UpdateDomFromEditedPage_PageOpenedAgainAndNotEdited_ReportsNothingChanged()
+        {
+            // The invariant the whole "no snapshot means no unsaved changes" idea rests on: our own
+            // save processing has to be a FIXED POINT on content that has already been through it.
+            // If ProcessPageAfterEditing (or SetImageAltAttrsFromDescriptions, or the user-style
+            // handling) altered already-saved content even slightly, every page would report a
+            // change every time it was opened, however well the browser behaved, and a book would
+            // rewrite itself forever just from being looked at. See BL-13502.
+            //
+            // The first pass is allowed to change things -- that is a page being brought up to
+            // date. It is the second that has to be quiet.
+            var book = CreateBook();
+            var pageCount = book.GetPages().Count();
+
+            for (var index = 0; index < pageCount; index++)
+            {
+                // GetEditableHtmlDomForPage is what the browser is handed; giving it straight back
+                // stands for a user who opened the page and touched nothing.
+                var firstPage = book.GetPages().ElementAt(index);
+                book.UpdateDomFromEditedPage(
+                    book.GetEditableHtmlDomForPage(firstPage),
+                    out _,
+                    needToDoFullSave: false,
+                    out _
+                );
+
+                var secondPage = book.GetPages().ElementAt(index);
+                book.UpdateDomFromEditedPage(
+                    book.GetEditableHtmlDomForPage(secondPage),
+                    out _,
+                    needToDoFullSave: false,
+                    out var changedOnSecondVisit
+                );
+
+                Assert.That(
+                    changedOnSecondVisit,
+                    Is.False,
+                    $"Page {secondPage.Id} reported a change on being opened a second time and not "
+                        + "edited. Our processing of it is not stable, so it would re-save itself "
+                        + "every time anyone looked at it."
+                );
+            }
+        }
+
+        [Test]
+        public void UpdateDomFromEditedPage_PageActuallyEdited_ReportsChanged()
+        {
+            // Guards the test above: if anythingChanged were simply always false, it would pass and
+            // mean nothing.
+            var book = CreateBook();
+            var page = book.GetPages().First();
+
+            // Settle the page first, so what we measure is our edit and not the tidy-up.
+            book.UpdateDomFromEditedPage(
+                book.GetEditableHtmlDomForPage(page),
+                out _,
+                needToDoFullSave: false,
+                out _
+            );
+
+            var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            var textarea =
+                dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']") as SafeXmlElement;
+            Assert.That(textarea, Is.Not.Null, "test setup: expected the first page's textarea");
+            textarea.InnerText = "changed by the test";
+
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out var changed);
+
+            Assert.That(changed, Is.True);
         }
 
         [Test]

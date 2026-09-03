@@ -17,6 +17,7 @@ import {
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
+import { startWatchingPageForSnapshots } from "./js/pageSnapshot";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -48,7 +49,13 @@ document.addEventListener("DOMContentLoaded", () => {
 // but I think it is unwise. It is so easy for an extra file to get imported into another bundle,
 // and then it will bring this along, with disastrous results.
 export interface IPageFrameExports {
-    requestPageContent(): void;
+    // Gather the current page's content and have C# save it, without the page being reloaded
+    // afterwards.
+    // Resolves false if C# declined to save; see savePageWithoutReloading in bloomEditing.ts.
+    savePageWithoutReloading(): Promise<boolean>;
+    // The combined "body <SPLIT-DATA> userCss" string that a save needs, gathered without
+    // disturbing the live page.
+    getPageContentForSaveWhenReady(): Promise<string>;
     pageUnloading(): void;
     copySelection(): void;
     cutSelection(): void;
@@ -110,12 +117,11 @@ export interface IPageFrameExports {
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
-// For example, workspaceBundle.getEditablePageBundleExports().requestPageContent() can be called.
+// For example, workspaceBundle.getEditablePageBundleExports().savePageWithoutReloading() can be called.
 import {
-    getBodyContentForSavePage,
-    requestPageContent,
+    getPageContentForSaveWhenReady,
+    savePageWithoutReloading,
     captureContentForExternalProcessing,
-    userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
     copySelection,
@@ -129,9 +135,11 @@ import {
     changeImageByElement,
     imageOperationCanUndo,
     imageOperationUndo,
+} from "./js/bloomEditing";
+import {
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
-} from "./js/bloomEditing";
+} from "./js/pageContentDelays";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 // Called from the AI Image Editor overlay in the top window, which owns the session but
 // cannot touch this page itself; see aiImageEditorPageCommands.ts and aiImageEditorOverlay.ts.
@@ -141,10 +149,9 @@ import type {
     IAiImageEditorCommitResult,
 } from "./aiImageEditor/aiImageEditorShared";
 export {
-    getBodyContentForSavePage,
-    requestPageContent,
+    getPageContentForSaveWhenReady,
+    savePageWithoutReloading,
     captureContentForExternalProcessing,
-    userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
     copySelection,
@@ -383,6 +390,11 @@ $(document).ready(() => {
     // in the live editor, which never reads this flag.
     window.__bloomEditablePageReady = true;
 
+    // Start volunteering the page's content to C# whenever it changes and settles, so a save never
+    // has to ask for it and wait. See pageSnapshot.ts. Deliberately after bootstrap(), so the
+    // load-time fix-ups it applies are not themselves reported as the user's changes.
+    startWatchingPageForSnapshots(getPageContentForSaveWhenReady);
+
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
     // back to c#-land. We have a similar listener in the pageThumbnailList itself.
@@ -400,10 +412,9 @@ export function SayHello() {
 // Legacy global exposure: mimic old webpack window["editablePageBundle"] contract used by other iframes / C#
 // NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
 interface EditablePageBundleApi {
-    requestPageContent: typeof requestPageContent;
+    savePageWithoutReloading: typeof savePageWithoutReloading;
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
-    getBodyContentForSavePage: typeof getBodyContentForSavePage;
-    userStylesheetContent: typeof userStylesheetContent;
+    getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
@@ -479,10 +490,9 @@ declare global {
 }
 
 window.editablePageBundle = {
-    requestPageContent,
+    savePageWithoutReloading,
     captureContentForExternalProcessing,
-    getBodyContentForSavePage,
-    userStylesheetContent,
+    getPageContentForSaveWhenReady,
     pageUnloading,
     copySelection,
     cutSelection,

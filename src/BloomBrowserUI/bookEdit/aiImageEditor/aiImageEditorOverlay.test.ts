@@ -9,13 +9,16 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 //  - The edit target. C# hands over the page id and file name of the image the user
 //    right-clicked (it survived a page save, which reloaded the page frame), and the overlay
 //    matches that against the book image list to fill the "Image to Edit" slot (BL-16682).
-//  - Saving after a commit. The current-page swaps only touched the LIVE DOM, so unless we
-//    save, a second commit in the same session would read its oldSrc from a saved page still
-//    showing the pre-edit image and match nothing. Because this overlay lives in the top
-//    window, we can save immediately: the page reload underneath leaves its controls alone.
+//  - NOT saving after a commit. A current-page swap lives in the live page DOM only, like an
+//    image pasted or chosen from the gallery, and is persisted the same way: by the normal page
+//    save when the user moves on (BL-16330). A retry from this still-open overlay would read a
+//    stale oldSrc, which the page frame handles by remembering what it already swapped rather
+//    than by saving here. The savePageWithoutReloading mock below exists to assert that we
+//    never call it.
 
 const post = vi.fn();
 const postJson = vi.fn();
+const savePageWithoutReloading = vi.fn();
 const postThatMightNavigate = vi.fn();
 const trackEvent = vi.fn();
 const trackChangePicture = vi.fn();
@@ -148,6 +151,9 @@ const commitAndReplyFromHost = (
 beforeEach(() => {
     post.mockClear();
     postJson.mockClear();
+    savePageWithoutReloading.mockClear();
+    // It answers whether C# actually saved; the overlay chains onto that to complain if not.
+    savePageWithoutReloading.mockResolvedValue(true);
     postThatMightNavigate.mockClear();
     trackEvent.mockClear();
     trackChangePicture.mockClear();
@@ -158,6 +164,7 @@ beforeEach(() => {
     });
     getEditablePageBundleExports.mockReturnValue({
         applyAiImageEditorReplacements,
+        savePageWithoutReloading,
     });
     delete (window as Window & { __bloomAiImageEditorCleanup?: () => void })
         .__bloomAiImageEditorCleanup;
@@ -361,8 +368,8 @@ describe("aiImageEditorOverlay: the live page is NOT saved after a commit", () =
         };
         expect(ack.ok).toBe(true);
         expect(ack.error).toBeUndefined();
-        // Nothing landed on this page, so nothing to save.
-        expect(postThatMightNavigate).not.toHaveBeenCalled();
+        // We never save from here at all -- see the note at the top of this file.
+        expect(savePageWithoutReloading).not.toHaveBeenCalled();
         expect(applyAiImageEditorReplacements).not.toHaveBeenCalled();
         postMessageToEditor.mockRestore();
     });
@@ -387,8 +394,8 @@ describe("aiImageEditorOverlay: the live page is NOT saved after a commit", () =
         expect(ack.ok).toBe(false);
         expect(ack.error).toContain("not available");
         expect(ack.error).toContain("other pages were made");
-        // Nothing landed, so nothing to save.
-        expect(postThatMightNavigate).not.toHaveBeenCalled();
+        // We never save from here at all -- see the note at the top of this file.
+        expect(savePageWithoutReloading).not.toHaveBeenCalled();
         postMessageToEditor.mockRestore();
     });
 });

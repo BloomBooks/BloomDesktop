@@ -13,6 +13,21 @@ using SIL.IO;
 namespace Bloom.Edit
 {
     /// <summary>
+    /// Carries the outgoing page's content along with a page-selection event, for the case where
+    /// the browser sent it with the click. Without it we would have to ask the browser for the
+    /// content and wait for the answer on another API before we could change pages.
+    /// </summary>
+    public class PageSelectedChangedEventArgs : EventArgs
+    {
+        public PageSelectedChangedEventArgs(string pageContentFromBrowser)
+        {
+            PageContentFromBrowser = pageContentFromBrowser;
+        }
+
+        public string PageContentFromBrowser { get; }
+    }
+
+    /// <summary>
     /// Handle a list of page thumbnails (the left column in Edit mode) using an iframe configured by
     /// pageThumbnailList.pug to load the React component specified in pageThumbnailList.tsx.
     /// The code here is tightly coupled to the code in pageThumbnailList.tsx and its dependencies,
@@ -88,7 +103,7 @@ namespace Bloom.Edit
                 _baseHtml = ReactControl.ReplaceViteDevOrigin(_baseHtml);
         }
 
-        private void InvokePageSelectedChanged(IPage page)
+        private void InvokePageSelectedChanged(IPage page, string pageContentFromBrowser = null)
         {
             EventHandler handler = PageSelectedChanged;
             if (
@@ -97,7 +112,12 @@ namespace Bloom.Edit
                 page != null
             )
             {
-                handler(page, null);
+                handler(
+                    page,
+                    pageContentFromBrowser == null
+                        ? null
+                        : new PageSelectedChangedEventArgs(pageContentFromBrowser)
+                );
             }
         }
 
@@ -201,10 +221,15 @@ namespace Bloom.Edit
             return result.ToList();
         }
 
-        internal void PageClicked(IPage page)
+        /// <summary>
+        /// The user clicked a page in the list. pageContentFromBrowser, when the page list managed
+        /// to collect it, is the current page's content, so we can save it without asking the
+        /// browser for it and waiting; null means fall back to that older route.
+        /// </summary>
+        internal void PageClicked(IPage page, string pageContentFromBrowser = null)
         {
             if (Enabled)
-                InvokePageSelectedChanged(page);
+                InvokePageSelectedChanged(page, pageContentFromBrowser);
         }
 
         /// <summary>
@@ -241,7 +266,17 @@ namespace Bloom.Edit
             }
         }
 
-        internal void ExecuteContextMenuCommand(IPage page, string commandId)
+        /// <summary>
+        /// Run one of the thumbnail context menu's commands. pageContentFromBrowser, when the page
+        /// list was able to collect it, is the current page's content; the commands that have to
+        /// save the current page first can then do so without asking the browser for it and waiting
+        /// (see EditingModel.SavePageInPlaceThen).
+        /// </summary>
+        internal void ExecuteContextMenuCommand(
+            IPage page,
+            string commandId,
+            string pageContentFromBrowser = null
+        )
         {
             if (!IsContextMenuCommandEnabled(page, commandId))
                 return;
@@ -249,20 +284,20 @@ namespace Bloom.Edit
             switch (commandId)
             {
                 case "duplicatePage":
-                    Model.DuplicatePage(page);
+                    Model.DuplicatePage(page, pageContentFromBrowser);
                     break;
                 case "duplicatePageManyTimes":
                     Model.DuplicateManyPages(page);
                     break;
                 case "copyPage":
-                    Model.CopyPage(page);
+                    Model.CopyPage(page, pageContentFromBrowser);
                     break;
                 case "pastePage":
-                    Model.PastePage(page);
+                    Model.PastePage(page, pageContentFromBrowser);
                     break;
                 case "removePage":
                     // The browser side has already confirmed with the user (BL-16421).
-                    Model.DeletePage(page);
+                    Model.DeletePage(page, pageContentFromBrowser);
                     break;
                 case "chooseDifferentLayout":
                     Model.GetEditingBrowser().Focus();
@@ -277,7 +312,11 @@ namespace Bloom.Edit
         // This gets invoked by Javascript (via the PageListApi) when it determines that a particular page has been moved.
         // newIndex is the (zero-based) index that the page is moving to
         // in the whole list of pages, including the placeholder.
-        internal void PageMoved(IPage movedPage, int newPageIndex)
+        internal void PageMoved(
+            IPage movedPage,
+            int newPageIndex,
+            string pageContentFromBrowser = null
+        )
         {
             // accounts for placeholder.
             // Enhance: may not be needed in single-column mode, if we ever restore that.
@@ -293,7 +332,7 @@ namespace Bloom.Edit
                 WebSocketServer.SendString("pageThumbnailList", "pageListNeedsReset", "");
                 return;
             }
-            Model.SaveThen(
+            Model.MergeCurrentPageThenSave(
                 () =>
                 {
                     var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
@@ -302,8 +341,8 @@ namespace Bloom.Edit
                     PageSelectedChanged(movedPage, new EventArgs());
                     return movedPage.Id;
                 },
-                () => { }, // wrong state, do nothing
-                forceFullSave: true
+                forceFullSave: true,
+                pageContentFromBrowser: pageContentFromBrowser
             );
         }
 

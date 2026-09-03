@@ -1,5 +1,6 @@
-import { hideImageDescriptions } from "../imageDescription/imageDescriptionUtils";
+import { unwrapDescribedImages } from "../imageDescription/imageDescriptionUtils";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
 import { getTheOneToolbox } from "../toolbox";
 import { ToolBox } from "../toolbox";
@@ -136,18 +137,34 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         }
     }
 
+    // The markup this tool adds that would otherwise reach the saved HTML: the
+    // bloom-describedImage wrappers, the visible "|" phrase-delimiter spans, and (while audio is
+    // playing or paused) the highlight-segment spans fixHighlighting() inserts. Everything else
+    // removeRecordingSetup() deals with is either bloom-ui (the playback-order controls, the
+    // recording icon), not in the DOM at all (the ::highlight registry), or purely tool state, so
+    // it lives in detachFromPage below.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        unwrapDescribedImages(pageOrClone);
+        TalkingBookTool.enshroudPhraseDelimiters(pageOrClone);
+        getAudioRecorder()?.undoHighlightingFixes(pageOrClone);
+    }
+
     public detachFromPage() {
         const audioRecorder = getAudioRecorder();
         // not quite sure how this can be called when never initialized, but if
         // we don't have the object we certainly can't use it.
         if (audioRecorder) {
+            // Live-only: takes down the playback-order UI and resets the tool's own state. It also
+            // calls revertFixHighlighting(), which does the same DOM restoration removeToolMarkup()
+            // does and then clears the record of it, so the super call below finds nothing left.
             audioRecorder.removeRecordingSetup();
         }
-        const page = ToolBox.getPage();
-        if (page) {
-            hideImageDescriptions(page);
-            TalkingBookTool.enshroudPhraseDelimiters(page);
-        }
+        // The rest is what hideImageDescriptions() used to do for us here: the
+        // bloom-showImageDescriptions class is on the body, which is outside the page div that
+        // removeToolMarkup() gets, and comic editing must not resume until the wrappers are gone.
+        ToolBox.getPage()?.classList.remove("bloom-showImageDescriptions");
+        super.detachFromPage();
+        getCanvasElementManager()?.resumeComicEditing();
     }
 
     // Called whenever the user edits text.

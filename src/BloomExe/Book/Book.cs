@@ -4200,10 +4200,21 @@ namespace Bloom.Book
         /// Return true if needToDoFullSave is true, or if this method discovers another reason we need to do a full save.
         /// Returns as an out param the page element from the book's dom that got modified.
         /// </summary>
+        /// <param name="anythingChanged">False if what the browser sent turns out to say exactly
+        /// what the book already says, so this page gives us nothing to write. It reports only on
+        /// the data passed in; a caller that knows of a change elsewhere must account for that
+        /// itself. This is the definitive test for the data itself:
+        /// it is made AFTER our own processing of what we received (ProcessPageAfterEditing strips
+        /// the editing markup, SetImageAltAttrsFromDescriptions fills in alt text), so it asks the
+        /// only question that matters -- did the book actually change? -- rather than whether the
+        /// incoming string differed. The browser cannot answer that for us: it would have to
+        /// predict this processing, and a copy of these rules living over there is a copy that can
+        /// drift. See BL-13502.</param>
         public bool UpdateDomFromEditedPage(
             HtmlDom editedPageDom,
             out SafeXmlElement pageToSaveToDisk,
-            bool needToDoFullSave = true
+            bool needToDoFullSave,
+            out bool anythingChanged
         )
         {
             // This is needed if the user did some ChangeLayout (origami) manipulation. This will populate new
@@ -4217,8 +4228,16 @@ namespace Bloom.Book
             string pageId = pageFromEditedDom.GetAttribute("id");
             pageToSaveToDisk = GetPageFromStorage(pageId);
 
+            // Remember the page as the book currently has it, so that once we have processed what
+            // the browser sent we can see whether it actually said anything new. OuterXml rather
+            // than InnerXml because ProcessPageAfterEditing writes the page div’s own class, lang
+            // and style attributes too.
+            var pageAsTheBookHadIt = pageToSaveToDisk.OuterXml;
+
             HtmlDom.ProcessPageAfterEditing(pageToSaveToDisk, pageFromEditedDom);
             HtmlDom.SetImageAltAttrsFromDescriptions(pageToSaveToDisk, Language1Tag);
+
+            var pageChanged = pageToSaveToDisk.OuterXml != pageAsTheBookHadIt;
 
             // The main condition for being able to just write the page is that no shareable data on the
             // page changed during editing. If that's so we can skip this step.
@@ -4241,6 +4260,13 @@ namespace Bloom.Book
 
                 //Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
             }
+
+            // Deliberately NOT including needToDoFullSave: that says how WIDE a save has to be if
+            // there is one (whether the change is confined to this page), not whether anything
+            // changed -- and it defaults to true. A caller that knows something outside this page
+            // wants saving has to say so itself; EditingModel does.
+            anythingChanged = pageChanged || stylesChanged;
+
             return needToDoFullSave || stylesChanged;
         }
 
@@ -4255,8 +4281,12 @@ namespace Bloom.Book
                 var reallyNeedFullSave = UpdateDomFromEditedPage(
                     editedPageDom,
                     out SafeXmlElement pageToSaveToDisk,
-                    needToDoFullSave
+                    needToDoFullSave,
+                    out var anythingChanged
                 );
+
+                if (!anythingChanged)
+                    return; // what the browser sent says exactly what the book already said
 
                 SavePageToDisk(pageToSaveToDisk, reallyNeedFullSave);
             }

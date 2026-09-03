@@ -42,16 +42,50 @@ namespace Bloom.web.controllers
                 HandleSaveToolboxSetting,
                 true
             );
+            // (editView/pageContent used to live here: the browser's answer to a save that C# had
+            // started. Nothing asks any more -- the browser volunteers the page as it is edited,
+            // via editView/pageSnapshot below.)
+            // Save the current page from content the browser gathered on its own initiative, without
+            // reloading the page. Unlike editView/pageContent (which is the browser answering a save
+            // that C# started, and always ends in a navigation), this lets Javascript save whenever it
+            // needs the book on disk to be current and then simply carry on editing the same page.
+            // The reply is not sent until the save is finished, so Javascript can await it.
+            //
+            // It answers whether the save actually happened. It can decline -- the user may have
+            // started changing pages, or an external process may have replaced the book on disk --
+            // and a caller that carries on regardless would be working from a file that does not
+            // say what it thinks it says. That is not hypothetical: the AI Image Editor saves so
+            // that the file matches the page it is about to read image sources from.
             apiHandler.RegisterEndpointHandler(
-                "editView/pageContent",
+                "editView/savePageInPlace",
                 request =>
                 {
                     var pageContentData = request.RequiredPostString(unescape: false);
-                    View.Model.ReceivePageContent(pageContentData);
+                    request.ReplyWithBoolean(View.Model.SavePageInPlace(pageContentData));
+                },
+                true, // updates the book DOM, writes files, and refreshes the page list: UI thread
+                true
+            );
+            // The browser volunteering the current content of the page it is editing, so that a
+            // later save does not have to ask for it and wait. All this does is remember the
+            // string; see PageSnapshot for what it is for and why "no snapshot" means "nothing to
+            // save" rather than "go and ask".
+            //
+            // Deliberately NOT on the UI thread and NOT synchronized: it only stores a string (the
+            // store does its own locking), and an idle task reporting what the editor contains has
+            // no business queueing behind a save, or blocking one. Making it wait would reintroduce
+            // in one place exactly the coupling this removes everywhere else.
+            apiHandler.RegisterEndpointHandler(
+                "editView/pageSnapshot",
+                request =>
+                {
+                    var pageId = request.RequiredParam("pageId");
+                    var pageContentData = request.RequiredPostString(unescape: false);
+                    View.Model.ReceivePageSnapshot(pageId, pageContentData);
                     request.PostSucceeded();
                 },
-                true,
-                true // review.
+                false,
+                false
             );
             apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
             apiHandler.RegisterEndpointHandler(
@@ -266,7 +300,7 @@ namespace Bloom.web.controllers
             }
 
             request.ReplyWithText("true");
-            View.Model.SaveThen(
+            View.Model.MergeCurrentPageThenSave(
                 () =>
                 {
                     if (switchingToCustom)
@@ -315,8 +349,7 @@ namespace Bloom.web.controllers
                     }
 
                     return pageId;
-                },
-                () => { }
+                }
             );
         }
 
@@ -324,7 +357,7 @@ namespace Bloom.web.controllers
         {
             var pageId = request.GetPostStringOrNull();
             request.PostSucceeded();
-            View.Model.SaveThen(() => pageId, () => { });
+            View.Model.MergeCurrentPageThenSave(() => pageId, () => { });
         }
 
         /// <summary>

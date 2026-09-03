@@ -376,21 +376,21 @@ namespace Bloom.web.controllers
                 OpenEditorInBrowser(payload);
             });
 
-            model.SaveThen(
-                () => pageId,
-                doIfNotInRightStateToSave: () =>
-                {
-                    // No save was attempted and nothing failed. Every state that refuses one — a
-                    // save already in flight, mid-navigation, saved-and-stripped — is on its way to
-                    // a page load, and by then that other save will have brought the DOM up to date.
-                    bookDomIsSound = true;
-                },
-                // Reached only when the save actually got to disk. Checking it this way, rather
-                // than cancelling from failureAction, covers more: failureAction is not called when
-                // _saveBook() itself throws, which is precisely the disk-full case, nor on the
-                // deliberate _discardInFlightSave path.
-                doAfterSaveToDisk: () => bookDomIsSound = true
-            );
+            // Saving is synchronous now (see PageSnapshot), so "did the book actually reach disk?"
+            // is simply "did this return without throwing" -- which is what we need to know before
+            // reading image sources back out of the file. A refusal to save (mid-navigation, say)
+            // is not a problem: those states are on their way to a page load which brings the DOM
+            // up to date anyway. Only an actual failure, such as the disk being full, is.
+            try
+            {
+                model.SaveCurrentPageAndBook();
+                bookDomIsSound = true;
+            }
+            catch (Exception)
+            {
+                bookDomIsSound = false;
+                throw;
+            }
 
             request.PostSucceeded();
         }
