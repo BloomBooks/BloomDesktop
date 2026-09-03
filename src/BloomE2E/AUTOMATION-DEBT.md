@@ -16,22 +16,22 @@ House rules:
 
 Work in progress, 2026-09-03 (BL-16799): every entry below that carries a **being fixed**
 line is being paid down now, in a stack of small pull requests, one per improvement, each
-branching off the one before it. The pull requests do not exist yet, so the branch name is
-the identity here. Before you start on a marked entry, ask the owner of its branch.
+branching off the one before it. Before you start on a marked entry, read its pull request
+and ask its author.
 
-| Branch | What it pays down |
-| --- | --- |
-| `BL-16799-automation-scripts` | The `bloom-automation` scripts answer `--help` without killing anything, and reject an unknown flag or a malformed process id. |
-| `BL-16799-vr-collect-failures` | A visual-regression case collects every failed comparison and fails once at the end. |
-| `BL-16799-component-tests-in-ci` | The component-tester Playwright suites get a nightly job. |
-| `BL-16799-vite-port` | `BLOOM_E2E_VITE_PORT` makes a run test the working tree's front end. Adds a new entry for what remains. |
-| `BL-16799-type-in-one-call` | Typing in a text box is one insertion, not one key press per character. Adds a new entry: typing now raises no key events. |
-| `BL-16799-page-screenshot` | A helper captures a whole book page, which absorbs the `captureBeyondViewport` footgun. |
-| `BL-16799-toolbox-registration` | One `registerAllToolboxTools()` that both the bootstrap and the test harness call. |
-| `BL-16799-shell-document` | A test can no longer attach to a shell document Bloom does not drive: one WebView2 environment per run, plus the `e2e/shellUrl` hook. |
-| `BL-16799-tab-test-ids` | `data-testid` on the workspace tabs, so no test matches a localized label. |
-| `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
-| `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
+| Pull request | Branch | What it pays down |
+| --- | --- | --- |
+| #8290 | `BL-16799-automation-scripts` | The `bloom-automation` scripts answer `--help` without killing anything, and reject an unknown flag or a malformed process id. |
+| #8291 | `BL-16799-vr-collect-failures` | A visual-regression case collects every failed comparison and fails once at the end. |
+| #8292 | `BL-16799-component-tests-in-ci` | The component-tester Playwright suites get a nightly job. |
+| #8293 | `BL-16799-vite-port` | `BLOOM_E2E_VITE_PORT` makes a run test the working tree's front end. Adds a new entry for what remains. |
+| #8294 | `BL-16799-type-in-one-call` | Typing in a text box is one insertion, not one key press per character. Adds a new entry: typing now raises no key events. |
+| #8295 | `BL-16799-page-screenshot` | A helper captures a whole book page, which absorbs the `captureBeyondViewport` footgun. |
+| #8296 | `BL-16799-toolbox-registration` | One `registerAllToolboxTools()` that both the bootstrap and the test harness call. |
+| #8297 | `BL-16799-shell-document` | A test can no longer attach to a shell document Bloom does not drive: one WebView2 environment per run, plus the `e2e/shellUrl` hook. |
+| #8298 | `BL-16799-tab-test-ids` | `data-testid` on the workspace tabs, so no test matches a localized label. |
+| #8299 | `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
+| #8300 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
 
 Three of these also add entries of their own, for the debt that is left after the fix. The
 stack replaces PR #8276, which did all of this at once.
@@ -57,7 +57,7 @@ stopping Bloom, rewriting the `.bloomCollection`, and starting again, which is w
 new `bloomApp.restart(betweenStopAndStart)` fixture method is for. Each restart costs
 about six seconds and loses whatever the editor had not yet saved.
 
-being fixed on `BL-16799-collection-languages`: the `e2e/setCollectionLanguages` hook
+being fixed on `BL-16799-collection-languages` (#8300): the `e2e/setCollectionLanguages` hook
 does the work of the Settings dialog's OK button, so no test composes `.bloomCollection`
 XML. The dialog itself stays on this entry: nothing can drive or screenshot it.
 
@@ -121,7 +121,7 @@ accumulate per-comparison failures and fail once at the end — proven during BL
 (~20–30 lines, confined to the spec). Loop at `index.spec.ts:426`, assertion at
 `index.spec.ts:486` (pre-rewire line numbers). (Promoted from PAPERCUTS 2026-07-30.)
 
-being fixed on `BL-16799-vr-collect-failures`.
+being fixed on `BL-16799-vr-collect-failures` (#8291).
 
 ## The top bar has no stable test ids, so tests match on localized text
 
@@ -138,9 +138,9 @@ only stable marker available. Fix direction: `data-testid="workspace-tab-collect
 (etc.) on each tab and one on the shell root, and drop the label matching.
 (Found 2026-09-01 while scaffolding src/BloomE2E.)
 
-being fixed on two branches: `BL-16799-shell-document` puts a test id on the top bar and
+being fixed on two branches: `BL-16799-shell-document` (#8297) puts a test id on the top bar and
 stops the fixture identifying the shell document by `[role="tablist"]`, and
-`BL-16799-tab-test-ids` puts one on each tab and drops the label matching.
+`BL-16799-tab-test-ids` (#8298) puts one on each tab and drops the label matching.
 
 seen again 2026-09-01, in the Edit tab's page thumbnail menu: the items
 `pageThumbnailList.tsx` renders carry no id, class or `data-testid` (all their styling is
@@ -157,7 +157,7 @@ rot again silently. Fix direction: a nightly job mirroring the visual-regression
 (component config only; the bloom-exe config needs the e2e launch fixture first).
 (Promoted from PAPERCUTS 2026-07-27.)
 
-being fixed on `BL-16799-component-tests-in-ci`, as that nightly job. The bloom-exe config
+being fixed on `BL-16799-component-tests-in-ci` (#8292), as that nightly job. The bloom-exe config
 stays out of it, for the reason given above.
 
 ## Toolbox tool registration is a side effect of toolboxBootstrap
@@ -172,7 +172,7 @@ because it asserts on `.subscription-badge` (legacy-toolbox-only) and
 the React header renders badges/icons and what classes to expose.
 (Promoted from PAPERCUTS 2026-07-27.)
 
-being fixed on `BL-16799-toolbox-registration`, which extracts
+being fixed on `BL-16799-toolbox-registration` (#8296), which extracts
 `bookEdit/toolbox/registerAllToolboxTools.ts`. The `test.fixme` half is not fixed there; it
 stays as an entry of its own.
 
@@ -195,7 +195,7 @@ Known WebView2/CDP behaviors that every ad-hoc script rediscovers the hard way; 
   error). Working pattern: `Emulation.setDeviceMetricsOverride` large enough for the
   whole `.bloom-page`, screenshot with a `clip`, then `clearDeviceMetricsOverride`;
   give every CDP request a timeout.
-  being fixed on `BL-16799-page-screenshot`, which absorbs this into
+  being fixed on `BL-16799-page-screenshot` (#8295), which absorbs this into
   `helpers/screenshot.ts`. The other two items in this list stay.
 - Never `taskkill //IM node.exe //F` to clean up a hung capture — it kills the go.sh
   vite/dotnet-watch flow and takes Bloom's server down. Kill only the script's own PID.
@@ -213,7 +213,7 @@ direction: recognize `--help`/`-h` and reject unknown flags in every script that
 processes — and fold these helpers' jobs into the library's audited launch/teardown
 fixture over time. (Promoted from PAPERCUTS 2026-07-24.)
 
-being fixed on `BL-16799-automation-scripts`, for the `--help`, unknown-flag and
+being fixed on `BL-16799-automation-scripts` (#8290), for the `--help`, unknown-flag and
 malformed-process-id part. Folding the helpers into the fixture is not part of it.
 
 ## Adding a page needs the Add Page dialog, which offers nothing to automate against
@@ -249,7 +249,7 @@ would look like the same flake. Fix direction: have `jumpToPage` queue the reque
 until the Edit tab is ready, or report that it refused it.
 (Found 2026-09-01 automating Test Case ID 169.)
 
-being fixed on `BL-16799-page-change`: it reports that it refused the jump, rather than
+being fixed on `BL-16799-page-change` (#8299): it reports that it refused the jump, rather than
 queueing it, and the helpers wait for the Edit tab to settle before asking. Queueing was
 tried first and made things worse. That branch adds an entry for the Bloom defect behind
 this one, which it does not fix.
@@ -274,7 +274,7 @@ CKEditor does with a programmatic value change; a supported "set the text of thi
 path would let long text be set at once.
 (Found 2026-09-01 automating Test Case ID 169.)
 
-being fixed on `BL-16799-type-in-one-call`, for the typing half only: one insertion
+being fixed on `BL-16799-type-in-one-call` (#8294), for the typing half only: one insertion
 instead of a key press per character. Clearing a box still needs Control+A and Delete, and
 that branch adds an entry saying that typing now raises no key events.
 
