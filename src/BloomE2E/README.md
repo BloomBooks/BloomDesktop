@@ -208,6 +208,33 @@ BLOOM_TESTING_INPUTS_DIR=D:/bloom-testing-inputs pnpm test
 Either way the fixture copies the collection before Bloom opens it, so a run never modifies your
 inputs.
 
+## Testing a front-end change
+
+The launched Bloom serves its React UI from the built `output/browser`, so an edit to a `.tsx`
+file does not reach a run until somebody rebuilds that bundle. To test the working tree instead,
+start a Vite dev server and name its port in `BLOOM_E2E_VITE_PORT`; the fixture then passes
+`--vite-port` to Bloom, which loads every React control from the dev server.
+
+```bash
+# In one terminal, in src/BloomBrowserUI. Set PORT as well as --port: the port in
+# vite.config.mts comes from process.env.PORT, and --port alone leaves the HMR and
+# React-Refresh URLs pointing at 5173, which makes the page fail to load its entry module.
+PORT=5173 pnpm exec vite --port 5173 --strictPort
+
+# In another, in src/BloomE2E
+BLOOM_E2E_VITE_PORT=5173 pnpm exec playwright test
+```
+
+**Use 5173, and set the variable.** The port is not free to choose: the page list and the toolbox
+write `http://localhost:5173` into their own imports, so on any other port those two frames load
+nothing and come up empty, which reads as the feature being missing rather than as a port
+problem. And leaving `BLOOM_E2E_VITE_PORT` unset does not mean "no dev server": a dev build of
+Bloom probes 5173 by itself, so an unset variable and a server somewhere else means the run
+quietly tests the built bundle, however old it is. Both halves are in AUTOMATION-DEBT.md under
+"A Vite dev server only reaches the whole UI on port 5173".
+
+So stop a Bloom that is already using 5173 before a run, rather than moving the dev server.
+
 ## In CI
 
 `.github/workflows/nightly.yml` runs the whole suite every night against the Release build it has
