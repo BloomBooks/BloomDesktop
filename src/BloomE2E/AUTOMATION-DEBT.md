@@ -21,7 +21,6 @@ the identity here. Before you start on a marked entry, ask the owner of its bran
 
 | Branch | What it pays down |
 | --- | --- |
-| `BL-16799-shell-document` | A test can no longer attach to a shell document Bloom does not drive: one WebView2 environment per run, plus the `e2e/shellUrl` hook. |
 | `BL-16799-tab-test-ids` | `data-testid` on the workspace tabs, so no test matches a localized label. |
 | `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
@@ -143,15 +142,14 @@ nowhere in the source, so `bloom-exe-tabs.uitest.ts` cannot have worked for some
 (it needs a developer's Bloom already running, and nothing runs it in CI — see the entry
 below); and `src/BloomE2E/helpers/workspace.ts` has to map tab ids to the English labels
 "Collections"/"Edit"/"Publish", so the suite silently only works in an English UI —
-which rules out automating the UI-language cases. The same gap makes the fixture
-identify Bloom's shell document among the CDP page targets by `[role="tablist"]`, the
-only stable marker available. Fix direction: `data-testid="workspace-tab-collection"`
-(etc.) on each tab and one on the shell root, and drop the label matching.
+which rules out automating the UI-language cases. Fix direction:
+`data-testid="workspace-tab-collection"` (etc.) on each tab, and drop the label matching.
+The shell root has its own test id as of 2026-09-01, so the fixture no longer identifies
+Bloom's shell document by `[role="tablist"]`.
 (Found 2026-09-01 while scaffolding src/BloomE2E.)
 
-being fixed on two branches: `BL-16799-shell-document` puts a test id on the top bar and
-stops the fixture identifying the shell document by `[role="tablist"]`, and
-`BL-16799-tab-test-ids` puts one on each tab and drops the label matching.
+being fixed on `BL-16799-tab-test-ids`, which puts a test id on each tab and drops the
+label matching.
 
 seen again 2026-09-01, in the Edit tab's page thumbnail menu: the items
 `pageThumbnailList.tsx` renders carry no id, class or `data-testid` (all their styling is
@@ -465,4 +463,33 @@ that presses one named key in a box, for the tests whose subject is the key pres
 (Enter splitting a paragraph, Tab moving between boxes, a shortcut), and a note in that
 helper that `typeInGroup` is not the way to test those. (Found 2026-09-02, during the
 review of the headless work.)
+
+
+## A test can attach to a shell document Bloom does not drive
+
+More than one document in a run carries the workspace root's markup, and therefore the
+top bar's `data-testid`, so `fixtures/bloomTest.ts findShellPage` returns whichever the
+debugging protocol lists first. When that is not the document Bloom drives, the test is
+silently broken rather than failing: its own clicking and typing work, `expect` on what
+it typed passes, and every page Bloom loads goes into the document it cannot see. The
+symptom is a 60-second wait in `goToPage` for a page Bloom's own log says it showed.
+This is why `publish-text-languages.spec.ts` fails perhaps one run in three.
+
+Fixed for tests, 2026-09-01. `e2e/shellUrl` reports the URL of the document Bloom drives,
+and `findShellPage` now takes the page whose URL has the same file name (Bloom and the
+debugging protocol escape the rest of the URL differently), re-resolving after
+`bloomApp.restart`. It falls back to the first page carrying the marker only when the
+endpoint never answers, which is what an old `Bloom.exe` in `output/Debug` does, and says
+so. `goToPage`'s failure message names both URLs. Also, under `--e2e` every browser built
+on the UI thread shares one CoreWebView2Environment, so those documents live in one
+browser process with one debugging listener; before that, each environment was given the
+same port number and only the first process to start could listen on it. That sharing is
+deliberately limited to the UI thread: an environment belongs to the thread that created
+it, and handing it to a browser built on the thread serving an API call hangs that thread.
+Publishing a BloomPUB does exactly that, and its preview never appeared.
+
+What remains: nobody knows why a run has a second workspace root document at all. Bloom
+creates one `_workspaceReactControl`. Worth finding, because the duplicate is what makes
+the test-side check necessary.
+(Found 2026-09-01 while making `jumpToPage` queue a jump.)
 
