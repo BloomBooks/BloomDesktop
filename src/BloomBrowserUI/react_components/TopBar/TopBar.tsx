@@ -130,6 +130,10 @@ export const TopBar: React.FunctionComponent = () => {
         <ScopedCssBaseline>
             <div
                 ref={topBarRef}
+                // How automation recognizes Bloom's shell document among the WebView2's CDP
+                // targets, and the one stable marker on the top bar as a whole. See
+                // src/BloomE2E/fixtures/bloomTest.ts (SHELL_MARKER).
+                data-testid="workspace-top-bar"
                 css={css`
                     background-color: ${getColorForTab(activeTab)};
                     padding-top: 2px;

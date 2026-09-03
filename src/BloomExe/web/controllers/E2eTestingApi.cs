@@ -133,6 +133,15 @@ namespace Bloom.web.controllers
                 false // does not need the UI thread
             );
 
+            // GET returns the URL of the workspace root document Bloom drives, or an empty string
+            // before that browser exists. A run has more than one document carrying the workspace
+            // root's markup, so the top bar's test id alone does not identify the right one, and a
+            // test that attaches to the wrong one is silently broken: its own typing and clicking
+            // work, while every page Bloom loads goes somewhere it cannot see. Compare on the file
+            // name, which is unique per document; the rest of the URL is escaped differently by
+            // Bloom and by the debugging protocol. Needs the UI thread to read the browser.
+            apiHandler.RegisterEndpointHandler(kApiUrlPart + "shellUrl", HandleGetShellUrl, true);
+
             // POST {"email": ...}: which Bloom Library login state Bloom should REPORT. A test
             // needs this because the real login lives in machine-wide settings shared with the
             // developer's own Bloom: signing out for real would sign the developer out, and
@@ -145,6 +154,15 @@ namespace Bloom.web.controllers
                 HandleSetLoginState,
                 false // does not need the UI thread
             );
+        }
+
+        /// <summary>
+        /// Reply with the URL of the workspace root document Bloom drives (see the registration
+        /// above), or an empty string if the main browser is not up yet.
+        /// </summary>
+        private void HandleGetShellUrl(ApiRequest request)
+        {
+            request.ReplyWithText(Workspace.WorkspaceView.MainBrowserForE2eTests?.Url ?? "");
         }
 
         /// <summary>
