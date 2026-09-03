@@ -1,11 +1,10 @@
-import { css, ThemeProvider } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import BloomButton from "../../../react_components/bloomButton";
 import { ImportIcon, InsertSegmentMarkerIcon } from "./TalkingBookToolboxIcons";
 import { Divider, TooltipProps, RadioGroup, Typography } from "@mui/material";
 import { MuiRadio } from "../../../react_components/muiRadio";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
-import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
 import { RecordingMode } from "./recordingMode";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
@@ -71,181 +70,177 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
         );
 
     return (
-        <ThemeProvider theme={toolboxTheme}>
-            <TriangleCollapse
-                initiallyOpen={false}
+        <TriangleCollapse
+            initiallyOpen={false}
+            css={css`
+                padding-left: 10px;
+            `}
+        >
+            <BloomTooltip
+                tip={insertSegmentMarkerTooltipText}
+                showDisabled={!props.hasRecordableDivs}
+                tipWhenDisabled={{
+                    l10nKey:
+                        "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip",
+                }}
+                {...commonTooltipProps}
+            >
+                <BloomButton
+                    id="insert-segment-marker-button"
+                    iconBeforeText={React.createElement(
+                        InsertSegmentMarkerIcon,
+                    )}
+                    hasText={true}
+                    variant="outlined"
+                    size="small"
+                    enabled={props.hasRecordableDivs}
+                    l10nKey="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker"
+                    onClick={props.insertSegmentMarker}
+                />
+            </BloomTooltip>
+            <Divider />
+            <BloomTooltip
+                showDisabled={!props.hasAudio}
+                tipWhenDisabled={
+                    (!props.hasRecordableDivs && {
+                        l10nKey:
+                            "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip",
+                    }) ||
+                    ""
+                }
+                {...commonTooltipProps}
+            >
+                <Typography variant="h2">
+                    <LocalizedString
+                        l10nKey={
+                            "EditTab.Toolbox.TalkingBookTool.RecordingMode"
+                        }
+                    >
+                        Recording Mode
+                    </LocalizedString>
+                </Typography>
+                <RadioGroup
+                    value={props.recordingMode}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                        props.setRecordingMode(
+                            RecordingMode[
+                                (event.target as HTMLInputElement).value
+                            ],
+                        )
+                    }
+                >
+                    <BloomTooltip
+                        tip={{
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip",
+                        }}
+                        showDisabled={sentenceModeDisabled}
+                        // When there is nothing recordable on this page, the tooltip around the
+                        // whole Recording Mode group already explains that. Adding a tip here too
+                        // would leave two tooltips overlapping on the same hover, and this one
+                        // would be telling the user the wrong reason anyway (BL-16639).
+                        tipWhenDisabled={
+                            props.hasRecordableDivs
+                                ? {
+                                      l10nKey: `EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip`,
+                                  }
+                                : ""
+                        }
+                        {...commonTooltipProps}
+                    >
+                        <MuiRadio
+                            disabled={sentenceModeDisabled}
+                            value={RecordingMode.Sentence}
+                            label="By Sentence"
+                            l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeSentence"
+                        />
+                    </BloomTooltip>
+                    <BloomTooltip
+                        showDisabled={!props.hasRecordableDivs}
+                        tip={{
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip",
+                        }}
+                        {...commonTooltipProps}
+                    >
+                        <RequiresSubscriptionAdjacentIconWrapper featureName="WholeTextBoxAudio">
+                            <MuiRadio
+                                disabled={!props.hasRecordableDivs}
+                                value={RecordingMode.TextBox}
+                                label="By Whole Text Box"
+                                l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox"
+                            />
+                        </RequiresSubscriptionAdjacentIconWrapper>
+                    </BloomTooltip>
+                </RadioGroup>
+            </BloomTooltip>
+            <div
                 css={css`
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
                     padding-left: 10px;
                 `}
             >
                 <BloomTooltip
-                    tip={insertSegmentMarkerTooltipText}
-                    showDisabled={!props.hasRecordableDivs}
+                    showDisabled={!enabledImportRecordingButton}
+                    tip={{
+                        l10nKey:
+                            "EditTab.Toolbox.TalkingBookTool.ImportRecordingTip",
+                    }}
                     tipWhenDisabled={{
                         l10nKey:
-                            "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip",
+                            "EditTab.Toolbox.TalkingBookTool.ImportRecordingDisabledTip",
                     }}
                     {...commonTooltipProps}
                 >
                     <BloomButton
-                        id="insert-segment-marker-button"
-                        iconBeforeText={React.createElement(
-                            InsertSegmentMarkerIcon,
-                        )}
+                        id="import-recording-button"
+                        iconBeforeText={React.createElement(ImportIcon)}
                         hasText={true}
                         variant="outlined"
                         size="small"
-                        enabled={props.hasRecordableDivs}
-                        l10nKey="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker"
-                        onClick={props.insertSegmentMarker}
+                        enabled={enabledImportRecordingButton}
+                        l10nKey="EditTab.Toolbox.TalkingBookTool.ImportRecording"
+                        onClick={() => props.handleImportRecordingClick()}
                     />
                 </BloomTooltip>
-                <Divider />
-                <BloomTooltip
-                    showDisabled={!props.hasAudio}
-                    tipWhenDisabled={
-                        (!props.hasRecordableDivs && {
-                            l10nKey:
-                                "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip",
-                        }) ||
-                        ""
-                    }
-                    {...commonTooltipProps}
-                >
-                    <Typography variant="h2">
-                        <LocalizedString
-                            l10nKey={
-                                "EditTab.Toolbox.TalkingBookTool.RecordingMode"
-                            }
-                        >
-                            Recording Mode
-                        </LocalizedString>
-                    </Typography>
-                    <RadioGroup
-                        value={props.recordingMode}
-                        onChange={(
-                            event: React.ChangeEvent<HTMLInputElement>,
-                        ) =>
-                            props.setRecordingMode(
-                                RecordingMode[
-                                    (event.target as HTMLInputElement).value
-                                ],
-                            )
-                        }
-                    >
-                        <BloomTooltip
-                            tip={{
-                                l10nKey:
-                                    "EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip",
-                            }}
-                            showDisabled={sentenceModeDisabled}
-                            // When there is nothing recordable on this page, the tooltip around the
-                            // whole Recording Mode group already explains that. Adding a tip here too
-                            // would leave two tooltips overlapping on the same hover, and this one
-                            // would be telling the user the wrong reason anyway (BL-16639).
-                            tipWhenDisabled={
-                                props.hasRecordableDivs
-                                    ? {
-                                          l10nKey: `EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip`,
-                                      }
-                                    : ""
-                            }
-                            {...commonTooltipProps}
-                        >
-                            <MuiRadio
-                                disabled={sentenceModeDisabled}
-                                value={RecordingMode.Sentence}
-                                label="By Sentence"
-                                l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeSentence"
-                            />
-                        </BloomTooltip>
-                        <BloomTooltip
-                            showDisabled={!props.hasRecordableDivs}
-                            tip={{
-                                l10nKey:
-                                    "EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip",
-                            }}
-                            {...commonTooltipProps}
-                        >
-                            <RequiresSubscriptionAdjacentIconWrapper featureName="WholeTextBoxAudio">
-                                <MuiRadio
-                                    disabled={!props.hasRecordableDivs}
-                                    value={RecordingMode.TextBox}
-                                    label="By Whole Text Box"
-                                    l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox"
-                                />
-                            </RequiresSubscriptionAdjacentIconWrapper>
-                        </BloomTooltip>
-                    </RadioGroup>
-                </BloomTooltip>
-                <div
-                    css={css`
-                        display: flex;
-                        flex-direction: column;
-                        gap: 10px;
-                        padding-left: 10px;
-                    `}
-                >
-                    <BloomTooltip
-                        showDisabled={!enabledImportRecordingButton}
-                        tip={{
-                            l10nKey:
-                                "EditTab.Toolbox.TalkingBookTool.ImportRecordingTip",
-                        }}
-                        tipWhenDisabled={{
-                            l10nKey:
-                                "EditTab.Toolbox.TalkingBookTool.ImportRecordingDisabledTip",
-                        }}
-                        {...commonTooltipProps}
-                    >
-                        <BloomButton
-                            id="import-recording-button"
-                            iconBeforeText={React.createElement(ImportIcon)}
-                            hasText={true}
-                            variant="outlined"
-                            size="small"
-                            enabled={enabledImportRecordingButton}
-                            l10nKey="EditTab.Toolbox.TalkingBookTool.ImportRecording"
-                            onClick={() => props.handleImportRecordingClick()}
-                        />
-                    </BloomTooltip>
-                </div>
-                <Divider />
-                <BloomTooltip
-                    css={css`
-                        z-index: 1002; // has to be above the disableOverlay because this is the one control we don't want to disable in show playback order mode
-                    `}
-                    tip={{
-                        l10nKey:
-                            "EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrderTip",
-                    }}
-                    {...commonTooltipProps}
-                >
-                    <BloomSwitch
-                        size="small"
-                        // disabled={!props.hasRecordableDivs}
-                        checked={props.inShowPlaybackOrderMode}
-                        onChange={() =>
-                            props.setShowPlaybackOrder(
-                                !props.inShowPlaybackOrderMode,
-                            )
-                        }
-                        l10nKey="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder"
-                        highlightWhenChecked={true}
-                    />
-                </BloomTooltip>
+            </div>
+            <Divider />
+            <BloomTooltip
+                css={css`
+                    z-index: 1002; // has to be above the disableOverlay because this is the one control we don't want to disable in show playback order mode
+                `}
+                tip={{
+                    l10nKey:
+                        "EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrderTip",
+                }}
+                {...commonTooltipProps}
+            >
                 <BloomSwitch
                     size="small"
-                    checked={props.showingImageDescriptions}
+                    // disabled={!props.hasRecordableDivs}
+                    checked={props.inShowPlaybackOrderMode}
                     onChange={() =>
-                        props.setShowingImageDescriptions(
-                            !props.showingImageDescriptions,
+                        props.setShowPlaybackOrder(
+                            !props.inShowPlaybackOrderMode,
                         )
                     }
+                    l10nKey="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder"
                     highlightWhenChecked={true}
-                    l10nKey="EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions"
                 />
-            </TriangleCollapse>
-        </ThemeProvider>
+            </BloomTooltip>
+            <BloomSwitch
+                size="small"
+                checked={props.showingImageDescriptions}
+                onChange={() =>
+                    props.setShowingImageDescriptions(
+                        !props.showingImageDescriptions,
+                    )
+                }
+                highlightWhenChecked={true}
+                l10nKey="EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions"
+            />
+        </TriangleCollapse>
     );
 };

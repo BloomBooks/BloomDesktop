@@ -41,7 +41,7 @@ import * as toastr from "toastr";
 import WebSocketManager, {
     IBloomWebSocketEvent,
 } from "../../../utils/WebSocketManager";
-import { getActiveToolId, ToolBox } from "../toolbox";
+import { getActiveToolId } from "../toolbox";
 import * as React from "react";
 import { renderRoot } from "../../../utils/reactRender";
 import {
@@ -70,7 +70,11 @@ import {
     FeatureStatus,
     getFeatureStatusAsync,
 } from "../../../react_components/featureStatus";
-import { animateStyleName } from "../../../utils/shared";
+import {
+    animateStyleName,
+    getPageIFrame,
+    getPageIframeBody,
+} from "../../../utils/shared";
 import jQuery from "jquery";
 import {
     AudioHighlightManager,
@@ -1278,7 +1282,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     private urlPrefix(): string {
-        const pageFrame = this.getPageFrame()!; // Note: Just fail fast if it's null.
+        const pageFrame = getPageIFrame(); // Note: Just fail fast if it's null.
         const bookSrc = pageFrame.src;
         const index = bookSrc.lastIndexOf("/");
         const bookFolderUrl = bookSrc.substring(0, index + 1);
@@ -2280,7 +2284,7 @@ export default class AudioRecording implements IAudioRecorder {
     // together in one place.
     public async setShowingImageDescriptions(isOn: boolean) {
         this.showingImageDescriptions = isOn;
-        const page = ToolBox.getPage();
+        const page = getPageIframeBody();
         if (this.showingImageDescriptions) {
             if (page) {
                 // we should always have a page, but testing makes lint happy
@@ -2576,21 +2580,11 @@ export default class AudioRecording implements IAudioRecorder {
         // This only set the RECORDING mode. Don't touch the audio-sentence markup, which represents the PLAYBACK mode.
     }
 
-    // Gets the "page" iframe. May return null if the iframe doesn't exist (e.g., in testing, or while loading).
-    public getPageFrame(): HTMLIFrameElement | null {
-        // Enhance: Maybe should just use the version in workspaceFrames.ts instead?
-        //   (we could add an async version there that would return a promise which is fulfilled when the frame becomes available AND loaded.)
-        return <HTMLIFrameElement | null>(
-            parent?.window?.document?.getElementById("page")
-        );
-    }
-
     // The body of the editable page, a root for searching for document content.
+    // (This survives only because it is part of IAudioRecorder, which lets other code and the
+    // unit tests get at the page body through the recorder; the lookup itself lives in shared.ts.)
     public getPageDocBody(): HTMLElement | null {
-        // ENHANCE: What if the iFrame is there but hasn't finished loading yet? (Which will wipe contentWindow.document)
-        const page = this.getPageFrame();
-        if (!page || !page.contentWindow) return null;
-        return page.contentWindow.document.body;
+        return getPageIframeBody();
     }
 
     // The body of the editable page, a root for searching for document content.
@@ -2757,7 +2751,7 @@ export default class AudioRecording implements IAudioRecorder {
     // Determines which element should receive the Current Highlight
     //   (Notably, checks to see if we should move from the existing Current Highlight (determined via CSS classes) to the actively focused element instead.)
     private async getWhichTextBoxShouldReceiveHighlightAsync(): Promise<HTMLElement | null> {
-        const pageFrame = this.getPageFrame();
+        const pageFrame = getPageIFrame();
 
         // Determine which element should receive the current highlight
         if (
@@ -3275,7 +3269,7 @@ export default class AudioRecording implements IAudioRecorder {
             // the async actions complete.
             await this.resetCurrentAudioElementAsync(currentTextBox);
 
-            // cleanUpNbsps() in toolbox.ts runs synchronously while we are suspended at the
+            // cleanUpNbsps() in pageEditingMarkup.ts runs synchronously while we are suspended at the
             // first await above.  It unconditionally sets editableDiv.innerHTML, detaching
             // the span that resetCurrentAudioElementAsync just registered as highlightedElement.
             // IDs are preserved through that replacement, so we can recover the live DOM node.
@@ -4734,7 +4728,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     private getElementsToUpdateForCursor(): (Element | null)[] {
         const elementsToUpdate: (Element | null)[] = [];
-        elementsToUpdate.push(document.getElementById("toolbox"));
+        elementsToUpdate.push(document.querySelector(".toolboxRoot"));
 
         const pageBody = this.getPageDocBody();
         if (pageBody) {
@@ -4810,7 +4804,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public insertSegmentMarker(): void {
-        const selection = this.getPageFrame()!.contentWindow!.getSelection();
+        const selection = getPageIFrame().contentWindow!.getSelection();
         const range = selection!.getRangeAt(0);
         const marker = document.createTextNode("|");
         range.insertNode(marker);
