@@ -204,20 +204,6 @@ Known WebView2/CDP behaviors that every ad-hoc script rediscovers the hard way; 
 
 (Promoted from PAPERCUTS 2026-07-22.)
 
-## Visual-regression baselines only match the CI runner
-
-The pixelmatch comparison demands zero differing pixels, and the committed baselines
-render exactly only on windows-latest CI. On a developer machine the bloom-player
-pages come out 1–884 pixels different (text shifted ~2 px vertically; previews match
-exactly), deterministically across runs, exe configs, and bloom-player versions —
-leading suspect: locally installed TTF Andika vs the WOFF2 Bloom ships. So a local
-run of the suite cannot go green, which makes local verification and baseline
-authoring painful. Fix direction: a small per-comparison pixel tolerance, or
-machine-profile baselines, or render fonts only from Bloom's own WOFF2 set in --e2e
-mode. (Found 2026-09-01 while verifying the bloom-testing-inputs rewire.)
-
-being fixed, from 2026-09-03, on `vr-baselines-match-locally` (no PR yet; not part of the BL-16799 stack): first measuring every comparison's pixel count on a developer machine, then trying standardized fonts (render only from Bloom's own WOFF2 set) and DPI as the cause.
-
 ## Automation helper scripts run destructive defaults on unknown flags
 
 `node .github/skills/bloom-automation/killBloomProcess.mjs --help` killed the running

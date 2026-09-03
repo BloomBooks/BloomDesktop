@@ -226,10 +226,6 @@ describe("All books", () => {
             ],
         });
         context = await browser.newContext();
-        andikaIsInstalled = await isFontInstalled(context, "Andika");
-        if (andikaIsInstalled) {
-            console.warn(chalk.black.bgYellow(ANDIKA_INSTALLED_WARNING));
-        }
         page = await context.newPage();
         playerPage = await context.newPage();
         await playerPage.setViewportSize({ width: 900, height: 1200 });
@@ -341,13 +337,10 @@ describe("All books", () => {
     // `screenshotsDir` is always in the SOURCE inputs tree (output/testing-inputs, or whatever
     // BLOOM_TESTING_INPUTS_DIR names), never in the temp copy, so that an accepted new baseline is
     // a file a developer can commit to the inputs repository. See readme.md.
-    // `isPlayerCapture` marks a bloom-player screenshot, whose text comes from whatever Andika the
-    // machine has (see andikaIsInstalled), as opposed to a book-preview one, which does not.
     async function captureOrCompare(
         label: string,
         screenshotsDir: string,
         shoot: (imagePath: string) => Promise<void>,
-        isPlayerCapture = false,
     ) {
         const referencePath = Path.join(
             screenshotsDir,
@@ -366,9 +359,6 @@ describe("All books", () => {
             referencePath,
             currentPath,
             Path.join(screenshotsDir, `${label}-diff.png`),
-            isPlayerCapture && andikaIsInstalled
-                ? ANDIKA_INSTALLED_WARNING
-                : undefined,
         );
     }
 
@@ -523,52 +513,6 @@ describe("All books", () => {
         return result.text();
     }
 
-    // The bloom-player captures must not depend on which fonts this machine has installed. When Bloom
-    // stages a BloomPUB it strips the book's own @font-face rules (BL-12594) and leaves the font to
-    // bloom-player, which declares Andika as `local("Andika")` first and the Bloom-served woff2 only
-    // as a fallback. So a machine with Andika installed renders every player page with its own copy of
-    // the font, and its glyphs differ from the reference images (which come from a machine without it,
-    // like the CI runner) by tens to hundreds of pixels per page. That has twice led someone to "fix"
-    // the suite by regenerating the baselines on their own machine, which just moved the failure to
-    // CI. The book-preview captures are unaffected: the staged book's own @font-face points at the
-    // served copy. So we don't refuse to run; we warn once up front, and when a player page then
-    // mismatches we say in the failure itself that the font is the likely cause, so nobody reads it
-    // as a regression or accepts it as a new baseline.
-    let andikaIsInstalled = false;
-    const ANDIKA_INSTALLED_WARNING =
-        `Andika is installed on this machine. bloom-player prefers an installed Andika over the copy ` +
-        `Bloom serves, so the bloom-player screenshots will be rendered with this machine's Andika and ` +
-        `will probably differ from the reference images (which are rendered without it, as on CI). ` +
-        `Player-page differences on this machine are probably that, not a regression, and must not be ` +
-        `accepted as new baselines. Uninstall Andika to make these comparisons meaningful; Bloom ` +
-        `does not need it installed.`;
-
-    // The probe is a @font-face whose only source is local(<family>): it loads if and only if the
-    // font is installed. Chrome may either resolve with no faces or reject when it is not.
-    async function isFontInstalled(
-        context: BrowserContext,
-        family: string,
-    ): Promise<boolean> {
-        const probe = await context.newPage();
-        try {
-            await probe.setContent(
-                `<style>@font-face { font-family: "bloom-vr-probe"; src: local("${family}"); }</style>`,
-            );
-            return await probe.evaluate(async () => {
-                try {
-                    const faces = await (globalThis as any).document.fonts.load(
-                        '16px "bloom-vr-probe"',
-                    );
-                    return faces.some((f: any) => f.status === "loaded");
-                } catch {
-                    return false;
-                }
-            });
-        } finally {
-            await probe.close();
-        }
-    }
-
     // Build the bloom-player URL for the staged book at a specific page (0-based). Mirrors what the
     // desktop app does (see RecordVideoWindow): the staged URL is already single-encoded, and
     // URLSearchParams encodes it again so it survives as a query parameter (see BL-11319).
@@ -635,6 +579,10 @@ describe("All books", () => {
                 content:
                     ".nicescroll-rails,.nicescroll-cursors{display:none!important}",
             });
+            // Render the book's text from the fonts Bloom serves, whatever this machine has
+            // installed; see SERVED_FONTS_ONLY_CSS. Also before the settle wait: it restyles the
+            // text, and the wait for document.fonts.ready below is what covers the reload.
+            await playerPage.addStyleTag({ content: SERVED_FONTS_ONLY_CSS });
             const active = await playerPage.waitForSelector(
                 ACTIVE_PLAYER_PAGE,
                 { timeout: 30000 },
@@ -689,18 +637,14 @@ describe("All books", () => {
                 async (imagePath) => {
                     await pageElement.screenshot({ path: imagePath });
                 },
-                true,
             );
         }
     }
 
-    // `likelyCause`, when given, is an explanation to attach to a mismatch (see andikaIsInstalled):
-    // something we know about this machine that makes the difference expected rather than a regression.
     async function comparePreviewImage(
         referencePath: string,
         testPath: string,
         diffPath: string,
-        likelyCause?: string,
     ) {
         const referenceImage = PNG.sync.read(fs.readFileSync(referencePath));
         const testImage = PNG.sync.read(fs.readFileSync(testPath));
@@ -735,8 +679,7 @@ describe("All books", () => {
             // a long run's output.
             throw new Error(
                 `${testPath} differed from the reference by ${numberOfDifferentPixels} pixels. ` +
-                    `The diff image is at ${diffPath}.` +
-                    (likelyCause ? `\n\n${likelyCause}` : ""),
+                    `The diff image is at ${diffPath}.`,
             );
         }
     }
@@ -775,6 +718,48 @@ function writeDirectionalDiff(reference: PNG, current: PNG, diffPath: string) {
         out.data[i + 3] = 255;
     }
     fs.writeFileSync(diffPath, PNG.sync.write(out) as Uint8Array);
+}
+
+// The bloom-player captures must not depend on which fonts this machine has installed. When Bloom
+// stages a BloomPUB it strips the book's own @font-face rules (BL-12594) and leaves the font to
+// bloom-player, which declares each Andika face as `local(...)` first and the Bloom-served WOFF2
+// only as a fallback. So a machine with Andika installed used to render every player page with
+// its own copy of the font, and its glyphs differed from the reference images (rendered without
+// it, as on the CI runner) by hundreds to thousands of pixels per page; that twice led someone to
+// "fix" the suite by regenerating the baselines on their own machine, which just moved the failure
+// to CI. (The book-preview captures were never affected: the staged book's own @font-face points at
+// the served copy.)
+//
+// So after loading a player page we add these rules: one @font-face per face bloom-player declares,
+// with the same family, weight and style descriptors, and the served WOFF2 as the ONLY source.
+// When several @font-face rules have identical descriptors the last one wins, so these replace the
+// player's own, and the text renders from Bloom's WOFF2 whatever is installed. The URLs are the
+// ones bloom-player itself falls back to, so a run requests exactly the files CI does. Measured
+// 2026-09-03: with Andika faces forced to an installed font, 51 of 84 comparisons differed (199 to
+// 14351 pixels); with these rules added as well, 0 of 84.
+const SERVED_FONTS_ONLY_CSS = [
+    servedFontFaces("Andika"),
+    servedFontFaces("Andika New Basic"),
+].join("\n");
+
+// The four @font-face rules (regular, bold, italic, bold italic) for one family, each with the
+// served file as its only source. The URL is the one bloom-player uses: the family name under
+// ./host/fonts/, followed by " Bold", " Italic" or " Bold Italic" for the other faces, which Bloom
+// answers with the matching WOFF2 (see FontsApi.ProcessHostFontsRequest).
+function servedFontFaces(family: string): string {
+    const variants = [
+        ["normal", "normal", ""],
+        ["bold", "normal", " Bold"],
+        ["normal", "italic", " Italic"],
+        ["bold", "italic", " Bold Italic"],
+    ];
+    return variants
+        .map(
+            ([weight, style, variant]) =>
+                `@font-face{font-family:"${family}";font-weight:${weight};font-style:${style};` +
+                `src:url("./host/fonts/${family}${variant}")}`,
+        )
+        .join("\n");
 }
 
 // Ports Bloom uses: it takes the next free block starting at 8089 (8089, 8092, 8095, ...). We probe
