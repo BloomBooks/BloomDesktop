@@ -615,6 +615,14 @@ jobs:
                   function Get-SuiteCounts([string] $path) {
                       if (-not (Test-Path -LiteralPath $path)) { return $null }
                       try { $xml = [xml](Get-Content -LiteralPath $path -Raw) } catch { return $null }
+                      # A zero-byte file needs its own check and cannot rely on the catch above:
+                      # Get-Content -Raw returns $null for one, and casting $null to [xml] yields
+                      # $null without throwing, so we would fall through to calling a method on
+                      # $null. Under GitHub's $ErrorActionPreference = "stop" that kills this step,
+                      # and the send step is gated on this one succeeding -- so an empty junit file
+                      # (the likeliest shape of "a suite reported nothing") would mean no Zulip
+                      # message at all, silencing the very case this reporting exists to catch.
+                      if (-not $xml) { return $null }
 
                       $run = $xml."test-run"
                       if ($run) {
