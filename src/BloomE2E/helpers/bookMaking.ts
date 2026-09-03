@@ -560,7 +560,16 @@ export async function typeInGroup(
     const box = await clickInGroup(page, groupSelector, languageTag);
     await box.press("Control+a");
     await box.press("Delete");
-    if (text) await box.pressSequentially(text);
+    // One insertion rather than a key press per character: the box has focus, and CKEditor and
+    // Bloom's own markup code both work from the input event this raises, so the result is the
+    // same and the cost does not grow with the length of the text.
+    //
+    // What this does NOT do is raise keydown, keypress or keyup. So a test that types here does
+    // not exercise anything in Bloom that listens for a key rather than for input, and the
+    // assertion below cannot tell the difference. A test whose subject IS a key press needs a
+    // helper of its own that presses that key. (AUTOMATION-DEBT.md: "Typing in a text box raises
+    // no key events".)
+    if (text) await page.keyboard.insertText(text);
     // Bloom's editor reacts to typing; confirm the box holds what we meant before moving on, so a
     // later failure cannot be blamed on text that never arrived.
     await expect(box).toHaveText(text, { timeout: 15000 });
