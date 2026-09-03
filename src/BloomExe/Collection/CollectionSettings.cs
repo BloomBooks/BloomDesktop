@@ -1395,9 +1395,11 @@ namespace Bloom.Collection
         /// This routine uses the user-specified name for the main project language.
         /// For the other two project languages, it explicitly uses the appropriate collection settings
         /// name for that language, which the user also set.
-        /// If the user hasn't set a name for the given language, this will find a fairly readable name
-        /// for the languages Palaso knows about (probably the autonym) and fall back to the tag itself
-        /// if it can't find a name.
+        /// If the user hasn't set a name for the given language, this returns the language's
+        /// standard name from the Ethnologue data that Palaso knows about ("Spanish"), and falls
+        /// back to the tag itself if it can't find a name. It used to try for a name in the
+        /// metadata language and get the autonym or a localized name unpredictably; see the
+        /// comment at the fallback below.
         /// BL-8174 But in case the tag includes Script/Region/Variant codes, we should show them somewhere too.
         /// </summary>
         // TODO (default name BL-13703) make this consistent with the new Language Chooser default display name instead of using LibPalasso?
@@ -1434,7 +1436,75 @@ namespace Bloom.Collection
                     this.SignLanguage.IsCustomName,
                     metadataLanguageTag
                 );
-            return this.GetLanguageName(langTag, metadataLanguageTag);
+            // The four checks above cover Language1/2/3 and the sign language, but AllLanguages can
+            // hold more than those -- callers add to it (see
+            // RuntimeInformationInjectorTests.AddLanguagesUsedInPage_AddsOnlyAppropriateNames) --
+            // and a name the user gave any of them still wins over anything we look up.
+            var namedByTheCollection = AllLanguages.Find(x => x.Tag == langTag);
+            if (
+                namedByTheCollection != null
+                && !string.IsNullOrWhiteSpace(namedByTheCollection.Name)
+            )
+                return namedByTheCollection.Name;
+
+            // This language is not one the collection names, so there is no user-supplied name and
+            // we have to look one up. Use GetBestLanguageName, which answers from the Ethnologue
+            // data, rather than GetLocalizedLanguageName, which asks for the name "in" some other
+            // language.
+            //
+            // That distinction matters: which name GetLocalizedLanguageName gives depends on the
+            // MACHINE, not on the request. It has two paths, chosen by a static boolean it latches
+            // once per process according to whether a native ICU library is findable, and Bloom
+            // ships icu.net but no icuuc.dll (see WritingSystem.EnsureSldrInitialized), so that
+            // turns on whatever else happens to be installed:
+            //
+            //   ICU findable      -> honors the request, so Spanish "in French" is "espagnol"
+            //   ICU not findable  -> ignores the request and returns the autonym, "español"
+            //
+            // Each is consistent within its own environment: the GitHub windows-latest runner gives
+            // "espagnol" (nightly runs 33665790357 and 33685669405), a developer machine gives
+            // "español" (checked in the real Publish tab). So two users with the same collection
+            // and the same book read different names for the same language, decided by unrelated
+            // software on their PATH.
+            //
+            // BloomE2E's publish-text-languages spec is what surfaced it -- the Publish tab's Text
+            // Languages list, for a language whose text is still in the book after the collection
+            // stopped listing it. BookDataTests had carried an Is.EqualTo(...).Or.EqualTo(...)
+            // around it for years, with a comment naming ICU and concluding "I can't find anywhere
+            // this actually shows up".
+            //
+            // GetBestLanguageName answers from the Ethnologue data either way, so every machine
+            // agrees. It gives the language's standard name ("Spanish"), which is also what Bloom
+            // uses as a language's default name elsewhere -- WritingSystem decides whether a name
+            // is custom by comparing against this same data -- so a language the collection has
+            // stopped naming now reads the way Bloom would have named it anyway.
+            //
+            // Route it through GetLanguageNameWithScriptVariants like the four branches above, so
+            // this path keeps BL-8174's script/region distinctions: GetBestLanguageName answers
+            // with the BASE language's name, so on its own it would label a zh-TW row and a zh-CN
+            // row both "Chinese". nameIsCustom is false because nobody chose this name, which also
+            // keeps us out of that method's one branch that calls GetLanguageName.
+            try
+            {
+                if (IetfLanguageTag.GetBestLanguageName(langTag, out var bestName))
+                    return GetLanguageNameWithScriptVariants(
+                        langTag,
+                        bestName,
+                        false,
+                        metadataLanguageTag
+                    );
+            }
+            catch (Exception e)
+            {
+                // Never let looking up a name throw: we do this while building the page DOM, and
+                // an exception here made the Edit tab unusable once already (BL-15159). Falling
+                // back to the tag is a fine label, but log it rather than swallowing it silently,
+                // so a language that starts displaying as a bare tag is diagnosable.
+                Logger.WriteEvent(
+                    $"Could not find a display name for language \"{langTag}\", so showing the tag itself: {e.Message}"
+                );
+            }
+            return langTag;
         }
 
         // We always want to use a name the user deliberately gave (hence the use of 'nameIsCustom').
