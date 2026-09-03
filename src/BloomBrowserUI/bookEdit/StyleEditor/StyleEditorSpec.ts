@@ -566,6 +566,96 @@ describe("StyleEditor", () => {
         }
     });
 
+    // The controls createStyle copies into the new style. The values do not matter here; they
+    // only have to exist, because updateStyle reads every one of them.
+    const formatDialogControlsHtml =
+        "<select id='size-select'><option selected>12</option></select>" +
+        "<select id='line-height-select'><option selected>1.5</option></select>" +
+        "<select id='word-space-select'><option selected>Normal</option><option>Wide</option><option>Extra Wide</option></select>" +
+        "<select id='para-spacing-select'><option selected>0</option></select>" +
+        "<div id='bold'></div><div id='italic'></div><div id='underline'></div>" +
+        "<div id='indent-none' class='selectedIcon'></div><div id='position-left' class='selectedIcon'></div>" +
+        "<div id='colorSelectButton'></div>" +
+        "<select id='styleSelect'></select>" +
+        "<div id='style-group' class='state-enteringStyle'></div>" +
+        "<input id='style-select-input' value='Bar'>";
+
+    // A box's font normally comes from the collection's language settings, not from its style,
+    // so a new style should say nothing about the font unless the old style set one explicitly.
+    it("createStyle copies a font the old style set explicitly for the box's language", () => {
+        (globalThis as any).GetSettings = () => ({
+            languageForNewTextBoxes: "xyz",
+        });
+        try {
+            $("body").append(
+                "<div id='testTarget' class='foo-style' lang='xyz'></div>" +
+                    formatDialogControlsHtml,
+            );
+            const editor = new StyleEditor(
+                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+            );
+            editor.boxBeingEdited = $("#testTarget").get(0);
+            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+                () => {},
+            );
+            editor.changeFont("Arial");
+            // sanity check: the old style now names the font for this language
+            expect(
+                GetRuleMatchingSelector('.foo-style[lang="xyz"]')?.cssText,
+            ).toContain("font-family: Arial");
+
+            // runFormatDialog fills the style list when the dialog opens; createStyle adds to it.
+            (editor as any).styles = [];
+            editor.createStyle();
+
+            expect($("#testTarget").attr("class")).toContain("Bar-style");
+            expect(
+                GetRuleMatchingSelector('.Bar-style[lang="xyz"]')?.cssText,
+            ).toContain("font-family: Arial");
+            // The font stays per language: the language-independent rule says nothing about it.
+            expect(
+                GetRuleMatchingSelector(".Bar-style {")?.cssText,
+            ).not.toContain("font-family");
+        } finally {
+            delete (globalThis as any).GetSettings;
+        }
+    });
+
+    it("createStyle leaves the font to the language's default when the old style did", () => {
+        (globalThis as any).GetSettings = () => ({
+            languageForNewTextBoxes: "xyz",
+        });
+        try {
+            $("body").append(
+                "<div id='testTarget' class='foo-style' lang='xyz'></div>" +
+                    formatDialogControlsHtml,
+            );
+            const editor = new StyleEditor(
+                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+            );
+            editor.boxBeingEdited = $("#testTarget").get(0);
+            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+                () => {},
+            );
+            // sanity check: nothing names a font yet
+            expect(GetRuleMatchingSelector("font-family")).toBeNull();
+
+            // runFormatDialog fills the style list when the dialog opens; createStyle adds to it.
+            (editor as any).styles = [];
+            editor.createStyle();
+
+            expect($("#testTarget").attr("class")).toContain("Bar-style");
+            // The new style got the other settings...
+            expect(
+                GetRuleMatchingSelector('.Bar-style[lang="xyz"]')?.cssText,
+            ).toContain("font-size: 12pt");
+            // ...but no font, in any of its rules.
+            expect(GetRuleMatchingSelector("font-family")).toBeNull();
+        } finally {
+            delete (globalThis as any).GetSettings;
+        }
+    });
+
     it("UpdateControlsToReflectAppliedStyle passes the real highlight colors to changeHiliteProps", () => {
         $("body").append(
             "<div id='testTarget' class='foo-style' lang='xyz'></div>",

@@ -364,17 +364,11 @@ test.describe("All Format Controls", () => {
         expect(byBox(after, 0, L2).style).toBe(TESTING);
         expect(byBox(after, 1, L1).style).toBe(NORMAL);
         expect(byBox(after, 1, L2).style).toBe(NORMAL);
-        // The new style copied the box's settings, so the box looks as it did. (Its font is
-        // checked by the next test, on its own, because Bloom currently drops it.)
-        const { fontFamily: fontBefore, ...looksBefore } = looksOf(
-            byBox(before, 0, L1),
+        // The new style copied the box's settings, font included (the box's font was set
+        // explicitly on the Characters tab, so it belongs to the style), so the box looks as it did.
+        expect(looksOf(byBox(after, 0, L1))).toEqual(
+            looksOf(byBox(before, 0, L1)),
         );
-        const { fontFamily: fontAfter, ...looksAfter } = looksOf(
-            byBox(after, 0, L1),
-        );
-        void fontBefore;
-        void fontAfter;
-        expect(looksAfter).toEqual(looksBefore);
         // The other group on the page did not change at all.
         expect(looksOf(byBox(after, 1, L1))).toEqual(
             looksOf(byBox(before, 1, L1)),
@@ -382,25 +376,6 @@ test.describe("All Format Controls", () => {
         expect(looksOf(byBox(after, 1, L2))).toEqual(
             looksOf(byBox(before, 1, L2)),
         );
-    });
-
-    test("creating a style keeps the box's font [Test Case ID 357]", async ({
-        page,
-    }) => {
-        // The manual test says "the text doesn't change; all properties should be copied from
-        // Normal". Bloom copies every Characters and Paragraph setting except the font: the copy
-        // of the font was lost when the font control became a React component (BL-10388, 2022),
-        // so a box in a new style falls back to the collection's font. Suspected bug; this test
-        // is marked as expected to fail until that is decided, and will complain when it passes.
-        test.fail(
-            true,
-            "Bloom does not copy the font into a newly created style (suspected bug, found automating Test Case ID 357)",
-        );
-        const box = (await getTextBoxFormatting(page)).find(
-            (b) => b.group === 0 && b.lang === L1,
-        )!;
-        expect(box.style).toBe(TESTING);
-        expect(box.fontFamily).toBe(L1_CHARACTERS.fontFamily);
     });
 
     test("changing the Testing style changes only the Testing boxes [Test Case ID 357]", async ({

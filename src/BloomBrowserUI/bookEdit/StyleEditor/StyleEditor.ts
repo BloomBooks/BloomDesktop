@@ -1621,11 +1621,18 @@ export default class StyleEditor {
     // Make a new style. Initialize to all current values. Caller should ensure it is a valid new style.
     public createStyle() {
         const typedStyle = $("#style-select-input").val();
+        // A box's font normally comes from the collection's language settings, not from its style,
+        // so the new style says nothing about the font unless the old style did: only a font the
+        // user set explicitly (for this language) carries over. Read it before the style changes.
+        const explicitFont = this.getExplicitFontForBox();
         StyleEditor.SetStyleNameForElement(
             this.boxBeingEdited,
             typedStyle + "-style",
         );
         this.updateStyle();
+        if (explicitFont) {
+            this.changeFont(explicitFont);
+        }
 
         // Recommended way to insert an item into a select2 control and select it (one of the trues makes it selected)
         // See http://codepen.io/alexweissman/pen/zremOV
@@ -1640,6 +1647,28 @@ export default class StyleEditor {
         $("#style-select-input").val("");
     }
 
+    /**
+     * The font the box's style sets explicitly for the box's language (the rule changeFont
+     * writes), or undefined when the style leaves the font to the language's default. Reads
+     * only; never creates a rule.
+     */
+    private getExplicitFontForBox(): string | undefined {
+        const target = this.boxBeingEdited;
+        const styleName = StyleEditor.GetStyleNameForElement(target);
+        if (!styleName) {
+            return undefined;
+        }
+        let addToSelector = "";
+        if (!this.targetUsesLanguageIndependentRules(target)) {
+            const lang = StyleEditor.GetLangValueOrNull(target);
+            addToSelector = lang ? '[lang="' + lang + '"]' : ":not([lang])";
+        }
+        const rule = this.GetRuleForStyle(styleName, addToSelector, false);
+        return rule?.style.getPropertyValue("font-family") || undefined;
+    }
+
+    // Copy every control's current value into the box's (new) style. The font is deliberately
+    // not among them: see createStyle.
     public updateStyle() {
         this.changeSize();
         this.changeLineheight();
