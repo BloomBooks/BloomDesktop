@@ -153,9 +153,11 @@ export async function getFontMetadata(
 }
 
 /**
- * The name of a font of the given kind, from the fonts Bloom offers on this machine: `preferred` if
- * it is there and is of that kind, otherwise the first such font. Which fonts a machine has varies,
- * so a test names the font it would like and takes what it gets.
+ * The name of a font of the given kind, from the fonts Bloom offers on this machine: the first of
+ * `preferred` that is there and is of that kind, otherwise the first such font. Which fonts a
+ * machine has varies, so a test names the fonts it would like, in order, and takes what it gets.
+ * The nightly runner has the fonts bloom-testing-inputs ships under fonts/ (installed by
+ * scripts/install-test-fonts.ps1), so a test names those first to behave the same everywhere.
  *
  * Throws when the machine has no font of the kind, listing how many of each kind it does have: a
  * test of the mark for that kind cannot run on such a machine, and the failure should say so.
@@ -163,12 +165,14 @@ export async function getFontMetadata(
 export async function pickFont(
     page: Page,
     kind: FontKind,
-    preferred?: string,
+    preferred: string[] = [],
 ): Promise<string> {
     const fonts = await getFontsMetadata(page);
     const candidates = fonts.filter((f) => f.name && isKind(f, kind));
     const chosen =
-        candidates.find((f) => f.name === preferred) ?? candidates[0];
+        preferred
+            .map((name) => candidates.find((f) => f.name === name))
+            .find((f) => f) ?? candidates[0];
     if (!chosen) {
         const kinds: FontKind[] = [
             "usable",
@@ -350,10 +354,15 @@ export async function readFontInformationPane(
             name:
                 element.querySelector(selectors.name)?.textContent?.trim() ??
                 "",
-            links: Array.from(element.querySelectorAll("a[href]")).map((a) => ({
-                text: a.textContent?.trim() ?? "",
-                href: a.getAttribute("href") ?? "",
-            })),
+            // A font with no manufacturer at all still gets a manufacturer link, with an empty
+            // href (FontInformationPane renders the link when neither name nor URL is there).
+            // That is not a link a person can follow, so leave it out.
+            links: Array.from(element.querySelectorAll("a[href]"))
+                .filter((a) => a.getAttribute("href"))
+                .map((a) => ({
+                    text: a.textContent?.trim() ?? "",
+                    href: a.getAttribute("href") ?? "",
+                })),
             hasDetailsIcon: !!element.querySelector(selectors.detailsIcon),
             text: element.textContent ?? "",
         }),
