@@ -21,7 +21,6 @@ and ask its author.
 
 | Pull request | Branch | What it pays down |
 | --- | --- | --- |
-| #8298 | `BL-16799-tab-test-ids` | `data-testid` on the workspace tabs, so no test matches a localized label. |
 | #8299 | `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
 | #8300 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
 | not yet open | `e2e-private-user-settings` | Every Bloom a test launches keeps its user settings in a folder of its own, named on the command line, so a run starts from defaults and its settings die with its temp folder. |
@@ -140,29 +139,13 @@ than the source and naming the file that is newer. Bloom needs an explicit "no d
 option before the second half of that can be trusted.
 (Found 2026-09-01 while fixing the top-bar test ids.)
 
-## The top bar has no stable test ids, so tests match on localized text
+## The Edit tab's page thumbnail menu has no stable test ids, so tests match on localized text
 
-`TopBar.tsx` renders the workspace tabs as `<a role="tab">` with a localized `<Span>`
-label and no id, class, or `data-testid`. Two costs, both already paid: the
-component-tester's `bloomExeCdp.ts` drives `#main-tabs button`, a selector that exists
-nowhere in the source, so `bloom-exe-tabs.uitest.ts` cannot have worked for some time
-(it needs a developer's Bloom already running, and nothing runs it in CI — see the entry
-below); and `src/BloomE2E/helpers/workspace.ts` has to map tab ids to the English labels
-"Collections"/"Edit"/"Publish", so the suite silently only works in an English UI —
-which rules out automating the UI-language cases. Fix direction:
-`data-testid="workspace-tab-collection"` (etc.) on each tab, and drop the label matching.
-The shell root has its own test id as of 2026-09-01, so the fixture no longer identifies
-Bloom's shell document by `[role="tablist"]`.
-(Found 2026-09-01 while scaffolding src/BloomE2E.)
-
-being fixed on `BL-16799-tab-test-ids`, which puts a test id on each tab and drops the
-label matching.
-
-seen again 2026-09-01, in the Edit tab's page thumbnail menu: the items
-`pageThumbnailList.tsx` renders carry no id, class or `data-testid` (all their styling is
-inline), so `src/BloomE2E/helpers/pageThumbnails.ts` has to find "Copy Page" and "Paste Page"
+The items `pageThumbnailList.tsx` renders carry no id, class or `data-testid` (all their
+styling is inline), so `src/BloomE2E/helpers/pageThumbnails.ts` has to find "Copy Page" and "Paste Page"
 by their English labels, exactly as the top bar does. Same fix: a `data-testid` per command,
 taken from the `commandId` the menu already has.
+(Found 2026-09-01 while scaffolding src/BloomE2E.)
 
 ## One toolbox harness test asserts on classes that do not exist
 
