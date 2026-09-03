@@ -971,7 +971,12 @@ namespace Bloom.Edit
             // The page we may have a snapshot of is going away, and whatever the save just wrote
             // into the book DOM is now the truth. Holding on to it would let a later visit to the
             // same page re-apply content from the previous visit. See PageSnapshot.Clear.
+            //
+            // Forgetting the load id along with it is what makes that stick: until the incoming
+            // page reports itself ready, every snapshot that arrives belongs to the load we are
+            // leaving, and is refused rather than quietly refilling what we just cleared.
             _pageSnapshot.Clear();
+            _currentPageLoadId = null;
             try
             {
                 if (page == null)
@@ -1685,13 +1690,34 @@ namespace Bloom.Edit
                 ifNotInAStateToSave?.Invoke();
         }
 
+        // The load of the page we are currently showing, as the browser identified it when it
+        // reported the page ready (see getPageLoadId() in pageSnapshot.ts). Null between starting a
+        // navigation and the new page reporting in, which is exactly the window in which no
+        // snapshot should be believed.
+        private string _currentPageLoadId;
+
         /// <summary>
-        /// Called by the editView/pageSnapshot API when the browser's idle task volunteers the
-        /// current content of the page. All we do is remember it; see PageSnapshot for why.
+        /// Called by the editView/pageSnapshot API when the browser volunteers the current content
+        /// of the page. All we do is remember it; see PageSnapshot for why.
+        ///
+        /// A snapshot is ignored unless it comes from the load of the page we are currently
+        /// showing. The endpoint is deliberately unsynchronised, so a post sent moments before a
+        /// navigation can arrive after we cleared the snapshot for it. Matching on the page id
+        /// alone is not enough, because reloading the SAME page keeps the id: Change Layout,
+        /// importing a video and changing the topic all rebuild the page under it, and a snapshot
+        /// of the pre-reload page would then be merged over what the reload built.
         /// </summary>
-        public void ReceivePageSnapshot(string pageId, string pageContentData)
+        /// <returns>False if we did not take it, so the browser knows not to count it as
+        /// delivered. That matters most in the moment before a page has reported itself ready: the
+        /// snapshot endpoint is not synchronised and the ready notification is, so a snapshot can
+        /// genuinely arrive first. Dropping it silently would leave C# with nothing to save while
+        /// the browser believed it had told us.</returns>
+        public bool ReceivePageSnapshot(string pageId, string loadId, string pageContentData)
         {
+            if (_currentPageLoadId == null || loadId != _currentPageLoadId)
+                return false; // a load we have moved on from, or one not yet registered
             _pageSnapshot.Set(pageId, pageContentData);
+            return true;
         }
 
         /// <summary>
@@ -2358,8 +2384,11 @@ namespace Bloom.Edit
             return WidgetHelper.AddWidgetFilesToBookFolder(CurrentBook.FolderPath, fullWidgetPath);
         }
 
-        public void HandlePageDomLoadedEvent(string pageId)
+        public void HandlePageDomLoadedEvent(string pageId, string loadId = null)
         {
+            // From now until the next page reports itself loaded, this is the only load whose
+            // snapshots we will accept. See ReceivePageSnapshot.
+            _currentPageLoadId = loadId;
             var nowEditing = _stateMachine.ToEditing(pageId);
             // If we are in the middle of the "Update Book" per-page pass, a page finishing loading
             // (which means the edit-tab page setup code has run on it) is our cue to save it and

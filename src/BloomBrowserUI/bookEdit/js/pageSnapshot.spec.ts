@@ -3,12 +3,17 @@ import {
     startWatchingPageForSnapshots,
     stopWatchingPageForSnapshots,
     quietMsForTests,
+    getPageLoadId,
 } from "./pageSnapshot";
 
 const posted: Array<{ url: string; body: string }> = [];
 
 // Lets a test hold a POST open, to check that a second one never starts alongside it.
 let postHook: (() => Promise<void>) | undefined;
+
+// What C# answers. `{ data: false }` is a refusal: the snapshot was for a page load it is not
+// showing, so the browser must not count it as delivered.
+let postReply: unknown = undefined;
 
 const reported: string[] = [];
 vi.mock("../../lib/errorHandler", () => ({
@@ -18,7 +23,7 @@ vi.mock("../../lib/errorHandler", () => ({
 vi.mock("../../utils/bloomApi", () => ({
     postString: (url: string, body: string) => {
         posted.push({ url, body });
-        return postHook ? postHook() : Promise.resolve();
+        return postHook ? postHook() : Promise.resolve(postReply);
     },
 }));
 
@@ -58,6 +63,7 @@ describe("pageSnapshot", () => {
         reported.length = 0;
         contentToReport = "";
         postHook = undefined;
+        postReply = undefined;
         setUpPage();
     });
 
@@ -309,5 +315,42 @@ describe("pageSnapshot", () => {
         expect(reported.length).toBe(1);
         expect(reported[0]).toContain("could not keep track of your changes");
         expect(posted.length).toBe(0);
+    });
+    it("stamps every post with the id of this page load", async () => {
+        // C# refuses a snapshot that does not carry the load it is currently showing, so that a
+        // post overtaking a reload of the same page cannot be merged over what the reload built.
+        contentToReport = "before";
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+
+        contentToReport = "after";
+        changeThePage("after");
+        await letTheSnapshotHappen();
+
+        expect(posted.length).toBe(1);
+        expect(posted[0].url).toContain(
+            "loadId=" + encodeURIComponent(getPageLoadId()),
+        );
+        expect(getPageLoadId()).not.toBe("");
+    });
+
+    it("offers the content again when C# refuses the snapshot", async () => {
+        // C# refuses anything from a page load it is not showing. Because the snapshot endpoint is
+        // not ordered against the "page is ready" one, a snapshot can genuinely arrive first and be
+        // refused; counting it as delivered would leave C# with nothing to save.
+        contentToReport = "first";
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+
+        postReply = { data: false }; // refused
+        contentToReport = "typed";
+        changeThePage("typed");
+        await letTheSnapshotHappen();
+        expect(posted.map((p) => p.body)).toEqual(["typed"]);
+
+        // Refused, so the very same content must be offered again rather than treated as sent.
+        postReply = { data: true };
+        await letTheSnapshotHappen();
+        expect(posted.map((p) => p.body)).toEqual(["typed", "typed"]);
     });
 });

@@ -27,6 +27,27 @@ import { reportError } from "../../lib/errorHandler";
 
 const kApi = "editView/pageSnapshot";
 
+// Identifies THIS load of THIS page, so C# can tell our snapshots from those of a load it has
+// already moved on from. A module-level constant is exactly the right scope: the page frame gets a
+// fresh document, and so a fresh module, on every page load.
+//
+// It exists because the snapshot endpoint is deliberately unsynchronised (a keystroke has no
+// business queueing behind a save), so a post sent moments before a navigation can be processed
+// after C# has cleared the snapshot for it. Moving to a DIFFERENT page was harmless -- the stale
+// entry is filed under a page id nobody asks about again -- but reloading the SAME page is not:
+// Change Layout, importing a video and changing the topic all rebuild the page under its own id,
+// and a snapshot of the pre-reload page would then be merged over what the reload built.
+const pageLoadId =
+    Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+
+/**
+ * Identifies this load of this page. Sent with the "page is ready" notification and with every
+ * snapshot, so C# can ignore anything from a load it has superseded.
+ */
+export function getPageLoadId(): string {
+    return pageLoadId;
+}
+
 // How long the page must be quiet before we take a snapshot.
 //
 // This is small on purpose, and the size of it decides how much typing an exit could lose. What
@@ -103,14 +124,25 @@ async function takeSnapshot(): Promise<void> {
         if (pageIdBeingWatched !== pageId) return;
 
         if (content !== lastPosted) {
-            await postString(
-                `${kApi}?pageId=${encodeURIComponent(pageId)}`,
+            const reply = await postString(
+                `${kApi}?pageId=${encodeURIComponent(pageId)}&loadId=${encodeURIComponent(
+                    pageLoadId,
+                )}`,
                 content,
             );
-            // Only once the post has actually resolved. Recording it before would mean that a
-            // post which failed still counted as sent: we would never retry it, and C# would go
-            // on holding the content from before the failure -- so the next save would write
-            // that, losing everything typed since, not merely the latest keystroke.
+            // C# refuses a snapshot from a load it is not showing -- including in the moment
+            // before this page has reported itself ready, since the two APIs are not ordered with
+            // respect to each other. A refusal is not a failure, but it does mean C# does not have
+            // this content, so we must not record it as sent and must offer it again.
+            const accepted =
+                (reply as { data?: boolean | string } | void)?.data !== false;
+            if (!accepted) {
+                scheduleSnapshot();
+                return;
+            }
+            // Only once the post has actually resolved AND been taken. Recording it earlier would
+            // mean content C# never received still counted as sent: we would never retry it, and
+            // the next save would write what C# still held, losing everything typed since.
             lastPosted = content;
         }
     } catch (error) {

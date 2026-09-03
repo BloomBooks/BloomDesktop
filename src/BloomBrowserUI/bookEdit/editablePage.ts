@@ -17,7 +17,10 @@ import {
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
-import { startWatchingPageForSnapshots } from "./js/pageSnapshot";
+import {
+    getPageLoadId,
+    startWatchingPageForSnapshots,
+} from "./js/pageSnapshot";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -35,7 +38,9 @@ function getPageId(): string {
 // It is important that this does not get pulled into any other compiled bundle,
 // since it will generate errors when loaded into any page that does not have a .bloom-page.
 document.addEventListener("DOMContentLoaded", () => {
-    postString("editView/pageDomLoaded", getPageId());
+    // The load id goes with it: from here until the next page reports ready, C# accepts snapshots
+    // only from this load. See getPageLoadId().
+    postString("editView/pageDomLoaded", getPageId() + " " + getPageLoadId());
 });
 
 // This allows strong typing to be done for exported functions.
