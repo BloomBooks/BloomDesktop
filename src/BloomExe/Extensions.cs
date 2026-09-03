@@ -94,6 +94,13 @@ namespace Bloom
         /// and dropping topmost lands us behind that active window again -- measurably: with only
         /// the topmost toggle, Bloom came up second, right behind Chrome. So we also take the
         /// foreground for real. See ForceWindowToForeground.
+        ///
+        /// The two halves differ by platform, deliberately: the topmost hold happens on Linux as
+        /// well as Windows, while only taking the foreground is Windows-only. We kept the hold
+        /// cross-platform because the race it wins is not peculiar to Windows, so there was no
+        /// reason to withhold it -- but note that it is unverified on Linux, since we do not
+        /// currently build or test there. Before this, Shell.ReallyComeToFront toggled topmost
+        /// instantly, so Linux did not hold it at all. BL-16784.
         /// </summary>
         public static void BringToFrontNow(this Form form)
         {

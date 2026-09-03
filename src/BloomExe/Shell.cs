@@ -396,6 +396,13 @@ namespace Bloom
         /// <summary>
         /// we let the Program call this after it closes the splash screen, and after opening a
         /// collection at a time when there is no splash screen to close (see OpenProjectWindow).
+        ///
+        /// Code review asked whether this still earns its keep, now that BringToFrontNow does the
+        /// raising, and suggested inlining it (BL-16784). We kept it, because coming to the front
+        /// is not all it does: it also sets _finishedLoading, which is what allows the window size
+        /// and location to be saved afterwards. And it has three callers -- ComeToFront just above,
+        /// and two in Program (the splash-screen one-shot and OpenProjectWindow) -- so inlining it
+        /// would mean repeating that pairing in each of them.
         /// </summary>
         public void ReallyComeToFront()
         {
