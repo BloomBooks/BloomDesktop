@@ -21,7 +21,6 @@ the identity here. Before you start on a marked entry, ask the owner of its bran
 
 | Branch | What it pays down |
 | --- | --- |
-| `BL-16799-vr-collect-failures` | A visual-regression case collects every failed comparison and fails once at the end. |
 | `BL-16799-component-tests-in-ci` | The component-tester Playwright suites get a nightly job. |
 | `BL-16799-vite-port` | `BLOOM_E2E_VITE_PORT` makes a run test the working tree's front end. Adds a new entry for what remains. |
 | `BL-16799-type-in-one-call` | Typing in a text box is one insertion, not one key press per character. Adds a new entry: typing now raises no key events. |
@@ -111,17 +110,6 @@ is the rest. Note that the pretense changes only what Bloom reports, so Bloom un
 refuses to upload at all rather than let an automated click publish under the developer's real
 account.
 (Found 2026-09-02 automating Test Case ID 606, `upload-required-items.spec.ts`.)
-
-## Visual-regression cases stop at the first failed comparison
-
-Each case in `src/BloomVisualRegressionTests/index.spec.ts` throws on the first
-mismatch, so later comparisons never capture their images; stale baselines surface one
-layer per ~3-minute run (BL-16638 took three accept-and-rerun rounds). Fix direction:
-accumulate per-comparison failures and fail once at the end — proven during BL-16638
-(~20–30 lines, confined to the spec). Loop at `index.spec.ts:426`, assertion at
-`index.spec.ts:486` (pre-rewire line numbers). (Promoted from PAPERCUTS 2026-07-30.)
-
-being fixed on `BL-16799-vr-collect-failures`.
 
 ## The top bar has no stable test ids, so tests match on localized text
 
