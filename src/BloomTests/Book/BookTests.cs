@@ -6775,7 +6775,81 @@ namespace BloomTests.Book
                 default:
                     break;
             }
-            Assert.That(result, Is.EqualTo($"Enter Shift-Enter{replacement}Last Line "));
+            // The space between the two paragraphs is what Bloom 6.2 and earlier wrote out; the
+            // paragraph boundary it stood for now gets the same replacement as the linebreak span.
+            Assert.That(
+                result,
+                Is.EqualTo($"Enter{replacement}Shift-Enter{replacement}Last Line ")
+            );
+        }
+
+        [TestCase(Bloom.Book.Book.LineBreakSpanConversionMode.ToSpace)]
+        [TestCase(Bloom.Book.Book.LineBreakSpanConversionMode.ToNewline)]
+        [TestCase(Bloom.Book.Book.LineBreakSpanConversionMode.ToSimpleNewline)]
+        public void RemoveHtmlMarkup_AdjacentParagraphs_BoundaryBecomesLineBreak(
+            Bloom.Book.Book.LineBreakSpanConversionMode conversionMode
+        )
+        {
+            // What the browser gives us for "a", Enter, "b": no whitespace at all between the
+            // paragraphs. See https://issues.bloomlibrary.org/youtrack/issue/BL-16808.
+            string input = "<p>a</p><p>b</p>";
+
+            // Sanity check: without the paragraph handling this runs the two together.
+            Assert.That(
+                input.Contains("</p><p>"),
+                Is.True,
+                "test input is supposed to have no whitespace between the paragraphs"
+            );
+
+            var result = Bloom.Book.Book.RemoveHtmlMarkup(input, conversionMode);
+
+            string replacement = " ";
+            switch (conversionMode)
+            {
+                case Bloom.Book.Book.LineBreakSpanConversionMode.ToNewline:
+                    replacement = Environment.NewLine;
+                    break;
+                case Bloom.Book.Book.LineBreakSpanConversionMode.ToSimpleNewline:
+                    replacement = "\n";
+                    break;
+                default:
+                    break;
+            }
+            Assert.That(result, Is.EqualTo($"a{replacement}b"));
+        }
+
+        [Test]
+        public void RemoveHtmlMarkup_HeadingFollowsParagraph_BoundaryBecomesLineBreak()
+        {
+            string input = "<p>a</p><h1>b</h1><p>c</p>";
+            var result = Bloom.Book.Book.RemoveHtmlMarkup(
+                input,
+                Bloom.Book.Book.LineBreakSpanConversionMode.ToSimpleNewline
+            );
+
+            Assert.That(result, Is.EqualTo("a\nb\nc"));
+        }
+
+        [Test]
+        public void RemoveHtmlMarkup_SingleParagraph_NoLeadingLineBreak()
+        {
+            var result = Bloom.Book.Book.RemoveHtmlMarkup(
+                "<p>a</p>",
+                Bloom.Book.Book.LineBreakSpanConversionMode.ToSimpleNewline
+            );
+
+            Assert.That(result, Is.EqualTo("a"));
+        }
+
+        [Test]
+        public void RemoveHtmlMarkup_MarkupInsideParagraph_NoSpuriousLineBreak()
+        {
+            var result = Bloom.Book.Book.RemoveHtmlMarkup(
+                "<p><strong>Where Are</strong></p><p><strong>The Fish Going?</strong></p>",
+                Bloom.Book.Book.LineBreakSpanConversionMode.ToSimpleNewline
+            );
+
+            Assert.That(result, Is.EqualTo("Where Are\nThe Fish Going?"));
         }
 
         [Test]
