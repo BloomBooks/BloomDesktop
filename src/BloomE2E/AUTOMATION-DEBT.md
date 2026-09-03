@@ -14,9 +14,9 @@ House rules:
 - Ordinary dev/tooling friction goes to `PAPERCUTS.md` at the repo root instead; several
   entries below were promoted from there.
 
-Work in progress, 2026-09-03 (BL-16799): every entry below that carries a **being fixed**
-line is being paid down now, in a stack of small pull requests, one per improvement, each
-branching off the one before it. Before you start on a marked entry, read its pull request
+Work in progress, 2026-09-03: every entry below that carries a **being fixed** line is being
+paid down now, in small pull requests, one per improvement, each branching off the one before
+it (the first stack is BL-16799). Before you start on a marked entry, read its pull request
 and ask its author.
 
 | Pull request | Branch | What it pays down |
@@ -32,6 +32,8 @@ and ask its author.
 | #8298 | `BL-16799-tab-test-ids` | `data-testid` on the workspace tabs, so no test matches a localized label. |
 | #8299 | `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
 | #8300 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
+| not yet open | `e2e-private-user-settings` | Every Bloom a test launches keeps its user settings in a folder of its own, named on the command line, so a run starts from defaults and its settings die with its temp folder. |
+| not yet open | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off the one above. |
 
 Three of these also add entries of their own, for the debt that is left after the fix. The
 stack replaces PR #8276, which did all of this at once.
@@ -111,6 +113,11 @@ is the rest. Note that the pretense changes only what Bloom reports, so Bloom un
 refuses to upload at all rather than let an automated click publish under the developer's real
 account.
 (Found 2026-09-02 automating Test Case ID 606, `upload-required-items.spec.ts`.)
+
+being fixed on `e2e-real-library-login`, once `e2e-private-user-settings` (the user.config entry
+below) has landed: with a settings folder of its own, a test's Bloom can be given a real test
+account's login before it starts, and can sign out for real without touching anyone else's login.
+The test account, and where its credentials live, are the rest of this branch.
 
 ## Visual-regression cases stop at the first failed comparison
 
@@ -328,6 +335,11 @@ the file said `en` again a moment later. The same test has to restore the zoom i
 that setting is shared too. Fix direction: under `--e2e`, point the settings provider at a
 per-instance folder (a sibling of the temp collection would do), so a test's Bloom starts from
 defaults and its changes die with it.
+
+being fixed on `e2e-private-user-settings`: a command-line argument names the folder Bloom keeps
+its user settings in, and the launch fixture gives every Bloom it starts a folder inside the run's
+temp folder, so the settings start from defaults, or from whatever the test puts there first, and
+are deleted with the rest of the run.
 
 ## No way to run the suite at a chosen monitor resolution and scale factor
 
