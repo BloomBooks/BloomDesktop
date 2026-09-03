@@ -216,6 +216,8 @@ authoring painful. Fix direction: a small per-comparison pixel tolerance, or
 machine-profile baselines, or render fonts only from Bloom's own WOFF2 set in --e2e
 mode. (Found 2026-09-01 while verifying the bloom-testing-inputs rewire.)
 
+being fixed, from 2026-09-03, on `vr-baselines-match-locally` (no PR yet; not part of the BL-16799 stack): first measuring every comparison's pixel count on a developer machine, then trying standardized fonts (render only from Bloom's own WOFF2 set) and DPI as the cause.
+
 ## Automation helper scripts run destructive defaults on unknown flags
 
 `node .github/skills/bloom-automation/killBloomProcess.mjs --help` killed the running
