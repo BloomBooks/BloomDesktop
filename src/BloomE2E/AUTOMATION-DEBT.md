@@ -21,7 +21,6 @@ and ask its author.
 
 | Pull request | Branch | What it pays down |
 | --- | --- | --- |
-| #8291 | `BL-16799-vr-collect-failures` | A visual-regression case collects every failed comparison and fails once at the end. |
 | #8292 | `BL-16799-component-tests-in-ci` | The component-tester Playwright suites get a nightly job. |
 | #8293 | `BL-16799-vite-port` | `BLOOM_E2E_VITE_PORT` makes a run test the working tree's front end. Adds a new entry for what remains. |
 | #8294 | `BL-16799-type-in-one-call` | Typing in a text box is one insertion, not one key press per character. Adds a new entry: typing now raises no key events. |
@@ -117,17 +116,6 @@ being fixed on `e2e-real-library-login`, once `e2e-private-user-settings` (the u
 below) has landed: with a settings folder of its own, a test's Bloom can be given a real test
 account's login before it starts, and can sign out for real without touching anyone else's login.
 The test account, and where its credentials live, are the rest of this branch.
-
-## Visual-regression cases stop at the first failed comparison
-
-Each case in `src/BloomVisualRegressionTests/index.spec.ts` throws on the first
-mismatch, so later comparisons never capture their images; stale baselines surface one
-layer per ~3-minute run (BL-16638 took three accept-and-rerun rounds). Fix direction:
-accumulate per-comparison failures and fail once at the end — proven during BL-16638
-(~20–30 lines, confined to the spec). Loop at `index.spec.ts:426`, assertion at
-`index.spec.ts:486` (pre-rewire line numbers). (Promoted from PAPERCUTS 2026-07-30.)
-
-being fixed on `BL-16799-vr-collect-failures` (#8291).
 
 ## The top bar has no stable test ids, so tests match on localized text
 
