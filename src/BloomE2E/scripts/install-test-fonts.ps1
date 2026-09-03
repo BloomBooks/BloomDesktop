@@ -47,17 +47,30 @@ public static extern int AddFontResourceW(string lpFileName);
 public static extern bool PostMessage(System.IntPtr hWnd, uint Msg, System.IntPtr wParam, System.IntPtr lParam);
 '@
 
-# The registry value name Windows uses is the font's full name plus the format in brackets,
-# e.g. "Alef Regular (TrueType)". GDI+ does not read the name, only the file, but matching
-# Windows keeps Settings > Fonts happy about the entry.
-Add-Type -AssemblyName PresentationCore
-function Get-FontFullName([string] $path) {
-    $face = New-Object System.Windows.Media.GlyphTypeface ([Uri] $path)
-    $name = $face.Win32FamilyNames["en-us"]
-    if (-not $name) { $name = ($face.Win32FamilyNames.Values | Select-Object -First 1) }
-    $style = $face.Win32FaceNames["en-us"]
-    if (-not $style) { $style = ($face.Win32FaceNames.Values | Select-Object -First 1) }
-    return "$name $style".Trim()
+# The font's family name, read with GDI+ (the same library Bloom lists fonts with). Not WPF's
+# GlyphTypeface: its constructor fails intermittently in a non-interactive runner session.
+Add-Type -AssemblyName System.Drawing
+function Get-FontFamilyName([string] $path) {
+    $collection = New-Object System.Drawing.Text.PrivateFontCollection
+    try {
+        $collection.AddFontFile($path)
+        if ($collection.Families.Count -eq 0) { throw "GDI+ reads no font family from $path" }
+        return $collection.Families[0].Name
+    } finally {
+        $collection.Dispose()
+    }
+}
+
+# The registry value name Windows writes for an installed font is its full name plus the format
+# in brackets, e.g. "Alef Bold (TrueType)". GDI+ does not read the name, only the file path, so
+# the style part need only keep the names of a family's files apart: it is taken from the file
+# name after the hyphen ("Alef-Bold" -> "Bold"), or "Regular".
+function Get-RegistryValueName([System.IO.FileInfo] $file) {
+    $family = Get-FontFamilyName $file.FullName
+    $base = $file.BaseName
+    $style = if ($base.Contains("-")) { $base.Substring($base.IndexOf("-") + 1) } else { "Regular" }
+    $format = if ($file.Extension -ieq ".otf") { "OpenType" } else { "TrueType" }
+    return "$family $style ($format)"
 }
 
 $files = Get-ChildItem -Path $FontsDir -Recurse -File -Include *.ttf, *.otf
@@ -70,8 +83,7 @@ foreach ($file in $files) {
         Write-Host "already installed: $($file.Name)"
     } else {
         Copy-Item $file.FullName $target
-        $format = if ($file.Extension -ieq ".otf") { "OpenType" } else { "TrueType" }
-        $valueName = "$(Get-FontFullName $target) ($format)"
+        $valueName = Get-RegistryValueName $file
         New-ItemProperty -Path $registryKey -Name $valueName -Value $target -PropertyType String -Force | Out-Null
         $installed++
         Write-Host "installed: $($file.Name) as '$valueName'"
@@ -87,11 +99,10 @@ $WM_FONTCHANGE = 0x001D
 [TestFonts.Native]::PostMessage($HWND_BROADCAST, $WM_FONTCHANGE, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
 
 # Prove it the way Bloom will see it: GDI+'s installed-font families.
-Add-Type -AssemblyName System.Drawing
 $families = (New-Object System.Drawing.Text.InstalledFontCollection).Families | ForEach-Object { $_.Name }
 $missing = @()
 foreach ($file in $files) {
-    $family = (New-Object System.Windows.Media.GlyphTypeface ([Uri] $file.FullName)).Win32FamilyNames.Values | Select-Object -First 1
+    $family = Get-FontFamilyName $file.FullName
     if ($families -notcontains $family) { $missing += "$family ($($file.Name))" }
 }
 if ($missing.Count -gt 0) {
