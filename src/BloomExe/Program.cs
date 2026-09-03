@@ -2292,6 +2292,14 @@ namespace Bloom
 
         public static void SetUpLocalization()
         {
+            // Offer the pseudo-locale ("Pseudo-English") in the UI language menu on developer and
+            // alpha channels only. It is an internationalization-testing tool, not a translation:
+            // see BL-16748 and OfferPseudoLocalizationForI18nTesting below. Note that this gates
+            // only whether the locale is *offered*; L10NSharp will pseudolocalize lookups for
+            // qps-ploc whenever that is the current UI language, which is why GetDesiredUiLanguage
+            // also refuses a stored qps-ploc on channels where we don't offer it.
+            LocalizationManager.OfferPseudoLocalization = OfferPseudoLocalizationForI18nTesting;
+
             ILocalizationManager lm;
             var installedStringFileFolder =
                 FileLocationUtilities.GetDirectoryDistributedWithApplication(true, "localization");
@@ -2447,6 +2455,16 @@ namespace Bloom
         }
 
         /// <summary>
+        /// Whether we offer the "Pseudo-English" pseudo-locale (qps-ploc) as a UI language.
+        /// It exists so that we (and testers) can spot internationalization problems: every
+        /// string that goes through localization comes back visibly transformed, so anything
+        /// still showing as plain English is hard-coded. That is a developer/tester tool, so we
+        /// offer it only on the developer and alpha channels. See BL-16748.
+        /// </summary>
+        public static bool OfferPseudoLocalizationForI18nTesting =>
+            ApplicationUpdateSupport.IsDevOrAlpha;
+
+        /// <summary>
         /// Derive the desired UI language from the stored value, or from matching the OS value against
         /// the available localizations if nothing has been explicitly stored yet.
         /// </summary>
@@ -2456,6 +2474,19 @@ namespace Bloom
         private static string GetDesiredUiLanguage(string installedStringFileFolder)
         {
             var desiredLanguage = Settings.Default.UserInterfaceLanguage;
+            // The user may have chosen the pseudo-locale on a channel that offers it and then run
+            // a channel that does not (the settings are shared between channels of the same
+            // version). Lookups for qps-ploc would still work, so without this the user would get
+            // an inexplicably mangled UI with no menu entry to get out of it. Fall back to
+            // English instead. See BL-16748.
+            if (
+                desiredLanguage == LocalizationManager.PseudoLocalizationLanguageId
+                && !OfferPseudoLocalizationForI18nTesting
+            )
+            {
+                // SetUpLocalization stores whatever we return back into the setting.
+                return "en";
+            }
             if (
                 String.IsNullOrEmpty(desiredLanguage)
                 || !Settings.Default.UserInterfaceLanguageSetExplicitly

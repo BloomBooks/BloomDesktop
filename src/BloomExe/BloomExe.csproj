@@ -241,7 +241,7 @@
 		<PackageReference Include="Fleck" Version="1.1.0" />
 		<PackageReference Include="Glob" Version="1.1.8" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
-		<PackageReference Include="L10NSharp" Version="10.0.0-beta0005" />
+		<PackageReference Include="L10NSharp" Version="10.1.0-beta0001" />
 		<PackageReference Include="LargeAddressAware" Version="1.0.5" />
 		<PackageReference Include="Markdig.Signed" Version="0.37.0" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
