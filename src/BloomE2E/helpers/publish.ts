@@ -45,8 +45,12 @@ export interface ITextLanguageRow {
     disabled: boolean;
 }
 
-/** Go to the Publish tab and open one of its destinations. A book must already be selected. */
-export async function openPublishDestination(
+/**
+ * Go to the Publish tab and click one of its destinations, without waiting for what that screen
+ * shows. Each screen's own module waits for its own content; they do not all show the same things
+ * (the Web screen, for one, shows no Text Languages list for a book that has no text).
+ */
+export async function selectPublishDestination(
     page: Page,
     destination: PublishDestination,
 ): Promise<void> {
@@ -54,6 +58,18 @@ export async function openPublishDestination(
     const target = page.getByRole("tab", { name: destination, exact: true });
     await target.waitFor({ state: "visible", timeout: 30000 });
     await target.click();
+}
+
+/**
+ * Go to the Publish tab, open one of its destinations, and wait for its Text Languages list. A
+ * book must already be selected. Use this for the screens whose subject is that list; the Web
+ * screen has its own opener in helpers/libraryPublish.ts.
+ */
+export async function openPublishDestination(
+    page: Page,
+    destination: PublishDestination,
+): Promise<void> {
+    await selectPublishDestination(page, destination);
     await textLanguagesGroup(page).waitFor({
         state: "visible",
         timeout: 60000,
