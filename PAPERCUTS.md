@@ -19,6 +19,18 @@ House rules:
 
 ---
 
+## 2026-09-03 — The e2e fixture launches a stale Bloom.exe when output/Debug/x64 is older than AnyCPU
+
+- **Cut:** `findBloomExe` in `src/BloomE2E/fixtures/launchBloom.ts` tries `Debug/x64` before
+  `Debug/AnyCPU` in a fixed order. `dotnet build src/BloomExe/BloomExe.csproj` writes to `AnyCPU`, so
+  a leftover `x64` folder from an earlier build wins, and the suite runs an old exe against the
+  freshly built `output/browser`. It looked like a broken test: a blank Collections tab,
+  `e2e/isCollectionReady` never true, and `BLOOM_AUTOMATION_MONITOR` ignored (the exe predated it).
+  Nothing in the run says which exe was launched; `common/instanceInfo` does.
+- **Idea:** pick the newest `Bloom.exe` among the candidates (or the one matching the newest
+  `output/browser`), and log the chosen path once at launch so a stale exe is visible in the output.
+- **Context:** Test Case ID 358, PR #8289; cost about 20 minutes of misdiagnosis.
+
 ## 2026-09-02 — notion_automation.py needs Python, which not every dev machine has
 
 - **Cut:** `.github/skills/improve-test-automation-coverage/notion_automation.py` is the only way the
@@ -28,6 +40,9 @@ House rules:
 - **Idea:** Rewrite it as `notion_automation.mjs`: the repo already requires Node and the script is
   stdlib-only (`urllib` → `fetch`), so nothing else changes; update the skill text and worker brief.
 - **Context:** Hit while automating Test Case ID 356 on a machine with no Python.
+- seen again 2026-09-03 (Test Case ID 358): ported to Node once more, this time with the card
+  split (`[Automated portion]` / `[Manual portion]`, related both ways) that `add-e2e-test` asks
+  for and the Python script has no command for either.
 
 ## 2026-09-01 — VR suite: a slow first preview load fails its case via Playwright's default 30s goto timeout
 
