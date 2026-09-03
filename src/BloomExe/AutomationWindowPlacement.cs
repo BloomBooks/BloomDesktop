@@ -215,7 +215,18 @@ namespace Bloom
             // 3840x2100 REAL pixels, taller than any monitor on the machine, and the page inside
             // it laid out at a viewport height no user could ever have. Keeping the window
             // directly under the primary, aligned with its left edge, keeps the primary the
-            // nearest monitor, so an off-screen window paints at the size a visible one would.
+            // nearest monitor on the layouts we have, so an off-screen window paints at the size
+            // a visible one would.
+            //
+            // "On the layouts we have" is the real limit here, and it is worth stating plainly.
+            // The primary is nearest only while no monitor sits below the primary in the same
+            // band of x. A machine with one monitor stacked under another, at a different scale
+            // factor, puts that lower monitor nearest instead, and the size comes out wrong in
+            // exactly the way described above. Getting it right for every layout means asking
+            // Windows for the scale factor of whichever monitor ends up nearest and scaling the
+            // requested size by the ratio, which is more than this code does today. See "No way
+            // to run the suite at a chosen monitor resolution and scale factor" in
+            // src/BloomE2E/AUTOMATION-DEBT.md.
             //
             // How far down: far enough that the window clears every monitor even after Windows
             // scales it. This process's idea of the height can be out by the ratio of two scale

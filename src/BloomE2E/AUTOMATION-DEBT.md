@@ -326,6 +326,17 @@ Whatever the mechanism, the suite needs the same thing from it: a way to say "ru
 at 1920x1080 at 150%" and have the run either honour it or refuse, rather than silently using
 the desktop it found.
 
+One piece of this is a known limit in the code already, and it is what the fix direction above
+would settle. `AutomationWindowPlacement.GetBoundsOffEveryMonitor` puts an off-screen window
+directly below the primary monitor, because the nearest monitor is the one whose scale factor
+Windows applies, and on the layouts we have that keeps the primary nearest. It stops being true
+when a monitor sits *below* the primary in the same band of x: that lower monitor is then nearest,
+and if its scale factor differs the window comes out the wrong size, which is the same bug in a
+new layout. Fixing it properly means asking Windows for the nearest monitor's scale factor and
+scaling the requested size by the ratio, which needs the per-monitor DPI calls this entry is
+about. Nobody on the team has such a layout today, which is why it is written down rather than
+fixed. (Devin raised it on PR 8285, 2026-09-03.)
+
 ## Every run takes the developer's window size, so small-screen bugs go unseen
 
 A run makes its window as big as the monitor it lands on, so the suite proves the layout only at
@@ -346,16 +357,19 @@ in another, a trap that caught this code twice on BL-16804.
 
 The work is not the window size, which is about thirty lines in `AutomationWindowPlacement.cs` and
 `Shell.cs`. The work is the suite going red, which is the point of the change. One full run of the
-35 tests at 1024x586 on 2026-09-03 gave **16 passed, 6 failed, 13 did not run**, against 23 passed
-and 2 failed at the size of a developer's monitor. Two of the six fail at any size (Test Case ID
-349 is BL-16807, Test Case ID 169 is BL-16806), so the small window is what broke these four:
+35 tests at 1024x586 on 2026-09-03 gave **16 passed, 6 failed, 13 did not run**, against 23
+passed and 2 failed at the size of a developer's monitor. Two of the six fail at either size, so
+they are not the window's doing: Test Case ID 349 (BL-16807) and Test Case ID 606, which times out
+after 60 seconds waiting for the publish-to-web steps. The small window is what added these four:
 
 - `copy-page.spec.ts:85` (Test Case ID 348), failed in 8 seconds.
 - `derivative-keeps-template-pages.spec.ts:106` (Test Case ID 72), failed after 48 seconds.
 - `format-gear-positioning.spec.ts:130` (Test Case ID 356), failed in 335 ms: the Format dialog no
   longer opened close to its gear, while the test above it in the same file passed. So the small
   window moved the dialog.
-- `upload-required-items.spec.ts:88` (Test Case ID 606), failed after 1.2 minutes.
+- `publish-text-languages.spec.ts:416` (Test Case ID 169), failed after 37 seconds. Read this one
+  with care: it is BL-16806, which is machine-dependent, and it passed in the full-size run of the
+  same build. So the window may have caused it or may not.
 
 Because the suite is serial per file, those 6 failures also stop 13 more tests from running, so
 the small window costs 7 passes and hides 13 results until the fixes land.
