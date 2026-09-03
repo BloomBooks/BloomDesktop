@@ -128,16 +128,17 @@ test.describe("Font chooser", () => {
         const [textPage] = await getContentPages(page);
         await goToPage(page, textPage.id);
 
-        // The manual test names Andika, Times New Roman, Baskerville Old Face and Euclid; take
-        // those when the machine has them, and another font of the same kind when it does not.
-        usableFont = await pickFont(page, "usable", "Andika");
-        microsoftFont = await pickFont(page, "microsoft", "Times New Roman");
-        notEmbeddableFont = await pickFont(
-            page,
-            "not-embeddable",
+        // The manual test names Andika, Times New Roman, Baskerville Old Face and Euclid. A clean
+        // Windows machine has neither of the last two, so bloom-testing-inputs ships Alef (which
+        // Bloom calls unsuitable) and Luciole (unknown) for the nightly runner to install; prefer
+        // those, then the card's fonts, then any font of the kind.
+        usableFont = await pickFont(page, "usable", ["Andika"]);
+        microsoftFont = await pickFont(page, "microsoft", ["Times New Roman"]);
+        notEmbeddableFont = await pickFont(page, "not-embeddable", [
+            "Alef",
             "Baskerville Old Face",
-        );
-        unknownFont = await pickFont(page, "unknown", "Euclid");
+        ]);
+        unknownFont = await pickFont(page, "unknown", ["Luciole", "Euclid"]);
 
         await clickInGroup(page, TEXT_BOX, LANGUAGE);
         await scrollFormatGearIntoView(page);
