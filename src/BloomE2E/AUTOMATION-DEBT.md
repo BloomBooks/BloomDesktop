@@ -21,7 +21,6 @@ the identity here. Before you start on a marked entry, ask the owner of its bran
 
 | Branch | What it pays down |
 | --- | --- |
-| `BL-16799-page-screenshot` | A helper captures a whole book page, which absorbs the `captureBeyondViewport` footgun. |
 | `BL-16799-toolbox-registration` | One `registerAllToolboxTools()` that both the bootstrap and the test harness call. |
 | `BL-16799-shell-document` | A test can no longer attach to a shell document Bloom does not drive: one WebView2 environment per run, plus the `e2e/shellUrl` hook. |
 | `BL-16799-tab-test-ids` | `data-testid` on the workspace tabs, so no test matches a localized label. |
@@ -177,6 +176,17 @@ being fixed on `BL-16799-toolbox-registration`, which extracts
 `bookEdit/toolbox/registerAllToolboxTools.ts`. The `test.fixme` half is not fixed there; it
 stays as an entry of its own.
 
+## One test's tab is the next test's starting state
+
+`fixtures/bloomTest.ts` launches one Bloom per worker, and Playwright gives every test with the
+same fixture options that same worker. So a test that ends on the Edit tab makes the next one
+start there, and `tests/workspace-tabs.spec.ts` fails its opening sanity check with
+`collection: "enabled"` rather than for any reason to do with tabs. `tests/capture-book-page.spec.ts`
+switches back to the collection tab at its end to avoid exactly this, which is a convention no
+helper enforces and nothing reminds a new test about. Fix direction: reset the workspace in the
+fixture's per-test setup, so the tab a test starts on is not a matter of file order.
+(Found 2026-09-01, when adding capture-book-page.spec.ts broke workspace-tabs.spec.ts.)
+
 ## AI-image-editor selectors are an untested cross-repo contract
 
 `driveAiImageEditor.mjs` drives the `bloom-ai-image-tools` overlay by role/text
@@ -187,23 +197,19 @@ did NOT drift. Fix direction: stable `data-testid`s on tool tiles and category h
 in the editor repo, or have it publish its host-harness selectors for import.
 (Promoted from PAPERCUTS 2026-07-30, BL-16603.)
 
-## Driver-level CDP footguns that the automation library must absorb
+## Driver-level CDP footguns the helper layer does not cover yet
 
-Known WebView2/CDP behaviors that every ad-hoc script rediscovers the hard way; the
-`src/BloomE2E` helper layer should encode them once:
+Known WebView2/CDP behaviors that every ad-hoc script rediscovers the hard way. The screenshot
+one is now absorbed by `helpers/screenshot.ts` (enlarge the window, clip, clear the override,
+and time out every CDP request); these two are not, because they are about the scripts around a
+capture rather than the capture itself:
 
-- `Page.captureScreenshot` with `captureBeyondViewport:true` hangs (no response, no
-  error). Working pattern: `Emulation.setDeviceMetricsOverride` large enough for the
-  whole `.bloom-page`, screenshot with a `clip`, then `clearDeviceMetricsOverride`;
-  give every CDP request a timeout.
-  being fixed on `BL-16799-page-screenshot`, which absorbs this into
-  `helpers/screenshot.ts`. The other two items in this list stay.
 - Never `taskkill //IM node.exe //F` to clean up a hung capture — it kills the go.sh
   vite/dotnet-watch flow and takes Bloom's server down. Kill only the script's own PID.
 - Reopening a book re-stamps it with freshly compiled xmatter CSS from `output/`, so
   "before" captures taken after a restart already show the new layout.
 
-(Promoted from PAPERCUTS 2026-07-22.)
+(Promoted from PAPERCUTS 2026-07-22; the screenshot item removed 2026-09-01.)
 
 ## Visual-regression baselines only match the CI runner
 
