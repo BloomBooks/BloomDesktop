@@ -158,6 +158,26 @@ function samePath(a: string, b: string): boolean {
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * The environment the Bloom we launch runs in. One variable decides where its windows go,
+ * BLOOM_AUTOMATION_MONITOR, and Bloom reads it itself (see AutomationWindowPlacement.cs):
+ * "headless" puts every window off every monitor, a monitor number puts them on that monitor, and
+ * anything else, the variable being unset included, leaves Bloom to place its windows as it always
+ * does. So the child inherits this process's environment untouched, with one exception.
+ *
+ * The exception is Playwright's --debug (which sets PWDEBUG): stepping through a test whose window
+ * nobody can see is pointless, so a debug session clears a "headless" setting, or the "0" that says
+ * the same thing, and gets a window. A setting that names a monitor is left alone, because that
+ * window IS visible.
+ */
+function environmentForBloom(): NodeJS.ProcessEnv {
+    const asked = process.env.BLOOM_AUTOMATION_MONITOR?.trim().toLowerCase();
+    if (process.env.PWDEBUG && (asked === "headless" || asked === "0")) {
+        return { ...process.env, BLOOM_AUTOMATION_MONITOR: "" };
+    }
+    return process.env;
+}
+
 /** What common/instanceInfo tells us about a running Bloom. Only the fields we use. */
 interface IInstanceInfo {
     editableCollectionFolder?: string;
@@ -362,12 +382,12 @@ async function startBloomOn(
     };
 
     // --e2e: skip the DEBUG "attach debugger now" prompt and suppress modal error dialogs.
-    // --automation: let this instance run alongside a Bloom the developer already has open.
-    const bloomProcess: ChildProcess = execFile(exe, [
-        findCollectionFile(collectionDir),
-        "--e2e",
-        "--automation",
-    ]);
+    // --automation: let this instance run alongside a Bloom the developer already has open, and
+    // let BLOOM_AUTOMATION_MONITOR say where its windows go (see environmentForBloom).
+    const args = [findCollectionFile(collectionDir), "--e2e", "--automation"];
+    const bloomProcess: ChildProcess = execFile(exe, args, {
+        env: environmentForBloom(),
+    });
     let exitStatus: { code: number | null; signal: string | null } | undefined;
     bloomProcess.stdout?.on("data", (d) => recordOutput(String(d)));
     bloomProcess.stderr?.on("data", (d) => recordOutput(String(d)));

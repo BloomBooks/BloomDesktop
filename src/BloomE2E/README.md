@@ -135,7 +135,62 @@ pnpm exec playwright test -g "switching workspace tabs"       # one test by titl
 pnpm exec playwright test --debug    # step through it
 ```
 
-A run opens a real Bloom window. That is expected; do not click in it.
+A run opens a real Bloom window on your desktop. That is expected; do not click in it.
+
+### Where the Bloom window goes: `BLOOM_AUTOMATION_MONITOR`
+
+One environment variable decides where every window an e2e run opens goes, the main window and
+the splash screen alike. Set it in your shell, or per run:
+
+| Value | What happens |
+| --- | --- |
+| `headless`, or `0` | Every window opens far outside every monitor. You see nothing, so a run can go on while you work. |
+| a 1-based monitor number, counted left to right | Every window opens on that monitor, so a run stays off the one you are working on. |
+| unset, or anything else | Bloom places its windows as it always does, and you see the run. |
+
+```bash
+BLOOM_AUTOMATION_MONITOR=headless pnpm test    # see nothing
+BLOOM_AUTOMATION_MONITOR=0 pnpm test           # the same thing: no monitor at all
+BLOOM_AUTOMATION_MONITOR=2 pnpm test           # on the second monitor from the left
+pnpm test                                      # wherever Bloom normally opens
+```
+
+A value Bloom cannot use, a typo or a monitor you do not have, counts as "anything else": you get
+a visible window, which is exactly what tells you the variable did not take effect. A setting that
+hid the window on a typo would leave you nothing to notice.
+
+**The number counts left to right, which is not the number Windows Settings shows.** Monitor 1 is
+your leftmost monitor, 2 the next one to the right, and so on, matching the arrangement picture in
+Windows Settings but not the numbers printed on it. Windows does not document how the Settings app
+makes those numbers, and no API reproduces them: on one three-monitor machine Windows Settings said
+1 (primary, centre), 2 (right) and 3 (left), while left to right is 1 (left), 2 (primary, centre)
+and 3 (right). So read the arrangement, not the numbers on it. Bloom also writes the whole mapping
+to `%TEMP%\SIL\Bloom\Log.txt` on every automation start:
+
+```
+BLOOM_AUTOMATION_MONITOR='2': every window goes on the monitor at {X=0,Y=0,Width=2560,Height=1440}.
+The monitors this process sees, numbered left to right as this variable numbers them (which is NOT
+how Windows Settings numbers them): 1=(-1920,601) 1920x1200, 2=(0,0) 2560x1440 primary,
+3=(3840,432) 1920x1200.
+```
+
+`headless` moves the window off-screen rather than minimizing or hiding it, because WebView2 stops
+painting a minimized window, which would make every screenshot blank. Off-screen the window paints
+exactly as it would in front of you, so rendering and keyboard input behave the same.
+
+It goes **below** your primary monitor, not off to one side, and that matters on a machine whose
+monitors run at different scale factors. Windows gives a window the scale factor of the monitor
+nearest to it. A window out to the left would take the leftmost monitor's scale factor while
+carrying a size measured in the primary's, and on a 150% primary beside a 100% monitor that made a
+window 3840x2100 real pixels, taller than any monitor on the machine, with a page viewport no user
+could have. Directly below the primary, the primary stays the nearest monitor and the size is
+right. See `AutomationWindowPlacement.GetBoundsOffEveryMonitor`.
+
+`--debug` clears a `headless` setting for you: stepping through a test whose window you cannot see
+is pointless. A setting that names a monitor is left alone, because that window is visible anyway.
+
+The variable applies only to a run under `--automation`, which is every e2e run and nothing else.
+A Bloom you start yourself is unaffected, however the variable is set.
 
 The suite needs a built `Bloom.exe` under `output/{Debug,Release}/{x64,AnyCPU,}/` and the test
 inputs at `output/testing-inputs`, fetched by `node build/get-testing-inputs.mjs` at the commit

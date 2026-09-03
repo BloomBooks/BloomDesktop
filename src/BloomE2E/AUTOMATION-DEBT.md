@@ -287,3 +287,100 @@ the file said `en` again a moment later. The same test has to restore the zoom i
 that setting is shared too. Fix direction: under `--e2e`, point the settings provider at a
 per-instance folder (a sibling of the temp collection would do), so a test's Bloom starts from
 defaults and its changes die with it.
+
+## No way to run the suite at a chosen monitor resolution and scale factor
+
+Every run takes the resolution and the scale factor of whatever monitor it lands on, so a
+suite proves the layout only at the DPI of the machine that ran it. That is exactly where a
+class of Bloom bugs lives: a control that fits at 100% and overlaps at 150%, a dialog that
+opens off the edge on a short screen, a size computed in one coordinate space and used in
+another. A developer at 150% and a CI runner at 100% each pass while the other's bug goes
+unseen, and neither can reproduce what a user reports.
+
+Found 2026-09-03, twice in one change (BL-16804), which is what makes this worth scheduling:
+
+- The off-screen window asked for the primary monitor's working-area size, and Windows
+  interpreted that size at the scale factor of the nearest monitor. On a machine with a 150%
+  primary and a 100% monitor beside it, a window meant to be 3840x2100 came out 3840x2100 real
+  pixels, taller than any monitor on the machine. `format-gear-positioning.spec.ts` failed
+  because the page viewport was 1990 CSS pixels high, a size no user has. The same mismatch,
+  in its first guise, had eaten all but 27 pixels of a 1000-pixel off-screen cushion.
+- Both bugs passed every unit test, because a unit test compares numbers inside one process's
+  own coordinate space. Only a real window at a real scale factor shows them.
+
+Fix direction, cheapest first, none of it tried yet:
+
+- **An RDP session to the machine.** An `.rdp` file takes `desktopwidth`, `desktopheight` and
+  `desktopscalefactor` (100, 125, 150, 175, 200), so one connection per combination gives a
+  real desktop at a chosen scale with no driver to install. This looks like the least work and
+  the most likely to run in CI, but nobody has tried driving the suite inside one.
+- **A virtual display driver.** Windows has an indirect-display driver model (IddCx), and
+  several drivers built on it create a monitor with no hardware behind it, at a resolution the
+  driver is told to offer. Setting that monitor's *scale factor* is the harder half: Windows
+  exposes per-monitor scale only through display-config calls Microsoft does not document.
+  Worth an afternoon of investigation before committing to it.
+- **A virtual machine or Windows Sandbox** at a chosen resolution and scale. Heaviest, but it
+  is the only one that also isolates the shared `user.config` described above.
+
+Whatever the mechanism, the suite needs the same thing from it: a way to say "run these tests
+at 1920x1080 at 150%" and have the run either honour it or refuse, rather than silently using
+the desktop it found.
+
+One piece of this is a known limit in the code already, and it is what the fix direction above
+would settle. `AutomationWindowPlacement.GetBoundsOffEveryMonitor` puts an off-screen window
+directly below the primary monitor, because the nearest monitor is the one whose scale factor
+Windows applies, and on the layouts we have that keeps the primary nearest. It stops being true
+when a monitor sits *below* the primary in the same band of x: that lower monitor is then nearest,
+and if its scale factor differs the window comes out the wrong size, which is the same bug in a
+new layout. Fixing it properly means asking Windows for the nearest monitor's scale factor and
+scaling the requested size by the ratio, which needs the per-monitor DPI calls this entry is
+about. Nobody on the team has such a layout today, which is why it is written down rather than
+fixed. (Devin raised it on PR 8285, 2026-09-03.)
+
+## Every run takes the developer's window size, so small-screen bugs go unseen
+
+A run makes its window as big as the monitor it lands on, so the suite proves the layout only at
+the size of a developer's screen. Many Bloom users are on inexpensive machines with small screens,
+and that is where a class of bugs lives that nobody on the team meets: a control that overlaps
+another, a dialog that opens past an edge, a toolbar that quietly drops an item. This is the
+window-size half of the DPI entry above, and it is much cheaper to fix, because it needs no
+virtual monitor.
+
+The plan: give every automation run a window of **1024x586**, the working area of a 1024x768
+screen once a task bar of the usual height is taken off, wherever the window goes.
+`BLOOM_AUTOMATION_WINDOW_SIZE=1600x900` asks for a different size, for chasing a bug that only
+shows on a big screen. The floor is 400x300, which is `Shell.MinimumSize`; anything Bloom cannot
+use, a typo included, gives the default rather than a broken run. The size must be the same for
+all three values of `BLOOM_AUTOMATION_MONITOR`, so that variable decides only *where* a window
+goes: a suite whose size changed with its placement would let one test pass in one mode and fail
+in another, a trap that caught this code twice on BL-16804.
+
+The work is not the window size, which is about thirty lines in `AutomationWindowPlacement.cs` and
+`Shell.cs`. The work is the suite going red, which is the point of the change. One full run of the
+35 tests at 1024x586 on 2026-09-03 gave **16 passed, 6 failed, 13 did not run**, against 23
+passed and 2 failed at the size of a developer's monitor. Two of the six fail at either size, so
+they are not the window's doing: Test Case ID 349 (BL-16807) and Test Case ID 606, which times out
+after 60 seconds waiting for the publish-to-web steps. The small window is what added these four:
+
+- `copy-page.spec.ts:85` (Test Case ID 348), failed in 8 seconds.
+- `derivative-keeps-template-pages.spec.ts:106` (Test Case ID 72), failed after 48 seconds.
+- `format-gear-positioning.spec.ts:130` (Test Case ID 356), failed in 335 ms: the Format dialog no
+  longer opened close to its gear, while the test above it in the same file passed. So the small
+  window moved the dialog.
+- `publish-text-languages.spec.ts:416` (Test Case ID 169), failed after 37 seconds. Read this one
+  with care: it is BL-16806, which is machine-dependent, and it passed in the full-size run of the
+  same build. So the window may have caused it or may not.
+
+Because the suite is serial per file, those 6 failures also stop 13 more tests from running, so
+the small window costs 7 passes and hides 13 results until the fixes land.
+
+Each failure then needs triage into one of two piles, and the second pile is the reason to do any
+of this: either the test assumed a large window and has to be rewritten, or **Bloom itself
+misbehaves at 1024x586**, which is a real user-facing bug and wants its own card. Timeouts rather
+than quick failures are the common failure mode, so the suite is also much slower while the fixes
+are outstanding. Whoever picks this up has to decide what the nightly workflow does in the
+meantime: run small and stay red, or stay large until the tests are fixed.
+
+(Written and measured on 2026-09-03 during BL-16804, then deliberately taken back out: the
+developer chose to record the plan here rather than carry a red suite. The code is not in the
+history, so rebuilding it from this entry is part of the job.)
