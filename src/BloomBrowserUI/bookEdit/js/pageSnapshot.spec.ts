@@ -10,6 +10,11 @@ const posted: Array<{ url: string; body: string }> = [];
 // Lets a test hold a POST open, to check that a second one never starts alongside it.
 let postHook: (() => Promise<void>) | undefined;
 
+const reported: string[] = [];
+vi.mock("../../lib/errorHandler", () => ({
+    reportError: (message: string) => reported.push(message),
+}));
+
 vi.mock("../../utils/bloomApi", () => ({
     postString: (url: string, body: string) => {
         posted.push({ url, body });
@@ -50,6 +55,7 @@ describe("pageSnapshot", () => {
     beforeEach(() => {
         vi.useFakeTimers();
         posted.length = 0;
+        reported.length = 0;
         contentToReport = "";
         postHook = undefined;
         setUpPage();
@@ -261,5 +267,47 @@ describe("pageSnapshot", () => {
             gatherCount,
             "the change that landed mid-gather must trigger another snapshot, not be dropped",
         ).toBe(3);
+    });
+    it("does not treat a failed post as sent, so the content is offered again", async () => {
+        // Recording it as sent before the post resolved would mean C# never got this content and
+        // we never tried again -- the next save would then write what C# still held, losing
+        // everything typed since.
+        contentToReport = "first";
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+
+        postHook = () => Promise.reject(new Error("network gone"));
+        contentToReport = "second";
+        changeThePage("second");
+        await letTheSnapshotHappen();
+        expect(posted.map((p) => p.body)).toEqual(["second"]);
+
+        // The post failed, so the same content must still be offered on the next attempt.
+        postHook = undefined;
+        changeThePage("second again");
+        await letTheSnapshotHappen();
+        expect(posted.map((p) => p.body)).toEqual(["second", "second"]);
+    });
+
+    it("reports a gather that throws, once per page, instead of losing the edits silently", async () => {
+        // If the gather throws and nobody says so, C# concludes there is nothing to save and the
+        // user's work disappears without a word.
+        contentToReport = "fine";
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+
+        const exploding = () => Promise.reject(new Error("no marginBox"));
+        stopWatchingPageForSnapshots();
+        startWatchingPageForSnapshots(exploding);
+        await letTheBaselineSettle();
+
+        changeThePage("one");
+        await letTheSnapshotHappen();
+        changeThePage("two");
+        await letTheSnapshotHappen();
+
+        expect(reported.length).toBe(1);
+        expect(reported[0]).toContain("could not keep track of your changes");
+        expect(posted.length).toBe(0);
     });
 });

@@ -307,33 +307,22 @@ namespace Bloom.web.controllers
         /// made the current page's commit results describe an image the live page no longer shows,
         /// and left <see cref="DeleteSupersededAiImageFiles"/> blind to a file the live page uses.
         ///
-        /// Two separate things follow from the fact that saving always ends in a navigation.
+        /// WHERE the overlay lives: in the top window, not in the page iframe — like the
+        /// image-gallery and copyright/license commands (see aiImageEditorOverlay.ts and the
+        /// comments on those commands in canvasControlRegistry.ts). Plenty of other operations
+        /// still replace the page iframe underneath it.
         ///
-        /// WHERE the overlay lives: not in the page iframe, which that navigation replaces every
-        /// time — hence the top window, like the image-gallery and copyright/license commands (see
-        /// aiImageEditorOverlay.ts and the comments on those commands in canvasControlRegistry.ts).
-        ///
-        /// WHEN we open it: once the browser has a page again, via
-        /// EditingModel.RunAfterNextPageLoad. Opening from SaveThen's doAfterSaveToDisk directly is
-        /// tempting, since the top window is alive at that moment — but that moment is immediately
-        /// before the navigation, and the navigation is not always confined to the page iframe.
-        /// EditingView.StartNavigationToEditPage reloads the whole workspace root when
-        /// MemoryUtils.SystemIsShortOfMemory(), which is Bloom's own private bytes past ~2GB —
-        /// the ordinary state of a long editing session on a big book. Opening from
-        /// doAfterSaveToDisk there meant the page saved correctly and the AI Image Editor never appeared,
-        /// with no message: openAiImageEditor doesn't even build the overlay synchronously; it
-        /// POSTs launch first and builds it in the reply, a whole round trip after the reload
-        /// began. Waiting for the page load costs nothing and is immune to all three routes.
-        /// doAfterSaveToDisk is still where we ASK for that, though — see the body — because it
-        /// only runs when the save actually reached disk, which is how a failed save leaves the
-        /// editor closed instead of opening it on a book DOM we know to be stale.
-        ///
-        /// To see that failure for yourself, temporarily make ShouldDoFullReload() return true —
-        /// its own comment invites exactly this — rather than trying to grow Bloom past 2GB.
+        /// WHEN we open it: immediately after the save returns. This used to queue itself for the
+        /// next page load via EditingModel.RunAfterNextPageLoad, because saving always ended in a
+        /// navigation which replaced the page iframe — and, when Bloom was short of memory,
+        /// reloaded the whole workspace root with it (EditingView.StartNavigationToEditPage), so
+        /// opening any earlier meant the page saved and the editor never appeared. Since BL-13502
+        /// a save does not navigate at all, so there is no page load to wait for: continuing to
+        /// wait for one is what made the editor never open.
         /// </summary>
         private void HandleSaveThenLaunch(ApiRequest request)
         {
-            // Must be read before SaveThen: by the time our callbacks run the request is complete.
+            // Must be read before we save: by the time we are done the request is complete.
             // Deliberately unguarded: the only caller is launchAiImageEditor in
             // aiImageEditorPageCommands.ts, which always sends {slotIndex}, so a parse failure means
             // we broke our own contract and we want to hear about it with the real exception rather
@@ -350,47 +339,15 @@ namespace Bloom.web.controllers
             }
             payload.pageId = pageId;
 
-            // Ask NOW to be opened on the next page load, and record separately whether the book
-            // DOM turned out to be sound. Both halves matter, for different reasons.
-            //
-            // Asking now, rather than from the callbacks below: OnTabAboutToChange discards the
-            // queued request when the user leaves the Edit tab. If we only queued it later, from
-            // doAfterSaveToDisk, that discard could run first — on a save still in flight — and we
-            // would then re-arm behind it, so the AI Image Editor sprang open when the user came back to
-            // that page. (Devin caught that; queueing up front puts the discard reliably after us.)
-            var bookDomIsSound = false;
-            model.RunAfterNextPageLoad(loadedPageId =>
-            {
-                // Not the page we saved: the user navigated meanwhile, so the image we were asked
-                // to edit isn't there to edit.
-                if (loadedPageId != pageId)
-                    return;
-                // The save was attempted and failed. Leave the AI Image Editor closed: the book DOM is
-                // still stale, so we would be opening it on exactly the out-of-date data this
-                // endpoint exists to prevent, and a commit from there would call book.Save() again
-                // on top of whatever went wrong (disk full, a corrupt image, out of memory). The
-                // user is not left wondering — EditingStateMachine has already shown them "Bloom
-                // had trouble saving a page...". (JohnThomson raised this in review.)
-                if (!bookDomIsSound)
-                    return;
-                OpenEditorInBrowser(payload);
-            });
+            // Save before opening, because everything the editor is told about the book is read
+            // from the saved DOM. Saving is synchronous now (see PageSnapshot), so "did the book
+            // actually reach disk?" is simply "did this return without throwing". If it throws we
+            // never reach the open below, which is what we want: opening on a book DOM we know to
+            // be stale is exactly what this endpoint exists to prevent, and the user has already
+            // been shown "Bloom had trouble saving a page...".
+            model.SaveCurrentPageAndBook();
 
-            // Saving is synchronous now (see PageSnapshot), so "did the book actually reach disk?"
-            // is simply "did this return without throwing" -- which is what we need to know before
-            // reading image sources back out of the file. A refusal to save (mid-navigation, say)
-            // is not a problem: those states are on their way to a page load which brings the DOM
-            // up to date anyway. Only an actual failure, such as the disk being full, is.
-            try
-            {
-                model.SaveCurrentPageAndBook();
-                bookDomIsSound = true;
-            }
-            catch (Exception)
-            {
-                bookDomIsSound = false;
-                throw;
-            }
+            OpenEditorInBrowser(payload);
 
             request.PostSucceeded();
         }

@@ -1,4 +1,5 @@
 import { postString } from "../../utils/bloomApi";
+import { reportError } from "../../lib/errorHandler";
 
 // Keep C# supplied with the current content of the page being edited, so that a save never has to
 // ask for it and wait.
@@ -62,6 +63,9 @@ let busy = false;
 // Bumped every time a change arrives. The async gather checks it afterwards, so a change that
 // lands while we were gathering schedules another pass instead of being lost.
 let changeCount = 0;
+// The page we have already complained about, so that a page which fails every time reports once
+// rather than on every keystroke.
+let pageWeReportedAFailureFor: string | undefined;
 
 function currentPageId(): string | undefined {
     return document.querySelector(".bloom-page")?.id || undefined;
@@ -99,12 +103,36 @@ async function takeSnapshot(): Promise<void> {
         if (pageIdBeingWatched !== pageId) return;
 
         if (content !== lastPosted) {
-            lastPosted = content;
             await postString(
                 `${kApi}?pageId=${encodeURIComponent(pageId)}`,
                 content,
             );
+            // Only once the post has actually resolved. Recording it before would mean that a
+            // post which failed still counted as sent: we would never retry it, and C# would go
+            // on holding the content from before the failure -- so the next save would write
+            // that, losing everything typed since, not merely the latest keystroke.
+            lastPosted = content;
         }
+    } catch (error) {
+        // Gathering the page can legitimately throw -- the BL-13120 origami guard, a missing
+        // marginBox, the canvas-element count checks -- and so can the post. Either way this is
+        // the one failure the whole design cannot afford to be quiet about: C# concludes "no
+        // snapshot, so nothing to save", and the user's edits are dropped without a word. (The
+        // global unhandledrejection handler is commented out in lib/errorHandler.ts, so nothing
+        // else would report it.) Before BL-13502 the equivalent failure came back through the
+        // state machine as "Bloom had trouble saving a page"; this keeps that promise.
+        //
+        // Once per page: a page that fails will fail again on the very next keystroke.
+        if (pageWeReportedAFailureFor !== pageId) {
+            pageWeReportedAFailureFor = pageId;
+            reportError(
+                "Bloom could not keep track of your changes to this page: " +
+                    (error instanceof Error ? error.message : String(error)),
+                error instanceof Error ? error.stack : undefined,
+            );
+        }
+        // Try again on the next change: a transient failure should not stop us for good.
+        scheduleSnapshot();
     } finally {
         busy = false;
     }
@@ -141,6 +169,7 @@ export function startWatchingPageForSnapshots(
     lastPosted = undefined;
     changeCount = 0;
     baselineTaken = false;
+    pageWeReportedAFailureFor = undefined;
 
     // Take a baseline of the page as it ends up once it has finished loading, and treat that as
     // "already sent". Without it every page posts a snapshot within a second of being opened, even
