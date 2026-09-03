@@ -26,6 +26,11 @@ namespace Bloom.web.controllers
         private readonly AvatarCache _avatarCache;
         private readonly ITeamCollectionManager _tcManager;
 
+        // What an e2e test has told us to report as the login state, or null to report the real
+        // one. See SetLoginStateForE2eTests. Volatile because the endpoint that sets it and the
+        // one that reads it run on different server threads.
+        private volatile string _e2eLoginOverride;
+
         // Whether we still owe the user the "please sign in" invitation described in
         // HandleSignInInvitationNeeded. It is used up once the front end reports having shown the
         // dialog, so we invite the user at most once per Bloom run.
@@ -178,7 +183,26 @@ namespace Bloom.web.controllers
         }
 
         // The email of the logged-in user, or empty when not logged in.
-        private string CurrentEmail => _client.LoggedIn ? Settings.Default.WebUserId : "";
+        private string CurrentEmail =>
+            _e2eLoginOverride ?? (_client.LoggedIn ? Settings.Default.WebUserId : "");
+
+        /// <summary>
+        /// Make Bloom report a pretended login state without touching the real Bloom Library
+        /// login: an email to report as signed in, the empty string to report as signed out, or
+        /// null to stop pretending and report the real state again. Called only by the e2e test
+        /// hook (e2e/loginState), which exists only in e2e test mode.
+        ///
+        /// A test needs this because the real login lives in machine-wide settings shared with the
+        /// developer's own Bloom: signing out for real would sign the developer out, and signing in
+        /// needs an external browser and real credentials. So the upload screen's login gate is
+        /// tested against a pretended state instead. Everything downstream of the actual upload
+        /// still uses the real client, so nothing can be uploaded with a pretended login.
+        /// </summary>
+        internal void SetLoginStateForE2eTests(string emailOrNullToStopPretending)
+        {
+            _e2eLoginOverride = emailOrNullToStopPretending;
+            BroadcastLoginState();
+        }
 
         /// <summary>
         /// Called once at startup (from ProjectContext, after this API's endpoints are registered) to

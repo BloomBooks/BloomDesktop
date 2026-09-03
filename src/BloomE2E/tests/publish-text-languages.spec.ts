@@ -347,27 +347,22 @@ test.describe("the Text Languages publish list", () => {
         await setContentLanguages(page, ["en"]);
     });
 
-    // NOT A FLAKE. This test fails on CI every time, and BL-16806 is the card that fixes it -- so
-    // if you are here because a nightly went red on this test, that is the known cause and there
-    // is a fix in flight; nothing new to chase.
-    //
-    // The assertion that fails is the language NAME, and the whole point of the test:
+    // This test fails on CI every time, on the language NAME, and BL-16806 is the card that fixes
+    // it -- so if you are here because a nightly went red on this test, that is the cause and
+    // there is a fix in flight; nothing new to chase.
     //
     //     Expected: español      Received: espagnol
     //
-    // "espagnol" is French for Spanish, and the answer depends on the MACHINE, not on the run.
+    // "espagnol" is French for Spanish, and the answer depends on the machine, not on the run.
     // Bloom asks LibPalaso for the name of the dropped language "in" the collection's metadata
     // language, which is French here; LibPalaso honors that request only where a native ICU
-    // library is findable, and Bloom ships icu.net but no icuuc.dll. So the CI runner answers
-    // "espagnol" (runs 33665790357 and 33685669405, both) while a developer machine ignores the
-    // request and gives the autonym "español" (checked by hand in the real Publish tab). It is
-    // not a timing race in the publish list, and not the
-    // editView/topBar/contentLanguageUsageChange suspicion, which never explained it. BL-16806 has
-    // the evidence. Everything else about the row (unchecked, not incomplete, enabled) is right.
+    // library is findable, and Bloom ships icu.net but no icuuc.dll. So the CI runner gives
+    // "espagnol" (nightly runs 33665790357 and 33685669405) while a developer machine ignores the
+    // request and gives the autonym "español" (checked in the real Publish tab). Everything else
+    // about the row -- unchecked, not incomplete, enabled -- is right.
     //
-    // The "failed once in six full runs on 2026-09-01" this was originally filed as was a
-    // DIFFERENT failure in this same test -- it has other steps that time out on a loaded machine,
-    // which is what a local run looks like when it dies before reaching this assertion.
+    // A local failure of this test is usually something else: it has other steps that time out on
+    // a loaded machine, and dies before reaching this assertion.
     //
     // Left running deliberately: it is a real difference in what Bloom shows a user, and the one
     // test that catches it.
