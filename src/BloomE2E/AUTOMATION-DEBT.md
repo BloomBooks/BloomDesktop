@@ -50,6 +50,13 @@ journey of picking a pack in Settings stays untested. Story Producer is worse of
 not in the dialog's list at all, only forced by its branding, so the test sets the branding
 through the `e2e/setBranding` hook.
 
+seen again 2026-09-03 (Test Case ID 358, `font-chooser.spec.ts`): the manual test reaches the
+font chooser through Settings, on the Book Making tab ("Default Font for English"), which is
+the same WinForms dialog. The chooser is the same React component there as in the Edit tab's
+Format dialog, so the test drives it in the Format dialog (`helpers/fontChooser.ts`) and the
+Settings route stays manual. `settings/setFontForLanguage` is not a way round it: like the other
+settings endpoints it only records a pending change on the open dialog.
+
 ## Native OS dialogs hang automation
 
 File pickers, the Image Toolbox, and video capture open native windows Playwright

@@ -566,6 +566,29 @@ export async function typeInGroup(
     await expect(box).toHaveText(text, { timeout: 15000 });
 }
 
+/**
+ * The font one language's box of one translation group is shown in: the first family of its computed
+ * font-family, without quotes, e.g. "Andika". This is how a test checks that a font chosen in the
+ * Format dialog reached the text.
+ */
+export async function getFontFamilyInGroup(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<string> {
+    const box = editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
+        .first();
+    await box.waitFor({ state: "visible", timeout: 30000 });
+    const family = await box.evaluate(
+        (element) => getComputedStyle(element).fontFamily,
+    );
+    return family
+        .split(",")[0]
+        .trim()
+        .replace(/^["']|["']$/g, "");
+}
+
 /** One front or back matter page, as the Edit tab showed it. */
 export interface IShownXmatterPage {
     /** The page list's caption for the page, e.g. "Front Cover". */
