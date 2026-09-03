@@ -1623,15 +1623,22 @@ export default class StyleEditor {
         const typedStyle = $("#style-select-input").val();
         // A box's font normally comes from the collection's language settings, not from its style,
         // so the new style says nothing about the font unless the old style did: only a font the
-        // user set explicitly (for this language) carries over. Read it before the style changes.
-        const explicitFont = this.getExplicitFontForBox();
-        StyleEditor.SetStyleNameForElement(
-            this.boxBeingEdited,
-            typedStyle + "-style",
-        );
+        // user set explicitly carries over, per language, for every language in the group (the
+        // whole group moves to the new style). Read them before the style changes.
+        const explicitFonts = this.getExplicitFontsForGroup();
+        const newStyleName = typedStyle + "-style";
+        StyleEditor.SetStyleNameForElement(this.boxBeingEdited, newStyleName);
         this.updateStyle();
-        if (explicitFont) {
-            this.changeFont(explicitFont);
+        if (explicitFonts.size > 0) {
+            explicitFonts.forEach((font, languageSelector) => {
+                const rule = this.GetRuleForStyle(
+                    newStyleName,
+                    languageSelector,
+                    true,
+                );
+                rule?.style.setProperty("font-family", font, "important");
+            });
+            this.cleanupAfterStyleChange();
         }
 
         // Recommended way to insert an item into a select2 control and select it (one of the trues makes it selected)
@@ -1648,23 +1655,42 @@ export default class StyleEditor {
     }
 
     /**
-     * The font the box's style sets explicitly for the box's language (the rule changeFont
-     * writes), or undefined when the style leaves the font to the language's default. Reads
-     * only; never creates a rule.
+     * The fonts the box's style sets explicitly (the rules changeFont writes), for the box being
+     * edited and every other language's box in its translation group: a map from the language
+     * part of the selector ('[lang="fr"]', or "" for a box that uses language-independent rules)
+     * to the font. A language whose font comes from the collection's settings is not in the map.
+     * Reads only; never creates a rule.
      */
-    private getExplicitFontForBox(): string | undefined {
+    private getExplicitFontsForGroup(): Map<string, string> {
+        const fonts = new Map<string, string>();
         const target = this.boxBeingEdited;
         const styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName) {
-            return undefined;
+            return fonts;
         }
-        let addToSelector = "";
-        if (!this.targetUsesLanguageIndependentRules(target)) {
-            const lang = StyleEditor.GetLangValueOrNull(target);
-            addToSelector = lang ? '[lang="' + lang + '"]' : ":not([lang])";
+        const group = target.closest(".bloom-translationGroup");
+        const boxes = group
+            ? Array.from(group.getElementsByClassName("bloom-editable"))
+            : [target];
+        for (const box of boxes) {
+            let languageSelector = "";
+            if (!this.targetUsesLanguageIndependentRules(box as HTMLElement)) {
+                const lang = StyleEditor.GetLangValueOrNull(box as HTMLElement);
+                languageSelector = lang
+                    ? '[lang="' + lang + '"]'
+                    : ":not([lang])";
+            }
+            const rule = this.GetRuleForStyle(
+                styleName,
+                languageSelector,
+                false,
+            );
+            const font = rule?.style.getPropertyValue("font-family");
+            if (font) {
+                fonts.set(languageSelector, font);
+            }
         }
-        const rule = this.GetRuleForStyle(styleName, addToSelector, false);
-        return rule?.style.getPropertyValue("font-family") || undefined;
+        return fonts;
     }
 
     // Copy every control's current value into the box's (new) style. The font is deliberately

@@ -656,6 +656,51 @@ describe("StyleEditor", () => {
         }
     });
 
+    it("createStyle keeps the explicit font of every language in the box's translation group", () => {
+        (globalThis as any).GetSettings = () => ({
+            languageForNewTextBoxes: "xyz",
+        });
+        try {
+            $("body").append(
+                "<div class='bloom-translationGroup foo-style'>" +
+                    "<div id='testTarget' class='bloom-editable foo-style' lang='xyz'></div>" +
+                    "<div id='sibling' class='bloom-editable foo-style' lang='abc'></div>" +
+                    "</div>" +
+                    formatDialogControlsHtml,
+            );
+            const editor = new StyleEditor(
+                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+            );
+            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+                () => {},
+            );
+            // The user chose a different font for each language.
+            editor.boxBeingEdited = $("#sibling").get(0);
+            editor.changeFont("Verdana");
+            editor.boxBeingEdited = $("#testTarget").get(0);
+            editor.changeFont("Arial");
+            // sanity check
+            expect(
+                GetRuleMatchingSelector('.foo-style[lang="abc"]')?.cssText,
+            ).toContain("font-family: Verdana");
+
+            // runFormatDialog fills the style list when the dialog opens; createStyle adds to it.
+            (editor as any).styles = [];
+            editor.createStyle();
+
+            // Both boxes moved to the new style, and each keeps its own font.
+            expect($("#sibling").attr("class")).toContain("Bar-style");
+            expect(
+                GetRuleMatchingSelector('.Bar-style[lang="xyz"]')?.cssText,
+            ).toContain("font-family: Arial");
+            expect(
+                GetRuleMatchingSelector('.Bar-style[lang="abc"]')?.cssText,
+            ).toContain("font-family: Verdana");
+        } finally {
+            delete (globalThis as any).GetSettings;
+        }
+    });
+
     it("UpdateControlsToReflectAppliedStyle passes the real highlight colors to changeHiliteProps", () => {
         $("body").append(
             "<div id='testTarget' class='foo-style' lang='xyz'></div>",

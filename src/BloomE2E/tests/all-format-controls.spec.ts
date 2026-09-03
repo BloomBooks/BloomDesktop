@@ -369,6 +369,11 @@ test.describe("All Format Controls", () => {
         expect(looksOf(byBox(after, 0, L1))).toEqual(
             looksOf(byBox(before, 0, L1)),
         );
+        // Its L2 partner moved to the new style too, and keeps the font that was chosen for it;
+        // its other settings now come from the new style, which copied the L1 box's.
+        expect(byBox(after, 0, L2).fontFamily).toBe(
+            byBox(before, 0, L2).fontFamily,
+        );
         // The other group on the page did not change at all.
         expect(looksOf(byBox(after, 1, L1))).toEqual(
             looksOf(byBox(before, 1, L1)),
