@@ -47,6 +47,10 @@ namespace Bloom.Edit
         private bool _reloadFromDiskOnLeavingEditTab;
 
         public bool Visible;
+
+        // A page a JumpToPage call asked for while the Edit tab was not showing. OnBecomeVisible
+        // displays this page instead of the one it would otherwise choose. See JumpToPage.
+        private string _pageIdToShowWhenVisible;
         private Book.Book _currentlyDisplayedBook;
         private Book.Book _bookForToolboxContent;
         private EditingView _view;
@@ -113,6 +117,11 @@ namespace Bloom.Edit
             _server = server;
             _webSocketServer = webSocketServer;
             _sourceCollectionsList = sourceCollectionsList;
+            // A run has one EditingModel, and E2eTestingApi has no way to be handed it: the
+            // container builds that api before any book is selected. So hand it over here, the
+            // same way WorkspaceView hands over its browser for e2e/shellUrl.
+            if (Program.RunningE2eTests)
+                ModelForE2eTests = this;
 
             _stateMachine = new EditingStateMachine(
                 // navigate,
@@ -515,6 +524,8 @@ namespace Bloom.Edit
             // This edit tab can ignore changes that don't actually involve selecting a different book.
             if (_bookSelection.CurrentSelection == _currentlyDisplayedBook)
                 return;
+            // A jump queued for a page of the book we are leaving means nothing in the new one.
+            _pageIdToShowWhenVisible = null;
             //prevent trying to save this page in whatever comes next
             var hadPageToSave = _havePageToSave;
             _havePageToSave = false;
@@ -996,11 +1007,23 @@ namespace Bloom.Edit
 
             ErrorReportUtils.CheckForFakeTestErrorsIfNotRealUser(_currentlyDisplayedBook.Title);
 
-            // BL-2339: try to choose the last edited page
-            var page =
-                _currentlyDisplayedBook.GetPageByIndex(
-                    _currentlyDisplayedBook.UserPrefs.MostRecentPage
-                ) ?? _currentlyDisplayedBook.FirstPage;
+            // A jump asked for while this tab was not showing wins over the remembered page: it is
+            // the more recent request. See JumpToPage.
+            var requestedPageId = _pageIdToShowWhenVisible;
+            _pageIdToShowWhenVisible = null;
+            IPage page = null;
+            if (requestedPageId != null)
+                page = _currentlyDisplayedBook
+                    .GetPages()
+                    .FirstOrDefault(p => p.Id == requestedPageId);
+            if (page == null)
+            {
+                // BL-2339: try to choose the last edited page
+                page =
+                    _currentlyDisplayedBook.GetPageByIndex(
+                        _currentlyDisplayedBook.UserPrefs.MostRecentPage
+                    ) ?? _currentlyDisplayedBook.FirstPage;
+            }
 
             if (page != null)
                 _view.GoToPage(page);
@@ -1687,6 +1710,93 @@ namespace Bloom.Edit
             request.PostSucceeded();
         }
 
+        /// <summary>
+        /// The one EditingModel of an e2e run, or null outside such a run. See the constructor.
+        /// </summary>
+        public static EditingModel ModelForE2eTests;
+
+        /// <summary>
+        /// What the Edit tab is doing, for the e2e suite to wait on (see e2e/editState). Editing
+        /// is the only state in which the tab accepts a request without deferring it.
+        /// </summary>
+        public State EditTabState => _stateMachine.CurrentState;
+
+        /// <summary>
+        /// The page EditTabState is about, or null.
+        /// </summary>
+        public string EditTabStatePageId => _stateMachine.CurrentPageId;
+
+        // How many times the page named by _announcedPageId has told us its DOM had loaded. See
+        // HandlePageDomLoadedEvent.
+        private string _announcedPageId;
+        private int _pageLoadAnnouncements;
+
+        /// <summary>
+        /// How many times the page now being shown has announced that its DOM had loaded. A page
+        /// does that more than once, and a request that changes the page is lost if it arrives
+        /// between two of those announcements (see src/BloomE2E/AUTOMATION-DEBT.md). So the e2e
+        /// suite waits for this to stop rising. For automation only.
+        /// </summary>
+        public int PageLoadAnnouncements => _pageLoadAnnouncements;
+
+        /// <summary>
+        /// Show the page with this id in the Edit tab. The page being left is saved on the way,
+        /// which is how anything typed on it reaches the file.
+        ///
+        /// A jump that arrives before the Edit tab is showing is remembered, and OnBecomeVisible
+        /// displays that page instead of the one it would otherwise choose.
+        ///
+        /// Otherwise the jump either happens at once or is refused: this returns false when the
+        /// Edit tab is busy with a page (loading one, or saving one), when there is no book, and
+        /// when the tab is in the momentary state after a save in which no transition is allowed.
+        /// Bloom used to drop such a jump and report success, which left the caller waiting for a
+        /// page that was never coming (see src/BloomE2E/AUTOMATION-DEBT.md).
+        /// </summary>
+        public bool JumpToPage(string pageId)
+        {
+            if (CurrentBook == null || string.IsNullOrEmpty(pageId))
+                return false;
+
+            if (!Visible)
+            {
+                // The Edit tab is not showing, so there is nothing to save and nowhere to
+                // navigate. OnBecomeVisible chooses the page to display, so hand it this one.
+                _pageIdToShowWhenVisible = pageId;
+                return true;
+            }
+
+            // The Edit tab is busy with a page: saving one, or loading one. Say so rather than
+            // queue the jump. A queued jump has to be released by some signal that the tab is
+            // ready, and the only signal available is a page announcing that its DOM has loaded,
+            // which a page does more than once. A jump released by the first announcement starts
+            // a save, the second announcement is then refused because a save is in flight, and
+            // the browser never answers the save request, which leaves the tab unable to change
+            // pages at all. See src/BloomE2E/AUTOMATION-DEBT.md.
+            if (_stateMachine.SavePending || _stateMachine.Navigating)
+            {
+                Logger.WriteEvent(
+                    $"EditingModel.JumpToPage({pageId}): the edit tab was busy with a page, so the jump was refused."
+                );
+                return false;
+            }
+
+            var jumped = true;
+            SaveThen(
+                () => pageId,
+                doIfNotInRightStateToSave: () =>
+                {
+                    // We ruled out the two states that refuse a save above, so we are in the
+                    // momentary SavedAndStripped state, which an API call should not be able to
+                    // observe. Say so rather than drop the request silently.
+                    Logger.WriteEvent(
+                        $"EditingModel.JumpToPage({pageId}): the edit tab was not in a state to save, so the jump was refused."
+                    );
+                    jumped = false;
+                }
+            );
+            return jumped;
+        }
+
         private bool CannotSavePage()
         {
             return _bookSelection == null
@@ -2186,6 +2296,16 @@ namespace Bloom.Edit
 
         public void HandlePageDomLoadedEvent(string pageId)
         {
+            // Count the announcement before acting on it. A page announces itself more than once,
+            // and the e2e suite has to know that the last one has been and gone before it asks
+            // this tab for anything (see the editState endpoint and PageLoadAnnouncements).
+            if (pageId != _announcedPageId)
+            {
+                _announcedPageId = pageId;
+                _pageLoadAnnouncements = 0;
+            }
+            _pageLoadAnnouncements++;
+
             var nowEditing = _stateMachine.ToEditing(pageId);
             if (nowEditing)
             {
