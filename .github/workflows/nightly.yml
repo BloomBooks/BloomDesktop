@@ -588,7 +588,6 @@ jobs:
                   # time. The job context is legal in a step env, and carries the same fact.
                   JOB_STATUS: ${{ job.status }}
                   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-                  COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
                   BRANCH: ${{ github.ref_name }}
                   FRONTEND_BUILD: ${{ steps.build_frontend.outcome }}
                   CSHARP_BUILD: ${{ steps.build_csharp.outcome }}
@@ -599,6 +598,45 @@ jobs:
               run: |
                   if (-not $env:BLOOM_ZULIP_EMAIL -or -not $env:BLOOM_ZULIP_API_KEY) {
                       throw "The nightly failed, but BLOOM_ZULIP_EMAIL / BLOOM_ZULIP_API_KEY are not set as repository secrets, so it could not be reported."
+                  }
+
+                  # Read each suite's own results file, so the message carries numbers rather than
+                  # just a verdict -- "2 failed, 33 passed" tells you how bad the night was before
+                  # you open anything. Two formats arrive: NUnit3 (a <test-run> root) from the C#
+                  # suite, and JUnit (<testsuites>) from the three vitest/Playwright suites.
+                  #
+                  # The JUnit totals are summed from the individual <testsuite> elements rather than
+                  # read off the root, because vitest's root element carries no skipped count while
+                  # Playwright's does; summing the children is correct for both.
+                  #
+                  # A missing or unparseable file returns $null, and that is itself the news: it is
+                  # the "a suite reported nothing at all" case these per-suite reports exist to
+                  # catch, so it must read as such and never as a quiet zero.
+                  function Get-SuiteCounts([string] $path) {
+                      if (-not (Test-Path -LiteralPath $path)) { return $null }
+                      try { $xml = [xml](Get-Content -LiteralPath $path -Raw) } catch { return $null }
+
+                      $run = $xml."test-run"
+                      if ($run) {
+                          return [pscustomobject]@{
+                              Failed = [int] $run.failed
+                              Passed = [int] $run.passed
+                              # An inconclusive test ran and decided nothing, which is nearer to
+                              # skipped than to passed.
+                              Skipped = [int] $run.skipped + [int] $run.inconclusive
+                          }
+                      }
+
+                      $suites = $xml.SelectNodes("//testsuite")
+                      if (-not $suites -or $suites.Count -eq 0) { return $null }
+                      $tests = 0; $failed = 0; $skipped = 0
+                      foreach ($suite in $suites) {
+                          $tests += [int] $suite.tests
+                          # An erroring test is a failing test as far as the reader cares.
+                          $failed += [int] $suite.failures + [int] $suite.errors
+                          $skipped += [int] $suite.skipped
+                      }
+                      return [pscustomobject]@{ Failed = $failed; Passed = $tests - $failed - $skipped; Skipped = $skipped }
                   }
 
                   # Read at a glance in the Zulip app. An outcome we did not anticipate shows as a
@@ -612,15 +650,40 @@ jobs:
                       return "$glyph $label - $outcome"
                   }
 
+                  # For a suite that actually ran, the counts say more than the word "failure" does,
+                  # so they take its place; the glyph already carries the verdict. The exception is a
+                  # suite that failed without any individual test failing -- an inconclusive or empty
+                  # result that only the publish step objected to -- where the numbers alone would
+                  # look like a pass, so say plainly what happened.
+                  function Format-Suite([string] $label, [string] $outcome, [string] $resultsPath) {
+                      $line = Format-Outcome $label $outcome
+                      if (-not $outcome -or $outcome -eq "skipped" -or $outcome -eq "cancelled") { return $line }
+
+                      $counts = Get-SuiteCounts $resultsPath
+                      if (-not $counts) { return "$($glyphs["failure"]) $label - no results file" }
+
+                      $parts = @()
+                      if ($counts.Failed -gt 0) { $parts += "$($counts.Failed) failed" }
+                      $parts += "$($counts.Passed) passed"
+                      if ($counts.Skipped -gt 0) { $parts += "$($counts.Skipped) skipped" }
+                      if ($outcome -eq "failure" -and $counts.Failed -eq 0) {
+                          $parts += "reported failure with no failing test"
+                      }
+                      return "$($glyphs[$outcome]) $label - " + ($parts -join ", ")
+                  }
+
                   # The two builds are prerequisites rather than suites, so they earn a line only
                   # when they are the reason the suites below have nothing to say.
                   $lines = @()
                   if ($env:FRONTEND_BUILD -ne "success") { $lines += Format-Outcome "front-end build" $env:FRONTEND_BUILD }
                   if ($env:CSHARP_BUILD -ne "success") { $lines += Format-Outcome "C# build" $env:CSHARP_BUILD }
-                  $lines += Format-Outcome "front-end tests (vitest)" $env:FRONTEND_TESTS
-                  $lines += Format-Outcome "C# tests (NUnit)" $env:CSHARP_TESTS
-                  $lines += Format-Outcome "BloomE2E tests (Playwright)" $env:E2E_TESTS
-                  $lines += Format-Outcome "visual regression tests" $env:VISUAL_REGRESSION
+                  # Paths match the four publish-test-results steps above; if you move a results
+                  # file, move it in both places or this reports "no results file" for a suite that
+                  # in fact ran perfectly well.
+                  $lines += Format-Suite "front-end tests (vitest)" $env:FRONTEND_TESTS "output/Tests/vitest-junit.xml"
+                  $lines += Format-Suite "C# tests (NUnit)" $env:CSHARP_TESTS "output/Tests/Release/x64/TestResults.xml"
+                  $lines += Format-Suite "BloomE2E tests (Playwright)" $env:E2E_TESTS "output/Tests/e2e-junit.xml"
+                  $lines += Format-Suite "visual regression tests" $env:VISUAL_REGRESSION "output/Tests/visual-regression-junit.xml"
 
                   # Three outcomes reach this step now, since a ticked manual run reports a pass too.
                   if ($env:JOB_STATUS -eq "cancelled") {
@@ -630,12 +693,10 @@ jobs:
                   } else {
                       $headline = "Nightly run failed"
                   }
-                  $shortSha = $env:GITHUB_SHA.Substring(0, 7)
-
                   # Built up as a list of lines and joined once, rather than as one array literal:
                   # a comma-separated literal spanning several lines quietly mis-parses when one of
                   # the elements is itself a piped expression, and yields a nested array.
-                  $message = @("**$headline** on $($env:BRANCH) at [$shortSha]($($env:COMMIT_URL))", "")
+                  $message = @("**$headline** on $($env:BRANCH)", "")
                   $message += $lines | ForEach-Object { "* $_" }
                   $message += ""
                   $message += "[The run, with a report for each of the four suites]($($env:RUN_URL))"
