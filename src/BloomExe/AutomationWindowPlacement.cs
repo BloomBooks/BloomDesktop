@@ -13,9 +13,19 @@ namespace Bloom
     ///   "headless", or "0" for no monitor at all                every window opens off every monitor
     ///   absent, empty, or anything else                         Bloom places windows as it always does
     ///
-    /// The variable applies ONLY under --automation. A developer who leaves it set in their shell
-    /// therefore still gets an ordinary, visible Bloom when they start one themselves; only a run
-    /// that already declared itself automation obeys it.
+    /// The variable applies ONLY under --automation, and that is a wider set of runs than the test
+    /// suites: ./go.sh passes --automation as well (scripts/watchBloomExe.mjs), so a Bloom started
+    /// to work in obeys the variable too. That is deliberate, and it is what the variable is for:
+    /// the developer sets it once and every Bloom an agent starts stays off the monitor they are
+    /// working on. Two things follow that are worth knowing before changing this code.
+    ///
+    /// First, "headless" therefore hides a ./go.sh Bloom the developer started THEMSELVES, and a
+    /// hidden Bloom looks exactly like one that failed to start: the launcher reports success and
+    /// the HTTP server answers, but no window exists anywhere. The log line DescribeChoice writes
+    /// on every automation start is what settles that, so leave it in place.
+    ///
+    /// Second, a Bloom the developer starts with no --automation flag at all is untouched, however
+    /// the variable is set.
     ///
     /// Nothing here changes whether an automation window takes the keyboard focus. It never does,
     /// wherever it is (see Shell.ShowWithoutActivation and Shell.ReallyComeToFront).
