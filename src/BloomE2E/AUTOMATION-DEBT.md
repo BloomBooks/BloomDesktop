@@ -325,3 +325,48 @@ Fix direction, cheapest first, none of it tried yet:
 Whatever the mechanism, the suite needs the same thing from it: a way to say "run these tests
 at 1920x1080 at 150%" and have the run either honour it or refuse, rather than silently using
 the desktop it found.
+
+## Every run takes the developer's window size, so small-screen bugs go unseen
+
+A run makes its window as big as the monitor it lands on, so the suite proves the layout only at
+the size of a developer's screen. Many Bloom users are on inexpensive machines with small screens,
+and that is where a class of bugs lives that nobody on the team meets: a control that overlaps
+another, a dialog that opens past an edge, a toolbar that quietly drops an item. This is the
+window-size half of the DPI entry above, and it is much cheaper to fix, because it needs no
+virtual monitor.
+
+The plan: give every automation run a window of **1024x586**, the working area of a 1024x768
+screen once a task bar of the usual height is taken off, wherever the window goes.
+`BLOOM_AUTOMATION_WINDOW_SIZE=1600x900` asks for a different size, for chasing a bug that only
+shows on a big screen. The floor is 400x300, which is `Shell.MinimumSize`; anything Bloom cannot
+use, a typo included, gives the default rather than a broken run. The size must be the same for
+all three values of `BLOOM_AUTOMATION_MONITOR`, so that variable decides only *where* a window
+goes: a suite whose size changed with its placement would let one test pass in one mode and fail
+in another, a trap that caught this code twice on BL-16804.
+
+The work is not the window size, which is about thirty lines in `AutomationWindowPlacement.cs` and
+`Shell.cs`. The work is the suite going red, which is the point of the change. One full run of the
+35 tests at 1024x586 on 2026-09-03 gave **16 passed, 6 failed, 13 did not run**, against 23 passed
+and 2 failed at the size of a developer's monitor. Two of the six fail at any size (Test Case ID
+349 is BL-16807, Test Case ID 169 is BL-16806), so the small window is what broke these four:
+
+- `copy-page.spec.ts:85` (Test Case ID 348), failed in 8 seconds.
+- `derivative-keeps-template-pages.spec.ts:106` (Test Case ID 72), failed after 48 seconds.
+- `format-gear-positioning.spec.ts:130` (Test Case ID 356), failed in 335 ms: the Format dialog no
+  longer opened close to its gear, while the test above it in the same file passed. So the small
+  window moved the dialog.
+- `upload-required-items.spec.ts:88` (Test Case ID 606), failed after 1.2 minutes.
+
+Because the suite is serial per file, those 6 failures also stop 13 more tests from running, so
+the small window costs 7 passes and hides 13 results until the fixes land.
+
+Each failure then needs triage into one of two piles, and the second pile is the reason to do any
+of this: either the test assumed a large window and has to be rewritten, or **Bloom itself
+misbehaves at 1024x586**, which is a real user-facing bug and wants its own card. Timeouts rather
+than quick failures are the common failure mode, so the suite is also much slower while the fixes
+are outstanding. Whoever picks this up has to decide what the nightly workflow does in the
+meantime: run small and stay red, or stay large until the tests are fixed.
+
+(Written and measured on 2026-09-03 during BL-16804, then deliberately taken back out: the
+developer chose to record the plan here rather than carry a red suite. The code is not in the
+history, so rebuilding it from this entry is part of the job.)
