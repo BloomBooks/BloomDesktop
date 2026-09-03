@@ -21,7 +21,6 @@ the identity here. Before you start on a marked entry, ask the owner of its bran
 
 | Branch | What it pays down |
 | --- | --- |
-| `BL-16799-type-in-one-call` | Typing in a text box is one insertion, not one key press per character. Adds a new entry: typing now raises no key events. |
 | `BL-16799-page-screenshot` | A helper captures a whole book page, which absorbs the `captureBeyondViewport` footgun. |
 | `BL-16799-toolbox-registration` | One `registerAllToolboxTools()` that both the bootstrap and the test harness call. |
 | `BL-16799-shell-document` | A test can no longer attach to a shell document Bloom does not drive: one WebView2 environment per run, plus the `e2e/shellUrl` hook. |
@@ -269,16 +268,16 @@ dropped.
 
 A `.bloom-editable` is a CKEditor surface, and Playwright's `fill()` on one leaves a
 tail of what was there ("Deux" became "eux"), so `typeInGroup` clicks in, selects all,
-deletes, and types the new text one key at a time. That is closer to what a person does
-and it is reliable, but it is also slow for anything longer than a few words, and no
-test can currently clear a box by any faster route. Fix direction: understand what
-CKEditor does with a programmatic value change; a supported "set the text of this box"
-path would let long text be set at once.
-(Found 2026-09-01 automating Test Case ID 169.)
+deletes, and then puts the new text in.
 
-being fixed on `BL-16799-type-in-one-call`, for the typing half only: one insertion
-instead of a key press per character. Clearing a box still needs Control+A and Delete, and
-that branch adds an entry saying that typing now raises no key events.
+Partly fixed 2026-09-01: the typing half is no longer a key press per character.
+`typeInGroup` now inserts the whole string in one call (`keyboard.insertText`), which
+CKEditor and Bloom's markup code both handle through the input event it raises, so the
+cost of typing no longer grows with the length of the text. What remains is clearing a
+box: that still needs a click, Control+A and Delete, because neither `fill()` nor
+setting the value leaves CKEditor in a state Bloom then saves correctly. Fix direction:
+an `e2e/` hook, or a supported CKEditor path, that sets the text of one box outright.
+(Found 2026-09-01 automating Test Case ID 169.)
 
 ## The page menu offers commands that silently do nothing while a page is loading
 
@@ -450,3 +449,20 @@ So both halves say the same thing: **serve the dev server on 5173 and set
 shell gets it, so `--vite-port` means what it says; and give Bloom an option that means "ignore
 any dev server", so a run can state which front end it is testing rather than inherit it from
 the machine. (Found 2026-09-02.)
+
+## Typing in a text box raises no key events
+
+`typeInGroup` puts the whole string in with `keyboard.insertText`, which raises `input`
+and nothing else. So no test that types exercises anything in Bloom that listens for
+`keydown`, `keypress` or `keyup`, and the `toHaveText` check that follows cannot tell the
+difference: the text arrives either way. The pieces of Bloom that watch for a particular
+key, rather than for a change to the text, are therefore not covered by any test that
+types.
+
+This is a deliberate trade for speed, taken because a key press per character made every
+test that fills a book slower in proportion to how much it typed. Fix direction: a helper
+that presses one named key in a box, for the tests whose subject is the key press itself
+(Enter splitting a paragraph, Tab moving between boxes, a shortcut), and a note in that
+helper that `typeInGroup` is not the way to test those. (Found 2026-09-02, during the
+review of the headless work.)
+
