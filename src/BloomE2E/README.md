@@ -178,6 +178,14 @@ how Windows Settings numbers them): 1=(-1920,601) 1920x1200, 2=(0,0) 2560x1440 p
 painting a minimized window, which would make every screenshot blank. Off-screen the window paints
 exactly as it would in front of you, so rendering and keyboard input behave the same.
 
+It goes **below** your primary monitor, not off to one side, and that matters on a machine whose
+monitors run at different scale factors. Windows gives a window the scale factor of the monitor
+nearest to it. A window out to the left would take the leftmost monitor's scale factor while
+carrying a size measured in the primary's, and on a 150% primary beside a 100% monitor that made a
+window 3840x2100 real pixels, taller than any monitor on the machine, with a page viewport no user
+could have. Directly below the primary, the primary stays the nearest monitor and the size is
+right. See `AutomationWindowPlacement.GetBoundsOffEveryMonitor`.
+
 `--debug` clears a `headless` setting for you: stepping through a test whose window you cannot see
 is pointless. A setting that names a monitor is left alone, because that window is visible anyway.
 

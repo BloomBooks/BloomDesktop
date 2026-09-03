@@ -214,9 +214,15 @@ namespace BloomTests
             Assert.That(bounds.Width, Is.GreaterThan(0), "Sanity check: a real size.");
             Assert.That(bounds.Height, Is.GreaterThan(0), "Sanity check: a real size.");
             Assert.That(
+                bounds.Top,
+                Is.LessThanOrEqualTo(32000),
+                "Windows does not honour a position further down than this."
+            );
+            Assert.That(
                 bounds.Left,
-                Is.GreaterThanOrEqualTo(-32000),
-                "Windows does not honour a position further left than this."
+                Is.EqualTo(System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.X),
+                "The window has to line up with the primary monitor, or Windows gives it another "
+                    + "monitor's scale factor. See GetBoundsOffEveryMonitor."
             );
             foreach (var screen in System.Windows.Forms.Screen.AllScreens)
             {
@@ -227,16 +233,16 @@ namespace BloomTests
                 );
             }
 
-            // The desktop can make the window as much as four times as wide as this process asked
-            // for, because Windows scales a monitor by at most 400%. So a clearance of one width
+            // The desktop can make the window as much as four times as high as this process asked
+            // for, because Windows scales a monitor by at most 400%. So a clearance of one height
             // is not enough: measure it, and require four. See GetBoundsOffEveryMonitor.
-            var leftmostX = System.Windows.Forms.Screen.AllScreens.Min(screen =>
-                screen.Bounds.Left
+            var lowestY = System.Windows.Forms.Screen.AllScreens.Max(screen =>
+                screen.Bounds.Bottom
             );
             Assert.That(
-                leftmostX - bounds.Left,
-                Is.GreaterThanOrEqualTo(bounds.Width * 4),
-                "A window four times this wide would still have to clear the leftmost monitor."
+                bounds.Top - lowestY,
+                Is.GreaterThanOrEqualTo(bounds.Height * 4),
+                "A window four times this high would still have to clear the lowest monitor."
             );
         }
     }

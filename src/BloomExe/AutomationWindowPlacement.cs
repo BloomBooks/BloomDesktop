@@ -192,8 +192,8 @@ namespace Bloom
 
         /// <summary>
         /// Where an off-every-monitor run puts a window: the size of the primary screen's working
-        /// area, positioned to the left of every monitor, so that not one pixel of it is on any
-        /// screen.
+        /// area, positioned below every monitor and in line with the primary, so that not one
+        /// pixel of it is on any screen and it still gets the primary's scale factor.
         ///
         /// The window is moved rather than minimized or hidden because a minimized WebView2 stops
         /// painting: screenshots come back blank and the layout is the wrong size. An off-screen
@@ -201,36 +201,46 @@ namespace Bloom
         /// </summary>
         public static Rectangle GetBoundsOffEveryMonitor()
         {
-            var size = Screen.PrimaryScreen.WorkingArea.Size;
-            // Two bounds, and the window has to respect both.
+            var workingArea = Screen.PrimaryScreen.WorkingArea;
+            var size = workingArea.Size;
+
+            // The window goes straight DOWN from the primary monitor, not off to the left, and the
+            // reason is the DPI of the monitor Windows thinks the window is on.
             //
-            // The first is the leftmost monitor: the window's right edge has to be left of it, or
-            // part of the window shows. Both the position and the width above are in the
-            // coordinates this process sees, and the desktop does not always agree with them: on
-            // a machine whose primary monitor is scaled to 160%, Bloom asked for a window 1587
-            // pixels wide and Windows made one 2560 pixels wide, which ate all but 27 pixels of a
-            // 1000-pixel cushion. So leave room for the whole error rather than a fixed number of
-            // pixels: Windows scales a monitor by at most 400%, so a window this process believes
-            // is W wide covers at most 4W pixels of the desktop. Four widths to the left of the
-            // leftmost monitor therefore clears it whatever the scale factors are, and the
-            // 1000 pixels on top of that keep the two edges from meeting exactly.
+            // Windows gives a window the scale factor of the monitor nearest to it, and this
+            // process asked for a size in the primary monitor's own scaled pixels. Put the window
+            // out to the left and the nearest monitor is the leftmost one, whose scale factor is
+            // very likely not the primary's: on a machine whose primary runs at 150% and whose
+            // left monitor runs at 100%, a window meant to match the primary's 3840x2100 came out
+            // 3840x2100 REAL pixels, taller than any monitor on the machine, and the page inside
+            // it laid out at a viewport height no user could ever have. Keeping the window
+            // directly under the primary, aligned with its left edge, keeps the primary the
+            // nearest monitor, so an off-screen window paints at the size a visible one would.
             //
-            // The second is -32000, as far left as a window may go: Windows still places a window
-            // there, and anything beyond about -32768 runs into the 16-bit coordinates that some
-            // of the older window messages still carry.
+            // How far down: far enough that the window clears every monitor even after Windows
+            // scales it. This process's idea of the height can be out by the ratio of two scale
+            // factors, and Windows scales a monitor by at most 400%, so a window this process
+            // believes is H high covers at most 4H pixels of the desktop. Four heights below the
+            // lowest monitor therefore clears them all, and the 1000 pixels on top of that keep
+            // the two edges from meeting exactly. (An earlier version of this went left and left
+            // one window width of room; on a 160% primary that left 27 pixels of a 1000-pixel
+            // cushion, which is how the ratio came to be measured rather than guessed.)
             //
-            // On any real layout the first bound gives several thousand pixels to the left, well
-            // inside the second. A leftward run of monitors more than about 30000 pixels wide
-            // would need a position that satisfies neither, and then the limit wins: a window at
-            // a coordinate Windows will not honour is worse than one that overlaps a monitor.
-            const int farLeftWindowsAllows = -32000;
+            // 32000 is as far down as a window may go: Windows still places a window there, and
+            // anything past about 32768 runs into the 16-bit coordinates that some of the older
+            // window messages still carry. On any real layout four heights is several thousand
+            // pixels, well inside that. A downward run of monitors more than about 30000 pixels
+            // tall would need a position that satisfies neither, and then the limit wins: a
+            // window at a coordinate Windows will not honour is worse than one that overlaps a
+            // monitor.
+            const int farDownWindowsAllows = 32000;
             const int largestScaleFactorWindowsAllows = 4;
-            var leftmostX = Screen.AllScreens.Min(screen => screen.Bounds.Left);
-            var x = Math.Max(
-                farLeftWindowsAllows,
-                leftmostX - (size.Width * largestScaleFactorWindowsAllows) - 1000
+            var lowestY = Screen.AllScreens.Max(screen => screen.Bounds.Bottom);
+            var y = Math.Min(
+                farDownWindowsAllows,
+                lowestY + (size.Height * largestScaleFactorWindowsAllows) + 1000
             );
-            return new Rectangle(x, 0, size.Width, size.Height);
+            return new Rectangle(workingArea.X, y, size.Width, size.Height);
         }
     }
 }

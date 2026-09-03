@@ -287,3 +287,41 @@ the file said `en` again a moment later. The same test has to restore the zoom i
 that setting is shared too. Fix direction: under `--e2e`, point the settings provider at a
 per-instance folder (a sibling of the temp collection would do), so a test's Bloom starts from
 defaults and its changes die with it.
+
+## No way to run the suite at a chosen monitor resolution and scale factor
+
+Every run takes the resolution and the scale factor of whatever monitor it lands on, so a
+suite proves the layout only at the DPI of the machine that ran it. That is exactly where a
+class of Bloom bugs lives: a control that fits at 100% and overlaps at 150%, a dialog that
+opens off the edge on a short screen, a size computed in one coordinate space and used in
+another. A developer at 150% and a CI runner at 100% each pass while the other's bug goes
+unseen, and neither can reproduce what a user reports.
+
+Found 2026-09-03, twice in one change (BL-16804), which is what makes this worth scheduling:
+
+- The off-screen window asked for the primary monitor's working-area size, and Windows
+  interpreted that size at the scale factor of the nearest monitor. On a machine with a 150%
+  primary and a 100% monitor beside it, a window meant to be 3840x2100 came out 3840x2100 real
+  pixels, taller than any monitor on the machine. `format-gear-positioning.spec.ts` failed
+  because the page viewport was 1990 CSS pixels high, a size no user has. The same mismatch,
+  in its first guise, had eaten all but 27 pixels of a 1000-pixel off-screen cushion.
+- Both bugs passed every unit test, because a unit test compares numbers inside one process's
+  own coordinate space. Only a real window at a real scale factor shows them.
+
+Fix direction, cheapest first, none of it tried yet:
+
+- **An RDP session to the machine.** An `.rdp` file takes `desktopwidth`, `desktopheight` and
+  `desktopscalefactor` (100, 125, 150, 175, 200), so one connection per combination gives a
+  real desktop at a chosen scale with no driver to install. This looks like the least work and
+  the most likely to run in CI, but nobody has tried driving the suite inside one.
+- **A virtual display driver.** Windows has an indirect-display driver model (IddCx), and
+  several drivers built on it create a monitor with no hardware behind it, at a resolution the
+  driver is told to offer. Setting that monitor's *scale factor* is the harder half: Windows
+  exposes per-monitor scale only through display-config calls Microsoft does not document.
+  Worth an afternoon of investigation before committing to it.
+- **A virtual machine or Windows Sandbox** at a chosen resolution and scale. Heaviest, but it
+  is the only one that also isolates the shared `user.config` described above.
+
+Whatever the mechanism, the suite needs the same thing from it: a way to say "run these tests
+at 1920x1080 at 150%" and have the run either honour it or refuse, rather than silently using
+the desktop it found.
