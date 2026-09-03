@@ -14,14 +14,16 @@ House rules:
 - Ordinary dev/tooling friction goes to `PAPERCUTS.md` at the repo root instead; several
   entries below were promoted from there.
 
-Work in progress, 2026-09-03 (BL-16799): every entry below that carries a **being fixed**
-line is being paid down now, in a stack of small pull requests, one per improvement, each
-branching off the one before it. The pull requests do not exist yet, so the branch name is
-the identity here. Before you start on a marked entry, ask the owner of its branch.
+Work in progress, 2026-09-03: every entry below that carries a **being fixed** line is being
+paid down now, in small pull requests, one per improvement, each branching off the one before
+it (the first stack is BL-16799). Before you start on a marked entry, read its pull request
+and ask its author.
 
-| Branch | What it pays down |
-| --- | --- |
-| `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
+| Pull request | Branch | What it pays down |
+| --- | --- | --- |
+| #8300 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
+| not yet open | `e2e-private-user-settings` | Every Bloom a test launches keeps its user settings in a folder of its own, named on the command line, so a run starts from defaults and its settings die with its temp folder. |
+| not yet open | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off the one above. |
 
 Three of these also add entries of their own, for the debt that is left after the fix. The
 stack replaces PR #8276, which did all of this at once.
@@ -47,7 +49,7 @@ stopping Bloom, rewriting the `.bloomCollection`, and starting again, which is w
 new `bloomApp.restart(betweenStopAndStart)` fixture method is for. Each restart costs
 about six seconds and loses whatever the editor had not yet saved.
 
-being fixed on `BL-16799-collection-languages`: the `e2e/setCollectionLanguages` hook
+being fixed on `BL-16799-collection-languages` (#8300): the `e2e/setCollectionLanguages` hook
 does the work of the Settings dialog's OK button, so no test composes `.bloomCollection`
 XML. The dialog itself stays on this entry: nothing can drive or screenshot it.
 
@@ -101,6 +103,11 @@ is the rest. Note that the pretense changes only what Bloom reports, so Bloom un
 refuses to upload at all rather than let an automated click publish under the developer's real
 account.
 (Found 2026-09-02 automating Test Case ID 606, `upload-required-items.spec.ts`.)
+
+being fixed on `e2e-real-library-login`, once `e2e-private-user-settings` (the user.config entry
+below) has landed: with a settings folder of its own, a test's Bloom can be given a real test
+account's login before it starts, and can sign out for real without touching anyone else's login.
+The test account, and where its credentials live, are the rest of this branch.
 
 ## Which front end the e2e suite tests depends on what else is running
 
@@ -184,18 +191,6 @@ capture rather than the capture itself:
   "before" captures taken after a restart already show the new layout.
 
 (Promoted from PAPERCUTS 2026-07-22; the screenshot item removed 2026-09-01.)
-
-## Visual-regression baselines only match the CI runner
-
-The pixelmatch comparison demands zero differing pixels, and the committed baselines
-render exactly only on windows-latest CI. On a developer machine the bloom-player
-pages come out 1–884 pixels different (text shifted ~2 px vertically; previews match
-exactly), deterministically across runs, exe configs, and bloom-player versions —
-leading suspect: locally installed TTF Andika vs the WOFF2 Bloom ships. So a local
-run of the suite cannot go green, which makes local verification and baseline
-authoring painful. Fix direction: a small per-comparison pixel tolerance, or
-machine-profile baselines, or render fonts only from Bloom's own WOFF2 set in --e2e
-mode. (Found 2026-09-01 while verifying the bloom-testing-inputs rewire.)
 
 ## Adding a page needs the Add Page dialog, which offers nothing to automate against
 
@@ -309,6 +304,11 @@ the file said `en` again a moment later. The same test has to restore the zoom i
 that setting is shared too. Fix direction: under `--e2e`, point the settings provider at a
 per-instance folder (a sibling of the temp collection would do), so a test's Bloom starts from
 defaults and its changes die with it.
+
+being fixed on `e2e-private-user-settings`: a command-line argument names the folder Bloom keeps
+its user settings in, and the launch fixture gives every Bloom it starts a folder inside the run's
+temp folder, so the settings start from defaults, or from whatever the test puts there first, and
+are deleted with the rest of the run.
 
 ## No way to run the suite at a chosen monitor resolution and scale factor
 
