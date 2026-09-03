@@ -44,7 +44,7 @@ export function registerAllToolboxTools(): void {
     );
     registerOnce(kMotionToolId, () => new MotionTool());
     registerOnce("talkingBook", () => new TalkingBookTool());
-    registerOnce(SignLanguageTool.kToolID, () => new SignLanguageTool());
+    registerOnce("signLanguage", () => new SignLanguageTool());
     registerOnce(
         ImageDescriptionAdapter.kToolID,
         () => new ImageDescriptionAdapter(),
