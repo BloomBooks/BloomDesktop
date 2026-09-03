@@ -273,6 +273,12 @@ jobs:
                   # The html reporter would otherwise try to serve the report at the end of a
                   # failing run, which on a runner means a step that never returns.
                   PLAYWRIGHT_HTML_OPEN: never
+                  # Put every window this run opens off every monitor. Bloom obeys this variable
+                  # only under --automation, which is what the fixture launches; see
+                  # src/BloomE2E/README.md. The runner has a desktop, so a visible window would
+                  # also work, but asking for it here says what the run needs instead of leaving
+                  # it to whatever the runner happens to do.
+                  BLOOM_AUTOMATION_MONITOR: headless
               run: pnpm test --reporter=list,junit,html
 
             # What explains an e2e failure: Playwright's HTML report, plus the trace and failure
