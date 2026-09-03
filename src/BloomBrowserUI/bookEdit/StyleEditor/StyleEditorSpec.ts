@@ -496,6 +496,211 @@ describe("StyleEditor", () => {
         }
     });
 
+    // The Format dialog's Color control follows the same rule as bold, size and spacing: a change
+    // made on a box in the collection's first language is for the style as a whole, so it goes
+    // into the language-independent rule too (BL-16803). Font family is the deliberate exception.
+    it("changeColor on a first-language box writes the color to the language-specific and the language-independent rules", () => {
+        (globalThis as any).GetSettings = () => ({
+            languageForNewTextBoxes: "xyz",
+        });
+        try {
+            $("body").append(
+                "<div id='testTarget' class='foo-style' lang='xyz'></div>" +
+                    "<div id='colorSelectButton'></div>",
+            );
+            const editor = new StyleEditor(
+                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+            );
+            editor.boxBeingEdited = $("#testTarget").get(0);
+            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+                () => {},
+            );
+            // sanity check: nothing has written a color yet
+            expect(GetRuleMatchingSelector("color:")).toBeNull();
+
+            editor.changeColor("rgb(255, 22, 22)");
+
+            expect(
+                GetRuleMatchingSelector('.foo-style[lang="xyz"]')?.cssText,
+            ).toContain("color: rgb(255, 22, 22)");
+            expect(GetRuleMatchingSelector(".foo-style {")?.cssText).toContain(
+                "color: rgb(255, 22, 22)",
+            );
+            expect(
+                $("#colorSelectButton").attr("style"),
+                "the dialog's color button shows the new color",
+            ).toContain("rgb(255, 22, 22)");
+        } finally {
+            delete (globalThis as any).GetSettings;
+        }
+    });
+
+    it("changeColor on a box in another language writes the color only to that language's rule", () => {
+        (globalThis as any).GetSettings = () => ({
+            languageForNewTextBoxes: "xyz",
+        });
+        try {
+            $("body").append(
+                "<div id='testTarget' class='foo-style' lang='abc'></div>" +
+                    "<div id='colorSelectButton'></div>",
+            );
+            const editor = new StyleEditor(
+                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+            );
+            editor.boxBeingEdited = $("#testTarget").get(0);
+            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+                () => {},
+            );
+
+            editor.changeColor("rgb(255, 22, 22)");
+
+            expect(
+                GetRuleMatchingSelector('.foo-style[lang="abc"]')?.cssText,
+            ).toContain("color: rgb(255, 22, 22)");
+            expect(
+                GetRuleMatchingSelector(".foo-style {"),
+                "no language-independent rule should be written for a non-L1 box",
+            ).toBeNull();
+        } finally {
+            delete (globalThis as any).GetSettings;
+        }
+    });
+
+    // The controls createStyle copies into the new style. The values do not matter here; they
+    // only have to exist, because updateStyle reads every one of them.
+    const formatDialogControlsHtml =
+        "<select id='size-select'><option selected>12</option></select>" +
+        "<select id='line-height-select'><option selected>1.5</option></select>" +
+        "<select id='word-space-select'><option selected>Normal</option><option>Wide</option><option>Extra Wide</option></select>" +
+        "<select id='para-spacing-select'><option selected>0</option></select>" +
+        "<div id='bold'></div><div id='italic'></div><div id='underline'></div>" +
+        "<div id='indent-none' class='selectedIcon'></div><div id='position-left' class='selectedIcon'></div>" +
+        "<div id='colorSelectButton'></div>" +
+        "<select id='styleSelect'></select>" +
+        "<div id='style-group' class='state-enteringStyle'></div>" +
+        "<input id='style-select-input' value='Bar'>";
+
+    // A box's font normally comes from the collection's language settings, not from its style,
+    // so a new style should say nothing about the font unless the old style set one explicitly.
+    it("createStyle copies a font the old style set explicitly for the box's language", () => {
+        (globalThis as any).GetSettings = () => ({
+            languageForNewTextBoxes: "xyz",
+        });
+        try {
+            $("body").append(
+                "<div id='testTarget' class='foo-style' lang='xyz'></div>" +
+                    formatDialogControlsHtml,
+            );
+            const editor = new StyleEditor(
+                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+            );
+            editor.boxBeingEdited = $("#testTarget").get(0);
+            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+                () => {},
+            );
+            editor.changeFont("Arial");
+            // sanity check: the old style now names the font for this language
+            expect(
+                GetRuleMatchingSelector('.foo-style[lang="xyz"]')?.cssText,
+            ).toContain("font-family: Arial");
+
+            // runFormatDialog fills the style list when the dialog opens; createStyle adds to it.
+            (editor as any).styles = [];
+            editor.createStyle();
+
+            expect($("#testTarget").attr("class")).toContain("Bar-style");
+            expect(
+                GetRuleMatchingSelector('.Bar-style[lang="xyz"]')?.cssText,
+            ).toContain("font-family: Arial");
+            // The font stays per language: the language-independent rule says nothing about it.
+            expect(
+                GetRuleMatchingSelector(".Bar-style {")?.cssText,
+            ).not.toContain("font-family");
+        } finally {
+            delete (globalThis as any).GetSettings;
+        }
+    });
+
+    it("createStyle leaves the font to the language's default when the old style did", () => {
+        (globalThis as any).GetSettings = () => ({
+            languageForNewTextBoxes: "xyz",
+        });
+        try {
+            $("body").append(
+                "<div id='testTarget' class='foo-style' lang='xyz'></div>" +
+                    formatDialogControlsHtml,
+            );
+            const editor = new StyleEditor(
+                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+            );
+            editor.boxBeingEdited = $("#testTarget").get(0);
+            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+                () => {},
+            );
+            // sanity check: nothing names a font yet
+            expect(GetRuleMatchingSelector("font-family")).toBeNull();
+
+            // runFormatDialog fills the style list when the dialog opens; createStyle adds to it.
+            (editor as any).styles = [];
+            editor.createStyle();
+
+            expect($("#testTarget").attr("class")).toContain("Bar-style");
+            // The new style got the other settings...
+            expect(
+                GetRuleMatchingSelector('.Bar-style[lang="xyz"]')?.cssText,
+            ).toContain("font-size: 12pt");
+            // ...but no font, in any of its rules.
+            expect(GetRuleMatchingSelector("font-family")).toBeNull();
+        } finally {
+            delete (globalThis as any).GetSettings;
+        }
+    });
+
+    it("createStyle keeps the explicit font of every language in the box's translation group", () => {
+        (globalThis as any).GetSettings = () => ({
+            languageForNewTextBoxes: "xyz",
+        });
+        try {
+            $("body").append(
+                "<div class='bloom-translationGroup foo-style'>" +
+                    "<div id='testTarget' class='bloom-editable foo-style' lang='xyz'></div>" +
+                    "<div id='sibling' class='bloom-editable foo-style' lang='abc'></div>" +
+                    "</div>" +
+                    formatDialogControlsHtml,
+            );
+            const editor = new StyleEditor(
+                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+            );
+            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+                () => {},
+            );
+            // The user chose a different font for each language.
+            editor.boxBeingEdited = $("#sibling").get(0);
+            editor.changeFont("Verdana");
+            editor.boxBeingEdited = $("#testTarget").get(0);
+            editor.changeFont("Arial");
+            // sanity check
+            expect(
+                GetRuleMatchingSelector('.foo-style[lang="abc"]')?.cssText,
+            ).toContain("font-family: Verdana");
+
+            // runFormatDialog fills the style list when the dialog opens; createStyle adds to it.
+            (editor as any).styles = [];
+            editor.createStyle();
+
+            // Both boxes moved to the new style, and each keeps its own font.
+            expect($("#sibling").attr("class")).toContain("Bar-style");
+            expect(
+                GetRuleMatchingSelector('.Bar-style[lang="xyz"]')?.cssText,
+            ).toContain("font-family: Arial");
+            expect(
+                GetRuleMatchingSelector('.Bar-style[lang="abc"]')?.cssText,
+            ).toContain("font-family: Verdana");
+        } finally {
+            delete (globalThis as any).GetSettings;
+        }
+    });
+
     it("UpdateControlsToReflectAppliedStyle passes the real highlight colors to changeHiliteProps", () => {
         $("body").append(
             "<div id='testTarget' class='foo-style' lang='xyz'></div>",
