@@ -5291,49 +5291,60 @@ namespace Bloom.Book
             if (outsideFrontCover == null)
                 return null;
 
-            // Prefer the designated cover image if it is present and not placeholder.
-            var designatedCoverImage = outsideFrontCover
+            // We take the image the book marks as its cover, and failing that an image out of an
+            // image container. That is the whole rule: the branding logo, the license image and the
+            // QR code of the "Made with Bloom" badge belong to the branding or the license rather
+            // than to the book, and none of them is in an image container, so nothing needs to name
+            // them. We used to accept any img on the cover, so a branded book whose cover picture
+            // was still a placeholder took the branding logo instead. For the ABC brandings that
+            // logo is an SVG, which PalasoImage cannot load, so such a book had no thumbnail at all
+            // (BL-16780).
+            //
+            // Take the mark from either the img or the container. Both shapes are already here: the
+            // standard xmatter marks the img, while the Afghan Children Read xmatter marks the
+            // bloom-canvas itself (Afghan-Children-Read-XMatter-mixins.pug). We accept an img
+            // inside a marked container too. Nothing in this repo produces that shape today, but a
+            // book on disk or a project-specific xmatter kept elsewhere may, and a marked container
+            // has no image URL of its own, so without it the search would fall through to an
+            // earlier container and take the wrong picture.
+            //
+            // The container itself is a candidate as well as the imgs inside it, because a book old
+            // enough to use an obsolete image representation carries the picture on the container.
+            // We handle those here rather than only for editable books, because publish and preview
+            // use this code too.
+            // Match whole class names. "contains(@class, 'bloom-canvas')" is also true of
+            // bloom-canvas-element, which is not a container at all.
+            const string kImageContainer =
+                "div[contains(concat(' ', normalize-space(@class), ' '), ' bloom-imageContainer ')]";
+            const string kBloomCanvas =
+                "div[contains(concat(' ', normalize-space(@class), ' '), ' bloom-canvas ')]";
+            var markedAsTheCoverImage = outsideFrontCover
                 .SafeSelectNodes(
                     ".//img[@data-book='coverImage'] | .//div[@data-book='coverImage']"
+                        + " | .//div[@data-book='coverImage']//img"
                 )
-                .Cast<SafeXmlElement>()
-                .FirstOrDefault();
+                .Cast<SafeXmlElement>();
+            // An img anywhere inside an image container is one of the book's pictures, but under a
+            // bloom-canvas only a direct child is: on a custom-layout cover the whole margin box is
+            // one bloom-canvas and everything on the cover, branding included, is a canvas element
+            // inside it, so a descendant search there would sweep up the branding logo. A direct
+            // child of the bloom-canvas is the old shape, a background image not yet converted to a
+            // canvas element (see SetupImagesInContainer).
+            var inAnImageContainer = outsideFrontCover
+                .SafeSelectNodes(
+                    $".//{kImageContainer} | .//{kImageContainer}//img"
+                        + $" | .//{kBloomCanvas} | .//{kBloomCanvas}/img"
+                )
+                .Cast<SafeXmlElement>();
+            var candidates = markedAsTheCoverImage.Concat(inAnImageContainer);
 
-            SafeXmlElement bestPlaceholderElt = null;
-            string bestPlaceholderPath = null;
+            // A placeholder means "no picture chosen yet", so keep looking for a real one. Ending
+            // up with the placeholder is a fine answer; ending up with the branding logo is not.
+            SafeXmlElement placeholderElt = null;
+            string placeholderPath = null;
 
-            if (designatedCoverImage != null)
+            foreach (var candidate in candidates)
             {
-                var designatedPath = GetImagePath(designatedCoverImage);
-                if (designatedPath != null)
-                {
-                    if (!ImageUtils.IsPlaceholderImageFilename(designatedPath))
-                    {
-                        coverImgElt = designatedCoverImage;
-                        return designatedPath;
-                    }
-
-                    bestPlaceholderElt = designatedCoverImage;
-                    bestPlaceholderPath = designatedPath;
-                }
-            }
-
-            foreach (
-                // we may not need to consider any options other than img, since anything that is old enough
-                // in format to use an obsolete image representation probably only has one image on the
-                // cover, properly designated with data-book. However, it's not much more work or complexity
-                // to handle the older cases here, too, and we do use this code in publish and preview situations,
-                // not only for editable books.
-                var candidate in outsideFrontCover
-                    .SafeSelectNodes(
-                        ".//img | .//div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]"
-                    )
-                    .Cast<SafeXmlElement>()
-            )
-            {
-                if (candidate == designatedCoverImage)
-                    continue;
-
                 var candidatePath = GetImagePath(candidate);
                 if (candidatePath == null)
                     continue;
@@ -5344,15 +5355,15 @@ namespace Bloom.Book
                     return candidatePath;
                 }
 
-                if (bestPlaceholderPath == null)
+                if (placeholderPath == null)
                 {
-                    bestPlaceholderElt = candidate;
-                    bestPlaceholderPath = candidatePath;
+                    placeholderElt = candidate;
+                    placeholderPath = candidatePath;
                 }
             }
 
-            coverImgElt = bestPlaceholderElt;
-            return bestPlaceholderPath;
+            coverImgElt = placeholderElt;
+            return placeholderPath;
         }
 
         private string GetImagePath(SafeXmlElement imageElement)
