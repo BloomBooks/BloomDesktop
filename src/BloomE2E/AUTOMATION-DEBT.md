@@ -27,7 +27,6 @@ the identity here. Before you start on a marked entry, ask the owner of its bran
 | `BL-16799-vite-port` | `BLOOM_E2E_VITE_PORT` makes a run test the working tree's front end. Adds a new entry for what remains. |
 | `BL-16799-type-in-one-call` | Typing in a text box is one insertion, not one key press per character. Adds a new entry: typing now raises no key events. |
 | `BL-16799-page-screenshot` | A helper captures a whole book page, which absorbs the `captureBeyondViewport` footgun. |
-| `BL-16799-suite-docs` | The `add-e2e-test` rule that every step of a test is a helper call. |
 | `BL-16799-toolbox-registration` | One `registerAllToolboxTools()` that both the bootstrap and the test harness call. |
 | `BL-16799-shell-document` | A test can no longer attach to a shell document Bloom does not drive: one WebView2 environment per run, plus the `e2e/shellUrl` hook. |
 | `BL-16799-tab-test-ids` | `data-testid` on the workspace tabs, so no test matches a localized label. |
