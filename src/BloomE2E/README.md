@@ -58,12 +58,11 @@ and whatever tab is showing. Most tests need nothing else.
 | `restart`       | Stop Bloom, run an optional callback, start it again on the same collection, and return the new page. |
 
 `restart(betweenStopAndStart)` is how a test changes something Bloom only reads at startup. The
-collection's languages are the case that needed it: the collection Settings dialog is a WinForms
-surface CDP cannot reach, and `collectionSettings/changeLanguage` only answers while that dialog
-is open, so the way to change a language is to stop Bloom, rewrite the `.bloomCollection` with
-`makeCollectionXml`, and start again. Bloom is killed rather than asked to quit, so leave the
-page being edited before restarting or what was typed on it is lost. Use the page `restart`
-returns; the old one is closed.
+collection's languages are the case that needed it, and a test does not call `restart` itself for
+that: `setCollectionLanguages(bloomApp, tags)` posts the new languages to the `e2e/` hook that
+writes the `.bloomCollection`, then restarts Bloom and returns the new page. Bloom is killed
+rather than asked to quit, so leave the page being edited before restarting or what was typed on
+it is lost. Use the page `restart` returns; the old one is closed.
 
 Teardown kills the process tree, waits for the HTTP port to go dark, and deletes the temp copy.
 
@@ -93,7 +92,7 @@ real bug in the code under test; read the message and fix it rather than working
   dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
   `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
   screen.
-- `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
+- `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`, `setCollectionLanguages`.
 - `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
 - `helpers/addPageDialog.ts` — open, read, scroll and close the real Add Page dialog, and add a
   page through it. Tests that only need a page in their book call `addPage` instead.

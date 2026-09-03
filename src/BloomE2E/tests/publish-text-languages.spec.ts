@@ -22,8 +22,7 @@ import {
     setContentLanguages,
     typeInGroup,
 } from "../helpers/bookMaking";
-import { selectBook } from "../helpers/collection";
-import { restartWithCollectionSettings } from "../helpers/collectionSettings";
+import { selectBook, setCollectionLanguages } from "../helpers/collection";
 import {
     clickTextLanguage,
     expectTextLanguageRows,
@@ -95,12 +94,9 @@ test.describe("the Text Languages publish list", () => {
         );
         await goToPage(page, coverBeforeRestart!.id);
 
-        // Now swap German out for Spanish. Collection settings have no API and their dialog is a
-        // WinForms surface CDP cannot reach, so the way to change them is to quit Bloom, rewrite
-        // the .bloomCollection, and start again. See AUTOMATION-DEBT.md.
-        const newPage = await restartWithCollectionSettings(bloomApp, {
-            languages: FINAL_LANGUAGES,
-        });
+        // Now swap German out for Spanish. Bloom reads the collection's languages when it opens
+        // the collection, so this restarts it; see setCollectionLanguages.
+        const newPage = await setCollectionLanguages(bloomApp, FINAL_LANGUAGES);
         bookFolder = await findBookFolder(newPage, BOOK_TITLE);
         await selectBook(newPage, bookFolder);
         await switchTab(newPage, "edit");
@@ -347,36 +343,34 @@ test.describe("the Text Languages publish list", () => {
         await setContentLanguages(page, ["en"]);
     });
 
-    // Skipped until BL-16806 lands: https://issues.bloomlibrary.org/youtrack/issue/BL-16806
+    // This test no longer meets the difference BL-16806 is about, and master's version of it
+    // does, so do not copy master's comment back here. Master drops the language by rewriting the
+    // .bloomCollection, and Bloom then asks LibPalaso for the name of the dropped language "in"
+    // the collection's metadata language. LibPalaso honors that only where a native ICU library
+    // is findable, and Bloom ships icu.net but no icuuc.dll, so the CI runner answers "espagnol",
+    // French for Spanish, every time, and a developer machine answers "español" every time. It is
+    // a real difference in what Bloom shows a user, tracked on BL-16806.
     //
-    // It fails on CI every time, on the language NAME. The difference it catches is real -- it is
-    // what Bloom shows a user -- but the fix has to settle WHICH name a dropped language gets, and
-    // until that is decided this test would keep the nightly red over a known cause. Re-enable it
-    // with the fix, and expect whatever name BL-16806 settles on.
-    //
-    //     Expected: español      Received: espagnol
-    //
-    // "espagnol" is French for Spanish, and the answer depends on the machine, not on the run.
-    // Bloom asks LibPalaso for the name of the dropped language "in" the collection's metadata
-    // language, which is French here; LibPalaso honors that request only where a native ICU
-    // library is findable, and Bloom ships icu.net but no icuuc.dll. So the CI runner gives
-    // "espagnol" (nightly runs 33665790357 and 33685669405) while a developer machine ignores the
-    // request and gives the autonym "español" (checked in the real Publish tab). Everything else
-    // about the row -- unchecked, not incomplete, enabled -- is right.
-    //
-    // A local failure of this test is usually something else: it has other steps that time out on
-    // a loaded machine, and dies before reaching this assertion.
-    test.skip("keeps a language that the collection no longer has, under its own name [Test Case ID 169]", async ({
+    // This version drops the language through e2e/setCollectionLanguages, the code the Collection
+    // Settings dialog's OK button runs, which keeps the language's collection name. So the list
+    // reads "Spanish" on every machine, and the lookup that differs is never reached. The
+    // coverage that costs is recorded in src/BloomE2E/AUTOMATION-DEBT.md.
+    test("keeps a language that the collection no longer has, under the name the collection remembers [Test Case ID 169]", async ({
         bloomApp,
     }) => {
         test.setTimeout(180000);
 
         // Drop Spanish from the collection. The book still has Spanish text, so the language stays
-        // in the list; but the collection no longer supplies a name for it, so Bloom falls back to
-        // the name the language calls itself.
-        const withoutSpanish = await restartWithCollectionSettings(bloomApp, {
-            languages: ["en", "fr"],
-        });
+        // in the list, named "Spanish". Removing a language does not throw its settings away:
+        // CollectionSettingsDialog.UpdateLanguageSettings moves the displaced language to the end
+        // of the collection's list, name and font and all, so the name outlives the removal. (This
+        // test used to expect "español", the language's own name for itself, because it dropped
+        // the language by rewriting the .bloomCollection, which no part of Bloom does. Going
+        // through the same code the dialog's OK button runs is what changed the answer.)
+        const withoutSpanish = await setCollectionLanguages(bloomApp, [
+            "en",
+            "fr",
+        ]);
         await selectBook(withoutSpanish, bookFolder);
         await openPublishDestination(withoutSpanish, "Web");
         // In any order: where a language the collection no longer names sits in the list is not
@@ -397,19 +391,20 @@ test.describe("the Text Languages publish list", () => {
                     disabled: false,
                 },
                 {
-                    name: "español",
+                    name: "Spanish",
                     incomplete: false,
                     checked: false,
                     disabled: false,
                 },
             ],
-            "Spanish did not stay in the list, unchecked and under its own name.",
+            "Spanish did not stay in the list, unchecked and under the name the collection remembers.",
         );
 
         // Put Spanish back, for the test that follows.
-        const withSpanish = await restartWithCollectionSettings(bloomApp, {
-            languages: FINAL_LANGUAGES,
-        });
+        const withSpanish = await setCollectionLanguages(
+            bloomApp,
+            FINAL_LANGUAGES,
+        );
         await selectBook(withSpanish, bookFolder);
     });
 

@@ -14,18 +14,6 @@ House rules:
 - Ordinary dev/tooling friction goes to `PAPERCUTS.md` at the repo root instead; several
   entries below were promoted from there.
 
-Work in progress, 2026-09-03 (BL-16799): every entry below that carries a **being fixed**
-line is being paid down now, in a stack of small pull requests, one per improvement, each
-branching off the one before it. The pull requests do not exist yet, so the branch name is
-the identity here. Before you start on a marked entry, ask the owner of its branch.
-
-| Branch | What it pays down |
-| --- | --- |
-| `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
-
-Three of these also add entries of their own, for the debt that is left after the fix. The
-stack replaces PR #8276, which did all of this at once.
-
 ---
 
 ## WinForms surfaces are invisible to CDP
@@ -38,18 +26,13 @@ force-foreground trick. Fix direction: move these surfaces to the web UI (the te
 direction anyway), or expose each dialog's WebView2 on a discoverable CDP port.
 (Promoted from PAPERCUTS 2026-07-11.)
 
-seen again 2026-09-01 (Test Case ID 169, `publish-text-languages.spec.ts`): the case
-turns on which languages the collection has, and there is no API for that either.
-`collectionSettings/changeLanguage` is not one: its only listener is the open WinForms
-`CollectionSettingsDialog` (`CollectionSettingsDialog.cs:368`), so a POST to it while
-the dialog is closed does nothing. The test therefore changes a collection language by
-stopping Bloom, rewriting the `.bloomCollection`, and starting again, which is what the
-new `bloomApp.restart(betweenStopAndStart)` fixture method is for. Each restart costs
-about six seconds and loses whatever the editor had not yet saved.
-
-being fixed on `BL-16799-collection-languages`: the `e2e/setCollectionLanguages` hook
-does the work of the Settings dialog's OK button, so no test composes `.bloomCollection`
-XML. The dialog itself stays on this entry: nothing can drive or screenshot it.
+seen again 2026-09-01, and the collection-languages half of it is now fixed: tests set
+the collection's languages through the `e2e/setCollectionLanguages` hook, which does
+the same work as clicking OK in the Collection Settings dialog, and
+`helpers/collection.ts setCollectionLanguages` wraps it with the restart Bloom still
+needs (about six seconds, and it loses whatever the editor had not yet saved). No test
+composes `.bloomCollection` XML any more. What remains is the dialog itself: nothing
+can drive or screenshot the Settings UI, so the journey test for it cannot be written.
 
 seen again 2026-09-01 (Test Case ID 349, `duplicate-page.spec.ts`): "Duplicate Page Many
 Times..." asks how many copies in `DuplicateManyDialog`, which is `WireUpForWinforms`, so the
@@ -244,6 +227,25 @@ shows a `.bloom-page`. Two page adds in a row therefore lost the second one.
 helpers no longer act early; the production endpoints still reply success to a request they
 dropped.
 
+## Bloom names a dropped language differently on CI and on a developer machine (BL-16806)
+
+`publish-text-languages.spec.ts` used to drop a language by rewriting the `.bloomCollection`,
+and it then expected the publish list to show that language's own name for itself, "español".
+On CI that assertion failed every time, with `Expected: español  Received: espagnol` — French
+for Spanish. Everything else about the row was right.
+
+The cause is known, and BL-16806 is the card that fixes it. Bloom asks LibPalaso for the name of
+the dropped language "in" the collection's metadata language, French here. LibPalaso honors such
+a request only where it can find a native ICU library, and Bloom ships icu.net but no
+`icuuc.dll`, so the answer depends on the machine, not on the run: the CI runner answers
+"espagnol", and a developer machine ignores the request and gives the autonym "español". It is
+a real difference in what Bloom shows a user, not a test problem.
+
+No test on this branch covers it any more. The test now drops the language through
+`e2e/setCollectionLanguages`, the code the Settings dialog's OK button runs, which keeps the
+language's collection name, so the list reads "Spanish" on every machine and the lookup that
+differs is never reached. Recorded here so the coverage loss is visible; the defect itself
+belongs to BL-16806. (Found 2026-09-01, diagnosed on master 2026-09-02.)
 ## Filling a text box directly leaves part of the old text behind
 
 A `.bloom-editable` is a CKEditor surface, and Playwright's `fill()` on one leaves a
