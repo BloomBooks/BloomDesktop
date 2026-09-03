@@ -879,7 +879,18 @@ async function launchDedicatedBloom() {
     // --e2e: skip the DEBUG "Attach debugger now" prompt and suppress modal error dialogs so a
     // Bloom problem fails the test instead of hanging the run. --automation: allow this instance to
     // run alongside a Bloom the developer already has open (bypasses the single-instance token).
-    bloomProcess = execFile(exe, [collection, "--e2e", "--automation"]);
+    // --user-settings-folder: keep this Bloom's user settings (user.config) in the temp folder, so
+    // the run starts from default settings, as it does on a fresh CI runner, rather than from
+    // whatever the developer's Bloom of the same version saved last, and leaves nothing behind.
+    const userSettingsDir = Path.join(tempCollectionsRoot, "user-settings");
+    fs.mkdirSync(userSettingsDir);
+    bloomProcess = execFile(exe, [
+        collection,
+        "--e2e",
+        "--automation",
+        "--user-settings-folder",
+        userSettingsDir,
+    ]);
     // Capture Bloom's output and watch for an early exit. Without this a launch failure (crash on
     // startup, missing WebView2 runtime, first-run dialog) is invisible: the poll below just runs
     // out the full 90s and reports "seen: none" with no clue why. Echo to our own stderr too so the

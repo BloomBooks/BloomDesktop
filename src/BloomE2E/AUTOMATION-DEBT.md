@@ -32,8 +32,7 @@ and ask its author.
 | #8298 | `BL-16799-tab-test-ids` | `data-testid` on the workspace tabs, so no test matches a localized label. |
 | #8299 | `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
 | #8300 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
-| not yet open | `e2e-private-user-settings` | Every Bloom a test launches keeps its user settings in a folder of its own, named on the command line, so a run starts from defaults and its settings die with its temp folder. |
-| not yet open | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off the one above. |
+| not yet open | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off `e2e-private-user-settings`, which gave every Bloom a test launches a settings folder of its own and removed its entry from this file. |
 
 Three of these also add entries of their own, for the debt that is left after the fix. The
 stack replaces PR #8276, which did all of this at once.
@@ -107,17 +106,16 @@ covers neither the real sign-in and sign-out buttons nor anything that needs a r
 which is every manual case that uploads for real (#204, #205, #211-#213, #215, #217, #218, #220),
 so none of those can be automated either. Fix direction: a test account plus a per-instance login
 store (a login the `--e2e` instance keeps to itself), so a run can sign in for real and upload to
-dev.bloomlibrary.org without touching the developer's settings. The per-instance half of that is
-the same fix "Every Bloom of one build shares one user.config" asks for, below; the test account
-is the rest. Note that the pretense changes only what Bloom reports, so Bloom under `--e2e` now
-refuses to upload at all rather than let an automated click publish under the developer's real
-account.
+dev.bloomlibrary.org without touching the developer's settings. The per-instance half is done:
+every Bloom a test launches now keeps its settings, the login included, in a folder of its own
+(`bloomApp.userSettingsDir`), so a test can put a login there before launch and sign out for real
+without touching anyone else's; the test account is the rest. Note that the pretense changes only
+what Bloom reports, so Bloom under `--e2e` still refuses to upload at all rather than let an
+automated click publish under a real account.
 (Found 2026-09-02 automating Test Case ID 606, `upload-required-items.spec.ts`.)
 
-being fixed on `e2e-real-library-login`, once `e2e-private-user-settings` (the user.config entry
-below) has landed: with a settings folder of its own, a test's Bloom can be given a real test
-account's login before it starts, and can sign out for real without touching anyone else's login.
-The test account, and where its credentials live, are the rest of this branch.
+being fixed on `e2e-real-library-login`: the test account, where its credentials live, and the
+sign-in that uses them.
 
 ## Visual-regression cases stop at the first failed comparison
 
@@ -319,28 +317,6 @@ copy is a feature we want; if it is, put the page on the real clipboard, and giv
 fixture a way to run a second instance.
 (Found 2026-09-01 while automating Test Case ID 348.)
 
-## Every Bloom of one build shares one user.config, so a run inherits another Bloom's settings
-
-Bloom keeps its user settings (UI language, page zoom, and the rest of `Settings.Default`) in
-`%LOCALAPPDATA%\SIL\Bloom\<version>\user.config`, one file per build version, and `--e2e` does
-nothing to change that. So the Bloom a test launches starts from whatever the last Bloom of the
-same version saved, and saves its own changes for the next one. The e2e lock keeps suites from
-running at once, but a developer's own Bloom from a worktree of the same version is outside the
-lock and shares the file all the same, and so does the previous run of any suite.
-
-Seen 2026-09-02 (Test Case ID 356, `format-gear-positioning.spec.ts`): two runs found every
-factory template named in Turkish, then in French, and failed in `makeBookFromTemplate`, which
-matches the English title; a Bloom nobody in the suite had started was running at the time, and
-the file said `en` again a moment later. The same test has to restore the zoom it changes, because
-that setting is shared too. Fix direction: under `--e2e`, point the settings provider at a
-per-instance folder (a sibling of the temp collection would do), so a test's Bloom starts from
-defaults and its changes die with it.
-
-being fixed on `e2e-private-user-settings`: a command-line argument names the folder Bloom keeps
-its user settings in, and the launch fixture gives every Bloom it starts a folder inside the run's
-temp folder, so the settings start from defaults, or from whatever the test puts there first, and
-are deleted with the rest of the run.
-
 ## No way to run the suite at a chosen monitor resolution and scale factor
 
 Every run takes the resolution and the scale factor of whatever monitor it lands on, so a
@@ -372,8 +348,8 @@ Fix direction, cheapest first, none of it tried yet:
   driver is told to offer. Setting that monitor's *scale factor* is the harder half: Windows
   exposes per-monitor scale only through display-config calls Microsoft does not document.
   Worth an afternoon of investigation before committing to it.
-- **A virtual machine or Windows Sandbox** at a chosen resolution and scale. Heaviest, but it
-  is the only one that also isolates the shared `user.config` described above.
+- **A virtual machine or Windows Sandbox** at a chosen resolution and scale. Heaviest, and the
+  only one that would also isolate everything else on the machine a run could inherit.
 
 Whatever the mechanism, the suite needs the same thing from it: a way to say "run these tests
 at 1920x1080 at 150%" and have the run either honour it or refuse, rather than silently using

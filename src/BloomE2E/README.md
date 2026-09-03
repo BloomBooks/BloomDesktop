@@ -55,7 +55,19 @@ and whatever tab is showing. Most tests need nothing else.
 | `cdpPort`       | The port the embedded WebView2 answers CDP on.                          |
 | `bloomPid`      | The process id of the Bloom serving this collection.                    |
 | `collectionDir` | The temp copy of the collection. Build book paths from this, never from `output/testing-inputs`. |
+| `userSettingsDir` | The folder this Bloom keeps its user settings in (its `user.config`), beside the collection in the temp folder. |
 | `restart`       | Stop Bloom, run an optional callback, start it again on the same collection, and return the new page. |
+
+Every Bloom the fixture launches keeps its user settings, the contents of `user.config` (UI
+language, page zoom, the Bloom Library login, and the rest of `Settings.Default`), in
+`userSettingsDir`, passed to Bloom as `--user-settings-folder`. Every Bloom of one build otherwise
+shares one `user.config` in `%LOCALAPPDATA%\SIL\Bloom\<version>`, so a run would start from
+whatever the developer's Bloom, or the previous run, saved last, and leave its own changes behind
+for them. Instead the folder starts empty, so Bloom starts from default settings, and it is deleted
+with the rest of the run. A restart keeps it, so what one launch saved the next one reads, as on a
+real machine. `helpers/userSettings.ts` reads what Bloom has saved there. The fixture checks that
+the Bloom it started really is using the folder, so a stale `Bloom.exe` fails the launch rather
+than quietly sharing settings.
 
 `restart(betweenStopAndStart)` is how a test changes something Bloom only reads at startup. The
 collection's languages are the case that needed it: the collection Settings dialog is a WinForms
@@ -98,6 +110,8 @@ real bug in the code under test; read the message and fix it rather than working
 - `helpers/addPageDialog.ts` — open, read, scroll and close the real Add Page dialog, and add a
   page through it. Tests that only need a page in their book call `addPage` instead.
 - `helpers/files.ts` — `fingerprintFolder`, `isInsideFolder`, for checks against the disk.
+- `helpers/userSettings.ts` — `getUserSettingsFolder`, `readSavedUserSetting`: where the Bloom
+  under test keeps its user settings, and what it has saved there.
 - `helpers/api.ts` — `apiGet`, `apiPost`, `apiGetJson`. These run `fetch` inside the page with a
   relative URL, which is not a style choice: Bloom's server rejects a `127.0.0.1` Host header, and
   the CDP endpoint does not answer on `localhost`. The file explains it.

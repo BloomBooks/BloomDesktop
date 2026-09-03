@@ -135,6 +135,112 @@ namespace BloomTests
             Assert.That(remainingArgs, Is.Empty);
         }
 
+        [Test]
+        public void ParseStartupPortArguments_StoresUserSettingsFolderAndRemovesIt()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[]
+                {
+                    "--user-settings-folder",
+                    @"C:\Temp\bloom-e2e-abc\user-settings",
+                    @"C:\Temp\Example.bloomcollection",
+                },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(
+                Program.StartupUserSettingsFolder,
+                Is.EqualTo(@"C:\Temp\bloom-e2e-abc\user-settings")
+            );
+            Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
+            Assert.That(
+                Program.StartupRequestedPortSummary,
+                Is.EqualTo(@"userSettingsFolder=C:\Temp\bloom-e2e-abc\user-settings")
+            );
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_MakesRelativeUserSettingsFolderAbsolute()
+        {
+            // Bloom changes its working directory during startup, so a relative folder is pinned
+            // to the directory Bloom was started in before that can happen.
+            Program.ParseStartupPortArguments(
+                new[] { @"--user-settings-folder=relative\settings" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(
+                Program.StartupUserSettingsFolder,
+                Is.EqualTo(
+                    System.IO.Path.Combine(
+                        System.IO.Directory.GetCurrentDirectory(),
+                        @"relative\settings"
+                    )
+                )
+            );
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_LeavesUserSettingsFolderNullWithoutArgument()
+        {
+            Program.ParseStartupPortArguments(
+                new[] { @"C:\Temp\Example.bloomcollection" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_RejectsUserSettingsFolderWithoutValue()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--user-settings-folder" },
+                out var errorMessage
+            );
+
+            Assert.That(
+                errorMessage,
+                Is.EqualTo("Bloom requires a value after --user-settings-folder.")
+            );
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            Assert.That(remainingArgs, Is.Empty);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_RejectsEmptyUserSettingsFolder()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--user-settings-folder=" },
+                out var errorMessage
+            );
+
+            Assert.That(
+                errorMessage,
+                Does.StartWith("Bloom cannot use \"\" as the --user-settings-folder")
+            );
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            Assert.That(remainingArgs, Is.Empty);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_RejectsDuplicateUserSettingsFolders()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { @"--user-settings-folder=C:\one", @"--user-settings-folder=C:\two" },
+                out var errorMessage
+            );
+
+            Assert.That(
+                errorMessage,
+                Is.EqualTo("Bloom only accepts one --user-settings-folder argument.")
+            );
+            Assert.That(remainingArgs, Is.Empty);
+        }
+
         // --- IsBenignUnobservedTaskSocketNoise: the Sentry BeforeSend filter for
         //     BLOOM-DESKTOP-EQ4 / -E4J / -E9K ---
 

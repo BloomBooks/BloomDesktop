@@ -2,133 +2,133 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Bloom.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="FirstTimeRun" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="FirstTimeRun" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="MruProjects" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="Bloom.CollectionChoosing.MostRecentPathsList" Scope="User">
+    <Setting Name="MruProjects" Provider="Bloom.BloomSettingsProvider" Type="Bloom.CollectionChoosing.MostRecentPathsList" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="NeedUpgrade" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="NeedUpgrade" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UserInterfaceLanguage" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="UserInterfaceLanguage" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="UserInterfaceLanguageSetExplicitly" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="UserInterfaceLanguageSetExplicitly" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="LastSourceLanguageViewed" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="LastSourceLanguageViewed" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="LastSourceLanguageViewed2" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="LastSourceLanguageViewed2" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ImageHandler" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="ImageHandler" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)">http</Value>
     </Setting>
-    <Setting Name="ImageGalleryProviderKeys" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="ImageGalleryProviderKeys" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ShowSendReceive" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="ShowSendReceive" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="ShowLocalizationControls" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="ShowLocalizationControls" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="ShowUnapprovedLocalizations" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="ShowUnapprovedLocalizations" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="EnabledExperimentalFeatures" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="EnabledExperimentalFeatures" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="DontShowThisAgain" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="DontShowThisAgain" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ShowExperimentalFeatures" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="ShowExperimentalFeatures" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="WebUserId" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="WebUserId" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="WebPassword" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="WebPassword" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="WebShowPassword" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="WebShowPassword" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UseAdobePdfViewer" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="UseAdobePdfViewer" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="MaximizeWindow" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="MaximizeWindow" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="WindowSizeAndLocation" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="SIL.Windows.Forms.PortableSettingsProvider.FormSettings" Scope="User">
+    <Setting Name="WindowSizeAndLocation" Provider="Bloom.BloomSettingsProvider" Type="SIL.Windows.Forms.PortableSettingsProvider.FormSettings" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="LicenseAccepted" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="LicenseAccepted" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="RestoreBounds" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Drawing.Rectangle" Scope="User">
+    <Setting Name="RestoreBounds" Provider="Bloom.BloomSettingsProvider" Type="System.Drawing.Rectangle" Scope="User">
       <Value Profile="(Default)">0, 0, 1028, 586</Value>
     </Setting>
-    <Setting Name="ImageSearchLanguage" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="ImageSearchLanguage" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="PageZoom" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="PageZoom" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)">1.0</Value>
     </Setting>
-    <Setting Name="AdobeColorProfileEula2003Accepted" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="AdobeColorProfileEula2003Accepted" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="BloomDeviceFileExportFolder" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="BloomDeviceFileExportFolder" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="PublishAndroidMethod" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="PublishAndroidMethod" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="CurrentStage" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Int32" Scope="User">
+    <Setting Name="CurrentStage" Provider="Bloom.BloomSettingsProvider" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="CurrentLevel" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Int32" Scope="User">
+    <Setting Name="CurrentLevel" Provider="Bloom.BloomSettingsProvider" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="CurrentBookPath" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="CurrentBookPath" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="AutoUpdateDialogShown" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Int32" Scope="User">
+    <Setting Name="AutoUpdateDialogShown" Provider="Bloom.BloomSettingsProvider" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="AlwaysMeasurePerformance" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="AlwaysMeasurePerformance" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="AutoUpdate" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="AutoUpdate" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="ForumInvitationLastShown" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.DateTime" Scope="User">
+    <Setting Name="ForumInvitationLastShown" Provider="Bloom.BloomSettingsProvider" Type="System.DateTime" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ForumInvitationAcknowledged" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="ForumInvitationAcknowledged" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="LastLoginDest" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="LastLoginDest" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="LastLoginSessionToken" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="LastLoginSessionToken" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="LastLoginUserId" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="LastLoginUserId" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ExportImportFileFolder" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="OpenRouterApiKey" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="OpenRouterApiKey" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="CollectionTabSplitterSizes" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="CollectionTabSplitterSizes" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="WebSiteDestinationOverride" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="WebSiteDestinationOverride" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>
