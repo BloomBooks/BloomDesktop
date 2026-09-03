@@ -166,6 +166,9 @@ const Tab: React.FunctionComponent<{
         <li role="presentation">
             <a
                 role="tab"
+                // Automation clicks tabs by this id. The visible label is localized, so matching
+                // on it would confine every test to an English UI.
+                data-testid={`workspace-tab-${props.tab.id}`}
                 aria-selected={props.selected ? "true" : "false"}
                 aria-disabled={props.disabled ? "true" : "false"}
                 css={css`
@@ -227,6 +230,7 @@ export const BloomTabs: React.FunctionComponent<{
     return (
         <ul
             role="tablist"
+            data-testid="workspace-tabs"
             css={
                 // style as tabs
                 css`
