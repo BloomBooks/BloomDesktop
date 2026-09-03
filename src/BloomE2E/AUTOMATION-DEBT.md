@@ -21,7 +21,6 @@ and ask its author.
 
 | Pull request | Branch | What it pays down |
 | --- | --- | --- |
-| #8293 | `BL-16799-vite-port` | `BLOOM_E2E_VITE_PORT` makes a run test the working tree's front end. Adds a new entry for what remains. |
 | #8294 | `BL-16799-type-in-one-call` | Typing in a text box is one insertion, not one key press per character. Adds a new entry: typing now raises no key events. |
 | #8295 | `BL-16799-page-screenshot` | A helper captures a whole book page, which absorbs the `captureBeyondViewport` footgun. |
 | #8296 | `BL-16799-toolbox-registration` | One `registerAllToolboxTools()` that both the bootstrap and the test harness call. |
@@ -115,6 +114,35 @@ being fixed on `e2e-real-library-login`, once `e2e-private-user-settings` (the u
 below) has landed: with a settings folder of its own, a test's Bloom can be given a real test
 account's login before it starts, and can sign out for real without touching anyone else's login.
 The test account, and where its credentials live, are the rest of this branch.
+
+## Which front end the e2e suite tests depends on what else is running
+
+A launched Bloom serves its React front end either from the built `output/browser` or from a Vite
+dev server, and until the fixture is told which, the answer depends on the machine. Three facts,
+established 2026-09-01:
+
+- **There is no way to point Bloom at another folder.** `BloomFileLocator.BrowserRoot` computes
+  `output/browser` (or `browser`) from where the app sits, with no environment variable and no
+  command-line option, so the isolated bundle that `build/agent-vite.ps1` writes under
+  `output/agent/<key>/browser` cannot be used by a launched Bloom.
+- **A dev server is the supported route, and the fixture now takes it.** Set
+  `BLOOM_E2E_VITE_PORT=<n>` and `fixtures/launchBloom.ts` passes `--vite-port <n>`, so the suite
+  tests the working tree with no build at all. Start the server with `PORT` set as well as
+  `--port`: the port in `vite.config.mts` comes from `process.env.PORT`, so `--port` alone moves
+  the server but leaves its HMR and React-Refresh URLs pointing at 5173, and the page then fails
+  to load its entry module.
+- **Leaving the variable unset does not mean "no dev server".** A dev build probes port 5173 by
+  itself (`ReactControl.TryGetActiveViteDevPort`), so a developer's own dev server silently
+  decides what the suite tests, and Bloom offers no option that means "ignore any dev server"
+  (`--vite-port` rejects 0, and `ValidateStartupVitePort` requires the port to answer).
+
+What remains: the fixture neither starts a dev server of its own nor checks that `output/browser`
+is newer than `src/BloomBrowserUI`, so a run with the variable unset can still test a stale
+bundle without saying so. Fix direction: have the fixture own the choice, either by starting a
+dev server on a port of its own choosing, or by refusing to run against an `output/browser` older
+than the source and naming the file that is newer. Bloom needs an explicit "no dev server"
+option before the second half of that can be trusted.
+(Found 2026-09-01 while fixing the top-bar test ids.)
 
 ## The top bar has no stable test ids, so tests match on localized text
 
@@ -399,3 +427,26 @@ meantime: run small and stay red, or stay large until the tests are fixed.
 (Written and measured on 2026-09-03 during BL-16804, then deliberately taken back out: the
 developer chose to record the plan here rather than carry a red suite. The code is not in the
 history, so rebuilding it from this entry is part of the job.)
+
+## A Vite dev server only reaches the whole UI on port 5173
+
+`--vite-port` tells Bloom's shell which dev server to load the front end from, but two of the
+Edit tab's frames ignore it. `bookEdit/pageThumbnailList/pageThumbnailList.vite-dev.pug` and
+`bookEdit/toolbox/toolbox.vite-dev.pug` write `http://localhost:5173/...` into every import
+they emit, so on any other port the page list and the toolbox load nothing and come up empty.
+
+That failure looks like the feature being missing, not like a port problem. A run on port 5199
+failed `duplicate-page.spec.ts` on 2026-09-02 with "waiting for
+getByTestId('duplicate-page-button') to be visible", 30 seconds, because `#PageControls` had
+never been filled. Nothing in the message points at the dev server.
+
+The same run showed the second half of it: `BLOOM_E2E_VITE_PORT` was unset, so Bloom fell back
+to probing 5173 by itself, found nothing there, and served the built `output/browser` instead.
+That bundle was a day old, so the suite silently tested yesterday's front end and reported the
+new test id as absent.
+
+So both halves say the same thing: **serve the dev server on 5173 and set
+`BLOOM_E2E_VITE_PORT=5173`.** Fix direction: emit the port into those two pug files the way the
+shell gets it, so `--vite-port` means what it says; and give Bloom an option that means "ignore
+any dev server", so a run can state which front end it is testing rather than inherit it from
+the machine. (Found 2026-09-02.)
