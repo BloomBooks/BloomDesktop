@@ -122,7 +122,12 @@ established 2026-09-01:
 - **Leaving the variable unset does not mean "no dev server".** A dev build probes port 5173 by
   itself (`ReactControl.TryGetActiveViteDevPort`), so a developer's own dev server silently
   decides what the suite tests, and Bloom offers no option that means "ignore any dev server"
-  (`--vite-port` rejects 0, and `ValidateStartupVitePort` requires the port to answer).
+  (`--vite-port` rejects 0, and `ValidateStartupVitePort` requires the port to answer). This is
+  what went wrong on 2026-09-02: the variable was unset, so a run served a day-old bundle and
+  `duplicate-page.spec.ts` reported a new test id as absent. `--vite-port` itself honours any
+  port. `ReactControl.ReplaceViteDevOrigin` rewrites the literal `http://localhost:5173` in all
+  three Edit frames, the two `*.vite-dev.pug` files included, and a run on 5199 on 2026-09-03
+  loaded the shell, the toolbox and the page list from 5199.
 
 What remains: the fixture neither starts a dev server of its own nor checks that `output/browser`
 is newer than `src/BloomBrowserUI`, so a run with the variable unset can still test a stale
@@ -419,29 +424,6 @@ meantime: run small and stay red, or stay large until the tests are fixed.
 (Written and measured on 2026-09-03 during BL-16804, then deliberately taken back out: the
 developer chose to record the plan here rather than carry a red suite. The code is not in the
 history, so rebuilding it from this entry is part of the job.)
-
-## A Vite dev server only reaches the whole UI on port 5173
-
-`--vite-port` tells Bloom's shell which dev server to load the front end from, but two of the
-Edit tab's frames ignore it. `bookEdit/pageThumbnailList/pageThumbnailList.vite-dev.pug` and
-`bookEdit/toolbox/toolbox.vite-dev.pug` write `http://localhost:5173/...` into every import
-they emit, so on any other port the page list and the toolbox load nothing and come up empty.
-
-That failure looks like the feature being missing, not like a port problem. A run on port 5199
-failed `duplicate-page.spec.ts` on 2026-09-02 with "waiting for
-getByTestId('duplicate-page-button') to be visible", 30 seconds, because `#PageControls` had
-never been filled. Nothing in the message points at the dev server.
-
-The same run showed the second half of it: `BLOOM_E2E_VITE_PORT` was unset, so Bloom fell back
-to probing 5173 by itself, found nothing there, and served the built `output/browser` instead.
-That bundle was a day old, so the suite silently tested yesterday's front end and reported the
-new test id as absent.
-
-So both halves say the same thing: **serve the dev server on 5173 and set
-`BLOOM_E2E_VITE_PORT=5173`.** Fix direction: emit the port into those two pug files the way the
-shell gets it, so `--vite-port` means what it says; and give Bloom an option that means "ignore
-any dev server", so a run can state which front end it is testing rather than inherit it from
-the machine. (Found 2026-09-02.)
 
 ## Typing in a text box raises no key events
 

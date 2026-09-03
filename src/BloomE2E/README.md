@@ -219,24 +219,22 @@ start a Vite dev server and name its port in `BLOOM_E2E_VITE_PORT`; the fixture 
 `--vite-port` to Bloom, which loads every React control from the dev server.
 
 ```bash
-# In one terminal, in src/BloomBrowserUI. Set PORT as well as --port: the port in
-# vite.config.mts comes from process.env.PORT, and --port alone leaves the HMR and
-# React-Refresh URLs pointing at 5173, which makes the page fail to load its entry module.
-PORT=5173 pnpm exec vite --port 5173 --strictPort
+# In one terminal, in src/BloomBrowserUI. Any free port works. Set PORT as well as --port:
+# the port in vite.config.mts comes from process.env.PORT, and --port alone leaves the HMR
+# and React-Refresh URLs pointing at 5173, which makes the page fail to load its entry
+# module.
+PORT=5199 pnpm exec vite --port 5199 --strictPort
 
 # In another, in src/BloomE2E
-BLOOM_E2E_VITE_PORT=5173 pnpm exec playwright test
+BLOOM_E2E_VITE_PORT=5199 pnpm exec playwright test
 ```
 
-**Use 5173, and set the variable.** The port is not free to choose: the page list and the toolbox
-write `http://localhost:5173` into their own imports, so on any other port those two frames load
-nothing and come up empty, which reads as the feature being missing rather than as a port
-problem. And leaving `BLOOM_E2E_VITE_PORT` unset does not mean "no dev server": a dev build of
-Bloom probes 5173 by itself, so an unset variable and a server somewhere else means the run
-quietly tests the built bundle, however old it is. Both halves are in AUTOMATION-DEBT.md under
-"A Vite dev server only reaches the whole UI on port 5173".
-
-So stop a Bloom that is already using 5173 before a run, rather than moving the dev server.
+**Always set the variable.** An unset `BLOOM_E2E_VITE_PORT` does not mean "no dev server": a dev
+build of Bloom probes 5173 by itself, so an unset variable and a dev server on another port means
+the run quietly tests the built `output/browser`, however old it is. A stale bundle reads as the
+feature being missing rather than as a stale bundle, which is what the 2026-09-02 failure looked
+like. See AUTOMATION-DEBT.md under "Which front end the e2e suite tests depends on what else is
+running".
 
 ## In CI
 
