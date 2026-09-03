@@ -42,6 +42,8 @@ namespace BloomTests
         [TestCase("HEADLESS")]
         [TestCase("Headless")]
         [TestCase("  headless  ")]
+        [TestCase("0", TestName = "Parse_ZeroMonitor_GoesOffEveryMonitor")]
+        [TestCase(" 0 ", TestName = "Parse_ZeroMonitorWithSpaces_GoesOffEveryMonitor")]
         public void Parse_Headless_GoesOffEveryMonitor(string setting)
         {
             Assert.That(
@@ -70,7 +72,6 @@ namespace BloomTests
         /// normally and the developer sees the window. See the remarks on Parse.
         /// </summary>
         [TestCase("4", TestName = "Parse_MonitorBeyondTheLast_PlacesWindowsNormally")]
-        [TestCase("0", TestName = "Parse_ZeroMonitor_PlacesWindowsNormally")]
         [TestCase("-1", TestName = "Parse_NegativeMonitor_PlacesWindowsNormally")]
         [TestCase("headles", TestName = "Parse_HeadlessMisspelt_PlacesWindowsNormally")]
         [TestCase("true", TestName = "Parse_Nonsense_PlacesWindowsNormally")]
@@ -139,6 +140,65 @@ namespace BloomTests
 
             Assert.That(AutomationWindowPlacement.GetChoice(), Is.EqualTo(Choice.OffEveryMonitor));
             Assert.That(AutomationWindowPlacement.IsOffEveryMonitor, Is.True);
+        }
+
+        /// <summary>
+        /// The log line is the only place a developer can see which monitor a number means, because
+        /// the number is not the one Windows Settings shows. So it has to name every monitor, and it
+        /// has to say that the numbering differs.
+        /// </summary>
+        [Test]
+        public void DescribeChoice_NamesEveryMonitorAndWarnsAboutTheNumbering()
+        {
+            Environment.SetEnvironmentVariable(
+                AutomationWindowPlacement.VariableName,
+                AutomationWindowPlacement.HeadlessSetting
+            );
+            Program.ParseStartupPortArguments(new[] { "--automation" }, out _);
+
+            var line = AutomationWindowPlacement.DescribeChoice();
+
+            Assert.That(line, Does.Contain(AutomationWindowPlacement.VariableName));
+            Assert.That(line, Does.Contain("off every monitor"));
+            Assert.That(
+                line,
+                Does.Contain("NOT how Windows Settings"),
+                "A developer reading a number off Windows Settings has to be warned."
+            );
+            var screens = AutomationWindowPlacement.MonitorsLeftToRight();
+            for (var oneBased = 1; oneBased <= screens.Length; oneBased++)
+            {
+                Assert.That(
+                    line,
+                    Does.Contain($"{oneBased}=({screens[oneBased - 1].Bounds.X},"),
+                    $"Monitor {oneBased} is missing from the log line."
+                );
+            }
+        }
+
+        /// <summary>
+        /// Monitor 1 is the leftmost monitor, whatever order Screen.AllScreens returns. This runs
+        /// against however many monitors the machine has, so it says nothing on the CI runner's
+        /// single screen and everything on a developer's several.
+        /// </summary>
+        [Test]
+        public void MonitorsLeftToRight_AreOrderedByPosition()
+        {
+            var monitors = AutomationWindowPlacement.MonitorsLeftToRight();
+
+            Assert.That(
+                monitors.Length,
+                Is.EqualTo(System.Windows.Forms.Screen.AllScreens.Length),
+                "Every monitor has to be there; the order is all that changes."
+            );
+            for (var next = 1; next < monitors.Length; next++)
+            {
+                Assert.That(
+                    monitors[next].Bounds.Left,
+                    Is.GreaterThanOrEqualTo(monitors[next - 1].Bounds.Left),
+                    $"Monitor {next + 1} is left of monitor {next}."
+                );
+            }
         }
 
         /// <summary>

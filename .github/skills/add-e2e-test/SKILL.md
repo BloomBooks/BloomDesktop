@@ -340,12 +340,14 @@ pnpm exec playwright test -g "switching workspace tabs"  # one test by title
 
 A run launches a real Bloom and its window appears on the developer's desktop, unless
 `BLOOM_AUTOMATION_MONITOR` says otherwise. That one variable decides where every window a run
-opens goes, the splash screen included: `headless` puts them all off every monitor, a 1-based
-monitor number puts them on that monitor, and any other value, unset included, leaves Bloom to
-place them as it always does. `headless` moves the window off-screen rather than minimizing it,
+opens goes, the splash screen included: `headless`, or `0`, puts them all off every monitor; a
+1-based monitor number puts them on that monitor; and any other value, unset included, leaves Bloom
+to place them as it always does. `headless` moves the window off-screen rather than minimizing it,
 because WebView2 stops painting a minimized window and every screenshot then comes back blank.
-`--debug` clears a `headless` setting, so a debug session has a window to step through. See
-`src/BloomE2E/README.md` for the table.
+`--debug` clears a `headless` setting, so a debug session has a window to step through. The monitor
+number counts left to right, so 1 is the leftmost monitor; it is **not** the number Windows Settings
+shows beside each display, and no API reproduces those. Bloom writes the whole mapping to its log at
+startup. See `src/BloomE2E/README.md` for the table and that log line.
 
 A run needs a built `Bloom.exe` under `output/{Debug,Release}/{x64,AnyCPU,}/` (build it yourself;
 see "Build Bloom whenever it helps") and the inputs at `output/testing-inputs`. Point

@@ -166,12 +166,13 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * does. So the child inherits this process's environment untouched, with one exception.
  *
  * The exception is Playwright's --debug (which sets PWDEBUG): stepping through a test whose window
- * nobody can see is pointless, so a debug session clears a "headless" setting and gets a window.
- * A setting that names a monitor is left alone, because that window IS visible.
+ * nobody can see is pointless, so a debug session clears a "headless" setting, or the "0" that says
+ * the same thing, and gets a window. A setting that names a monitor is left alone, because that
+ * window IS visible.
  */
 function environmentForBloom(): NodeJS.ProcessEnv {
     const asked = process.env.BLOOM_AUTOMATION_MONITOR?.trim().toLowerCase();
-    if (process.env.PWDEBUG && asked === "headless") {
+    if (process.env.PWDEBUG && (asked === "headless" || asked === "0")) {
         return { ...process.env, BLOOM_AUTOMATION_MONITOR: "" };
     }
     return process.env;

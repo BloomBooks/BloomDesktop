@@ -446,6 +446,13 @@ namespace Bloom
                 // through to the ordinary cases below, window placement and all, so the
                 // developer sees the Bloom they would see without the variable.
                 var placement = AutomationWindowPlacement.GetChoice();
+                if (Program.StartupAutomation)
+                {
+                    // Say in the log which monitor this run chose and what the alternatives were.
+                    // The number in the variable is not the number Windows Settings shows; see
+                    // AutomationWindowPlacement.DescribeChoice.
+                    Logger.WriteEvent(AutomationWindowPlacement.DescribeChoice());
+                }
                 if (placement == AutomationWindowPlacement.Choice.OffEveryMonitor)
                 {
                     // The window goes off every monitor and out of the task bar, so a test can

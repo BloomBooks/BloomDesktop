@@ -9,9 +9,9 @@ namespace Bloom
     /// What an automation run (--automation, e.g. the Playwright suites) does with the windows it
     /// opens. One environment variable decides it, BLOOM_AUTOMATION_MONITOR:
     ///
-    ///   "2" (any 1-based index into Screen.AllScreens)  every window opens on that monitor
-    ///   "headless"                                      every window opens off every monitor
-    ///   absent, empty, or anything else                 Bloom places its windows as it always does
+    ///   "2" (a 1-based monitor number, counted left to right)  every window opens on that monitor
+    ///   "headless", or "0" for no monitor at all                every window opens off every monitor
+    ///   absent, empty, or anything else                         Bloom places windows as it always does
     ///
     /// The variable applies ONLY under --automation. A developer who leaves it set in their shell
     /// therefore still gets an ordinary, visible Bloom when they start one themselves; only a run
@@ -30,6 +30,9 @@ namespace Bloom
     {
         /// <summary>The value of BLOOM_AUTOMATION_MONITOR that asks for off-screen windows.</summary>
         public const string HeadlessSetting = "headless";
+
+        /// <summary>The number that says the same thing as HeadlessSetting: no monitor at all.</summary>
+        public const string NoMonitorSetting = "0";
 
         public const string VariableName = "BLOOM_AUTOMATION_MONITOR";
 
@@ -87,6 +90,10 @@ namespace Bloom
                 return Choice.AsBloomNormallyWould;
             if (trimmed.Equals(HeadlessSetting, StringComparison.OrdinalIgnoreCase))
                 return Choice.OffEveryMonitor;
+            // "0" says the same thing as "headless": no monitor at all. It reads as "none" beside
+            // the numbers that name a monitor, and it is quicker to type.
+            if (trimmed == NoMonitorSetting)
+                return Choice.OffEveryMonitor;
             if (int.TryParse(trimmed, out var index) && index >= 1 && index <= screenCount)
             {
                 oneBasedMonitor = index;
@@ -100,6 +107,32 @@ namespace Bloom
         /// variable: it is also false for a run that is not automation.
         /// </summary>
         public static bool IsOffEveryMonitor => GetChoice() == Choice.OffEveryMonitor;
+
+        /// <summary>
+        /// This machine's monitors in the order the variable numbers them: left to right, so
+        /// monitor 1 is the leftmost. Two monitors at the same horizontal position, one above the
+        /// other, come out top first.
+        ///
+        /// The order is by position rather than the order Screen.AllScreens happens to return,
+        /// which is the order of the display drivers and means nothing a developer can see. A
+        /// developer reads a number off the picture of their monitors, so the number has to follow
+        /// the picture.
+        ///
+        /// This is still NOT the number Windows Settings prints on each monitor. Windows does not
+        /// document how the Settings app makes those labels, and neither the AllScreens order nor
+        /// the \\.\DISPLAY&lt;n&gt; device name nor the display-config path order reproduces them: on
+        /// one three-monitor machine Windows Settings said 1 (primary, centre), 2 (right) and
+        /// 3 (left), while left to right is 1 (left), 2 (primary, centre) and 3 (right). So Bloom
+        /// counts left to right, which a developer can work out from the arrangement they see,
+        /// and DescribeChoice writes the whole mapping to the log.
+        /// </summary>
+        public static Screen[] MonitorsLeftToRight()
+        {
+            return Screen
+                .AllScreens.OrderBy(screen => screen.Bounds.Left)
+                .ThenBy(screen => screen.Bounds.Top)
+                .ToArray();
+        }
 
         /// <summary>
         /// The monitor an automation run opens its windows on. Only meaningful when the choice is
@@ -117,9 +150,44 @@ namespace Bloom
                 ) == Choice.OnTheChosenMonitor
             )
             {
-                return Screen.AllScreens[oneBasedMonitor - 1];
+                return MonitorsLeftToRight()[oneBasedMonitor - 1];
             }
             return Screen.PrimaryScreen;
+        }
+
+        /// <summary>
+        /// One line for the log saying what the variable said and what this run did with it,
+        /// naming every monitor by position and size.
+        ///
+        /// This exists because the number in the variable counts left to right, which is NOT the
+        /// number Windows Settings prints beside each display; see MonitorsLeftToRight. A developer
+        /// who reads a number off Windows Settings therefore gets a different monitor, and nothing
+        /// on screen says so. The log line is what lets them see which monitor Bloom actually
+        /// chose, and work out the number they want.
+        /// </summary>
+        public static string DescribeChoice()
+        {
+            var raw = Environment.GetEnvironmentVariable(VariableName);
+            var monitors = string.Join(
+                ", ",
+                MonitorsLeftToRight()
+                    .Select(
+                        (screen, zeroBased) =>
+                            $"{zeroBased + 1}=({screen.Bounds.X},{screen.Bounds.Y}) "
+                            + $"{screen.Bounds.Width}x{screen.Bounds.Height}"
+                            + (screen.Primary ? " primary" : "")
+                    )
+            );
+            var what = GetChoice() switch
+            {
+                Choice.OffEveryMonitor => "every window goes off every monitor",
+                Choice.OnTheChosenMonitor =>
+                    $"every window goes on the monitor at {GetChosenMonitor().Bounds}",
+                _ => "Bloom places its windows as it always does",
+            };
+            return $"{VariableName}={(raw == null ? "(not set)" : $"'{raw}'")}: {what}. "
+                + $"The monitors this process sees, numbered left to right as this variable "
+                + $"numbers them (which is NOT how Windows Settings numbers them): {monitors}.";
         }
 
         /// <summary>

@@ -144,19 +144,35 @@ the splash screen alike. Set it in your shell, or per run:
 
 | Value | What happens |
 | --- | --- |
-| `headless` | Every window opens far outside every monitor. You see nothing, so a run can go on while you work. |
-| a 1-based monitor number | Every window opens on that monitor, so a run stays off the one you are working on. |
+| `headless`, or `0` | Every window opens far outside every monitor. You see nothing, so a run can go on while you work. |
+| a 1-based monitor number, counted left to right | Every window opens on that monitor, so a run stays off the one you are working on. |
 | unset, or anything else | Bloom places its windows as it always does, and you see the run. |
 
 ```bash
 BLOOM_AUTOMATION_MONITOR=headless pnpm test    # see nothing
-BLOOM_AUTOMATION_MONITOR=2 pnpm test           # on the second monitor
+BLOOM_AUTOMATION_MONITOR=0 pnpm test           # the same thing: no monitor at all
+BLOOM_AUTOMATION_MONITOR=2 pnpm test           # on the second monitor from the left
 pnpm test                                      # wherever Bloom normally opens
 ```
 
 A value Bloom cannot use, a typo or a monitor you do not have, counts as "anything else": you get
 a visible window, which is exactly what tells you the variable did not take effect. A setting that
 hid the window on a typo would leave you nothing to notice.
+
+**The number counts left to right, which is not the number Windows Settings shows.** Monitor 1 is
+your leftmost monitor, 2 the next one to the right, and so on, matching the arrangement picture in
+Windows Settings but not the numbers printed on it. Windows does not document how the Settings app
+makes those numbers, and no API reproduces them: on one three-monitor machine Windows Settings said
+1 (primary, centre), 2 (right) and 3 (left), while left to right is 1 (left), 2 (primary, centre)
+and 3 (right). So read the arrangement, not the numbers on it. Bloom also writes the whole mapping
+to `%TEMP%\SIL\Bloom\Log.txt` on every automation start:
+
+```
+BLOOM_AUTOMATION_MONITOR='2': every window goes on the monitor at {X=0,Y=0,Width=2560,Height=1440}.
+The monitors this process sees, numbered left to right as this variable numbers them (which is NOT
+how Windows Settings numbers them): 1=(-1920,601) 1920x1200, 2=(0,0) 2560x1440 primary,
+3=(3840,432) 1920x1200.
+```
 
 `headless` moves the window off-screen rather than minimizing or hiding it, because WebView2 stops
 painting a minimized window, which would make every screenshot blank. Off-screen the window paints
