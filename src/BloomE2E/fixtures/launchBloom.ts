@@ -178,6 +178,24 @@ function environmentForBloom(): NodeJS.ProcessEnv {
     return process.env;
 }
 
+/**
+ * The Vite dev server port the launched Bloom should load its React front end from, or undefined
+ * to leave the choice to Bloom.
+ *
+ * A launched Bloom serves its UI from the built output/browser unless it is told about a dev
+ * server, so an edit to a .tsx file does not reach the suite until somebody rebuilds the bundle,
+ * which AGENTS.md reserves for a developer or CI. Set BLOOM_E2E_VITE_PORT=<n> and Bloom loads the
+ * front end from that dev server instead, so the suite tests the working tree.
+ *
+ * Leaving the variable unset is NOT the same as "no dev server". A dev build of Bloom probes port
+ * 5173 by itself (ReactControl.TryGetActiveViteDevPort), so a developer's own dev server silently
+ * changes what the suite tests, and Bloom has no option that means "ignore any dev server"
+ * (--vite-port rejects 0). See AUTOMATION-DEBT.md.
+ */
+function getViteDevPort(): string | undefined {
+    return process.env.BLOOM_E2E_VITE_PORT || undefined;
+}
+
 /** What common/instanceInfo tells us about a running Bloom. Only the fields we use. */
 interface IInstanceInfo {
     editableCollectionFolder?: string;
@@ -385,6 +403,10 @@ async function startBloomOn(
     // --automation: let this instance run alongside a Bloom the developer already has open, and
     // let BLOOM_AUTOMATION_MONITOR say where its windows go (see environmentForBloom).
     const args = [findCollectionFile(collectionDir), "--e2e", "--automation"];
+    // --vite-port: serve the React front end from a dev server, so the suite tests the working
+    // tree rather than a stale output/browser (see getViteDevPort).
+    const vitePort = getViteDevPort();
+    if (vitePort) args.push("--vite-port", vitePort);
     const bloomProcess: ChildProcess = execFile(exe, args, {
         env: environmentForBloom(),
     });

@@ -354,6 +354,24 @@ see "Build Bloom whenever it helps") and the inputs at `output/testing-inputs`. 
 `BLOOM_TESTING_INPUTS_DIR` at a bloom-testing-inputs checkout to use your own in-progress
 collections instead of the pinned ones.
 
+The launched Bloom serves its React UI from the built `output/browser`, so **an edit to a `.tsx`
+file does not reach a run until that bundle is rebuilt.** To test the working tree instead, start
+a dev server and name its port in `BLOOM_E2E_VITE_PORT`; the fixture passes `--vite-port` and
+Bloom loads every React control from it. Set `PORT` as well as `--port`, or the dev server's
+HMR and React-Refresh URLs still point at 5173 and the page fails to load its entry module.
+
+```bash
+PORT=5173 pnpm exec vite --port 5173 --strictPort   # in src/BloomBrowserUI
+BLOOM_E2E_VITE_PORT=5173 pnpm test                  # in src/BloomE2E
+```
+
+**Use 5173, and set the variable.** The page list and the toolbox write `http://localhost:5173`
+into their own imports, so on any other port those two frames load nothing and come up empty,
+which reads as the feature being missing. And leaving the variable unset does not mean "no dev
+server": a dev build of Bloom probes 5173 by itself, so an unset variable and a server elsewhere
+means the run quietly tests the built bundle, however old it is. Stop a Bloom that already holds
+5173 rather than moving the dev server. See AUTOMATION-DEBT.md.
+
 `.github/workflows/nightly.yml` does not run this suite yet. The step it will need is the
 same `pnpm test` in that folder, after the Release build and the testing-inputs fetch that
 the visual-regression job already does.
