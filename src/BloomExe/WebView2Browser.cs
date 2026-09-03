@@ -396,11 +396,12 @@ namespace Bloom
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
             }
-            if (Program.StartupHeadless)
+            if (AutomationWindowPlacement.IsOffEveryMonitor)
             {
-                // A headless run keeps Bloom's window far off-screen (see Shell.GetHeadlessBounds),
-                // so Windows reports the window as occluded and Chromium stops rendering it. A
-                // screenshot of an unrendered page comes back blank, so turn that behavior off.
+                // This run keeps Bloom's window far off-screen (see
+                // AutomationWindowPlacement.GetBoundsOffEveryMonitor), so Windows reports the
+                // window as occluded and Chromium stops rendering it. A screenshot of an
+                // unrendered page comes back blank, so turn that behavior off.
                 featuresToDisable.Add("CalculateNativeWinOcclusion");
                 additionalBrowserArgs += " --disable-backgrounding-occluded-windows";
             }

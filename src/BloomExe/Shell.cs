@@ -48,64 +48,9 @@ namespace Bloom
         private bool _finishedLoading;
 
         // During an automation run (--automation, e.g. the Playwright suites) the window must
-        // not steal the user's keyboard focus when it is shown. The same goes for a headless run
-        // (--headless), whose window sits off-screen where the user cannot see it at all.
-        protected override bool ShowWithoutActivation =>
-            Program.StartupAutomation || Program.StartupHeadless;
-
-        /// <summary>
-        /// The screen that an automation run (--automation) should open windows on: the one
-        /// chosen by the BLOOM_AUTOMATION_MONITOR environment variable (a 1-based index into
-        /// Screen.AllScreens), or the primary screen when the variable is absent or out of
-        /// range. Without this, Windows opens each test-launched window on whichever monitor
-        /// the user is currently working on.
-        /// </summary>
-        public static Screen GetAutomationScreen()
-        {
-            var setting = Environment.GetEnvironmentVariable("BLOOM_AUTOMATION_MONITOR");
-            if (
-                int.TryParse(setting, out var oneBasedIndex)
-                && oneBasedIndex >= 1
-                && oneBasedIndex <= Screen.AllScreens.Length
-            )
-            {
-                return Screen.AllScreens[oneBasedIndex - 1];
-            }
-            return Screen.PrimaryScreen;
-        }
-
-        /// <summary>
-        /// Where a headless run (--headless) puts its window: the size of the automation screen's
-        /// working area, but positioned to the left of every monitor, so that not one pixel of it
-        /// is on any screen.
-        ///
-        /// The window is moved rather than minimized or hidden because a minimized WebView2 stops
-        /// painting: screenshots come back blank and the layout is the wrong size. An off-screen
-        /// window of the normal size keeps painting, so a test sees exactly what a user would.
-        /// </summary>
-        public static Rectangle GetHeadlessBounds()
-        {
-            var size = GetAutomationScreen().WorkingArea.Size;
-            // Two bounds, and the window has to respect both.
-            //
-            // The first is the leftmost monitor: the window's right edge has to be left of it, or
-            // part of the window shows. The 1000-pixel cushion is there because Windows and this
-            // process do not always agree about how many pixels wide a monitor is, which is what
-            // happens when the monitors have different scale factors.
-            //
-            // The second is -32000, as far left as a window may go: Windows still places a window
-            // there, and anything beyond about -32768 runs into the 16-bit coordinates that some
-            // of the older window messages still carry.
-            //
-            // On any real layout the first bound gives a few thousand pixels to the left, well
-            // inside the second. A leftward run of monitors more than about 30000 pixels wide
-            // would need a position that satisfies neither, and then the limit wins: a window at
-            // a coordinate Windows will not honour is worse than one that overlaps a monitor.
-            const int farLeftWindowsAllows = -32000;
-            var leftmostX = Screen.AllScreens.Min(screen => screen.Bounds.Left);
-            var x = Math.Max(farLeftWindowsAllows, leftmostX - size.Width - 1000);
-            return new Rectangle(x, 0, size.Width, size.Height);
-        }
+        // not steal the user's keyboard focus when it is shown. That holds wherever the window
+        // is: on the developer's desktop, on a monitor of its own, or off every monitor.
+        protected override bool ShowWithoutActivation => Program.StartupAutomation;
 
         public Shell(
             Func<WorkspaceView> projectViewFactory,
@@ -126,10 +71,10 @@ namespace Bloom
             _controlKeyEvent = controlKeyEvent;
             _audioRecording = audioRecording;
             InitializeComponent();
-            if (Program.StartupHeadless)
+            if (AutomationWindowPlacement.IsOffEveryMonitor)
             {
-                // Keep the off-screen window out of the task bar, so a headless run leaves no
-                // trace on the developer's desktop.
+                // Keep the off-screen window out of the task bar, so such a run leaves no trace
+                // on the developer's desktop.
                 //
                 // This has to happen before the window handle exists, which is why it is here
                 // and not in Shell_Load with the rest of the headless placement. Assigning
@@ -472,10 +417,10 @@ namespace Bloom
         public void ReallyComeToFront()
         {
             // During an automation run, grabbing focus would yank the user's keyboard away
-            // from whatever they are doing on another monitor while tests run. A headless
-            // window must not come to the front either: it is off-screen on purpose, and
-            // TopMost/BringToFront on it would take the foreground away for nothing.
-            if (!Program.StartupAutomation && !Program.StartupHeadless)
+            // from whatever they are doing while tests run, and a window placed off every
+            // monitor cannot come to the front at all: TopMost and BringToFront on it would
+            // take the foreground away for nothing.
+            if (!Program.StartupAutomation)
             {
                 //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
                 TopMost = true;
@@ -496,26 +441,40 @@ namespace Bloom
             {
                 SuspendLayout();
 
-                if (Program.StartupHeadless)
+                // Where an automation run puts its window is BLOOM_AUTOMATION_MONITOR's to
+                // decide (see AutomationWindowPlacement). A run that it says nothing about falls
+                // through to the ordinary cases below, window placement and all, so the
+                // developer sees the Bloom they would see without the variable.
+                var placement = AutomationWindowPlacement.GetChoice();
+                if (placement == AutomationWindowPlacement.Choice.OffEveryMonitor)
                 {
-                    // A headless run keeps the window off every screen and out of the task bar,
-                    // so a test can run while the developer works. The window stays Normal (not
-                    // minimized) and full size, because WebView2 only paints a window that is
-                    // neither minimized nor hidden. See GetHeadlessBounds.
+                    // The window goes off every monitor and out of the task bar, so a test can
+                    // run while the developer works. It stays Normal (not minimized) and full
+                    // size, because WebView2 only paints a window that is neither minimized nor
+                    // hidden. See AutomationWindowPlacement.GetBoundsOffEveryMonitor.
                     StartPosition = FormStartPosition.Manual;
                     WindowState = FormWindowState.Normal;
-                    Bounds = GetHeadlessBounds();
+                    Bounds = AutomationWindowPlacement.GetBoundsOffEveryMonitor();
                     // ShowInTaskbar is set in the constructor, not here. See the comment there.
+                }
+                else if (placement == AutomationWindowPlacement.Choice.OnTheChosenMonitor)
+                {
+                    // Open on the monitor the variable named, not on whichever one the developer
+                    // is working on, and leave the saved window placement alone.
+                    StartPosition = FormStartPosition.Manual;
+                    WindowState = FormWindowState.Normal;
+                    Bounds = AutomationWindowPlacement.GetChosenMonitor().WorkingArea;
+                    // Maximizing keeps the window on the screen that contains its bounds.
+                    WindowState = FormWindowState.Maximized;
                 }
                 else if (Program.StartupAutomation)
                 {
-                    // An automation run must not open on whichever monitor the user is
-                    // currently working on, and must not disturb the saved window placement.
-                    // Pin the window to the automation screen (see GetAutomationScreen).
-                    StartPosition = FormStartPosition.Manual;
-                    WindowState = FormWindowState.Normal;
-                    Bounds = GetAutomationScreen().WorkingArea;
-                    // Maximizing keeps the window on the screen that contains its bounds.
+                    // An automation run the variable said nothing about: open exactly where a
+                    // Bloom with no saved placement opens, and write nothing. The guard below
+                    // keeps it from touching the developer's saved placement either way, which
+                    // it must not do whatever the variable says: every Bloom of one build shares
+                    // one user.config.
+                    StartPosition = FormStartPosition.WindowsDefaultLocation;
                     WindowState = FormWindowState.Maximized;
                 }
                 else if (Settings.Default.WindowSizeAndLocation == null)
@@ -529,9 +488,9 @@ namespace Bloom
                 // This feature is not yet a normal part of Bloom, since we think just maximizing is more rice-farmer-friendly.
                 // However, we added the ability to remember this stuff at the request of the person making videos, who needs
                 // Bloom to open in the same place / size each time.
-                if (Program.StartupAutomation || Program.StartupHeadless)
+                if (Program.StartupAutomation)
                 {
-                    // Placement is already pinned above; leave the user's saved placement alone.
+                    // Placement is settled above; leave the developer's saved placement alone.
                 }
                 else if (Settings.Default.MaximizeWindow == false)
                 {
@@ -591,9 +550,10 @@ namespace Bloom
                 return;
             if (WindowState != FormWindowState.Normal)
                 return;
-            // A headless window is deliberately off every screen and is Normal rather than
-            // maximized, so saving its bounds would leave the developer's next Bloom invisible.
-            if (Program.StartupHeadless || Program.StartupAutomation)
+            // An automation run must never write the saved bounds. Where BLOOM_AUTOMATION_MONITOR
+            // put its window is somewhere the developer is not looking, off every monitor or on a
+            // monitor of the run's choosing, and saving that would move their next Bloom there.
+            if (Program.StartupAutomation)
                 return;
 
             Settings.Default.RestoreBounds = new Rectangle(Left, Top, Width, Height);

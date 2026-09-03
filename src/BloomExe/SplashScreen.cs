@@ -29,33 +29,34 @@ namespace Bloom
         }
 
         // During an automation run (--automation) the splash must not steal the user's
-        // keyboard focus when it is shown. Neither must a headless run (--headless), whose
-        // windows all sit off-screen.
-        protected override bool ShowWithoutActivation =>
-            Program.StartupAutomation || Program.StartupHeadless;
+        // keyboard focus when it is shown. That holds wherever the splash is.
+        protected override bool ShowWithoutActivation => Program.StartupAutomation;
 
         private SplashScreen()
         {
             InitializeComponent();
-            if (Program.StartupHeadless)
+            // The splash obeys BLOOM_AUTOMATION_MONITOR exactly as the main window does (see
+            // AutomationWindowPlacement). It is the second window every run opens, so a splash
+            // that ignored the variable would put a window on the developer's desktop however
+            // carefully the main one was placed.
+            var placement = AutomationWindowPlacement.GetChoice();
+            if (placement == AutomationWindowPlacement.Choice.OffEveryMonitor)
             {
-                // A headless run shows nothing on any monitor, so the splash goes off-screen with
-                // the main window and out of the task bar with it. See Shell.GetHeadlessBounds.
-                //
-                // The splash normally has a task bar entry, and an off-screen window with one is
+                // Off every monitor with the main window, and out of the task bar with it. The
+                // splash normally has a task bar entry, and an off-screen window with one is
                 // worse than either: the developer gets a task bar button for a window they
                 // cannot bring into view.
                 StartPosition = FormStartPosition.Manual;
-                var headlessArea = Shell.GetHeadlessBounds();
-                Location = new System.Drawing.Point(headlessArea.Left, headlessArea.Top);
+                var offScreenArea = AutomationWindowPlacement.GetBoundsOffEveryMonitor();
+                Location = new System.Drawing.Point(offScreenArea.Left, offScreenArea.Top);
                 ShowInTaskbar = false;
             }
-            else if (Program.StartupAutomation)
+            else if (placement == AutomationWindowPlacement.Choice.OnTheChosenMonitor)
             {
-                // An automation run must not open on whichever monitor the user is currently
-                // working on. Center the splash on the automation screen instead.
+                // Center the splash on the monitor the variable named, rather than on whichever
+                // one the developer is working on.
+                var area = AutomationWindowPlacement.GetChosenMonitor().WorkingArea;
                 StartPosition = FormStartPosition.Manual;
-                var area = Shell.GetAutomationScreen().WorkingArea;
                 Location = new System.Drawing.Point(
                     area.Left + (area.Width - Width) / 2,
                     area.Top + (area.Height - Height) / 2
@@ -126,9 +127,9 @@ namespace Bloom
         private void SplashScreen_Load(object sender, EventArgs e)
         {
             // During an automation run, grabbing focus would yank the user's keyboard away
-            // from whatever they are doing on another monitor while tests run. A headless splash
-            // is off-screen, so bringing it to the front would take the foreground for nothing.
-            if (!Program.StartupAutomation && !Program.StartupHeadless)
+            // from whatever they are doing while tests run, and a splash off every monitor
+            // cannot come to the front at all.
+            if (!Program.StartupAutomation)
             {
                 //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
                 TopMost = true;
@@ -138,7 +139,7 @@ namespace Bloom
             _channelLabel.Visible = channel.ToLowerInvariant() != "release";
             _channelLabel.Text = channel; // No need to localize this: seen only by testers or special users (BL-4451)
             _copyrightlabel.Text = $"© 2011-{DateTime.Now.Year} SIL Global";
-            if (!Program.StartupAutomation && !Program.StartupHeadless)
+            if (!Program.StartupAutomation)
                 BringToFront();
         }
 

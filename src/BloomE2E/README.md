@@ -135,18 +135,38 @@ pnpm exec playwright test -g "switching workspace tabs"       # one test by titl
 pnpm exec playwright test --debug    # step through it
 ```
 
-A run opens a real Bloom, but you will not see it: Bloom is launched with `--headless`, which puts
-its window far outside every monitor, so a run can go on while you work. The window is moved
-off-screen rather than minimized or hidden because WebView2 stops painting a minimized window,
-which would make every screenshot blank.
+A run opens a real Bloom window on your desktop. That is expected; do not click in it.
 
-To watch the run instead, set `BLOOM_E2E_HEADED=1`; `--debug` turns it on for you.
+### Where the Bloom window goes: `BLOOM_AUTOMATION_MONITOR`
+
+One environment variable decides where every window an e2e run opens goes, the main window and
+the splash screen alike. Set it in your shell, or per run:
+
+| Value | What happens |
+| --- | --- |
+| `headless` | Every window opens far outside every monitor. You see nothing, so a run can go on while you work. |
+| a 1-based monitor number | Every window opens on that monitor, so a run stays off the one you are working on. |
+| unset, or anything else | Bloom places its windows as it always does, and you see the run. |
 
 ```bash
-BLOOM_E2E_HEADED=1 pnpm exec playwright test tests/workspace-tabs.spec.ts
+BLOOM_AUTOMATION_MONITOR=headless pnpm test    # see nothing
+BLOOM_AUTOMATION_MONITOR=2 pnpm test           # on the second monitor
+pnpm test                                      # wherever Bloom normally opens
 ```
 
-A headed run opens a real Bloom window. That is expected; do not click in it.
+A value Bloom cannot use, a typo or a monitor you do not have, counts as "anything else": you get
+a visible window, which is exactly what tells you the variable did not take effect. A setting that
+hid the window on a typo would leave you nothing to notice.
+
+`headless` moves the window off-screen rather than minimizing or hiding it, because WebView2 stops
+painting a minimized window, which would make every screenshot blank. Off-screen the window paints
+exactly as it would in front of you, so rendering and keyboard input behave the same.
+
+`--debug` clears a `headless` setting for you: stepping through a test whose window you cannot see
+is pointless. A setting that names a monitor is left alone, because that window is visible anyway.
+
+The variable applies only to a run under `--automation`, which is every e2e run and nothing else.
+A Bloom you start yourself is unaffected, however the variable is set.
 
 The suite needs a built `Bloom.exe` under `output/{Debug,Release}/{x64,AnyCPU,}/` and the test
 inputs at `output/testing-inputs`, fetched by `node build/get-testing-inputs.mjs` at the commit

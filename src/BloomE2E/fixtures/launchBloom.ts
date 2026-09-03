@@ -159,19 +159,22 @@ function samePath(a: string, b: string): boolean {
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Whether the Bloom we launch should appear on a monitor. By default it does not: --headless puts
- * its window far outside every screen, so a run does not take the developer's desktop over.
+ * The environment the Bloom we launch runs in. One variable decides where its windows go,
+ * BLOOM_AUTOMATION_MONITOR, and Bloom reads it itself (see AutomationWindowPlacement.cs):
+ * "headless" puts every window off every monitor, a monitor number puts them on that monitor, and
+ * anything else, the variable being unset included, leaves Bloom to place its windows as it always
+ * does. So the child inherits this process's environment untouched, with one exception.
  *
- * The window is moved off-screen rather than minimized or hidden because WebView2 stops painting a
- * minimized window: screenshots come back blank and the layout is the wrong size. Off-screen, the
- * window paints exactly as it would in front of a person, so keyboard input and rendering behave
- * the same (see Shell.GetHeadlessBounds).
- *
- * Set BLOOM_E2E_HEADED=1 to watch the run. Playwright's --debug (which sets PWDEBUG) implies it:
- * there is no point stepping through a test whose window you cannot see.
+ * The exception is Playwright's --debug (which sets PWDEBUG): stepping through a test whose window
+ * nobody can see is pointless, so a debug session clears a "headless" setting and gets a window.
+ * A setting that names a monitor is left alone, because that window IS visible.
  */
-function shouldShowBloomOnScreen(): boolean {
-    return process.env.BLOOM_E2E_HEADED === "1" || !!process.env.PWDEBUG;
+function environmentForBloom(): NodeJS.ProcessEnv {
+    const asked = process.env.BLOOM_AUTOMATION_MONITOR?.trim().toLowerCase();
+    if (process.env.PWDEBUG && asked === "headless") {
+        return { ...process.env, BLOOM_AUTOMATION_MONITOR: "" };
+    }
+    return process.env;
 }
 
 /** What common/instanceInfo tells us about a running Bloom. Only the fields we use. */
@@ -378,11 +381,12 @@ async function startBloomOn(
     };
 
     // --e2e: skip the DEBUG "attach debugger now" prompt and suppress modal error dialogs.
-    // --automation: let this instance run alongside a Bloom the developer already has open.
-    // --headless: keep the window off every screen (see shouldShowBloomOnScreen).
+    // --automation: let this instance run alongside a Bloom the developer already has open, and
+    // let BLOOM_AUTOMATION_MONITOR say where its windows go (see environmentForBloom).
     const args = [findCollectionFile(collectionDir), "--e2e", "--automation"];
-    if (!shouldShowBloomOnScreen()) args.push("--headless");
-    const bloomProcess: ChildProcess = execFile(exe, args);
+    const bloomProcess: ChildProcess = execFile(exe, args, {
+        env: environmentForBloom(),
+    });
     let exitStatus: { code: number | null; signal: string | null } | undefined;
     bloomProcess.stdout?.on("data", (d) => recordOutput(String(d)));
     bloomProcess.stderr?.on("data", (d) => recordOutput(String(d)));
