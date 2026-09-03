@@ -340,12 +340,24 @@ namespace Bloom.web.controllers
             payload.pageId = pageId;
 
             // Save before opening, because everything the editor is told about the book is read
-            // from the saved DOM. Saving is synchronous now (see PageSnapshot), so "did the book
-            // actually reach disk?" is simply "did this return without throwing". If it throws we
-            // never reach the open below, which is what we want: opening on a book DOM we know to
-            // be stale is exactly what this endpoint exists to prevent, and the user has already
-            // been shown "Bloom had trouble saving a page...".
-            model.SaveCurrentPageAndBook();
+            // from the saved DOM. Saving is synchronous now (see PageSnapshot), so the answer is
+            // available right here: it throws if the save went wrong (the user has then already
+            // been shown "Bloom had trouble saving a page..."), and returns false if it declined
+            // to save at all -- we are mid-navigation, or an external program has replaced the
+            // book on disk and its content must not be overwritten.
+            //
+            // Either way we must NOT open: the whole point of saving first is that the editor
+            // reads the book from disk, so opening after a save that did not happen would edit
+            // stale images and commit against them. Under the old flow this could not arise --
+            // the open waited for a page load that a refused save never produced -- so it needs
+            // saying now that the open follows immediately.
+            if (!model.SaveCurrentPageAndBook())
+            {
+                request.Failed(
+                    "Bloom could not save the page, so the AI Image Editor was not opened."
+                );
+                return;
+            }
 
             OpenEditorInBrowser(payload);
 

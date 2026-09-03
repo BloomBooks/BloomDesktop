@@ -134,7 +134,13 @@ async function takeSnapshot(): Promise<void> {
         // Try again on the next change: a transient failure should not stop us for good.
         scheduleSnapshot();
     } finally {
-        busy = false;
+        // Only release the lock if we are still the run that took it. If the page was unloaded
+        // and another started while we were awaiting, this run belongs to the old page, and
+        // clearing the flag here would unlock the NEW page's in-flight post -- allowing two at
+        // once, which is the one thing the flag exists to prevent. Not reachable today, because
+        // each page load is a fresh document with its own module state, but the module claims to
+        // be safe to restart and this is what makes that true.
+        if (pageIdBeingWatched === pageId) busy = false;
     }
     // Something changed while we were gathering or posting: that change is not in what we just
     // sent, so go round again.
