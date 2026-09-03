@@ -11,7 +11,12 @@ import {
 
 // Test timing constants
 export const kTestOptOutDelaySeconds = 2;
-export const kTestOptOutTimeoutMs = kTestOptOutDelaySeconds * 1000 + 2000; // delay + buffer
+// The delay the component waits before offering the opt-out button, plus a buffer for the machine
+// running the suite. The buffer was 2000ms, which was not enough on a loaded machine: the last
+// worker to start would miss the button by a fraction of a second, so one of these tests failed
+// about once per full-suite run and passed when run on its own. This is a wait for a state, not a
+// sleep, so a longer buffer costs a passing run nothing.
+export const kTestOptOutTimeoutMs = kTestOptOutDelaySeconds * 1000 + 8000;
 
 // Field helper type for registration form
 type FieldHelper = {

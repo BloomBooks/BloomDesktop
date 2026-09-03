@@ -21,7 +21,6 @@ the identity here. Before you start on a marked entry, ask the owner of its bran
 
 | Branch | What it pays down |
 | --- | --- |
-| `BL-16799-component-tests-in-ci` | The component-tester Playwright suites get a nightly job. |
 | `BL-16799-vite-port` | `BLOOM_E2E_VITE_PORT` makes a run test the working tree's front end. Adds a new entry for what remains. |
 | `BL-16799-type-in-one-call` | Typing in a text box is one insertion, not one key press per character. Adds a new entry: typing now raises no key events. |
 | `BL-16799-page-screenshot` | A helper captures a whole book page, which absorbs the `captureBeyondViewport` footgun. |
@@ -135,18 +134,6 @@ seen again 2026-09-01, in the Edit tab's page thumbnail menu: the items
 inline), so `src/BloomE2E/helpers/pageThumbnails.ts` has to find "Copy Page" and "Paste Page"
 by their English labels, exactly as the top bar does. Same fix: a `data-testid` per command,
 taken from the `commandId` the menu already has.
-
-## The component-tester Playwright suites are not in CI
-
-`nightly.yml` runs vitest, C#, visual-regression and BloomE2E; nothing runs
-`react_components/component-tester`'s suites, which is how the harness sat broken
-(React 17 pin + config bug) unnoticed until it was green again at 144 passed. It will
-rot again silently. Fix direction: a nightly job mirroring the visual-regression one
-(component config only; the bloom-exe config needs the e2e launch fixture first).
-(Promoted from PAPERCUTS 2026-07-27.)
-
-being fixed on `BL-16799-component-tests-in-ci`, as that nightly job. The bloom-exe config
-stays out of it, for the reason given above.
 
 ## Toolbox tool registration is a side effect of toolboxBootstrap
 

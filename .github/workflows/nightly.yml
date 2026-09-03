@@ -1,19 +1,19 @@
 # Nightly build + full test run of everything on master.
 #
 # This is a health check, not a release: it builds the front-end and the C# solution and
-# runs all four test suites — front-end vitest, C# NUnit, the BloomE2E suite and the visual
-# regression suite — but produces no installer, does no signing, and publishes nothing. It
-# exists to catch breakage that the PR checks miss — e.g. tests excluded from PR runs, or rot
-# from dependency/runner drift — on a predictable cadence.
+# runs all five test suites — front-end vitest, C# NUnit, the BloomE2E suite, the visual
+# regression suite, and the component-tester Playwright suite — but produces no installer, does
+# no signing, and publishes nothing. It exists to catch breakage that the PR checks miss — e.g.
+# tests excluded from PR runs, or rot from dependency/runner drift — on a predictable cadence.
 #
-# Each suite publishes its own check run / job-summary section, so the commit shows four
+# Each suite publishes its own check run / job-summary section, so the commit shows five
 # independent results rather than one merged total. See the "Test reports" steps at the end.
 #
 # Schedule: 04:00 UTC daily. GitHub cron is always UTC (== GMT, no DST), so this is a
 # literal 4am GMT. Note GitHub may delay scheduled runs during peak load; exact timing is
 # best-effort. Can also be run on demand via the Actions "Run workflow" button.
 #
-# A manual run can pick which of the four suites to run; all four are ticked by default, so the
+# A manual run can pick which of the five suites to run; all five are ticked by default, so the
 # default manual run matches the scheduled one. Unticking the ones you don't need is how to iterate
 # quickly when chasing a failure in a single suite: the C# suite alone is ~9 minutes of a ~22-minute
 # run, so dropping it takes an attempt to ~12. That was added while hunting the intermittent
@@ -54,6 +54,10 @@ on:
                 description: "Visual-regression suite (drives a real Bloom)"
                 type: boolean
                 default: true
+            run_component_tests:
+                description: "Component-tester suite (Playwright against the Vite harness)"
+                type: boolean
+                default: true
 
 # Don't stack nightlies: if a manual run overlaps the scheduled one, let the first finish.
 concurrency:
@@ -81,6 +85,7 @@ jobs:
             RUN_CSHARP_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_csharp_tests }}
             RUN_E2E_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e_tests }}
             RUN_VISUAL_REGRESSION: ${{ github.event_name != 'workflow_dispatch' || inputs.run_visual_regression }}
+            RUN_COMPONENT_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_component_tests }}
 
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -110,6 +115,7 @@ jobs:
                       src/content/pnpm-lock.yaml
                       src/BloomE2E/pnpm-lock.yaml
                       src/BloomVisualRegressionTests/pnpm-lock.yaml
+                      src/BloomBrowserUI/react_components/component-tester/pnpm-lock.yaml
 
             # ----- Dependencies (mirrors init.sh) -----
 
@@ -453,6 +459,50 @@ jobs:
                   retention-days: 4
                   if-no-files-found: ignore
 
+            # ----- Component-tester tests -----
+            # src/BloomBrowserUI/react_components/component-tester renders one React component at a
+            # time in a Vite dev server and drives it with Playwright (the *.uitest.ts files beside
+            # each component). Nothing ran these until now, which is how the harness sat broken for
+            # weeks — a React 17 pin plus a config bug — and it would rot again silently
+            # (AUTOMATION-DEBT.md, "The component-tester Playwright suites are not in CI").
+            #
+            # This is the component config only (playwright.config.ts, which the package's own
+            # `pnpm test` uses). The sibling playwright.bloom-exe.config.ts attaches over CDP to a
+            # Bloom the developer already has running, so it needs the src/BloomE2E launch fixture
+            # before it can run unattended; its specs are excluded by that config's testIgnore.
+            #
+            # It needs neither build: the harness serves the components from its own Vite dev
+            # server, which playwright.config.ts starts as its webServer. So this group depends on
+            # nothing above it, and runs even when the builds failed.
+            - name: Set up component-tester tests
+              id: setup_component_tests
+              if: ${{ !cancelled() && env.RUN_COMPONENT_TESTS == 'true' }}
+              working-directory: src/BloomBrowserUI/react_components/component-tester
+              shell: bash
+              run: |
+                  pnpm install --frozen-lockfile
+                  pnpm exec playwright install chromium
+
+            # Playwright takes its junit path from PLAYWRIGHT_JUNIT_OUTPUT_NAME, not from a CLI
+            # flag: it has no --outputFile (that is vitest's). The path is relative to the working
+            # directory, so it climbs back to the repo root's output/Tests like the other suites.
+            #
+            # --timeout raises the per-test 30s of playwright.config.ts, which is a developer's
+            # number: it assumes a dev server that has already transformed the module graph. Every
+            # CI run starts cold, and the first request for a component pays for transforming that
+            # whole graph. Locally, a cold first run failed 12 tests on `page.goto` timing out
+            # while the warm re-run of the same suite passed 142 in 58 seconds. So give the runner
+            # room rather than reporting a cold start as a broken component. A passing test still
+            # returns as soon as it passes, so this costs a green run nothing.
+            - name: Run component-tester tests
+              id: component_tests
+              if: ${{ !cancelled() && steps.setup_component_tests.outcome == 'success' }}
+              working-directory: src/BloomBrowserUI/react_components/component-tester
+              shell: bash
+              env:
+                  PLAYWRIGHT_JUNIT_OUTPUT_NAME: ../../../../output/Tests/component-tester-junit.xml
+              run: pnpm test --timeout=120000 --reporter=list,junit
+
             # ----- Test reports, one per suite -----
             # Each suite gets its OWN invocation of the publish action, and therefore its own
             # check run on the commit and its own section in the job summary: pass/fail/skip
@@ -518,6 +568,15 @@ jobs:
                   action_fail_on_inconclusive: true
                   files: output/Tests/visual-regression-junit.xml
 
+            - name: Publish component-tester test results
+              if: ${{ !cancelled() && steps.component_tests.outcome != 'skipped' }}
+              uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+              with:
+                  check_name: "Nightly tests: component-tester (Playwright)"
+                  comment_mode: "off"
+                  action_fail_on_inconclusive: true
+                  files: output/Tests/component-tester-junit.xml
+
             - name: Upload test results
               if: ${{ always() }}
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -531,4 +590,5 @@ jobs:
                       output/Tests/vitest-junit.xml
                       output/Tests/e2e-junit.xml
                       output/Tests/visual-regression-junit.xml
+                      output/Tests/component-tester-junit.xml
                   retention-days: 14
