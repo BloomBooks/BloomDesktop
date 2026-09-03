@@ -399,12 +399,10 @@ namespace Bloom
         /// </summary>
         public void ReallyComeToFront()
         {
-            // Hold topmost for a moment rather than toggling it instantly: the window we are racing
-            // may raise itself just after we do, and an instant toggle loses to that. BringToFrontNow
-            // explains why the late drop wins either way. (An instant toggle is what we used to do
-            // here, and it is why Bloom could come up behind Chrome. BL-16784)
+            // An instant toggle is what we used to do here, and it is why Bloom could come up
+            // behind Chrome. (BL-16784)  See comments for BringToFrontNow for why this works better.
             this.BringToFrontNow();
-
+            // Flag that it's safe to restore the window size and location on Linux.
             _finishedLoading = true;
         }
 

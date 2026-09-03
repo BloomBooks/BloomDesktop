@@ -83,11 +83,11 @@ namespace Bloom
 
         /// <summary>
         /// Put the form in front of other applications right now. We stay topmost for a moment
-        /// instead of dropping it immediately: when the window we are racing was made foreground
-        /// by the close of a previous window, that raise can arrive after ours, and an instant
-        /// toggle loses to it. Clearing TopMost re-asserts our place at the top of the ordinary
-        /// windows anyway, so the late drop wins the race whichever order things happened in.
-        /// See BL-16690, BL-16784.
+        /// instead of dropping it immediately: when another window is in the process of coming to
+        /// the front as a result of Bloom recently closing its own window, that raise can arrive
+        /// after ours, and an instant toggle loses to it. Clearing TopMost re-asserts our place
+        /// at the top of the ordinary windows anyway, so the late drop wins the race whichever
+        /// order things happened in.  See BL-16690, BL-16784.
         ///
         /// Being topmost is not enough by itself. If another application holds the foreground,
         /// Windows refuses our Activate(), so the window we raised is still not the *active* one,
