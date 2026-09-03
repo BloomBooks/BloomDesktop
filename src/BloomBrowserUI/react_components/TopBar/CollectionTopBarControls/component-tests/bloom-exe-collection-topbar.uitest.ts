@@ -10,7 +10,7 @@ test.describe("CollectionTopBarControls on Bloom.exe", () => {
         const connection = await connectToBloomExe();
 
         try {
-            await clickWorkspaceTab(connection.page, "Collections");
+            await clickWorkspaceTab(connection.page, "collection");
             await waitForActiveWorkspaceTab("collection");
 
             await expect(
