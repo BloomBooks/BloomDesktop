@@ -15,16 +15,18 @@ over HTTP, and shuts it down and deletes the temp folder afterward. Because it l
 `--automation`, it can run alongside a Bloom you already have open. Because it operates on a temp
 copy, a run never modifies the books it renders.
 
-# If Andika is installed on your machine
+# Fonts installed on your machine do not matter
 
-bloom-player prefers an installed Andika (`local("Andika")`) over the copy Bloom serves, so with
-Andika installed the bloom-player screenshots come out with your machine's version of the font and
-differ from the reference images, which are rendered without it (as on the CI runner). The book
-previews are not affected. The suite detects this: it warns at the start of the run, and any
-player-page mismatch on such a machine says so in its failure message. Treat those failures as the
-font, not a regression, and do **not** fix them by regenerating the baselines on a machine that has
-Andika — that makes them wrong on CI and on everyone else's machine. To make the player comparisons
-meaningful, uninstall Andika; Bloom itself does not need it installed.
+The reference images are rendered on the CI runner, which has no Andika installed, and the suite
+renders the same way everywhere: text comes from the WOFF2 fonts Bloom itself serves, never from a
+font installed on the machine. That needs no care for the book previews, whose `@font-face` rules
+already point at the served copy. bloom-player is different: it declares Andika as
+`local("Andika")` first and the served copy only as a fallback, so a machine with Andika installed
+used to render every player page with its own copy and differ from the baselines by hundreds of
+pixels per page. The suite now adds its own `@font-face` rules to each player page (see
+`SERVED_FONTS_ONLY_CSS` in `index.spec.ts`), with the served file as the only source, and those
+replace the player's. So a player-page mismatch on your machine is a real difference, and a local
+run can go green whatever fonts you have.
 
 # Where the test inputs come from
 
