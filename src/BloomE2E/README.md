@@ -104,6 +104,10 @@ real bug in the code under test; read the message and fix it rather than working
 - `helpers/realClick.ts` — `realClick`, `realClickAt`. Book tiles, Settings, and PREVIEW ignore a
   synthetic `element.click()`. Never hand-roll `Input.dispatchMouseEvent` in a test; add the
   gesture here.
+- `helpers/screenshot.ts` — `captureCurrentBookPage`, `captureElement`, `readPngSize`. Captures an
+  element taller than the window. `Page.captureScreenshot` with `captureBeyondViewport` hangs in
+  WebView2, so this enlarges the window, clips, clears the override, and times out every CDP
+  request. Never open a CDP session in a test; add the capture here.
 
 Two things a test must never do: trigger a native OS dialog (file pickers, the WinForms Image
 Toolbox, video capture), because Playwright cannot dismiss one and the run hangs; and wait on a
