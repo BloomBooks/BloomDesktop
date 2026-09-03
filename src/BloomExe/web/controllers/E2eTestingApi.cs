@@ -30,6 +30,7 @@ namespace Bloom.web.controllers
         private readonly PageTemplatesApi _pageTemplatesApi;
         private readonly SourceCollectionsList _sourceCollectionsList;
         private readonly EditingModel _editingModel;
+        private readonly AccountApi _accountApi;
 
         public E2eTestingApi(
             CollectionSettings collectionSettings,
@@ -38,7 +39,8 @@ namespace Bloom.web.controllers
             CollectionModel collectionModel,
             PageTemplatesApi pageTemplatesApi,
             SourceCollectionsList sourceCollectionsList,
-            EditingModel editingModel
+            EditingModel editingModel,
+            AccountApi accountApi
         )
         {
             _collectionSettings = collectionSettings;
@@ -48,6 +50,7 @@ namespace Bloom.web.controllers
             _pageTemplatesApi = pageTemplatesApi;
             _sourceCollectionsList = sourceCollectionsList;
             _editingModel = editingModel;
+            _accountApi = accountApi;
         }
 
         /// <summary>
@@ -170,6 +173,19 @@ namespace Bloom.web.controllers
                 HandleGetEditState,
                 false // does not need the UI thread
             );
+
+            // POST {"email": ...}: which Bloom Library login state Bloom should REPORT. A test
+            // needs this because the real login lives in machine-wide settings shared with the
+            // developer's own Bloom: signing out for real would sign the developer out, and
+            // signing in needs an external browser and real credentials. Only the report changes,
+            // so a test can check that the upload screen offers Upload only to a signed-in user;
+            // an actual upload still needs a real login. It runs off the UI thread like the rest
+            // of the login state's plumbing (see AccountApi's own broadcasts).
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "loginState",
+                HandleSetLoginState,
+                false // does not need the UI thread
+            );
         }
 
         /// <summary>
@@ -202,6 +218,27 @@ namespace Bloom.web.controllers
         private void HandleGetShellUrl(ApiRequest request)
         {
             request.ReplyWithText(Workspace.WorkspaceView.MainBrowserForE2eTests?.Url ?? "");
+        }
+
+        /// <summary>
+        /// What POST e2e/loginState takes: the email to report as signed in, the empty string to
+        /// report as signed out, or null (an absent member) to stop pretending altogether and
+        /// report the real login again. The three have to be distinguishable, so this is JSON
+        /// rather than a bare string, in which "signed out" and "no pretense" would both be empty.
+        /// </summary>
+        private class E2eLoginState
+        {
+            public string Email;
+        }
+
+        /// <summary>
+        /// POST e2e/loginState: report a pretended Bloom Library login state instead of the real
+        /// one. See AccountApi.SetLoginStateForE2eTests.
+        /// </summary>
+        private void HandleSetLoginState(ApiRequest request)
+        {
+            _accountApi.SetLoginStateForE2eTests(request.RequiredPostObject<E2eLoginState>().Email);
+            request.PostSucceeded();
         }
 
         /// <summary>

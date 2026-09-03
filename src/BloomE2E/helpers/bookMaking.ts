@@ -536,6 +536,22 @@ export async function addPage(
 }
 
 /**
+ * The id of the page the Edit tab is showing, or undefined when it is not showing one. A test uses
+ * this to check where Bloom took it, e.g. that "Click to fix" on a missing title opened the cover.
+ */
+export async function getShownPageId(page: Page): Promise<string | undefined> {
+    const frame = page.frame({ name: "page" });
+    if (!frame) return undefined;
+    return (
+        (await frame
+            .locator(".bloom-page")
+            .first()
+            .getAttribute("id")
+            .catch(() => null)) ?? undefined
+    );
+}
+
+/**
  * Show a page in the Edit tab. This is also how a test SAVES what it typed: Bloom writes the page
  * it is leaving, so text typed into a box reaches the file only once the book moves off that page.
  */

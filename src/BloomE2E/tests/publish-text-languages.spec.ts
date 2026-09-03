@@ -343,11 +343,18 @@ test.describe("the Text Languages publish list", () => {
         await setContentLanguages(page, ["en"]);
     });
 
-    // FORMER FLAKE: this test failed once in six full runs on 2026-09-01, and the cause was not
-    // known then. The likely cause was found later the same day: the fixture could attach to a
-    // workspace document Bloom was not driving, which fails the tests that come after a restart
-    // (the file runs serially). bloomTest.findShellPage now asks Bloom which document it drives.
-    // If this test fails again, keep the whole log; the first failure kept only the tail.
+    // This test no longer meets the difference BL-16806 is about, and master's version of it
+    // does, so do not copy master's comment back here. Master drops the language by rewriting the
+    // .bloomCollection, and Bloom then asks LibPalaso for the name of the dropped language "in"
+    // the collection's metadata language. LibPalaso honors that only where a native ICU library
+    // is findable, and Bloom ships icu.net but no icuuc.dll, so the CI runner answers "espagnol",
+    // French for Spanish, every time, and a developer machine answers "español" every time. It is
+    // a real difference in what Bloom shows a user, tracked on BL-16806.
+    //
+    // This version drops the language through e2e/setCollectionLanguages, the code the Collection
+    // Settings dialog's OK button runs, which keeps the language's collection name. So the list
+    // reads "Spanish" on every machine, and the lookup that differs is never reached. The
+    // coverage that costs is recorded in src/BloomE2E/AUTOMATION-DEBT.md.
     test("keeps a language that the collection no longer has, under the name the collection remembers [Test Case ID 169]", async ({
         bloomApp,
     }) => {

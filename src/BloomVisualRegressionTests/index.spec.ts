@@ -39,6 +39,13 @@ const testingInputsRoot =
     process.env.BLOOM_TESTING_INPUTS_DIR ??
     Path.join(repoRoot, "output", "testing-inputs");
 const sourceCollectionsRoot = Path.join(testingInputsRoot, "collections");
+// The ONE collection this suite renders. We launch a single Bloom on it (see
+// launchDedicatedBloom) and Bloom cannot be made to switch collections mid-run, so a book in any
+// other collection of the inputs repository is out of reach: selecting it fails. The inputs
+// repository does now hold other collections (page-copy, for the BloomE2E copy-page test), so
+// both the launch and the enumeration of books below go through this constant rather than taking
+// whatever collections happen to be there.
+const TESTED_COLLECTION = "basic";
 if (!fs.existsSync(sourceCollectionsRoot)) {
     throw new Error(
         `Could not find the test-input collections at ${sourceCollectionsRoot}.\n` +
@@ -243,26 +250,24 @@ describe("All books", () => {
         cleanupTempCollections();
     });
 
-    // NB: currently, we don't have a way of making Bloom change collections, or re-running it with a different collection
-    // The inputs repository currently holds only the one collection, so this is ok for now.
-    const collectionFolders = fs
-        .readdirSync(sourceCollectionsRoot)
-        .filter((f) =>
-            fs.statSync(Path.join(sourceCollectionsRoot, f)).isDirectory(),
+    // NB: currently, we don't have a way of making Bloom change collections, or re-running it with
+    // a different collection, so we render only the books of TESTED_COLLECTION -- the one the Bloom
+    // we launch has open. (We used to take every collection in the inputs repository, which was
+    // fine while it held only one; when the page-copy collection was added for the BloomE2E
+    // copy-page test, its books became tests that could never pass, because selecting a book that
+    // is not in the open collection fails.)
+    const collectionFolder = Path.join(
+        sourceCollectionsRoot,
+        TESTED_COLLECTION,
+    );
+    const bookFolders = fs
+        .readdirSync(collectionFolder)
+        .filter(
+            (f) =>
+                fs.statSync(Path.join(collectionFolder, f)).isDirectory() &&
+                !f.startsWith("Sample Texts"),
         )
-        .map((f) => Path.join(sourceCollectionsRoot, f));
-
-    const bookFolders = collectionFolders.flatMap((collectionPath) => {
-        var paths = fs
-            .readdirSync(collectionPath)
-            .filter(
-                (f) =>
-                    fs.statSync(Path.join(collectionPath, f)).isDirectory() &&
-                    !f.startsWith("Sample Texts"),
-            )
-            .map((f) => Path.join(collectionPath, f));
-        return paths;
-    });
+        .map((f) => Path.join(collectionFolder, f));
     const brandings = ["Default", "Local-Community", "UEEP[Uzbek]"];
     // The appearance themes to test. These match the files in src/content/appearanceThemes/.
     const themes = [
@@ -874,18 +879,20 @@ async function findBloomServingCollection(
     return null;
 }
 
-// Populate the throwaway temp collection that Bloom will open, by copying the source collections.
-// A plain copy is enough for determinism now: output/testing-inputs is one exact commit of the
-// inputs repository (build/testing-inputs.pin), so there is no working tree to differ from it. The
-// screenshots/ folders are left out — they are baselines and outputs, read and written in the
-// source tree (see captureOrCompare), and copying 48 reference PNGs per book would only slow the
-// run down.
+// Populate the throwaway temp collection that Bloom will open, by copying TESTED_COLLECTION. The
+// inputs repository's other collections belong to other suites and we never open them, so we do
+// not copy them. A plain copy is enough for determinism now: output/testing-inputs is one exact
+// commit of the inputs repository (build/testing-inputs.pin), so there is no working tree to
+// differ from it. The screenshots/ folders are left out — they are baselines and outputs, read and
+// written in the source tree (see captureOrCompare), and copying 48 reference PNGs per book would
+// only slow the run down.
 function populateTempCollections(dest: string) {
-    fs.cpSync(sourceCollectionsRoot, dest, {
+    const source = Path.join(sourceCollectionsRoot, TESTED_COLLECTION);
+    fs.cpSync(source, Path.join(dest, TESTED_COLLECTION), {
         recursive: true,
-        filter: (source) => Path.basename(source) !== "screenshots",
+        filter: (path) => Path.basename(path) !== "screenshots",
     });
-    console.log(`Rendering the test collections from ${sourceCollectionsRoot}`);
+    console.log(`Rendering the test collection from ${source}`);
 }
 
 // Populate a throwaway temp collection (see populateTempCollections) and launch a dedicated Bloom on
@@ -903,8 +910,8 @@ async function launchDedicatedBloom() {
 
     const collection = Path.join(
         tempCollectionsRoot,
-        "basic",
-        "basic.bloomCollection",
+        TESTED_COLLECTION,
+        `${TESTED_COLLECTION}.bloomCollection`,
     );
     // The exe lands in a config/platform-specific folder depending on the build; try the known
     // locations. Release is included because CI runs the suite against Release builds. Debug is
@@ -952,7 +959,7 @@ async function launchDedicatedBloom() {
     });
 
     // Discover which port our instance opened on by matching the collection folder it has open.
-    const wantFolder = Path.join(tempCollectionsRoot, "basic");
+    const wantFolder = Path.join(tempCollectionsRoot, TESTED_COLLECTION);
     const startTime = Date.now();
     while (Date.now() - startTime < 90000) {
         const match = await findBloomServingCollection(wantFolder);

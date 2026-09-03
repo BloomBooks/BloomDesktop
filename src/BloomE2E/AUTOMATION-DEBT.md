@@ -66,6 +66,25 @@ video have none: the Talking Book tool records from a real microphone, and a vid
 through the Sign Language tool's native file picker or camera, so those two sections of the
 manual test stay manual.
 
+## The Bloom Library login cannot be done for real in a test
+
+Bloom's login state lives in machine-wide settings (`Settings.Default.WebUserId`), which an e2e
+Bloom shares with the developer's own Bloom, and signing in goes out to an external browser with
+real credentials. So a test can drive neither half of it: posting `account/logout` would sign the
+developer out of their own Bloom, and `account/login` would sit waiting for a human. The e2e hook
+`e2e/loginState` therefore makes Bloom *report* a login state without touching the real one, which
+is enough for the gate the upload screen enforces (Upload is offered only to a signed-in user) but
+covers neither the real sign-in and sign-out buttons nor anything that needs a real account —
+which is every manual case that uploads for real (#204, #205, #211-#213, #215, #217, #218, #220),
+so none of those can be automated either. Fix direction: a test account plus a per-instance login
+store (a login the `--e2e` instance keeps to itself), so a run can sign in for real and upload to
+dev.bloomlibrary.org without touching the developer's settings. The per-instance half of that is
+the same fix "Every Bloom of one build shares one user.config" asks for, below; the test account
+is the rest. Note that the pretense changes only what Bloom reports, so Bloom under `--e2e` now
+refuses to upload at all rather than let an automated click publish under the developer's real
+account.
+(Found 2026-09-02 automating Test Case ID 606, `upload-required-items.spec.ts`.)
+
 ## Which front end the e2e suite tests depends on what else is running
 
 A launched Bloom serves its React front end either from the built `output/browser` or from a Vite
