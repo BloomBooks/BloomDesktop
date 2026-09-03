@@ -130,6 +130,17 @@ jobs:
               shell: bash
               run: node build/get-testing-inputs.mjs
 
+            # The font chooser test (src/BloomE2E/tests/font-chooser.spec.ts) needs one installed
+            # font of each verdict Bloom gives, and a clean windows-latest runner has only
+            # Microsoft fonts: nothing Bloom calls "unknown", and nothing non-Microsoft it calls
+            # "unsuitable". bloom-testing-inputs carries the missing fonts under fonts/ (its
+            # fonts/README.md says which and why); this installs them for the runner's user. The
+            # script fails if GDI+ does not list them afterwards, which is what Bloom reads.
+            - name: Install test fonts
+              if: ${{ env.RUN_E2E_TESTS == 'true' }}
+              shell: powershell
+              run: ./src/BloomE2E/scripts/install-test-fonts.ps1
+
             - name: pnpm install
               shell: bash
               run: |
