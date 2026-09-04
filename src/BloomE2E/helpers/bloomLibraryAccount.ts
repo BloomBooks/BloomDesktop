@@ -4,8 +4,12 @@
 // login included, in a folder of its own (bloomApp.userSettingsDir; see fixtures/launchBloom.ts).
 // So a test can sign a real account in without touching the developer's own Bloom, and Bloom's
 // bulk-upload child process, which reads the login back from that folder, uploads as the test
-// account rather than as the developer. See AUTOMATION-DEBT.md, "The Bloom Library login cannot be
-// done for real in a test".
+// account rather than as the developer. (Before that, the login lived in settings shared with the
+// developer's Bloom, so no test could sign in for real, and the upload cases stayed manual.)
+//
+// The sign-in goes straight to the endpoint the website posts a browser login back to, not through
+// Bloom's Sign in button: that button opens the system browser, which no test can drive. See
+// AUTOMATION-DEBT.md, "The Sign in button's trip through the system browser cannot be driven".
 //
 // The account and its password: the email is a constant here, because it is not secret and a reader
 // should see which account a test signs in as (an assertion can check it too — the Sign out button

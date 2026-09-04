@@ -23,7 +23,7 @@ and ask its author.
 | --- | --- | --- |
 | #8299 | `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
 | #8300 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
-| not yet open | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off `e2e-private-user-settings`, which gave every Bloom a test launches a settings folder of its own and removed its entry from this file. |
+| #8306 | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off `e2e-private-user-settings`, which gave every Bloom a test launches a settings folder of its own and removed its entry from this file. |
 
 Three of these also add entries of their own, for the debt that is left after the fix. The
 stack replaces PR #8276, which did all of this at once.
@@ -85,28 +85,19 @@ video have none: the Talking Book tool records from a real microphone, and a vid
 through the Sign Language tool's native file picker or camera, so those two sections of the
 manual test stay manual.
 
-## The Bloom Library login cannot be done for real in a test
+## The Sign in button's trip through the system browser cannot be driven
 
-Bloom's login state lives in machine-wide settings (`Settings.Default.WebUserId`), which an e2e
-Bloom shares with the developer's own Bloom, and signing in goes out to an external browser with
-real credentials. So a test can drive neither half of it: posting `account/logout` would sign the
-developer out of their own Bloom, and `account/login` would sit waiting for a human. The e2e hook
-`e2e/loginState` therefore makes Bloom *report* a login state without touching the real one, which
-is enough for the gate the upload screen enforces (Upload is offered only to a signed-in user) but
-covers neither the real sign-in and sign-out buttons nor anything that needs a real account —
-which is every manual case that uploads for real (#204, #205, #211-#213, #215, #217, #218, #220),
-so none of those can be automated either. Fix direction: a test account plus a per-instance login
-store (a login the `--e2e` instance keeps to itself), so a run can sign in for real and upload to
-dev.bloomlibrary.org without touching the developer's settings. The per-instance half is done:
-every Bloom a test launches now keeps its settings, the login included, in a folder of its own
-(`bloomApp.userSettingsDir`), so a test can put a login there before launch and sign out for real
-without touching anyone else's; the test account is the rest. Note that the pretense changes only
-what Bloom reports, so Bloom under `--e2e` still refuses to upload at all rather than let an
-automated click publish under a real account.
-(Found 2026-09-02 automating Test Case ID 606, `upload-required-items.spec.ts`.)
-
-being fixed on `e2e-real-library-login`: the test account, where its credentials live, and the
-sign-in that uses them.
+A test can now sign a Bloom in to dev.bloomlibrary.org for real (`signBloomIntoLibraryForReal`,
+`helpers/bloomLibraryAccount.ts`): it signs the test account in the way the website does and posts
+the result to `external/login`, the endpoint the website posts a browser login back to, and Bloom
+keeps it in the run's own settings folder. What stays out of reach is the button itself: Sign in
+opens the system browser on bloomlibrary.org's login page, and Playwright drives only Bloom's
+WebView2, so the click, the browser round trip, and the hand-back to Bloom are never exercised.
+Sign out is a plain button and could be, but no test does yet. Cost: the manual cases about the
+sign-in and sign-out buttons stay manual; every case that merely needs to be signed in (the upload
+cases) can run. Fix direction: none cheap. A Bloom-hosted login page under `--e2e` would test a
+different flow from the one users have.
+(Found 2026-09-04 automating Test Case ID 211, `bulk-upload-quick-test.spec.ts`.)
 
 ## Which front end the e2e suite tests depends on what else is running
 

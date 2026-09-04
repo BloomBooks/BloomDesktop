@@ -14,7 +14,7 @@
 import { expect, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as Path from "node:path";
-import { openPublishToWeb } from "./libraryPublish";
+import { acceptAllAgreements, openPublishToWeb } from "./libraryPublish";
 
 /** The name of the log the bulk-upload child process writes into the collection folder. */
 const BULK_UPLOAD_LOG = "BloomBulkUploadLog.txt";
@@ -103,6 +103,24 @@ export async function waitForBulkUploadResult(
         skipped: count(/Skipped (\d+) books/),
         log,
     };
+}
+
+/**
+ * Upload the whole collection and wait for its result, the way a person does from a selected book:
+ * go to Publish: Web, tick the agreements, run "Upload this collection", and read the tally the
+ * child Bloom wrote. A book must be selected and the user signed in. Coming back to Publish: Web
+ * and ticking already-ticked agreements is harmless, so a test calls this for every upload round,
+ * wherever it left Bloom in between.
+ */
+export async function uploadCollection(
+    page: Page,
+    collectionDir: string,
+): Promise<IBulkUploadResult> {
+    await openPublishToWeb(page);
+    await acceptAllAgreements(page);
+    clearBulkUploadLog(collectionDir);
+    await startCollectionUpload(page);
+    return waitForBulkUploadResult(collectionDir);
 }
 
 /**

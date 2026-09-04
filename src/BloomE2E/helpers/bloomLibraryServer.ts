@@ -6,6 +6,11 @@
 // src/connection): a parse-server, which holds the book records and answers anonymous reads with
 // the application id below, and the Bloom Library API, which takes the writes and wants the
 // signed-in user's parse session token. Both ids here are public; the website ships them.
+//
+// The files of an uploaded book sit in the sandbox's public S3 bucket, at the record's baseUrl; a
+// test reads the uploaded HTML from there to see what Bloom actually sent.
+
+import { xmatterPackInBookHtml } from "./bookHtml";
 
 /** The sandbox parse-server, where the book records live. */
 export const DEV_PARSE_SERVER_URL = "https://dev-server.bloomlibrary.org/parse";
@@ -33,8 +38,15 @@ export interface IBookOnServer {
     title: string;
     /** Bloom's tags, e.g. "bookshelf:test-bookshelf-1". */
     tags: string[];
+    /** The bookshelves the book sits on, by url key: the "bookshelf:" tags without their prefix. */
+    bookshelves: string[];
     /** The email of the account that uploaded it. */
     uploaderEmail: string | undefined;
+    /**
+     * Where the book's files are on S3, as Bloom wrote it (BloomS3Client.GetBaseUrl): URL-encoded
+     * with the slashes as %2f and spaces as +. Ends with the book folder's name.
+     */
+    baseUrl: string;
 }
 
 const parseHeaders = {
@@ -43,20 +55,25 @@ const parseHeaders = {
 };
 
 /**
- * The book records on the sandbox for these book instance ids, in no particular order. A book that
- * is not there is simply absent from the result, so a test compares lengths.
+ * Query the sandbox's book records with this parse "where" clause, as the signed-in user when a
+ * login is given (the website sends the session token for a user's own records, so a test does
+ * too). Returns the records in no particular order.
  */
-export async function findBooksOnDevServer(
-    bookInstanceIds: string[],
+async function queryBooksOnDevServer(
+    where: object,
+    describe: string,
+    login?: IBloomLibraryLogin,
 ): Promise<IBookOnServer[]> {
-    const where = JSON.stringify({ bookInstanceId: { $in: bookInstanceIds } });
     const url =
-        `${DEV_PARSE_SERVER_URL}/classes/books?where=${encodeURIComponent(where)}` +
-        `&include=uploader&keys=title,bookInstanceId,tags,uploader&limit=1000`;
-    const response = await fetch(url, { headers: parseHeaders });
+        `${DEV_PARSE_SERVER_URL}/classes/books?where=${encodeURIComponent(JSON.stringify(where))}` +
+        `&include=uploader&keys=title,bookInstanceId,tags,uploader,baseUrl&limit=1000`;
+    const headers = login
+        ? { ...parseHeaders, "X-Parse-Session-Token": login.sessionToken }
+        : parseHeaders;
+    const response = await fetch(url, { headers });
     if (!response.ok)
         throw new Error(
-            `The sandbox parse-server answered ${response.status} to a query for books: ${await response.text()}`,
+            `The sandbox parse-server answered ${response.status} to a query for ${describe}: ${await response.text()}`,
         );
     const body = (await response.json()) as {
         results: {
@@ -65,15 +82,34 @@ export async function findBooksOnDevServer(
             title: string;
             tags?: string[];
             uploader?: { email?: string };
+            baseUrl: string;
         }[];
     };
+    const bookshelfPrefix = "bookshelf:";
     return body.results.map((r) => ({
         objectId: r.objectId,
         bookInstanceId: r.bookInstanceId,
         title: r.title,
         tags: r.tags ?? [],
+        bookshelves: (r.tags ?? [])
+            .filter((tag) => tag.startsWith(bookshelfPrefix))
+            .map((tag) => tag.substring(bookshelfPrefix.length)),
         uploaderEmail: r.uploader?.email,
+        baseUrl: r.baseUrl,
     }));
+}
+
+/**
+ * The book records on the sandbox for these book instance ids, in no particular order. A book that
+ * is not there is simply absent from the result, so a test compares lengths.
+ */
+export async function findBooksOnDevServer(
+    bookInstanceIds: string[],
+): Promise<IBookOnServer[]> {
+    return queryBooksOnDevServer(
+        { bookInstanceId: { $in: bookInstanceIds } },
+        "books",
+    );
 }
 
 /**
@@ -84,42 +120,50 @@ export async function findBooksOnDevServer(
 export async function findBooksUploadedBy(
     login: IBloomLibraryLogin,
 ): Promise<IBookOnServer[]> {
-    const where = JSON.stringify({
-        uploader: {
-            __type: "Pointer",
-            className: "_User",
-            objectId: login.userId,
+    return queryBooksOnDevServer(
+        {
+            uploader: {
+                __type: "Pointer",
+                className: "_User",
+                objectId: login.userId,
+            },
         },
-    });
+        "the account's books",
+        login,
+    );
+}
+
+/**
+ * The HTML of a book as it was uploaded, read from the sandbox's S3 bucket. Bloom uploads the book
+ * folder under the record's baseUrl and names the .htm after the folder, so this reads
+ * `<baseUrl><folder>.htm`. The bucket is public-read; that is how the website shows books.
+ */
+export async function fetchUploadedBookHtml(
+    book: IBookOnServer,
+): Promise<string> {
+    // Bloom writes baseUrl with HttpUtility.UrlEncode, which puts spaces as "+", so undo that
+    // before the general decoding turns the %2f slashes (and any %2b plus) back into themselves.
+    const folderPath = decodeURIComponent(book.baseUrl.replace(/\+/g, " "));
+    const folderName = folderPath.split("/").filter(Boolean).pop()!;
+    // The URL constructor re-encodes the spaces and the rest of the path for the request.
     const url =
-        `${DEV_PARSE_SERVER_URL}/classes/books?where=${encodeURIComponent(where)}` +
-        `&include=uploader&keys=title,bookInstanceId,tags,uploader&limit=1000`;
-    const response = await fetch(url, {
-        headers: {
-            ...parseHeaders,
-            "X-Parse-Session-Token": login.sessionToken,
-        },
-    });
+        new URL(folderPath).href + encodeURIComponent(folderName) + ".htm";
+    const response = await fetch(url);
     if (!response.ok)
         throw new Error(
-            `The sandbox parse-server answered ${response.status} to a query for the account's books: ${await response.text()}`,
+            `S3 answered ${response.status} for the uploaded HTML of "${book.title}" at ${url}`,
         );
-    const body = (await response.json()) as {
-        results: {
-            objectId: string;
-            bookInstanceId: string;
-            title: string;
-            tags?: string[];
-            uploader?: { email?: string };
-        }[];
-    };
-    return body.results.map((r) => ({
-        objectId: r.objectId,
-        bookInstanceId: r.bookInstanceId,
-        title: r.title,
-        tags: r.tags ?? [],
-        uploaderEmail: r.uploader?.email,
-    }));
+    return response.text();
+}
+
+/**
+ * The front/back matter pack the uploaded copy of this book carries (see xmatterPackInBookHtml):
+ * how a test sees that an upload sent the book with the collection's current pack.
+ */
+export async function getXmatterPackOfBookOnServer(
+    book: IBookOnServer,
+): Promise<string> {
+    return xmatterPackInBookHtml(await fetchUploadedBookHtml(book));
 }
 
 /**
