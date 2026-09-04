@@ -267,7 +267,12 @@ namespace Bloom.Book
             // Force a full update so shared/derived data (titles, metadata) is sucked in, matching
             // what the live editor does when leaving a page that changed such data. We delay the
             // actual write to disk until a single Book.Save() after all pages are processed.
-            book.UpdateDomFromEditedPage(editedDom, out _, needToDoFullSave: true);
+            book.UpdateDomFromEditedPage(
+                editedDom,
+                out _,
+                needToDoFullSave: true,
+                anythingChanged: out _
+            );
         }
 
         /// <summary>

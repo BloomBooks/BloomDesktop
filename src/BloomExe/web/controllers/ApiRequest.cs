@@ -522,6 +522,20 @@ namespace Bloom.Api
         }
 
         /// <summary>
+        /// The current page's content, for a request whose whole body is that content because the
+        /// browser sent it along so we can save the page without asking for it and waiting (see
+        /// getPageContentForSaveWhenReady() in bloomEditing.ts and EditingModel.SavePageInPlaceThen).
+        /// Null if it was not sent, in which case the handler must fall back to SaveThen.
+        ///
+        /// Deliberately not unescaped: this is page HTML, and unescaping it would corrupt it.
+        /// </summary>
+        public string GetPageContentFromBrowserOrNull()
+        {
+            var content = GetPostStringOrNull(unescape: false);
+            return string.IsNullOrEmpty(content) ? null : content;
+        }
+
+        /// <summary>
         /// Get an enum value of type T that was passed as application/json
         /// </summary>
         /// <typeparam name="T"></typeparam>

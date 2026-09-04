@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Globalization;
 using Bloom.Api;
@@ -70,7 +70,7 @@ namespace Bloom.Edit
                     kApiUrlPart + "duplicatePage",
                     request =>
                     {
-                        _editingModel.OnDuplicatePage();
+                        _editingModel.OnDuplicatePage(request.GetPageContentFromBrowserOrNull());
                         request.PostSucceeded();
                     },
                     true
@@ -83,7 +83,7 @@ namespace Bloom.Edit
                     request =>
                     {
                         // The browser side has already confirmed with the user (BL-16421).
-                        _editingModel.OnDeletePage();
+                        _editingModel.OnDeletePage(request.GetPageContentFromBrowserOrNull());
                         request.PostSucceeded();
                     },
                     true

@@ -13,8 +13,8 @@ import { Link } from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import {
-    hideImageDescriptions,
     showImageDescriptions,
+    unwrapDescribedImages,
 } from "./imageDescriptionUtils";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
@@ -357,11 +357,23 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         );
     }
 
+    // The only thing this tool adds inside the page that would otherwise be saved is the
+    // bloom-describedImage wrapper. (The bloom-showImageDescriptions class is on the body, which is
+    // outside the page div we save, so it belongs in detachFromPage below.)
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        unwrapDescribedImages(pageOrClone);
+    }
+
     public detachFromPage() {
-        const page = ToolBox.getPage();
-        if (page) {
-            hideImageDescriptions(page);
+        const bodyOfPageIframe = ToolBox.getPage();
+        if (!bodyOfPageIframe) {
+            return;
         }
+        // Removing the class and the wrappers must both happen before we resume comic editing;
+        // resume may not work right while the extra wrapper is present.
+        bodyOfPageIframe.classList.remove("bloom-showImageDescriptions");
+        super.detachFromPage(); // removeToolMarkup: unwraps the bloom-describedImage wrappers
+        getCanvasElementManager()?.resumeComicEditing();
     }
 
     public isExperimental(): boolean {

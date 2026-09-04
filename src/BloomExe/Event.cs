@@ -90,32 +90,22 @@ namespace Bloom
         public WorkspaceTab? FromTab;
         public WorkspaceTab? ToTab;
 
-        // The two ways a subscriber can hand the tab change back to us. Exactly one of them is
-        // used, according to what the subscriber is able to do:
+        // How a subscriber hands the tab change back to us: it calls CompleteTheChange, either
+        // before returning if it had nothing to do first, or once it has saved.
         //
-        //   nothing to do first        -> CompleteTheChange, before returning
-        //   I must save first          -> CompleteTheChange, once my save has finished
-        //   a save is already running  -> StartTheChangeOver, once that save has finished
+        // There used to be a second action, StartTheChangeOver, for a subscriber that could neither
+        // proceed nor finish because it was waiting on a save begun by something else -- an earlier
+        // click on a tab whose save was still out with the browser (BL-16766). Saving no longer
+        // waits for anything, so a subscriber is never in that position, and the case is gone.
         //
-        // The last case is the one that needs the second action: the subscriber can neither let
-        // the change proceed nor take responsibility for finishing it, because the save it is
-        // waiting on belongs to something else (typically an earlier click on a tab). See BL-16766.
-        //
-        // This is a bit of a kludge. It works partly because there is currently only one subscriber,
-        // so there is no ambiguity about who should do this, or how we know when all the subscribers
-        // are done. If we ever have more than one subscriber, we'll need to do something more sophisticated.
+        // This works partly because there is currently only one subscriber, so there is no ambiguity
+        // about who should call it, or about how we know all the subscribers are done. If we ever
+        // have more than one, we'll need something more sophisticated.
 
         // Actually switches the tab: everything WorkspaceView.ChangeTab held back until a
         // subscriber said it was safe. Call this EXACTLY ONCE — it raises the tab-changed event
         // and records the new tab as current.
         public Action CompleteTheChange;
-
-        // Abandons this attempt and asks for the whole tab change to be made afresh later, from the
-        // top of WorkspaceView.ChangeTab. Because it starts over, it re-checks everything, so it is
-        // safe to call whenever the way is clear — including when it turns out to be unnecessary,
-        // in which case it does nothing at all because the tab we wanted is already current.
-        // Null if the raiser has nothing to redo.
-        public Action StartTheChangeOver;
     }
 
     /// <summary>
@@ -142,27 +132,15 @@ namespace Bloom
             : base("CreateFromSourceBookCommand", LoggingLevel.Major) { }
     }
 
-    public class CollectionClosingArgs
-    {
-        // May be executed by one subscriber when it is safe to do so, typically in response to an event
-        // after returning from the event handler. A subscriber that wants to do this should set Delayed to true.
-        // This is a bit of a kludge. It works partly because there is currently only one subscriber
-        // that needs to postpone work until after the event handler has returned,
-        // so there is no ambiguity about who should do this. The tricky thing was to make sure
-        // all subscribers get to do their thing when we don't need to delay (when not in Edit tab).
-        // Hence Delayed and the override of Raise.
-        public Action PostponedWork;
-
-        // If a subscriber sets this to true, it takes responsibility for calling PostponedWork
-        // at some later time. If no one does, Raise() will call it after all subscribers have been called.
-        // At most one subscriber should set this to true. Review: should we enforce this?
-        public bool Delayed;
-
-        // If something goes wrong (typically, we failed to save the current page due to a bug), this should be called.
-        // Typically, postponed work will not happen, so the collection closing will also not happen.
-        // We are currently using this to reset a flag in Shell.OnClosing so we can try again.
-        public Action FailureAction;
-    }
+    /// <summary>
+    /// Nothing to say beyond "the collection is closing". This used to carry a PostponedWork /
+    /// Delayed / FailureAction protocol so that a subscriber could say "I will finish this later,
+    /// you carry on" — its own comment called it a bit of a kludge — and it existed for exactly
+    /// one subscriber, EditingModel, because saving the page being edited meant asking the browser
+    /// and waiting. That save is synchronous now (see PageSnapshot), so subscribers simply do their
+    /// work and return.
+    /// </summary>
+    public class CollectionClosingArgs { }
 
     /// <summary>
     /// called when the user is quiting or changing to another collection
@@ -171,15 +149,6 @@ namespace Bloom
     {
         public CollectionClosing()
             : base("CollectionClosing", LoggingLevel.Major) { }
-
-        public override void Raise(CollectionClosingArgs descriptor)
-        {
-            base.Raise(descriptor);
-            if (!descriptor.Delayed)
-            {
-                descriptor.PostponedWork?.Invoke();
-            }
-        }
     }
 
     public class EditBookCommand : Event<Book.Book>

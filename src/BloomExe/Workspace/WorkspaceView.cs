@@ -1586,10 +1586,6 @@ window.showWorkspaceInitializationFailure = function(message) {
                         }
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
                     },
-                    // Starting over means re-running this whole method, so the "already on the
-                    // desired tab" check at the top makes it a no-op if some other path has
-                    // meanwhile switched to the tab we wanted. See BL-16766.
-                    StartTheChangeOver = () => ChangeTab(view),
                 }
             );
         }
@@ -1850,19 +1846,13 @@ window.showWorkspaceInitializationFailure = function(message) {
             {
                 if (InEditMode)
                 {
-                    _editingView.Model.SaveThen(
-                        () => _editingView.Model.CurrentPage.Id,
-                        ReportAndLogProblem, // wrong state: show dialog without saving
-                        doAfterSaveToDisk: () =>
-                        {
-                            ReportAndLogProblem();
-                        }
-                    );
+                    // Get the latest edits into the report. Synchronous now (see PageSnapshot), so
+                    // this is just "save, then show the dialog" -- it used to need the dialog
+                    // packaged as an action to run whenever the save eventually finished, and a
+                    // second copy of it for the case where no save could be started.
+                    _editingView.Model.SaveCurrentPageAndBook();
                 }
-                else
-                {
-                    ReportAndLogProblem();
-                }
+                ReportAndLogProblem();
             }
             catch
             {

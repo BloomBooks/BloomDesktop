@@ -1,8 +1,9 @@
-import { SetupImage } from "./bloomImages";
+﻿import { SetupImage } from "./bloomImages";
 import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementPageBridge";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
-import { post, postThatMightNavigate } from "../../utils/bloomApi";
+import { post } from "../../utils/bloomApi";
+import { saveChangesAndRethinkPage } from "./bloomEditing";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import $ from "jquery";
@@ -190,7 +191,7 @@ function changeLayoutModeToggleClickHandler() {
         const toggleTransitionLength = 450;
         setTimeout(() => {
             $("html").off("keydown.origami");
-            postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+            void saveChangesAndRethinkPage();
         }, toggleTransitionLength);
     }
 }

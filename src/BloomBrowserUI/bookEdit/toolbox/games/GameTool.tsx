@@ -1837,11 +1837,16 @@ export class GameTool extends ToolboxToolReactAdaptor {
         }
     }
 
-    public detachFromPage() {
-        const page = GameTool.getBloomPage();
-        if (page) {
-            undoPrepareActivity(page);
-        }
+    // While the user is on the Play tab, prepareActivity() has put the page into play mode; that
+    // markup must not be saved. So the save path runs this on a CLONE, and detachFromPage
+    // (inherited) runs the very same thing on the live page when the tool goes away.
+    //
+    // undoPrepareActivity works on whichever of those it is given and only on that one, so the
+    // clone comes out with the draggables where the author put them -- which is what the book
+    // should record -- and the live page goes on being played. That was not always true; see
+    // bloom-player's own tests for what it guarantees.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        undoPrepareActivity(pageOrClone);
     }
 }
 export function playSound(

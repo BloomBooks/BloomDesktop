@@ -42,16 +42,52 @@ namespace Bloom.web.controllers
                 HandleSaveToolboxSetting,
                 true
             );
+            // (editView/pageContent used to live here: the browser's answer to a save that C# had
+            // started. Nothing asks any more -- the browser volunteers the page as it is edited,
+            // via editView/pageSnapshot below.)
+            // Save the current page from content the browser gathered on its own initiative, without
+            // reloading the page. Unlike editView/pageContent (which is the browser answering a save
+            // that C# started, and always ends in a navigation), this lets Javascript save whenever it
+            // needs the book on disk to be current and then simply carry on editing the same page.
+            // The reply is not sent until the save is finished, so Javascript can await it.
+            //
+            // It answers whether the save actually happened. It can decline -- the user may have
+            // started changing pages, or an external process may have replaced the book on disk --
+            // and a caller that carries on regardless would be working from a file that does not
+            // say what it thinks it says. That is not hypothetical: the AI Image Editor saves so
+            // that the file matches the page it is about to read image sources from.
             apiHandler.RegisterEndpointHandler(
-                "editView/pageContent",
+                "editView/savePageInPlace",
                 request =>
                 {
                     var pageContentData = request.RequiredPostString(unescape: false);
-                    View.Model.ReceivePageContent(pageContentData);
-                    request.PostSucceeded();
+                    request.ReplyWithBoolean(View.Model.SavePageInPlace(pageContentData));
                 },
-                true,
-                true // review.
+                true, // updates the book DOM, writes files, and refreshes the page list: UI thread
+                true
+            );
+            // The browser volunteering the current content of the page it is editing, so that a
+            // later save does not have to ask for it and wait. All this does is remember the
+            // string; see PageSnapshot for what it is for and why "no snapshot" means "nothing to
+            // save" rather than "go and ask".
+            //
+            // Deliberately NOT on the UI thread and NOT synchronized: it only stores a string (the
+            // store does its own locking), and an idle task reporting what the editor contains has
+            // no business queueing behind a save, or blocking one. Making it wait would reintroduce
+            // in one place exactly the coupling this removes everywhere else.
+            apiHandler.RegisterEndpointHandler(
+                "editView/pageSnapshot",
+                request =>
+                {
+                    var pageId = request.RequiredParam("pageId");
+                    var loadId = request.GetParamOrNull("loadId");
+                    var pageContentData = request.RequiredPostString(unescape: false);
+                    request.ReplyWithBoolean(
+                        View.Model.ReceivePageSnapshot(pageId, loadId, pageContentData)
+                    );
+                },
+                false,
+                false
             );
             apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
             apiHandler.RegisterEndpointHandler(
@@ -266,65 +302,64 @@ namespace Bloom.web.controllers
             }
 
             request.ReplyWithText("true");
-            View.Model.SaveThen(
-                () =>
+            View.Model.MergeCurrentPageThenSave(() =>
+            {
+                if (switchingToCustom)
+                    pageElt.AddClass("bloom-customLayout");
+                else
+                    pageElt.RemoveClass("bloom-customLayout");
+                // We must capture these from the saved page before typically replacing that with a different
+                // page element.
+                var backgroundAudio = pageElt.GetAttribute(HtmlDom.musicAttrName);
+                var backgroundAudioVolume = pageElt.GetAttribute(HtmlDom.musicVolumeName);
+                // Bring everything up to date consistent with the new
+                // state. Might be enough just do the BookData update.
+                book.EnsureUpToDateMemory(new NullProgress());
+                // Toggling between custom and standard layout can replace the xMatter page HTML,
+                // so reapply branding QR-code HTML adjustments for the current book settings.
+                // This should not need to regenerate the QR code file.
+                book.UpdateQrCodeHtmlForCurrentSettings(updateQrCodeFileEvenIfItExists: false);
+
+                if (
+                    shouldRemoveCustomLayoutDataWhenSwitchingToStandard
+                    && !string.IsNullOrWhiteSpace(customLayoutId)
+                )
                 {
-                    if (switchingToCustom)
-                        pageElt.AddClass("bloom-customLayout");
+                    book.BookData.RemoveAllFormsAndDataDivChildrenForDataBook(customLayoutId);
+                }
+
+                var updatedPageElt = book.GetPage(pageId)?.GetDivNodeForThisPage();
+                if (updatedPageElt != null)
+                {
+                    if (string.IsNullOrEmpty(backgroundAudio))
+                        updatedPageElt.RemoveAttribute(HtmlDom.musicAttrName);
                     else
-                        pageElt.RemoveClass("bloom-customLayout");
-                    // We must capture these from the saved page before typically replacing that with a different
-                    // page element.
-                    var backgroundAudio = pageElt.GetAttribute(HtmlDom.musicAttrName);
-                    var backgroundAudioVolume = pageElt.GetAttribute(HtmlDom.musicVolumeName);
-                    // Bring everything up to date consistent with the new
-                    // state. Might be enough just do the BookData update.
-                    book.EnsureUpToDateMemory(new NullProgress());
-                    // Toggling between custom and standard layout can replace the xMatter page HTML,
-                    // so reapply branding QR-code HTML adjustments for the current book settings.
-                    // This should not need to regenerate the QR code file.
-                    book.UpdateQrCodeHtmlForCurrentSettings(updateQrCodeFileEvenIfItExists: false);
+                        updatedPageElt.SetAttribute(HtmlDom.musicAttrName, backgroundAudio);
 
-                    if (
-                        shouldRemoveCustomLayoutDataWhenSwitchingToStandard
-                        && !string.IsNullOrWhiteSpace(customLayoutId)
-                    )
-                    {
-                        book.BookData.RemoveAllFormsAndDataDivChildrenForDataBook(customLayoutId);
-                    }
+                    if (string.IsNullOrEmpty(backgroundAudioVolume))
+                        updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
+                    else
+                        updatedPageElt.SetAttribute(HtmlDom.musicVolumeName, backgroundAudioVolume);
 
-                    var updatedPageElt = book.GetPage(pageId)?.GetDivNodeForThisPage();
-                    if (updatedPageElt != null)
-                    {
-                        if (string.IsNullOrEmpty(backgroundAudio))
-                            updatedPageElt.RemoveAttribute(HtmlDom.musicAttrName);
-                        else
-                            updatedPageElt.SetAttribute(HtmlDom.musicAttrName, backgroundAudio);
+                    // Keep the same invariant we enforce elsewhere.
+                    if (string.IsNullOrEmpty(backgroundAudio))
+                        updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
+                }
 
-                        if (string.IsNullOrEmpty(backgroundAudioVolume))
-                            updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
-                        else
-                            updatedPageElt.SetAttribute(
-                                HtmlDom.musicVolumeName,
-                                backgroundAudioVolume
-                            );
-
-                        // Keep the same invariant we enforce elsewhere.
-                        if (string.IsNullOrEmpty(backgroundAudio))
-                            updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
-                    }
-
-                    return pageId;
-                },
-                () => { }
-            );
+                return pageId;
+            });
         }
 
         private void HandleJumpToPage(ApiRequest request)
         {
             var pageId = request.GetPostStringOrNull();
             request.PostSucceeded();
-            View.Model.SaveThen(() => pageId, () => { });
+            View.Model.MergeCurrentPageThenSave(
+                () => pageId,
+                () => { },
+                // The action only names the page to go to.
+                actionChangesTheBook: false
+            );
         }
 
         /// <summary>
@@ -628,9 +663,12 @@ namespace Bloom.web.controllers
 
         private void HandlePageDomLoaded(ApiRequest request)
         {
-            // we collect and pass on the pageId for bookkeeping purposes
-            var pageId = request.RequiredPostString();
-            View.Model.HandlePageDomLoadedEvent(pageId);
+            // The browser sends "<pageId> <loadId>"; the load id identifies this particular load of
+            // the page, so that snapshots from a load we have moved on from can be ignored.
+            var parts = request.RequiredPostString().Split(' ');
+            var pageId = parts[0];
+            var loadId = parts.Length > 1 ? parts[1] : null;
+            View.Model.HandlePageDomLoadedEvent(pageId, loadId);
             request.PostSucceeded();
         }
 

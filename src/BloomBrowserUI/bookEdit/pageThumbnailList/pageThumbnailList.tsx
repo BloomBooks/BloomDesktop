@@ -28,6 +28,7 @@ import {
     postString,
     useApiData,
 } from "../../utils/bloomApi";
+import { collectCurrentPageContent } from "./currentPageContent";
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -702,10 +703,7 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
                 const pageElt = e.currentTarget.closest("[id]")!;
                 const pageId = pageElt.getAttribute("id");
                 const caption = pageElt.getAttribute("data-caption");
-                postJson("pageList/pageClicked", {
-                    pageId,
-                    detail: caption,
-                });
+                postPageClicked(pageId!, caption ?? "");
             }
         }
     };
@@ -817,10 +815,15 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
         closeContextMenuOnBlurCleanupRef.current = undefined;
 
         const pageId = contextMenuPoint.pageId;
-        const postCommand = () =>
+        // Most of these commands (duplicate, copy, paste, remove) have to save the current page
+        // first, so send its content along. See collectCurrentPageContent().
+        const postCommand = async () =>
             postJson("pageList/contextMenuItemClicked", {
                 pageId,
                 commandId,
+                pageContent: await collectCurrentPageContent(
+                    `the ${commandId} command`,
+                ),
             });
         if (commandId === "removePage") {
             confirmRemovePage(postCommand);
@@ -1057,16 +1060,58 @@ function onDragStop(
         // the page clicked. (Note however that this seems to get fired on any click,
         // even just closing a popup menu, so it's possible that we might get more
         // click events than we really want.)
-        postJson("pageList/pageClicked", {
-            pageId: movedPageId,
-            detail: "unknown",
-        });
+        postPageClicked(movedPageId, "unknown");
         return;
     }
     // Needs more smarts if we ever do other than two columns.
     const newIndex = newItem.y * 2 + newItem.x;
 
-    postJson("pageList/pageMoved", { movedPageId, newIndex });
+    // Moving a page saves the current one first; see collectCurrentPageContent().
+    void collectCurrentPageContent("the page move").then((pageContent) =>
+        postJson("pageList/pageMoved", {
+            movedPageId,
+            newIndex,
+            pageContent,
+        }),
+    );
+}
+
+// One click's work at a time, so that the posts reach C# in the order the user clicked.
+//
+// This used to be free: the click posted immediately, so two clicks arrived in the order they were
+// made. Gathering the outgoing page's content first put an await in front of the post, and two
+// clicks in quick succession would then be two overlapping gathers whose posts could arrive in
+// either order -- so C#, which takes the first and declines the second while it navigates, could
+// act on the earlier click rather than the later one. Chaining costs the second click the first's
+// gather, which is well under a millisecond.
+let pageClickWork: Promise<void> = Promise.resolve();
+
+// Tell C# the user picked a page, sending the CURRENT page's content along with the click so it
+// can save the page we are leaving in the same step. See collectCurrentPageContent().
+function postPageClicked(
+    pageId: string,
+    detail: string,
+    onSuccess?: () => void,
+): Promise<void> {
+    pageClickWork = pageClickWork
+        .then(async () => {
+            const pageContent =
+                await collectCurrentPageContent("the page change");
+            // Awaited, not just issued: the point of the chain is that C# sees the clicks in the
+            // order they were made, and it has not seen this one until the post comes back.
+            // Releasing the queue when the request was merely sent would let the next click's post
+            // overtake it, which is the ordering we are here to prevent.
+            await postJson(
+                "pageList/pageClicked",
+                { pageId, detail, pageContent },
+                onSuccess,
+            );
+        })
+        // One click that somehow failed must not stop every later click from being sent.
+        .catch((error) => {
+            console.warn("could not tell Bloom about a page click", error);
+        });
+    return pageClickWork;
 }
 
 function ContinueAutomatedPageClicking(
@@ -1082,22 +1127,15 @@ function ContinueAutomatedPageClicking(
             "**  pageThumbnailList: user initiated Automated Page Clicking test function",
         );
     }
-    postJson(
-        "pageList/pageClicked",
-        {
-            pageId: pagesRemaining[0].key,
-            detail: pagesRemaining[0].caption,
-        },
-        () => {
-            const remaining = pagesRemaining.slice(1);
-            if (remaining.length > 0)
-                window.setTimeout(
-                    () => {
-                        ContinueAutomatedPageClicking(remaining, count + 1);
-                    },
-                    8 * 1000, // leave time for the browser to redraw
-                );
-            else window.alert("Done with automated page clicking");
-        },
-    );
+    postPageClicked(pagesRemaining[0].key, pagesRemaining[0].caption, () => {
+        const remaining = pagesRemaining.slice(1);
+        if (remaining.length > 0)
+            window.setTimeout(
+                () => {
+                    ContinueAutomatedPageClicking(remaining, count + 1);
+                },
+                8 * 1000, // leave time for the browser to redraw
+            );
+        else window.alert("Done with automated page clicking");
+    });
 }

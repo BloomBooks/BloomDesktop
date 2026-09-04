@@ -40,13 +40,27 @@ namespace Bloom.Edit
         {
             if (page == null)
                 return;
-            if (!_dontForwardSelectionEvent)
-            {
-                // The only necessary action after saving is to navigate to the desired page.
-                // This is achieved by returning the right ID in the trivial doAfterSaving function
-                // passed as the first argument to SaveThen.
-                _model.SaveThen(() => (page as Page).Id, () => { });
-            }
+            if (_dontForwardSelectionEvent)
+                return;
+
+            var pageId = (page as Page).Id;
+
+            // The only necessary action after saving is to go to the desired page, which is what
+            // returning its ID from the first argument achieves.
+            //
+            // The click usually brings the outgoing page's content with it, which is the freshest
+            // copy there is; when it does not, MergeCurrentPageThenSave uses the snapshot the
+            // browser last volunteered. Either way the save and the move happen in one step, with
+            // nothing to wait for in between -- which is what stopped a second page click being
+            // silently discarded.
+            _model.MergeCurrentPageThenSave(
+                () => pageId,
+                // Clicking a thumbnail changes nothing in the book: the action just names the page
+                // to go to. This is the case the whole "do not write a page nobody edited"
+                // optimisation exists for, so it must not claim the book changed.
+                actionChangesTheBook: false,
+                pageContentFromBrowser: (e as PageSelectedChangedEventArgs)?.PageContentFromBrowser
+            );
         }
 
         public void SetBook(Book.Book book) //review: could do this instead by giving this class the bookselection object
