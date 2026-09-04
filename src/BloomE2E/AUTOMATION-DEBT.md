@@ -86,6 +86,50 @@ video have none: the Talking Book tool records from a real microphone, and a vid
 through the Sign Language tool's native file picker or camera, so those two sections of the
 manual test stay manual.
 
+fixed for file CHOOSERS 2026-09-04 (Test Case ID 170, `import-recording.spec.ts`): a test can
+now pre-answer the next native "choose a file" dialog, so a UI path that opens one is drivable
+instead of hanging. POST `e2e/nextChosenFile` with `{"Path": ...}` arms a single answer;
+`FileIOApi.SelectFileUsingDialog` takes it in place of showing the dialog, and Bloom goes back to
+showing the real one afterwards. `helpers/talkingBook.ts` (`armFileChooser`) is the wrapper. It
+deliberately does NOT remember the chosen folder in `FilePathMemory`, which is machine-wide
+settings shared with the developer's own Bloom.
+
+Still open on this entry: the FOLDER chooser (`fileIO/chooseFolder`) has no such hook -- it is a
+different dialog with a different shape (it answers over a websocket, through
+`MiscUtils.GetOutputFolderOutsideCollectionFolder`), and no test needs it yet. Video capture and
+the Image Toolbox are likewise untouched. And a microphone is still a microphone: recording audio
+cannot be automated at all, which is why `helpers/talkingBook.ts` has `addNarration` (put the mp3
+where a recording would have gone) alongside the Import Recording path.
+
+## A Playwright worker occasionally dies at startup, before any test runs
+
+Seen twice on 2026-09-04 while building `publish-talking-book-languages.spec.ts`: a run ends with
+`Error: worker process exited unexpectedly (code=3221226505, signal=null)` and the file's first
+test reported as failing after 0ms. 3221226505 is Windows' STATUS_STACK_BUFFER_OVERRUN, and it
+arrives before any test code executes, so nothing is scraped and no screenshot is written.
+
+It is not specific to a test: one occurrence was on a throwaway probe file, one on
+`import-recording.spec.ts`, and both files then passed 6 runs in a row on their own. Roughly one
+run in fifteen. Fix direction: unknown -- it is in the worker process, not in Bloom, so start by
+capturing the worker's own crash (`DEBUG=pw:*`, or a Windows dump) the next time a nightly shows
+it. Until then, a lone failure with this exit code and a 0ms test is worth re-running before
+being investigated as a test failure.
+
+## An api that captures CollectionSettings.Subscription cannot see a subscription change
+
+`FeatureStatusApi` used to snapshot `collectionSettings.Subscription` in its constructor, so
+anything that later REPLACED that object left the api answering from the subscription Bloom
+started with. That made the `e2e/setBranding` hook only half work: it moved the collection to,
+say, a Pro subscription, and `features/status` went on reporting the feature disabled -- which is
+what the Talking Book tool reads to decide whether to offer Import Recording. Found 2026-09-04
+while automating Test Case ID 170; fixed by reading `_collectionSettings.Subscription` on each
+use.
+
+`SubscriptionSettingsEditorApi` still holds the same kind of snapshot, refreshed on
+`CollectionSettingsDialog.DialogCancelled`. Nothing found to be wrong with it, and no test needed
+it, so it was left alone -- but it is the same shape, and worth remembering if a test ever finds
+that api reporting a stale subscription.
+
 ## The Bloom Library login cannot be done for real in a test
 
 Bloom's login state lives in machine-wide settings (`Settings.Default.WebUserId`), which an e2e
