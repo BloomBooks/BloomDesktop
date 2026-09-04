@@ -18,8 +18,8 @@
 #
 # A manual run can pick which of the five suites to run; all five are ticked by default, so the
 # default manual run matches the scheduled one. Unticking the ones you don't need is how to iterate
-# quickly when chasing a failure in a single suite: the C# suite alone is ~9 minutes of a ~22-minute
-# run, so dropping it takes an attempt to ~12. That was added while hunting the intermittent
+# quickly when chasing a failure in a single suite: the C# suite alone is ~13 minutes of a
+# ~47-minute run, so dropping it takes an attempt to ~34. That was added while hunting the intermittent
 # visual-regression hang in BL-16612.
 #
 # The two BUILDS always run and are not selectable, because they are prerequisites rather than
@@ -30,8 +30,8 @@
 # Note this is a selection, not a reordering. Reordering the steps so a chosen suite runs earlier
 # would be safe on paper -- nothing gates on either test suite except its own publish step -- but the
 # scheduled run is where our record of how often something fails comes from, and a suite that runs on
-# a machine which has NOT just spent nine minutes being hammered by the C# tests is being sampled
-# under different conditions. For an intermittent, possibly load-sensitive failure that matters, so
+# a machine which has NOT just spent thirteen minutes being hammered by the C# tests is being
+# sampled under different conditions. For an intermittent, possibly load-sensitive failure that matters, so
 # the scheduled run keeps its shape and manual runs vary only in what they skip.
 #
 # The component-tester suite is the one deliberate exception, moved ahead of visual regression on
@@ -50,23 +50,23 @@ on:
     workflow_dispatch:
         inputs:
             run_frontend_tests:
-                description: "Front-end suite (vitest)"
+                description: "TypeScript unit tests (vitest, ~3 min)"
                 type: boolean
                 default: true
             run_csharp_tests:
-                description: "C# suite (NUnit) - the slowest, ~9 min"
+                description: "C# unit tests (NUnit, ~13 min)"
                 type: boolean
                 default: true
             run_e2e_tests:
-                description: "BloomE2E suite (clicks through a real Bloom)"
-                type: boolean
-                default: true
-            run_visual_regression:
-                description: "Visual-regression suite (drives a real Bloom)"
+                description: "BloomE2E tests (Playwright, ~9 min)"
                 type: boolean
                 default: true
             run_component_tests:
-                description: "Component-tester suite (Playwright against the Vite harness)"
+                description: "React component tests (Playwright, ~2 min)"
+                type: boolean
+                default: true
+            run_visual_regression:
+                description: "Visual regression tests (book page layout, ~3 min)"
                 type: boolean
                 default: true
             post_to_zulip:
@@ -101,8 +101,8 @@ jobs:
             RUN_FRONTEND_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_frontend_tests }}
             RUN_CSHARP_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_csharp_tests }}
             RUN_E2E_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e_tests }}
-            RUN_VISUAL_REGRESSION: ${{ github.event_name != 'workflow_dispatch' || inputs.run_visual_regression }}
             RUN_COMPONENT_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_component_tests }}
+            RUN_VISUAL_REGRESSION: ${{ github.event_name != 'workflow_dispatch' || inputs.run_visual_regression }}
 
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
