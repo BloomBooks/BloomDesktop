@@ -14,24 +14,17 @@ House rules:
 - Ordinary dev/tooling friction goes to `PAPERCUTS.md` at the repo root instead; several
   entries below were promoted from there.
 
-Work in progress, 2026-09-03 (BL-16799): every entry below that carries a **being fixed**
-line is being paid down now, in a stack of small pull requests, one per improvement, each
-branching off the one before it. Before you start on a marked entry, read its pull request
+Work in progress, 2026-09-03: every entry below that carries a **being fixed** line is being
+paid down now, in small pull requests, one per improvement, each branching off the one before
+it (the first stack is BL-16799). Before you start on a marked entry, read its pull request
 and ask its author.
 
 | Pull request | Branch | What it pays down |
 | --- | --- | --- |
-| #8290 | `BL-16799-automation-scripts` | The `bloom-automation` scripts answer `--help` without killing anything, and reject an unknown flag or a malformed process id. |
-| #8291 | `BL-16799-vr-collect-failures` | A visual-regression case collects every failed comparison and fails once at the end. |
-| #8292 | `BL-16799-component-tests-in-ci` | The component-tester Playwright suites get a nightly job. |
-| #8293 | `BL-16799-vite-port` | `BLOOM_E2E_VITE_PORT` makes a run test the working tree's front end. Adds a new entry for what remains. |
-| #8294 | `BL-16799-type-in-one-call` | Typing in a text box is one insertion, not one key press per character. Adds a new entry: typing now raises no key events. |
-| #8295 | `BL-16799-page-screenshot` | A helper captures a whole book page, which absorbs the `captureBeyondViewport` footgun. |
-| #8296 | `BL-16799-toolbox-registration` | One `registerAllToolboxTools()` that both the bootstrap and the test harness call. |
-| #8297 | `BL-16799-shell-document` | A test can no longer attach to a shell document Bloom does not drive: one WebView2 environment per run, plus the `e2e/shellUrl` hook. |
-| #8298 | `BL-16799-tab-test-ids` | `data-testid` on the workspace tabs, so no test matches a localized label. |
 | #8299 | `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
 | #8300 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
+| not yet open | `e2e-private-user-settings` | Every Bloom a test launches keeps its user settings in a folder of its own, named on the command line, so a run starts from defaults and its settings die with its temp folder. |
+| not yet open | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off the one above. |
 
 Three of these also add entries of their own, for the debt that is left after the fix. The
 stack replaces PR #8276, which did all of this at once.
@@ -112,69 +105,69 @@ refuses to upload at all rather than let an automated click publish under the de
 account.
 (Found 2026-09-02 automating Test Case ID 606, `upload-required-items.spec.ts`.)
 
-## Visual-regression cases stop at the first failed comparison
+being fixed on `e2e-real-library-login`, once `e2e-private-user-settings` (the user.config entry
+below) has landed: with a settings folder of its own, a test's Bloom can be given a real test
+account's login before it starts, and can sign out for real without touching anyone else's login.
+The test account, and where its credentials live, are the rest of this branch.
 
-Each case in `src/BloomVisualRegressionTests/index.spec.ts` throws on the first
-mismatch, so later comparisons never capture their images; stale baselines surface one
-layer per ~3-minute run (BL-16638 took three accept-and-rerun rounds). Fix direction:
-accumulate per-comparison failures and fail once at the end — proven during BL-16638
-(~20–30 lines, confined to the spec). Loop at `index.spec.ts:426`, assertion at
-`index.spec.ts:486` (pre-rewire line numbers). (Promoted from PAPERCUTS 2026-07-30.)
+## Which front end the e2e suite tests depends on what else is running
 
-being fixed on `BL-16799-vr-collect-failures` (#8291).
+A launched Bloom serves its React front end either from the built `output/browser` or from a Vite
+dev server, and until the fixture is told which, the answer depends on the machine. Three facts,
+established 2026-09-01:
 
-## The top bar has no stable test ids, so tests match on localized text
+- **There is no way to point Bloom at another folder.** `BloomFileLocator.BrowserRoot` computes
+  `output/browser` (or `browser`) from where the app sits, with no environment variable and no
+  command-line option, so the isolated bundle that `build/agent-vite.ps1` writes under
+  `output/agent/<key>/browser` cannot be used by a launched Bloom.
+- **A dev server is the supported route, and the fixture now takes it.** Set
+  `BLOOM_E2E_VITE_PORT=<n>` and `fixtures/launchBloom.ts` passes `--vite-port <n>`, so the suite
+  tests the working tree with no build at all. Start the server with `PORT` set as well as
+  `--port`: the port in `vite.config.mts` comes from `process.env.PORT`, so `--port` alone moves
+  the server but leaves its HMR and React-Refresh URLs pointing at 5173, and the page then fails
+  to load its entry module.
+- **Leaving the variable unset does not mean "no dev server".** A dev build probes port 5173 by
+  itself (`ReactControl.TryGetActiveViteDevPort`), so a developer's own dev server silently
+  decides what the suite tests, and Bloom offers no option that means "ignore any dev server"
+  (`--vite-port` rejects 0, and `ValidateStartupVitePort` requires the port to answer).
 
-`TopBar.tsx` renders the workspace tabs as `<a role="tab">` with a localized `<Span>`
-label and no id, class, or `data-testid`. Two costs, both already paid: the
-component-tester's `bloomExeCdp.ts` drives `#main-tabs button`, a selector that exists
-nowhere in the source, so `bloom-exe-tabs.uitest.ts` cannot have worked for some time
-(it needs a developer's Bloom already running, and nothing runs it in CI — see the entry
-below); and `src/BloomE2E/helpers/workspace.ts` has to map tab ids to the English labels
-"Collections"/"Edit"/"Publish", so the suite silently only works in an English UI —
-which rules out automating the UI-language cases. The same gap makes the fixture
-identify Bloom's shell document among the CDP page targets by `[role="tablist"]`, the
-only stable marker available. Fix direction: `data-testid="workspace-tab-collection"`
-(etc.) on each tab and one on the shell root, and drop the label matching.
-(Found 2026-09-01 while scaffolding src/BloomE2E.)
+What remains: the fixture neither starts a dev server of its own nor checks that `output/browser`
+is newer than `src/BloomBrowserUI`, so a run with the variable unset can still test a stale
+bundle without saying so. Fix direction: have the fixture own the choice, either by starting a
+dev server on a port of its own choosing, or by refusing to run against an `output/browser` older
+than the source and naming the file that is newer. Bloom needs an explicit "no dev server"
+option before the second half of that can be trusted.
+(Found 2026-09-01 while fixing the top-bar test ids.)
 
-being fixed on two branches: `BL-16799-shell-document` (#8297) puts a test id on the top bar and
-stops the fixture identifying the shell document by `[role="tablist"]`, and
-`BL-16799-tab-test-ids` (#8298) puts one on each tab and drops the label matching.
+## The Edit tab's page thumbnail menu has no stable test ids, so tests match on localized text
 
-seen again 2026-09-01, in the Edit tab's page thumbnail menu: the items
-`pageThumbnailList.tsx` renders carry no id, class or `data-testid` (all their styling is
-inline), so `src/BloomE2E/helpers/pageThumbnails.ts` has to find "Copy Page" and "Paste Page"
+The items `pageThumbnailList.tsx` renders carry no id, class or `data-testid` (all their
+styling is inline), so `src/BloomE2E/helpers/pageThumbnails.ts` has to find "Copy Page" and "Paste Page"
 by their English labels, exactly as the top bar does. Same fix: a `data-testid` per command,
 taken from the `commandId` the menu already has.
+(Found 2026-09-01 while scaffolding src/BloomE2E.)
 
-## The component-tester Playwright suites are not in CI
+## One toolbox harness test asserts on classes that do not exist
 
-`nightly.yml` runs vitest, C#, visual-regression and BloomE2E; nothing runs
-`react_components/component-tester`'s suites, which is how the harness sat broken
-(React 17 pin + config bug) unnoticed until it was green again at 144 passed. It will
-rot again silently. Fix direction: a nightly job mirroring the visual-regression one
-(component config only; the bloom-exe config needs the e2e launch fixture first).
-(Promoted from PAPERCUTS 2026-07-27.)
+`react_components/ToolboxRootTestHarness`'s suite has one `test.fixme` because it asserts on
+`.subscription-badge` (which only the legacy toolbox has) and `.toolbox-react-header-icon` (which
+never existed). Re-enabling it needs a decision on whether the React toolbox header renders
+badges and icons at all, and what classes to expose for them. Fix direction: make that decision
+as part of the toolbox React refactor (BL-16608 / PR #8109), then rewrite the assertions against
+what the header really renders.
+(Was part of a larger entry about toolbox registration, whose other half was fixed 2026-09-01 by
+extracting `bookEdit/toolbox/registerAllToolboxTools.ts`.)
 
-being fixed on `BL-16799-component-tests-in-ci` (#8292), as that nightly job. The bloom-exe config
-stays out of it, for the reason given above.
+## One test's tab is the next test's starting state
 
-## Toolbox tool registration is a side effect of toolboxBootstrap
-
-`ToolboxRoot` only renders tools registered via importing `toolboxBootstrap.ts`, which
-also renders and clobbers globals, so the test harness duplicates the 11
-`ToolBox.registerTool(...)` calls with a "keep in sync" comment. Fix direction: extract
-a side-effect-free `registerAllToolboxTools()` both import — probably folded into the
-toolbox React refactor (BL-16608 / PR #8109). Related: one harness test is `test.fixme`
-because it asserts on `.subscription-badge` (legacy-toolbox-only) and
-`.toolbox-react-header-icon` (never existed); re-enabling it needs a decision on whether
-the React header renders badges/icons and what classes to expose.
-(Promoted from PAPERCUTS 2026-07-27.)
-
-being fixed on `BL-16799-toolbox-registration` (#8296), which extracts
-`bookEdit/toolbox/registerAllToolboxTools.ts`. The `test.fixme` half is not fixed there; it
-stays as an entry of its own.
+`fixtures/bloomTest.ts` launches one Bloom per worker, and Playwright gives every test with the
+same fixture options that same worker. So a test that ends on the Edit tab makes the next one
+start there, and `tests/workspace-tabs.spec.ts` fails its opening sanity check with
+`collection: "enabled"` rather than for any reason to do with tabs. `tests/capture-book-page.spec.ts`
+switches back to the collection tab at its end to avoid exactly this, which is a convention no
+helper enforces and nothing reminds a new test about. Fix direction: reset the workspace in the
+fixture's per-test setup, so the tab a test starts on is not a matter of file order.
+(Found 2026-09-01, when adding capture-book-page.spec.ts broke workspace-tabs.spec.ts.)
 
 ## AI-image-editor selectors are an untested cross-repo contract
 
@@ -186,35 +179,19 @@ did NOT drift. Fix direction: stable `data-testid`s on tool tiles and category h
 in the editor repo, or have it publish its host-harness selectors for import.
 (Promoted from PAPERCUTS 2026-07-30, BL-16603.)
 
-## Driver-level CDP footguns that the automation library must absorb
+## Driver-level CDP footguns the helper layer does not cover yet
 
-Known WebView2/CDP behaviors that every ad-hoc script rediscovers the hard way; the
-`src/BloomE2E` helper layer should encode them once:
+Known WebView2/CDP behaviors that every ad-hoc script rediscovers the hard way. The screenshot
+one is now absorbed by `helpers/screenshot.ts` (enlarge the window, clip, clear the override,
+and time out every CDP request); these two are not, because they are about the scripts around a
+capture rather than the capture itself:
 
-- `Page.captureScreenshot` with `captureBeyondViewport:true` hangs (no response, no
-  error). Working pattern: `Emulation.setDeviceMetricsOverride` large enough for the
-  whole `.bloom-page`, screenshot with a `clip`, then `clearDeviceMetricsOverride`;
-  give every CDP request a timeout.
-  being fixed on `BL-16799-page-screenshot` (#8295), which absorbs this into
-  `helpers/screenshot.ts`. The other two items in this list stay.
 - Never `taskkill //IM node.exe //F` to clean up a hung capture — it kills the go.sh
   vite/dotnet-watch flow and takes Bloom's server down. Kill only the script's own PID.
 - Reopening a book re-stamps it with freshly compiled xmatter CSS from `output/`, so
   "before" captures taken after a restart already show the new layout.
 
-(Promoted from PAPERCUTS 2026-07-22.)
-
-## Automation helper scripts run destructive defaults on unknown flags
-
-`node .github/skills/bloom-automation/killBloomProcess.mjs --help` killed the running
-Bloom: unknown flags are ignored and the destructive default runs, so "read the usage
-first" is itself the dangerous move; sibling scripts may share the shape. Fix
-direction: recognize `--help`/`-h` and reject unknown flags in every script that kills
-processes — and fold these helpers' jobs into the library's audited launch/teardown
-fixture over time. (Promoted from PAPERCUTS 2026-07-24.)
-
-being fixed on `BL-16799-automation-scripts` (#8290), for the `--help`, unknown-flag and
-malformed-process-id part. Folding the helpers into the fixture is not part of it.
+(Promoted from PAPERCUTS 2026-07-22; the screenshot item removed 2026-09-01.)
 
 ## Adding a page needs the Add Page dialog, which offers nothing to automate against
 
@@ -267,16 +244,16 @@ dropped.
 
 A `.bloom-editable` is a CKEditor surface, and Playwright's `fill()` on one leaves a
 tail of what was there ("Deux" became "eux"), so `typeInGroup` clicks in, selects all,
-deletes, and types the new text one key at a time. That is closer to what a person does
-and it is reliable, but it is also slow for anything longer than a few words, and no
-test can currently clear a box by any faster route. Fix direction: understand what
-CKEditor does with a programmatic value change; a supported "set the text of this box"
-path would let long text be set at once.
-(Found 2026-09-01 automating Test Case ID 169.)
+deletes, and then puts the new text in.
 
-being fixed on `BL-16799-type-in-one-call` (#8294), for the typing half only: one insertion
-instead of a key press per character. Clearing a box still needs Control+A and Delete, and
-that branch adds an entry saying that typing now raises no key events.
+Partly fixed 2026-09-01: the typing half is no longer a key press per character.
+`typeInGroup` now inserts the whole string in one call (`keyboard.insertText`), which
+CKEditor and Bloom's markup code both handle through the input event it raises, so the
+cost of typing no longer grows with the length of the text. What remains is clearing a
+box: that still needs a click, Control+A and Delete, because neither `fill()` nor
+setting the value leaves CKEditor in a state Bloom then saves correctly. Fix direction:
+an `e2e/` hook, or a supported CKEditor path, that sets the text of one box outright.
+(Found 2026-09-01 automating Test Case ID 169.)
 
 ## The page menu offers commands that silently do nothing while a page is loading
 
@@ -328,6 +305,11 @@ the file said `en` again a moment later. The same test has to restore the zoom i
 that setting is shared too. Fix direction: under `--e2e`, point the settings provider at a
 per-instance folder (a sibling of the temp collection would do), so a test's Bloom starts from
 defaults and its changes die with it.
+
+being fixed on `e2e-private-user-settings`: a command-line argument names the folder Bloom keeps
+its user settings in, and the launch fixture gives every Bloom it starts a folder inside the run's
+temp folder, so the settings start from defaults, or from whatever the test puts there first, and
+are deleted with the rest of the run.
 
 ## No way to run the suite at a chosen monitor resolution and scale factor
 
@@ -425,3 +407,72 @@ meantime: run small and stay red, or stay large until the tests are fixed.
 (Written and measured on 2026-09-03 during BL-16804, then deliberately taken back out: the
 developer chose to record the plan here rather than carry a red suite. The code is not in the
 history, so rebuilding it from this entry is part of the job.)
+
+## A Vite dev server only reaches the whole UI on port 5173
+
+`--vite-port` tells Bloom's shell which dev server to load the front end from, but two of the
+Edit tab's frames ignore it. `bookEdit/pageThumbnailList/pageThumbnailList.vite-dev.pug` and
+`bookEdit/toolbox/toolbox.vite-dev.pug` write `http://localhost:5173/...` into every import
+they emit, so on any other port the page list and the toolbox load nothing and come up empty.
+
+That failure looks like the feature being missing, not like a port problem. A run on port 5199
+failed `duplicate-page.spec.ts` on 2026-09-02 with "waiting for
+getByTestId('duplicate-page-button') to be visible", 30 seconds, because `#PageControls` had
+never been filled. Nothing in the message points at the dev server.
+
+The same run showed the second half of it: `BLOOM_E2E_VITE_PORT` was unset, so Bloom fell back
+to probing 5173 by itself, found nothing there, and served the built `output/browser` instead.
+That bundle was a day old, so the suite silently tested yesterday's front end and reported the
+new test id as absent.
+
+So both halves say the same thing: **serve the dev server on 5173 and set
+`BLOOM_E2E_VITE_PORT=5173`.** Fix direction: emit the port into those two pug files the way the
+shell gets it, so `--vite-port` means what it says; and give Bloom an option that means "ignore
+any dev server", so a run can state which front end it is testing rather than inherit it from
+the machine. (Found 2026-09-02.)
+
+## Typing in a text box raises no key events
+
+`typeInGroup` puts the whole string in with `keyboard.insertText`, which raises `input`
+and nothing else. So no test that types exercises anything in Bloom that listens for
+`keydown`, `keypress` or `keyup`, and the `toHaveText` check that follows cannot tell the
+difference: the text arrives either way. The pieces of Bloom that watch for a particular
+key, rather than for a change to the text, are therefore not covered by any test that
+types.
+
+This is a deliberate trade for speed, taken because a key press per character made every
+test that fills a book slower in proportion to how much it typed. Fix direction: a helper
+that presses one named key in a box, for the tests whose subject is the key press itself
+(Enter splitting a paragraph, Tab moving between boxes, a shortcut), and a note in that
+helper that `typeInGroup` is not the way to test those. (Found 2026-09-02, during the
+review of the headless work.)
+
+
+## A test can attach to a shell document Bloom does not drive
+
+More than one document in a run carries the workspace root's markup, and therefore the
+top bar's `data-testid`, so `fixtures/bloomTest.ts findShellPage` returns whichever the
+debugging protocol lists first. When that is not the document Bloom drives, the test is
+silently broken rather than failing: its own clicking and typing work, `expect` on what
+it typed passes, and every page Bloom loads goes into the document it cannot see. The
+symptom is a 60-second wait in `goToPage` for a page Bloom's own log says it showed.
+This is why `publish-text-languages.spec.ts` fails perhaps one run in three.
+
+Fixed for tests, 2026-09-01. `e2e/shellUrl` reports the URL of the document Bloom drives,
+and `findShellPage` now takes the page whose URL has the same file name (Bloom and the
+debugging protocol escape the rest of the URL differently), re-resolving after
+`bloomApp.restart`. It falls back to the first page carrying the marker only when the
+endpoint never answers, which is what an old `Bloom.exe` in `output/Debug` does, and says
+so. `goToPage`'s failure message names both URLs. Also, under `--e2e` every browser built
+on the UI thread shares one CoreWebView2Environment, so those documents live in one
+browser process with one debugging listener; before that, each environment was given the
+same port number and only the first process to start could listen on it. That sharing is
+deliberately limited to the UI thread: an environment belongs to the thread that created
+it, and handing it to a browser built on the thread serving an API call hangs that thread.
+Publishing a BloomPUB does exactly that, and its preview never appeared.
+
+What remains: nobody knows why a run has a second workspace root document at all. Bloom
+creates one `_workspaceReactControl`. Worth finding, because the duplicate is what makes
+the test-side check necessary.
+(Found 2026-09-01 while making `jumpToPage` queue a jump.)
+
