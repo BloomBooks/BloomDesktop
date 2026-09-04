@@ -329,7 +329,8 @@ Dependencies point down only:
      mounts, and reading once races that answer.
    - `helpers/talkingBook.ts` — `openToolboxWithTalkingBook`, `getNarrationSentences`,
      `addNarration`, `getNarratedLanguages`, `importNarration`, `armFileChooser`,
-     `setRecordingMode`, `openAdvancedSection`. Narration cannot be RECORDED in a test (it needs
+     `isImportRecordingEnabled`, `setRecordingMode`, `openAdvancedSection`. Narration cannot be
+     RECORDED in a test (it needs
      a microphone), so a test that needs a book with audio calls `addNarration`, which puts an
      mp3 where a recording would have gone — the sentence ids it is named after come from
      Bloom's own tool, which marks them when the toolbox opens. `importNarration` drives the

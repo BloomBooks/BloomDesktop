@@ -195,7 +195,14 @@ export async function armFileChooser(
     );
 }
 
-/** Choose one of the Talking Book tool's recording modes, by the label its radio shows. */
+/**
+ * Choose one of the Talking Book tool's recording modes, by the label its radio shows.
+ *
+ * Both radios can legitimately be unavailable, and for different reasons: whole-text-box mode
+ * needs a Pro subscription, and By Sentence is refused once the box holds a whole-text-box
+ * recording. Either way this fails rather than silently leaving the mode alone, because a caller
+ * that thinks it changed the mode would go on to test the wrong thing.
+ */
 export async function setRecordingMode(
     page: Page,
     mode: "By Sentence" | "By Whole Text Box",
@@ -209,10 +216,20 @@ export async function setRecordingMode(
     await radio.waitFor({ state: "visible", timeout: 30000 });
     await expect(
         radio,
-        `The "${mode}" recording mode is disabled. Whole-text-box mode needs a Pro subscription, and either mode needs a page with a recordable text box.`,
+        `The "${mode}" recording mode is disabled. Whole-text-box mode needs a Pro subscription; By Sentence is refused once the text box holds a whole-text-box recording; and either needs a page with a recordable text box.`,
     ).toBeEnabled({ timeout: 30000 });
     await radio.click();
     await expect(radio).toBeChecked({ timeout: 30000 });
+}
+
+/**
+ * Whether the tool is offering Import Recording. Bloom enables it only in whole-text-box
+ * recording mode, only for a Pro subscription, and only on a page with a recordable text box, so
+ * a caller checking for `false` should make sure it has ruled out the reasons it did not mean.
+ */
+export async function isImportRecordingEnabled(page: Page): Promise<boolean> {
+    await openAdvancedSection(page);
+    return toolboxFrame(page).locator("#import-recording-button").isEnabled();
 }
 
 /**
