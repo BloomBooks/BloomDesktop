@@ -8,6 +8,7 @@ import {
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
 import { postJson } from "../utils/bloomApi";
+import { Link } from "../react_components/BookGridSetup/BookLinkTypes";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
 
@@ -33,6 +34,14 @@ export interface IWorkspaceExports {
     hideColorPickerDialog(): void;
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
     showEditViewTopicChooserDialog(): void;
+    showLinkTargetChooserDialog(
+        currentUrl: string,
+        onSetUrl: (url: string) => void,
+    ): void;
+    showBookGridSetupDialog(
+        currentLinks: Link[],
+        setLinksCallback: (links: Link[]) => void,
+    ): void;
     showAdjustTimingsDialogFromWorkspaceRoot(
         currentTextBox: HTMLElement,
         // The split and applyTimingsFile calls both return a list of new timings,
@@ -70,6 +79,13 @@ import { getEditablePageBundleExports } from "./js/workspaceFrames";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
+// These two are launched from code that runs in the page iframe. They must be shown from here,
+// the workspace root, so that their modal backdrop covers the whole workspace including the
+// page list; rendered in the page iframe the backdrop covers only the book pane (BL-16809).
+import { showLinkTargetChooserDialog } from "../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+export { showLinkTargetChooserDialog };
+import { showBookGridSetupDialog } from "../react_components/BookGridSetup/BookGridSetupDialog";
+export { showBookGridSetupDialog };
 
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
@@ -449,6 +465,8 @@ interface WorkspaceBundleApi {
     getToolboxBundleExports: typeof getToolboxBundleExports;
     getEditablePageBundleExports: typeof getEditablePageBundleExports;
     showPageChooserDialog: typeof showPageChooserDialog;
+    showLinkTargetChooserDialog: typeof showLinkTargetChooserDialog;
+    showBookGridSetupDialog: typeof showBookGridSetupDialog;
     showBookSettingsDialog: typeof showBookSettingsDialog;
     showRegistrationDialog: typeof showRegistrationDialogForEditTab;
     showAboutDialog: typeof showAboutDialog;
@@ -495,6 +513,8 @@ window.workspaceBundle = {
     getToolboxBundleExports,
     getEditablePageBundleExports,
     showPageChooserDialog,
+    showLinkTargetChooserDialog,
+    showBookGridSetupDialog,
     showBookSettingsDialog,
     showRegistrationDialog: showRegistrationDialogForEditTab,
     showAboutDialog,

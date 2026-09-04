@@ -203,8 +203,7 @@ namespace Bloom.Edit
 
         internal void PageClicked(IPage page)
         {
-            if (Enabled)
-                InvokePageSelectedChanged(page);
+            InvokePageSelectedChanged(page);
         }
 
         /// <summary>
@@ -217,7 +216,7 @@ namespace Bloom.Edit
         /// </remarks>
         internal bool IsContextMenuCommandEnabled(IPage page, string commandId)
         {
-            if (!Enabled || page == null)
+            if (page == null)
                 return false;
 
             switch (commandId)
@@ -272,7 +271,6 @@ namespace Bloom.Edit
         }
 
         private PageListApi _pageListApi;
-        internal bool Enabled = true;
 
         // This gets invoked by Javascript (via the PageListApi) when it determines that a particular page has been moved.
         // newIndex is the (zero-based) index that the page is moving to
