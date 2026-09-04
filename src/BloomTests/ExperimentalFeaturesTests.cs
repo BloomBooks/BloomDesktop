@@ -30,6 +30,43 @@ namespace BloomTests
         {
             Settings.Default.EnabledExperimentalFeatures = _originalEnabledFeatures;
             Settings.Default.Save();
+            // The command-line tests below leave --e2e and --experimental-features set in Program's
+            // statics; parsing empty args puts every one of them back (see ProgramTests.TearDown).
+            Program.ParseStartupPortArguments(System.Array.Empty<string>(), out _);
+        }
+
+        /// <summary>
+        /// A feature named on the command line (--experimental-features, under --e2e) counts as
+        /// enabled, and is reported alongside the saved ones, without being saved itself.
+        /// </summary>
+        [Test]
+        public void CommandLineFeatures_CountAsEnabledUnderE2e_AndAreNotSaved()
+        {
+            Program.ParseStartupPortArguments(
+                new[] { "--e2e", "--experimental-features", "testing" },
+                out var errorMessage
+            );
+            Assert.That(errorMessage, Is.Null, "Sanity check: the arguments parsed.");
+            Assert.That(Program.RunningE2eTests, Is.True, "Sanity check.");
+
+            Assert.IsTrue(ExperimentalFeatures.IsFeatureEnabled("testing"));
+            Assert.AreEqual("testing", ExperimentalFeatures.TokensOfEnabledFeatures);
+            Assert.AreEqual(
+                "",
+                Settings.Default.EnabledExperimentalFeatures,
+                "The command line must not reach the saved setting."
+            );
+
+            // A saved feature and a command-line one are reported together.
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, true);
+            Assert.AreEqual(
+                ExperimentalFeatures.kTeamCollections + ",testing",
+                ExperimentalFeatures.TokensOfEnabledFeatures
+            );
+            Assert.AreEqual(
+                ExperimentalFeatures.kTeamCollections,
+                Settings.Default.EnabledExperimentalFeatures
+            );
         }
 
         /// <summary>

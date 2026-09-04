@@ -59,6 +59,13 @@ export interface ICollectionSpec {
      * three; two entries mean the collection has no Language3.
      */
     languages: string[];
+    /**
+     * A subscription code to open the collection with, which is what decides the collection's
+     * subscription tier. Left out, the collection has no code and so is Basic. Use
+     * kEnterpriseSubscriptionCode (helpers/collectionSettings.ts) for a test of a tier-gated
+     * feature.
+     */
+    subscriptionCode?: string;
 }
 
 /** Options for launchBloom. Give exactly one of collectionName and collectionSpec. */
@@ -72,6 +79,15 @@ export interface ILaunchBloomOptions {
     collectionName?: string;
     /** Create a collection for this test alone. The default choice. */
     collectionSpec?: ICollectionSpec;
+    /**
+     * Experimental features this Bloom should have on, by the tokens ExperimentalFeatures.cs uses:
+     * "team-collections", "experimental-source-books". A person turns these on in the Advanced tab
+     * of the collection Settings dialog, which is WinForms and so unreachable, and the saved
+     * setting is shared with the developer's own Bloom, so the launch hands them to this instance
+     * on its command line instead (--experimental-features, which Bloom accepts only beside
+     * --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
+     */
+    experimentalFeatures?: string[];
     /** How long to wait for Bloom to start serving the collection. Default 120 seconds. */
     readyTimeoutMs?: number;
 }
@@ -116,8 +132,15 @@ export function getSourceCollectionsRoot(): string {
 
 /**
  * Find the built Bloom.exe. The exe lands in a config/platform-specific folder depending on the
- * build, so try the known locations. Debug comes first for the common local case; CI builds and
- * runs Release. Throws naming every folder it looked in.
+ * build, so several of the known locations can hold one at once, and the MOST RECENTLY BUILT wins.
+ *
+ * Newest rather than a fixed order, because the order is not a preference anybody holds: a
+ * worktree that once built x64 and now builds AnyCPU keeps the old exe forever (output/ is
+ * gitignored and nothing cleans it), and a fixed order silently runs the whole suite against a
+ * months-old Bloom. That failure is not diagnosable from a test: the old exe lacks whatever the
+ * test is about, so the test fails exactly as if Bloom were broken. Seen 2026-09-04, where a June
+ * x64 build beat the AnyCPU one built minutes before and opened the developer's own collection
+ * instead of the one it was given. Throws naming every folder it looked in.
  */
 export function findBloomExe(): string {
     const candidates = [
@@ -128,14 +151,17 @@ export function findBloomExe(): string {
         "Release/AnyCPU",
         "Release",
     ].map((sub) => Path.join(repoRoot, "output", sub, "Bloom.exe"));
-    const exe = candidates.find((c) => fs.existsSync(c));
-    if (!exe) {
+    const built = candidates
+        .filter((c) => fs.existsSync(c))
+        .map((path) => ({ path, builtAt: fs.statSync(path).mtimeMs }))
+        .sort((a, b) => b.builtAt - a.builtAt);
+    if (built.length === 0) {
         throw new Error(
             `Could not find a built Bloom.exe (looked in: ${candidates.join(", ")}). ` +
                 `Build Bloom, then re-run.`,
         );
     }
-    return exe;
+    return built[0].path;
 }
 
 /**
@@ -278,7 +304,7 @@ export function writeNewCollection(
     fs.mkdirSync(collectionDir, { recursive: true });
     fs.writeFileSync(
         Path.join(collectionDir, `${spec.name}.bloomCollection`),
-        makeCollectionXml(spec.languages),
+        makeCollectionXml(spec.languages, "Factory", spec.subscriptionCode),
         "utf8",
     );
     return collectionDir;
@@ -292,10 +318,15 @@ export function writeNewCollection(
  * `xmatterPack` is the pack's key, the part of its folder name before "-XMatter": "Factory" (the
  * pack the Settings dialog calls Paper Saver), "Traditional", "SuperPaperSaver", "Device",
  * "SIL-PNG". The default is Factory, which is what the collections here have always had.
+ *
+ * `subscriptionCode` is written only when given. It is the collection's subscription, and so its
+ * tier: Bloom parses the tier out of the code as it opens the collection. See
+ * kEnterpriseSubscriptionCode in helpers/collectionSettings.ts.
  */
 export function makeCollectionXml(
     languages: string[],
     xmatterPack = "Factory",
+    subscriptionCode?: string,
 ): string {
     // Bloom treats Language2 as "same as Language1" when a collection names only one language,
     // which is what its own new-collection code writes.
@@ -316,6 +347,9 @@ export function makeCollectionXml(
         languageElements +
         `\n  <XMatterPack>${xmatterPack}</XMatterPack>\n` +
         `  <BrandingProjectName>Default</BrandingProjectName>\n` +
+        (subscriptionCode
+            ? `  <SubscriptionCode>${subscriptionCode}</SubscriptionCode>\n`
+            : "") +
         `  <AllowNewBooks>True</AllowNewBooks>\n` +
         `  <PageNumberStyle>Decimal</PageNumberStyle>\n` +
         `</Collection>\n`
@@ -394,6 +428,7 @@ function isPid(pid: number | undefined): pid is number {
 async function startBloomOn(
     collectionDir: string,
     readyTimeoutMs: number,
+    experimentalFeatures?: string[],
 ): Promise<IRunningBloom> {
     const exe = findBloomExe();
 
@@ -417,6 +452,10 @@ async function startBloomOn(
     // tree rather than a stale output/browser (see getViteDevPort).
     const vitePort = getViteDevPort();
     if (vitePort) args.push("--vite-port", vitePort);
+    // --experimental-features: turn these on for this Bloom alone, without touching the saved
+    // setting the developer's own Bloom shares (see ILaunchBloomOptions.experimentalFeatures).
+    if (experimentalFeatures?.length)
+        args.push("--experimental-features", experimentalFeatures.join(","));
     const bloomProcess: ChildProcess = execFile(exe, args, {
         env: environmentForBloom(),
     });
@@ -556,7 +595,11 @@ export async function launchBloom(
     process.once("exit", cleanUpOnExit);
 
     try {
-        running = await startBloomOn(collectionDir, readyTimeoutMs);
+        running = await startBloomOn(
+            collectionDir,
+            readyTimeoutMs,
+            options.experimentalFeatures,
+        );
     } catch (error) {
         process.removeListener("exit", cleanUpOnExit);
         fs.rmSync(tempRoot, { recursive: true, force: true });
@@ -575,7 +618,11 @@ export async function launchBloom(
             // about to rewrite one of the files it had open.
             await delay(1000);
             if (betweenStopAndStart) await betweenStopAndStart();
-            running = await startBloomOn(collectionDir, readyTimeoutMs);
+            running = await startBloomOn(
+                collectionDir,
+                readyTimeoutMs,
+                options.experimentalFeatures,
+            );
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;
             launched.bloomPid = running.servingPid;

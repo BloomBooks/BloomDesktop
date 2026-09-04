@@ -38,6 +38,20 @@ A test says which collection it wants, in one of two ways, and never both:
   `output/testing-inputs/collections`. Use this only for a fixture too expensive to build at run
   time, such as a collection of 200 books.
 
+Two more things are decided at launch, because Bloom reads them once and keeps the answer:
+
+- **The subscription tier.** A `collectionSpec` may carry `subscriptionCode`, which is written
+  into the `.bloomCollection` and decides the tier. Without it the collection is Basic, and every
+  tier-gated control is hidden or replaced by an upgrade notice. For a test of such a feature use
+  `kEnterpriseSubscriptionCode` from `helpers/collectionSettings.ts`, the code Bloom's own unit
+  tests use. Its branding stamps a butterfly on every page, so keep screenshot comparisons on the
+  Default branding. There is no API hook for the tier, on purpose: `FeatureStatusApi` and others
+  keep the Subscription they were built with, so a tier set later would be invisible to them.
+- **Experimental features.** `test.use({ experimentalFeatures: ["team-collections"] })` names
+  the features this Bloom has on, by the tokens in `ExperimentalFeatures.cs`. The launcher passes
+  them as `--experimental-features`, which Bloom accepts only beside `--e2e`, so nothing is saved
+  and the developer's own Bloom, which shares the saved setting, is untouched.
+
 Either way the fixture launches Bloom on a temp copy and attaches to the WebView2. One Bloom
 serves every test in a worker, because launching takes several seconds.
 
@@ -108,6 +122,26 @@ real bug in the code under test; read the message and fix it rather than working
   element taller than the window. `Page.captureScreenshot` with `captureBeyondViewport` hangs in
   WebView2, so this enlarges the window, clips, clears the override, and times out every CDP
   request. Never open a CDP session in a test; add the capture here.
+- `helpers/collectionSettings.ts` — rewrite the collection's languages, xmatter pack or
+  subscription code and restart Bloom on them; `setBranding`; `getFeatureStatus`, the same
+  answer the front end asks for before it shows a tier-gated control; and
+  `kEnterpriseSubscriptionCode`.
+- `helpers/keys.ts` — `pressKey`, `pressKeyIn`, `typeWithKeys`: real key presses, for tests whose
+  subject is the key. `typeInGroup` inserts text and raises no key events, so use it for
+  everything else.
+- `helpers/toolbox.ts` — `showToolbox`, `hideToolbox`, `toolboxFrame`, `openTool`,
+  `getShownTools`. Nothing here turns a tool on through the toolbox's own check boxes; the page
+  does that when clicked (a Canvas page's canvas opens the Canvas tool, a video box the Sign
+  Language tool), which is the route a person takes.
+- `helpers/canvasElements.ts` — `openCanvasTool`, `dragPaletteItemOntoCanvas`,
+  `selectCanvasElement`, the selected element's toolbar and "..." menu by localization id,
+  `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`. The palette drag is
+  dispatched rather than pressed, for a reason the file and AUTOMATION-DEBT.md give.
+- `helpers/geometry.ts` — compare rectangles to one another (`expectInside`, `expectNoOverlap`,
+  `expectSameRect`) so a test never asserts a pixel value the machine decided.
+- `helpers/videos.ts` — `chooseVideoFile` puts a video into a video box through the Sign Language
+  tool's own Import, with the native file picker alone answered by an `e2e/*` hook; ships
+  `fixtures/videos/short.mp4`.
 
 Two things a test must never do: trigger a native OS dialog (file pickers, the WinForms Image
 Toolbox, video capture), because Playwright cannot dismiss one and the run hangs; and wait on a

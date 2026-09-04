@@ -69,6 +69,12 @@ interface IBloomWorkerFixtures {
     collectionName: string | undefined;
     /** A collection to create for this test alone. Set it with test.use(). Preferred. */
     collectionSpec: ICollectionSpec | undefined;
+    /**
+     * Experimental features this Bloom should have on, by their ExperimentalFeatures.cs tokens
+     * (e.g. ["team-collections"]). Set it with test.use(). See
+     * ILaunchBloomOptions.experimentalFeatures for why this is not done the way a person does it.
+     */
+    experimentalFeatures: string[] | undefined;
     /** The launched Bloom. Prefer the `page` fixture unless you need a port or the folder. */
     bloomApp: IBloomApp;
     problemDialogWatcher: IProblemDialogWatcher;
@@ -222,9 +228,13 @@ async function findShellPage(
 export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
     collectionName: [undefined, { scope: "worker", option: true }],
     collectionSpec: [undefined, { scope: "worker", option: true }],
+    experimentalFeatures: [undefined, { scope: "worker", option: true }],
 
     bloomApp: [
-        async ({ collectionName, collectionSpec }, use) => {
+        async (
+            { collectionName, collectionSpec, experimentalFeatures },
+            use,
+        ) => {
             let launched: ILaunchedBloom | undefined;
             // Reassigned by restart(), and read by the teardown below, so the connection we close
             // is always the current one.
@@ -233,6 +243,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                 launched = await launchBloom({
                     collectionName,
                     collectionSpec,
+                    experimentalFeatures,
                 });
                 // CDP must go to 127.0.0.1: on Windows "localhost" resolves to ::1 first, and
                 // WebView2's debugging port does not answer there — you get an empty or wrong

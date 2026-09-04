@@ -240,6 +240,12 @@ export const LocalizableMenuItem: React.FunctionComponent<
                 disabled={props.disabled}
                 className={props.className}
                 value={props.value}
+                // The localization id doubles as the item's test id. Without it, the only handle on
+                // a menu item is its localized label, so a test would be asserting on English.
+                data-testid={props.l10nId}
+                // A tier-gated item stays clickable (see menuClickHandler), so nothing else in the
+                // DOM tells a test that the command itself is not on offer.
+                data-subscription-gated={enabled ? undefined : "true"}
             >
                 <React.Fragment>
                     {iconElement}

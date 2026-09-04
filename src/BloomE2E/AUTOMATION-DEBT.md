@@ -81,10 +81,11 @@ seen again 2026-09-01 (Test Case ID 349, `duplicate-page.spec.ts`): the manual t
 picture, a recording, and a video on a page. The picture has a route: the image chooser is a
 web dialog now, and once a file is chosen it posts `imageGallery/imageGalleryResult` and then
 applies the answer with the page bundle's `changeImageByElement`, so `helpers/images.ts` does
-those two steps for a file the test supplies and never opens the picker. The recording and the
-video have none: the Talking Book tool records from a real microphone, and a video arrives only
-through the Sign Language tool's native file picker or camera, so those two sections of the
-manual test stay manual.
+those two steps for a file the test supplies and never opens the picker. The video has one too,
+since 2026-09-04: `e2e/nextFileToChoose` arms the answer the Sign Language tool's file picker
+would have given, and `helpers/videos.ts` drives the rest of the import through the real UI. The
+recording has none: the Talking Book tool records from a real microphone, so that section of the
+manual test stays manual.
 
 ## The Bloom Library login cannot be done for real in a test
 
@@ -126,17 +127,19 @@ established 2026-09-01:
   `--port`: the port in `vite.config.mts` comes from `process.env.PORT`, so `--port` alone moves
   the server but leaves its HMR and React-Refresh URLs pointing at 5173, and the page then fails
   to load its entry module.
-- **Leaving the variable unset does not mean "no dev server".** A dev build probes port 5173 by
-  itself (`ReactControl.TryGetActiveViteDevPort`), so a developer's own dev server silently
-  decides what the suite tests, and Bloom offers no option that means "ignore any dev server"
-  (`--vite-port` rejects 0, and `ValidateStartupVitePort` requires the port to answer).
+- **Leaving the variable unset means "no dev server", under `--e2e`.** A dev build normally
+  probes port 5173 by itself (`ReactControl.TryGetActiveViteDevPort`), so whatever held that port
+  decided what the suite tested; on 2026-09-04 it was another repository's Vite server, and every
+  launched Bloom sat on its loading spinner because the front end it asked for did not exist
+  there. Since then `ReactControl.ShouldUseViteDev` and `TryGetActiveViteDevPort` skip the probe
+  when `Program.RunningE2eTests` is set, so an e2e run uses a dev server only when it named one
+  with `--vite-port`. A Bloom started without `--e2e` still probes, as before.
 
 What remains: the fixture neither starts a dev server of its own nor checks that `output/browser`
-is newer than `src/BloomBrowserUI`, so a run with the variable unset can still test a stale
-bundle without saying so. Fix direction: have the fixture own the choice, either by starting a
-dev server on a port of its own choosing, or by refusing to run against an `output/browser` older
-than the source and naming the file that is newer. Bloom needs an explicit "no dev server"
-option before the second half of that can be trusted.
+is newer than `src/BloomBrowserUI`, so a run with the variable unset tests the built bundle,
+however stale, without saying so. Fix direction: have the fixture own the choice, either by
+starting a dev server on a port of its own choosing, or by refusing to run against an
+`output/browser` older than the source and naming the file that is newer.
 (Found 2026-09-01 while fixing the top-bar test ids.)
 
 ## The Edit tab's page thumbnail menu has no stable test ids, so tests match on localized text
@@ -420,33 +423,41 @@ failed `duplicate-page.spec.ts` on 2026-09-02 with "waiting for
 getByTestId('duplicate-page-button') to be visible", 30 seconds, because `#PageControls` had
 never been filled. Nothing in the message points at the dev server.
 
-The same run showed the second half of it: `BLOOM_E2E_VITE_PORT` was unset, so Bloom fell back
-to probing 5173 by itself, found nothing there, and served the built `output/browser` instead.
-That bundle was a day old, so the suite silently tested yesterday's front end and reported the
-new test id as absent.
+The same run showed a second half, since fixed: `BLOOM_E2E_VITE_PORT` was unset, so Bloom fell
+back to probing 5173 by itself, found nothing there, and served the built `output/browser`
+instead. That bundle was a day old, so the suite silently tested yesterday's front end and
+reported the new test id as absent. Under `--e2e` Bloom no longer probes (see "Which front end
+the e2e suite tests depends on what else is running"), so an unset variable now means the built
+bundle, every time.
 
-So both halves say the same thing: **serve the dev server on 5173 and set
+So: **to test the working tree, serve the dev server on 5173 and set
 `BLOOM_E2E_VITE_PORT=5173`.** Fix direction: emit the port into those two pug files the way the
-shell gets it, so `--vite-port` means what it says; and give Bloom an option that means "ignore
-any dev server", so a run can state which front end it is testing rather than inherit it from
-the machine. (Found 2026-09-02.)
+shell gets it, so `--vite-port` means what it says. (Found 2026-09-02.)
 
-## Typing in a text box raises no key events
+## Canvas element toolbar buttons are anonymous
 
-`typeInGroup` puts the whole string in with `keyboard.insertText`, which raises `input`
-and nothing else. So no test that types exercises anything in Bloom that listens for
-`keydown`, `keypress` or `keyup`, and the `toHaveText` check that follows cannot tell the
-difference: the text arrives either way. The pieces of Bloom that watch for a particular
-key, rather than for a change to the text, are therefore not covered by any test that
-types.
+The floating toolbar over a selected canvas element (`#canvas-element-context-controls`,
+built by `CanvasElementContextControls.tsx`) gives its buttons no id, class, label or test id;
+each is an SVG icon with a tooltip. Only the "..." button carries a test id
+(`canvas-context-menu-button`). So `helpers/canvasElements.ts` can count the buttons
+(`getCanvasElementToolbarButtonCount`) but cannot say which command a button is, and a test
+that wants a named command has to open the "..." menu instead, whose items carry their
+localization id as a test id (`LocalizableMenuItem`). Fix direction: give each toolbar button a
+`data-testid` naming its command, and let the helper click by name. (Found 2026-09-04.)
 
-This is a deliberate trade for speed, taken because a key press per character made every
-test that fills a book slower in proportion to how much it typed. Fix direction: a helper
-that presses one named key in a box, for the tests whose subject is the key press itself
-(Enter splitting a paragraph, Tab moving between boxes, a shortcut), and a note in that
-helper that `typeInGroup` is not the way to test those. (Found 2026-09-02, during the
-review of the headless work.)
+## Dragging a palette item with the real mouse hangs the run
 
+A Canvas tool palette item is an HTML5 draggable. Pressing the real mouse on one hands the
+drag to Windows, which runs it in a modal loop of its own: the renderer stops answering, and
+the automation's next call never returns. It cost five minutes of a run when it happened, about
+one run in ten, and Playwright's own `dragTo` wedges the same way because it too begins with a
+real press. So `helpers/canvasElements.ts dispatchPaletteDrag` dispatches the drag events
+itself (dragstart, dragover, drop, dragend, one shared `DataTransfer`) from Bloom's shell
+document, which runs every line of Bloom's drag handling and skips only the operating system's
+part. That is the one place in this suite where a gesture is synthesized rather than performed.
+Fix direction: a click-to-add route on the palette (click the item, then click the canvas) that
+a test can drive with real presses, which would also help anyone who cannot drag. (Found
+2026-09-04.)
 
 ## A test can attach to a shell document Bloom does not drive
 
