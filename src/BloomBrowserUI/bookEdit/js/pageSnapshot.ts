@@ -67,6 +67,12 @@ export function getPageLoadId(): string {
 // only stores the string, replacing the last one.
 const kQuietMs = 25;
 
+// How long to wait before offering the content again when C# did not take it -- a refusal, or a
+// post that failed. Longer than the debounce on purpose: nothing the user did causes these, so
+// there is nothing to be responsive to, and a 25ms retry against a server that is not answering
+// would be a busy loop. A real change reschedules at kQuietMs and so overtakes this.
+const kRetryAfterFailedPostMs = 1000;
+
 let observer: MutationObserver | undefined;
 let timer: number | undefined;
 let lastPosted: string | undefined;
@@ -164,14 +170,26 @@ async function takeSnapshot(): Promise<void> {
                 )}`,
                 content,
             );
-            // C# refuses a snapshot from a load it is not showing -- including in the moment
-            // before this page has reported itself ready, since the two APIs are not ordered with
-            // respect to each other. A refusal is not a failure, but it does mean C# does not have
-            // this content, so we must not record it as sent and must offer it again.
-            const accepted =
-                (reply as { data?: boolean | string } | void)?.data !== false;
-            if (!accepted) {
-                scheduleSnapshot();
+            // Two different things can mean C# does not have this content, and both must count as
+            // NOT sent:
+            //
+            // * C# refused it, answering false. It refuses a snapshot from a load it is not
+            //   showing, including in the moment before this page has reported itself ready, since
+            //   the two APIs are not ordered with respect to each other. A refusal is not a
+            //   failure; it just means try again.
+            // * The POST failed and we got no answer at all. postString goes through wrapAxios,
+            //   which turns a rejected request into a resolved promise carrying nothing -- so a
+            //   failed post looks exactly like a successful one apart from the missing response.
+            //   Reading only `.data` would therefore take a failure for an acceptance, record the
+            //   content as sent, and never offer it again; the next save would write what C# still
+            //   held, losing everything typed since the snapshot before.
+            const response = reply as { data?: boolean | string } | void;
+            const delivered = !!response && response.data !== false;
+            if (!delivered) {
+                // Slower than the normal debounce: if the server is not answering, retrying every
+                // 25ms would spin. Any change the user makes reschedules at the normal interval,
+                // so this only governs how fast we retry when nothing else is happening.
+                scheduleSnapshot(kRetryAfterFailedPostMs);
                 return;
             }
             // Only once the post has actually resolved AND been taken. Recording it earlier would
@@ -197,8 +215,10 @@ async function takeSnapshot(): Promise<void> {
                 error instanceof Error ? error.stack : undefined,
             );
         }
-        // Try again on the next change: a transient failure should not stop us for good.
-        scheduleSnapshot();
+        // Try again: a transient failure should not stop us for good. At the slower interval,
+        // for the same reason as a post C# did not take -- a page that fails to gather fails
+        // again immediately, and retrying every 25ms would spin.
+        scheduleSnapshot(kRetryAfterFailedPostMs);
     } finally {
         // Only release the lock if we are still the run that took it. If the page was unloaded
         // and another started while we were awaiting, this run belongs to the old page, and
@@ -213,13 +233,13 @@ async function takeSnapshot(): Promise<void> {
     if (changeCount !== countWhenStarted) scheduleSnapshot();
 }
 
-function scheduleSnapshot(): void {
+function scheduleSnapshot(delayMs: number = kQuietMs): void {
     if (suspendedFor) return; // setSnapshotsSuspended takes one when it resumes
     if (timer !== undefined) window.clearTimeout(timer);
     timer = window.setTimeout(() => {
         timer = undefined;
         void takeSnapshot();
-    }, kQuietMs);
+    }, delayMs);
 }
 
 function noteChange(): void {
@@ -321,3 +341,4 @@ export function stopWatchingPageForSnapshots(): void {
  * Exported for tests: the interval the page must be quiet before a snapshot is taken.
  */
 export const quietMsForTests = kQuietMs;
+export const retryMsForTests = kRetryAfterFailedPostMs;

@@ -3,17 +3,21 @@ import {
     startWatchingPageForSnapshots,
     stopWatchingPageForSnapshots,
     quietMsForTests,
+    retryMsForTests,
     getPageLoadId,
 } from "./pageSnapshot";
 
 const posted: Array<{ url: string; body: string }> = [];
 
 // Lets a test hold a POST open, to check that a second one never starts alongside it.
-let postHook: (() => Promise<void>) | undefined;
+let postHook: (() => Promise<unknown>) | undefined;
 
-// What C# answers. `{ data: false }` is a refusal: the snapshot was for a page load it is not
-// showing, so the browser must not count it as delivered.
-let postReply: unknown = undefined;
+// What C# answers. A real post resolves to the axios response, and this endpoint answers with a
+// boolean, so `{ data: true }` is an ordinary success. `{ data: false }` is a refusal: the snapshot
+// was for a page load it is not showing. And `undefined` -- no response at all -- is what a FAILED
+// post looks like, because postString goes through wrapAxios, which turns a rejected request into a
+// resolved promise carrying nothing.
+let postReply: unknown = { data: true };
 
 const reported: string[] = [];
 vi.mock("../../lib/errorHandler", () => ({
@@ -46,6 +50,14 @@ async function letTheBaselineSettle() {
     await Promise.resolve();
 }
 
+// Walks the slower timer used to offer content again when C# did not take it.
+async function letTheRetryHappen() {
+    vi.advanceTimersByTime(retryMsForTests);
+    await vi.runAllTicks();
+    await Promise.resolve(); // the gather's await
+    await Promise.resolve(); // the post's await
+}
+
 // A MutationObserver delivers its callback in a microtask, and the module then waits kQuietMs.
 // This walks both forward.
 async function letTheSnapshotHappen() {
@@ -63,7 +75,7 @@ describe("pageSnapshot", () => {
         reported.length = 0;
         contentToReport = "";
         postHook = undefined;
-        postReply = undefined;
+        postReply = { data: true };
         setUpPage();
     });
 
@@ -184,12 +196,12 @@ describe("pageSnapshot", () => {
         let maxInFlight = 0;
         let releasePost: () => void = () => {};
         postHook = () =>
-            new Promise<void>((resolve) => {
+            new Promise<unknown>((resolve) => {
                 inFlight++;
                 maxInFlight = Math.max(maxInFlight, inFlight);
                 releasePost = () => {
                     inFlight--;
-                    resolve();
+                    resolve({ data: true }); // an ordinary successful post
                 };
             });
 
@@ -349,8 +361,33 @@ describe("pageSnapshot", () => {
         expect(posted.map((p) => p.body)).toEqual(["typed"]);
 
         // Refused, so the very same content must be offered again rather than treated as sent.
+        // Nothing the user did caused the refusal, so the retry is on the slower timer.
         postReply = { data: true };
-        await letTheSnapshotHappen();
+        await letTheRetryHappen();
         expect(posted.map((p) => p.body)).toEqual(["typed", "typed"]);
+    });
+
+    it("does not treat a post that failed outright as sent", async () => {
+        // The realistic shape of a failed post, and the one that nearly slipped through: postString
+        // goes through wrapAxios, which swallows the rejection and resolves with NOTHING. So a
+        // failed post is indistinguishable from a successful one except that no response comes
+        // back -- and reading only `.data` took that for an acceptance. The content was then
+        // recorded as sent and never offered again, and the next save wrote what C# still held.
+        contentToReport = "first";
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+
+        postReply = undefined; // the post failed; wrapAxios gives us nothing
+        contentToReport = "typed";
+        changeThePage("typed");
+        await letTheSnapshotHappen();
+        expect(posted.map((p) => p.body)).toEqual(["typed"]);
+
+        postReply = { data: true };
+        await letTheRetryHappen();
+        expect(
+            posted.map((p) => p.body),
+            "content C# never received must be offered again, not counted as sent",
+        ).toEqual(["typed", "typed"]);
     });
 });
