@@ -38,10 +38,7 @@ const createScrollableBook = (index: number) => {
 const createScrollableBooks = (count: number) =>
     Array.from({ length: count }, (_, index) => createScrollableBook(index));
 
-const includeManualTests = process.env.PLAYWRIGHT_INCLUDE_MANUAL === "1";
-const manualDescribe = includeManualTests ? test.describe : test.describe.skip;
-
-manualDescribe("Manual Interactive Testing", () => {
+test.describe("Manual Interactive Testing", () => {
     test("default", async ({ page }) => {
         test.setTimeout(0);
 

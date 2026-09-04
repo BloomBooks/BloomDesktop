@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.Collections.Generic;
 using Bloom.WebLibraryIntegration;
 using NUnit.Framework;
 
@@ -134,16 +135,18 @@ namespace BloomTests.WebLibraryIntegration
         }
 
         [Test]
-        [Platform(
-            Exclude = "Win",
-            Reason = "Environment variables on Windows are case-insensitive"
-        )]
         public void BothEnvironmentVariables_UsesLowercaseVariable()
         {
-            Environment.SetEnvironmentVariable("http_proxy", "http://example1.com");
-            Environment.SetEnvironmentVariable("HTTP_PROXY", "http://example2.com");
+            // Only a case-sensitive environment (Linux) can hold both names at once, so feed
+            // the lookup directly rather than setting real variables; that lets the rule be
+            // tested on Windows too.
+            var environment = new Dictionary<string, string>
+            {
+                { "http_proxy", "http://example1.com" },
+                { "HTTP_PROXY", "http://example2.com" },
+            };
 
-            var proxy = new ProxyManager();
+            var proxy = new ProxyManager(name => environment[name]);
 
             Assert.That(proxy.Hostname, Is.EqualTo("example1.com"));
             Assert.That(proxy.Port, Is.EqualTo(80));

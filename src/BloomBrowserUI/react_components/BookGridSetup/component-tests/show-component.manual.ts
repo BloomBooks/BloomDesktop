@@ -8,10 +8,7 @@
 import { test } from "../../component-tester/playwrightTest";
 import { setupBookGridSetupComponent, createTestBook } from "./test-helpers";
 
-const includeManualTests = process.env.PLAYWRIGHT_INCLUDE_MANUAL === "1";
-const manualDescribe = includeManualTests ? test.describe : test.describe.skip;
-
-manualDescribe("Manual Interactive Testing", () => {
+test.describe("Manual Interactive Testing", () => {
     test("default", async ({ page }) => {
         test.setTimeout(0);
 
