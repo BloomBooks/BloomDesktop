@@ -150,7 +150,7 @@ namespace BloomTests
 
             Assert.That(errorMessage, Is.Null);
             Assert.That(
-                Program.StartupUserSettingsFolder,
+                BloomSettingsProvider.UserSettingsFolder,
                 Is.EqualTo(@"C:\Temp\bloom-e2e-abc\user-settings")
             );
             Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
@@ -172,7 +172,7 @@ namespace BloomTests
 
             Assert.That(errorMessage, Is.Null);
             Assert.That(
-                Program.StartupUserSettingsFolder,
+                BloomSettingsProvider.UserSettingsFolder,
                 Is.EqualTo(
                     System.IO.Path.Combine(
                         System.IO.Directory.GetCurrentDirectory(),
@@ -191,7 +191,7 @@ namespace BloomTests
             );
 
             Assert.That(errorMessage, Is.Null);
-            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            Assert.That(BloomSettingsProvider.UserSettingsFolder, Is.Null);
         }
 
         [Test]
@@ -206,7 +206,7 @@ namespace BloomTests
                 errorMessage,
                 Is.EqualTo("Bloom requires a value after --user-settings-folder.")
             );
-            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            Assert.That(BloomSettingsProvider.UserSettingsFolder, Is.Null);
             Assert.That(remainingArgs, Is.Empty);
         }
 
@@ -222,7 +222,7 @@ namespace BloomTests
                 errorMessage,
                 Does.StartWith("Bloom cannot use \"\" as the --user-settings-folder")
             );
-            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            Assert.That(BloomSettingsProvider.UserSettingsFolder, Is.Null);
             Assert.That(remainingArgs, Is.Empty);
         }
 

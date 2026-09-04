@@ -661,8 +661,9 @@ namespace Bloom.Publish.BloomLibrary
             // its user settings. When this Bloom keeps its settings in a folder of its own (see
             // BloomSettingsProvider), the second one has to read the same folder, or it finds no
             // login at all, or somebody else's.
-            if (Program.StartupUserSettingsFolder != null)
-                arguments += $" --user-settings-folder \"{Program.StartupUserSettingsFolder}\"";
+            if (BloomSettingsProvider.UserSettingsFolder != null)
+                arguments +=
+                    $" --user-settings-folder \"{BloomSettingsProvider.UserSettingsFolder}\"";
             // An automated run wants the second Bloom to behave as this one does: no modal dialogs.
             if (Program.RunningE2eTests)
                 arguments += " --e2e";

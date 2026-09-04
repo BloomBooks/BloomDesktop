@@ -114,12 +114,9 @@ namespace Bloom
         // rebuild and relaunch us.
         internal static int? StartupLauncherPort { get; private set; }
 
-        // The folder to keep the user settings (user.config) in instead of the usual
-        // %LOCALAPPDATA%\SIL\Bloom\<version>, passed as --user-settings-folder; null for the usual
-        // one. Every Bloom of one build otherwise shares one user.config, so the e2e launch fixture
-        // passes a folder inside the run's temp folder, and the Bloom it launches neither inherits
-        // nor overwrites anyone else's settings. See BloomSettingsProvider.
-        internal static string StartupUserSettingsFolder { get; private set; }
+        // The folder --user-settings-folder asked Bloom to keep its user.config in lives on
+        // BloomSettingsProvider.UserSettingsFolder (where the provider that consumes it is), which
+        // ParseStartupPortArguments sets directly. See BloomSettingsProvider.
 
         internal static string StartupRequestedPortSummary =>
             string.Join(
@@ -131,8 +128,8 @@ namespace Bloom
                     StartupLauncherPort.HasValue
                         ? $"launcherPort={StartupLauncherPort.Value}"
                         : null,
-                    StartupUserSettingsFolder != null
-                        ? $"userSettingsFolder={StartupUserSettingsFolder}"
+                    BloomSettingsProvider.UserSettingsFolder != null
+                        ? $"userSettingsFolder={BloomSettingsProvider.UserSettingsFolder}"
                         : null,
                 }.Where(value => value != null)
             );
@@ -151,12 +148,11 @@ namespace Bloom
             TempFile.NamePrefix = "bloom";
 
             // Parse our own startup arguments before anything reads Settings.Default:
-            // --user-settings-folder decides where the settings live, and a settings provider fixes
-            // its location when it is constructed, which happens the first time a setting is read.
-            // A bad argument is reported further down, once WinForms is ready to show a dialog.
+            // --user-settings-folder decides where the settings live (it sets
+            // BloomSettingsProvider.UserSettingsFolder), and a settings provider fixes its location
+            // when it is constructed, which happens the first time a setting is read. A bad argument
+            // is reported further down, once WinForms is ready to show a dialog.
             var args = ParseStartupPortArguments(args1, out var startupPortErrorMessage);
-            if (startupPortErrorMessage == null)
-                BloomSettingsProvider.UserSettingsFolder = StartupUserSettingsFolder;
 
             CheckForCorruptUserConfig();
             // Ensure that the registration information is loaded early before Team Collection
@@ -365,7 +361,7 @@ namespace Bloom
                     // owner put there (see BloomSettingsProvider), so nothing is brought in from
                     // another version's file; an automated run would otherwise inherit the
                     // developer's settings after all.
-                    if (StartupUserSettingsFolder == null)
+                    if (BloomSettingsProvider.UserSettingsFolder == null)
                     {
                         Settings.Default.Upgrade();
                         Settings.Default.Reload();
@@ -811,7 +807,7 @@ namespace Bloom
             StartupLabel = null;
             StartupAutomation = false;
             StartupLauncherPort = null;
-            StartupUserSettingsFolder = null;
+            BloomSettingsProvider.UserSettingsFolder = null;
             RunningE2eTests = false;
 
             var remainingArgs = new List<string>();
@@ -876,10 +872,11 @@ namespace Bloom
         }
 
         /// <summary>
-        /// Handle --user-settings-folder: the folder to keep user.config in (see
-        /// StartupUserSettingsFolder). Stored as a full path, because Bloom changes its working
-        /// directory during startup (NormalizeWorkingDirectory) and a relative path would
-        /// otherwise point somewhere else by the time the settings are saved.
+        /// Handle --user-settings-folder: the folder to keep user.config in, stored on
+        /// BloomSettingsProvider.UserSettingsFolder (the provider that consumes it). Stored as a
+        /// full path, because Bloom changes its working directory during startup
+        /// (NormalizeWorkingDirectory) and a relative path would otherwise point somewhere else by
+        /// the time the settings are saved.
         /// </summary>
         private static bool TryHandleUserSettingsFolderArgument(
             string[] args,
@@ -904,7 +901,7 @@ namespace Bloom
             if (errorMessage != null)
                 return true;
 
-            if (StartupUserSettingsFolder != null)
+            if (BloomSettingsProvider.UserSettingsFolder != null)
             {
                 errorMessage = $"Bloom only accepts one {optionName} argument.";
                 return true;
@@ -912,7 +909,7 @@ namespace Bloom
 
             try
             {
-                StartupUserSettingsFolder = Path.GetFullPath(value);
+                BloomSettingsProvider.UserSettingsFolder = Path.GetFullPath(value);
             }
             catch (Exception e)
                 when (e is ArgumentException
