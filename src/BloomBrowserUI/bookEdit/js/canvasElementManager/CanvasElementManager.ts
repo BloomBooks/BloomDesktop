@@ -2846,10 +2846,17 @@ export class CanvasElementManager {
         theOneCanvasElementManager.handleResizeAdjustments();
     }
     /**
-     * Re-fit the background image of every bloom-canvas on the page to its container.
+     * Run the same adjustments on every bloom-canvas on the page that an origami splitter
+     * drag runs on its panes: convert a legacy background image to a canvas element if
+     * needed, then rescale every canvas element to the size the bloom-canvas has now.
      * A host that resizes a container with JavaScript after Bloom's page-load pass has
      * run needs this, so that a picture follows its container the way an origami image
      * follows its pane.
+     *
+     * The rescale only touches canvas elements that already have a position. A background
+     * image whose bloom-canvas had no size when it was created never got one (see the
+     * zero-area guard in adjustBackgroundImageSizeToFit), so this method leaves it alone;
+     * use refitBackgroundImage for that canvas.
      */
     public adjustAfterContainerResize(): void {
         this.handleResizeAdjustments();
