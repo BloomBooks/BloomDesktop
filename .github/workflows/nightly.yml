@@ -9,7 +9,7 @@
 # Each suite publishes its own check run / job-summary section, so the commit shows five
 # independent results rather than one merged total. See the "Test reports" steps at the end.
 #
-# Every night is then reported to Zulip -- pass or fail, one topic per night -- with each suite's
+# Every night is then reported to Zulip -- pass or fail, all in one topic -- with each suite's
 # counts and how long it took. See "The nightly report" at the end.
 #
 # Schedule: 04:00 UTC daily. GitHub cron is always UTC (== GMT, no DST), so this is a
@@ -50,27 +50,27 @@ on:
     workflow_dispatch:
         inputs:
             run_frontend_tests:
-                description: "TypeScript unit tests (vitest, ~3 min)"
+                description: "TypeScript unit tests (~3 min)"
                 type: boolean
                 default: true
             run_csharp_tests:
-                description: "C# unit tests (NUnit, ~13 min)"
+                description: "C# unit tests (~13 min)"
                 type: boolean
                 default: true
             run_e2e_tests:
-                description: "BloomE2E tests (Playwright, ~9 min)"
+                description: "BloomE2E tests (~9 min)"
                 type: boolean
                 default: true
             run_component_tests:
-                description: "React component tests (Playwright, ~2 min)"
+                description: "React component tests (~2 min)"
                 type: boolean
                 default: true
             run_visual_regression:
-                description: "Visual regression tests (book page layout, ~3 min)"
+                description: "Visual regression tests -- book page layout (~3 min)"
                 type: boolean
                 default: true
             post_to_zulip:
-                description: "Post this run's report to Zulip (scheduled runs always do; this is for testing)"
+                description: "Post report to Zulip"
                 type: boolean
                 default: false
 
@@ -612,15 +612,21 @@ jobs:
                   retention-days: 14
 
             # ----- The nightly report -----
-            # Post a report of EVERY night to Zulip -- channel "developers", a topic per night --
+            # Post a report of EVERY night to Zulip -- channel "developers", topic "Nightly run" --
             # rather than speaking up only when something broke. Silence on a good night is
             # indistinguishable from a nightly that never ran at all, which is the failure that
             # hides longest; and the timings below are worth watching on a green night too, since
             # a suite doubling in length is news before it is a failure.
             #
-            # One topic per night ("Nightly run 2026-09-04"), so a bad night can be discussed under its
-            # own date without burying the others, and so the channel's topic list doubles as a
-            # record of which nights ran.
+            # One topic for all of them, so the nights sit together as a single thread you can
+            # follow or mute in one go, and so last night's numbers are one scroll from the night
+            # before's. Zulip's own date dividers separate them, so the report carries no date of
+            # its own.
+            #
+            # The cost of that, worth knowing because it undoes half an argument made when this was
+            # designed: a night that dies on the job timeout reports nothing, and with a shared
+            # topic that is a gap in a thread rather than a missing topic in a list. Less visible,
+            # though still a morning with no message in a channel that has one every other day.
             #
             # Two steps: compose the message here, hand it to Zulip's own action below. The split is
             # not decoration -- gathering the outcomes, counts and timings is our logic; talking to
@@ -898,9 +904,8 @@ jobs:
 
                   Write-Host $content
 
-                  # One topic per night. The schedule is 04:00 UTC, so the UTC date is the night's
-                  # own name and does not drift with whoever is reading.
-                  $topic = "Nightly run " + [datetimeoffset]::UtcNow.ToString("yyyy-MM-dd")
+                  # A fixed topic, so every night lands in the same thread.
+                  $topic = "Nightly run"
 
                   # Step outputs, so the send step below stays a pure "here is a message, post it".
                   # A multi-line value needs the delimiter form.
