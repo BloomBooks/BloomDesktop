@@ -75,3 +75,30 @@ describe("bloom-player's undoPrepareActivity, as the save path depends on it", (
         );
     });
 });
+
+// The other half of the workaround: knowing when play mode is over.
+//
+// The page frame stops volunteering snapshots while the game tool is in its Play tab, and starts
+// again when it leaves. "Leaves" is not only the user picking another tab -- switching to a
+// different tool detaches the game tool straight from Play, and the tool's teardown runs
+// undoPrepareActivity on the LIVE page. If that path did not also resume, nothing else the user did
+// on that page would ever be volunteered to C#, and quitting would write what it held from before.
+//
+// removeToolMarkup tells the two apart by whether the element it is given is still in the document:
+// the clone taken for a save is detached, the live page is not. This pins that distinction, which
+// is what the fix rests on.
+describe("telling a save's clone from the live page", () => {
+    it("a clone of the body is detached, and the live page is not", () => {
+        document.body.innerHTML = `<div class="bloom-page" id="p1"></div>`;
+        const livePage = document.getElementsByClassName(
+            "bloom-page",
+        )[0] as HTMLElement;
+        const cloneOfBody = document.body.cloneNode(true) as HTMLElement;
+        const pageInClone = cloneOfBody.getElementsByClassName(
+            "bloom-page",
+        )[0] as HTMLElement;
+
+        expect(livePage.isConnected).toBe(true);
+        expect(pageInClone.isConnected).toBe(false);
+    });
+});

@@ -298,6 +298,25 @@ function noteChange(): void {
 }
 
 /**
+ * Tell the watcher that the saved form of the page may have changed in a way it cannot see.
+ *
+ * The MutationObserver covers everything in the body, which is nearly all of what we gather. It
+ * does NOT cover the user's own style definitions: those are gathered too (see
+ * getPageContentForSave), they live in a <style> in the HEAD, and the style editor changes them
+ * through the CSSOM -- deleteRule/insertRule and setProperty -- which mutates no DOM node at all,
+ * in the head or anywhere else. So changing a style's font, size, spacing or colour without
+ * touching the text could produce no snapshot, and leaving the tab or quitting would then write
+ * the styles as they were.
+ *
+ * Calling this more often than necessary costs nothing: a snapshot is compared against the last
+ * one delivered and is not posted if the saved form has not actually changed. So callers should
+ * err towards calling it.
+ */
+export function notePageContentMayHaveChanged(): void {
+    noteChange();
+}
+
+/**
  * Start watching the page that has just become editable. Safe to call again; it restarts on the
  * new page.
  */

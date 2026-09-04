@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
+    notePageContentMayHaveChanged,
     startWatchingPageForSnapshots,
     stopWatchingPageForSnapshots,
     quietMsForTests,
@@ -344,6 +345,45 @@ describe("pageSnapshot", () => {
             "loadId=" + encodeURIComponent(getPageLoadId()),
         );
         expect(getPageLoadId()).not.toBe("");
+    });
+
+    it("posts when told the content changed in a way it cannot observe", async () => {
+        // The user's style definitions are gathered too, but they are changed through the CSSOM --
+        // setProperty, deleteRule, insertRule -- which mutates no DOM node, so a MutationObserver
+        // cannot see it. Changing a style's size or colour without touching the text would
+        // otherwise produce no snapshot at all, and leaving the tab would write the old styles.
+        contentToReport = "first";
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+        expect(posted.length, "sanity: nothing posted yet").toBe(0);
+
+        // The style editor changed a rule. Nothing in the page changed.
+        contentToReport = "first, but with bigger type";
+        notePageContentMayHaveChanged();
+        vi.advanceTimersByTime(quietMsForTests);
+        await vi.runAllTicks();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(posted.map((p) => p.body)).toEqual([
+            "first, but with bigger type",
+        ]);
+    });
+
+    it("posts nothing when told of a change that turns out not to be one", async () => {
+        // Callers are told to err towards saying so, which is only safe because an unchanged page
+        // costs nothing.
+        contentToReport = "first";
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+
+        notePageContentMayHaveChanged();
+        vi.advanceTimersByTime(quietMsForTests);
+        await vi.runAllTicks();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(posted.length).toBe(0);
     });
 
     it("offers the content again when C# refuses the snapshot", async () => {

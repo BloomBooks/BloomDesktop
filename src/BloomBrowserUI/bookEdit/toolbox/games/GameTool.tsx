@@ -1838,11 +1838,23 @@ export class GameTool extends ToolboxToolReactAdaptor {
     }
 
     // While the user is on the Play tab, prepareActivity() has put the page into play mode; that
-    // markup must not be saved. undoPrepareActivity() is pure DOM surgery on the page element it is
-    // given, so the save path can run it on a clone and leave the live page in play mode, while
-    // detachFromPage (inherited) runs the very same thing on the live page.
+    // markup must not be saved. So the save path runs this on a CLONE, and detachFromPage
+    // (inherited) runs the very same thing on the live page when the tool goes away.
+    //
+    // Note that undoPrepareActivity is not confined to the element it is given: bloom-player
+    // recorded the live draggables when play mode began, and undoing restores THOSE, whichever
+    // element we pass. That is why the page frame stops volunteering snapshots while we are in the
+    // Play tab (see setActiveDragActivityTab), and it is why this has to say when play mode is
+    // over -- which is not only when the user picks another tab. Switching to a different tool
+    // detaches us straight from Play, and if we did not resume here, nothing else on that page
+    // would ever be volunteered to C# again.
     public removeToolMarkup(pageOrClone: HTMLElement): void {
         undoPrepareActivity(pageOrClone);
+        // A clone taken for a save is detached; the live page is not. Only the live page leaving
+        // play mode means play mode is over.
+        if (pageOrClone.isConnected) {
+            getEditablePageBundleExports()?.setSnapshotsSuspended(undefined);
+        }
     }
 }
 export function playSound(

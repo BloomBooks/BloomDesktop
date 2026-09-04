@@ -19,6 +19,7 @@ import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants"
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
 import {
     getPageLoadId,
+    notePageContentMayHaveChanged,
     setSnapshotsSuspended,
     startWatchingPageForSnapshots,
 } from "./js/pageSnapshot";
@@ -67,6 +68,9 @@ export interface IPageFrameExports {
     // its Play tab; see setSnapshotsSuspended in js/pageSnapshot.ts for why gathering is not free
     // there.
     setSnapshotsSuspended(reason: string | undefined): void;
+    // Say that the saved form of the page may have changed in a way the page watcher cannot see --
+    // the user's style definitions, which are changed through the CSSOM and mutate no DOM node.
+    notePageContentMayHaveChanged(): void;
     copySelection(): void;
     cutSelection(): void;
     pasteClipboard(): void;
@@ -164,6 +168,7 @@ export {
     captureContentForExternalProcessing,
     pageUnloading,
     setSnapshotsSuspended,
+    notePageContentMayHaveChanged,
     topBarButtonClick,
     copySelection,
     cutSelection,
@@ -428,6 +433,7 @@ interface EditablePageBundleApi {
     getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
     setSnapshotsSuspended: typeof setSnapshotsSuspended;
+    notePageContentMayHaveChanged: typeof notePageContentMayHaveChanged;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
     pasteClipboard: typeof pasteClipboard;
@@ -507,6 +513,7 @@ window.editablePageBundle = {
     getPageContentForSaveWhenReady,
     pageUnloading,
     setSnapshotsSuspended,
+    notePageContentMayHaveChanged,
     copySelection,
     cutSelection,
     pasteClipboard,
