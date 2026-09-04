@@ -521,7 +521,8 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
 /**
  * Click in one language's box of one translation group on the page being shown, so that it has the
  * focus, the way a person starts editing it. `groupSelector` picks the group, e.g. ".bookTitle" for
- * the cover title. Waits until the box has the focus, and returns it.
+ * the cover title; when the page has several groups that match, `groupIndex` says which one, in
+ * document order. Waits until the box has the focus, and returns it.
  *
  * Focusing a box is also what makes Bloom show the box's format gear (see helpers/formatDialog.ts).
  */
@@ -529,9 +530,12 @@ export async function clickInGroup(
     page: Page,
     groupSelector: string,
     languageTag: string,
+    groupIndex = 0,
 ): Promise<Locator> {
     const box = editablePageFrame(page)
-        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
+        .locator(groupSelector)
+        .nth(groupIndex)
+        .locator(`.bloom-editable[lang="${languageTag}"]`)
         .first();
     await box.waitFor({ state: "visible", timeout: 30000 });
     await box.click();
@@ -544,9 +548,11 @@ export async function clickInGroup(
 
 /**
  * Type text into one language's box of one translation group on the page being shown, the way a
- * person does. `groupSelector` picks the group, e.g. ".bookTitle" for the cover title.
+ * person does. `groupSelector` picks the group, e.g. ".bookTitle" for the cover title; when the
+ * page has several groups that match, `groupIndex` says which one, in document order.
  *
- * Pass an empty string to clear the box; that is how a test makes a translation incomplete.
+ * Pass an empty string to clear the box; that is how a test makes a translation incomplete. A
+ * newline in `text` presses Enter, which starts a new paragraph, as it does for a person.
  * Nothing reaches the file until the book leaves this page — see goToPage.
  */
 export async function typeInGroup(
@@ -554,10 +560,16 @@ export async function typeInGroup(
     groupSelector: string,
     languageTag: string,
     text: string,
+    groupIndex = 0,
 ): Promise<void> {
     // Click in, select what is there, and type over it. A box here is a CKEditor surface, and
     // filling it directly leaves part of the old text behind.
-    const box = await clickInGroup(page, groupSelector, languageTag);
+    const box = await clickInGroup(
+        page,
+        groupSelector,
+        languageTag,
+        groupIndex,
+    );
     await box.press("Control+a");
     await box.press("Delete");
     // One insertion rather than a key press per character: the box has focus, and CKEditor and
@@ -571,8 +583,9 @@ export async function typeInGroup(
     // no key events".)
     if (text) await page.keyboard.insertText(text);
     // Bloom's editor reacts to typing; confirm the box holds what we meant before moving on, so a
-    // later failure cannot be blamed on text that never arrived.
-    await expect(box).toHaveText(text, { timeout: 15000 });
+    // later failure cannot be blamed on text that never arrived. innerText, rather than textContent,
+    // so that a paragraph break reads back as the newline that made it.
+    await expect(box).toHaveText(text, { timeout: 15000, useInnerText: true });
 }
 
 /** One front or back matter page, as the Edit tab showed it. */
