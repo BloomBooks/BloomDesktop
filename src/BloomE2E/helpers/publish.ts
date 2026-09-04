@@ -117,15 +117,6 @@ export function languagesGroup(page: Page, group: LanguageGroup): Locator {
     return page.getByTestId(groupTestIds[group]);
 }
 
-/**
- * Whether the Talking Book Languages list is on the screen at all. Bloom shows it only when some
- * language of the book has narration that could be published, so its absence is itself a thing a
- * test asserts.
- */
-export async function isAudioLanguageListShowing(page: Page): Promise<boolean> {
-    return (await languagesGroup(page, "audio").count()) > 0;
-}
-
 /** Every row of one language list, in the order the screen shows them. */
 export async function getLanguageRows(
     page: Page,

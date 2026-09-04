@@ -146,13 +146,19 @@ export function getNarratedLanguages(
  *
  * The button ends in a native file chooser, which Playwright cannot dismiss, so this pre-answers
  * it through Bloom's e2e hook before clicking (see E2eTestingApi's nextChosenFile).
+ *
+ * `bookFolder` is needed to wait for the import to finish -- see the comment on the wait below.
  */
 export async function importNarration(
     page: Page,
+    bookFolder: string,
     groupSelector: string,
     languageTag: string,
     mp3Path: string = sampleNarrationFile,
 ): Promise<void> {
+    const audioFolder = Path.join(bookFolder, "audio");
+    const before = narrationFilesIn(audioFolder).length;
+
     await clickInGroup(page, groupSelector, languageTag);
     await setRecordingMode(page, "By Whole Text Box");
     await openAdvancedSection(page);
@@ -168,14 +174,25 @@ export async function importNarration(
     await armFileChooser(page, Path.resolve(mp3Path));
     await importButton.click();
 
-    // The import is several round trips -- choose, find the audio folder, copy, write the markup --
-    // so wait for its result rather than for the click.
+    // The import is several round trips -- choose the file, find the book's audio folder, copy,
+    // then write the markup -- so wait for its RESULT: one more narration file on disk than
+    // before. Waiting on the page instead does not work: the tool has already marked the text
+    // box as recordable, so every DOM signal a caller might poll is true before the import
+    // begins, and the wait would return immediately while the copy was still in flight.
     await expect
-        .poll(async () => (await getNarrationSentences(page)).length, {
+        .poll(() => narrationFilesIn(audioFolder).length, {
             timeout: 60000,
-            message: `Importing "${mp3Path}" never left the page with a narrated sentence.`,
+            message: `Importing "${mp3Path}" never added a narration file to ${audioFolder}.`,
         })
-        .toBeGreaterThan(0);
+        .toBeGreaterThan(before);
+}
+
+/** The narration files in a book's audio folder; empty when the folder does not exist yet. */
+function narrationFilesIn(audioFolder: string): string[] {
+    if (!fs.existsSync(audioFolder)) return [];
+    return fs
+        .readdirSync(audioFolder)
+        .filter((name) => name.toLowerCase().endsWith(".mp3"));
 }
 
 /**

@@ -319,7 +319,7 @@ Dependencies point down only:
      here talks to Bloom.
    - `helpers/publish.ts` — `openPublishDestination`, `getLanguageRows`,
      `expectLanguageRows`, `expectLanguageRowsInAnyOrder`, `clickLanguage`,
-     `getTooltipForLanguage`, `isAudioLanguageListShowing`, `showBloomPubPreview`,
+     `getTooltipForLanguage`, `showBloomPubPreview`,
      `getPreviewLanguages`, `getLanguagesInBook`, `isTalkingBookFeatureOn`,
      `expectTalkingBookFeature`, `stageBloomPub`, `getStagedNarrationIds`. The Publish tab has
      TWO language lists — Text Languages and Talking Book Languages — rendered by the same

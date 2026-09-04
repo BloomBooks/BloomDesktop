@@ -121,6 +121,7 @@ test.describe("importing a recording made outside Bloom", () => {
         // behind it, answered by the e2e hook rather than by a person.
         await importNarration(
             page,
+            bookFolder,
             ".bloom-translationGroup",
             "en",
             sampleNarrationFile,
