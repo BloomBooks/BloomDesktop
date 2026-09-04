@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
     notePageContentMayHaveChanged,
-    setSnapshotsSuspended,
     startWatchingPageForSnapshots,
     stopWatchingPageForSnapshots,
     quietMsForTests,
@@ -82,7 +81,6 @@ describe("pageSnapshot", () => {
     });
 
     afterEach(() => {
-        setSnapshotsSuspended(undefined);
         stopWatchingPageForSnapshots();
         vi.useRealTimers();
         document.body.innerHTML = "";
@@ -386,72 +384,6 @@ describe("pageSnapshot", () => {
         await Promise.resolve();
 
         expect(posted.length).toBe(0);
-    });
-
-    it("does not read the page at all while snapshots are suspended", async () => {
-        // Reading the page is not free in every state: the game tool's part of it reaches into
-        // bloom-player's record of the LIVE page, which is why the page frame stops watching while
-        // a game is in its Play tab. A game page can open straight into that tab, because the tab
-        // is remembered per page, so even the once-per-page baseline read has to wait.
-        let gathers = 0;
-        const countingGather = () => {
-            gathers++;
-            return Promise.resolve(contentToReport);
-        };
-
-        setSnapshotsSuspended("a test");
-        contentToReport = "the game, in play mode";
-        startWatchingPageForSnapshots(countingGather);
-        await letTheBaselineSettle();
-        changeThePage("the user drags something");
-        await letTheSnapshotHappen();
-
-        expect(gathers, "the page must not be read while suspended").toBe(0);
-        expect(posted.length).toBe(0);
-
-        // On resuming we do NOT go and take a late baseline. A baseline means "what the page was
-        // before the user touched it", and this moment is not that: anything that changed while we
-        // were suspended would be folded in and thereby counted as already delivered. So we offer
-        // the page instead, whatever it now says.
-        contentToReport = "the game, back in start mode";
-        setSnapshotsSuspended(undefined);
-        await letTheSnapshotHappen();
-        expect(
-            posted.map((p) => p.body),
-            "resuming offers the page rather than quietly adopting it",
-        ).toEqual(["the game, back in start mode"]);
-
-        // And from then on it behaves normally.
-        contentToReport = "the user typed";
-        changeThePage("typed");
-        await letTheSnapshotHappen();
-        expect(posted.map((p) => p.body)).toEqual([
-            "the game, back in start mode",
-            "the user typed",
-        ]);
-    });
-
-    it("does not fold an edit made while suspended into the baseline", async () => {
-        // The trap this avoids: adopting the page on resuming would make whatever was typed while
-        // we were not watching the new definition of "unchanged", so it would never be sent, and
-        // the next save would write the page as it was before.
-        contentToReport = "before";
-        startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
-
-        setSnapshotsSuspended("a test");
-        contentToReport =
-            "before, plus something typed while we were not watching";
-        changeThePage("typed while suspended");
-        await letTheSnapshotHappen();
-        expect(posted.length, "nothing posted while suspended").toBe(0);
-
-        setSnapshotsSuspended(undefined);
-        await letTheSnapshotHappen();
-        expect(
-            posted.map((p) => p.body),
-            "the edit made while suspended must still reach C#",
-        ).toEqual(["before, plus something typed while we were not watching"]);
     });
 
     it("offers the content again when C# refuses the snapshot", async () => {

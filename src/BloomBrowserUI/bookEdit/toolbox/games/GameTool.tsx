@@ -1841,20 +1841,12 @@ export class GameTool extends ToolboxToolReactAdaptor {
     // markup must not be saved. So the save path runs this on a CLONE, and detachFromPage
     // (inherited) runs the very same thing on the live page when the tool goes away.
     //
-    // Note that undoPrepareActivity is not confined to the element it is given: bloom-player
-    // recorded the live draggables when play mode began, and undoing restores THOSE, whichever
-    // element we pass. That is why the page frame stops volunteering snapshots while we are in the
-    // Play tab (see setActiveDragActivityTab), and it is why this has to say when play mode is
-    // over -- which is not only when the user picks another tab. Switching to a different tool
-    // detaches us straight from Play, and if we did not resume here, nothing else on that page
-    // would ever be volunteered to C# again.
+    // undoPrepareActivity works on whichever of those it is given and only on that one, so the
+    // clone comes out with the draggables where the author put them -- which is what the book
+    // should record -- and the live page goes on being played. That was not always true; see
+    // bloom-player's own tests for what it guarantees.
     public removeToolMarkup(pageOrClone: HTMLElement): void {
         undoPrepareActivity(pageOrClone);
-        // A clone taken for a save is detached; the live page is not. Only the live page leaving
-        // play mode means play mode is over.
-        if (pageOrClone.isConnected) {
-            getEditablePageBundleExports()?.setSnapshotsSuspended(undefined);
-        }
     }
 }
 export function playSound(
@@ -2007,14 +1999,6 @@ export function setActiveDragActivityTab(tab: number) {
     const canvasElementManager = getCanvasElementManager();
     if (effectiveTab === playTabIndex) {
         canvasElementManager!.suspendComicEditing("forGamePlayMode");
-        // Stop the page frame volunteering snapshots while we are in play mode. Gathering the page
-        // asks the current tool to take its markup off the CLONE, and ours does that by calling
-        // undoPrepareActivity() -- which does not confine itself to the element it is given: it
-        // puts the LIVE draggables back where prepareActivity() found them. Gathering happens
-        // whenever the page changes, and dragging an item changes the page, so without this every
-        // drag undid itself a moment later and the game could not be played. Nothing that happens
-        // in play mode belongs in the book, so there is nothing to lose by not watching.
-        pageFrameExports?.setSnapshotsSuspended("game play mode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
         prepareActivity(page, (_next) => {
@@ -2058,9 +2042,6 @@ export function setActiveDragActivityTab(tab: number) {
         //Slider: wrapper?.removeEventListener("click", designTimeClickOnSlider);
     } else {
         undoPrepareActivity(page);
-        // Here undoPrepareActivity IS being given the live page, which is what it expects, so the
-        // page is now genuinely out of play mode and safe to gather again.
-        pageFrameExports?.setSnapshotsSuspended(undefined);
         canvasElementManager?.resumeComicEditing();
         canvasElementManager?.checkActiveElementIsVisible();
         //Slider: wrapper?.addEventListener("click", designTimeClickOnSlider);

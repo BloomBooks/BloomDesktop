@@ -102,61 +102,6 @@ let changeCount = 0;
 let pageWeReportedAFailureFor: string | undefined;
 // How many posts in a row have failed outright. Governs the backoff, and how soon we stop asking.
 let consecutiveFailedPosts = 0;
-// Set while the page is in a mode where gathering it would disturb what the user is doing. See
-// setSnapshotsSuspended.
-let suspendedFor: string | undefined;
-
-/**
- * Stop volunteering snapshots, or start again. Pass a short reason to suspend, undefined to resume.
- *
- * We gather by cloning the body and cleaning the CLONE, so gathering is normally invisible. There
- * is one exception, and it is the reason this exists: the toolbox tool is asked to take its markup
- * off the clone, and the game tool does that by calling bloom-player's undoPrepareActivity(), which
- * is NOT confined to the element it is given -- it restores the positions bloom-player recorded
- * when play mode began, on the LIVE elements, whichever element we hand it.
- *
- * On the live page that is exactly right, and it is what leaving the Play tab does. On a clone it
- * is destructive: it snaps the items the user has dragged back to where they started. Since we
- * gather whenever the page changes, and dragging an item changes the page, the game became
- * unplayable in the editor -- every drag undid itself a moment later.
- *
- * Suspending loses nothing. Nothing that happens in play mode belongs in the book, and any change
- * made while we were suspended is picked up by the snapshot taken on resuming.
- *
- * TEMPORARY, and only half a fix. An explicit save -- a page-list command -- gathers the page
- * directly rather than through us, so it is not suspended, and it still hands the game tool a
- * clone: the live page's drags are still undone, and worse, the clone it saves records the
- * draggables where the tester dragged them rather than where the author put them. Only
- * bloom-player can fix that, by restoring positions in the page it is given instead of the one it
- * remembered, which is bloom-player#441. When that is merged and the dependency bumped, all of
- * this suspension machinery should come out: setSnapshotsSuspended, its page-frame export, both
- * calls in GameTool, and the deferred baseline in startWatchingPageForSnapshots.
- */
-export function setSnapshotsSuspended(reason: string | undefined): void {
-    suspendedFor = reason;
-    if (reason) {
-        if (timer !== undefined) window.clearTimeout(timer);
-        timer = undefined;
-    } else {
-        // If we never got to read the page, we have no baseline -- and we deliberately do not go
-        // and take one now. A baseline is "what the page looked like before the user touched it",
-        // and this moment is not that: anything that changed while we were suspended would be
-        // folded into it and thereby counted as already delivered, which is precisely how an edit
-        // gets lost. So we simply declare that we have no idea what C# holds, which makes the
-        // snapshot below unconditional.
-        //
-        // The cost is one redundant snapshot per suspension, and it is not even a redundant SAVE:
-        // C# compares what it is given against what the book already says and writes nothing if
-        // they match.
-        if (!baselineTaken) {
-            lastPosted = undefined;
-            baselineTaken = true;
-        }
-        // Whatever changed while we were suspended still owes C# a snapshot.
-        scheduleSnapshot();
-    }
-}
-
 // Tell the user, at most once for this page. Reporting is the whole reason a snapshot post is
 // made quietly (see postStringQuietly): so that WE decide when to speak, rather than the request
 // layer speaking on every attempt.
@@ -190,8 +135,6 @@ function currentPageId(): string | undefined {
 async function takeSnapshot(): Promise<void> {
     const pageId = pageIdBeingWatched;
     if (!pageId || !gatherPageContent) return;
-    // Not while gathering would disturb the live page; resuming takes one.
-    if (suspendedFor) return;
     if (!baselineTaken) {
         // The page is still finishing loading. Come back once we know what "unchanged" looks like.
         scheduleSnapshot();
@@ -306,7 +249,6 @@ async function takeSnapshot(): Promise<void> {
 }
 
 function scheduleSnapshot(delayMs: number = kQuietMs): void {
-    if (suspendedFor) return; // setSnapshotsSuspended takes one when it resumes
     if (timer !== undefined) window.clearTimeout(timer);
     timer = window.setTimeout(() => {
         timer = undefined;
@@ -341,14 +283,7 @@ export function notePageContentMayHaveChanged(): void {
 // Read the page once, and treat that as already sent. See the long note in
 // startWatchingPageForSnapshots for why a baseline is needed at all.
 //
-// NOT while snapshots are suspended. Gathering is not free in play mode -- the game tool's part of
-// it reaches into bloom-player's record of the LIVE page -- and a game page can open straight into
-// its Play tab, because the tab is remembered per page. Nothing is at risk in the meantime: with no
-// baseline nothing is posted, and there is nothing a save should be writing while the user is
-// playing the game. Resuming does not come back here for a late baseline, because by then the
-// moment for one has passed: see setSnapshotsSuspended.
-function takeBaselineWhenNotSuspended(pageId: string): void {
-    if (suspendedFor) return; // setSnapshotsSuspended calls us back when it resumes
+function takeBaseline(pageId: string): void {
     void gatherPageContent!().then(
         (baseline) => {
             if (pageIdBeingWatched !== pageId) return; // moved on while we waited
@@ -386,10 +321,6 @@ export function startWatchingPageForSnapshots(
     baselineTaken = false;
     pageWeReportedAFailureFor = undefined;
     consecutiveFailedPosts = 0;
-    // Deliberately NOT clearing suspendedFor: page setup can put a game page straight into its
-    // Play tab (the tab is remembered per page), and that suspension may well be set before we
-    // are started. Each page load is a fresh document, and so a fresh copy of this module, so
-    // there is nothing to inherit from the page we left.
 
     // Take a baseline of the page as it ends up once it has finished loading, and treat that as
     // "already sent". Without it every page posts a snapshot within a second of being opened, even
@@ -411,7 +342,7 @@ export function startWatchingPageForSnapshots(
     // settling is indistinguishable from typing, we would then have no way to tell we owed C# a
     // snapshot of it -- trading a harmless duplicate for a lost edit. One post per page visit,
     // carrying exactly what a save would have written, is the better end of that trade.
-    takeBaselineWhenNotSuspended(pageId);
+    takeBaseline(pageId);
 
     // A MutationObserver rather than input/keyup handlers, because plenty of what changes a page
     // never goes through a keyboard event: a tool rewriting the markup, a canvas element being

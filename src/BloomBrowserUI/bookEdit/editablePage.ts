@@ -20,7 +20,6 @@ import { renderDragActivityTabControl } from "./js/AbovePageControls";
 import {
     getPageLoadId,
     notePageContentMayHaveChanged,
-    setSnapshotsSuspended,
     startWatchingPageForSnapshots,
 } from "./js/pageSnapshot";
 
@@ -64,10 +63,6 @@ export interface IPageFrameExports {
     // disturbing the live page.
     getPageContentForSaveWhenReady(): Promise<string>;
     pageUnloading(): void;
-    // Stop/start volunteering snapshots of the page. The game tool uses this while the page is in
-    // its Play tab; see setSnapshotsSuspended in js/pageSnapshot.ts for why gathering is not free
-    // there.
-    setSnapshotsSuspended(reason: string | undefined): void;
     // Say that the saved form of the page may have changed in a way the page watcher cannot see --
     // the user's style definitions, which are changed through the CSSOM and mutate no DOM node.
     notePageContentMayHaveChanged(): void;
@@ -167,7 +162,6 @@ export {
     savePageWithoutReloading,
     captureContentForExternalProcessing,
     pageUnloading,
-    setSnapshotsSuspended,
     notePageContentMayHaveChanged,
     topBarButtonClick,
     copySelection,
@@ -432,7 +426,6 @@ interface EditablePageBundleApi {
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
     getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
-    setSnapshotsSuspended: typeof setSnapshotsSuspended;
     notePageContentMayHaveChanged: typeof notePageContentMayHaveChanged;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
@@ -512,7 +505,6 @@ window.editablePageBundle = {
     captureContentForExternalProcessing,
     getPageContentForSaveWhenReady,
     pageUnloading,
-    setSnapshotsSuspended,
     notePageContentMayHaveChanged,
     copySelection,
     cutSelection,

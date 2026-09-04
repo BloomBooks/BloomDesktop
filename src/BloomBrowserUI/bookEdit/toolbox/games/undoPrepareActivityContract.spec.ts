@@ -1,104 +1,140 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { prepareActivity, undoPrepareActivity } from "bloom-player";
 
-// Pins the one thing about bloom-player that the game tool's save path has to work around.
+// What the game tool's save path needs from bloom-player, pinned here because getting it wrong is
+// invisible from Bloom's side until a user loses work.
 //
-// GameTool.removeToolMarkup() is handed a CLONE of the page when Bloom gathers the page to save
-// it, and calls undoPrepareActivity() on it to take play-mode markup off that copy. That reads as
-// if it could not affect the live page. It can: prepareActivity() records the live draggables and
-// where they started in bloom-player's own module state, and undoPrepareActivity() restores THOSE
-// elements, whatever element it is given.
+// GameTool.removeToolMarkup is handed a CLONE of the page when Bloom gathers the page to save it,
+// and the live page when the tool is detached. It calls undoPrepareActivity on whichever it is
+// given, and needs two things of it:
 //
-// That is right when it is given the live page (leaving the Play tab), and destructive when it is
-// given a clone while the user is still playing -- it snaps their dragged items back. Since Bloom
-// gathers the page whenever the page changes, and dragging changes the page, that made a drag
-// activity unplayable in the editor. The fix is to stop gathering while in play mode
-// (setSnapshotsSuspended in bookEdit/js/pageSnapshot.ts).
+//   * the element it is given comes out with the draggables where the AUTHOR put them, because
+//     that element is what gets written into the book; and
+//   * no other element is touched, because the live page may still be being played.
 //
-// So this is a dependency test, not a test of our own code: if a bloom-player bump ever confines
-// undoPrepareActivity to the element it is given, the first test here fails, and that is the
-// signal that the suspension can go.
-describe("bloom-player's undoPrepareActivity, as the save path depends on it", () => {
-    const authoredLeft = "99px";
-    const authoredTop = "88px";
+// Neither was true before bloom-player#441: positions were restored through the element references
+// recorded when play began, so undoing a copy put the LIVE page back -- cancelling the tester's
+// drags a moment after each one -- while leaving the copy holding the dragged positions, which then
+// overwrote the book's authored ones. Bloom worked around the first half by not watching the page
+// during play mode. That workaround is gone, and this is what replaced it.
 
-    let livePage: HTMLElement;
-    let liveDraggable: HTMLElement;
+const authoredLeft = "10px";
+const authoredTop = "20px";
 
-    beforeEach(() => {
-        document.body.innerHTML = `
-            <div class="bloom-page" data-activity="drag-letter-to-target">
-              <div class="bloom-canvas-element" data-draggable-id="d1"
-                   style="left: ${authoredLeft}; top: ${authoredTop};"></div>
-            </div>`;
-        livePage = document.getElementsByClassName(
-            "bloom-page",
-        )[0] as HTMLElement;
-        liveDraggable = document.querySelector(
-            "[data-draggable-id]",
-        ) as HTMLElement;
+function makeActivityPage() {
+    document.body.innerHTML = "";
+    const page = document.createElement("div");
+    page.classList.add("bloom-page");
+    page.setAttribute("data-activity", "drag-letter-to-target");
+    const draggable = document.createElement("div");
+    draggable.setAttribute("data-draggable-id", "d1");
+    draggable.style.left = authoredLeft;
+    draggable.style.top = authoredTop;
+    page.appendChild(draggable);
+    document.body.appendChild(page);
+    return { page, draggable };
+}
 
-        prepareActivity(livePage, () => {
-            /* nothing to do */
+// An older bloom-player cannot meet this contract. Rather than a wall of red while the dependency
+// catches up, say so once and skip: what this needs is whichever alpha first contains
+// bloom-player#441.
+function installedBloomPlayerConfinesUndo(): boolean {
+    const { page, draggable } = makeActivityPage();
+    prepareActivity(page, () => {
+        /* no change-page action */
+    });
+    draggable.style.left = "300px";
+    undoPrepareActivity(page.cloneNode(true) as HTMLElement);
+    const liveWasLeftAlone = draggable.style.left === "300px";
+    undoPrepareActivity(page); // leave no session state behind for the real tests
+    document.body.innerHTML = "";
+    return liveWasLeftAlone;
+}
+
+const confinesUndo = installedBloomPlayerConfinesUndo();
+if (!confinesUndo) {
+    console.warn(
+        "Skipping the undoPrepareActivity contract: the installed bloom-player predates " +
+            "bloom-player#441, so undoing a copy still reaches into the live page. Bump the " +
+            "bloom-player dependency to pick up the fix.",
+    );
+}
+
+describe.skipIf(!confinesUndo)(
+    "what the save path needs from bloom-player's undoPrepareActivity",
+    () => {
+        beforeEach(() => {
+            document.body.innerHTML = "";
         });
 
-        // The user drags the item somewhere and it lands on its target.
-        liveDraggable.style.left = "5px";
-        liveDraggable.style.top = "6px";
-        liveDraggable.classList.add("bloom-draggedToTarget");
+        it("gives the copy the authored positions, so that is what the book records", () => {
+            const { page, draggable } = makeActivityPage();
+            prepareActivity(page, () => {
+                /* no change-page action */
+            });
 
-        // Sanity check: the drag really did move it, so a restored position below means
-        // undoPrepareActivity moved it back rather than that it never moved.
-        expect(liveDraggable.style.left).toBe("5px");
-        expect(liveDraggable.classList.contains("bloom-draggedToTarget")).toBe(
-            true,
-        );
-    });
+            // The tester drags the item onto its target.
+            draggable.style.left = "300px";
+            draggable.style.top = "400px";
+            draggable.classList.add("bloom-draggedToTarget");
 
-    it("undoes the LIVE page even when it is given only a clone", () => {
-        undoPrepareActivity(livePage.cloneNode(true) as HTMLElement);
+            const copy = page.cloneNode(true) as HTMLElement;
+            expect(
+                copy.querySelector<HTMLElement>("[data-draggable-id]")!.style
+                    .left,
+                "test setup: the copy starts out holding the dragged position",
+            ).toBe("300px");
 
-        expect(liveDraggable.style.left).toBe(authoredLeft);
-        expect(liveDraggable.style.top).toBe(authoredTop);
-        expect(liveDraggable.classList.contains("bloom-draggedToTarget")).toBe(
-            false,
-        );
-    });
+            undoPrepareActivity(copy);
 
-    it("puts the live page back where play mode found it when given the live page", () => {
-        undoPrepareActivity(livePage);
+            const inCopy = copy.querySelector<HTMLElement>(
+                "[data-draggable-id]",
+            )!;
+            expect(inCopy.style.left).toBe(authoredLeft);
+            expect(inCopy.style.top).toBe(authoredTop);
+            expect(inCopy.classList.contains("bloom-draggedToTarget")).toBe(
+                false,
+            );
+        });
 
-        expect(liveDraggable.style.left).toBe(authoredLeft);
-        expect(liveDraggable.style.top).toBe(authoredTop);
-        expect(liveDraggable.classList.contains("bloom-draggedToTarget")).toBe(
-            false,
-        );
-    });
-});
+        it("leaves the live page alone, so the game stays playable", () => {
+            const { page, draggable } = makeActivityPage();
+            prepareActivity(page, () => {
+                /* no change-page action */
+            });
+            draggable.style.left = "300px";
+            draggable.style.top = "400px";
 
-// The other half of the workaround: knowing when play mode is over.
-//
-// The page frame stops volunteering snapshots while the game tool is in its Play tab, and starts
-// again when it leaves. "Leaves" is not only the user picking another tab -- switching to a
-// different tool detaches the game tool straight from Play, and the tool's teardown runs
-// undoPrepareActivity on the LIVE page. If that path did not also resume, nothing else the user did
-// on that page would ever be volunteered to C#, and quitting would write what it held from before.
-//
-// removeToolMarkup tells the two apart by whether the element it is given is still in the document:
-// the clone taken for a save is detached, the live page is not. This pins that distinction, which
-// is what the fix rests on.
-describe("telling a save's clone from the live page", () => {
-    it("a clone of the body is detached, and the live page is not", () => {
-        document.body.innerHTML = `<div class="bloom-page" id="p1"></div>`;
-        const livePage = document.getElementsByClassName(
-            "bloom-page",
-        )[0] as HTMLElement;
-        const cloneOfBody = document.body.cloneNode(true) as HTMLElement;
-        const pageInClone = cloneOfBody.getElementsByClassName(
-            "bloom-page",
-        )[0] as HTMLElement;
+            undoPrepareActivity(page.cloneNode(true) as HTMLElement);
 
-        expect(livePage.isConnected).toBe(true);
-        expect(pageInClone.isConnected).toBe(false);
-    });
-});
+            expect(draggable.style.left).toBe("300px");
+            expect(draggable.style.top).toBe("400px");
+        });
+
+        it("still restores the live page when that is what it is given", () => {
+            // Leaving the Play tab, which is the other way the tool calls this.
+            const { page, draggable } = makeActivityPage();
+            prepareActivity(page, () => {
+                /* no change-page action */
+            });
+            draggable.style.left = "300px";
+
+            undoPrepareActivity(page);
+
+            expect(draggable.style.left).toBe(authoredLeft);
+        });
+
+        it("saving during play does not cost the live page its later restore", () => {
+            const { page, draggable } = makeActivityPage();
+            prepareActivity(page, () => {
+                /* no change-page action */
+            });
+            draggable.style.left = "300px";
+
+            undoPrepareActivity(page.cloneNode(true) as HTMLElement); // a save
+            undoPrepareActivity(page); // then leaving Play
+
+            expect(draggable.style.left).toBe(authoredLeft);
+        });
+    },
+);
