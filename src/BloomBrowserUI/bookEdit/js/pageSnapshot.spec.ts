@@ -15,7 +15,7 @@ let postHook: (() => Promise<unknown>) | undefined;
 // What C# answers. A real post resolves to the axios response, and this endpoint answers with a
 // boolean, so `{ data: true }` is an ordinary success. `{ data: false }` is a refusal: the snapshot
 // was for a page load it is not showing. And `undefined` -- no response at all -- is what a FAILED
-// post looks like, because postString goes through wrapAxios, which turns a rejected request into a
+// post looks like, because postStringQuietly goes through wrapAxios, which turns a rejected request into a
 // resolved promise carrying nothing.
 let postReply: unknown = { data: true };
 
@@ -25,7 +25,7 @@ vi.mock("../../lib/errorHandler", () => ({
 }));
 
 vi.mock("../../utils/bloomApi", () => ({
-    postString: (url: string, body: string) => {
+    postStringQuietly: (url: string, body: string) => {
         posted.push({ url, body });
         return postHook ? postHook() : Promise.resolve(postReply);
     },
@@ -368,7 +368,7 @@ describe("pageSnapshot", () => {
     });
 
     it("does not treat a post that failed outright as sent", async () => {
-        // The realistic shape of a failed post, and the one that nearly slipped through: postString
+        // The realistic shape of a failed post, and the one that nearly slipped through: the post
         // goes through wrapAxios, which swallows the rejection and resolves with NOTHING. So a
         // failed post is indistinguishable from a successful one except that no response comes
         // back -- and reading only `.data` took that for an acceptance. The content was then
@@ -391,11 +391,14 @@ describe("pageSnapshot", () => {
         ).toEqual(["typed", "typed"]);
     });
 
-    it("stops retrying a failing post rather than reporting an error for ever", async () => {
-        // Every failed post is reported to the user by wrapAxios. Retrying on a timer therefore
-        // cannot go on indefinitely, or a server that has stopped answering puts a dialog in front
-        // of the user for as long as they stay on the page. We back off and give up; the content
-        // is still not recorded as sent, so the next thing the user changes offers it again.
+    it("keeps offering a failing post, backing off, and tells the user only once", async () => {
+        // Two things have to be true at the same time here, and they pull against each other.
+        //
+        // We must not stop retrying: while C# has not got this content, quitting writes what it
+        // still holds, so a server that comes back must be given the content even if the user
+        // never types again. But we must also not report the failure on every attempt, or an
+        // outage puts an error in front of the user again and again. Hence a quiet post and one
+        // report per page.
         contentToReport = "first";
         startWatchingPageForSnapshots(gather);
         await letTheBaselineSettle();
@@ -406,25 +409,34 @@ describe("pageSnapshot", () => {
         await letTheSnapshotHappen();
         expect(posted.length, "sanity: the first attempt happened").toBe(1);
 
-        // Walk well past every backoff step (1s, 2s, 4s, 8s) and then some.
-        for (let i = 0; i < 12; i++) {
-            vi.advanceTimersByTime(60000);
+        // A minute of outage, walked in 10s steps.
+        for (let i = 0; i < 6; i++) {
+            vi.advanceTimersByTime(10000);
             await vi.runAllTicks();
             await Promise.resolve();
             await Promise.resolve();
         }
         expect(
             posted.length,
-            "the retries must be bounded, not one a second for ever",
-        ).toBeLessThanOrEqual(5);
-        const attemptsBeforeGivingUp = posted.length;
+            "it must keep offering rather than give up",
+        ).toBeGreaterThan(1);
+        expect(
+            posted.length,
+            "backing off: a minute of outage must not mean a minute of attempts",
+        ).toBeLessThan(12);
+        expect(
+            reported.length,
+            "the user must be told once, not once per attempt",
+        ).toBe(1);
 
-        // Giving up is not giving in: the next real change offers the content again.
+        // When the server comes back, the content gets there with no further typing.
         postReply = { data: true };
-        contentToReport = "typed more";
-        changeThePage("typed more");
-        await letTheSnapshotHappen();
-        expect(posted.length).toBe(attemptsBeforeGivingUp + 1);
-        expect(posted[posted.length - 1].body).toBe("typed more");
+        const attemptsWhileDown = posted.length;
+        vi.advanceTimersByTime(60000);
+        await vi.runAllTicks();
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(posted.length).toBe(attemptsWhileDown + 1);
+        expect(posted[posted.length - 1].body).toBe("typed");
     });
 });

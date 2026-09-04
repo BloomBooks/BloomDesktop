@@ -1,4 +1,4 @@
-import { postString } from "../../utils/bloomApi";
+import { postStringQuietly } from "../../utils/bloomApi";
 import { reportError } from "../../lib/errorHandler";
 
 // Keep C# supplied with the current content of the page being edited, so that a save never has to
@@ -73,9 +73,12 @@ const kQuietMs = 25;
 // reschedules at kQuietMs and so overtakes this.
 const kRetryAfterRefusalMs = 1000;
 
-// How many times to keep offering content after a post that FAILED (as opposed to one C# refused).
-// Every failed attempt shows the user an error, so this cannot go on for ever; see takeSnapshot.
-const kMaxFailedPostRetries = 4;
+// A run of failures backs off from kRetryAfterRefusalMs up to this. We never give up: the browser
+// holding content C# has not got is exactly the state that loses the user's work at exit, so it
+// has to keep offering until something takes it. What made giving up look attractive was the
+// noise, and that is dealt with separately -- the post is made quietly and we report once per
+// page, rather than once per attempt.
+const kMaxRetryMs = 30000;
 
 let observer: MutationObserver | undefined;
 let timer: number | undefined;
@@ -132,6 +135,32 @@ export function setSnapshotsSuspended(reason: string | undefined): void {
     }
 }
 
+// Tell the user, at most once for this page. Reporting is the whole reason a snapshot post is
+// made quietly (see postStringQuietly): so that WE decide when to speak, rather than the request
+// layer speaking on every attempt.
+function reportFailureOncePerPage(
+    pageId: string,
+    message: string,
+    stack: string | undefined,
+): void {
+    if (pageWeReportedAFailureFor === pageId) return;
+    pageWeReportedAFailureFor = pageId;
+    reportError(message, stack);
+}
+
+// Offer the content again after a failure, backing off 1s, 2s, 4s... to kMaxRetryMs and then
+// staying there. Never gives up: while C# has not got this content, quitting writes what it still
+// holds. A change the user makes reschedules at kQuietMs and overtakes this.
+function retryAfterFailure(): void {
+    consecutiveFailedPosts++;
+    scheduleSnapshot(
+        Math.min(
+            kRetryAfterRefusalMs * Math.pow(2, consecutiveFailedPosts - 1),
+            kMaxRetryMs,
+        ),
+    );
+}
+
 function currentPageId(): string | undefined {
     return document.querySelector(".bloom-page")?.id || undefined;
 }
@@ -170,7 +199,7 @@ async function takeSnapshot(): Promise<void> {
         if (pageIdBeingWatched !== pageId) return;
 
         if (content !== lastPosted) {
-            const reply = await postString(
+            const reply = await postStringQuietly(
                 `${kApi}?pageId=${encodeURIComponent(pageId)}&loadId=${encodeURIComponent(
                     pageLoadId,
                 )}`,
@@ -183,7 +212,7 @@ async function takeSnapshot(): Promise<void> {
             //   showing, including in the moment before this page has reported itself ready, since
             //   the two APIs are not ordered with respect to each other. A refusal is not a
             //   failure; it just means try again.
-            // * The POST failed and we got no answer at all. postString goes through wrapAxios,
+            // * The POST failed and we got no answer at all. The post goes through wrapAxios,
             //   which turns a rejected request into a resolved promise carrying nothing -- so a
             //   failed post looks exactly like a successful one apart from the missing response.
             //   Reading only `.data` would therefore take a failure for an acceptance, record the
@@ -204,18 +233,12 @@ async function takeSnapshot(): Promise<void> {
                 return;
             }
             if (failed) {
-                consecutiveFailedPosts++;
-                if (consecutiveFailedPosts <= kMaxFailedPostRetries) {
-                    // 1s, 2s, 4s... so a long outage is quiet rather than a dialog a second.
-                    scheduleSnapshot(
-                        kRetryAfterRefusalMs *
-                            Math.pow(2, consecutiveFailedPosts - 1),
-                    );
-                }
-                // Past that we stop asking on our own. lastPosted is still not set, so the very
-                // next thing the user changes offers this content again -- which is how a
-                // recovering server gets it, and the case we would otherwise lose (a failure
-                // followed by nothing at all, then a quit) is already several retries old.
+                reportFailureOncePerPage(
+                    pageId,
+                    "Bloom could not keep track of your changes to this page: the request to save them did not get through.",
+                    undefined,
+                );
+                retryAfterFailure();
                 return;
             }
             consecutiveFailedPosts = 0;
@@ -233,18 +256,19 @@ async function takeSnapshot(): Promise<void> {
         // else would report it.) Before BL-13502 the equivalent failure came back through the
         // state machine as "Bloom had trouble saving a page"; this keeps that promise.
         //
-        // Once per page: a page that fails will fail again on the very next keystroke.
-        if (pageWeReportedAFailureFor !== pageId) {
-            pageWeReportedAFailureFor = pageId;
-            reportError(
-                "Bloom could not keep track of your changes to this page: " +
-                    (error instanceof Error ? error.message : String(error)),
-                error instanceof Error ? error.stack : undefined,
-            );
-        }
-        // Try again on the next change. Not on a timer: the gather is deterministic, so a page
-        // that failed to gather fails again immediately, and a timer would just repeat the report
-        // we have carefully arranged to make only once.
+        // Once per page: a page that fails will fail again on the very next keystroke, and we
+        // also retry on a timer, so without this the same error would be put in front of the user
+        // over and over.
+        reportFailureOncePerPage(
+            pageId,
+            "Bloom could not keep track of your changes to this page: " +
+                (error instanceof Error ? error.message : String(error)),
+            error instanceof Error ? error.stack : undefined,
+        );
+        // Keep offering, on the same backoff as a failed post. A gather is deterministic, so this
+        // will usually fail the same way -- but it costs no further reports now, and if the
+        // failure did depend on something transient in the page, this is what recovers from it.
+        retryAfterFailure();
     } finally {
         // Only release the lock if we are still the run that took it. If the page was unloaded
         // and another started while we were awaiting, this run belongs to the old page, and

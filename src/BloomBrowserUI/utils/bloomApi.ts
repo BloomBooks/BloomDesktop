@@ -581,6 +581,23 @@ export async function getWithConfigAsync<T>(
 }
 
 export function postString(urlSuffix: string, value: string) {
+    return postStringInternal(urlSuffix, value, true);
+}
+
+/**
+ * postString for a caller that reports failures itself.
+ *
+ * The difference is only in who tells the user. wrapAxios reports every rejection, which is right
+ * for a post made once in response to something the user did. It is wrong for one that is retried
+ * on a timer: the user would be shown the same error again on every attempt for as long as the
+ * failure lasted. A caller that retries should use this and report once. See pageSnapshot.ts,
+ * which is why it exists.
+ */
+export function postStringQuietly(urlSuffix: string, value: string) {
+    return postStringInternal(urlSuffix, value, false);
+}
+
+function postStringInternal(urlSuffix: string, value: string, report: boolean) {
     // Match post(): unit tests should not hit Bloom backend endpoints.
     const isTest =
         typeof process !== "undefined" && process.env.NODE_ENV === "test";
@@ -594,6 +611,7 @@ export function postString(urlSuffix: string, value: string) {
                 "Content-Type": "text/plain",
             },
         }),
+        report,
     );
 }
 
