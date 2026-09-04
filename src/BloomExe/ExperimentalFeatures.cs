@@ -10,8 +10,6 @@ namespace Bloom
     {
         public const string kExperimentalSourceBooks = "experimental-source-books";
         public const string kTeamCollections = "team-collections";
-        public const string kAppBuilder = "app-builder";
-        public const string kAiImageEditing = "ai-image-editing";
         public const string kTables = "tables";
 
         public static string TokensOfEnabledFeatures =>
@@ -27,8 +25,12 @@ namespace Bloom
                 SetValue(kExperimentalSourceBooks, true);
                 Settings.Default.ShowExperimentalFeatures = false;
             }
-            // remove obsolete experimental feature that has gone mainstream
+            // remove obsolete experimental features that have gone mainstream
             SetValue("webView2", false);
+            // App Building and AI image editing stopped being experimental in 6.5 (BL-16731);
+            // they are now gated only by the subscription tier.
+            SetValue("app-builder", false);
+            SetValue("ai-image-editing", false);
 
             // In June 2025, the only one of these sources was the Picture Dictionary,
             // and it had issues which had been introduced in an earlier version.

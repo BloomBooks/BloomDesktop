@@ -309,6 +309,12 @@ namespace Bloom
         private static bool _useSharedEnvironment;
         private static CoreWebView2Environment _sharedEnvironment;
 
+        // The one environment every browser of an e2e run shares, so the run has a single browser
+        // process and therefore a single remote-debugging listener. See where it is used in
+        // InitWebView. Like the statics above it is unsynchronized, which is safe for the same
+        // reason: browser construction is marshalled to the UI thread.
+        private static CoreWebView2Environment _environmentForE2eTests;
+
         public static void BeginSharedEnvironmentBatch()
         {
             AssertSharedEnvironmentStaticsAreUiThreadOnly();
@@ -396,6 +402,15 @@ namespace Bloom
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
             }
+            if (AutomationWindowPlacement.IsOffEveryMonitor)
+            {
+                // This run keeps Bloom's window far off-screen (see
+                // AutomationWindowPlacement.GetBoundsOffEveryMonitor), so Windows reports the
+                // window as occluded and Chromium stops rendering it. A screenshot of an
+                // unrendered page comes back blank, so turn that behavior off.
+                featuresToDisable.Add("CalculateNativeWinOcclusion");
+                additionalBrowserArgs += " --disable-backgrounding-occluded-windows";
+            }
             if (RemoteDebuggingPort.HasValue && !Program.RunningUnitTests)
             {
                 // Expose a CDP endpoint so Playwright and other automation can attach to the real Bloom WebView2 surface.
@@ -475,6 +490,21 @@ namespace Bloom
             //  - _sharedEnvironment: the legacy on-UI-thread shared-environment batch (BookProcessor's old path).
             // Otherwise we fall through and create a fresh one.
             var env = _injectedEnvironment ?? (_useSharedEnvironment ? _sharedEnvironment : null);
+            // An e2e run attaches a test to ONE of these browser processes over the remote debugging
+            // port, and every environment we create is given that same port number, so only the
+            // process that starts first can listen on it. Which one that is depends on startup
+            // timing, so a test could attach to a browser Bloom is not driving: its scripts appeared
+            // to run (ExecuteScriptAsync reported success against the browser Bloom does drive)
+            // while the document the test was watching never changed. One environment for the whole
+            // run means one browser process, one listener, and every document visible to the test.
+            //
+            // Only for browsers built on the UI thread, which is every browser a test can see. A
+            // CoreWebView2Environment belongs to the thread that created it, so handing this one to
+            // a browser built on a server thread hangs that thread: publishing a BloomPUB, which
+            // makes its browsers on the thread serving the API call, waited forever and the preview
+            // never appeared.
+            if (env == null && Program.RunningE2eTests && Program.RunningOnUiThread)
+                env = _environmentForE2eTests;
             if (env == null)
             {
                 string dataFolder;
@@ -494,6 +524,18 @@ namespace Bloom
                 );
                 if (_useSharedEnvironment)
                     _sharedEnvironment = env;
+                // Only keep it when it actually carries a debugging port. The port lives in the
+                // options, which are fixed when the environment is made, so an environment built
+                // before BloomServer had its port would have none, and every UI-thread browser
+                // after it would inherit that: no browser in the run would ever listen, and the
+                // suite would report a startup timeout rather than a reason. No browser is built
+                // that early today, and this keeps it that way if one ever is.
+                if (
+                    Program.RunningE2eTests
+                    && Program.RunningOnUiThread
+                    && RemoteDebuggingPort.HasValue
+                )
+                    _environmentForE2eTests = env;
             }
             await _webview.EnsureCoreWebView2Async(env);
             // Added as a footnote to BL-15466 to prevent popups generated from title
@@ -802,18 +844,53 @@ namespace Bloom
         /// </summary>
         public override void RunJavascriptFireAndForget(string script)
         {
+            if (_webview == null || _webview.IsDisposed || _webview.Disposing)
+                return;
+
+            // Everything below, including the CoreWebView2 readiness check, must happen on the thread
+            // that created the control, which is usually the UI thread. Reading the CoreWebView2 property
+            // from any other thread can throw "CoreWebView2 can only be accessed from the UI thread": the
+            // WinForms wrapper does a COM QueryInterface on the apartment-bound ICoreWebView2Controller,
+            // which fails E_NOINTERFACE across apartments. Whether it actually throws depends on the
+            // apartment that controller ended up in, so it fails on some machines and not others. That
+            // made the readiness guard checking _webview.CoreWebView2 the crash site (BL-16749: a
+            // .bloomSource import runs on a background thread, and the book rename it does raises
+            // BookRenamedEvent inline, which asks the Edit view to refresh the page list).
+            // Since this method is fire-and-forget by contract - the script has not necessarily run by the
+            // time we return - re-posting the whole call to the correct (UI) thread costs the caller nothing.
+            // Do NOT fold this back into the guard below.
+            if (_webview.IsHandleCreated && _webview.InvokeRequired)
+            {
+                try
+                {
+                    _webview.BeginInvoke((Action)(() => RunJavascriptFireAndForget(script)));
+                }
+                catch (Exception e)
+                    when (e is ObjectDisposedException || e is InvalidOperationException)
+                {
+                    // The control can start disposing between the checks above and this call. That
+                    // is the same expected shutdown race the ContinueWith below logs rather than
+                    // reports, and here we are on a background thread, where letting it escape
+                    // would take Bloom down.
+                    Logger.WriteEvent(
+                        "WebView2Browser.RunJavascriptFireAndForget: could not marshal to the UI thread (expected during shutdown): "
+                            + e.Message
+                    );
+                }
+                return;
+            }
+            // With no handle there is no UI thread to post to, and any CoreWebView2 is not usable
+            // yet, so this is the same "not in a usable state" case the guard below covers.
+            if (!_webview.IsHandleCreated)
+                return;
+
             // Guard against running when the browser isn't in a usable state. During app startup
             // (before CoreWebView2 is initialized) or shutdown (while the control is disposing),
             // ExecuteScriptAsync throws from inside its async state machine. Because nothing here
             // awaits or otherwise observes the returned Task, that fault used to reach the GC
             // finalizer thread and get rethrown as an UnobservedTaskException (Sentry
             // BLOOM-DESKTOP-D07). This mirrors the readiness check in UpdateDisplay().
-            if (
-                _webview == null
-                || _webview.IsDisposed
-                || _webview.Disposing
-                || _webview.CoreWebView2 == null
-            )
+            if (_webview.CoreWebView2 == null)
                 return;
 
             // Even with the guard above there is a tiny race window in which the control can start

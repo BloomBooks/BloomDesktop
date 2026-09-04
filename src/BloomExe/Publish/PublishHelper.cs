@@ -2080,10 +2080,14 @@ namespace Bloom.Publish
             return fixedSomething;
         }
 
-        public static async Task ReportInvalidFontsAsync(
+        /// <summary>
+        /// Report (via progress) any fonts used in the staged book that cannot be published.
+        /// Returns the set of font names actually requested by the book's content, which
+        /// lets a test verify that the browser-based scan really ran.
+        /// </summary>
+        public static IReadOnlyCollection<string> ReportInvalidFonts(
             string destDirName,
-            IProgress progress,
-            Control controlToInvokeOn
+            IProgress progress
         )
         {
             // Make a browser so we can accurately determine what fonts are actually requested by
@@ -2107,96 +2111,41 @@ namespace Bloom.Publish
                 editable.AddClass("bloom-visibility-code-on");
             }
 
-            // This function, which is what we want to do next, may be either invoked
-            // or simply run, depending on whether we need to force running it on the UI thread.
-            // We can only manipulate the browser on the UI thread (except in tests).
-            var getFontsAction = async () =>
+            // Ask a real browser which fonts the stylesheets actually request. We use an
+            // OffScreenBrowser (a WebView2 on its own dedicated thread, driven by blocking calls)
+            // rather than creating a WebView2Browser inline on the calling thread. The inline
+            // approach needed fragile thread juggling (see BL-15292), and in bulk upload it
+            // reliably wedged after a couple of books: each new inline WebView2 failed to finish
+            // initializing, so every subsequent book failed to upload with "The instance of
+            // CoreWebView2 is uninitialized" (BL-16767). This is the same mechanism
+            // RemoveUnwantedContent uses for its page checks.
+            using (var browser = new OffScreenBrowser())
             {
-                // This will usually be the main UI thread, but in tests it could be anything.
-                // In production, we must make sure we're on the UI thread to create and manipulate a browser,
-                // but we may no longer be after we await RunJavaScriptAsync. We have to be on the same
-                // thread to dispose it, so keep track of which thread it is.
-                var threadWhereWeMadeBrowser = Thread.CurrentThread;
-                // Even trying controlToInvokeOn.Invoke everywhere the browser is referenced, I couldn't get
-                // "await WebView2Browser.CreateAsync()" to produce a browser that would successfully navigate
-                // to the page for checking fonts.  The navigation would always time out and report failure,
-                // unless it crashed before the timeout and stopped the program with exit code 0x80000003.
-                // If it didn't crash, often the scan for fonts would return an empty array which looks
-                // innocuous (but possibly misleading) to the user.  When it didn't return an empty array,
-                // it returned an array full of nothing but "Times New Roman", the default browser font on
-                // Windows which is illegal to embed or distribute, and complained vociferously to the user.
-                // See BL-15292 for more details and discussion.
-                var browser = new WebView2Browser(); // NOT await WebView2Browser.CreateAsync();
-                try
+                if (!browser.Navigate(dom, 10000, () => false))
                 {
-                    // Logically, if any await can result in a thread switch, we might need to invoke again here.
-                    // (But invoking again here doesn't work!?)
-                    if (
-                        !browser.NavigateAndWaitTillDone(
-                            dom,
-                            10000,
-                            InMemoryHtmlFileSource.JustCheckingPage,
-                            () => false,
-                            false
-                        )
-                    )
-                    {
-                        // We had problems with timeouts here in similar code (BL-7892).
-                        // We may as well carry on and detect as many problem fonts as we can.
-                        Debug.WriteLine("Failed to navigate fully to ReportInvalidFontsAsync DOM");
-                        Logger.WriteEvent(
-                            "Failed to navigate fully to ReportInvalidFontsAsync DOM"
-                        );
-                    }
+                    // We had problems with timeouts here in similar code (BL-7892).
+                    // We may as well carry on and detect as many problem fonts as we can.
+                    Debug.WriteLine("Failed to navigate fully to ReportInvalidFonts DOM");
+                    Logger.WriteEvent("Failed to navigate fully to ReportInvalidFonts DOM");
+                }
 
-                    // Get and store the display and font information for each element in the DOM.
-                    var rawInfo = await browser.GetObjectFromJavascriptAsync(
-                        GetElementFontFamilyInfoJavascript
-                    );
-                    //Debug.WriteLine($"DEBUG ReportInvalidFontsAsync: rawInfo={rawInfo}");
-                    var fontFamilyInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(
-                        rawInfo
-                    );
+                // Get the font-family information for each element in the DOM.
+                var rawInfo = browser.RunJavascript(GetElementFontFamilyInfoJavascript);
+                var fontFamilyInfo = string.IsNullOrEmpty(rawInfo)
+                    ? null
+                    : Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(rawInfo);
 
-                    if (fontFamilyInfo != null)
+                if (fontFamilyInfo != null)
+                {
+                    foreach (var family in fontFamilyInfo)
                     {
-                        foreach (var family in fontFamilyInfo)
+                        var font = ExtractFontNameFromFontFamily(family);
+                        if (!string.IsNullOrEmpty(font))
                         {
-                            var font = ExtractFontNameFromFontFamily(family);
-                            if (!string.IsNullOrEmpty(font))
-                            {
-                                fontsFound.Add(font);
-                            }
+                            fontsFound.Add(font);
                         }
                     }
                 }
-                finally
-                {
-                    if (threadWhereWeMadeBrowser == Thread.CurrentThread)
-                    {
-                        // This seems to happen in tests. In live code, given the bizarre way
-                        // Windows.Forms implements await and resumes on a different thread,
-                        // we don't take this branch, but we normally have a controlToInvokeOn,
-                        // which is usually null in tests.
-                        browser.Dispose();
-                    }
-                    else if (controlToInvokeOn != null)
-                    {
-                        // If we made the browser on this control's thread, we can dispose of it properly by invoking
-                        // to that thread. This is the usual path in production.
-                        controlToInvokeOn.Invoke(() => browser.Dispose());
-                    }
-                    // Otherwise, we just can't dispose of it properly. Probably we're running tests
-                    // and it doesn't matter much.
-                }
-            };
-            if (controlToInvokeOn == null)
-            {
-                await getFontsAction();
-            }
-            else
-            {
-                await (Task)controlToInvokeOn.Invoke(getFontsAction);
             }
 
             // The old approach. Enhance: this is probably much faster to run. We think its only
@@ -2291,6 +2240,7 @@ namespace Bloom.Publish
                     //progress.WriteWarning("This book has a font, \"{0}\", which is not on this computer and whose license is unknown.", font);
                 }
             }
+            return fontsFound;
         }
 
         private const string AILangTagFragment = "-x-ai";

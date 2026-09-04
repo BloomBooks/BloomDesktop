@@ -1,3 +1,17 @@
+# ⚠️ TEMPORARY (as of 2026-08-27): new work targets Version6.5, not master
+
+We are in a transition phase. Unless the user says otherwise:
+
+- Branch new work off **`Version6.5`**, not `master`, even if you are sitting on `master` now.
+- Open PRs with **`Version6.5`** as the base branch.
+- Assume `Version6.5` is the right target rather than asking just to confirm it. If something
+  about the task genuinely makes the target unclear, it is fine to ask — but say that you are
+  assuming `Version6.5` when you do.
+
+Delete this whole section (it exists only on master) once master is the normal target again.
+
+---
+
 This project has a web front-end at src/BloomBrowserUI.
 The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 
@@ -201,9 +215,11 @@ You have a complete set of faster, non-disruptive alternatives, so don't run the
 The full `pnpm build` exists to (re)populate the shared `output\browser` — `clean.js` plus content assets plus the bundle. It's slow, and it wrecks any running Vite dev server / `--watch` and the Bloom loading from it, so it's a developer/CI job, not something to spring on a live session. If you think you genuinely need it, ask the developer to run it (they can stop Bloom first) rather than running it yourself.
 
 # Localization
-Whenever you add, modify, or review localizable strings (XLF entries), follow `.github/skills/xlf-strings/SKILL.md`.
+Whenever you add, modify, or review localizable strings (XLF entries), follow `.github/skills/xlf-strings/SKILL.md`. For how Crowdin works and why those rules exist — including why a no-longer-used string is marked obsolete rather than deleted — see `DistFiles/localization/README.md`.
 
-The one rule that applies at all times even outside that skill: **only ever edit files under `DistFiles/localization/en/`** — never touch the other language subdirectories.
+Two rules apply at all times, even outside that skill:
+- **Only ever edit files under `DistFiles/localization/en/`** — never touch the other language subdirectories.
+- **Never delete a `<trans-unit>` on your own initiative**, even an obsolete one, and even when you are confident nothing uses it. Mark it obsolete and leave it.
 
 # Commenting
 All public methods should have a comment. So should most private ones!
@@ -221,6 +237,12 @@ To find the ticket id for the branch you are on, look for a `BL-XXXXX` token in 
 then the PR title, then recent commit messages. Not every branch has a card — some work (small
 cleanups, branding tweaks, tooling) is done without one, so finding no id is a normal outcome, not
 a reason to go hunting.
+
+**A `[6.X]` prefix on a card's summary names the target branch.** If a card's summary starts
+with something like `[6.4]` or `[6.5]`, the fix belongs on that `VersionX.Y` branch. Before
+starting, check the branch you are about to branch from and the PR base you plan to use; if
+they don't match the prefix, stop and confirm the target with the user rather than guessing.
+A card with no prefix has no branch requirement from this rule.
 
 # Skills
 Reusable, task-specific procedures for this repo live in `.github/skills/<name>/SKILL.md`.

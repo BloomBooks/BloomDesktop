@@ -138,12 +138,12 @@ import {
 } from "./js/bloomEditing";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 // Called from the AI Image Editor overlay in the top window, which owns the session but
-// cannot touch this page itself; see aiEditorPageCommands.ts and aiEditorOverlay.ts.
-import { applyAiImageEditorReplacements } from "./aiImageEditor/aiEditorPageCommands";
+// cannot touch this page itself; see aiImageEditorPageCommands.ts and aiImageEditorOverlay.ts.
+import { applyAiImageEditorReplacements } from "./aiImageEditor/aiImageEditorPageCommands";
 import type {
     IAiImageEditorApplyOutcome,
     IAiImageEditorCommitResult,
-} from "./aiImageEditor/aiEditorShared";
+} from "./aiImageEditor/aiImageEditorShared";
 export {
     getBodyContentForSavePage,
     requestPageContent,

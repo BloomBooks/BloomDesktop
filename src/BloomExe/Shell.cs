@@ -14,6 +14,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.Extensions;
 using SIL.Reporting;
@@ -46,6 +47,11 @@ namespace Bloom
         // finished, overwriting the saved RestoreBounds before they are applied.
         private bool _finishedLoading;
 
+        // During an automation run (--automation, e.g. the Playwright suites) the window must
+        // not steal the user's keyboard focus when it is shown. That holds wherever the window
+        // is: on the developer's desktop, on a monitor of its own, or off every monitor.
+        protected override bool ShowWithoutActivation => Program.StartupAutomation;
+
         public Shell(
             Func<WorkspaceView> projectViewFactory,
             CollectionSettings collectionSettings,
@@ -65,6 +71,19 @@ namespace Bloom
             _controlKeyEvent = controlKeyEvent;
             _audioRecording = audioRecording;
             InitializeComponent();
+            if (AutomationWindowPlacement.IsOffEveryMonitor)
+            {
+                // Keep the off-screen window out of the task bar, so such a run leaves no trace
+                // on the developer's desktop.
+                //
+                // This has to happen before the window handle exists, which is why it is here
+                // and not in Shell_Load with the rest of the headless placement. Assigning
+                // ShowInTaskbar on a form that is already showing makes Windows Forms recreate
+                // the form's handle, and every child handle with it, including the WebView2
+                // host. The Edit tab survived that with a browser that no longer answered a
+                // jump to another page, so every e2e test that moves between pages hung.
+                ShowInTaskbar = false;
+            }
             Activated += (sender, args) =>
             {
                 // In at least one case (BL-15060) we seem to have gotten activated
@@ -397,11 +416,18 @@ namespace Bloom
         /// </summary>
         public void ReallyComeToFront()
         {
-            //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
-            TopMost = true;
-            Focus();
-            BringToFront();
-            TopMost = false;
+            // During an automation run, grabbing focus would yank the user's keyboard away
+            // from whatever they are doing while tests run, and a window placed off every
+            // monitor cannot come to the front at all: TopMost and BringToFront on it would
+            // take the foreground away for nothing.
+            if (!Program.StartupAutomation)
+            {
+                //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
+                TopMost = true;
+                Focus();
+                BringToFront();
+                TopMost = false;
+            }
 
             _finishedLoading = true;
         }
@@ -415,7 +441,50 @@ namespace Bloom
             {
                 SuspendLayout();
 
-                if (Settings.Default.WindowSizeAndLocation == null)
+                // Where an automation run puts its window is BLOOM_AUTOMATION_MONITOR's to
+                // decide (see AutomationWindowPlacement). A run that it says nothing about falls
+                // through to the ordinary cases below, window placement and all, so the
+                // developer sees the Bloom they would see without the variable.
+                var placement = AutomationWindowPlacement.GetChoice();
+                if (Program.StartupAutomation)
+                {
+                    // Say in the log which monitor this run chose and what the alternatives were.
+                    // The number in the variable is not the number Windows Settings shows; see
+                    // AutomationWindowPlacement.DescribeChoice.
+                    Logger.WriteEvent(AutomationWindowPlacement.DescribeChoice());
+                }
+                if (placement == AutomationWindowPlacement.Choice.OffEveryMonitor)
+                {
+                    // The window goes off every monitor and out of the task bar, so a test can
+                    // run while the developer works. It stays Normal (not minimized) and full
+                    // size, because WebView2 only paints a window that is neither minimized nor
+                    // hidden. See AutomationWindowPlacement.GetBoundsOffEveryMonitor.
+                    StartPosition = FormStartPosition.Manual;
+                    WindowState = FormWindowState.Normal;
+                    Bounds = AutomationWindowPlacement.GetBoundsOffEveryMonitor();
+                    // ShowInTaskbar is set in the constructor, not here. See the comment there.
+                }
+                else if (placement == AutomationWindowPlacement.Choice.OnTheChosenMonitor)
+                {
+                    // Open on the monitor the variable named, not on whichever one the developer
+                    // is working on, and leave the saved window placement alone.
+                    StartPosition = FormStartPosition.Manual;
+                    WindowState = FormWindowState.Normal;
+                    Bounds = AutomationWindowPlacement.GetChosenMonitor().WorkingArea;
+                    // Maximizing keeps the window on the screen that contains its bounds.
+                    WindowState = FormWindowState.Maximized;
+                }
+                else if (Program.StartupAutomation)
+                {
+                    // An automation run the variable said nothing about: open exactly where a
+                    // Bloom with no saved placement opens, and write nothing. The guard below
+                    // keeps it from touching the developer's saved placement either way, which
+                    // it must not do whatever the variable says: every Bloom of one build shares
+                    // one user.config.
+                    StartPosition = FormStartPosition.WindowsDefaultLocation;
+                    WindowState = FormWindowState.Maximized;
+                }
+                else if (Settings.Default.WindowSizeAndLocation == null)
                 {
                     StartPosition = FormStartPosition.WindowsDefaultLocation;
                     WindowState = FormWindowState.Maximized;
@@ -426,7 +495,11 @@ namespace Bloom
                 // This feature is not yet a normal part of Bloom, since we think just maximizing is more rice-farmer-friendly.
                 // However, we added the ability to remember this stuff at the request of the person making videos, who needs
                 // Bloom to open in the same place / size each time.
-                if (Settings.Default.MaximizeWindow == false)
+                if (Program.StartupAutomation)
+                {
+                    // Placement is settled above; leave the developer's saved placement alone.
+                }
+                else if (Settings.Default.MaximizeWindow == false)
                 {
                     Settings.Default.WindowSizeAndLocation.InitializeForm(this);
                 }
@@ -483,6 +556,11 @@ namespace Bloom
             if (!_finishedLoading)
                 return;
             if (WindowState != FormWindowState.Normal)
+                return;
+            // An automation run must never write the saved bounds. Where BLOOM_AUTOMATION_MONITOR
+            // put its window is somewhere the developer is not looking, off every monitor or on a
+            // monitor of the run's choosing, and saving that would move their next Bloom there.
+            if (Program.StartupAutomation)
                 return;
 
             Settings.Default.RestoreBounds = new Rectangle(Left, Top, Width, Height);
@@ -555,6 +633,31 @@ namespace Bloom
             {
                 FileMeddlerManager.Stop();
             }
+        }
+
+        /// <summary>
+        /// Records the user's choice between bloomlibrary.org and dev.bloomlibrary.org, then
+        /// restarts Bloom if the choice differs from the web site of this run.  A restart is
+        /// necessary because the upload destination and the login belong to one run only.
+        /// </summary>
+        /// <remarks>
+        /// The restart waits for the idle loop, as the change of the user interface language
+        /// does in WorkspaceView.SetUiLanguage.  We are on the user interface thread inside an
+        /// API request that holds the server's lock, and a restart closes the collection, which
+        /// makes more API requests.
+        /// </remarks>
+        public void SetUseDevBloomLibrary(bool useDevSite)
+        {
+            if (!BookUpload.SetUserChoiceOfDevWebSite(useDevSite))
+                return;
+            Application.Idle -= RestartForWebSiteChange;
+            Application.Idle += RestartForWebSiteChange;
+        }
+
+        private void RestartForWebSiteChange(object sender, EventArgs e)
+        {
+            Application.Idle -= RestartForWebSiteChange;
+            Program.RestartBloom(false);
         }
 
         private void UpdatePerformanceMeasurementStatus()

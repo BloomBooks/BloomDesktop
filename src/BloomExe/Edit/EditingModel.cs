@@ -20,7 +20,6 @@ using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
@@ -411,7 +410,7 @@ namespace Bloom.Edit
                             _currentlyDisplayedBook = null;
                         }
                         else
-                            CurrentBook?.Save(); // we need it all the way saved before doing the PostponedWork
+                            CurrentBook?.Save(); // we need it all the way saved before completing the tab change
                         // This bizarre behavior prevents BL-2313 and related problems.
                         // For some reason I cannot discover, switching tabs when focus is in the Browser window
                         // causes Bloom to get deactivated, which prevents various controls from working.
@@ -419,21 +418,28 @@ namespace Bloom.Edit
                         // things get into a very bad state indeed. So arrange to re-activate ourselves as soon as the dust settles.
                         _oldActiveForm = Form.ActiveForm;
                         Application.Idle += ReactivateFormOnIdle;
-                        details.PostponedWork?.Invoke();
+                        details.CompleteTheChange?.Invoke();
                         return null; // leaving this tab, show blank page
                     },
                     () =>
                     {
-                        // We disable the tab control while we're in SavePending or SavedAndStripped.
-                        // We shouldn't be in NoPage while in the edit tab, but if we somehow are, we take the branch above.
-                        // If we're Editing, we will take the branch above.
-                        // So this is just the case where we're Navigating, either because we clicked on the Edit tab
-                        // and then immediately something else, or clicked another tab during the fraction of a second
-                        // while Bloom is navigating to a new page after doing some command. Abort the navigate, then go ahead.
-                        // Earlier versions of Bloom had a Debug guard against reaching this state, but it happened
-                        // often enough to be annoying, and the recovery code here seems to work adequately.
-                        // In particlar, we seem to get here after a Javascript error has been reported, and raising
-                        // an exception here tends to interfere with reporting the error we really want to see.
+                        // We get here when we could not start a save, so we're in Navigating,
+                        // SavePending or SavedAndStripped. (We shouldn't be in NoPage while in the
+                        // edit tab, but if we somehow are, we take the branch above; and if we're
+                        // Editing we take the branch above too.)
+                        //
+                        // We do ask for the tabs to be disabled while saving, but that doesn't take
+                        // effect soon enough to stop a second click on a tab, so SavePending really
+                        // does happen here — that was BL-16766. See WorkspaceView.SetTabsEnabled.
+                        //
+                        // Navigating: we clicked the Edit tab and then immediately something else,
+                        // or clicked another tab during the fraction of a second while Bloom is
+                        // navigating to a new page after doing some command. Abort the navigate,
+                        // then go ahead. Earlier versions of Bloom had a Debug guard against
+                        // reaching this state, but it happened often enough to be annoying, and the
+                        // recovery code here seems to work adequately. In particlar, we seem to get
+                        // here after a Javascript error has been reported, and raising an exception
+                        // here tends to interfere with reporting the error we really want to see.
                         if (StateMachine.Navigating)
                         {
                             StateMachine.ToNoPage();
@@ -449,9 +455,25 @@ namespace Bloom.Edit
                             CurrentBook?.ReloadFromDisk(null);
                             _currentlyDisplayedBook = null;
                         }
+                        // If we are here because a save is still in flight (someone else started
+                        // it, and the browser has not yet handed back the page content), we must
+                        // not let the tab change go ahead now: the tab-changed event would ask the
+                        // state machine to empty the page, which throws while a save is pending,
+                        // and would leave the workspace half switched between the two tabs
+                        // (BL-16766). Wait for the save to finish and then start the tab change
+                        // over from the beginning.
+                        // Note that the retry sees reloadFromDiskInsteadOfSaving as false, because
+                        // this attempt consumed the flag — so it takes the ordinary Save() branch
+                        // above rather than the reload branch. That is correct: the reload has
+                        // already happened, just above, and the discarded save cannot have merged
+                        // anything into the DOM, so the DOM still matches what the external process
+                        // wrote and saving it writes that same content back. There is also no
+                        // second in-flight save for the retry to discard.
+                        if (StateMachine.DeferUntilSaveCompletes(details.StartTheChangeOver))
+                            return;
                         _oldActiveForm = Form.ActiveForm;
                         Application.Idle += ReactivateFormOnIdle;
-                        details.PostponedWork?.Invoke();
+                        details.CompleteTheChange?.Invoke();
                     },
                     skipSaveToDisk: true
                 );
@@ -459,7 +481,7 @@ namespace Bloom.Edit
             else
             {
                 // If the old tab is not Edit, we don't need to save anything, so just do the postponed work.
-                details.PostponedWork?.Invoke();
+                details.CompleteTheChange?.Invoke();
             }
         }
 
@@ -570,7 +592,7 @@ namespace Bloom.Edit
                                             : ""
                                     )
                             );
-                            Analytics.Track("Duplicate Page");
+                            BloomAnalytics.Track("Duplicate Page");
                         }
                         catch (Exception error)
                         {
@@ -612,7 +634,7 @@ namespace Bloom.Edit
                         _currentlyDisplayedBook.DeletePage(page);
                         //_view.UpdatePageList(false);  DeletePage calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
                         Logger.WriteEvent("Delete Page");
-                        Analytics.Track("Delete Page");
+                        BloomAnalytics.Track("Delete Page");
                         return pageToShowNext.Id;
                     }
                     catch (Exception error)
@@ -661,7 +683,7 @@ namespace Bloom.Edit
                 RefreshDisplayOfCurrentPage();
                 _view.UpdatePageList(false);
 
-                Analytics.Track("Relocate Page");
+                BloomAnalytics.Track("Relocate Page");
                 Logger.WriteEvent("Relocate Page");
             }
         }
@@ -705,7 +727,7 @@ namespace Bloom.Edit
                     {
                         try
                         {
-                            Analytics.Track(
+                            BloomAnalytics.Track(
                                 "Insert Template Page",
                                 new Dictionary<string, string>
                                 {
@@ -889,7 +911,7 @@ namespace Bloom.Edit
                     _view.UpdatePageList(true); //counting on this to redo the thumbnails
 
                     Logger.WriteEvent("ChangingContentLanguages");
-                    Analytics.Track("Change Content Languages");
+                    BloomAnalytics.Track("Change Content Languages");
                     return _pageSelection.CurrentSelection.Id;
                 },
                 () => { } // wrong state, do nothing
@@ -1048,7 +1070,7 @@ namespace Bloom.Edit
 
                 _pageSelection.SelectPage(page);
                 Logger.WriteMinorEvent("changing page selection");
-                Analytics.Track("Select Page"); //not "edit page" because at the moment we don't have the capability of detecting that.
+                BloomAnalytics.Track("Select Page"); //not "edit page" because at the moment we don't have the capability of detecting that.
 
                 // Trace memory usage in case it may be useful
                 // First see if we seem to have a problem without taking time (~100ms in a large book/fast computer) to force GC.
@@ -1820,10 +1842,12 @@ namespace Bloom.Edit
             request.ReplyWithHtml(translationGroupHtml);
         }
 
+        /// <param name="source">For analytics; passed on to UpdateImageInBrowser.</param>
         public void ChangePicture(
             string imageId,
             UrlPathString priorImageSrc,
             PalasoImage imageInfo,
+            string source,
             string pageBackgroundColor = null
         )
         {
@@ -1840,7 +1864,7 @@ namespace Bloom.Edit
                     pageBackgroundColor,
                     undoable: true // All image changes made here are undoable.
                 );
-                UpdateImageInBrowser(args);
+                UpdateImageInBrowser(args, source);
             }
             catch (Exception e)
             {
@@ -1853,7 +1877,13 @@ namespace Bloom.Edit
             }
         }
 
-        public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
+        /// <param name="source">Where this picture came from, for analytics: see
+        /// AnalyticsApi.TrackChangePicture. Every caller here is some form of paste; the image
+        /// chooser and the AI image editor report their own.</param>
+        public void UpdateImageInBrowser(
+            PageEditingModel.ImageInfoForJavascript args,
+            string source
+        )
         {
             // We generally don't need to wait since we don't need to save as part of this operation.
             // If a cover image needs to be made transparent, code in version 6.5 and later takes care of that elsewhere.
@@ -1863,7 +1893,7 @@ namespace Bloom.Edit
                     $"workspaceBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
                 );
             // not saving, but we still want to log etc.
-            Analytics.Track("Change Picture");
+            AnalyticsApi.TrackChangePicture(source, CurrentBook?.ID);
             Logger.WriteEvent("ChangePicture {0}...", (object)args.src);
         }
 

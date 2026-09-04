@@ -83,6 +83,43 @@ House rules:
   84 images in one run, then reverted. Roughly 20–30 lines, confined to that spec file.
 - **Context:** BL-16638 / PR #8134. Andrew chose "make a papercut entry" over fixing it inline.
   Loop at `index.spec.ts:426`, assertion at `index.spec.ts:486`.
+## 2026-09-02 — notion_automation.py needs Python, which not every dev machine has
+
+- **Cut:** `.github/skills/improve-test-automation-coverage/notion_automation.py` is the only way the
+  add-e2e-test flow reads or updates a Notion test card, and both it and the skill text assume `py`.
+  On a machine with no Python (only the Windows Store stub) every `show`/`set` fails, and an agent
+  ends up hand-porting the script to Node before it can read the card.
+- **Idea:** Rewrite it as `notion_automation.mjs`: the repo already requires Node and the script is
+  stdlib-only (`urllib` → `fetch`), so nothing else changes; update the skill text and worker brief.
+- **Context:** Hit while automating Test Case ID 356 on a machine with no Python.
+
+## 2026-09-01 — VR suite: a slow first preview load fails its case via Playwright's default 30s goto timeout
+
+- **Cut:** The first case after Bloom starts pays for the first book-preview load (~33s observed
+  on a dev machine vs 6–10s for later cases). `loadPreviewAndWaitUntilReady`
+  (`src/BloomVisualRegressionTests/index.spec.ts:360`) lets a `page.goto` TimeoutError escape its
+  retry loop, and the 30s limit is Playwright's default navigation timeout, not the suite's own
+  120s test timeout — so one slow first load fails the whole case.
+- **Idea:** Give the first `goto` (or all of them) an explicit longer timeout, or catch the
+  TimeoutError inside the retry loop.
+- **Context:** Seen once in three otherwise-identical local runs while verifying the
+  bloom-testing-inputs rewire; not the BL-16612 hang (Bloom kept serving all later cases).
+
+## 2026-08-31 — AGENTS.md's vitest-wedge workaround (`--no-file-parallelism`) doesn't always work
+
+- **Cut:** AGENTS.md ("If the front-end test suite seems to hang, re-run it with
+  `--no-file-parallelism`") promises that re-running that way completes the suite green. It
+  didn't: `yarn vitest run --no-file-parallelism` stopped dead after 11 test files with no error
+  and no summary, and was still stuck 19 minutes later. Cost ~25 minutes of a preflight run
+  before it was killed. The advice is stated as a reliable fix, so the natural response is to
+  keep waiting rather than to try something else.
+- **Idea:** `yarn vitest run --no-file-parallelism --pool=threads` ran the whole suite in ~3.5
+  minutes (49 files, 532 tests). The default pool is `forks`, so the wedge looks fork-specific —
+  either document `--pool=threads` as the workaround or set `pool: "threads"` in
+  `vite.config.mts`. Worth reproducing on another machine before rewriting the AGENTS.md advice.
+- **Context:** BloomDesktop, during `/preflight` of PR #8267 (BL-16786). Not the same cut as the
+  2026-07-27 entry (C# host aborting alongside vitest): both the wedged run and the successful
+  `--pool=threads` run overlapped a `dotnet test`, so concurrency wasn't the differentiator here.
 
 ## 2026-07-28 — One talkingBookSpec test fails only under full-suite worker load
 - **Cut:** `talkingBookSpec.ts > showTool(checksum=missing, audio=missing, scenario=PreTextBox) => UPDATE`
@@ -97,15 +134,6 @@ House rules:
 - **Context:** BL-16558 preflight. Full suite 611 passing; this test failed on two
   consecutive runs then passed on the third with no code change in between.
 
-## 2026-07-24 — killBloomProcess.mjs --help kills Bloom instead of printing usage
-- **Cut:** Running `node .github/skills/bloom-automation/killBloomProcess.mjs --help` to check
-  its options killed the running Bloom (output: "Killed process IDs: 56212, 55352"). Unknown
-  flags are ignored and the destructive default action runs, so the conventional "let me read
-  the usage first" move is itself the dangerous one. The sibling scripts may have the same shape.
-- **Idea:** Have these scripts recognize `--help`/`-h` (print usage, exit 0) and reject unknown
-  flags instead of silently proceeding — especially the ones that kill processes.
-- **Context:** BloomDesktop, during `/preflight` live verification of PR #8107.
-
 ## 2026-07-24 — agent-dotnet.sh collides with itself when a build and a test run overlap
 - **Cut:** The wrapper isolates per *terminal*, not per *command*, so a `build` started while
   that same terminal's `test` is still running fails with MSB3027 — "Bloom.dll ... locked by:
@@ -115,20 +143,8 @@ House rules:
   invocation its own subtree, and make the error message say "another agent-dotnet command is
   using this tree" instead of a raw MSBuild copy failure.
 - **Context:** BloomDesktop, `/preflight` of PR #8107 (dev launcher control API).
-
-## 2026-07-27 — The component-tester uitest suites still aren't in CI
-
-- **Cut:** Nothing runs `react_components/component-tester`'s Playwright suites — `nightly.yml`
-  runs vitest, C# and visual-regression only, and doesn't even `pnpm install` that workspace. That
-  is why the whole harness sat broken (React 17 pin + a second-Playwright-copy config bug) without
-  anyone noticing. It is now green at 144 passed / 25 skipped, so it will silently rot again.
-- **Idea:** Add a nightly job mirroring the visual-regression one (`pnpm install --frozen-lockfile`
-  in the component-tester dir, `pnpm exec playwright install chromium`, then
-  `pnpm exec playwright test --config playwright.config.ts`) and publish its junit output. The
-  bloom-exe config needs a running Bloom.exe, so only the component config is CI-able for now.
-- **Context:** BloomDesktop, branch `fix-component-tester`. The component-tester README still
-  says these are "not currently run as part of CI or other script" — update it if this lands.
-
+- **seen again 2026-08-26:** `/preflight` of PR #8239 (BL-16763). The failed copy was read as a
+  build break for a comment-only commit, which had already been pushed.
 
 ## 2026-07-27 — Changing harness imports + `reuseExistingServer` = 20 bogus test failures
 
@@ -142,23 +158,6 @@ House rules:
   harness, stop the dev server and `rm -rf node_modules/.vite` before trusting a red run"), or have
   the config/dev script clear the deps cache when `component-harness.tsx` is newer than it.
 - **Context:** BloomDesktop, branch `fix-component-tester`.
-
-
-## 2026-07-27 — Toolbox test harness has to duplicate toolboxBootstrap's tool registration
-
-- **Cut:** `ToolboxRoot` only renders a section for a tool in `getMasterToolList()`, and tools land
-  there as a side effect of importing `toolboxBootstrap.ts`. The harness can't import that module —
-  it also does `$(document).ready(renderToolboxRoot)` and assigns `window.toolboxBundle`, which
-  would double-render the root and clobber the stub some tests install. So
-  `ToolboxRootTestHarness.tsx` now repeats the 11 `ToolBox.registerTool(...)` calls, with a
-  "keep in sync" comment — i.e. a list that will drift.
-- **Idea:** Extract the registrations into a side-effect-free `registerAllToolboxTools()` module
-  that both `toolboxBootstrap.ts` and the harness import. Probably best folded into the toolbox
-  React refactor (BL-16608 / PR #8109) rather than done separately.
-- **Context:** BloomDesktop, branch `fix-component-tester`. Related: one test there is now
-  `test.fixme` because it asserts on `.subscription-badge` (legacy-toolbox-only) and
-  `.toolbox-react-header-icon` (never existed) via computed `background-image`; re-enabling it
-  needs a decision on whether the React header renders badges/icons and what classes to expose.
 
 
 ## 2026-07-27 — C# test host aborts mid-run when the suite runs alongside vitest
@@ -252,22 +251,6 @@ House rules:
   yarn+husky4 and this worktree has the pnpm deps" instead of letting husky's bare error through.
 - **Context:** BL-16684; worktree started on master, moved to Version6.4 because the bug ships in 6.4.
 
-## 2026-07-22 — CDP capture: two footguns while driving Bloom's WebView2
-
-While recapturing MXB title pages over CDP (port 8091):
-
-- **Never `taskkill //IM node.exe //F` to clean up a hung capture script.** It kills the
-  whole `dotnet watch` / vite dev flow that `go.sh` runs (front-end is node), which takes
-  Bloom's server down with it. Kill only your own script's PID. Cost me a Bloom restart.
-- **`Page.captureScreenshot` with `captureBeyondViewport:true` hangs in WebView2** (no
-  response, no error). Workaround that worked: `Emulation.setDeviceMetricsOverride` to a
-  viewport tall/wide enough to contain the whole `.bloom-page`, then a normal
-  `captureScreenshot` with a `clip`, then `clearDeviceMetricsOverride`. Also give every CDP
-  request a timeout so a stuck call fails fast instead of hanging the script.
-- Reopening the book (e.g. after a Bloom restart) **re-stamps it with the freshly compiled
-  xmatter CSS** from `output/`, so a "before" capture taken after that already shows the new
-  layout — grab authentic before-shots from the reviewer's PDF instead.
-
 ## 2026-07-13 — pnpm-lock.yaml reformats wholesale on any install (format drift)
 - **Cut:** The committed `src/BloomBrowserUI/pnpm-lock.yaml` (on master too) is in an
   older pnpm serialization style (double-quoted `lockfileVersion`, 4-space indent, and it
@@ -281,11 +264,6 @@ While recapturing MXB title pages over CDP (port 8091):
   matches `packageManager` output, or document the exact pnpm invocation the team uses so
   installs are format-stable. Until then, hash bumps need a manual lock edit.
 - **Context:** BL image-chooser integration PR (BloomDesktop #8059); local pnpm 11.5.2.
-
-## 2026-07-11 — Can't screenshot Bloom's WinForms modal dialogs via CDP
-- **Cut:** Verifying a `WireUpForWinforms` modal (e.g. `CollectionChooserDialog`) is painful. The modal opens in a separate WebView2 that is NOT exposed on the main CDP endpoint (`/json/list` shows only the main workspace page), so `screenshotBloom.mjs` can't capture it. Vite React Fast Refresh also closes any open modal on HMR. I fell back to OS-level screen capture, which needed the `AttachThreadInput` foregrounding trick because the ORCA host window covers the screen and `SetForegroundWindow` from a background process is blocked.
-- **Idea:** Have the `run-bloom` / `bloom-automation` skill document a supported way to screenshot modal dialogs — e.g. expose the dialog's WebView2 on a discoverable CDP port, or ship a helper that does the force-foreground + region capture.
-- **Context:** ImproveVisuals branch, restyling the Open/Create Collections dialog to the 2A design.
 
 ## 2026-07-29 — Running C# tests in a fresh worktree needs borrowed artifacts
 
@@ -308,29 +286,29 @@ brand-new worktree (`Version6.4-2`). Two things blocked that, neither documented
 Worth writing down somewhere: the minimum steps to make a new worktree test-capable, and
 whether an agent may run a one-time front-end build for that purpose.
 
-## 2026-07-30 — The AI-editor CDP driver breaks on editor-UI drift, silently
+**seen again 2026-08-31 (BL-15958):** same cut, this time as `Could not find the directory
+output\browser\appearanceMigrations` in `AppearanceSettingsTests`. The sequence that finally
+made a fresh worktree testable: `build/getDependencies-windows.sh` (its CS0246 error names
+`PodcastUtilities.PortableDevices`, which reads as a missing NuGet package, not a fetch step),
+then `pnpm install` in `src/BloomBrowserUI` **and separately** in `src/content` (without the
+second one the build stops at `checkForNodeModules.js`), then a full
+`pnpm -C src/BloomBrowserUI build`. `build/agent-vite.sh` is not enough: it skips the
+content-copy steps the tests need.
 
-`driveAiImageEditor.mjs dummy-edit` drives the `bloom-ai-image-tools` overlay by
-role/text selectors copied from that repo's own e2e spec. Two of them had drifted since
-they were written, and each failure is a 30-second Playwright timeout naming a selector,
-with no hint that the UI simply changed shape:
+## 2026-08-28 — Moving a worktree between master and Version6.5 changes which settings file Bloom reads
 
-- `getByText("Custom Edit", { exact: true })` — the tool button's text is now the name
-  *followed by its description* ("Custom EditEdit the image, optionally with additional…"),
-  so exact-text never matches. Fixed to `getByRole("button", {name: /^Custom Edit/})`.
-- `getByRole("button", {name: /Enhance/i})` now resolves to two elements (strict-mode
-  violation). Fixed with `.first()`.
+`BloomExe.csproj` sets `<Version>` per branch: 6.6.0.0 on master, 6.5.0.0 on Version6.5.
+`CrossPlatformSettingsProvider` puts the user settings under
+`%LOCALAPPDATA%\SIL\Bloom\<version>\user.config`, so re-basing a worktree from master onto
+Version6.5 silently swaps Bloom onto a different settings file.
 
-Also, `editorFrame` only recognized the editor at `localhost:3000`, so the driver worked
-*only* under `./go.sh --with bloom-ai-image-tools=<path>` and not on a plain `./go.sh`,
-where BloomServer serves the built dist-app at `/bloom/aiImageEditor/index.html`. Fixed to
-accept both.
+The symptom names nothing: Bloom opens some old collection you have not used for weeks, and
+here it was one that crashes on open. Opening a good collection in another dev Bloom does not
+help, because that copy is 6.6.0.0 and writes the other file. `MruProjects` is only the most
+visible setting; every other user setting jumps too.
 
-**Idea:** these selectors are a cross-repo contract with no test on either side. Either
-give the editor stable `data-testid`s for the tool tiles and category headers (it already
-has them for the model picker, prompt, and commit button — those did NOT drift), or have
-the editor repo publish its host-harness selectors so this driver can import rather than
-copy them.
+**Workaround:** edit `%LOCALAPPDATA%\SIL\Bloom\6.5.0.0\user.config` and put the collection you
+want first in `MruProjects`, or delete the entries so Bloom shows the collection chooser.
 
 **Context:** BL-16603, verifying the credits fix end-to-end against a real Bloom.
 
@@ -357,3 +335,7 @@ collection tab (`switchWorkspaceTab.mjs --running-bloom --tab edit`).
 
 **Idea:** either add `D:/bloom-table/dist` to `server.watch`, or have `go.sh` run bloom-table's
 `build:watch` when it is linked, so a `vp pack` there triggers the invalidation Vite needs.
+**Idea:** `./go.sh` could say which settings folder this build uses, or a dev build could name
+the branch rather than the version in that path.
+
+**Context:** BL-16781, after re-basing the `dev-blorgswitch` worktree onto Version6.5.

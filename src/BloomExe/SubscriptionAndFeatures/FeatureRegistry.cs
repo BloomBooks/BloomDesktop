@@ -194,13 +194,11 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.AppBuilder,
                 SubscriptionTier = SubscriptionTier.Pro,
-                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kAppBuilder,
             },
             new FeatureInfo
             {
                 Feature = FeatureName.AiImageEditing,
                 SubscriptionTier = SubscriptionTier.Pro,
-                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kAiImageEditing,
             },
             new FeatureInfo
             {

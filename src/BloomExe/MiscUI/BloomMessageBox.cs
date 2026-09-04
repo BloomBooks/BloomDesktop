@@ -36,6 +36,14 @@ namespace Bloom.MiscUI
                     {
                         messageHtml,
                         rightButtonDefinitions = rightButtons,
+                        // KNOWN GAP: you cannot currently ask for a warning icon and get one.
+                        // MessageBoxIcon.Warning and .Exclamation are the same value in .NET, so
+                        // ToString() here yields "exclamation", while BloomMessageBox.tsx only
+                        // handles "warning" and "asterisk" -- so passing Warning silently draws
+                        // nothing at all. (Measured: zero icons rendered.) MessageBoxIcon.Information
+                        // does work, because it stringifies to "Asterisk". Whoever needs a warning
+                        // icon should either map Exclamation to "warning" here or teach the .tsx the
+                        // name it is actually being sent; until then, do not expect one. See BL-16690.
                         icon = icon.ToString().ToLowerInvariant(),
                         closeWithAPICall = true,
                     }
@@ -48,7 +56,13 @@ namespace Bloom.MiscUI
                 // and remove the control box.
                 dlg.ControlBox = false;
                 if (owner == null)
+                {
                     dlg.StartPosition = FormStartPosition.CenterScreen;
+                    // With no owner there is no other Bloom presence on the taskbar, so without
+                    // its own button an ownerless message box that loses the foreground is
+                    // unfindable. (ReactDialog turns this off, which suits the owned case.)
+                    dlg.ShowInTaskbar = true;
+                }
                 dlg.ShowDialog(owner);
                 return dlg.CloseSource;
             }

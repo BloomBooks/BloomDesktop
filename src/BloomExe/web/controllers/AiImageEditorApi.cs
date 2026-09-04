@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
+using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Core.ClearShare;
 using SIL.IO;
@@ -44,9 +45,9 @@ namespace Bloom.web.controllers
     ///            The build copies dist-app/ from the installed `bloom-ai-image-tools`
     ///            package into output/browser/aiImageEditor/ (a viteStaticCopy target,
     ///            mirroring the bloom-player copy); `./go.sh` stages the same at dev time
-    ///            (scripts/aiEditorBuild.mjs), falling back to building a local checkout
+    ///            (scripts/aiImageEditorBuild.mjs), falling back to building a local checkout
     ///            until the package is published and added as a dependency.
-    ///   LINKED : set BLOOM_AI_EDITOR_URL to the AI image editor's own Vite dev server (HMR).
+    ///   LINKED : set BLOOM_AI_IMAGE_EDITOR_URL to the AI image editor's own Vite dev server (HMR).
     ///            `./go.sh --with bloom-ai-image-tools` does this automatically (it starts
     ///            the dev server and points Bloom at it); GetAiImageEditorUrl honors it.
     ///
@@ -62,7 +63,7 @@ namespace Bloom.web.controllers
     ///        aiImageEditor/commit        apply the chosen replacements to the book.
     ///        aiImageEditor/saveCredentials  persist the user's OpenRouter API key.
     ///   2. window.postMessage on channel "bloom-ai-image-tools", between the overlay JS
-    ///      (aiEditorOverlay.ts, in the TOP window) and the AI image editor's iframe: ready /
+    ///      (aiImageEditorOverlay.ts, in the TOP window) and the AI image editor's iframe: ready /
     ///      init / commit / cancel / log / ack. The overlay JS — NOT this class — sends
     ///      `init` (built from the launch reply) and tears the overlay down. Image BYTES
     ///      never cross postMessage; they move only as files via aiImageEditor/file.
@@ -82,7 +83,7 @@ namespace Bloom.web.controllers
     ///   currently-open page is owned by the live browser, so those replacements are
     ///   returned as {oldSrc,newSrc,copyright,creator,license}; the overlay hands them to the
     ///   page frame's applyAiImageEditorReplacements(), which applies them via Bloom's
-    ///   changeImageByElement() (aiEditorPageCommands.ts).
+    ///   changeImageByElement() (aiImageEditorPageCommands.ts).
     ///
     /// AI IMAGE EDITOR REPO: bloom-ai-image-tools — App.tsx (mode=bloom-iframe),
     ///   services/host/BloomHostBridge.ts (createIframeBloomHostBridge),
@@ -113,7 +114,7 @@ namespace Bloom.web.controllers
         // handle. Single source of truth — AllowedFileName (below), IsImageFileName, the
         // history-result probe, the reused-source check, and the whole-book image list all
         // derive from this set, so the lists can't drift apart. Must stay in sync with the
-        // front-end's editable-format list (BloomBrowserUI/.../aiEditorImageFormats.ts).
+        // front-end's editable-format list (BloomBrowserUI/.../aiImageEditorImageFormats.ts).
         private static readonly HashSet<string> AllowedImageExtensions = new HashSet<string>(
             StringComparer.OrdinalIgnoreCase
         )
@@ -217,30 +218,81 @@ namespace Bloom.web.controllers
         private string GetAiImageEditorUrl()
         {
             // The AI image editor is served by BloomServer from output/browser/aiImageEditor/.
-            // The go.mjs launcher (scripts/aiEditorBuild.mjs) builds it from the local
+            // The go.mjs launcher (scripts/aiImageEditorBuild.mjs) builds it from the local
             // bloom-ai-image-tools checkout and stages it there, so `./go.sh` "just works"
             // with no separate dev server, in both Debug and Release.
             //
             // Someone working on the AI image editor itself, who wants hot-module reload, can
-            // instead point Bloom at its own Vite dev server by setting BLOOM_AI_EDITOR_URL,
-            // e.g. BLOOM_AI_EDITOR_URL=http://localhost:3000/ and running `pnpm dev` in the
+            // instead point Bloom at its own Vite dev server by setting BLOOM_AI_IMAGE_EDITOR_URL,
+            // e.g. BLOOM_AI_IMAGE_EDITOR_URL=http://localhost:3000/ and running `pnpm dev` in the
             // bloom-ai-image-tools checkout.
-            var overrideUrl = Environment.GetEnvironmentVariable("BLOOM_AI_EDITOR_URL");
+            var overrideUrl = GetLinkedEditorUrlOverride();
             if (!string.IsNullOrWhiteSpace(overrideUrl))
                 return overrideUrl;
             return $"{BloomServer.ServerUrl}/bloom/aiImageEditor/index.html";
         }
 
+        /// <summary>
+        /// The env var a developer sets to point Bloom at the AI image editor's own Vite dev
+        /// server instead of the staged build.
+        /// </summary>
+        internal const string kLinkedEditorUrlEnvironmentVariable = "BLOOM_AI_IMAGE_EDITOR_URL";
+
+        /// <summary>
+        /// The name this variable had before it was renamed to match the rest of the feature.
+        /// Still honored so that a developer who has the old name in a shell profile or launch
+        /// config keeps getting their linked dev server rather than silently falling back to
+        /// the staged build. Transitional: delete once nobody is using it.
+        /// </summary>
+        internal const string kLinkedEditorUrlObsoleteEnvironmentVariable = "BLOOM_AI_EDITOR_URL";
+
+        // So the deprecation notice appears once per run rather than once per read.
+        private static bool _warnedAboutObsoleteEditorUrlVariable;
+
+        /// <summary>
+        /// The linked-dev-server URL the developer asked for, or null if they didn't ask for
+        /// one. Prefers <see cref="kLinkedEditorUrlEnvironmentVariable"/> and falls back to
+        /// <see cref="kLinkedEditorUrlObsoleteEnvironmentVariable"/>, logging once when the
+        /// obsolete name is what supplied the value.
+        /// </summary>
+        internal static string GetLinkedEditorUrlOverride()
+        {
+            var url = Environment.GetEnvironmentVariable(kLinkedEditorUrlEnvironmentVariable);
+            if (!string.IsNullOrWhiteSpace(url))
+                return url;
+
+            url = Environment.GetEnvironmentVariable(kLinkedEditorUrlObsoleteEnvironmentVariable);
+            if (string.IsNullOrWhiteSpace(url))
+                return null;
+
+            if (!_warnedAboutObsoleteEditorUrlVariable)
+            {
+                _warnedAboutObsoleteEditorUrlVariable = true;
+                Logger.WriteEvent(
+                    $"{kLinkedEditorUrlObsoleteEnvironmentVariable} is obsolete; please rename it"
+                        + $" to {kLinkedEditorUrlEnvironmentVariable}. Using it for now."
+                );
+            }
+            return url;
+        }
+
         /// <summary>The image the user right-clicked, as the page frame sends it to
         /// <see cref="HandleSaveThenLaunch"/> and as we hand it back to the browser once the page
-        /// has been saved. See IAiImageEditorTarget in aiEditorShared.ts. The page frame sends only
-        /// the file name; we fill in the page id, since we are the ones who know which page we
-        /// saved, and the overlay (in the top window) has no page DOM of its own to read it from.
+        /// has been saved. See IAiImageEditorTarget in aiImageEditorShared.ts. The page frame sends
+        /// only the slot's index among the page's image containers; we fill in the page id, since
+        /// we are the ones who know which page we saved, and the overlay (in the top window) has
+        /// no page DOM of its own to read it from.
         /// </summary>
         private class SaveThenLaunchRequest
         {
-            public string imageFileName { get; set; }
             public string pageId { get; set; }
+
+            /// <summary>Which image slot of that page the user clicked, as its index among the
+            /// page's image containers in document order. The page frame counts them, because
+            /// only it can see which slot the user clicked; we just carry it back to the
+            /// overlay, where it names the book image "{pageId}:{slotIndex}".
+            /// </summary>
+            public int slotIndex { get; set; }
         }
 
         /// <summary>
@@ -251,7 +303,7 @@ namespace Bloom.web.controllers
         /// slot's current src — is read from the SAVED book DOM, but an image the user has just
         /// added exists only in the live page (Bloom deliberately doesn't save on an image change;
         /// see EditingModel.UpdateImageInBrowser and BL-16330). Launching against the unsaved DOM
-        /// opened the editor with an empty "Image to Edit" slot (BL-16682); it would also have
+        /// opened the AI Image Editor with an empty "Image to Edit" slot (BL-16682); it would also have
         /// made the current page's commit results describe an image the live page no longer shows,
         /// and left <see cref="DeleteSupersededAiImageFiles"/> blind to a file the live page uses.
         ///
@@ -259,7 +311,7 @@ namespace Bloom.web.controllers
         ///
         /// WHERE the overlay lives: not in the page iframe, which that navigation replaces every
         /// time — hence the top window, like the image-gallery and copyright/license commands (see
-        /// aiEditorOverlay.ts and the comments on those commands in canvasControlRegistry.ts).
+        /// aiImageEditorOverlay.ts and the comments on those commands in canvasControlRegistry.ts).
         ///
         /// WHEN we open it: once the browser has a page again, via
         /// EditingModel.RunAfterNextPageLoad. Opening from SaveThen's doAfterSaveToDisk directly is
@@ -268,7 +320,7 @@ namespace Bloom.web.controllers
         /// EditingView.StartNavigationToEditPage reloads the whole workspace root when
         /// MemoryUtils.SystemIsShortOfMemory(), which is Bloom's own private bytes past ~2GB —
         /// the ordinary state of a long editing session on a big book. Opening from
-        /// doAfterSaveToDisk there meant the page saved correctly and the editor never appeared,
+        /// doAfterSaveToDisk there meant the page saved correctly and the AI Image Editor never appeared,
         /// with no message: openAiImageEditor doesn't even build the overlay synchronously; it
         /// POSTs launch first and builds it in the reply, a whole round trip after the reload
         /// began. Waiting for the page load costs nothing and is immune to all three routes.
@@ -283,7 +335,7 @@ namespace Bloom.web.controllers
         {
             // Must be read before SaveThen: by the time our callbacks run the request is complete.
             // Deliberately unguarded: the only caller is launchAiImageEditor in
-            // aiEditorPageCommands.ts, which always sends {imageFileName}, so a parse failure means
+            // aiImageEditorPageCommands.ts, which always sends {slotIndex}, so a parse failure means
             // we broke our own contract and we want to hear about it with the real exception rather
             // than a generic "invalid payload" that says nothing (see AGENTS.md, "Don't be overly
             // defensive about error handling").
@@ -304,7 +356,7 @@ namespace Bloom.web.controllers
             // Asking now, rather than from the callbacks below: OnTabAboutToChange discards the
             // queued request when the user leaves the Edit tab. If we only queued it later, from
             // doAfterSaveToDisk, that discard could run first — on a save still in flight — and we
-            // would then re-arm behind it, so the editor sprang open when the user came back to
+            // would then re-arm behind it, so the AI Image Editor sprang open when the user came back to
             // that page. (Devin caught that; queueing up front puts the discard reliably after us.)
             var bookDomIsSound = false;
             model.RunAfterNextPageLoad(loadedPageId =>
@@ -313,7 +365,7 @@ namespace Bloom.web.controllers
                 // to edit isn't there to edit.
                 if (loadedPageId != pageId)
                     return;
-                // The save was attempted and failed. Leave the editor closed: the book DOM is
+                // The save was attempted and failed. Leave the AI Image Editor closed: the book DOM is
                 // still stale, so we would be opening it on exactly the out-of-date data this
                 // endpoint exists to prevent, and a commit from there would call book.Save() again
                 // on top of whatever went wrong (disk full, a corrupt image, out of memory). The
@@ -345,8 +397,8 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Tells the browser to open the AI image editor overlay on <paramref name="target"/>. The
-        /// browser owns the overlay (only it can postMessage to the editor's iframe), so all this
-        /// side does is call its entry point; see openAiImageEditor in aiEditorOverlay.ts.
+        /// browser owns the overlay (only it can postMessage to the AI Image Editor's iframe), so all this
+        /// side does is call its entry point; see openAiImageEditor in aiImageEditorOverlay.ts.
         /// Fire-and-forget, like EditingModel.UpdateImageInBrowser's call to changeImage: there is
         /// nothing here to wait for.
         ///
@@ -405,7 +457,7 @@ namespace Bloom.web.controllers
             // (e.g. a local checkout that hasn't been built/staged yet). Fail the launch with
             // a clear message rather than opening an overlay whose iframe would just 404.
             if (
-                string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("BLOOM_AI_EDITOR_URL"))
+                string.IsNullOrWhiteSpace(GetLinkedEditorUrlOverride())
                 && BloomFileLocator.GetBrowserFile(optional: true, "aiImageEditor", "index.html")
                     == null
             )
@@ -453,14 +505,56 @@ namespace Bloom.web.controllers
                     // HandleSaveCredentials also refuses to persist.
                     demoOnly = book.IsPlayground,
                     // Let the AI image editor reveal its developer/tester tools (e.g. the
-                    // "Local Dummy (No AI)" model, for cost-free testing) on developer AND
-                    // alpha/unstable builds, so human alpha testers can exercise it without
-                    // spending real AI credits. The AI image editor hides those tools unless
-                    // the host opts in, so release/beta builds (IsDevOrAlpha false) never
-                    // expose them to end users.
-                    showDeveloperTools = ApplicationUpdateSupport.IsDevOrAlpha,
+                    // "Local Dummy (No AI)" model, for cost-free testing). The AI image
+                    // editor hides those tools unless the host opts in, so ordinary
+                    // release/beta builds never expose them to end users.
+                    showDeveloperTools = ShouldShowDeveloperTools(),
                 }
             );
+        }
+
+        /// <summary>
+        /// Environment variable a tester can set to get the AI image editor's tester tools
+        /// (currently the "Local Dummy (No AI)" model) on a channel that would not normally
+        /// offer them, e.g. an installed beta. See <see cref="kTesterToolsOnValues"/> for
+        /// what counts as "on".
+        /// </summary>
+        internal const string kShowTesterToolsEnvironmentVariable =
+            "BLOOM_AI_IMAGE_EDITOR_TESTER_TOOLS";
+
+        /// <summary>
+        /// The values of <see cref="kShowTesterToolsEnvironmentVariable"/> that mean "on",
+        /// compared case-insensitively after trimming. We accept several spellings because
+        /// the people setting this are testers typing into a Windows environment-variable
+        /// box, not developers reading our source.
+        /// </summary>
+        internal static readonly string[] kTesterToolsOnValues = new[]
+        {
+            "true",
+            "t",
+            "y",
+            "yes",
+            "1",
+        };
+
+        /// <summary>
+        /// Whether to tell the AI image editor to reveal its developer/tester tools. The
+        /// "Local Dummy (No AI)" model is the one such tool today; it lets a tester exercise
+        /// the editor without spending real AI credits. These are always on for developer and
+        /// alpha/unstable builds. On any other channel (beta, release) a tester can opt in by
+        /// setting <see cref="kShowTesterToolsEnvironmentVariable"/>, which is how we let a
+        /// beta tester try the editor for free without shipping the tools to end users
+        /// (BL-16770).
+        /// </summary>
+        internal static bool ShouldShowDeveloperTools()
+        {
+            if (ApplicationUpdateSupport.IsDevOrAlpha)
+                return true;
+            var optIn = Environment
+                .GetEnvironmentVariable(kShowTesterToolsEnvironmentVariable)
+                ?.Trim();
+            return optIn != null
+                && kTesterToolsOnValues.Contains(optIn, StringComparer.OrdinalIgnoreCase);
         }
 
         private class SaveCredentialsRequest
@@ -530,7 +624,7 @@ namespace Bloom.web.controllers
             {
                 request.Failed(
                     HttpStatusCode.Unauthorized,
-                    "The selected book changed since the editor was launched"
+                    "The selected book changed since the AI Image Editor was launched"
                 );
                 return false;
             }
@@ -797,15 +891,40 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// True if an image-bearing element is one the user is allowed to replace. Branding,
-        /// license, and QR-code images are never user-changeable, so they are excluded both
-        /// from the list offered to the AI image editor and from being overwritten at commit.
+        /// The image slots of one page, in document order: its image containers. A slot's index
+        /// in this list is its whole identity, and it is what "{pageId}:{ordinal}" holds.
         /// Internal for testing.
+        ///
+        /// An image container is exactly what a user may replace, which is why nothing here
+        /// filters. The branding, license and QR-code images live outside any container, so
+        /// they are not slots and cannot be edited or overwritten.
+        ///
+        /// slotIndexOnPage in aiImageEditorPageCommands.ts numbers the same containers on the live
+        /// page, so the index the page frame sends at launch means the same thing here. It has
+        /// one exclusion this does not need: Bloom injects controls into the live page, and a
+        /// save strips them, so they are never in the DOM we read.
         /// </summary>
-        internal static bool IsUserChangeableImageElement(SafeXmlElement element) =>
-            !element.HasClass("branding")
-            && !element.HasClass("licenseImage")
-            && !element.HasClass("bloom-qrcode");
+        internal static SafeXmlElement[] SelectImageSlotsOnPage(SafeXmlElement page) =>
+            page.SafeSelectNodes(
+                    ".//*[contains(concat(' ', normalize-space(@class), ' '), ' "
+                        + HtmlDom.kImageContainerClass
+                        + " ')]"
+                )
+                .OfType<SafeXmlElement>()
+                .ToArray();
+
+        /// <summary>
+        /// The element of a slot that carries the picture: the container's own img, or the
+        /// container itself when it wears the picture as a background image. Null when the slot
+        /// holds neither, which a slot with no picture at all can do.
+        /// </summary>
+        internal static SafeXmlElement GetImageElementOfSlot(SafeXmlElement slot)
+        {
+            var img = slot.SelectSingleNode("./img") as SafeXmlElement;
+            if (img != null)
+                return img;
+            return (slot.GetAttribute("style") ?? "").Contains("background-image") ? slot : null;
+        }
 
         /// <summary>
         /// Locates the bytes for a history result by id. The AI image editor may store a
@@ -915,6 +1034,119 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// What to call a page when naming one of its image slots to the user: "Page 3" for a
+        /// numbered page, or the page's own name (e.g. "Front Cover") for front or back matter.
+        /// Null when the page says neither, in which case the slot goes unlabelled.
+        /// In the user interface language.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately not HtmlDom.GetNumberOrLabelOfPageWhereElementLives: that returns the
+        /// number bare, with no "Page", and answers "unknown" for a page whose
+        /// data-page-number attribute is missing rather than empty, which HtmlDom itself can
+        /// produce (see BL-12903). "unknown" would be worse than no label at all.
+        /// </remarks>
+        internal static string GetPageNameForImageSlotLabel(SafeXmlElement page)
+        {
+            // Back matter pages do carry page numbers, but they are clearer by name.
+            var number = page.GetAttribute("data-page-number");
+            if (!string.IsNullOrWhiteSpace(number) && !HtmlDom.IsBackMatterPage(page))
+                // "Page" plus the number, rather than a "Page {0}" string of our own: the
+                // word already exists in our strings, and a translator meeting a bare format
+                // string has less to go on than the word itself.
+                return LocalizationManager.GetString("ReaderSetup.PageHeader", "Page")
+                    + " "
+                    + number;
+
+            var label = page.SelectSingleNode("./div[@class='pageLabel']")?.InnerText.Trim();
+            if (string.IsNullOrEmpty(label))
+                return null;
+            // Page labels are localized under a dynamic id built from the English label, the
+            // same way the page list in the Edit tab does it.
+            return LocalizationManager.GetString("TemplateBooks.PageLabel." + label, label);
+        }
+
+        /// <summary>
+        /// Names one image slot for the user. A page with a single image slot needs no more than
+        /// the page name. A page with several says which slot this is: "Page 3 - Canvas
+        /// Background" for the canvas background image, "Page 3 - Image 1" for the pictures on
+        /// top of it. Every empty slot looks the same in the AI image editor, so this label is
+        /// the only thing that tells two of them apart (BL-16744).
+        /// </summary>
+        /// <param name="pageName">from <see cref="GetPageNameForImageSlotLabel"/>, may be null</param>
+        /// <param name="isCanvasBackground">true for the canvas background image</param>
+        /// <param name="imageNumber">
+        /// the 1-based position of this slot among the page's images, counting every slot that is
+        /// not being named as the canvas background. A page with several canvases names none of
+        /// them, so there every slot is counted. Ignored when isCanvasBackground is true.
+        /// </param>
+        /// <param name="slotCount">how many image slots this page offers in all</param>
+        internal static string BuildImageSlotLabel(
+            string pageName,
+            bool isCanvasBackground,
+            int imageNumber,
+            int slotCount
+        )
+        {
+            // The only picture on the page. There is nothing to tell it apart from.
+            if (slotCount < 2)
+                return pageName;
+
+            var whichSlot = isCanvasBackground
+                ? LocalizationManager.GetString(
+                    "AiImageEditor.SlotLabel.CanvasBackground",
+                    "Canvas Background"
+                )
+                : LocalizationManager.GetString("EditTab.CustomPage.Image", "Image")
+                    + " "
+                    + imageNumber;
+            if (string.IsNullOrEmpty(pageName))
+                return whichSlot;
+            // The separator is not localizable. It carries no meaning to translate, and a
+            // string of nothing but two placeholders and a dash gives a translator no context.
+            return pageName + " - " + whichSlot;
+        }
+
+        /// <summary>
+        /// Names every image slot of one page, in the order the page offers them. Kept in one
+        /// place because a slot's name depends on what else the page holds, not just on itself.
+        /// </summary>
+        /// <param name="pageName">from <see cref="GetPageNameForImageSlotLabel"/>, may be null</param>
+        /// <param name="isCanvasBackground">
+        /// for each slot of the page, in order, whether it is the background image of a canvas
+        /// </param>
+        internal static List<string> BuildImageSlotLabelsForPage(
+            string pageName,
+            IReadOnlyList<bool> isCanvasBackground
+        )
+        {
+            // "Canvas Background" names a slot only when the page has exactly one canvas. A
+            // Picture Dictionary page has six, so six background images; calling them all
+            // "Canvas Background" would be six identical labels, which is the very confusion
+            // the label exists to remove. There, plain numbering tells them apart.
+            var nameTheBackground = isCanvasBackground.Count(background => background) == 1;
+
+            var labels = new List<string>();
+            var imageNumber = 0;
+            foreach (var background in isCanvasBackground)
+            {
+                // The background is named, not numbered, so the numbering of the pictures on
+                // top of it starts at 1 whether or not the page has a background.
+                var nameAsBackground = background && nameTheBackground;
+                if (!nameAsBackground)
+                    imageNumber++;
+                labels.Add(
+                    BuildImageSlotLabel(
+                        pageName,
+                        nameAsBackground,
+                        imageNumber,
+                        isCanvasBackground.Count
+                    )
+                );
+            }
+            return labels;
+        }
+
+        /// <summary>
         /// Enumerates every image the user is allowed to change across the whole book — all
         /// pages including front cover and xmatter, including empty placeholder slots —
         /// excluding only branding and license images. Each entry is a reference (id +
@@ -934,17 +1166,27 @@ namespace Bloom.web.controllers
                 var pageId = page.GetAttribute("id");
                 if (string.IsNullOrEmpty(pageId) || !SafeId.IsMatch(pageId))
                     continue;
-                var pageLabel = page.GetAttribute("data-page-number");
+                var pageName = GetPageNameForImageSlotLabel(page);
 
-                var holders = HtmlDom.SelectChildImgAndBackgroundImageElements(page);
-                // Ordinal is the index within the full holder list so that commit can
-                // re-find the element deterministically; the branding/license skip below
-                // only affects which slots we offer, not the indexing.
-                for (var ordinal = 0; ordinal < holders.Length; ordinal++)
+                var slots = SelectImageSlotsOnPage(page);
+                // The slots this page offers, gathered before any is added to the result,
+                // because a slot's label depends on how many the page has: a page with one
+                // image says just "Page 2", a page with more says "Page 2 - Image 1" and so on.
+                var slotsOnThisPage =
+                    new List<(
+                        string id,
+                        string src,
+                        bool isPlaceholder,
+                        bool isCanvasBackground,
+                        ImageCredits credits
+                    )>();
+                // Ordinal is the index within the full slot list, so a slot we decline to offer
+                // below still holds its place. That is what lets the page frame send an index it
+                // worked out for itself, without knowing which slots we kept.
+                for (var ordinal = 0; ordinal < slots.Length; ordinal++)
                 {
-                    if (!(holders[ordinal] is SafeXmlElement element))
-                        continue;
-                    if (!IsUserChangeableImageElement(element))
+                    var element = GetImageElementOfSlot(slots[ordinal]);
+                    if (element == null)
                         continue;
 
                     var relativePath = HtmlDom.GetImageElementUrl(element).PathOnly.NotEncoded;
@@ -958,22 +1200,44 @@ namespace Bloom.web.controllers
                     if (!IsImageFileName(relativePath))
                         continue;
 
-                    images.Add(
-                        new
-                        {
-                            id = pageId + ":" + ordinal,
-                            src = (folderAsUrlPrefix + "/" + relativePath).ToLocalhost(),
-                            pageLabel = string.IsNullOrEmpty(pageLabel) ? null : pageLabel,
+                    slotsOnThisPage.Add(
+                        (
+                            id: pageId + ":" + ordinal,
+                            src: (folderAsUrlPrefix + "/" + relativePath).ToLocalhost(),
                             // The AI image editor shows its own placeholder graphic for empty
                             // slots rather than trying to load the (book-less)
                             // placeHolder.png.
-                            isPlaceholder = ImageUtils.IsPlaceholderImageFilename(relativePath),
+                            isPlaceholder: ImageUtils.IsPlaceholderImageFilename(relativePath),
+                            // A bloom-canvas can hold one background image with pictures on
+                            // top of it. The background is worth naming as such, because the
+                            // user thinks of it as the page's picture, not as "image 1".
+                            isCanvasBackground: HtmlDom.IsBackgroundImage(element),
                             // The image's current credits, so a result derived from it can
                             // carry (or amend) them. The AI image editor owns the credit
                             // *decision* and hands back whatever it chose on commit; Bloom
                             // only embeds that into the file. Null when the image has no
                             // usable metadata.
-                            credits = GetCreditsForImageFile(book.FolderPath, relativePath),
+                            credits: GetCreditsForImageFile(book.FolderPath, relativePath)
+                        )
+                    );
+                }
+
+                // Now that the whole page is known, name its slots and add them.
+                var labels = BuildImageSlotLabelsForPage(
+                    pageName,
+                    slotsOnThisPage.Select(slot => slot.isCanvasBackground).ToList()
+                );
+                for (var i = 0; i < slotsOnThisPage.Count; i++)
+                {
+                    var slot = slotsOnThisPage[i];
+                    images.Add(
+                        new
+                        {
+                            id = slot.id,
+                            src = slot.src,
+                            pageLabel = labels[i],
+                            isPlaceholder = slot.isPlaceholder,
+                            credits = slot.credits,
                         }
                     );
                 }
@@ -1180,6 +1444,11 @@ namespace Bloom.web.controllers
             // survives.
             DeleteSupersededAiImageFiles(book.FolderPath, book.OurHtmlDom, supersededOffPageFiles);
 
+            // The "AI Image Editor Closed" and "Change Picture" events are reported by
+            // aiImageEditorOverlay.ts when it gets this reply, not here. For a slot on the page the user
+            // has open we only STAGE the replacement and hand it back; whether it actually landed
+            // is something only the browser learns, so counting a staged slot as applied here
+            // would report success we do not have.
             request.ReplyWithJson(
                 new
                 {
@@ -1248,20 +1517,16 @@ namespace Bloom.web.controllers
                 return false;
             }
 
-            var holders = HtmlDom.SelectChildImgAndBackgroundImageElements(page);
-            if (ordinal < 0 || ordinal >= holders.Length)
+            var slots = SelectImageSlotsOnPage(page);
+            if (ordinal < 0 || ordinal >= slots.Length)
             {
                 error = "Image index out of range";
                 return false;
             }
-            if (!(holders[ordinal] is SafeXmlElement element))
+            var element = GetImageElementOfSlot(slots[ordinal]);
+            if (element == null)
             {
                 error = "Image element not found";
-                return false;
-            }
-            if (!IsUserChangeableImageElement(element))
-            {
-                error = "Image is not user-changeable";
                 return false;
             }
 
@@ -1317,14 +1582,25 @@ namespace Bloom.web.controllers
             var newFileName = ImportImageIntoBookFolder(
                 sourceBytesPath,
                 book.FolderPath,
-                // Only a freshly generated/uploaded result needs resizing. A REUSED book image
-                // was already import-processed on its own way in, so there is nothing to gain
-                // by shrinking it again — and resizing rewrites the file through
-                // GraphicsMagick, which can drop the credits embedded in it. This path
-                // deliberately doesn't re-write credits (see EmbedCreditsInNewImageFile below),
-                // so there would be nothing to put them back.
+                // Only a freshly generated/uploaded result needs resizing: a reused book image was
+                // already import-processed on its own way in, so shrinking it again would gain
+                // nothing and would cost it a generation of quality.
+                // This used to cite credits as the reason too — resizing rewrites the file through
+                // GraphicsMagick, which drops the XMP packet the licence lives in. That no longer
+                // applies: ImportImageIntoBookFolder now re-attaches the metadata after processing,
+                // whichever path it took. So scope is the whole justification for this argument.
                 resizeIfNeeded: !string.IsNullOrEmpty(replacement.resultId)
             );
+            // A generated result can arrive as a PNG for a slot the book held as a JPEG,
+            // which can be several times the size; re-encode it as a JPEG when that wins
+            // enough to be worth it (BL-16645).  A reused image is already in the book
+            // folder in the appropriate format, so we don't need to process it again.
+            if (!string.IsNullOrEmpty(replacement.resultId))
+                newFileName = ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                    book.FolderPath,
+                    oldSrc,
+                    newFileName
+                );
             newSrc = newFileName;
 
             // A generated result arrives with no intellectual-property metadata of its own, so
@@ -1393,10 +1669,10 @@ namespace Bloom.web.controllers
         /// an image that fails to process at all. Internal for testing.
         /// </summary>
         /// <param name="resizeIfNeeded">
-        /// False for a reused book image, which was already import-processed on its own way in.
-        /// Resizing it again would gain nothing and would rewrite the file through
-        /// GraphicsMagick, which can drop the credits embedded in it — and the reuse path
-        /// deliberately doesn't re-write credits, so they would simply be lost.
+        /// False for a reused book image, which was already import-processed on its own way in, so
+        /// resizing it again would gain nothing and would cost it a generation of quality. (It used
+        /// to matter for credits as well; it no longer does, since this method re-attaches the
+        /// metadata after processing whichever path it took.)
         /// </param>
         /// <returns>The name (no path) of the new file in the book folder.</returns>
         internal static string ImportImageIntoBookFolder(
@@ -1421,6 +1697,49 @@ namespace Bloom.web.controllers
                             isSameFile: false,
                             resizeFileIfNeeded: resizeIfNeeded
                         );
+                        // Only re-attach metadata we actually read something from. Writing an empty
+                        // model over the processed file could STRIP what
+                        // ProcessAndSaveImageIntoFolder had preserved by copying the file verbatim —
+                        // turning "we found no metadata" into "there is now no metadata" — and there
+                        // is nothing to restore in that case anyway. Two ways to end up empty: the
+                        // read failed (ImageUtils.CopyCoreMetadata guards on the same flag), or it
+                        // succeeded and the source simply had none, which is the normal case for a
+                        // freshly generated AI result. Both of Devin's reviews of #8188 on this line.
+                        if (
+                            processedName != null
+                            && imageInfo.Metadata != null
+                            && imageInfo.Metadata.ExceptionCaughtWhileLoading == null
+                            && !imageInfo.Metadata.IsEmpty
+                        )
+                        {
+                            // Put the credits back on whatever was just written, exactly as
+                            // PageEditingModel.ChangePicture does after the same call — and for the
+                            // same reason. Processing can rewrite the bytes (a GraphicsMagick
+                            // resize, or a save through GDI+ for a non-web format), and libpalaso
+                            // keeps the licence only in the XMP packet, which a GraphicsMagick
+                            // rewrite drops. Creator and copyright happen to survive, because they
+                            // are also written as PNG tEXt keys, so the symptom is narrow and easy
+                            // to miss: an uploaded photo keeps its copyright line but arrives with
+                            // no licence at all (BL-16645).
+                            try
+                            {
+                                ImageUtils.SaveImageMetadata(
+                                    imageInfo,
+                                    Path.Combine(bookFolderPath, processedName)
+                                );
+                            }
+                            catch (Exception metadataEx)
+                            {
+                                // Deliberately not rethrown: the outer catch would fall back to
+                                // copying the source in verbatim, throwing away a perfectly good
+                                // processed image over a metadata problem. Unprocessed bulk is a
+                                // worse outcome than metadata we failed to re-attach.
+                                Logger.WriteError(
+                                    $"AiImageEditorApi: imported {sourceBytesPath} but could not re-attach its metadata",
+                                    metadataEx
+                                );
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -1447,6 +1766,161 @@ namespace Bloom.web.controllers
             else
                 RobustFile.Copy(sourceBytesPath, newPath, true);
             return newFileName;
+        }
+
+        // How much bigger than the JPEG it supersedes a new PNG has to be before we spend a
+        // GraphicsMagick run (and some lossy re-encoding) trying to shrink it. A PNG merely the
+        // same size as the JPEG it replaces isn't the blow-up BL-16645 is about.
+        private const double PngBloatRatioWorthReencoding = 1.5;
+
+        /// <summary>
+        /// The AI image editor can return a PNG for a slot the book held as a JPEG, and a
+        /// photographic PNG can be several times the size of the JPEG it replaced — the very
+        /// bloat <see cref="ImportImageIntoBookFolder"/> exists to avoid (BL-16645). So when the
+        /// file we just imported is a PNG substantially bigger than the JPEG it supersedes,
+        /// re-encode it as a JPEG and keep that instead, deleting the PNG. We only keep the JPEG
+        /// if the saving is real: <see cref="ImageUtils.TryChangeFormatToJpegIfHelpful"/> insists
+        /// on at least 50% smaller and cleans up after itself otherwise.
+        ///
+        /// A PNG we can see is transparent is left alone whatever its size, because a JPEG cannot
+        /// carry an alpha channel and converting one would permanently flatten its see-through
+        /// areas onto a solid background.  Note that checking the image for transparency does
+        /// an exhaustive scan of its pixels, which can take about 10 msec for the largest images
+        /// we store that are fully opaque (on a fast machine).  Any pixel that is less than fully
+        /// opaque makes the image "transparent" for our purposes, so we don't have to check every
+        /// pixel if we find one that is not fully opaque.  Checking for transparency is done only
+        /// when needed, and is still much faster than re-encoding a large PNG as a JPEG.
+        ///
+        /// Returns the name (no path) to use for the new file — the JPEG's if we converted,
+        /// otherwise <paramref name="newFileName"/> unchanged. Internal for testing.
+        /// </summary>
+        /// <remarks>
+        /// Only called for a freshly generated or uploaded result; a REUSED book image is left alone.
+        /// The problem this method fixes is about a generated result bloating a book, and a reused
+        /// image is already in the book folder in the appropriate format.
+        /// </remarks>
+        internal static string ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+            string bookFolderPath,
+            string oldSrc,
+            string newFileName
+        )
+        {
+            if (string.IsNullOrEmpty(oldSrc))
+                return newFileName; // nothing was there to compare against
+            var oldPath = Path.Combine(bookFolderPath, oldSrc);
+            var newPath = Path.Combine(bookFolderPath, newFileName);
+            // Judge by the bytes, not the extensions: a book folder can easily hold a file whose
+            // extension misdescribes its content (which is why these helpers sniff the header).
+            if (!ImageUtils.IsJpegFile(oldPath) || !ImageUtils.IsPngFile(newPath))
+                return newFileName;
+            if (
+                new FileInfo(newPath).Length
+                <= PngBloatRatioWorthReencoding * new FileInfo(oldPath).Length
+            )
+                return newFileName;
+
+            // ImportImageIntoBookFolder only reserved the ".png" name, and GetUnusedFilename
+            // checks just that one name — so the same base name with a ".jpg" extension may
+            // well be another slot's live image. Reserve a genuinely unused .jpg name instead
+            // of writing over it; TryChangeFormatToJpegIfHelpful also warns that a
+            // pre-existing destination file can make GraphicsMagick fail outright.
+            var jpegFileName = ImageUtils.GetUnusedFilename(bookFolderPath, "ai-image", ".jpg");
+            var jpegPath = Path.Combine(bookFolderPath, jpegFileName);
+            bool keepTheJpeg;
+            try
+            {
+                // Dispose before touching the PNG again: PalasoImage owns a decoded copy of it.
+                using (var image = PalasoImage.FromFileRobustly(newPath))
+                {
+                    // A JPEG has no alpha channel, so re-encoding a PNG that has any
+                    // see-through areas would flatten them onto a solid background — and we
+                    // delete the PNG below, so the transparency would be gone for good. That is
+                    // why we scan every pixel here, while the same conversion in
+                    // ImageUtils.AdjustImageForDisplay settles for a sample: there the original
+                    // survives, so a missed patch costs a display copy rather than the picture.
+                    if (ImageUtils.HasTransparency(image.Image, samplePixels: false))
+                        return newFileName;
+                    keepTheJpeg = ImageUtils.TryChangeFormatToJpegIfHelpful(image, jpegPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Anything we can't decode simply doesn't get optimized. Note that
+                // ImportImageIntoBookFolder may have copied these bytes in verbatim without
+                // ever decoding them (that is its fallback for a file it can't process), so an
+                // undecodable file really can reach us — and letting that abort the whole
+                // commit, losing every replacement in it, would be a poor trade for a missed
+                // size saving.
+                Logger.WriteError(
+                    $"AiImageEditorApi: could not consider re-encoding {newPath} as a JPEG",
+                    ex
+                );
+                // GraphicsMagick may already have written the JPEG before we got here — the throw
+                // can come from disposing the PalasoImage, after the conversion itself succeeded —
+                // and we are about to walk away from it, so clean it up like the declined case
+                // below rather than leaving it unreferenced in the book folder.
+                try
+                {
+                    if (RobustFile.Exists(jpegPath))
+                        RobustFile.Delete(jpegPath);
+                }
+                catch (Exception cleanupEx)
+                {
+                    Logger.WriteError(
+                        $"AiImageEditorApi: could not clean up the abandoned {jpegPath}",
+                        cleanupEx
+                    );
+                }
+                return newFileName;
+            }
+            if (!keepTheJpeg)
+            {
+                // TryChangeFormatToJpegIfHelpful removes a JPEG it merely decided against, but
+                // not one left behind by a GraphicsMagick run that failed partway. Unlike its
+                // other callers, our destination is the book folder itself, so a leftover would
+                // sit unreferenced in the very place this method exists to keep small.
+                // Guarded for the same reason as the delete below, and even more plainly: this is
+                // the branch where we gained nothing at all, so a locked leftover file is the last
+                // thing that should be allowed to throw away the user's whole commit.
+                try
+                {
+                    if (RobustFile.Exists(jpegPath))
+                        RobustFile.Delete(jpegPath);
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteError(
+                        $"AiImageEditorApi: could not clean up the unused {jpegPath}",
+                        ex
+                    );
+                }
+                return newFileName;
+            }
+            // Carry the credits across before the PNG goes away. GraphicsMagick does not preserve
+            // them when it rewrites a PNG as a JPEG — measured, not assumed: creator, copyright and
+            // licence all come back empty. That matters because an UPLOADED result can arrive with
+            // the user's own credits embedded in it, and nothing downstream would put them back:
+            // EmbedCreditsInNewImageFile writes only the credits the AI Image Editor explicitly sent, and
+            // only when it sent any. So without this, uploading a credited photo and having it
+            // re-encoded would quietly strip its copyright (BL-16645, and John's review of #8188).
+            ImageUtils.CopyCoreMetadata(newPath, jpegPath);
+            // Nothing references the PNG now, and leaving it in the book folder would keep
+            // exactly the bulk we just converted away from. But a momentarily locked file (a
+            // virus scanner, the host still serving it) must not abort the commit: we already
+            // have the JPEG, so a PNG we failed to delete is strictly better than discarding
+            // every replacement in the request.
+            try
+            {
+                RobustFile.Delete(newPath);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError(
+                    $"AiImageEditorApi: converted {newPath} to a JPEG but could not delete it",
+                    ex
+                );
+            }
+            return jpegFileName;
         }
 
         /// <summary>

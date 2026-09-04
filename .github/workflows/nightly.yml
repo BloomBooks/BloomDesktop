@@ -1,28 +1,31 @@
 # Nightly build + full test run of everything on master.
 #
 # This is a health check, not a release: it builds the front-end and the C# solution and
-# runs all three test suites — front-end vitest, C# NUnit, and the visual regression suite —
-# but produces no installer, does no signing, and publishes nothing. It exists to catch
-# breakage that the PR checks miss — e.g. tests excluded from PR runs, or rot from
-# dependency/runner drift — on a predictable cadence.
+# runs all five test suites — front-end vitest, C# NUnit, the BloomE2E suite, the visual
+# regression suite, and the component-tester Playwright suite — but produces no installer, does
+# no signing, and publishes nothing. It exists to catch breakage that the PR checks miss — e.g.
+# tests excluded from PR runs, or rot from dependency/runner drift — on a predictable cadence.
 #
-# Each suite publishes its own check run / job-summary section, so the commit shows three
+# Each suite publishes its own check run / job-summary section, so the commit shows five
 # independent results rather than one merged total. See the "Test reports" steps at the end.
+#
+# Every night is then reported to Zulip -- pass or fail, one topic per night -- with each suite's
+# counts and how long it took. See "The nightly report" at the end.
 #
 # Schedule: 04:00 UTC daily. GitHub cron is always UTC (== GMT, no DST), so this is a
 # literal 4am GMT. Note GitHub may delay scheduled runs during peak load; exact timing is
 # best-effort. Can also be run on demand via the Actions "Run workflow" button.
 #
-# A manual run can pick which of the three suites to run; all three are ticked by default, so the
+# A manual run can pick which of the five suites to run; all five are ticked by default, so the
 # default manual run matches the scheduled one. Unticking the ones you don't need is how to iterate
 # quickly when chasing a failure in a single suite: the C# suite alone is ~9 minutes of a ~22-minute
 # run, so dropping it takes an attempt to ~12. That was added while hunting the intermittent
 # visual-regression hang in BL-16612.
 #
 # The two BUILDS always run and are not selectable, because they are prerequisites rather than
-# suites: the C# build needs the front-end build's output, and the visual-regression suite drives a
-# real Bloom.exe, so it needs both. Unticking every suite is therefore a valid "does it still build"
-# check.
+# suites: the C# build needs the front-end build's output, and the two suites that drive a real
+# Bloom.exe (BloomE2E and visual regression) need both. Unticking every suite is therefore a valid
+# "does it still build" check.
 #
 # Note this is a selection, not a reordering. Reordering the steps so a chosen suite runs earlier
 # would be safe on paper -- nothing gates on either test suite except its own publish step -- but the
@@ -30,6 +33,14 @@
 # a machine which has NOT just spent nine minutes being hammered by the C# tests is being sampled
 # under different conditions. For an intermittent, possibly load-sensitive failure that matters, so
 # the scheduled run keeps its shape and manual runs vary only in what they skip.
+#
+# The component-tester suite is the one deliberate exception, moved ahead of visual regression on
+# 2026-09-04. Two reasons. It depends on nothing above it -- its own Vite dev server serves the
+# components, so neither build gates it -- and visual regression is the suite with a hanging history
+# (hence the watchdog beside it): anything sequenced after a hang is hostage to it, since a job
+# killed at timeout-minutes runs no further steps, so a wedged Bloom would have cost us the
+# component results too. It also cost nothing to move now, because the suite landed on 2026-09-03
+# (#8292) and has no failure record yet to preserve. Suites that have one stay put.
 
 name: Nightly Build and Test
 
@@ -46,10 +57,22 @@ on:
                 description: "C# suite (NUnit) - the slowest, ~9 min"
                 type: boolean
                 default: true
+            run_e2e_tests:
+                description: "BloomE2E suite (clicks through a real Bloom)"
+                type: boolean
+                default: true
             run_visual_regression:
                 description: "Visual-regression suite (drives a real Bloom)"
                 type: boolean
                 default: true
+            run_component_tests:
+                description: "Component-tester suite (Playwright against the Vite harness)"
+                type: boolean
+                default: true
+            post_to_zulip:
+                description: "Post this run's report to Zulip (scheduled runs always do; this is for testing)"
+                type: boolean
+                default: false
 
 # Don't stack nightlies: if a manual run overlaps the scheduled one, let the first finish.
 concurrency:
@@ -65,17 +88,21 @@ jobs:
         permissions:
             contents: read
             checks: write
+            # For the nightly report's step timings, which come from the jobs API.
+            actions: read
 
         env:
             # VersionNumbers requires a 4-part BUILD_NUMBER; nightlies never publish, so a
             # throwaway value that just identifies the run is fine.
             BUILD_NUMBER: 0.0.${{ github.run_number }}.0
-            # Which suites this run should do. A scheduled run always does all three; a manual run does
+            # Which suites this run should do. A scheduled run always does all of them; a manual run does
             # whichever boxes were ticked. Resolved once here so the step conditions stay readable, and
             # compared as strings at the point of use because env values are always strings.
             RUN_FRONTEND_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_frontend_tests }}
             RUN_CSHARP_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_csharp_tests }}
+            RUN_E2E_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e_tests }}
             RUN_VISUAL_REGRESSION: ${{ github.event_name != 'workflow_dispatch' || inputs.run_visual_regression }}
+            RUN_COMPONENT_TESTS: ${{ github.event_name != 'workflow_dispatch' || inputs.run_component_tests }}
 
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -103,13 +130,28 @@ jobs:
                   cache-dependency-path: |
                       src/BloomBrowserUI/pnpm-lock.yaml
                       src/content/pnpm-lock.yaml
+                      src/BloomE2E/pnpm-lock.yaml
                       src/BloomVisualRegressionTests/pnpm-lock.yaml
+                      src/BloomBrowserUI/react_components/component-tester/pnpm-lock.yaml
 
             # ----- Dependencies (mirrors init.sh) -----
 
             - name: Get binary dependencies (TeamCity artifacts, chm, ffmpeg, etc.)
               shell: bash
               run: ./build/getDependencies-windows.sh
+
+            # The prepared collections the BloomE2E suite opens, and the books and reference
+            # screenshots the visual-regression suite renders, live in
+            # https://github.com/BloomBooks/bloom-testing-inputs, at the commit named by
+            # build/testing-inputs.pin. This fetches that commit into output/testing-inputs. It is a
+            # shallow single-commit fetch, so it costs a couple of seconds. Done here with the other
+            # dependency fetches rather than beside the suite, so a bad pin fails early and visibly.
+            - name: Get testing inputs (test books and reference screenshots)
+              # Only the two Bloom-driving suites consume these, so a fetch failure must not block a
+              # run that has both of them switched off.
+              if: ${{ env.RUN_E2E_TESTS == 'true' || env.RUN_VISUAL_REGRESSION == 'true' }}
+              shell: bash
+              run: node build/get-testing-inputs.mjs
 
             - name: pnpm install
               shell: bash
@@ -211,10 +253,127 @@ jobs:
                     /p:BUILD_NUMBER=$env:BUILD_NUMBER `
                     /p:excludedCategories=SkipOnTeamCity
 
+            # ----- BloomE2E tests -----
+            # src/BloomE2E launches a real Bloom.exe on a throwaway copy of a collection, attaches
+            # Playwright to its embedded WebView2 over CDP, and clicks through the UI the way a
+            # person would. Nothing ran these until now, so the suite could rot silently between the
+            # days a developer happened to run it — exactly what the component-tester harness did.
+            #
+            # Like the visual-regression suite it needs BOTH builds (the Bloom.exe it launches, and
+            # the front-end assets that Bloom loads its UI from) and the testing inputs fetched
+            # above; workspace-tabs.spec.ts opens the prepared "basic" collection, and the fixture
+            # copies it before Bloom sees it. !cancelled() lets it run even when an earlier suite
+            # failed, so one bad night still reports every stack.
+            #
+            # It runs BEFORE the visual-regression group on purpose, even though that group was
+            # here first. Visual regression is the suite that hangs (BL-16612): when it does, it
+            # burns ~24 minutes and can take the job's whole timeout with it, so anything placed
+            # after it is hostage to a failure that has nothing to do with it. Running first means
+            # this suite always reports. It also keeps the Bloom logs the diagnostics steps collect
+            # for that hunt as the visual-regression Bloom's own: both suites write
+            # %TEMP%\SIL\Bloom\Log.txt, and whoever ran last is what is left there to collect.
+            #
+            # No `playwright install`: the fixture attaches to Bloom's WebView2 with
+            # chromium.connectOverCDP, so Playwright launches no browser of its own and needs no
+            # downloaded one.
+            - name: Set up BloomE2E tests
+              id: setup_e2e_tests
+              if: ${{ !cancelled() && steps.build_frontend.outcome == 'success' && steps.build_csharp.outcome == 'success' && env.RUN_E2E_TESTS == 'true' }}
+              working-directory: src/BloomE2E
+              shell: bash
+              run: pnpm install --frozen-lockfile
+
+            # Playwright takes its junit path from PLAYWRIGHT_JUNIT_OUTPUT_NAME, not from a CLI flag:
+            # it has no --outputFile (that is vitest's). The path is relative to the working
+            # directory, so it climbs back to the repo root's output/Tests like the other suites.
+            - name: Run BloomE2E tests
+              id: e2e_tests
+              if: ${{ !cancelled() && steps.setup_e2e_tests.outcome == 'success' }}
+              working-directory: src/BloomE2E
+              shell: bash
+              env:
+                  PLAYWRIGHT_JUNIT_OUTPUT_NAME: ../../output/Tests/e2e-junit.xml
+                  # The html reporter would otherwise try to serve the report at the end of a
+                  # failing run, which on a runner means a step that never returns.
+                  PLAYWRIGHT_HTML_OPEN: never
+                  # Put every window this run opens off every monitor. Bloom obeys this variable
+                  # only under --automation, which is what the fixture launches; see
+                  # src/BloomE2E/README.md. The runner has a desktop, so a visible window would
+                  # also work, but asking for it here says what the run needs instead of leaving
+                  # it to whatever the runner happens to do.
+                  BLOOM_AUTOMATION_MONITOR: headless
+              run: pnpm test --reporter=list,junit,html
+
+            # What explains an e2e failure: Playwright's HTML report, plus the trace and failure
+            # screenshot its config keeps (trace: retain-on-failure, screenshot: only-on-failure).
+            # On failure only: a green run's report says nothing a green check has not already said,
+            # the same reason the visual-regression screenshots below go up only on failure.
+            #
+            # !cancelled() is load-bearing, not decoration. A step `if:` with no status-check
+            # function in it gets an implicit `success()` AND-ed in, and success() is already false
+            # once the e2e step has failed -- so `outcome == 'failure'` alone would skip this upload
+            # on precisely the night we want the report, and show as "skipped" rather than red.
+            - name: Upload BloomE2E report
+              if: ${{ !cancelled() && steps.e2e_tests.outcome == 'failure' }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: e2e-report
+                  path: |
+                      src/BloomE2E/playwright-report/**
+                      src/BloomE2E/test-results/**
+                  retention-days: 4
+                  if-no-files-found: ignore
+
+            # ----- Component-tester tests -----
+            # src/BloomBrowserUI/react_components/component-tester renders one React component at a
+            # time in a Vite dev server and drives it with Playwright (the *.uitest.ts files beside
+            # each component). Nothing ran these until now, which is how the harness sat broken for
+            # weeks — a React 17 pin plus a config bug — and it would rot again silently
+            # (AUTOMATION-DEBT.md, "The component-tester Playwright suites are not in CI").
+            #
+            # This is the component config only (playwright.config.ts, which the package's own
+            # `pnpm test` uses). The sibling playwright.bloom-exe.config.ts attaches over CDP to a
+            # Bloom the developer already has running, so it needs the src/BloomE2E launch fixture
+            # before it can run unattended; its specs are excluded by that config's testIgnore.
+            #
+            # It needs neither build: the harness serves the components from its own Vite dev
+            # server, which playwright.config.ts starts as its webServer. So this group depends on
+            # nothing above it, and runs even when the builds failed.
+            - name: Set up component-tester tests
+              id: setup_component_tests
+              if: ${{ !cancelled() && env.RUN_COMPONENT_TESTS == 'true' }}
+              working-directory: src/BloomBrowserUI/react_components/component-tester
+              shell: bash
+              run: |
+                  pnpm install --frozen-lockfile
+                  pnpm exec playwright install chromium
+
+            # Playwright takes its junit path from PLAYWRIGHT_JUNIT_OUTPUT_NAME, not from a CLI
+            # flag: it has no --outputFile (that is vitest's). The path is relative to the working
+            # directory, so it climbs back to the repo root's output/Tests like the other suites.
+            #
+            # --timeout raises the per-test 30s of playwright.config.ts, which is a developer's
+            # number: it assumes a dev server that has already transformed the module graph. Every
+            # CI run starts cold, and the first request for a component pays for transforming that
+            # whole graph. Locally, a cold first run failed 12 tests on `page.goto` timing out
+            # while the warm re-run of the same suite passed 142 in 58 seconds. So give the runner
+            # room rather than reporting a cold start as a broken component. A passing test still
+            # returns as soon as it passes, so this costs a green run nothing.
+            # John approved this timeout on 2026-09-03, as src/BloomBrowserUI/AGENTS.md asks.
+            - name: Run component-tester tests
+              id: component_tests
+              if: ${{ !cancelled() && steps.setup_component_tests.outcome == 'success' }}
+              working-directory: src/BloomBrowserUI/react_components/component-tester
+              shell: bash
+              env:
+                  PLAYWRIGHT_JUNIT_OUTPUT_NAME: ../../../../output/Tests/component-tester-junit.xml
+              run: pnpm test --timeout=120000 --reporter=list,junit
+
             # ----- Visual regression tests -----
             # src/BloomVisualRegressionTests drives a real Release Bloom.exe (which it finds at
-            # output/Release/x64/Bloom.exe) over HTTP and compares rendered screenshots against
-            # committed reference images (pixelmatch). It needs BOTH builds: the C# build (the
+            # output/Release/x64/Bloom.exe) over HTTP and compares rendered screenshots against the
+            # reference images in output/testing-inputs (pixelmatch), fetched by the "Get testing
+            # inputs" step above. It needs BOTH builds: the C# build (the
             # Bloom.exe it launches) AND the front-end build (Bloom loads its UI from the built
             # browser assets that the C# build copies into its output). So both must have
             # succeeded — build_csharp already implies build_frontend (the C# chain is gated on
@@ -333,8 +492,8 @@ jobs:
                   if-no-files-found: ignore
 
             # The current + diff images, so a human can see what changed -- on FAILURE only. The
-            # committed *-reference.png baselines are already in the repo; *-current.png and
-            # *-diff.png are generated (gitignored). On a green run no *-diff.png exists at all
+            # *-reference.png baselines are already in the inputs repository; *-current.png and
+            # *-diff.png are generated beside them. On a green run no *-diff.png exists at all
             # (nothing mismatched) and the *-current.png set is a ~28 MB re-upload of baselines we
             # already have in git -- 98% of what this step used to upload, for none of the
             # information -- once a night, times retention-days. That is what was blowing out our
@@ -345,14 +504,19 @@ jobs:
             # its screenshots; and the diagnostics that actually explain a hang go up either way.
             # if-no-files-found: ignore because a failure can also mean Bloom never launched, in
             # which case there are no screenshots to collect.
+            #
+            # !cancelled() for the reason given on the BloomE2E upload above: without a status-check
+            # function the implicit success() gate skipped this step on every failing night, so the
+            # diff images were never actually collected -- run 33607591898 (2026-09-02, scheduled,
+            # failed in this very suite) uploaded only nightly-test-results and bloom-diagnostics.
             - name: Upload visual regression screenshots
-              if: ${{ steps.visual_regression.outcome == 'failure' }}
+              if: ${{ !cancelled() && steps.visual_regression.outcome == 'failure' }}
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: visual-regression-diffs
                   path: |
-                      src/BloomVisualRegressionTests/collections/**/screenshots/*-current.png
-                      src/BloomVisualRegressionTests/collections/**/screenshots/*-diff.png
+                      output/testing-inputs/collections/**/screenshots/*-current.png
+                      output/testing-inputs/collections/**/screenshots/*-diff.png
                   # Four days, so a failure noticed after a weekend is still there to look at.
                   retention-days: 4
                   if-no-files-found: ignore
@@ -390,7 +554,7 @@ jobs:
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
                   # Quoted: an unquoted YAML scalar cannot contain ": ".
-                  check_name: "Nightly tests: front-end (vitest)"
+                  check_name: "Nightly run: TypeScript unit tests"
                   comment_mode: "off"
                   action_fail_on_inconclusive: true
                   files: output/Tests/vitest-junit.xml
@@ -399,19 +563,37 @@ jobs:
               if: ${{ !cancelled() && steps.csharp_tests.outcome != 'skipped' }}
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
-                  check_name: "Nightly tests: C# (NUnit)"
+                  check_name: "Nightly run: C# unit tests"
                   comment_mode: "off"
                   action_fail_on_inconclusive: true
                   files: output/Tests/Release/x64/TestResults.xml
+
+            - name: Publish BloomE2E test results
+              if: ${{ !cancelled() && steps.e2e_tests.outcome != 'skipped' }}
+              uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+              with:
+                  check_name: "Nightly run: BloomE2E tests"
+                  comment_mode: "off"
+                  action_fail_on_inconclusive: true
+                  files: output/Tests/e2e-junit.xml
 
             - name: Publish visual regression test results
               if: ${{ !cancelled() && steps.visual_regression.outcome != 'skipped' }}
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
-                  check_name: "Nightly tests: visual regression"
+                  check_name: "Nightly run: Visual regression tests"
                   comment_mode: "off"
                   action_fail_on_inconclusive: true
                   files: output/Tests/visual-regression-junit.xml
+
+            - name: Publish component-tester test results
+              if: ${{ !cancelled() && steps.component_tests.outcome != 'skipped' }}
+              uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+              with:
+                  check_name: "Nightly run: React component tests"
+                  comment_mode: "off"
+                  action_fail_on_inconclusive: true
+                  files: output/Tests/component-tester-junit.xml
 
             - name: Upload test results
               if: ${{ always() }}
@@ -424,5 +606,328 @@ jobs:
                   path: |
                       output/Tests/Release/x64/TestResults.xml
                       output/Tests/vitest-junit.xml
+                      output/Tests/e2e-junit.xml
                       output/Tests/visual-regression-junit.xml
+                      output/Tests/component-tester-junit.xml
                   retention-days: 14
+
+            # ----- The nightly report -----
+            # Post a report of EVERY night to Zulip -- channel "developers", a topic per night --
+            # rather than speaking up only when something broke. Silence on a good night is
+            # indistinguishable from a nightly that never ran at all, which is the failure that
+            # hides longest; and the timings below are worth watching on a green night too, since
+            # a suite doubling in length is news before it is a failure.
+            #
+            # One topic per night ("Nightly run 2026-09-04"), so a bad night can be discussed under its
+            # own date without burying the others, and so the channel's topic list doubles as a
+            # record of which nights ran.
+            #
+            # Two steps: compose the message here, hand it to Zulip's own action below. The split is
+            # not decoration -- gathering the outcomes, counts and timings is our logic; talking to
+            # the API is theirs.
+            #
+            # This pair is deliberately the LAST thing in the job, because it reports the job as it
+            # stands when it runs. By this point that includes the five publish-test-results steps
+            # above, which are what turn "a suite reported nothing at all" into a red run
+            # (action_fail_on_inconclusive). Put this any earlier and that entire class of failure --
+            # the one the per-suite reports exist to catch -- would be reported as a good night.
+            #
+            # Needs two repository secrets, from a Zulip bot (Zulip settings > Personal settings >
+            # Bots > Add a new bot; "Incoming webhook" is the right type -- it can only send
+            # messages, never read them):
+            #   BLOOM_ZULIP_EMAIL   - the bot's generated email
+            #   BLOOM_ZULIP_API_KEY - that bot's API key
+            #
+            # Scheduled runs always post. A manual run posts only if post_to_zulip is ticked, so
+            # iterating on this workflow cannot fill the channel with noise.
+            - name: Compose the nightly report
+              id: zulip_message
+              # always(), so a failed or cancelled night reports too -- that is the whole point.
+              if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.post_to_zulip) }}
+              shell: pwsh
+              env:
+                  # Checked here rather than left to the send step, so a missing secret says so in
+                  # plain words instead of surfacing as an API rejection.
+                  BLOOM_ZULIP_EMAIL: ${{ secrets.BLOOM_ZULIP_EMAIL }}
+                  BLOOM_ZULIP_API_KEY: ${{ secrets.BLOOM_ZULIP_API_KEY }}
+                  # job.status, not success()/failure(): the status FUNCTIONS are only legal in an
+                  # `if`, and using one here fails the whole workflow at parse time. The job context
+                  # is legal in a step env and carries the same fact.
+                  JOB_STATUS: ${{ job.status }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  BRANCH: ${{ github.ref_name }}
+                  # For the timings lookup below.
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  API_URL: ${{ github.api_url }}
+                  REPO: ${{ github.repository }}
+                  RUN_ID: ${{ github.run_id }}
+                  RUN_ATTEMPT: ${{ github.run_attempt }}
+                  # Step outcomes. The two builds earn a line only when they are the reason a suite
+                  # has nothing to say; the five suites always get one.
+                  FRONTEND_BUILD: ${{ steps.build_frontend.outcome }}
+                  CSHARP_BUILD: ${{ steps.build_csharp.outcome }}
+                  FRONTEND_TESTS: ${{ steps.frontend_tests.outcome }}
+                  CSHARP_TESTS: ${{ steps.csharp_tests.outcome }}
+                  E2E_TESTS: ${{ steps.e2e_tests.outcome }}
+                  COMPONENT_TESTS: ${{ steps.component_tests.outcome }}
+                  VISUAL_REGRESSION: ${{ steps.visual_regression.outcome }}
+              run: |
+                  if (-not $env:BLOOM_ZULIP_EMAIL -or -not $env:BLOOM_ZULIP_API_KEY) {
+                      throw "BLOOM_ZULIP_EMAIL / BLOOM_ZULIP_API_KEY are not set as repository secrets, so the nightly could not be reported."
+                  }
+
+                  # ---- timings -------------------------------------------------------------
+                  # GitHub does not expose a step's own duration to a later step, but it does
+                  # expose every step's start and end through the jobs API, including the steps of
+                  # a job still in progress -- which this one is. So one call gets the builds and
+                  # the suites alike, with no stopwatch instrumentation scattered through the
+                  # workflow. It needs `actions: read`, granted in this job's permissions.
+                  #
+                  # The steps are matched BY NAME, so renaming a step below means renaming it here
+                  # too. A miss costs only that one timing, never the report.
+                  $frontendBuildStep = "Build browser UI (production)"
+                  $stepTimes = $null
+                  $jobStarted = $null
+                  $lastStepEnded = $null
+                  $setupSeconds = $null
+                  try {
+                      $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = "application/vnd.github+json" }
+                      $uri = "$($env:API_URL)/repos/$($env:REPO)/actions/runs/$($env:RUN_ID)/attempts/$($env:RUN_ATTEMPT)/jobs?per_page=100"
+                      $response = Invoke-RestMethod -Uri $uri -Headers $headers
+                      # The publish-test-results steps create their own check runs, which show up in
+                      # this same list, so pick our job out by name rather than taking the first.
+                      $job = $response.jobs | Where-Object { $_.name -eq "build-and-test" } | Select-Object -First 1
+                      if ($job) {
+                          $jobStarted = $job.started_at
+                          $stepTimes = @{}
+                          foreach ($step in $job.steps) {
+                              if ($step.started_at -and $step.completed_at) {
+                                  $span = [datetimeoffset]::Parse($step.completed_at) - [datetimeoffset]::Parse($step.started_at)
+                                  $stepTimes[$step.name] = $span.TotalSeconds
+                                  $ended = [datetimeoffset]::Parse($step.completed_at)
+                                  if ($null -eq $lastStepEnded -or $ended -gt $lastStepEnded) { $lastStepEnded = $ended }
+                              }
+                          }
+                          # Everything before the front-end build is toolchain setup and dependency
+                          # installation. Worth its own figure because it is not small -- the pnpm
+                          # toolchain step alone has taken seven minutes -- and it is the part a
+                          # reader would otherwise mistake for build time.
+                          $buildIndex = [array]::IndexOf(($job.steps | ForEach-Object { $_.name }), $frontendBuildStep)
+                          if ($buildIndex -gt 0) {
+                              $setupSeconds = 0
+                              foreach ($step in $job.steps[0..($buildIndex - 1)]) {
+                                  if ($stepTimes.ContainsKey($step.name)) { $setupSeconds += $stepTimes[$step.name] }
+                              }
+                          }
+                      }
+                  } catch {
+                      # A report with no timings still tells you what broke, so never let this be
+                      # the thing that silences the night.
+                      Write-Host "Could not read step timings, continuing without them: $_"
+                  }
+
+                  # Round to whole seconds BEFORE splitting into minutes, not after. Rounding the
+                  # remainder instead lets 119.6s print as "1m 60s" and 59.6s as "60s". The jobs
+                  # API reports whole-second timestamps, so today every duration here is already an
+                  # integer and neither could happen -- but the function should not depend on its
+                  # caller's precision to be correct.
+                  function Format-Duration([double] $seconds) {
+                      $whole = [int] [math]::Round($seconds)
+                      if ($whole -ge 60) {
+                          return "{0}m {1}s" -f [math]::Floor($whole / 60), ($whole % 60)
+                      }
+                      return "{0}s" -f $whole
+                  }
+
+                  # Returns " (2m 50s)", ready to append, or "" when that step's timing is unknown.
+                  function Format-StepTime([string] $stepName) {
+                      if ($stepTimes -and $stepTimes.ContainsKey($stepName)) {
+                          return " ($(Format-Duration $stepTimes[$stepName]))"
+                      }
+                      return ""
+                  }
+
+                  # ---- test counts ---------------------------------------------------------
+                  # Read each suite's own results file, so the message carries numbers rather than
+                  # just a verdict. Two formats arrive: NUnit3 (a <test-run> root) from the C# suite,
+                  # and JUnit (<testsuites>) from the vitest and Playwright suites.
+                  #
+                  # The JUnit totals are summed from the individual <testsuite> elements rather than
+                  # read off the root, because vitest's root element carries no skipped count while
+                  # Playwright's does; summing the children is correct for both.
+                  #
+                  # A missing or unparseable file returns $null, and that is itself the news: it is
+                  # the "a suite reported nothing at all" case these per-suite reports exist to
+                  # catch, so it must read as such and never as a quiet zero.
+                  function Get-SuiteCounts([string] $path) {
+                      if (-not (Test-Path -LiteralPath $path)) { return $null }
+                      try { $xml = [xml](Get-Content -LiteralPath $path -Raw) } catch { return $null }
+                      # A zero-byte file needs its own check and cannot rely on the catch above:
+                      # Get-Content -Raw returns $null for one, and casting $null to [xml] yields
+                      # $null without throwing, so we would fall through to calling a method on
+                      # $null and kill this step.
+                      if (-not $xml) { return $null }
+
+                      $run = $xml."test-run"
+                      if ($run) {
+                          return [pscustomobject]@{
+                              Failed = [int] $run.failed
+                              Passed = [int] $run.passed
+                              # An inconclusive test ran and decided nothing, which is nearer to
+                              # skipped than to passed.
+                              Skipped = [int] $run.skipped + [int] $run.inconclusive
+                          }
+                      }
+
+                      $suites = $xml.SelectNodes("//testsuite")
+                      if (-not $suites -or $suites.Count -eq 0) { return $null }
+                      $tests = 0; $failed = 0; $skipped = 0
+                      foreach ($suite in $suites) {
+                          $tests += [int] $suite.tests
+                          # An erroring test is a failing test as far as the reader cares.
+                          $failed += [int] $suite.failures + [int] $suite.errors
+                          $skipped += [int] $suite.skipped
+                      }
+                      return [pscustomobject]@{ Failed = $failed; Passed = $tests - $failed - $skipped; Skipped = $skipped }
+                  }
+
+                  # ---- the message ---------------------------------------------------------
+                  # Read at a glance in the Zulip app. An outcome we did not anticipate shows as a
+                  # question mark rather than as a blank.
+                  $glyphs = @{ success = "✅"; failure = "❌"; skipped = "⏭️"; cancelled = "🚫" }
+                  function Format-Outcome([string] $label, [string] $outcome) {
+                      # An empty outcome means the step's condition was never even evaluated.
+                      if (-not $outcome) { $outcome = "did not run" }
+                      $glyph = $glyphs[$outcome]
+                      if (-not $glyph) { $glyph = "❓" }
+                      return "$glyph $label - $outcome"
+                  }
+
+                  # For a suite that actually ran, the counts say more than the word "failure" does,
+                  # so they take its place; the glyph already carries the verdict. The exception is a
+                  # suite that failed without any individual test failing -- an inconclusive or empty
+                  # result that only the publish step objected to -- where the numbers alone would
+                  # look like a pass, so say plainly what happened.
+                  function Format-Suite([string] $label, [string] $outcome, [string] $resultsPath, [string] $stepName) {
+                      # No timing for a suite that never ran: GitHub reports a skipped step as
+                      # having started and finished at the same instant, so it would read "(0s)",
+                      # which looks like a suite that ran impossibly fast rather than one that sat
+                      # the night out.
+                      if (-not $outcome -or $outcome -eq "skipped" -or $outcome -eq "cancelled") {
+                          return Format-Outcome $label $outcome
+                      }
+                      $time = Format-StepTime $stepName
+
+                      $counts = Get-SuiteCounts $resultsPath
+                      if (-not $counts) { return "$($glyphs["failure"]) $label - no results file$time" }
+
+                      $parts = @()
+                      if ($counts.Failed -gt 0) { $parts += "$($counts.Failed) failed" }
+                      $parts += "$($counts.Passed) passed"
+                      if ($counts.Skipped -gt 0) { $parts += "$($counts.Skipped) skipped" }
+                      if ($outcome -eq "failure" -and $counts.Failed -eq 0) {
+                          $parts += "reported failure with no failing test"
+                      }
+                      return "$($glyphs[$outcome]) $label - " + ($parts -join ", ") + $time
+                  }
+
+                  # The two builds are prerequisites rather than suites, so they earn a line here
+                  # only when they are the reason the suites below have nothing to say. Their
+                  # timings are reported for every run, further down.
+                  $lines = @()
+                  if ($env:FRONTEND_BUILD -ne "success") { $lines += Format-Outcome "Front-end build" $env:FRONTEND_BUILD }
+                  if ($env:CSHARP_BUILD -ne "success") { $lines += Format-Outcome "C# build" $env:CSHARP_BUILD }
+
+                  # Suites in the order the job runs them. Paths match the five
+                  # publish-test-results steps above; if you move a results file, move it in both
+                  # places or this reports "no results file" for a suite that ran perfectly well.
+                  $lines += Format-Suite "TypeScript unit tests" $env:FRONTEND_TESTS "output/Tests/vitest-junit.xml" "Run browser UI tests"
+                  $lines += Format-Suite "C# unit tests" $env:CSHARP_TESTS "output/Tests/Release/x64/TestResults.xml" "Run C# tests"
+                  $lines += Format-Suite "BloomE2E tests" $env:E2E_TESTS "output/Tests/e2e-junit.xml" "Run BloomE2E tests"
+                  $lines += Format-Suite "React component tests" $env:COMPONENT_TESTS "output/Tests/component-tester-junit.xml" "Run component-tester tests"
+                  $lines += Format-Suite "Visual regression tests" $env:VISUAL_REGRESSION "output/Tests/visual-regression-junit.xml" "Run visual regression tests"
+
+                  if ($env:JOB_STATUS -eq "cancelled") {
+                      $headline = "🚫 **Nightly run cancelled**"
+                  } elseif ($env:JOB_STATUS -eq "success") {
+                      $headline = "✅ **Nightly run passed**"
+                  } else {
+                      $headline = "❌ **Nightly run failed**"
+                  }
+
+                  # How long the night took overall. Measured to the last step that has finished
+                  # rather than to "now": this step is the last in the job, so the two are the same
+                  # to within a second on a real run -- but only the former also gives the right
+                  # answer when this script is replayed against a past run's API data, which is how
+                  # it gets tested.
+                  $elapsed = ""
+                  if ($jobStarted -and $lastStepEnded) {
+                      $total = $lastStepEnded - [datetimeoffset]::Parse($jobStarted)
+                      $elapsed = " · $(Format-Duration $total.TotalSeconds)"
+                  }
+
+                  # Built up as a list of lines and joined once, rather than as one array literal:
+                  # a comma-separated literal spanning several lines quietly mis-parses when one of
+                  # the elements is itself a piped expression, and yields a nested array.
+                  $message = @("$headline on $($env:BRANCH)$elapsed", "")
+                  $message += $lines | ForEach-Object { "* $_" }
+
+                  # The builds and the setup they depend on, as one line: they are not suites and do
+                  # not deserve a bullet each, but their timings are the first place a slowing
+                  # nightly shows up.
+                  $buildTimes = @()
+                  if ($stepTimes -and $stepTimes.ContainsKey($frontendBuildStep)) { $buildTimes += "front-end $(Format-Duration $stepTimes[$frontendBuildStep])" }
+                  if ($stepTimes -and $stepTimes.ContainsKey("Build")) { $buildTimes += "C# $(Format-Duration $stepTimes["Build"])" }
+                  if ($null -ne $setupSeconds) { $buildTimes += "setup and install $(Format-Duration $setupSeconds)" }
+                  if ($buildTimes.Count -gt 0) {
+                      $message += ""
+                      $message += "Builds: " + ($buildTimes -join " · ")
+                  }
+
+                  # Quoted deliberately. Zulip turns a bare link into a preview card -- a big
+                  # GitHub icon and the repository blurb, several times the height of the report
+                  # itself -- and there is no per-message way to turn that off. But its markdown
+                  # processor skips links inside a blockquote ("we don't do inline previews for
+                  # links inside blockquotes", zerver/lib/markdown/__init__.py), so quoting the
+                  # line suppresses the card while leaving an ordinary clickable link. The
+                  # alternative is the org-wide "Show previews of linked websites" setting, which
+                  # would change every message everyone posts.
+                  $message += ""
+                  $message += "> [The run]($($env:RUN_URL))"
+                  $content = $message -join "`n"
+
+                  Write-Host $content
+
+                  # One topic per night. The schedule is 04:00 UTC, so the UTC date is the night's
+                  # own name and does not drift with whoever is reading.
+                  $topic = "Nightly run " + [datetimeoffset]::UtcNow.ToString("yyyy-MM-dd")
+
+                  # Step outputs, so the send step below stays a pure "here is a message, post it".
+                  # A multi-line value needs the delimiter form.
+                  #
+                  # Written with .NET rather than Out-File because Out-File's `utf8` means BOM-less
+                  # only in PowerShell 7 and BOM-ful in 5.1, and a BOM here is silent poison: it
+                  # lands in front of the key, so the output becomes "﻿content" and the send
+                  # step posts an empty message with no error anywhere.
+                  $block = "content<<ZULIP_MESSAGE_EOF`n$content`nZULIP_MESSAGE_EOF`ntopic=$topic`n"
+                  [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, $block, [System.Text.UTF8Encoding]::new($false))
+
+            # Zulip's own documented GitHub Actions integration
+            # (https://zulip.com/integrations/doc/github-actions). Pinned by SHA like every other
+            # action here; that is v2.0.2, which the docs' `@v1` predates -- same inputs, but v1
+            # still runs on node20, which the runners are retiring.
+            #
+            # always() rather than a status check: the composing step above has already decided
+            # whether there is anything to say, so if it was skipped this is skipped with it.
+            # Naming a status here instead would drop the cancelled case.
+            - name: Post the nightly report to Zulip
+              if: ${{ always() && steps.zulip_message.outcome == 'success' }}
+              uses: zulip/github-actions-zulip/send-message@f675f2b4eb2a95fae974215476dcb7ad8dfeff6b # v2.0.2
+              with:
+                  organization-url: https://sil-bloom.zulipchat.com
+                  email: ${{ secrets.BLOOM_ZULIP_EMAIL }}
+                  api-key: ${{ secrets.BLOOM_ZULIP_API_KEY }}
+                  type: stream
+                  to: developers
+                  topic: ${{ steps.zulip_message.outputs.topic }}
+                  content: ${{ steps.zulip_message.outputs.content }}

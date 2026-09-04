@@ -470,13 +470,10 @@ namespace Bloom.web.controllers
             var collectionSettings = Model.Book.CollectionSettings;
             void onLanguageChange(LanguageChangeEventArgs args)
             {
-                // How to know if the new sign language name is custom or not!?
-                // 1- set the Tag (which also sets the Name to the non-custom default
-                // 2- read the Name
-                // 3- if it's not the same as DesiredName, the new name is custom
+                // As in the Collection Settings dialog's sign-language handler, args.IsRtl is
+                // deliberately ignored: a sign language has no text direction.
                 collectionSettings.SignLanguageTag = args.LanguageTag;
-                var slIsCustom = collectionSettings.SignLanguage.Name != args.DesiredName;
-                collectionSettings.SignLanguage.SetName(args.DesiredName, slIsCustom);
+                collectionSettings.SignLanguage.SetName(args.DesiredName, args.IsCustomName);
                 collectionSettings.Save();
                 Model.UpdateLangDataCache();
 

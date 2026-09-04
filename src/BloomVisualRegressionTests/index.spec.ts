@@ -15,18 +15,53 @@ import * as os from "os";
 import { PNG } from "pngjs";
 import Pixelmatch from "pixelmatch";
 import * as Path from "path";
+import { fileURLToPath } from "url";
 
 // The Bloom HTTP origin the suite talks to. launchDedicatedBloom resolves this at startup to the
 // port our launched instance actually opened on, instead of assuming 8089.
 let bloomOrigin = "http://localhost:8089";
 
-// We must not let Bloom mutate the committed collections: opening a book brings it up to date
+// This spec file lives in <repoRoot>/src/BloomVisualRegressionTests. Resolve paths from the file
+// rather than from process.cwd() so they hold however vitest is invoked.
+const repoRoot = Path.resolve(
+    Path.dirname(fileURLToPath(import.meta.url)),
+    "..",
+    "..",
+);
+
+// The books and their reference screenshots are NOT in this repository. They live in
+// https://github.com/BloomBooks/bloom-testing-inputs, at the commit named by
+// build/testing-inputs.pin, which `node build/get-testing-inputs.mjs` materializes into
+// output/testing-inputs. Because that is one exact commit, a run is reproducible without this
+// suite doing anything clever. Set BLOOM_TESTING_INPUTS_DIR to a checkout of that repository to
+// render your own in-progress input changes instead (see readme.md).
+const testingInputsRoot =
+    process.env.BLOOM_TESTING_INPUTS_DIR ??
+    Path.join(repoRoot, "output", "testing-inputs");
+const sourceCollectionsRoot = Path.join(testingInputsRoot, "collections");
+// The ONE collection this suite renders. We launch a single Bloom on it (see
+// launchDedicatedBloom) and Bloom cannot be made to switch collections mid-run, so a book in any
+// other collection of the inputs repository is out of reach: selecting it fails. The inputs
+// repository does now hold other collections (page-copy, for the BloomE2E copy-page test), so
+// both the launch and the enumeration of books below go through this constant rather than taking
+// whatever collections happen to be there.
+const TESTED_COLLECTION = "basic";
+if (!fs.existsSync(sourceCollectionsRoot)) {
+    throw new Error(
+        `Could not find the test-input collections at ${sourceCollectionsRoot}.\n` +
+            (process.env.BLOOM_TESTING_INPUTS_DIR
+                ? `BLOOM_TESTING_INPUTS_DIR is set to ${process.env.BLOOM_TESTING_INPUTS_DIR}; it must be a ` +
+                  `checkout of https://github.com/BloomBooks/bloom-testing-inputs (the folder containing collections/).`
+                : `Run: node build/get-testing-inputs.mjs`),
+    );
+}
+
+// We must not let Bloom mutate the source collections: opening a book brings it up to date
 // (rewriting .htm/.css), regenerates thumbnail.png, copies branding files into the book folder, etc.
 // So each run copies the collections to a throwaway temp folder and launches a dedicated Bloom on
-// THAT. Reference/current/diff images still live under the repo book folders (they are committed and
-// the "accept the new render" workflow needs a stable path), so the two are decoupled: Bloom operates
-// on the temp copy (see toTempBookFolder); screenshots are read/written in the repo copy.
-const repoCollectionsRoot = Path.join(process.cwd(), "collections");
+// THAT. Reference/current/diff images are read and written under the SOURCE book folders instead,
+// because updating a baseline means changing the inputs repository. So the two are decoupled: Bloom
+// operates on the temp copy (see toTempBookFolder); screenshots live in the source copy.
 let tempCollectionsRoot: string | null = null;
 // The dedicated Bloom we launch, kept so we can shut it down afterwards.
 let bloomProcess: ChildProcess | null = null;
@@ -173,10 +208,29 @@ describe("All books", () => {
     let playerPage: Page;
     let browser: Browser;
     let context: BrowserContext;
+    // Every image comparison the CURRENT case has failed. A case compares one book-preview image
+    // and one image per bloom-player page, and a stale baseline usually affects several of them.
+    // Throwing on the first mismatch meant the later comparisons never even captured their
+    // images, so accepting a real layout change took one ~3-minute run per image (BL-16638 took
+    // three rounds). So collect them all and fail once, at the end of the case.
+    let comparisonFailures: string[] = [];
 
     beforeAll(async () => {
         await launchDedicatedBloom();
-        browser = await chromium.launch();
+        // Text must rasterize the same way on every machine, or the reference images are only
+        // valid on whichever machine made them. By default Chrome anti-aliases text with LCD
+        // sub-pixel rendering, using the host's DirectWrite gamma/contrast settings, so the same
+        // glyphs come out with different colored fringes on a developer machine than on the CI
+        // runner. --disable-lcd-text forces grayscale anti-aliasing instead;
+        // --font-render-hinting=none removes the other host-dependent step; --force-color-profile
+        // pins the color space the result is converted through.
+        browser = await chromium.launch({
+            args: [
+                "--disable-lcd-text",
+                "--font-render-hinting=none",
+                "--force-color-profile=srgb",
+            ],
+        });
         context = await browser.newContext();
         page = await context.newPage();
         playerPage = await context.newPage();
@@ -192,24 +246,24 @@ describe("All books", () => {
         cleanupTempCollections();
     });
 
-    // NB: currently, we don't have a way of making Bloom change collections, or re-running it with a different collection
-    // Our test "collections/" directory currently only has the one collection, so this is ok for now.
-    const collectionFolders = fs
-        .readdirSync("collections")
-        .filter((f) => fs.statSync(Path.join("collections", f)).isDirectory())
-        .map((f) => Path.join(process.cwd(), "collections", f));
-
-    const bookFolders = collectionFolders.flatMap((collectionPath) => {
-        var paths = fs
-            .readdirSync(collectionPath)
-            .filter(
-                (f) =>
-                    fs.statSync(Path.join(collectionPath, f)).isDirectory() &&
-                    !f.startsWith("Sample Texts"),
-            )
-            .map((f) => Path.join(collectionPath, f));
-        return paths;
-    });
+    // NB: currently, we don't have a way of making Bloom change collections, or re-running it with
+    // a different collection, so we render only the books of TESTED_COLLECTION -- the one the Bloom
+    // we launch has open. (We used to take every collection in the inputs repository, which was
+    // fine while it held only one; when the page-copy collection was added for the BloomE2E
+    // copy-page test, its books became tests that could never pass, because selecting a book that
+    // is not in the open collection fails.)
+    const collectionFolder = Path.join(
+        sourceCollectionsRoot,
+        TESTED_COLLECTION,
+    );
+    const bookFolders = fs
+        .readdirSync(collectionFolder)
+        .filter(
+            (f) =>
+                fs.statSync(Path.join(collectionFolder, f)).isDirectory() &&
+                !f.startsWith("Sample Texts"),
+        )
+        .map((f) => Path.join(collectionFolder, f));
     const brandings = ["Default", "Local-Community", "UEEP[Uzbek]"];
     // The appearance themes to test. These match the files in src/content/appearanceThemes/.
     const themes = [
@@ -245,6 +299,7 @@ describe("All books", () => {
     });
 
     test.each(cases)("$title", async (testCase) => {
+        comparisonFailures = [];
         // Park the capture pages before we mutate this book. Otherwise the previous case's still-open
         // book-preview / bloom-player page keeps requesting book and staged-BloomPUB files while this
         // case rewrites them, which caused mid-run "file is being used by another process" and
@@ -257,7 +312,7 @@ describe("All books", () => {
         await waitForCollectionReady();
         // Select the book first, then set branding and theme: each of setBranding/setTheme brings
         // the currently-selected book up to date so it picks up the corresponding files/appearance.
-        // Bloom operates on the temp copy; screenshots (below) still go to the repo book folder.
+        // Bloom operates on the temp copy; screenshots (below) go to the source book folder.
         await selectBook(toTempBookFolder(testCase.bookFolder));
         await setBranding(testCase.branding);
         await setTheme(testCase.theme);
@@ -282,10 +337,21 @@ describe("All books", () => {
         await selectTab("publish");
         const stagedUrl = await makeBloomPubPreview();
         await capturePlayerPages(stagedUrl, testCase.label, screenshotsDir);
+
+        // One failure for the whole case, listing every image that did not match, so a single run
+        // shows all the baselines that need looking at.
+        if (comparisonFailures.length > 0)
+            throw new Error(
+                `${comparisonFailures.length} of this case's images did not match their ` +
+                    `reference:\n  ${comparisonFailures.join("\n  ")}`,
+            );
     });
 
     // Create the reference image if it does not exist yet; otherwise capture a current image and
     // compare it to the reference. `shoot(path)` writes a screenshot to the given path.
+    // `screenshotsDir` is always in the SOURCE inputs tree (output/testing-inputs, or whatever
+    // BLOOM_TESTING_INPUTS_DIR names), never in the temp copy, so that an accepted new baseline is
+    // a file a developer can commit to the inputs repository. See readme.md.
     async function captureOrCompare(
         label: string,
         screenshotsDir: string,
@@ -528,6 +594,10 @@ describe("All books", () => {
                 content:
                     ".nicescroll-rails,.nicescroll-cursors{display:none!important}",
             });
+            // Render the book's text from the fonts Bloom serves, whatever this machine has
+            // installed; see SERVED_FONTS_ONLY_CSS. Also before the settle wait: it restyles the
+            // text, and the wait for document.fonts.ready below is what covers the reload.
+            await playerPage.addStyleTag({ content: SERVED_FONTS_ONLY_CSS });
             const active = await playerPage.waitForSelector(
                 ACTIVE_PLAYER_PAGE,
                 { timeout: 30000 },
@@ -586,7 +656,26 @@ describe("All books", () => {
         }
     }
 
+    // Compare one captured image against its reference. This does NOT throw on a mismatch: it
+    // appends a description to comparisonFailures, and the test body fails the case once it has
+    // compared every image. Anything thrown while comparing (notably Pixelmatch's "Image sizes do
+    // not match", which is itself a real failure) is recorded the same way.
     async function comparePreviewImage(
+        referencePath: string,
+        testPath: string,
+        diffPath: string,
+    ) {
+        try {
+            await compareOrThrow(referencePath, testPath, diffPath);
+        } catch (error) {
+            comparisonFailures.push(
+                `${testPath}: ${error instanceof Error ? error.message : String(error)}`,
+            );
+        }
+    }
+
+    // The comparison itself: write a diff image and throw when the two images differ at all.
+    async function compareOrThrow(
         referencePath: string,
         testPath: string,
         diffPath: string,
@@ -619,7 +708,13 @@ describe("All books", () => {
                         `If the new version is correct, replace ${referencePath} with ${testPath}`,
                 ),
             );
-            expect(numberOfDifferentPixels).toBe(0);
+            // A thrown Error rather than expect(...).toBe(0), so the failure itself carries the
+            // diff path; the console lines above are lost in a long run's output.
+            // comparePreviewImage catches this and records it.
+            throw new Error(
+                `${testPath} differed from ${referencePath} by ${numberOfDifferentPixels} pixels. ` +
+                    `The diff image is at ${diffPath}.`,
+            );
         }
     }
 });
@@ -659,19 +754,61 @@ function writeDirectionalDiff(reference: PNG, current: PNG, diffPath: string) {
     fs.writeFileSync(diffPath, PNG.sync.write(out) as Uint8Array);
 }
 
+// The bloom-player captures must not depend on which fonts this machine has installed. When Bloom
+// stages a BloomPUB it strips the book's own @font-face rules (BL-12594) and leaves the font to
+// bloom-player, which declares each Andika face as `local(...)` first and the Bloom-served WOFF2
+// only as a fallback. So a machine with Andika installed used to render every player page with
+// its own copy of the font, and its glyphs differed from the reference images (rendered without
+// it, as on the CI runner) by hundreds to thousands of pixels per page; that twice led someone to
+// "fix" the suite by regenerating the baselines on their own machine, which just moved the failure
+// to CI. (The book-preview captures were never affected: the staged book's own @font-face points at
+// the served copy.)
+//
+// So after loading a player page we add these rules: one @font-face per face bloom-player declares,
+// with the same family, weight and style descriptors, and the served WOFF2 as the ONLY source.
+// When several @font-face rules have identical descriptors the last one wins, so these replace the
+// player's own, and the text renders from Bloom's WOFF2 whatever is installed. The URLs are the
+// ones bloom-player itself falls back to, so a run requests exactly the files CI does. Measured
+// 2026-09-03: with Andika faces forced to an installed font, 51 of 84 comparisons differed (199 to
+// 14351 pixels); with these rules added as well, 0 of 84.
+const SERVED_FONTS_ONLY_CSS = [
+    servedFontFaces("Andika"),
+    servedFontFaces("Andika New Basic"),
+].join("\n");
+
+// The four @font-face rules (regular, bold, italic, bold italic) for one family, each with the
+// served file as its only source. The URL is the one bloom-player uses: the family name under
+// ./host/fonts/, followed by " Bold", " Italic" or " Bold Italic" for the other faces, which Bloom
+// answers with the matching WOFF2 (see FontsApi.ProcessHostFontsRequest).
+function servedFontFaces(family: string): string {
+    const variants = [
+        ["normal", "normal", ""],
+        ["bold", "normal", " Bold"],
+        ["normal", "italic", " Italic"],
+        ["bold", "italic", " Bold Italic"],
+    ];
+    return variants
+        .map(
+            ([weight, style, variant]) =>
+                `@font-face{font-family:"${family}";font-weight:${weight};font-style:${style};` +
+                `src:url("./host/fonts/${family}${variant}")}`,
+        )
+        .join("\n");
+}
+
 // Ports Bloom uses: it takes the next free block starting at 8089 (8089, 8092, 8095, ...). We probe
 // these to find the port our launched instance opened on. A developer's own Bloom may also be on one
 // of these ports, so we match on the open collection folder (below) rather than assuming a port.
 const CANDIDATE_PORTS = [8089, 8092, 8095, 8098, 8101, 8104];
 
-// Map a repo book folder to the corresponding folder in the temp copy that Bloom actually has open.
-// selectBook must point Bloom at the temp copy; screenshots stay under the repo book folder.
-function toTempBookFolder(repoBookFolder: string): string {
+// Map a source book folder to the corresponding folder in the temp copy that Bloom actually has
+// open. selectBook must point Bloom at the temp copy; screenshots stay under the source book folder.
+function toTempBookFolder(sourceBookFolder: string): string {
     if (!tempCollectionsRoot)
         throw new Error("Temp collection copy has not been created yet");
     return Path.join(
         tempCollectionsRoot,
-        Path.relative(repoCollectionsRoot, repoBookFolder),
+        Path.relative(sourceCollectionsRoot, sourceBookFolder),
     );
 }
 
@@ -720,100 +857,25 @@ async function findBloomServingCollection(
     return null;
 }
 
-// Populate the throwaway temp collection that Bloom will open. By default we export the *committed*
-// (HEAD) state of collections/, so a run is deterministic and immune to accidental working-tree
-// changes — Bloom's own book rewrites, or a stray Bloom editing the repo copy. The reference images
-// still live in the working tree (see capturePlayerPages/saveScreenshot), so the
-// regenerate -> eyeball -> commit workflow is unaffected by this. Set BLOOM_VR_WORKING_TREE=1 to
-// instead render your uncommitted working-tree changes (for deliberately modifying or adding test
-// books). If git or tar is unavailable, or any step of the export fails, we fall back to copying the
-// working tree so the suite still runs.
+// Populate the throwaway temp collection that Bloom will open, by copying TESTED_COLLECTION. The
+// inputs repository's other collections belong to other suites and we never open them, so we do
+// not copy them. A plain copy is enough for determinism now: output/testing-inputs is one exact
+// commit of the inputs repository (build/testing-inputs.pin), so there is no working tree to
+// differ from it. The screenshots/ folders are left out — they are baselines and outputs, read and
+// written in the source tree (see captureOrCompare), and copying 48 reference PNGs per book would
+// only slow the run down.
 function populateTempCollections(dest: string) {
-    if (process.env.BLOOM_VR_WORKING_TREE === "1") {
-        console.log(
-            "BLOOM_VR_WORKING_TREE=1: rendering the working-tree collection (uncommitted changes included).",
-        );
-        fs.cpSync(repoCollectionsRoot, dest, { recursive: true });
-        return;
-    }
-    try {
-        // Export the COMMITTED (HEAD) tracked files under collections/ straight from git. We avoid
-        // `git archive` + `tar`: the HEAD:<subtree> tree-ish comes back empty in a git worktree, and
-        // system `tar` varies by platform (GNU vs bsdtar; only GNU has --force-local; each treats a
-        // "C:" path differently) — both bit us. We copy tracked files only: Bloom regenerates the
-        // gitignored support files (origami.css, branding.css, ...) itself, and the screenshots/
-        // reference images are read from the repo working tree, not this temp copy. Any git failure
-        // (git not on PATH, not a repo, a staged-but-uncommitted new file, ...) throws to the catch.
-        const listed = execFileSync("git", [
-            "ls-files",
-            "-z",
-            "--",
-            "collections",
-        ])
-            .toString()
-            .split("\0")
-            .filter(Boolean)
-            .filter((rel) => !rel.includes("/screenshots/"));
-        if (listed.length === 0)
-            throw new Error("git ls-files found no tracked collection files");
-        for (const rel of listed) {
-            // rel is cwd-relative, e.g. "collections/basic/basic.bloomCollection". Write its
-            // committed content to the matching path under dest (dest/basic/...). Keep it a Buffer,
-            // not a string, so binary book images round-trip exactly.
-            const content = execFileSync("git", ["show", `HEAD:./${rel}`], {
-                maxBuffer: 256 * 1024 * 1024,
-            });
-            const outPath = Path.join(dest, Path.relative("collections", rel));
-            fs.mkdirSync(Path.dirname(outPath), { recursive: true });
-            fs.writeFileSync(outPath, content);
-        }
-        if (!fs.existsSync(Path.join(dest, "basic", "basic.bloomCollection")))
-            throw new Error(
-                "committed collection is missing basic/basic.bloomCollection",
-            );
-        warnIfWorkingTreeBookChanges();
-        console.log(
-            "Rendering the committed (HEAD) test collection. Set BLOOM_VR_WORKING_TREE=1 to render working-tree changes.",
-        );
-    } catch (e) {
-        console.warn(
-            `Could not export the committed collection from git (${(e as Error).message}); ` +
-                "falling back to a working-tree copy.",
-        );
-        fs.cpSync(repoCollectionsRoot, dest, { recursive: true });
-    }
+    const source = Path.join(sourceCollectionsRoot, TESTED_COLLECTION);
+    fs.cpSync(source, Path.join(dest, TESTED_COLLECTION), {
+        recursive: true,
+        filter: (path) => Path.basename(path) !== "screenshots",
+    });
+    console.log(`Rendering the test collection from ${source}`);
 }
 
-// Warn (never fail) when the working tree has uncommitted changes to book inputs under collections/,
-// so it is never a surprise that the default run ignored them (it renders committed HEAD). Reference
-// images (under screenshots/) are excluded — an uncommitted reference update is a normal state.
-function warnIfWorkingTreeBookChanges() {
-    try {
-        const out = execFileSync("git", [
-            "status",
-            "--porcelain",
-            "--",
-            "collections",
-        ]).toString();
-        const changed = out
-            .split("\n")
-            .map((line) => line.slice(3).trim())
-            .filter((p) => p && !p.includes("/screenshots/"));
-        if (changed.length > 0)
-            console.warn(
-                `Note: ignoring ${changed.length} uncommitted change(s) under collections/ ` +
-                    "(rendering committed HEAD; use BLOOM_VR_WORKING_TREE=1 to render them). e.g. " +
-                    changed.slice(0, 5).join(", "),
-            );
-    } catch (e) {
-        // best-effort; a warning is not worth failing the run over
-    }
-}
-
-// Populate a throwaway temp collection (committed HEAD by default; see populateTempCollections) and
-// launch a dedicated Bloom on it, then wait until that instance is serving it. We always launch our
-// own (rather than reusing a developer's Bloom) so the run is deterministic and never touches the
-// repo collection.
+// Populate a throwaway temp collection (see populateTempCollections) and launch a dedicated Bloom on
+// it, then wait until that instance is serving it. We always launch our own (rather than reusing a
+// developer's Bloom) so the run is deterministic and never touches the source collections.
 async function launchDedicatedBloom() {
     // Canonicalize immediately: os.tmpdir() is an 8.3 short path on Windows, but Bloom reports the
     // long form, so we normalize here (and in samePath) to make the discovery match work.
@@ -826,20 +888,20 @@ async function launchDedicatedBloom() {
 
     const collection = Path.join(
         tempCollectionsRoot,
-        "basic",
-        "basic.bloomCollection",
+        TESTED_COLLECTION,
+        `${TESTED_COLLECTION}.bloomCollection`,
     );
     // The exe lands in a config/platform-specific folder depending on the build; try the known
     // locations. Release is included because CI runs the suite against Release builds. Debug is
     // listed first for the common local (go.sh) case; a clean CI checkout only has the config it built.
     const exeCandidates = [
-        "../../output/Debug/x64/Bloom.exe",
-        "../../output/Debug/AnyCPU/Bloom.exe",
-        "../../output/Debug/Bloom.exe",
-        "../../output/Release/x64/Bloom.exe",
-        "../../output/Release/AnyCPU/Bloom.exe",
-        "../../output/Release/Bloom.exe",
-    ];
+        "Debug/x64",
+        "Debug/AnyCPU",
+        "Debug",
+        "Release/x64",
+        "Release/AnyCPU",
+        "Release",
+    ].map((sub) => Path.join(repoRoot, "output", sub, "Bloom.exe"));
     const exe = exeCandidates.find((c) => fs.existsSync(c));
     if (!exe) {
         throw new Error(
@@ -875,7 +937,7 @@ async function launchDedicatedBloom() {
     });
 
     // Discover which port our instance opened on by matching the collection folder it has open.
-    const wantFolder = Path.join(tempCollectionsRoot, "basic");
+    const wantFolder = Path.join(tempCollectionsRoot, TESTED_COLLECTION);
     const startTime = Date.now();
     while (Date.now() - startTime < 90000) {
         const match = await findBloomServingCollection(wantFolder);

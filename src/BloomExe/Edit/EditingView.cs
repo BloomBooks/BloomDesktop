@@ -51,6 +51,10 @@ namespace Bloom.Edit
         private ZoomModel _zoomModel;
         private PageListApi _pageListApi;
         private Timer _editButtonsUpdateTimer;
+        private Timer _saveZoomSettingTimer;
+
+        /// <summary>How long the zoom must hold still before we write it to the settings file.</summary>
+        private const int kSaveZoomSettingDelayMs = 2000;
         private Browser _mainBrowser => WorkspaceView?.MainBrowser;
         private WorkspaceView _workspaceView;
         private Form _hostFormForEvents;
@@ -135,6 +139,13 @@ namespace Bloom.Edit
             _pageListApi = pageListApi;
             _editButtonsUpdateTimer = new Timer();
             _editButtonsUpdateTimer.Tick += _editButtonsUpdateTimer_Tick;
+            // A Ctrl+mousewheel spin changes the zoom many times a second. A write of the
+            // settings file on each change holds the UI thread while the browser process tries
+            // to call into it, which can freeze Bloom for minutes (BL-16762, BL-16763). So we
+            // write once, after the zoom stops. See SetZoom() and SaveZoomSettingNow().
+            _saveZoomSettingTimer = new Timer();
+            _saveZoomSettingTimer.Interval = kSaveZoomSettingDelayMs;
+            _saveZoomSettingTimer.Tick += (sender, e) => SaveZoomSettingNow();
 
             //SetupThumbnailLists();
             _model.SetView(this);
@@ -153,43 +164,7 @@ namespace Bloom.Edit
 
             controlKeyEvent.Subscribe(HandleControlKeyEvent);
 
-            bookRenamedEvent.Subscribe(
-                (oldToNewPath) =>
-                {
-                    // If the selected book is renamed, we should update our saved CurrentBookPath.
-                    // Each branch below saves the settings itself: it used to be enough to change
-                    // the value in memory, because the next SelectBook() would flush it, but
-                    // SelectBook() no longer writes settings at all (BL-16660).
-                    if (model.CurrentBook == null)
-                    {
-                        // Note: possibly all we need is this branch, which doesn't actually depend
-                        // on model.CurrentBook being null. However, if we do have a model.CurrentBook,
-                        // that's the definitive source of truth. We don't want by any chance to
-                        // be updating our settings to indicate that anything else is selected.
-                        // So I decided to use this only when we don't have that...usually only
-                        // during startup, I think because of a duplicate name.
-                        if (oldToNewPath.Key == Settings.Default.CurrentBookPath)
-                        {
-                            Settings.Default.CurrentBookPath = oldToNewPath.Value;
-                            Settings.Default.Save();
-                        }
-                    }
-                    else if (oldToNewPath.Value == _model.CurrentBook?.FolderPath)
-                    {
-                        // This is the usual path, updating the settings to match the model's current book.
-                        Settings.Default.CurrentBookPath = oldToNewPath.Value;
-                        Settings.Default.Save();
-                    }
-                    UpdatePageList(true);
-                    if (_model.CurrentBook != null)
-                    {
-                        var url = _model.GetUrlForPageListFile();
-                        _mainBrowser.RunJavascriptFireAndForget(
-                            $"workspaceBundle.switchThumbnailPage('{url}');"
-                        );
-                    }
-                }
-            );
+            bookRenamedEvent.Subscribe(HandleBookRenamedOnUiThread);
 #if __MonoCS__
             // The inactive button images look garishly pink on Linux/Mono, but look okay on Windows.
             // Merely introducing an "identity color matrix" to the image attributes appears to fix
@@ -225,6 +200,70 @@ namespace Bloom.Edit
                 ColorAdjustType.Bitmap
             );
 #endif
+        }
+
+        /// <summary>
+        /// Runs <see cref="HandleBookRenamed"/> on the UI thread. A book can be renamed from a
+        /// background thread - BookStorage.SetBookName raises BookRenamedEvent inline, and several
+        /// operations that bring a book up to date (notably the .bloomSource import, which runs
+        /// behind a progress dialog) do that off the UI thread - but what we do in response drives
+        /// WinForms and the WebView2, both of which are UI-thread-only. Doing it directly from the
+        /// import's worker thread is what threw "CoreWebView2 can only be accessed from the UI
+        /// thread" and abandoned the import (BL-16749). When no window is open (e.g. unit tests)
+        /// this just runs inline; the same pattern as CollectionModel.SelectBookOnUiThread.
+        /// The Invoke is deliberately synchronous, which keeps the handler's old ordering (the
+        /// settings write and the page-list refresh both finish before the rename returns). That
+        /// would only deadlock if the UI thread were blocked waiting on this worker, which no
+        /// current path does: the import's progress dialog does not block it, and a modal dialog
+        /// would still pump messages.
+        /// </summary>
+        private void HandleBookRenamedOnUiThread(KeyValuePair<string, string> oldToNewPath)
+        {
+            var form = Shell.GetShellOrOtherOpenForm();
+            if (form != null && form.InvokeRequired)
+                form.Invoke((Action)(() => HandleBookRenamed(oldToNewPath)));
+            else
+                HandleBookRenamed(oldToNewPath);
+        }
+
+        /// <summary>
+        /// Updates our saved CurrentBookPath and refreshes the page list after a book has been
+        /// renamed. Call it only on the UI thread (see <see cref="HandleBookRenamedOnUiThread"/>).
+        /// </summary>
+        private void HandleBookRenamed(KeyValuePair<string, string> oldToNewPath)
+        {
+            // If the selected book is renamed, we should update our saved CurrentBookPath.
+            // Each branch below saves the settings itself: it used to be enough to change
+            // the value in memory, because the next SelectBook() would flush it, but
+            // SelectBook() no longer writes settings at all (BL-16660).
+            if (_model.CurrentBook == null)
+            {
+                // Note: possibly all we need is this branch, which doesn't actually depend
+                // on model.CurrentBook being null. However, if we do have a model.CurrentBook,
+                // that's the definitive source of truth. We don't want by any chance to
+                // be updating our settings to indicate that anything else is selected.
+                // So I decided to use this only when we don't have that...usually only
+                // during startup, I think because of a duplicate name.
+                if (oldToNewPath.Key == Settings.Default.CurrentBookPath)
+                {
+                    Settings.Default.CurrentBookPath = oldToNewPath.Value;
+                    Settings.Default.Save();
+                }
+            }
+            else if (oldToNewPath.Value == _model.CurrentBook?.FolderPath)
+            {
+                // This is the usual path, updating the settings to match the model's current book.
+                Settings.Default.CurrentBookPath = oldToNewPath.Value;
+                Settings.Default.Save();
+            }
+            UpdatePageList(true);
+            if (_model.CurrentBook != null)
+            {
+                var url = _model.GetUrlForPageListFile();
+                _mainBrowser.RunJavascriptFireAndForget(
+                    $"workspaceBundle.switchThumbnailPage('{url}');"
+                );
+            }
         }
 
         public EditingModel Model => _model;
@@ -276,6 +315,9 @@ namespace Bloom.Edit
         void ParentForm_Deactivate(object sender, EventArgs e)
         {
             _editButtonsUpdateTimer.Enabled = false;
+            // Safe here, unlike the model save the comment below warns about: this only
+            // serializes the in-memory settings, and runs no Javascript.
+            SaveZoomSettingNow();
             // Save when we leave the main window, even just switching to the epub a11y check window.
             // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6228. This control can lose/regain
             // focus erratically on Linux, so we don't want this save on its LostFocus event.
@@ -352,9 +394,13 @@ namespace Bloom.Edit
             {
                 // This will rarely do anything. It's typically called from the OnTabChanged event, which is invoked after
                 // onTabAboutToChange, which (typically, in state Editing) initiates a Save with a pending action that returns null,
-                // which will also cause a change to NoPage. However, it will be ignored in states where it's not valid,
-                // and may be helpful in some cases (e.g., if somehow we're navigating), so I decided to put it in.
+                // which will also cause a change to NoPage. But it may be helpful in some cases
+                // (e.g., if somehow we're navigating), so I decided to put it in.
+                // Careful: it is *not* ignored in the states where emptying the page is invalid; it
+                // throws. So anything that leads here has to have made sure we are not mid-save
+                // first — see EditingModel.OnTabAboutToChange and BL-16766.
                 _model.StateMachine.ToNoPage();
+                SaveZoomSettingNow();
             }
         }
 
@@ -755,6 +801,7 @@ namespace Bloom.Edit
                             imageId,
                             priorImageSrc,
                             clipboardImage,
+                            "clipboard",
                             pageBackgroundColor
                         );
                         pictureChanged = true;
@@ -771,6 +818,7 @@ namespace Bloom.Edit
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
+                                "clipboard",
                                 pageBackgroundColor
                             );
                             pictureChanged = true;
@@ -789,6 +837,7 @@ namespace Bloom.Edit
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
+                                "clipboard",
                                 pageBackgroundColor
                             );
                             pictureChanged = true;
@@ -824,6 +873,7 @@ namespace Bloom.Edit
                                         imageId,
                                         priorImageSrc,
                                         palasoImage,
+                                        "clipboard",
                                         pageBackgroundColor
                                     );
                                     pictureChanged = true;
@@ -1051,7 +1101,7 @@ namespace Bloom.Edit
                 creator = "",
                 undoable = "true",
             };
-            _model.UpdateImageInBrowser(args);
+            _model.UpdateImageInBrowser(args, "clipboard");
         }
 
         /// <summary>
@@ -1180,6 +1230,12 @@ namespace Bloom.Edit
             );
         }
 
+        /// <summary>
+        /// Nothing calls this at present -- it is left from an older path -- so the "clipboard"
+        /// source it reports below is the route it USED to serve, not one derived from anything
+        /// the caller says. Anyone reusing this method from somewhere else must pass the real
+        /// route through instead; see AnalyticsApi.TrackChangePicture for the vocabulary.
+        /// </summary>
         public void SaveChangedImage(
             string imageId,
             UrlPathString priorImageSrc,
@@ -1193,7 +1249,13 @@ namespace Bloom.Edit
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
                     return;
-                _model.ChangePicture(imageId, priorImageSrc, imageInfo, pageBackgroundColor);
+                _model.ChangePicture(
+                    imageId,
+                    priorImageSrc,
+                    imageInfo,
+                    "clipboard",
+                    pageBackgroundColor
+                );
                 imageChanged = true;
             }
             catch (System.IO.IOException error)
@@ -1471,6 +1533,13 @@ namespace Bloom.Edit
                 _editButtonsUpdateTimer.Dispose();
                 _editButtonsUpdateTimer = null;
             }
+
+            if (_saveZoomSettingTimer != null)
+            {
+                SaveZoomSettingNow();
+                _saveZoomSettingTimer.Dispose();
+                _saveZoomSettingTimer = null;
+            }
         }
 
         public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";
@@ -1582,13 +1651,29 @@ namespace Bloom.Edit
             // setting below, so there's no reason to wait for the script to finish.
             _mainBrowser.RunJavascriptFireAndForget($"workspaceBundle.setZoom({zoomFactor});");
             Settings.Default.PageZoom = zoom.ToString(CultureInfo.InvariantCulture);
-            Settings.Default.Save();
+            // Do not write the settings file here. Restart the timer, so that the write happens
+            // two seconds after the last zoom change. SaveZoomSettingNow() also writes the file
+            // if we leave the Edit tab, lose the main window, or shut down before the tick.
+            _saveZoomSettingTimer.Stop();
+            _saveZoomSettingTimer.Start();
             // Note: July 29 2025 we removed code that handled zoom by reloading the page,
             // with some complicated mess involving timers to make sure one reload for zoom
             // didn't interfere with another. I eventually tracked this down to when we made
             // canvas elements draggable (6/28/2017). I think the old JQuery draggable code was
             // messed up by scaling and had to be adjusted somehow. Now we're not using that,
             // so updating in place is much cleaner (and faster!).
+        }
+
+        /// <summary>
+        /// Writes the deferred zoom setting to disk now, if SetZoom() left one pending, and stops
+        /// the timer that would have written it later. Does nothing if no write is pending.
+        /// </summary>
+        private void SaveZoomSettingNow()
+        {
+            if (_saveZoomSettingTimer == null || !_saveZoomSettingTimer.Enabled)
+                return;
+            _saveZoomSettingTimer.Stop();
+            Settings.Default.Save();
         }
 
         public void AdjustPageZoom(int delta)
@@ -1708,7 +1793,11 @@ namespace Bloom.Edit
                 }
                 catch (Exception ex)
                 {
-                    BloomWebSocketServer.Instance.SendEvent(
+                    // Instance is only set while a collection is open, so this can be null while one
+                    // is closing -- and it used to be a disposed server instead, which swallowed the
+                    // message silently. Losing the notification is the right failure here; turning a
+                    // handled download error into a NullReferenceException is not.
+                    BloomWebSocketServer.Instance?.SendEvent(
                         "makeThumbnailFile-" + desiredFileNameWithoutExtension,
                         "error: " + ex.Message
                     );

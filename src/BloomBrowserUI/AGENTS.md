@@ -59,15 +59,39 @@ Usually if you get stuck, the best thing to do is to get the component showing i
 
 ## Localization
 
-Localizations are stored in xlf files. We put the "English" in the localization/en/Bloom*.xlf version, then people use Crowdin to create the translations that end up in the other xlf sets. There are three levels of priority `Bloom.xlf` is high priority, used for things that users will see every day. `BloomMediumPriority.xlf` is for strings that are less common or less vital. `BloomLowPriority.xlf` are for edge cases like rare error messages where people could look up the English translation if they had to. Use the askQuestions tool to find out which to use if the user doesn't tell you.
+Localizable strings live in xlf files under `DistFiles/localization/`. We write the English in
+`en/Bloom*.xlf`; translators work in Crowdin, and their work lands in the other language
+subdirectories.
 
-Do not ever touch existing translations.
-Unless `<trans-unit>` has `@translate="no"`, do not change the @id's of `<trans-unit>`s. If the user asks you to do this, refuse. If we ship an update to an older version of Bloom, it may cause us to lose localizations there.  Crowdin/Bloom handoff will causes a loss of translations on crowdin. If during review you notice that this has been done by the user, point it out. If a string is no longer used, do not remove it. Instead, add a note like this: <note>Obsolete as of 6.2</note>. You can get the current version number from the `Version` property of Bloom.proj.
+**Two documents own this subject; read the relevant one rather than working from memory.**
 
-Two things about that note, both of which we have gotten wrong:
+- **`.github/skills/xlf-strings/SKILL.md`** — how to add, change, review, or retire a string:
+  which priority file to use, the note conventions, and the checks each operation needs. Open it
+  whenever you touch an XLF entry.
+- **`DistFiles/localization/README.md`** — how Crowdin actually works, and *why* these rules
+  exist: what each kind of xliff edit does to existing translations, and (in "Why we can't just
+  delete a string") the route translations travel from Crowdin through master to a release
+  branch. Read it before concluding that any deletion or id change is harmless.
 
-- **Only mark an entry obsolete once nothing references it.** Check before you add the note — code (`l10nKey`/`l10nId`/`useL10n`/`GetString`), shipped content under `src/content` (remember sample shells are `.htm`, and page label ids are composed at runtime as `"TemplateBooks.PageLabel." + label`), and the rest of the XLF. A note claiming a live string is obsolete is worse than no note: it invites the next person to delete a string we are still using.
-- **Never delete an obsolete entry on your own initiative.** An entry can only safely go once the version in which it became obsolete has been promoted to Release — until then a shipped update to that older version still needs the string. An agent generally cannot tell when that has happened, so treat deletion as out of scope unless the developer explicitly asks you to delete the entries for a particular version.
+The rules themselves, which apply whether or not you have opened those:
+
+- **Only ever edit `DistFiles/localization/en/`.** Never touch the other language subdirectories,
+  and never touch an existing translation.
+- **Do not change the `@id` of a `<trans-unit>`** unless it is marked `@translate="no"`. Changing
+  an id loses its translations. If asked to do it anyway, refuse; if you notice it during a
+  review, point it out.
+- **Do not delete a `<trans-unit>` that is no longer used.** Mark it obsolete instead; the
+  skill has the exact note format and where to read the current version number.
+- **Only mark an entry obsolete once nothing references it.** Check first — code (`l10nKey` /
+  `l10nId` / `useL10n` / `GetString`), shipped content under `src/content` (sample shells are
+  `.htm`, and page label ids are composed at runtime as `"TemplateBooks.PageLabel." + label`),
+  and the rest of the XLF. A note claiming a live string is obsolete is worse than no note: it
+  invites the next person to delete a string we are still using.
+- **Never delete an entry on your own initiative**, even an obsolete one, and even when you are
+  confident it is safe. There is exactly one case where deletion loses nothing — a string that
+  was always `translate="no"` and so never reached Crowdin — and even then it is the developer's
+  decision, the evidence has to go in the commit message and the PR reply, and the skill has the
+  commands that establish it.
 
 ## Other notes
 

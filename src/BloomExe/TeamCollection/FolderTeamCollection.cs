@@ -365,6 +365,50 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
+        /// The repository's copy of the collection settings for a local collection folder, or null if
+        /// this is not a Team Collection or we cannot reach the repository right now.
+        ///
+        /// Static, and taking a plain folder path, because the minimum-version gate has to ask this
+        /// before any TeamCollection object exists -- indeed before Bloom has committed to opening
+        /// the collection at all. Otherwise a member whose repository has just gained a minimum
+        /// version would be judged on their own stale copy and let in for the whole session, since
+        /// the repository is not copied down until later in startup. See BL-16690.
+        /// </summary>
+        internal static string GetRepoCollectionSettingsForCollectionFolder(
+            string localCollectionFolder
+        )
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(localCollectionFolder))
+                    return null;
+                var linkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder);
+                if (!RobustFile.Exists(linkPath))
+                    return null; // an ordinary collection; nothing to consult
+                var repoFolder = TeamCollectionManager.RepoFolderPathFromLinkPath(linkPath);
+                if (string.IsNullOrWhiteSpace(repoFolder) || !Directory.Exists(repoFolder))
+                    return null; // disconnected, or the shared folder has moved
+                var zipPath = GetRepoProjectFilesZipPath(repoFolder);
+                if (!RobustFile.Exists(zipPath))
+                    return null;
+                var entryName = GetCollectionSettingsEntryName(zipPath);
+                if (entryName == null)
+                    return null;
+                return RobustZip.GetZipEntryContent(zipPath, entryName);
+            }
+            catch (Exception e)
+            {
+                // Offline, a part-written zip, a network share that has gone away: none of that is a
+                // good reason to stop someone opening a collection. The local file still has its say.
+                Logger.WriteError(
+                    "Could not read the Team Collection repo settings while checking the minimum Bloom version",
+                    e
+                );
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Return a list of all the books currently in the repo. (It will not update as changes are made,
         /// either locally or remotely. Beware that conceivably a book in the list might be removed
         /// before you get around to processing it.)
@@ -469,6 +513,26 @@ namespace Bloom.TeamCollection
         {
             var destPath = GetRepoProjectFilesZipPath(_repoFolderPath);
             RobustZip.WriteFilesToZip(names, _localCollectionFolder, destPath);
+        }
+
+        /// <summary>
+        /// Read the collection settings straight out of the repo's zip of collection files, without
+        /// unpacking anything or disturbing the local copy. Used to notice a minimum Bloom version
+        /// arriving from an administrator while the user has the collection open.
+        /// </summary>
+        protected override string GetRepoCollectionSettingsContent()
+        {
+            var zipPath = GetRepoProjectFilesZipPath(_repoFolderPath);
+            if (!RobustFile.Exists(zipPath))
+                return null;
+            // Find the entry by its extension rather than building the name from the local
+            // collection path: the collection may have been renamed locally, in which case the
+            // name we would build is not the one in the repo. (Shared with BL-16691, which reads
+            // AllowCheckouts out of the same file.)
+            var entryName = GetCollectionSettingsEntryName(zipPath);
+            if (entryName == null)
+                return null;
+            return RobustZip.GetZipEntryContent(zipPath, entryName);
         }
 
         protected override DateTime LastRepoCollectionFileModifyTime

@@ -525,5 +525,31 @@ namespace Bloom.Properties {
                 this["OpenRouterApiKey"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string CollectionTabSplitterSizes {
+            get {
+                return ((string)(this["CollectionTabSplitterSizes"]));
+            }
+            set {
+                this["CollectionTabSplitterSizes"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string WebSiteDestinationOverride {
+            get {
+                return ((string)(this["WebSiteDestinationOverride"]));
+            }
+            set {
+                this["WebSiteDestinationOverride"] = value;
+            }
+        }
     }
 }

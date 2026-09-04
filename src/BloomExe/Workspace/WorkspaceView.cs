@@ -179,6 +179,8 @@ namespace Bloom.Workspace
                 _workspaceReactControl.BrowserCreated += (unused, args) =>
                 {
                     _mainBrowser = _workspaceReactControl.Browser;
+                    if (Program.RunningE2eTests)
+                        MainBrowserForE2eTests = _mainBrowser;
                     _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
                     _editingView.InitializeMainBrowserForEditMode();
                     MaybeOpenMainBrowserDevTools();
@@ -280,6 +282,14 @@ namespace Bloom.Workspace
                 shouldHideSplashScreen: true
             ); // possibility of error message boxes (BL-12155)
         }
+
+        /// <summary>
+        /// The browser holding the workspace root document that Bloom drives: the one whose page
+        /// iframe the Edit tab navigates. Set only under --e2e, for the e2e/shellUrl endpoint.
+        /// More than one document in a run carries the workspace root's markup, and a test that
+        /// attaches to the wrong one sees its own clicks work while nothing Bloom does arrives.
+        /// </summary>
+        internal static Browser MainBrowserForE2eTests { get; private set; }
 
         internal void ReloadWorkspaceRootDocument()
         {
@@ -1036,7 +1046,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             if (
                 !Debugger.IsAttached
                 && Platform.IsWindows
-                && !InstallerSupport.SharedByAllUsers()
+                && !InstallerSupport.SharedByAllUsers() // currently always false; see its comment
                 && !ApplicationUpdateSupport.IsDev
             )
             {
@@ -1513,7 +1523,7 @@ window.showWorkspaceInitializationFailure = function(message) {
         /// attempt this, also merging the comments with some care. I'm not sure whether we should keep
         /// the argument as an IBloomTabArea of a WorkspaceTab value. If the latter, _previouslySelectedTabArea
         /// probably wants to change too, and perhaps other things.
-        /// Note that we don't want to make any actual changes of state until the PostponedWork callback runs
+        /// Note that we don't want to make any actual changes of state until the CompleteTheChange callback runs
         /// after we raise _selectedTabAboutToChangeEvent. The allows the current tab to shut down cleanly,
         /// before any changes that might do things like cleaning out its iframe. In particular, we have to wait
         /// until any changes are saved if we are leaving the edit tab.
@@ -1545,11 +1555,11 @@ window.showWorkspaceInitializationFailure = function(message) {
                 {
                     FromTab = previousTab,
                     ToTab = currentTab,
-                    PostponedWork = () =>
+                    CompleteTheChange = () =>
                     {
                         CurrentTabView = view;
 
-                        // Mark the tab active only when postponed work actually runs.
+                        // Mark the tab active only when we actually complete the change.
                         // When leaving Edit this is delayed until pending save completes.
                         if (currentTab.HasValue)
                         {
@@ -1576,6 +1586,10 @@ window.showWorkspaceInitializationFailure = function(message) {
                         }
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
                     },
+                    // Starting over means re-running this whole method, so the "already on the
+                    // desired tab" check at the top makes it a no-op if some other path has
+                    // meanwhile switched to the tab we wanted. See BL-16766.
+                    StartTheChangeOver = () => ChangeTab(view),
                 }
             );
         }
@@ -1770,6 +1784,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             {
                 MessageBox.Show(this, "Sorry, you cannot check for updates from the debugger.");
             }
+            // Currently dead: SharedByAllUsers is always false now (see its comment).
             else if (InstallerSupport.SharedByAllUsers())
             {
                 MessageBox.Show(
@@ -1862,6 +1877,16 @@ window.showWorkspaceInitializationFailure = function(message) {
             ProblemReportApi.ShowProblemDialog(this, null);
         }
 
+        /// <summary>
+        /// Ask the tab bar to stop offering the tabs (or to offer them again).
+        /// </summary>
+        /// <remarks>
+        /// ADVISORY, not a lock: this only pushes new tab states to the React top bar over a
+        /// websocket, and nothing checks _tabsEnabled when a workspace/selectTab request arrives.
+        /// So a click made (or already in flight) before the browser catches up still gets acted
+        /// on — see BL-16766. Whatever must not happen mid-operation has to be handled where it
+        /// happens, not assumed to have been prevented here.
+        /// </remarks>
         public void SetTabsEnabled(bool enable)
         {
             _tabsEnabled = enable;

@@ -351,6 +351,15 @@ namespace Bloom.Api
                     _server = null;
                 }
             }
+
+            // Stop advertising ourselves once we can no longer carry a message. Without this,
+            // Instance goes on pointing at this disposed server after its collection closes, so
+            // the two places that ask "is there a server already?" -- WorkspaceView's language
+            // chooser and the minimum-version upgrade dialog -- are told yes and then talk to
+            // something that will never answer. In the dialog's case that means a progress window
+            // that never fills in and, having no close box, cannot be dismissed.
+            if (ReferenceEquals(Instance, this))
+                Instance = null;
         }
     }
 }

@@ -17,7 +17,6 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.Code;
 using SIL.IO;
@@ -877,6 +876,21 @@ namespace Bloom.TeamCollection
                         // allowed, and the next Save() would write that back over the change and
                         // un-pause the whole team. See BL-16691.
                         UpdateAllowCheckoutsFromRepo();
+                        // MinimumBloomVersion is hand-edited into the local file by exactly the same
+                        // administrator workflow, and would be erased by exactly the same next Save().
+                        // We only take the value; we deliberately do NOT lock the administrator out
+                        // from here. This runs while the collection is still being opened, with no
+                        // Shell to own a dialog and nowhere sensible to send them. Their own gate
+                        // catches it at the next launch, by which time the local file says so. See
+                        // BL-16690.
+                        //
+                        // Read it from the local file rather than by reading back the zip we have
+                        // just written. That zip can briefly refuse to open -- Dropbox mid-sync, a
+                        // part-written file -- and a failed read would leave our in-memory copy
+                        // empty, which is exactly how the next ordinary Save() would delete the
+                        // administrator's requirement for the whole team. The local file is where
+                        // the value came from a moment ago, so it cannot fail us that way.
+                        RememberRepoMinimumBloomVersion(TryReadLocalCollectionSettingsContent());
                     }
                 }
             }
@@ -1211,7 +1225,29 @@ namespace Bloom.TeamCollection
             _pendingRepoChanges.Enqueue(args);
         }
 
+        private bool _handlingRepoChangeOnIdle;
+
         internal void HandleRemoteBookChangesOnIdle(object sender, EventArgs e)
+        {
+            // Handling a change can put up a modal dialog (a lock-out, for one), and while that
+            // dialog is up the message pump keeps delivering Idle events, so we would re-enter and
+            // start processing further repo changes on top of the one we are still in the middle
+            // of -- against a collection we may be busy closing. Whatever is left in the queue can
+            // wait for the next Idle after we return.
+            if (_handlingRepoChangeOnIdle)
+                return;
+            _handlingRepoChangeOnIdle = true;
+            try
+            {
+                HandleOneRemoteBookChange();
+            }
+            finally
+            {
+                _handlingRepoChangeOnIdle = false;
+            }
+        }
+
+        private void HandleOneRemoteBookChange()
         {
             if (_pendingRepoChanges.TryDequeue(out RepoChangeEventArgs args))
             {
@@ -1225,8 +1261,13 @@ namespace Bloom.TeamCollection
                     HandleDeletedRepoFileAfterPause(delArgs);
                 else if (args is BookRepoChangeEventArgs changeArgs)
                     HandleModifiedFile(changeArgs);
-                else
-                    HandleCollectionSettingsChange(args);
+                else if (HandleCollectionSettingsChange(args))
+                {
+                    // We just shut the user out of this collection, so Bloom is either quitting or
+                    // closing the collection down. Don't go on to poke at the book selection of a
+                    // collection that is being torn down.
+                    return;
+                }
                 // These "HandleX" methods above send a C# event, which is helpful for the C# end of things.
                 // Unfortunately, a websocket message is needed to make sure that javascript-land is up-to-date
                 // with any remote changes, for example, that the TeamCollection button updates (See BL-10270).
@@ -1343,7 +1384,9 @@ namespace Bloom.TeamCollection
             UpdateBookStatus(bookBaseName, true);
         }
 
-        internal void HandleCollectionSettingsChange(RepoChangeEventArgs result)
+        /// <returns>true if we are shutting the user out of this collection, so the caller should
+        /// stop working with it.</returns>
+        internal bool HandleCollectionSettingsChange(RepoChangeEventArgs result)
         {
             _tcLog.WriteMessage(
                 MessageAndMilestoneType.NewStuff,
@@ -1352,7 +1395,160 @@ namespace Bloom.TeamCollection
                 null,
                 null
             );
+            // Check this first. It can shut the user out of the collection altogether, and it
+            // blocks in a modal dialog until they decide, so there would be no point updating a
+            // setting on a collection they are in the middle of leaving.
+            if (CheckWhetherRepoNowRequiresANewerBloom())
+                return true;
+
             UpdateAllowCheckoutsFromRepo();
+            return false;
+        }
+
+        /// <summary>
+        /// The change a teammate just made may have been to set a minimum Bloom version that this
+        /// Bloom doesn't meet. Unlike other collection settings, that one can't wait until the next
+        /// restart to take effect: the whole point of it is to stop this Bloom touching the
+        /// collection, and the user is in it right now. So we shut them out immediately.
+        ///
+        /// Note that we read the repository's copy of the settings, not the local one. Bloom
+        /// deliberately doesn't overwrite local collection settings mid-session, so the local file
+        /// still says what it said when the collection was opened.
+        /// </summary>
+        /// <returns>true if we shut the user out of the collection.</returns>
+        private bool CheckWhetherRepoNowRequiresANewerBloom()
+        {
+            var repoSettings = TryGetRepoCollectionSettingsContent();
+
+            RememberRepoMinimumBloomVersion(repoSettings);
+
+            if (
+                !MinimumBloomVersionCheck.IsThisBloomTooOldForSettings(
+                    repoSettings,
+                    out var minimumVersion
+                )
+            )
+                return false;
+
+            // ErrorNoReload rather than Error: reloading is exactly what cannot help here, since the
+            // reloaded collection meets the same gate. This entry usually spends no time on screen,
+            // because the lock-out dialog takes over immediately -- but it stays visible if the
+            // lock-out is skipped because one is already under way for this collection.
+            _tcLog.WriteMessage(
+                MessageAndMilestoneType.ErrorNoReload,
+                // The same words, and so the same XLF entry, as the lock-out dialog's header.
+                "Collection.NewerVersionNeededHeader",
+                "This collection needs a newer version of Bloom.",
+                null,
+                null
+            );
+
+            return MinimumBloomVersionCheck.LockUserOutOfOpenCollection(
+                Path.GetFileNameWithoutExtension(CollectionPath(_localCollectionFolder)),
+                minimumVersion
+            );
+        }
+
+        /// <summary>
+        /// This computer's own copy of the collection settings, or null if we cannot read it. Used
+        /// straight after we have pushed the local files up, when the local file is by definition
+        /// what the repository now holds and is the more reliable of the two to read.
+        /// </summary>
+        private string TryReadLocalCollectionSettingsContent()
+        {
+            try
+            {
+                var path = CollectionPath(_localCollectionFolder);
+                if (!RobustFile.Exists(path))
+                    return null;
+                return RobustFile.ReadAllText(path, Encoding.UTF8);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("TeamCollection could not read the local collection settings", e);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// The repository's copy of the collection settings, or null if we cannot get at it just
+        /// now -- there is no repo copy yet, the zip is part-written, Dropbox is mid-sync. Never
+        /// throws: failing to read it is a normal transient condition, and no caller should
+        /// interrupt someone's work over it. If the collection really does require a newer Bloom,
+        /// we find out at the next start.
+        /// </summary>
+        private string TryGetRepoCollectionSettingsContent()
+        {
+            try
+            {
+                return GetRepoCollectionSettingsContent();
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("TeamCollection could not read the repo collection settings", e);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Copy the repository's minimum version into the settings we are holding in memory. This
+        /// matters even when this Bloom is new enough to carry on: CollectionSettings.Save() rebuilds
+        /// the file from scratch and writes MinimumBloomVersion out of memory, and plenty of ordinary
+        /// actions save mid-session. If our copy were still the empty value we loaded before the
+        /// administrator's change arrived, the next save would drop the element from the local file,
+        /// and the Team Collection would push that up -- quietly removing the protection for the
+        /// whole team, from the very Bloom it was meant to keep out.
+        /// </summary>
+        private void RememberRepoMinimumBloomVersion(string repoSettings)
+        {
+            var settings = _tcManager?.Settings;
+            if (settings == null)
+                return; // no settings to update (unit tests)
+
+            // Not knowing what the repo says is quite different from the repo saying "no minimum".
+            // Only the second of those should clear what we are holding.
+            if (string.IsNullOrWhiteSpace(repoSettings))
+                return;
+
+            string repoValue;
+            try
+            {
+                repoValue = MinimumBloomVersionCheck.ParseMinimumBloomVersion(repoSettings);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError(
+                    "TeamCollection could not parse the repo collection settings to read its minimum Bloom version",
+                    e
+                );
+                return;
+            }
+
+            // Record it against the collection as well as in the settings object. The local
+            // .bloomCollection is deliberately not rewritten mid-session, so without this the
+            // startup gate would read the stale file and let someone we had just shut out back in
+            // by picking the same collection from the chooser. See BL-16690.
+            MinimumBloomVersionCheck.RememberMinimumVersionFromRepo(
+                CollectionPath(_localCollectionFolder),
+                repoValue
+            );
+
+            if (repoValue == settings.MinimumBloomVersion)
+                return;
+            Logger.WriteEvent(
+                $"TeamCollection: MinimumBloomVersion changed remotely to '{repoValue}'."
+            );
+            settings.MinimumBloomVersion = repoValue;
+        }
+
+        /// <summary>
+        /// The text of the collection settings file as it stands in the repository right now, or
+        /// null if we have no way to get at it. Subclasses that keep the collection files somewhere
+        /// we can read should override this.
+        /// </summary>
+        protected virtual string GetRepoCollectionSettingsContent()
+        {
+            return null;
         }
 
         /// <summary>
@@ -2783,7 +2979,7 @@ namespace Bloom.TeamCollection
         /// </summary>
         public void SynchronizeRepoAndLocal(Action whenDone = null)
         {
-            Analytics.Track(
+            BloomAnalytics.Track(
                 "TeamCollectionOpen",
                 new Dictionary<string, string>()
                 {

@@ -6,7 +6,10 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Bloom;
 using Bloom.Book;
+using Bloom.ImageProcessing;
+using Bloom.SafeXml;
 using Bloom.web.controllers;
 using NUnit.Framework;
 using SIL.Code;
@@ -172,7 +175,7 @@ namespace BloomTests.web.controllers
         // ------------------------------------------------------------------
 
         // Writes a PNG of the given size into a "source" folder OUTSIDE the book folder,
-        // standing in for the AI editor's history folder, and returns its full path.
+        // standing in for the AI image editor's history folder, and returns its full path.
         private string MakeSourcePng(string name, int width, int height)
         {
             var sourceFolder = Path.Combine(_bookFolder.Path, "source");
@@ -256,12 +259,69 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
+        public void ImportImageIntoBookFolder_OversizedCreditedImage_KeepsItsCredits()
+        {
+            // An uploaded result big enough to need resizing is rewritten by GraphicsMagick on the
+            // way in, and that drops the iTXt/XMP chunk libpalaso keeps IP metadata in (measured:
+            // a plain gm resize loses it, and asking it not to strip profiles doesn't help). The
+            // ordinary import path is safe because PageEditingModel.ChangePicture re-writes the
+            // metadata straight after ProcessAndSaveImageIntoFolder; this path has to do the same,
+            // or an uploaded photo quietly loses its copyright (BL-16645).
+            var source = MakeSourcePng("credited-huge.png", 4200, 1000);
+            using (var img = PalasoImage.FromFileRobustly(source))
+            {
+                img.Metadata.Creator = "Jane Doe";
+                img.Metadata.CopyrightNotice = "Copyright 2020 Jane Doe";
+                img.Metadata.License = new CreativeCommonsLicense(
+                    true,
+                    true,
+                    CreativeCommonsLicense.DerivativeRules.Derivatives
+                );
+                RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
+            }
+            // Sanity: the credits really are in the source, so a match below isn't two blanks
+            // agreeing with each other.
+            var before = Metadata.FromFile(source);
+            Assert.That(before.Creator, Is.EqualTo("Jane Doe"), "setup");
+            Assert.That(before.CopyrightNotice, Is.EqualTo("Copyright 2020 Jane Doe"), "setup");
+
+            var newName = AiImageEditorApi.ImportImageIntoBookFolder(source, _bookFolder.Path);
+
+            var newPath = Path.Combine(_bookFolder.Path, newName);
+            using (var after = Image.FromFile(newPath))
+            {
+                // Sanity: it really took the resize path, which is the one that loses metadata.
+                Assert.That(
+                    after.Width,
+                    Is.LessThan(4200),
+                    "setup: this image should have been downscaled on the way in"
+                );
+            }
+            var kept = Metadata.FromFile(newPath);
+            Assert.That(
+                kept.Creator,
+                Is.EqualTo("Jane Doe"),
+                "the creator must survive the import resize"
+            );
+            Assert.That(
+                kept.CopyrightNotice,
+                Is.EqualTo("Copyright 2020 Jane Doe"),
+                "the copyright must survive the import resize"
+            );
+            Assert.That(
+                kept.License,
+                Is.Not.Null.And.Not.InstanceOf<NullLicense>(),
+                "the licence must survive the import resize too"
+            );
+        }
+
+        [Test]
         public void ImportImageIntoBookFolder_ReusedImage_IsNotResized()
         {
             // A reused book image was already import-processed on its own way in, so we
-            // deliberately don't resize it again: resizing rewrites the file through
-            // GraphicsMagick, and the reuse path doesn't re-write credits afterwards, so
-            // anything embedded in the original would simply be lost.
+            // deliberately don't resize it again: it would gain nothing and would cost the image
+            // a generation of quality. (Credits used to be part of that reasoning; they no longer
+            // are, now that the import re-attaches metadata whichever path it took.)
             var source = MakeSourcePng("already-in-book.png", 5000, 4000);
 
             var newName = AiImageEditorApi.ImportImageIntoBookFolder(
@@ -349,6 +409,434 @@ namespace BloomTests.web.controllers
                 Is.True,
                 "a corrupt image must still be copied rather than silently dropped"
             );
+        }
+
+        // ------------------------------------------------------------------
+        // ConvertPngToJpegIfItBloatsTheJpegItReplaces: an AI result often comes back as a PNG
+        // for a slot the book held as a JPEG, and a photographic PNG can be several times the
+        // size (BL-16645). man.png and man.jpg are the same photo in both formats, so together
+        // they stand in for exactly that situation.
+        // ------------------------------------------------------------------
+
+        private const string _pathToTestImages = "src/BloomTests/ImageProcessing/images";
+
+        // Copies one of the images distributed with the application into the book folder under
+        // the given name, and returns that name (which is what the API deals in).
+        private string CopyTestImageIntoBookFolder(string distributedName, string nameInBook)
+        {
+            var source = FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                distributedName
+            );
+            RobustFile.Copy(source, Path.Combine(_bookFolder.Path, nameInBook), true);
+            return nameInBook;
+        }
+
+        private long LengthInBookFolder(string name)
+        {
+            return new FileInfo(Path.Combine(_bookFolder.Path, name)).Length;
+        }
+
+        // A real (header-sniffable) but tiny JPEG in the book folder, for cases that need the
+        // superseded file to be small enough to make the new PNG look bloated.
+        private string MakeSmallJpegInBookFolder(string name)
+        {
+            var path = Path.Combine(_bookFolder.Path, name);
+            using (var bitmap = new Bitmap(4, 4))
+            {
+                RobustImageIO.SaveImage(bitmap, path, ImageFormat.Jpeg);
+            }
+            Assert.That(
+                ImageUtils.IsJpegFile(path),
+                Is.True,
+                "setup: the stand-in old file must sniff as a real JPEG"
+            );
+            return name;
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_BigPngReplacingSmallJpeg_KeepsTheJpegAndDeletesThePng()
+        {
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+            var pngLength = LengthInBookFolder(newName);
+            // Sanity: this really is the blow-up case, or the method would rightly do nothing
+            // and the assertions below would pass for the wrong reason.
+            Assert.That(
+                pngLength,
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: the new PNG must be the bloated one"
+            );
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                Path.GetExtension(result),
+                Is.EqualTo(".jpg"),
+                "a photo PNG this much bigger than the JPEG it replaces should be re-encoded"
+            );
+            Assert.That(
+                result,
+                Does.StartWith("ai-image"),
+                "DeleteSupersededAiImageFiles reclaims our files by this prefix"
+            );
+            Assert.That(
+                File.Exists(Path.Combine(_bookFolder.Path, result)),
+                Is.True,
+                "the file we name has to exist"
+            );
+            Assert.That(
+                LengthInBookFolder(result),
+                Is.LessThan(pngLength),
+                "the whole point is a smaller file"
+            );
+            Assert.That(
+                File.Exists(Path.Combine(_bookFolder.Path, newName)),
+                Is.False,
+                "leaving the PNG behind would keep exactly the bulk we converted away from"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_JpegOfTheSameBaseNameExists_DoesNotOverwriteIt()
+        {
+            // ImportImageIntoBookFolder only reserved "ai-image1.png", and GetUnusedFilename
+            // checks just that one name — so "ai-image1.jpg" can be another slot's live image,
+            // and writing the conversion over it would destroy that image.
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+            var otherSlotsImage = Path.Combine(_bookFolder.Path, "ai-image1.jpg");
+            File.WriteAllText(otherSlotsImage, "another slot's image");
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                Path.GetExtension(result),
+                Is.EqualTo(".jpg"),
+                "setup: this case should still convert, or it proves nothing about clobbering"
+            );
+            Assert.That(
+                result,
+                Is.Not.EqualTo("ai-image1.jpg"),
+                "the conversion must claim a name of its own"
+            );
+            Assert.That(
+                File.ReadAllText(otherSlotsImage),
+                Is.EqualTo("another slot's image"),
+                "the other slot's image must come through untouched"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_ReplacingAPng_LeavesTheNewPngAlone()
+        {
+            // Nothing to gain: the book was already paying PNG prices for this slot, and
+            // re-encoding would silently cost quality.
+            var oldSrc = CopyTestImageIntoBookFolder("bird.png", "old-art.png");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(result, Is.EqualTo(newName), "only a superseded JPEG justifies converting");
+            Assert.That(File.Exists(Path.Combine(_bookFolder.Path, newName)), Is.True);
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_PngNoBiggerThanTheJpegItReplaces_LeavesItAlone()
+        {
+            // LakePendOreille.jpg is far bigger than man.png, so there is no blow-up to undo
+            // and the lossy re-encode would buy the book nothing.
+            var oldSrc = CopyTestImageIntoBookFolder("LakePendOreille.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.LessThan(LengthInBookFolder(oldSrc)),
+                "setup: the new PNG is not the bloated one in this case"
+            );
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                result,
+                Is.EqualTo(newName),
+                "no conversion when the PNG isn't the problem"
+            );
+            Assert.That(File.Exists(Path.Combine(_bookFolder.Path, newName)), Is.True);
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_ConversionDeclined_LeavesNoStrayJpegInTheBookFolder()
+        {
+            // bird.png is line art: converting it gains little, so the conversion is declined
+            // after a name has already been reserved and GraphicsMagick has run. Whatever the
+            // reason for declining, nothing unreferenced may be left behind — a stray file
+            // would sit in the very folder this method exists to keep small.
+            var oldSrc = MakeSmallJpegInBookFolder("old-tiny.jpg");
+            var newName = CopyTestImageIntoBookFolder("bird.png", "ai-image1.png");
+            // Sanity: the ratio gate must pass, so we really do get as far as converting.
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: big enough to be a conversion candidate"
+            );
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(result, Is.EqualTo(newName), "line art is not worth re-encoding");
+            Assert.That(
+                Directory.GetFiles(_bookFolder.Path, "ai-image*.jpg"),
+                Is.Empty,
+                "a declined conversion must not leave an unreferenced file in the book folder"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_TransparentPng_IsLeftAloneEvenThoughItIsBigger()
+        {
+            // A JPEG has no alpha channel, so converting would flatten the see-through areas
+            // onto a solid background — and since we delete the PNG on success, the
+            // transparency would be gone for good. Size is no excuse for that.
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder(
+                "shirtWithTransparentBg.png",
+                "ai-image1.png"
+            );
+            // Sanity: this is a big PNG that really is transparent, so it would otherwise be
+            // converted and the assertion below would be testing nothing.
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: big enough that only the transparency check can stop the conversion"
+            );
+            using (var image = Image.FromFile(Path.Combine(_bookFolder.Path, newName)))
+            {
+                Assert.That(
+                    ImageUtils.HasTransparency(image),
+                    Is.True,
+                    "setup: the test image must actually have transparency"
+                );
+            }
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                result,
+                Is.EqualTo(newName),
+                "a transparent PNG must be kept as a PNG however big it is"
+            );
+            Assert.That(
+                File.Exists(Path.Combine(_bookFolder.Path, newName)),
+                Is.True,
+                "and the transparent file itself must survive"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_Converted_CarriesTheCreditsOntoTheJpeg()
+        {
+            // GraphicsMagick does not preserve credits when it rewrites a PNG as a JPEG, and an
+            // uploaded result can arrive with the user's own credits embedded in it. Nothing
+            // downstream would put them back — EmbedCreditsInNewImageFile writes only the credits
+            // the AI image editor explicitly sent — so losing them here would quietly strip a
+            // photographer's copyright.
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+            var newPath = Path.Combine(_bookFolder.Path, newName);
+            using (var img = PalasoImage.FromFileRobustly(newPath))
+            {
+                img.Metadata.Creator = "Jane Doe";
+                img.Metadata.CopyrightNotice = "Copyright 2020 Jane Doe";
+                img.Metadata.License = new CreativeCommonsLicense(
+                    true,
+                    true,
+                    CreativeCommonsLicense.DerivativeRules.Derivatives
+                );
+                RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
+            }
+            // Sanity: the credits really are in the PNG, so a match below isn't two blanks agreeing.
+            var before = Metadata.FromFile(newPath);
+            Assert.That(before.Creator, Is.EqualTo("Jane Doe"), "setup");
+            Assert.That(before.CopyrightNotice, Is.EqualTo("Copyright 2020 Jane Doe"), "setup");
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            // Sanity: it really did convert, or there would be no re-encode to lose anything.
+            Assert.That(
+                Path.GetExtension(result),
+                Is.EqualTo(".jpg"),
+                "setup: this case must convert for the test to mean anything"
+            );
+            var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, result));
+            Assert.That(
+                after.Creator,
+                Is.EqualTo("Jane Doe"),
+                "the creator must survive the re-encode"
+            );
+            Assert.That(
+                after.CopyrightNotice,
+                Is.EqualTo("Copyright 2020 Jane Doe"),
+                "the copyright must survive the re-encode"
+            );
+            Assert.That(
+                after.License?.Token,
+                Is.EqualTo("cc-by"),
+                "and so must the licence, which otherwise degrades to 'ask permission'"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_PngTransparentOnlyInTheMiddle_IsLeftAlone()
+        {
+            // The case the corner-only check used to miss (BL-16645): a subject knocked out of an
+            // otherwise solid canvas, so the corners are opaque but the middle is see-through.
+            // Converting it would flatten the cutout and delete the original.
+            var oldSrc = MakeSmallJpegInBookFolder("old-tiny.jpg");
+            var newName = "ai-image1.png";
+            var newPath = Path.Combine(_bookFolder.Path, newName);
+            using (var bitmap = new Bitmap(300, 300, PixelFormat.Format32bppArgb))
+            {
+                for (int y = 0; y < 300; ++y)
+                for (int x = 0; x < 300; ++x)
+                {
+                    var inBorder = x < 30 || y < 30 || x >= 270 || y >= 270;
+                    // Varied border colors, so the PNG doesn't compress down below the size gate.
+                    bitmap.SetPixel(
+                        x,
+                        y,
+                        inBorder
+                            ? Color.FromArgb(255, (x * 7) % 256, (y * 13) % 256, (x + y) % 256)
+                            : Color.FromArgb(0, 0, 0, 0)
+                    );
+                }
+                RobustImageIO.SaveImage(bitmap, newPath, ImageFormat.Png);
+            }
+            // Sanity checks, so this can't pass for the wrong reason: it sniffs as a PNG, it is
+            // big enough to be a conversion candidate, and the transparency really is invisible to
+            // the corner scan yet visible to HasTransparency.
+            Assert.That(ImageUtils.IsPngFile(newPath), Is.True, "setup");
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: big enough that only the transparency check can stop the conversion"
+            );
+            using (var check = Image.FromFile(newPath))
+            {
+                Assert.That(
+                    ((Bitmap)check).GetPixel(5, 5).A,
+                    Is.EqualTo(255),
+                    "setup: the corner must be opaque, or the old corner-only check would have caught it"
+                );
+                Assert.That(
+                    ImageUtils.HasTransparency(check),
+                    Is.True,
+                    "setup: the scattered sampling must see the interior cutout"
+                );
+            }
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(
+                result,
+                Is.EqualTo(newName),
+                "a picture see-through only in its middle must still be kept as a PNG"
+            );
+            Assert.That(File.Exists(newPath), Is.True, "and the original must survive");
+            Assert.That(
+                Directory.GetFiles(_bookFolder.Path, "ai-image*.jpg"),
+                Is.Empty,
+                "no JPEG should have been produced at all"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_UndecodableFile_LeavesItAloneRatherThanThrowing()
+        {
+            // ImportImageIntoBookFolder copies a file it can't process in verbatim, without
+            // ever decoding it, so a file with a valid PNG header but junk content really can
+            // reach us. Throwing here would abort the whole commit — every replacement in it —
+            // over a missed size saving.
+            var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
+            var newName = "ai-image1.png";
+            var newPath = Path.Combine(_bookFolder.Path, newName);
+            var junk = new byte[20000];
+            new byte[] { 137, 80, 78, 71 }.CopyTo(junk, 0); // a PNG header, then nothing valid
+            File.WriteAllBytes(newPath, junk);
+            // Sanity: it sniffs as a PNG and is big enough, so we really do reach the decode.
+            Assert.That(ImageUtils.IsPngFile(newPath), Is.True, "setup");
+            Assert.That(
+                LengthInBookFolder(newName),
+                Is.GreaterThan(1.5 * LengthInBookFolder(oldSrc)),
+                "setup: big enough to be a conversion candidate"
+            );
+
+            var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                _bookFolder.Path,
+                oldSrc,
+                newName
+            );
+
+            Assert.That(result, Is.EqualTo(newName), "an undecodable file is simply not optimized");
+            Assert.That(
+                File.Exists(newPath),
+                Is.True,
+                "and it must still be there for the page to point at"
+            );
+        }
+
+        [Test]
+        public void ConvertPngToJpeg_NoOldFile_LeavesTheNewPngAlone()
+        {
+            // A slot can point at a file that isn't there (or at nothing at all); with nothing
+            // to compare against we must still not lose the image we just imported.
+            var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
+
+            foreach (var missingOldSrc in new[] { "no-such-file.jpg", "", null })
+            {
+                var result = AiImageEditorApi.ConvertPngToJpegIfItBloatsTheJpegItReplaces(
+                    _bookFolder.Path,
+                    missingOldSrc,
+                    newName
+                );
+
+                Assert.That(
+                    result,
+                    Is.EqualTo(newName),
+                    $"oldSrc '{missingOldSrc}' gives us nothing to compare against"
+                );
+                Assert.That(File.Exists(Path.Combine(_bookFolder.Path, newName)), Is.True);
+            }
         }
 
         // ------------------------------------------------------------------
@@ -744,53 +1232,107 @@ namespace BloomTests.web.controllers
         }
 
         // ------------------------------------------------------------------
-        // IsUserChangeableImageElement: branding/license/QR images are off-limits.
+        // SelectImageSlotsOnPage: a page's slots are its image containers, in document
+        // order. The index of a slot in that list is its whole identity, and the page frame
+        // works out the same index for itself (slotIndexOnPage in aiImageEditorPageCommands.ts),
+        // so these two numberings have to agree.
         // ------------------------------------------------------------------
 
-        private static Bloom.SafeXml.SafeXmlElement MakeImgWithClass(string className)
+        private static SafeXmlElement MakePageWithBody(string bodyOfPage)
         {
-            var classAttr = className == null ? "" : $" class='{className}'";
             var dom = new HtmlDom(
                 $@"<html><head></head><body>
                     <div class='bloom-page' id='page1'><div class='marginBox'>
-                        <img src='pic.png'{classAttr}/>
+                        {bodyOfPage}
                     </div></div>
                   </body></html>"
             );
-            return (Bloom.SafeXml.SafeXmlElement)dom.RawDom.SelectSingleNode("//img");
+            return (SafeXmlElement)dom.RawDom.SelectSingleNode("//div[@id='page1']");
         }
 
         [Test]
-        public void IsUserChangeableImageElement_PlainImage_IsChangeable()
+        public void SelectImageSlotsOnPage_ReturnsContainersInDocumentOrder()
         {
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer'><img src='first.png'/></div>
+                  <div class='bloom-imageContainer'><img src='second.png'/></div>"
+            );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(2));
             Assert.That(
-                AiImageEditorApi.IsUserChangeableImageElement(MakeImgWithClass(null)),
-                Is.True
+                AiImageEditorApi.GetImageElementOfSlot(slots[0]).GetAttribute("src"),
+                Is.EqualTo("first.png")
+            );
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(slots[1]).GetAttribute("src"),
+                Is.EqualTo("second.png")
             );
         }
 
         [TestCase("branding")]
         [TestCase("licenseImage")]
         [TestCase("bloom-qrcode")]
-        public void IsUserChangeableImageElement_ProtectedImage_IsNotChangeable(string className)
+        public void SelectImageSlotsOnPage_ImageOutsideAContainer_IsNotASlot(string className)
         {
+            // Branding, license and QR-code images are never in an image container, which is
+            // why neither side of the bridge needs a list of them: they are not slots, so
+            // they cannot be offered to the AI image editor or overwritten by a commit.
+            var page = MakePageWithBody(
+                $@"<img class='{className}' src='protected.png'/>
+                   <div class='bloom-imageContainer'><img src='real.png'/></div>"
+            );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(1), $"'{className}' must not be a slot");
             Assert.That(
-                AiImageEditorApi.IsUserChangeableImageElement(MakeImgWithClass(className)),
-                Is.False,
-                $"an image with class '{className}' must not be user-changeable"
+                AiImageEditorApi.GetImageElementOfSlot(slots[0]).GetAttribute("src"),
+                Is.EqualTo("real.png")
             );
         }
 
         [Test]
-        public void IsUserChangeableImageElement_ProtectedClassAmongOthers_IsNotChangeable()
+        public void SelectImageSlotsOnPage_ClassAmongOthers_IsStillASlot()
         {
-            // The class check must find the protected class even when combined with others.
-            Assert.That(
-                AiImageEditorApi.IsUserChangeableImageElement(
-                    MakeImgWithClass("bloom-imageContainer branding")
-                ),
-                Is.False
+            // The class test must find bloom-imageContainer among other classes, and must
+            // not match a class that merely contains those characters.
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer bloom-backgroundImage'><img src='real.png'/></div>
+                  <div class='bloom-imageContainerish'><img src='notASlot.png'/></div>"
             );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(1));
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(slots[0]).GetAttribute("src"),
+                Is.EqualTo("real.png")
+            );
+        }
+
+        [Test]
+        public void GetImageElementOfSlot_BackgroundImageSlot_ReturnsTheContainer()
+        {
+            // A slot can wear its picture as a background image instead of holding an img.
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer' style=""background-image:url('bg.png')""></div>"
+            );
+
+            var slot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+
+            Assert.That(AiImageEditorApi.GetImageElementOfSlot(slot), Is.SameAs(slot));
+        }
+
+        [Test]
+        public void GetImageElementOfSlot_SlotWithNoPicture_ReturnsNull()
+        {
+            var page = MakePageWithBody(@"<div class='bloom-imageContainer'></div>");
+
+            var slot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+
+            Assert.That(AiImageEditorApi.GetImageElementOfSlot(slot), Is.Null);
         }
 
         // ------------------------------------------------------------------
@@ -1184,7 +1726,7 @@ namespace BloomTests.web.controllers
             // (updated by ImageUpdater) and as the next book-up-to-date pass. Pin that
             // agreement down rather than trusting the two to stay in step by inspection.
             var name = MakePngWithCredits("pic.png", "Ada Lovelace", "Copyright 1843 Ada");
-            var img = MakeImgWithClass(null); // its src is "pic.png", the file we just made
+            var img = MakePlainImg(); // its src is "pic.png", the file we just made
 
             ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
                 _bookFolder.Path,
@@ -1200,6 +1742,401 @@ namespace BloomTests.web.controllers
             Assert.That(attributes.copyright, Is.EqualTo(img.GetAttribute("data-copyright")));
             Assert.That(attributes.creator, Is.EqualTo(img.GetAttribute("data-creator")));
             Assert.That(attributes.license, Is.EqualTo(img.GetAttribute("data-license")));
+        }
+
+        // A plain image element, for a test that needs one and nothing around it.
+        private static SafeXmlElement MakePlainImg()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page' id='page1'><div class='marginBox'>
+                        <img src='pic.png'/>
+                    </div></div>
+                  </body></html>"
+            );
+            return (SafeXmlElement)dom.RawDom.SelectSingleNode("//img");
+        }
+
+        // The single page of a one-page DOM, as the label helpers take it.
+        private static SafeXmlElement FirstPageOf(string pageMarkup)
+        {
+            var dom = new HtmlDom("<html><head></head><body>" + pageMarkup + "</body></html>");
+            var page = dom
+                .RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                .OfType<SafeXmlElement>()
+                .FirstOrDefault();
+            if (page == null)
+                Assert.Fail("the test markup has no bloom-page, so there is nothing to name");
+            return page;
+        }
+
+        [Test]
+        public void GetPageNameForImageSlotLabel_NumberedPage_SaysPageAndTheNumber()
+        {
+            var page = FirstPageOf(
+                "<div class='bloom-page numberedPage' id='p1' data-page-number='3'>"
+                    + "<div class='pageLabel'>Basic Text &amp; Picture</div></div>"
+            );
+
+            // The user thinks in page numbers, not template names, so the number wins over the
+            // page's own label when the page has one.
+            Assert.That(AiImageEditorApi.GetPageNameForImageSlotLabel(page), Is.EqualTo("Page 3"));
+        }
+
+        [Test]
+        public void GetPageNameForImageSlotLabel_FrontMatter_UsesThePageName()
+        {
+            var page = FirstPageOf(
+                // Bloom writes data-page-number='' on an unnumbered page (BL-7303).
+                "<div class='bloom-page bloom-frontMatter' id='cover' data-page-number=''>"
+                    + "<div class='pageLabel'>Front Cover</div></div>"
+            );
+
+            // Front matter has no page number, so the page's own name is all we can say. It is
+            // the English name: the AI image editor's user interface is English only.
+            Assert.That(
+                AiImageEditorApi.GetPageNameForImageSlotLabel(page),
+                Is.EqualTo("Front Cover")
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_OnePictureOnThePage_JustNamesThePage()
+        {
+            // Nothing to tell it apart from, so the page name is enough. This is the common
+            // case: a full-page picture is one canvas background image and nothing else.
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", true, 1, 1),
+                Is.EqualTo("Page 3")
+            );
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", false, 1, 1),
+                Is.EqualTo("Page 3")
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_BackgroundAndAPictureOnIt_NamesTheBackgroundAndNumbersTheRest()
+        {
+            // Two empty slots on one page show the same graphic in the AI image editor, so
+            // without these names the user cannot tell which slot is which (BL-16744).
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 1", true, 0, 2),
+                Is.EqualTo("Page 1 - Canvas Background")
+            );
+            // The pictures on top of the background start at 1, not at 2.
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 1", false, 1, 2),
+                Is.EqualTo("Page 1 - Image 1")
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_TwoPicturesAndNoBackground_NumbersThem()
+        {
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", false, 1, 2),
+                Is.EqualTo("Page 3 - Image 1")
+            );
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", false, 2, 2),
+                Is.EqualTo("Page 3 - Image 2")
+            );
+        }
+
+        [Test]
+        public void GetPageNameForImageSlotLabel_NoNumberAndNoLabel_SaysNothing()
+        {
+            // HtmlDom can leave a page with no data-page-number attribute at all (BL-12903).
+            // No label is better than a made-up one such as "unknown".
+            var page = FirstPageOf("<div class='bloom-page' id='p1'></div>");
+
+            Assert.That(AiImageEditorApi.GetPageNameForImageSlotLabel(page), Is.Null);
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_NoPageName_NamesTheSlotOnly()
+        {
+            // Nothing to say about the page, but two slots still have to be told apart.
+            Assert.That(AiImageEditorApi.BuildImageSlotLabel(null, false, 1, 1), Is.Null);
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel(null, false, 2, 2),
+                Is.EqualTo("Image 2")
+            );
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel(null, true, 0, 2),
+                Is.EqualTo("Canvas Background")
+            );
+        }
+
+        [Test]
+        public void IsBackgroundImage_TellsTheCanvasBackgroundFromAPictureOnTopOfIt()
+        {
+            // EnumerateBookImages asks HtmlDom which slot is the canvas background, and labels
+            // that one "Canvas Background" rather than "Image 1". This test pins the markup
+            // that question is asked about, so a change to the canvas DOM breaks here.
+            var page = FirstPageOf(
+                "<div class='bloom-page numberedPage' id='p1' data-page-number='1'>"
+                    + "<div class='bloom-canvas'>"
+                    + "<div class='bloom-canvas-element bloom-backgroundImage'>"
+                    + "<div class='bloom-imageContainer'><img src='back.png'/></div></div>"
+                    + "<div class='bloom-canvas-element'>"
+                    + "<div class='bloom-imageContainer'><img src='front.png'/></div></div>"
+                    + "</div></div>"
+            );
+            var images = HtmlDom
+                .SelectChildImgAndBackgroundImageElements(page)
+                .OfType<SafeXmlElement>()
+                .ToList();
+
+            // Sanity: both pictures are there, in the order the labels will number them.
+            Assert.That(images.Count, Is.EqualTo(2), "setup");
+            Assert.That(images[0].GetAttribute("src"), Is.EqualTo("back.png"), "setup");
+
+            Assert.That(HtmlDom.IsBackgroundImage(images[0]), Is.True);
+            Assert.That(HtmlDom.IsBackgroundImage(images[1]), Is.False);
+        }
+
+        [Test]
+        public void BuildImageSlotLabelsForPage_BackgroundAndTwoPicturesOnIt_NamesThenNumbers()
+        {
+            var labels = AiImageEditorApi.BuildImageSlotLabelsForPage(
+                "Page 4",
+                new[] { true, false, false }
+            );
+
+            Assert.That(
+                labels,
+                Is.EqualTo(
+                    new[] { "Page 4 - Canvas Background", "Page 4 - Image 1", "Page 4 - Image 2" }
+                )
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabelsForPage_SeveralCanvasesOnThePage_NumbersThemAll()
+        {
+            // A Picture Dictionary page has six canvases, so six background images. Naming
+            // them all "Canvas Background" would give six identical labels, which is the
+            // confusion these labels exist to remove (BL-16744).
+            var labels = AiImageEditorApi.BuildImageSlotLabelsForPage(
+                "Page 4",
+                new[] { true, true, true }
+            );
+
+            Assert.That(
+                labels,
+                Is.EqualTo(new[] { "Page 4 - Image 1", "Page 4 - Image 2", "Page 4 - Image 3" }),
+                "identical labels would tell the user nothing"
+            );
+            Assert.That(labels.Distinct().Count(), Is.EqualTo(3), "every label must be distinct");
+        }
+
+        [Test]
+        public void BuildImageSlotLabelsForPage_OneCanvasOnly_JustNamesThePage()
+        {
+            // The common case: a full-page picture is one canvas background and nothing else.
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabelsForPage("Page 4", new[] { true }),
+                Is.EqualTo(new[] { "Page 4" })
+            );
+        }
+    }
+
+    /// <summary>
+    /// Tests for <see cref="AiImageEditorApi.GetLinkedEditorUrlOverride"/>, which honors the
+    /// obsolete BLOOM_AI_EDITOR_URL name so a developer who still has it set keeps getting
+    /// their linked dev server instead of silently falling back to the staged build.
+    /// </summary>
+    [TestFixture]
+    public class AiImageEditorLinkedUrlOverrideTests
+    {
+        private string _originalCurrent;
+        private string _originalObsolete;
+
+        [SetUp]
+        public void Setup()
+        {
+            _originalCurrent = Get(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable);
+            _originalObsolete = Get(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable);
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, null);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, null);
+            // Sanity: with neither name set we must start from "no override", or a test below
+            // could pass on a value left over from the developer's own environment.
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.Null,
+                "setup: neither variable should be in play at the start of a test"
+            );
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, _originalCurrent);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, _originalObsolete);
+        }
+
+        private static string Get(string name) => Environment.GetEnvironmentVariable(name);
+
+        private static void Set(string name, string value) =>
+            Environment.SetEnvironmentVariable(name, value);
+
+        [Test]
+        public void CurrentNameSet_IsUsed()
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, "http://localhost:3000/");
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://localhost:3000/")
+            );
+        }
+
+        [Test]
+        public void OnlyObsoleteNameSet_IsStillHonored()
+        {
+            Set(
+                AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable,
+                "http://localhost:4000/"
+            );
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://localhost:4000/"),
+                "the obsolete name must keep working during the transition"
+            );
+        }
+
+        [Test]
+        public void BothNamesSet_CurrentWins()
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, "http://current/");
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, "http://obsolete/");
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://current/")
+            );
+        }
+
+        [TestCase("")]
+        [TestCase("   ")]
+        public void CurrentNameBlank_FallsBackToObsolete(string blank)
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, blank);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, "http://obsolete/");
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://obsolete/"),
+                "a blank current name should not mask a usable obsolete one"
+            );
+        }
+
+        [TestCase("")]
+        [TestCase("   ")]
+        public void BothBlankOrUnset_ReturnsNull(string blank)
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, blank);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, blank);
+            Assert.That(AiImageEditorApi.GetLinkedEditorUrlOverride(), Is.Null);
+        }
+    }
+
+    /// <summary>
+    /// Tests for <see cref="AiImageEditorApi.ShouldShowDeveloperTools"/>, the opt-in that
+    /// lets a tester on a channel like beta see the AI image editor's tester tools
+    /// (currently the "Local Dummy (No AI)" model). See BL-16770.
+    /// </summary>
+    [TestFixture]
+    public class AiImageEditorDeveloperToolsOptInTests
+    {
+        private string _originalValue;
+
+        [SetUp]
+        public void Setup()
+        {
+            _originalValue = Environment.GetEnvironmentVariable(
+                AiImageEditorApi.kShowTesterToolsEnvironmentVariable
+            );
+            // Sanity: unit tests run on a channel that is neither developer nor alpha, so
+            // every "on" result below really comes from the environment variable and not
+            // from the channel check short-circuiting the method.
+            Assert.That(
+                ApplicationUpdateSupport.IsDevOrAlpha,
+                Is.False,
+                "setup: unit tests should not look like a dev/alpha channel"
+            );
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            SetVariable(_originalValue);
+        }
+
+        private static void SetVariable(string value)
+        {
+            Environment.SetEnvironmentVariable(
+                AiImageEditorApi.kShowTesterToolsEnvironmentVariable,
+                value
+            );
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("   ")]
+        [TestCase("0")]
+        [TestCase("f")]
+        [TestCase("n")]
+        [TestCase("no")]
+        [TestCase("false")]
+        [TestCase("please")]
+        [TestCase("truely")]
+        public void ShouldShowDeveloperTools_NotOptedIn_False(string value)
+        {
+            SetVariable(value);
+            Assert.That(AiImageEditorApi.ShouldShowDeveloperTools(), Is.False);
+        }
+
+        [TestCase("true")]
+        [TestCase("t")]
+        [TestCase("y")]
+        [TestCase("yes")]
+        [TestCase("1")]
+        // The same values as above, spelled the way a tester might actually type them.
+        [TestCase("TRUE")]
+        [TestCase("True")]
+        [TestCase("T")]
+        [TestCase("Y")]
+        [TestCase("Yes")]
+        [TestCase("YES")]
+        [TestCase(" 1 ")]
+        public void ShouldShowDeveloperTools_OptedIn_True(string value)
+        {
+            SetVariable(value);
+            Assert.That(AiImageEditorApi.ShouldShowDeveloperTools(), Is.True);
+        }
+
+        /// <summary>
+        /// Guards the list itself: every documented "on" value must actually turn the tools
+        /// on, so adding a spelling to kTesterToolsOnValues without a matching TestCase above
+        /// still can't ship broken.
+        /// </summary>
+        [Test]
+        public void ShouldShowDeveloperTools_EveryDocumentedOnValue_True()
+        {
+            Assert.That(
+                AiImageEditorApi.kTesterToolsOnValues,
+                Is.Not.Empty,
+                "setup: there should be some accepted values"
+            );
+            foreach (var value in AiImageEditorApi.kTesterToolsOnValues)
+            {
+                SetVariable(value);
+                Assert.That(
+                    AiImageEditorApi.ShouldShowDeveloperTools(),
+                    Is.True,
+                    $"'{value}' is documented as an accepted value"
+                );
+            }
         }
     }
 }
