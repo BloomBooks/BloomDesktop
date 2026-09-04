@@ -696,6 +696,7 @@ jobs:
                   $jobStarted = $null
                   $lastStepEnded = $null
                   $setupSeconds = $null
+                  $reportingSeconds = $null
                   try {
                       $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = "application/vnd.github+json" }
                       $uri = "$($env:API_URL)/repos/$($env:REPO)/actions/runs/$($env:RUN_ID)/attempts/$($env:RUN_ATTEMPT)/jobs?per_page=100"
@@ -715,14 +716,23 @@ jobs:
                               }
                           }
                           # Everything before the front-end build is toolchain setup and dependency
-                          # installation. Worth its own figure because it is not small -- the pnpm
-                          # toolchain step alone has taken seven minutes -- and it is the part a
-                          # reader would otherwise mistake for build time.
+                          # installation: checkout, the dotnet/msbuild/pnpm/node actions, the binary
+                          # dependencies and test inputs, pnpm install. Worth its own figure because it
+                          # is not small -- the pnpm toolchain step alone has taken seven minutes -- and
+                          # it is the part a reader would otherwise mistake for build time.
                           $buildIndex = [array]::IndexOf(($job.steps | ForEach-Object { $_.name }), $frontendBuildStep)
                           if ($buildIndex -gt 0) {
                               $setupSeconds = 0
                               foreach ($step in $job.steps[0..($buildIndex - 1)]) {
                                   if ($stepTimes.ContainsKey($step.name)) { $setupSeconds += $stepTimes[$step.name] }
+                              }
+                          }
+                          # Publishing the results: the per-suite check runs, the results artifact, and
+                          # this report. Roughly a minute a night, and none of it is testing.
+                          $reportingSeconds = 0
+                          foreach ($step in $job.steps) {
+                              if ($stepTimes.ContainsKey($step.name) -and ($step.name -like "Publish *" -or $step.name -eq "Upload test results" -or $step.name -like "*the nightly report*")) {
+                                  $reportingSeconds += $stepTimes[$step.name]
                               }
                           }
                       }
@@ -852,6 +862,8 @@ jobs:
                   $lines += Format-Suite "BloomE2E tests" $env:E2E_TESTS "output/Tests/e2e-junit.xml" "Run BloomE2E tests"
                   $lines += Format-Suite "React component tests" $env:COMPONENT_TESTS "output/Tests/component-tester-junit.xml" "Run component-tester tests"
                   $lines += Format-Suite "Visual regression tests" $env:VISUAL_REGRESSION "output/Tests/visual-regression-junit.xml" "Run visual regression tests"
+                  # The same five step names, for the accounting at the end.
+                  $suiteSteps = @("Run browser UI tests", "Run C# tests", "Run BloomE2E tests", "Run component-tester tests", "Run visual regression tests")
 
                   if ($env:JOB_STATUS -eq "cancelled") {
                       $headline = "🚫 **Nightly run cancelled**"
@@ -867,6 +879,7 @@ jobs:
                   # answer when this script is replayed against a past run's API data, which is how
                   # it gets tested.
                   $elapsed = ""
+                  $total = $null
                   if ($jobStarted -and $lastStepEnded) {
                       $total = $lastStepEnded - [datetimeoffset]::Parse($jobStarted)
                       $elapsed = " · $(Format-Duration $total.TotalSeconds)"
@@ -878,16 +891,34 @@ jobs:
                   $message = @("$headline on $($env:BRANCH)$elapsed", "")
                   $message += $lines | ForEach-Object { "* $_" }
 
-                  # The builds and the setup they depend on, as one line: they are not suites and do
-                  # not deserve a bullet each, but their timings are the first place a slowing
-                  # nightly shows up.
-                  $buildTimes = @()
-                  if ($stepTimes -and $stepTimes.ContainsKey($frontendBuildStep)) { $buildTimes += "front-end $(Format-Duration $stepTimes[$frontendBuildStep])" }
-                  if ($stepTimes -and $stepTimes.ContainsKey("Build")) { $buildTimes += "C# $(Format-Duration $stepTimes["Build"])" }
-                  if ($null -ne $setupSeconds) { $buildTimes += "setup and install $(Format-Duration $setupSeconds)" }
-                  if ($buildTimes.Count -gt 0) {
+                  # Where the rest of the night went, as one line in job order: none of it is a
+                  # suite, so none of it deserves a bullet, but these timings are the first place a
+                  # slowing nightly shows up. Together with the suite timings above they account for
+                  # the whole of the headline total; "other" is whatever is left over -- the
+                  # per-suite installs, the diagnostics and screenshot uploads, and the gaps between
+                  # steps -- so the parts always add up.
+                  $restTimes = @()
+                  $accounted = 0
+                  if ($null -ne $setupSeconds) { $restTimes += "setup and install $(Format-Duration $setupSeconds)"; $accounted += $setupSeconds }
+                  if ($stepTimes -and $stepTimes.ContainsKey($frontendBuildStep)) { $restTimes += "front-end build $(Format-Duration $stepTimes[$frontendBuildStep])"; $accounted += $stepTimes[$frontendBuildStep] }
+                  if ($stepTimes -and $stepTimes.ContainsKey("Build")) {
+                      # Restoring the build tasks is the first thing the C# build needs, so it counts
+                      # as part of that build.
+                      $csharpBuild = $stepTimes["Build"]
+                      if ($stepTimes.ContainsKey("Restore MSBuild build tasks")) { $csharpBuild += $stepTimes["Restore MSBuild build tasks"] }
+                      $restTimes += "C# build $(Format-Duration $csharpBuild)"; $accounted += $csharpBuild
+                  }
+                  if ($null -ne $reportingSeconds) { $restTimes += "reporting $(Format-Duration $reportingSeconds)"; $accounted += $reportingSeconds }
+                  if ($stepTimes -and $total) {
+                      foreach ($suiteStep in $suiteSteps) {
+                          if ($stepTimes.ContainsKey($suiteStep)) { $accounted += $stepTimes[$suiteStep] }
+                      }
+                      $otherSeconds = [math]::Round($total.TotalSeconds) - [math]::Round($accounted)
+                      if ($otherSeconds -gt 0) { $restTimes += "other $(Format-Duration $otherSeconds)" }
+                  }
+                  if ($restTimes.Count -gt 0) {
                       $message += ""
-                      $message += "Builds: " + ($buildTimes -join " · ")
+                      $message += "Also: " + ($restTimes -join " · ")
                   }
 
                   # Quoted deliberately. Zulip turns a bare link into a preview card -- a big
