@@ -1843,7 +1843,14 @@ namespace Bloom.Edit
 
             // A null page element with a full save is fine -- Book.SavePageToDisk only uses the
             // element for the single-page fast path.
-            CurrentBook.SavePageToDisk(_modifiedPageElement, _nextSaveMustBeFull);
+            if (!CurrentBook.SavePageToDisk(_modifiedPageElement, _nextSaveMustBeFull))
+            {
+                // Nothing reached disk. The user has been told; what matters here is that the
+                // book still needs writing, so we must not clear the flags that say so. Clearing
+                // them would make the next save believe there was nothing to do, and the change
+                // would never be written at all.
+                return;
+            }
             _bookDomHasUnwrittenChanges = false;
             _nextSaveMustBeFull = false;
             _pageHasUnsavedDataDerivedChange = false;

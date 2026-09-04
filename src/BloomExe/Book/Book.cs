@@ -4304,7 +4304,13 @@ namespace Bloom.Book
         /// Finish a delayed save. pageToSaveToDisk should be the value from the out param of UpdateDomFromEditedPage().
         /// It is the one page that needs saving, if reallyNeedFullSave is false; if that is true, it is not used.
         /// </summary>
-        public void SavePageToDisk(SafeXmlElement pageToSaveToDisk, bool reallyNeedFullSave)
+        /// <summary>
+        /// Write the page, or the whole book if it has to be. Returns FALSE if nothing reached
+        /// disk: the file could not be written, or the page was found to be empty and refused.
+        /// Both of those tell the user; the return value is for the caller, which otherwise clears
+        /// the flags that say the change still needs writing, and so never tries again.
+        /// </summary>
+        public bool SavePageToDisk(SafeXmlElement pageToSaveToDisk, bool reallyNeedFullSave)
         {
             try
             {
@@ -4331,20 +4337,22 @@ namespace Bloom.Book
                         )
                         {
                             // This has been logged and reported to the user. We don't want to save the empty page.
-                            return;
+                            return false;
                         }
-                        Save();
+                        if (!Save())
+                            return false;
                     }
                 }
                 catch (UnauthorizedAccessException e)
                 {
                     BookStorage.ShowAccessDeniedErrorReport(e);
-                    return;
+                    return false;
                 }
 
                 if (!BookInfo.FileNameLocked)
                     Storage.UpdateBookFileAndFolderName(CollectionSettings);
                 //review used to have   UpdateBookFolderAndFileNames(data);
+                return true;
             }
             catch (Exception error)
             {
@@ -4354,6 +4362,7 @@ namespace Bloom.Book
                 );
                 ErrorReport.NotifyUserOfProblem(error, msg);
             }
+            return false;
         }
 
         /// <summary>

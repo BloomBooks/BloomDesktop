@@ -130,10 +130,19 @@ export function setSnapshotsSuspended(reason: string | undefined): void {
         if (timer !== undefined) window.clearTimeout(timer);
         timer = undefined;
     } else {
-        // If we were suspended before we could read the page, this is the moment to do it: the
-        // page has just come out of the mode that made gathering unsafe.
-        if (!baselineTaken && pageIdBeingWatched && gatherPageContent) {
-            takeBaselineWhenNotSuspended(pageIdBeingWatched);
+        // If we never got to read the page, we have no baseline -- and we deliberately do not go
+        // and take one now. A baseline is "what the page looked like before the user touched it",
+        // and this moment is not that: anything that changed while we were suspended would be
+        // folded into it and thereby counted as already delivered, which is precisely how an edit
+        // gets lost. So we simply declare that we have no idea what C# holds, which makes the
+        // snapshot below unconditional.
+        //
+        // The cost is one redundant snapshot per suspension, and it is not even a redundant SAVE:
+        // C# compares what it is given against what the book already says and writes nothing if
+        // they match.
+        if (!baselineTaken) {
+            lastPosted = undefined;
+            baselineTaken = true;
         }
         // Whatever changed while we were suspended still owes C# a snapshot.
         scheduleSnapshot();
@@ -326,10 +335,10 @@ export function notePageContentMayHaveChanged(): void {
 //
 // NOT while snapshots are suspended. Gathering is not free in play mode -- the game tool's part of
 // it reaches into bloom-player's record of the LIVE page -- and a game page can open straight into
-// its Play tab, because the tab is remembered per page. So the baseline waits until play mode ends,
-// which is exactly when the page is in the state a save should write anyway. Nothing is at risk in
-// the meantime: with no baseline nothing is posted, and there is nothing a save should be writing
-// while the user is playing the game.
+// its Play tab, because the tab is remembered per page. Nothing is at risk in the meantime: with no
+// baseline nothing is posted, and there is nothing a save should be writing while the user is
+// playing the game. Resuming does not come back here for a late baseline, because by then the
+// moment for one has passed: see setSnapshotsSuspended.
 function takeBaselineWhenNotSuspended(pageId: string): void {
     if (suspendedFor) return; // setSnapshotsSuspended calls us back when it resumes
     void gatherPageContent!().then(

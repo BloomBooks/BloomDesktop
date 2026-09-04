@@ -1097,7 +1097,11 @@ function postPageClicked(
         .then(async () => {
             const pageContent =
                 await collectCurrentPageContent("the page change");
-            postJson(
+            // Awaited, not just issued: the point of the chain is that C# sees the clicks in the
+            // order they were made, and it has not seen this one until the post comes back.
+            // Releasing the queue when the request was merely sent would let the next click's post
+            // overtake it, which is the ordering we are here to prevent.
+            await postJson(
                 "pageList/pageClicked",
                 { pageId, detail, pageContent },
                 onSuccess,
