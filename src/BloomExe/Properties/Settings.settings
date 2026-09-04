@@ -119,7 +119,7 @@
     <Setting Name="LastLoginUserId" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ExportImportFileFolder" Type="System.String" Scope="User">
+    <Setting Name="ExportImportFileFolder" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="OpenRouterApiKey" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
