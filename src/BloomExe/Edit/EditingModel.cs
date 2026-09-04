@@ -196,11 +196,15 @@ namespace Bloom.Edit
                 //shown so the view has never been full constructed, so we're not in a good state to do a refresh
                 if (Visible)
                 {
-                    MergeCurrentPageThenSave(() =>
-                    {
-                        _view.UpdatePageList(false);
-                        return _pageSelection.CurrentSelection.Id;
-                    });
+                    MergeCurrentPageThenSave(
+                        () =>
+                        {
+                            _view.UpdatePageList(false);
+                            return _pageSelection.CurrentSelection.Id;
+                        },
+                        // Refreshing the thumbnails changes nothing in the book.
+                        actionChangesTheBook: false
+                    );
                 }
             });
             _contentLanguages = new List<ContentLanguage>();
@@ -514,7 +518,6 @@ namespace Bloom.Edit
                     }
                     return newPageId;
                 },
-                forceFullSave: true,
                 pageContentFromBrowser: pageContentFromBrowser
             );
         }
@@ -551,7 +554,6 @@ namespace Bloom.Edit
                         return page.Id; // stay on this page.
                     }
                 },
-                forceFullSave: true,
                 pageContentFromBrowser: pageContentFromBrowser
             );
         }
@@ -656,7 +658,6 @@ namespace Bloom.Edit
                     Logger.WriteEvent("InsertTemplatePage");
                     return newPageId;
                 },
-                forceFullSave: true,
                 pageContentFromBrowser: pageContentFromBrowser
             );
         }
@@ -976,7 +977,6 @@ namespace Bloom.Edit
             // page reports itself ready, every snapshot that arrives belongs to the load we are
             // leaving, and is refused rather than quietly refilling what we just cleared.
             _pageSnapshot.Clear();
-            _currentPageLoadId = null;
             try
             {
                 if (page == null)
@@ -1599,6 +1599,10 @@ namespace Bloom.Edit
             _nextSaveMustBeFull |= forceFullSave;
             MergeCurrentPageThenSave(
                 () => _pageSelection.CurrentSelection.Id,
+                // The action just names the page to come back to. Whatever our caller changed
+                // before getting here has already said so -- forceFullSave above, or
+                // _pageHasUnsavedDataDerivedChange, which the merge reads.
+                actionChangesTheBook: false,
                 pageContentFromBrowser: pageContentFromBrowser
             );
         }
@@ -1665,6 +1669,12 @@ namespace Bloom.Edit
         /// arriving from inside another one's changeBookBeforeWriting. Most callers have nothing
         /// useful to do then and omit it; the ones that do are finishing something they had already
         /// started, like clearing a dialog's spinner.</param>
+        /// <param name="actionChangesTheBook">Whether changeBookBeforeWriting changes the book.
+        /// We cannot see inside it, so it has to say. It defaults to TRUE because that is the safe
+        /// answer: a caller that changes the book and does not say so has its change written
+        /// nowhere, whereas one that says so needlessly costs a write. Only the callers whose
+        /// action merely names the page to go to next -- clicking a thumbnail is the important one,
+        /// and the whole point of not saving an untouched page -- pass false.</param>
         /// <param name="pageContentFromBrowser">The current page's content, when the request that
         /// got us here brought it along (see getPageContentForSaveWhenReady() in the browser).
         /// Otherwise we use whatever the browser last volunteered; a null snapshot is a positive
@@ -1672,14 +1682,14 @@ namespace Bloom.Edit
         public void MergeCurrentPageThenSave(
             Func<string> changeBookBeforeWriting,
             Action ifNotInAStateToSave = null,
-            bool forceFullSave = false,
+            bool actionChangesTheBook = true,
             string pageContentFromBrowser = null
         )
         {
             var outcome = SavePageInPlaceThen(
                 pageContentFromBrowser ?? CurrentPageSnapshotOrNull,
                 changeBookBeforeWriting,
-                forceFullSave
+                actionChangesTheBook
             );
             // Declined is the only outcome where nothing at all happened -- changeBookBeforeWriting
             // has NOT run -- so it is the only one where the caller's fallback is the right
@@ -1689,12 +1699,6 @@ namespace Bloom.Edit
             if (outcome == InPlaceSaveOutcome.Declined)
                 ifNotInAStateToSave?.Invoke();
         }
-
-        // The load of the page we are currently showing, as the browser identified it when it
-        // reported the page ready (see getPageLoadId() in pageSnapshot.ts). Null between starting a
-        // navigation and the new page reporting in, which is exactly the window in which no
-        // snapshot should be believed.
-        private string _currentPageLoadId;
 
         /// <summary>
         /// Called by the editView/pageSnapshot API when the browser volunteers the current content
@@ -1714,10 +1718,7 @@ namespace Bloom.Edit
         /// the browser believed it had told us.</returns>
         public bool ReceivePageSnapshot(string pageId, string loadId, string pageContentData)
         {
-            if (_currentPageLoadId == null || loadId != _currentPageLoadId)
-                return false; // a load we have moved on from, or one not yet registered
-            _pageSnapshot.Set(pageId, pageContentData);
-            return true;
+            return _pageSnapshot.Set(pageId, loadId, pageContentData);
         }
 
         /// <summary>
@@ -1873,7 +1874,7 @@ namespace Bloom.Edit
         private InPlaceSaveOutcome SavePageInPlaceThen(
             string pageContentData,
             Func<string> changeBookBeforeWriting,
-            bool forceFullSave = false
+            bool actionChangesTheBook
         )
         {
             if (CannotSavePage() || !_havePageToSave)
@@ -1885,15 +1886,25 @@ namespace Bloom.Edit
             if (_reloadFromDiskOnLeavingEditTab)
                 return InPlaceSaveOutcome.Refused;
 
-            _nextSaveMustBeFull |= forceFullSave;
-
-            // With no content to merge, the caller's action is the only thing that can change the
-            // book -- and adding, duplicating or relaying out a page certainly does. We cannot know
-            // which pages it will touch, so the write must happen and must be a full one; the
-            // per-page fast path needs a modified page element we do not have. (Leaving this to
-            // _modifiedPageElement meant the action ran and nothing was written at all: the change
-            // lived only in memory until some later full save happened to pick it up.)
-            if (pageContentData == null)
+            // The caller's action runs between the merge and the write, and adding, duplicating,
+            // deleting or relaying out a page certainly changes the book. We cannot know which
+            // pages such an action touches, so the write must happen and must be a full one; the
+            // per-page fast path needs a modified page element we do not have.
+            //
+            // Merging the page cannot decide this for us, and that is the trap: the merge marks the
+            // book dirty only when the page's own content differs from what the book already holds,
+            // so a command used on a page the user never edited leaves the book looking clean at
+            // the very moment the action is about to make it dirty -- and SaveBookToDisk then
+            // returns without writing: the action ran, the screen showed the result, and nothing
+            // reached disk until some later full save happened to pick it up. Changing the page
+            // size or orientation, choosing a different layout for a page, setting the copyright
+            // and licence, and re-reading a sign-language video from disk all went that way when
+            // used on a page the user had not typed on.
+            //
+            // Null content says the same thing from the other direction: there is no merge at all,
+            // so nothing else can mark the book dirty. (It also means the page has not changed
+            // since it loaded -- see PageSnapshot -- rather than that we have not been told yet.)
+            if (actionChangesTheBook || pageContentData == null)
             {
                 _bookDomHasUnwrittenChanges = true;
                 _nextSaveMustBeFull = true;
@@ -2314,14 +2325,11 @@ namespace Bloom.Edit
                 takeTheSnapshot();
                 return;
             }
-            MergeCurrentPageThenSave(
-                () =>
-                {
-                    takeTheSnapshot();
-                    return page.Id;
-                },
-                forceFullSave: true
-            );
+            MergeCurrentPageThenSave(() =>
+            {
+                takeTheSnapshot();
+                return page.Id;
+            });
         }
 
         /// <summary>
@@ -2386,10 +2394,19 @@ namespace Bloom.Edit
 
         public void HandlePageDomLoadedEvent(string pageId, string loadId = null)
         {
-            // From now until the next page reports itself loaded, this is the only load whose
-            // snapshots we will accept. See ReceivePageSnapshot.
-            _currentPageLoadId = loadId;
             var nowEditing = _stateMachine.ToEditing(pageId);
+            // Adopt the load id ONLY for a notification we accepted, which means it is for the page
+            // we are now editing. These arrive asynchronously, so one from a page we have already
+            // moved on from can turn up late; taking its id would make us refuse every snapshot the
+            // page the user is actually on sends, and since a refused snapshot is retried rather
+            // than dropped, it would go on refusing. C# would then hold nothing for that page, and
+            // leaving the tab or quitting would write nothing -- losing not the last keystroke but
+            // everything since the page loaded. (Devin caught this.)
+            //
+            // From here until the next page reports itself loaded, this is the only load whose
+            // snapshots we accept. See ReceivePageSnapshot.
+            if (nowEditing)
+                _pageSnapshot.AcceptSnapshotsFromLoad(loadId);
             // If we are in the middle of the "Update Book" per-page pass, a page finishing loading
             // (which means the edit-tab page setup code has run on it) is our cue to save it and
             // move on to the next page. See StartUpdatingAllPages().
@@ -2453,7 +2470,13 @@ namespace Bloom.Edit
                 // We are already in the Edit tab. Kick off the chain by navigating to the first page.
                 // (MergeCurrentPageThenSave saves whatever page is showing, then navigates.)
                 var firstPageId = _pageUpdateOrder[0];
-                MergeCurrentPageThenSave(() => firstPageId, () => FinishUpdatingAllPages());
+                MergeCurrentPageThenSave(
+                    () => firstPageId,
+                    () => FinishUpdatingAllPages(),
+                    // The action only names the page to show; FinishUpdatingAllPages is the
+                    // could-not-save fallback, not the change.
+                    actionChangesTheBook: false
+                );
             }
             else
             {
@@ -2479,7 +2502,11 @@ namespace Bloom.Edit
                 // Save the page we just visited (persisting the edit-tab setup that ran on it) and
                 // move on. Reusing the normal save-then-navigate cycle means each page gets exactly
                 // the treatment it would if the user clicked it in the Edit tab.
-                MergeCurrentPageThenSave(() => nextPageId, () => FinishUpdatingAllPages());
+                MergeCurrentPageThenSave(
+                    () => nextPageId,
+                    () => FinishUpdatingAllPages(),
+                    actionChangesTheBook: false
+                );
             }
             else
             {

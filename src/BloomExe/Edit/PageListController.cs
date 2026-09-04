@@ -55,6 +55,10 @@ namespace Bloom.Edit
             // silently discarded.
             _model.MergeCurrentPageThenSave(
                 () => pageId,
+                // Clicking a thumbnail changes nothing in the book: the action just names the page
+                // to go to. This is the case the whole "do not write a page nobody edited"
+                // optimisation exists for, so it must not claim the book changed.
+                actionChangesTheBook: false,
                 pageContentFromBrowser: (e as PageSelectedChangedEventArgs)?.PageContentFromBrowser
             );
         }

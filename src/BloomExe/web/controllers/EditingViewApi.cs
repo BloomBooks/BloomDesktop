@@ -354,7 +354,12 @@ namespace Bloom.web.controllers
         {
             var pageId = request.GetPostStringOrNull();
             request.PostSucceeded();
-            View.Model.MergeCurrentPageThenSave(() => pageId, () => { });
+            View.Model.MergeCurrentPageThenSave(
+                () => pageId,
+                () => { },
+                // The action only names the page to go to.
+                actionChangesTheBook: false
+            );
         }
 
         /// <summary>

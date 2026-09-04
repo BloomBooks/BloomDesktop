@@ -341,7 +341,6 @@ namespace Bloom.Edit
                     PageSelectedChanged(movedPage, new EventArgs());
                     return movedPage.Id;
                 },
-                forceFullSave: true,
                 pageContentFromBrowser: pageContentFromBrowser
             );
         }
