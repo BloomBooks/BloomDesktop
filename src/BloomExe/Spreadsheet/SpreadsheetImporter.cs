@@ -1781,8 +1781,18 @@ namespace Bloom.Spreadsheet
         /// translation group: an object of a registered kind is one of the page's blocks,
         /// so the lead row advances onto the page it belongs to (which for a page whose
         /// only content is that object is the only thing that could) and takes that page's
-        /// next unused object. A page that has no object left for the row gets a warning
-        /// naming the row, and the whole family is skipped, leaving the page as it was.
+        /// next unused object.
+        ///
+        /// A family that has nowhere to go gets a warning naming its lead row and is
+        /// skipped. Where that leaves the importer depends on whether the lead row starts a
+        /// page. Export writes a page type on the first row it makes for a page, so a lead
+        /// row carrying one is the first row of its page, and it moves onto a new page
+        /// whether or not an object is found there: if it did not, every row after it would
+        /// land a page early, and the page it was meant for would be thrown away as unused
+        /// at the end of the import. (Past the end of the book this adds a copy of the last
+        /// page with nothing to put on it, as it does for any other row.) A lead row with no
+        /// page type belongs to the page we are on, so if that page has no object for it we
+        /// skip it in place and the page stays as it was.
         /// </summary>
         /// <param name="kind">The kind whose LeadRowLabel this row carries.</param>
         /// <param name="pageType">The page type named in this row's [page type] cell, which
@@ -1794,6 +1804,22 @@ namespace Bloom.Spreadsheet
             var firstRowIndex = _currentRowIndex;
             var lastRowIndex = _currentRowIndex + rows.Count - 1;
             var leadRowLabel = kind.LeadRowLabel;
+
+            // Find the object first, so that a family we end up skipping still holds its
+            // place in the page order (see the summary). Only a lead row that starts a page,
+            // or one whose page still has an unused object, moves the importer at all.
+            SafeXmlElement target = null;
+            if (!string.IsNullOrEmpty(pageType) || CurrentPageHasAnUnusedObject())
+            {
+                var typesFound = AdvanceToNextSetOfBlocks(BlockTypes.Object, pageType);
+                if ((typesFound & BlockTypes.Object) == BlockTypes.Object)
+                    target = _blocksOnPage[objectIndex][_blockOnPageIndexes[objectIndex]];
+                // With more than one kind sharing the object slot we could land on an
+                // object belonging to another kind; better to say we found nothing than to
+                // hand a kind something it does not understand.
+                if (target != null && !kind.GetObjectsOnPage(_currentPage).Contains(target))
+                    target = null;
+            }
 
             if (_sheet.GetColumnForTag(InternalSpreadsheet.DetailsColumnLabel) < 0)
             {
@@ -1808,32 +1834,11 @@ namespace Bloom.Spreadsheet
                 return;
             }
 
-            // Check first that advancing could actually find an object of this kind. Bloom
-            // has no default page that holds one, and it must not invent one, so if there
-            // is none to be had we say so and skip rather than advancing off the end of the
-            // book and adding a page that still has no object for us.
-            if (!AnObjectOfKindIsStillAvailable(kind))
-            {
-                WarnNoObjectFor(leadRowLabel);
-                _currentRowIndex = lastRowIndex;
-                return;
-            }
-
-            // This is what gets us onto the page the object belongs to, and picks which of
-            // that page's objects this row is for.
-            var typesFound = AdvanceToNextSetOfBlocks(BlockTypes.Object, pageType);
-            var target =
-                (typesFound & BlockTypes.Object) == BlockTypes.Object
-                    ? _blocksOnPage[objectIndex][_blockOnPageIndexes[objectIndex]]
-                    : null;
-            // With more than one kind sharing the object slot we could land on an object
-            // belonging to another kind; better to say we found nothing than to hand a kind
-            // something it does not understand.
-            if (target != null && !kind.GetObjectsOnPage(_currentPage).Contains(target))
-                target = null;
             if (target == null)
             {
-                WarnNoObjectFor(leadRowLabel);
+                Warn(
+                    $"Row {CurrentRowIndexForMessages} is a {leadRowLabel} row, but Bloom found nowhere on the page to put it, so it was skipped."
+                );
                 _currentRowIndex = lastRowIndex;
                 return;
             }
@@ -1854,13 +1859,13 @@ namespace Bloom.Spreadsheet
         }
 
         /// <summary>
-        /// Tells the user that the page had nowhere to put the object a lead row describes.
+        /// True if the page we are on has an object (of any registered kind) that no lead
+        /// row has used yet, so that the next lead row can stay on this page.
         /// </summary>
-        private void WarnNoObjectFor(string leadRowLabel)
+        private bool CurrentPageHasAnUnusedObject()
         {
-            Warn(
-                $"Row {CurrentRowIndexForMessages} is a {leadRowLabel} row, but Bloom found nowhere on the page to put it, so it was skipped."
-            );
+            var objects = _blocksOnPage[objectIndex];
+            return objects != null && _blockOnPageIndexes[objectIndex] + 1 < objects.Count;
         }
 
         /// <summary>
@@ -1877,36 +1882,6 @@ namespace Bloom.Spreadsheet
                 rows.Add(_inputRows[i]);
             }
             return rows;
-        }
-
-        /// <summary>
-        /// Whether there is still an object of this kind somewhere for another of its lead
-        /// rows to fill: one on the current page that we have not used yet, one on a page we
-        /// have not reached, or one on the last content page, since a copy of that page is
-        /// what import adds when it runs out of pages.
-        /// </summary>
-        private bool AnObjectOfKindIsStillAvailable(ISpreadsheetObjectKind kind)
-        {
-            var objectsOnCurrentPage = _blocksOnPage[objectIndex];
-            if (objectsOnCurrentPage != null && _currentPage != null)
-            {
-                var ofThisKind = kind.GetObjectsOnPage(_currentPage);
-                for (
-                    var i = Math.Max(_blockOnPageIndexes[objectIndex] + 1, 0);
-                    i < objectsOnCurrentPage.Count;
-                    i++
-                )
-                {
-                    if (ofThisKind.Contains(objectsOnCurrentPage[i]))
-                        return true;
-                }
-            }
-            for (var i = Math.Max(_currentPageIndex + 1, 0); i < _pages.Count; i++)
-            {
-                if (kind.GetObjectsOnPage(_pages[i]).Count > 0)
-                    return true;
-            }
-            return _lastContentPage != null && kind.GetObjectsOnPage(_lastContentPage).Count > 0;
         }
 
         private List<SafeXmlElement> GetBloomCanvases(SafeXmlElement ancestor)

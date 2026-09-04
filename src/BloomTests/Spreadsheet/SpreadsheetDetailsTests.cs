@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Bloom.Book;
 using Bloom.SafeXml;
@@ -65,25 +66,30 @@ namespace BloomTests.Spreadsheet
 
         /// <summary>
         /// The test book: a heading group, then whatever markup the caller wants in the
-        /// middle, then a trailing group. Putting the object between two ordinary groups is
-        /// what lets us see whether its rows land in the right place.
+        /// middle, then a trailing group, all on one page. Putting the object between two
+        /// ordinary groups is what lets us see whether its rows land in the right place.
         /// </summary>
         private static string MakeBook(string middleMarkup)
         {
-            return @"
-<!DOCTYPE html>
+            return MakeBookWithPages(
+                TranslationGroup("Encabezado", "Heading")
+                    + middleMarkup
+                    + TranslationGroup("Pie", "Footing")
+            );
+        }
 
-<html>
-<head>
-</head>
-
-<body data-l1=""es"" data-l2=""en"" data-l3="""">
-	<div id=""bloomDataDiv"">
-		<div data-book=""bookTitle"" lang=""en"">
-			<p>Details round trip</p>
-		</div>
-	</div>
-    <div class=""bloom-page numberedPage customPage A5Portrait side-right bloom-bilingual"" data-page="""" id=""3a71a95a-4b62-4890-80b6-6b5b26f1b78a"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang="""">
+        /// <summary>
+        /// A book with one "Just Text" page per argument, each page holding just the
+        /// markup given for it.
+        /// </summary>
+        private static string MakeBookWithPages(params string[] pageMarkups)
+        {
+            var pages = new StringBuilder();
+            for (var i = 0; i < pageMarkups.Length; i++)
+            {
+                pages.Append(
+                    $@"
+    <div class=""bloom-page numberedPage customPage A5Portrait side-right bloom-bilingual"" data-page="""" id=""3a71a95a-4b62-4890-80b6-6b5b26f1b78{i}"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{i + 1}"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Just Text"" lang=""en"">
             Just Text
         </div>
@@ -93,16 +99,41 @@ namespace BloomTests.Spreadsheet
         <div class=""split-pane-component marginBox"" style="""">
             <div class=""split-pane-component-inner"">
 "
-                + TranslationGroup("Encabezado", "Heading")
-                + middleMarkup
-                + TranslationGroup("Pie", "Footing")
-                + @"
+                        + pageMarkups[i]
+                        + @"
             </div>
         </div>
     </div>
+"
+                );
+            }
+            return @"
+<!DOCTYPE html>
+
+<html>
+<head>
+</head>
+
+<body data-l1=""es"" data-l2=""en"" data-l3="""">
+    <div id=""bloomDataDiv"">
+        <div data-book=""bookTitle"" lang=""en"">
+            <p>Details round trip</p>
+        </div>
+    </div>"
+                + pages
+                + @"
 </body>
 </html>
 ";
+        }
+
+        /// <summary>The book's pages, in order.</summary>
+        private static List<SafeXmlElement> PagesOf(HtmlDom dom)
+        {
+            return dom
+                .RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
         }
 
         private StubObjectKind _kind;
@@ -369,6 +400,77 @@ namespace BloomTests.Spreadsheet
                 Does.Not.Contain("Uno-es"),
                 "there was nowhere to put the object, so its text must not have leaked onto the page"
             );
+            Assert.That(
+                PagesOf(_domWithoutObject).Count,
+                Is.EqualTo(1),
+                "a lead row in the middle of a page is skipped in place: it must not start a new page and push the footing onto it"
+            );
+        }
+
+        [Test]
+        public async Task Import_WhenTheBookHasNoObject_LaterRowsStillLandOnTheirOwnPages()
+        {
+            // A spreadsheet whose first page holds nothing but an object, then a page of
+            // text, imported into a book that has no such object anywhere. The object's
+            // rows have nowhere to go, but they must still hold their place in the page
+            // order: the text that follows belongs on the second page, not the first, and
+            // the first page must not be thrown away as unused.
+            var sheet = ExportBook(
+                MakeBookWithPages(StubObject("Uno", "Dos"), TranslationGroup("Segundo", "Second"))
+            );
+            Assert.That(
+                sheet.ContentRows.Select(r => r.MetadataKey).ToList(),
+                Is.EqualTo(
+                    new[]
+                    {
+                        "[book title]",
+                        StubObjectKind.LeadLabel,
+                        StubObjectKind.PartLabel,
+                        StubObjectKind.PartLabel,
+                        InternalSpreadsheet.PageContentRowLabel,
+                    }
+                ),
+                "sanity: an object-only page followed by a text page"
+            );
+
+            var target = new HtmlDom(
+                MakeBookWithPages(
+                    TranslationGroup("Primero", "First"),
+                    TranslationGroup("Viejo", "Old")
+                ),
+                true
+            );
+            var warnings = await RoundTripThroughFileAndImportAsync(sheet, target);
+
+            Assert.That(warnings, Has.Exactly(1).Contains(StubObjectKind.LeadLabel));
+            var pages = PagesOf(target);
+            Assert.That(pages.Count, Is.EqualTo(2), "neither page should have been thrown away");
+            Assert.That(
+                pages[0].InnerXml,
+                Does.Contain("Primero").And.Not.Contain("Segundo"),
+                "the first page had nowhere to put the object, so it must be left as it was"
+            );
+            Assert.That(
+                pages[1].InnerXml,
+                Does.Contain("Segundo").And.Not.Contain("Viejo"),
+                "the text row belongs on the second page"
+            );
+        }
+
+        [Test]
+        public async Task Import_OfAnObjectOnlyPage_IntoABookWithNoObject_KeepsThatPage()
+        {
+            // The object's rows are the whole spreadsheet. Skipping them must still count
+            // as reaching the page they were meant for, or the cleanup at the end of the
+            // import would throw that page away as one the spreadsheet never got to.
+            var sheet = ExportBook(MakeBookWithPages(StubObject("Uno", "Dos")));
+            var target = new HtmlDom(MakeBookWithPages(TranslationGroup("Primero", "First")), true);
+            var warnings = await RoundTripThroughFileAndImportAsync(sheet, target);
+
+            Assert.That(warnings, Has.Exactly(1).Contains(StubObjectKind.LeadLabel));
+            var pages = PagesOf(target);
+            Assert.That(pages.Count, Is.EqualTo(1), "the page must not be thrown away");
+            Assert.That(pages[0].InnerXml, Does.Contain("Primero"));
         }
 
         [Test]
