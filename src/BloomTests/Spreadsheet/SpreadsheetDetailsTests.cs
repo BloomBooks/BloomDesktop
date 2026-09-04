@@ -402,6 +402,44 @@ namespace BloomTests.Spreadsheet
         }
 
         [Test]
+        public void ReadFromFile_LeavesTheDetailsCellExactlyAsWritten()
+        {
+            // The JSON in a [details] cell is copied verbatim, so text in it that happens to
+            // look like one of Excel's _xNNNN_ character escapes must come back as that
+            // text, not as the character it would name; and its markup characters must not
+            // be XML-escaped. (EPPlus itself still rewrites the doubly-escaped form
+            // _x005F_xNNNN_, which Bloom does not try to protect.)
+            const string details = "{\"kind\":\"stub\",\"label\":\"_x0041_ & <b>\"}";
+            var sheet = new InternalSpreadsheet();
+            sheet.AddColumnForTag(
+                InternalSpreadsheet.DetailsColumnLabel,
+                InternalSpreadsheet.DetailsColumnFriendlyName
+            );
+            var row = new ContentRow(sheet);
+            row.SetCell(InternalSpreadsheet.RowTypeColumnLabel, StubObjectKind.LeadLabel);
+            row.SetCell(InternalSpreadsheet.DetailsColumnLabel, details);
+
+            // Sanity: the decoding that ordinary cells get would indeed change this text.
+            Assert.That(
+                SpreadsheetIO.ReplaceExcelEscapedCharsAndEscapeXmlOnes(details, false),
+                Is.Not.EqualTo(details)
+            );
+
+            using (var tempFile = TempFile.WithExtension("xlsx"))
+            {
+                sheet.WriteToFile(tempFile.Path);
+                var readBack = InternalSpreadsheet.ReadFromFile(tempFile.Path);
+                Assert.That(
+                    readBack
+                        .ContentRows.Single()
+                        .GetCell(InternalSpreadsheet.DetailsColumnLabel)
+                        .Content,
+                    Is.EqualTo(details)
+                );
+            }
+        }
+
+        [Test]
         public async Task Import_OfAContinuationRowWithNoLeadRow_ReportsIt()
         {
             // A hand-made sheet holding just one part row, as a user would leave behind by

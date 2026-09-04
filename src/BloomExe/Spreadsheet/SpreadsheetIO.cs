@@ -366,6 +366,21 @@ namespace Bloom.Spreadsheet
             return IsWysiwygFormattedColumn(row, index) && IsWysiwygFormattedRow(row);
         }
 
+        /// <summary>
+        /// True for a cell of the [details] column, whose JSON we must get back byte for
+        /// byte. Such a cell gets neither XML escaping nor the decoding of Excel's _xNNNN_
+        /// character escapes: text that merely looks like such an escape (say, "_x0041_" in
+        /// a label) must stay as it is, not become the character it would name. Excel needs
+        /// those escapes only for characters XML cannot hold, and JSON never holds one raw.
+        /// </summary>
+        private static bool IsCopiedVerbatim(SpreadsheetRow row, int index)
+        {
+            if (row.Spreadsheet.AllRows().Count() <= 1)
+                return false; // the header row itself is being read; see WantXmlEscaping
+            return row.Spreadsheet.Header.GetRow(0).GetCell(index).Content
+                == InternalSpreadsheet.DetailsColumnLabel;
+        }
+
         private static bool WantXmlEscaping(SpreadsheetRow row, int index)
         {
             if (row.Spreadsheet.AllRows().Count() <= 1)
@@ -443,13 +458,16 @@ namespace Bloom.Spreadsheet
                 }
                 else
                 {
-                    var cellContent = worksheet.Cells[rowIndex + 1, c + 1].Value ?? "";
-                    row.AddCell(
-                        ReplaceExcelEscapedCharsAndEscapeXmlOnes(
-                            cellContent.ToString(),
-                            WantXmlEscaping(row, c)
-                        )
-                    );
+                    var cellContent = (worksheet.Cells[rowIndex + 1, c + 1].Value ?? "").ToString();
+                    if (IsCopiedVerbatim(row, c))
+                        row.AddCell(cellContent);
+                    else
+                        row.AddCell(
+                            ReplaceExcelEscapedCharsAndEscapeXmlOnes(
+                                cellContent,
+                                WantXmlEscaping(row, c)
+                            )
+                        );
                 }
             }
         }
