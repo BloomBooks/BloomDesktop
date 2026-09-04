@@ -279,6 +279,9 @@ export async function setContentLanguages(
     page: Page,
     tags: string[],
 ): Promise<void> {
+    // Each change makes Bloom reload the page, so this is a page-changing request and must not
+    // arrive while the Edit tab is still loading one. See waitForEditTabSettled.
+    await waitForEditTabSettled(page);
     const usage = await apiGetJson<IContentLanguageUsage>(
         page,
         "editView/topBar/contentLanguageUsage",
@@ -312,7 +315,7 @@ export async function setContentLanguages(
             )
             .toBe(wanted);
     }
-    await waitForEditablePage(page);
+    await waitForEditTabSettled(page);
 }
 
 /** The Edit tab's frame holding the page being edited. Throws if the Edit tab is not showing. */
@@ -366,6 +369,79 @@ export async function waitForEditablePage(
                 "Bloom never finished loading the page in the Edit tab (its editing state never became Editing).",
         })
         .toBe("true");
+}
+
+/** What e2e/editState replies with: what the Edit tab is doing. */
+interface IEditTabState {
+    /** A name from Bloom's State enum: NoPage, Navigating, Editing, SavePending, SavedAndStripped. */
+    state: string;
+    /** The page that state is about, or "". */
+    pageId: string;
+    /** Whether the Edit tab is the tab being shown. */
+    visible: boolean;
+    /** How many times the page now shown has told Bloom its DOM had loaded. */
+    pageLoadAnnouncements: number;
+}
+
+/**
+ * How long the Edit tab must report the same page, with no new announcement, before this counts
+ * as settled. It has to cover the gap between the two announcements of one page load, which has
+ * been seen to reach a second. John approved this wait on 2026-09-03, as
+ * src/BloomBrowserUI/AGENTS.md asks.
+ */
+const kEditTabQuietPeriodMs = 1500;
+
+/**
+ * Wait until the Edit tab is settled on a page: showing it, in the Editing state, and done
+ * announcing that the page has loaded.
+ *
+ * Ask this before any request that changes the page. The Edit tab refuses such a request while it
+ * navigates, and a page announces itself to Bloom more than once, so a request that arrives
+ * between two of those announcements starts a save that the second announcement leaves unanswered
+ * (AUTOMATION-DEBT.md: "A page change asked for while the Edit tab is still loading a page can be
+ * lost"). Waiting for the Editing state alone is therefore not enough. The condition this waits
+ * for is that the page and the count of announcements have both held still for
+ * kEditTabQuietPeriodMs, so it returns as soon as that holds.
+ *
+ * The DOM is no help here. Bloom leaves the previous page in the frame while it loads the next
+ * one, so a test looking at the frame sees a settled Edit tab throughout.
+ */
+export async function waitForEditTabSettled(
+    page: Page,
+    timeoutMs = 90000,
+): Promise<void> {
+    let lastReading = "";
+    let unchangedSince = 0;
+    await expect
+        .poll(
+            async () => {
+                const now = await apiGetJson<IEditTabState>(
+                    page,
+                    "e2e/editState",
+                );
+                if (!now.visible || now.state !== "Editing") {
+                    lastReading = "";
+                    return now.state;
+                }
+                const reading = `${now.pageId} ${now.pageLoadAnnouncements}`;
+                if (reading !== lastReading) {
+                    lastReading = reading;
+                    unchangedSince = Date.now();
+                }
+                const quietFor = Date.now() - unchangedSince;
+                if (quietFor < kEditTabQuietPeriodMs)
+                    return `Editing, but page ${now.pageId} last announced itself ${quietFor}ms ago`;
+                return "Editing";
+            },
+            {
+                // Poll often, so that the wait is only as long as the quiet period needs.
+                intervals: [250],
+                timeout: timeoutMs,
+                message:
+                    "The Edit tab never settled on a page, so a request to change pages could be lost.",
+            },
+        )
+        .toBe("Editing");
 }
 
 /** One page of the selected book, as e2e/pages reports it. */
@@ -467,7 +543,7 @@ export async function addPage(
             message: `Bloom never added the "${templatePageLabel}" page(s).`,
         })
         .toBe(before + times);
-    await waitForEditablePage(page);
+    await waitForEditTabSettled(page);
 }
 
 /**
@@ -491,31 +567,75 @@ export async function getShownPageId(page: Page): Promise<string | undefined> {
  * it is leaving, so text typed into a box reaches the file only once the book moves off that page.
  */
 export async function goToPage(page: Page, pageId: string): Promise<void> {
-    // The Edit tab drops a jump that arrives while it is still loading a page, so wait for it to
-    // be showing one before asking for another.
-    await waitForEditablePage(page);
-
-    // Ask up to three times. Coming back from the Publish tab, the Edit tab can still swallow a
-    // jump after it looks ready, and asking again costs a few seconds where failing costs the run.
+    // Wait for the Edit tab first. A jump asked for while it is still loading a page is refused,
+    // and one asked for between two announcements of one page load wedges it (see
+    // waitForEditTabSettled). Asking at a moment when the tab acts on the jump at once avoids
+    // both.
+    // Then ask, and ask again if the tab was busy after all. The tab answers with an error when
+    // it cannot jump (EditingModel.JumpToPage), rather than dropping the jump and reporting
+    // success as it used to, so a refusal is visible here instead of turning into a 60-second
+    // wait for a page that is not coming. Three tries, because the wait above closes the window
+    // for a refusal without quite shutting it: the tab can start loading the page list in the
+    // moment between the wait finishing and this request arriving.
+    let refusal: unknown;
+    for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) await waitForEditTabSettled(page);
+        refusal = undefined;
+        await apiPost(page, "editView/jumpToPage", pageId, "text/plain").catch(
+            (error) => {
+                refusal = error;
+            },
+        );
+        if (refusal === undefined) break;
+    }
+    if (refusal !== undefined)
+        throw new Error(
+            `The Edit tab refused to show page ${pageId} three times running: ${refusal}`,
+        );
     const showing = async () =>
         (await page
             .frame({ name: "page" })
             ?.locator(`.bloom-page[id="${pageId}"]`)
             .count()
             .catch(() => 0)) ?? 0;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-        await apiPost(page, "editView/jumpToPage", pageId, "text/plain");
-        try {
-            await expect.poll(showing, { timeout: 20000 }).toBe(1);
-            await waitForEditablePage(page);
-            return;
-        } catch {
-            // fall through and ask again
-        }
+    try {
+        await expect.poll(showing, { timeout: 60000 }).toBe(1);
+    } catch {
+        // Say what the frame does hold. "Bloom never showed the page" on its own cannot tell a
+        // page that never arrived from a page that arrived and was replaced by another one.
+        const frame = page.frame({ name: "page" });
+        const heldPageIds = frame
+            ? await frame
+                  .locator(".bloom-page")
+                  .evaluateAll((pages) => pages.map((p) => p.id))
+                  .catch(() => ["(could not read the frame)"])
+            : [];
+        // Read this the forgiving way. A shell document Bloom is not driving is one of the
+        // failures this message exists to explain, and in exactly that case the request can
+        // fail. Letting it throw here would replace the whole diagnostic with its own error.
+        const drivenShell = await apiGet(page, "e2e/shellUrl")
+            .then((response) => response.body)
+            .catch((error) => `(could not be read: ${error})`);
+        // The state the Edit tab is stuck in says which of the two failures this is: a jump that
+        // wedged the tab leaves it in SavePending or Navigating on the page it already had.
+        const editState = await apiGet(page, "e2e/editState")
+            .then((response) => response.body)
+            .catch((error) => `(could not be read: ${error})`);
+        throw new Error(
+            `Bloom never showed page ${pageId} in the Edit tab. ` +
+                `The Edit tab is at ${editState}. ` +
+                (frame
+                    ? `The 'page' frame is at ${frame.url()} and holds [${heldPageIds.join(", ")}].`
+                    : `There is no 'page' frame.`) +
+                ` Bloom drives the shell at ${drivenShell}; ` +
+                `this test is watching ${page.url()}. If those name different documents, the test ` +
+                `attached to the wrong one and nothing Bloom does will ever appear (see AUTOMATION-DEBT.md).`,
+        );
     }
-    throw new Error(
-        `Bloom never showed page ${pageId} in the Edit tab, after three attempts.`,
-    );
+    // The page being in the frame is not the whole of arriving: Bloom is still setting it up, and
+    // it re-navigates the page list too. Leave the Edit tab settled, so whatever the test does
+    // next is not working against a frame that is about to be replaced.
+    await waitForEditTabSettled(page);
 }
 
 /**
