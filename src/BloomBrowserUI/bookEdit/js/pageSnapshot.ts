@@ -87,6 +87,38 @@ let changeCount = 0;
 // The page we have already complained about, so that a page which fails every time reports once
 // rather than on every keystroke.
 let pageWeReportedAFailureFor: string | undefined;
+// Set while the page is in a mode where gathering it would disturb what the user is doing. See
+// setSnapshotsSuspended.
+let suspendedFor: string | undefined;
+
+/**
+ * Stop volunteering snapshots, or start again. Pass a short reason to suspend, undefined to resume.
+ *
+ * We gather by cloning the body and cleaning the CLONE, so gathering is normally invisible. There
+ * is one exception, and it is the reason this exists: the toolbox tool is asked to take its markup
+ * off the clone, and the game tool does that by calling bloom-player's undoPrepareActivity(), which
+ * is NOT confined to the element it is given -- it restores the positions bloom-player recorded
+ * when play mode began, on the LIVE elements, whichever element we hand it.
+ *
+ * On the live page that is exactly right, and it is what leaving the Play tab does. On a clone it
+ * is destructive: it snaps the items the user has dragged back to where they started. Since we
+ * gather whenever the page changes, and dragging an item changes the page, the game became
+ * unplayable in the editor -- every drag undid itself a moment later.
+ *
+ * Suspending loses nothing. Nothing that happens in play mode belongs in the book, an explicit
+ * save still gathers directly rather than through us, and any change made while we were suspended
+ * is picked up by the snapshot we take on resuming.
+ */
+export function setSnapshotsSuspended(reason: string | undefined): void {
+    suspendedFor = reason;
+    if (reason) {
+        if (timer !== undefined) window.clearTimeout(timer);
+        timer = undefined;
+    } else {
+        // Whatever changed while we were suspended still owes C# a snapshot.
+        scheduleSnapshot();
+    }
+}
 
 function currentPageId(): string | undefined {
     return document.querySelector(".bloom-page")?.id || undefined;
@@ -95,6 +127,8 @@ function currentPageId(): string | undefined {
 async function takeSnapshot(): Promise<void> {
     const pageId = pageIdBeingWatched;
     if (!pageId || !gatherPageContent) return;
+    // Not while gathering would disturb the live page; resuming takes one.
+    if (suspendedFor) return;
     if (!baselineTaken) {
         // The page is still finishing loading. Come back once we know what "unchanged" looks like.
         scheduleSnapshot();
@@ -180,6 +214,7 @@ async function takeSnapshot(): Promise<void> {
 }
 
 function scheduleSnapshot(): void {
+    if (suspendedFor) return; // setSnapshotsSuspended takes one when it resumes
     if (timer !== undefined) window.clearTimeout(timer);
     timer = window.setTimeout(() => {
         timer = undefined;
@@ -208,6 +243,10 @@ export function startWatchingPageForSnapshots(
     changeCount = 0;
     baselineTaken = false;
     pageWeReportedAFailureFor = undefined;
+    // Deliberately NOT clearing suspendedFor: page setup can put a game page straight into its
+    // Play tab (the tab is remembered per page), and that suspension may well be set before we
+    // are started. Each page load is a fresh document, and so a fresh copy of this module, so
+    // there is nothing to inherit from the page we left.
 
     // Take a baseline of the page as it ends up once it has finished loading, and treat that as
     // "already sent". Without it every page posts a snapshot within a second of being opened, even

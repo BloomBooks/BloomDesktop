@@ -1995,6 +1995,14 @@ export function setActiveDragActivityTab(tab: number) {
     const canvasElementManager = getCanvasElementManager();
     if (effectiveTab === playTabIndex) {
         canvasElementManager!.suspendComicEditing("forGamePlayMode");
+        // Stop the page frame volunteering snapshots while we are in play mode. Gathering the page
+        // asks the current tool to take its markup off the CLONE, and ours does that by calling
+        // undoPrepareActivity() -- which does not confine itself to the element it is given: it
+        // puts the LIVE draggables back where prepareActivity() found them. Gathering happens
+        // whenever the page changes, and dragging an item changes the page, so without this every
+        // drag undid itself a moment later and the game could not be played. Nothing that happens
+        // in play mode belongs in the book, so there is nothing to lose by not watching.
+        pageFrameExports?.setSnapshotsSuspended("game play mode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
         prepareActivity(page, (_next) => {
@@ -2038,6 +2046,9 @@ export function setActiveDragActivityTab(tab: number) {
         //Slider: wrapper?.removeEventListener("click", designTimeClickOnSlider);
     } else {
         undoPrepareActivity(page);
+        // Here undoPrepareActivity IS being given the live page, which is what it expects, so the
+        // page is now genuinely out of play mode and safe to gather again.
+        pageFrameExports?.setSnapshotsSuspended(undefined);
         canvasElementManager?.resumeComicEditing();
         canvasElementManager?.checkActiveElementIsVisible();
         //Slider: wrapper?.addEventListener("click", designTimeClickOnSlider);

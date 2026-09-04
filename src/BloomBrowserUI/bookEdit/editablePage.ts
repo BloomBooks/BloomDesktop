@@ -19,6 +19,7 @@ import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants"
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
 import {
     getPageLoadId,
+    setSnapshotsSuspended,
     startWatchingPageForSnapshots,
 } from "./js/pageSnapshot";
 
@@ -62,6 +63,10 @@ export interface IPageFrameExports {
     // disturbing the live page.
     getPageContentForSaveWhenReady(): Promise<string>;
     pageUnloading(): void;
+    // Stop/start volunteering snapshots of the page. The game tool uses this while the page is in
+    // its Play tab; see setSnapshotsSuspended in js/pageSnapshot.ts for why gathering is not free
+    // there.
+    setSnapshotsSuspended(reason: string | undefined): void;
     copySelection(): void;
     cutSelection(): void;
     pasteClipboard(): void;
@@ -158,6 +163,7 @@ export {
     savePageWithoutReloading,
     captureContentForExternalProcessing,
     pageUnloading,
+    setSnapshotsSuspended,
     topBarButtonClick,
     copySelection,
     cutSelection,
@@ -421,6 +427,7 @@ interface EditablePageBundleApi {
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
     getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
+    setSnapshotsSuspended: typeof setSnapshotsSuspended;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
     pasteClipboard: typeof pasteClipboard;
@@ -499,6 +506,7 @@ window.editablePageBundle = {
     captureContentForExternalProcessing,
     getPageContentForSaveWhenReady,
     pageUnloading,
+    setSnapshotsSuspended,
     copySelection,
     cutSelection,
     pasteClipboard,
