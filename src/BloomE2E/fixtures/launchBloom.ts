@@ -71,6 +71,19 @@ export interface ICollectionSpec {
      * three; two entries mean the collection has no Language3.
      */
     languages: string[];
+    /**
+     * A Bloom subscription code, which is what a person types in the Settings dialog to put the
+     * collection under a subscription. Left out, the collection has none (the Basic tier). A test
+     * that needs an enterprise feature uses TEST_ENTERPRISE_SUBSCRIPTION_CODE from
+     * helpers/collectionSettings.ts.
+     */
+    subscriptionCode?: string;
+    /**
+     * The Bloom Library bookshelf every book of the collection is uploaded to, by its url key, e.g.
+     * "test-bookshelf-1". Bloom honours it only under an enterprise subscription whose bookshelves
+     * include it, which is what the Settings dialog offers a person.
+     */
+    bookshelf?: string;
 }
 
 /** Options for launchBloom. Give exactly one of collectionName and collectionSpec. */
@@ -183,11 +196,16 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * window IS visible.
  */
 function environmentForBloom(): NodeJS.ProcessEnv {
+    // Every Bloom a test launches talks to the sandbox, dev.bloomlibrary.org, never to
+    // bloomlibrary.org: a test signs in there with a test account and uploads for real. A Debug
+    // Bloom uses the sandbox anyway; a Release Bloom, which is what CI builds, uses bloomlibrary.org
+    // unless this variable says otherwise (see BookUpload.UseSandboxWithoutUserChoice).
+    const env: NodeJS.ProcessEnv = { ...process.env, BloomSandbox: "true" };
     const asked = process.env.BLOOM_AUTOMATION_MONITOR?.trim().toLowerCase();
     if (process.env.PWDEBUG && (asked === "headless" || asked === "0")) {
-        return { ...process.env, BLOOM_AUTOMATION_MONITOR: "" };
+        env.BLOOM_AUTOMATION_MONITOR = "";
     }
-    return process.env;
+    return env;
 }
 
 /** What common/instanceInfo tells us about a running Bloom. Only the fields we use. */
@@ -264,10 +282,18 @@ export function writeNewCollection(
     fs.mkdirSync(collectionDir, { recursive: true });
     fs.writeFileSync(
         Path.join(collectionDir, `${spec.name}.bloomCollection`),
-        makeCollectionXml(spec.languages),
+        makeCollectionXml(spec.languages, undefined, spec),
         "utf8",
     );
     return collectionDir;
+}
+
+/** The settings makeCollectionXml writes beyond the languages and the front/back matter pack. */
+export interface ICollectionXmlExtras {
+    /** See ICollectionSpec.subscriptionCode. */
+    subscriptionCode?: string;
+    /** See ICollectionSpec.bookshelf. */
+    bookshelf?: string;
 }
 
 /**
@@ -278,10 +304,14 @@ export function writeNewCollection(
  * `xmatterPack` is the pack's key, the part of its folder name before "-XMatter": "Factory" (the
  * pack the Settings dialog calls Paper Saver), "Traditional", "SuperPaperSaver", "Device",
  * "SIL-PNG". The default is Factory, which is what the collections here have always had.
+ *
+ * Bloom keeps the bookshelf as a "bookshelf:" tag in DefaultBookTags, and since Bloom 6.1 reads
+ * the subscription from SubscriptionCode alone; BrandingProjectName is written for older Blooms.
  */
 export function makeCollectionXml(
     languages: string[],
     xmatterPack = "Factory",
+    extras: ICollectionXmlExtras = {},
 ): string {
     // Bloom treats Language2 as "same as Language1" when a collection names only one language,
     // which is what its own new-collection code writes.
@@ -302,6 +332,12 @@ export function makeCollectionXml(
         languageElements +
         `\n  <XMatterPack>${xmatterPack}</XMatterPack>\n` +
         `  <BrandingProjectName>Default</BrandingProjectName>\n` +
+        (extras.subscriptionCode
+            ? `  <SubscriptionCode>${extras.subscriptionCode}</SubscriptionCode>\n`
+            : "") +
+        (extras.bookshelf
+            ? `  <DefaultBookTags>bookshelf:${extras.bookshelf}</DefaultBookTags>\n`
+            : "") +
         `  <AllowNewBooks>True</AllowNewBooks>\n` +
         `  <PageNumberStyle>Decimal</PageNumberStyle>\n` +
         `</Collection>\n`

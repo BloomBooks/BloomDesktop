@@ -283,6 +283,13 @@ jobs:
                   # also work, but asking for it here says what the run needs instead of leaving
                   # it to whatever the runner happens to do.
                   BLOOM_AUTOMATION_MONITOR: headless
+                  # The password of the Bloom Library test account (e2e-tester@example.org on
+                  # dev.bloomlibrary.org), for the tests that sign in and upload for real. The
+                  # account exists only for this; the email is a constant in the suite
+                  # (src/BloomE2E/helpers/bloomLibraryAccount.ts). Locally the same variable is set
+                  # at User scope; a developer without it has those tests skipped, while a run on CI
+                  # without it fails, so a missing secret is noticed.
+                  BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD: ${{ secrets.BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD }}
               run: pnpm test --reporter=list,junit,html
 
             # What explains an e2e failure: Playwright's HTML report, plus the trace and failure
