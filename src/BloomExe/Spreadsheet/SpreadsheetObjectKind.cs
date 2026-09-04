@@ -167,8 +167,11 @@ namespace Bloom.Spreadsheet
             new List<ISpreadsheetObjectKind>();
 
         /// <summary>
-        /// Makes a kind known to the exporter and importer. Its
-        /// <see cref="ISpreadsheetObjectKind.LeadRowLabel"/> must not already be taken.
+        /// Makes a kind known to the exporter and importer. Neither its
+        /// <see cref="ISpreadsheetObjectKind.LeadRowLabel"/> nor its
+        /// <see cref="ISpreadsheetObjectKind.Kind"/> may already be taken: the row label
+        /// is what picks the kind for a row, and the kind name is what the row's [details]
+        /// cell claims, so two kinds sharing either would be indistinguishable.
         /// </summary>
         public static void Register(ISpreadsheetObjectKind kind)
         {
@@ -177,6 +180,10 @@ namespace Bloom.Spreadsheet
             if (ForLeadRowLabel(kind.LeadRowLabel) != null)
                 throw new ArgumentException(
                     $"A spreadsheet object kind using the row label {kind.LeadRowLabel} is already registered."
+                );
+            if (_kinds.Any(k => k.Kind == kind.Kind))
+                throw new ArgumentException(
+                    $"A spreadsheet object kind named {kind.Kind} is already registered."
                 );
             _kinds.Add(kind);
         }

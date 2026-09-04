@@ -1784,15 +1784,13 @@ namespace Bloom.Spreadsheet
         /// next unused object.
         ///
         /// A family that has nowhere to go gets a warning naming its lead row and is
-        /// skipped. Where that leaves the importer depends on whether the lead row starts a
-        /// page. Export writes a page type on the first row it makes for a page, so a lead
-        /// row carrying one is the first row of its page, and it moves onto a new page
-        /// whether or not an object is found there: if it did not, every row after it would
-        /// land a page early, and the page it was meant for would be thrown away as unused
-        /// at the end of the import. (Past the end of the book this adds a copy of the last
-        /// page with nothing to put on it, as it does for any other row.) A lead row with no
-        /// page type belongs to the page we are on, so if that page has no object for it we
-        /// skip it in place and the page stays as it was.
+        /// skipped, but only after the importer has moved the way it would for any row:
+        /// onto a new page if the lead row names a page type; otherwise it stays on the
+        /// page if that page still has an unused object, and else moves to the next page.
+        /// If it did not move, every row after a skipped family would land a page early,
+        /// and the page the family was meant for would be thrown away as unused at the end
+        /// of the import. (Past the end of the book this adds a copy of the last page with
+        /// nothing to put on it, as it does for any other row.)
         /// </summary>
         /// <param name="kind">The kind whose LeadRowLabel this row carries.</param>
         /// <param name="pageType">The page type named in this row's [page type] cell, which
@@ -1805,21 +1803,18 @@ namespace Bloom.Spreadsheet
             var lastRowIndex = _currentRowIndex + rows.Count - 1;
             var leadRowLabel = kind.LeadRowLabel;
 
-            // Find the object first, so that a family we end up skipping still holds its
-            // place in the page order (see the summary). Only a lead row that starts a page,
-            // or one whose page still has an unused object, moves the importer at all.
+            // Find the object first, the way a [page content] row finds its group, so that
+            // a family we end up skipping still holds its place in the page order (see the
+            // summary).
+            var typesFound = AdvanceToNextSetOfBlocks(BlockTypes.Object, pageType);
             SafeXmlElement target = null;
-            if (!string.IsNullOrEmpty(pageType) || CurrentPageHasAnUnusedObject())
-            {
-                var typesFound = AdvanceToNextSetOfBlocks(BlockTypes.Object, pageType);
-                if ((typesFound & BlockTypes.Object) == BlockTypes.Object)
-                    target = _blocksOnPage[objectIndex][_blockOnPageIndexes[objectIndex]];
-                // With more than one kind sharing the object slot we could land on an
-                // object belonging to another kind; better to say we found nothing than to
-                // hand a kind something it does not understand.
-                if (target != null && !kind.GetObjectsOnPage(_currentPage).Contains(target))
-                    target = null;
-            }
+            if ((typesFound & BlockTypes.Object) == BlockTypes.Object)
+                target = _blocksOnPage[objectIndex][_blockOnPageIndexes[objectIndex]];
+            // With more than one kind sharing the object slot we could land on an object
+            // belonging to another kind; better to say we found nothing than to hand a kind
+            // something it does not understand.
+            if (target != null && !kind.GetObjectsOnPage(_currentPage).Contains(target))
+                target = null;
 
             if (_sheet.GetColumnForTag(InternalSpreadsheet.DetailsColumnLabel) < 0)
             {
@@ -1856,16 +1851,6 @@ namespace Bloom.Spreadsheet
                 }
             );
             _currentRowIndex = lastRowIndex;
-        }
-
-        /// <summary>
-        /// True if the page we are on has an object (of any registered kind) that no lead
-        /// row has used yet, so that the next lead row can stay on this page.
-        /// </summary>
-        private bool CurrentPageHasAnUnusedObject()
-        {
-            var objects = _blocksOnPage[objectIndex];
-            return objects != null && _blockOnPageIndexes[objectIndex] + 1 < objects.Count;
         }
 
         /// <summary>

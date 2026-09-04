@@ -127,6 +127,19 @@ namespace BloomTests.Spreadsheet
 ";
         }
 
+        /// <summary>
+        /// The same book with no page labels, as an older or hand-made page can have; export
+        /// then writes no page type for the page.
+        /// </summary>
+        private static string WithoutPageLabels(string bookHtml)
+        {
+            return System.Text.RegularExpressions.Regex.Replace(
+                bookHtml,
+                @"<div class=""pageLabel""[^>]*>\s*Just Text\s*</div>",
+                ""
+            );
+        }
+
         /// <summary>The book's pages, in order.</summary>
         private static List<SafeXmlElement> PagesOf(HtmlDom dom)
         {
@@ -393,18 +406,19 @@ namespace BloomTests.Spreadsheet
             Assert.That(
                 _domWithoutObject.RawDom.InnerXml,
                 Does.Contain("Encabezado").And.Contain("Pie"),
-                "skipping the object must not cost the page its own content"
+                "skipping the object must not cost the book any of its own content"
             );
             Assert.That(
                 _domWithoutObject.RawDom.InnerXml,
                 Does.Not.Contain("Uno-es"),
                 "there was nowhere to put the object, so its text must not have leaked onto the page"
             );
-            Assert.That(
-                PagesOf(_domWithoutObject).Count,
-                Is.EqualTo(1),
-                "a lead row in the middle of a page is skipped in place: it must not start a new page and push the footing onto it"
-            );
+            // The lead row moved on the way any row the page had no room for would, so the
+            // footing that followed it went onto a page of its own.
+            var pages = PagesOf(_domWithoutObject);
+            Assert.That(pages.Count, Is.EqualTo(2));
+            Assert.That(pages[0].InnerXml, Does.Contain("Encabezado"));
+            Assert.That(pages[1].InnerXml, Does.Contain("Pie"));
         }
 
         [Test]
@@ -455,6 +469,52 @@ namespace BloomTests.Spreadsheet
                 Does.Contain("Segundo").And.Not.Contain("Viejo"),
                 "the text row belongs on the second page"
             );
+        }
+
+        [Test]
+        public async Task Import_OfAnUnlabeledObjectOnlyPage_IntoABookWithNoObject_KeepsThatPage()
+        {
+            // As above, but the page has no label, so its lead row carries no page type.
+            // The lead row must still count as reaching the page.
+            var sheet = ExportBook(WithoutPageLabels(MakeBookWithPages(StubObject("Uno", "Dos"))));
+            Assert.That(
+                sheet.GetColumnForTag(InternalSpreadsheet.PageTypeColumnLabel),
+                Is.LessThan(0),
+                "sanity: no row got a page type"
+            );
+            var target = new HtmlDom(MakeBookWithPages(TranslationGroup("Primero", "First")), true);
+            var warnings = await RoundTripThroughFileAndImportAsync(sheet, target);
+
+            Assert.That(warnings, Has.Exactly(1).Contains(StubObjectKind.LeadLabel));
+            var pages = PagesOf(target);
+            Assert.That(pages.Count, Is.EqualTo(1), "the page must not be thrown away");
+            Assert.That(pages[0].InnerXml, Does.Contain("Primero"));
+        }
+
+        [Test]
+        public void Register_OfAKindWhoseNameIsTaken_Throws()
+        {
+            var other = new Mock<ISpreadsheetObjectKind>();
+            other.Setup(k => k.Kind).Returns(StubObjectKind.KindName);
+            other.Setup(k => k.LeadRowLabel).Returns("[some other label]");
+            Assert.That(
+                () => SpreadsheetObjectKinds.Register(other.Object),
+                Throws.ArgumentException
+            );
+            Assert.That(SpreadsheetObjectKinds.All, Has.Count.EqualTo(1));
+        }
+
+        [Test]
+        public void Register_OfAKindWhoseLeadRowLabelIsTaken_Throws()
+        {
+            var other = new Mock<ISpreadsheetObjectKind>();
+            other.Setup(k => k.Kind).Returns("some-other-kind");
+            other.Setup(k => k.LeadRowLabel).Returns(StubObjectKind.LeadLabel);
+            Assert.That(
+                () => SpreadsheetObjectKinds.Register(other.Object),
+                Throws.ArgumentException
+            );
+            Assert.That(SpreadsheetObjectKinds.All, Has.Count.EqualTo(1));
         }
 
         [Test]
