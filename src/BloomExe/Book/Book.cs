@@ -4920,7 +4920,17 @@ namespace Bloom.Book
             }
         }
 
-        public void Save(bool forPublication = false)
+        /// <summary>
+        /// Write the whole book to disk.
+        ///
+        /// Returns FALSE if it did not write: the book is not in a state where it can be saved, or
+        /// the file could not be written. Both of those already tell the user; the return value is
+        /// for callers that must not carry on as though the file now says what they think it says.
+        /// The AI image editor is the case that forced this -- it opens the book FROM DISK, so
+        /// opening it after a save that silently did nothing shows the user an older book and
+        /// commits its edits over the newer one.
+        /// </summary>
+        public bool Save(bool forPublication = false)
         {
             // If you add something here, consider whether it is needed in SaveForPageChanged().
             // I believe all the things currently here before the actual Save are not needed
@@ -4939,7 +4949,7 @@ namespace Bloom.Book
                     PassiveIf.All,
                     "Bloom attempted to Save a book which cannot currently be saved: " + FolderPath
                 );
-                return;
+                return false;
             }
 
             RemoveObsoleteSoundAttributes(OurHtmlDom);
@@ -4974,13 +4984,14 @@ namespace Bloom.Book
             catch (UnauthorizedAccessException e)
             {
                 BookStorage.ShowAccessDeniedErrorReport(e);
-                return;
+                return false;
             }
             // If the user has given the book its own title, record the Created entry now so
             // any further renames are reported normally. (If the title is still just the source
             // book name, we defer until deselection or shutdown.)
             RecordPendingCreatedHistoryEvent(onlyIfTitleChanged: true);
             DoPostSaveTasks();
+            return true;
         }
 
         private void RemoveVideoWarnings()

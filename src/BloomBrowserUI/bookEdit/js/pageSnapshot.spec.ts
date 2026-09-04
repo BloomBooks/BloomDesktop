@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
     notePageContentMayHaveChanged,
+    setSnapshotsSuspended,
     startWatchingPageForSnapshots,
     stopWatchingPageForSnapshots,
     quietMsForTests,
@@ -81,6 +82,7 @@ describe("pageSnapshot", () => {
     });
 
     afterEach(() => {
+        setSnapshotsSuspended(undefined);
         stopWatchingPageForSnapshots();
         vi.useRealTimers();
         document.body.innerHTML = "";
@@ -384,6 +386,45 @@ describe("pageSnapshot", () => {
         await Promise.resolve();
 
         expect(posted.length).toBe(0);
+    });
+
+    it("does not read the page at all while snapshots are suspended", async () => {
+        // Reading the page is not free in every state: the game tool's part of it reaches into
+        // bloom-player's record of the LIVE page, which is why the page frame stops watching while
+        // a game is in its Play tab. A game page can open straight into that tab, because the tab
+        // is remembered per page, so even the once-per-page baseline read has to wait.
+        let gathers = 0;
+        const countingGather = () => {
+            gathers++;
+            return Promise.resolve(contentToReport);
+        };
+
+        setSnapshotsSuspended("a test");
+        contentToReport = "the game, in play mode";
+        startWatchingPageForSnapshots(countingGather);
+        await letTheBaselineSettle();
+        changeThePage("the user drags something");
+        await letTheSnapshotHappen();
+
+        expect(gathers, "the page must not be read while suspended").toBe(0);
+        expect(posted.length).toBe(0);
+
+        // Leaving play mode is the first moment it is safe to read, and it is also the state a
+        // save should be writing, so that is the baseline.
+        contentToReport = "the game, back in start mode";
+        setSnapshotsSuspended(undefined);
+        await letTheBaselineSettle();
+        expect(gathers, "the baseline is taken on resuming").toBe(1);
+        expect(
+            posted.length,
+            "the baseline is not posted; it IS the baseline",
+        ).toBe(0);
+
+        // And from then on it behaves normally.
+        contentToReport = "the user typed";
+        changeThePage("typed");
+        await letTheSnapshotHappen();
+        expect(posted.map((p) => p.body)).toEqual(["the user typed"]);
     });
 
     it("offers the content again when C# refuses the snapshot", async () => {

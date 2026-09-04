@@ -1766,8 +1766,12 @@ namespace Bloom.Edit
                 return false;
             }
             UpdateBookDomFromBrowserPageContent(CurrentPageSnapshotOrNull);
-            CurrentBook.Save();
-            return true;
+            // Book.Save returns false when it did not actually write -- an unwritable file, or a
+            // book that cannot be saved at all. It tells the user itself; what matters here is
+            // that we do not report success, because callers act on that. The AI image editor
+            // opens the book from disk, so opening it after a save that silently did nothing
+            // would show an older book and commit its edits over the newer one.
+            return CurrentBook.Save();
         }
 
         /// <summary>

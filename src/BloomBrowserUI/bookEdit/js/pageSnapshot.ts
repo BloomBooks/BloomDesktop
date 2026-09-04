@@ -130,6 +130,11 @@ export function setSnapshotsSuspended(reason: string | undefined): void {
         if (timer !== undefined) window.clearTimeout(timer);
         timer = undefined;
     } else {
+        // If we were suspended before we could read the page, this is the moment to do it: the
+        // page has just come out of the mode that made gathering unsafe.
+        if (!baselineTaken && pageIdBeingWatched && gatherPageContent) {
+            takeBaselineWhenNotSuspended(pageIdBeingWatched);
+        }
         // Whatever changed while we were suspended still owes C# a snapshot.
         scheduleSnapshot();
     }
@@ -316,6 +321,37 @@ export function notePageContentMayHaveChanged(): void {
     noteChange();
 }
 
+// Read the page once, and treat that as already sent. See the long note in
+// startWatchingPageForSnapshots for why a baseline is needed at all.
+//
+// NOT while snapshots are suspended. Gathering is not free in play mode -- the game tool's part of
+// it reaches into bloom-player's record of the LIVE page -- and a game page can open straight into
+// its Play tab, because the tab is remembered per page. So the baseline waits until play mode ends,
+// which is exactly when the page is in the state a save should write anyway. Nothing is at risk in
+// the meantime: with no baseline nothing is posted, and there is nothing a save should be writing
+// while the user is playing the game.
+function takeBaselineWhenNotSuspended(pageId: string): void {
+    if (suspendedFor) return; // setSnapshotsSuspended calls us back when it resumes
+    void gatherPageContent!().then(
+        (baseline) => {
+            if (pageIdBeingWatched !== pageId) return; // moved on while we waited
+            lastPosted = baseline;
+            baselineTaken = true;
+            // If the page changed while we were taking the baseline, that change may or may not
+            // be in it; go round again rather than assume.
+            if (changeCount > 0) scheduleSnapshot();
+        },
+        () => {
+            if (pageIdBeingWatched !== pageId) return;
+            // We could not read the page. Fail towards reporting too much rather than too little:
+            // an extra snapshot costs a redundant save, a missing one costs the user's typing.
+            lastPosted = undefined;
+            baselineTaken = true;
+            scheduleSnapshot();
+        },
+    );
+}
+
 /**
  * Start watching the page that has just become editable. Safe to call again; it restarts on the
  * new page.
@@ -358,24 +394,7 @@ export function startWatchingPageForSnapshots(
     // settling is indistinguishable from typing, we would then have no way to tell we owed C# a
     // snapshot of it -- trading a harmless duplicate for a lost edit. One post per page visit,
     // carrying exactly what a save would have written, is the better end of that trade.
-    void gather().then(
-        (baseline) => {
-            if (pageIdBeingWatched !== pageId) return; // moved on while we waited
-            lastPosted = baseline;
-            baselineTaken = true;
-            // If the page changed while we were taking the baseline, that change may or may not
-            // be in it; go round again rather than assume.
-            if (changeCount > 0) scheduleSnapshot();
-        },
-        () => {
-            if (pageIdBeingWatched !== pageId) return;
-            // We could not read the page. Fail towards reporting too much rather than too little:
-            // an extra snapshot costs a redundant save, a missing one costs the user's typing.
-            lastPosted = undefined;
-            baselineTaken = true;
-            scheduleSnapshot();
-        },
-    );
+    takeBaselineWhenNotSuspended(pageId);
 
     // A MutationObserver rather than input/keyup handlers, because plenty of what changes a page
     // never goes through a keyboard event: a tool rewriting the markup, a canvas element being
