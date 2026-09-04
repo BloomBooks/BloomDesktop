@@ -103,17 +103,23 @@ where a recording would have gone) alongside the Import Recording path.
 
 ## A Playwright worker occasionally dies at startup, before any test runs
 
-Seen twice on 2026-09-04 while building `publish-talking-book-languages.spec.ts`: a run ends with
-`Error: worker process exited unexpectedly (code=3221226505, signal=null)` and the file's first
-test reported as failing after 0ms. 3221226505 is Windows' STATUS_STACK_BUFFER_OVERRUN, and it
-arrives before any test code executes, so nothing is scraped and no screenshot is written.
+Seen three times on 2026-09-04, while building `publish-talking-book-languages.spec.ts`: a run
+ends with `Error: worker process exited unexpectedly (code=3221226505, signal=null)` and one
+test is reported as failing after 0ms, with the rest of its file's tests "did not run".
+3221226505 is Windows' STATUS_STACK_BUFFER_OVERRUN, and it arrives before any test code
+executes, so nothing is scraped and no screenshot is written.
 
-It is not specific to a test: one occurrence was on a throwaway probe file, one on
-`import-recording.spec.ts`, and both files then passed 6 runs in a row on their own. Roughly one
-run in fifteen. Fix direction: unknown -- it is in the worker process, not in Bloom, so start by
-capturing the worker's own crash (`DEBUG=pw:*`, or a Windows dump) the next time a nightly shows
-it. Until then, a lone failure with this exit code and a 0ms test is worth re-running before
-being investigated as a test failure.
+**It is not specific to a test, and not specific to whoever is writing one.** The three
+occurrences were on three different files: a throwaway probe, `import-recording.spec.ts`, and
+`xmatter-packs.spec.ts` -- the last of which was written weeks earlier and shares no helper with
+the branch that was in flight. Each file then passed repeatedly on its own (`import-recording`
+six runs in a row). Roughly one run in fifteen, and a whole-suite run is more likely to hit it
+simply because it starts more workers.
+
+Fix direction: unknown -- it is in the Playwright worker process, not in Bloom, so start by
+capturing the worker's own crash (`DEBUG=pw:*`, or a Windows dump) the next time it appears.
+Until then: **a lone failure with this exit code and a 0ms test is not a test failure.** Re-run
+before investigating, and do not attribute it to the branch in flight.
 
 ## An api that captures CollectionSettings.Subscription cannot see a subscription change
 
