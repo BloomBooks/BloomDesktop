@@ -210,8 +210,27 @@ namespace Bloom.Edit
                             // However, FailureAction should be called in this case which allows closing the collection
                             // to try again. If we do try again and the same page fails again, the state machine will
                             // call this action anyway. So, finally PostponedWork will get called and we can close the collection.
-                            CurrentBook.Save();
-                            CurrentBook.RecordPendingCreatedHistoryEvent();
+                            try
+                            {
+                                CurrentBook.Save();
+                                CurrentBook.RecordPendingCreatedHistoryEvent();
+                            }
+                            catch (Exception e)
+                            {
+                                // Shutting down must not depend on the save succeeding. If it does,
+                                // a page that cannot be saved leaves the user no way out of Bloom at
+                                // all, because every further attempt to close runs this same failing
+                                // save (BL-16776). We deliberately don't put up a dialog: the user is
+                                // trying to quit, and whatever made the save fail will already have
+                                // been reported when it happened.
+                                NonFatalProblem.Report(
+                                    ModalIf.None,
+                                    PassiveIf.All,
+                                    "Bloom could not save the page you were editing as it shut down",
+                                    null,
+                                    e
+                                );
+                            }
                             args.PostponedWork();
                             return null;
                         },
@@ -410,7 +429,33 @@ namespace Bloom.Edit
                             _currentlyDisplayedBook = null;
                         }
                         else
-                            CurrentBook?.Save(); // we need it all the way saved before completing the tab change
+                        {
+                            try
+                            {
+                                CurrentBook?.Save(); // we need it all the way saved before completing the tab change
+                            }
+                            catch (Exception e)
+                            {
+                                // Tell the user, but change tabs anyway: a page that cannot be saved must
+                                // not lock them into the Edit tab indefinitely (BL-16776). We report rather
+                                // than letting this propagate so that we still finish on the same path a
+                                // successful save takes, rather than navigating a tab we have just left.
+                                // Note this is not the kind of swallowing we deliberately removed from
+                                // GetCleanCurrentPageFromBodyAndCss, where catching let a save carry on with
+                                // missing content. By the time we get here the page content has either
+                                // reached the DOM or thrown; all we abandon is writing it out.
+                                NonFatalProblem.Report(
+                                    ModalIf.All,
+                                    PassiveIf.All,
+                                    LocalizationManager.GetString(
+                                        "Errors.CouldNotSavePage",
+                                        "Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!"
+                                    ),
+                                    null,
+                                    e
+                                );
+                            }
+                        }
                         // This bizarre behavior prevents BL-2313 and related problems.
                         // For some reason I cannot discover, switching tabs when focus is in the Browser window
                         // causes Bloom to get deactivated, which prevents various controls from working.
