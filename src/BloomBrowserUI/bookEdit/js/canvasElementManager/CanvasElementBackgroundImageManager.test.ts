@@ -29,7 +29,10 @@ vi.mock("../../../utils/elementUtils", async (importOriginal) => {
 
 // These imports deliberately come after the vi.mock calls above, so that the module graph
 // they pull in gets the stubbed modules.
-import { adjustBackgroundImageSize } from "./CanvasElementBackgroundImageManager";
+import {
+    adjustBackgroundImageSize,
+    getBackgroundCanvasElement,
+} from "./CanvasElementBackgroundImageManager";
 import type { BackgroundImageManagerState } from "./CanvasElementBackgroundImageManager";
 
 // The inline styles a background image already has when something asks for a refit.
@@ -132,7 +135,24 @@ describe("adjustBackgroundImageSize", () => {
         );
     });
 
-    // This is the guard against the two tests above passing for the wrong reason: given a
+    // A hidden bloom-canvas that has a border reports a negative size, because
+    // getExactClientSize subtracts the border from a zero bounding rectangle.
+    test("leaves the background image alone when the bloom-canvas reports a negative size", async () => {
+        const { bloomCanvas, bgCanvasElement } = setUpBackgroundImage();
+        reportedSize.width = -2;
+        reportedSize.height = -2;
+
+        await refit(bloomCanvas, bgCanvasElement);
+
+        expect(bgCanvasElement.style.width).toBe(
+            initialCanvasElementStyle.width,
+        );
+        expect(bgCanvasElement.style.height).toBe(
+            initialCanvasElementStyle.height,
+        );
+    });
+
+    // This is the guard against the tests above passing for the wrong reason: given a
     // bloom-canvas that does have a size, the same call really does resize the background
     // image. (The image here has failed to load, which is the one case the code can size
     // synchronously, since it then fills the container to show the error message.)
@@ -147,5 +167,89 @@ describe("adjustBackgroundImageSize", () => {
         expect(bgCanvasElement.style.height).toBe("500px");
         expect(bgCanvasElement.style.left).toBe("0px");
         expect(bgCanvasElement.style.top).toBe("0px");
+    });
+});
+
+describe("getBackgroundCanvasElement", () => {
+    test("finds the background image that is a direct child of the bloom-canvas", () => {
+        const { bloomCanvas, bgCanvasElement } = setUpBackgroundImage();
+        expect(getBackgroundCanvasElement(bloomCanvas)).toBe(bgCanvasElement);
+    });
+
+    test("returns undefined when the bloom-canvas has no background image", () => {
+        document.body.innerHTML = `
+            <div class="bloom-canvas">
+                <div class="bloom-canvas-element"><div class="bloom-imageContainer"><img src="a.png"/></div></div>
+            </div>`;
+        const bloomCanvas = document.querySelector(
+            ".bloom-canvas",
+        ) as HTMLElement;
+        expect(getBackgroundCanvasElement(bloomCanvas)).toBeUndefined();
+    });
+
+    test("does not take a nested bloom-canvas's background image for the outer one", () => {
+        document.body.innerHTML = `
+            <div class="bloom-canvas" id="outer">
+                <div class="bloom-canvas-element">
+                    <div class="bloom-canvas" id="inner">
+                        <div class="bloom-canvas-element bloom-backgroundImage" id="innerBg">
+                            <div class="bloom-imageContainer"><img src="inner.png"/></div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        const outer = document.getElementById("outer") as HTMLElement;
+        const inner = document.getElementById("inner") as HTMLElement;
+        const innerBg = document.getElementById("innerBg") as HTMLElement;
+        // Sanity check: a plain descendant search would have found the inner one.
+        expect(outer.getElementsByClassName("bloom-backgroundImage")[0]).toBe(
+            innerBg,
+        );
+
+        expect(getBackgroundCanvasElement(outer)).toBeUndefined();
+        expect(getBackgroundCanvasElement(inner)).toBe(innerBg);
+    });
+
+    test("finds each bloom-canvas's own background image when both have one", () => {
+        document.body.innerHTML = `
+            <div class="bloom-canvas" id="outer">
+                <div class="bloom-canvas-element bloom-backgroundImage" id="outerBg">
+                    <div class="bloom-imageContainer"><img src="outer.png"/></div>
+                </div>
+                <div class="bloom-canvas-element">
+                    <div class="bloom-canvas" id="inner">
+                        <div class="bloom-canvas-element bloom-backgroundImage" id="innerBg">
+                            <div class="bloom-imageContainer"><img src="inner.png"/></div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        const outer = document.getElementById("outer") as HTMLElement;
+        const inner = document.getElementById("inner") as HTMLElement;
+        expect(getBackgroundCanvasElement(outer)).toBe(
+            document.getElementById("outerBg"),
+        );
+        expect(getBackgroundCanvasElement(inner)).toBe(
+            document.getElementById("innerBg"),
+        );
+    });
+
+    // The Image Description tool wraps the background image in a bloom-describedImage
+    // while it is active, so the background image is not a direct child then.
+    test("still finds the background image when the Image Description tool has wrapped it", () => {
+        document.body.innerHTML = `
+            <div class="bloom-canvas">
+                <div class="bloom-describedImage">
+                    <div class="bloom-canvas-element bloom-backgroundImage" id="bg">
+                        <div class="bloom-imageContainer"><img src="a.png"/></div>
+                    </div>
+                </div>
+            </div>`;
+        const bloomCanvas = document.querySelector(
+            ".bloom-canvas",
+        ) as HTMLElement;
+        expect(getBackgroundCanvasElement(bloomCanvas)).toBe(
+            document.getElementById("bg"),
+        );
     });
 });

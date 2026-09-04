@@ -85,6 +85,26 @@ export function revertBackgroundCanvasElements(): void {
     }
 }
 
+/**
+ * Find the canvas element that holds the background image of this bloom-canvas, if any.
+ *
+ * A descendant search is not enough once a bloom-canvas can be nested inside another:
+ * the outer canvas would find the inner canvas's background image and treat it as its
+ * own. A direct-child search is not enough either, because the Image Description tool
+ * temporarily wraps the background image in a bloom-describedImage. So we take the
+ * first background image whose nearest bloom-canvas is this one.
+ */
+export function getBackgroundCanvasElement(
+    bloomCanvas: HTMLElement,
+): HTMLElement | undefined {
+    return Array.from(
+        bloomCanvas.getElementsByClassName(kBackgroundImageClass),
+    ).find(
+        (candidate) =>
+            candidate.closest(`.${kBloomCanvasClass}`) === bloomCanvas,
+    ) as HTMLElement | undefined;
+}
+
 export function handleResizeAdjustments(
     state: BackgroundImageManagerState,
     bloomCanvases: HTMLElement[],
@@ -117,9 +137,7 @@ function switchBackgroundToCanvasElementIfNeeded(
     getActiveElement: () => HTMLElement | undefined,
     alignControlFrameWithActiveElement: () => void,
 ) {
-    const bgCanvasElement = bloomCanvas.getElementsByClassName(
-        kBackgroundImageClass,
-    )[0] as HTMLElement;
+    const bgCanvasElement = getBackgroundCanvasElement(bloomCanvas);
     if (bgCanvasElement) {
         // I think this is redundant, but it got added by mistake at one point,
         // and will hide the placeholder if it's there, so make sure it's not.
@@ -141,9 +159,7 @@ function switchBackgroundToCanvasElement(
     alignControlFrameWithActiveElement: () => void,
 ) {
     const oldBgImage = getImageFromContainer(bloomCanvas);
-    let bgCanvasElement = bloomCanvas.getElementsByClassName(
-        kBackgroundImageClass,
-    )[0] as HTMLElement;
+    let bgCanvasElement = getBackgroundCanvasElement(bloomCanvas);
     if (!bgCanvasElement) {
         // various legacy behavior, such as hiding the old-style background placeholder.
         bloomCanvas.classList.add(kHasCanvasElementClass);
@@ -228,9 +244,7 @@ export function setupBackgroundImageAttributes(
     useSizeOfNewImage = false,
 ): Promise<void> {
     if (!bgElement) {
-        bgElement = bloomCanvas.getElementsByClassName(
-            kBackgroundImageClass,
-        )[0] as HTMLElement;
+        bgElement = getBackgroundCanvasElement(bloomCanvas);
     }
     if (bgElement?.getAttribute("data-bubble")) {
         return Promise.resolve(); // setup has already been done (data-bubble is added by putBubbleBefore)
@@ -375,12 +389,14 @@ function adjustBackgroundImageSizeToFit(
 ): Promise<void> {
     const { width: bloomCanvasWidth, height: bloomCanvasHeight } =
         getExactClientSize(bloomCanvas);
-    if (bloomCanvasWidth === 0 || bloomCanvasHeight === 0) {
+    if (bloomCanvasWidth <= 0 || bloomCanvasHeight <= 0) {
         // Nothing useful can be computed from a box with no area, and the numbers
         // we would write are not neutral: they become the baseline that later
         // resizes scale, so the picture ends up somewhere arbitrary. A bloom-canvas
         // that is hidden, or that has not been laid out yet, is in this state, so
         // the right thing to do is wait until it has a real size and fit then.
+        // (A hidden bloom-canvas with a border reports a negative size, since
+        // getExactClientSize subtracts the border from a zero bounding rectangle.)
         return Promise.resolve();
     }
     let imgAspectRatio =

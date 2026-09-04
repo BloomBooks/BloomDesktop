@@ -97,6 +97,7 @@ import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension
 import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeAdjustments";
 import {
     adjustBackgroundImageSize as adjustCanvasBackgroundImageSize,
+    getBackgroundCanvasElement,
     handleResizeAdjustments as handleBackgroundResizeAdjustments,
     setupBackgroundImageAttributes,
     type BackgroundImageManagerState,
@@ -3158,12 +3159,16 @@ export class CanvasElementManager {
      * That is the case whenever something lays out a container with JavaScript after
      * the page-load pass, so the bloom-canvas inside it gets its real size later.
      */
-    public refitBackgroundImage(bloomCanvas: HTMLElement): void {
-        const bgCanvasElement = bloomCanvas.getElementsByClassName(
-            kBackgroundImageClass,
-        )[0] as HTMLElement;
-        if (!bgCanvasElement) return;
-        this.adjustBackgroundImageSize(bloomCanvas, bgCanvasElement, false);
+    public refitBackgroundImage(bloomCanvas: HTMLElement): Promise<void> {
+        const bgCanvasElement = getBackgroundCanvasElement(bloomCanvas);
+        if (!bgCanvasElement) return Promise.resolve();
+        // The promise settles once the image has loaded and been fitted, so a caller
+        // that lays out other things around the picture can wait for it.
+        return this.adjustBackgroundImageSize(
+            bloomCanvas,
+            bgCanvasElement,
+            false,
+        );
     }
 
     public AdjustChildrenIfSizeChanged(bloomCanvas: HTMLElement): void {
