@@ -1076,19 +1076,38 @@ function onDragStop(
     );
 }
 
+// One click's work at a time, so that the posts reach C# in the order the user clicked.
+//
+// This used to be free: the click posted immediately, so two clicks arrived in the order they were
+// made. Gathering the outgoing page's content first put an await in front of the post, and two
+// clicks in quick succession would then be two overlapping gathers whose posts could arrive in
+// either order -- so C#, which takes the first and declines the second while it navigates, could
+// act on the earlier click rather than the later one. Chaining costs the second click the first's
+// gather, which is well under a millisecond.
+let pageClickWork: Promise<void> = Promise.resolve();
+
 // Tell C# the user picked a page, sending the CURRENT page's content along with the click so it
 // can save the page we are leaving in the same step. See collectCurrentPageContent().
-async function postPageClicked(
+function postPageClicked(
     pageId: string,
     detail: string,
     onSuccess?: () => void,
 ): Promise<void> {
-    const pageContent = await collectCurrentPageContent("the page change");
-    postJson(
-        "pageList/pageClicked",
-        { pageId, detail, pageContent },
-        onSuccess,
-    );
+    pageClickWork = pageClickWork
+        .then(async () => {
+            const pageContent =
+                await collectCurrentPageContent("the page change");
+            postJson(
+                "pageList/pageClicked",
+                { pageId, detail, pageContent },
+                onSuccess,
+            );
+        })
+        // One click that somehow failed must not stop every later click from being sent.
+        .catch((error) => {
+            console.warn("could not tell Bloom about a page click", error);
+        });
+    return pageClickWork;
 }
 
 function ContinueAutomatedPageClicking(

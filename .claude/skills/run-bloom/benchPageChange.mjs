@@ -27,11 +27,32 @@ const r = createRequire(
 const { chromium } = r("playwright");
 const sleep = (ms) => new Promise((x) => setTimeout(x, ms));
 
-const PAGES = [
-    { id: "e9f55da7-b76d-4178-aa66-b062d744c6c0", label: "Basic Text & Image" },
-    { id: "6799f146-e29d-4521-89d3-c1192ab606b4", label: "Title Page" },
-];
 const ITERATIONS = Number(process.argv[2] ?? 8);
+
+// The two pages to click between. Ids because that is what the thumbnails carry, and the
+// benchmark has to click a specific one to get comparable numbers. They default to two pages of
+// the book this was written against; pass your own to run it on any book:
+//
+//   node benchPageChange.mjs 8 <pageId> <pageId>
+//
+// To find them, open the book in Bloom and read the ids off the page-list thumbnails
+// (each thumbnail div carries the page's id).
+const PAGES =
+    process.argv.length > 4
+        ? [
+              { id: process.argv[3], label: "first page" },
+              { id: process.argv[4], label: "second page" },
+          ]
+        : [
+              {
+                  id: "e9f55da7-b76d-4178-aa66-b062d744c6c0",
+                  label: "Basic Text & Image",
+              },
+              {
+                  id: "6799f146-e29d-4521-89d3-c1192ab606b4",
+                  label: "Title Page",
+              },
+          ];
 
 // The launcher picks the CDP port; pass it in when it is not the usual one.
 const cdpPort = process.env.BLOOM_CDP_PORT ?? 8091;
