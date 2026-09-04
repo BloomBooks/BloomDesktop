@@ -1648,7 +1648,22 @@ const userStylesheetContent = () => {
         .join("\n");
 };
 
+// Whether this page has already been torn down. A page document only ever goes away once, but
+// pageUnloading() can be ASKED for twice on the same one: leaving the Edit tab runs it (from
+// EditingView.OnHideEditTab, since nothing navigates the page frame then), and coming back
+// re-navigates that frame, which runs it again from switchContentPage() before the new page
+// replaces this document.
+//
+// The second run is not harmless. detachCurrentTool() does not forget the current tool after
+// detaching it, so it detaches again -- and the second detach usually does not reach
+// removeToolMarkup(), which makes detachToolFromPage() report the tool for "forgetting" to call
+// super.detachFromPage(). That accusation is false, and it points at a tool that is behaving
+// perfectly well.
+let thisPageHasBeenUnloaded = false;
+
 export const pageUnloading = () => {
+    if (thisPageHasBeenUnloaded) return;
+    thisPageHasBeenUnloaded = true;
     // Stop volunteering snapshots of a page that is going away. C# clears its copy when it starts
     // navigating, so anything we sent after that would be for a page nobody is on. See
     // pageSnapshot.ts.
