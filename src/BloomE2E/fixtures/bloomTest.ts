@@ -45,6 +45,12 @@ export interface IBloomApp {
     /** The collection folder Bloom has open: a temp folder, never the inputs repository itself. */
     collectionDir: string;
     /**
+     * The folder this Bloom keeps its user settings in (its user.config), beside the collection in
+     * the temp folder, so nothing it saves reaches the developer's own Bloom or the next run. It
+     * starts empty, and a restart keeps it. See helpers/userSettings.ts to read what is in it.
+     */
+    userSettingsDir: string;
+    /**
      * Quit Bloom and start it again on the same collection folder, and return the new shell page.
      *
      * `betweenStopAndStart` runs while no Bloom holds the folder, which is the only safe moment to
@@ -245,6 +251,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                     cdpPort: launched.cdpPort,
                     bloomPid: launched.bloomPid,
                     collectionDir: launched.collectionDir,
+                    userSettingsDir: launched.userSettingsDir,
                     restart: async (betweenStopAndStart) => {
                         // Close the old CDP connection first: it holds a socket into the process
                         // that is about to be killed.

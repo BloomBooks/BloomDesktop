@@ -12,6 +12,12 @@
 //  3. Discovery matches on the OPEN COLLECTION FOLDER, not on a port. Bloom takes the next free
 //     port block, and a developer's own Bloom may already hold 8089, so the folder is the only
 //     reliable way to tell our instance from theirs.
+//  4. Every Bloom we launch keeps its user settings (user.config: UI language, page zoom, the Bloom
+//     Library login, and the rest of Settings.Default) in a folder of its own inside the temp
+//     folder, passed as --user-settings-folder. Every Bloom of one build otherwise shares one
+//     user.config, so a run would start from whatever the developer's Bloom, or the previous run,
+//     saved last, and leave its own changes behind for them. This way it starts from defaults, or
+//     from whatever a test puts in the folder first, and its settings die with the temp folder.
 //
 // Nothing here knows about Playwright; fixtures/bloomTest.ts adds the CDP attachment on top.
 
@@ -31,6 +37,12 @@ export interface ILaunchedBloom {
     bloomPid: number;
     /** The temp copy of the collection folder that this Bloom has open. */
     collectionDir: string;
+    /**
+     * The folder this Bloom keeps its user settings in (its user.config), a sibling of the
+     * collection in the temp folder. It starts empty, so Bloom starts from default settings; a
+     * restart keeps it, so what one launch saved the next one reads, as on a real machine.
+     */
+    userSettingsDir: string;
     /** Kill the process tree, confirm the HTTP port went dark, and delete the temp copy. */
     stop: () => Promise<void>;
     /**
@@ -59,6 +71,19 @@ export interface ICollectionSpec {
      * three; two entries mean the collection has no Language3.
      */
     languages: string[];
+    /**
+     * A Bloom subscription code, which is what a person types in the Settings dialog to put the
+     * collection under a subscription. Left out, the collection has none (the Basic tier). A test
+     * that needs an enterprise feature uses TEST_ENTERPRISE_SUBSCRIPTION_CODE from
+     * helpers/collectionSettings.ts.
+     */
+    subscriptionCode?: string;
+    /**
+     * The Bloom Library bookshelf every book of the collection is uploaded to, by its url key, e.g.
+     * "test-bookshelf-1". Bloom honours it only under an enterprise subscription whose bookshelves
+     * include it, which is what the Settings dialog offers a person.
+     */
+    bookshelf?: string;
 }
 
 /** Options for launchBloom. Give exactly one of collectionName and collectionSpec. */
@@ -171,11 +196,16 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * window IS visible.
  */
 function environmentForBloom(): NodeJS.ProcessEnv {
+    // Every Bloom a test launches talks to the sandbox, dev.bloomlibrary.org, never to
+    // bloomlibrary.org: a test signs in there with a test account and uploads for real. A Debug
+    // Bloom uses the sandbox anyway; a Release Bloom, which is what CI builds, uses bloomlibrary.org
+    // unless this variable says otherwise (see BookUpload.UseSandboxWithoutUserChoice).
+    const env: NodeJS.ProcessEnv = { ...process.env, BloomSandbox: "true" };
     const asked = process.env.BLOOM_AUTOMATION_MONITOR?.trim().toLowerCase();
     if (process.env.PWDEBUG && (asked === "headless" || asked === "0")) {
-        return { ...process.env, BLOOM_AUTOMATION_MONITOR: "" };
+        env.BLOOM_AUTOMATION_MONITOR = "";
     }
-    return process.env;
+    return env;
 }
 
 /**
@@ -211,6 +241,8 @@ interface IInstanceInfo {
     editableCollectionFolder?: string;
     processId?: number;
     cdpPort?: number;
+    /** Where this Bloom keeps its user settings; absent from a Bloom built before it reported this. */
+    userSettingsFolder?: string;
 }
 
 /**
@@ -278,10 +310,18 @@ export function writeNewCollection(
     fs.mkdirSync(collectionDir, { recursive: true });
     fs.writeFileSync(
         Path.join(collectionDir, `${spec.name}.bloomCollection`),
-        makeCollectionXml(spec.languages),
+        makeCollectionXml(spec.languages, undefined, spec),
         "utf8",
     );
     return collectionDir;
+}
+
+/** The settings makeCollectionXml writes beyond the languages and the front/back matter pack. */
+export interface ICollectionXmlExtras {
+    /** See ICollectionSpec.subscriptionCode. */
+    subscriptionCode?: string;
+    /** See ICollectionSpec.bookshelf. */
+    bookshelf?: string;
 }
 
 /**
@@ -292,10 +332,14 @@ export function writeNewCollection(
  * `xmatterPack` is the pack's key, the part of its folder name before "-XMatter": "Factory" (the
  * pack the Settings dialog calls Paper Saver), "Traditional", "SuperPaperSaver", "Device",
  * "SIL-PNG". The default is Factory, which is what the collections here have always had.
+ *
+ * Bloom keeps the bookshelf as a "bookshelf:" tag in DefaultBookTags, and since Bloom 6.1 reads
+ * the subscription from SubscriptionCode alone; BrandingProjectName is written for older Blooms.
  */
 export function makeCollectionXml(
     languages: string[],
     xmatterPack = "Factory",
+    extras: ICollectionXmlExtras = {},
 ): string {
     // Bloom treats Language2 as "same as Language1" when a collection names only one language,
     // which is what its own new-collection code writes.
@@ -316,6 +360,12 @@ export function makeCollectionXml(
         languageElements +
         `\n  <XMatterPack>${xmatterPack}</XMatterPack>\n` +
         `  <BrandingProjectName>Default</BrandingProjectName>\n` +
+        (extras.subscriptionCode
+            ? `  <SubscriptionCode>${extras.subscriptionCode}</SubscriptionCode>\n`
+            : "") +
+        (extras.bookshelf
+            ? `  <DefaultBookTags>bookshelf:${extras.bookshelf}</DefaultBookTags>\n`
+            : "") +
         `  <AllowNewBooks>True</AllowNewBooks>\n` +
         `  <PageNumberStyle>Decimal</PageNumberStyle>\n` +
         `</Collection>\n`
@@ -393,6 +443,7 @@ function isPid(pid: number | undefined): pid is number {
  */
 async function startBloomOn(
     collectionDir: string,
+    userSettingsDir: string,
     readyTimeoutMs: number,
 ): Promise<IRunningBloom> {
     const exe = findBloomExe();
@@ -417,6 +468,8 @@ async function startBloomOn(
     // tree rather than a stale output/browser (see getViteDevPort).
     const vitePort = getViteDevPort();
     if (vitePort) args.push("--vite-port", vitePort);
+    // --user-settings-folder: keep this Bloom's user settings to itself (point 4 at the top).
+    args.push("--user-settings-folder", userSettingsDir);
     const bloomProcess: ChildProcess = execFile(exe, args, {
         env: environmentForBloom(),
     });
@@ -482,6 +535,21 @@ async function startBloomOn(
         );
     }
 
+    // A Bloom that is not keeping its settings where we said would share them with the developer's
+    // own Bloom, which is the very thing the folder prevents; a Bloom.exe built before the argument
+    // existed reports no folder at all. Either way, no test can be trusted, so stop here.
+    if (
+        !found.info.userSettingsFolder ||
+        !samePath(found.info.userSettingsFolder, userSettingsDir)
+    ) {
+        killProcessTree([bloomProcess.pid, found.info.processId].filter(isPid));
+        throw new Error(
+            `Bloom was asked to keep its user settings in ${userSettingsDir} but reports ` +
+                `${found.info.userSettingsFolder ?? "no user settings folder"}. ` +
+                `Is ${exe} built from current sources?`,
+        );
+    }
+
     return {
         httpPort: found.httpPort,
         cdpPort: found.info.cdpPort,
@@ -532,10 +600,13 @@ export async function launchBloom(
     );
 
     let collectionDir: string;
+    // Empty, so this Bloom starts from default settings (point 4 at the top). Deleted with tempRoot.
+    const userSettingsDir = Path.join(tempRoot, "user-settings");
     try {
         collectionDir = options.collectionSpec
             ? writeNewCollection(tempRoot, options.collectionSpec)
             : copyPreparedCollection(tempRoot, options.collectionName!);
+        fs.mkdirSync(userSettingsDir);
     } catch (error) {
         fs.rmSync(tempRoot, { recursive: true, force: true });
         throw error;
@@ -556,7 +627,11 @@ export async function launchBloom(
     process.once("exit", cleanUpOnExit);
 
     try {
-        running = await startBloomOn(collectionDir, readyTimeoutMs);
+        running = await startBloomOn(
+            collectionDir,
+            userSettingsDir,
+            readyTimeoutMs,
+        );
     } catch (error) {
         process.removeListener("exit", cleanUpOnExit);
         fs.rmSync(tempRoot, { recursive: true, force: true });
@@ -568,6 +643,7 @@ export async function launchBloom(
         cdpPort: running.cdpPort,
         bloomPid: running.servingPid,
         collectionDir,
+        userSettingsDir,
 
         restart: async (betweenStopAndStart) => {
             await killAndWaitForPortToGoDark(running!);
@@ -575,7 +651,11 @@ export async function launchBloom(
             // about to rewrite one of the files it had open.
             await delay(1000);
             if (betweenStopAndStart) await betweenStopAndStart();
-            running = await startBloomOn(collectionDir, readyTimeoutMs);
+            running = await startBloomOn(
+                collectionDir,
+                userSettingsDir,
+                readyTimeoutMs,
+            );
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;
             launched.bloomPid = running.servingPid;

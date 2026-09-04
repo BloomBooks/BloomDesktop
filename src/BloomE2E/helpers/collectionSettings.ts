@@ -15,6 +15,17 @@ import type { IBloomApp } from "../fixtures/bloomTest";
 import { makeCollectionXml } from "../fixtures/launchBloom";
 import { apiPost } from "./api";
 
+/**
+ * A valid, never-expiring subscription code for the "Test" enterprise subscription: the code
+ * Bloom's own unit tests use, for a branding Bloom ships and that Contentful knows, with two
+ * bookshelves, TEST_BOOKSHELVES. It stands for the code a person types in the Settings dialog, so
+ * a test can use every enterprise feature, bulk upload included, on a collection it made itself.
+ */
+export const TEST_ENTERPRISE_SUBSCRIPTION_CODE = "Test-727011-1339";
+
+/** The bookshelves the Test subscription owns on Bloom Library, by url key. */
+export const TEST_BOOKSHELVES = ["test-bookshelf-1", "test-bookshelf-2"];
+
 /** The collection settings a test can rewrite. Everything else keeps Bloom's defaults. */
 export interface ICollectionSettings {
     /** Language tags for Language1, Language2 and Language3, in that order. */
@@ -24,6 +35,10 @@ export interface ICollectionSettings {
      * "Traditional". Left out, the collection gets the pack makeCollectionXml gives by default.
      */
     xmatterPack?: string;
+    /** A subscription code; see ICollectionSpec.subscriptionCode. Left out, no subscription. */
+    subscriptionCode?: string;
+    /** The Bloom Library bookshelf, by url key; see ICollectionSpec.bookshelf. Left out, none. */
+    bookshelf?: string;
 }
 
 /**
@@ -56,7 +71,11 @@ export async function restartWithCollectionSettings(
     return bloomApp.restart(() =>
         fs.writeFileSync(
             settingsPath,
-            makeCollectionXml(settings.languages, settings.xmatterPack),
+            makeCollectionXml(
+                settings.languages,
+                settings.xmatterPack,
+                settings,
+            ),
             "utf8",
         ),
     );
