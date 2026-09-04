@@ -379,8 +379,12 @@ namespace Bloom.Spreadsheet
             // PageType column holds what is basically the InnerText of an element;
             // the InnerText property handles any XML escaping.
             // Image source column holds the actual path to the file; it will be url encoded when set as the src.
+            // The details column holds JSON, which we must get back byte for byte: escaping
+            // its ampersands (e.g. in a url inside an attribute value) would corrupt what we
+            // are copying verbatim.
             return key != InternalSpreadsheet.PageTypeColumnLabel
-                && key != InternalSpreadsheet.ImageSourceColumnLabel;
+                && key != InternalSpreadsheet.ImageSourceColumnLabel
+                && key != InternalSpreadsheet.DetailsColumnLabel;
         }
 
         private static bool IsWysiwygFormattedColumn(SpreadsheetRow row, int index)
@@ -392,6 +396,7 @@ namespace Bloom.Spreadsheet
                 || key == InternalSpreadsheet.WidgetSourceColumnLabel
                 || key == InternalSpreadsheet.PageTypeColumnLabel
                 || key == InternalSpreadsheet.AttributeColumnLabel
+                || key == InternalSpreadsheet.DetailsColumnLabel
             )
                 return false;
             return !nonWysiwygColumns.Contains(key);

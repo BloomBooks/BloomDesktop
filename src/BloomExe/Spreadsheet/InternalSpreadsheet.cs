@@ -39,6 +39,16 @@ namespace Bloom.Spreadsheet
         public const string WidgetSourceColumnLabel = "[activities source]";
         public const string PageTypeColumnLabel = "[page type]";
         public const string AttributeColumnLabel = "[attribute]";
+
+        // A hidden column holding a JSON object with whatever non-textual state a row's
+        // object needs to be reconstructed on import. Which object a row is for is said by
+        // the "kind" property of that JSON, matching the Kind of a registered
+        // ISpreadsheetObjectKind. Its presence anywhere in a spreadsheet marks that
+        // spreadsheet as the authority on the objects whose rows use it; a spreadsheet
+        // without the column (e.g. made by an older Bloom) can say nothing about them, so
+        // import leaves whatever the book already has alone.
+        public const string DetailsColumnLabel = "[details]";
+        public const string DetailsColumnFriendlyName = "Details";
         public const string ImageSourceColumnFriendlyName = "Image File Path";
 
         public const string BlankContentIndicator = "[blank]";
@@ -350,7 +360,10 @@ namespace Bloom.Spreadsheet
             {
                 GetColumnForTag(PageNumberColumnLabel),
                 GetColumnForTag(ImageSourceColumnLabel),
-            };
+                GetColumnForTag(DetailsColumnLabel),
+            }
+                .Where(i => i >= 0) // optional columns may be absent
+                .ToList();
 
         public void SortHiddenContentRowsToTheBottom()
         {
