@@ -370,6 +370,16 @@ public class EditingStateMachine
         }
         catch (Exception e)
         {
+            // This covers the caller's action throwing as well as the page content failing to
+            // apply, which is what BL-16776 asked for: the caller is told either way. Here it is
+            // told twice over -- reportFailure, and the Failed outcome it gets back -- because the
+            // call is synchronous now, so there is a return value to carry it. In the shape
+            // BL-16776 fixed there was none, and an exception left the caller waiting for ever.
+            //
+            // We do NOT navigate, unlike that older path. It had to, because the page had been
+            // stripped to be read and was no longer editable; nothing strips the page now, so the
+            // browser still has an intact one in front of the user, and rebuilding it from an
+            // in-memory book we know to be half-updated would be the worse of the two.
             if (_pageId != _pageIdWeFailedToSave)
             {
                 _pageIdWeFailedToSave = _pageId;
