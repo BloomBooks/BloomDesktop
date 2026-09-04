@@ -1711,8 +1711,14 @@ namespace Bloom.Spreadsheet
                 && (blocksNeeded & BlockTypes.Object) == BlockTypes.Object
             )
             {
+                var blocksNeededBesidesObject = blocksNeeded & ~BlockTypes.Object;
+                // If the object was all the row needed, there is nothing left to find a page
+                // for, so we use the page we have. (Recursing with nothing needed would only
+                // repeat the "requested page type" warning above for the same row.)
+                if (blocksNeededBesidesObject == BlockTypes.None)
+                    return false;
                 return InsertDefaultPageIfNeeded(
-                    blocksNeeded & ~BlockTypes.Object,
+                    blocksNeededBesidesObject,
                     blocksWeHave,
                     pageTypeNeeded,
                     _pageTypeOfLastPage
