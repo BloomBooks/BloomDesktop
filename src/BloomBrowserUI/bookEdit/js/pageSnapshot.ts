@@ -67,11 +67,15 @@ export function getPageLoadId(): string {
 // only stores the string, replacing the last one.
 const kQuietMs = 25;
 
-// How long to wait before offering the content again when C# did not take it -- a refusal, or a
-// post that failed. Longer than the debounce on purpose: nothing the user did causes these, so
-// there is nothing to be responsive to, and a 25ms retry against a server that is not answering
-// would be a busy loop. A real change reschedules at kQuietMs and so overtakes this.
-const kRetryAfterFailedPostMs = 1000;
+// How long to wait before offering the content again when C# did not take it. Longer than the
+// debounce on purpose: nothing the user did causes these, so there is nothing to be responsive to,
+// and a 25ms retry against a server that is not answering would be a busy loop. A real change
+// reschedules at kQuietMs and so overtakes this.
+const kRetryAfterRefusalMs = 1000;
+
+// How many times to keep offering content after a post that FAILED (as opposed to one C# refused).
+// Every failed attempt shows the user an error, so this cannot go on for ever; see takeSnapshot.
+const kMaxFailedPostRetries = 4;
 
 let observer: MutationObserver | undefined;
 let timer: number | undefined;
@@ -93,6 +97,8 @@ let changeCount = 0;
 // The page we have already complained about, so that a page which fails every time reports once
 // rather than on every keystroke.
 let pageWeReportedAFailureFor: string | undefined;
+// How many posts in a row have failed outright. Governs the backoff, and how soon we stop asking.
+let consecutiveFailedPosts = 0;
 // Set while the page is in a mode where gathering it would disturb what the user is doing. See
 // setSnapshotsSuspended.
 let suspendedFor: string | undefined;
@@ -183,15 +189,36 @@ async function takeSnapshot(): Promise<void> {
             //   Reading only `.data` would therefore take a failure for an acceptance, record the
             //   content as sent, and never offer it again; the next save would write what C# still
             //   held, losing everything typed since the snapshot before.
+            //
+            // They are retried differently, because only one of them is loud. A refusal costs
+            // nothing and ends by itself the moment the page reports ready, so we simply keep
+            // offering. A failure is reported to the user by wrapAxios on every attempt, so a
+            // server that is not answering would put a dialog in front of the user every second
+            // for as long as they stayed on the page. That one backs off and gives up on its own.
             const response = reply as { data?: boolean | string } | void;
-            const delivered = !!response && response.data !== false;
-            if (!delivered) {
-                // Slower than the normal debounce: if the server is not answering, retrying every
-                // 25ms would spin. Any change the user makes reschedules at the normal interval,
-                // so this only governs how fast we retry when nothing else is happening.
-                scheduleSnapshot(kRetryAfterFailedPostMs);
+            const refused = !!response && response.data === false;
+            const failed = !response;
+            if (refused) {
+                consecutiveFailedPosts = 0;
+                scheduleSnapshot(kRetryAfterRefusalMs);
                 return;
             }
+            if (failed) {
+                consecutiveFailedPosts++;
+                if (consecutiveFailedPosts <= kMaxFailedPostRetries) {
+                    // 1s, 2s, 4s... so a long outage is quiet rather than a dialog a second.
+                    scheduleSnapshot(
+                        kRetryAfterRefusalMs *
+                            Math.pow(2, consecutiveFailedPosts - 1),
+                    );
+                }
+                // Past that we stop asking on our own. lastPosted is still not set, so the very
+                // next thing the user changes offers this content again -- which is how a
+                // recovering server gets it, and the case we would otherwise lose (a failure
+                // followed by nothing at all, then a quit) is already several retries old.
+                return;
+            }
+            consecutiveFailedPosts = 0;
             // Only once the post has actually resolved AND been taken. Recording it earlier would
             // mean content C# never received still counted as sent: we would never retry it, and
             // the next save would write what C# still held, losing everything typed since.
@@ -215,10 +242,9 @@ async function takeSnapshot(): Promise<void> {
                 error instanceof Error ? error.stack : undefined,
             );
         }
-        // Try again: a transient failure should not stop us for good. At the slower interval,
-        // for the same reason as a post C# did not take -- a page that fails to gather fails
-        // again immediately, and retrying every 25ms would spin.
-        scheduleSnapshot(kRetryAfterFailedPostMs);
+        // Try again on the next change. Not on a timer: the gather is deterministic, so a page
+        // that failed to gather fails again immediately, and a timer would just repeat the report
+        // we have carefully arranged to make only once.
     } finally {
         // Only release the lock if we are still the run that took it. If the page was unloaded
         // and another started while we were awaiting, this run belongs to the old page, and
@@ -263,6 +289,7 @@ export function startWatchingPageForSnapshots(
     changeCount = 0;
     baselineTaken = false;
     pageWeReportedAFailureFor = undefined;
+    consecutiveFailedPosts = 0;
     // Deliberately NOT clearing suspendedFor: page setup can put a game page straight into its
     // Play tab (the tab is remembered per page), and that suspension may well be set before we
     // are started. Each page load is a fresh document, and so a fresh copy of this module, so
@@ -341,4 +368,4 @@ export function stopWatchingPageForSnapshots(): void {
  * Exported for tests: the interval the page must be quiet before a snapshot is taken.
  */
 export const quietMsForTests = kQuietMs;
-export const retryMsForTests = kRetryAfterFailedPostMs;
+export const retryMsForTests = kRetryAfterRefusalMs;

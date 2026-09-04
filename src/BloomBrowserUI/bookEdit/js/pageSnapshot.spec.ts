@@ -390,4 +390,41 @@ describe("pageSnapshot", () => {
             "content C# never received must be offered again, not counted as sent",
         ).toEqual(["typed", "typed"]);
     });
+
+    it("stops retrying a failing post rather than reporting an error for ever", async () => {
+        // Every failed post is reported to the user by wrapAxios. Retrying on a timer therefore
+        // cannot go on indefinitely, or a server that has stopped answering puts a dialog in front
+        // of the user for as long as they stay on the page. We back off and give up; the content
+        // is still not recorded as sent, so the next thing the user changes offers it again.
+        contentToReport = "first";
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+
+        postReply = undefined; // every post fails
+        contentToReport = "typed";
+        changeThePage("typed");
+        await letTheSnapshotHappen();
+        expect(posted.length, "sanity: the first attempt happened").toBe(1);
+
+        // Walk well past every backoff step (1s, 2s, 4s, 8s) and then some.
+        for (let i = 0; i < 12; i++) {
+            vi.advanceTimersByTime(60000);
+            await vi.runAllTicks();
+            await Promise.resolve();
+            await Promise.resolve();
+        }
+        expect(
+            posted.length,
+            "the retries must be bounded, not one a second for ever",
+        ).toBeLessThanOrEqual(5);
+        const attemptsBeforeGivingUp = posted.length;
+
+        // Giving up is not giving in: the next real change offers the content again.
+        postReply = { data: true };
+        contentToReport = "typed more";
+        changeThePage("typed more");
+        await letTheSnapshotHappen();
+        expect(posted.length).toBe(attemptsBeforeGivingUp + 1);
+        expect(posted[posted.length - 1].body).toBe("typed more");
+    });
 });
