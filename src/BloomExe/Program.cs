@@ -860,7 +860,14 @@ namespace Bloom
                 )
                 {
                     if (errorMessage != null)
+                    {
+                        // The launch is being rejected, so it must not use a settings folder an
+                        // earlier --user-settings-folder already set: leaving it set would have
+                        // startup open (and possibly self-heal) that folder's user.config before
+                        // the error is reported. A rejected launch touches nothing.
+                        BloomSettingsProvider.UserSettingsFolder = null;
                         return Array.Empty<string>();
+                    }
 
                     continue;
                 }

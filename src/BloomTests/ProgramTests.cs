@@ -241,6 +241,20 @@ namespace BloomTests
             Assert.That(remainingArgs, Is.Empty);
         }
 
+        [Test]
+        public void ParseStartupPortArguments_ClearsUserSettingsFolderWhenALaterArgumentIsBad()
+        {
+            // A valid folder set before a bad argument must not survive: the launch is rejected, and
+            // startup must not open that folder's user.config before reporting the error.
+            Program.ParseStartupPortArguments(
+                new[] { @"--user-settings-folder=C:\valid", "--vite-port", "70000" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Not.Null);
+            Assert.That(BloomSettingsProvider.UserSettingsFolder, Is.Null);
+        }
+
         // --- IsBenignUnobservedTaskSocketNoise: the Sentry BeforeSend filter for
         //     BLOOM-DESKTOP-EQ4 / -E4J / -E9K ---
 
