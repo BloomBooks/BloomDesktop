@@ -25,6 +25,7 @@ import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import BloomField from "../bloomField/BloomField";
 import BloomNotices from "./bloomNotices";
+import { reportError } from "../../lib/errorHandler";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import {
@@ -1442,10 +1443,28 @@ export async function savePageWithoutReloading(): Promise<boolean> {
 // EditingModel.SavePageAndReloadIt.
 //
 // The post itself might navigate this very frame out from under us, hence postThatMightNavigate.
+//
+// Every caller does `void saveChangesAndRethinkPage()`, so nothing here may reject. The post
+// cannot (wrapAxios swallows the rejection), but the gather can -- and a rejection nobody catches
+// is silent, because the global unhandledrejection handler is commented out in lib/errorHandler.ts.
+// The user would be left looking at a restructured page -- a new origami layout, a video they just
+// imported -- that was never saved and never rebuilt, with no hint that anything went wrong. So we
+// say so, the same way pageSnapshot.ts does for the failure it cannot afford to be quiet about.
 export async function saveChangesAndRethinkPage(): Promise<void> {
+    let content: string;
+    try {
+        content = await getPageContentForSaveWhenReady();
+    } catch (error) {
+        reportError(
+            "Bloom could not save your changes to this page: " +
+                (error instanceof Error ? error.message : String(error)),
+            error instanceof Error ? error.stack : undefined,
+        );
+        return;
+    }
     await postThatMightNavigate(
         "common/saveChangesAndRethinkPageEvent",
-        await getPageContentForSaveWhenReady(),
+        content,
     );
 }
 

@@ -44,7 +44,7 @@ export async function collectCurrentPageContent(
             giveUp = window.setTimeout(() => {
                 console.warn(
                     `gave up waiting for the current page's content for ${whatFor} (the page frame ` +
-                        `may have navigated away mid-wait); C# will ask the page frame for it instead.`,
+                        `may have navigated away mid-wait); C# will save the last snapshot the browser volunteered.`,
                 );
                 resolve(undefined);
             }, kGiveUpWaitingMs);
@@ -56,7 +56,7 @@ export async function collectCurrentPageContent(
         }
     } catch (error) {
         console.warn(
-            `could not collect the current page's content for ${whatFor}; C# will ask the page frame for it instead.`,
+            `could not collect the current page's content for ${whatFor}; C# will save the last snapshot the browser volunteered.`,
             error,
         );
         return undefined;

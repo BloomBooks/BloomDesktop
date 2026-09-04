@@ -1,18 +1,14 @@
 # Saving a page without reloading it — what it enables
 
-## A note on shape: this branch has to survive a long wait
+## A note on shape: this document is part history
 
-It will not merge for a while (it is too big a change to risk in the current release), so it is
-written to be cheap to merge later rather than to be the most direct expression of each change.
-Two rules follow from that, and they are worth keeping if you add to it:
-
-- **New behaviour goes in new files.** `pageContentDelays.ts`, `niceScrollCleanup.ts`,
-  `currentPageContent.ts`, `EditingStateMachine`'s new transitions, and the tests for all of them
-  are additions rather than edits. A new file cannot conflict with anything.
-- **Don't reshape existing code to add to it.** What conflicts is a *changed* line, not an added
-  one — so an extra argument on a call beats hoisting its lambda into a named local, even when the
-  named local reads a little better on its own. That single choice took `EditingModel.cs` from 130
-  changed lines to 37 and removed every reindentation.
+The sections up to "The page snapshot" were written *before* the snapshot existed, while the branch
+was still converting callers one at a time and waiting on a round trip. They are kept because they
+record why each caller was converted (or deliberately not), and what the round trip actually cost,
+measured. Read them as the reasoning that led here, not as a description of the current code: what
+they call `SaveThen` is now `EditingModel.MergeCurrentPageThenSave`, and the waiting states they
+discuss no longer exist. Where an earlier section and a later one disagree, the later one is what
+was built.
 
 ## What changed
 
@@ -473,16 +469,22 @@ pressure.
 None of that argues for a longer debounce, which would cost every user a bigger loss window to buy
 something the coalescing already provides.
 
-### Why that matters for exit
+### Why that mattered for exit
 
-`Shell.OnClosing` currently cancels the close (`e.Cancel = true`), starts a save, and calls
-`Close()` again when it finishes — with `_startedClosingEvent` / `_finishedClosingEvent` guarding
-the re-entry. All of that exists for one reason: the save could not complete synchronously,
-because it had to ask the browser and wait.
+`Shell.OnClosing` used to cancel the close (`e.Cancel = true`), start a save, and call `Close()`
+again once the save came back — with `_startedClosingEvent` / `_finishedClosingEvent` guarding the
+re-entry. All of that existed for one reason: the save could not complete synchronously, because it
+had to ask the browser and wait for the answer on another API call.
 
-A save that takes the snapshot IS synchronous. That makes the whole dance unnecessary: save, then
-let the close proceed. What has to be accepted in exchange is that quitting could lose the last
-~50 ms of typing rather than being guaranteed fresh.
+A save that takes the snapshot **is** synchronous, so the dance is gone: `OnClosing` saves and lets
+the close proceed. Nothing waits on the browser at shutdown, and so nothing can hang there.
+
+What is accepted in exchange is stated plainly, because it is the one guarantee this design gives
+up: the content written at exit is the last snapshot the browser posted, which is up to ~50 ms
+behind the live page. Quitting within 50 ms of a keystroke can therefore miss that keystroke. It is
+not "the page is re-read at close time" — there is no mechanism left that could re-read it. The
+window is shorter than the hand movement that reaches for the X, and testing has not managed to hit
+it, but it is a trade rather than an oversight.
 
 ### Would observing `.bloom-page` instead of the body be better?
 
@@ -491,36 +493,35 @@ the gather clones the whole `document.body`, so a change outside `.bloom-page` c
 gets saved. An observer narrower than the thing being gathered can miss a real change. If the two
 are ever narrowed, they must be narrowed together.
 
-**2. The state machine does not go away. It shrinks to one caller.**
+**2. The two saves that can follow a keystroke were expected to keep the round trip. They did not.**
 
 A snapshot is up to `kQuietMs` plus a gather behind the live page. That is fine for a page click,
-which cannot happen within a few hundred milliseconds of a keystroke. It is **not** fine for the
-two saves that can:
+which cannot happen within a few hundred milliseconds of a keystroke. The doubt was about the two
+saves that can:
 
 - **leaving the Edit tab** — a tab click, possibly right after typing;
 - **closing the collection** — `Shell.OnClosing`, i.e. the window's X button, Alt+F4, or the OS
   shutting Bloom down.
 
-Both would lose the last fraction of a second of typing if they read a snapshot. So both keep
-asking the browser, and therefore `SavePending`, `SavedAndStripped`, `RequestBrowserToSave` and
-`editView/pageContent` all survive to serve them.
+The plan was to let those two keep asking the browser, which would have kept `SavePending`,
+`SavedAndStripped`, `RequestBrowserToSave` and the `editView/pageContent` API alive to serve them,
+and left the state machine at "one waiting state, one caller" rather than none.
 
-They are excluded automatically, because both are the only callers that pass `skipSaveToDisk`.
-That is convenient rather than principled — see the comment in `SaveThen`.
+Measuring the debounce is what changed the answer. At 400 ms the round trip was clearly worth
+keeping for those two; at 25 ms the freshness window is ~50 ms, which is below the time it takes to
+move a hand from the keyboard to a tab or a close button. So both were converted after all: the
+waiting states, `RequestBrowserToSave` and `editView/pageContent` are gone, and both paths are now
+straight-line code. The state machine keeps only the states it needs to know *which page is being
+edited and whether it is safe to act on it* — it no longer arbitrates a wait.
 
-Of the two, only the tab change could be converted: the tab strip lives in the workspace root,
-which *can* reach the page frame (that is how the page list collects content). The window close
-genuinely cannot start in Typescript — it arrives as a WinForms message, and `OnClosing` has to
-cancel the close, save, and close again. It could keep one narrow round trip of its own, but that
-is the state machine's waiting states surviving for a single caller rather than disappearing.
-
-The C#-side alternative is not available: the only synchronous way to read Javascript is
-`RunJavascriptWithStringResult_Sync_Dangerous`, which pumps the message loop, and Bloom has been
+The C#-side alternative was never available in any case: the only synchronous way to read Javascript
+is `RunJavascriptWithStringResult_Sync_Dangerous`, which pumps the message loop, and Bloom has been
 deliberately retreating from it (see `OffScreenBrowser`, `PublishHelper`).
 
-## So: worth doing?
+## The verdict
 
-The round trip disappears from every ordinary editing action, which is real. But "the state machine
-goes away" is not on offer without either accepting that quitting Bloom can lose the last few
-hundred milliseconds of typing, or keeping a round trip for that one path. The honest shape is
-"one waiting state, one caller" rather than none.
+The round trip is gone from every save, including the two that were expected to keep it, and with it
+the asynchronous machinery that existed only to wait: two state-machine states, the ask-the-browser
+API and its browser half, and the shutdown kludge that cancelled the user's quit and re-issued it.
+The price is a single, bounded one — the last ~50 ms of typing at exit — and it is paid only by the
+exit path, not by the ordinary saves that happen all day.
