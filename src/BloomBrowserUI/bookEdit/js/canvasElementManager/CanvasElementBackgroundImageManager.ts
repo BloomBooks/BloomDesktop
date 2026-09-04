@@ -375,6 +375,14 @@ function adjustBackgroundImageSizeToFit(
 ): Promise<void> {
     const { width: bloomCanvasWidth, height: bloomCanvasHeight } =
         getExactClientSize(bloomCanvas);
+    if (bloomCanvasWidth === 0 || bloomCanvasHeight === 0) {
+        // Nothing useful can be computed from a box with no area, and the numbers
+        // we would write are not neutral: they become the baseline that later
+        // resizes scale, so the picture ends up somewhere arbitrary. A bloom-canvas
+        // that is hidden, or that has not been laid out yet, is in this state, so
+        // the right thing to do is wait until it has a real size and fit then.
+        return Promise.resolve();
+    }
     let imgAspectRatio =
         bgCanvasElement.clientWidth / bgCanvasElement.clientHeight;
     const img = getImageFromCanvasElement(bgCanvasElement);
