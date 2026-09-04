@@ -50,6 +50,11 @@
         <target xml:lang="ne-NP" state="needs-translation">Edit with AI...</target>
         <note>ID: EditTab.Image.EditWithAI</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.SlotLabel.CanvasBackground" translate="no">
+        <source xml:lang="en">Canvas Background</source>
+        <target xml:lang="ne-NP" state="needs-translation">Canvas Background</target>
+        <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
+      </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">No Indent</source>
         <target xml:lang="ne-NP" state="needs-translation">No Indent</target>
@@ -69,7 +74,7 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile">
         <source xml:lang="en">Choose Sound File</source>
         <target xml:lang="ne-NP" state="needs-translation">Choose Sound File</target>
-        <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
+        <note>ID: EditTab.Toolbox.DragActivity.ChooseSoundFile</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Correct">
         <source xml:lang="en">Correct</source>
@@ -183,10 +188,16 @@
         <target xml:lang="ne-NP" state="needs-translation">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2</note>
       </trans-unit>
-      <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled">
+      <!-- This string is not currently used. It was added (commit 472b7f6f6, July 2024) as a
+           tooltip for the disabled "part of the right answer" button, but days later
+           commit 3b195aad0 changed that control to be hidden when not relevant instead of
+           disabled, so the string was commented out. Kept in case a disabled state returns;
+           if uncommenting, verify the wording against the code first.
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled">
         <source xml:lang="en">Nothing that can be part of the right answer is selected</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled</note>
-      </trans-unit-->
+      </trans-unit>
+      -->
       <trans-unit id="EditTab.Toolbox.DragActivity.Play">
         <source xml:lang="en">Play</source>
         <target xml:lang="ne-NP" state="needs-translation">Play</target>
@@ -240,12 +251,12 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectSound">
         <source xml:lang="en">Correct Sound</source>
         <target xml:lang="ne-NP" state="needs-translation">Correct Sound</target>
-        <note>ID: EditTab.Toolbox.DragActivity.WhenCorrect</note>
+        <note>ID: EditTab.Toolbox.DragActivity.CorrectSound</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongSound">
         <source xml:lang="en">Wrong Sound</source>
         <target xml:lang="ne-NP" state="needs-translation">Wrong Sound</target>
-        <note>ID: EditTab.Toolbox.DragActivity.WhenWrong</note>
+        <note>ID: EditTab.Toolbox.DragActivity.WrongSound</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Word">
         <source xml:lang="en">Word</source>
@@ -380,7 +391,7 @@
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.OrderWordsInstructions">
         <source>Drag the words where they go</source>
         <target xml:lang="ne-NP" state="needs-translation">Drag the words where they go</target>
-        <note>ID: EditTab.Toolbox.Games.Placeholder.OrderInstructions</note>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.OrderWordsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
         <source xml:lang="en">Game Tool</source>
@@ -536,7 +547,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition" sil:dynamic="true">
         <source xml:lang="en">Bloom will hide these when you publish.</source>
         <target xml:lang="ne-NP" state="needs-translation">Bloom will hide these when you publish.</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip" sil:dynamic="true">
         <source xml:lang="en">First, put the cursor in a box which has something to record.</source>
@@ -546,7 +557,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip" sil:dynamic="true">
         <source xml:lang="en">If you want to change this mode, first use the "Clear" button to remove your recording.</source>
         <target xml:lang="ne-NP" state="needs-translation">If you want to change this mode, first use the "Clear" button to remove your recording.</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip</note>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip" sil:dynamic="true">
         <source xml:lang="en">Record one sentence at a time. You can break up sentences using the `|` character.</source>
@@ -627,7 +638,7 @@
       <trans-unit id="EditTab.Toolbox.CanvasTool.DragInstructions" sil:dynamic="true">
         <source xml:lang="en">Drag any of these onto a canvas:</source>
         <target xml:lang="ne-NP" state="needs-translation">Drag any of these onto a canvas:</target>
-        <note>ID: EditTab.Toolbox.CanvasTool.DragInstructions2</note>
+        <note>ID: EditTab.Toolbox.CanvasTool.DragInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit" sil:dynamic="true">
         <source xml:lang="en">Image Fit</source>
@@ -657,7 +668,7 @@
       <trans-unit id="EditTab.Toolbox.CanvasTool.NavButtons" sil:dynamic="true">
         <source xml:lang="en">A button that jumps you to a page or book in your app</source>
         <target xml:lang="ne-NP" state="needs-translation">A button that jumps you to a page or book in your app</target>
-        <note>ID: EditTab.Toolbox.OverlayTool.NavButtons</note>
+        <note>ID: EditTab.Toolbox.CanvasTool.NavButtons</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.Navigation" sil:dynamic="true">
         <source xml:lang="en">Navigation</source>
@@ -672,7 +683,7 @@
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true">
         <source xml:lang="en">Set Destination</source>
         <target xml:lang="ne-NP" state="needs-translation">Set Destination</target>
-        <note>ID: EditTab.Toolbox.OverlayTool.SetDest</note>
+        <note>ID: EditTab.Toolbox.CanvasTool.SetDest</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true">
         <source xml:lang="en">drag</source>
@@ -1062,7 +1073,7 @@
       <trans-unit id="Common.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background Color</source>
         <target xml:lang="ne-NP" state="needs-translation">Background Color</target>
-        <note>Common.CoverBackgroundColor</note>
+        <note>Common.BackgroundColor</note>
       </trans-unit>
       <trans-unit id="BookSettings.WhatToShowOnCover" sil:dynamic="true">
         <source xml:lang="en">Front Cover</source>
@@ -1107,7 +1118,7 @@
       <trans-unit id="BookSettings.PageNumbers.Left" sil:dynamic="true">
         <source xml:lang="en">Left</source>
         <target xml:lang="ne-NP" state="needs-translation">Left</target>
-        <note>BookSettings.PageNumbers.TopLeft</note>
+        <note>BookSettings.PageNumbers.Left</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers.Center" sil:dynamic="true">
         <source xml:lang="en">Center</source>

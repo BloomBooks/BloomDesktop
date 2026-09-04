@@ -690,9 +690,9 @@
         <target xml:lang="pt-PT" state="final">Se a legenda contem "{0}", o Bloom vai preencher com o nome da língua.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption.Description</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2" approved="yes">
         <source xml:lang="en">More books in {0} language:</source>
-        <target xml:lang="pt-PT" state="needs-translation">More books in {0} language:</target>
+        <target xml:lang="pt-PT" state="final">Mais livros na língua {0}:</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
