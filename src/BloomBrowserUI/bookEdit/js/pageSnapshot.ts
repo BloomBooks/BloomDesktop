@@ -120,9 +120,17 @@ let suspendedFor: string | undefined;
  * gather whenever the page changes, and dragging an item changes the page, the game became
  * unplayable in the editor -- every drag undid itself a moment later.
  *
- * Suspending loses nothing. Nothing that happens in play mode belongs in the book, an explicit
- * save still gathers directly rather than through us, and any change made while we were suspended
- * is picked up by the snapshot we take on resuming.
+ * Suspending loses nothing. Nothing that happens in play mode belongs in the book, and any change
+ * made while we were suspended is picked up by the snapshot taken on resuming.
+ *
+ * TEMPORARY, and only half a fix. An explicit save -- a page-list command -- gathers the page
+ * directly rather than through us, so it is not suspended, and it still hands the game tool a
+ * clone: the live page's drags are still undone, and worse, the clone it saves records the
+ * draggables where the tester dragged them rather than where the author put them. Only
+ * bloom-player can fix that, by restoring positions in the page it is given instead of the one it
+ * remembered, which is bloom-player#441. When that is merged and the dependency bumped, all of
+ * this suspension machinery should come out: setSnapshotsSuspended, its page-frame export, both
+ * calls in GameTool, and the deferred baseline in startWatchingPageForSnapshots.
  */
 export function setSnapshotsSuspended(reason: string | undefined): void {
     suspendedFor = reason;
