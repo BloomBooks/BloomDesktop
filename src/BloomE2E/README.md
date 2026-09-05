@@ -253,9 +253,13 @@ inputs.
 ## Testing a front-end change
 
 The launched Bloom serves its React UI from the built `output/browser`, so an edit to a `.tsx`
-file does not reach a run until somebody rebuilds that bundle. To test the working tree instead,
-start a Vite dev server and name its port in `BLOOM_E2E_VITE_PORT`; the fixture then passes
-`--vite-port` to Bloom, which loads every React control from the dev server.
+file does not reach a run until somebody rebuilds that bundle. The fixture refuses to launch a
+Bloom whose bundle is older than any file under `src/BloomBrowserUI`, or whose `Bloom.dll` is older
+than any file under `src/BloomExe`, and its error names the newer file; a run against a stale
+build would otherwise fail in exactly the way a real regression does. Rebuild, or, to test the
+working tree instead, start a Vite dev server and name its port in `BLOOM_E2E_VITE_PORT`; the
+fixture then passes `--vite-port` to Bloom, which loads every React control from the dev server,
+and the bundle's age no longer matters.
 
 ```bash
 # In one terminal, in src/BloomBrowserUI. Set PORT as well as --port: the port in

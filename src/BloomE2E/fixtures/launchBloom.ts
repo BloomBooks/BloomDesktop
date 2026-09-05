@@ -165,6 +165,132 @@ export function findBloomExe(): string {
 }
 
 /**
+ * The newest file under `root`, by modification time, with the folders in `skip` left out and,
+ * when `extensions` is given, only files with one of those extensions counted. Returns undefined
+ * for a folder that does not exist or holds no such file.
+ */
+function newestFileUnder(
+    root: string,
+    skip: Set<string>,
+    extensions?: Set<string>,
+): { path: string; mtimeMs: number } | undefined {
+    let newest: { path: string; mtimeMs: number } | undefined;
+    const visit = (dir: string) => {
+        let entries: fs.Dirent[];
+        try {
+            entries = fs.readdirSync(dir, { withFileTypes: true });
+        } catch {
+            return;
+        }
+        for (const entry of entries) {
+            if (skip.has(entry.name)) continue;
+            const path = Path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+                visit(path);
+            } else if (entry.isFile()) {
+                if (
+                    extensions &&
+                    !extensions.has(Path.extname(entry.name).toLowerCase())
+                )
+                    continue;
+                const mtimeMs = fs.statSync(path).mtimeMs;
+                if (!newest || mtimeMs > newest.mtimeMs)
+                    newest = { path, mtimeMs };
+            }
+        }
+    };
+    visit(root);
+    return newest;
+}
+
+/** The folders under a source tree whose contents never call for a rebuild. */
+const FOLDERS_THAT_ARE_NOT_SOURCE = new Set([
+    "node_modules",
+    "obj",
+    "bin",
+    ".vite-hooks",
+    ".vscode",
+    ".storybook",
+]);
+
+let freshnessChecked = false;
+
+/**
+ * Refuse to launch a Bloom whose front-end bundle or whose Bloom.dll is older than its source.
+ *
+ * The launched Bloom serves its React UI from output/browser, and nothing rebuilds that bundle when
+ * a .tsx file changes or a merge brings in someone else's; the same goes for Bloom.dll and the C#
+ * under src/BloomExe. A run against a stale build fails in the way a real regression does, in a
+ * test whose feature is simply not in the build yet, and nothing in the output says so. On
+ * 2026-09-05 a whole-suite run failed one of master's own tests that way, against a bundle a day
+ * older than the commit the test needed. So this compares the newest file on each side and stops
+ * the run, naming the newer source file, before a single test can misreport.
+ *
+ * The bundle check is skipped when BLOOM_E2E_VITE_PORT is set, because then the dev server serves
+ * the working tree and the bundle is not what the run tests. Checked once per worker process.
+ */
+function assertBuildIsNotStale(exe: string): void {
+    if (freshnessChecked) return;
+    freshnessChecked = true;
+    const complaints: string[] = [];
+
+    if (!getViteDevPort()) {
+        const bundleDir = Path.join(repoRoot, "output", "browser");
+        // Only what the build writes. A running Bloom writes into this folder too (a template
+        // book's history.db, for one), and such a file would make a stale bundle look fresh.
+        const bundle = newestFileUnder(
+            bundleDir,
+            new Set(),
+            new Set([".js", ".css", ".html", ".htm"]),
+        );
+        const source = newestFileUnder(
+            Path.join(repoRoot, "src", "BloomBrowserUI"),
+            FOLDERS_THAT_ARE_NOT_SOURCE,
+        );
+        if (!bundle) {
+            complaints.push(
+                `There is no front-end bundle in ${bundleDir}; the launched Bloom would show an empty UI.`,
+            );
+        } else if (source && source.mtimeMs > bundle.mtimeMs) {
+            complaints.push(
+                `The front-end bundle in ${bundleDir} is older than the source: ` +
+                    `${source.path} was modified ${new Date(source.mtimeMs).toISOString()}, ` +
+                    `the bundle ${new Date(bundle.mtimeMs).toISOString()}.`,
+            );
+        }
+        if (complaints.length) {
+            complaints.push(
+                "Either rebuild the bundle (pnpm build in src/BloomBrowserUI; stop a Bloom that is " +
+                    "running from this tree first, the build empties output/browser), or start a " +
+                    "Vite dev server and set BLOOM_E2E_VITE_PORT to its port so the suite tests " +
+                    'the working tree (see README.md, "Testing a front-end change").',
+            );
+        }
+    }
+
+    const dll = Path.join(Path.dirname(exe), "Bloom.dll");
+    const dllBuilt = fs.existsSync(dll) ? fs.statSync(dll).mtimeMs : undefined;
+    const csSource = newestFileUnder(
+        Path.join(repoRoot, "src", "BloomExe"),
+        FOLDERS_THAT_ARE_NOT_SOURCE,
+    );
+    if (dllBuilt !== undefined && csSource && csSource.mtimeMs > dllBuilt) {
+        complaints.push(
+            `${dll} is older than the C# source: ${csSource.path} was modified ` +
+                `${new Date(csSource.mtimeMs).toISOString()}, Bloom.dll was built ` +
+                `${new Date(dllBuilt).toISOString()}. Rebuild Bloom, then re-run.`,
+        );
+    }
+
+    if (complaints.length) {
+        throw new Error(
+            "BloomE2E refuses to test a stale build.\n  " +
+                complaints.join("\n  "),
+        );
+    }
+}
+
+/**
  * Resolve a path to its canonical on-disk form. On Windows this is essential: os.tmpdir() returns
  * an 8.3 short path (C:\Users\JOHNTH~1\...) while Bloom reports the long form, so the two would
  * never compare equal. Falls back to Path.resolve for a path that does not exist yet.
@@ -436,6 +562,7 @@ async function startBloomOn(
     console.log(
         `BloomE2E: launching ${exe} (built ${fs.statSync(exe).mtime.toISOString()})`,
     );
+    assertBuildIsNotStale(exe);
 
     // Everything Bloom says, kept so a failed launch can report the reason.
     let bloomOutput = "";

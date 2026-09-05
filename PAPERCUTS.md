@@ -185,6 +185,10 @@ House rules:
   port is free.
 - **Context:** the Add-Tables branch's e2e tests, 2026-09-04; ported to the e2e-infrastructure
   branch with the tests' helpers.
+- **Update 2026-09-05:** the fixture now refuses to launch a Bloom whose bundle, or whose
+  `Bloom.dll`, is older than its source, and names the newer file (`assertBuildIsNotStale` in
+  `src/BloomE2E/fixtures/launchBloom.ts`). The stale build still has to be rebuilt by hand, or
+  bypassed with `BLOOM_E2E_VITE_PORT`, but it can no longer fail a test in silence.
 
 
 ## 2026-08-10 — check-csharp-ApplicationExit.sh greps whole files, not the diff

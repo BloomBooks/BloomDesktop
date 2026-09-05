@@ -190,11 +190,12 @@ established 2026-09-01:
   when `Program.RunningE2eTests` is set, so an e2e run uses a dev server only when it named one
   with `--vite-port`. A Bloom started without `--e2e` still probes, as before.
 
-What remains: the fixture neither starts a dev server of its own nor checks that `output/browser`
-is newer than `src/BloomBrowserUI`, so a run with the variable unset tests the built bundle,
-however stale, without saying so. Fix direction: have the fixture own the choice, either by
-starting a dev server on a port of its own choosing, or by refusing to run against an
-`output/browser` older than the source and naming the file that is newer.
+Since 2026-09-05 the fixture refuses to run against an `output/browser` older than any file under
+`src/BloomBrowserUI`, or a `Bloom.dll` older than any file under `src/BloomExe`, naming the newer
+file (`assertBuildIsNotStale` in `fixtures/launchBloom.ts`); a whole-suite run had just failed one
+of master's own tests against a day-old bundle, looking exactly like a regression. What remains:
+the fixture does not start a dev server of its own, so a developer still chooses between a rebuild
+and `BLOOM_E2E_VITE_PORT`.
 (Found 2026-09-01 while fixing the top-bar test ids.)
 
 ## The Edit tab's page thumbnail menu has no stable test ids, so tests match on localized text
