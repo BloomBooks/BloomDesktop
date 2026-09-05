@@ -7,6 +7,11 @@ const postMock = vi.fn();
 vi.mock("../../utils/bloomApi", async (importOriginal) => ({
     ...((await importOriginal()) as object),
     post: (...args: unknown[]) => postMock(...args),
+    // SetupTableEditing asks the server for the table feature's status. There is no
+    // server here, and never calling the callback is what these tests want: the
+    // remembered answer stays whatever setTablesMayBeRestructuredForTests set, rather
+    // than a real status arriving mid-test.
+    get: () => {},
 }));
 
 import {

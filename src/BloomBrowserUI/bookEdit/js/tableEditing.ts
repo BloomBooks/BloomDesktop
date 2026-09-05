@@ -9,6 +9,8 @@ import {
     setColumnWidth,
     setDefaultCellContentTypeId,
     setRowHeight,
+    setCellMenuOpenHandler,
+    setStructuralChromeGate,
     kTableCellContentChangedEvent,
 } from "bloom-table";
 // Edit-only table styles (selection highlight, boundary hints). These must NOT
@@ -28,6 +30,10 @@ import {
     AddLanguageTags,
     attachToCkEditor,
 } from "./bloomEditing";
+import {
+    refreshTableFeatureStatus,
+    tablesMayBeRestructured,
+} from "./tableFeature";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
@@ -112,6 +118,33 @@ function ensureContentTypesRegistered(): void {
     );
 
     setDefaultCellContentTypeId("text");
+    installHostHooks();
+}
+
+/**
+ * Tell the bloom-table library how much of a table's editing Bloom is offering.
+ *
+ * A book may hold a table that the user is not entitled to make: the subscription
+ * is below Pro, or the Tables experiment has been turned off since the table was
+ * made. Bloom's rule for such a book is the one it uses for canvas elements —
+ * localize, don't create — so the table stays attached and its text, language tags,
+ * format gear, picture replacement and audio all keep working, while everything
+ * that would create or restructure a table is withheld.
+ *
+ * Two hooks do that between them:
+ * - The structural chrome gate withholds the "+" edge buttons, the row and column
+ *   pills and the table pill.
+ * - The cell menu open handler withholds the Cell menu, which is where content
+ *   type, merge and split live. It is a separate hook because the gate deliberately
+ *   leaves the Cell menu alone (a host that lays a table out itself still wants the
+ *   cell formatting). Answering true means "the host opened a menu itself, open
+ *   none": the library opens nothing and, since it does not stop the event, the
+ *   right-click goes on to Bloom's own text context menu, which is what a
+ *   right-click in a frozen table should show.
+ */
+function installHostHooks(): void {
+    setStructuralChromeGate(() => tablesMayBeRestructured());
+    setCellMenuOpenHandler(() => !tablesMayBeRestructured());
 }
 
 /**
@@ -302,6 +335,11 @@ function attachSingleTable(tableDiv: HTMLElement): void {
  */
 export function SetupTableEditing(container: HTMLElement): void {
     ensureContentTypesRegistered();
+    // Asked for once per page load and remembered, because the hooks installed
+    // above have to answer during an event they cannot await. Nothing waits for
+    // it: until it arrives the answer is "no", which is the safe way round, since
+    // it withholds chrome rather than showing chrome that then has to disappear.
+    void refreshTableFeatureStatus();
     container.addEventListener(
         kTableCellContentChangedEvent,
         onTableCellContentChanged,

@@ -8,8 +8,12 @@
 // does, through the page bundle's changeImageByElement.
 //
 // Cropping IS driven through the real UI: a mouse drag on a side handle of the selected image.
+//
+// Every function here works on the page's first image slot by default. A table cell also holds an
+// ordinary picture box, so each takes an optional `within` locator to say which one to act on; pass
+// the cell and everything below applies to the picture in it instead.
 
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import * as Path from "node:path";
 import { apiPost } from "./api";
 import { editablePageFrame } from "./bookMaking";
@@ -46,6 +50,7 @@ export interface IImagePlacement {
 export async function chooseImageFile(
     page: Page,
     filePath: string,
+    within?: Locator,
 ): Promise<void> {
     const result = await apiPost(
         page,
@@ -59,11 +64,12 @@ export async function chooseImageFile(
         creator: string;
         license: string;
     };
-    const frame = editablePageFrame(page);
-    await frame.locator(FIRST_IMAGE).first().waitFor({ state: "attached" });
-    await frame.evaluate(
-        ({ selector, imageInfo }) => {
-            const img = document.querySelector(selector) as HTMLElement;
+    const target = imageIn(page, within);
+    await target.waitFor({ state: "attached", timeout: 30000 });
+    // The image element itself is the handle: changeImageByElement takes the <img> the chooser was
+    // opened on, so passing the one we found scopes the change to that slot.
+    await target.evaluate(
+        (img, imageInfo) => {
             const bundle = (
                 window as unknown as {
                     editablePageBundle: {
@@ -74,18 +80,15 @@ export async function chooseImageFile(
                     };
                 }
             ).editablePageBundle;
-            bundle.changeImageByElement(img, imageInfo);
+            bundle.changeImageByElement(img as HTMLElement, imageInfo);
         },
-        {
-            selector: FIRST_IMAGE,
-            imageInfo: { ...info, undoable: "false" },
-        },
+        { ...info, undoable: "false" },
     );
     const fileName = Path.basename(decodeURIComponent(info.src));
     await expect
-        .poll(async () => (await getImagePlacement(page)).fileName, {
+        .poll(async () => (await getImagePlacement(page, within)).fileName, {
             timeout: 30000,
-            message: `The page never showed ${fileName} in its first image slot.`,
+            message: `The page never showed ${fileName} in the image slot.`,
         })
         .toBe(fileName);
     // Bloom sizes the slot to the picture once it has loaded; wait for that, or a crop that
@@ -93,13 +96,10 @@ export async function chooseImageFile(
     await expect
         .poll(
             async () =>
-                frame
-                    .locator(FIRST_IMAGE)
-                    .first()
-                    .evaluate((img) => {
-                        const image = img as HTMLImageElement;
-                        return image.naturalWidth > 0 && image.clientWidth > 0;
-                    }),
+                target.evaluate((img) => {
+                    const image = img as HTMLImageElement;
+                    return image.naturalWidth > 0 && image.clientWidth > 0;
+                }),
             {
                 timeout: 30000,
                 message: `${fileName} never finished loading on the page.`,
@@ -108,13 +108,19 @@ export async function chooseImageFile(
         .toBe(true);
 }
 
-/** How the first image on the page being shown is placed in its slot. */
-export async function getImagePlacement(page: Page): Promise<IImagePlacement> {
-    const img = editablePageFrame(page).locator(FIRST_IMAGE).first();
+/** How an image on the page being shown is placed in its slot. */
+export async function getImagePlacement(
+    page: Page,
+    within?: Locator,
+): Promise<IImagePlacement> {
+    const img = imageIn(page, within);
     await img.waitFor({ state: "attached", timeout: 30000 });
     return img.evaluate((element) => {
         const image = element as HTMLImageElement;
-        const slot = image.closest(".bloom-canvas-element") as HTMLElement;
+        // The box that shows the picture: the canvas element it is the background of, or, in a
+        // table cell, the cell itself.
+        const slot = (image.closest(".bloom-canvas-element") ??
+            image.closest(".bloom-cell")) as HTMLElement;
         const src = image.getAttribute("src") ?? "";
         return {
             fileName: decodeURIComponent(src.split("/").pop() ?? src),
@@ -139,9 +145,10 @@ export async function cropImage(
     page: Page,
     side: "n" | "s" | "e" | "w",
     pixels: number,
+    within?: Locator,
 ): Promise<void> {
     const frame = editablePageFrame(page);
-    const img = frame.locator(FIRST_IMAGE).first();
+    const img = imageIn(page, within);
     await img.waitFor({ state: "visible", timeout: 30000 });
     // A real press at the picture's centre. The drawing canvas Bloom lays over the page takes the
     // click and selects the picture under it, so Playwright's own click, which refuses to press
@@ -166,9 +173,19 @@ export async function cropImage(
     await page.mouse.up();
     await page.keyboard.up("Control");
     await expect
-        .poll(async () => (await getImagePlacement(page)).cropped, {
+        .poll(async () => (await getImagePlacement(page, within)).cropped, {
             timeout: 30000,
             message: `Dragging the ${side} handle by ${pixels}px did not crop the image.`,
         })
         .toBe(true);
+}
+
+/**
+ * The picture to act on: the one inside `within` when a scope is given, otherwise the page's first
+ * image slot. A table cell's picture box is an ordinary Bloom picture box, so the same selector
+ * finds it.
+ */
+function imageIn(page: Page, within?: Locator): Locator {
+    if (within) return within.locator(".bloom-imageContainer img").first();
+    return editablePageFrame(page).locator(FIRST_IMAGE).first();
 }

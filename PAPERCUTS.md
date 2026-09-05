@@ -339,3 +339,26 @@ collection tab (`switchWorkspaceTab.mjs --running-bloom --tab edit`).
 the branch rather than the version in that path.
 
 **Context:** BL-16781, after re-basing the `dev-blorgswitch` worktree onto Version6.5.
+
+## An e2e test cannot use a `data-testid` you just added to the front end
+
+**2026-09-04, Add-Tables.** `src/BloomE2E` launches a real `Bloom.exe`, and that Bloom loads its
+UI from the shared `output\browser`, not from a Vite dev server. So a `data-testid` added to a
+`.tsx` file is invisible to the test until someone repopulates `output\browser` with a full
+`pnpm build` — which AGENTS.md tells agents not to run, because it wrecks the dev server and the
+Bloom the developer has running against it. The two rules meet in a place with no move in it: the
+skill says to prefer a testid over matching an English label, and the environment says the testid
+cannot take effect.
+
+The failure does not look like a build problem. The locator simply finds nothing, in a Bloom whose
+markup is correct in the source you are reading, so it reads as a wrong selector and you go
+looking for a different one.
+
+What worked: match the English `aria-label` the library writes, and add testids only in
+`D:\bloom-table\src`, which is a separate build. Cost, roughly an hour, twice.
+
+**Idea:** have the e2e fixture build the front end into its own tree (the way
+`build/agent-vite.sh` already does) and point the Bloom it launches at that, so a test runs
+against the source in the worktree rather than against whatever was last built.
+
+**Context:** adding the table end-to-end tests, `tables-core.spec.ts` and `tables-extended.spec.ts`.

@@ -12,6 +12,7 @@ import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { convertPointFromViewportToElementFrame } from "./CanvasElementGeometry";
 import { inPlayMode } from "./CanvasElementPositioning";
 import { dragToResize } from "bloom-table";
+import { tablesMayBeRestructured } from "../tableFeature";
 
 export interface ICanvasElementPointerInteractionsHost {
     getActiveElement: () => HTMLElement | undefined;
@@ -198,7 +199,15 @@ export class CanvasElementPointerInteractions {
         // the Comical canvas covers the table anyway, so the press never reaches it.
         // So we hand it over, and the table's own document-level handlers take the drag
         // from here.
-        if (dragToResize.beginResizeAtPoint(event)) {
+        // Resizing a row or column is restructuring the table, so it is one of the
+        // things withheld from a book whose tables are frozen (see installHostHooks
+        // in tableEditing.ts). Not handing the press over leaves it to the ordinary
+        // canvas element handling below, which is what a press anywhere else in a
+        // frozen table does.
+        if (
+            tablesMayBeRestructured() &&
+            dragToResize.beginResizeAtPoint(event)
+        ) {
             event.preventDefault();
             event.stopPropagation();
             return;
@@ -381,7 +390,10 @@ export class CanvasElementPointerInteractions {
         if (!target?.style) {
             return;
         }
-        const edge = dragToResize.resizeEdgeAtPoint(event);
+        // No resize cursor where the press would not start a resize; see onMouseDown.
+        const edge = tablesMayBeRestructured()
+            ? dragToResize.resizeEdgeAtPoint(event)
+            : undefined;
         if (edge) {
             target.style.cursor = edge === "row" ? "ns-resize" : "ew-resize";
         } else if (target.style.cursor.endsWith("-resize")) {

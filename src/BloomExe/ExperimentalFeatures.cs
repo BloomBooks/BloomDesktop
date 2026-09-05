@@ -12,8 +12,42 @@ namespace Bloom
         public const string kTeamCollections = "team-collections";
         public const string kTables = "tables";
 
-        public static string TokensOfEnabledFeatures =>
-            Settings.Default.EnabledExperimentalFeatures;
+        /// <summary>
+        /// The name of the environment variable an e2e test uses to turn experimental features on
+        /// for the Bloom it launches, and for that process alone.
+        /// </summary>
+        public const string kE2eEnvironmentVariable = "BLOOM_E2E_EXPERIMENTAL_FEATURES";
+
+        /// <summary>
+        /// Features an e2e test asked for, as a comma-separated list of tokens, or the empty
+        /// string.
+        ///
+        /// A test cannot turn one of these on the way a person does: they live in the Advanced tab
+        /// of the collection Settings dialog, which is a WinForms surface CDP cannot reach. Nor can
+        /// it write the setting, because Settings.Default lives in one user.config per build
+        /// version, shared with the developer's own Bloom (see AUTOMATION-DEBT.md, "Every Bloom of
+        /// one build shares one user.config"), so a test that saved a feature would leave it on for
+        /// them. This reads the answer from the environment instead: nothing is saved, and the
+        /// setting dies with the process. Honoured only under --e2e.
+        /// </summary>
+        private static string TokensFromE2eEnvironment =>
+            Program.RunningE2eTests
+                ? Environment.GetEnvironmentVariable(kE2eEnvironmentVariable) ?? ""
+                : "";
+
+        public static string TokensOfEnabledFeatures
+        {
+            get
+            {
+                var saved = Settings.Default.EnabledExperimentalFeatures ?? "";
+                var fromEnvironment = TokensFromE2eEnvironment;
+                if (string.IsNullOrEmpty(fromEnvironment))
+                    return saved;
+                if (string.IsNullOrEmpty(saved))
+                    return fromEnvironment;
+                return saved + "," + fromEnvironment;
+            }
+        }
 
         public static void MigrateFromOldSettings()
         {
@@ -65,7 +99,9 @@ namespace Bloom
 
         public static bool IsFeatureEnabled(string featureName)
         {
-            return Settings.Default.EnabledExperimentalFeatures.Contains(featureName);
+            // Reads TokensOfEnabledFeatures rather than the setting, so a feature an e2e test
+            // named in the environment counts as enabled everywhere this is asked.
+            return TokensOfEnabledFeatures.Contains(featureName);
         }
     }
 }

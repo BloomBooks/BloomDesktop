@@ -136,3 +136,45 @@ export async function setZoom(page: Page, percent: number): Promise<void> {
         )
         .toBe(percent);
 }
+
+/**
+ * True when Bloom has something it could undo. This is the same question the WinForms shell asks
+ * before it enables its Edit > Undo menu item.
+ */
+export async function canUndo(page: Page): Promise<boolean> {
+    // canUndo() answers with the label the menu item should carry, or "" when there is nothing to
+    // undo, so any non-empty answer means yes.
+    const label = await page.evaluate(() =>
+        (
+            window as unknown as {
+                workspaceBundle: { canUndo: () => string };
+            }
+        ).workspaceBundle.canUndo(),
+    );
+    return label !== "";
+}
+
+/**
+ * Undo the last change, and wait until Bloom has nothing more to say it is undoing.
+ *
+ * Ctrl+Z in the Edit tab is a WinForms accelerator: the key press never reaches the browser, so a
+ * test cannot send it. What the shell does when the key is pressed is call the front end's
+ * `workspaceBundle.handleUndo()`, which is exactly what this calls. So this is the production undo
+ * path with only the key press missing, and it covers CKEditor undo, the canvas element manager's
+ * undo and the bloom-table history alike, because handleUndo is the code that chooses between them.
+ * (AUTOMATION-DEBT.md: "WinForms surfaces cannot be driven".)
+ */
+export async function undo(page: Page): Promise<void> {
+    if (!(await canUndo(page)))
+        throw new Error(
+            "Bloom says there is nothing to undo, so calling undo would do nothing. " +
+                "The change you meant to undo may not have registered.",
+        );
+    await page.evaluate(() =>
+        (
+            window as unknown as {
+                workspaceBundle: { handleUndo: () => void };
+            }
+        ).workspaceBundle.handleUndo(),
+    );
+}

@@ -19,6 +19,7 @@ using Bloom.TeamCollection;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
+using Newtonsoft.Json.Linq;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
@@ -39,16 +40,22 @@ namespace Bloom.Spreadsheet
         private SafeXmlElement _currentPage;
         private List<SafeXmlElement> _pages;
 
-        // text, image, video, widget
-        const int blockTypeCount = 4;
+        // text, image, video, widget, table
+        const int blockTypeCount = 5;
 
         // lists of translation groups (other than image descriptions),
-        // bloom-canvases, video containers, and widget containers.
+        // bloom-canvases, video containers, widget containers, and top-level tables.
         List<SafeXmlElement>[] _blocksOnPage = new List<SafeXmlElement>[blockTypeCount];
         public const int translationGroupIndex = 0;
         public const int bloomCanvasIndex = 1;
         public const int videoContainerIndex = 2;
         public const int widgetContainerIndex = 3;
+
+        // A bloom-table is a block in its own right, so that a [table] row can advance the
+        // importer onto its page and pick the right table there just as a [page content]
+        // row does for text and pictures. A page whose only content is a table has no
+        // [page content] row at all, so nothing else would get us there.
+        public const int tableIndex = 4;
 
         // for each kind of block, this gives the index in the corresponding list in blocksOnPage
         // of the next block we should import into. May be -1 or too large if there are no more
@@ -276,6 +283,7 @@ namespace Bloom.Spreadsheet
             _currentPageIndex = -1;
             _blocksOnPage[translationGroupIndex] = new List<SafeXmlElement>();
             _blocksOnPage[bloomCanvasIndex] = new List<SafeXmlElement>();
+            _blocksOnPage[tableIndex] = new List<SafeXmlElement>();
             _destLayout = Layout.FromDom(_destinationDom, Layout.A5Portrait);
             var pageTypeIndex = sheet.GetColumnForTag(InternalSpreadsheet.PageTypeColumnLabel);
             while (_currentRowIndex < _inputRows.Count)
@@ -377,6 +385,18 @@ namespace Bloom.Spreadsheet
                         // not have all the required slots.
                         typesInRow &= ~typesToPut;
                     }
+                }
+                else if (rowTypeLabel == InternalSpreadsheet.TableRowLabel)
+                {
+                    await ImportTableAsync(pageType);
+                }
+                else if (rowTypeLabel == InternalSpreadsheet.TableCellRowLabel)
+                {
+                    // Normally consumed by the [table] handling above; one can only reach
+                    // the main loop this way if it was separated from its table's row.
+                    Warn(
+                        $"Row {CurrentRowIndexForMessages} is a {InternalSpreadsheet.TableCellRowLabel} row that does not follow a {InternalSpreadsheet.TableRowLabel} row, so Bloom could not use it."
+                    );
                 }
                 else if (rowTypeLabel.StartsWith("[") && rowTypeLabel.EndsWith("]")) //This row is xmatter
                 {
@@ -1655,6 +1675,22 @@ namespace Bloom.Spreadsheet
                 );
             }
 
+            // None of Bloom's default pages holds a table, so there is no page we could
+            // generate that would satisfy a table. Drop the flag and let the caller decide
+            // what to do with the page we have: either it can hold the rest of what the row
+            // needs, or (for a row that needs only a table) ImportTableAsync reports that
+            // the page has no table for it and skips those rows. We must not invent a table:
+            // it would be a table of a shape nothing in the spreadsheet asked for.
+            if (string.IsNullOrEmpty(guid) && (blocksNeeded & BlockTypes.Table) == BlockTypes.Table)
+            {
+                return InsertDefaultPageIfNeeded(
+                    blocksNeeded & ~BlockTypes.Table,
+                    blocksWeHave,
+                    pageTypeNeeded,
+                    _pageTypeOfLastPage
+                );
+            }
+
             if (string.IsNullOrEmpty(guid))
             {
                 throw new ApplicationException("Failed to find a default page type");
@@ -1695,6 +1731,371 @@ namespace Bloom.Spreadsheet
                 .Contains(className);
         }
 
+        /// <summary>
+        /// Imports the table whose [table] row we are on, and everything that belongs to
+        /// it: its [table cell] rows, any [image description] rows those carry, and the
+        /// [table] and [table cell] rows of a table nested in one of its cells. Leaves
+        /// _currentRowIndex on the last row it consumed, since the main loop advances past
+        /// that.
+        ///
+        /// When the spreadsheet has the hidden [details] column, a [table] row is the
+        /// authority on its table: the table element is rebuilt from the JSON (attributes
+        /// and inline styles verbatim, so Bloom never has to interpret a column width or a
+        /// border matrix) and put in place of the table the target page has, keeping its
+        /// parent. Its cells are then filled through the same code that fills [page
+        /// content] rows.
+        ///
+        /// The table it replaces is found the same way a [page content] row finds its
+        /// translation group: a table is one of the page's blocks, so the row advances onto
+        /// the page it belongs to (which for a page whose only content is a table is the
+        /// only thing that could) and takes that page's next unused table. A page that has
+        /// no table left for the row gets a warning naming the row, and the table's rows
+        /// are skipped.
+        /// </summary>
+        /// <param name="pageType">The page type named in this row's [page type] cell, which
+        /// export writes on the first row it makes for a page. As for a [page content] row,
+        /// a page type means "start a new page of that type".</param>
+        private async Task ImportTableAsync(string pageType)
+        {
+            var rows = CollectRowsOfTable();
+            var lastRowIndex = _currentRowIndex + rows.Count - 1;
+            var tableDetails = GetDetailsOfRow(rows[0]);
+
+            if (_sheet.GetColumnForTag(InternalSpreadsheet.DetailsColumnLabel) < 0)
+            {
+                // Nothing but the [details] column can tell us what a table looks like, so
+                // there is nothing we can do with these rows but leave the book's own table
+                // alone. (Export always writes the column when it writes a [table] row, so
+                // this means the spreadsheet was edited into this state.)
+                Warn(
+                    $"Row {CurrentRowIndexForMessages} is a {InternalSpreadsheet.TableRowLabel} row, but this spreadsheet has no {InternalSpreadsheet.DetailsColumnLabel} column, so Bloom could not use it."
+                );
+                _currentRowIndex = lastRowIndex;
+                return;
+            }
+
+            // Check first that advancing could actually find a table. Bloom has no default
+            // page that holds one, and it must not invent a table (that would be a table of
+            // a shape nothing in the spreadsheet asked for), so if there is none to be had
+            // we say so and skip rather than advancing off the end of the book and adding a
+            // page that still has no table for us.
+            if (!ATableIsStillAvailable())
+            {
+                Warn(
+                    $"Row {CurrentRowIndexForMessages} is a {InternalSpreadsheet.TableRowLabel} row, but Bloom found no table on the page for it, so it was skipped."
+                );
+                _currentRowIndex = lastRowIndex;
+                return;
+            }
+
+            // This is what gets us onto the page the table belongs to, and picks which of
+            // that page's tables this row is for.
+            var typesFound = AdvanceToNextSetOfBlocks(BlockTypes.Table, pageType);
+            if ((typesFound & BlockTypes.Table) != BlockTypes.Table)
+            {
+                Warn(
+                    $"Row {CurrentRowIndexForMessages} is a {InternalSpreadsheet.TableRowLabel} row, but Bloom found no table on the page for it, so it was skipped."
+                );
+                _currentRowIndex = lastRowIndex;
+                return;
+            }
+
+            var oldTable = _blocksOnPage[tableIndex][_blockOnPageIndexes[tableIndex]];
+            var newTable = BuildTableFromDetails(tableDetails);
+            oldTable.ParentNode.ReplaceChild(newTable, oldTable);
+
+            // Fill the cells. A row with no "parent" belongs to this table; one with a
+            // parent belongs to the table nested in that cell of this table.
+            SafeXmlElement nestedTable = null;
+            JObject nestedTableParent = null;
+            SafeXmlElement cellAwaitingDescription = null;
+            for (var i = 1; i < rows.Count; i++)
+            {
+                // Messages about these rows should name the row they are really about.
+                _currentRowIndex = _currentRowIndex + 1;
+                var row = rows[i];
+                var details = GetDetailsOfRow(row);
+                var parent = details?["parent"] as JObject;
+                if (row.MetadataKey == InternalSpreadsheet.ImageDescriptionRowLabel)
+                {
+                    if (cellAwaitingDescription != null)
+                        await PutDescriptionRowInCellAsync(row, cellAwaitingDescription);
+                    continue;
+                }
+                cellAwaitingDescription = null;
+                if (row.MetadataKey == InternalSpreadsheet.TableRowLabel)
+                {
+                    // A table nested in one of this table's cells.
+                    var host = CellOfTableAt(newTable, parent);
+                    if (host == null)
+                    {
+                        Warn(
+                            $"Row {CurrentRowIndexForMessages} describes a table nested in a cell that Bloom could not find, so it was skipped."
+                        );
+                        continue;
+                    }
+                    nestedTable = BuildTableFromDetails(details);
+                    nestedTableParent = parent;
+                    host.InnerXml = "";
+                    host.AppendChild(nestedTable);
+                    continue;
+                }
+
+                // A [table cell] row.
+                var owningTable = parent == null ? newTable : nestedTable;
+                if (parent != null && !SameCell(parent, nestedTableParent))
+                    owningTable = null;
+                var cell =
+                    owningTable == null ? null : CellOfTableAt(owningTable, details as JObject);
+                if (cell == null)
+                {
+                    Warn(
+                        $"Row {CurrentRowIndexForMessages} is a {InternalSpreadsheet.TableCellRowLabel} row for a cell Bloom could not find, so it was skipped."
+                    );
+                    continue;
+                }
+                var filledImage = await PutRowInCellAsync(row, cell, details?["type"]?.ToString());
+                if (filledImage)
+                    cellAwaitingDescription = cell;
+            }
+            _currentRowIndex = lastRowIndex;
+        }
+
+        /// <summary>
+        /// Whether there is still a table somewhere for another [table] row to fill: one on
+        /// the current page that we have not used yet, one on a page we have not reached,
+        /// or one on the last content page, since a copy of that page is what import adds
+        /// when it runs out of pages.
+        /// </summary>
+        private bool ATableIsStillAvailable()
+        {
+            var tablesOnCurrentPage = _blocksOnPage[tableIndex];
+            if (
+                tablesOnCurrentPage != null
+                && _blockOnPageIndexes[tableIndex] + 1 < tablesOnCurrentPage.Count
+            )
+                return true;
+            for (var i = Math.Max(_currentPageIndex + 1, 0); i < _pages.Count; i++)
+            {
+                if (SpreadsheetTables.TopLevelTables(_pages[i]).Count > 0)
+                    return true;
+            }
+            return _lastContentPage != null
+                && SpreadsheetTables.TopLevelTables(_lastContentPage).Count > 0;
+        }
+
+        /// <summary>
+        /// The run of rows that belong to the [table] row we are on: itself, then every
+        /// following [table cell], [image description] and nested [table] row, stopping at
+        /// the next [table] row that is not nested (or at any other kind of row).
+        /// </summary>
+        private List<ContentRow> CollectRowsOfTable()
+        {
+            var rows = new List<ContentRow> { _inputRows[_currentRowIndex] };
+            for (var i = _currentRowIndex + 1; i < _inputRows.Count; i++)
+            {
+                var key = _inputRows[i].MetadataKey;
+                if (key == InternalSpreadsheet.TableRowLabel)
+                {
+                    // A nested table's row carries the cell of the outer table that holds
+                    // it; one without that starts a new table of its own.
+                    if (GetDetailsOfRow(_inputRows[i])?["parent"] == null)
+                        break;
+                }
+                else if (
+                    key != InternalSpreadsheet.TableCellRowLabel
+                    && key != InternalSpreadsheet.ImageDescriptionRowLabel
+                )
+                {
+                    break;
+                }
+                rows.Add(_inputRows[i]);
+            }
+            return rows;
+        }
+
+        /// <summary>
+        /// The JSON object in a row's [details] cell, or null if there is none or it will
+        /// not parse (which is reported).
+        /// </summary>
+        private JObject GetDetailsOfRow(ContentRow row)
+        {
+            var details = row.GetCell(InternalSpreadsheet.DetailsColumnLabel).Content;
+            if (string.IsNullOrWhiteSpace(details))
+                return null;
+            try
+            {
+                return JObject.Parse(details);
+            }
+            catch (Newtonsoft.Json.JsonReaderException)
+            {
+                Warn(
+                    $"Bloom could not read the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages} (\"{details}\")."
+                );
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Builds a bloom-table element from a [table] row's JSON: the table's attributes
+        /// verbatim, then one cell per entry in its "cells" list (in row-major order),
+        /// each with its own attributes verbatim and, unless it is a covered
+        /// (bloom-skip) cell, the default content for its content type, which the
+        /// [table cell] rows then fill.
+        /// </summary>
+        private SafeXmlElement BuildTableFromDetails(JObject tableDetails)
+        {
+            var table = _destinationDom.RawDom.CreateElement("div");
+            SpreadsheetTables.ApplyAttributes(table, tableDetails?["attributes"] as JObject);
+            // Belt and braces: a table with no bloom-table class would not be a table at all.
+            table.AddClass(SpreadsheetTables.TableClass);
+            var cells = (tableDetails?["cells"] as JArray) ?? new JArray();
+            foreach (
+                var cellDetails in cells
+                    .OfType<JObject>()
+                    .OrderBy(c => (int?)c["row"] ?? 0)
+                    .ThenBy(c => (int?)c["col"] ?? 0)
+            )
+            {
+                var cell = _destinationDom.RawDom.CreateElement("div");
+                SpreadsheetTables.ApplyAttributes(cell, cellDetails["attributes"] as JObject);
+                cell.AddClass(SpreadsheetTables.CellClass);
+                table.AppendChild(cell);
+                if (cell.HasClass(SpreadsheetTables.SkipClass))
+                    continue;
+                switch (SpreadsheetTables.ContentTypeOf(cell))
+                {
+                    case SpreadsheetTables.ImageContentType:
+                        cell.InnerXml = SpreadsheetTables.ImageCellContent;
+                        break;
+                    case SpreadsheetTables.VideoContentType:
+                        cell.InnerXml = SpreadsheetTables.VideoCellContent;
+                        break;
+                    case SpreadsheetTables.TableContentType:
+                        // Left empty; the nested table's own [table] row builds its content.
+                        break;
+                    default:
+                        cell.InnerXml = SpreadsheetTables.TextCellContent;
+                        break;
+                }
+            }
+            return table;
+        }
+
+        /// <summary>
+        /// The cell of a table at the "row" and "col" of the given JSON object, or null if
+        /// the table has no such cell. The cells of a table are always
+        /// rowCount * columnCount of them in row-major order, covered ones included, so
+        /// the position is just index arithmetic.
+        /// </summary>
+        private static SafeXmlElement CellOfTableAt(SafeXmlElement table, JObject position)
+        {
+            if (table == null || position == null)
+                return null;
+            var row = (int?)position["row"];
+            var column = (int?)position["col"];
+            if (row == null || column == null)
+                return null;
+            var cells = SpreadsheetTables.CellsOf(table);
+            var index = row.Value * SpreadsheetTables.ColumnCount(table) + column.Value;
+            if (index < 0 || index >= cells.Count)
+                return null;
+            return cells[index];
+        }
+
+        /// <summary>
+        /// True if two [details] positions name the same cell.
+        /// </summary>
+        private static bool SameCell(JObject one, JObject other)
+        {
+            if (one == null || other == null)
+                return false;
+            return (int?)one["row"] == (int?)other["row"] && (int?)one["col"] == (int?)other["col"];
+        }
+
+        /// <summary>
+        /// Puts a [table cell] row's content into the cell, through the same code that
+        /// fills a [page content] row: text into the cell's translation group, an image
+        /// into the cell's bloom-canvas, a video into the cell's bloom-videoContainer.
+        /// Returns true if it filled an image, in which case an [image description] row
+        /// may follow for the same cell.
+        /// </summary>
+        private async Task<bool> PutRowInCellAsync(
+            ContentRow row,
+            SafeXmlElement cell,
+            string contentType
+        )
+        {
+            switch (contentType ?? SpreadsheetTables.ContentTypeOf(cell))
+            {
+                case SpreadsheetTables.ImageContentType:
+                    var canvas = SpreadsheetTables.FindDescendantWithClass(cell, "bloom-canvas");
+                    if (canvas == null)
+                    {
+                        cell.InnerXml = SpreadsheetTables.ImageCellContent;
+                        canvas = SpreadsheetTables.FindDescendantWithClass(cell, "bloom-canvas");
+                    }
+                    await PutRowInImageAsync(row, null, canvas);
+                    return true;
+                case SpreadsheetTables.VideoContentType:
+                    if (
+                        string.IsNullOrWhiteSpace(
+                            row.GetCell(InternalSpreadsheet.VideoSourceColumnLabel).Text
+                        )
+                    )
+                        return false;
+                    var videoContainer = SpreadsheetTables.FindDescendantWithClass(
+                        cell,
+                        "bloom-videoContainer"
+                    );
+                    if (videoContainer == null)
+                    {
+                        cell.InnerXml = SpreadsheetTables.VideoCellContent;
+                        videoContainer = SpreadsheetTables.FindDescendantWithClass(
+                            cell,
+                            "bloom-videoContainer"
+                        );
+                    }
+                    PutRowInVideo(row, videoContainer);
+                    return false;
+                case SpreadsheetTables.TableContentType:
+                    // A nested table has no content of its own; its cells have their own rows.
+                    return false;
+                default:
+                    var group = SafeSelectNodesByClassName(cell, ".//div", "bloom-translationGroup")
+                        .FirstOrDefault(g => !HasExactClassName(g, "bloom-imageDescription"));
+                    if (group == null)
+                    {
+                        cell.InnerXml = SpreadsheetTables.TextCellContent;
+                        group = SafeSelectNodesByClassName(cell, ".//div", "bloom-translationGroup")
+                            .First();
+                    }
+                    await PutRowInGroupAsync(row, group);
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Puts an [image description] row that followed a picture cell's row into that
+        /// cell's image description group, creating the group if the cell has none.
+        /// </summary>
+        private async Task PutDescriptionRowInCellAsync(ContentRow row, SafeXmlElement cell)
+        {
+            var canvas = SpreadsheetTables.FindDescendantWithClass(cell, "bloom-canvas") ?? cell;
+            var group = SafeSelectNodesByClassName(canvas, ".//div", "bloom-imageDescription")
+                .FirstOrDefault();
+            if (group == null)
+            {
+                group = canvas.OwnerDocument.CreateElement("div");
+                group.SetAttribute(
+                    "class",
+                    "bloom-translationGroup bloom-imageDescription bloom-trailingElement"
+                );
+                canvas.AppendChild(group);
+            }
+            await PutRowInGroupAsync(row, group);
+        }
+
         private List<SafeXmlElement> GetBloomCanvases(SafeXmlElement ancestor)
         {
             return SafeSelectNodesByClassName(ancestor, ".//div", "bloom-canvas").ToList();
@@ -1720,15 +2121,30 @@ namespace Bloom.Spreadsheet
             List<SafeXmlElement>[] blocksOnPageCollector
         )
         {
-            blocksOnPageCollector[bloomCanvasIndex] = GetBloomCanvases(currentPage);
+            // Anything inside a bloom-table belongs to that table, which is filled from its
+            // own [table] and [table cell] rows, so it must not be a destination for the
+            // page's positionally-matched [page content] rows.
+            blocksOnPageCollector[bloomCanvasIndex] = GetBloomCanvases(currentPage)
+                .Where(x => !SpreadsheetTables.IsInsideTable(x))
+                .ToList();
             // We don't want image description slots as possible destinations for text.
             // They are handled by special extra rows inserted after the row that has the image.
             var allGroups = TranslationGroupManager.SortedGroupsOnPage(currentPage, true);
             blocksOnPageCollector[translationGroupIndex] = allGroups
-                .Where(x => !HasExactClassName(x, "bloom-imageDescription"))
+                .Where(x =>
+                    !HasExactClassName(x, "bloom-imageDescription")
+                    && !SpreadsheetTables.IsInsideTable(x)
+                )
                 .ToList();
-            blocksOnPageCollector[videoContainerIndex] = GetVideoContainers(currentPage);
-            blocksOnPageCollector[widgetContainerIndex] = GetWidgetContainers(currentPage);
+            blocksOnPageCollector[videoContainerIndex] = GetVideoContainers(currentPage)
+                .Where(x => !SpreadsheetTables.IsInsideTable(x))
+                .ToList();
+            blocksOnPageCollector[widgetContainerIndex] = GetWidgetContainers(currentPage)
+                .Where(x => !SpreadsheetTables.IsInsideTable(x))
+                .ToList();
+            // A table nested in a cell is not a block of the page; it is filled from the
+            // rows that hang off the cell holding it.
+            blocksOnPageCollector[tableIndex] = SpreadsheetTables.TopLevelTables(currentPage);
         }
 
         // This helper method supports various tasks that have to be done for each block type
@@ -2378,7 +2794,8 @@ namespace Bloom.Spreadsheet
         Image = 1 << SpreadsheetImporter.bloomCanvasIndex,
         Video = 1 << SpreadsheetImporter.videoContainerIndex,
         Widget = 1 << SpreadsheetImporter.widgetContainerIndex,
-        All = 15, // deliberately not including landscape!
+        Table = 1 << SpreadsheetImporter.tableIndex,
+        All = 31, // deliberately not including landscape!
 
         // This is special. A combination of the above flags may be used as an index
         // to look up a page guid that should be inserted when we need that combination

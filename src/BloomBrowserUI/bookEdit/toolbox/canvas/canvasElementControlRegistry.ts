@@ -158,7 +158,14 @@ export const tableCanvasElementControls: ICanvasElementControlConfiguration = {
     menuSections: ["wholeElement"],
     toolbar: ["duplicate", "delete"],
     toolPanel: [],
-    availabilityRules: wholeElementAvailabilityRules,
+    availabilityRules: mergeRules(wholeElementAvailabilityRules, {
+        // Duplicating a table is making one, so it goes where the rest of table
+        // creation goes when the feature is not available. Delete stays: the user
+        // must always be able to get rid of something they cannot edit.
+        duplicate: {
+            visible: (ctx) => ctx.tablesMayBeRestructured,
+        },
+    }),
 };
 
 export const bookLinkGridControls: ICanvasElementControlConfiguration = {

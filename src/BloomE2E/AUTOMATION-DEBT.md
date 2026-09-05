@@ -214,6 +214,12 @@ template book the dialog would show, each page tagged with its book's title, thr
 `PageTemplatesApi.GetTemplateBookPathsForAddPage`. The dialog still parses the HTML
 itself; the hook only mirrors which books it is handed.
 
+seen again 2026-09-04 (tables-extended.spec.ts, pasting a table into a second book): the
+destination book was made from Basic Book and therefore had no page to paste into, and
+Paste Page is a command on a page's own menu. It reads as a save that never happened,
+because what the test sees is a book file with no numbered pages in it. Adding a page
+first is the whole fix; the note is here because the symptom points elsewhere.
+
 ## The Edit tab silently drops a jump to a page while it is loading
 
 `editView/jumpToPage` is the only way to move a test to a particular page, and it is
@@ -447,6 +453,15 @@ that presses one named key in a box, for the tests whose subject is the key pres
 helper that `typeInGroup` is not the way to test those. (Found 2026-09-02, during the
 review of the headless work.)
 
+seen again 2026-09-04, tables: undoing typing in a cell needs real key presses, because
+CKEditor builds its undo stack from them, so `keyboard.insertText` leaves nothing to undo
+and the undo test passed vacuously until the typing was done key by key. `typeInCellKeyByKey`
+in `helpers/tables.ts` is the first half of the fix direction above, for cells only. The same
+run showed a second case: Bloom marks a box as overflowing from a `keyup` or a `paste`
+(`OverflowChecker.AddOverflowHandlers`), so no test that fills a box the quick way can see an
+overflow mark at all, and one that appears to is riding on the keyup from the select-all and
+Delete that cleared the box first.
+
 
 ## A test can attach to a shell document Bloom does not drive
 
@@ -476,3 +491,74 @@ creates one `_workspaceReactControl`. Worth finding, because the duplicate is wh
 the test-side check necessary.
 (Found 2026-09-01 while making `jumpToPage` queue a jump.)
 
+## A table's own menus can only be found by their English words
+
+The bloom-table library labels its pills and its commands in English and does not localize
+them, so `helpers/tables.ts` opens a menu by `button[data-btable-menu-pill="row|column|table"]`
+(stable, because the library sets it) but picks a command out of that menu by matching the
+English `aria-label`: "Add Row Below", "Delete Column", and so on. Every table test therefore
+depends on wording the library owns, in a repository of its own, and a reworded command breaks
+the tests rather than the product.
+
+Fix direction: have the library put a command id on each item, the way Bloom's own menus are
+being given `data-testid`s, and match on that. Until then a table test cannot check what a
+person actually reads, because the words are not Bloom's to translate.
+(Found 2026-09-04, writing the table suites.)
+
+## A picture in a cell leaves a drawing surface that swallows every press
+
+Once a picture goes into a cell, the canvas element's own drawing surface
+(`canvas.comical-generated`) lies over the table and takes the presses aimed at cells and at
+the table's chrome, so the next step in a test hits the surface instead of the thing it was
+aimed at. The tests get past it by rebuilding the page (`reloadPageBeingEdited`), which is not
+something a person does and hides whatever a person would actually hit.
+
+Fix direction: this is a product question first, so it belongs with the table work rather than
+with the automation layer; the tests should not need the rebuild at all. It is recorded here
+because until it is settled, any table test that puts a picture in a cell has that rebuild in
+the middle of it.
+(Found 2026-09-04, writing the table suites.)
+
+## Nothing in the markup marks the boundary between two rows or columns
+
+A person resizes a row or a column by dragging the line between them, and that line is not an
+element: the library listens for a pointer down near a cell's edge. So `dragBoundary` in
+`helpers/tables.ts` aims two pixels inside the cell's own edge and hopes that is within the grab
+area, which is a guess at a number the library owns and does not publish. A change to that
+distance breaks the tests silently, by making the drag do nothing.
+
+Fix direction: give each boundary a small element of its own carrying a `data-btable-resize`
+attribute that names what it resizes. A test can then aim at the middle of the thing it means to
+drag, and a person gets a target that can be seen.
+(Found 2026-09-04, writing the table suites.)
+
+## Leaving Change Layout mode is finished later than the mode says
+
+Turning origami's Change Layout switch off takes the mode off straight away, then saves the
+page and asks Bloom to rebuild it 450 ms later (`saveChangesAndRethinkPageEvent`). Until that
+rebuild lands, the page on screen is the one layout mode left behind: its text boxes have had
+`contentEditable` taken off them, so anything typed goes nowhere and anything measured is about
+to be replaced. `helpers/origami.ts` waits for an editable text box to come back, which is a
+guess at the product's own signal.
+
+Fix direction: have the rebuild announce itself, so a test can wait for the event rather than
+for a symptom of it.
+(Found 2026-09-04, writing the table suites.)
+
+## What Copy Page put on the clipboard does not survive making a book
+
+Copy Page and Paste Page are the only route to the page clipboard, and a test that copies a
+page, makes a second book, adds a page to it, and then goes there to paste finds Paste Page
+still greyed out. Nothing says the clipboard was emptied: the command is simply never enabled,
+which reads as a Copy Page that did nothing, and the test fails 30 seconds later in the paste
+rather than at the copy. It is intermittent, which makes it worse -- the same order of steps
+passed twice and failed on the third run, so it looks like a race in the copy.
+
+Working around it is easy once known: build the destination book and its page first, then copy,
+then switch and paste, so nothing happens between the two halves. `tables-extended.spec.ts`
+does that, with a comment saying why the order matters.
+
+Worth finding out whether the page clipboard is meant to survive this, since a person doing the
+same thing by hand would lose their copy the same way. If it is meant to, this is a product bug
+rather than automation debt.
+(Found 2026-09-04 automating the table specs.)
