@@ -38,6 +38,20 @@ A test says which collection it wants, in one of two ways, and never both:
   `output/testing-inputs/collections`. Use this only for a fixture too expensive to build at run
   time, such as a collection of 200 books.
 
+Two more things are decided at launch, because Bloom reads them once and keeps the answer:
+
+- **The subscription tier.** A `collectionSpec` may carry `subscriptionCode`, which is written
+  into the `.bloomCollection` and decides the tier. Without it the collection is Basic, and every
+  tier-gated control is hidden or replaced by an upgrade notice. For a test of such a feature use
+  `kEnterpriseSubscriptionCode` from `helpers/collectionSettings.ts`, the code Bloom's own unit
+  tests use. Its branding stamps a butterfly on every page, so keep screenshot comparisons on the
+  Default branding. There is no API hook for the tier, on purpose: `FeatureStatusApi` and others
+  keep the Subscription they were built with, so a tier set later would be invisible to them.
+- **Experimental features.** `test.use({ experimentalFeatures: ["team-collections"] })` names
+  the features this Bloom has on, by the tokens in `ExperimentalFeatures.cs`. The launcher passes
+  them as `--experimental-features`, which Bloom accepts only beside `--e2e`, so nothing is saved
+  and the developer's own Bloom, which shares the saved setting, is untouched.
+
 Either way the fixture launches Bloom on a temp copy and attaches to the WebView2. One Bloom
 serves every test in a worker, because launching takes several seconds.
 
@@ -108,6 +122,30 @@ real bug in the code under test; read the message and fix it rather than working
   element taller than the window. `Page.captureScreenshot` with `captureBeyondViewport` hangs in
   WebView2, so this enlarges the window, clips, clears the override, and times out every CDP
   request. Never open a CDP session in a test; add the capture here.
+- `helpers/collectionSettings.ts` — rewrite the collection's languages, xmatter pack or
+  subscription code and restart Bloom on them; `setBranding`; `getFeatureStatus`, the same
+  answer the front end asks for before it shows a tier-gated control; and
+  `kEnterpriseSubscriptionCode`.
+- `helpers/keys.ts` — `pressKey`, `pressKeyIn`, `typeWithKeys`: real key presses, for tests whose
+  subject is the key. `typeInGroup` inserts text and raises no key events, so use it for
+  everything else.
+- `helpers/toolbox.ts` — `showToolbox`, `hideToolbox`, `toolboxFrame`, `openTool`,
+  `getShownTools`. Nothing here turns a tool on through the toolbox's own check boxes; the page
+  does that when clicked (a Canvas page's canvas opens the Canvas tool, a video box the Sign
+  Language tool), which is the route a person takes.
+- `helpers/canvasElements.ts` — `openCanvasTool`, `dragPaletteItemOntoCanvas`,
+  `selectCanvasElement`, the selected element's toolbar and "..." menu by localization id,
+  `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`. The palette drag is
+  dispatched rather than pressed, for a reason the file and AUTOMATION-DEBT.md give.
+- `helpers/geometry.ts` — compare rectangles to one another (`expectInside`, `expectNoOverlap`,
+  `expectSameRect`) so a test never asserts a pixel value the machine decided.
+- `helpers/videos.ts` — `chooseVideoFile` puts a video into a video box through the Sign Language
+  tool's own Import, with the native file picker alone answered by an `e2e/*` hook; ships
+  `fixtures/videos/short.mp4`.
+- `helpers/origami.ts` — the Edit tab's Change Layout mode: `setChangeLayoutMode`,
+  `sections`, `splitSection`, `getSectionTypesOffered`, `chooseSectionType`.
+- `helpers/pageSize.ts` — `getPageSize`, `getPageSizeChoices`, `setPageSize`: read and change
+  the book's page size and orientation through the Edit tab's layout-choice API.
 
 Two things a test must never do: trigger a native OS dialog (file pickers, the WinForms Image
 Toolbox, video capture), because Playwright cannot dismiss one and the run hangs; and wait on a
@@ -215,9 +253,13 @@ inputs.
 ## Testing a front-end change
 
 The launched Bloom serves its React UI from the built `output/browser`, so an edit to a `.tsx`
-file does not reach a run until somebody rebuilds that bundle. To test the working tree instead,
-start a Vite dev server and name its port in `BLOOM_E2E_VITE_PORT`; the fixture then passes
-`--vite-port` to Bloom, which loads every React control from the dev server.
+file does not reach a run until somebody rebuilds that bundle. The fixture refuses to launch a
+Bloom whose bundle is older than any file under `src/BloomBrowserUI`, or whose `Bloom.dll` is older
+than any file under `src/BloomExe`, and its error names the newer file; a run against a stale
+build would otherwise fail in exactly the way a real regression does. Rebuild, or, to test the
+working tree instead, start a Vite dev server and name its port in `BLOOM_E2E_VITE_PORT`; the
+fixture then passes `--vite-port` to Bloom, which loads every React control from the dev server,
+and the bundle's age no longer matters.
 
 ```bash
 # In one terminal, in src/BloomBrowserUI. Set PORT as well as --port: the port in
@@ -232,10 +274,10 @@ BLOOM_E2E_VITE_PORT=5173 pnpm exec playwright test
 **Use 5173, and set the variable.** The port is not free to choose: the page list and the toolbox
 write `http://localhost:5173` into their own imports, so on any other port those two frames load
 nothing and come up empty, which reads as the feature being missing rather than as a port
-problem. And leaving `BLOOM_E2E_VITE_PORT` unset does not mean "no dev server": a dev build of
-Bloom probes 5173 by itself, so an unset variable and a server somewhere else means the run
-quietly tests the built bundle, however old it is. Both halves are in AUTOMATION-DEBT.md under
-"A Vite dev server only reaches the whole UI on port 5173".
+problem. And leaving `BLOOM_E2E_VITE_PORT` unset means the built bundle, however old it is: under
+`--e2e` Bloom does not probe 5173 by itself, so a dev server it was not told about is ignored.
+Both halves are in AUTOMATION-DEBT.md under "A Vite dev server only reaches the whole UI on port
+5173".
 
 So stop a Bloom that is already using 5173 before a run, rather than moving the dev server.
 

@@ -3,7 +3,7 @@
 //
 // This is the one file that drives that button. It exists for two reasons beyond the button
 // itself: it is the journey coverage for Bloom's native "choose a file" dialog, which no test
-// could reach until Bloom gained an --e2e way to pre-answer it (E2eTestingApi's nextChosenFile);
+// could reach until Bloom gained an --e2e way to pre-answer it (E2eTestingApi's nextFileToChoose);
 // and Import Recording is the only route by which a real person gets audio into a book without a
 // microphone, so it is worth knowing it works.
 //

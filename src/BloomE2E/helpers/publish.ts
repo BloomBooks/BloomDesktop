@@ -258,8 +258,11 @@ export async function showBloomPubPreview(page: Page): Promise<Frame> {
                     .frames()
                     .find((f) => f.url().includes("bloomplayer.htm"));
                 if (!player) return 0;
+                // The book's own pages, not the language chooser: bloom-player offers that button
+                // only for a book with more than one language, so waiting for it left a
+                // single-language book's preview looking as though it had never loaded.
                 return player
-                    .locator('[aria-label="Choose Language"]')
+                    .locator(".bloom-page")
                     .count()
                     .catch(() => 0);
             },

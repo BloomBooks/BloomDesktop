@@ -487,6 +487,28 @@ export async function getShownPageId(page: Page): Promise<string | undefined> {
 }
 
 /**
+ * Leave the page being edited and come back to it, which saves it and builds its editing surfaces
+ * again. Use it when something on the page has been left in a state the page cannot get out of by
+ * itself, such as a drawing surface that stays over the page until the page is rebuilt.
+ *
+ * Throws if the book has only one page, because then there is nowhere to go and back from.
+ */
+export async function reloadPageBeingEdited(page: Page): Promise<void> {
+    const wasShowing = await getShownPageId(page);
+    if (!wasShowing)
+        throw new Error(
+            "The Edit tab is not showing a page, so there is none to reload.",
+        );
+    const other = (await getPages(page)).find((p) => p.id !== wasShowing);
+    if (!other)
+        throw new Error(
+            "The book has only one page, so there is nowhere to go and come back from.",
+        );
+    await goToPage(page, other.id);
+    await goToPage(page, wasShowing);
+}
+
+/**
  * Show a page in the Edit tab. This is also how a test SAVES what it typed: Bloom writes the page
  * it is leaving, so text typed into a box reaches the file only once the book moves off that page.
  */

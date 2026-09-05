@@ -241,6 +241,18 @@ namespace Bloom
                 {
                     if (e.PermissionKind == CoreWebView2PermissionKind.ClipboardRead)
                         e.State = CoreWebView2PermissionState.Allow;
+                    // An e2e run starts from a fresh browser profile, so the first thing the Sign
+                    // Language tool does (ask for the camera) would put up WebView2's permission
+                    // prompt, which no test can dismiss. Refuse, which is what happens on a machine
+                    // with no camera, and which leaves the tool's Import button usable.
+                    else if (
+                        Program.RunningE2eTests
+                        && (
+                            e.PermissionKind == CoreWebView2PermissionKind.Camera
+                            || e.PermissionKind == CoreWebView2PermissionKind.Microphone
+                        )
+                    )
+                        e.State = CoreWebView2PermissionState.Deny;
                 };
                 _readyToNavigate = true;
             };
