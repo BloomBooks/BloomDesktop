@@ -166,13 +166,14 @@ export function findBloomExe(): string {
 
 /**
  * The newest file under `root`, by modification time, with the folders in `skip` left out and,
- * when `counts` is given, only files it accepts counted. Returns undefined for a folder that does
- * not exist or holds no such file.
+ * when `counts` is given, only files it accepts counted; it is handed the file's path relative
+ * to `root`, with forward slashes. Returns undefined for a folder that does not exist or holds no
+ * such file.
  */
 function newestFileUnder(
     root: string,
     skip: Set<string>,
-    counts?: (fileName: string) => boolean,
+    counts?: (relativePath: string) => boolean,
 ): { path: string; mtimeMs: number } | undefined {
     let newest: { path: string; mtimeMs: number } | undefined;
     const visit = (dir: string) => {
@@ -188,7 +189,11 @@ function newestFileUnder(
             if (entry.isDirectory()) {
                 visit(path);
             } else if (entry.isFile()) {
-                if (counts && !counts(entry.name)) continue;
+                if (
+                    counts &&
+                    !counts(Path.relative(root, path).replace(/\\/g, "/"))
+                )
+                    continue;
                 const mtimeMs = fs.statSync(path).mtimeMs;
                 if (!newest || mtimeMs > newest.mtimeMs)
                     newest = { path, mtimeMs };
@@ -199,7 +204,10 @@ function newestFileUnder(
     return newest;
 }
 
-/** The folders under a source tree whose contents never call for a rebuild. */
+/**
+ * The folders under a source tree whose contents never call for a rebuild: dependencies, build
+ * products, editor and tool settings, and the folders that hold only tests and their fixtures.
+ */
 const FOLDERS_THAT_ARE_NOT_SOURCE = new Set([
     "node_modules",
     "obj",
@@ -207,16 +215,23 @@ const FOLDERS_THAT_ARE_NOT_SOURCE = new Set([
     ".vite-hooks",
     ".vscode",
     ".storybook",
+    "__tests__",
+    "component-tests",
+    "canvas-e2e-tests",
+    "test",
 ]);
 
 /**
- * Whether a change to this source file calls for a rebuild. Tests, stories and documentation are
- * not part of what the build produces, so editing one must not stop the suite.
+ * Whether a change to this source file (path relative to the source tree, forward slashes) calls
+ * for a rebuild. Tests and stories are not part of what the build produces, so editing one must
+ * not stop the suite. Nor is most Markdown, but the build compiles the help and info pages from
+ * it (compileMarkdownPlugin in vite.config.mts), so Markdown in those two folders counts.
  */
-function isBuiltSource(fileName: string): boolean {
-    const lower = fileName.toLowerCase();
-    if (lower.endsWith(".md")) return false;
-    return !/\.(spec|test|stories)\.[jt]sx?$/.test(lower);
+function isBuiltSource(relativePath: string): boolean {
+    const lower = relativePath.toLowerCase();
+    if (lower.endsWith(".md"))
+        return lower.startsWith("help/") || lower.startsWith("infopages/");
+    return !/\.(spec|test|uitest|stories)\.[jt]sx?$/.test(lower);
 }
 
 /** Whether the build wrote this file into output/browser (as opposed to a running Bloom). */
