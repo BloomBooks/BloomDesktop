@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -202,6 +203,8 @@ namespace Bloom
             // Bloom has several command line scenarios, without a coherent system for them.
             // The following is how we will do things from now on, and things can be moved
             // into this as time allows. See CommandLineOptions.cs.
+            // The command itself runs inside RunConsoleCommandLoop, which gives this thread a real
+            // message loop; see that method for why that matters so much to WebView2.
             if (
                 args.Length > 0
                 && new[]
@@ -225,80 +228,9 @@ namespace Bloom
 
                 RunningInConsoleMode = true;
 
-                var mainTask = CommandLine
-                    .Parser.Default.ParseArguments(
-                        args,
-                        new[]
-                        {
-                            typeof(HydrateParameters),
-                            typeof(UploadParameters),
-                            typeof(DownloadBookOptions),
-                            typeof(GetUsedFontsParameters),
-                            typeof(ChangeLayoutParameters),
-                            typeof(CreateArtifactsParameters),
-                            typeof(SendFontAnalyticsParameters),
-                            typeof(SpreadsheetExportParameters),
-                            typeof(SpreadsheetImportParameters),
-                        }
-                    )
-                    .MapResult(
-                        (HydrateParameters opts) => HydrateBookCommand.Handle(opts),
-                        (UploadParameters opts) => HandleUpload(opts),
-                        (DownloadBookOptions opts) =>
-                            DownloadBookCommand.HandleSilentDownload(opts),
-                        (GetUsedFontsParameters opts) => GetUsedFontsCommand.Handle(opts),
-                        (ChangeLayoutParameters opts) => ChangeLayoutCommand.Handle(opts),
-                        (CreateArtifactsParameters opts) => CreateArtifactsCommand.Handle(opts),
-                        (SendFontAnalyticsParameters opts) => SendFontAnalyticsCommand.Handle(opts),
-                        (SpreadsheetExportParameters opts) => SpreadsheetExportCommand.Handle(opts),
-                        // We don't have a way to get the CollectionSettings object for the Import process.
-                        // This means that if we use this CLI version, care should be taken to update the book,
-                        // so the pages get the correct "side" classes (side-left, side-right). (BL-10884)
-                        (SpreadsheetImportParameters opts) => SpreadsheetImportCommand.Handle(opts),
-                        async errors =>
-                        {
-                            var code = 0;
-                            foreach (var error in errors)
-                            {
-                                if (
-                                    !(error is HelpVerbRequestedError)
-                                    && !(error is HelpRequestedError)
-                                )
-                                {
-                                    // All of the errors have already been reported in English text. This would just add
-                                    // a cryptic class name to the output, possibly in the middle of a line in the usage
-                                    // message displayed as a result of the errors.
-                                    // Console.WriteLine(error.ToString());
-                                    code = 1;
-                                }
-                            }
-
-                            return code;
-                        }
-                    );
-                // What we want to do here is await mainTask. But to do that we have to make
-                // Main async. That is allowed since C# 7.1, but if we do it, we don't get
-                // a Windows.Forms synchronization context, which means async tasks started on
-                // the UI thread don't have to complete on the UI thread. That will mess up
-                // WebView2, and it is so that we can use WebView2's ExecuteJavascriptAsync
-                // that we made all these commands async to begin with.
-                // As soon as we DO have a windows.forms sync context...even if we made it ourselves,
-                // which is tricky because await won't work on a windows.forms sync context
-                // until we enter Run() and start pumping messages...we run into the problem
-                // that we need the result of the main task to return as the result of Main().
-                // We can't just call Result, because that blocks the main thread, which stops
-                // it pumping messages, which means anything that awaits on the main thread
-                // will deadlock.
-                // So, the best I can find to do is to sit here pumping messages until the
-                // main task completes.
-                // (Many of the main tasks don't actually do any awaiting and will immediately
-                // show as completed.)
-                while (!mainTask.IsCompleted)
-                {
-                    Application.DoEvents();
-                }
+                var exitCode = RunConsoleCommandLoop(() => ParseAndDispatchConsoleCommand(args));
                 WebView2Browser.CleanupWebView2UserFolders();
-                return mainTask.Result; // we're done; this is safe once there is nothing being awaited.
+                return exitCode;
             }
 
             if (!ValidateStartupVitePort(out var startupViteErrorMessage))
@@ -1102,6 +1034,158 @@ namespace Bloom
                 }
             }
             return missingOrAntique;
+        }
+
+        /// <summary>
+        /// Runs one console-mode command to completion on this thread, driving a real Windows Forms
+        /// message loop while it runs, and returns the exit code the command produced.
+        /// </summary>
+        /// <remarks>
+        /// Console mode used to wait for the command with
+        /// "while (!mainTask.IsCompleted) Application.DoEvents();". The comment there explained that Main
+        /// was deliberately left synchronous so that there would be a Windows Forms synchronization
+        /// context, and so that an await started on this thread would resume on this thread — which
+        /// WebView2 depends on. The trouble is that the wait loop defeated exactly that:
+        /// Application.DoEvents(), when it is the OUTERMOST message loop, uninstalls the
+        /// WindowsFormsSynchronizationContext and leaves a plain base SynchronizationContext, whose Post
+        /// queues to the thread pool. (Nested inside Application.Run it does not, which is why the
+        /// desktop app never had this problem.) So from the first await that actually yielded, console
+        /// work moved to MTA thread-pool threads — where a WebView2 cannot even be created, because
+        /// CoreWebView2Environment.CreateAsync needs an STA thread and throws RPC_E_CHANGED_MODE. That is
+        /// what made bulk upload fail from the second book onwards (BL-16767).
+        ///
+        /// Running a genuine loop instead makes the original intent true: the command's awaits resume on
+        /// this STA thread, which is pumping messages, so a browser created here can finish initializing
+        /// and can be used for the whole run.
+        ///
+        /// ⚠ The flip side, and the one thing to know before adding console code: because awaits now
+        /// come back to this thread, **sync-over-async on this thread can deadlock**, where under the old
+        /// DoEvents wait it could not. If a console verb blocks on a Task (<c>.Result</c>,
+        /// <c>.Wait()</c>, <c>GetAwaiter().GetResult()</c>) and that Task can only complete by running a
+        /// continuation posted back to this context, nothing will ever run it. The blocking calls on the
+        /// existing console paths were checked and are safe: they wait either on library tasks that use
+        /// <c>ConfigureAwait(false)</c> internally (the AWS SDK, HttpClient), or on work owned by another
+        /// thread (OffScreenBrowser completes its own), and <see cref="Bloom.Utils.AsyncUtil"/> pins its
+        /// work to <c>TaskScheduler.Default</c> for exactly this reason. New code that blocks on one of
+        /// Bloom's own async methods is the case to avoid — await it, or route it through AsyncUtil.
+        /// </remarks>
+        /// <param name="startCommand">
+        /// Starts the command and returns its Task. It is invoked from inside the message loop, not
+        /// before it, because an await captures whatever synchronization context is current at the moment
+        /// it suspends — starting the command any earlier would be too late for its first await.
+        /// </param>
+        internal static int RunConsoleCommandLoop(Func<Task<int>> startCommand)
+        {
+            var syncContext = new WindowsFormsSynchronizationContext();
+            SynchronizationContext.SetSynchronizationContext(syncContext);
+            // Deliberately NOT assigned to Program.MainContext. That property means "the app's UI
+            // thread", and code keyed off it (RabProjectService, CommonApi, ToastService) behaves
+            // differently when it is set; RabProjectService in particular has a null branch precisely
+            // for the case where there is no UI. Publishing this context there would silently change
+            // those paths in console mode, which is no part of what this loop is for.
+
+            var appContext = new ApplicationContext();
+            Task<int> commandTask = null;
+            Exception startupError = null;
+
+            // Post rather than call: this body runs once Application.Run below is pumping.
+            syncContext.Post(
+                _ =>
+                {
+                    try
+                    {
+                        commandTask = startCommand();
+                    }
+                    catch (Exception e)
+                    {
+                        // The command threw before it could return a Task, so nothing will ever complete
+                        // it. End the loop ourselves and rethrow below, on the caller's stack.
+                        startupError = e;
+                        appContext.ExitThread();
+                        return;
+                    }
+                    // Stop pumping as soon as the command finishes. Scheduling the continuation onto this
+                    // same context keeps ExitThread on the thread that is running the loop.
+                    commandTask.ContinueWith(
+                        _2 => appContext.ExitThread(),
+                        TaskScheduler.FromCurrentSynchronizationContext()
+                    );
+                },
+                null
+            );
+
+            Application.Run(appContext);
+
+            if (startupError != null)
+                ExceptionDispatchInfo.Capture(startupError).Throw();
+            // Normally the loop ended *because* the task completed, so reading Result below neither
+            // blocks nor deadlocks. But if something else ended the loop (a stray Application.Exit
+            // from inside a command, say), Result would block this thread forever. A console tool that
+            // hangs is the worst thing this method could do, so say what happened instead.
+            if (commandTask == null || !commandTask.IsCompleted)
+                throw new ApplicationException(
+                    "The console message loop ended before the command finished, so its exit code is"
+                        + " unavailable. Something other than the command ending stopped the loop."
+                );
+            // As before, a command that failed surfaces its exception from this line.
+            return commandTask.Result;
+        }
+
+        /// <summary>
+        /// Parses the command line and starts the matching console command, returning its Task.
+        /// Called by <see cref="RunConsoleCommandLoop"/> from inside the message loop.
+        /// </summary>
+        private static Task<int> ParseAndDispatchConsoleCommand(string[] args)
+        {
+            return CommandLine
+                .Parser.Default.ParseArguments(
+                    args,
+                    new[]
+                    {
+                        typeof(HydrateParameters),
+                        typeof(UploadParameters),
+                        typeof(DownloadBookOptions),
+                        typeof(GetUsedFontsParameters),
+                        typeof(ChangeLayoutParameters),
+                        typeof(CreateArtifactsParameters),
+                        typeof(SendFontAnalyticsParameters),
+                        typeof(SpreadsheetExportParameters),
+                        typeof(SpreadsheetImportParameters),
+                    }
+                )
+                .MapResult(
+                    (HydrateParameters opts) => HydrateBookCommand.Handle(opts),
+                    (UploadParameters opts) => HandleUpload(opts),
+                    (DownloadBookOptions opts) => DownloadBookCommand.HandleSilentDownload(opts),
+                    (GetUsedFontsParameters opts) => GetUsedFontsCommand.Handle(opts),
+                    (ChangeLayoutParameters opts) => ChangeLayoutCommand.Handle(opts),
+                    (CreateArtifactsParameters opts) => CreateArtifactsCommand.Handle(opts),
+                    (SendFontAnalyticsParameters opts) => SendFontAnalyticsCommand.Handle(opts),
+                    (SpreadsheetExportParameters opts) => SpreadsheetExportCommand.Handle(opts),
+                    // We don't have a way to get the CollectionSettings object for the Import process.
+                    // This means that if we use this CLI version, care should be taken to update the book,
+                    // so the pages get the correct "side" classes (side-left, side-right). (BL-10884)
+                    (SpreadsheetImportParameters opts) => SpreadsheetImportCommand.Handle(opts),
+                    async errors =>
+                    {
+                        var code = 0;
+                        foreach (var error in errors)
+                        {
+                            if (
+                                !(error is HelpVerbRequestedError) && !(error is HelpRequestedError)
+                            )
+                            {
+                                // All of the errors have already been reported in English text. This would just add
+                                // a cryptic class name to the output, possibly in the middle of a line in the usage
+                                // message displayed as a result of the errors.
+                                // Console.WriteLine(error.ToString());
+                                code = 1;
+                            }
+                        }
+
+                        return code;
+                    }
+                );
         }
 
         static async Task<int> HandleUpload(UploadParameters opts)
