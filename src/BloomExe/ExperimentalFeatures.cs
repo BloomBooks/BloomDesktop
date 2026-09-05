@@ -19,6 +19,14 @@ namespace Bloom
         public const string kE2eEnvironmentVariable = "BLOOM_E2E_EXPERIMENTAL_FEATURES";
 
         /// <summary>
+        /// The value an e2e test puts in that variable to say "no experimental features at all".
+        /// A token is needed because an empty environment variable cannot be told from an absent
+        /// one on Windows, and "absent" has to go on meaning "leave the saved setting alone" for
+        /// every Bloom that is not under --e2e.
+        /// </summary>
+        public const string kE2eNoFeatures = "none";
+
+        /// <summary>
         /// Features an e2e test asked for, as a comma-separated list of tokens, or the empty
         /// string.
         ///
@@ -35,17 +43,25 @@ namespace Bloom
                 ? Environment.GetEnvironmentVariable(kE2eEnvironmentVariable) ?? ""
                 : "";
 
+        /// <summary>
+        /// The tokens of the features that are on, comma-separated.
+        ///
+        /// Under --e2e the environment variable is the WHOLE answer, rather than something added
+        /// to the saved setting: a run says which features it wants and gets exactly those, and a
+        /// run that names none (kE2eNoFeatures) gets none. That matters because the saved setting
+        /// lives in a user.config shared with the developer's own Bloom (see AUTOMATION-DEBT.md,
+        /// "Every Bloom of one build shares one user.config"), so a test of how Bloom behaves with
+        /// an experiment turned OFF could not be written at all while the developer's own saved
+        /// setting could turn it back on.
+        /// </summary>
         public static string TokensOfEnabledFeatures
         {
             get
             {
-                var saved = Settings.Default.EnabledExperimentalFeatures ?? "";
                 var fromEnvironment = TokensFromE2eEnvironment;
-                if (string.IsNullOrEmpty(fromEnvironment))
-                    return saved;
-                if (string.IsNullOrEmpty(saved))
-                    return fromEnvironment;
-                return saved + "," + fromEnvironment;
+                if (!string.IsNullOrEmpty(fromEnvironment))
+                    return fromEnvironment == kE2eNoFeatures ? "" : fromEnvironment;
+                return Settings.Default.EnabledExperimentalFeatures ?? "";
             }
         }
 

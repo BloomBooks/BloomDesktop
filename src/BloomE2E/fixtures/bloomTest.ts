@@ -21,6 +21,7 @@ import {
     launchBloom,
     type ILaunchedBloom,
     type ICollectionSpec,
+    type IRelaunchChanges,
 } from "./launchBloom";
 import { chromium } from "@playwright/test";
 import {
@@ -57,11 +58,15 @@ export interface IBloomApp {
      * rewrite the .bloomCollection; use it to change collection settings, which have no API and
      * live in a WinForms dialog CDP cannot reach.
      *
+     * `changes` replaces launch options that Bloom reads only at startup, such as which
+     * experimental features are on; see IRelaunchChanges.
+     *
      * A restart invalidates the `page` fixture and the old ports. Take the page this returns, or
      * read bloomApp.page afterwards; the old Page object throws once its target is gone.
      */
     restart: (
         betweenStopAndStart?: () => void | Promise<void>,
+        changes?: IRelaunchChanges,
     ) => Promise<Page>;
 }
 
@@ -273,12 +278,12 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                     cdpPort: launched.cdpPort,
                     bloomPid: launched.bloomPid,
                     collectionDir: launched.collectionDir,
-                    restart: async (betweenStopAndStart) => {
+                    restart: async (betweenStopAndStart, changes) => {
                         // Close the old CDP connection first: it holds a socket into the process
                         // that is about to be killed.
                         await browser?.close();
                         browser = undefined;
-                        await launched!.restart(betweenStopAndStart);
+                        await launched!.restart(betweenStopAndStart, changes);
                         browser = await connectOverCdpWithRetry(
                             launched!.cdpPort,
                         );

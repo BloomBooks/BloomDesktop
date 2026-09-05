@@ -109,6 +109,74 @@ export async function getSectionTypesOffered(
 }
 
 /**
+ * What the Table entry of a section's type chooser looks like. The entry has three possible
+ * states, and they mean different things (see createTableSelector in origami.ts): missing
+ * altogether when the "Tables" experiment is off, dimmed and badged when the experiment is on but
+ * the collection's subscription tier is below the one tables need, and an ordinary link when
+ * tables can be made.
+ */
+export interface ITableSectionTypeOffer {
+    /** True when the word "Table" is in the section's list of types at all. */
+    offered: boolean;
+    /** True when the entry is dimmed and carries the subscription badge. */
+    needsSubscription: boolean;
+    /** The entry's opacity, which is what the dimming amounts to. 1 when it is not dimmed. */
+    opacity: number;
+}
+
+/** The Table entry, and its badge, inside one section's list of types. */
+function tableTypeEntry(page: Page, sectionIndex: number): Locator {
+    return sections(page)
+        .nth(sectionIndex)
+        .locator(`.selector-links a[data-i18n="${TYPE_KEY.table}"]`);
+}
+
+/**
+ * Read the state of the Table entry in the section at `sectionIndex`. Requires Change Layout mode
+ * and a section with nothing in it yet, which is the only state in which origami offers the list.
+ */
+export async function getTableSectionTypeOffer(
+    page: Page,
+    sectionIndex = 0,
+): Promise<ITableSectionTypeOffer> {
+    const link = tableTypeEntry(page, sectionIndex);
+    if ((await link.count()) === 0)
+        return { offered: false, needsSubscription: false, opacity: 1 };
+    const state = await link.first().evaluate((element) => ({
+        // The class origami puts on the entry when the tier is too low, and the badge beside it.
+        dimmed: element.classList.contains("origami-featureNeedsSubscription"),
+        opacity: Number.parseFloat(getComputedStyle(element).opacity),
+        badges:
+            element.parentElement?.querySelectorAll(".subscription-badge")
+                .length ?? 0,
+    }));
+    return {
+        offered: true,
+        needsSubscription: state.dimmed && state.badges > 0,
+        opacity: state.opacity,
+    };
+}
+
+/**
+ * Click the Table entry in the section at `sectionIndex` without expecting the section to become a
+ * table. That is what a person gets below the tier tables need: the entry is dimmed and clicking
+ * it only explains itself. Use chooseSectionType when the click should actually make a table.
+ */
+export async function clickTableSectionType(
+    page: Page,
+    sectionIndex = 0,
+): Promise<void> {
+    const link = tableTypeEntry(page, sectionIndex);
+    if ((await link.count()) === 0)
+        throw new Error(
+            `Section ${sectionIndex} does not offer the "table" type at all, so there is ` +
+                `nothing to click. It offers: ` +
+                `${(await getSectionTypesOffered(page, sectionIndex)).join(", ") || "(nothing)"}.`,
+        );
+    await link.first().click();
+}
+
+/**
  * Make the section at `sectionIndex` hold `type`, by clicking that word in its list of types, and
  * wait until the list has gone.
  *

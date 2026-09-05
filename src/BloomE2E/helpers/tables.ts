@@ -876,6 +876,44 @@ export async function rightClickCell(
     column: number,
     tableIndex = 0,
 ): Promise<IOpenMenus> {
+    await pressRightOnCell(page, row, column, tableIndex);
+    await editablePageFrame(page)
+        .locator('[data-btable-menu="cell"]')
+        .waitFor({ state: "visible", timeout: 30000 })
+        .catch(() => undefined);
+    return getOpenMenus(page);
+}
+
+/**
+ * Right-click a cell where the Cell menu is not expected, and report which menus came up.
+ *
+ * Separate from rightClickCell because that one waits half a minute for a Cell menu that is never
+ * coming, which is thirty seconds added to every run. This waits only long enough for whatever
+ * menu does open to appear.
+ */
+export async function rightClickCellExpectingNoCellMenu(
+    page: Page,
+    row: number,
+    column: number,
+    tableIndex = 0,
+): Promise<IOpenMenus> {
+    await pressRightOnCell(page, row, column, tableIndex);
+    // Long enough for a menu raised by this click to have rendered, whichever menu it is.
+    await editablePageFrame(page)
+        .locator("[data-btable-menu]:visible, .MuiMenu-list:visible")
+        .first()
+        .waitFor({ state: "visible", timeout: 2000 })
+        .catch(() => undefined);
+    return getOpenMenus(page);
+}
+
+/** Press the right mouse button in the middle of a cell. Waits for nothing. */
+async function pressRightOnCell(
+    page: Page,
+    row: number,
+    column: number,
+    tableIndex: number,
+): Promise<void> {
     const target = await cell(page, row, column, tableIndex);
     const box = await requireBox(
         target,
@@ -885,11 +923,6 @@ export async function rightClickCell(
     const y = box.y + box.height / 2;
     await page.mouse.move(x, y);
     await page.mouse.click(x, y, { button: "right" });
-    await editablePageFrame(page)
-        .locator('[data-btable-menu="cell"]')
-        .waitFor({ state: "visible", timeout: 30000 })
-        .catch(() => undefined);
-    return getOpenMenus(page);
 }
 
 /** Which menus are showing on the page being edited. */
@@ -913,16 +946,25 @@ export async function getOpenMenus(page: Page): Promise<IOpenMenus> {
     };
 }
 
-/** Close any table, cell or canvas element menu that is open, the way Escape does. */
+/**
+ * Close any table, cell or canvas element menu that is open, the way Escape does.
+ *
+ * Escape goes to the open menu itself as well as to the window: a MUI menu is in the page's
+ * iframe, and a keystroke sent to the window reaches whatever holds the focus, which after a
+ * mouse press on the page is often the shell document. A MUI menu that stays open keeps its
+ * backdrop over the page, and the backdrop takes every press aimed at what is underneath.
+ */
 export async function closeAnyMenu(page: Page): Promise<void> {
     const frame = editablePageFrame(page);
+    const anyMenu = frame
+        .locator("[data-btable-menu]:visible, .MuiMenu-list:visible")
+        .first();
     for (let attempt = 0; attempt < 3; attempt++) {
         const open = await getOpenMenus(page);
         if (!Object.values(open).some((isOpen) => isOpen)) return;
+        await anyMenu.press("Escape").catch(() => undefined);
         await page.keyboard.press("Escape");
-        await frame
-            .locator("[data-btable-menu]:visible, .MuiMenu-list:visible")
-            .first()
+        await anyMenu
             .waitFor({ state: "hidden", timeout: 5000 })
             .catch(() => undefined);
     }
@@ -1067,6 +1109,39 @@ export async function dragTableBy(
 }
 
 /**
+ * Select the canvas element the table sits in, rather than a cell of it, and wait until Bloom
+ * marks it active. That is what the element's own toolbar and "..." menu act on.
+ *
+ * The press is aimed two pixels inside the table's top left corner, which is the table's own
+ * border and grid gap rather than a cell: a press in a cell selects the cell, and leaves whatever
+ * was active before as the active canvas element -- which for a table holding a video cell is the
+ * video's element, whose menu is a different menu entirely. That is the same point dragTableBy
+ * and rightClickCanvasElementEdge use.
+ */
+export async function selectTableElement(
+    page: Page,
+    tableIndex = 0,
+): Promise<void> {
+    const rect = (await measureTable(page, tableIndex)).rect;
+    await page.mouse.move(rect.x + 2, rect.y + 2);
+    await page.mouse.down();
+    await page.mouse.up();
+    // The element that holds a table, told apart from any element inside one of its cells by the
+    // fact that the table is inside it.
+    const active = editablePageFrame(page).locator(
+        '.bloom-canvas-element[data-bloom-active="true"]:has(.bloom-table)',
+    );
+    await expect
+        .poll(async () => active.count(), {
+            timeout: 15000,
+            message:
+                `Pressing the top left corner of table ${tableIndex} did not select the canvas ` +
+                `element it sits in.`,
+        })
+        .toBeGreaterThan(0);
+}
+
+/**
  * Assert that a table is drawn wholly inside the canvas of the page it is on.
  *
  * A table that hangs over the page boundary is clipped, so part of it cannot be seen or clicked,
@@ -1105,6 +1180,106 @@ export async function dragBoundary(
     distance: number,
     tableIndex = 0,
 ): Promise<{ before: ITableShape; after: ITableShape }> {
+    const before = await performBoundaryDrag(
+        page,
+        what,
+        index,
+        distance,
+        tableIndex,
+    );
+    const sizes = what === "column" ? "columnWidths" : "rowHeights";
+    await expect
+        .poll(
+            async () =>
+                (await getTableShape(page, tableIndex))[sizes].join(","),
+            {
+                timeout: 30000,
+                message:
+                    `Dragging the ${what} ${index} boundary by ${distance}px did not change the ` +
+                    `table's recorded sizes (still ${before[sizes].join(",")}).`,
+            },
+        )
+        .not.toBe(before[sizes].join(","));
+    return { before, after: await getTableShape(page, tableIndex) };
+}
+
+/** How long expectBoundaryDragDoesNothing watches before it believes nothing is going to move. */
+const NO_RESIZE_MS = 1500;
+
+/**
+ * Make the same gesture dragBoundary makes, and assert that the table does not resize: no
+ * recorded size changes, and no cell changes width or height.
+ *
+ * This is a helper of its own rather than an option on dragBoundary because the waiting is the
+ * opposite way round. dragBoundary waits for a change and fails if none comes; this watches for a
+ * while and fails if one does, so that a resize which arrives a moment late still fails the test.
+ */
+export async function expectBoundaryDragDoesNothing(
+    page: Page,
+    what: "column" | "row",
+    index: number,
+    distance: number,
+    tableIndex = 0,
+): Promise<void> {
+    const cellsBefore = (await measureTable(page, tableIndex)).cells;
+    const before = await performBoundaryDrag(
+        page,
+        what,
+        index,
+        distance,
+        tableIndex,
+    );
+    const sizes = what === "column" ? "columnWidths" : "rowHeights";
+    const deadline = Date.now() + NO_RESIZE_MS;
+    while (Date.now() < deadline) {
+        expect(
+            (await getTableShape(page, tableIndex))[sizes].join(","),
+            `Dragging the ${what} ${index} boundary by ${distance}px changed the table's ` +
+                `recorded sizes, and here it should do nothing at all.`,
+        ).toBe(before[sizes].join(","));
+    }
+    // The recorded sizes are what the library writes down; the cells are what a person sees. A
+    // drag that moved the boundary without recording it would still be a failure.
+    const cellsAfter = (await measureTable(page, tableIndex)).cells;
+    const describe = (cells: ICellInfo[]) =>
+        cells
+            .map(
+                (c) =>
+                    `(${c.row},${c.column}) ${Math.round(c.rect.width)}x` +
+                    `${Math.round(c.rect.height)}`,
+            )
+            .join(" ");
+    for (const was of cellsBefore) {
+        const now = cellsAfter.find(
+            (c) => c.row === was.row && c.column === was.column,
+        );
+        if (!now)
+            throw new Error(
+                `The cell at row ${was.row}, column ${was.column} disappeared during a drag ` +
+                    `that should have done nothing.`,
+            );
+        expect(
+            Math.abs(now.rect.width - was.rect.width) +
+                Math.abs(now.rect.height - was.rect.height),
+            `Dragging the ${what} ${index} boundary by ${distance}px resized the cells, and ` +
+                `here it should do nothing at all. Before: ${describe(cellsBefore)}. After: ` +
+                `${describe(cellsAfter)}.`,
+        ).toBeLessThanOrEqual(2);
+    }
+}
+
+/**
+ * Press two pixels inside the right or bottom edge of a cell and drag `distance` pixels, which is
+ * the gesture the library reads as a resize. Returns the table's shape as it was before the drag.
+ * Says nothing about what the drag should achieve; the callers above do that.
+ */
+async function performBoundaryDrag(
+    page: Page,
+    what: "column" | "row",
+    index: number,
+    distance: number,
+    tableIndex: number,
+): Promise<ITableShape> {
     const before = await getTableShape(page, tableIndex);
     const target =
         what === "column"
@@ -1128,20 +1303,7 @@ export async function dragBoundary(
     // events, and a single jump gives it one, which some of its own snapping treats as no drag.
     await page.mouse.move(to.x, to.y, { steps: 12 });
     await page.mouse.up();
-    const sizes = what === "column" ? "columnWidths" : "rowHeights";
-    await expect
-        .poll(
-            async () =>
-                (await getTableShape(page, tableIndex))[sizes].join(","),
-            {
-                timeout: 30000,
-                message:
-                    `Dragging the ${what} ${index} boundary by ${distance}px did not change the ` +
-                    `table's recorded sizes (still ${before[sizes].join(",")}).`,
-            },
-        )
-        .not.toBe(before[sizes].join(","));
-    return { before, after: await getTableShape(page, tableIndex) };
+    return before;
 }
 
 // ── Internals ───────────────────────────────────────────────────────────

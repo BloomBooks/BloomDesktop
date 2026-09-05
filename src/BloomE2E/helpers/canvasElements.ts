@@ -238,6 +238,35 @@ export async function dragPaletteItemOntoCanvas(
 }
 
 /**
+ * Which items the Canvas tool's palette is offering, by the canvas element type each one makes.
+ * Opens the Canvas tool first.
+ *
+ * An item whose feature is off, or whose subscription tier the collection has not got, is simply
+ * absent from the palette rather than dimmed, so this is how a test asks whether a feature is on
+ * offer. Below the canvas feature's own tier the whole tool sits behind a subscription notice (see
+ * subscriptionToolIds in ToolboxRoot.tsx) while its items stay in the document underneath it, so a
+ * test about a tier should say which of the two it means.
+ */
+export async function getPaletteItemsOffered(
+    page: Page,
+): Promise<PaletteItem[]> {
+    const toolbox = await openCanvasTool(page);
+    const anyItem = toolbox.locator("[data-testid^=palette-]:visible").first();
+    // Wait for one item rather than reading at once: the palette is drawn before it has heard
+    // back from features/status, and an item behind a feature appears only afterwards, so an
+    // immediate read can miss items that are on their way.
+    await anyItem.waitFor({ state: "visible", timeout: 20000 });
+    const ids = await toolbox
+        .locator("[data-testid^=palette-]:visible")
+        .evaluateAll((elements) =>
+            elements.map(
+                (element) => element.getAttribute("data-testid") ?? "",
+            ),
+        );
+    return ids.map((id) => id.replace(/^palette-/, "") as PaletteItem);
+}
+
+/**
  * Select a canvas element by clicking it, and wait until Bloom marks it active. Returns it.
  *
  * The click is a real mouse press, not Playwright's own: Bloom lays a drawing surface over the
@@ -374,12 +403,33 @@ export async function clickCanvasElementMenuItem(
         .waitFor({ state: "hidden", timeout: 30000 });
 }
 
-/** Close the canvas element menu without choosing anything, the way pressing Escape does. */
+/**
+ * Close the canvas element menu without choosing anything, the way pressing Escape does.
+ *
+ * Escape is pressed on the menu itself, not through page.keyboard: the menu is in the page's
+ * iframe, and a keystroke sent to the window goes to whatever holds the focus, which after a
+ * mouse press on the page is often the shell document, so the menu never hears it. If Escape
+ * still leaves it open, its own backdrop is clicked, which is the other way a person shuts it.
+ * Leaving it open matters: the backdrop takes every press aimed at the page underneath.
+ */
 export async function closeCanvasElementMenu(page: Page): Promise<void> {
-    const menu = editablePageFrame(page).locator(MENU).first();
+    const frame = editablePageFrame(page);
+    const menu = frame.locator(MENU).first();
     if (!(await menu.isVisible().catch(() => false))) return;
-    await page.keyboard.press("Escape");
-    await menu.waitFor({ state: "hidden", timeout: 30000 });
+    await menu.press("Escape").catch(() => undefined);
+    if (
+        await menu
+            .waitFor({ state: "hidden", timeout: 5000 })
+            .then(() => false)
+            .catch(() => true)
+    ) {
+        await frame
+            .locator(".MuiBackdrop-root")
+            .first()
+            .click({ timeout: 5000 })
+            .catch(() => undefined);
+    }
+    await menu.waitFor({ state: "hidden", timeout: 15000 });
 }
 
 /**

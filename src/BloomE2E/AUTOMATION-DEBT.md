@@ -562,3 +562,22 @@ Worth finding out whether the page clipboard is meant to survive this, since a p
 same thing by hand would lose their copy the same way. If it is meant to, this is a product bug
 rather than automation debt.
 (Found 2026-09-04 automating the table specs.)
+
+## A second e2e Bloom on the machine pushes a cold start past two minutes
+
+Two suites running at once, in two worktrees, make each other slow to start: a Bloom that
+normally serves its collection in twenty seconds took a little over two minutes twice in five
+runs of `tables-gating.spec.ts` while another worktree's suite was launching its own. The
+failure names nothing of the kind. It says `Bloom did not open the collection within 120s`,
+lists the instances it can see, and the wanted collection is right there among them on port
+8089, because the diagnostic look happens a second after the last poll gave up. So it reads as
+a discovery bug in the fixture, and the fixture is fine.
+
+`startBloomOn` now allows four minutes rather than two. Nothing waits that long in a healthy
+run, since the poll stops the moment Bloom answers; the number only decides how patient a slow
+start is allowed to make us.
+
+Fix direction: the suite has no idea another one is running. A machine-wide lock, or a check
+that refuses to start while a foreign e2e Bloom is up, would turn a slow flake into a clear
+message. Worth doing if agents keep running two worktrees at once.
+(Found 2026-09-05, gating the table specs.)

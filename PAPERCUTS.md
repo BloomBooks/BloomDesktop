@@ -362,3 +362,20 @@ What worked: match the English `aria-label` the library writes, and add testids 
 against the source in the worktree rather than against whatever was last built.
 
 **Context:** adding the table end-to-end tests, `tables-core.spec.ts` and `tables-extended.spec.ts`.
+
+## Two agents running e2e suites at once fail each other's launches, and it looks like a fixture bug
+
+**2026-09-05, Add-Tables.** Two worktrees running Playwright suites on this machine each made the
+other's `Bloom.exe` slow to start, past the fixture's two-minute readiness limit, twice in five
+runs. The message is `Bloom did not open the collection within 120s` followed by the list of
+instances the fixture can see, and the collection it says it wanted is right there in that list,
+because the diagnostic look happens a second after the last poll gave up. So it reads as a
+discovery bug, and half an hour goes into the innocent code. Neither run is told the other exists.
+
+Raised the limit to four minutes in `src/BloomE2E/fixtures/launchBloom.ts` and wrote it up in
+`src/BloomE2E/AUTOMATION-DEBT.md`.
+
+**Idea:** a machine-wide lock, or refuse to start while a Bloom launched by another e2e run is up,
+and say so. Agents in two worktrees is now the normal case, not the odd one.
+
+**Context:** gating `tables-gating.spec.ts` through three consecutive clean runs.
