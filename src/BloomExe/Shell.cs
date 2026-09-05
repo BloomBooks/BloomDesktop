@@ -394,16 +394,22 @@ namespace Bloom
         }
 
         /// <summary>
-        /// we let the Program call this after it closes the splash screen
+        /// we let the Program call this after it closes the splash screen, and after opening a
+        /// collection at a time when there is no splash screen to close (see OpenProjectWindow).
+        ///
+        /// Code review asked whether this still earns its keep, now that BringToFrontNow does the
+        /// raising, and suggested inlining it (BL-16784). We kept it, because coming to the front
+        /// is not all it does: it also sets _finishedLoading, which is what allows the window size
+        /// and location to be saved afterwards. And it has three callers -- ComeToFront just above,
+        /// and two in Program (the splash-screen one-shot and OpenProjectWindow) -- so inlining it
+        /// would mean repeating that pairing in each of them.
         /// </summary>
         public void ReallyComeToFront()
         {
-            //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
-            TopMost = true;
-            Focus();
-            BringToFront();
-            TopMost = false;
-
+            // An instant toggle is what we used to do here, and it is why Bloom could come up
+            // behind Chrome. (BL-16784)  See comments for BringToFrontNow for why this works better.
+            this.BringToFrontNow();
+            // Flag that it's safe to restore the window size and location on Linux.
             _finishedLoading = true;
         }
 
