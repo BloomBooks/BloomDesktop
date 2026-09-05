@@ -1008,6 +1008,32 @@ namespace BloomTests.Spreadsheet
         }
 
         [Test]
+        public async Task UnreadableDetailsBeyondTheBooksTablesAddNoPage()
+        {
+            // The sheet has two tables; the book has one. The second [table] row's details
+            // are spoiled. Import must not add a page for a row it cannot use.
+            var sheet = ExportBook(MakeTableOnlyBook("Alpha", "Beta"));
+            var tableRows = sheet
+                .ContentRows.Where(r => r.MetadataKey == InternalSpreadsheet.TableRowLabel)
+                .ToList();
+            Assert.That(tableRows.Count, Is.EqualTo(2), "sanity: one [table] row per page");
+            tableRows[1].SetCell(InternalSpreadsheet.DetailsColumnLabel, "");
+
+            var target = new HtmlDom(MakeTableOnlyBook("Gamma"), true);
+            Assert.That(CountNumberedPages(target), Is.EqualTo(1), "sanity: one page to start");
+            var warnings = await RoundTripThroughFileAndImportAsync(sheet, target);
+            Assert.That(warnings, Has.Some.Contains("found no table on the page for it"));
+
+            Assert.That(CountNumberedPages(target), Is.EqualTo(1), "no page was added");
+            var table = GetTable(target);
+            Assert.That(
+                TextOfCell(SpreadsheetTables.CellsOf(table)[0], "es"),
+                Is.EqualTo("Alpha uno"),
+                "the first table still imported"
+            );
+        }
+
+        [Test]
         public async Task TableOnlyPageImportsOntoAnAddedPage()
         {
             // The target book runs out of pages part way through: the second table has no

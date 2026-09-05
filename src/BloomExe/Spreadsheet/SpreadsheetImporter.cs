@@ -1779,7 +1779,9 @@ namespace Bloom.Spreadsheet
             // a shape nothing in the spreadsheet asked for), so if there is none to be had
             // we say so and skip rather than advancing off the end of the book and adding a
             // page that still has no table for us.
-            if (!ATableIsStillAvailable())
+            // A row whose details cannot be read (handled below) may use up a table the
+            // book already has, but must not be the reason a page gets added.
+            if (!ATableIsStillAvailable(mayAddAPage: tableDetails != null))
             {
                 Warn(
                     $"Row {CurrentRowIndexForMessages} is a {InternalSpreadsheet.TableRowLabel} row, but Bloom found no table on the page for it, so it was skipped."
@@ -1877,10 +1879,10 @@ namespace Bloom.Spreadsheet
         /// <summary>
         /// Whether there is still a table somewhere for another [table] row to fill: one on
         /// the current page that we have not used yet, one on a page we have not reached,
-        /// or one on the last content page, since a copy of that page is what import adds
-        /// when it runs out of pages.
+        /// or, if mayAddAPage, one on the last content page, since a copy of that page is
+        /// what import adds when it runs out of pages.
         /// </summary>
-        private bool ATableIsStillAvailable()
+        private bool ATableIsStillAvailable(bool mayAddAPage)
         {
             var tablesOnCurrentPage = _blocksOnPage[tableIndex];
             if (
@@ -1893,7 +1895,8 @@ namespace Bloom.Spreadsheet
                 if (SpreadsheetTables.TopLevelTables(_pages[i]).Count > 0)
                     return true;
             }
-            return _lastContentPage != null
+            return mayAddAPage
+                && _lastContentPage != null
                 && SpreadsheetTables.TopLevelTables(_lastContentPage).Count > 0;
         }
 
