@@ -70,8 +70,11 @@ namespace Bloom
         {
             if (isEnabled)
             {
-                if (!IsFeatureEnabled(featureName))
-                    Settings.Default.EnabledExperimentalFeatures += "," + featureName;
+                // Asks the saved setting itself, not IsFeatureEnabled: under --e2e that answers
+                // from the command line, so a saved token would look absent and be saved again.
+                var saved = Settings.Default.EnabledExperimentalFeatures ?? "";
+                if (!saved.Contains(featureName))
+                    Settings.Default.EnabledExperimentalFeatures = saved + "," + featureName;
             }
             else
             {

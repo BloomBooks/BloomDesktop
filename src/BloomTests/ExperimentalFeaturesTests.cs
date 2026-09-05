@@ -94,6 +94,29 @@ namespace BloomTests
         }
 
         /// <summary>
+        /// Under --e2e a saved feature does not count as enabled, so SetValue must not take that
+        /// as a reason to save it again: the setting is shared with the developer's own Bloom.
+        /// </summary>
+        [Test]
+        public void SetValue_UnderE2e_DoesNotSaveAFeatureTwice()
+        {
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, true);
+            Program.ParseStartupPortArguments(new[] { "--e2e" }, out var errorMessage);
+            Assert.That(errorMessage, Is.Null, "Sanity check: the arguments parsed.");
+            Assert.IsFalse(
+                ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections),
+                "Sanity check: under --e2e the saved feature does not count."
+            );
+
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, true);
+
+            Assert.AreEqual(
+                ExperimentalFeatures.kTeamCollections,
+                Settings.Default.EnabledExperimentalFeatures
+            );
+        }
+
+        /// <summary>
         /// Test the SetValue and IsFeatureEnabled methods as well as the
         /// TokensOfEnabledFeatures property.
         /// </summary>
