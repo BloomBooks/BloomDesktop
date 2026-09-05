@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using SIL.IO;
 
 namespace Bloom.MiscUI
 {
@@ -100,14 +101,81 @@ namespace Bloom.MiscUI
             get { return _dialog.FileNames; }
         }
 
+        /// <summary>
+        /// The path the next file or folder chooser should answer with instead of showing a
+        /// dialog, or null for the normal behaviour. An e2e test sets this through
+        /// e2e/nextFileToChoose, an endpoint that exists only under --e2e; nothing else writes it.
+        /// It is taken (and cleared) by the one chooser it answers, so a test arms it once per
+        /// dialog it expects. Both this class and BloomFolderChooser consume it, so a test does
+        /// not have to know which of the two a feature opens.
+        /// </summary>
+        private static string _nextPathToChooseInE2eTests;
+
+        /// <summary>
+        /// Arm the next file or folder chooser to answer with this path (see
+        /// _nextPathToChooseInE2eTests).
+        /// </summary>
+        public static void SetNextPathToChooseInE2eTests(string path)
+        {
+            _nextPathToChooseInE2eTests = path;
+        }
+
+        /// <summary>
+        /// Take the armed path, clearing it, if there is one and this is an e2e run; otherwise
+        /// return false. Honoured only under --e2e, so a normal run always shows its dialog even
+        /// if something managed to set the path.
+        /// </summary>
+        public static bool TryTakeNextPathToChooseInE2eTests(out string path)
+        {
+            path = _nextPathToChooseInE2eTests;
+            if (!Program.RunningE2eTests || string.IsNullOrEmpty(path))
+            {
+                path = null;
+                return false;
+            }
+            _nextPathToChooseInE2eTests = null;
+            return true;
+        }
+
         public DialogResult ShowDialog()
         {
+            if (TryAnswerForE2eTests(out var result))
+                return result;
             return _dialog.ShowDialog();
         }
 
         public DialogResult ShowDialog(IWin32Window owner)
         {
+            if (TryAnswerForE2eTests(out var result))
+                return result;
             return _dialog.ShowDialog(owner);
+        }
+
+        /// <summary>
+        /// Under --e2e, answer with the path a test armed rather than showing the dialog: the
+        /// caller then runs its real post-dialog code with FileName(s) set, as though a person
+        /// had chosen that file. A native dialog would hang the run (see AUTOMATION-DEBT.md,
+        /// "Native OS dialogs hang automation"). The checks a real dialog makes are made here
+        /// too, and fail loudly, because a test that arms a missing file or one the filter would
+        /// have refused has a bug that must not pass as a chosen file.
+        /// </summary>
+        private bool TryAnswerForE2eTests(out DialogResult result)
+        {
+            result = DialogResult.None;
+            if (!TryTakeNextPathToChooseInE2eTests(out var path))
+                return false;
+            if (CheckFileExists && !RobustFile.Exists(path))
+                throw new FileNotFoundException(
+                    $"The e2e test armed the file chooser with a file that does not exist: {path}",
+                    path
+                );
+            if (!DoubleCheckFileFilter(Filter, path))
+                throw new ArgumentException(
+                    $"The e2e test armed the file chooser with {path}, which its filter ({Filter}) would not have allowed."
+                );
+            _dialog.FileName = path;
+            result = DialogResult.OK;
+            return true;
         }
 
         protected virtual void Dispose(bool disposing)
