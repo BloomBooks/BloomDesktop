@@ -17,6 +17,7 @@ using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionChoosing;
 using Bloom.ErrorReporter;
+using Bloom.FreezeDoctor;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Registration;
@@ -27,6 +28,7 @@ using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
+using BloomFreezeDoctor.Protocol;
 using BloomTemp;
 using CommandLine;
 using L10NSharp;
@@ -140,6 +142,16 @@ namespace Bloom
             // other programs for 64K available default temp file names.
             TempFile.NamePrefix = "bloom";
             CheckForCorruptUserConfig();
+            // Tell any Freeze Doctor already running that a Bloom has started, as early in Main as it can
+            // go, so it adopts us at once instead of at its next five-second sweep. Everything before this
+            // is time in which a hang or a crash cannot be doctored, because Bloom only asks for a dump if
+            // a Doctor is already watching. Announced from where the Doctor is launched instead, much
+            // further down, it was measured arriving 6.2 seconds in - by which time the sweep had already
+            // found us and it bought nothing.
+            //
+            // Not any earlier than this, though: it reads a setting, and CheckForCorruptUserConfig above is
+            // what makes reading one safe.
+            DoctorLauncher.AnnounceToAnyDoctor();
             // Ensure that the registration information is loaded early before Team Collection
             // needs it.
             Registration.Registration.Default.EnsureLoaded();
@@ -1483,6 +1495,18 @@ namespace Bloom
             // Crashes if initialized twice, and there's at least once case when joining a TC
             // where we can come here twice.
             WritingSystem.EnsureSldrInitialized();
+
+            // Publish our health for the Freeze Doctor. Started here, just before the message loop,
+            // because the UI heartbeat is a WinForms timer: it only ticks while messages are being pumped,
+            // which is exactly what makes its silence meaningful.
+            FreezeDoctorSupport.Start();
+            // And start the Doctor itself if the user has switched it on, since a diagnostic tool is no use
+            // unless it is already running when the trouble starts.
+            DoctorLauncher.LaunchIfWanted();
+            // Deliberate breakage for testing the Doctor, and inert unless BLOOM_SIMULATE_FREEZE is set
+            // AND this is a developer build.
+            FreezeSimulator.ArmIfRequested(ApplicationUpdateSupport.ChannelName);
+
             try
             {
                 Application.Run();
@@ -1505,6 +1529,8 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
+                // Ask a watching Freeze Doctor to dump us while we still exist.
+                FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(bad);
                 System.Environment.FailFast(exceptMsg);
             }
@@ -1520,6 +1546,7 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
+                FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(nasty);
                 System.Environment.FailFast(exceptMsg);
             }
@@ -1529,6 +1556,10 @@ namespace Bloom
                     FileMeddlerManager.Stop();
                 WebView2Browser.CleanupWebView2UserFolders();
             }
+
+            // From here on we mark how far shutdown has got, so that a Bloom which dies part way through
+            // can say WHERE it stopped rather than only that it did.
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.MessageLoopReturned);
 
             try
             {
@@ -1546,6 +1577,7 @@ namespace Bloom
                 }
             }
 
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.SettingsSaved);
             Sldr.Cleanup();
             Logger.WriteMinorEvent("shutting down logger, about to dispose project context");
             // Force the log file to include the minor events.  I don't know why this isn't the default. (BL-16290)
@@ -1556,9 +1588,11 @@ namespace Bloom
                 logPath = Path.Combine(Path.GetTempPath(), "SIL", "Bloom", "Log.txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logPath));
             RobustFile.WriteAllText(logPath, logText);
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.LogWritten);
 
             if (_projectContext != null)
                 _projectContext.Dispose();
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.ProjectContextDisposed);
         }
 
         /// <summary>
@@ -2515,6 +2549,15 @@ namespace Bloom
 
         // Only the token owner may release it and run Bloom's global temp cleanup on exit.
         private static bool _ownsSingleInstanceToken;
+
+        /// <summary>
+        /// Whether this Bloom holds the single-instance token, which the channels deliberately share, so
+        /// that at most one Bloom is normally running. Published in the Doctor's session file: it is what
+        /// tells the Doctor which running Bloom is actually standing in the way of a restart, as against
+        /// the ones that bypassed the token (an --automation run) or never took it (a Ctrl-held launch
+        /// that was not first).
+        /// </summary>
+        internal static bool OwnsSingleInstanceToken => _ownsSingleInstanceToken;
 
         /// <summary>
         /// Decides whether a Sentry event is the benign "unobserved Task socket/IO abort" noise

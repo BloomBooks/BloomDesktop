@@ -280,7 +280,9 @@ describe("aiImageEditorOverlay: the live page is NOT saved after a commit", () =
         commitAndReplyFromHost(postFromEditor, false);
 
         // The overlay stays up so the user can read the error about the slot that failed.
-        expect(document.getElementById("ai-image-editor-overlay")).not.toBeNull();
+        expect(
+            document.getElementById("ai-image-editor-overlay"),
+        ).not.toBeNull();
         expect(postThatMightNavigate).not.toHaveBeenCalled();
 
         closeButton.click();

@@ -170,6 +170,12 @@
     build here does NOT go to the same directory as the VS build. -->
     <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
     <Exec Command='dotnet build "$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <!-- The Freeze Doctor, which ships inside Bloom's installer rather than having one of its own. It
+    has to be named here, exactly like WebView2PdfMaker above, BECAUSE this target builds project by
+    project rather than building the solution: being in Bloom.sln is not enough. Leaving it out would
+    have failed silently and expensively - the signing step below has ContinueOnError, so an unbuilt
+    Doctor would simply have been missing from the installer with nothing going red anywhere. -->
+    <Exec Command='dotnet build "$(RootDir)\src\BloomFreezeDoctor\BloomFreezeDoctor.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
   <!--If the number of directories between output and OutDir changes, we need a corresponding
     change in BloomFileLocatorTests.kRelativePathToBrowserFolder and XMatterHelperTests.OneTimeSetup-->
     <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\Tests\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
@@ -507,6 +513,11 @@
     <!-- Sign x64 executables -->
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <!-- The Freeze Doctor. Signed here rather than by an installer of its own, because it no longer has
+         one: it ships inside Bloom's installer and is switched on from the debug menu. An unsigned exe
+         inside a signed installer is what behavioural antivirus objects to, and it matters more than
+         usual for this one, which opens handles to other processes and writes memory dumps. -->
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\BloomFreezeDoctor.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <!-- restore to Sign ARM64 executables
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>

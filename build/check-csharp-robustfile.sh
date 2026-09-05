@@ -35,6 +35,12 @@ if [ -s $filesToCheck ]; then
     case "$file" in
       src/BloomExe/RobustFileIO.cs) continue;;
       src/BloomTests/*) continue;;
+      # The Freeze Doctor's TEST project only, matching the src/BloomTests carve-out above for the same
+      # reason. Its production code is NOT exempt: it was converted to RobustFile/RobustIO rather than
+      # excused, because a diagnostic tool writing to a user's disk has no more business losing a file to
+      # a passing virus scanner than Bloom does - and the first thing the conversion found was a real
+      # one, an outbox rename that failed about one run in three and threw away a gathered report.
+      src/BloomFreezeDoctor.Tests/*) continue;;
     esac
     if awk '
       # Flag ordinary banned file APIs directly.
