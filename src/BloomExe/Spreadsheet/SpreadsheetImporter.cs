@@ -1774,18 +1774,6 @@ namespace Bloom.Spreadsheet
                 return;
             }
 
-            if (tableDetails == null)
-            {
-                // The column is there but this row's cell is empty or not valid JSON (again,
-                // something an edit did to the spreadsheet). Building a table from nothing
-                // would replace the book's table with an empty one, so leave it alone.
-                Warn(
-                    $"Row {CurrentRowIndexForMessages} is a {InternalSpreadsheet.TableRowLabel} row, but Bloom could not read its {InternalSpreadsheet.DetailsColumnLabel} cell, so the book's table was left alone."
-                );
-                _currentRowIndex = lastRowIndex;
-                return;
-            }
-
             // Check first that advancing could actually find a table. Bloom has no default
             // page that holds one, and it must not invent a table (that would be a table of
             // a shape nothing in the spreadsheet asked for), so if there is none to be had
@@ -1813,6 +1801,19 @@ namespace Bloom.Spreadsheet
             }
 
             var oldTable = _blocksOnPage[tableIndex][_blockOnPageIndexes[tableIndex]];
+            if (tableDetails == null)
+            {
+                // The column is there but this row's cell is empty or not valid JSON (again,
+                // something an edit did to the spreadsheet). Building a table from nothing
+                // would replace the book's table with an empty one, so leave it alone. This
+                // comes after the advance above so that the book's table still counts as
+                // used up: the next [table] row belongs to the table after it.
+                Warn(
+                    $"Row {CurrentRowIndexForMessages} is a {InternalSpreadsheet.TableRowLabel} row, but Bloom could not read its {InternalSpreadsheet.DetailsColumnLabel} cell, so the book's table was left alone."
+                );
+                _currentRowIndex = lastRowIndex;
+                return;
+            }
             var newTable = BuildTableFromDetails(tableDetails);
             oldTable.ParentNode.ReplaceChild(newTable, oldTable);
 

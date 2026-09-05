@@ -340,14 +340,16 @@ export function SetupTableEditing(container: HTMLElement): void {
     // it: until it arrives the answer is "no", which is the safe way round, since
     // it withholds chrome rather than showing chrome that then has to disappear.
     void refreshTableFeatureStatus();
-    container.addEventListener(
+    // Both listeners go on the document, not on `container`. SetupElements (and
+    // so this) runs again on a subtree whenever a canvas element is added, and a
+    // listener on that subtree would hear a cell's event a second time on its
+    // way up to the document, wiring the cell twice. Adding the same function to
+    // the document again is a no-op. (The cell-content event is dispatched on
+    // the cell and bubbles; the history event is dispatched on the document.)
+    container.ownerDocument.addEventListener(
         kTableCellContentChangedEvent,
         onTableCellContentChanged,
     );
-    // The library dispatches this one on the document rather than on the table,
-    // so it is the document that has to listen. Adding the same function again
-    // is a no-op, which matters because SetupElements (and so this) runs again
-    // on a subtree whenever a canvas element is added.
     container.ownerDocument.addEventListener(
         kTableHistoryUpdatedEvent,
         onTableHistoryUpdated,
@@ -416,7 +418,7 @@ export function AttachNewTableThatFillsItsSpace(tableDiv: HTMLElement): void {
  * Called from removeEditingDebris in bloomEditing.ts before navigating away.
  */
 export function TeardownTableEditing(container: HTMLElement): void {
-    container.removeEventListener(
+    container.ownerDocument.removeEventListener(
         kTableCellContentChangedEvent,
         onTableCellContentChanged,
     );

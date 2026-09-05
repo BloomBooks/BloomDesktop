@@ -210,7 +210,10 @@ export class CanvasElementPointerInteractions {
         // in tableEditing.ts). Not handing the press over leaves it to the ordinary
         // canvas element handling below, which is what a press anywhere else in a
         // frozen table does.
+        // Only the main button starts a resize: a right-click near a boundary is
+        // asking for a menu, and taking the press away from it would show none.
         if (
+            event.button === 0 &&
             tablesMayBeRestructured() &&
             dragToResize.beginResizeAtPoint(event)
         ) {

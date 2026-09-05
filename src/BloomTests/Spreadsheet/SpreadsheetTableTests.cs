@@ -964,6 +964,50 @@ namespace BloomTests.Spreadsheet
         }
 
         [Test]
+        public async Task UnreadableDetailsUseUpTheBooksTableSoLaterTablesLandRight()
+        {
+            // Two pages, a table on each. The first [table] row's details are spoiled; the
+            // second's are fine and carry an edit. The first table must be left alone and
+            // the second must still receive its own edit, not be skipped or land on the
+            // first page's table.
+            var bookHtml = MakeTableOnlyBook("Alpha", "Beta");
+            var sheet = ExportBook(bookHtml);
+            var tableRows = sheet
+                .ContentRows.Where(r => r.MetadataKey == InternalSpreadsheet.TableRowLabel)
+                .ToList();
+            Assert.That(tableRows.Count, Is.EqualTo(2), "sanity: one [table] row per page");
+            tableRows[0].SetCell(InternalSpreadsheet.DetailsColumnLabel, "");
+            var betaCellRow = sheet.ContentRows.First(r =>
+                r.MetadataKey == InternalSpreadsheet.TableCellRowLabel
+                && r.GetCell("[es]").Content.Contains("Beta uno")
+            );
+            betaCellRow.SetCell(sheet.GetRequiredColumnForLang("es"), "<p>Beta edited</p>");
+
+            var target = new HtmlDom(bookHtml, true);
+            var warnings = await RoundTripThroughFileAndImportAsync(sheet, target);
+            Assert.That(warnings, Has.Some.Contains("could not read its [details] cell"));
+
+            var pages = target
+                .GetPageElements()
+                .Where(p => p.GetAttribute("class").Contains("numberedPage"))
+                .ToList();
+            Assert.That(pages.Count, Is.EqualTo(2), "no page was added");
+            var firstTable = TopLevelTablesOfPage(pages[0]).Single();
+            var secondTable = TopLevelTablesOfPage(pages[1]).Single();
+            Assert.That(
+                TextOfCell(SpreadsheetTables.CellsOf(firstTable)[0], "es"),
+                Is.EqualTo("Alpha uno"),
+                "the table with the spoiled row is untouched"
+            );
+            Assert.That(
+                TextOfCell(SpreadsheetTables.CellsOf(secondTable)[0], "es"),
+                Is.EqualTo("Beta edited"),
+                "the second table still got its own rows"
+            );
+            Assert.That(secondTable.GetAttribute("data-column-widths"), Is.EqualTo("80px,fill"));
+        }
+
+        [Test]
         public async Task TableOnlyPageImportsOntoAnAddedPage()
         {
             // The target book runs out of pages part way through: the second table has no

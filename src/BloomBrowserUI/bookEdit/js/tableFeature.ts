@@ -31,13 +31,23 @@ export function tablesMayBeRestructured(): boolean {
     return tablesMayBeRestructuredOnThisPage;
 }
 
+let pendingRefresh: Promise<void> | undefined;
+
 /**
  * Fetch the `table` feature's status and remember it for the synchronous callers
- * above. Called from SetupTableEditing on every page load.
+ * above. Called from SetupTableEditing, which runs on every page load and again
+ * whenever a canvas element is added; the answer cannot change within one page
+ * load (this module lives in the page iframe), so the server is asked once and
+ * the same promise is handed back after that.
  */
-export async function refreshTableFeatureStatus(): Promise<void> {
-    const status = await getFeatureStatusAsync("table");
-    tablesMayBeRestructuredOnThisPage = !!status?.enabled && !!status?.visible;
+export function refreshTableFeatureStatus(): Promise<void> {
+    if (!pendingRefresh) {
+        pendingRefresh = getFeatureStatusAsync("table").then((status) => {
+            tablesMayBeRestructuredOnThisPage =
+                !!status?.enabled && !!status?.visible;
+        });
+    }
+    return pendingRefresh;
 }
 
 /**
