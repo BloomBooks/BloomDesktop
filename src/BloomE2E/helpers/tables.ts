@@ -907,6 +907,44 @@ export async function rightClickCellExpectingNoCellMenu(
     return getOpenMenus(page);
 }
 
+/**
+ * Right-click the text of a cell, where the Cell menu is not expected, and report which menus
+ * came up.
+ *
+ * The press lands on the paragraph itself rather than in the middle of the cell, because Bloom's
+ * text context menu claims a right-click on a paragraph and a cell is usually much taller than
+ * the line of text in it. That is the same rule an ordinary text box follows: the blank part of
+ * a text box raises no text menu either.
+ */
+export async function rightClickCellTextExpectingNoCellMenu(
+    page: Page,
+    row: number,
+    column: number,
+    languageTag: string,
+    tableIndex = 0,
+): Promise<IOpenMenus> {
+    const paragraph = (
+        await cellTextBox(page, row, column, languageTag, tableIndex)
+    )
+        .locator("p")
+        .first();
+    const box = await requireBox(
+        paragraph,
+        `the text of the cell at row ${row}, column ${column}`,
+    );
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.click(x, y, { button: "right" });
+    // Long enough for a menu raised by this click to have rendered, whichever menu it is.
+    await editablePageFrame(page)
+        .locator("[data-btable-menu]:visible, .MuiMenu-list:visible")
+        .first()
+        .waitFor({ state: "visible", timeout: 2000 })
+        .catch(() => undefined);
+    return getOpenMenus(page);
+}
+
 /** Press the right mouse button in the middle of a cell. Waits for nothing. */
 async function pressRightOnCell(
     page: Page,

@@ -23,6 +23,7 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => ({
     get: () => {},
 }));
 
+import { findParagraphForTextContextMenu } from "../textContextMenu/noIndent";
 import { AttachNewTable, SetupTableEditing } from "./tableEditing";
 import { setTablesMayBeRestructuredForTests } from "./tableFeature";
 
@@ -155,10 +156,24 @@ describe("a table where tables may not be made", () => {
         expect(tablePill()).not.toBeNull();
         expect(tablePill()!.style.display).toBe("none");
 
+        // Bloom's own text context menu listens on the document, in the bubble phase, so
+        // what it needs from the library is that the right-click reach it at all. Count the
+        // events a listener like that one sees.
+        let contextMenuEventsSeen = 0;
+        const countContextMenus = () => contextMenuEventsSeen++;
+        document.addEventListener("contextmenu", countContextMenus);
         rightClick(editable);
-        // No Cell menu, so no content type, no merge and no split. The right-click
-        // goes on to Bloom's own text context menu, which is not the library's DOM.
+        document.removeEventListener("contextmenu", countContextMenus);
+
+        // No Cell menu, so no content type, no merge and no split.
         expect(menuPopup()).toBeNull();
+
+        // Instead the right-click is left to Bloom, which puts up its own text context
+        // menu: the library must not stop the event on its way to the document, and the
+        // paragraph must be one that menu claims.
+        expect(contextMenuEventsSeen).toBe(1);
+        const paragraph = editable.querySelector("p")!;
+        expect(findParagraphForTextContextMenu(paragraph)).toBe(paragraph);
 
         // The point of gating the chrome rather than skipping attachTable: the cells
         // are still Bloom text boxes the user can work in.

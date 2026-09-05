@@ -166,7 +166,7 @@ export class CanvasElementPointerInteractions {
     };
 
     /**
-     * Whether a press landed in a table, which owns its own right-click menu.
+     * Whether a press landed in a table whose own right-click menu owns it.
      *
      * event.target cannot answer this: the Comical canvas covers the table, so a
      * press on a cell reports the canvas as its target. Two ways to be in a table:
@@ -177,7 +177,13 @@ export class CanvasElementPointerInteractions {
         bloomCanvas: HTMLElement,
         bubble: Bubble | undefined,
     ): boolean {
-        if (bloomCanvas.closest(".bloom-cell")) return true;
+        // A press on the picture of a picture cell. The table's Cell menu owns that press,
+        // except in a book whose tables are frozen: there the library opens no Cell menu (see
+        // installHostHooks in tableEditing.ts), so the press should reach the ordinary canvas
+        // element handling below and open the picture's own menu, which is what the same
+        // picture outside a table gets.
+        if (bloomCanvas.closest(".bloom-cell"))
+            return tablesMayBeRestructured();
         return (
             !!bubble &&
             bubble.content.getElementsByClassName("bloom-table").length > 0

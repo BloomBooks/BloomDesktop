@@ -73,7 +73,6 @@ import {
 import {
     closeSubscriptionDialog,
     expectNoSubscriptionDialog,
-    isSubscriptionDialogShowing,
     waitForSubscriptionDialog,
 } from "../helpers/requiresSubscription";
 import {
@@ -88,6 +87,7 @@ import {
     getTableShape,
     measureChrome,
     rightClickCellExpectingNoCellMenu,
+    rightClickCellTextExpectingNoCellMenu,
     selectTableElement,
     setCellContentType,
     typeInCell,
@@ -333,19 +333,19 @@ test.describe("a book with a table where tables cannot be made", () => {
         });
 
         await step(
-            "Check right-clicking a cell opens no Cell menu",
+            "Check right-clicking a text cell offers Bloom's text menu, not the Cell menu",
             async () => {
-                const menus = await rightClickCellExpectingNoCellMenu(
+                const menus = await rightClickCellTextExpectingNoCellMenu(
                     belowPro,
                     0,
                     0,
+                    "en",
                 );
                 expect(
                     menus.cell,
                     "The Cell menu is entirely structural (content type, merge, insert), so below " +
                         "Pro it should not open.",
                 ).toBe(false);
-                // What the person should get instead is the subject of the fixme below.
                 expect(
                     {
                         row: menus.row,
@@ -355,8 +355,40 @@ test.describe("a book with a table where tables cannot be made", () => {
                     "None of the table's other menus should open either; every command in them " +
                         "restructures the table.",
                 ).toEqual({ row: false, column: false, table: false });
-                // Whatever the right-click did put up stays up, and a MUI menu's backdrop takes
-                // every press aimed at the page underneath it.
+                // The cell holds an ordinary Bloom text box, so with the Cell menu withheld the
+                // right-click should reach the menu that text gets anywhere else. See
+                // findParagraphForTextContextMenu in noIndent.ts, which has to let a paragraph
+                // inside a cell through even though a table on a Canvas page sits inside a canvas
+                // element.
+                expect(
+                    menus.bloomText,
+                    "A text cell should still offer Bloom's own text context menu, so that the " +
+                        "person who received the book is not left with no menu at all.",
+                ).toBe(true);
+                // The menu stays up until something takes it down, and a MUI menu's backdrop
+                // takes every press aimed at the page underneath it.
+                await closeAnyMenu(belowPro);
+            },
+        );
+
+        await step(
+            "Check right-clicking a picture cell offers the picture's own menu",
+            async () => {
+                // The other half of the same rule: a cell's content keeps the menu that content
+                // has anywhere else. A picture cell holds a bloom-canvas, so the press should
+                // reach the canvas element handling that any picture gets, rather than being
+                // left to a Cell menu that this tier never opens. See isPressInsideTable in
+                // CanvasElementPointerInteractions.ts.
+                const menus = await rightClickCellExpectingNoCellMenu(
+                    belowPro,
+                    1,
+                    0,
+                );
+                expect(
+                    { cell: menus.cell, canvasElement: menus.canvasElement },
+                    "A picture in a cell should offer the menu a picture offers, and not the " +
+                        "Cell menu.",
+                ).toEqual({ cell: false, canvasElement: true });
                 await closeAnyMenu(belowPro);
             },
         );
@@ -527,46 +559,9 @@ test.describe("a book with a table where tables cannot be made", () => {
         },
     );
 
-    // A right-click in a text cell of a frozen table offers no menu at all, so the person who
-    // received the book has no cut, copy or paste there. Three pieces of code meet and each one
-    // steps aside: the library's own contextmenu handler calls preventDefault and then asks
-    // Bloom's cell-menu hook, which answers "the host has this" (that is how the Cell menu is
-    // withheld), so the library opens nothing; Bloom's text menu then bails, because
-    // findParagraphForTextContextMenu refuses any paragraph inside a canvas element, and a table
-    // on a Canvas page is inside one; and the canvas element's own menu opens only from the "..."
-    // button. Expected: the right-click offers Bloom's text menu, as it does for a table in a
-    // page section, where the paragraph is not inside a canvas element. Marked fixme rather than
-    // weakened. Nothing about the gating is wrong here; the fallback is missing.
-    test.fixme(
-        "below Pro, right-clicking a cell offers Bloom's own text menu",
-        async ({ bloomApp }) => {
-            const page = bloomApp.page;
-            const menus = await rightClickCellExpectingNoCellMenu(page, 0, 0);
-            expect(
-                { cell: menus.cell, bloomText: menus.bloomText },
-                "With the Cell menu withheld, the right-click should reach Bloom's own text menu.",
-            ).toEqual({ cell: false, bloomText: true });
-        },
-    );
-
-    // Pasting a table below Pro cannot be driven, and the guard the plan asks for is not there
-    // either. Nothing in Bloom copies a table as a canvas element: the element's own menu offers
-    // only Duplicate and Delete, and the only Copy Table command lives on the table pill, which
-    // this tier has already taken away. On the paste side, CanvasElementClipboard handles text and
-    // images and asks about the `canvas` feature, never the `table` one, so a table on the
-    // clipboard has no path in and no gate of its own. Expected: a copied table on the clipboard,
-    // pasted below Pro, opens the dialog that names the tier tables need. Marked fixme rather than
-    // weakened, because the assertion is the product decision.
-    test.fixme(
-        "below Pro, pasting a copied table opens the subscription dialog",
-        async ({ bloomApp }) => {
-            const page = bloomApp.page;
-            expect(
-                await isSubscriptionDialogShowing(page),
-                "There is no way to put a table on the clipboard, so this test cannot be written.",
-            ).toBe(true);
-        },
-    );
+    // The plan's remaining case, pasting a copied table below Pro, is not reachable and is
+    // not meant to be: copying a table is itself a Pro command (the table pill's Copy Table),
+    // so this tier can never get a table onto the clipboard in the first place.
 
     test("below Pro, the original book cannot be published at all", async ({
         bloomApp,
