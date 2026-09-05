@@ -41,7 +41,7 @@ function settingsFrameWindow() {
     )).contentWindow;
 }
 
-let setupDialogElement: JQuery;
+let setupDialogElement: JQuery | undefined;
 
 export function showSetupDialog(showWhat) {
     // The dialog is useless without the collection's reader settings: as soon as its
@@ -98,7 +98,7 @@ function beginShowSetupDialog(showWhat) {
                             //nb: the element pointed to here by setupDialogElement is the same as "this"
                             //however, the jquery that you'd get by saying $(this) is *not* the same one as
                             //that stored in setupDialogElement. Ref BL-3331.
-                            setupDialogElement.dialog("close");
+                            setupDialogElement!.dialog("close");
                         },
                     },
                 };
@@ -139,7 +139,8 @@ function beginShowSetupDialog(showWhat) {
                         close: () => {
                             // $(this).remove(); uses the wrong document (see https://silbloom.myjetbrains.com/youtrack/issue/BL-3962)
                             // the following derives from http://stackoverflow.com/questions/2864740/jquery-how-to-completely-remove-a-dialog-on-close
-                            setupDialogElement.dialog("destroy").remove();
+                            setupDialogElement!.dialog("destroy").remove();
+                            setupDialogElement = undefined;
                             postBoolean("editView/setModalState", false);
                         },
                         open: () => {
@@ -217,7 +218,16 @@ export function initializeReaderSetupDialog() {
 }
 
 export function closeSetupDialog() {
-    setupDialogElement.dialog("close");
+    if (setupDialogElement) {
+        setupDialogElement.dialog("close");
+    } else {
+        // NOTE for whoever converts the Leveled Reader's setup dialog to React (BL-16607
+        // converted only the Decodable side): this "no jQuery dialog, so it must be the
+        // decodable React one" reasoning stops being true the moment there are two React
+        // reader dialogs. It will need to dispatch on which one is actually open rather than
+        // assuming. Nothing else here cares which dialog it is, so it is the one spot to fix.
+        getWorkspaceBundleExports().closeDecodableReaderSetupDialog();
+    }
 }
 
 // Get replacement settings dialog content when editing settings is forbidden.

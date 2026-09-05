@@ -16,9 +16,15 @@ import { setActiveDragActivityTab } from "./games/GameTool";
 import { registerAllToolboxTools } from "./registerAllToolboxTools";
 // Explicit imports needed so that these symbols are in local scope for the window.toolboxBundle object
 import {
+    classifySampleTextFiles,
+    getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
+    addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
     makeLetterWordList,
+    removeSampleTextFilesChangedListener,
+    removeWordListChangedListener,
 } from "./readers/readerTools";
 import { activateLongPressFor } from "../js/bloomEditing";
 import { IAudioRecorder } from "./talkingBook/IAudioRecorder";
@@ -26,10 +32,34 @@ import { theOneAudioRecorder } from "./talkingBook/audioRecording";
 import { renderToolboxRoot } from "./ToolboxRoot";
 
 export interface IToolboxFrameExports {
+    beginSaveChangedSettings(
+        settings: import("./readers/ReaderSettings").ReaderSettings,
+        previousMoreWords: string,
+        previousLetters: string,
+        previousUseAllowedWords?: number,
+    ): Promise<void>;
+
     addWordListChangedListener(
         listenerNameAndContext: string,
         callback: () => void,
     ): void;
+
+    removeWordListChangedListener(listenerNameAndContext: string): void;
+
+    getDecodableStageMatchingWords(knownGpcs: string[]): string[];
+
+    getSynphonyAlwaysMatchSymbols(): string[];
+
+    classifySampleTextFiles(
+        paths: string[],
+    ): { path: string; readable: boolean; hasExtension: boolean }[];
+
+    addSampleTextFilesChangedListener(
+        listenerNameAndContext: string,
+        callback: () => void,
+    ): void;
+
+    removeSampleTextFilesChangedListener(listenerNameAndContext: string): void;
 
     activateLongPressFor(jQuerySetOfMatchedElements): void;
 
@@ -57,9 +87,15 @@ export {
     closeSetupDialog,
 } from "./readers/readerSetup/readerSetupDialog";
 export {
+    classifySampleTextFiles,
+    getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
+    addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
     makeLetterWordList,
+    removeSampleTextFilesChangedListener,
+    removeWordListChangedListener,
 } from "./readers/readerTools";
 export { activateLongPressFor } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.
@@ -126,9 +162,15 @@ const toolboxBundle: ToolboxBundleApi = {
     showSetupDialog,
     initializeReaderSetupDialog,
     closeSetupDialog,
+    classifySampleTextFiles,
+    getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
+    addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
     makeLetterWordList,
+    removeSampleTextFilesChangedListener,
+    removeWordListChangedListener,
     activateLongPressFor,
     TalkingBookTool,
     canUndo,
