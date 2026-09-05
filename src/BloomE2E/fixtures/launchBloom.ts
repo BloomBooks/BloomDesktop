@@ -241,6 +241,16 @@ function isBuildOutput(fileName: string): boolean {
     );
 }
 
+/** The newest of several newestFileUnder results, or undefined when none found a file. */
+function newestOf(
+    ...found: ({ path: string; mtimeMs: number } | undefined)[]
+): { path: string; mtimeMs: number } | undefined {
+    return found.reduce(
+        (best, f) => (f && (!best || f.mtimeMs > best.mtimeMs) ? f : best),
+        undefined,
+    );
+}
+
 let freshnessChecked = false;
 
 /**
@@ -267,10 +277,26 @@ function assertBuildIsNotStale(exe: string): void {
         // Only what the build writes. A running Bloom writes into this folder too (a template
         // book's history.db, for one), and such a file would make a stale bundle look fresh.
         const bundle = newestFileUnder(bundleDir, new Set(), isBuildOutput);
-        const source = newestFileUnder(
-            Path.join(repoRoot, "src", "BloomBrowserUI"),
-            FOLDERS_THAT_ARE_NOT_SOURCE,
-            isBuiltSource,
+        // The build reads three trees (compileMarkdownPlugin in vite.config.mts): the front end,
+        // the templates' ReadMe files, and the Markdown at the top of DistFiles.
+        const source = newestOf(
+            newestFileUnder(
+                Path.join(repoRoot, "src", "BloomBrowserUI"),
+                FOLDERS_THAT_ARE_NOT_SOURCE,
+                isBuiltSource,
+            ),
+            newestFileUnder(
+                Path.join(repoRoot, "src", "content", "templates"),
+                new Set(),
+                (relativePath) => /(^|\/)readme[^/]*\.md$/i.test(relativePath),
+            ),
+            newestFileUnder(
+                Path.join(repoRoot, "DistFiles"),
+                new Set(),
+                (relativePath) =>
+                    !relativePath.includes("/") &&
+                    relativePath.toLowerCase().endsWith(".md"),
+            ),
         );
         if (!bundle) {
             complaints.push(
