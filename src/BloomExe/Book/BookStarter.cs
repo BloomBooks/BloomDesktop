@@ -70,7 +70,9 @@ namespace Bloom.Book
             string initialBookName = GetInitialName(parentCollectionPath, newBookInstanceId);
             var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
             CopyFolder(sourceBookFolder, newBookFolder);
+            Utils.PerfTrace.Mark("BookStarter: CopyFolder done");
             BookStorage.RemoveLocalOnlyFiles(newBookFolder);
+            Utils.PerfTrace.Mark("BookStarter: RemoveLocalOnlyFiles done");
             //if something bad happens from here on out, we need to delete that folder we just made
             try
             {
@@ -91,6 +93,7 @@ namespace Bloom.Book
                 }
                 var newNamedFile = Path.Combine(newBookFolder, initialBookName + ".htm");
                 RobustFile.Move(oldNamedFile, newNamedFile);
+                Utils.PerfTrace.Mark("BookStarter: html rename done");
 
                 //the destination may change here...
                 newBookFolder = SetupNewDocumentContents(
@@ -98,6 +101,7 @@ namespace Bloom.Book
                     newBookFolder,
                     newBookInstanceId
                 );
+                Utils.PerfTrace.Mark("BookStarter: SetupNewDocumentContents done");
 
                 if (OnNextRunSimulateFailureMakingBook)
                     throw new ApplicationException("Simulated failure for unit test");
@@ -186,6 +190,7 @@ namespace Bloom.Book
             // we already made one.
             bookInfo.AppearanceSettings.AllowLaterInstance(initialPath);
             var storage = _bookStorageFactory(bookInfo);
+            Utils.PerfTrace.Mark("BookStarter.SetupNewDocumentContents: storage made");
 
             bool usingTemplate = bookInfo.IsSuitableForMakingShells;
             bool makingTemplate = bookInfo.IsSuitableForMakingTemplates;
@@ -284,6 +289,7 @@ namespace Bloom.Book
                 BookCopyrightAndLicense.RemoveLicense(storage);
 
             InjectXMatter(initialPath, storage, sizeAndOrientation);
+            Utils.PerfTrace.Mark("BookStarter.SetupNewDocumentContents: InjectXMatter done");
 
             // Restore bloom-customLayout to any pages that had it before xmatter replacement.
             XMatterHelper.RestoreCustomLayoutClasses(storage.Dom, customLayoutIds);
@@ -333,12 +339,16 @@ namespace Bloom.Book
                 SetupPage(div, bookData);
             }
 
+            Utils.PerfTrace.Mark("BookStarter.SetupNewDocumentContents: page loop done");
+
             ClearAwayDraftText(storage.Dom.RawDom);
 
             storage.UpdateSupportFiles();
+            Utils.PerfTrace.Mark("BookStarter.SetupNewDocumentContents: UpdateSupportFiles done");
             try
             {
                 storage.Save();
+                Utils.PerfTrace.Mark("BookStarter.SetupNewDocumentContents: Save done");
             }
             catch (UnauthorizedAccessException e)
             {

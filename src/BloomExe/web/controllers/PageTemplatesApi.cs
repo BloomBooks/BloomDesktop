@@ -77,6 +77,14 @@ namespace Bloom.web.controllers
         /// </summary>
         public void HandleTemplatesRequest(ApiRequest request)
         {
+            using (Bloom.Utils.PerfTrace.Measure("PageTemplatesApi.HandleTemplatesRequest"))
+            {
+                HandleTemplatesRequestInner(request);
+            }
+        }
+
+        private void HandleTemplatesRequestInner(ApiRequest request)
+        {
             dynamic addPageSettings = new ExpandoObject();
             addPageSettings.defaultPageToSelect =
                 _templateInsertionCommand.MostRecentInsertedTemplatePage == null
@@ -95,6 +103,9 @@ namespace Bloom.web.controllers
                     }
                 }
             }
+            Bloom.Utils.PerfTrace.Mark(
+                "PageTemplatesApi.HandleTemplatesRequest: FindTemplateBook/GetDefaultTemplatePageId done"
+            );
 
             var sizeAndOrientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation;
             addPageSettings.orientation =
@@ -102,8 +113,16 @@ namespace Bloom.web.controllers
                 : sizeAndOrientation.IsLandScape ? "landscape"
                 : "portrait";
 
-            addPageSettings.templateBooks = GetTemplateBookPathsForAddPage()
-                .Select(bookTemplatePath => GetPageGroup(bookTemplatePath));
+            var templateBookPaths = GetTemplateBookPathsForAddPage();
+            Bloom.Utils.PerfTrace.Mark(
+                "PageTemplatesApi.HandleTemplatesRequest: GetTemplateBookPathsForAddPage done, count="
+                    + templateBookPaths.Count
+            );
+            // Note: this Select is lazy; the work of GetPageGroup happens when JsonConvert below
+            // enumerates it, so the mark after serialization is the one that measures it.
+            addPageSettings.templateBooks = templateBookPaths.Select(bookTemplatePath =>
+                GetPageGroup(bookTemplatePath)
+            );
             // Never used on the javascript side.
             // addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor
 
@@ -113,6 +132,9 @@ namespace Bloom.web.controllers
             addPageSettings.forChooseLayout = ForPageLayout;
 
             var json = JsonConvert.SerializeObject(addPageSettings);
+            Bloom.Utils.PerfTrace.Mark(
+                "PageTemplatesApi.HandleTemplatesRequest: serialization (and thus GetPageGroup) done"
+            );
             request.ReplyWithJson(json);
         }
 
@@ -166,10 +188,26 @@ namespace Bloom.web.controllers
         /// </summary>
         public void HandleThumbnailRequest(ApiRequest request)
         {
+            using (
+                Bloom.Utils.PerfTrace.Measure(
+                    "PageTemplatesApi.HandleThumbnailRequest "
+                        + (Bloom.Utils.PerfTrace.Enabled ? request.Parameters["path"] ?? "" : "")
+                )
+            )
+            {
+                HandleThumbnailRequestInner(request);
+            }
+        }
+
+        private void HandleThumbnailRequestInner(ApiRequest request)
+        {
             var filePath = request.RequiredParam("path");
             var pathToExistingOrGeneratedThumbnail = FindOrGenerateThumbnail(
                 filePath,
                 out bool isGenerating
+            );
+            Bloom.Utils.PerfTrace.Mark(
+                "PageTemplatesApi.HandleThumbnailRequest: isGenerating=" + isGenerating
             );
             if (
                 string.IsNullOrEmpty(pathToExistingOrGeneratedThumbnail)

@@ -359,13 +359,27 @@ namespace Bloom.Api
             new[] { ".js", ".css", ".jpg", ".jpeg", ".svg", ".png", ".woff2" }
         );
 
+#if DEBUG
+        /// <summary>
+        /// True if the developer asked a debug build to cache the way a released build does, by
+        /// setting the environment variable BLOOM_DEBUG_ENABLE_CACHE to any value.
+        /// </summary>
+        private static readonly bool _debugCacheEnabled = !string.IsNullOrEmpty(
+            Environment.GetEnvironmentVariable("BLOOM_DEBUG_ENABLE_CACHE")
+        );
+#endif
+
         private bool ShouldCache(string path, string originalPath)
         {
             bool bypassCache = false;
 #if DEBUG
             // Developers never want caching...interferes with trying new versions of stuff.
             // So, obviously, you want to comment this line out to test caching.
-            bypassCache = true;
+            // Setting BLOOM_DEBUG_ENABLE_CACHE also turns caching back on, without editing this
+            // file. That is for performance measurements: a debug build otherwise reloads several
+            // megabytes of javascript on every page, which a released build does not, so timings
+            // taken without it do not tell us what a user experiences.
+            bypassCache = !_debugCacheEnabled;
 #endif
             if (bypassCache)
                 return false;

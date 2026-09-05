@@ -592,6 +592,18 @@ namespace Bloom.Api
         // NOTE: this method gets called on different threads!
         protected async Task<bool> ProcessRequestAsync(IRequestInfo request)
         {
+            if (!Utils.PerfTrace.Enabled)
+                return await ProcessRequestInnerAsync(request);
+            // Trace every request by the path with the query stripped off, so a run shows how many
+            // requests each page load makes and how long each one took.
+            using (Utils.PerfTrace.Measure("HTTP " + GetLocalPathWithoutQuery(request)))
+            {
+                return await ProcessRequestInnerAsync(request);
+            }
+        }
+
+        private async Task<bool> ProcessRequestInnerAsync(IRequestInfo request)
+        {
             if (
                 CurrentCollectionSettings != null
                 && CurrentCollectionSettings.SettingsFilePath != null

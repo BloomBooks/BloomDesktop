@@ -218,19 +218,22 @@ namespace Bloom.Api
             //nb: don't move this to after the raise command, as the selection changes
             // var checkinNotice = string.Format("Created book from '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay);
 
-            try
+            using (Bloom.Utils.PerfTrace.Measure("AppApi.HandleMakeFromSelectedBook"))
             {
-                _createFromSourceBookCommand.Raise(_bookSelection.CurrentSelection);
-            }
-            catch (Exception error)
-            {
-                SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-                    error,
-                    "Bloom could not add that book to the collection."
-                );
-            }
+                try
+                {
+                    _createFromSourceBookCommand.Raise(_bookSelection.CurrentSelection);
+                }
+                catch (Exception error)
+                {
+                    SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+                        error,
+                        "Bloom could not add that book to the collection."
+                    );
+                }
 
-            request.PostSucceeded();
+                request.PostSucceeded();
+            }
         }
 
         private void HandleMakeOrEditBook(ApiRequest request)

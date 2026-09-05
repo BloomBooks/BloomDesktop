@@ -517,6 +517,7 @@ public class EditingStateMachine
     private void Log(string message)
     {
         Debug.WriteLine("[EditingStateMachine] " + message);
+        Bloom.Utils.PerfTrace.Mark("[StateMachine] " + message);
     }
 
     private void LogTransition(string nextState, string nextPageId)

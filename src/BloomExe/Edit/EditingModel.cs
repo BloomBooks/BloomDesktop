@@ -738,13 +738,20 @@ namespace Bloom.Edit
         /// </summary>
         private void OnInsertPage(object page, PageInsertEventArgs e)
         {
+            Utils.PerfTrace.Mark("EditingModel.OnInsertPage entry");
             SaveThen(
                 () =>
                 { // there might be unsaved changes in the current page from before we clicked Add Page
+                    Utils.PerfTrace.Mark(
+                        "EditingModel.OnInsertPage: in SaveThen, before InsertPageAfter"
+                    );
                     var newPageId = CurrentBook.InsertPageAfter(
                         DeterminePageWhichWouldPrecedeNextInsertion(),
                         page as Page,
                         e.NumberToAdd
+                    );
+                    Utils.PerfTrace.Mark(
+                        "EditingModel.OnInsertPage: in SaveThen, after InsertPageAfter"
                     );
                     // We deliberately do NOT force the page-list iframe to reload here.
                     // InsertPageAfter raises pageListChangedEvent (deferred until idle), which
@@ -1007,6 +1014,14 @@ namespace Bloom.Edit
 
         public void OnBecomeVisible()
         {
+            using (Utils.PerfTrace.Measure("EditingModel.OnBecomeVisible"))
+            {
+                OnBecomeVisibleInner();
+            }
+        }
+
+        private void OnBecomeVisibleInner()
+        {
             _view.CheckFontAvailability();
             if (_currentlyDisplayedBook != CurrentBook)
             {
@@ -1028,11 +1043,13 @@ namespace Bloom.Edit
                 var contentLanguages = GetMultilingualContentLanguages();
                 CurrentBook.SetMultilingualContentLanguages(contentLanguages);
                 CurrentBook.PrepareForEditing();
+                Utils.PerfTrace.Mark("EditingModel.OnBecomeVisible: PrepareForEditing done");
             }
 
             _currentlyDisplayedBook = CurrentBook;
 
             var errors = _currentlyDisplayedBook.CheckForErrors();
+            Utils.PerfTrace.Mark("EditingModel.OnBecomeVisible: CheckForErrors done");
             if (!String.IsNullOrEmpty(errors))
             {
                 ErrorReport.NotifyUserOfProblem(errors);
@@ -1334,11 +1351,34 @@ namespace Bloom.Edit
 
         public static string GetEditPageIframeContents(Book.Book book, IPage page)
         {
-            var dom = GetEditPageIframeDom(book, page);
-            var transparencyModifications = HtmlDom.AddTransparencyParamToImages(dom);
+            using (Utils.PerfTrace.Measure("EditingModel.GetEditPageIframeContents"))
+            {
+                return GetEditPageIframeContentsInner(book, page);
+            }
+        }
+
+        private static string GetEditPageIframeContentsInner(Book.Book book, IPage page)
+        {
+            HtmlDom dom;
+            using (Utils.PerfTrace.Measure("GetEditPageIframeContents: GetEditPageIframeDom"))
+            {
+                dom = GetEditPageIframeDom(book, page);
+            }
+            List<(SafeXmlElement img, string src)> transparencyModifications;
+            using (
+                Utils.PerfTrace.Measure("GetEditPageIframeContents: AddTransparencyParamToImages")
+            )
+            {
+                transparencyModifications = HtmlDom.AddTransparencyParamToImages(dom);
+            }
             try
             {
-                return dom.getHtmlStringDisplayOnly();
+                using (
+                    Utils.PerfTrace.Measure("GetEditPageIframeContents: getHtmlStringDisplayOnly")
+                )
+                {
+                    return dom.getHtmlStringDisplayOnly();
+                }
             }
             finally
             {
@@ -1348,12 +1388,19 @@ namespace Bloom.Edit
 
         public static HtmlDom GetEditPageIframeDom(Book.Book book, IPage page)
         {
-            var dom = book.GetEditableHtmlDomForPage(page);
-            AddMissingCopyrightNoticeIfNeeded(book, dom);
-            SetupPageZoom(dom);
-            book.InsertFullBleedMarkup(dom.Body);
-            XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
-            InsertLabelAndLayoutTogglePane(dom);
+            HtmlDom dom;
+            using (Utils.PerfTrace.Measure("GetEditPageIframeDom: GetEditableHtmlDomForPage"))
+            {
+                dom = book.GetEditableHtmlDomForPage(page);
+            }
+            using (Utils.PerfTrace.Measure("GetEditPageIframeDom: rest"))
+            {
+                AddMissingCopyrightNoticeIfNeeded(book, dom);
+                SetupPageZoom(dom);
+                book.InsertFullBleedMarkup(dom.Body);
+                XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
+                InsertLabelAndLayoutTogglePane(dom);
+            }
             // We might want something like this? I think just for debugging?
             // dom.Title = InMemoryHtmlFile.GetTitleForProcessExplorer(source) + " (InMemoryHtmlFile)"; // makes this show up in Windows Process Explorer WebView2 listing
             return dom;
@@ -1428,8 +1475,13 @@ namespace Bloom.Edit
 
         public void SetupServerWithCurrentBookToolboxContents()
         {
-            _server.ToolboxContent = ToolboxView.MakeToolboxContent(_currentlyDisplayedBook);
-            _bookForToolboxContent = _currentlyDisplayedBook;
+            using (
+                Utils.PerfTrace.Measure("EditingModel.SetupServerWithCurrentBookToolboxContents")
+            )
+            {
+                _server.ToolboxContent = ToolboxView.MakeToolboxContent(_currentlyDisplayedBook);
+                _bookForToolboxContent = _currentlyDisplayedBook;
+            }
         }
 
         /// <summary>
@@ -1505,6 +1557,14 @@ namespace Bloom.Edit
         /// </summary>
         internal string GetUrlForPageListFile()
         {
+            using (Utils.PerfTrace.Measure("EditingModel.GetUrlForPageListFile"))
+            {
+                return GetUrlForPageListFileInner();
+            }
+        }
+
+        private string GetUrlForPageListFileInner()
+        {
             var useViteDev = ReactControl.ShouldUseViteDev();
             var frame = BloomFileLocator.GetBrowserFile(
                 false,
@@ -1513,9 +1573,13 @@ namespace Bloom.Edit
                 useViteDev ? "pageThumbnailList.vite-dev.html" : "pageThumbnailList.html"
             );
             var backColor = MiscUtils.ColorToHtmlCode(Palette.SidePanelBackgroundColor);
-            var _baseHtml = RobustFile
-                .ReadAllText(frame, Encoding.UTF8)
-                .Replace("DarkGray", backColor);
+            string _baseHtml;
+            using (Utils.PerfTrace.Measure("GetUrlForPageListFile: read pageThumbnailList.html"))
+            {
+                _baseHtml = RobustFile
+                    .ReadAllText(frame, Encoding.UTF8)
+                    .Replace("DarkGray", backColor);
+            }
             if (useViteDev)
                 _baseHtml = ReactControl.ReplaceViteDevOrigin(_baseHtml);
             var pages = CurrentBook.GetPages().ToList();
@@ -1543,17 +1607,28 @@ namespace Bloom.Edit
                 "data-pageSize=\"A5Portrait\"",
                 $"data-pageSize=\"{sizeClass}\""
             );
-            var pageListDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(htmlText));
+            HtmlDom pageListDom;
+            using (Utils.PerfTrace.Measure("GetUrlForPageListFile: GetXmlDomFromHtml"))
+            {
+                pageListDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(htmlText));
+            }
 
             if (SIL.PlatformUtilities.Platform.IsLinux)
                 OptimizeForLinux(pageListDom);
 
-            pageListDom = CurrentBook.GetHtmlDomForPageList(pageListDom);
-            var url = _view.Browser.CreateSimulatedFile(
-                pageListDom,
-                false,
-                InMemoryHtmlFileSource.Pagelist
-            );
+            using (Utils.PerfTrace.Measure("GetUrlForPageListFile: GetHtmlDomForPageList"))
+            {
+                pageListDom = CurrentBook.GetHtmlDomForPageList(pageListDom);
+            }
+            string url;
+            using (Utils.PerfTrace.Measure("GetUrlForPageListFile: CreateSimulatedFile"))
+            {
+                url = _view.Browser.CreateSimulatedFile(
+                    pageListDom,
+                    false,
+                    InMemoryHtmlFileSource.Pagelist
+                );
+            }
             // PossiblyEncoded because CreateSimulatedFile returns a localhost url whose path
             // components are already escaped; see the note on CreateFromPossiblyEncodedString.
             var urlPath = UrlPathString.CreateFromPossiblyEncodedString(url);
@@ -1786,6 +1861,7 @@ namespace Bloom.Edit
         // Send a request to the browser to send us the page content so we can save it.
         private void RequestBrowserToSave()
         {
+            Utils.PerfTrace.Mark("EditingModel.RequestBrowserToSave");
             Logger.WriteMinorEvent("EditingModel.RequestSave() starting");
             // show the saving message to the user
             _webSocketServer.SendString("pageThumbnailList", "saving", "");
@@ -1803,6 +1879,7 @@ namespace Bloom.Edit
         /// </summary>
         public void ReceivePageContent(string pageContentData)
         {
+            Utils.PerfTrace.Mark("EditingModel.ReceivePageContent");
             _stateMachine.ToSavedAndStripped(pageContentData);
         }
 
@@ -1814,6 +1891,14 @@ namespace Bloom.Edit
         /// to match whatever the browser has.
         /// </summary>
         public void UpdateBookDomFromBrowserPageContent(SafeXmlDocument docFromBrowser)
+        {
+            using (Utils.PerfTrace.Measure("EditingModel.UpdateBookDomFromBrowserPageContent"))
+            {
+                UpdateBookDomFromBrowserPageContentInner(docFromBrowser);
+            }
+        }
+
+        private void UpdateBookDomFromBrowserPageContentInner(SafeXmlDocument docFromBrowser)
         {
             //BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
             //this old code:
@@ -2231,6 +2316,7 @@ namespace Bloom.Edit
 
         public void HandlePageDomLoadedEvent(string pageId)
         {
+            Utils.PerfTrace.Mark("EditingModel.HandlePageDomLoadedEvent " + pageId);
             var nowEditing = _stateMachine.ToEditing(pageId);
             if (nowEditing)
             {

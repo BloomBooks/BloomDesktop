@@ -428,6 +428,14 @@ namespace Bloom.Edit
         /// </summary>
         public void GoToPage(IPage page, bool changingUiLanguage = false)
         {
+            using (Bloom.Utils.PerfTrace.Measure("EditingView.GoToPage"))
+            {
+                GoToPageInner(page, changingUiLanguage);
+            }
+        }
+
+        private void GoToPageInner(IPage page, bool changingUiLanguage)
+        {
             if (!_model.Visible)
             {
                 return;
@@ -465,15 +473,25 @@ namespace Bloom.Edit
         /// </summary>
         internal void StartNavigationToEditPage(IPage page)
         {
+            using (Bloom.Utils.PerfTrace.Measure("EditingView.StartNavigationToEditPage"))
+            {
+                StartNavigationToEditPageInner(page);
+            }
+        }
+
+        private void StartNavigationToEditPageInner(IPage page)
+        {
             _pageListView.SelectThumbnailWithoutSendingEvent(page);
             _pageListView.UpdateThumbnailAsync(page);
             _model.SaveStateForFullSaveDecision();
 
             var canReuseCurrentRoot = !_changingUiLanguage && !ShouldDoFullReload();
             var pageUrl = _model.GetUrlForCurrentPage();
-            var pageListUrl = _model.GetUrlForPageListFile();
             if (_model.AreToolboxAndOuterFrameCurrent() && canReuseCurrentRoot && !ThemeChanged)
             {
+                Bloom.Utils.PerfTrace.Mark(
+                    "EditingView.StartNavigationToEditPage: branch switchContentPage only"
+                );
                 // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
                 var urlFile = Path.GetFileName(pageUrl); // this actually works with a leading http://.
                 Logger.WriteEvent(
@@ -485,6 +503,9 @@ namespace Bloom.Edit
             }
             else if (canReuseCurrentRoot)
             {
+                Bloom.Utils.PerfTrace.Mark(
+                    "EditingView.StartNavigationToEditPage: branch reload toolbox+pagelist+page"
+                );
                 // The workspace root is always loaded (after initial startup),
                 // so don't navigate the top document again. Just initialize edit-frame content.
                 _model.SetupServerWithCurrentBookToolboxContents();
@@ -493,6 +514,12 @@ namespace Bloom.Edit
                     "(function(){ const toolbox = document.getElementById('toolbox'); if (toolbox && toolbox.contentWindow) { toolbox.contentWindow.location.reload(); } })();"
                 );
 
+                // Regenerating the page list costs about 140 ms, so only do it in this branch,
+                // which is the only one that navigates the page list iframe. Doing it in the
+                // branch above was not merely wasted: making a new simulated file disposes the
+                // previous one of the same kind, which is the very file the page list iframe is
+                // still showing there.
+                var pageListUrl = _model.GetUrlForPageListFile();
                 _mainBrowser.RunJavascriptFireAndForget(
                     "workspaceBundle.switchThumbnailPage('" + pageListUrl + "');"
                 );
@@ -502,6 +529,9 @@ namespace Bloom.Edit
             }
             else
             {
+                Bloom.Utils.PerfTrace.Mark(
+                    "EditingView.StartNavigationToEditPage: branch ReloadWorkspaceRootDocument"
+                );
                 // Set everything up and reload the workspace root document.
                 _model.SetupServerWithCurrentBookToolboxContents();
                 WorkspaceView.ReloadWorkspaceRootDocument();
@@ -548,6 +578,14 @@ namespace Bloom.Edit
         }
 
         public void UpdatePageList(bool emptyThumbnailCache)
+        {
+            using (Bloom.Utils.PerfTrace.Measure("EditingView.UpdatePageList"))
+            {
+                UpdatePageListInner(emptyThumbnailCache);
+            }
+        }
+
+        private void UpdatePageListInner(bool emptyThumbnailCache)
         {
             if (emptyThumbnailCache)
             {
@@ -1707,7 +1745,14 @@ namespace Bloom.Edit
                 return result;
             }
 
-            _model.SetupServerWithCurrentBookToolboxContents();
+            // StartNavigationToEditPage has usually just built the toolbox content for this same
+            // book, a few tens of milliseconds ago, and building it costs about 140 ms. Skip it when
+            // the server already holds content for the book we are displaying. We deliberately do
+            // NOT make SetupServerWithCurrentBookToolboxContents itself skip, because the two calls
+            // in StartNavigationToEditPage are how a UI language change and a theme change get fresh
+            // toolbox content for a book that has not changed.
+            if (!_model.AreToolboxAndOuterFrameCurrent())
+                _model.SetupServerWithCurrentBookToolboxContents();
             result.pageListSrc = _model.GetUrlForPageListFile();
             result.pageSrc = _model.GetUrlForCurrentPage();
             result.toolboxIsShowing = _model.CurrentBook.BookInfo.ToolboxIsOpen;

@@ -347,6 +347,16 @@ namespace Bloom.Api
             // count permanently high. Second, disposal covers every exit: previously an exception out of
             // Invoke other than ObjectDisposedException left the block reported forever.
             using (BloomServer._theOneInstance.ReportThreadBlocking())
+            using (
+                Utils.PerfTrace.Measure(
+                    "API wait for UI thread + handler "
+                        + (
+                            Utils.PerfTrace.Enabled
+                                ? request._requestInfo.LocalPathWithoutQuery
+                                : ""
+                        )
+                )
+            )
             {
                 try
                 {

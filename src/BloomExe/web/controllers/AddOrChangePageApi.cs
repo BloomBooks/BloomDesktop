@@ -44,8 +44,19 @@ namespace Bloom.web.controllers
 
         private void HandleAddPage(ApiRequest request)
         {
+            using (Bloom.Utils.PerfTrace.Measure("AddOrChangePageApi.HandleAddPage"))
+            {
+                HandleAddPageInner(request);
+            }
+        }
+
+        private void HandleAddPageInner(ApiRequest request)
+        {
             (IPage templatePage, bool dummy, int numberOfPagesToAdd, bool _) =
                 GetPageTemplateAndUserStyles(request);
+            Bloom.Utils.PerfTrace.Mark(
+                "AddOrChangePageApi.HandleAddPage: GetPageTemplateAndUserStyles done"
+            );
             if (templatePage == null || numberOfPagesToAdd < 1) // just in case
                 return;
             CopyVideoPlaceHolderIfNeeded(templatePage);
@@ -165,8 +176,16 @@ namespace Bloom.web.controllers
             var convertWholeBook = false;
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             var templateBookPath = HttpUtility.HtmlDecode(requestData.templateBookPath);
+            // Note: this makes a brand new Book (and so a new BookStorage, which parses the
+            // template's html) on every call; nothing here caches the template book.
+            Bloom.Utils.PerfTrace.Mark(
+                "AddOrChangePageApi.GetPageTemplateAndUserStyles: FindAndCreateTemplateBookByFullPath start"
+            );
             var templateBook = _sourceCollectionsList.FindAndCreateTemplateBookByFullPath(
                 templateBookPath
+            );
+            Bloom.Utils.PerfTrace.Mark(
+                "AddOrChangePageApi.GetPageTemplateAndUserStyles: FindAndCreateTemplateBookByFullPath done"
             );
             if (templateBook == null)
             {
@@ -175,6 +194,9 @@ namespace Bloom.web.controllers
             }
 
             var pageDictionary = templateBook.GetTemplatePagesIdDictionary();
+            Bloom.Utils.PerfTrace.Mark(
+                "AddOrChangePageApi.GetPageTemplateAndUserStyles: GetTemplatePagesIdDictionary done"
+            );
             if (!pageDictionary.TryGetValue(requestData.pageId, out IPage page))
             {
                 request.Failed(

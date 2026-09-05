@@ -536,10 +536,41 @@ namespace Bloom.web
             // problem if a dev is trying to run dev builds of two versions at once.
             if (!ApplicationUpdateSupport.IsDev)
                 return false;
-            // If still an option, see if localhost:5173 is running. This is quite slow when it is not.
-            // The original version used 400ms, which meant a 1200ms delay; but if it's going to succeed,
-            // it typically does so in 2ms. I compromised on 40.
-            return IsLocalPortOpen(kDefaultViteDevPort, 40);
+            return IsViteDevPortOpenRecently();
+        }
+
+        /// <summary>
+        /// How long we are willing to reuse the answer to "is the vite dev server listening?".
+        /// </summary>
+        private const int kVitePortProbeCacheMilliseconds = 5000;
+
+        private static bool _vitePortWasOpen;
+        private static DateTime _timeVitePortProbed = DateTime.MinValue;
+        private static readonly object _vitePortProbeLock = new object();
+
+        /// <summary>
+        /// True if localhost:5173 is listening, reusing the answer from the last few seconds if we
+        /// have one. When the dev server is NOT running the probe costs about 140 ms (three
+        /// connection attempts that each have to time out), and building one edit page asks three
+        /// separate times, so an uncached probe adds nearly half a second to every page navigation
+        /// in a dev build. The window is short so that a developer who starts the dev server after
+        /// Bloom is already up still gets it, without restarting Bloom.
+        /// </summary>
+        private static bool IsViteDevPortOpenRecently()
+        {
+            lock (_vitePortProbeLock)
+            {
+                if (
+                    (DateTime.Now - _timeVitePortProbed).TotalMilliseconds
+                    < kVitePortProbeCacheMilliseconds
+                )
+                    return _vitePortWasOpen;
+                // If it is going to succeed it typically does so in 2 ms; the original 400 ms
+                // timeout meant a 1200 ms delay when it was not there. 40 is the compromise.
+                _vitePortWasOpen = IsLocalPortOpen(kDefaultViteDevPort, 40);
+                _timeVitePortProbed = DateTime.Now;
+                return _vitePortWasOpen;
+            }
         }
 
         public static int GetViteDevPort()
@@ -555,7 +586,7 @@ namespace Bloom.web
                 return true;
             }
 
-            if (ApplicationUpdateSupport.IsDev && IsLocalPortOpen(kDefaultViteDevPort, 40))
+            if (ApplicationUpdateSupport.IsDev && IsViteDevPortOpenRecently())
             {
                 vitePort = kDefaultViteDevPort;
                 return true;

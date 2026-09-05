@@ -1197,6 +1197,7 @@ namespace Bloom.CollectionTab
                     sourceBook,
                     TheOneEditableCollection.PathToDirectory
                 );
+                Utils.PerfTrace.Mark("CollectionModel: _bookServer.CreateFromSourceBook done");
                 if (newBook == null)
                     return; //This can happen if there is a configuration dialog and the user clicks Cancel
 
@@ -1211,12 +1212,15 @@ namespace Bloom.CollectionTab
                 var sourceL1Title = sourceBook.BookInfo.GetTitleForLanguage(l1Lang);
                 newBook.PendingCreationSourceTitle = sourceL1Title;
                 newBook.BringBookUpToDate(new NullProgress(), false);
+                Utils.PerfTrace.Mark("CollectionModel: BringBookUpToDate done");
 
                 TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
+                Utils.PerfTrace.Mark("CollectionModel: AddBookInfo done");
 
                 if (_bookSelection != null)
                 {
                     _bookSelection.SelectBook(newBook, aboutToEdit: true);
+                    Utils.PerfTrace.Mark("CollectionModel: SelectBook done");
                 }
                 //enhance: would be nice to know if this is a new shell
                 if (!sourceBook.IsInEditableCollection)
@@ -1232,6 +1236,7 @@ namespace Bloom.CollectionTab
                     );
                 }
                 _editBookCommand.Raise(newBook);
+                Utils.PerfTrace.Mark("CollectionModel: _editBookCommand.Raise done");
             }
             catch (Exception e)
             {

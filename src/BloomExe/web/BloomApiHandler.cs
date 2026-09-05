@@ -420,6 +420,7 @@ namespace Bloom.Api
                 {
                     // Try to acquire lock
                     using (BloomServer._theOneInstance.ReportThreadBlocking())
+                    using (Utils.PerfTrace.Measure("API wait for sync lock " + localPathLc))
                     {
                         syncOn.Wait();
                         lockAcquired = true;

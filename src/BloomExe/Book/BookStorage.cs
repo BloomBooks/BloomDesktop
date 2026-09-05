@@ -277,7 +277,15 @@ namespace Bloom.Book
 
             ErrorAllowsReporting = true;
 
-            ExpensiveInitialization();
+            using (
+                Utils.PerfTrace.Measure(
+                    "BookStorage ctor "
+                        + (Utils.PerfTrace.Enabled ? Path.GetFileName(bookInfo.FolderPath) : "")
+                )
+            )
+            {
+                ExpensiveInitialization();
+            }
         }
 
         private string _cachedFolderPath;
@@ -662,10 +670,18 @@ namespace Bloom.Book
                 Dom.RemoveMetaElement("FeatureRequirement");
             }
 
-            string tempPath = SaveHtml(Dom);
-            ValidateSave(tempPath);
+            using (
+                Utils.PerfTrace.Measure(
+                    "BookStorage.Save "
+                        + (Utils.PerfTrace.Enabled ? Path.GetFileName(FolderPath) : "")
+                )
+            )
+            {
+                string tempPath = SaveHtml(Dom);
+                ValidateSave(tempPath);
 
-            BookInfo.Save();
+                BookInfo.Save();
+            }
         }
 
         // Common final stage of Save() and SaveForPageChanged(). Validates the temp file, reports any problems,

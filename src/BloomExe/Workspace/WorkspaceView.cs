@@ -293,7 +293,10 @@ namespace Bloom.Workspace
 
         internal void ReloadWorkspaceRootDocument()
         {
-            _workspaceReactControl?.Reload();
+            using (Utils.PerfTrace.Measure("WorkspaceView.ReloadWorkspaceRootDocument"))
+            {
+                _workspaceReactControl?.Reload();
+            }
         }
 
         /// <summary>
@@ -1529,6 +1532,19 @@ window.showWorkspaceInitializationFailure = function(message) {
         /// until any changes are saved if we are leaving the edit tab.
         /// </summary>
         private void ChangeTab(IBloomTabArea view)
+        {
+            using (
+                Utils.PerfTrace.Measure(
+                    "WorkspaceView.ChangeTab to "
+                        + (Utils.PerfTrace.Enabled ? GetWorkspaceTab(view).ToString() : "")
+                )
+            )
+            {
+                ChangeTabInner(view);
+            }
+        }
+
+        private void ChangeTabInner(IBloomTabArea view)
         {
             // Already on the desired tab: nothing to do.  And possible problems if we do do something.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8382.

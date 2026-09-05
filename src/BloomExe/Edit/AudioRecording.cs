@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Utils;
 using L10NSharp;
 using SIL.Code;
 using SIL.IO;
@@ -155,7 +156,15 @@ namespace Bloom.Edit
                 HandleCurrentRecordingDevice,
                 true
             );
-            apiHandler.RegisterEndpointHandler("audio/devices", HandleAudioDevices, true);
+            // This one runs off the UI thread and outside the server's global lock (BL perf work).
+            // Enumerating the system's recording devices takes about a second, and the talking book
+            // tool asks for it every time the toolbox loads, which is every time a book is opened in
+            // the Edit tab. On the UI thread that second stops the edit page from finishing its load,
+            // and under the global lock every other API request queues behind it. Nothing in this
+            // handler touches a Windows Forms control directly: the Recorder getter marshals
+            // CreateRecorder onto the shell form itself when it needs to, and device enumeration is a
+            // plain NAudio read.
+            apiHandler.RegisterEndpointHandler("audio/devices", HandleAudioDevices, false, false);
 
             apiHandler.RegisterEndpointHandler("audio/copyAudioFile", HandleCopyAudioFile, false);
             apiHandler.RegisterEndpointHandler("audio/stopMonitoring", HandleStopMonitoring, true);
@@ -242,10 +251,17 @@ namespace Bloom.Edit
             try
             {
                 var sb = new StringBuilder("{\"devices\":[");
-                sb.Append(
-                    string.Join(",", RecordingDevices.Select(d => "\"" + d.ProductName + "\""))
-                );
+                using (PerfTrace.Measure("AudioRecording.HandleAudioDevices: enumerate devices"))
+                {
+                    sb.Append(
+                        string.Join(",", RecordingDevices.Select(d => "\"" + d.ProductName + "\""))
+                    );
+                }
                 sb.Append("],\"productName\":");
+                using (PerfTrace.Measure("AudioRecording.HandleAudioDevices: get Recorder"))
+                {
+                    var unused = CurrentRecording.Recorder;
+                }
                 if (CurrentRecording.RecordingDevice != null)
                     sb.Append("\"" + CurrentRecording.RecordingDevice.ProductName + "\"");
                 else
@@ -288,9 +304,12 @@ namespace Bloom.Edit
             // See BL-13003.
             lock (_beginMonitoringLock)
             {
-                if (!RecordingDevices.Contains(RecordingDevice))
+                using (PerfTrace.Measure("AudioRecording.BeginMonitoring: check device in list"))
                 {
-                    RecordingDevice = RecordingDevices.FirstOrDefault();
+                    if (!RecordingDevices.Contains(RecordingDevice))
+                    {
+                        RecordingDevice = RecordingDevices.FirstOrDefault();
+                    }
                 }
                 if (
                     RecordingDevice != null
@@ -303,7 +322,10 @@ namespace Bloom.Edit
                 {
                     try
                     {
-                        Recorder.BeginMonitoring(catchAndReportExceptions: false);
+                        using (PerfTrace.Measure("AudioRecording: Recorder.BeginMonitoring"))
+                        {
+                            Recorder.BeginMonitoring(catchAndReportExceptions: false);
+                        }
                         _monitoringAudio = true;
                     }
                     catch (Exception e)
@@ -567,6 +589,8 @@ namespace Bloom.Edit
 
             // If someone unplugged the microphone we were planning to use switch to another.
             // This also triggers selecting the first one initially.
+            // Ask the system afresh here, as this code did before we started reusing the list.
+            InvalidateRecordingDevices();
             if (!RecordingDevices.Contains(RecordingDevice))
             {
                 RecordingDevice = RecordingDevices.FirstOrDefault();
@@ -809,13 +833,60 @@ namespace Bloom.Edit
             set { Recorder.SelectedDevice = value; }
         }
 
+        /// <summary>
+        /// How long we are willing to reuse an already-enumerated list of recording devices.
+        /// Asking the system for the list costs about a second, and the talking book tool asks for
+        /// the list and then immediately begins monitoring, which asks for it again, so one toolbox
+        /// load pays for it twice. The window is deliberately short so that a user who plugs in a
+        /// headset and then presses the change-device button still sees the new device.
+        /// </summary>
+        private const int kRecordingDeviceCacheMilliseconds = 2000;
+
+        private static List<IRecordingDevice> _cachedRecordingDevices;
+        private static DateTime _timeRecordingDevicesEnumerated = DateTime.MinValue;
+        private static readonly object _recordingDevicesLock = new object();
+
+        /// <summary>
+        /// The system's recording devices, reusing the answer from the last couple of seconds if we
+        /// have one. Call InvalidateRecordingDevices() first where the list must be current.
+        /// </summary>
         private IEnumerable<IRecordingDevice> RecordingDevices
         {
+            get
+            {
+                lock (_recordingDevicesLock)
+                {
+                    if (
+                        _cachedRecordingDevices != null
+                        && (DateTime.Now - _timeRecordingDevicesEnumerated).TotalMilliseconds
+                            < kRecordingDeviceCacheMilliseconds
+                    )
+                        return _cachedRecordingDevices;
+                    using (PerfTrace.Measure("AudioRecording: enumerate recording devices"))
+                    {
 #if __MonoCS__
-            get { return SIL.Media.AlsaAudio.RecordingDevice.Devices; }
+                        _cachedRecordingDevices =
+                            SIL.Media.AlsaAudio.RecordingDevice.Devices.ToList();
 #else
-            get { return SIL.Media.Naudio.RecordingDevice.Devices; }
+                        _cachedRecordingDevices = SIL.Media.Naudio.RecordingDevice.Devices.ToList();
 #endif
+                    }
+                    _timeRecordingDevicesEnumerated = DateTime.Now;
+                    return _cachedRecordingDevices;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Throw away any remembered list of recording devices, so that the next use of
+        /// RecordingDevices asks the system again.
+        /// </summary>
+        private void InvalidateRecordingDevices()
+        {
+            lock (_recordingDevicesLock)
+            {
+                _cachedRecordingDevices = null;
+            }
         }
 
         internal void ReportNoMicrophone()
@@ -849,6 +920,8 @@ namespace Bloom.Edit
 
         private bool SetRecordingDevice(string micName)
         {
+            // The user may have just plugged the device in, so do not reuse an older list.
+            InvalidateRecordingDevices();
             foreach (var d in RecordingDevices)
             {
                 if (d.ProductName == micName)
@@ -991,26 +1064,46 @@ namespace Bloom.Edit
                 // to update the icon. At that point we start really sending volume requests.
                 if (_recorder == null)
                 {
-                    var formToInvokeOn = Shell.GetShellOrOtherOpenForm();
-                    if (formToInvokeOn == null)
+                    // audio/devices now runs on a server thread rather than the UI thread, so two
+                    // requests could arrive here at once; only one of them should make a Recorder.
+                    // Monitor is reentrant, so the recursive use from CreateRecorder is safe.
+                    lock (_recorderCreationLock)
                     {
-                        NonFatalProblem.Report(
-                            ModalIf.All,
-                            PassiveIf.All,
-                            "Bloom could not find a form on which to start the level monitoring code. Please restart Bloom."
-                        );
-                        return null;
-                    }
-                    if (formToInvokeOn.InvokeRequired)
-                    {
-                        formToInvokeOn.Invoke((Action)(CreateRecorder));
-                    }
-                    else
-                    {
-                        CreateRecorder();
+                        if (_recorder == null)
+                            CreateRecorderOnUiThread();
                     }
                 }
                 return _recorder;
+            }
+        }
+
+        private readonly object _recorderCreationLock = new object();
+
+        /// <summary>
+        /// Make the Recorder, on the UI thread, whichever thread we are called on.
+        /// </summary>
+        private void CreateRecorderOnUiThread()
+        {
+            var formToInvokeOn = Shell.GetShellOrOtherOpenForm();
+            if (formToInvokeOn == null)
+            {
+                NonFatalProblem.Report(
+                    ModalIf.All,
+                    PassiveIf.All,
+                    "Bloom could not find a form on which to start the level monitoring code. Please restart Bloom."
+                );
+                return;
+            }
+            using (PerfTrace.Measure("AudioRecording: CreateRecorder"))
+            {
+                if (formToInvokeOn.InvokeRequired)
+                {
+                    formToInvokeOn.Invoke((Action)(CreateRecorder));
+                }
+                else
+                {
+                    CreateRecorder();
+                }
             }
         }
 
@@ -1020,7 +1113,10 @@ namespace Bloom.Edit
                 .CurrentSelection
                 .CollectionSettings
                 .AudioRecordingTrimEndMilliseconds;
-            _recorder = new AudioRecorder(1);
+            using (PerfTrace.Measure("AudioRecording: new AudioRecorder"))
+            {
+                _recorder = new AudioRecorder(1);
+            }
             _recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
             BeginMonitoring(); // could get here recursively _recorder isn't set by now!
             if (_exitHookSet)

@@ -947,6 +947,14 @@ namespace Bloom.Book
 
         public Book FindTemplateBook()
         {
+            using (Utils.PerfTrace.Measure("Book.FindTemplateBook"))
+            {
+                return FindTemplateBookInner();
+            }
+        }
+
+        private Book FindTemplateBookInner()
+        {
             Guard.AgainstNull(_templateFinder, "_templateFinder");
             if (!IsInEditableCollection)
                 return null; // won't be adding pages, don't need source of templates
@@ -964,7 +972,11 @@ namespace Bloom.Book
                 // we'll add a check for the same "TemplateKey" to allow reusing a cached "TemplateBook".
                 // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3782.
                 if (templateKey == _cachedTemplateKey && _cachedTemplateBook != null)
+                {
+                    Utils.PerfTrace.Mark("Book.FindTemplateBook: cache hit");
                     return _cachedTemplateBook;
+                }
+                Utils.PerfTrace.Mark("Book.FindTemplateBook: cache miss");
                 // Find the template for this book.
                 book = _templateFinder.FindAndCreateTemplateBookFromDerivative(this);
                 _cachedTemplateBook = book;
@@ -1089,8 +1101,11 @@ namespace Bloom.Book
         /// </summary>
         public void BringBookUpToDate(IProgress progress, bool forCopyOfUpToDateBook = false)
         {
-            UpToDate = false; // force a full update
-            EnsureUpToDate(progress, forCopyOfUpToDateBook);
+            using (Utils.PerfTrace.Measure("Book.BringBookUpToDate"))
+            {
+                UpToDate = false; // force a full update
+                EnsureUpToDate(progress, forCopyOfUpToDateBook);
+            }
         }
 
         /// <summary>
@@ -3741,27 +3756,55 @@ namespace Bloom.Book
         /// <returns>the id of the first page added.</returns>
         public string InsertPageAfter(IPage pageBefore, IPage templatePage, int numberToAdd = 1)
         {
+            using (Utils.PerfTrace.Measure("Book.InsertPageAfter"))
+            {
+                return InsertPageAfterInner(pageBefore, templatePage, numberToAdd);
+            }
+        }
+
+        private string InsertPageAfterInner(IPage pageBefore, IPage templatePage, int numberToAdd)
+        {
             Guard.Against(HasFatalError, "Insert page failed: " + FatalErrorDescription);
             Guard.Against(!IsSaveable, "Tried to edit a non-editable book.");
 
-            ClearCachedDataFromDom();
+            using (Utils.PerfTrace.Measure("InsertPageAfter: ClearCachedDataFromDom"))
+            {
+                ClearCachedDataFromDom();
+            }
             bool stylesChanged = false;
 
             if (templatePage.Book != null) // will be null in some unit tests that are unconcerned with stylesheets
-                stylesChanged = HtmlDom.AddStylesheetFromAnotherBook(
-                    templatePage.Book.OurHtmlDom,
-                    OurHtmlDom
-                );
+            {
+                HtmlDom templateBookDom;
+                using (Utils.PerfTrace.Measure("InsertPageAfter: template book OurHtmlDom"))
+                {
+                    templateBookDom = templatePage.Book.OurHtmlDom;
+                }
+                using (Utils.PerfTrace.Measure("InsertPageAfter: AddStylesheetFromAnotherBook"))
+                {
+                    stylesChanged = HtmlDom.AddStylesheetFromAnotherBook(
+                        templateBookDom,
+                        OurHtmlDom
+                    );
+                }
+            }
 
             // And, if it comes from a different book, we may need to copy over some of the user-defined
             // styles from that book. Do this before we set up the new page, which will get a copy of this
             // book's (possibly updated) stylesheet.
-            stylesChanged |= AddMissingStylesFromTemplatePage(templatePage);
+            using (Utils.PerfTrace.Measure("InsertPageAfter: AddMissingStylesFromTemplatePage"))
+            {
+                stylesChanged |= AddMissingStylesFromTemplatePage(templatePage);
+            }
 
             SafeXmlDocument dom = OurHtmlDom.RawDom;
             var templatePageDiv = templatePage.GetDivNodeForThisPage();
-            var newPageDiv = dom.ImportNode(templatePageDiv, true) as SafeXmlElement;
-            BookStarter.SetupPage(newPageDiv, _bookData); //, LockedExceptForTranslation);
+            SafeXmlElement newPageDiv;
+            using (Utils.PerfTrace.Measure("InsertPageAfter: import and set up the page div"))
+            {
+                newPageDiv = dom.ImportNode(templatePageDiv, true) as SafeXmlElement;
+                BookStarter.SetupPage(newPageDiv, _bookData); //, LockedExceptForTranslation);
+            }
             if (!IsSuitableForMakingShells)
             {
                 // We need to add these early on for leveled reader statistics not to get messed up
@@ -3800,8 +3843,11 @@ namespace Bloom.Book
                 ApplyWaterMarkIfNeeded(clonedDiv);
             }
 
-            OrderOrNumberOfPagesChanged();
-            BuildPageCache();
+            using (Utils.PerfTrace.Measure("InsertPageAfter: rebuild page cache"))
+            {
+                OrderOrNumberOfPagesChanged();
+                BuildPageCache();
+            }
             var newPage = GetPages().First(p => p.GetDivNodeForThisPage() == firstPageAdded);
             Guard.AgainstNull(newPage, "could not find the page we just added");
 
@@ -3821,7 +3867,10 @@ namespace Bloom.Book
             }
 
             //similarly, if the page has stylesheet files we don't have, copy them
-            CopyMissingStylesheetFiles(templatePage);
+            using (Utils.PerfTrace.Measure("InsertPageAfter: CopyMissingStylesheetFiles"))
+            {
+                CopyMissingStylesheetFiles(templatePage);
+            }
 
             // Copy correct and wrong sound files, if any, and if we don't already have them.
             // Review: do we want to copy anyway and rename if already found? It guards against the
@@ -4311,6 +4360,14 @@ namespace Bloom.Book
         /// </summary>
         public void SavePageToDisk(SafeXmlElement pageToSaveToDisk, bool reallyNeedFullSave)
         {
+            using (Utils.PerfTrace.Measure("Book.SavePageToDisk"))
+            {
+                SavePageToDiskInner(pageToSaveToDisk, reallyNeedFullSave);
+            }
+        }
+
+        private void SavePageToDiskInner(SafeXmlElement pageToSaveToDisk, bool reallyNeedFullSave)
+        {
             try
             {
                 try
@@ -4778,11 +4835,15 @@ namespace Bloom.Book
             // that might be helpful or even necessary when editing it was skipped. Do it now.
             // If it was already checked out or not in a TC, this will be a no-op, because
             // we did it all when we selected it.
-            EnsureUpToDate(new NullProgress());
+            using (Utils.PerfTrace.Measure("Book.PrepareForEditing"))
+            {
+                EnsureUpToDate(new NullProgress());
+                Utils.PerfTrace.Mark("Book.PrepareForEditing: EnsureUpToDate done");
 
-            //We could re-enable RebuildXMatter() here later, so that we get this nice refresh each time.
-            //But currently this does some really slow image compression:	RebuildXMatter(RawDom);
-            UpdateEditableAreasOfElement(OurHtmlDom);
+                //We could re-enable RebuildXMatter() here later, so that we get this nice refresh each time.
+                //But currently this does some really slow image compression:	RebuildXMatter(RawDom);
+                UpdateEditableAreasOfElement(OurHtmlDom);
+            }
         }
 
         /// <summary>
@@ -4926,6 +4987,14 @@ namespace Bloom.Book
         }
 
         public void Save(bool forPublication = false)
+        {
+            using (Utils.PerfTrace.Measure("Book.Save"))
+            {
+                SaveInner(forPublication);
+            }
+        }
+
+        private void SaveInner(bool forPublication)
         {
             // If you add something here, consider whether it is needed in SaveForPageChanged().
             // I believe all the things currently here before the actual Save are not needed

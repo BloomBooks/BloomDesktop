@@ -66,6 +66,7 @@ namespace Bloom.Book
                     sourceBookFolder,
                     containingDestinationFolder
                 );
+                Utils.PerfTrace.Mark("BookServer: CreateBookOnDiskFromTemplate done");
                 if (Configurator.IsConfigurable(pathToFolderOfNewBook))
                 {
                     var c = _configuratorFactory(containingDestinationFolder);
@@ -83,16 +84,19 @@ namespace Bloom.Book
                     _tcManager?.CurrentCollectionEvenIfDisconnected
                     ?? new AlwaysEditSaveContext() as ISaveContext;
                 var newBookInfo = new BookInfo(pathToFolderOfNewBook, true, sc); // _bookInfos.Find(b => b.FolderPath == pathToFolderOfNewBook);
+                Utils.PerfTrace.Mark("BookServer: new BookInfo done");
                 if (newBookInfo is ErrorBookInfo)
                 {
                     throw ((ErrorBookInfo)newBookInfo).Exception;
                 }
 
                 Book newBook = GetBookFromBookInfo(newBookInfo);
+                Utils.PerfTrace.Mark("BookServer: GetBookFromBookInfo done");
 
                 //Hack: this is a bit of a hack, to handle problems where we make the book with the suggested initial name, but the title is still something else
                 var name = Path.GetFileName(newBookInfo.FolderPath); // this way, we get "my book 1", "my book 2", etc.
                 newBook.SetTitle(name);
+                Utils.PerfTrace.Mark("BookServer: SetTitle done");
 
                 Logger.WriteMinorEvent("Finished CreateFromnewBook({0})", newBook.FolderPath);
                 Logger.WriteEvent("CreateFromSourceBook({0})", newBook.FolderPath);
