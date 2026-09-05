@@ -19,6 +19,70 @@ House rules:
 
 ---
 
+## 2026-08-24 — The book folder's own basePage.css can be older than the one you just built
+
+- **Cut:** Bloom serves `basePage.css` for the edit page out of the *book* folder, and the copy
+  there (`<collection>/<book>/basePage.css`) was 71330 bytes with no bloom-table rules at all,
+  byte-for-byte the size of `D:/bloom/output/browser/bookLayout/basePage.css` from Aug 8, while
+  this worktree's freshly built copy was 74244 bytes and had them. The symptom does not look like
+  a CSS problem: the table loses `display: grid`, so every cell becomes a full-width block, cells
+  report a height of 1px, and Bloom's picture-fitting code writes nonsense geometry from those
+  sizes. Rebuilding the worktree's `basePage.css` changes nothing, because nothing re-copies it.
+- **Idea:** When a table (or anything else whose CSS lives in `basePage.css`) is not laid out as
+  expected, fetch the stylesheet the page actually loaded and grep it, rather than reading the
+  built file: `link[rel=stylesheet]` in the page iframe points at the book folder. Copying
+  `output/browser/bookLayout/basePage.css` over the book's copy fixes it immediately. Worth
+  finding out what decides not to re-copy it, and whether a book last opened by another checkout's
+  Bloom keeps that checkout's support files.
+- **Context:** `Add-Tables`, verifying table picture cells in the running Bloom. Cost about an
+  hour of chasing a layout bug that was a stale stylesheet.
+
+## 2026-08-24 — A changed bloom-table.css never reaches basePage.css
+
+- **Cut:** `basePage.less` pulls the library's structural styles in with
+  `@import (inline) ".../node_modules/bloom-table/dist/bloom-table.css"`, but `build:less-inner`
+  (watchLessManager.js) decides whether to recompile by comparing the mtimes of the imports LESS
+  reports, and that inline CSS is not among them. So after the library changes its CSS the built
+  `output/browser/bookLayout/basePage.css` stays stale and the running Bloom lays tables out by
+  the old rules, with nothing saying so.
+- **Idea:** Have the manager count an inline-imported file among an entry's dependencies (the
+  regex in `scanLessImports` already matches `@import (inline) "..."`; it is `resolveLessImport`
+  plus the post-compile `result.imports` list that drop it). Meanwhile: delete
+  `output/browser/bookLayout/basePage.css` and run `pnpm --dir src/content run build:less-inner`,
+  which rebuilds when the output is missing.
+- **Context:** `Add-Tables`, updating Bloom to the current bloom-table. The one stale property was
+  `overflow: hidden` where the library now needs `overflow: clip` for nested tables.
+
+## 2026-08-20 — Rebuilding a pnpm-linked front-end dependency needs a whole new go.sh session
+
+- **Cut:** `bloom-table` is linked from a sibling repo, and after `vp pack` there the running
+  Bloom kept executing the old code. The launcher's `/restart` does not help: it restarts
+  Bloom.exe, but the Vite dev server from the first `go.sh` survives and keeps serving the
+  module it transformed at startup (`/@id/bloom-table` was 1462507 bytes stale against a 1462511
+  byte file on disk). Killing that one node process to force a fresh server killed the launcher
+  with it, so the control API vanished and the developer's Bloom went down.
+- **Idea:** Either have `go.sh` watch the dist of linked deps and restart Vite, or give the
+  launcher a documented "restart Vite too" action. Meanwhile the skill note that says "restart
+  Bloom" should say "stop the session and run `./go.sh` again", because a `/restart` reads as
+  enough and is not. `curl http://localhost:<vitePort>/@id/<dep>` and grep for your change is the
+  cheap way to tell whether the server is stale.
+- **Context:** `Add-Tables` branch, removing the table toolbox and taking the latest bloom-table.
+  Cost about twenty minutes plus an unplanned relaunch of the developer's Bloom.
+
+## 2026-07-30 — Visual regression suite reports only the first stale image per case
+- **Cut:** Each case in `src/BloomVisualRegressionTests/index.spec.ts` compares the book preview
+  and then every bloom-player page in sequence, and every comparison throws on failure — so the
+  first stale baseline kills the case and the later comparisons never even capture their images.
+  After BL-16370 the stale previews meant **no** player page was compared for weeks: BL-16638
+  started as 10 baselines, became 22, and would have taken three accept-and-rerun rounds to
+  bottom out (10 previews → 10 player pages → 2 more hidden behind those). Each layer costs a
+  full ~3-minute run to discover, and the nightly reads as "one failure per case" the whole time.
+- **Idea:** Accumulate per-comparison failures for the case (label, pixel count, diff path), let
+  the preview capture and the whole player loop run to completion, then fail once at the end with
+  the full list. Proven to work — the change was made temporarily during BL-16638 to capture all
+  84 images in one run, then reverted. Roughly 20–30 lines, confined to that spec file.
+- **Context:** BL-16638 / PR #8134. Andrew chose "make a papercut entry" over fixing it inline.
+  Loop at `index.spec.ts:426`, assertion at `index.spec.ts:486`.
 ## 2026-09-02 — notion_automation.py needs Python, which not every dev machine has
 
 - **Cut:** `.github/skills/improve-test-automation-coverage/notion_automation.py` is the only way the
@@ -246,7 +310,72 @@ visible setting; every other user setting jumps too.
 **Workaround:** edit `%LOCALAPPDATA%\SIL\Bloom\6.5.0.0\user.config` and put the collection you
 want first in `MruProjects`, or delete the entries so Bloom shows the collection chooser.
 
+**Context:** BL-16603, verifying the credits fix end-to-end against a real Bloom.
+
+## A rebuilt bloom-table never reaches the running Bloom until the dev server restarts
+
+**2026-08-20, Add-Tables.** `vite.config.mts` deliberately puts `bloom-table` in
+`optimizeDeps.exclude` with a comment saying that pre-bundling would cache a stale copy, and
+that excluding it "makes Vite serve the dist live, so a `vp pack` in the sibling repo shows up".
+It does not show up. The page loads it as `/@fs/D:/bloom-table/dist/bloom-table.mjs?t=<stamp>`,
+and Vite keeps serving the transform it cached under that exact URL: the file is outside the
+project root, so nothing watches it, so the stamp never changes and the cache is never
+invalidated. A page reload, a cache-disabled reload, deleting `node_modules/.vite/deps`, and
+`launcherControl.mjs --restart` all leave the old library in place.
+
+The cost is a wrong diagnosis, not just lost time: the new code is served correctly for the
+Bloom-side file and only the library is stale, so the console fills with
+`TypeError: dragToResize.beginResizeAtPoint is not a function` from a line that plainly calls a
+method the built `.d.mts` and `.mjs` both contain. It reads as a build or export problem in the
+library.
+
+What worked: `launcherControl.mjs --shutdown` then `--ensure-running --wait-ready`, i.e. a fresh
+Vite. Note the ports change, so re-read `output/bloom-launcher.json`, and Bloom comes back on the
+collection tab (`switchWorkspaceTab.mjs --running-bloom --tab edit`).
+
+**Idea:** either add `D:/bloom-table/dist` to `server.watch`, or have `go.sh` run bloom-table's
+`build:watch` when it is linked, so a `vp pack` there triggers the invalidation Vite needs.
 **Idea:** `./go.sh` could say which settings folder this build uses, or a dev build could name
 the branch rather than the version in that path.
 
 **Context:** BL-16781, after re-basing the `dev-blorgswitch` worktree onto Version6.5.
+
+## An e2e test cannot use a `data-testid` you just added to the front end
+
+**2026-09-04, Add-Tables.** `src/BloomE2E` launches a real `Bloom.exe`, and that Bloom loads its
+UI from the shared `output\browser`, not from a Vite dev server. So a `data-testid` added to a
+`.tsx` file is invisible to the test until someone repopulates `output\browser` with a full
+`pnpm build` — which AGENTS.md tells agents not to run, because it wrecks the dev server and the
+Bloom the developer has running against it. The two rules meet in a place with no move in it: the
+skill says to prefer a testid over matching an English label, and the environment says the testid
+cannot take effect.
+
+The failure does not look like a build problem. The locator simply finds nothing, in a Bloom whose
+markup is correct in the source you are reading, so it reads as a wrong selector and you go
+looking for a different one.
+
+What worked: match the English `aria-label` the library writes, and add testids only in
+`D:\bloom-table\src`, which is a separate build. Cost, roughly an hour, twice.
+
+**Idea:** have the e2e fixture build the front end into its own tree (the way
+`build/agent-vite.sh` already does) and point the Bloom it launches at that, so a test runs
+against the source in the worktree rather than against whatever was last built.
+
+**Context:** adding the table end-to-end tests, `tables-core.spec.ts` and `tables-extended.spec.ts`.
+
+## Two agents running e2e suites at once fail each other's launches, and it looks like a fixture bug
+
+**2026-09-05, Add-Tables.** Two worktrees running Playwright suites on this machine each made the
+other's `Bloom.exe` slow to start, past the fixture's two-minute readiness limit, twice in five
+runs. The message is `Bloom did not open the collection within 120s` followed by the list of
+instances the fixture can see, and the collection it says it wanted is right there in that list,
+because the diagnostic look happens a second after the last poll gave up. So it reads as a
+discovery bug, and half an hour goes into the innocent code. Neither run is told the other exists.
+
+Raised the limit to four minutes in `src/BloomE2E/fixtures/launchBloom.ts` and wrote it up in
+`src/BloomE2E/AUTOMATION-DEBT.md`.
+
+**Idea:** a machine-wide lock, or refuse to start while a Bloom launched by another e2e run is up,
+and say so. Agents in two worktrees is now the normal case, not the odd one.
+
+**Context:** gating `tables-gating.spec.ts` through three consecutive clean runs.

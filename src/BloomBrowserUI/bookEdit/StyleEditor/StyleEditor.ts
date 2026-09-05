@@ -1102,8 +1102,14 @@ export default class StyleEditor {
             fmtButton.style.top = bottom / scale - this.fmtButtonHeight + "px";
             fmtButton.style.left = "unset";
             fmtButton.style.right = "0";
-        } else if (element.closest(kCanvasElementSelector)) {
-            // This element is inside a text-over-picture element.
+        } else if (
+            element.closest(kCanvasElementSelector) &&
+            !element.closest(".bloom-cell")
+        ) {
+            // This element is inside a text-over-picture element. (A table cell is
+            // excluded: a canvas element holding a table has a box per cell, so the
+            // button belongs inside the cell, where the code below puts it, and not
+            // out to the left of the whole table.)
             fmtButton.style.top = bottom / scale + "px";
             fmtButton.style.left = -5 - this.fmtButtonWidth + "px";
         } else {

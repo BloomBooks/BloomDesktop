@@ -112,6 +112,71 @@ export async function openPublishDestination(
     });
 }
 
+/**
+ * Go to the Publish tab and wait until it has decided what to show: either its list of
+ * destinations, or the notice that this book cannot be published at this subscription tier.
+ *
+ * The tab shows a blank screen until publish/getInitialPublishTabInfo answers, so a test that
+ * looked at once could see neither.
+ */
+export async function openPublishTab(page: Page): Promise<void> {
+    await switchTab(page, "publish");
+    await expect
+        .poll(
+            async () =>
+                (await getPublishDestinationsOffered(page)).length > 0 ||
+                (await isPublishingBlockedNoticeShowing(page)),
+            {
+                timeout: 60000,
+                message:
+                    "The Publish tab showed neither a destination to publish to nor a notice " +
+                    "saying why it cannot be published.",
+            },
+        )
+        .toBe(true);
+}
+
+/**
+ * The destinations the Publish tab is offering, by the label each shows. Empty when the tab is
+ * showing something instead of its destinations, which is what happens when the book uses a
+ * feature above the collection's subscription tier: the notice replaces the whole list.
+ */
+export async function getPublishDestinationsOffered(
+    page: Page,
+): Promise<string[]> {
+    // The destination strip is react-tabs' own tab list, told apart from the workspace's tabs by
+    // that class. One member of it is deliberately invisible: it is the "nothing chosen yet" tab.
+    return page
+        .locator(".react-tabs__tab-list .react-tabs__tab:not(.invisible_tab)")
+        .evaluateAll((tabs) =>
+            tabs.map((tab) => (tab.textContent ?? "").trim()).filter(Boolean),
+        );
+}
+
+/**
+ * True while the Publish tab is showing the notice that says the book uses a feature the
+ * collection's subscription tier does not include. Found by its test id, because every word of it
+ * is localized (PublishingBookRequiresHigherTierNotice.tsx).
+ */
+export async function isPublishingBlockedNoticeShowing(
+    page: Page,
+): Promise<boolean> {
+    return (
+        (await page
+            .locator('[data-testid="publishing-blocked-notice"]')
+            .count()) > 0
+    );
+}
+
+/** What the notice says, for a failure message. Empty when it is not showing. */
+export async function getPublishingBlockedNoticeText(
+    page: Page,
+): Promise<string> {
+    const notice = page.locator('[data-testid="publishing-blocked-notice"]');
+    if ((await notice.count()) === 0) return "";
+    return (await notice.first().innerText()).replace(/\s+/g, " ").trim();
+}
+
 /** One of the two language lists, told apart from the other by its test id. */
 export function languagesGroup(page: Page, group: LanguageGroup): Locator {
     return page.getByTestId(groupTestIds[group]);
@@ -258,8 +323,11 @@ export async function showBloomPubPreview(page: Page): Promise<Frame> {
                     .frames()
                     .find((f) => f.url().includes("bloomplayer.htm"));
                 if (!player) return 0;
+                // The book's own pages, not the language chooser: bloom-player offers that button
+                // only for a book with more than one language, so waiting for it left a
+                // single-language book's preview looking as though it had never loaded.
                 return player
-                    .locator('[aria-label="Choose Language"]')
+                    .locator(".bloom-page")
                     .count()
                     .catch(() => 0);
             },

@@ -772,7 +772,13 @@ function SetupBloomCanvas(bloomCanvas: HTMLElement) {
     // rely on a call to SetImageDisplaySize() when the image is added.
     const img = $(bloomCanvas).find("img");
     SetImageDisplaySizeIfCalledFor($(bloomCanvas), img);
-    SetupChangeImageButton(bloomCanvas);
+    // In a table cell we leave the image with no overlay button at all. The button is
+    // 63 by 52 pixels, which is larger than many cells, so it hides the picture it is
+    // supposed to edit. Clicking the picture selects the background image instead, and
+    // that puts the canvas element toolbar under the cell, where there is room for it.
+    if (!bloomCanvas.closest(".bloom-cell")) {
+        SetupChangeImageButton(bloomCanvas);
+    }
 
     $(bloomCanvas)
         .mouseenter(function () {

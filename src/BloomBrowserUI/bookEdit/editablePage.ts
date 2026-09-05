@@ -17,6 +17,7 @@ import {
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
+import { tableHistoryManager } from "bloom-table";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -71,6 +72,9 @@ export interface IPageFrameExports {
     ckeditorUndo(): void;
     imageOperationCanUndo(): boolean;
     imageOperationUndo(): boolean;
+
+    tableCanUndo(): boolean;
+    tableUndo(): void;
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
@@ -339,6 +343,20 @@ export function ckeditorUndo() {
     (<any>CKEDITOR.currentInstance).undoManager.undo();
 }
 
+// Whether the bloom-table library (which lives in this page iframe, where the
+// tables are attached) has a table operation it can undo. Called cross-frame
+// from workspaceRoot.canUndo()/handleUndo().
+export function tableCanUndo(): boolean {
+    return tableHistoryManager.canUndo();
+}
+
+// Undo the most recent bloom-table operation. Called cross-frame from
+// workspaceRoot.handleUndo(). undoLast() finds the relevant attached table on
+// its own, so the caller needn't hold a table reference.
+export function tableUndo(): void {
+    tableHistoryManager.undoLast();
+}
+
 for (let j = 0; j < styleSheets.length; j++) {
     // This doesn't work any more because we are now loading this code as a module,
     // which means it is loaded after the document is parsed.
@@ -422,6 +440,8 @@ interface EditablePageBundleApi {
     getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
     ckeditorCanUndo: typeof ckeditorCanUndo;
     ckeditorUndo: typeof ckeditorUndo;
+    tableCanUndo: typeof tableCanUndo;
+    tableUndo: typeof tableUndo;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
     removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
     e2eSetActiveCanvasElementByIndex: typeof e2eSetActiveCanvasElementByIndex;
@@ -501,6 +521,8 @@ window.editablePageBundle = {
     getTheOneCanvasElementManager,
     ckeditorCanUndo,
     ckeditorUndo,
+    tableCanUndo,
+    tableUndo,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
     e2eSetActiveCanvasElementByIndex,

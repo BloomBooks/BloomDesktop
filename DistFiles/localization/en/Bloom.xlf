@@ -1460,6 +1460,11 @@
         <source xml:lang="en">Video</source>
         <note>ID: EditTab.CustomPage.Video</note>
       </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Table" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Table</source>
+        <note>ID: EditTab.CustomPage.Table</note>
+        <note>Shown as an option when a Custom Page section can contain a table (experimental feature)</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true">
         <source xml:lang="en">Text Box</source>
         <note>ID: EditTab.CustomPage.TextBox</note>
@@ -5990,6 +5995,11 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Wall Calendar</source>
         <note>ID: TemplateBooks.BookName.Wall Calendar</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Alphabet Book" sil:dynamic="true" translate="no">
+        <source xml:lang="en">A letter of the alphabet and a picture, three pairs to a row.</source>
+        <note>ID: TemplateBooks.PageDescription.Alphabet Book</note>
+        <note>Description shown under the "Alphabet Book" page in the Add Page dialog. "A row" is a row of the table that the page holds.</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Bloom Reader Quiz" sil:dynamic="true">
         <source xml:lang="en">Use for comprehension testing on devices.</source>
         <note>ID: TemplateBooks.PageDescription.Bloom Reader Quiz</note>
@@ -6244,6 +6254,11 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true">
         <source xml:lang="en">Alphabet</source>
         <note>ID: TemplateBooks.PageLabel.Alphabet</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Alphabet Book" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Alphabet Book</source>
+        <note>ID: TemplateBooks.PageLabel.Alphabet Book</note>
+        <note>Name of a page the user can add to a book from the Add Page dialog. The page holds a table of letters, each with a picture beside it.</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true">
         <source xml:lang="en">Basic Text &amp; Image</source>

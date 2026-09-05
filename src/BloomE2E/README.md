@@ -67,6 +67,17 @@ returns; the old one is closed.
 
 Teardown kills the process tree, waits for the HTTP port to go dark, and deletes the temp copy.
 
+`step` names one step of a test: `await step("Add a row from the row menu", async () => { ... })`.
+It is Playwright's own `test.step`, so the HTML report keeps the nesting, and it also writes the
+title onto the caption strip in the Bloom window, where the last three steps show with their times.
+Someone watching a run can therefore read what the test is doing rather than guessing from the
+mouse. Write titles the way a tester would say them out loud: a verb first, one line, no selectors
+and no helper names. A step returns whatever its body returns, so a value measured in one step can
+be checked in the next. Pass `{ fixme: true }` as a third argument to record a step that is
+deliberately not run; its body is skipped and the caption shows it struck through. None of this
+changes what a test does or whether it passes: a Bloom too old to have the caption, or a shell
+mid-reload, simply gets nothing.
+
 A background watcher polls for Bloom's "Bloom had a problem" dialog. When one appears it reads the
 exception from behind the dialog's own "Learn More" link, closes the dialog the way its Close
 button does, and fails the test with that text. It never clicks Submit, which would send a report,

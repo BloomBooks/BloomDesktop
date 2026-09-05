@@ -38,6 +38,7 @@ import {
     CanvasElementItemRegion,
     CanvasElementItemRow,
     CanvasElementLinkGridItem,
+    CanvasElementTableItem,
     NavigationImageButtonPaletteItem,
     CanvasElementTextItem,
     NavigationLabelButtonPaletteItem,
@@ -63,6 +64,7 @@ import {
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { CanvasTool } from "./canvasTool";
+import { useGetFeatureStatus } from "../../../react_components/featureStatus";
 
 const kImageFillModePaddedValue = "padded";
 type ImageFillMode =
@@ -95,6 +97,17 @@ const getImageFillModeForElement = (element: HTMLElement): ImageFillMode => {
 
 const CanvasToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
+    // Tables need a Pro subscription and the "Tables" experiment, and both halves
+    // of the feature's status have to be true to offer one: the tier decides
+    // `enabled`, while an experimental feature that is turned off makes its feature
+    // invisible rather than disabled. There is no subscription badge on this palette
+    // item, because below Pro the Canvas tool as a whole is already behind the canvas
+    // feature's subscription notice (see subscriptionToolIds in ToolboxRoot.tsx), so
+    // nothing here is reachable. The Table link in the page layout controls does need
+    // the badge, and origami.ts gives it one.
+    const tableFeatureStatus = useGetFeatureStatus("table");
+    const isTableFeatureEnabled =
+        !!tableFeatureStatus?.enabled && !!tableFeatureStatus?.visible;
     type CanvasElementType = "text" | "image" | "video" | undefined;
 
     // Declare all the hooks
@@ -1159,7 +1172,12 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                             : ""
                                     }
                                 >
-                                    <CanvasElementItemRow>
+                                    <CanvasElementItemRow
+                                        // Four 50px icons are wider than the
+                                        // toolbox, so this row wraps rather
+                                        // than squeezing them.
+                                        extraCss="flex-wrap: wrap; height: auto; row-gap: 10px;"
+                                    >
                                         <CanvasElementItem
                                             src="/bloom/bookEdit/toolbox/canvas/comic-icon.svg"
                                             canvasElementType="speech"
@@ -1172,6 +1190,17 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                             src="/bloom/bookEdit/toolbox/canvas/sign-language-overlay.svg"
                                             canvasElementType="video"
                                         />
+                                        {isTableFeatureEnabled && (
+                                            <BloomTooltip
+                                                id="tablePaletteItem"
+                                                placement="top-end"
+                                                tip={
+                                                    <Div l10nKey="EditTab.Toolbox.CanvasTool.Table"></Div>
+                                                }
+                                            >
+                                                <CanvasElementTableItem />
+                                            </BloomTooltip>
+                                        )}
                                     </CanvasElementItemRow>
                                     <CanvasElementItemRow secondRow={true}>
                                         <CanvasElementTextItem
@@ -1186,7 +1215,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
                                                 color: ${kBloomBlue};
                                                 background-color: white;
-                                                border: 1px dotted ${kBloomBlue};
+                                                // matches the stroke of the icons above
+                                                border: 3px dotted ${kBloomBlue};
                                             `}
                                             l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
                                         />
@@ -1202,7 +1232,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                                 padding-top: 5px;
                                                 padding-bottom: 5px;
 
-                                                border: 1px solid ${kBloomBlue};
+                                                // matches the stroke of the icons above
+                                                border: 3px solid ${kBloomBlue};
                                                 color: ${kBloomBlue};
                                                 background-color: white;
                                                 box-shadow: 3px 3px
@@ -1211,7 +1242,6 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                             l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
                                         />
                                     </CanvasElementItemRow>
-
                                     <TriangleCollapse
                                         initiallyOpen={false}
                                         labelL10nKey="EditTab.Toolbox.CanvasTool.Navigation"

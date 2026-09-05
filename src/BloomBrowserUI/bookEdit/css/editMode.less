@@ -317,6 +317,15 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
     }
 }
 
+// A table cell is often smaller than the 63 by 52 pixel image buttons, so a button
+// there hides the picture instead of helping the user edit it. In a cell the user
+// clicks the picture, which selects it and puts the canvas element toolbar below the
+// cell. See the matching test in SetupBloomCanvas (bloomImages.ts), which does not
+// even make the "change image" button for a cell.
+.bloom-cell .imageButton {
+    display: none !important;
+}
+
 /*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
 .marginBox div.pageLabel {
     /*+placement:anchor-top-left -1px -29px;*/
@@ -1432,6 +1441,31 @@ body {
     }
 }
 
+// A canvas element holding a table is not one text box, so the two rules above,
+// which move a canvas element's format button and language name out to the
+// context controls beneath the element, would name the language of one cell for
+// the whole table and leave no way to reach the format dialog of the others.
+// Each cell therefore keeps its own format button and language name, as a text
+// box on an ordinary page does.
+.bloom-canvas-element .bloom-table {
+    #formatButton {
+        display: block;
+    }
+}
+
+// The language names come back only while the page is hovered, which is the
+// condition the rule near the top of this file puts on them everywhere else.
+// The display here beats the rule that hides a canvas element's language names
+// unless the bloom-canvas itself is hovered; in a table they belong to the cells,
+// so they follow the page like the ones on an ordinary page do.
+.bloom-page:hover,
+body:has(#canvas-element-context-controls:hover) .bloom-page {
+    .bloom-canvas-element .bloom-table [data-languageTipContent]:after {
+        content: attr(data-languageTipContent) !important;
+        display: block !important;
+    }
+}
+
 // hideAllCKEditors is toggled by bloomEditing.ts to prevent bl-12448
 body.hideAllCKEditors .cke_chrome {
     // "display" is manipulated on the `style` element by ckeditor, so we can't use that
@@ -1568,6 +1602,17 @@ canvas.moving {
     &.has-image:not(.moving):not(.has-svg):not(.is-button)
         .bloom-ui-canvas-element-side-handle {
         display: block;
+    }
+
+    // A picture in a table cell is sized by the cell, so cropping it inside the cell
+    // has no meaning yet: the four crop handles would only offer the user a way to
+    // make the picture disagree with the cell that holds it.
+    // The selector repeats the one above so that it wins on specificity as well as
+    // on order.
+    .bloom-cell
+        &.has-image:not(.moving):not(.has-svg):not(.is-button)
+        .bloom-ui-canvas-element-side-handle {
+        display: none;
     }
 
     // We want the crop handles to look disabled on an empty/placeholder image. Disabling them is actually done in

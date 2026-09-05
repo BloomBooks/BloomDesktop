@@ -2845,6 +2845,15 @@ export class CanvasElementManager {
         // but dragging gets stopped by mouse up, so we need to do it here.
         theOneCanvasElementManager.handleResizeAdjustments();
     }
+    /**
+     * Re-fit the background image of every bloom-canvas on the page to its container.
+     * Table editing calls this when a cell changes size, because a cell's picture must
+     * follow the cell the way an origami image follows its pane.
+     */
+    public adjustAfterContainerResize(): void {
+        this.handleResizeAdjustments();
+    }
+
     private handleResizeAdjustments(): void {
         handleBackgroundResizeAdjustments(
             this.backgroundImageManagerState,
@@ -3130,6 +3139,24 @@ export class CanvasElementManager {
             this.alignControlFrameWithActiveElement,
             cropInfo,
         );
+    }
+
+    /**
+     * Re-fit the background image of one bloom-canvas to the size the canvas has now.
+     *
+     * The general resize path (AdjustChildrenIfSizeChanged) keeps each child's offsets
+     * and scales them, which is right for canvas elements the user placed but wrong for
+     * a background image that was fitted when its bloom-canvas had not been laid out
+     * yet. A picture in a table cell is the case that needs this: the table sizes its
+     * cells with JavaScript, so the cell's bloom-canvas gets its real size after the
+     * page-load pass has run.
+     */
+    public refitBackgroundImage(bloomCanvas: HTMLElement): void {
+        const bgCanvasElement = bloomCanvas.getElementsByClassName(
+            kBackgroundImageClass,
+        )[0] as HTMLElement;
+        if (!bgCanvasElement) return;
+        this.adjustBackgroundImageSize(bloomCanvas, bgCanvasElement, false);
     }
 
     public AdjustChildrenIfSizeChanged(bloomCanvas: HTMLElement): void {

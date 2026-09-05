@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
@@ -155,6 +156,27 @@ namespace Bloom.web.controllers
                 false // does not need the UI thread
             );
 
+            // There is deliberately no endpoint here for setting the collection's subscription
+            // tier. Several parts of Bloom keep the Subscription object they were handed at
+            // startup (FeatureStatusApi is one), so a tier replaced later is invisible to them,
+            // and a test that set it that way would still find tier-gated features hidden. A test
+            // that needs a tier launches the collection with a real subscription code in its
+            // .bloomCollection instead; see kProSubscriptionCode in BloomE2E.
+
+            // POST body is the full path of a video file, and it makes the NEXT "choose a video"
+            // answer with that file instead of opening the native file-chooser dialog. Choosing a
+            // video is the only route by which a video reaches a book without a camera, and a
+            // native dialog hangs a run (see AUTOMATION-DEBT.md, "Native OS dialogs hang
+            // automation"). Arming the answer here rather than short-circuiting the import means
+            // the test still drives the real UI and Bloom still runs the whole production import:
+            // the copy into the book folder, the ffmpeg re-encode, the progress dialog and the
+            // update of the video container. Off the UI thread: it only stores a string.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "nextVideoFileToChoose",
+                HandleSetNextVideoFileToChoose,
+                false // does not need the UI thread
+            );
+
             // POST {"path": ...}: the path the NEXT native "choose a file" dialog should return,
             // instead of opening. Playwright cannot dismiss a native dialog, so any UI path that
             // opens one hangs the run (see AUTOMATION-DEBT.md); pre-answering the dialog lets a
@@ -166,6 +188,16 @@ namespace Bloom.web.controllers
                 HandleSetNextChosenFile,
                 false // does not need the UI thread
             );
+        }
+
+        /// <summary>
+        /// POST e2e/nextVideoFileToChoose: answer the next "choose a video" with this file rather
+        /// than opening the file-chooser dialog (see the registration above).
+        /// </summary>
+        private void HandleSetNextVideoFileToChoose(ApiRequest request)
+        {
+            SignLanguageApi.VideoFileToChooseInE2eTests = request.RequiredPostString();
+            request.PostSucceeded();
         }
 
         /// <summary>

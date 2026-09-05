@@ -334,6 +334,10 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
                 ${props.showOuterRectangle ? buttonBorder : ""}
             `}
             draggable={true}
+            // The palette icons are SVGs and localized tooltips, so a test that had to find one by
+            // its picture or its label would break the next time either changed. See
+            // BloomE2E/helpers/canvasElements.ts.
+            data-testid={`palette-${props.canvasElementType}`}
             onDragStart={(ev) => ondragstart(ev, props.canvasElementType)}
             onDragEnd={(ev) =>
                 ondragend(
@@ -514,6 +518,8 @@ export const CanvasElementItem: React.FunctionComponent<{
             `}
             src={props.src}
             draggable={true}
+            // See the note on CanvasElementSvgItem's data-testid.
+            data-testid={`palette-${props.canvasElementType}`}
             onDragStart={(ev) => ondragstart(ev, props.canvasElementType)}
             onDragEnd={(ev) =>
                 ondragend(
@@ -607,6 +613,25 @@ export const CanvasElementLinkGridItem: React.FunctionComponent = (props) => {
             // and makes it too small
             width="80px"
         />
+    );
+};
+
+export const CanvasElementTableItem: React.FunctionComponent = (props) => {
+    return (
+        <CanvasElementSvgItem
+            canvasElementType="table"
+            addClasses={""}
+            showOuterRectangle={false}
+        >
+            <img
+                css={css`
+                    width: 50px;
+                    height: 50px;
+                    cursor: grab;
+                `}
+                src="/bloom/bookEdit/toolbox/canvas/tablePaletteItem.svg"
+            />
+        </CanvasElementSvgItem>
     );
 };
 

@@ -240,6 +240,9 @@ export const LocalizableMenuItem: React.FunctionComponent<
                 disabled={props.disabled}
                 className={props.className}
                 value={props.value}
+                // The localization id doubles as the item's test id. Without it, the only handle on
+                // a menu item is its localized label, so a test would be asserting on English.
+                data-testid={props.l10nId}
             >
                 <React.Fragment>
                     {iconElement}

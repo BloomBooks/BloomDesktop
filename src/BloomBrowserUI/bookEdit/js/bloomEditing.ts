@@ -20,6 +20,8 @@ import {
 } from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
 import { setupOrigami, cleanupOrigami } from "./origami";
+import { SetupTableEditing, TeardownTableEditing } from "./tableEditing";
+import { removeTableEditingArtifacts } from "bloom-table";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -330,7 +332,7 @@ function AddEditKeyHandlers(container) {
 // But there may be yet others that are not visible when we run this but which soon will be,
 // such as image descriptions. We don't seem to need the optimization, so let's just do
 // them all.)
-function AddLanguageTags(container) {
+export function AddLanguageTags(container) {
     $(container)
         .find(".bloom-editable[contentEditable=true]")
         .each(function () {
@@ -572,6 +574,7 @@ export function SetupElements(
 
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
+    SetupTableEditing(container);
     initializeCanvasElementManager();
     initChoiceWidgetsForEditing();
 
@@ -1333,6 +1336,8 @@ function removeEditingDebris() {
         textLabels[i].remove();
     }
     removeTransientVideoTimestampParams(document.body);
+    removeTableEditingArtifacts(document);
+    TeardownTableEditing(document.body);
     cleanupNiceScroll(); // don't leave the nicescroll debris around
 }
 
@@ -1667,15 +1672,38 @@ export const copySelection = () => {
     copyImpl();
 };
 
+/**
+ * The editable that a clipboard command acts on in its entirety, when there is no
+ * text selection to act on instead.
+ *
+ * Normally that is the canvas element's own text. A table canvas element has no
+ * such thing: it holds one editable per cell, so the first one found is the
+ * top-left cell whichever cell the user is working in, and a command acting on it
+ * would read or overwrite text the user is not looking at. So inside a table the
+ * cell that holds the caret is what the command acts on.
+ */
+function editableForWholeElementClipboard(
+    activeCanvasElement: HTMLElement | undefined,
+): HTMLElement | undefined {
+    const focusedEditable = (
+        document.activeElement as HTMLElement | null
+    )?.closest<HTMLElement>(".bloom-editable");
+    if (focusedEditable?.closest(".bloom-cell")) {
+        return focusedEditable;
+    }
+    return activeCanvasElement?.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on",
+    )[0] as HTMLElement | undefined;
+}
+
 async function copyImpl() {
     const sel = document.getSelection();
     if (!sel?.toString()) {
         const activeCanvasElement =
             theOneCanvasElementManager?.getActiveElement();
-        const activeCanvasElementEditable =
-            activeCanvasElement?.getElementsByClassName(
-                "bloom-editable bloom-visibility-code-on",
-            )[0] as HTMLElement;
+        const activeCanvasElementEditable = editableForWholeElementClipboard(
+            activeCanvasElement,
+        ) as HTMLElement;
 
         // No active text selection to copy; copy the canvas element's entire content.
         // There's a slight chance that the user wanted to copy some trailing
@@ -1793,9 +1821,17 @@ async function pasteImpl(imageAvailable: boolean) {
     // Enhance: might there be a case where text should be pasted as a new canvas element?
     // Enhance: we'd like to be able to copy and paste entire canvas overlays (including target if any).
     const activeElement = canvasElementManager?.getActiveElement();
-    const activeCanvasElementEditable = activeElement?.getElementsByClassName(
-        "bloom-editable bloom-visibility-code-on",
-    )[0] as HTMLElement;
+    const activeCanvasElementEditable = editableForWholeElementClipboard(
+        activeElement,
+    ) as HTMLElement;
+    // With the caret in a table cell the paste belongs at the caret, like any other
+    // typing in that cell, so the "replace the element's whole content" branch below
+    // must not claim it. (The Ctrl+V route never reaches here at all: pasteHandler
+    // leaves a paste inside a bloom-editable to the browser. This is the top bar's
+    // Paste button.)
+    const caretIsInTableCell = !!(
+        document.activeElement as HTMLElement | null
+    )?.closest(".bloom-cell");
 
     const textToPaste = await navigator.clipboard.readText();
     if (!textToPaste) {
@@ -1803,6 +1839,7 @@ async function pasteImpl(imageAvailable: boolean) {
     }
     if (
         activeCanvasElementEditable &&
+        !caretIsInTableCell &&
         activeElement !== canvasElementManager.theCanvasElementWeAreTextEditing
     ) {
         // We've issued a paste command on a canvas element that isn't active for editing.

@@ -297,6 +297,10 @@ namespace Bloom.web.controllers
                     // Control port of the dev launcher that started us (null when not
                     // launched via go.sh); see .github/skills/bloom-automation.
                     launcherControlPort = Program.StartupLauncherPort,
+                    // True when this Bloom was launched with --e2e. The workspace shell reads
+                    // this to decide whether to show the end-to-end step caption; nothing about
+                    // that caption exists in a normal run.
+                    runningE2eTests = Program.RunningE2eTests,
                 }
             );
         }

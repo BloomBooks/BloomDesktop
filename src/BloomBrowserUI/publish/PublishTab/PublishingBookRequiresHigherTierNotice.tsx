@@ -52,6 +52,10 @@ export const PublishingBookRequiresHigherTierNotice: React.FunctionComponent<{
 
     return (
         <div
+            // How an automated test tells that publishing is blocked: everything else on this
+            // notice is localized text. It replaces the whole tab, so its presence also means
+            // no publish destination is reachable.
+            data-testid="publishing-blocked-notice"
             css={css`
                 background-color: ${kBloomUnselectedTabBackground};
                 margin: 0;

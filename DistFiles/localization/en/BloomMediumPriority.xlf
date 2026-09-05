@@ -40,6 +40,11 @@
         <note>This checkbox enables the experimental publish-to-apps workflow.</note>
         <note>Obsolete as of Bloom 6.5</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.Tables" translate="no">
+        <source xml:lang="en">Tables</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.Tables</note>
+        <note>Label of a checkbox in the Experimental Features list of the Advanced tab of Collection Settings. Turning it on lets the user add a table to a custom page.</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing" translate="no">
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>
@@ -603,6 +608,11 @@
         <source xml:lang="en">Go Somewhere</source>
         <note>ID: EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText</note>
         <note>Default text for a navigation button</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Table" translate="no">
+        <source xml:lang="en">A table of rows and columns, which can hold text or pictures</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Table</note>
+        <note>Tooltip on the table icon in the Canvas Tool. The user drags the icon onto a page to add a table.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true">
         <source xml:lang="en">Set Destination</source>
