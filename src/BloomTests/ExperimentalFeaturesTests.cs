@@ -94,6 +94,34 @@ namespace BloomTests
         }
 
         /// <summary>
+        /// A token is matched whole: one that merely contains a feature's name must not enable it.
+        /// </summary>
+        [Test]
+        public void IsFeatureEnabled_TokenContainingTheName_DoesNotCount()
+        {
+            Program.ParseStartupPortArguments(
+                new[]
+                {
+                    "--e2e",
+                    "--experimental-features",
+                    "not-" + ExperimentalFeatures.kTeamCollections,
+                },
+                out var errorMessage
+            );
+            Assert.That(errorMessage, Is.Null, "Sanity check: the arguments parsed.");
+
+            Assert.IsFalse(
+                ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
+            );
+            Assert.IsTrue(
+                ExperimentalFeatures.IsFeatureEnabled(
+                    "not-" + ExperimentalFeatures.kTeamCollections
+                ),
+                "Sanity check: the token that was named does count."
+            );
+        }
+
+        /// <summary>
         /// Under --e2e a saved feature does not count as enabled, so SetValue must not take that
         /// as a reason to save it again: the setting is shared with the developer's own Bloom.
         /// </summary>

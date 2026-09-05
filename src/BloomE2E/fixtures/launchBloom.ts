@@ -166,13 +166,13 @@ export function findBloomExe(): string {
 
 /**
  * The newest file under `root`, by modification time, with the folders in `skip` left out and,
- * when `extensions` is given, only files with one of those extensions counted. Returns undefined
- * for a folder that does not exist or holds no such file.
+ * when `counts` is given, only files it accepts counted. Returns undefined for a folder that does
+ * not exist or holds no such file.
  */
 function newestFileUnder(
     root: string,
     skip: Set<string>,
-    extensions?: Set<string>,
+    counts?: (fileName: string) => boolean,
 ): { path: string; mtimeMs: number } | undefined {
     let newest: { path: string; mtimeMs: number } | undefined;
     const visit = (dir: string) => {
@@ -188,11 +188,7 @@ function newestFileUnder(
             if (entry.isDirectory()) {
                 visit(path);
             } else if (entry.isFile()) {
-                if (
-                    extensions &&
-                    !extensions.has(Path.extname(entry.name).toLowerCase())
-                )
-                    continue;
+                if (counts && !counts(entry.name)) continue;
                 const mtimeMs = fs.statSync(path).mtimeMs;
                 if (!newest || mtimeMs > newest.mtimeMs)
                     newest = { path, mtimeMs };
@@ -212,6 +208,23 @@ const FOLDERS_THAT_ARE_NOT_SOURCE = new Set([
     ".vscode",
     ".storybook",
 ]);
+
+/**
+ * Whether a change to this source file calls for a rebuild. Tests, stories and documentation are
+ * not part of what the build produces, so editing one must not stop the suite.
+ */
+function isBuiltSource(fileName: string): boolean {
+    const lower = fileName.toLowerCase();
+    if (lower.endsWith(".md")) return false;
+    return !/\.(spec|test|stories)\.[jt]sx?$/.test(lower);
+}
+
+/** Whether the build wrote this file into output/browser (as opposed to a running Bloom). */
+function isBuildOutput(fileName: string): boolean {
+    return [".js", ".css", ".html", ".htm"].includes(
+        Path.extname(fileName).toLowerCase(),
+    );
+}
 
 let freshnessChecked = false;
 
@@ -238,14 +251,11 @@ function assertBuildIsNotStale(exe: string): void {
         const bundleDir = Path.join(repoRoot, "output", "browser");
         // Only what the build writes. A running Bloom writes into this folder too (a template
         // book's history.db, for one), and such a file would make a stale bundle look fresh.
-        const bundle = newestFileUnder(
-            bundleDir,
-            new Set(),
-            new Set([".js", ".css", ".html", ".htm"]),
-        );
+        const bundle = newestFileUnder(bundleDir, new Set(), isBuildOutput);
         const source = newestFileUnder(
             Path.join(repoRoot, "src", "BloomBrowserUI"),
             FOLDERS_THAT_ARE_NOT_SOURCE,
+            isBuiltSource,
         );
         if (!bundle) {
             complaints.push(
@@ -260,10 +270,11 @@ function assertBuildIsNotStale(exe: string): void {
         }
         if (complaints.length) {
             complaints.push(
-                "Either rebuild the bundle (pnpm build in src/BloomBrowserUI; stop a Bloom that is " +
-                    "running from this tree first, the build empties output/browser), or start a " +
-                    "Vite dev server and set BLOOM_E2E_VITE_PORT to its port so the suite tests " +
-                    'the working tree (see README.md, "Testing a front-end change").',
+                "Either start a Vite dev server and set BLOOM_E2E_VITE_PORT to its port, so the " +
+                    'suite tests the working tree (see README.md, "Testing a front-end change"), ' +
+                    "or have the developer rebuild the bundle: pnpm build in src/BloomBrowserUI " +
+                    "empties output/browser, so it is their call and no Bloom may be running from " +
+                    'this tree (AGENTS.md, "Don\'t run the full pnpm build yourself").',
             );
         }
     }
@@ -273,6 +284,7 @@ function assertBuildIsNotStale(exe: string): void {
     const csSource = newestFileUnder(
         Path.join(repoRoot, "src", "BloomExe"),
         FOLDERS_THAT_ARE_NOT_SOURCE,
+        isBuiltSource,
     );
     if (dllBuilt !== undefined && csSource && csSource.mtimeMs > dllBuilt) {
         complaints.push(

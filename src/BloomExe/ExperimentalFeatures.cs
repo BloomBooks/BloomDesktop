@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Bloom.Properties;
 
 namespace Bloom
@@ -73,7 +74,7 @@ namespace Bloom
                 // Asks the saved setting itself, not IsFeatureEnabled: under --e2e that answers
                 // from the command line, so a saved token would look absent and be saved again.
                 var saved = Settings.Default.EnabledExperimentalFeatures ?? "";
-                if (!saved.Contains(featureName))
+                if (!HasToken(saved, featureName))
                     Settings.Default.EnabledExperimentalFeatures = saved + "," + featureName;
             }
             else
@@ -92,7 +93,16 @@ namespace Bloom
         {
             // Reads TokensOfEnabledFeatures rather than the setting, so a feature an e2e test
             // named on the command line counts as enabled everywhere this is asked.
-            return TokensOfEnabledFeatures.Contains(featureName);
+            return HasToken(TokensOfEnabledFeatures, featureName);
+        }
+
+        /// <summary>
+        /// Whether the comma-separated list names exactly this token. A substring test would let
+        /// a token that merely contains a feature's name ("not-team-collections") enable it.
+        /// </summary>
+        private static bool HasToken(string commaSeparatedTokens, string token)
+        {
+            return commaSeparatedTokens.Split(',').Select(t => t.Trim()).Contains(token);
         }
     }
 }
