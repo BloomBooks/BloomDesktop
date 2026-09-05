@@ -25,6 +25,10 @@ function cleanClonedNode(element: Element): void {
     removePositiveTabindex(element);
     safelyRemoveAttribute(element, "data-duration");
     safelyRemoveAttribute(element, "data-audiorecordingendtimes");
+    // A table Bloom has wired up carries this marker (see attachSingleTable in
+    // tableEditing.ts). The copy has not been wired up, so it must not carry it,
+    // or the table library never registers it and none of its commands work.
+    safelyRemoveAttribute(element, "data-table-attached");
 
     const childArray = Array.from(element.childNodes);
     childArray.forEach((child) => {

@@ -126,6 +126,8 @@ let originalBook: string;
 let tablePage: IBookPage;
 let videoTablePage: IBookPage;
 let textPage: IBookPage;
+// The folder of the derivative the first test makes below Pro; the video-table test reads it.
+let derivativeFolder: string;
 
 test.describe("a book with a table where tables cannot be made", () => {
     test("below Pro, a derivative's table can be filled in but not restructured", async ({
@@ -181,9 +183,8 @@ test.describe("a book with a table where tables cannot be made", () => {
 
         await step("Put a video in a table on a page of its own", async () => {
             // A video cell belongs in the fixture: it is one of the things the gating has to
-            // leave alone. It goes in a table on its own page because a table holding a video is
-            // misidentified as a video (see the fixme below), which would make every question
-            // this test asks about the table's own element menu a question about a video's.
+            // leave alone. It goes in a table on its own page so that the last test in this
+            // file can ask about that table's element menu on its own.
             const before = (await getContentPages(page)).map((p) => p.id);
             await addPage(page, "Canvas");
             videoTablePage = (await getContentPages(page)).find(
@@ -261,8 +262,7 @@ test.describe("a book with a table where tables cannot be made", () => {
                 );
                 const contents = await readBook(belowPro, folder);
                 // The page whose table holds the picture, not the one whose table holds the
-                // video: everything below asks about the table's own element menu, and a table
-                // holding a video is misidentified (see the fixme below).
+                // video: the video table has a test of its own at the end of this file.
                 const withTable = contents.pages.find(
                     (p) =>
                         p.tables.length > 0 &&
@@ -281,6 +281,7 @@ test.describe("a book with a table where tables cannot be made", () => {
                         `The derivative at ${folder} has no page without a table, so the text ` +
                             `page was not copied.`,
                     );
+                derivativeFolder = folder;
                 return { folder, table: withTable.id, text: withoutTable.id };
             },
         );
@@ -532,21 +533,47 @@ test.describe("a book with a table where tables cannot be made", () => {
         );
     });
 
-    // A table with a video in one of its cells is taken for a video. inferCanvasElementType tests
-    // for a bloom-videoContainer anywhere in the element before it tests for a bloom-table, so the
-    // element that holds such a table resolves to the "video" type: its toolbar and "..." menu are
-    // a video's (Choose Video, Record Yourself, Play Earlier, Play Later), and Duplicate comes with
-    // them, ungated, because only the table type's rules gate it. So below Pro a person can
-    // duplicate a table after all, as long as it holds a video. Expected: a table is a table
-    // whatever its cells hold, and the video test in inferCanvasElementType should come after the
-    // table test, the way the image and text tests already do. Marked fixme rather than weakened;
-    // this is a defect in the inference, not in the gating.
-    test.fixme(
-        "below Pro, a table holding a video is still treated as a table",
-        async ({ bloomApp }) => {
-            const page = bloomApp.page;
-            await goToPage(page, videoTablePage.id);
+    // A table is a table whatever its cells hold. inferCanvasElementType once tested for a
+    // bloom-videoContainer anywhere in the element before it tested for a bloom-table, so a table
+    // with a video cell resolved to the "video" type and got a video's toolbar, with Duplicate
+    // ungated because only the table type's rules gate it. Below Pro that let a person duplicate
+    // a table after all, as long as it held a video.
+    test("below Pro, a table holding a video is still treated as a table", async ({
+        bloomApp,
+        step,
+    }) => {
+        const page = bloomApp.page;
+        if (!derivativeFolder)
+            throw new Error(
+                "The derivative test has to run first; it makes the book this test opens.",
+            );
+
+        const videoPageId = await step(
+            "Find the derivative's page whose table holds the video",
+            async () => {
+                // The derivative's own page, not the original's: a derivative's pages are copies.
+                const contents = await readBook(page, derivativeFolder);
+                const withVideo = contents.pages.find((p) =>
+                    p.tables.some((t) => t.videoSources.length > 0),
+                );
+                if (!withVideo)
+                    throw new Error(
+                        `The derivative at ${derivativeFolder} has no page whose table holds a ` +
+                            `video, so the video page was not copied.`,
+                    );
+                return withVideo.id;
+            },
+        );
+        if (!videoPageId) throw new Error("The video page was never found.");
+
+        await step("Open that page in the Edit tab", async () => {
+            // The previous test left Bloom on the Collection tab with the derivative selected.
+            await switchTab(page, "edit");
+            await goToPage(page, videoPageId);
             await waitForTableAttached(page);
+        });
+
+        await step("Check the table's element menu is a table's", async () => {
             await selectTableElement(page);
             const ids = (await getCanvasElementMenuItems(page)).map(
                 (item) => item.id,
@@ -556,8 +583,8 @@ test.describe("a book with a table where tables cannot be made", () => {
                 "A table with a video cell should offer the table's own commands, and no " +
                     "Duplicate below Pro.",
             ).not.toContain("EditTab.Toolbox.ComicTool.Options.Duplicate");
-        },
-    );
+        });
+    });
 
     // The plan's remaining case, pasting a copied table below Pro, is not reachable and is
     // not meant to be: copying a table is itself a Pro command (the table pill's Copy Table),

@@ -69,6 +69,13 @@ export const inferCanvasElementType = (
         return "book-link-grid";
     }
 
+    // Test for a table before the video, image and text tests below: a cell can
+    // hold a bloom-videoContainer, a bloom-canvas or a translationGroup, and
+    // those would otherwise win.
+    if (canvasElement.getElementsByClassName("bloom-table").length > 0) {
+        return "table";
+    }
+
     if (
         canvasElement.getElementsByClassName("bloom-videoContainer").length > 0
     ) {
@@ -77,12 +84,6 @@ export const inferCanvasElementType = (
 
     if (canvasElement.getElementsByClassName("bloom-rectangle").length > 0) {
         return "rectangle";
-    }
-
-    // Test for a table before the image and text tests below: a cell can hold a
-    // bloom-canvas or a translationGroup, and those would otherwise win.
-    if (canvasElement.getElementsByClassName("bloom-table").length > 0) {
-        return "table";
     }
 
     if (canvasElement.querySelector('[data-icon-type="audio"]')) {

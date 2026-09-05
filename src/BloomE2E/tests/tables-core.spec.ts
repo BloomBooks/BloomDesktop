@@ -529,42 +529,35 @@ test.describe("a table on a canvas page", () => {
         );
     });
 
-    // The copy is drawn as a table and holds the original's text, but it is not a working table:
-    // no structural command reaches it. Duplicating the canvas element clones the table's markup,
-    // including the data-table-attached="1" that Bloom writes on a table it has wired up, and
-    // attachSingleTable in tableEditing.ts returns early on a table that already carries it. So
-    // attachTable is never called for the copy, the table library never registers it, and every
-    // command in the copy's own menus does nothing, logging "TableHistoryManager: Attempted to add
-    // history entry for a detached or null table". Marked fixme rather than weakened: the copy
-    // should behave like any other table.
-    test.fixme(
-        "the duplicated table takes commands of its own",
-        async ({ page }) => {
-            await clickCell(page, 0, 0, 1);
-            await openTableMenu(page, "row", 1, 1);
-            await clickTableMenuCommand(page, "Add Row Below");
-            const rowsOfEach = async () => ({
-                original: (await getTableShape(page, 0)).rows,
-                copy: (await getTableShape(page, 1)).rows,
-            });
-            // Both tables, because the row menu serves whichever table is current, and a command that
-            // went to the wrong one is the failure worth seeing.
-            await expect
-                .poll(rowsOfEach, {
-                    message:
-                        "The copy's own row menu should have added a row to the copy alone.",
-                })
-                .toEqual({ original: 2, copy: 3 });
-            await openTableMenu(page, "row", 2, 1);
-            await clickTableMenuCommand(page, "Delete Row");
-            await expect
-                .poll(rowsOfEach, {
-                    message:
-                        "Deleting the copy's third row should have left both tables at two rows.",
-                })
-                .toEqual({ original: 2, copy: 2 });
-        },
-    );
+    // The copy has to be a working table, not just drawn as one. Duplicating a canvas element
+    // clones the table's markup, and until the clone cleanup dropped it, the copy carried the
+    // data-table-attached="1" Bloom writes on a table it has wired up, so attachSingleTable in
+    // tableEditing.ts skipped it and none of its commands reached the table library.
+    test("the duplicated table takes commands of its own", async ({ page }) => {
+        await clickCell(page, 0, 0, 1);
+        await openTableMenu(page, "row", 1, 1);
+        await clickTableMenuCommand(page, "Add Row Below");
+        const rowsOfEach = async () => ({
+            original: (await getTableShape(page, 0)).rows,
+            copy: (await getTableShape(page, 1)).rows,
+        });
+        // Both tables, because the row menu serves whichever table is current, and a command that
+        // went to the wrong one is the failure worth seeing.
+        await expect
+            .poll(rowsOfEach, {
+                message:
+                    "The copy's own row menu should have added a row to the copy alone.",
+            })
+            .toEqual({ original: 2, copy: 3 });
+        await openTableMenu(page, "row", 2, 1);
+        await clickTableMenuCommand(page, "Delete Row");
+        await expect
+            .poll(rowsOfEach, {
+                message:
+                    "Deleting the copy's third row should have left both tables at two rows.",
+            })
+            .toEqual({ original: 2, copy: 2 });
+    });
 
     test("saves both tables to the book, with no editing markup", async ({
         page,
@@ -711,7 +704,8 @@ test.describe("a table on a canvas page", () => {
     // picture. The copy's cell records data-content-type="image" and its bloom-canvas is empty:
     // publishing turns the img a picture cell holds into a background image in the cell's style
     // attribute, and for the duplicated table that never happens, so the reader loses the picture.
-    // Marked fixme rather than weakened: a duplicated table's picture belongs in the book.
+    // Marked fixme rather than weakened: a duplicated table's picture belongs in the book. (Wiring
+    // the copy up as a table, which the clone cleanup now allows, did not cure this.)
     test.fixme(
         "shows both tables' pictures in a BloomPUB preview",
         async ({ page }) => {
