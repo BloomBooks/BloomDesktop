@@ -246,6 +246,13 @@ export const LocalizableMenuItem: React.FunctionComponent<
                 // A tier-gated item stays clickable (see menuClickHandler), so nothing else in the
                 // DOM tells a test that the command itself is not on offer.
                 data-subscription-gated={enabled ? undefined : "true"}
+                // Until the feature status arrives the item looks enabled. A test that reads the
+                // menu the moment it opens needs to know the answer is not in yet.
+                data-feature-status-pending={
+                    props.featureName && featureStatus === undefined
+                        ? "true"
+                        : undefined
+                }
             >
                 <React.Fragment>
                     {iconElement}

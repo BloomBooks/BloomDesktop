@@ -12,34 +12,28 @@ namespace Bloom
         public const string kTeamCollections = "team-collections";
 
         /// <summary>
-        /// Features an e2e test asked for on the command line (--experimental-features, a
-        /// comma-separated list of tokens), or the empty string.
+        /// The comma-separated tokens of the features that are enabled: normally the saved setting,
+        /// but under --e2e only what the command line asked for (--experimental-features), which
+        /// may be nothing.
         ///
-        /// A test cannot turn one of these on the way a person does: they live in the Advanced tab
-        /// of the collection Settings dialog, which is a WinForms surface CDP cannot reach. Nor can
-        /// it write the setting, because Settings.Default lives in one user.config per build
-        /// version, shared with the developer's own Bloom (see AUTOMATION-DEBT.md, "Every Bloom of
-        /// one build shares one user.config"), so a test that saved a feature would leave it on for
-        /// them. This reads the answer from the command line instead: nothing is saved, and the
-        /// setting dies with the process. Honoured only under --e2e; Program refuses the argument
-        /// without it. A feature named here stays enabled for the whole run: SetValue edits only
-        /// the saved setting, so it cannot turn such a feature off, and a test that needs the
-        /// feature off must launch without the token.
+        /// A test cannot turn a feature on the way a person does: they live in the Advanced tab of
+        /// the collection Settings dialog, which is a WinForms surface CDP cannot reach. Nor can it
+        /// write the setting, because Settings.Default lives in one user.config per build version,
+        /// shared with the developer's own Bloom (see AUTOMATION-DEBT.md, "Every Bloom of one build
+        /// shares one user.config"), so a test that saved a feature would leave it on for them.
+        /// So under --e2e the command line is the whole answer: nothing is saved, the setting dies
+        /// with the process, and the developer's own saved experiments do not reach the run, so a
+        /// test that needs a feature OFF gets it off by not naming the token. Program refuses the
+        /// argument without --e2e. A feature named here stays enabled for the whole run: SetValue
+        /// edits only the saved setting, so it cannot turn such a feature off.
         /// </summary>
-        private static string TokensFromE2eCommandLine =>
-            Program.RunningE2eTests ? Program.StartupExperimentalFeatures ?? "" : "";
-
         public static string TokensOfEnabledFeatures
         {
             get
             {
-                var saved = Settings.Default.EnabledExperimentalFeatures ?? "";
-                var fromCommandLine = TokensFromE2eCommandLine;
-                if (string.IsNullOrEmpty(fromCommandLine))
-                    return saved;
-                if (string.IsNullOrEmpty(saved))
-                    return fromCommandLine;
-                return saved + "," + fromCommandLine;
+                if (Program.RunningE2eTests)
+                    return Program.StartupExperimentalFeatures ?? "";
+                return Settings.Default.EnabledExperimentalFeatures ?? "";
             }
         }
 

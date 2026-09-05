@@ -372,12 +372,20 @@ export async function openCanvasElementMenu(page: Page): Promise<void> {
  *
  * A command the collection's subscription tier does not reach counts as not enabled. Bloom keeps
  * such an item clickable (a click opens the Subscription settings), so it does not carry MUI's
- * disabled class; LocalizableMenuItem marks it with data-subscription-gated instead.
+ * disabled class; LocalizableMenuItem marks it with data-subscription-gated instead. That mark
+ * arrives only once the item has asked Bloom about its feature, and until then the item looks
+ * enabled, so this waits for every item to have its answer before reading.
  */
 export async function getCanvasElementMenuItems(
     page: Page,
 ): Promise<{ id: string; enabled: boolean }[]> {
     await openCanvasElementMenu(page);
+    await expect(
+        editablePageFrame(page).locator(
+            `${MENU} li[role="menuitem"][data-feature-status-pending]`,
+        ),
+        "Some menu items never learned whether their feature is on offer.",
+    ).toHaveCount(0, { timeout: 30000 });
     return editablePageFrame(page)
         .locator(`${MENU} li[role="menuitem"]`)
         .evaluateAll((items) =>

@@ -213,10 +213,10 @@ function environmentForBloom(): NodeJS.ProcessEnv {
  * which AGENTS.md reserves for a developer or CI. Set BLOOM_E2E_VITE_PORT=<n> and Bloom loads the
  * front end from that dev server instead, so the suite tests the working tree.
  *
- * Leaving the variable unset is NOT the same as "no dev server". A dev build of Bloom probes port
- * 5173 by itself (ReactControl.TryGetActiveViteDevPort), so a developer's own dev server silently
- * changes what the suite tests, and Bloom has no option that means "ignore any dev server"
- * (--vite-port rejects 0). See AUTOMATION-DEBT.md.
+ * Leaving the variable unset means the built bundle, every time. A dev build of Bloom normally
+ * probes port 5173 by itself (ReactControl.TryGetActiveViteDevPort), but under --e2e it skips that
+ * probe, so a developer's own dev server cannot silently change what the suite tests. See
+ * AUTOMATION-DEBT.md, "Which front end the e2e suite tests depends on what else is running".
  */
 function getViteDevPort(): string | undefined {
     const value = process.env.BLOOM_E2E_VITE_PORT;
@@ -431,6 +431,11 @@ async function startBloomOn(
     experimentalFeatures?: string[],
 ): Promise<IRunningBloom> {
     const exe = findBloomExe();
+    // findBloomExe takes the newest build in any configuration, so say which one this run uses:
+    // a stray Release or x64 build silently becoming the Bloom under test is otherwise invisible.
+    console.log(
+        `BloomE2E: launching ${exe} (built ${fs.statSync(exe).mtime.toISOString()})`,
+    );
 
     // Everything Bloom says, kept so a failed launch can report the reason.
     let bloomOutput = "";

@@ -37,7 +37,8 @@ namespace BloomTests
 
         /// <summary>
         /// A feature named on the command line (--experimental-features, under --e2e) counts as
-        /// enabled, and is reported alongside the saved ones, without being saved itself.
+        /// enabled without being saved, and under --e2e the saved features are not reported at all,
+        /// so a run does not depend on the developer's own settings.
         /// </summary>
         [Test]
         public void CommandLineFeatures_CountAsEnabledUnderE2e_AndAreNotSaved()
@@ -57,15 +58,38 @@ namespace BloomTests
                 "The command line must not reach the saved setting."
             );
 
-            // A saved feature and a command-line one are reported together.
+            // A saved feature is still saved, but under --e2e it is not enabled: the run sees only
+            // what its command line asked for.
             ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, true);
-            Assert.AreEqual(
-                ExperimentalFeatures.kTeamCollections + ",testing",
-                ExperimentalFeatures.TokensOfEnabledFeatures
+            Assert.AreEqual("testing", ExperimentalFeatures.TokensOfEnabledFeatures);
+            Assert.IsFalse(
+                ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
             );
             Assert.AreEqual(
                 ExperimentalFeatures.kTeamCollections,
                 Settings.Default.EnabledExperimentalFeatures
+            );
+        }
+
+        /// <summary>
+        /// Under --e2e with no --experimental-features, nothing is enabled, whatever the developer
+        /// has saved: a test that needs a feature off must be able to rely on that.
+        /// </summary>
+        [Test]
+        public void UnderE2e_WithoutCommandLineFeatures_SavedFeaturesAreIgnored()
+        {
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, true);
+            Assert.IsTrue(
+                ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections),
+                "Sanity check: outside --e2e the saved feature counts."
+            );
+
+            Program.ParseStartupPortArguments(new[] { "--e2e" }, out var errorMessage);
+            Assert.That(errorMessage, Is.Null, "Sanity check: the arguments parsed.");
+
+            Assert.AreEqual("", ExperimentalFeatures.TokensOfEnabledFeatures);
+            Assert.IsFalse(
+                ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
             );
         }
 

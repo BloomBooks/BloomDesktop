@@ -270,10 +270,10 @@ BLOOM_E2E_VITE_PORT=5173 pnpm exec playwright test
 **Use 5173, and set the variable.** The port is not free to choose: the page list and the toolbox
 write `http://localhost:5173` into their own imports, so on any other port those two frames load
 nothing and come up empty, which reads as the feature being missing rather than as a port
-problem. And leaving `BLOOM_E2E_VITE_PORT` unset does not mean "no dev server": a dev build of
-Bloom probes 5173 by itself, so an unset variable and a server somewhere else means the run
-quietly tests the built bundle, however old it is. Both halves are in AUTOMATION-DEBT.md under
-"A Vite dev server only reaches the whole UI on port 5173".
+problem. And leaving `BLOOM_E2E_VITE_PORT` unset means the built bundle, however old it is: under
+`--e2e` Bloom does not probe 5173 by itself, so a dev server it was not told about is ignored.
+Both halves are in AUTOMATION-DEBT.md under "A Vite dev server only reaches the whole UI on port
+5173".
 
 So stop a Bloom that is already using 5173 before a run, rather than moving the dev server.
 
