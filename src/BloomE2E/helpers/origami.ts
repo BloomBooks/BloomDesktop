@@ -56,6 +56,21 @@ export async function setChangeLayoutMode(
             "The Edit tab is not offering a Change Layout switch, so this page does not allow a " +
                 "custom layout. Origami is only offered for a page whose template is a customPage.",
         );
+    // Leaving the mode is not finished when the mode is off. Origami saves the page and asks
+    // Bloom to rebuild it, half a second later, and until that rebuild lands the page is the one
+    // layout mode left behind: its text boxes have had contentEditable taken off them (see
+    // setupLayoutMode in origami.ts), so anything typed goes nowhere and anything measured is
+    // about to be replaced. The rebuilt page is a new element, so mark the current one, in a
+    // property that is not markup and so cannot be saved into the book, and wait for a page
+    // element that does not carry the mark. (A text box is not a usable signal: a page whose
+    // sections are all pictures or videos has none.)
+    const pageElement = frame.locator(".bloom-page").first();
+    if (!on)
+        await pageElement.evaluate((el) => {
+            (
+                el as unknown as { __e2eBeforeLeavingLayoutMode: boolean }
+            ).__e2eBeforeLeavingLayoutMode = true;
+        });
     await label.click();
     await expect
         .poll(async () => isChangeLayoutMode(page), {
@@ -66,16 +81,26 @@ export async function setChangeLayoutMode(
         })
         .toBe(on);
     if (!on) {
-        // Leaving the mode is not finished when the mode is off. Origami saves the page and asks
-        // Bloom to rebuild it, half a second later, and until that rebuild lands the page is the
-        // one layout mode left behind: its text boxes have had contentEditable taken off them (see
-        // setupLayoutMode in origami.ts), so anything typed goes nowhere and anything measured is
-        // about to be replaced. An editable text box is therefore the signal that the real page is
-        // back.
-        await editablePageFrame(page)
-            .locator('.bloom-editable[contenteditable="true"]')
-            .first()
-            .waitFor({ state: "attached", timeout: 60000 });
+        await expect
+            .poll(
+                async () =>
+                    pageElement
+                        .evaluate(
+                            (el) =>
+                                !(
+                                    el as unknown as {
+                                        __e2eBeforeLeavingLayoutMode?: boolean;
+                                    }
+                                ).__e2eBeforeLeavingLayoutMode,
+                        )
+                        .catch(() => false),
+                {
+                    timeout: 60000,
+                    message:
+                        "Bloom did not rebuild the page after Change Layout mode was turned off.",
+                },
+            )
+            .toBe(true);
         await waitForEditablePage(page);
     }
 }
