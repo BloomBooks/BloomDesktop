@@ -142,6 +142,10 @@ real bug in the code under test; read the message and fix it rather than working
 - `helpers/videos.ts` — `chooseVideoFile` puts a video into a video box through the Sign Language
   tool's own Import, with the native file picker alone answered by an `e2e/*` hook; ships
   `fixtures/videos/short.mp4`.
+- `helpers/origami.ts` — the Edit tab's Change Layout mode: `setChangeLayoutMode`,
+  `sections`, `splitSection`, `getSectionTypesOffered`, `chooseSectionType`.
+- `helpers/pageSize.ts` — `getPageSize`, `getPageSizeChoices`, `setPageSize`: read and change
+  the book's page size and orientation through the Edit tab's layout-choice API.
 
 Two things a test must never do: trigger a native OS dialog (file pickers, the WinForms Image
 Toolbox, video capture), because Playwright cannot dismiss one and the run hangs; and wait on a
