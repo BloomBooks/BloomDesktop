@@ -455,6 +455,22 @@ namespace Bloom.Book
 
                 const char kBOM = '\uFEFF'; // Unicode Byte Order Mark character.
 
+                // The user sees a line break both for Shift+Enter (a bloom-linebreak span) and for
+                // plain Enter (a new block element), so both get the same replacement text.
+                var lineBreakReplacement = "";
+                switch (lineBreakSpanConversionOption)
+                {
+                    case LineBreakSpanConversionMode.ToNewline:
+                        lineBreakReplacement = Environment.NewLine;
+                        break;
+                    case LineBreakSpanConversionMode.ToSpace:
+                        lineBreakReplacement = " ";
+                        break;
+                    case LineBreakSpanConversionMode.ToSimpleNewline:
+                        lineBreakReplacement = "\n";
+                        break;
+                }
+
                 // Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
                 // This is being handled using at the XML level instead of string level, so that it'll work regardless of
                 // whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
@@ -480,21 +496,40 @@ namespace Bloom.Book
                     }
 
                     // Now delete lineBreakSpan and replace it
-                    var replacementForLinebreakSpan = "";
-                    switch (lineBreakSpanConversionOption)
-                    {
-                        case LineBreakSpanConversionMode.ToNewline:
-                            replacementForLinebreakSpan = Environment.NewLine;
-                            break;
-                        case LineBreakSpanConversionMode.ToSpace:
-                            replacementForLinebreakSpan = " ";
-                            break;
-                        case LineBreakSpanConversionMode.ToSimpleNewline:
-                            replacementForLinebreakSpan = "\n";
-                            break;
-                    }
-                    var newlineNode = doc.CreateTextNode(replacementForLinebreakSpan);
+                    var newlineNode = doc.CreateTextNode(lineBreakReplacement);
                     lineBreakSpan.ParentNode.ReplaceChild(newlineNode, lineBreakSpan);
+                }
+
+                // Handle plain Enter, which starts a new block element (a paragraph, or with the
+                // heading support added in 6.4, a heading). InnerText just runs the blocks
+                // together, so we have to put the line break in ourselves. Up through Bloom 6.2 we
+                // got away without this because HTML Tidy always left whitespace between block
+                // elements when it wrote the book out; HtmlAgilityPack, which replaced Tidy in the
+                // .NET 8 upgrade, does not. See https://issues.bloomlibrary.org/youtrack/issue/BL-16808.
+                var blocks = doc.SafeSelectNodes("//p | //h1 | //h2 | //h3 | //h4 | //h5 | //h6")
+                    .Cast<SafeXmlElement>()
+                    .ToArray();
+                foreach (var block in blocks)
+                {
+                    var previous = block.PreviousSibling;
+                    if (previous == null)
+                        continue; // nothing comes before it, so there is no boundary to mark
+
+                    // Throw away any whitespace Tidy left between the block elements (books
+                    // written out by Bloom 6.2 and earlier have it). It isn't rendered anywhere,
+                    // and it is what used to stand in for the line break the user sees, so
+                    // replacing it rather than adding to it makes a book written by an older
+                    // Bloom give the same answer as one written by this one.
+                    var isWhitespaceNode =
+                        previous.NodeType == XmlNodeType.Whitespace
+                        || (
+                            previous.NodeType == XmlNodeType.Text
+                            && String.IsNullOrWhiteSpace(previous.Value)
+                        );
+                    if (isWhitespaceNode)
+                        block.ParentNode.RemoveChild(previous);
+
+                    block.ParentNode.InsertBefore(doc.CreateTextNode(lineBreakReplacement), block);
                 }
 
                 return doc.DocumentElement.InnerText;
