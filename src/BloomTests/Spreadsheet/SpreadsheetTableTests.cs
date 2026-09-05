@@ -724,6 +724,34 @@ namespace BloomTests.Spreadsheet
             );
         }
 
+        [TestCase("")]
+        [TestCase("not json {")]
+        public async Task TableRowWithUnreadableDetailsLeavesTheBooksTableAlone(string details)
+        {
+            // The [details] column is present, but someone has blanked or mangled the cell
+            // on the [table] row. Bloom must not rebuild the table from nothing (which would
+            // erase the book's table); it says so and leaves the table as it was.
+            var sheet = ExportBook(MakeBook(MakeTable(true)));
+            var tableRow = sheet.ContentRows.First(r =>
+                r.MetadataKey == InternalSpreadsheet.TableRowLabel
+            );
+            Assert.That(
+                tableRow.GetCell(InternalSpreadsheet.DetailsColumnLabel).Content,
+                Does.Contain("\"kind\""),
+                "sanity: the exported details cell describes the table before we spoil it"
+            );
+            tableRow.SetCell(InternalSpreadsheet.DetailsColumnLabel, details);
+
+            var targetDom = new HtmlDom(MakeBook(MakeTable(true)), true);
+            var warnings = await RoundTripThroughFileAndImportAsync(sheet, targetDom);
+            Assert.That(warnings, Has.Some.Contains("could not read its [details] cell"));
+
+            var table = GetTable(targetDom);
+            Assert.That(TextOfCell(GetCell(table, 0, 0), "es"), Is.EqualTo("Uno"));
+            Assert.That(TextOfCell(GetCell(table, 2, 2), "en"), Is.EqualTo("Five"));
+            Assert.That(table.GetAttribute("data-column-widths"), Is.EqualTo("120px,fill,hug"));
+        }
+
         [Test]
         public async Task ImportCopiesCellImageAndVideoFilesIntoTheBook()
         {
