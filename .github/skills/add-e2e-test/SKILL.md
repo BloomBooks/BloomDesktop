@@ -212,6 +212,40 @@ Rules that hold regardless of the final API:
   a "Bloom had a problem" dialog appears; do not loop-dismiss it.
 - Waits are event/state-based (poll an API, await a selector), never fixed sleeps.
 
+## A gated feature's books must be tested in the hands of a non-subscriber
+
+Whenever the feature under test is behind a subscription tier, the test plan is not complete
+until it covers what happens to the books that feature produces when someone **without** that
+subscription opens them. This is a top priority for the Bloom project: subscribers make books,
+and the people who reuse those books, above all to translate them into their own languages, very
+often have no subscription. They cannot be blocked from that reuse. They will not be able to
+create new instances of the gated thing or restructure it, and that is fine, but they must be
+able to localize what is there.
+
+So for every gated feature, write tests for each of these, with Bloom relaunched into the lower
+tier (see `bloomApp.restart` and the relaunch options in `fixtures/launchBloom.ts`; the Pro and
+Enterprise code the suite uses is `Test-727011-1339`, never a new one):
+
+- **A derivative made below the tier from a subscriber's book.** Every text the subscriber
+  wrote can be translated: the text boxes take typing, show their language tags, and the
+  format gear works. Pictures can be replaced, audio can be recorded, the book publishes to
+  BloomPUB, ePUB and PDF. Nothing errors, nothing is hidden or garbled.
+- **What is frozen, precisely.** List the affordances the lower tier does not get (add, delete,
+  restructure, duplicate, the feature's palette icon, its Add Page entries) and assert each
+  one is absent or shows the subscription dialog, while the content itself stays editable.
+- **The original book opened below the tier.** Publishing an original that uses the gated
+  feature is normally blocked (`PreventPublishingInOriginalBooks` in `FeatureRegistry.cs`);
+  assert the Publish tab shows that block, and that the derivative from the bullet above does
+  not.
+- **The feature's experimental switch off, if it has one**, at the subscriber's tier: the
+  content still renders and localizes, with no badge, dialog or chrome.
+
+The expected behaviour for each of these is a product decision, not something to infer from the
+code. Ask the developer, item by item, what a non-subscriber should be able to do with this
+feature's content, and record the answers in the plan or the card before writing the test. Where
+the product does not yet do what they said, write the test as `test.fixme` with the observed and
+expected behaviour, and report the gap: it is a bug, and a high-priority one.
+
 ## Every step is a helper call
 
 This suite will grow to a few thousand tests. It stays maintainable only if the knowledge
@@ -489,6 +523,9 @@ The last message of the run is short (about 200 words) and stands on its own. In
 - [ ] The test passes locally, launched from a clean state (no Bloom running).
 - [ ] No Bloom.exe process survives the run.
 - [ ] New inputs: PR merged in bloom-testing-inputs, pin advanced here, both green.
+- [ ] If the feature is behind a subscription tier, tests cover a non-subscriber's use of the
+      books it makes: localizing a derivative, what is frozen, the original's publish block,
+      the experimental switch off. The expected behaviour came from the developer, not the code.
 - [ ] Anything you could not automate cleanly is recorded in `AUTOMATION-DEBT.md`.
 - [ ] The PR is open against `master`, CI is green, and it is marked ready unless something is
       deferred to the developer.
