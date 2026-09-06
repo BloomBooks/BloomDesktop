@@ -29,7 +29,14 @@ Object.keys(require.cache).forEach((key) => {
 
 const config: PlaywrightTestConfig = {
     testDir: "..",
-    testMatch: "**/*.uitest.*",
+    // The show-component.manual.ts files are not tests: each one mounts a component in a
+    // visible browser and waits forever so a developer can play with it. They are collected
+    // only when show-component.sh asks for them, so a normal run (and the nightly report)
+    // never counts them as skipped tests.
+    testMatch:
+        process.env.PLAYWRIGHT_INCLUDE_MANUAL === "1"
+            ? ["**/*.uitest.*", "**/*.manual.*"]
+            : "**/*.uitest.*",
     // The bloom-exe*.uitest.ts specs belong to the other config
     // (playwright.bloom-exe.config.ts): they attach over CDP to a running Bloom.exe and
     // import from the repo-level `playwright/test` rather than this package's

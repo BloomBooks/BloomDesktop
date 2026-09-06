@@ -12,6 +12,10 @@ using Assert = NUnit.Framework.Assert;
 
 namespace BloomTests.Book
 {
+    // The tests marked [Category("Integration")] fetch the live license spreadsheet data, so they
+    // need internet access. Exclude them from a quick local run with
+    // --filter TestCategory!=Integration. The rest of the fixture is local-only (faked HttpClient
+    // or offline cache).
     public class LicenseCheckerTests
     {
         // Always restore the static state we touch, so these tests don't leak into the others
@@ -37,6 +41,7 @@ namespace BloomTests.Book
         }
 
         [Test]
+        [Category("Integration")]
         public void ProblemLanguages_KeepsExactMatchNeedingTrim_RemovesNotMatched_WritesOfflineCache()
         {
             using (
@@ -74,6 +79,7 @@ namespace BloomTests.Book
         }
 
         [Test]
+        [Category("Integration")]
         public void ProblemLanguages_KeepsAsteriskMatch()
         {
             var checker = new LicenseChecker();

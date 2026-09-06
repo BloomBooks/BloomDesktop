@@ -1090,7 +1090,7 @@ namespace Bloom.Publish
 
         internal static void DeDuplicateMediaFiles(SafeXmlDocument dom, string folderPath)
         {
-            DeDuplicateReferencedMedia(GetImageMediaReferences(dom), folderPath);
+            DeDuplicateReferencedMedia(GetImageMediaReferences(dom, folderPath), folderPath);
             DeDuplicateReferencedMedia(GetVideoMediaReferences(dom), folderPath);
             // Narration files are tied to specific spans, so keep those one-to-one file names stable.
             var talkingBookAudioFileNames = GetTalkingBookAudioFileNames(dom);
@@ -1171,7 +1171,10 @@ namespace Bloom.Publish
             }
         }
 
-        private static IEnumerable<MediaReference> GetImageMediaReferences(SafeXmlDocument dom)
+        private static IEnumerable<MediaReference> GetImageMediaReferences(
+            SafeXmlDocument dom,
+            string folderPath
+        )
         {
             foreach (
                 var imageElement in HtmlDom
@@ -1206,9 +1209,18 @@ namespace Bloom.Publish
                     .Cast<SafeXmlElement>()
             )
             {
-                var relativePath = UrlPathString
-                    .CreateFromUrlEncodedString(bookSetting.InnerText.Trim())
-                    .PathOnly.NotEncoded;
+                // A bloomDataDiv image entry holds a plain file name, NOT a URL-encoded one --
+                // see the encoding conventions note on UrlPathString. This used to decode the
+                // value unconditionally, which disagreed with the rewrite below and with Book.cs,
+                // which both writes and normalizes these to the plain name.
+                //
+                // A handful of old books do break that rule and store an encoded name (BL-3901),
+                // so decode as far as it takes to actually find the file -- and no further, which
+                // is what leaves a real name like "photo%41.png" alone. Being wrong here means we
+                // don't recognize the reference, so the file it names can be deleted as a
+                // duplicate while this entry still points at it.
+                var relativePath = bookSetting.InnerText.Trim().Split('?')[0];
+                UrlPathString.GetFullyDecodedPath(folderPath, ref relativePath);
                 if (
                     string.IsNullOrWhiteSpace(relativePath)
                     || ImageUtils.IsPlaceholderImageFilename(relativePath)
@@ -1220,6 +1232,10 @@ namespace Bloom.Publish
                 yield return new MediaReference
                 {
                     RelativePath = relativePath,
+                    // Written as the plain file name, deliberately not URL-encoded, to match the
+                    // read above and what Book.cs writes and normalizes -- see the encoding
+                    // conventions note on UrlPathString. (The @src it also sets here is the
+                    // data-div's own bookkeeping copy, not an img that the browser ever loads.)
                     RewriteReference = canonicalRelativePath =>
                     {
                         bookSetting.InnerText = canonicalRelativePath;
@@ -1318,6 +1334,21 @@ namespace Bloom.Publish
             }
         }
 
+        /// <summary>
+        /// Build a reference to the audio file named by one of the sound attributes.
+        /// </summary>
+        /// <remarks>
+        /// These attributes do NOT agree with each other about encoding, so each has to be read
+        /// and written in its own convention -- see the encoding conventions note on
+        /// UrlPathString. data-backgroundaudio is URL-encoded; data-sound, data-correct-sound and
+        /// data-wrong-sound hold the plain file name.
+        ///
+        /// Getting it wrong is worse than it looks: the name we produce is what
+        /// DeDuplicateReferencedMedia looks for on disk, so a mis-decoded name simply isn't found
+        /// and that reference is skipped -- and if another attribute names the same file under a
+        /// name that IS found, the file can be deleted as a duplicate while this attribute still
+        /// points at it.
+        /// </remarks>
         private static MediaReference MakeAudioAttributeReference(
             SafeXmlElement element,
             string attributeName,
@@ -1328,7 +1359,10 @@ namespace Bloom.Publish
             if (string.IsNullOrWhiteSpace(rawValue) || rawValue == "none")
                 return null;
 
-            var fileName = UrlPathString.CreateFromUrlEncodedString(rawValue).PathOnly.NotEncoded;
+            var isUrlEncoded = attributeName == HtmlDom.musicAttrName;
+            var fileName = isUrlEncoded
+                ? UrlPathString.CreateFromUrlEncodedString(rawValue).PathOnly.NotEncoded
+                : rawValue.Split('?')[0];
             var normalizedFileName = BookStorage.GetNormalizedPathForOS(fileName);
             if (talkingBookAudioFileNames.Contains(normalizedFileName))
                 return null;
@@ -1337,7 +1371,15 @@ namespace Bloom.Publish
             {
                 RelativePath = MakeRelativePath("audio", fileName),
                 RewriteReference = canonicalRelativePath =>
-                    element.SetAttribute(attributeName, Path.GetFileName(canonicalRelativePath)),
+                {
+                    var newFileName = Path.GetFileName(canonicalRelativePath);
+                    element.SetAttribute(
+                        attributeName,
+                        isUrlEncoded
+                            ? UrlPathString.CreateFromUnencodedString(newFileName).UrlEncoded
+                            : newFileName
+                    );
+                },
             };
         }
 
@@ -2038,10 +2080,14 @@ namespace Bloom.Publish
             return fixedSomething;
         }
 
-        public static async Task ReportInvalidFontsAsync(
+        /// <summary>
+        /// Report (via progress) any fonts used in the staged book that cannot be published.
+        /// Returns the set of font names actually requested by the book's content, which
+        /// lets a test verify that the browser-based scan really ran.
+        /// </summary>
+        public static IReadOnlyCollection<string> ReportInvalidFonts(
             string destDirName,
-            IProgress progress,
-            Control controlToInvokeOn
+            IProgress progress
         )
         {
             // Make a browser so we can accurately determine what fonts are actually requested by
@@ -2065,96 +2111,41 @@ namespace Bloom.Publish
                 editable.AddClass("bloom-visibility-code-on");
             }
 
-            // This function, which is what we want to do next, may be either invoked
-            // or simply run, depending on whether we need to force running it on the UI thread.
-            // We can only manipulate the browser on the UI thread (except in tests).
-            var getFontsAction = async () =>
+            // Ask a real browser which fonts the stylesheets actually request. We use an
+            // OffScreenBrowser (a WebView2 on its own dedicated thread, driven by blocking calls)
+            // rather than creating a WebView2Browser inline on the calling thread. The inline
+            // approach needed fragile thread juggling (see BL-15292), and in bulk upload it
+            // reliably wedged after a couple of books: each new inline WebView2 failed to finish
+            // initializing, so every subsequent book failed to upload with "The instance of
+            // CoreWebView2 is uninitialized" (BL-16767). This is the same mechanism
+            // RemoveUnwantedContent uses for its page checks.
+            using (var browser = new OffScreenBrowser())
             {
-                // This will usually be the main UI thread, but in tests it could be anything.
-                // In production, we must make sure we're on the UI thread to create and manipulate a browser,
-                // but we may no longer be after we await RunJavaScriptAsync. We have to be on the same
-                // thread to dispose it, so keep track of which thread it is.
-                var threadWhereWeMadeBrowser = Thread.CurrentThread;
-                // Even trying controlToInvokeOn.Invoke everywhere the browser is referenced, I couldn't get
-                // "await WebView2Browser.CreateAsync()" to produce a browser that would successfully navigate
-                // to the page for checking fonts.  The navigation would always time out and report failure,
-                // unless it crashed before the timeout and stopped the program with exit code 0x80000003.
-                // If it didn't crash, often the scan for fonts would return an empty array which looks
-                // innocuous (but possibly misleading) to the user.  When it didn't return an empty array,
-                // it returned an array full of nothing but "Times New Roman", the default browser font on
-                // Windows which is illegal to embed or distribute, and complained vociferously to the user.
-                // See BL-15292 for more details and discussion.
-                var browser = new WebView2Browser(); // NOT await WebView2Browser.CreateAsync();
-                try
+                if (!browser.Navigate(dom, 10000, () => false))
                 {
-                    // Logically, if any await can result in a thread switch, we might need to invoke again here.
-                    // (But invoking again here doesn't work!?)
-                    if (
-                        !browser.NavigateAndWaitTillDone(
-                            dom,
-                            10000,
-                            InMemoryHtmlFileSource.JustCheckingPage,
-                            () => false,
-                            false
-                        )
-                    )
-                    {
-                        // We had problems with timeouts here in similar code (BL-7892).
-                        // We may as well carry on and detect as many problem fonts as we can.
-                        Debug.WriteLine("Failed to navigate fully to ReportInvalidFontsAsync DOM");
-                        Logger.WriteEvent(
-                            "Failed to navigate fully to ReportInvalidFontsAsync DOM"
-                        );
-                    }
+                    // We had problems with timeouts here in similar code (BL-7892).
+                    // We may as well carry on and detect as many problem fonts as we can.
+                    Debug.WriteLine("Failed to navigate fully to ReportInvalidFonts DOM");
+                    Logger.WriteEvent("Failed to navigate fully to ReportInvalidFonts DOM");
+                }
 
-                    // Get and store the display and font information for each element in the DOM.
-                    var rawInfo = await browser.GetObjectFromJavascriptAsync(
-                        GetElementFontFamilyInfoJavascript
-                    );
-                    //Debug.WriteLine($"DEBUG ReportInvalidFontsAsync: rawInfo={rawInfo}");
-                    var fontFamilyInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(
-                        rawInfo
-                    );
+                // Get the font-family information for each element in the DOM.
+                var rawInfo = browser.RunJavascript(GetElementFontFamilyInfoJavascript);
+                var fontFamilyInfo = string.IsNullOrEmpty(rawInfo)
+                    ? null
+                    : Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(rawInfo);
 
-                    if (fontFamilyInfo != null)
+                if (fontFamilyInfo != null)
+                {
+                    foreach (var family in fontFamilyInfo)
                     {
-                        foreach (var family in fontFamilyInfo)
+                        var font = ExtractFontNameFromFontFamily(family);
+                        if (!string.IsNullOrEmpty(font))
                         {
-                            var font = ExtractFontNameFromFontFamily(family);
-                            if (!string.IsNullOrEmpty(font))
-                            {
-                                fontsFound.Add(font);
-                            }
+                            fontsFound.Add(font);
                         }
                     }
                 }
-                finally
-                {
-                    if (threadWhereWeMadeBrowser == Thread.CurrentThread)
-                    {
-                        // This seems to happen in tests. In live code, given the bizarre way
-                        // Windows.Forms implements await and resumes on a different thread,
-                        // we don't take this branch, but we normally have a controlToInvokeOn,
-                        // which is usually null in tests.
-                        browser.Dispose();
-                    }
-                    else if (controlToInvokeOn != null)
-                    {
-                        // If we made the browser on this control's thread, we can dispose of it properly by invoking
-                        // to that thread. This is the usual path in production.
-                        controlToInvokeOn.Invoke(() => browser.Dispose());
-                    }
-                    // Otherwise, we just can't dispose of it properly. Probably we're running tests
-                    // and it doesn't matter much.
-                }
-            };
-            if (controlToInvokeOn == null)
-            {
-                await getFontsAction();
-            }
-            else
-            {
-                await (Task)controlToInvokeOn.Invoke(getFontsAction);
             }
 
             // The old approach. Enhance: this is probably much faster to run. We think its only
@@ -2249,6 +2240,7 @@ namespace Bloom.Publish
                     //progress.WriteWarning("This book has a font, \"{0}\", which is not on this computer and whose license is unknown.", font);
                 }
             }
+            return fontsFound;
         }
 
         private const string AILangTagFragment = "-x-ai";

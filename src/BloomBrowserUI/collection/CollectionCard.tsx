@@ -236,7 +236,12 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
                                 align-items: center;
                                 width: 100%;
                                 margin-bottom: 10px;
-                                // Keep the title clear of the top-right "..." button.
+                                // Keep the title clear of the top-right "..."
+                                // button. border-box makes the padding count
+                                // inside the 100% width; without it the row is
+                                // 34px wider than the card and the ellipsis
+                                // lands under the button anyway.
+                                box-sizing: border-box;
                                 padding-right: ${kMoreButtonReservedSpace};
                             `}
                         >

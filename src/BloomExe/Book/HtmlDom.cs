@@ -17,7 +17,6 @@ using Bloom.Publish.Epub;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
@@ -884,7 +883,7 @@ namespace Bloom.Book
                 var props = new Dictionary<string, string>();
                 props["newLayout"] = templateId;
                 props["oldLineage"] = oldLineage;
-                Analytics.Track("Change Page Layout", props);
+                BloomAnalytics.Track("Change Page Layout", props);
                 return true;
             }
             return false;
@@ -2878,6 +2877,10 @@ namespace Bloom.Book
                 audioOrDivWithBackgroundMusic.GetAttribute("data-backgroundaudio") ?? String.Empty;
             if (backgroundAudioFileName != String.Empty)
             {
+                // data-backgroundaudio really IS URL-encoded -- the music tool writes it through
+                // encodeAndSetPageAttr (encodeURIComponent). Do not "correct" this to match its
+                // neighbours data-sound / data-correct-sound / data-wrong-sound, which are plain.
+                // See the encoding conventions note on UrlPathString.
                 return UrlPathString.CreateFromUrlEncodedString(backgroundAudioFileName);
             }
 

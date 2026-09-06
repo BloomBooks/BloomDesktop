@@ -9,7 +9,10 @@ import { BoxWithIconAndText } from "../react_components/boxes";
 import { useL10n } from "../react_components/l10nHooks";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { Markdown } from "../react_components/markdown";
-import { getSafeLocalizedDate } from "../collection/subscriptionCodeControl";
+import {
+    getSafeLocalizedDate,
+    getTodayAsYYYYMMDD,
+} from "../collection/subscriptionCodeControl";
 import { useSubscriptionInfo } from "../collection/useSubscriptionInfo";
 import { SubscriptionTier } from "../react_components/featureStatus";
 import { useIsTeamCollection } from "../teamCollection/teamCollectionApi";
@@ -98,7 +101,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
 
     // don't show anything until we have this info
     if (expiryDateStringAsYYYYMMDD === "") return null;
-    const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
+    const todayAsYYYYMMDD = getTodayAsYYYYMMDD();
     // if the license is deprecated, we want to show the warning right away. Otherwise,
     // we only want to show it if the expiration is within 2 months (approximately 60 days).
     const kDaysBeforeWarningForNormalExpiration = 60;

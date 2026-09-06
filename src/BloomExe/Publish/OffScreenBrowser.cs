@@ -286,7 +286,25 @@ namespace Bloom.Publish
                 },
                 null
             );
-            return tcs.Task.GetAwaiter().GetResult();
+
+            // We are about to block, and publishing runs as an api request, so the thread we block is
+            // usually a BloomServer worker. Tell the server, so that it keeps a worker free to serve the
+            // requests this browser is about to make -- including the very page we navigate to, which
+            // BloomServer serves from memory.
+            //
+            // Without this the server could not tell that its whole pool was blocked. Reporting a block is
+            // opt-in, and neither of the two existing reports covers us. BloomApiHandler's covers ACQUIRING
+            // the api lock, not the long stretch while publishing holds it. ApiRequest's covers marshalling
+            // a handler onto the UI thread, which the publish endpoints deliberately opt out of (they
+            // register with handleOnUiThread: false), so it never runs on this path -- and that opt-out is
+            // also why the thread we block here is a server worker rather than the UI thread, which is what
+            // makes reporting it worth doing at all. So every other worker could be waiting for that lock,
+            // and this one waiting here, with the server believing a worker was still free. That is
+            // BL-16612.
+            using (BloomServer._theOneInstance?.ReportThreadBlocking())
+            {
+                return tcs.Task.GetAwaiter().GetResult();
+            }
         }
 
         /// <summary>

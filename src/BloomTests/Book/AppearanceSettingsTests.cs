@@ -396,14 +396,14 @@ namespace BloomTests.Book
         [TestCase(@"""pageNumber-position"": ""automatic""", "unset", "unset")]
         [TestCase(
             @"""pageNumber-position"": ""left""",
-            "calc(var(--page-margin-left) + var(--pageNumber-full-bleed-extra-margin, 0px))",
+            "calc(var(--page-margin-left) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))",
             "deliberately-invalid"
         )]
         [TestCase(@"""pageNumber-position"": ""center""", "50%", "50%")]
         [TestCase(
             @"""pageNumber-position"": ""right""",
             "deliberately-invalid",
-            "calc(var(--page-margin-right) + var(--pageNumber-full-bleed-extra-margin, 0px))"
+            "calc(var(--page-margin-right) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))"
         )]
         [TestCase(@"""pageNumber-position"": ""hidden""", "unset", "unset")]
         // [TestCase(null, null, null)]

@@ -9,3 +9,6 @@ a8c3a95d33958acd1ae8a873143a1bcdfbc8f135
 # format all BloomBrowserUI and content files with prettier v3
 b751a4ca1d7b642b485c1e8d08ec91f1a4793017
 938512c4ee055e6e2c67cb130da37ea4912adab9
+
+# indent getDependencies-windows.sh (no code change)
+fb538952d8f71d048df0b9e9c9e78778df094a5f

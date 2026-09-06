@@ -1,3 +1,17 @@
+# ⚠️ TEMPORARY (as of 2026-08-27): new work targets Version6.5, not master
+
+We are in a transition phase. Unless the user says otherwise:
+
+- Branch new work off **`Version6.5`**, not `master`, even if you are sitting on `master` now.
+- Open PRs with **`Version6.5`** as the base branch.
+- Assume `Version6.5` is the right target rather than asking just to confirm it. If something
+  about the task genuinely makes the target unclear, it is fine to ask — but say that you are
+  assuming `Version6.5` when you do.
+
+Delete this whole section (it exists only on master) once master is the normal target again.
+
+---
+
 This project has a web front-end at src/BloomBrowserUI.
 The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 
@@ -35,6 +49,26 @@ The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 - Add sanity checks to guard against falsely passing tests. For example, when unit testing a method, sanity check that the test data values are as expected before you call the method, and then after you call the method you can verify that those values have changed as expected.
 - When running C# tests with `dotnet test`, never pass `--no-build`. Always let dotnet build the test project first so the tests run against the latest code. A stale DLL can cause tests to pass or fail against an old version of the code, hiding real regressions.
 
+## The opt-in Reading App Builder real-build test
+
+`BloomTests.Publish.Rab.RabRealBuildTests.SetupAndBuildAsync_RealReadingAppBuilderBuild_CreatesValidApk`
+is the only test that exercises a real Reading App Builder installation end to end: it builds a
+BloomPUB into an actual signed Android APK with RAB and Gradle, and checks the result. **It is worth
+running after any change under `src/BloomExe/Publish/Rab/`** — nothing else covers that path for
+real.
+
+- It needs RAB installed (Bloom's own toolchain under
+  `%LOCALAPPDATA%\SIL\Bloom\ReadingAppBuilder\` counts) and **`BLOOM_RUN_RAB_MANUAL_TESTS=1`** set.
+  Without the variable it calls `Assert.Ignore`.
+- It takes **about 70 seconds**, because it runs a real Gradle build.
+- It is `[Category("SkipOnTeamCity")]` / `[Category("RequiresReadingAppBuilder")]`, so **CI never
+  runs it**. If it breaks, only someone running it deliberately will find out.
+
+```bash
+BLOOM_RUN_RAB_MANUAL_TESTS=1 build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj \
+  --filter "FullyQualifiedName~RabRealBuildTests"
+```
+
 ## Building / testing C# while a Bloom is running
 
 The developer often has a Bloom running (via `./go.sh`) so they can watch your changes
@@ -56,6 +90,17 @@ under `output/agent/<key>/` so your build/test never touches the locked shared o
 means you do **not** need to stop the developer's Bloom to build or run unit tests, and
 multiple terminals can build/test at once. See `Directory.Build.props` for how it works.
 
+- For `test`, the wrapper **judges the run and prints a verdict as its last line**, so
+  `[agent-dotnet] test run completed. Passed! ...` is the only thing you need to read (and it
+  survives `| tail`). Do not judge a run by the `Passed!`/`Failed!` summary above it: a run whose
+  test host is killed part way through still prints a passing summary of however many tests got to
+  run. The wrapper catches that and says `*** TEST RUN ABORTED ***`, and exits non-zero, as it
+  does for ordinary failures. The text it looks for lives in `build/test-abort-markers.txt`.
+- **Tests retire their BloomServers, they do not dispose them.** A fixture that made a server
+  listen calls `RetiredTestServers.Retire(server)`; the listener is closed a few fixtures later,
+  once whatever it was serving has certainly finished. Disposing on the spot is what used to kill
+  the test host (BL-16667). If you add a fixture that calls `EnsureListening`, retire it the same
+  way rather than calling `Dispose`.
 - This wrapper is for **building and running tests only**. To *run* Bloom, still use
   `./go.sh` (see "Running Bloom" below) — the wrapper builds no `Bloom.exe` apphost.
   (`BloomPdfMaker.exe` is the one apphost it does build, because Bloom's PDF code shells
@@ -65,6 +110,34 @@ multiple terminals can build/test at once. See `Directory.Build.props` for how i
   `Directory.Build.props`, not the known environment noise it used to be.
 - The first build in a fresh terminal is a full (cold) build into that terminal's private
   tree; subsequent builds there are incremental. `output/` is gitignored.
+
+### Temp folders are isolated per test run too
+
+The build tree is not the only thing two concurrent runs would otherwise share. Our tests name
+their scratch folders after themselves (`new TemporaryFolder("SomeFixtureTests")`), which are
+machine-global paths, and `TemporaryFolder` **deletes** an existing folder of that name before
+creating it — so one run's setup would delete another run's in-flight folder.
+
+`src/BloomTests/TestTempDirectory.cs` prevents that: before any fixture runs, it points this
+process's temp directory at `%TEMP%\BloomTests\<key>-p<pid>\`. You therefore do **not** need to
+invent unique folder names in tests — keep naming a temp folder after your fixture, and it is
+already scoped to the run. It also means production code writing to temp while under test is
+isolated as well.
+
+Two consequences worth knowing:
+
+- **After a failing run the folder is kept**, so you can look at what the failing test wrote; the
+  path is printed on standard error at the end of the run. Passing runs delete theirs, and
+  anything older than a day is cleared by the next run.
+- **If the folder cannot be deleted, the run says so** — again on standard error, naming one file
+  that is still open and the reason the OS gave, without failing the run. That normally means a
+  test finished without disposing something; worth chasing, because a leaked handle can make
+  later runs behave oddly.
+- Note that standard error is the only channel `dotnet test` shows at its default verbosity —
+  `Console.Out`, `TestContext.Out` and `TestContext.Progress` are all swallowed. Use
+  `Console.Error` for anything a developer must see.
+- Every temp path is longer by `BloomTests\<key>-p<pid>\`. Deeply-nested temp paths in tests are
+  that much closer to `MAX_PATH`.
 
 ## Building / testing the front-end (web UI) while Bloom is running
 
@@ -106,6 +179,20 @@ Like the C# wrapper it is **build-only**: it confirms the bundle compiles; it do
 running Bloom load those bundles (Bloom reads the fixed `output\browser` / dev server). It
 skips the pug/LESS/markdown/static-copy steps, so it is a fast pure-bundle check.
 
+## If the front-end test suite seems to hang, re-run it with `--no-file-parallelism`
+
+On some machines `yarn test` (`vitest run`) gets through roughly fifteen test files and then
+stops dead — no error, no failing test, no summary — until something kills it. That is vitest's
+worker pool wedging, **not** a broken test and not the branch you are on: run the files one at a
+time and the whole suite completes green.
+
+```bash
+cd src/BloomBrowserUI && yarn vitest run --no-file-parallelism
+```
+
+So before reporting the suite as hanging or failing, re-run it that way and report *that* result.
+Do not go hunting for the "test that hangs" — it moves. Excluding whichever file it stopped after
+just relocates the stall to a different one.
 
 # Terminal
 The vscode terminal often loses the first character sent from copilot agents. So if you send "cd" it might just say "bash: d: command not found". Try prefixing commands with a space.
@@ -128,9 +215,11 @@ You have a complete set of faster, non-disruptive alternatives, so don't run the
 The full `pnpm build` exists to (re)populate the shared `output\browser` — `clean.js` plus content assets plus the bundle. It's slow, and it wrecks any running Vite dev server / `--watch` and the Bloom loading from it, so it's a developer/CI job, not something to spring on a live session. If you think you genuinely need it, ask the developer to run it (they can stop Bloom first) rather than running it yourself.
 
 # Localization
-Whenever you add, modify, or review localizable strings (XLF entries), follow `.github/skills/xlf-strings/SKILL.md`.
+Whenever you add, modify, or review localizable strings (XLF entries), follow `.github/skills/xlf-strings/SKILL.md`. For how Crowdin works and why those rules exist — including why a no-longer-used string is marked obsolete rather than deleted — see `DistFiles/localization/README.md`.
 
-The one rule that applies at all times even outside that skill: **only ever edit files under `DistFiles/localization/en/`** — never touch the other language subdirectories.
+Two rules apply at all times, even outside that skill:
+- **Only ever edit files under `DistFiles/localization/en/`** — never touch the other language subdirectories.
+- **Never delete a `<trans-unit>` on your own initiative**, even an obsolete one, and even when you are confident nothing uses it. Mark it obsolete and leave it.
 
 # Commenting
 All public methods should have a comment. So should most private ones!
@@ -148,6 +237,12 @@ To find the ticket id for the branch you are on, look for a `BL-XXXXX` token in 
 then the PR title, then recent commit messages. Not every branch has a card — some work (small
 cleanups, branding tweaks, tooling) is done without one, so finding no id is a normal outcome, not
 a reason to go hunting.
+
+**A `[6.X]` prefix on a card's summary names the target branch.** If a card's summary starts
+with something like `[6.4]` or `[6.5]`, the fix belongs on that `VersionX.Y` branch. Before
+starting, check the branch you are about to branch from and the PR base you plan to use; if
+they don't match the prefix, stop and confirm the target with the user rather than guessing.
+A card with no prefix has no branch requirement from this rule.
 
 # Skills
 Reusable, task-specific procedures for this repo live in `.github/skills/<name>/SKILL.md`.

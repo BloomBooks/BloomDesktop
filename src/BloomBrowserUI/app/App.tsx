@@ -8,12 +8,11 @@ import {
     defaultWorkspaceTabState,
     getActiveWorkspaceTab,
     TopBar,
-    TabStates,
+    useWorkspaceTabInfo,
     WorkspaceTabId,
 } from "../react_components/TopBar/TopBar";
 import { PublishTabPane } from "../publish/PublishTab/PublishTabPane";
 import { kPanelBackground } from "../bloomMaterialUITheme";
-import { useWatchApiObject } from "../utils/bloomApi";
 import { EditTabPane } from "./EditTabPane";
 import { ToastHost } from "../toast/ToastHost";
 
@@ -27,12 +26,7 @@ export const App: React.FunctionComponent = () => {
     // Team collection toast click returns to collection tab in WorkspaceView.cs:606.
     // Publish flow can force jump to edit tab in LibraryPublishApi.cs:517.
     // Edit-book command switches to edit tab in WorkspaceView.cs:1164.
-    const state = useWatchApiObject<{ tabStates: TabStates }>(
-        "workspace/tabs",
-        defaultWorkspaceTabState,
-        "workspace",
-        "tabs",
-    );
+    const state = useWorkspaceTabInfo();
 
     const tabStates = state.tabStates ?? defaultWorkspaceTabState.tabStates;
     const activeTab = React.useMemo((): WorkspaceTabId => {

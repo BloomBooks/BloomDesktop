@@ -7,6 +7,7 @@ using Bloom.Book;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.web;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.IO;
 
@@ -158,6 +159,20 @@ namespace Bloom.Api
                 kAppUrlPrefix + "isMeddlingWithNewFiles",
                 request => GetShell()?.GetIsMeddlingWithNewFiles() ?? false,
                 (request, value) => GetShell()?.SetIsMeddlingWithNewFiles(value),
+                true
+            );
+            // True only on the builds that offer the "Use dev.BloomLibrary.org" menu item.
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "canChooseDevBloomLibrary",
+                request => request.ReplyWithBoolean(BookUpload.UserCanChooseWebSite),
+                false
+            );
+            // Reads the web site that this run of Bloom uses, and records the user's choice of
+            // the web site for this run and the runs that follow.  Changing it restarts Bloom.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kAppUrlPrefix + "useDevBloomLibrary",
+                request => BookUpload.UseSandbox,
+                (request, value) => GetShell()?.SetUseDevBloomLibrary(value),
                 true
             );
             apiHandler.RegisterEndpointHandler(

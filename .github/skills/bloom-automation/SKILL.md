@@ -267,6 +267,21 @@ Use this when the user says to reuse the already-running Bloom.
 
 ## Rules
 
+### Never probe a live Bloom to discover whether something exists
+Bloom is a desktop app whose server expects only the requests its own UI makes. A request
+for an unregistered API endpoint is treated as a program error, not a 404: the server raises
+a modal "Bloom had a problem" dialog (`ReportMissingApiEndpoint` → `NonFatalProblem.Report`)
+on top of whatever the user is doing, and the same goes for a missing file
+(`ReportMissingFile`). So an exploratory `GET /bloom/api/...` "just to see if it's there" —
+e.g. to identify a running instance, find the current book, or check whether a feature
+exists — punishes the human at the screen even though the response looks harmless to you.
+- To learn whether an endpoint exists, read the source: grep `src/BloomExe/web` (and the
+  callers of `apiHandler.RegisterEndpointHandler`) for the endpoint string.
+- To identify or inspect a running instance, use the endpoints this skill already documents
+  (`common/instanceInfo`, the launcher `/status`) or the helper scripts — nothing else.
+- Send a request to a live Bloom only when the code shows the endpoint is registered in the
+  build that Bloom is running (a worktree on another branch may not have it).
+
 ### Reuse the current worktree instance
 - Reuse it.
 - Attach over CDP and drive the UI directly.
