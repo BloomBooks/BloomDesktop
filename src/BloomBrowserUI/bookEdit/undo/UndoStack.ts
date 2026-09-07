@@ -138,19 +138,16 @@ export class UndoStack {
             return;
         }
         const entry = this.entries[this.currentIndex];
-        const indexBefore = this.currentIndex;
         this.currentIndex--;
-        // If the entry fails to undo, the index goes back where it was: the failed entry stays the
-        // next thing to undo (so the user can retry, or see that it is stuck), instead of being
-        // silently skipped and offered as a Redo of something that never happened.
+        // If the entry fails to undo, it becomes the next thing to undo again (so the user can
+        // retry, or see that it is stuck), instead of being silently skipped and offered as a Redo
+        // of something that never happened.
         return this.apply(
             () => {
                 entry.prepareRedo?.();
                 return entry.undo();
             },
-            () => {
-                this.currentIndex = indexBefore;
-            },
+            () => this.makeNextToUndo(entry),
         );
     }
 
@@ -165,16 +162,34 @@ export class UndoStack {
             return;
         }
         const entry = this.entries[this.currentIndex + 1];
-        const indexBefore = this.currentIndex;
         this.currentIndex++;
-        // As in undo(): a redo that fails leaves the index where it was, so the same entry is
-        // still the next Redo rather than being treated as done.
+        // As in undo(): a redo that fails is still the next Redo rather than being treated as done.
         return this.apply(
             () => entry.redo!(),
-            () => {
-                this.currentIndex = indexBefore;
-            },
+            () => this.makeNextToRedo(entry),
         );
+    }
+
+    /**
+     * After a failed undo, point the index back at `entry` — by identity, not by the number it had
+     * before. An asynchronous undo can be in flight while the page changes, and `keepOnly` may have
+     * dropped entries (including this one) and renumbered the rest meanwhile; restoring the old
+     * number would then point past the end, and `canUndo` would advertise an entry that is not
+     * there. If the entry is gone, the index `keepOnly` computed is already right.
+     */
+    private makeNextToUndo(entry: IUndoEntry): void {
+        const i = this.entries.indexOf(entry);
+        if (i >= 0) {
+            this.currentIndex = i;
+        }
+    }
+
+    /** The redo counterpart of {@link makeNextToUndo}. */
+    private makeNextToRedo(entry: IUndoEntry): void {
+        const i = this.entries.indexOf(entry);
+        if (i >= 0) {
+            this.currentIndex = i - 1;
+        }
     }
 
     /**
@@ -310,8 +325,17 @@ export class UndoStack {
         );
     }
 
-    /** Filter entries, keeping `currentIndex` pointing at the same entry it did before. */
+    /**
+     * Filter entries, keeping `currentIndex` pointing at the same entry it did before.
+     *
+     * Pushes held by an open `runUndoable` scope are filtered too: an asynchronous gesture can be
+     * awaiting while the page changes, and without this its held entry, scoped to the page just
+     * left, would be recorded when the scope closes and later undone against the new page.
+     */
     private keepOnly(predicate: (entry: IUndoEntry) => boolean): void {
+        this.heldPushes = this.heldPushes.filter((held) =>
+            predicate(held.entry),
+        );
         const kept: IUndoEntry[] = [];
         let newIndex = -1;
         for (let i = 0; i < this.entries.length; i++) {

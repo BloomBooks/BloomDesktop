@@ -468,6 +468,54 @@ describe("UndoStack", () => {
         });
     });
 
+    describe("a page change during an in-flight or held operation", () => {
+        it("does not leave a dangling index when the failing entry was cleared meanwhile", async () => {
+            let reject: (e: Error) => void = () => {
+                throw new Error("test bug: reject called before it was set");
+            };
+            const slowFailing: IUndoEntry = {
+                label: "slow failing",
+                pageId: "page1",
+                kind: "custom",
+                undo: () =>
+                    new Promise<void>((_, rej) => {
+                        reject = rej;
+                    }),
+                redo: () => {},
+            };
+            stack.setCurrentPageId("page1");
+            stack.push(makeEntry("a", log));
+            stack.push(slowFailing);
+
+            const pending = stack.undo() as Promise<void>;
+            // The user changes page while the undo is still in flight.
+            stack.clearPageScopedEntries();
+            expect(stack.getEntryCount()).toBe(0); // sanity
+            reject(new Error("too late"));
+            await expect(pending).rejects.toThrow("too late");
+
+            // A numeric rollback would have pointed past the end here.
+            expect(stack.canUndo()).toBe(false);
+            expect(stack.peekUndoLabel()).toBeUndefined();
+            expect(() => stack.undo()).not.toThrow();
+        });
+
+        it("drops a held page-scoped push when the page is left before the scope closes", () => {
+            stack.setCurrentPageId("page1");
+            stack.beginUndoableScope("async gesture");
+            stack.push(makeEntry("old page work", log));
+            stack.push(makeEntry("delete page", log, { pageId: undefined }));
+            // Navigation happens while the gesture is still awaiting.
+            stack.clearPageScopedEntries();
+            stack.endUndoableScope();
+
+            // The page-scoped entry is gone; the one that survives page changes was kept.
+            expect(stack.getEntryCount()).toBe(1);
+            stack.undo();
+            expect(log).toEqual(["undo delete page"]);
+        });
+    });
+
     describe("asynchronous entries", () => {
         it("waits for an async undo before allowing another", async () => {
             let release: () => void = () => {
