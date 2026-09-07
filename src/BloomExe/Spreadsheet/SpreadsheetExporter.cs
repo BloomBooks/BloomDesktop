@@ -18,6 +18,7 @@ using Bloom.Publish;
 using Bloom.SafeXml;
 using Bloom.web;
 using L10NSharp;
+using Newtonsoft.Json.Linq;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -183,42 +184,94 @@ namespace Bloom.Spreadsheet
             Color colorForPage
         )
         {
-            var imageContainers = GetImageContainersAndBloomCanvases(page);
+            // A table's own translation groups, canvases and video containers belong to the
+            // table, which gets its own rows below; they must not also become [page content]
+            // rows, or a nine-by-six table would fill the sheet with dozens of positional
+            // rows that no importer could put back where they came from.
+            var tables = SpreadsheetTables.TopLevelTables(page);
+            var imageContainers = GetImageContainersAndBloomCanvases(page)
+                .Where(x => !SpreadsheetTables.IsInsideTable(x))
+                .ToList();
             var allGroups = TranslationGroupManager.SortedGroupsOnPage(page, true);
             var groups = allGroups
-                .Where(x => !x.GetAttribute("class").Contains("bloom-imageDescription"))
+                .Where(x =>
+                    !x.GetAttribute("class").Contains("bloom-imageDescription")
+                    && !SpreadsheetTables.IsInsideTable(x)
+                )
                 .ToList();
             var videoContainers = page.SafeSelectNodes(
                     ".//*[contains(@class,'bloom-videoContainer')]"
                 )
                 .Cast<SafeXmlElement>()
+                .Where(x => !SpreadsheetTables.IsInsideTable(x))
                 .ToList();
             var widgetContainers = page.SafeSelectNodes(
                     ".//*[contains(@class,'bloom-widgetContainer')]"
                 )
                 .Cast<SafeXmlElement>()
+                .Where(x => !SpreadsheetTables.IsInsideTable(x))
                 .ToList();
 
             var pageType = SpreadsheetImporter.GetLabelFromPage(page);
 
+            // Puts the page type on the first row we make for the page, whatever kind of row
+            // that is. If we make more rows for this page, we don't specify a type; that
+            // allows subsequent rows to go onto the same page if there is room.
+            void SetPageTypeIfNeeded(ContentRow rowNeedingType)
+            {
+                if (string.IsNullOrEmpty(pageType))
+                    return;
+                var pageTypeIndex = _spreadsheet.AddColumnForTag(
+                    InternalSpreadsheet.PageTypeColumnLabel,
+                    "Page Type"
+                );
+                rowNeedingType.SetCell(pageTypeIndex, pageType);
+                pageType = null;
+            }
+
             // Each of these will result in one row in the output.
-            var rowContentSources = Extensions.MapUnevenLists(
+            var rowContentSources = Extensions
+                .MapUnevenLists(
+                    new[] { groups, imageContainers, videoContainers, widgetContainers }
+                )
+                .ToList();
+
+            // Where each table's rows go among the page's [page content] rows: after as many
+            // of them as hold something that precedes the table in the document. Row k holds
+            // groups[k], imageContainers[k] and so on, so everything before the table has
+            // been written once we have written that many rows.
+            var pageContentRowsBeforeTable = RowsBeforeEachTable(
+                page,
+                tables,
                 new[] { groups, imageContainers, videoContainers, widgetContainers }
             );
+            var tablesWritten = 0;
+            void WriteTablesDueBefore(int pageContentRowsWritten)
+            {
+                while (
+                    tablesWritten < tables.Count
+                    && pageContentRowsBeforeTable[tablesWritten] <= pageContentRowsWritten
+                )
+                {
+                    ExportTableRows(
+                        tables[tablesWritten],
+                        pageNumber,
+                        colorForPage,
+                        bookFolderPath,
+                        null,
+                        SetPageTypeIfNeeded
+                    );
+                    tablesWritten++;
+                }
+            }
+
+            var pageContentRowsSoFar = 0;
             foreach (var pageContent in rowContentSources)
             {
+                WriteTablesDueBefore(pageContentRowsSoFar);
+                pageContentRowsSoFar++;
                 var row = new ContentRow(_spreadsheet);
-                if (!string.IsNullOrEmpty(pageType))
-                {
-                    var pageTypeIndex = _spreadsheet.AddColumnForTag(
-                        InternalSpreadsheet.PageTypeColumnLabel,
-                        "Page Type"
-                    );
-                    row.SetCell(pageTypeIndex, pageType);
-                    // If we make more rows for this page, don't specify a type.
-                    // This allows subsequent rows to go onto the same page if there is room.
-                    pageType = null;
-                }
+                SetPageTypeIfNeeded(row);
                 row.SetCell(
                     InternalSpreadsheet.RowTypeColumnLabel,
                     InternalSpreadsheet.PageContentRowLabel
@@ -278,6 +331,243 @@ namespace Bloom.Spreadsheet
                 }
 
                 row.BackgroundColor = colorForPage;
+            }
+            // Any tables that come after everything else on the page (including the case of
+            // a page whose only content is a table, where there are no [page content] rows).
+            WriteTablesDueBefore(int.MaxValue);
+        }
+
+        /// <summary>
+        /// For each table, how many [page content] rows must be written before it: the
+        /// largest number of items that precede it in document order in any one of the
+        /// lists those rows are made from.
+        /// </summary>
+        private static List<int> RowsBeforeEachTable(
+            SafeXmlElement page,
+            List<SafeXmlElement> tables,
+            List<SafeXmlElement>[] rowContentLists
+        )
+        {
+            if (tables.Count == 0)
+                return new List<int>();
+            var documentOrder = GetDocumentOrder(page);
+            int OrderOf(SafeXmlElement element) =>
+                documentOrder.TryGetValue(element, out var order) ? order : int.MaxValue;
+            return tables
+                .Select(table =>
+                {
+                    var tableOrder = OrderOf(table);
+                    return rowContentLists
+                        .Select(list => list.Count(item => OrderOf(item) < tableOrder))
+                        .Max();
+                })
+                .ToList();
+        }
+
+        /// <summary>
+        /// Every element at or under the page, numbered in document order, so that two
+        /// elements found by different searches can be told which comes first.
+        /// </summary>
+        private static Dictionary<SafeXmlElement, int> GetDocumentOrder(SafeXmlElement page)
+        {
+            var result = new Dictionary<SafeXmlElement, int>();
+            var next = 0;
+            void Walk(SafeXmlNode node)
+            {
+                if (node is SafeXmlElement element)
+                    result[element] = next++;
+                foreach (var child in node.ChildNodes)
+                    Walk(child);
+            }
+            Walk(page);
+            return result;
+        }
+
+        /// <summary>
+        /// Writes one bloom-table as a [table] row followed by one [table cell] row per
+        /// visible cell, row-major. The [table] row holds no text of its own: the table
+        /// element and all its cells go into the hidden [details] column as JSON,
+        /// attributes and inline styles verbatim, e.g.
+        /// {"kind":"table","attributes":{"class":"bloom-table bloom-leadingElement",
+        /// "data-column-widths":"hug,fill","style":"grid-template-columns: ...;"},
+        /// "cells":[{"row":0,"col":0,"attributes":{"class":"bloom-cell",
+        /// "data-content-type":"text"}}, ...]}. Copying attributes rather than
+        /// interpreting them means C# never has to understand a column width or a border
+        /// matrix, and an imported book renders correctly even if it is published without
+        /// ever being opened in the Edit tab.
+        ///
+        /// A cell's own content rides in the ordinary columns of its [table cell] row, so
+        /// that a translator sees a table's text in the same language columns as any other
+        /// text: {"kind":"table-cell","row":0,"col":1,"type":"text"}. Covered (bloom-skip)
+        /// cells get no row of their own; they are in the [table] row's cell list as
+        /// attributes, which is all there is to them.
+        ///
+        /// A cell whose type is "table" holds a nested table, whose own [table] and
+        /// [table cell] rows follow that cell's row and carry "parent":{"row":r,"col":c}
+        /// naming the cell of this table that holds them.
+        /// </summary>
+        /// <param name="parent">null for a table on the page; for a nested table, the row
+        /// and column of the cell of the containing table that holds it.</param>
+        private void ExportTableRows(
+            SafeXmlElement table,
+            string pageNumber,
+            Color colorForPage,
+            string bookFolderPath,
+            JObject parent,
+            Action<ContentRow> setPageTypeIfNeeded
+        )
+        {
+            // Make sure the details column exists; its presence is what tells the importer
+            // that this spreadsheet is the authority on the tables it describes.
+            _spreadsheet.AddColumnForTag(
+                InternalSpreadsheet.DetailsColumnLabel,
+                InternalSpreadsheet.DetailsColumnFriendlyName
+            );
+
+            var cells = SpreadsheetTables.CellsOf(table);
+            var columnCount = SpreadsheetTables.ColumnCount(table);
+
+            var tableDetails = new JObject { ["kind"] = SpreadsheetTables.TableKind };
+            if (parent != null)
+                tableDetails["parent"] = parent.DeepClone();
+            tableDetails["attributes"] = SpreadsheetTables.GetAttributesForExport(table);
+            var cellList = new JArray();
+            for (var i = 0; i < cells.Count; i++)
+            {
+                cellList.Add(
+                    new JObject
+                    {
+                        ["row"] = i / columnCount,
+                        ["col"] = i % columnCount,
+                        ["attributes"] = SpreadsheetTables.GetAttributesForExport(cells[i]),
+                    }
+                );
+            }
+            tableDetails["cells"] = cellList;
+
+            var tableRow = new ContentRow(_spreadsheet);
+            setPageTypeIfNeeded(tableRow);
+            tableRow.SetCell(
+                InternalSpreadsheet.RowTypeColumnLabel,
+                InternalSpreadsheet.TableRowLabel
+            );
+            tableRow.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
+            tableRow.SetCell(
+                InternalSpreadsheet.DetailsColumnLabel,
+                tableDetails.ToString(Newtonsoft.Json.Formatting.None)
+            );
+            tableRow.BackgroundColor = colorForPage;
+
+            for (var i = 0; i < cells.Count; i++)
+            {
+                var cell = cells[i];
+                if (cell.HasClass(SpreadsheetTables.SkipClass))
+                    continue;
+                var cellRowNumber = i / columnCount;
+                var cellColumnNumber = i % columnCount;
+                var contentType = SpreadsheetTables.ContentTypeOf(cell);
+
+                var cellDetails = new JObject
+                {
+                    ["kind"] = SpreadsheetTables.TableCellKind,
+                    ["row"] = cellRowNumber,
+                    ["col"] = cellColumnNumber,
+                    ["type"] = contentType,
+                };
+                if (parent != null)
+                    cellDetails["parent"] = parent.DeepClone();
+
+                var cellRow = new ContentRow(_spreadsheet);
+                cellRow.SetCell(
+                    InternalSpreadsheet.RowTypeColumnLabel,
+                    InternalSpreadsheet.TableCellRowLabel
+                );
+                cellRow.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
+                cellRow.SetCell(
+                    InternalSpreadsheet.DetailsColumnLabel,
+                    cellDetails.ToString(Newtonsoft.Json.Formatting.None)
+                );
+                cellRow.BackgroundColor = colorForPage;
+
+                switch (contentType)
+                {
+                    case SpreadsheetTables.TextContentType:
+                        var group = SafeXmlElement
+                            .GetAllDivsWithClass(cell, "bloom-translationGroup")
+                            .FirstOrDefault(g =>
+                                !g.HasClass("bloom-imageDescription")
+                                && SpreadsheetTables.ParentCellOf(g) == cell
+                            );
+                        if (group != null)
+                            WriteTranslationGroup(group, cellRow, bookFolderPath);
+                        break;
+                    case SpreadsheetTables.ImageContentType:
+                        WriteCellImage(cell, cellRow, pageNumber, colorForPage, bookFolderPath);
+                        break;
+                    case SpreadsheetTables.VideoContentType:
+                        var videoContainer = SpreadsheetTables.FindDescendantWithClass(
+                            cell,
+                            "bloom-videoContainer"
+                        );
+                        if (videoContainer != null)
+                            WriteVideo(videoContainer, cellRow, bookFolderPath);
+                        break;
+                    case SpreadsheetTables.TableContentType:
+                        var nested = SpreadsheetTables.FindNestedTable(cell);
+                        if (nested != null)
+                            ExportTableRows(
+                                nested,
+                                pageNumber,
+                                colorForPage,
+                                bookFolderPath,
+                                new JObject { ["row"] = cellRowNumber, ["col"] = cellColumnNumber },
+                                setPageTypeIfNeeded
+                            );
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes a picture cell's image into its [table cell] row, the same way a page's
+        /// image goes into a [page content] row: the file is copied into the spreadsheet's
+        /// images folder, its path goes in [image source] (so it also gets a thumbnail),
+        /// and any image description follows in an [image description] row.
+        /// </summary>
+        private void WriteCellImage(
+            SafeXmlElement cell,
+            ContentRow cellRow,
+            string pageNumber,
+            Color colorForPage,
+            string bookFolderPath
+        )
+        {
+            var image = cell.SafeSelectNodes(".//img").Cast<SafeXmlElement>().FirstOrDefault();
+            var imagePath = ImagePath(
+                bookFolderPath,
+                image?.GetAttribute("src") ?? "placeHolder.png"
+            );
+            var fileName = Path.GetFileName(imagePath);
+            var outputPath = Path.Combine("images", fileName);
+            if (ImageUtils.IsPlaceholderImageFilename(fileName))
+                outputPath = InternalSpreadsheet.BlankContentIndicator;
+            cellRow.SetCell(InternalSpreadsheet.ImageSourceColumnLabel, outputPath);
+            CopyImageFileToSpreadsheetFolder(imagePath);
+
+            foreach (
+                var description in SafeXmlElement
+                    .GetAllDivsWithClass(cell, "bloom-imageDescription")
+                    .Where(d => SpreadsheetTables.ParentCellOf(d) == cell)
+            ) // typically at most one
+            {
+                var descriptionRow = new ContentRow(_spreadsheet);
+                descriptionRow.SetCell(
+                    InternalSpreadsheet.RowTypeColumnLabel,
+                    InternalSpreadsheet.ImageDescriptionRowLabel
+                );
+                descriptionRow.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
+                descriptionRow.BackgroundColor = colorForPage;
+                WriteTranslationGroup(description, descriptionRow, bookFolderPath);
             }
         }
 
