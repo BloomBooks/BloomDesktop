@@ -34,6 +34,7 @@ books cannot be checked out, so Edit is disabled).
 | `handlerAccumulation.mjs` | any book with a text box | Stage 0 / inventory X4: edit key handlers accumulate when `SetupElements` runs again (fails today by design — it is the repro) |
 | `pasteDropBaseline.mjs` | Basic Book | Stage 0 / inventory C1–C7: writes `../PASTE-DROP-BASELINE.md`, what paste and drop let through today |
 | `pasteFilterBypass.mjs` | Basic Book | The bug the baseline found: a styled span in the payload makes BL-12357's handler restore the unfiltered HTML (fails today by design) |
+| `verifyDeleteCanvasElement.mjs` | a book with canvas elements ("The Moon and the Cap") | Stage 2b: deleting a canvas element is undoable from the Undo button (element, family bubble specs and place restored) and redoable with Ctrl+Y, exactly once |
 
 Helpers: `gotoBook.mjs "<title>"` opens a book in Edit; `activateTool.mjs <toolId>` (e.g.
 `talkingBook`, `decodableReader`) switches the toolbox tool through the ToolBox's own

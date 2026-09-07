@@ -1041,6 +1041,22 @@ harness's own `SetupElements` re-runs: on a freshly launched Bloom the same chec
 (`ecff07547`). When Stage 1 squash-merges, rebase only Stage 2b's own commits onto the target:
 `git rebase --onto <target> BL-6681-stage1-undostack BL-6681-stage2b-undo-delete-canvas-element`.
 
+**Stage 2b built (2026-09-07, late).** `bookEdit/undo/canvasElementDeletion.ts` (page frame: capture /
+restore / redelete) and `canvasElementDeletionEntry.ts` (workspace frame: builds and pushes the entry),
+with three one-line dispatches: `deleteCanvasElement` records just before removing (after the
+background-image branch, which records its own image undo), the workspace bundle gains
+`recordCanvasElementDeletion` (DEFERRED-EDITS 1f, realized), the page bundle gains
+`restoreDeletedCanvasElement` / `redeleteCanvasElement`. Both of the plan's "verify first" concerns
+were real and are handled by data in the record rather than by re-deriving: Comical's
+`deleteBubbleFromFamily` renumbers the family's `order` (and copies the patriarch's spec down), so the
+record carries every sibling's `data-bubble` and restore puts them all back; `removeDetachedTargets`
+removes the drag-activity target, so the record carries its markup and structural path. Redo goes
+through the real `deleteCanvasElement` with recording suppressed. 18 new tests (81 undo tests green),
+typecheck and lint clean. **Live check written (`liveChecks/verifyDeleteCanvasElement.mjs`) but not yet
+run:** the relaunched Bloom's WebView2 sat on `about:blank` (Vite alive, Bloom's server answering, 9 GB
+free) and was being restarted when this was written. Run it first thing; if it passes, PR the branch
+into the Stage 1 branch's target once Stage 1 merges (rebase `--onto`, see above).
+
 **Observed, not chased — the reader-tools undo arms itself in books without a reader tool.** In "A
 house for mouse" (Basic Book, toolbox shows only Canvas/Talking Book/Settings), after this session
 had earlier opened a Decodable Reader book and re-run `SetupElements` on this page, typing in a text
