@@ -32,8 +32,13 @@ describe("runUndoable", () => {
         runUndoable(
             "Delete canvas element",
             () => {
-                // What deleteCanvasElement's background-image branch does today.
-                stack.push(makeEntry("image operation", log));
+                // An inner layer that records its own undo does so in its own runUndoable, which
+                // is what lets the outer gesture's entry take precedence over it.
+                runUndoable(
+                    "image operation",
+                    () => stack.push(makeEntry("image operation", log)),
+                    stack,
+                );
                 stack.push(makeEntry("element removal", log));
             },
             stack,
@@ -42,8 +47,9 @@ describe("runUndoable", () => {
         expect(stack.getEntryCount()).toBe(1);
         expect(stack.peekUndoLabel()).toBe("Delete canvas element");
         stack.undo();
-        // The kept entry is the *first* one pushed, relabelled — not a new synthetic entry.
-        expect(log).toEqual(["undo image operation"]);
+        // The kept entry is the gesture's own, relabelled — not the inner layer's, and not a new
+        // synthetic entry.
+        expect(log).toEqual(["undo element removal"]);
     });
 
     it("returns the operation's value", () => {

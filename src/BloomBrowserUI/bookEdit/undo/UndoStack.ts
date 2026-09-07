@@ -32,12 +32,15 @@ export class UndoStack {
 
     /**
      * Labels of the `runUndoable` scopes currently open, outermost first.
-     * Non-empty means a push should be folded into the outermost scope rather than added.
+     * Non-empty means a push is held until the outermost scope closes. See {@link push}.
      */
     private openScopeLabels: string[] = [];
 
-    /** Whether the outermost open scope has already claimed an entry. See {@link push}. */
-    private pushedInOutermostScope = false;
+    /**
+     * Entries pushed while a scope was open, with the scope depth each arrived at, in order. One
+     * of them is recorded when the outermost scope closes; see {@link endUndoableScope}.
+     */
+    private heldPushes: { entry: IUndoEntry; depth: number }[] = [];
 
     /** True while an undo or redo is being applied, to stop a re-entrant one interleaving. */
     private applying = false;
@@ -60,23 +63,21 @@ export class UndoStack {
     /**
      * Record an undoable step.
      *
-     * If a `runUndoable` scope is open this does *not* add a second entry — one user gesture must
-     * produce exactly one entry, however many layers of code it passes through. The outermost
-     * scope wins: the first push inside it is kept and relabelled with the scope's label, and
-     * later pushes within the same scope are ignored. See PLAN.md 4.13.
+     * If a `runUndoable` scope is open the entry is not recorded yet but *held*: one user gesture
+     * must produce exactly one entry, however many layers of code it passes through, and which of
+     * the held entries that is can only be decided once the whole gesture has run. See
+     * {@link endUndoableScope} for the rule, and PLAN.md 4.13.
      */
     public push(entry: IUndoEntry): void {
         if (this.openScopeLabels.length > 0) {
-            if (this.pushedInOutermostScope) {
-                // A nested operation recording its own undo. Deliberately dropped: undoing the
-                // outermost operation already covers it, and keeping both would make the first
-                // Ctrl+Z half-undo the gesture.
-                return;
-            }
-            this.pushedInOutermostScope = true;
-            entry.label = this.openScopeLabels[0];
+            this.heldPushes.push({ entry, depth: this.openScopeLabels.length });
+            return;
         }
+        this.record(entry);
+    }
 
+    /** Actually add an entry, truncating any redo branch. */
+    private record(entry: IUndoEntry): void {
         // Anything the user had undone is now unreachable: they have taken a different branch.
         this.entries.length = this.currentIndex + 1;
 
@@ -137,9 +138,20 @@ export class UndoStack {
             return;
         }
         const entry = this.entries[this.currentIndex];
+        const indexBefore = this.currentIndex;
         this.currentIndex--;
-        entry.prepareRedo?.();
-        return this.apply(() => entry.undo());
+        // If the entry fails to undo, the index goes back where it was: the failed entry stays the
+        // next thing to undo (so the user can retry, or see that it is stuck), instead of being
+        // silently skipped and offered as a Redo of something that never happened.
+        return this.apply(
+            () => {
+                entry.prepareRedo?.();
+                return entry.undo();
+            },
+            () => {
+                this.currentIndex = indexBefore;
+            },
+        );
     }
 
     /**
@@ -153,8 +165,16 @@ export class UndoStack {
             return;
         }
         const entry = this.entries[this.currentIndex + 1];
+        const indexBefore = this.currentIndex;
         this.currentIndex++;
-        return this.apply(() => entry.redo!());
+        // As in undo(): a redo that fails leaves the index where it was, so the same entry is
+        // still the next Redo rather than being treated as done.
+        return this.apply(
+            () => entry.redo!(),
+            () => {
+                this.currentIndex = indexBefore;
+            },
+        );
     }
 
     /**
@@ -216,14 +236,39 @@ export class UndoStack {
      */
     public beginUndoableScope(label: string): void {
         if (this.openScopeLabels.length === 0) {
-            this.pushedInOutermostScope = false;
+            this.heldPushes = [];
         }
         this.openScopeLabels.push(label);
     }
 
-    /** Close the innermost `runUndoable` scope. */
+    /**
+     * Close the innermost `runUndoable` scope. Closing the *outermost* one records exactly one of
+     * the entries pushed while it was open, labelled with the outermost scope's label:
+     *
+     * - the first entry the outermost operation pushed **itself** (at depth 1), if it pushed one —
+     *   that entry describes the whole gesture, which is what a single Ctrl+Z must reverse; or
+     * - failing that, the first entry pushed by anything nested inside it, since a scope that
+     *   records nothing of its own is just a wrapper saying "these inner steps are one gesture".
+     *
+     * "First push wins" alone would be wrong: an inner layer usually runs, and pushes, *before* the
+     * outer operation gets to record its own entry, and keeping the inner one would leave an undo
+     * that reverses only part of the gesture (an image reverting to a placeholder, say, but not the
+     * canvas element coming back). The corollary is a discipline for inner layers: an operation
+     * that records its own undo does so inside its own `runUndoable`, so that its push sits at
+     * depth 2 or more when it happens inside a larger gesture. See PLAN.md 4.13.
+     */
     public endUndoableScope(): void {
+        const label = this.openScopeLabels[0];
         this.openScopeLabels.pop();
+        if (this.openScopeLabels.length > 0 || this.heldPushes.length === 0) {
+            return;
+        }
+        const chosen =
+            this.heldPushes.find((held) => held.depth === 1) ??
+            this.heldPushes[0];
+        this.heldPushes = [];
+        chosen.entry.label = label;
+        this.record(chosen.entry);
     }
 
     /** Whether a `runUndoable` scope is currently open. */
@@ -231,23 +276,38 @@ export class UndoStack {
         return this.openScopeLabels.length > 0;
     }
 
-    /** Run an entry's undo/redo, holding the re-entrancy guard until it finishes. */
-    private apply(action: () => void | Promise<void>): void | Promise<void> {
+    /**
+     * Run an entry's undo/redo, holding the re-entrancy guard until it finishes, and calling
+     * `onFailure` (after releasing the guard) if it throws or rejects. The failure itself is still
+     * propagated to the caller.
+     */
+    private apply(
+        action: () => void | Promise<void>,
+        onFailure: () => void,
+    ): void | Promise<void> {
         this.applying = true;
         let result: void | Promise<void>;
         try {
             result = action();
         } catch (e) {
             this.applying = false;
+            onFailure();
             throw e;
         }
         if (!result) {
             this.applying = false;
             return;
         }
-        return result.finally(() => {
-            this.applying = false;
-        });
+        return result.then(
+            () => {
+                this.applying = false;
+            },
+            (e) => {
+                this.applying = false;
+                onFailure();
+                throw e;
+            },
+        );
     }
 
     /** Filter entries, keeping `currentIndex` pointing at the same entry it did before. */

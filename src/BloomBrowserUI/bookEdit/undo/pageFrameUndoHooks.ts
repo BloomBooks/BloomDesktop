@@ -34,13 +34,17 @@ export function pageFrameNavigating(stack: UndoStack = theOneUndoStack): void {
 }
 
 /**
- * The page frame has loaded (or, on the 1500 ms fallback in switchContentPage, is assumed to have).
- * Records which page entries are now being made against.
+ * The page frame has loaded. Records which page entries are now being made against.
  *
- * Idempotent for an unchanged id, so being called twice, or late, is harmless. Being called EARLY
- * is not quite: an entry pushed before this runs is attributed to whatever id was current, which
- * could be the previous page. Nothing pushes automatically yet; this has to be looked at again when
- * typing starts recording entries (Stage 3).
+ * Called from switchContentPage's load handler, and also from a dedicated once-only load listener
+ * there, because that handler can be run early by a 1500 ms fallback (reading the page that is
+ * still showing) and then unregistered — without the second listener the id would stay stale for
+ * the rest of the page. Idempotent for an unchanged id, so running twice is harmless.
+ *
+ * Note the id recorded here is only used to notice page CHANGES (`setCurrentPageId` discards
+ * entries scoped to other pages). Entries carry the page id their pusher gave them, and every
+ * navigation clears page-scoped entries anyway (`pageFrameNavigating`), so a briefly stale id here
+ * cannot mis-stamp or wrongly keep an entry.
  */
 export function pageFrameLoaded(stack: UndoStack = theOneUndoStack): void {
     stack.setCurrentPageId(getCurrentPageIdFromPageFrame());

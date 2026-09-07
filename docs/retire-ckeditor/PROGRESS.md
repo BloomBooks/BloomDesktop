@@ -996,6 +996,45 @@ clipboard paste, since the capture used synthetic events.
 `toolboxBundle.getTheOneToolbox().getCurrentTool().id()` is; the harnesses now use that, and
 `liveChecks/activateTool.mjs` switches tools through `activateToolFromId`.
 
+### 2026-09-07 (later) — Stage 1 preflighted: PR #8317; two stacks found and fixed
+
+**PR:** https://github.com/BloomBooks/BloomDesktop/pull/8317 (draft, into `BL-6681-ckeditor`). Devin
+and a read-only local review both ran; every finding was acted on the same day. Two of them matter
+beyond this PR:
+
+1. **There were two "one" stacks.** The Undo button does not call the workspace bundle's
+   `handleUndo`: C# runs `getEditablePageBundleExports().topBarButtonClick({command:"undo"})` in the
+   **page** frame, and `bloomEditing.ts` imported `handleUndo` from `../workspaceRoot` — so
+   `workspaceRoot`'s module (with `theOneUndoStack` and the module-level provider registration) was
+   also executing in the page frame, and the button undid from *that* copy. Neutral while both were
+   empty, wrong the moment anything is pushed. **Fixed:** `topBarButtonClick` now calls
+   `getWorkspaceBundleExports().handleUndo()`, the import is gone, and registration runs only when
+   `window.parent === window`. The production build confirms why the guard is needed: Vite still puts
+   `workspaceRoot` in a chunk (`requiresSubscriptionBundle-main.js`) that the page and toolbox bundles
+   import, so its top level runs in all three frames regardless. **Lesson for the harnesses:** the
+   live checks had called `workspaceBundle.handleUndo()` directly and so could not see this;
+   `pressUndoButton` now goes through the page frame's `topBarButtonClick`, the real entry point.
+2. **Devin's three bugs, all real, all fixed:** a failed undo/redo moved `currentIndex` anyway (now
+   transactional — the failing entry stays the next thing to undo, tests for sync and async failure
+   both ways); `runUndoable` kept the *first* push inside a scope rather than the outer gesture's own
+   entry (now: pushes are held while a scope is open and, when the outermost closes, the first
+   depth-1 push wins, else the first inner one — with the discipline that an inner operation records
+   inside its own `runUndoable`); and Ctrl+Y in Change Layout mode would have fired origami's redo
+   *and* ours once the stack held anything (the binding now stands down when
+   `.marginBox.origami-layout-mode` is present, until Stage 4 retires origami's handler). Also a
+   dedicated once-only `load` listener records the page id even when the 1500 ms fallback ran first.
+
+**Observed, not chased — the reader-tools undo arms itself in books without a reader tool.** In "A
+house for mouse" (Basic Book, toolbox shows only Canvas/Talking Book/Settings), after this session
+had earlier opened a Decodable Reader book and re-run `SetupElements` on this page, typing in a text
+box made `toolboxBundle.canUndo()` true, so the Undo button ran the reader-tools undo instead of
+CKEditor's — with the Canvas tool active as well as the Talking Book tool. `doMarkup` (which pushes
+the model's undo snapshots) is only reachable from the decodable/leveled tools' own keyup handlers,
+so those handlers were attached to this page's editables somehow. Pre-existing (the old
+`handleUndo` used the same order and the same `toolbox.canUndo()`), and possibly an artefact of the
+session's own harness runs, so it needs a repro from a fresh launch before it is filed. Stage 3
+removes both mechanisms anyway.
+
 ## Next actions
 
 Everything below is pushed; nothing is half-applied, and both branches are green with a clean

@@ -312,6 +312,45 @@ describe("UndoStack", () => {
             expect(stack.peekUndoLabel()).toBe("outer");
         });
 
+        it("keeps the outer operation's own entry even when an inner scope pushed first", () => {
+            // The inner layer usually runs, and records, before the outer operation gets to
+            // record its own entry. The outer entry describes the whole gesture, so it must win.
+            stack.beginUndoableScope("outer");
+            stack.beginUndoableScope("inner");
+            stack.push(makeEntry("inner", log));
+            stack.endUndoableScope();
+            stack.push(makeEntry("outer", log));
+            stack.endUndoableScope();
+
+            stack.undo();
+            expect(log).toEqual(["undo outer"]);
+        });
+
+        it("falls back to the first inner entry when the outer scope records nothing itself", () => {
+            stack.beginUndoableScope("outer wrapper");
+            stack.beginUndoableScope("inner a");
+            stack.push(makeEntry("a", log));
+            stack.endUndoableScope();
+            stack.beginUndoableScope("inner b");
+            stack.push(makeEntry("b", log));
+            stack.endUndoableScope();
+            stack.endUndoableScope();
+
+            expect(stack.getEntryCount()).toBe(1);
+            expect(stack.peekUndoLabel()).toBe("outer wrapper");
+            stack.undo();
+            expect(log).toEqual(["undo a"]);
+        });
+
+        it("records nothing while the scope is still open", () => {
+            stack.beginUndoableScope("gesture");
+            stack.push(makeEntry("a", log));
+            expect(stack.getEntryCount()).toBe(0);
+            expect(stack.canUndo()).toBe(false);
+            stack.endUndoableScope();
+            expect(stack.getEntryCount()).toBe(1);
+        });
+
         it("starts a fresh claim for each new outermost scope", () => {
             stack.beginUndoableScope("first gesture");
             stack.push(makeEntry("a", log));
@@ -335,6 +374,97 @@ describe("UndoStack", () => {
 
             expect(stack.getEntryCount()).toBe(2);
             expect(stack.peekUndoLabel()).toBe("afterwards");
+        });
+    });
+
+    describe("a failing undo or redo", () => {
+        function failingEntry(
+            label: string,
+            options: {
+                failUndo?: boolean;
+                failRedo?: boolean;
+                failPrepare?: boolean;
+            },
+        ): IUndoEntry {
+            return {
+                label,
+                pageId: "page1",
+                kind: "custom",
+                prepareRedo: () => {
+                    if (options.failPrepare) throw new Error("prepare failed");
+                },
+                undo: () => {
+                    if (options.failUndo) throw new Error("undo failed");
+                    log.push(`undo ${label}`);
+                },
+                redo: () => {
+                    if (options.failRedo) throw new Error("redo failed");
+                    log.push(`redo ${label}`);
+                },
+            };
+        }
+
+        it("leaves a synchronously failing entry as the next thing to undo", () => {
+            stack.push(makeEntry("a", log));
+            stack.push(failingEntry("b", { failUndo: true }));
+            expect(stack.peekUndoLabel()).toBe("b"); // sanity
+
+            expect(() => stack.undo()).toThrow("undo failed");
+
+            expect(stack.peekUndoLabel()).toBe("b");
+            expect(stack.canRedo()).toBe(false);
+            expect(log).toEqual([]);
+        });
+
+        it("does the same when prepareRedo is what fails", () => {
+            stack.push(failingEntry("b", { failPrepare: true }));
+            expect(() => stack.undo()).toThrow("prepare failed");
+            expect(stack.peekUndoLabel()).toBe("b");
+            expect(stack.canRedo()).toBe(false);
+        });
+
+        it("leaves an asynchronously failing entry as the next thing to undo", async () => {
+            const entry: IUndoEntry = {
+                label: "async b",
+                pageId: "page1",
+                kind: "custom",
+                undo: () => Promise.reject(new Error("async undo failed")),
+                redo: () => {},
+            };
+            stack.push(makeEntry("a", log));
+            stack.push(entry);
+
+            await expect(stack.undo()).rejects.toThrow("async undo failed");
+
+            expect(stack.peekUndoLabel()).toBe("async b");
+            expect(stack.canRedo()).toBe(false);
+            // The guard is released, so the user can retry; it fails again, harmlessly, and the
+            // entry is still where it was.
+            await expect(stack.undo()).rejects.toThrow("async undo failed");
+            expect(stack.peekUndoLabel()).toBe("async b");
+        });
+
+        it("leaves a failing redo as the next thing to redo", async () => {
+            stack.push(failingEntry("b", { failRedo: true }));
+            stack.undo();
+            expect(stack.peekRedoLabel()).toBe("b"); // sanity
+
+            expect(() => stack.redo()).toThrow("redo failed");
+
+            expect(stack.peekRedoLabel()).toBe("b");
+            expect(stack.canUndo()).toBe(false);
+
+            const asyncEntry: IUndoEntry = {
+                label: "async c",
+                pageId: "page1",
+                kind: "custom",
+                undo: () => {},
+                redo: () => Promise.reject(new Error("async redo failed")),
+            };
+            stack.push(asyncEntry);
+            stack.undo();
+            await expect(stack.redo()).rejects.toThrow("async redo failed");
+            expect(stack.peekRedoLabel()).toBe("async c");
         });
     });
 
@@ -388,9 +518,13 @@ describe("UndoStack", () => {
 
             expect(() => stack.undo()).toThrow("boom");
 
-            // The stack must still work; a broken entry must not disable Undo for the session.
+            // The guard is released, so the stack still works: new work can be recorded and
+            // undone. (The broken entry itself stays put as the next thing to undo — see
+            // "a failing undo or redo" — rather than being skipped.)
+            stack.push(makeEntry("later", log));
             stack.undo();
-            expect(log).toEqual(["undo good"]);
+            expect(log).toEqual(["undo later"]);
+            expect(stack.peekUndoLabel()).toBe("bad");
         });
     });
 

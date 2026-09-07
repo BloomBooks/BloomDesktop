@@ -124,9 +124,16 @@ export async function setup() {
                 .getCurrentTool();
             return tool ? tool.id() : undefined;
         });
-    // What the top bar's Undo button does (topBarButtonClick -> handleUndo), minus the WinForms click.
+    // What the top bar's Undo button does, minus the click itself: C# runs
+    // getEditablePageBundleExports().topBarButtonClick({command:"undo"}) -- in the PAGE frame --
+    // which must reach the workspace frame's one stack. Going through the page frame here, rather
+    // than calling workspaceBundle.handleUndo() directly, is what caught the two-stacks bug.
     h.pressUndoButton = async () => {
-        await p.evaluate(() => window.workspaceBundle.handleUndo());
+        await p.evaluate(() =>
+            window.workspaceBundle
+                .getEditablePageBundleExports()
+                .topBarButtonClick({ command: "undo" }),
+        );
         await p.waitForTimeout(800);
     };
     // Find a content page (not xmatter) with a CKEditor'd content editable, starting at thumb 1.

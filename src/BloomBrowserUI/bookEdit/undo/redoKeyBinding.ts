@@ -15,6 +15,12 @@
 // claimed the event AND the shared stack actually has something to redo. When it does not, the
 // keystroke falls through untouched to whatever would have handled it before this existed.
 //
+// One case defaultPrevented cannot catch: origami's handler runs origamiRedo() without claiming
+// the event, so in Change Layout mode a Ctrl+Y that reaches us with something on the shared stack
+// would redo twice. We therefore also stand down whenever the page is in Change Layout mode, which
+// origami itself signals with the `origami-layout-mode` class on `.marginBox`. This goes away when
+// Stage 4 converts origami's undo onto the shared stack and retires its handler.
+//
 // There is no Redo button and no C# involvement: Redo is JS-only by decision (PLAN.md 10).
 
 /** The part of the workspace bundle this binding needs. Kept small so a test can fake it. */
@@ -32,6 +38,11 @@ export function isRedoKeystroke(e: KeyboardEvent): boolean {
         !e.shiftKey &&
         (e.key === "y" || e.key === "Y")
     );
+}
+
+/** Whether the page is in Change Layout mode, where origami owns Ctrl+Z and Ctrl+Y. */
+export function isInChangeLayoutMode(doc: Document): boolean {
+    return !!doc.querySelector(".marginBox.origami-layout-mode");
 }
 
 /**
@@ -52,6 +63,10 @@ export function installRedoKeyBinding(
         // Someone earlier in the bubble already claimed this keystroke (e.g. the reader tools'
         // handler, when a markup tool is active). Not ours.
         if (e.defaultPrevented) {
+            return;
+        }
+        // Origami claims Ctrl+Y in Change Layout mode without preventing the default; see above.
+        if (isInChangeLayoutMode(doc)) {
             return;
         }
         const target = getTarget();

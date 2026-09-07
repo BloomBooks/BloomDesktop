@@ -93,6 +93,17 @@ describe("redoKeyBinding", () => {
             expect(redoCalls).toBe(0);
         });
 
+        it("stands down in Change Layout mode, where origami redoes without claiming the key", () => {
+            canRedo = true;
+            const marginBox = doc.createElement("div");
+            marginBox.className = "marginBox origami-layout-mode";
+            doc.body.appendChild(marginBox);
+            const e = keydown({ key: "y", ctrlKey: true });
+            editable.dispatchEvent(e);
+            expect(redoCalls).toBe(0);
+            expect(e.defaultPrevented).toBe(false);
+        });
+
         it("ignores keystrokes that are not Ctrl+Y", () => {
             canRedo = true;
             editable.dispatchEvent(keydown({ key: "y" }));

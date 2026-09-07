@@ -18,9 +18,18 @@ import {
 } from "./undo/pageFrameUndoHooks";
 
 // The one undo stack (BL-6681) arbitrates between Bloom's pre-existing undo mechanisms until
-// they are converted. Registering them is all it takes; this module is loaded once per edit-tab
-// session, and the providers only reach across frames when consulted.
-registerLegacyUndoProviders();
+// they are converted. Registering them is all it takes, and the providers only reach across
+// frames when consulted.
+//
+// Only in the top (workspace) frame, though. Vite puts this module in a chunk shared with other
+// code, so its top level also runs inside the page and toolbox iframes, each of which would
+// otherwise get a live copy of "the one" stack with its own providers. Nothing in those frames may
+// use that copy -- the Undo button's page-frame entry point (topBarButtonClick) reaches the real
+// stack through getWorkspaceBundleExports() for exactly this reason -- and leaving it unregistered
+// makes sure of it: an accidental use would find an empty stack with no providers.
+if (window.parent === window) {
+    registerLegacyUndoProviders();
+}
 
 export interface IWorkspaceExports {
     showDialog(
@@ -182,6 +191,11 @@ export function switchContentPage(newSource: string) {
     };
     iframe.removeEventListener("load", handler);
     iframe.addEventListener("load", handler);
+    // Separately from the handler above, which the 1500 ms fallback below can run early (against
+    // the page that is still there) and then unregister: the undo stack must learn the id of the
+    // page that ACTUALLY loads, so it listens for the real load on its own. Idempotent, so running
+    // twice when the load does fire in time is harmless.
+    iframe.addEventListener("load", () => pageFrameLoaded(), { once: true });
     iframe.src = newSource;
     updateWorkspaceUrlParam("pageSrc", newSource);
     // When we don't already have a video (either a new page, or it has been deleted),
