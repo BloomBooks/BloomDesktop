@@ -29,6 +29,9 @@ const ToolboxCheckbox: FunctionComponent<{
                 margin-bottom: -6px;
                 padding-top: 0;
             `}
+            // The tool's own id, so a test can turn a tool on without matching its localized
+            // label. See BloomE2E/helpers/toolbox.ts.
+            data-testid={`toolbox-tool-${props.tool}`}
         >
             <BloomCheckbox
                 css={css`
