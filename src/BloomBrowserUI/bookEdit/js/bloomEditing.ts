@@ -2005,6 +2005,30 @@ export function attachToCkEditor(element) {
     $("body").addClass("hideAllCKEditors");
     const ckedit = CKEDITOR.inline(element);
 
+    // CKEditor copies the element's content when the instance is created and writes that copy
+    // back into the element when its asynchronous startup finishes, which is typically half a
+    // second later and has been measured at more than a second. The element is contenteditable
+    // the whole time, so anything typed during that window is silently overwritten by the copy.
+    // A table cell hits this every time: the library builds the cell empty, Bloom attaches an
+    // editor to it, and the user can type in it at once. Remember what the element holds just
+    // before the startup write (our "loaded" handler runs before it) and, if the write did
+    // change the content, put it back and give the editor the same content, so what was typed
+    // survives and the editor agrees with the DOM.
+    // The comparison is on the text rather than the markup, because CKEditor's startup write
+    // tidies an empty paragraph (<p></p> becomes <p><br /></p>) even when nothing was typed,
+    // and that is not a loss worth undoing.
+    let contentBeforeStartupWrite = element.innerHTML;
+    let textBeforeStartupWrite = element.textContent;
+    ckedit.on("loaded", () => {
+        contentBeforeStartupWrite = element.innerHTML;
+        textBeforeStartupWrite = element.textContent;
+    });
+    ckedit.on("instanceReady", () => {
+        if (element.textContent !== textBeforeStartupWrite) {
+            ckedit.setData(contentBeforeStartupWrite);
+        }
+    });
+
     // Record the div of the edit box for use later in positioning the format bar.
     mapCkeditDiv[ckedit.id] = element;
 
