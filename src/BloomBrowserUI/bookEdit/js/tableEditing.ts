@@ -20,6 +20,8 @@ import {
 // bloom-table.css, which basePage.less inlines so they ship everywhere.
 import "bloom-table/bloom-table-edit.css";
 import { SetupImagesInContainer } from "./bloomImages";
+import { SetupVideoEditing } from "./bloomVideo";
+import { post } from "../../utils/bloomApi";
 import $ from "jquery";
 import BloomField from "../bloomField/BloomField";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
@@ -103,6 +105,19 @@ function ensureContentTypesRegistered(): void {
         false,
     );
 
+    // Video cells hold a bloom-videoContainer, which is what Bloom's video
+    // tooling works on: the Sign Language tool records into it, the hover
+    // controls play what it holds, and Bloom's publishing code collects the
+    // videos it finds in one. The markup matches what origami's Video link
+    // creates, minus the placeholder graphic, which the server is asked for
+    // when a video cell is actually made (see wireBloomContentOfNewCells).
+    replaceCellContentType(
+        "video",
+        "<div class='bloom-videoContainer bloom-leadingElement bloom-noVideoSelected'></div>",
+        /bloom-videoContainer/,
+        false,
+    );
+
     setDefaultCellContentTypeId("text");
     installHostHooks();
 }
@@ -177,6 +192,39 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
     if (root.matches(imageCellSelector)) imageCells.push(root);
     imageCells.forEach((cell) => SetupImagesInContainer(cell));
     observeImageCells(root);
+    wireVideoContainersOfNewCells(root);
+}
+
+// The video containers this has already wired. SetupVideoEditing adds a click
+// handler to the container itself (the one that opens the Sign Language tool)
+// without any guard against being called twice, and we run over a whole table
+// again after every table operation, so remembering what we have done is what
+// keeps one click from opening the tool several times.
+const wiredVideoContainers = new WeakSet<HTMLElement>();
+
+/**
+ * Give the video container of every video cell within `root` the wiring Bloom's
+ * page-load pass would have given it: the play/pause/replay controls that appear
+ * on hover, and the click that opens the Sign Language tool to record into it.
+ */
+function wireVideoContainersOfNewCells(root: HTMLElement): void {
+    const containers = Array.from(
+        // `root` is a cell or a table, so every video container below it is the
+        // content of some cell.
+        root.querySelectorAll<HTMLElement>(".bloom-videoContainer"),
+    ).filter((container) => !wiredVideoContainers.has(container));
+    if (containers.length === 0) return;
+    containers.forEach((container) => {
+        wiredVideoContainers.add(container);
+        // SetupVideoEditing looks for containers inside what it is given, so it
+        // gets the cell rather than the container itself.
+        SetupVideoEditing(container.parentElement!);
+    });
+    // The placeholder graphic is not among the files Bloom copies into every
+    // book, so the server has to be asked to put this book's copy in place;
+    // origami's Video link does the same. Without it the placeholder is missing
+    // when the book is opened by anything but Bloom itself.
+    post("edit/pageControls/requestVideoPlaceHolder");
 }
 
 /** Handle a cell's content being (re)initialised. Attached via SetupTableEditing. */
