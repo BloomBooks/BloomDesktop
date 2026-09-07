@@ -251,6 +251,38 @@ namespace BloomTests.Utils
         }
 
         [Test]
+        public void CanRead_KeyThisVersionWrote_IsTrue()
+        {
+            UserKeyStore.Set("someService", "a-secret");
+
+            Assert.That(UserKeyStore.CanRead("someService"), Is.True);
+        }
+
+        [Test]
+        public void CanRead_NoSuchKey_IsFalse()
+        {
+            Assert.That(UserKeyStore.CanRead("someService"), Is.False);
+        }
+
+        [Test]
+        public void CanRead_MethodThisVersionCannotRead_IsFalse()
+        {
+            // A caller that removes keys the user cleared asks this before removing one, so
+            // that a key a newer Bloom protected some other way survives.
+            WriteRawFile(
+                "{ 'version': 1, 'keys': { 'someService': { 'value': 'AAAA',"
+                    + " 'protection': 'something-a-later-bloom-invented' } } }"
+            );
+
+            Assert.That(UserKeyStore.CanRead("someService"), Is.False);
+            Assert.That(
+                UserKeyStore.GetProtectionMethod("someService"),
+                Is.EqualTo("something-a-later-bloom-invented"),
+                "sanity: the key is on file, it is only unreadable"
+            );
+        }
+
+        [Test]
         public void ProtectThenUnprotect_RoundTripsThePlaintext()
         {
             const string original = "sk-or-v1-EXAMPLE-key_0123456789";

@@ -179,7 +179,11 @@ namespace Bloom.web.controllers
             }
             else
             {
-                var posted = JObject.Parse(request.RequiredPostString());
+                // A key can hold any character a service cares to use, "+" and "%" among
+                // them, so read the body exactly as the gallery sent it. The default
+                // unescape would turn a "+" into a space and decode a percent escape, and
+                // Bloom would store a key the service then rejects.
+                var posted = JObject.Parse(request.RequiredPostString(unescape: false));
                 var providerIds = new HashSet<string>();
                 foreach (var property in posted.Properties())
                 {
@@ -189,11 +193,17 @@ namespace Bloom.web.controllers
                     UserKeyStore.Set(kGalleryKeyPrefix + property.Name, (string)property.Value);
                 }
                 // The gallery sends every key it has, so a provider missing from the post is a
-                // key the user removed.
+                // key the user removed. A key this version cannot read is a different case: it
+                // never reached the gallery, so its absence from the post says nothing about
+                // what the user wants, and deleting it would throw away a key a newer Bloom
+                // put there.
                 foreach (var name in UserKeyStore.GetNames(kGalleryKeyPrefix))
                 {
-                    if (!providerIds.Contains(name.Substring(kGalleryKeyPrefix.Length)))
-                        UserKeyStore.Set(name, null);
+                    if (providerIds.Contains(name.Substring(kGalleryKeyPrefix.Length)))
+                        continue;
+                    if (!UserKeyStore.CanRead(name))
+                        continue;
+                    UserKeyStore.Set(name, null);
                 }
                 request.PostSucceeded();
             }

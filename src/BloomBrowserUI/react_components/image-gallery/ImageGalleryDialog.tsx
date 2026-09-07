@@ -5,7 +5,7 @@ import type {
     IProviderKeysV1,
     ISearchReport,
 } from "bloom-image-gallery";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
     BloomDialog,
     DialogTitle,
@@ -18,6 +18,7 @@ import {
     postDataWithConfigAsync,
     trackEvent,
 } from "../../utils/bloomApi";
+import { useMountEffect } from "../../utils/useMountEffect";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { getEditablePageBundleExports } from "../../bookEdit/js/workspaceFrames";
@@ -62,10 +63,9 @@ const ImageGalleryDialog: React.FunctionComponent<{
     // Exactly one "Image Chooser Closed" event per dialog session.
     const closeReportedRef = useRef(false);
 
-    // useEffect justified: this is a one-time async fetch that must run after mount
+    // A mount effect is justified: this is a one-time async fetch that must run after mount
     // so the component can render before the network round-trip completes.
-    // There are no dependencies to react to; [] is correct.
-    useEffect(() => {
+    useMountEffect(() => {
         getAsync("imageGallery/providerKeys")
             .then((r) => {
                 const keys = r?.data as IProviderKeysV1;
@@ -77,7 +77,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 }
             })
             .finally(() => setKeysLoaded(true));
-    }, []);
+    });
 
     // Searches are counted, not reported one by one: how many a visit took and which sources it
     // tried are what the close event needs, and a per-query event adds nothing on top of them.

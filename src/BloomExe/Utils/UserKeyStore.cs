@@ -135,6 +135,18 @@ namespace Bloom.Utils
         }
 
         /// <summary>
+        /// True when this version of Bloom knows how to read the key of this name, and there is
+        /// such a key. A caller that removes the keys the user no longer wants asks this first:
+        /// a key protected by a method only a newer Bloom understands is invisible to
+        /// <see cref="Get"/>, so its absence from what the user is looking at means nothing, and
+        /// removing it would throw away what the newer Bloom stored.
+        /// </summary>
+        public static bool CanRead(string name)
+        {
+            return GetProtectionMethod(name) == kDpapiCurrentUserProtection;
+        }
+
+        /// <summary>
         /// Stores a secret under this name, replacing any previous one. A null or empty secret
         /// removes the key, which is how a caller handles the user clearing one.
         /// </summary>
@@ -306,24 +318,19 @@ namespace Bloom.Utils
             }
         }
 
-        /// <summary>Callers hold s_lock.</summary>
+        /// <summary>
+        /// Writes the file. A failure throws, on purpose: the caller has just told the user
+        /// their key is saved, so swallowing the error would leave them to discover next time
+        /// that it never was. Callers hold s_lock.
+        /// </summary>
         private static void Save(StoreFile store)
         {
-            // A failure here costs the user only the memory of a key they can enter again, so
-            // report it and carry on rather than stopping whatever they were doing.
-            try
-            {
-                store.Version = kCurrentFormatVersion;
-                store.About = AboutText;
-                RobustFile.WriteAllText(
-                    FilePath,
-                    JsonConvert.SerializeObject(store, Formatting.Indented)
-                );
-            }
-            catch (Exception error)
-            {
-                Logger.WriteError("UserKeyStore could not write " + FilePath, error);
-            }
+            store.Version = kCurrentFormatVersion;
+            store.About = AboutText;
+            RobustFile.WriteAllText(
+                FilePath,
+                JsonConvert.SerializeObject(store, Formatting.Indented)
+            );
         }
     }
 }
