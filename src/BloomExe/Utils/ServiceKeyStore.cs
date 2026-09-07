@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -315,6 +316,10 @@ namespace Bloom.Utils
 
             [JsonProperty("method")]
             public string Protection;
+
+            /// <summary>See <see cref="StoreFile.Extra"/>.</summary>
+            [JsonExtensionData]
+            public IDictionary<string, JToken> Extra;
         }
 
         /// <summary>The whole file.</summary>
@@ -325,6 +330,16 @@ namespace Bloom.Utils
 
             [JsonProperty("services")]
             public Dictionary<string, StoredKey> Keys = new Dictionary<string, StoredKey>();
+
+            /// <summary>
+            /// Anything in the file that this version of Bloom has no field for, kept so that
+            /// writing the file back does not throw it away. Every write is a whole-file
+            /// rewrite, so without this an older Bloom storing one key would quietly strip
+            /// whatever a newer one had added -- and the newer Bloom would find its own data
+            /// gone with nothing to say why.
+            /// </summary>
+            [JsonExtensionData]
+            public IDictionary<string, JToken> Extra;
         }
 
         /// <summary>
@@ -343,6 +358,18 @@ namespace Bloom.Utils
                 );
                 if (store?.Keys == null)
                     return new StoreFile();
+                if (store.Version > kCurrentFormatVersion)
+                {
+                    // A newer Bloom wrote this. Reading goes ahead anyway, because what
+                    // decides whether a value can be decrypted is the "method" on the value
+                    // itself, and a newer Bloom has to leave the methods it inherited
+                    // readable. Say so in the log, though: if a later format ever changes the
+                    // shape of the file rather than adding to it, this line is what tells us
+                    // an older Bloom was looking at it.
+                    Logger.WriteEvent(
+                        $"ServiceKeyStore: {FilePath} says it is format version {store.Version}, and this version of Bloom knows version {kCurrentFormatVersion}. Reading it anyway; each key's own method decides whether it can be read."
+                    );
+                }
                 return store;
             }
             catch (Exception error)
@@ -362,7 +389,10 @@ namespace Bloom.Utils
         /// </summary>
         private static void Save(StoreFile store)
         {
-            store.Version = kCurrentFormatVersion;
+            // Never lower it: a file a newer Bloom wrote keeps saying so, because the number
+            // is how that Bloom will know its own format when it next reads the file. Raise a
+            // file with no version, or one from before the field existed, to ours.
+            store.Version = Math.Max(store.Version, kCurrentFormatVersion);
             RobustFile.WriteAllText(
                 FilePath,
                 JsonConvert.SerializeObject(store, Formatting.Indented)

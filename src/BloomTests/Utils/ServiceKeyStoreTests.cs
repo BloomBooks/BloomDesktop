@@ -384,13 +384,84 @@ namespace BloomTests.Utils
                 "setup: DPAPI itself must be able to read this blob"
             );
 
-            Assert.That(ServiceKeyStore.Unprotect(Convert.ToBase64String(blobWithNoEntropy)), Is.Null);
+            Assert.That(
+                ServiceKeyStore.Unprotect(Convert.ToBase64String(blobWithNoEntropy)),
+                Is.Null
+            );
         }
 
         /// <summary>
         /// Writes the file as given, so a test can set up content Bloom itself would not
         /// write. Single quotes stand in for double quotes, to keep the test strings readable.
         /// </summary>
+        [Test]
+        public void Get_FileFromANewerFormatVersion_StillReadsAKeyWhoseMethodIsKnown()
+        {
+            // What a Bloom that has moved the file on to format 2 leaves behind. The format
+            // version describes the file; whether a value can be decrypted is what the value's
+            // own "method" says, so a key this version wrote is still this version's to read.
+            var secret = "the-key";
+            ServiceKeyStore.Set("someService", secret);
+            var written = RobustFile.ReadAllText(ServiceKeyStore.FilePath);
+            Assert.That(
+                written,
+                Does.Contain("\"version\": 1"),
+                "setup: the file should say version 1 before we age it forward"
+            );
+            RobustFile.WriteAllText(
+                ServiceKeyStore.FilePath,
+                written.Replace("\"version\": 1", "\"version\": 2")
+            );
+
+            Assert.That(ServiceKeyStore.Get("someService"), Is.EqualTo(secret));
+        }
+
+        [Test]
+        public void Set_FileFromANewerFormatVersion_DoesNotLowerTheVersion()
+        {
+            WriteRawFile("{'version':7,'services':{}}");
+
+            ServiceKeyStore.Set("someService", "a key");
+
+            Assert.That(
+                RobustFile.ReadAllText(ServiceKeyStore.FilePath),
+                Does.Contain("\"version\": 7"),
+                "writing a key must not tell a newer Bloom its file is an older format"
+            );
+            Assert.That(
+                ServiceKeyStore.Get("someService"),
+                Is.EqualTo("a key"),
+                "and the key must really have been stored"
+            );
+        }
+
+        [Test]
+        public void Set_KeepsWhatThisVersionHasNoFieldFor()
+        {
+            // Every write rewrites the whole file, so anything a newer Bloom added -- a
+            // property of its own, or a field on a key -- has to survive the trip.
+            WriteRawFile(
+                "{'version':2,'services':{'otherService':{'value':'abc','method':'2',"
+                    + "'expires':'2027-01-01'}},'somethingNew':{'a':1}}"
+            );
+
+            ServiceKeyStore.Set("someService", "a key");
+
+            var fileText = RobustFile.ReadAllText(ServiceKeyStore.FilePath);
+            Assert.That(fileText, Does.Contain("somethingNew"), "a whole property went missing");
+            Assert.That(fileText, Does.Contain("expires"), "a field on a key went missing");
+            Assert.That(
+                fileText,
+                Does.Contain("2027-01-01"),
+                "the field survived in name only, without its value"
+            );
+            Assert.That(
+                ServiceKeyStore.GetProtectionMethod("otherService"),
+                Is.EqualTo("2"),
+                "the untouched key's own method must be exactly as it was"
+            );
+        }
+
         private void WriteRawFile(string contentWithSingleQuotes)
         {
             RobustFile.WriteAllText(

@@ -1,4 +1,4 @@
-﻿// The AI Image Editor overlay and session — the TOP-WINDOW half of the feature.
+// The AI Image Editor overlay and session — the TOP-WINDOW half of the feature.
 //
 // This runs in the workspace root, not the page iframe, for the same reason the image
 // gallery and the copyright/license dialog do (see the comments on those commands in
