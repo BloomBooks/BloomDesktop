@@ -242,5 +242,9 @@ export const buildCanvasElementControlRegistryContext = (
         // status (which is async) when it assembles the context.
         aiImageEditingAvailable: false,
         imageIsAiEditableFormat: isAiEditableImageSrc(img?.getAttribute("src")),
+        // Default off, for the same reason as aiImageEditingAvailable above:
+        // CanvasElementContextControls overlays the real (async) feature status when
+        // it assembles the context.
+        tablesMayBeRestructured: false,
     };
 };

@@ -375,6 +375,15 @@ function adjustBackgroundImageSizeToFit(
 ): Promise<void> {
     const { width: bloomCanvasWidth, height: bloomCanvasHeight } =
         getExactClientSize(bloomCanvas);
+    if (bloomCanvasWidth === 0 || bloomCanvasHeight === 0) {
+        // Nothing useful can be computed from a box with no area, and the numbers
+        // we would write are not neutral: they become the baseline that later
+        // resizes scale, so the picture ends up somewhere arbitrary. A bloom-canvas
+        // in a table cell is in this state during page load, because the table lays
+        // itself out with JavaScript after Bloom's page-load pass; tableEditing.ts
+        // asks for a refit once the cell has its real size.
+        return Promise.resolve();
+    }
     let imgAspectRatio =
         bgCanvasElement.clientWidth / bgCanvasElement.clientHeight;
     const img = getImageFromCanvasElement(bgCanvasElement);

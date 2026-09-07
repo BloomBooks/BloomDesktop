@@ -64,7 +64,14 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const editable = props.canvasElement.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement | undefined;
-    const langName = editable?.getAttribute("data-languagetipcontent");
+    // A table is many text boxes, so naming the language of the first cell here would
+    // be misleading. Each cell shows its own language name, the way a text box on an
+    // ordinary page does; see the .bloom-table rules in editMode.less.
+    const holdsTable =
+        props.canvasElement.getElementsByClassName("bloom-table").length > 0;
+    const langName = holdsTable
+        ? undefined
+        : editable?.getAttribute("data-languagetipcontent");
     const setMenuOpen = (open: boolean, launchingDialog?: boolean) => {
         // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
         // or some other code somewhere is doing it when we choose a menu item. So we tell the CanvasElementManager
@@ -93,6 +100,11 @@ const CanvasElementContextControls: React.FunctionComponent<{
     // Its FeatureStatus.visible reflects whether the experimental feature is on;
     // we feed that into the control context so the menu item is hidden when off.
     const aiImageEditingStatus = useGetFeatureStatus("AiImageEditing");
+    // Both halves of the table feature's status matter, and they mean different
+    // things: a tier below Pro leaves it not enabled, and turning the Tables
+    // experiment off leaves it not visible. Either way no new table may be made,
+    // which is what Duplicate on a table element would do.
+    const tableStatus = useGetFeatureStatus("table");
     const languageNameValues = useApiObject<ILanguageNameValues>(
         "settings/languageNames",
         {
@@ -460,6 +472,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
         hasClipboardText,
         languageNameValues,
         aiImageEditingAvailable: aiImageEditingStatus?.visible ?? false,
+        tablesMayBeRestructured:
+            !!tableStatus?.enabled && !!tableStatus?.visible,
     };
 
     const definition =
