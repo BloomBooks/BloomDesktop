@@ -71,6 +71,8 @@ export interface IPageFrameExports {
     ckeditorUndo(): void;
     imageOperationCanUndo(): boolean;
     imageOperationUndo(): boolean;
+    inlineImageCanUndo(): boolean;
+    inlineImageUndo(): boolean;
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
@@ -165,6 +167,10 @@ export {
     showGamePromptDialog,
     applyAiImageEditorReplacements,
 };
+// Inline (Word-style) images keep their own undo stack, for the same reason origami and the
+// image operations do: the workspace undo command has to be able to reach it. See inlineImages.ts.
+import { inlineImageCanUndo, inlineImageUndo } from "./js/inlineImages";
+export { inlineImageCanUndo, inlineImageUndo };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
 export { origamiCanUndo, origamiUndo };
@@ -417,6 +423,8 @@ interface EditablePageBundleApi {
     changeImageByElement: typeof changeImageByElement;
     imageOperationCanUndo: typeof imageOperationCanUndo;
     imageOperationUndo: typeof imageOperationUndo;
+    inlineImageCanUndo: typeof inlineImageCanUndo;
+    inlineImageUndo: typeof inlineImageUndo;
     origamiCanUndo: typeof origamiCanUndo;
     origamiUndo: typeof origamiUndo;
     getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
@@ -496,6 +504,8 @@ window.editablePageBundle = {
     changeImageByElement,
     imageOperationCanUndo: imageOperationCanUndo,
     imageOperationUndo: imageOperationUndo,
+    inlineImageCanUndo,
+    inlineImageUndo,
     origamiCanUndo,
     origamiUndo,
     getTheOneCanvasElementManager,
