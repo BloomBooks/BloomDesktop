@@ -867,20 +867,41 @@ export default class BloomField {
     // inadvertently remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
     // tries to safeguard elements bearing that class.
     private static PreventRemovalOfSomeElements(field: HTMLElement) {
-        const numberThatShouldBeThere = $(field).find(
-            ".bloom-preventRemoval",
-        ).length;
-        if (numberThatShouldBeThere > 0) {
-            $(field).keyup((e) => {
-                if (
-                    $(field).find(".bloom-preventRemoval").length <
-                    numberThatShouldBeThere
-                ) {
-                    document.execCommand("undo");
-                    e.preventDefault();
-                }
-            });
-        }
+        // The count is taken on each keydown and compared on the matching keyup, so what this
+        // guards is the keystroke itself. Taking it once here instead would get two cases wrong,
+        // and inline images reach both: an image added AFTER page setup was never counted and so
+        // was unprotected, and an image the person deliberately deleted (from its menu) left the
+        // count permanently short, so every keystroke they typed afterwards fired a browser undo.
+        let countBeforeTheKeystroke = 0;
+        // Auto-repeat sends a whole run of keydowns before the single keyup that ends them, so
+        // only the first one of a run saw the field as it was before anything was deleted. Held
+        // Delete used to get an image past this guard for exactly that reason: keydown number
+        // two re-read the count AFTER the deletion, so the keyup had nothing to compare against
+        // and the image stayed deleted.
+        let aKeyIsDown = false;
+        const countPreventRemoval = () =>
+            $(field).find(".bloom-preventRemoval").length;
+        $(field).keydown(() => {
+            if (aKeyIsDown) return;
+            aKeyIsDown = true;
+            countBeforeTheKeystroke = countPreventRemoval();
+        });
+        $(field).keyup((e) => {
+            aKeyIsDown = false;
+            if (countPreventRemoval() < countBeforeTheKeystroke) {
+                document.execCommand("undo");
+                e.preventDefault();
+            }
+            countBeforeTheKeystroke = countPreventRemoval();
+        });
+        // A key held down while the focus leaves the field never delivers its keyup here, which
+        // would leave the flag set and the count stale -- the state this guard used to be in
+        // permanently. Losing the focus ends the run.
+        // (A native listener, not jQuery's focusout: jQuery 3 synthesizes focusin/focusout from
+        // focus/blur, which a dispatched focusout event does not go through.)
+        field.addEventListener("focusout", () => {
+            aKeyIsDown = false;
+        });
 
         //OK, now what if the above fails in some scenario? This adds a last-resort way of getting
         //bloom-editable back to the state it was in when the page was first created, by having
