@@ -1028,6 +1028,19 @@ beyond this PR:
    undo may have dropped and renumbered entries), and `keepOnly` also filters the pushes held by
    an open `runUndoable` scope.
 
+**Preflight finished (2026-09-07 evening).** Four Devin rounds (one per push), eight distinct findings, all
+fixed or answered and resolved on their threads; round four raised nothing new. Full suite 857 green at
+`ecff07547`; live checks green on a fresh Bloom through the real button entry point. Report:
+https://bloombooks.github.io/dev-process-artifacts/deciders/bloomdesktop-bl-6681-stage1-undostack.html
+(linked on the card, with a Stage 1 test-ideas comment). The PR stays draft for John's own review; the
+three decisions it asks (merge target now that 6.5 exists; restore the hook-reformatted files; file the
+bugs) are in the report. The reader-tools "arming" below was traced to session-state pollution from the
+harness's own `SetupElements` re-runs: on a freshly launched Bloom the same check passed 7/7.
+
+**Stage 2b is next**, on `BL-6681-stage2b-undo-delete-canvas-element`, stacked on the Stage 1 tip
+(`ecff07547`). When Stage 1 squash-merges, rebase only Stage 2b's own commits onto the target:
+`git rebase --onto <target> BL-6681-stage1-undostack BL-6681-stage2b-undo-delete-canvas-element`.
+
 **Observed, not chased — the reader-tools undo arms itself in books without a reader tool.** In "A
 house for mouse" (Basic Book, toolbox shows only Canvas/Talking Book/Settings), after this session
 had earlier opened a Decodable Reader book and re-run `SetupElements` on this page, typing in a text
