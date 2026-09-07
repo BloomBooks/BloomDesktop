@@ -57,6 +57,7 @@ import { CanvasElementType } from "../../toolbox/canvas/canvasElementTypes";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
+import { recordCanvasElementDeletionForUndo } from "../../undo/canvasElementDeletion";
 import PlaceholderProvider from "../PlaceholderProvider";
 import { copyContentToTargetAndCleanup } from "../dragActivityRuntimeUtils";
 import $ from "jquery";
@@ -2770,6 +2771,9 @@ export class CanvasElementManager {
         ) {
             Comical.update(containerElement);
         }
+        // Undo (BL-6681): describe the element and its family while they are still intact.
+        // (The background-image branch above already records an image undo of its own.)
+        recordCanvasElementDeletionForUndo(textOverPicDiv);
 
         // The qtip bubbles belonging to things inside this canvas element (source bubbles, hint
         // bubbles, and in particular the "Choose topic" link on a data-derived="topic" field)

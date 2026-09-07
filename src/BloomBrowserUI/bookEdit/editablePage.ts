@@ -18,6 +18,11 @@ import {
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
 import { installRedoKeyBinding } from "./undo/redoKeyBinding";
+import {
+    ICanvasElementDeletionRecord,
+    redeleteCanvasElement,
+    restoreDeletedCanvasElement,
+} from "./undo/canvasElementDeletion";
 import { tryGetWorkspaceBundleExports } from "./js/workspaceFrames";
 
 function getPageId(): string {
@@ -50,6 +55,10 @@ document.addEventListener("DOMContentLoaded", () => {
 // but I think it is unwise. It is so easy for an extra file to get imported into another bundle,
 // and then it will bring this along, with disastrous results.
 export interface IPageFrameExports {
+    // Undo/redo of a canvas element deletion, driven by the one undo stack in the workspace
+    // frame from the record the page frame gave it (undo/canvasElementDeletion.ts).
+    restoreDeletedCanvasElement(record: ICanvasElementDeletionRecord): void;
+    redeleteCanvasElement(record: ICanvasElementDeletionRecord): void;
     requestPageContent(): void;
     pageUnloading(): void;
     copySelection(): void;
@@ -406,6 +415,8 @@ export function SayHello() {
 // Legacy global exposure: mimic old webpack window["editablePageBundle"] contract used by other iframes / C#
 // NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
 interface EditablePageBundleApi {
+    restoreDeletedCanvasElement: typeof restoreDeletedCanvasElement;
+    redeleteCanvasElement: typeof redeleteCanvasElement;
     requestPageContent: typeof requestPageContent;
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
     getBodyContentForSavePage: typeof getBodyContentForSavePage;
@@ -485,6 +496,8 @@ declare global {
 }
 
 window.editablePageBundle = {
+    restoreDeletedCanvasElement,
+    redeleteCanvasElement,
     requestPageContent,
     captureContentForExternalProcessing,
     getBodyContentForSavePage,

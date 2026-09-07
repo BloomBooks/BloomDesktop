@@ -16,6 +16,8 @@ import {
     pageFrameLoaded,
     pageFrameNavigating,
 } from "./undo/pageFrameUndoHooks";
+import { recordCanvasElementDeletion } from "./undo/canvasElementDeletionEntry";
+import type { ICanvasElementDeletionRecord } from "./undo/canvasElementDeletion";
 
 // The one undo stack (BL-6681) arbitrates between Bloom's pre-existing undo mechanisms until
 // they are converted. Registering them is all it takes, and the providers only reach across
@@ -76,6 +78,9 @@ export interface IWorkspaceExports {
     // Redo has no button and no C# side; the page frame's Ctrl+Y binding reaches it here.
     canRedo(): boolean;
     handleRedo(): void;
+    // The page frame describes an undoable operation it just performed; this frame builds and
+    // keeps the entry. Deliberately a description, never an entry or a closure (undoTypes.ts).
+    recordCanvasElementDeletion(record: ICanvasElementDeletionRecord): void;
 }
 
 export function SayHello() {
@@ -420,6 +425,7 @@ interface WorkspaceBundleApi {
     handleUndo: typeof handleUndo;
     handleRedo: typeof handleRedo;
     canRedo: typeof canRedo;
+    recordCanvasElementDeletion: typeof recordCanvasElementDeletion;
     switchThumbnailPage: typeof switchThumbnailPage;
     switchContentPage: typeof switchContentPage;
     showDialog: typeof showDialog;
@@ -466,6 +472,7 @@ window.workspaceBundle = {
     handleUndo,
     handleRedo,
     canRedo,
+    recordCanvasElementDeletion,
     switchThumbnailPage,
     switchContentPage,
     showDialog,
