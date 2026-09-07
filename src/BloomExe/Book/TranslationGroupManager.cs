@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -857,7 +857,7 @@ namespace Bloom.Book
                 foreach (var div in list)
                 {
                     var innerText = div.InnerText.Trim();
-                    if (String.IsNullOrEmpty(innerText))
+                    if (String.IsNullOrEmpty(innerText) && !HasInlineImage(div))
                     {
                         Logger.WriteEvent(
                             $"An empty duplicate div for {langTag} has been removed from a translation group."
@@ -882,11 +882,52 @@ namespace Bloom.Book
                         );
                         first.AppendChild(newline);
                         foreach (SafeXmlNode node in list[i].ChildNodes)
+                        {
+                            // The duplicate normally holds a COPY of a picture the survivor
+                            // already has -- that is what duplicating a block produces -- and
+                            // appending it would leave the same picture in the block twice, which
+                            // the reader sees twice. Sameness is by id; a wrapper without one
+                            // cannot be matched to anything, so it is kept.
+                            if (IsInlineImageAlreadyPresent(first, node))
+                                continue;
                             first.AppendChild(node);
+                        }
                         groupElement.RemoveChild(list[i]);
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Whether this node is an inline (Word-style) image wrapper that the given editable
+        /// already holds a copy of. The per-language copies of one picture share a
+        /// data-bloom-inline-image-id (see inlineImages.ts), and so do the copies that
+        /// duplicating a block makes, which is what identifies the repeat.
+        /// </summary>
+        private static bool IsInlineImageAlreadyPresent(SafeXmlNode editable, SafeXmlNode node)
+        {
+            var element = node as SafeXmlElement;
+            if (element == null || !element.HasClass("bloom-inlineImage"))
+                return false;
+            var id = element.GetAttribute("data-bloom-inline-image-id");
+            if (String.IsNullOrEmpty(id))
+                return false;
+            return editable
+                    .SafeSelectNodes(".//div[@data-bloom-inline-image-id='" + id + "']")
+                    .Length > 0;
+        }
+
+        /// <summary>
+        /// Whether this editable holds an inline (Word-style) image: a .bloom-inlineImage wrapper
+        /// (see inlineImages.ts). Such a block can be entirely without text -- a picture and the
+        /// empty paragraph that has to follow it -- so InnerText alone says it is empty, and
+        /// anything that discards an "empty" block would discard the picture with it.
+        /// </summary>
+        private static bool HasInlineImage(SafeXmlNode div)
+        {
+            return div.SafeSelectNodes(
+                    ".//div[contains(concat(' ', @class, ' '), ' bloom-inlineImage ')]"
+                ).Length > 0;
         }
 
         /// <summary>
