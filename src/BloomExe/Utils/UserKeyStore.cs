@@ -38,7 +38,7 @@ namespace Bloom.Utils
     /// Since DPAPI stops nothing that runs as the user, two cheap measures aim at the one
     /// attacker they can reach: the untargeted credential stealer that sweeps a profile for
     /// filenames and words like key, token and api, and that calls CryptUnprotectData on any
-    /// blob it finds. First, the file says nothing about itself. It is called services.bloom, its
+    /// blob it finds. First, the file says nothing about itself. It is called services.blm, its
     /// properties are dull ("services", "value", "method"), the method is a bare number, and
     /// there is no note explaining the format -- that explanation lives here, in the source,
     /// where it does a maintainer good and a scavenger none. Second, DPAPI is given
@@ -54,7 +54,7 @@ namespace Bloom.Utils
     /// </summary>
     public static class UserKeyStore
     {
-        private const string kFileName = "services.bloom";
+        private const string kFileName = "services.blm";
         private const int kCurrentFormatVersion = 1;
 
         /// <summary>
