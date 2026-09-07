@@ -1,17 +1,19 @@
-import { css } from "@emotion/react";
-
 import * as React from "react";
 import Menu from "@mui/material/Menu";
+import { Divider } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { LocalizableSelectableMenuItem } from "../../react_components/localizableMenuItem";
-import { renderRoot } from "../../utils/reactRender";
 import {
-    canToggleNoIndent,
-    findParagraphForTextContextMenu,
-    isNoIndentOn,
-    toggleNoIndent,
-} from "./noIndent";
+    contextMenuCss,
+    renderContextMenuItems,
+} from "../js/canvasElementManager/canvasControlMenuRendering";
+import { renderRoot } from "../../utils/reactRender";
+import { canToggleNoIndent, isNoIndentOn, toggleNoIndent } from "./noIndent";
+import {
+    getTextContextMenuContent,
+    ITextContextMenuContent,
+} from "./textContextMenuContent";
 
 // The context menu for a right-click on the text of an ordinary text box in the edit view
 // (BL-16649). Text inside a canvas element gets CanvasElementContextControls' menu instead;
@@ -21,19 +23,40 @@ import {
 // CanvasElementContextControls. Open state lives in renderTextContextMenu (below) rather
 // than in the component, so that the component can be re-rendered for a new paragraph
 // without carrying over stale state.
-const TextContextMenu: React.FunctionComponent<{
+//
+// It carries two kinds of command, because a right-click in a text box can mean two things.
+// One is a command on the paragraph clicked ("No Indent"). The other is a command on the
+// inline (Word-style) image of the text box: adding one, or -- when the click landed on the
+// image itself -- the standard image menu (the same commands a canvas element image offers).
+// Which of them apply to a given click is getTextContextMenuContent's decision, not this
+// component's.
+
+// "No Indent" acts on one paragraph, so it is offered only when the right-click was in one
+// (a click on an inline image is not). Its own logic is paragraph-shaped -- there is nothing
+// for isNoIndentOn or canToggleNoIndent to answer without one -- so the item is left out
+// altogether in that case rather than shown disabled.
+const NoIndentMenuItem: React.FunctionComponent<{
     paragraph: HTMLElement;
+    onDone: () => void;
+}> = (props) => (
+    <LocalizableSelectableMenuItem
+        english="No Indent"
+        l10nId="EditTab.TextContextMenu.NoIndent"
+        selected={isNoIndentOn(props.paragraph)}
+        disabled={!canToggleNoIndent(props.paragraph)}
+        onClick={() => {
+            toggleNoIndent(props.paragraph);
+            props.onDone();
+        }}
+    />
+);
+
+const TextContextMenu: React.FunctionComponent<{
+    content: ITextContextMenuContent;
     open: boolean;
     setOpen: (open: boolean) => void;
     anchorPosition: { left: number; top: number };
 }> = (props) => {
-    const noIndentIsOn = isNoIndentOn(props.paragraph);
-
-    const handleNoIndentClick = () => {
-        toggleNoIndent(props.paragraph);
-        props.setOpen(false);
-    };
-
     return (
         <ThemeProvider theme={lightTheme}>
             <Menu
@@ -45,22 +68,23 @@ const TextContextMenu: React.FunctionComponent<{
                 // and we don't want opening the menu to disturb them.
                 disableAutoFocus={true}
                 disableEnforceFocus={true}
-                css={css`
-                    ul li {
-                        color: #4d4d4d;
-                        svg {
-                            color: inherit !important;
-                        }
-                    }
-                `}
+                css={contextMenuCss}
             >
-                <LocalizableSelectableMenuItem
-                    english="No Indent"
-                    l10nId="EditTab.TextContextMenu.NoIndent"
-                    selected={noIndentIsOn}
-                    disabled={!canToggleNoIndent(props.paragraph)}
-                    onClick={handleNoIndentClick}
-                />
+                {props.content.paragraph && (
+                    <NoIndentMenuItem
+                        paragraph={props.content.paragraph}
+                        onDone={() => props.setOpen(false)}
+                    />
+                )}
+                {props.content.paragraph &&
+                    props.content.inlineImageItems.length > 0 && (
+                        <Divider variant="middle" component="li" />
+                    )}
+                {/* Each item closes the menu itself, through the closeMenu the content was
+                    built with (see setupTextContextMenu) -- the standard image commands
+                    decide for themselves when, because a dialog-launching command must
+                    close with dialog-aware focus handling before its dialog arrives. */}
+                {renderContextMenuItems(props.content.inlineImageItems)}
             </Menu>
         </ThemeProvider>
     );
@@ -75,11 +99,11 @@ const kTextContextMenuRootId = "text-context-menu";
 // per container for exactly that. Its mount is asynchronous, which is fine here -- nothing
 // reads the menu's DOM after the call.
 function renderTextContextMenu(
-    paragraph: HTMLElement,
+    pageDocument: Document,
+    content: ITextContextMenuContent,
     open: boolean,
     anchorPosition: { left: number; top: number },
 ) {
-    const pageDocument = paragraph.ownerDocument;
     let root = pageDocument.getElementById(kTextContextMenuRootId);
     if (!root) {
         root = pageDocument.createElement("div");
@@ -92,11 +116,16 @@ function renderTextContextMenu(
     }
     renderRoot(
         <TextContextMenu
-            paragraph={paragraph}
+            content={content}
             open={open}
             anchorPosition={anchorPosition}
             setOpen={(newOpen: boolean) =>
-                renderTextContextMenu(paragraph, newOpen, anchorPosition)
+                renderTextContextMenu(
+                    pageDocument,
+                    content,
+                    newOpen,
+                    anchorPosition,
+                )
             }
         />,
         root,
@@ -112,13 +141,20 @@ export function setupTextContextMenu(): void {
         // Ctrl+right-click is reserved for the WebView2 developer menu; see
         // WebView2Browser.ContextMenuRequested.
         if (event.ctrlKey) return;
-        const paragraph = findParagraphForTextContextMenu(event.target);
-        if (!paragraph) return;
+        const anchorPosition = { left: event.clientX, top: event.clientY };
+        // The menu items dismiss the menu through this. It has to exist before the content
+        // that captures it, and the content it re-renders is the content being built, hence
+        // the two-step wiring.
+        let content: ITextContextMenuContent | undefined;
+        const closeMenu = () => {
+            if (content)
+                renderTextContextMenu(document, content, false, anchorPosition);
+        };
+        content = getTextContextMenuContent(event.target, closeMenu);
+        // Nothing to offer: leave the event alone so WebView2's own menu still appears.
+        if (!content) return;
         event.preventDefault();
         event.stopPropagation();
-        renderTextContextMenu(paragraph, true, {
-            left: event.clientX,
-            top: event.clientY,
-        });
+        renderTextContextMenu(document, content, true, anchorPosition);
     });
 }
