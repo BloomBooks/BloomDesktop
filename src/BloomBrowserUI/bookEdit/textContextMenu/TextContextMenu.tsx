@@ -12,6 +12,7 @@ import {
     isNoIndentOn,
     toggleNoIndent,
 } from "./noIndent";
+import { tablesMayBeRestructured } from "../js/tableFeature";
 
 // The context menu for a right-click on the text of an ordinary text box in the edit view
 // (BL-16649). Text inside a canvas element gets CanvasElementContextControls' menu instead;
@@ -114,6 +115,14 @@ export function setupTextContextMenu(): void {
         if (event.ctrlKey) return;
         const paragraph = findParagraphForTextContextMenu(event.target);
         if (!paragraph) return;
+        // A right-click in a table cell belongs to the table's own Cell menu, which
+        // the bloom-table library opens from a capture-phase listener before this
+        // bubble-phase one runs. Two menus would come up if we also opened ours, so
+        // the cell's menu wins. The exception is a book whose tables are frozen (see
+        // installHostHooks in tableEditing.ts): there the library opens no Cell menu,
+        // and this is the menu the user should get.
+        if (paragraph.closest(".bloom-cell") && tablesMayBeRestructured())
+            return;
         event.preventDefault();
         event.stopPropagation();
         renderTextContextMenu(paragraph, true, {

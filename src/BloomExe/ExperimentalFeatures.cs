@@ -11,6 +11,7 @@ namespace Bloom
     {
         public const string kExperimentalSourceBooks = "experimental-source-books";
         public const string kTeamCollections = "team-collections";
+        public const string kTables = "tables";
 
         /// <summary>
         /// The comma-separated tokens of the features that are enabled: normally the saved setting,
