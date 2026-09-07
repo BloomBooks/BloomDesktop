@@ -31,6 +31,11 @@ books cannot be checked out, so Edit is disabled).
 | `verifyCk.mjs` | Basic Book | Undo button → CKEditor undo only; Ctrl+Z/Ctrl+Y run CKEditor's commands exactly once; our Ctrl+Y declines |
 | `verifyOrigami.mjs` | Basic Book (customPage) | Undo button → origamiUndo; origami's own Ctrl+Z/Ctrl+Y fire once; ours declines |
 | `verifyImage.mjs` | any page with an image | Undo button → imageOperationUndo after an undoable copyright change |
+| `handlerAccumulation.mjs` | any book with a text box | Stage 0 / inventory X4: edit key handlers accumulate when `SetupElements` runs again (fails today by design — it is the repro) |
+
+Helpers: `gotoBook.mjs "<title>"` opens a book in Edit; `activateTool.mjs <toolId>` (e.g.
+`talkingBook`, `decodableReader`) switches the toolbox tool through the ToolBox's own
+`activateToolFromId`.
 
 How attribution works: `verifyCommon.mjs` wraps the cross-frame functions the workspace bundle
 reaches each mechanism through, and listens to CKEditor's `afterCommandExec`, so a gesture is

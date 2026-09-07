@@ -114,14 +114,16 @@ export async function setup() {
         await p.waitForTimeout(300);
         await p.keyboard.press("End");
     };
+    // Which tool the toolbox considers current. Ask the ToolBox itself: the jQuery-UI accordion's
+    // header classes lag behind (and once mislabelled the Canvas tool as active while the Talking
+    // Book panel was plainly open).
     h.activeTool = () =>
-        h
-            .toolboxFrame()
-            ?.evaluate(() =>
-                document
-                    .querySelector("h3.ui-accordion-header-active")
-                    ?.getAttribute("data-toolid"),
-            );
+        h.toolboxFrame()?.evaluate(() => {
+            const tool = window.toolboxBundle
+                .getTheOneToolbox()
+                .getCurrentTool();
+            return tool ? tool.id() : undefined;
+        });
     // What the top bar's Undo button does (topBarButtonClick -> handleUndo), minus the WinForms click.
     h.pressUndoButton = async () => {
         await p.evaluate(() => window.workspaceBundle.handleUndo());

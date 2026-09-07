@@ -946,10 +946,40 @@ assessed** — likely to merge before us, and it matters to us more than expecte
   `bloomEditing.ts`, `origami.ts` and `decodableReaderTool.tsx` — expect a small conflict at the
   next sync after it lands; nothing structural.
 
-**Deliberately left for later:** the paste/drop baseline (needs synthetic `ClipboardEvent`s with real
-web-page payloads; feasible over CDP, not started), and the handler-accumulation repro (now easy:
-`editablePageBundle.SetupElements` is exported cross-frame, so calling it twice on the page and
-counting `document` keydown listeners via `DOMDebugger.getEventListeners` is the whole repro).
+**Handler accumulation (§4.10, inventory X4) — reproduced.** `liveChecks/handlerAccumulation.mjs`
+stubs `document.execCommand` in the page frame, dispatches Ctrl+R (the handler on `document`) and F7
+(the per-editable handler), and counts how many handlers fired; then calls the cross-frame
+`editablePageBundle.SetupElements(page)` again, as `refreshCanvasElementEditing` does on a subtree:
+
+| | Ctrl+R handlers fired | F7 handlers fired |
+| --- | --- | --- |
+| page as loaded | 1 | 1 |
+| after one extra `SetupElements` | 2 | 2 |
+| after two | 3 | 3 |
+
+So the code-reading finding of 2026-08-04 is real, not theoretical. (Counting native listeners over
+CDP would have shown nothing: jQuery multiplexes all its handlers behind one native listener, which
+is why the plan's suggested `DOMDebugger.getEventListeners` check was the wrong instrument.) In real
+use the trigger is anything that calls `refreshCanvasElementEditing` — adding or duplicating a canvas
+element — after which F6 wraps the selection in `<sup>` twice. *Ready to file as its own card.*
+
+**G2 (async markup path) attempted, still open.** With the Talking Book tool verified current
+(`getCurrentTool().id() === "talkingBook"`, `isUpdateMarkupAsync() === true`, toolbox showing), typing
+into a Basic Book text box produced **no `audio-sentence` markup at all** — and neither did calling
+`updateMarkupAsync()` and applying its result directly. So the async branch of the keystroke pipeline
+was not exercised, and the caret harness's PASS in that state proves nothing about G2. The tool has
+some gating of its own (probably the box must be its current recording div, or the page must be one
+it has set up) that I did not chase. **To close G2:** find what makes the Talking Book tool mark up a
+box on typing (start in `audioRecording.ts`'s `updateMarkupAsync`), get spans to appear, then re-run
+`verifyCaretPreservation.mjs` and check the caret *and* that the spans are there.
+
+**Left for later:** the paste/drop baseline (needs synthetic `ClipboardEvent`s with real web-page
+payloads; feasible over CDP, not started).
+
+**A harness lesson:** the jQuery-UI accordion's `h3.ui-accordion-header-active` class is not a reliable
+"which tool is active" signal — it said Canvas Tool while the Talking Book panel was plainly open.
+`toolboxBundle.getTheOneToolbox().getCurrentTool().id()` is; the harnesses now use that, and
+`liveChecks/activateTool.mjs` switches tools through `activateToolFromId`.
 
 ## Next actions
 
@@ -975,16 +1005,17 @@ Branch off **`BL-6681-ckeditor`** instead (the files below are new; nothing conf
 
 1. ~~Finish G1~~ (done 2026-09-07, harness passes with the reader tool active). **G2** (async
    markup path / BL-10133 — Talking Book tool, where the prep commit made its one deliberate
-   behaviour change) is still unverified; type in a box with the Talking Book tool active and check
-   the caret. G3 is verified.
+   behaviour change) is still unverified: the tool did not mark up the box on typing in the
+   2026-09-07 attempt (see that entry), so first work out what makes it mark up, then re-run
+   `verifyCaretPreservation.mjs` and confirm `audio-sentence` spans appear alongside the caret check.
+   G3 is verified.
 2. **Capture the paste/drop baseline** → `PASTE-DROP-BASELINE.md`, rows C1–C7. Use a **real web-page
    clipboard payload**, not hand-written tidy HTML. Do it before any further code change — this is the
    row-set whose failure is silent. Include **C7 (drop)**, the row CKEditor has been covering
    invisibly.
-3. **Handler-accumulation repro** (§4.10): `editablePageBundle.SetupElements(page)` is exported
-   cross-frame, so call it twice on the current page and count `document` keydown listeners via CDP
-   `DOMDebugger.getEventListeners`; F6 is the likeliest visible symptom. File its own card if it
-   reproduces. Add the X4 listener-leak test either way — it should fail before any fix.
+3. ~~Handler-accumulation repro~~ — **reproduced 2026-09-07** (`liveChecks/handlerAccumulation.mjs`,
+   1 → 2 → 3 handlers). Remaining: file its card (John's call), and keep that script as the X4
+   listener-leak test — it fails today and should pass once §4.10's signal-scoped teardown lands.
 4. ~~Page-reload timing baseline~~ — adopt BL-13502's measurements (see the 2026-09-07 entry) once it
    merges; re-run its `benchPageChange.mjs` on our branch only if something looks off.
 
