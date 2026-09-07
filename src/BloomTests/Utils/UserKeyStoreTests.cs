@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using Bloom.Utils;
 using NUnit.Framework;
 using SIL.IO;
@@ -141,7 +142,7 @@ namespace BloomTests.Utils
             // Base64 that decodes but is not a DPAPI blob for this user.
             var notADpapiBlob = Convert.ToBase64String(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 });
             WriteRawFile(
-                $"{{'version':1,'keys':{{'someService':{{'value':'{notADpapiBlob}','protection':'windows-dpapi-currentuser'}}}}}}"
+                $"{{'version':1,'services':{{'someService':{{'value':'{notADpapiBlob}','method':'1'}}}}}}"
             );
 
             Assert.That(
@@ -155,7 +156,7 @@ namespace BloomTests.Utils
         public void Get_ValueThatIsNotEvenBase64_ReturnsNull()
         {
             WriteRawFile(
-                "{'version':1,'keys':{'someService':{'value':'not base64 !!!','protection':'windows-dpapi-currentuser'}}}"
+                "{'version':1,'services':{'someService':{'value':'not base64 !!!','method':'1'}}}"
             );
 
             Assert.That(UserKeyStore.Get("someService"), Is.Null);
@@ -167,7 +168,7 @@ namespace BloomTests.Utils
             // What a file written by a future Bloom, or by hand, could look like. Reading the
             // value as if we knew how it was protected would be worse than asking again.
             WriteRawFile(
-                "{'version':1,'keys':{'someService':{'value':'anything','protection':'somethingElse'}}}"
+                "{'version':1,'services':{'someService':{'value':'anything','method':'somethingElse'}}}"
             );
 
             Assert.That(UserKeyStore.Get("someService"), Is.Null);
@@ -192,24 +193,59 @@ namespace BloomTests.Utils
         }
 
         [Test]
-        public void Set_TheFileSaysHowTheValueIsEncrypted()
+        public void Set_TheFileRecordsTheMethodAndNothingChatty()
         {
-            // A future Bloom, or a person looking at the file, must be able to tell how each
-            // value was encrypted without reading the Bloom source that wrote it. That is what
-            // makes a change of method a migration rather than a loss.
+            // Each value carries the code for how it was encrypted, so that a change of method
+            // is a migration rather than a loss. What the code means is written in the Bloom
+            // source and deliberately not in the file: an explanation there would tell a
+            // scavenger what it had found and a maintainer nothing they cannot read in
+            // UserKeyStore.
             UserKeyStore.Set("someService", "a key");
 
             var fileText = RobustFile.ReadAllText(UserKeyStore.FilePath);
 
             Assert.That(
                 fileText,
-                Does.Contain("windows-dpapi-currentuser"),
-                "each key must name its own protection method"
+                Does.Contain("\"method\": \"1\""),
+                "each value must record the method it was encrypted with"
             );
+            Assert.That(fileText, Does.Not.Contain("about"), "the file must not explain itself");
+        }
+
+        [Test]
+        public void Set_TheFileUsesNoGiveawayWords()
+        {
+            // The one thing obscurity buys here: an untargeted credential stealer sweeping the
+            // profile for files whose names or contents say key, token or api passes this one
+            // over. Anyone who reads Bloom's source still finds it, and that is accepted.
+            UserKeyStore.Set("someService", "a key");
             Assert.That(
-                fileText,
-                Does.Contain("about"),
-                "the file must carry a note explaining what that method means"
+                UserKeyStore.Get("someService"),
+                Is.EqualTo("a key"),
+                "setup: the key must really be stored, or this proves nothing"
+            );
+
+            // The encrypted values are base64 of random-looking bytes, so any of these words
+            // can turn up inside one by chance. They are not what a scavenger reads, so strip
+            // them before looking at the words the file itself chose.
+            var fileText = System.Text.RegularExpressions.Regex.Replace(
+                RobustFile.ReadAllText(UserKeyStore.FilePath),
+                "\"value\": \"[^\"]*\"",
+                "\"value\": \"\""
+            );
+
+            foreach (var giveaway in new[] { "key", "token", "secret", "password", "api", "dpapi" })
+            {
+                Assert.That(
+                    fileText.ToLowerInvariant(),
+                    Does.Not.Contain(giveaway),
+                    $"the file's own words must not include '{giveaway}'"
+                );
+            }
+            Assert.That(
+                Path.GetFileName(UserKeyStore.FilePath).ToLowerInvariant(),
+                Does.Not.Contain("key"),
+                "nor must its name"
             );
         }
 
@@ -218,10 +254,7 @@ namespace BloomTests.Utils
         {
             UserKeyStore.Set("someService", "a key");
 
-            Assert.That(
-                UserKeyStore.GetProtectionMethod("someService"),
-                Is.EqualTo("windows-dpapi-currentuser")
-            );
+            Assert.That(UserKeyStore.GetProtectionMethod("someService"), Is.EqualTo("1"));
         }
 
         [Test]
@@ -230,7 +263,7 @@ namespace BloomTests.Utils
             // What a migration pass needs: Get refuses the value, but the method is still
             // legible, so the pass can see what it is dealing with and leave it alone.
             WriteRawFile(
-                "{'version':1,'keys':{'someService':{'value':'anything','protection':'some-future-method'}}}"
+                "{'version':1,'services':{'someService':{'value':'anything','method':'some-future-method'}}}"
             );
 
             Assert.That(
@@ -270,8 +303,8 @@ namespace BloomTests.Utils
             // A caller that removes keys the user cleared asks this before removing one, so
             // that a key a newer Bloom protected some other way survives.
             WriteRawFile(
-                "{ 'version': 1, 'keys': { 'someService': { 'value': 'AAAA',"
-                    + " 'protection': 'something-a-later-bloom-invented' } } }"
+                "{ 'version': 1, 'services': { 'someService': { 'value': 'AAAA',"
+                    + " 'method': 'something-a-later-bloom-invented' } } }"
             );
 
             Assert.That(UserKeyStore.CanRead("someService"), Is.False);
@@ -289,12 +322,12 @@ namespace BloomTests.Utils
             // the protection method is one this Bloom knows, but the value will not decrypt.
             // Such a key must survive, so a caller that removes cleared keys leaves it alone.
             WriteRawFile(
-                "{ 'version': 1, 'keys': { 'someService': { 'value': 'bm90LWEtcHJvdGVjdGVkLWJsb2I=',"
-                    + " 'protection': 'windows-dpapi-currentuser' } } }"
+                "{ 'version': 1, 'services': { 'someService': { 'value': 'bm90LWEtcHJvdGVjdGVkLWJsb2I=',"
+                    + " 'method': '1' } } }"
             );
             Assert.That(
                 UserKeyStore.GetProtectionMethod("someService"),
-                Is.EqualTo("windows-dpapi-currentuser"),
+                Is.EqualTo("1"),
                 "sanity: the key is on file with a protection method this version knows"
             );
 
@@ -321,6 +354,37 @@ namespace BloomTests.Utils
             );
 
             Assert.That(UserKeyStore.Unprotect(protectedText), Is.EqualTo(original));
+        }
+
+        [Test]
+        public void Unprotect_BlobMadeWithoutBloomEntropy_ReturnsNull()
+        {
+            // Bloom hands DPAPI a fixed extra input, so a tool that finds an encrypted value and
+            // calls CryptUnprotectData on it the obvious way gets nothing. This test is what
+            // proves that extra input is actually in play.
+            const string original = "sk-or-v1-EXAMPLE-key_0123456789";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(original);
+            var blobWithNoEntropy = ProtectedData.Protect(
+                bytes,
+                null,
+                DataProtectionScope.CurrentUser
+            );
+
+            // Sanity: this blob is perfectly good DPAPI for this user, so the refusal below is
+            // about the entropy and not about a blob Windows could never have read.
+            Assert.That(
+                System.Text.Encoding.UTF8.GetString(
+                    ProtectedData.Unprotect(
+                        blobWithNoEntropy,
+                        null,
+                        DataProtectionScope.CurrentUser
+                    )
+                ),
+                Is.EqualTo(original),
+                "setup: DPAPI itself must be able to read this blob"
+            );
+
+            Assert.That(UserKeyStore.Unprotect(Convert.ToBase64String(blobWithNoEntropy)), Is.Null);
         }
 
         /// <summary>

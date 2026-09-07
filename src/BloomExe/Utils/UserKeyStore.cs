@@ -35,28 +35,93 @@ namespace Bloom.Utils
     /// by another account or another machine, and reports it as absent, so the user is asked
     /// for the key again. A caller that has anything better to say than silence should say it.
     ///
+    /// Since DPAPI stops nothing that runs as the user, two cheap measures aim at the one
+    /// attacker they can reach: the untargeted credential stealer that sweeps a profile for
+    /// filenames and words like key, token and api, and that calls CryptUnprotectData on any
+    /// blob it finds. First, the file says nothing about itself. It is called services.bloom, its
+    /// properties are dull ("services", "value", "method"), the method is a bare number, and
+    /// there is no note explaining the format -- that explanation lives here, in the source,
+    /// where it does a maintainer good and a scavenger none. Second, DPAPI is given
+    /// <see cref="kEntropy"/>, so unprotecting a found blob takes knowing about Bloom.
+    /// Anyone who reads this file still wins, and that is accepted: Bloom is open source, so
+    /// a scheme that had to stay secret was never on offer.
+    ///
+    /// The format is
+    /// <code>{ "version": 1, "services": { "openRouter": { "value": "&lt;base64&gt;", "method": "1" } } }</code>.
+    ///
     /// Nothing here knows what any key is for. A caller picks a name and owns its meaning,
     /// so a new service needs no change to this class.
     /// </summary>
     public static class UserKeyStore
     {
-        private const string kFileName = "UserKeys.json";
+        private const string kFileName = "services.bloom";
         private const int kCurrentFormatVersion = 1;
 
         /// <summary>
-        /// What a key's "protection" field says when Windows DPAPI encrypted its value in
-        /// CurrentUser scope. The name states the scope as well as the method, because DPAPI
-        /// also has a LocalMachine scope that decrypts for any account on the computer, and a
-        /// reader must be able to tell which one it is holding.
+        /// What a key's "method" field says when its value was encrypted the way this version
+        /// of Bloom encrypts: Windows DPAPI, CurrentUser scope (not LocalMachine, which any
+        /// account on the computer could decrypt), with exactly the bytes in
+        /// <see cref="kEntropy"/> as the optional entropy. Those three facts together are what
+        /// "1" means, and none of them can change without a new number.
         ///
-        /// Every method Bloom ever uses gets its own name here, and the name is recorded on
+        /// Every method Bloom ever uses gets its own number here, and the number is recorded on
         /// each key rather than once for the file. That is what makes a later change of method
         /// a migration rather than a loss: a future Bloom reads the field, keeps reading the
         /// keys it recognizes, converts the ones it wants to move, and leaves alone anything
         /// written by a version newer than itself. <see cref="GetProtectionMethod"/> reports
         /// the field without decrypting, so such a pass can see what it is dealing with.
         /// </summary>
-        private const string kDpapiCurrentUserProtection = "windows-dpapi-currentuser";
+        private const string kDpapiCurrentUserProtection = "1";
+
+        /// <summary>
+        /// The optional entropy handed to DPAPI along with each value. It is not a secret: it
+        /// is right here in the source of an open-source program, and anyone who reads this
+        /// file can use it. What it buys is narrow and worth having anyway. A credential
+        /// stealer that sweeps a profile and calls CryptUnprotectData on every blob it finds
+        /// gets nothing from this file without knowing about Bloom, because DPAPI refuses to
+        /// unprotect a value unless it is given the same entropy that protected it.
+        ///
+        /// These bytes must never change. Every value on every user's disk becomes unreadable
+        /// if they do, and Bloom would have no way to tell that from a file belonging to
+        /// another Windows account. A later change of entropy is therefore a new method number
+        /// (see <see cref="kDpapiCurrentUserProtection"/>) written alongside a reader for the
+        /// old one, not an edit to this array.
+        /// </summary>
+        private static readonly byte[] kEntropy =
+        {
+            0xC4,
+            0xA6,
+            0x55,
+            0x5E,
+            0x6F,
+            0x3F,
+            0x70,
+            0xBA,
+            0xFE,
+            0x36,
+            0x0E,
+            0x97,
+            0xD3,
+            0x13,
+            0xA3,
+            0xC1,
+            0x7A,
+            0xBB,
+            0xDE,
+            0xB3,
+            0x46,
+            0x0F,
+            0x74,
+            0x9A,
+            0x47,
+            0x3F,
+            0xB3,
+            0x8A,
+            0xD5,
+            0xAD,
+            0x18,
+            0x05,
+        };
 
         /// <summary>
         /// The name under which the user's OpenRouter API key is stored (the "Edit with AI"
@@ -208,7 +273,7 @@ namespace Bloom.Utils
             {
                 var encrypted = ProtectedData.Protect(
                     Encoding.UTF8.GetBytes(plaintext),
-                    null,
+                    kEntropy,
                     DataProtectionScope.CurrentUser
                 );
                 return Convert.ToBase64String(encrypted);
@@ -238,7 +303,7 @@ namespace Bloom.Utils
             {
                 var bytes = ProtectedData.Unprotect(
                     Convert.FromBase64String(protectedBase64),
-                    null,
+                    kEntropy,
                     DataProtectionScope.CurrentUser
                 );
                 return Encoding.UTF8.GetString(bytes);
@@ -259,7 +324,7 @@ namespace Bloom.Utils
             [JsonProperty("value")]
             public string Value;
 
-            [JsonProperty("protection")]
+            [JsonProperty("method")]
             public string Protection;
         }
 
@@ -269,28 +334,9 @@ namespace Bloom.Utils
             [JsonProperty("version")]
             public int Version = kCurrentFormatVersion;
 
-            /// <summary>
-            /// Written on every save and ignored on read: it is there so that whoever opens
-            /// this file, a person or a later program, can see how the values were encrypted
-            /// without having to find the Bloom source that wrote them.
-            /// </summary>
-            [JsonProperty("about")]
-            public string About;
-
-            [JsonProperty("keys")]
+            [JsonProperty("services")]
             public Dictionary<string, StoredKey> Keys = new Dictionary<string, StoredKey>();
         }
-
-        /// <summary>
-        /// The text of the file's "about" property. It names the protection method Bloom
-        /// writes today and says that the authority is each key's own "protection" field, so a
-        /// file holding keys written by two different versions cannot be misread.
-        /// </summary>
-        private static string AboutText =>
-            "Each key's \"protection\" field says how that key's value is encrypted; "
-            + $"\"{kDpapiCurrentUserProtection}\" means Windows DPAPI in CurrentUser scope, "
-            + "which only the Windows account that wrote it, on the computer that wrote it, "
-            + "can decrypt. Keys do not move to another computer or another account.";
 
         /// <summary>
         /// Reads the file, or reports an empty store when there is none yet. Damaged content is
@@ -328,7 +374,6 @@ namespace Bloom.Utils
         private static void Save(StoreFile store)
         {
             store.Version = kCurrentFormatVersion;
-            store.About = AboutText;
             RobustFile.WriteAllText(
                 FilePath,
                 JsonConvert.SerializeObject(store, Formatting.Indented)
