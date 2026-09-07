@@ -76,8 +76,22 @@ export class UndoStack {
         this.record(entry);
     }
 
-    /** Actually add an entry, truncating any redo branch. */
+    /**
+     * Actually add an entry, truncating any redo branch.
+     *
+     * An entry scoped to a page other than the current one is dropped instead. That is the last
+     * line of defence for a push that arrives *after* a page change — an asynchronous gesture on
+     * the old page finishing late — which `keepOnly` (run at navigation time) could not have seen.
+     * Undoing such an entry would apply the old page's data to whatever page is showing now.
+     */
     private record(entry: IUndoEntry): void {
+        if (
+            entry.pageId !== undefined &&
+            this.currentPageId !== undefined &&
+            entry.pageId !== this.currentPageId
+        ) {
+            return;
+        }
         // Anything the user had undone is now unreachable: they have taken a different branch.
         this.entries.length = this.currentIndex + 1;
 

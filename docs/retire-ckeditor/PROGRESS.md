@@ -1023,6 +1023,10 @@ beyond this PR:
    *and* ours once the stack held anything (the binding now stands down when
    `.marginBox.origami-layout-mode` is present, until Stage 4 retires origami's handler). Also a
    dedicated once-only `load` listener records the page id even when the 1500 ms fallback ran first.
+   Devin's second round added two navigation races on top of the first fix, both real and fixed:
+   the failure rollback now restores by entry identity (a page change during an in-flight async
+   undo may have dropped and renumbered entries), and `keepOnly` also filters the pushes held by
+   an open `runUndoable` scope.
 
 **Observed, not chased — the reader-tools undo arms itself in books without a reader tool.** In "A
 house for mouse" (Basic Book, toolbox shows only Canvas/Talking Book/Settings), after this session

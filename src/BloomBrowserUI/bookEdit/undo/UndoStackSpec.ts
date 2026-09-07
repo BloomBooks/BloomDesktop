@@ -500,6 +500,31 @@ describe("UndoStack", () => {
             expect(() => stack.undo()).not.toThrow();
         });
 
+        it("refuses an entry scoped to a page that is no longer current", () => {
+            // The push that arrives AFTER navigation, from an async gesture finishing late on the
+            // old page: keepOnly has already run, so record() itself has to turn it away.
+            stack.setCurrentPageId("page1");
+            stack.push(makeEntry("on page 1", log));
+            stack.setCurrentPageId("page2");
+            expect(stack.getEntryCount()).toBe(0); // sanity: the page-1 entry went with the page
+
+            stack.push(
+                makeEntry("late, from page 1", log, { pageId: "page1" }),
+            );
+            expect(stack.getEntryCount()).toBe(0);
+
+            // A late push inside a scope is turned away the same way when the scope closes...
+            stack.beginUndoableScope("late gesture");
+            stack.push(makeEntry("late and scoped", log, { pageId: "page1" }));
+            stack.endUndoableScope();
+            expect(stack.getEntryCount()).toBe(0);
+
+            // ...while entries for the current page, and ones that survive page changes, record.
+            stack.push(makeEntry("on page 2", log, { pageId: "page2" }));
+            stack.push(makeEntry("delete page", log, { pageId: undefined }));
+            expect(stack.getEntryCount()).toBe(2);
+        });
+
         it("drops a held page-scoped push when the page is left before the scope closes", () => {
             stack.setCurrentPageId("page1");
             stack.beginUndoableScope("async gesture");
