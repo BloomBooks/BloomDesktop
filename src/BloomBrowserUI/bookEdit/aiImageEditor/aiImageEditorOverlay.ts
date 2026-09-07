@@ -1,4 +1,4 @@
-// The AI Image Editor overlay and session — the TOP-WINDOW half of the feature.
+﻿// The AI Image Editor overlay and session — the TOP-WINDOW half of the feature.
 //
 // This runs in the workspace root, not the page iframe, for the same reason the image
 // gallery and the copyright/license dialog do (see the comments on those commands in
@@ -32,6 +32,7 @@
 import {
     post,
     postJson,
+    postString,
     trackChangePicture,
     trackEvent,
 } from "../../utils/bloomApi";
@@ -634,12 +635,9 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     // Bloom owns the OpenRouter API key. A key the user pastes into the
                     // AI Image Editor is handed up here so Bloom persists it per-user (and
                     // supplies it on the next launch). A null apiKey clears the stored key.
-                    postJson(
-                        "aiImageEditor/saveCredentials?session=" +
-                            encodeURIComponent(launchData.sessionToken),
-                        {
-                            apiKey: data.payload?.apiKey ?? null,
-                        },
+                    postString(
+                        "serviceKeys/key?name=openRouter",
+                        data.payload?.apiKey ?? "",
                     );
                     break;
             }

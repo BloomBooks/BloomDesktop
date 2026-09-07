@@ -10,10 +10,10 @@ using SIL.TestUtilities;
 namespace BloomTests.Utils
 {
     /// <summary>
-    /// Tests for <see cref="UserKeyStore"/>.
+    /// Tests for <see cref="ServiceKeyStore"/>.
     ///
     /// Every test works on a temporary folder, set through
-    /// <see cref="UserKeyStore.FolderForTests"/>. The real file holds the developer's
+    /// <see cref="ServiceKeyStore.FolderForTests"/>. The real file holds the developer's
     /// own API keys, so a test that wrote there would destroy them.
     ///
     /// The behavior that matters most here is what happens to a key that cannot be
@@ -21,28 +21,28 @@ namespace BloomTests.Utils
     /// than throwing, so the feature asks for the key again.
     /// </summary>
     [TestFixture]
-    public class UserKeyStoreTests
+    public class ServiceKeyStoreTests
     {
         private TemporaryFolder _folder;
 
         [SetUp]
         public void Setup()
         {
-            _folder = new TemporaryFolder("UserKeyStoreTests");
-            UserKeyStore.FolderForTests = _folder.Path;
+            _folder = new TemporaryFolder("ServiceKeyStoreTests");
+            ServiceKeyStore.FolderForTests = _folder.Path;
         }
 
         [TearDown]
         public void TearDown()
         {
-            UserKeyStore.FolderForTests = null;
+            ServiceKeyStore.FolderForTests = null;
             _folder.Dispose();
         }
 
         [Test]
         public void Get_NothingStored_ReturnsNull()
         {
-            Assert.That(UserKeyStore.Get("someService"), Is.Null);
+            Assert.That(ServiceKeyStore.Get("someService"), Is.Null);
         }
 
         [Test]
@@ -50,22 +50,22 @@ namespace BloomTests.Utils
         {
             const string secret = "sk-or-v1-EXAMPLE-key_0123456789";
 
-            UserKeyStore.Set("someService", secret);
+            ServiceKeyStore.Set("someService", secret);
 
             // Sanity: the file exists and does not contain the secret in the clear, so the
             // successful read below proves decryption rather than a plain-text round trip.
             Assert.That(
-                RobustFile.Exists(UserKeyStore.FilePath),
+                RobustFile.Exists(ServiceKeyStore.FilePath),
                 Is.True,
                 "setup: Set should have written the file"
             );
             Assert.That(
-                RobustFile.ReadAllText(UserKeyStore.FilePath),
+                RobustFile.ReadAllText(ServiceKeyStore.FilePath),
                 Does.Not.Contain(secret),
                 "setup: the secret must not be stored in the clear"
             );
 
-            Assert.That(UserKeyStore.Get("someService"), Is.EqualTo(secret));
+            Assert.That(ServiceKeyStore.Get("someService"), Is.EqualTo(secret));
         }
 
         [Test]
@@ -74,60 +74,60 @@ namespace BloomTests.Utils
             // Keys are ASCII, but the encryption is UTF-8 based, so prove non-ASCII survives.
             const string secret = "clé-secrète-日本語-😀";
 
-            UserKeyStore.Set("someService", secret);
+            ServiceKeyStore.Set("someService", secret);
 
-            Assert.That(UserKeyStore.Get("someService"), Is.EqualTo(secret));
+            Assert.That(ServiceKeyStore.Get("someService"), Is.EqualTo(secret));
         }
 
         [Test]
         public void Set_SecondValue_ReplacesTheFirst()
         {
-            UserKeyStore.Set("someService", "first");
+            ServiceKeyStore.Set("someService", "first");
             Assert.That(
-                UserKeyStore.Get("someService"),
+                ServiceKeyStore.Get("someService"),
                 Is.EqualTo("first"),
                 "setup: the first value should be readable before we replace it"
             );
 
-            UserKeyStore.Set("someService", "second");
+            ServiceKeyStore.Set("someService", "second");
 
-            Assert.That(UserKeyStore.Get("someService"), Is.EqualTo("second"));
+            Assert.That(ServiceKeyStore.Get("someService"), Is.EqualTo("second"));
         }
 
         [Test]
         public void Set_EmptySecret_RemovesTheKey()
         {
-            UserKeyStore.Set("someService", "a key");
+            ServiceKeyStore.Set("someService", "a key");
             Assert.That(
-                UserKeyStore.GetNames().ToList(),
+                ServiceKeyStore.GetNames().ToList(),
                 Has.Count.EqualTo(1),
                 "setup: the key should be on file before we clear it"
             );
 
-            UserKeyStore.Set("someService", "");
+            ServiceKeyStore.Set("someService", "");
 
-            Assert.That(UserKeyStore.Get("someService"), Is.Null);
-            Assert.That(UserKeyStore.GetNames(), Is.Empty);
+            Assert.That(ServiceKeyStore.Get("someService"), Is.Null);
+            Assert.That(ServiceKeyStore.GetNames(), Is.Empty);
         }
 
         [Test]
         public void Set_TwoKeys_KeepsBoth()
         {
-            UserKeyStore.Set("serviceOne", "one");
-            UserKeyStore.Set("serviceTwo", "two");
+            ServiceKeyStore.Set("serviceOne", "one");
+            ServiceKeyStore.Set("serviceTwo", "two");
 
-            Assert.That(UserKeyStore.Get("serviceOne"), Is.EqualTo("one"));
-            Assert.That(UserKeyStore.Get("serviceTwo"), Is.EqualTo("two"));
+            Assert.That(ServiceKeyStore.Get("serviceOne"), Is.EqualTo("one"));
+            Assert.That(ServiceKeyStore.Get("serviceTwo"), Is.EqualTo("two"));
         }
 
         [Test]
         public void GetNames_WithPrefix_ReturnsOnlyTheMatchingOnes()
         {
-            UserKeyStore.Set("imageGallery.pixabay", "one");
-            UserKeyStore.Set("imageGallery.somethingElse", "two");
-            UserKeyStore.Set("openRouter", "three");
+            ServiceKeyStore.Set("imageGallery.pixabay", "one");
+            ServiceKeyStore.Set("imageGallery.somethingElse", "two");
+            ServiceKeyStore.Set("openRouter", "three");
 
-            var names = UserKeyStore.GetNames("imageGallery.").ToList();
+            var names = ServiceKeyStore.GetNames("imageGallery.").ToList();
 
             Assert.That(
                 names,
@@ -146,7 +146,7 @@ namespace BloomTests.Utils
             );
 
             Assert.That(
-                UserKeyStore.Get("someService"),
+                ServiceKeyStore.Get("someService"),
                 Is.Null,
                 "a key that cannot be decrypted here must read as absent, not throw"
             );
@@ -159,7 +159,7 @@ namespace BloomTests.Utils
                 "{'version':1,'services':{'someService':{'value':'not base64 !!!','method':'1'}}}"
             );
 
-            Assert.That(UserKeyStore.Get("someService"), Is.Null);
+            Assert.That(ServiceKeyStore.Get("someService"), Is.Null);
         }
 
         [Test]
@@ -171,7 +171,7 @@ namespace BloomTests.Utils
                 "{'version':1,'services':{'someService':{'value':'anything','method':'somethingElse'}}}"
             );
 
-            Assert.That(UserKeyStore.Get("someService"), Is.Null);
+            Assert.That(ServiceKeyStore.Get("someService"), Is.Null);
         }
 
         [Test]
@@ -179,7 +179,7 @@ namespace BloomTests.Utils
         {
             WriteRawFile("this is not JSON at all");
 
-            Assert.That(UserKeyStore.Get("someService"), Is.Null);
+            Assert.That(ServiceKeyStore.Get("someService"), Is.Null);
         }
 
         [Test]
@@ -187,9 +187,9 @@ namespace BloomTests.Utils
         {
             WriteRawFile("this is not JSON at all");
 
-            UserKeyStore.Set("someService", "a key");
+            ServiceKeyStore.Set("someService", "a key");
 
-            Assert.That(UserKeyStore.Get("someService"), Is.EqualTo("a key"));
+            Assert.That(ServiceKeyStore.Get("someService"), Is.EqualTo("a key"));
         }
 
         [Test]
@@ -199,10 +199,10 @@ namespace BloomTests.Utils
             // is a migration rather than a loss. What the code means is written in the Bloom
             // source and deliberately not in the file: an explanation there would tell a
             // scavenger what it had found and a maintainer nothing they cannot read in
-            // UserKeyStore.
-            UserKeyStore.Set("someService", "a key");
+            // ServiceKeyStore.
+            ServiceKeyStore.Set("someService", "a key");
 
-            var fileText = RobustFile.ReadAllText(UserKeyStore.FilePath);
+            var fileText = RobustFile.ReadAllText(ServiceKeyStore.FilePath);
 
             Assert.That(
                 fileText,
@@ -218,9 +218,9 @@ namespace BloomTests.Utils
             // The one thing obscurity buys here: an untargeted credential stealer sweeping the
             // profile for files whose names or contents say key, token or api passes this one
             // over. Anyone who reads Bloom's source still finds it, and that is accepted.
-            UserKeyStore.Set("someService", "a key");
+            ServiceKeyStore.Set("someService", "a key");
             Assert.That(
-                UserKeyStore.Get("someService"),
+                ServiceKeyStore.Get("someService"),
                 Is.EqualTo("a key"),
                 "setup: the key must really be stored, or this proves nothing"
             );
@@ -229,7 +229,7 @@ namespace BloomTests.Utils
             // can turn up inside one by chance. They are not what a scavenger reads, so strip
             // them before looking at the words the file itself chose.
             var fileText = System.Text.RegularExpressions.Regex.Replace(
-                RobustFile.ReadAllText(UserKeyStore.FilePath),
+                RobustFile.ReadAllText(ServiceKeyStore.FilePath),
                 "\"value\": \"[^\"]*\"",
                 "\"value\": \"\""
             );
@@ -243,7 +243,7 @@ namespace BloomTests.Utils
                 );
             }
             Assert.That(
-                Path.GetFileName(UserKeyStore.FilePath).ToLowerInvariant(),
+                Path.GetFileName(ServiceKeyStore.FilePath).ToLowerInvariant(),
                 Does.Not.Contain("key"),
                 "nor must its name"
             );
@@ -252,9 +252,9 @@ namespace BloomTests.Utils
         [Test]
         public void GetProtectionMethod_ReportsTheMethodWithoutDecrypting()
         {
-            UserKeyStore.Set("someService", "a key");
+            ServiceKeyStore.Set("someService", "a key");
 
-            Assert.That(UserKeyStore.GetProtectionMethod("someService"), Is.EqualTo("1"));
+            Assert.That(ServiceKeyStore.GetProtectionMethod("someService"), Is.EqualTo("1"));
         }
 
         [Test]
@@ -267,12 +267,12 @@ namespace BloomTests.Utils
             );
 
             Assert.That(
-                UserKeyStore.Get("someService"),
+                ServiceKeyStore.Get("someService"),
                 Is.Null,
                 "setup: this version must refuse a method it does not know"
             );
             Assert.That(
-                UserKeyStore.GetProtectionMethod("someService"),
+                ServiceKeyStore.GetProtectionMethod("someService"),
                 Is.EqualTo("some-future-method")
             );
         }
@@ -280,21 +280,21 @@ namespace BloomTests.Utils
         [Test]
         public void GetProtectionMethod_NoSuchKey_ReturnsNull()
         {
-            Assert.That(UserKeyStore.GetProtectionMethod("someService"), Is.Null);
+            Assert.That(ServiceKeyStore.GetProtectionMethod("someService"), Is.Null);
         }
 
         [Test]
         public void CanRead_KeyThisVersionWrote_IsTrue()
         {
-            UserKeyStore.Set("someService", "a-secret");
+            ServiceKeyStore.Set("someService", "a-secret");
 
-            Assert.That(UserKeyStore.CanRead("someService"), Is.True);
+            Assert.That(ServiceKeyStore.CanRead("someService"), Is.True);
         }
 
         [Test]
         public void CanRead_NoSuchKey_IsFalse()
         {
-            Assert.That(UserKeyStore.CanRead("someService"), Is.False);
+            Assert.That(ServiceKeyStore.CanRead("someService"), Is.False);
         }
 
         [Test]
@@ -307,9 +307,9 @@ namespace BloomTests.Utils
                     + " 'method': 'something-a-later-bloom-invented' } } }"
             );
 
-            Assert.That(UserKeyStore.CanRead("someService"), Is.False);
+            Assert.That(ServiceKeyStore.CanRead("someService"), Is.False);
             Assert.That(
-                UserKeyStore.GetProtectionMethod("someService"),
+                ServiceKeyStore.GetProtectionMethod("someService"),
                 Is.EqualTo("something-a-later-bloom-invented"),
                 "sanity: the key is on file, it is only unreadable"
             );
@@ -326,12 +326,12 @@ namespace BloomTests.Utils
                     + " 'method': '1' } } }"
             );
             Assert.That(
-                UserKeyStore.GetProtectionMethod("someService"),
+                ServiceKeyStore.GetProtectionMethod("someService"),
                 Is.EqualTo("1"),
                 "sanity: the key is on file with a protection method this version knows"
             );
 
-            Assert.That(UserKeyStore.CanRead("someService"), Is.False);
+            Assert.That(ServiceKeyStore.CanRead("someService"), Is.False);
         }
 
         [Test]
@@ -339,7 +339,7 @@ namespace BloomTests.Utils
         {
             const string original = "sk-or-v1-EXAMPLE-key_0123456789";
 
-            var protectedText = UserKeyStore.Protect(original);
+            var protectedText = ServiceKeyStore.Protect(original);
 
             // Sanity: encryption actually transformed the value, so the round trip below is
             // meaningful and is not just echoing the plaintext back.
@@ -353,7 +353,7 @@ namespace BloomTests.Utils
                 "setup: Protect must produce base64, because that is what we store"
             );
 
-            Assert.That(UserKeyStore.Unprotect(protectedText), Is.EqualTo(original));
+            Assert.That(ServiceKeyStore.Unprotect(protectedText), Is.EqualTo(original));
         }
 
         [Test]
@@ -384,7 +384,7 @@ namespace BloomTests.Utils
                 "setup: DPAPI itself must be able to read this blob"
             );
 
-            Assert.That(UserKeyStore.Unprotect(Convert.ToBase64String(blobWithNoEntropy)), Is.Null);
+            Assert.That(ServiceKeyStore.Unprotect(Convert.ToBase64String(blobWithNoEntropy)), Is.Null);
         }
 
         /// <summary>
@@ -394,7 +394,7 @@ namespace BloomTests.Utils
         private void WriteRawFile(string contentWithSingleQuotes)
         {
             RobustFile.WriteAllText(
-                UserKeyStore.FilePath,
+                ServiceKeyStore.FilePath,
                 contentWithSingleQuotes.Replace('\'', '"')
             );
         }

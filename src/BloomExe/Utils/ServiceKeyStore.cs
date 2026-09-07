@@ -52,7 +52,7 @@ namespace Bloom.Utils
     /// Nothing here knows what any key is for. A caller picks a name and owns its meaning,
     /// so a new service needs no change to this class.
     /// </summary>
-    public static class UserKeyStore
+    public static class ServiceKeyStore
     {
         private const string kFileName = "services.blm";
         private const int kCurrentFormatVersion = 1;
@@ -176,7 +176,7 @@ namespace Bloom.Utils
                     // other way. Guessing at the bytes would be worse than asking the user
                     // again, and this version must not overwrite what it cannot read.
                     Logger.WriteEvent(
-                        $"UserKeyStore: the key '{name}' says it is protected by '{storedKey.Protection}', which this version of Bloom does not know how to read. Treating it as absent."
+                        $"ServiceKeyStore: the key '{name}' says it is protected by '{storedKey.Protection}', which this version of Bloom does not know how to read. Treating it as absent."
                     );
                     return null;
                 }
@@ -301,7 +301,7 @@ namespace Bloom.Utils
                 when (error is CryptographicException || error is FormatException)
             {
                 Logger.WriteEvent(
-                    $"UserKeyStore: a stored key could not be decrypted on this computer and account ({error.Message}). The user must enter it again."
+                    $"ServiceKeyStore: a stored key could not be decrypted on this computer and account ({error.Message}). The user must enter it again."
                 );
                 return null;
             }
@@ -348,7 +348,7 @@ namespace Bloom.Utils
             catch (Exception error)
             {
                 Logger.WriteError(
-                    "UserKeyStore could not read " + FilePath + "; treating it as empty",
+                    "ServiceKeyStore could not read " + FilePath + "; treating it as empty",
                     error
                 );
                 return new StoreFile();

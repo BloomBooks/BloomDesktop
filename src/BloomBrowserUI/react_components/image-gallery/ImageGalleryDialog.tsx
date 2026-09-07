@@ -1,4 +1,4 @@
-import { css } from "@emotion/react";
+﻿import { css } from "@emotion/react";
 import { ImageGallery } from "bloom-image-gallery";
 import type {
     IImage,
@@ -13,8 +13,8 @@ import {
 import {
     getBloomApiPrefix,
     getAsync,
+    postJson,
     postJsonAsync,
-    postString,
     postDataWithConfigAsync,
     trackEvent,
 } from "../../utils/bloomApi";
@@ -40,8 +40,9 @@ const ImageGalleryDialog: React.FunctionComponent<{
     searchLang: string;
 }> = (props) => {
     const [open, setOpen] = useState(true);
-    // Keys are loaded from the per-user key store before the gallery is rendered,
-    // so providers (e.g. Pixabay) receive their initial API key in their constructor.
+    // Keys are loaded from Bloom's per-user service key store before the gallery is
+    // rendered, so providers (e.g. Pixabay) receive their initial API key in their
+    // constructor.
     const [providerKeys, setProviderKeys] = useState<
         IProviderKeysV1 | undefined
     >(undefined);
@@ -66,7 +67,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
     // A mount effect is justified: this is a one-time async fetch that must run after mount
     // so the component can render before the network round-trip completes.
     useMountEffect(() => {
-        getAsync("imageGallery/providerKeys")
+        getAsync("serviceKeys/keys?prefix=imageGallery.")
             .then((r) => {
                 const keys = r?.data as IProviderKeysV1;
                 // Bloom replies with the format version plus one property per provider the
@@ -257,9 +258,9 @@ const ImageGalleryDialog: React.FunctionComponent<{
                             // key supplied while the chooser is open is reflected in what this
                             // visit reports.
                             pixabayKeyPresentRef.current = !!keys.pixabay;
-                            postString(
-                                "imageGallery/providerKeys",
-                                JSON.stringify(keys),
+                            postJson(
+                                "serviceKeys/keys?prefix=imageGallery.",
+                                keys,
                             );
                         }}
                         onLanguageChange={(lang) =>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -62,7 +62,6 @@ namespace Bloom.web.controllers
     ///                                    images + history, return the launch payload.
     ///        aiImageEditor/file          GET/POST/DELETE files under .ai-image-editor/.
     ///        aiImageEditor/commit        apply the chosen replacements to the book.
-    ///        aiImageEditor/saveCredentials  persist the user's OpenRouter API key.
     ///   2. window.postMessage on channel "bloom-ai-image-tools", between the overlay JS
     ///      (aiImageEditorOverlay.ts, in the TOP window) and the AI image editor's iframe: ready /
     ///      init / commit / cancel / log / ack. The overlay JS — NOT this class — sends
@@ -75,7 +74,7 @@ namespace Bloom.web.controllers
     ///   source of truth.
     ///
     /// SECURITY
-    ///   A per-launch session token (query param) gates /file, /commit, /saveCredentials.
+    ///   A per-launch session token (query param) gates /file and /commit.
     ///   File names are allow-listed; page/result ids are charset-restricted; reused
     ///   source URLs must resolve inside the book folder (no path traversal).
     ///
@@ -195,12 +194,6 @@ namespace Bloom.web.controllers
                 HandleCommit,
                 handleOnUiThread: true,
                 requiresSync: true
-            );
-            apiHandler.RegisterEndpointHandler(
-                "aiImageEditor/saveCredentials",
-                HandleSaveCredentials,
-                handleOnUiThread: false,
-                requiresSync: false
             );
         }
 
@@ -497,13 +490,12 @@ namespace Bloom.web.controllers
                     references = Array.Empty<object>(),
                     // Bloom owns the OpenRouter key: supply the per-user stored key so the AI
                     // image editor doesn't have to ask for it again. It hands any newly
-                    // obtained key back via aiImageEditor/saveCredentials.
-                    apiKey = UserKeyStore.Get(UserKeyStore.kOpenRouterName),
+                    // obtained key back to Bloom via serviceKeys/key (see ServiceKeysApi).
+                    apiKey = ServiceKeyStore.Get(ServiceKeyStore.kOpenRouterName),
                     // In a Playground template book all features are unlocked for
                     // "try it out", so the AI image editor opens — but it's a shared demo
                     // context, so it must not let the user set/save an OpenRouter API key.
-                    // The AI image editor disables its credential UI when this is true;
-                    // HandleSaveCredentials also refuses to persist.
+                    // The AI image editor disables its credential UI when this is true.
                     demoOnly = book.IsPlayground,
                     // Let the AI image editor reveal its developer/tester tools (e.g. the
                     // "Local Dummy (No AI)" model, for cost-free testing). The AI image
@@ -556,46 +548,6 @@ namespace Bloom.web.controllers
                 ?.Trim();
             return optIn != null
                 && kTesterToolsOnValues.Contains(optIn, StringComparer.OrdinalIgnoreCase);
-        }
-
-        private class SaveCredentialsRequest
-        {
-            public string apiKey { get; set; }
-        }
-
-        /// <summary>
-        /// Receives the user's OpenRouter API key from the AI image editor (manual key entry)
-        /// and persists it per Windows user via <see cref="UserKeyStore"/>. A null/empty
-        /// apiKey clears the stored key (sign-out). Session-gated so a stray frame can't
-        /// overwrite the user's stored key.
-        /// </summary>
-        private void HandleSaveCredentials(ApiRequest request)
-        {
-            if (!HasValidSession(request))
-                return;
-
-            // Defense in depth for the Playground "demo" case (see HandleLaunch): never
-            // persist a key obtained during a Playground session, even if a stray frame
-            // posts here despite the AI image editor's disabled credential UI.
-            if (_bookSelection.CurrentSelection?.IsPlayground == true)
-            {
-                request.PostSucceeded();
-                return;
-            }
-
-            SaveCredentialsRequest payload;
-            try
-            {
-                payload = request.RequiredPostObject<SaveCredentialsRequest>();
-            }
-            catch (Exception)
-            {
-                request.Failed(HttpStatusCode.BadRequest, "Invalid credentials payload");
-                return;
-            }
-
-            UserKeyStore.Set(UserKeyStore.kOpenRouterName, payload.apiKey);
-            request.PostSucceeded();
         }
 
         // Invalidates the current session. Called at the start of each launch to tear down

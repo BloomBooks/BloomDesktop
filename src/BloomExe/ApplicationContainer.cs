@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
@@ -83,6 +83,7 @@ namespace Bloom
                         typeof(CollectionChooserApi),
                         typeof(I18NApi),
                         typeof(ProgressDialogApi),
+                        typeof(ServiceKeysApi),
                     }.Contains(t)
                 );
 
@@ -131,6 +132,9 @@ namespace Bloom
             _container
                 .Resolve<ProgressDialogApi>()
                 .RegisterWithApiHandler(server.ApiHandler);
+            // The user's service API keys belong to the Windows user, not to a collection, so
+            // these endpoints live here rather than in ProjectContext.
+            _container.Resolve<ServiceKeysApi>().RegisterWithApiHandler(server.ApiHandler);
             server.ApiHandler.RecordApplicationLevelHandlers();
         }
 
