@@ -115,13 +115,34 @@ asynchronously after `CKEDITOR.inline()` returns:
 
 | Mechanism | What it really is | Notes |
 | --- | --- | --- |
-| `origamiCanUndo`/`origamiUndo` (`origami.ts:262-294`) | A stack of **jQuery `clone(true)` copies of `.marginBox`** — DOM plus attached handlers and data — restored with `replaceWith` | Only while Change Layout mode is active. Has its **own** `keydown.origami` Ctrl+Z/Ctrl+Y handler on `html` (`origami.ts:139-146`), and its own Redo. Safe today partly *because* layout mode strips `contentEditable` (`origami.ts:132`), so there are no live CKEditor instances to orphan. |
+| `origamiCanUndo`/`origamiUndo` (`origami.ts:277-294`) | A stack of **jQuery `clone(true)` copies of `.marginBox`** — DOM plus attached handlers and data — restored with `replaceWith` | Only while Change Layout mode is active. Has its **own** `keydown.origami` Ctrl+Z/Ctrl+Y handler on `html` (`origami.ts:137`), and its own Redo. Safe today partly *because* layout mode strips `contentEditable` (`origami.ts:132`), so there are no live CKEditor instances to orphan. |
 | `toolboxWindow.canUndo/undo` → `readerToolsModel` | A per-editable **text-typing** undo: `{html, text, caretOffset}` snapshots, seeded on focus (`noteFocus`, :557-568, from `decodableReaderTool.tsx:155`) and pushed on every markup-changing keystroke inside `doMarkup` (:753-764) | Gated on `shouldHandleUndo()` — `currentMarkupType !== None` (:570). It is consulted *before* CKEditor **deliberately**: when a reader tool is active it must shadow CKEditor's undo, which would restore stale decodable/leveled markup. Not "reader-setup changes". |
 | `imageOperationCanUndo`/`imageOperationUndo` (`ImageUndoManager.ts`) | Restores an image's `src` / copyright / crop | Clean two-phase prepare/commit; already page-id-scoped; gated on the active element being an image container. |
 | `ckeditorCanUndo`/`ckeditorUndo` | `CKEDITOR.currentInstance.undoManager`, **per editable div** | An "implementation secret". Ordering across boxes is already wrong. |
 | Browser-native undo | Invisible | Called directly in `BloomField.PreventRemovalOfSomeElements` (`BloomField.ts:810-825`); also fed implicitly by every `document.execCommand("insertHTML"/"formatBlock"/"justify*"/"insertText")` in `bloomEditing.ts` and `GamePromptDialog.tsx`, and by plain typing in any contenteditable. |
 
-Two corrections to the folklore:
+**Correction, verified 2026-08-06 — the table above is the *button* path, not the keyboard path.**
+`handleUndo()` has exactly one caller: `topBarButtonClick` (`bloomEditing.ts:1633-1648`), reached
+when the user clicks the toolbar Undo button. There is **no Ctrl+Z handler anywhere in the workspace
+frame**, and C#'s `UndoCommand.Implementer` is an empty lambda (`WebView2Browser.cs:890`) that exists
+only so the button's `Enabled` can be set. So Ctrl+Z is handled entirely in the **page** frame, by
+whichever of these claims it first:
+
+| Ctrl+Z handler | Where | When it wins |
+| --- | --- | --- |
+| `keydown.origami` on `html` | page frame (`origami.ts:137`) | Change Layout mode only |
+| per-editable `keydown` in the reader tools | page frame (`decodableReaderTool.tsx:158-178`) | any editable, whenever `currentMarkupType !== None`; `preventDefault`s and returns false |
+| CKEditor's own keystroke handling | inside each editable | otherwise |
+| browser-native contenteditable undo | — | when nothing above claims it |
+
+Two consequences the plan depended on and got half right. First, the deliberate
+reader-tools-before-CKEditor precedence is enforced for the keyboard by that `preventDefault`, not by
+`handleUndo`'s ordering — so with a reader tool active, Ctrl+Z in a text box never reaches the shared
+stack at all. Second, that is *why* Stage 1 is behaviour-neutral: it changes only the button path.
+The keyboard path is not unified until those page-frame handlers are converted (Stages 3–4), and
+until then a single consistent Undo exists for the button but not for the keystroke.
+
+Two further corrections to the folklore:
 - `workspaceRoot.ts:125`'s "*See also Browser.Undo; if all else fails we ask the C# browser
   object to Undo*" is **stale** — no such fallback exists in the WebView2 code. The Undo
   button's enabled state comes purely from `workspaceBundle.canUndo()` returning `"yes"`
@@ -142,10 +163,16 @@ nobody enumerated). **Use snapshots as the default entry type, with inverse-op e
 snapshot is too blunt.**
 
 The critical constraint, which shapes the contract: the page iframe's JS context dies not only
-on page *change* but on same-page **reloads** — ctrl+wheel zoom regenerates the page
-(`bloomEditing.ts:1268`), origami exit posts `saveChangesAndRethinkPageEvent`
-(`origami.ts:193`), and several tools navigate. An entry that closes over page-frame DOM or
-functions therefore becomes a live grenade: `undo()` would mutate a detached document or throw.
+on page *change* but on same-page **reloads** — origami exit posts `saveChangesAndRethinkPageEvent`
+(`origami.ts:193`), importing a video and changing the topic rebuild the page under its own id, and
+several tools navigate. (An earlier draft also cited ctrl+wheel zoom; **that is stale** — zoom is a
+CSS transform now, `EditingView.SetZoom` → `workspaceBundle.setZoom`, and reloads nothing. Corrected
+2026-09-07.) An entry that closes over page-frame DOM or functions therefore becomes a live grenade:
+`undo()` would mutate a detached document or throw.
+
+**Every one of those reloads goes through `workspaceRoot.switchContentPage`** — it is the only route
+C# uses to navigate the page frame (`EditingView.cs`, three call sites). So one hook there covers
+same-page reloads and page changes alike; see `bookEdit/undo/pageFrameUndoHooks.ts`.
 
 So **snapshot entries must be pure data**, interpreted at undo time by a restore function that
 re-acquires the current page frame via `getEditablePageBundleExports()`:
@@ -733,13 +760,19 @@ And the risk is concentrated — four paths are 74% of it:
 | 1 each | `editableDivUtils.ts`, `canvasElementManager/CanvasElementManager.ts` |
 | **0** | `workspaceRoot.ts`, `origami.ts`, `ImageUndoManager.ts`, `editablePage.ts` |
 
+> **Correction (2026-09-07):** the zero row was measured with the wrong path for `workspaceRoot.ts`
+> (it is `bookEdit/workspaceRoot.ts`, not `bookEdit/js/`). Re-measured over the following month
+> (2026-08-06 → 09-07): `workspaceRoot.ts` **5** commits — BL-16558 changed `handleUndo` itself —
+> `editablePage.ts` **3**, `origami.ts` and `ImageUndoManager.ts` genuinely 0. So Stage 1's
+> integration risk was low, not zero, and the BL-16558 change had to be folded into the legacy
+> providers. **When measuring drift, get the paths from `git ls-tree`, not from memory.**
+
 Three things follow directly:
 
 - **1.7 commits a day is a weekly sync, not a daily one.** A month between syncs would mean ~50
   commits to reconcile at once, which is what made the one Stage 0 rebase painful.
-- **Stage 1's integration risk is near zero** — every file its deferred edits touch is in the
-  zero-commit row. Stages 3 and 6 are where the cost lands, because that is where
-  `bloomEditing.ts` and `toolbox.ts` are.
+- **Stage 1's integration risk is low** (not zero — see the correction above). Stages 3 and 6 are
+  where the cost lands, because that is where `bloomEditing.ts` and `toolbox.ts` are.
 - **`lib/ckeditor/` is still being actively patched** — 4 commits in 30 days, to the library we are
   deleting. Each is a behaviour somebody needed. Stage 5 must diff that directory against the
   project's start point and account for every change, rather than deleting a directory assumed
@@ -942,13 +975,21 @@ Exit criteria: inventory reviewed; `pnpm test` green; prep commit demonstrably b
   clearForPage / clearOnPageFrameReload. Index-based with truncate-on-push (§4.1), count-bounded,
   `canUndo` and `canRedo` both O(1).
 - `workspaceRoot.canUndo`/`handleUndo` become thin delegations (two small edits, one file). Redo
-  needs no C# counterpart — it is reached only by Ctrl+Y (§10 q1), so it stays entirely in JS.
+  needs no C# counterpart — it is reached only by Ctrl+Y (§10 q1), so it stays entirely in JS. **But
+  it cannot be a workspace-frame keydown handler:** keyboard events inside the page iframe never
+  reach the parent document, and typing is exactly when the user wants Redo. It has to be registered
+  in the page frame (as both existing Ctrl+Y handlers are) and call across. See DEFERRED-EDITS.md 1e.
 - **Wrap all four existing mechanisms as legacy providers in their current priority order.**
-  No conversions, no behaviour change. This preserves the deliberate reader-tools-before-CKEditor
-  precedence (§3) for free. Redo has no legacy providers to wrap — origami's is the only Redo that
-  exists, and it keeps working via its own handler until Stage 4 converts it. (Note
-  `readerToolsModel.redo()` at `:609` appears to be **unreachable** — nothing exports or calls it;
-  worth a moment's check, but it is deleted in Stage 5 regardless.)
+  No conversions, no behaviour change. **Note precisely what that order governs**, which §3's
+  correction spells out: `handleUndo` is reached only from the top-bar Undo button, so wrapping it
+  reproduces the *button* path exactly and leaves the keyboard path — which is handled per-context in
+  the page frame and never enters `handleUndo` — untouched. Behaviour-neutrality holds, but not
+  because the ordering is preserved; because the keyboard path was never in scope.
+- Redo has no legacy providers to wrap, and there are **two** existing Redos, not one: origami's and
+  the reader tools'. Both keep working via their own page-frame handlers until converted.
+  (**Correction, verified 2026-08-06:** the earlier claim that `readerToolsModel.redo()` is
+  unreachable was wrong — `decodableReaderTool.tsx:170` calls it. Stage 5 must **not** delete it
+  blind; doing so would silently remove a working Ctrl+Y/Ctrl+Shift+Z for reader-tool typing.)
 - `runUndoable(label, fn)` with the nesting semantics of §4.13.
 
 Rationale for doing *no* conversions here: the four existing mechanisms are contextually

@@ -10,6 +10,26 @@ import {
 import { postJson } from "../utils/bloomApi";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
+import { theOneUndoStack } from "./undo/UndoStack";
+import { registerLegacyUndoProviders } from "./undo/legacyUndoProviders";
+import {
+    pageFrameLoaded,
+    pageFrameNavigating,
+} from "./undo/pageFrameUndoHooks";
+
+// The one undo stack (BL-6681) arbitrates between Bloom's pre-existing undo mechanisms until
+// they are converted. Registering them is all it takes, and the providers only reach across
+// frames when consulted.
+//
+// Only in the top (workspace) frame, though. Vite puts this module in a chunk shared with other
+// code, so its top level also runs inside the page and toolbox iframes, each of which would
+// otherwise get a live copy of "the one" stack with its own providers. Nothing in those frames may
+// use that copy -- the Undo button's page-frame entry point (topBarButtonClick) reaches the real
+// stack through getWorkspaceBundleExports() for exactly this reason -- and leaving it unregistered
+// makes sure of it: an accidental use would find an empty stack with no providers.
+if (window.parent === window) {
+    registerLegacyUndoProviders();
+}
 
 export interface IWorkspaceExports {
     showDialog(
@@ -53,6 +73,9 @@ export interface IWorkspaceExports {
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
     showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
     openAiImageEditor(target: IAiImageEditorTarget): void;
+    // Redo has no button and no C# side; the page frame's Ctrl+Y binding reaches it here.
+    canRedo(): boolean;
+    handleRedo(): void;
 }
 
 export function SayHello() {
@@ -101,45 +124,22 @@ export { showAdjustTimingsDialog as showAdjustTimingsDialogFromWorkspaceRoot };
 // Local alias so we have an in-scope identifier for legacy global exposure typing.
 const showAdjustTimingsDialogFromWorkspaceRoot = showAdjustTimingsDialog;
 
+// The top bar's Undo button (via topBarButtonClick in the page frame) ends up here. Everything
+// about WHICH mechanism gets to undo -- origami, the reader tools, image operations, CKEditor,
+// in that order and for the reasons recorded there -- lives in undo/legacyUndoProviders.ts, and
+// the stack's own entries come after them. See docs/retire-ckeditor/PLAN.md 3 and 6 (Stage 1).
 export function handleUndo(): void {
-    // First see if origami is active and knows about something we can undo.
-    // (Origami undo works only while the origami tool is active.)
-    const contentWindow = getEditablePageBundleExports();
-    if (contentWindow && contentWindow.origamiCanUndo()) {
-        contentWindow.origamiUndo();
-        return;
-    }
-    // Undoing changes made by commands and dialogs in the toolbox can't be undone using
-    // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
-    const toolboxWindow = getToolboxBundleExports();
-    if (toolboxWindow && toolboxWindow.canUndo()) {
-        toolboxWindow.undo();
-        // The reader tools' undo restores a saved innerHTML, which replaces the text nodes
-        // their highlights are painted over. Nothing else will notice: unlike Ctrl+Z, a click
-        // on this button produces no keystroke in the page, so the usual keyup markup update
-        // never happens and the highlights would stay dead. (BL-16558)
-        toolboxWindow.updateMarkupAfterUndoOrRedo();
-        return;
-    }
-    // In an ideal world, we would have all undo information stored in the order of the operations.
-    // But since ckeditor and image operations handle undo differently, we don't have that ordering.
-    // And each textbox has its own ckeditor instance, so their undo stacks are already separate.
-    // The canUndoImageOperation check verifies that we are on a canvas element that contains an image,
-    // which makes things work similarly to having multiple textboxes on a page.  However, multiple image
-    // boxes will operate on a single undo stack unlike mutiple textboxes.
-    // Because they are independent, and operational only the the proper context, it doesn't really
-    // matter in which order we check for undo operations.
-    if (contentWindow && contentWindow.imageOperationCanUndo()) {
-        contentWindow.imageOperationUndo();
-    } else if (contentWindow && contentWindow.ckeditorCanUndo()) {
-        contentWindow.ckeditorUndo();
-        // As above: this undo replaces the content of an editable, and there is no keystroke
-        // to trigger the markup update that repaints the tools' highlights over the new text
-        // nodes. (We call ckeditor's undoManager directly rather than its undo command, so the
-        // afterCommandExec handler in attachToCkEditor doesn't see this one.)
-        toolboxWindow?.updateMarkupAfterUndoOrRedo();
-    }
-    // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
+    void theOneUndoStack.undo();
+}
+
+// Ctrl+Y, from the page frame's binding (undo/redoKeyBinding.ts). There is no Redo button.
+export function handleRedo(): void {
+    void theOneUndoStack.redo();
+}
+
+// Whether Ctrl+Y would do anything. O(1): the page frame asks on every Ctrl+Y keydown.
+export function canRedo(): boolean {
+    return theOneUndoStack.canRedo();
 }
 
 // We need this update to maintain relative paths to images for the thumbnails. (BL-15906)
@@ -150,6 +150,9 @@ export function switchThumbnailPage(newSource: string) {
 }
 
 export function switchContentPage(newSource: string) {
+    // Whatever undo entries were scoped to the page being shown are about to describe elements
+    // that no longer exist. This runs before the try below on purpose: it touches no frame.
+    pageFrameNavigating();
     try {
         const editablePageBundle = getEditablePageBundleExports();
         if (editablePageBundle?.pageUnloading) {
@@ -181,12 +184,18 @@ export function switchContentPage(newSource: string) {
     const handler = () => {
         handlerCalled = true;
         iframe.removeEventListener("load", handler);
+        pageFrameLoaded();
         doWhenToolboxLoaded((toolboxFrameExports: IToolboxFrameExports) => {
             toolboxFrameExports.applyToolboxStateToPage();
         });
     };
     iframe.removeEventListener("load", handler);
     iframe.addEventListener("load", handler);
+    // Separately from the handler above, which the 1500 ms fallback below can run early (against
+    // the page that is still there) and then unregister: the undo stack must learn the id of the
+    // page that ACTUALLY loads, so it listens for the real load on its own. Idempotent, so running
+    // twice when the load does fire in time is harmless.
+    iframe.addEventListener("load", () => pageFrameLoaded(), { once: true });
     iframe.src = newSource;
     updateWorkspaceUrlParam("pageSrc", newSource);
     // When we don't already have a video (either a new page, or it has been deleted),
@@ -262,24 +271,10 @@ export function doWhenToolboxLoaded(
     }
 }
 
-//Called by c# using workspaceBundle.canUndo()
+//Called by c# using workspaceBundle.canUndo(), polled on a timer to set the Undo button's
+// enabled state (WebView2Browser.CanUndoAsync). "yes"/"fail" is that contract; keep it.
 export function canUndo(): string {
-    // See comments on handleUndo()
-    const contentWindow = getEditablePageBundleExports();
-    if (contentWindow && contentWindow.origamiCanUndo()) {
-        return "yes";
-    }
-    const toolboxWindow = getToolboxBundleExports();
-    if (toolboxWindow && toolboxWindow.canUndo && toolboxWindow.canUndo()) {
-        return "yes";
-    }
-    if (contentWindow && contentWindow.imageOperationCanUndo()) {
-        return "yes";
-    }
-    if (contentWindow && contentWindow.ckeditorCanUndo()) {
-        return "yes";
-    }
-    return "fail"; //can't undo in Javascript, possibly something in C# can?
+    return theOneUndoStack.canUndo() ? "yes" : "fail";
 }
 
 //noinspection JSUnusedGlobalSymbols
@@ -423,6 +418,8 @@ export function setZoom(zoom: number): void {
 interface WorkspaceBundleApi {
     SayHello: typeof SayHello;
     handleUndo: typeof handleUndo;
+    handleRedo: typeof handleRedo;
+    canRedo: typeof canRedo;
     switchThumbnailPage: typeof switchThumbnailPage;
     switchContentPage: typeof switchContentPage;
     showDialog: typeof showDialog;
@@ -467,6 +464,8 @@ window.workspaceBundle = {
     // simple exports
     SayHello,
     handleUndo,
+    handleRedo,
+    canRedo,
     switchThumbnailPage,
     switchContentPage,
     showDialog,

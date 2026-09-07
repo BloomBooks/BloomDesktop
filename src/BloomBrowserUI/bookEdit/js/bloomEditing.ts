@@ -52,6 +52,7 @@ import "../../lib/long-press/jquery.longpress.js";
 import {
     doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
+    getWorkspaceBundleExports,
 } from "./workspaceFrames";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
@@ -75,7 +76,6 @@ import { setupBookLinkGrids } from "./linkGrid";
 import { fitImageOverTextSplits } from "./autoFitImageOverTextSplits";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
-import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
@@ -1647,7 +1647,12 @@ export function topBarButtonClick(button: { command: string }) {
             cutSelection();
             break;
         case "undo":
-            handleUndo();
+            // Across the frame boundary, deliberately. This function runs in the PAGE frame
+            // (C# calls it through getEditablePageBundleExports), but the one undo stack lives
+            // in the workspace frame. Importing handleUndo from ../workspaceRoot here would run
+            // a second copy of that module in this frame, with its own empty stack, and the
+            // button would undo from the wrong one (BL-6681).
+            getWorkspaceBundleExports().handleUndo();
             break;
         // We don't handle paste this way. We need code on the C# side to decide if we have
         // an image on the clipboard. So we shortcut a roundtrip to client and server by just

@@ -2,9 +2,26 @@
 
 **Ticket:** BL-6681. **Plan:** [PLAN.md](PLAN.md). **Settled decisions:** [REVIEW-NOTES.md](REVIEW-NOTES.md).
 
-To resume after an interruption, issue **`/resume-ckeditor`** (see
-`.claude/skills/resume-ckeditor/SKILL.md`). Equivalent plain-English prompt:
-*"Read docs/retire-ckeditor/PROGRESS.md and continue from the next unchecked item."*
+## How to resume
+
+Issue **`/resume-ckeditor`** (`.claude/skills/resume-ckeditor/SKILL.md`). Equivalent plain-English
+prompt: *"Read docs/retire-ckeditor/PROGRESS.md and continue from the next unchecked item."*
+
+**On a fresh clone or a different computer, check out a project branch first.** Nothing here exists
+on `master` — not the plan, not the code, not even the skill file — because nothing may merge until
+the 6.5 branch is cut. So `/resume-ckeditor` does not exist until you do this:
+
+```sh
+git fetch origin
+git branch -r | grep BL-6681                     # what exists
+git checkout BL-6681-stage1-undostack            # the current tip; see the branch table below
+cd src/BloomBrowserUI && vp install              # if node_modules is absent or stale
+```
+
+The **branch table** below is authoritative for which branch is the working tip — it changes as
+stages advance, so trust it over any branch name you remember. If `node` is not 24.13.0 or `pnpm`
+not 11.5.2, read the boxed toolchain warning further down **before** touching the toolchain: the
+answer is `vp`, never Volta, and the intermediate states are all misleading.
 
 ## Current state
 
@@ -16,20 +33,36 @@ To resume after an interruption, issue **`/resume-ckeditor`** (see
 > [PLAN.md](PLAN.md) is rewritten around a long-lived integration branch. Read §5 before doing any
 > branch work; the short version is the table below.
 
+> ## ⚠ `Version6.5` has been cut (2026-09-04) — the merge window may be open
+>
+> The constraint below was "nothing merges to `master` until a `Version6.5` branch is cut". That
+> branch now exists (`origin/Version6.5`, first commit 2026-09-04; master is 160 commits past it).
+> Master's `AGENTS.md` carries a temporary header saying ordinary new work should target
+> `Version6.5`, not `master`, during the transition — which is about 6.5 fixes. This project is 6.6
+> work, so `master` is presumably now its correct target, and the integration branch could open its
+> PR. **Nothing has been merged or retargeted; that is John's call**, and it changes §5's economics
+> (stage PRs could go straight to master again). Raised in the 2026-09-07 entry.
+
+Stage 0's PR is reviewed-ready and awaiting a human; its card is in *Ready For Code Review*, the QA
+test-ideas comment is posted, and Devin is clean against HEAD `6bd49463`. **Stage 1 is live and
+verified in a running Bloom** (2026-09-07): the Undo button and Ctrl+Y go through the one stack, and
+four live checks show each legacy mechanism is reached exactly as before. It has no PR yet.
+
 **Branch topology** — one integration branch tracks `master`; each stage is a short-lived branch off
 it, PR'd into it and **squash-merged**, so integration carries one commit per stage:
 
 | Branch | What | State |
 | --- | --- | --- |
-| **`BL-6681-ckeditor`** | The project's trunk. The only branch that merges `master` in. Eventually one PR into `master`. | Created 2026-08-06 at Stage 0's HEAD; synced to master `9b6ba1cd9` |
-| `BL-6681-stage0-inventory` | PR [#8153](https://github.com/BloomBooks/BloomDesktop/pull/8153) — docs, characterization tests, the `toolbox.ts` seam | Ready for review, awaiting a human. Left targeting `master` on purpose (§5.6) |
-| `BL-6681-stage1-undostack` | `bookEdit/undo/` — the one undo stack, new files only | Local, green, inert; to be PR'd into `BL-6681-ckeditor` |
+| **`BL-6681-ckeditor`** | The project's trunk. The only branch that merges `master` in. Eventually one PR into `master`. | Pushed. Synced to master `f0d9f1472` (2026-09-07) |
+| **`BL-6681-stage1-undostack`** | ← **the working tip.** `bookEdit/undo/` — the one undo stack, **active**: `handleUndo`/`canUndo` delegate to it, Ctrl+Y bound in the page frame | Pushed (rebased onto integration 2026-09-07 — allowed: unreviewed, no PR). Green: 52 undo tests, full suite, typecheck. Live-verified. No PR yet; when there is one it targets `BL-6681-ckeditor`, not master |
+| `BL-6681-stage0-inventory` | PR [#8153](https://github.com/BloomBooks/BloomDesktop/pull/8153) — docs, characterization tests, the `toolbox.ts` seam | Pushed; ready for review, awaiting a human. Left targeting `master` on purpose (§5.6). **Don't push more to it** — it would restart the review |
 
 **Master-sync log** (§5.3 — record every sync here so the next drift check has a start point):
 
 | Date | Merged `master` at | Watchlist commits in that range |
 | --- | --- | --- |
 | 2026-08-06 | `9b6ba1cd9` | **0** of 51 — clean merge, nothing of ours touched |
+| 2026-09-07 | `f0d9f1472` | **11** of 433 — one conflict, `toolbox.ts` (BL-16717 made bookmarks conditional inside the extracted seam); resolved by teaching the seam. Nightly [34134257000](https://github.com/BloomBooks/BloomDesktop/actions/runs/34134257000): TS, C#, visual-regression and React suites **green**; BloomE2E failed 2 of 47 (Test Case 356 gear positioning — in active development in another worktree; 170 publish talking-book languages), neither near undo, and master's own nightlies have failed daily this week |
 
 All of PLAN.md §10 is decided except the Stage-5 legacy-cleanup lifetime, which blocks nothing.
 
@@ -47,14 +80,19 @@ Stage 0 checklist (PLAN.md §6):
 - [x] Environment unblocked: `vp`/`volta` PATH untangled, `init.sh` clean, `output/browser`
       repopulated. Full front-end suite green: **591 passed**.
 - [x] `toolbox.ts` selection-bracket prep commit (`2707d98a8`) — §5.7.3 done
-- [ ] Capture the paste/drop baseline (rows C1–C7, incl. **C7 drop**): needs a running Bloom
-- [ ] Handler-accumulation repro (§4.10) + the X4 listener-leak test: needs a running Bloom
-- [ ] Page-reload timing baseline (§4.11): needs a running Bloom
+- [x] **Paste/drop baseline captured** (2026-09-07, `PASTE-DROP-BASELINE.md`, C1–C7 incl. drop) — and
+      it found that **the paste filter is bypassed whenever the payload contains a styled span**
+      (BL-12357's `cke/id` test is always true), letting tables/iframes/images/divs into the book.
+- [x] Handler-accumulation repro (§4.10) — **reproduced** 2026-09-07 (1 → 2 → 3 handlers);
+      `liveChecks/handlerAccumulation.mjs` is the X4 test, failing until §4.10 lands
+- [~] Page-reload timing baseline (§4.11) — superseded by BL-13502's measurements (see 2026-09-07)
 - [x] Rebased onto `origin/master` (was 64 behind; one conflict in `toolbox.ts`, resolved). Now 0
       behind. Typecheck clean, 63 tests green.
 - [x] **G1 verified, both halves.** Automated: `verifyCaretPreservation.mjs` PASS (caret at the right
       offset, bookmarks consumed, no ZWSP). Manual, by John: decodable reader open, "real typing
       seems fine" — the case automation couldn't reach, and the check `toolbox.ts` itself prescribes.
+      **2026-09-07: the automated harness now also passes with the Decodable Reader tool active**
+      (markup running), on the post-BL-16717 code.
 - [ ] **G2** (async markup path / BL-10133 — where the prep commit made its one deliberate behaviour
       change) and **G3** (longpress) still unverified
 - [ ] **G6/G7** (new, from BL-16558): reader and Talking Book highlights are live Ranges and must
@@ -417,6 +455,8 @@ dispatches become "*also* start the new editor" rather than "skip CKEditor".
     the *same commit* that converts its entry, or its Redo breaks in between.
   - Incidental: `readerToolsModel.redo()` (`:609`) appears **unreachable** — nothing exports or
     calls it. Noted in Stage 1; deleted in Stage 5 regardless.
+    **← WRONG. Corrected 2026-08-06; see that day's entry. It is called from
+    `decodableReaderTool.tsx:170`.**
 
 §10 is retitled from "Open questions" to "Decisions", with reasoning kept inline so a later session
 doesn't reopen settled ground. **One genuinely open item remains**, and it blocks nothing: whether
@@ -629,6 +669,106 @@ comment asks for, and it covers the case automation could not reach (a reader to
 running). Combined with the automated harness result, the prep commit is verified on both halves.
 **G2 (async path / BL-10133) and G3 (longpress) remain unverified.**
 
+### 2026-08-05 (later still) — Stage 0 preflighted; PR #8153 open as draft
+
+**PR:** https://github.com/BloomBooks/BloomDesktop/pull/8153 (draft). Branch pushed, card linked,
+QA test-ideas comment posted, Devin consultation logged.
+
+Reviewer outcomes at HEAD `178269d78`:
+
+| Reviewer | Outcome |
+| --- | --- |
+| Local review (light, 1 subagent) | Clean — no correctness problems. It mutation-tested the new spec (neutering `selectAtOffset` fails 9 of 10 tests) and raised one accuracy note, which was fixed. |
+| Devin | **Re-review clean** — 0 bugs, 0 investigate flags, 8 informational. Three informational items acted on; the rest declined with reasons, recorded in the PR consultation log. |
+| CI (`pr-automation`) | pass |
+| CodeRabbit | see the run's final report |
+
+**Three things Devin's informational tier caught that were worth fixing** — a reminder that the
+lowest-signal tier is not always noise:
+
+1. The committed harness hard-coded `repoRoot = "C:/github/BloomDesktop"`, so it only ran in the
+   checkout it was written in. Now derived from `import.meta.url`.
+2. **The extraction has two deliberate behaviour differences, not one.**
+   `restoreSelectionAfterMarkup` re-reads the editor and no-ops if it has gone, where the old code
+   sat inside `if (ckeditorOfThisBox)` and would have thrown. Unreachable in practice
+   (`bloomCkEditor` is assigned once and never cleared) but real, and now documented on the
+   function. Notable because this branch already corrects two *other* comments in the same pipeline
+   that misled by overstating — a third would have been poor form.
+3. The inventory pointed at `PASTE-DROP-BASELINE.md` as if it existed.
+
+**G3 (longpress) is now verified too** — John spot-checked it manually and reports it basically
+works. So of the G rows, G1 and G3 are verified, and **G2 (async markup path / BL-10133) is the one
+still open**, along with the new G6/G7 highlight rows.
+
+
+### 2026-08-06 — Stage 1's new code written; two plan claims about Undo found wrong
+
+Stage 0's PR (#8153) is waiting on a human reviewer, so Stage 1's *new* code was written in parallel
+on a **temporary local branch `BL-6681-stage1-undostack`** (branched off Stage 0's HEAD, so the docs
+are in scope). New files only — nothing imports them, so the change is behaviourally inert and the
+two reviews stay independent. The edits to existing files that would activate it are written up in
+the new **[DEFERRED-EDITS.md](DEFERRED-EDITS.md)**, to land after Stage 0 merges. *(Superseded a few
+hours later by the no-merging constraint — see the next entry. The edits are no longer blocked,
+because Stage 0's commits became the integration branch's base.)*
+
+**New:** `src/BloomBrowserUI/bookEdit/undo/` — `undoTypes.ts` (`IUndoEntry`,
+`ILegacyUndoProvider`, `kMaxUndoEntries`), `UndoStack.ts` (index-based with truncate-on-push, O(1)
+`canUndo`/`canRedo`, count bound, page scoping, lazy redo capture, legacy-provider arbitration,
+`runUndoable` scope plumbing), `legacyUndoProviders.ts` (the four wrappers), `runUndoable.ts`, and
+specs. **31 tests**, typecheck clean, no new lint warnings.
+
+**Mutation-tested rather than trusted**, since they passed first run — three separate mutations, each
+caught by exactly the test that should catch it: dropping truncate-on-push failed 1 test; disabling
+the nested-push suppression failed 6; making `keepOnly` recompute the index unconditionally failed 1.
+
+**Two claims in the plan turned out to be wrong, both found by spending the "worth a moment's check"
+the plan itself asked for.** Both are corrected in PLAN.md at the point of error, not only here.
+
+1. **`readerToolsModel.redo()` is *not* unreachable** — `decodableReaderTool.tsx:170` calls it. So
+   there are **two** existing Redos, not one, and Stage 5's "deleted regardless" would have silently
+   removed a working Ctrl+Y/Ctrl+Shift+Z for reader-tool typing.
+2. **§3's ordering table describes the *button* path only.** `handleUndo()` has exactly one caller,
+   `topBarButtonClick` (`bloomEditing.ts:1633-1648`) — the toolbar Undo button. There is **no Ctrl+Z
+   handler in the workspace frame at all**, and C#'s `UndoCommand.Implementer` is an empty lambda
+   (`WebView2Browser.cs:890`) that exists only so the button's `Enabled` can be set. Ctrl+Z is
+   claimed in the *page* frame, by whichever gets it first: origami's `keydown.origami`
+   (`origami.ts:137`, layout mode), the reader tools' per-editable handler
+   (`decodableReaderTool.tsx:158-178`, whenever `currentMarkupType !== None` — it `preventDefault`s),
+   then CKEditor, then native contenteditable undo.
+
+   Three consequences, all recorded:
+   - The deliberate reader-tools-before-CKEditor precedence is enforced for the keyboard by that
+     `preventDefault`, **not** by `handleUndo`'s ordering. §3 said the ordering was what preserved
+     it, so wrapping the providers "for free" was the right conclusion reached by a wrong argument.
+   - Stage 1 is behaviour-neutral for a different reason than the plan gave: it changes only the
+     button path. So "one consistent Undo stack" arrives for the button now and for the keystroke
+     only when the page-frame handlers are converted (Stages 3–4). Worth being straight about.
+   - **Redo cannot be a workspace-frame keydown handler**, which is what Stage 1 assumed. Keyboard
+     events inside the page iframe never reach the parent document, and typing is precisely when
+     Redo is wanted — which is why both existing handlers are in the page frame. Rewritten as
+     DEFERRED-EDITS.md 1e, including that the new binding must be the last resort behind the two
+     that `preventDefault`.
+
+**Design points settled while writing it, so they are not reopened:**
+
+- **Legacy providers are consulted before our own entries.** That reproduces today's button path
+  exactly. It does *not* give true chronological order across the boundary (an entry recorded here
+  followed by a legacy operation undoes in the right order; the reverse does not), which was already
+  true between the old mechanisms. Documented on `UndoStack.undo` rather than fixed: inventing
+  cross-mechanism sequencing for a state we are deleting is not worth it.
+- **`push` is deliberately not exposed across frames.** Handing page-frame code a way to put a
+  page-frame *closure* on the stack is the exact failure §4.1 exists to prevent, so the cross-frame
+  surface must take data and let the workspace frame build the entry. Designed with Stage 2's first
+  real caller, not before (DEFERRED-EDITS.md 1f).
+- **`setCurrentPageId` is not enough on its own.** Ctrl+wheel zoom and leaving Change Layout mode
+  reload the page frame *without* changing page, so `clearPageScopedEntries()` needs its own hook;
+  `pageUnloading()` is the candidate, unverified. Harmless in Stage 1 (nothing pushes yet), and it
+  must be settled before Stage 3 records typing.
+- Page identity comes from `data-page-id`, reusing what `ImageUndoManager` already does
+  (`ImageUndoManager.ts:154-161`) rather than inventing a second notion of it.
+
+Incidental drift fixed while checking citations: `origami.ts:139-146` → `:137`, and the
+`origamiCanUndo`/`origamiUndo` range → `:277-294`.
 ### 2026-08-06 (later) — the no-merging constraint, and §5 rewritten around it
 
 John's manager ruled that **nothing from this project may merge to `master` until a `Version6.5`
@@ -698,29 +838,275 @@ has to reconcile) or close it as superseded by the integration PR, which contain
 the whole period. Stage 0's commits are the integration branch's base, so the edits can land on the
 Stage 1 branch now, and DEFERRED-EDITS.md's trigger is updated to say so.
 
+### 2026-09-07 — master sync, Stage 1 activated and live-verified, BL-13502 assessed
+
+Autonomous session (John mostly unavailable). Everything below is pushed.
+
+**Master sync (§5.3).** Merged `origin/master` `f0d9f1472` into `BL-6681-ckeditor`: 433 commits, 11
+on the watchlist, one conflict — `toolbox.ts`, in exactly the region the Stage 0 prep commit
+extracted. Master's **BL-16717** (ligature glyphs vanishing) made the CKEditor bookmark *conditional*:
+it is only taken when a tool is active or the box has a comment/nbsp to clean up, because the bookmark
+span splits the text node. Rather than let that logic grow back inline, the seam learned it:
+`saveSelectionForMarkup(editableDiv, boxMightBeRewritten)` records nothing when nothing can move the
+caret, and `restoreSelectionAfterMarkup` no-ops on such a record. The decision is made *before* the
+record, as master did, because the bookmark span itself contains an nbsp. Master's
+`mergeAdjacentTextNodes` sweep stays in the pipeline after the restore — it is about backspace and
+long-press splits too, so it must survive the anchor swap. Full suite 794 green; nightly triggered.
+
+Two things to know about that merge:
+
+- **The pre-commit hook reformatted three of master's own files** that were staged as part of the
+  merge (`crowdin.yml`, `aiImageEditorOverlay.test.ts`, `SIL-Niger/branding.less`) — master's copies
+  don't satisfy this repo's prettier. Restoring master's bytes needs a `--no-verify` commit, which I
+  did not do without asking. Harmless noise; **John: say the word and it's one commit.**
+- **§5.1's drift table was wrong for `workspaceRoot.ts`** — measured with the wrong path. It had 5
+  commits, one of them BL-16558 changing `handleUndo` itself (see below). Corrected in PLAN.md.
+
+**`Version6.5` exists.** See the box at the top. Not acted on.
+
+**Stage 1 activated** (`f92383031`): DEFERRED-EDITS 1a–1e applied, three ways different from how they
+were written:
+
+1. **BL-16558** (master, 2026-08) had made `handleUndo` call `updateMarkupAfterUndoOrRedo()` after the
+   reader-tools and CKEditor undos, because both rewrite an editable's innerHTML and so detach the
+   `::highlight()` Ranges painted over it. The toolbox and ckeditor providers now do the same;
+   `legacyUndoProvidersSpec.ts` pins it, and the order of the four.
+2. **Page identity is `.bloom-page`'s `id`, not `data-page-id`.** Nothing in Bloom sets
+   `data-page-id` — only `ImageUndoManagerSpec` does — so the check in
+   `ImageUndoManager.clearImageOperationUndoOnPageChange` compares undefined with undefined and never
+   fires (harmless there: the manager dies with the page frame). The plan's "reuse what
+   ImageUndoManager does" would have reproduced a dead check. *Worth a small card of its own.*
+3. **Ctrl+wheel zoom no longer reloads the page** — `EditingView.SetZoom` → `workspaceBundle.setZoom`,
+   a CSS transform. The plan cited zoom as the canonical same-page reload in §4.1, §4.11 and 1d; all
+   corrected. The real same-page reloads (leaving Change Layout mode, importing a video, changing the
+   topic) **all go through `workspaceRoot.switchContentPage`** — the only route C# uses to navigate
+   the page frame (`EditingView.cs`, three sites) — so 1d's question ("does `pageUnloading` fire on a
+   same-page reload?") is moot: `pageFrameNavigating()` clears page-scoped entries in
+   `switchContentPage` before the frame is touched, and `pageFrameLoaded()` records the id on load.
+
+Redo is bound in the **page** frame (`undo/redoKeyBinding.ts`, one call from `editablePage.ts`), at
+the document, bubble phase, acting only when nothing earlier claimed Ctrl+Y *and* the stack has
+something to redo — so origami's and the reader tools' handlers and CKEditor's own redo keep winning
+until converted. The workspace bundle grew `canRedo()`/`handleRedo()`.
+
+**Live verification — four harnesses, kept in `docs/retire-ckeditor/liveChecks/`** (see its README).
+Each wraps the cross-frame entry points and CKEditor's `afterCommandExec`, so a gesture is attributed
+by counters rather than by "the text changed back". Results against Bloom launched from this worktree
+(English Books collection):
+
+| Check | Result |
+| --- | --- |
+| Decodable Reader tool active: Undo button → reader-tools undo only (`tb=1 ck=0 markup=1`, no CKEditor command); our Ctrl+Y binding never fires | **PASS** |
+| Basic Book, no reader tool: Undo button → CKEditor undo only (`ck=1 tb=0 markup=1`); Ctrl+Z/Ctrl+Y run CKEditor's commands exactly once; our binding declines; round trip restores the text | **PASS** (7/7) |
+| Change Layout mode: Undo button → `origamiUndo` (`ori=1`); origami's Ctrl+Z/Ctrl+Y fire once; ours declines | **PASS** (6/6) |
+| Undoable copyright change on an image (`changeImageByElement`, the dialog's entry point): Undo button → `imageOperationUndo` (`img=1`), copyright restored | **PASS** (4/4) |
+| Undo button enabled state tracks `canUndo()` in all four | **PASS** (observed each time) |
+
+**Two pre-existing bugs the harness exposed** — both in the reader-tools mechanism, both caused by
+the very things this project removes, neither introduced here (the provider calls exactly what the
+old `handleUndo` called). Recorded as expected failures A4/A6/A7 in `verifyReader.mjs`:
+
+- **The reader-tools undo restores a snapshot containing a stale CKEditor bookmark span.**
+  `readerToolsModel.doMarkup` snapshots `innerHTML` while the `cke_bm_*` span is in the DOM, so
+  undoing restores it: after one undo the box read `"…on sun\u00a0"` with a
+  `<span id="cke_bm_31C" style="display:none">&nbsp;</span>` inside, and they accumulate (a page had
+  two after two runs). The snapshot's `text` also carries the nbsp, so the "is this the current state"
+  comparison in `undo()` fails and it steps back one fewer level than intended. This is the
+  "mid-word bookmark bug" of the inventory's ✗ rows made concrete, and it is content corruption, not
+  just wrong analysis.
+- **Ctrl+Z with a reader tool active runs TWO undos.** The reader tools' per-editable handler
+  `return false`s, which stops *propagation* — but CKEditor's keystroke handler is on the same
+  element, so it fires regardless (`ckCmds: ["undo"]` observed alongside the reader undo). Ctrl+Y
+  likewise runs both redos, and the round trip does not restore the typed text (`" pot"` was lost).
+  §3's "the reader tools claim Ctrl+Z" is therefore only half true: they act, but so does CKEditor.
+  *Should be reproduced on master and filed; it is user-visible today.*
+
+**BL-13502 (`origin/BL-13502-save-without-reload`, PR #8209, draft, 22 commits, 20 behind master)
+assessed** — likely to merge before us, and it matters to us more than expected:
+
+- **It removes the in-flight-save hazard entirely.** `SavePending`, `SavedAndStripped`,
+  `RequestBrowserToSave`, `editView/pageContent` and `DiscardInFlightSave` are gone; the browser
+  *volunteers* the page (`pageSnapshot.ts`, a body `MutationObserver` + 25 ms debounce) and C# saves
+  synchronously from the last snapshot. So §4.11's "sharp edge" and risk 5 evaporate — and a Tier 1
+  innerHTML restore needs *no* save integration at all: the observer sees it and posts within ~50 ms.
+- **Name clash.** Their `pageSnapshot.ts` / `PageSnapshot.cs` mean "the last content the browser
+  posted for saving". Our Stage 3 `PageSnapshot` (an undo entry kind) must be renamed — `undoSnapshot`
+  or similar — before it is written.
+- **A new CKEditor dependency to inventory.** The save path now clones the body and copies CKEditor's
+  cleaned data into the clone (`EditableDivUtils.copyCkEditorDataToClone`) instead of writing it back
+  over the live editors. REVIEW-NOTES' "restored divs silently skip cleanup" concern changes shape but
+  does not go away; Stage 3/5 must give that function a no-CKEditor path. Add to BEHAVIOR-INVENTORY
+  once it merges.
+- **Stage 2a's citations will be wrong.** `SaveThen` is now `MergeCurrentPageThenSave`, delete-page
+  receives its content from the page list and the "capture inside the SaveThen callback" reasoning
+  changes. **Do Stage 2a after BL-13502 merges**, re-deriving from the new code.
+- **It answers the Stage 0 timing item.** Their `SavingWithoutReloading.md` measured a page change at
+  ~790 ms, ~80% of it building the new page; gather is 0.4–0.7 ms; and "one keystroke produces ~9
+  MutationObserver batches because CKEditor does a lot of DOM work per key". Adopt those numbers as
+  the baseline (with their `benchPageChange.mjs`) rather than re-measuring; the ~9 batches per key is
+  a ready-made before/after metric for Stage 6.
+- Also touches `editablePage.ts` (the ready handler where our one-liner went), `toolbox.ts`,
+  `bloomEditing.ts`, `origami.ts` and `decodableReaderTool.tsx` — expect a small conflict at the
+  next sync after it lands; nothing structural.
+
+**Handler accumulation (§4.10, inventory X4) — reproduced.** `liveChecks/handlerAccumulation.mjs`
+stubs `document.execCommand` in the page frame, dispatches Ctrl+R (the handler on `document`) and F7
+(the per-editable handler), and counts how many handlers fired; then calls the cross-frame
+`editablePageBundle.SetupElements(page)` again, as `refreshCanvasElementEditing` does on a subtree:
+
+| | Ctrl+R handlers fired | F7 handlers fired |
+| --- | --- | --- |
+| page as loaded | 1 | 1 |
+| after one extra `SetupElements` | 2 | 2 |
+| after two | 3 | 3 |
+
+So the code-reading finding of 2026-08-04 is real, not theoretical. (Counting native listeners over
+CDP would have shown nothing: jQuery multiplexes all its handlers behind one native listener, which
+is why the plan's suggested `DOMDebugger.getEventListeners` check was the wrong instrument.) In real
+use the trigger is anything that calls `refreshCanvasElementEditing` — adding or duplicating a canvas
+element — after which F6 wraps the selection in `<sup>` twice. *Ready to file as its own card.*
+
+**G2 (async markup path) attempted, still open.** With the Talking Book tool verified current
+(`getCurrentTool().id() === "talkingBook"`, `isUpdateMarkupAsync() === true`, toolbox showing), typing
+into a Basic Book text box produced **no `audio-sentence` markup at all** — and neither did calling
+`updateMarkupAsync()` and applying its result directly. So the async branch of the keystroke pipeline
+was not exercised, and the caret harness's PASS in that state proves nothing about G2. The tool has
+some gating of its own (probably the box must be its current recording div, or the page must be one
+it has set up) that I did not chase. **To close G2:** find what makes the Talking Book tool mark up a
+box on typing (start in `audioRecording.ts`'s `updateMarkupAsync`), get spans to appear, then re-run
+`verifyCaretPreservation.mjs` and check the caret *and* that the spans are there.
+
+**Paste/drop baseline captured (§4.8, rows C1–C7)** — `liveChecks/pasteDropBaseline.mjs` →
+`PASTE-DROP-BASELINE.md`, by dispatching synthetic `paste` and `drop` events carrying `text/html`,
+which go through CKEditor's clipboard plugin and Bloom's paste transforms exactly as real ones do.
+Every row except C5 behaves as the inventory says, and drop matches paste throughout. **C5 does not,
+and the reason is a real bug:** `BloomField.restoreHtmlMarkupIfNecessary` (BL-12357) tests
+`dataTransfer.getData("cke/id")` to detect an internal CKEditor copy, but CKEditor assigns an id to
+*every* transfer, so the test is always true — and when the pasted HTML contains `<span style=` it
+replaces CKEditor's *filtered* HTML with the *full* clipboard HTML. `liveChecks/pasteFilterBypass.mjs`
+shows the same payload with and without one styled span: without, `table/iframe/img/div#id` are all
+stripped; with, **all four reach the book**. So the BL-3899 guarantee is effectively off for
+web-page pastes today. Full write-up in `PASTE-DROP-BASELINE.md` ▸ Findings. **This is worth a card
+of its own, ahead of anything else found today** — it is a one-condition fix on master
+(`getTransferType() === DATA_TRANSFER_INTERNAL`), and it should be confirmed once with a real
+clipboard paste, since the capture used synthetic events.
+
+**A harness lesson:** the jQuery-UI accordion's `h3.ui-accordion-header-active` class is not a reliable
+"which tool is active" signal — it said Canvas Tool while the Talking Book panel was plainly open.
+`toolboxBundle.getTheOneToolbox().getCurrentTool().id()` is; the harnesses now use that, and
+`liveChecks/activateTool.mjs` switches tools through `activateToolFromId`.
+
+### 2026-09-07 (later) — Stage 1 preflighted: PR #8317; two stacks found and fixed
+
+**PR:** https://github.com/BloomBooks/BloomDesktop/pull/8317 (draft, into `BL-6681-ckeditor`). Devin
+and a read-only local review both ran; every finding was acted on the same day. Two of them matter
+beyond this PR:
+
+1. **There were two "one" stacks.** The Undo button does not call the workspace bundle's
+   `handleUndo`: C# runs `getEditablePageBundleExports().topBarButtonClick({command:"undo"})` in the
+   **page** frame, and `bloomEditing.ts` imported `handleUndo` from `../workspaceRoot` — so
+   `workspaceRoot`'s module (with `theOneUndoStack` and the module-level provider registration) was
+   also executing in the page frame, and the button undid from *that* copy. Neutral while both were
+   empty, wrong the moment anything is pushed. **Fixed:** `topBarButtonClick` now calls
+   `getWorkspaceBundleExports().handleUndo()`, the import is gone, and registration runs only when
+   `window.parent === window`. The production build confirms why the guard is needed: Vite still puts
+   `workspaceRoot` in a chunk (`requiresSubscriptionBundle-main.js`) that the page and toolbox bundles
+   import, so its top level runs in all three frames regardless. **Lesson for the harnesses:** the
+   live checks had called `workspaceBundle.handleUndo()` directly and so could not see this;
+   `pressUndoButton` now goes through the page frame's `topBarButtonClick`, the real entry point.
+2. **Devin's three bugs, all real, all fixed:** a failed undo/redo moved `currentIndex` anyway (now
+   transactional — the failing entry stays the next thing to undo, tests for sync and async failure
+   both ways); `runUndoable` kept the *first* push inside a scope rather than the outer gesture's own
+   entry (now: pushes are held while a scope is open and, when the outermost closes, the first
+   depth-1 push wins, else the first inner one — with the discipline that an inner operation records
+   inside its own `runUndoable`); and Ctrl+Y in Change Layout mode would have fired origami's redo
+   *and* ours once the stack held anything (the binding now stands down when
+   `.marginBox.origami-layout-mode` is present, until Stage 4 retires origami's handler). Also a
+   dedicated once-only `load` listener records the page id even when the 1500 ms fallback ran first.
+   Devin's second round added two navigation races on top of the first fix, both real and fixed:
+   the failure rollback now restores by entry identity (a page change during an in-flight async
+   undo may have dropped and renumbered entries), and `keepOnly` also filters the pushes held by
+   an open `runUndoable` scope.
+
+**Observed, not chased — the reader-tools undo arms itself in books without a reader tool.** In "A
+house for mouse" (Basic Book, toolbox shows only Canvas/Talking Book/Settings), after this session
+had earlier opened a Decodable Reader book and re-run `SetupElements` on this page, typing in a text
+box made `toolboxBundle.canUndo()` true, so the Undo button ran the reader-tools undo instead of
+CKEditor's — with the Canvas tool active as well as the Talking Book tool. `doMarkup` (which pushes
+the model's undo snapshots) is only reachable from the decodable/leveled tools' own keyup handlers,
+so those handlers were attached to this page's editables somehow. Pre-existing (the old
+`handleUndo` used the same order and the same `toolbox.canUndo()`), and possibly an artefact of the
+session's own harness runs, so it needs a repro from a fresh launch before it is filed. Stage 3
+removes both mechanisms anyway.
+
 ## Next actions
 
-All of Stage 0's code work is done. What remains needs a **running Bloom** — do it in one session
-(`run-bloom` skill), on branch `BL-6681-stage0-inventory`:
+Everything below is pushed; nothing is half-applied, and both branches are green with a clean
+working tree. Bloom can be launched from this worktree with the `run-bloom` skill; the live checks in
+`docs/retire-ckeditor/liveChecks/` drive it.
 
-1. **Finish rows G1–G3.** The seam's wiring is verified; the DOM-rewriting case is not (see the
-   2026-08-05 entry). Create a book from the **Decodable Reader** template, open the toolbox,
-   activate the reader tool, and re-run `node docs/retire-ckeditor/verifyCaretPreservation.mjs
-   <cdpPort>` — it already reports the span counts that show whether markup ran. Then G2 (async
-   path / BL-10133, where the prep commit made its one deliberate behaviour change) and G3
-   (longpress). Remember: a disconnected Team Collection blocks editing existing books, so make a
-   new one; and `toolboxIsShowing()` gates markup, so the pane must genuinely be open.
-2. **Capture the paste/drop baseline** → `PASTE-DROP-BASELINE.md`, rows C1–C7. Use a **real web-page
-   clipboard payload**, not hand-written tidy HTML. Do it before any further code change — this is the
-   row-set whose failure is silent. Include **C7 (drop)**, the row CKEditor has been covering
-   invisibly.
-3. **Handler-accumulation repro** (§4.10): drive `refreshCanvasElementEditing` repeatedly and watch
-   for duplicate `document` keydown handlers via CDP `DOMDebugger.getEventListeners`; F6 is the
-   likeliest visible symptom. File its own card if it reproduces. Add the X4 listener-leak test either
-   way — it should fail before any fix.
-4. **Page-reload timing baseline** (§4.11) with the performance-log feature.
+### Decisions John needs to make
 
-Then: open the Stage 0 PR via `preflight`.
+- **The merge window.** `Version6.5` exists. Does the project now target `master` (6.6)? If so, §5
+  could go back to "stage PRs straight to master" — cheaper than the integration branch — and the
+  integration branch's first PR could open now. Nothing done pending the answer.
+- **Restore the three hook-reformatted master files** in the sync merge (needs one `--no-verify`
+  commit)? Or leave the noise.
+- **File the bugs found today** — in priority order: (1) the **paste-filter bypass** (BL-12357's
+  `cke/id` test admits every paste containing a styled span; tables/iframes/images/divs get in) —
+  confirm with a real clipboard first; (2) Ctrl+Z with a reader tool active runs two undos and breaks
+  Ctrl+Y; (3) the reader-tools undo restores stale `cke_bm_` bookmark spans; (4) edit key handlers
+  accumulate on every `SetupElements` re-run (F6 double-wraps); (5) the dead `data-page-id` check in
+  `ImageUndoManager`. All reproduced on this branch; (2)–(5) are untouched by our changes, and (1) is
+  in code we have not modified at all.
+
+### Stage 0's remainder — four items, all needing a running Bloom
+
+Do these in one session (`run-bloom` skill). **Not on `BL-6681-stage0-inventory`** — that branch is
+under human review, and pushing to it would restart the review for work that is purely additive.
+Branch off **`BL-6681-ckeditor`** instead (the files below are new; nothing conflicts).
+
+1. ~~Finish G1~~ (done 2026-09-07, harness passes with the reader tool active). **G2** (async
+   markup path / BL-10133 — Talking Book tool, where the prep commit made its one deliberate
+   behaviour change) is still unverified: the tool did not mark up the box on typing in the
+   2026-09-07 attempt (see that entry), so first work out what makes it mark up, then re-run
+   `verifyCaretPreservation.mjs` and confirm `audio-sentence` spans appear alongside the caret check.
+   G3 is verified.
+2. ~~Capture the paste/drop baseline~~ — done 2026-09-07 with synthetic events; **remaining:** one
+   manual confirmation with a real clipboard (copy a web-page table containing coloured text into a
+   Bloom box) that the styled-span bypass happens for real pastes too, then file it.
+3. ~~Handler-accumulation repro~~ — **reproduced 2026-09-07** (`liveChecks/handlerAccumulation.mjs`,
+   1 → 2 → 3 handlers). Remaining: file its card (John's call), and keep that script as the X4
+   listener-leak test — it fails today and should pass once §4.10's signal-scoped teardown lands.
+4. ~~Page-reload timing baseline~~ — adopt BL-13502's measurements (see the 2026-09-07 entry) once it
+   merges; re-run its `benchPageChange.mjs` on our branch only if something looks off.
+
+### Stage 1 — branch `BL-6681-stage1-undostack`, off `BL-6681-ckeditor`
+
+Active, tested (52 tests) and live-verified. What remains:
+
+5. ~~Apply DEFERRED-EDITS 1a–1e~~ — done 2026-09-07. 1f (the cross-frame push) waits for Stage 2's
+   first caller by design.
+6. ~~Where `clearPageScopedEntries()` hangs off~~ — settled: `switchContentPage`, which every
+   page-frame navigation goes through.
+7. **PR the branch into `BL-6681-ckeditor`** (or into `master`, if John opens the window — see the
+   decisions above) and run `preflight` on it. Then squash-merge and delete the branch (§5.2).
+
+### Stage 2 — after the Stage 1 PR
+
+- **2b (undo delete canvas element) first**, not 2a: it is pure front-end, and 2a's C# citations are
+  about to be invalidated by BL-13502. Design 1f (the data-not-closure cross-frame push) with it.
+- **2a (undo delete page) after BL-13502 merges**, re-derived from `MergeCurrentPageThenSave`.
+- Rename our planned `PageSnapshot` entry kind before Stage 3 (BL-13502 owns that name).
+
+**Standing chores while the branch is long-lived** (§5.3, §5.5):
+
+- **Weekly:** `git checkout BL-6681-ckeditor && git merge origin/master`, then record the master SHA
+  and the watchlist-commit count in the sync table at the top of this file.
+- **After every sync:** `gh workflow run nightly.yml --ref BL-6681-ckeditor` — otherwise the branch
+  gets no full C# suite and no visual-regression coverage at all, for months.
+- Set `git config rerere.enabled true` once, so a conflict resolved in one merge is reapplied in the
+  next.
 
 Note: launching Bloom uses `./go.sh`. If it fails with missing types like `PodcastUtilities` or
 `IDevice` (CS0246), this worktree lacks its C# dependencies — run `./init.sh` (see `AGENTS.md`).
@@ -729,34 +1115,3 @@ Later, not Stage 0:
 - Before designing `clipboard.ts`, read PR #8140 and `origin/BL-16459-clipboard-failure-reporting`.
 - Optional, offered but not done: comment on **BL-13502** that undo is another reason to want
   save/reload decoupled.
-
-### 2026-08-05 (later still) — Stage 0 preflighted; PR #8153 open as draft
-
-**PR:** https://github.com/BloomBooks/BloomDesktop/pull/8153 (draft). Branch pushed, card linked,
-QA test-ideas comment posted, Devin consultation logged.
-
-Reviewer outcomes at HEAD `178269d78`:
-
-| Reviewer | Outcome |
-| --- | --- |
-| Local review (light, 1 subagent) | Clean — no correctness problems. It mutation-tested the new spec (neutering `selectAtOffset` fails 9 of 10 tests) and raised one accuracy note, which was fixed. |
-| Devin | **Re-review clean** — 0 bugs, 0 investigate flags, 8 informational. Three informational items acted on; the rest declined with reasons, recorded in the PR consultation log. |
-| CI (`pr-automation`) | pass |
-| CodeRabbit | see the run's final report |
-
-**Three things Devin's informational tier caught that were worth fixing** — a reminder that the
-lowest-signal tier is not always noise:
-
-1. The committed harness hard-coded `repoRoot = "C:/github/BloomDesktop"`, so it only ran in the
-   checkout it was written in. Now derived from `import.meta.url`.
-2. **The extraction has two deliberate behaviour differences, not one.**
-   `restoreSelectionAfterMarkup` re-reads the editor and no-ops if it has gone, where the old code
-   sat inside `if (ckeditorOfThisBox)` and would have thrown. Unreachable in practice
-   (`bloomCkEditor` is assigned once and never cleared) but real, and now documented on the
-   function. Notable because this branch already corrects two *other* comments in the same pipeline
-   that misled by overstating — a third would have been poor form.
-3. The inventory pointed at `PASTE-DROP-BASELINE.md` as if it existed.
-
-**G3 (longpress) is now verified too** — John spot-checked it manually and reports it basically
-works. So of the G rows, G1 and G3 are verified, and **G2 (async markup path / BL-10133) is the one
-still open**, along with the new G6/G7 highlight rows.
