@@ -179,9 +179,10 @@ export class UndoStack {
     /**
      * Discard every page-scoped entry, keeping the ones that survive a page change.
      *
-     * Called when the page frame reloads *without* the page changing — ctrl+wheel zoom and leaving
-     * origami layout mode both do that. The page id is the same, so `setCurrentPageId` would not
-     * notice, but the captured state is just as stale: the elements it describes have been rebuilt.
+     * Called whenever the page frame is about to navigate (see pageFrameUndoHooks.ts). It exists
+     * for the reloads that keep the *same* page — leaving origami layout mode, importing a video,
+     * changing the topic — where `setCurrentPageId` would see no change, but the captured state is
+     * just as stale: the elements it describes have been rebuilt.
      */
     public clearPageScopedEntries(): void {
         this.keepOnly((e) => e.pageId === undefined);

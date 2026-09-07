@@ -22,10 +22,12 @@ export type UndoEntryKind = "pageSnapshot" | "subtreeSnapshot" | "custom";
  * ## The rule that shapes this interface: an entry must not close over page-frame objects
  *
  * The page iframe's JS context dies not only when the user changes page but on same-page
- * *reloads* — ctrl+wheel zoom regenerates the page, leaving origami layout mode posts
- * `saveChangesAndRethinkPageEvent`, and several tools navigate. A function object created in that
- * frame dies with it, so an entry built by page-frame code becomes a live grenade: `undo()` would
- * mutate a detached document, or simply throw.
+ * *reloads* — leaving origami layout mode posts `saveChangesAndRethinkPageEvent`, importing a
+ * video and changing the topic rebuild the page under its own id, and several tools navigate. (An
+ * earlier draft cited ctrl+wheel zoom too; that is now a CSS transform, `workspaceRoot.setZoom`,
+ * and reloads nothing.) A function object created in that frame dies with it, so an entry built by
+ * page-frame code becomes a live grenade: `undo()` would mutate a detached document, or simply
+ * throw.
  *
  * So entries are **built in the workspace frame** (which survives), out of **pure data** — HTML
  * strings, indices, ids. Anything an entry needs from the page frame it must re-acquire *inside*

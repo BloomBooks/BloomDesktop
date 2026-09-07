@@ -63,7 +63,18 @@ export const toolboxUndoProvider: ILegacyUndoProvider = {
         const toolbox = getToolboxBundleExports();
         return !!toolbox?.canUndo?.();
     },
-    undo: () => getToolboxBundleExports()?.undo(),
+    undo: () => {
+        const toolbox = getToolboxBundleExports();
+        if (!toolbox) {
+            return;
+        }
+        toolbox.undo();
+        // The reader tools' undo restores a saved innerHTML, which replaces the text nodes their
+        // highlights are painted over. Nothing else will notice: unlike Ctrl+Z, a click on the
+        // Undo button produces no keystroke in the page, so the usual keyup markup update never
+        // happens and the highlights would stay dead. (BL-16558)
+        toolbox.updateMarkupAfterUndoOrRedo();
+    },
 };
 
 /**
@@ -92,7 +103,15 @@ export const imageUndoProvider: ILegacyUndoProvider = {
 export const ckeditorUndoProvider: ILegacyUndoProvider = {
     name: "ckeditor",
     canUndo: () => !!getEditablePageBundleExports()?.ckeditorCanUndo(),
-    undo: () => getEditablePageBundleExports()?.ckeditorUndo(),
+    undo: () => {
+        getEditablePageBundleExports()?.ckeditorUndo();
+        // As for the toolbox provider: this undo replaces the content of an editable, and there
+        // is no keystroke to trigger the markup update that repaints the tools' highlights over
+        // the new text nodes. (ckeditorUndo calls the undoManager directly rather than the undo
+        // command, so the afterCommandExec handler in attachToCkEditor does not see this one.)
+        // (BL-16558)
+        getToolboxBundleExports()?.updateMarkupAfterUndoOrRedo();
+    },
 };
 
 /**
