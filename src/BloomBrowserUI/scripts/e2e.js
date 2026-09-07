@@ -52,6 +52,14 @@ const suiteCommands = {
         "./bookEdit/canvas-e2e-tests/playwright.config.ts",
         "--reporter=line",
     ],
+    // Self-contained: builds its own pages from the compiled book CSS, so unlike
+    // canvas it does not need a running Bloom.
+    "inline-images": [
+        "test",
+        "--config",
+        "./bookEdit/inline-images-e2e/playwright.config.ts",
+        "--reporter=line",
+    ],
 };
 
 const printUsage = () => {
