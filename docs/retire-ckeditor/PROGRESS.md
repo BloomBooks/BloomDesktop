@@ -1053,9 +1053,16 @@ record carries every sibling's `data-bubble` and restore puts them all back; `re
 removes the drag-activity target, so the record carries its markup and structural path. Redo goes
 through the real `deleteCanvasElement` with recording suppressed. 18 new tests (81 undo tests green),
 typecheck and lint clean. **Live check written (`liveChecks/verifyDeleteCanvasElement.mjs`) but not yet
-run:** the relaunched Bloom's WebView2 sat on `about:blank` (Vite alive, Bloom's server answering, 9 GB
-free) and was being restarted when this was written. Run it first thing; if it passes, PR the branch
-into the Stage 1 branch's target once Stage 1 merges (rebase `--onto`, see above).
+run.** After the Stage 1 live checks, every relaunch of Bloom from this worktree — a plain restart and a
+full stack shutdown/restart included — came up with its WebView2 stuck on `about:blank`: Bloom's HTTP
+server answered, Vite transformed every touched module (200s), 9 GB RAM free, the Bloom process had
+only its main window (no dialog) and was responding, yet C# never navigated the browser. The one thing
+that had changed since the morning's working launches is that the console session was locked by then
+(a desktop capture came back black), so that is the suspect, not the code. **Next session: launch
+Bloom with the screen unlocked and run `liveChecks/verifyDeleteCanvasElement.mjs` first** (it opens
+"The Moon and the Cap", deletes the second canvas element on a page, undoes from the button, redoes
+with Ctrl+Y, undoes again). If it passes, PR the branch into the Stage 1 branch's target once Stage 1
+merges (rebase `--onto`, see above).
 
 **Observed, not chased — the reader-tools undo arms itself in books without a reader tool.** In "A
 house for mouse" (Basic Book, toolbox shows only Canvas/Talking Book/Settings), after this session
@@ -1123,8 +1130,9 @@ Active, tested (52 tests) and live-verified. What remains:
 
 ### Stage 2 — after the Stage 1 PR
 
-- **2b (undo delete canvas element) first**, not 2a: it is pure front-end, and 2a's C# citations are
-  about to be invalidated by BL-13502. Design 1f (the data-not-closure cross-frame push) with it.
+- **2b (undo delete canvas element) is built and unit-tested** on
+  `BL-6681-stage2b-undo-delete-canvas-element` (stacked on Stage 1); its live check is written and
+  still to be run — see the 2026-09-07 (late) entry. Then PR it.
 - **2a (undo delete page) after BL-13502 merges**, re-derived from `MergeCurrentPageThenSave`.
 - Rename our planned `PageSnapshot` entry kind before Stage 3 (BL-13502 owns that name).
 
