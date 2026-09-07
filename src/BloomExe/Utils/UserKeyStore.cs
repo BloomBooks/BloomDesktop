@@ -229,12 +229,9 @@ namespace Bloom.Utils
                 }
                 else
                 {
-                    var protectedSecret = Protect(secret);
-                    if (protectedSecret == null)
-                        return; // Protect already reported why; better to forget the key than to store it in the clear
                     store.Keys[name] = new StoredKey
                     {
-                        Value = protectedSecret,
+                        Value = Protect(secret),
                         Protection = kDpapiCurrentUserProtection,
                     };
                 }
@@ -264,31 +261,23 @@ namespace Bloom.Utils
 
         /// <summary>
         /// Encrypts a string with the Windows user login (DPAPI, CurrentUser scope) and returns
-        /// it as base64, or null if this platform or account cannot do that. Public so that a
-        /// test can prove the round trip.
+        /// it as base64. Public so that a test can prove the round trip.
+        ///
+        /// A failure throws, for the same reason <see cref="Save"/> does: the caller is in the
+        /// middle of telling the user their key is saved. Bloom targets net8.0-windows, so this
+        /// is not expected at all; it becomes real on the day Bloom runs somewhere without
+        /// DPAPI, and on that day we want to hear about it rather than have every user quietly
+        /// re-enter their key at each launch. Note that <see cref="Unprotect"/> is different: a
+        /// value it cannot read is an ordinary thing to find in the file, so it returns null.
         /// </summary>
         public static string Protect(string plaintext)
         {
-            try
-            {
-                var encrypted = ProtectedData.Protect(
-                    Encoding.UTF8.GetBytes(plaintext),
-                    kEntropy,
-                    DataProtectionScope.CurrentUser
-                );
-                return Convert.ToBase64String(encrypted);
-            }
-            catch (Exception error)
-            {
-                // Bloom targets net8.0-windows, so this is not expected. It becomes real on the
-                // day Bloom runs somewhere without DPAPI, and storing the secret in the clear
-                // instead would be a nasty surprise to a user who was told it was encrypted.
-                Logger.WriteError(
-                    "UserKeyStore could not encrypt a key, so it was not saved",
-                    error
-                );
-                return null;
-            }
+            var encrypted = ProtectedData.Protect(
+                Encoding.UTF8.GetBytes(plaintext),
+                kEntropy,
+                DataProtectionScope.CurrentUser
+            );
+            return Convert.ToBase64String(encrypted);
         }
 
         /// <summary>
