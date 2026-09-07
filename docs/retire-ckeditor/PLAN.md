@@ -163,10 +163,16 @@ nobody enumerated). **Use snapshots as the default entry type, with inverse-op e
 snapshot is too blunt.**
 
 The critical constraint, which shapes the contract: the page iframe's JS context dies not only
-on page *change* but on same-page **reloads** — ctrl+wheel zoom regenerates the page
-(`bloomEditing.ts:1268`), origami exit posts `saveChangesAndRethinkPageEvent`
-(`origami.ts:193`), and several tools navigate. An entry that closes over page-frame DOM or
-functions therefore becomes a live grenade: `undo()` would mutate a detached document or throw.
+on page *change* but on same-page **reloads** — origami exit posts `saveChangesAndRethinkPageEvent`
+(`origami.ts:193`), importing a video and changing the topic rebuild the page under its own id, and
+several tools navigate. (An earlier draft also cited ctrl+wheel zoom; **that is stale** — zoom is a
+CSS transform now, `EditingView.SetZoom` → `workspaceBundle.setZoom`, and reloads nothing. Corrected
+2026-09-07.) An entry that closes over page-frame DOM or functions therefore becomes a live grenade:
+`undo()` would mutate a detached document or throw.
+
+**Every one of those reloads goes through `workspaceRoot.switchContentPage`** — it is the only route
+C# uses to navigate the page frame (`EditingView.cs`, three call sites). So one hook there covers
+same-page reloads and page changes alike; see `bookEdit/undo/pageFrameUndoHooks.ts`.
 
 So **snapshot entries must be pure data**, interpreted at undo time by a restore function that
 re-acquires the current page frame via `getEditablePageBundleExports()`:
@@ -754,13 +760,19 @@ And the risk is concentrated — four paths are 74% of it:
 | 1 each | `editableDivUtils.ts`, `canvasElementManager/CanvasElementManager.ts` |
 | **0** | `workspaceRoot.ts`, `origami.ts`, `ImageUndoManager.ts`, `editablePage.ts` |
 
+> **Correction (2026-09-07):** the zero row was measured with the wrong path for `workspaceRoot.ts`
+> (it is `bookEdit/workspaceRoot.ts`, not `bookEdit/js/`). Re-measured over the following month
+> (2026-08-06 → 09-07): `workspaceRoot.ts` **5** commits — BL-16558 changed `handleUndo` itself —
+> `editablePage.ts` **3**, `origami.ts` and `ImageUndoManager.ts` genuinely 0. So Stage 1's
+> integration risk was low, not zero, and the BL-16558 change had to be folded into the legacy
+> providers. **When measuring drift, get the paths from `git ls-tree`, not from memory.**
+
 Three things follow directly:
 
 - **1.7 commits a day is a weekly sync, not a daily one.** A month between syncs would mean ~50
   commits to reconcile at once, which is what made the one Stage 0 rebase painful.
-- **Stage 1's integration risk is near zero** — every file its deferred edits touch is in the
-  zero-commit row. Stages 3 and 6 are where the cost lands, because that is where
-  `bloomEditing.ts` and `toolbox.ts` are.
+- **Stage 1's integration risk is low** (not zero — see the correction above). Stages 3 and 6 are
+  where the cost lands, because that is where `bloomEditing.ts` and `toolbox.ts` are.
 - **`lib/ckeditor/` is still being actively patched** — 4 commits in 30 days, to the library we are
   deleting. Each is a behaviour somebody needed. Stage 5 must diff that directory against the
   project's start point and account for every change, rather than deleting a directory assumed
