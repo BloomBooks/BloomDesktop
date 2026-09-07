@@ -11,9 +11,16 @@
 // text box raises no key events".)
 //
 // Every press goes through Playwright's keyboard, which sends the same CDP raw key events the
-// browser would build from a physical key. What it cannot do is send a key that Bloom's WinForms
-// shell claims as an accelerator: Ctrl+Z never reaches the page at all, which is why undo has its
-// own helper in workspace.ts rather than a press here.
+// browser would build from a physical key.
+//
+// Ctrl+Z DOES arrive in the page: nothing in src/BloomExe claims it as an accelerator (no
+// ProcessCmdKey case, no menu ShortcutKeys, and the UndoCommand's Implementer in
+// WebView2Browser.SetEditingCommands is an empty lambda), and pressing it undoes typing, which
+// only ckeditor's undo plugin does. Measured in tests/inline-images-undo-keyboard.spec.ts. So
+// press it here when the question is what the key does. undo() in workspace.ts is still the way
+// to exercise the top-bar Undo BUTTON, which is a different path (it posts
+// editView/topBarButtonClick and comes back into workspaceRoot.handleUndo) -- the two are not
+// interchangeable, and a feature with its own undo stack needs both asked.
 
 import { expect, type Locator, type Page } from "@playwright/test";
 
