@@ -41,7 +41,12 @@ export default defineConfig({
         screenshot: "only-on-failure",
     },
 
-    reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
+    // The slow-steps reporter is on in every run, CI included: it prints one short list at the
+    // end and nothing at all when no step was slow, and a step that has started taking seconds is
+    // exactly the thing that otherwise goes unnoticed while the test still passes.
+    reporter: process.env.CI
+        ? [["list"], ["html", { open: "never" }], ["./reporters/slowSteps.ts"]]
+        : [["list"], ["./reporters/slowSteps.ts"]],
 
     // Fail a CI run that was pushed with a stray test.only.
     forbidOnly: !!process.env.CI,

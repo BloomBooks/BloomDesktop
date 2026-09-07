@@ -3,8 +3,9 @@
 // A test here never asserts a pixel value. The suite runs at whatever size the machine's window
 // happens to be, Bloom scales the page it is editing by the zoom setting, and Windows scales
 // everything again by the display's DPI, so "the first column is 150px wide" is a fact about the
-// machine, not about Bloom. "The two panes fill the page with no gap and no overlap" and "the
-// picture lies inside its box" are facts about Bloom, and they are what these check.
+// machine, not about Bloom. "The two panes fill the page with no gap and no overlap", "the two
+// columns fill the table with no gap and no overlap" and "the picture lies inside its box" are
+// facts about Bloom, and they are what these check.
 //
 // The tolerance exists because those three scalings leave sub-pixel remainders: a boundary that
 // the grid places at 150.5px is reported as 150.5 on one side and 150.5 on the other, but a value
@@ -64,8 +65,8 @@ export interface INamedRect {
 
 /**
  * Assert that no two of the rectangles share any area. Use this for affordances that a person has
- * to be able to hit independently: an element's resize handles, its "..." button, the canvas
- * element's own toolbar.
+ * to be able to hit independently: an element's resize handles, its "..." button, a table's row
+ * and column pills and its "+" buttons, the canvas element's own toolbar.
  */
 export function expectNoOverlap(rects: INamedRect[], what: string): void {
     const overlapping: string[] = [];
@@ -84,8 +85,9 @@ export function expectNoOverlap(rects: INamedRect[], what: string): void {
 }
 
 /**
- * Assert that `inner` lies within `outer`. Use this for a picture inside its box, or a canvas
- * element inside its canvas: it says the thing is where it belongs without saying where that is.
+ * Assert that `inner` lies within `outer`. Use this for a picture inside its box, a canvas element
+ * inside its canvas, or a cell inside its table: it says the thing is where it belongs without
+ * saying where that is.
  */
 export function expectInside(
     inner: IRect,

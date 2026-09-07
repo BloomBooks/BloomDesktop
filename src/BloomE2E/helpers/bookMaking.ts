@@ -489,7 +489,8 @@ export async function getShownPageId(page: Page): Promise<string | undefined> {
 /**
  * Leave the page being edited and come back to it, which saves it and builds its editing surfaces
  * again. Use it when something on the page has been left in a state the page cannot get out of by
- * itself, such as a drawing surface that stays over the page until the page is rebuilt.
+ * itself: after Bloom replaces the picture in a table cell, for instance, the canvas element's
+ * drawing surface stays over the table and no cell can be clicked until the page is rebuilt.
  *
  * Throws if the book has only one page, because then there is nowhere to go and back from.
  */

@@ -10,8 +10,9 @@
 // Cropping IS driven through the real UI: a mouse drag on a side handle of the selected image.
 //
 // Every function here works on the page's first image slot by default. A page can hold more than
-// one picture box, so each takes an optional `within` locator to say which one to act on; pass an
-// element that holds a picture box and everything below applies to the picture in it instead.
+// one picture box, and a table cell holds an ordinary one too, so each takes an optional `within`
+// locator to say which one to act on; pass an element that holds a picture box, such as a cell, and
+// everything below applies to the picture in it instead.
 
 import { expect, type Locator, type Page } from "@playwright/test";
 import * as Path from "node:path";
@@ -117,7 +118,10 @@ export async function getImagePlacement(
     await img.waitFor({ state: "attached", timeout: 30000 });
     return img.evaluate((element) => {
         const image = element as HTMLImageElement;
-        const slot = image.closest(".bloom-canvas-element") as HTMLElement;
+        // The box that shows the picture: the canvas element it is the background of, or, in a
+        // table cell, the cell itself.
+        const slot = (image.closest(".bloom-canvas-element") ??
+            image.closest(".bloom-cell")) as HTMLElement;
         const src = image.getAttribute("src") ?? "";
         return {
             fileName: decodeURIComponent(src.split("/").pop() ?? src),
@@ -179,7 +183,8 @@ export async function cropImage(
 
 /**
  * The picture to act on: the one inside `within` when a scope is given, otherwise the page's first
- * image slot.
+ * image slot. A table cell's picture box is an ordinary Bloom picture box, so the same selector
+ * finds it.
  */
 function imageIn(page: Page, within?: Locator): Locator {
     if (within) return within.locator(".bloom-imageContainer img").first();

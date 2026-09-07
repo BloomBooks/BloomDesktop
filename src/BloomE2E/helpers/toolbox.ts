@@ -7,11 +7,13 @@
 // itself does nothing. And whether the drawer starts open is remembered per book (BookInfo
 // ToolboxIsOpen), so a test that needs it open has to ask rather than assume.
 //
-// Nothing here turns a tool on through the toolbox's own "More..." check boxes. The toolbox shows
-// only the tools a book has enabled, and for the tools a test wants, Bloom enables the tool itself
-// when the page asks for it: clicking the canvas of a Canvas page opens the Canvas tool (see
-// canvasElements.ts, openCanvasTool), and clicking a video box opens the Sign Language tool (see
-// videos.ts). A test that goes through the page drives the same route a person does.
+// A test rarely has to turn a tool on. The toolbox shows only the tools a book has enabled, and
+// for most of the tools a test wants, Bloom enables the tool itself when the page asks for it:
+// clicking the canvas of a Canvas page opens the Canvas tool (see canvasElements.ts,
+// openCanvasTool), and clicking a video box opens the Sign Language tool (see videos.ts). Going
+// through the page drives the same route a person does. Where no page gesture does it, enableTool
+// below ticks the box in the toolbox's own "More..." section, which is the other route a person
+// has.
 
 import { expect, type Frame, type Page } from "@playwright/test";
 
@@ -99,13 +101,12 @@ export function toolboxFrame(page: Page): Frame {
 }
 
 /**
- * Open one of the tools the toolbox is showing, by clicking its accordion header the way a person
- * does, and wait until the tool's own controls are showing. Opens the toolbox drawer first if it is
- * shut. Does nothing but return the frame when the tool's controls are showing already.
+ * Open one of the toolbox's tools, by clicking its accordion header the way a person does, and wait
+ * until the tool's own controls are showing. Opens the toolbox drawer first if it is shut, and turns
+ * the tool on first if the book has not got it.
  *
  * The tool is found by the `data-toolid` its header carries, not by its heading text, which is
- * localized. Throws, naming the tools on offer, when the book has not got this tool; see the note
- * at the top of this file for how a tool gets turned on.
+ * localized.
  */
 export async function openTool(
     page: Page,
@@ -118,12 +119,7 @@ export async function openTool(
     const header = frame
         .locator(`.MuiAccordionSummary-root:has([data-toolid="${tool}"])`)
         .first();
-    if ((await header.count()) === 0)
-        throw new Error(
-            `The toolbox is not offering the "${tool}" tool. It shows: ` +
-                `${(await getShownTools(page)).join(", ") || "(nothing)"}. A tool is offered ` +
-                `only once the book has it on; the page it belongs to turns it on when clicked.`,
-        );
+    if ((await header.count()) === 0) await enableTool(page, tool);
     await header.click();
     await controls.waitFor({ state: "visible", timeout: 30000 });
     return frame;
@@ -136,4 +132,42 @@ export async function getShownTools(page: Page): Promise<string[]> {
         .evaluateAll((headers) =>
             headers.map((header) => header.getAttribute("data-toolid") ?? ""),
         );
+}
+
+/**
+ * Turn a tool on for this book, through the toolbox's own "More..." section, and wait until the
+ * tool appears in the toolbox.
+ *
+ * The toolbox shows only the tools a book has enabled, which for a new book is a short default
+ * list; the Canvas tool is not on it. So a test that wants the Canvas tool has to turn it on, and
+ * this is where a person does it. Nothing here matches a localized label: the check boxes carry
+ * the tool's own id (see SettingsToolControls.tsx).
+ */
+export async function enableTool(page: Page, tool: ToolId): Promise<void> {
+    const frame = await showToolbox(page);
+    const header = frame
+        .locator(`.MuiAccordionSummary-root:has([data-toolid="${tool}"])`)
+        .first();
+    if ((await header.count()) > 0) return;
+    const moreHeader = frame
+        .locator('.MuiAccordionSummary-root:has([data-toolid="settings"])')
+        .first();
+    if ((await moreHeader.count()) === 0)
+        throw new Error(
+            `The toolbox has no "${tool}" tool and no "More..." section to turn it on with. ` +
+                `It shows: ${(await getShownTools(page)).join(", ") || "(nothing)"}.`,
+        );
+    const checkbox = frame.locator(
+        `[data-testid="toolbox-tool-${tool}"] input[type="checkbox"]`,
+    );
+    if (!(await checkbox.isVisible().catch(() => false))) {
+        await moreHeader.click();
+        await checkbox.waitFor({ state: "visible", timeout: 30000 });
+    }
+    if ((await checkbox.count()) === 0)
+        throw new Error(
+            `The toolbox's "More..." section does not offer a "${tool}" tool.`,
+        );
+    await checkbox.click();
+    await header.waitFor({ state: "visible", timeout: 30000 });
 }

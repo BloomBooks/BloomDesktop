@@ -162,8 +162,8 @@ export async function canUndo(page: Page): Promise<boolean> {
  * Ctrl+Z in the Edit tab is a WinForms accelerator: the key press never reaches the browser, so a
  * test cannot send it. What the shell does when the key is pressed is call the front end's
  * `workspaceBundle.handleUndo()`, which is exactly what this calls. So this is the production undo
- * path with only the key press missing, and it covers CKEditor undo and the canvas element
- * manager's undo alike, because handleUndo is the code that chooses between them.
+ * path with only the key press missing, and it covers CKEditor undo, the canvas element manager's
+ * undo and the bloom-table history alike, because handleUndo is the code that chooses between them.
  * (AUTOMATION-DEBT.md: "WinForms surfaces cannot be driven".)
  */
 export async function undo(page: Page): Promise<void> {
