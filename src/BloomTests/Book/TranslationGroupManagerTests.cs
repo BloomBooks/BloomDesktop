@@ -1651,6 +1651,48 @@ namespace BloomTests.Book
                 );
         }
 
+        // A block whose only content is an inline (Word-style) image has no text in it, so
+        // judging "empty" by InnerText alone deleted the picture along with the div. The person
+        // who put the picture there and typed nothing beside it would find it simply gone.
+        [Test]
+        public void FixDuplicateLanguageDivs_KeepsADivWhoseOnlyContentIsAnInlineImage()
+        {
+            var contents = """
+                <div class='bloom-page'>
+                	<div class='bloom-translationGroup normal-style'>
+                		<div class='bloom-editable' data-languagetipcontent='First' lang='xyz'><div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval' data-bloom-inline-image-id='abc' contenteditable='false'><img src='bird.png' /></div><p></p></div>
+                		<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'></div>
+                	</div>
+                </div>
+                """;
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(contents);
+            // Sanity check: the div with the picture really does have no text of its own, which
+            // is what made it look empty.
+            var withThePicture = (SafeXmlElement)
+                dom.SafeSelectNodes("//div[@data-languagetipcontent='First']")[0];
+            Assert.That(withThePicture.InnerText.Trim(), Is.Empty);
+
+            TranslationGroupManager.FixDuplicateLanguageDivs(
+                (SafeXmlElement)
+                    dom.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")[0],
+                "xyz"
+            );
+
+            AssertThatXmlIn
+                .Dom(dom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='xyz']",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(dom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='xyz']//img[@src='bird.png']",
+                    1
+                );
+        }
+
         [Test]
         public void FixDuplicateLanguageDivs_HandlesNonemptyDivs()
         {

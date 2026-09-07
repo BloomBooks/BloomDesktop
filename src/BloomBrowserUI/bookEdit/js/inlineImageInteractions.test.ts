@@ -25,7 +25,12 @@ import {
     buildInlineImageMenuItems,
     cleanupInlineImageInteractions,
     clampInlineImageOffset,
+    computeInlineImageOffsetForNewBlockHeight,
     clampInlineImageWidthPercent,
+    computeBlockContentBox,
+    computeInlineImageDragScrollLayoutPx,
+    computeViewportPxPerLayoutPx,
+    shouldRevertInlineImageMove,
     computeInlineImageClusterIndex,
     computeInlineImageDock,
     computeInlineImageWidthPercent,
@@ -34,6 +39,7 @@ import {
     getInlineImageDock,
     getInlineImageHandleHorizontalSign,
     getInlineImageMenuItemsForClick,
+    kInlineImageContextControlsId,
     kInlineImageHandleClass,
     kInlineImageHandleFrameClass,
     kMaxInlineImageWidthPercent,
@@ -65,6 +71,9 @@ function pointerEvent(
 // A block 300px wide and 200px tall at the origin, so that thirds land on round numbers
 // (100 and 200) and the bottom fifth starts at y=160.
 const kEditableBox = { left: 0, top: 0, width: 300, height: 200 };
+// The dock of a position depends on how tall the image is, because the bottom dock starts
+// where the band can no longer fit the image inside the block's content.
+const kImageHeightViewportPx = 40;
 
 let pageCounter = 0;
 
@@ -121,7 +130,11 @@ describe("inlineImageInteractions", () => {
     describe("computeInlineImageDock", () => {
         it("switches dock at the thirds of the block's width", () => {
             const dockAt = (x: number) =>
-                computeInlineImageDock({ x, y: 10 }, kEditableBox);
+                computeInlineImageDock(
+                    { x, y: 10 },
+                    kEditableBox,
+                    kImageHeightViewportPx,
+                );
             expect(dockAt(1)).toBe(kInlineImageLeftClass);
             expect(dockAt(99)).toBe(kInlineImageLeftClass);
             // Exactly on a boundary belongs to the band, not to the side it came from.
@@ -134,36 +147,75 @@ describe("inlineImageInteractions", () => {
 
         it("keeps the dock of a position beyond the sides of the block", () => {
             expect(
-                computeInlineImageDock({ x: -500, y: 10 }, kEditableBox),
+                computeInlineImageDock(
+                    { x: -500, y: 10 },
+                    kEditableBox,
+                    kImageHeightViewportPx,
+                ),
             ).toBe(kInlineImageLeftClass);
             expect(
-                computeInlineImageDock({ x: 900, y: 10 }, kEditableBox),
+                computeInlineImageDock(
+                    { x: 900, y: 10 },
+                    kEditableBox,
+                    kImageHeightViewportPx,
+                ),
             ).toBe(kInlineImageRightClass);
         });
 
-        it("gives the bottom dock the bottom zone only in the middle third, leaving the lower corners to the sides", () => {
-            // Sanity check: the same x just above the bottom zone is the band.
+        it("hands the middle third to the bottom dock exactly where the band can no longer fit the image", () => {
+            // The block's content ends at 200 and the image is 40 tall, so the band can hold
+            // it while its center is above 180 and not a pixel lower. Every position above
+            // that is the band's, which is the point: the band's position down the block is a
+            // distance, and a person moving the picture down expects to be able to stop
+            // anywhere (John: "it seems like I should be able to put it vertically anywhere I
+            // want"). This used to be the bottom FIFTH of the block, which in an overflowing
+            // block was several lines of unreachable positions.
             expect(
-                computeInlineImageDock({ x: 150, y: 159 }, kEditableBox),
+                computeInlineImageDock(
+                    { x: 150, y: 179 },
+                    kEditableBox,
+                    kImageHeightViewportPx,
+                ),
             ).toBe(kInlineImageMiddleClass);
             expect(
-                computeInlineImageDock({ x: 150, y: 160 }, kEditableBox),
+                computeInlineImageDock(
+                    { x: 150, y: 180 },
+                    kEditableBox,
+                    kImageHeightViewportPx,
+                ),
+            ).toBe(kInlineImageBottomClass);
+            // A taller image runs out of room higher up, since it is the image's BOTTOM that
+            // has to stay inside the content.
+            expect(
+                computeInlineImageDock({ x: 150, y: 150 }, kEditableBox, 100),
             ).toBe(kInlineImageBottomClass);
             // The side docks win all the way down, so an image can be parked in a lower
             // corner (with clear:both zones stealing the whole strip, the corners were
             // unreachable).
             expect(
-                computeInlineImageDock({ x: 20, y: 160 }, kEditableBox),
+                computeInlineImageDock(
+                    { x: 20, y: 199 },
+                    kEditableBox,
+                    kImageHeightViewportPx,
+                ),
             ).toBe(kInlineImageLeftClass);
             expect(
-                computeInlineImageDock({ x: 280, y: 199 }, kEditableBox),
+                computeInlineImageDock(
+                    { x: 280, y: 199 },
+                    kEditableBox,
+                    kImageHeightViewportPx,
+                ),
             ).toBe(kInlineImageRightClass);
         });
 
         it("docks at the bottom for a position below the block altogether, whatever the horizontal position", () => {
             [20, 150, 280].forEach((x) => {
                 expect(
-                    computeInlineImageDock({ x, y: 5000 }, kEditableBox),
+                    computeInlineImageDock(
+                        { x, y: 5000 },
+                        kEditableBox,
+                        kImageHeightViewportPx,
+                    ),
                     `x=${x} below the block`,
                 ).toBe(kInlineImageBottomClass);
             });
@@ -174,14 +226,256 @@ describe("inlineImageInteractions", () => {
                 computeInlineImageDock(
                     { x: 0, y: 0 },
                     { left: 0, top: 0, width: 0, height: 0 },
+                    0,
                 ),
             ).toBe(kInlineImageBottomClass);
             expect(
                 computeInlineImageDock(
                     { x: 0, y: -10 },
                     { left: 0, top: 0, width: 0, height: 0 },
+                    0,
                 ),
             ).toBe(kInlineImageMiddleClass);
+        });
+    });
+
+    // The numbers here were measured in a running Bloom, on the page that produced the
+    // report: an A4 page whose text nearly filled it, with an image parked near the bottom,
+    // changed to A6 portrait. The text no longer fits the smaller page, so the block
+    // scrolls: its rectangle is 532 screen pixels tall and holds 484 layout pixels (the page
+    // is drawn at 110%), while the text it contains is 841 layout pixels tall.
+    const kA6Report = {
+        visibleBoxViewportPx: {
+            left: 71,
+            top: 87,
+            width: 353,
+            height: 532.159,
+        },
+        clientHeightLayoutPx: 484,
+        scrollHeightLayoutPx: 841,
+        // The image had been given an offset of 661 layout pixels on the A4 page, which puts
+        // it below everything the smaller page can show at once.
+        imageCenterYViewportPxWhenScrolledToTop: 888,
+        // The ball picture was 40% of a 353-pixel block wide, and about this tall on screen.
+        imageHeightViewportPx: 163,
+    };
+
+    describe("computeBlockContentBox", () => {
+        it("gives a block that fits its text its own rectangle", () => {
+            const box = { left: 71, top: 87, width: 353, height: 200 };
+            expect(computeBlockContentBox(box, 200, 200, 0)).toEqual(box);
+        });
+
+        it("reaches past the bottom of a block whose text overflows", () => {
+            const content = computeBlockContentBox(
+                kA6Report.visibleBoxViewportPx,
+                kA6Report.clientHeightLayoutPx,
+                kA6Report.scrollHeightLayoutPx,
+                0,
+            );
+            expect(content.top).toBe(87);
+            // 841 layout pixels of text, drawn at 110%.
+            expect(Math.round(content.height)).toBe(925);
+            expect(Math.round(content.top + content.height)).toBe(1012);
+        });
+
+        it("follows the block as it is scrolled, so the content keeps one position", () => {
+            const scrolled = computeBlockContentBox(
+                kA6Report.visibleBoxViewportPx,
+                kA6Report.clientHeightLayoutPx,
+                kA6Report.scrollHeightLayoutPx,
+                324.667,
+            );
+            expect(Math.round(scrolled.top)).toBe(-270);
+            expect(Math.round(scrolled.top + scrolled.height)).toBe(655);
+        });
+
+        it("returns the rectangle unchanged when nothing is laid out (jsdom)", () => {
+            const box = { left: 0, top: 0, width: 0, height: 0 };
+            expect(computeBlockContentBox(box, 0, 0, 0)).toEqual(box);
+        });
+    });
+
+    describe("computeInlineImageDragScrollLayoutPx", () => {
+        // A block 200 screen pixels tall starting at 100, drawn at 110%.
+        const visible = { left: 0, top: 100, width: 300, height: 200 };
+        const scale = 1.1;
+
+        it("asks for no scroll while the picture is showing", () => {
+            expect(
+                computeInlineImageDragScrollLayoutPx(
+                    { left: 0, top: 150, width: 60, height: 50 },
+                    visible,
+                    scale,
+                ),
+            ).toBe(0);
+        });
+
+        it("scrolls down by exactly what hangs below the block, in layout pixels", () => {
+            // Bottom at 320, which is 20 screen pixels below the block's 300.
+            expect(
+                computeInlineImageDragScrollLayoutPx(
+                    { left: 0, top: 270, width: 60, height: 50 },
+                    visible,
+                    scale,
+                ),
+            ).toBeCloseTo(20 / 1.1);
+        });
+
+        it("scrolls up by exactly what is above the block", () => {
+            // Top at 85, which is 15 screen pixels above the block's 100.
+            expect(
+                computeInlineImageDragScrollLayoutPx(
+                    { left: 0, top: 85, width: 60, height: 50 },
+                    visible,
+                    scale,
+                ),
+            ).toBeCloseTo(-15 / 1.1);
+        });
+
+        it("shows the bottom of a picture too tall for the block", () => {
+            const wanted = computeInlineImageDragScrollLayoutPx(
+                { left: 0, top: 90, width: 60, height: 300 },
+                visible,
+                scale,
+            );
+            expect(wanted).toBeGreaterThan(0);
+        });
+
+        it("asks for nothing where nothing is laid out (jsdom)", () => {
+            expect(
+                computeInlineImageDragScrollLayoutPx(
+                    { left: 0, top: 0, width: 0, height: 0 },
+                    { left: 0, top: 0, width: 0, height: 0 },
+                    0,
+                ),
+            ).toBe(0);
+        });
+    });
+
+    describe("shouldRevertInlineImageMove", () => {
+        it("undoes a move that pushed a fitting block into overflow", () => {
+            expect(shouldRevertInlineImageMove(0, 40)).toBe(true);
+        });
+
+        it("keeps a move that left a fitting block fitting", () => {
+            expect(shouldRevertInlineImageMove(0, 0)).toBe(false);
+        });
+
+        it("ignores a pixel of layout noise", () => {
+            expect(shouldRevertInlineImageMove(0, 1)).toBe(false);
+        });
+
+        it("keeps every move in a block whose text already overflowed", () => {
+            // The bug this rule was rewritten for: at offset 680 in the developer's A6 block
+            // the text already needed 344 layout pixels more than the block had, and dragging
+            // the image UP asks the text below it for more room still. Under the old rule that
+            // added overflow, so the move was undone -- every time, in both directions, which
+            // is what "the image is just stuck there" was.
+            expect(shouldRevertInlineImageMove(344, 381)).toBe(false);
+            expect(shouldRevertInlineImageMove(344, 344)).toBe(false);
+            expect(shouldRevertInlineImageMove(344, 300)).toBe(false);
+        });
+    });
+
+    describe("computeViewportPxPerLayoutPx", () => {
+        it("is the ratio of the screen rectangle to the laid-out height", () => {
+            expect(
+                computeViewportPxPerLayoutPx(
+                    kA6Report.visibleBoxViewportPx,
+                    kA6Report.clientHeightLayoutPx,
+                ),
+            ).toBeCloseTo(1.0995, 4);
+        });
+
+        it("is 1 when there is nothing to measure", () => {
+            expect(
+                computeViewportPxPerLayoutPx(
+                    { left: 0, top: 0, width: 0, height: 0 },
+                    0,
+                ),
+            ).toBe(1);
+        });
+    });
+
+    // The report: "I added an image to the bottom right-hand corner of an A4 portrait page
+    // that was pretty full of text. I then changed the page layout to be A6 portrait, the
+    // text now requires scrolling. I was not able to reposition that image anymore. It was
+    // just stuck there."
+    describe("an image in a block whose text overflows can still be dragged", () => {
+        it("does not read the image as being below the block", () => {
+            const asShown = computeInlineImageDock(
+                {
+                    x: 350,
+                    y: kA6Report.imageCenterYViewportPxWhenScrolledToTop,
+                },
+                kA6Report.visibleBoxViewportPx,
+                kA6Report.imageHeightViewportPx,
+            );
+            // What the block's rectangle says, and the whole of the reported bug: the image
+            // sits below the bottom of what the small page shows, so every drag of it asked
+            // for the bottom dock -- which does not fit in a block that is already too
+            // small, so every move was undone and the image never went anywhere.
+            expect(asShown).toBe(kInlineImageBottomClass);
+
+            const contentBox = computeBlockContentBox(
+                kA6Report.visibleBoxViewportPx,
+                kA6Report.clientHeightLayoutPx,
+                kA6Report.scrollHeightLayoutPx,
+                0,
+            );
+            expect(
+                computeInlineImageDock(
+                    {
+                        x: 350,
+                        y: kA6Report.imageCenterYViewportPxWhenScrolledToTop,
+                    },
+                    contentBox,
+                    kA6Report.imageHeightViewportPx,
+                ),
+                "The image is inside the block's text, so a drag there is an ordinary move, " +
+                    "not a request for the bottom dock.",
+            ).toBe(kInlineImageRightClass);
+        });
+
+        it("leaves room below the image to drag it into", () => {
+            const wrapperBottomViewportPx = 900; // the wrapper's bottom edge, on the screen
+            const currentOffsetLayoutPx = 661;
+            const roomByRectangle =
+                kA6Report.visibleBoxViewportPx.top +
+                kA6Report.visibleBoxViewportPx.height -
+                wrapperBottomViewportPx;
+            // Measured against the rectangle, the image is 281 pixels PAST the limit, so
+            // every drag clamped it back up to the fold.
+            expect(Math.round(roomByRectangle)).toBe(-281);
+            expect(
+                clampInlineImageOffset(
+                    currentOffsetLayoutPx + roomByRectangle,
+                    currentOffsetLayoutPx + roomByRectangle,
+                ),
+            ).toBe(380);
+
+            const contentBox = computeBlockContentBox(
+                kA6Report.visibleBoxViewportPx,
+                kA6Report.clientHeightLayoutPx,
+                kA6Report.scrollHeightLayoutPx,
+                0,
+            );
+            const viewportPxPerLayoutPx = computeViewportPxPerLayoutPx(
+                kA6Report.visibleBoxViewportPx,
+                kA6Report.clientHeightLayoutPx,
+            );
+            const roomByContent =
+                (contentBox.top + contentBox.height - wrapperBottomViewportPx) /
+                viewportPxPerLayoutPx;
+            expect(roomByContent).toBeGreaterThan(0);
+            expect(
+                clampInlineImageOffset(
+                    currentOffsetLayoutPx + 20,
+                    currentOffsetLayoutPx + roomByContent,
+                ),
+                "The image is inside the text, so it can still be pushed further down.",
+            ).toBe(681);
         });
     });
 
@@ -220,6 +514,49 @@ describe("inlineImageInteractions", () => {
 
         it("applies no maximum when none is given (no box to measure against)", () => {
             expect(clampInlineImageOffset(150)).toBe(150);
+        });
+    });
+
+    describe("computeInlineImageOffsetForNewBlockHeight", () => {
+        it("keeps the picture the same share of the way down a shorter block", () => {
+            // Two thirds of the way down a 900px block is two thirds of the way down a 300px one.
+            expect(
+                computeInlineImageOffsetForNewBlockHeight(600, 900, 300),
+            ).toBe(200);
+        });
+
+        it("keeps the same share of the way down a taller block", () => {
+            expect(
+                computeInlineImageOffsetForNewBlockHeight(200, 300, 900),
+            ).toBe(600);
+        });
+
+        it("leaves an offset alone when the block is the size it was measured against", () => {
+            expect(
+                computeInlineImageOffsetForNewBlockHeight(431, 773, 773),
+            ).toBe(431);
+        });
+
+        it("rounds to whole pixels, like every other offset", () => {
+            expect(
+                computeInlineImageOffsetForNewBlockHeight(431, 773, 516),
+            ).toBe(288);
+        });
+
+        it("leaves the offset alone where there is no height to work from", () => {
+            // Nothing is laid out (jsdom), or no baseline was ever recorded.
+            expect(computeInlineImageOffsetForNewBlockHeight(431, 0, 516)).toBe(
+                431,
+            );
+            expect(computeInlineImageOffsetForNewBlockHeight(431, 773, 0)).toBe(
+                431,
+            );
+        });
+
+        it("never puts the picture above the top of the block", () => {
+            expect(
+                computeInlineImageOffsetForNewBlockHeight(-5, 773, 516),
+            ).toBe(0);
         });
     });
 
@@ -648,6 +985,32 @@ describe("inlineImageInteractions", () => {
             );
             expect(
                 wrapper.querySelector("." + kInlineImageHandleFrameClass),
+            ).toBeNull();
+        });
+
+        it("puts the toolbar up on select and takes it down on deselect", () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            // Sanity check: no toolbar before anything is selected.
+            expect(
+                document.getElementById(kInlineImageContextControlsId),
+            ).toBeNull();
+
+            selectInlineImage(wrapper);
+
+            const bar = document.getElementById(kInlineImageContextControlsId);
+            expect(
+                bar,
+                "expected the toolbar under the picture",
+            ).not.toBeNull();
+            // It lives on the body, above the page, so the page save never sees it.
+            expect(bar!.parentElement).toBe(document.body);
+            expect(bar!.closest(".bloom-page")).toBeNull();
+
+            deselectAllInlineImages(document);
+
+            expect(
+                document.getElementById(kInlineImageContextControlsId),
             ).toBeNull();
         });
 

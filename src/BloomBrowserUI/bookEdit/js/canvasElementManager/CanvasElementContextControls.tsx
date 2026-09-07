@@ -20,6 +20,7 @@ import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { canvasElementControlRegistry } from "../../toolbox/canvas/canvasElementControlRegistry";
 import { buildCanvasElementControlRegistryContext } from "../../toolbox/canvas/buildCanvasElementControlRegistryContext";
 import {
+    ICanvasElementControlConfiguration,
     IControlContext,
     ILanguageNameValues,
     IControlMenuRow,
@@ -43,8 +44,29 @@ import {
 // for the most common operations that apply to the canvas element in its current state, and a menu for less common
 // operations.
 
-const CanvasElementContextControls: React.FunctionComponent<{
+/**
+ * What a caller must supply to put this bar on something that is not a canvas element. An
+ * inline image -- a picture inside a text block -- passes this, so that a picture offers the
+ * same toolbar wherever the user meets one (see inlineImageInteractions.ts).
+ */
+export interface IControlsForNonCanvasObject {
+    // Which controls the bar and the menu offer, in place of the canvas element registry's
+    // entry for the element's type.
+    configuration: ICanvasElementControlConfiguration;
+    // The menu behind the "..." button, already built.
+    menuItems: IMenuItemWithSubmenu[];
+    // Merged over the context the registry commands run in. This is where an object says
+    // how to delete itself (IControlContext.deleteThisObject).
+    contextAdditions: Partial<IControlContext>;
+    // Run after every toolbar command. An inline image uses it to stamp what the command did
+    // onto the copies in the other languages.
+    afterToolbarCommand?: () => void;
+}
+
+export const CanvasElementContextControls: React.FunctionComponent<{
     canvasElement: HTMLElement;
+    // Left out for a canvas element, which is what this bar was written for.
+    controlsForNonCanvasObject?: IControlsForNonCanvasObject;
     // These props support reusing the context controls menu for a right-click on the canvas element.
     // The first two make the open state of the menu a controlled property. Basically the
     // parent stores the state and passes it in, but to get the normal behavior of
@@ -223,11 +245,13 @@ const CanvasElementContextControls: React.FunctionComponent<{
         onClick: () => void;
         iconScale?: number;
         disabled?: boolean;
+        testId?: string;
     }): IToolbarItem => {
         return {
             key: props.key,
             node: (
                 <ButtonWithTooltip
+                    testId={props.testId}
                     tipL10nKey={props.tipL10nKey}
                     icon={props.icon}
                     iconScale={props.iconScale}
@@ -295,11 +319,12 @@ const CanvasElementContextControls: React.FunctionComponent<{
         const icon = control.toolbar?.icon ?? control.icon;
         const iconScale = control.toolbar?.iconScale ?? control.iconScale;
         const onClick = () => {
-            runControlCallback(`toolbar:${control.id}`, () =>
-                control.action(controlContext, {
+            runControlCallback(`toolbar:${control.id}`, async () => {
+                await control.action(controlContext, {
                     closeMenu: () => {},
-                }),
-            );
+                });
+                props.controlsForNonCanvasObject?.afterToolbarCommand?.();
+            });
         };
 
         if (typeof icon === "function") {
@@ -310,6 +335,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 onClick,
                 iconScale: iconScale ?? 1,
                 disabled: !item.enabled,
+                testId: `toolbar-${control.id}`,
             });
         }
 
@@ -333,6 +359,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     }}
                 >
                     <button
+                        data-testid={`toolbar-${control.id}`}
                         onClick={onClick}
                         css={getIconCss(
                             iconScale,
@@ -361,24 +388,28 @@ const CanvasElementContextControls: React.FunctionComponent<{
         hasClipboardText,
         languageNameValues,
         aiImageEditingAvailable: aiImageEditingStatus?.visible ?? false,
+        ...props.controlsForNonCanvasObject?.contextAdditions,
     };
 
     const definition =
+        props.controlsForNonCanvasObject?.configuration ??
         canvasElementControlRegistry[controlContext.elementType] ??
         canvasElementControlRegistry.none;
 
-    menuOptions = joinMenuSectionsWithSingleDividers(
-        getMenuSections(definition, controlContext, controlRuntime).map(
-            (section) =>
-                convertControlMenuRows(
-                    section
-                        .map((item) => item.menuRow)
-                        .filter((row): row is IControlMenuRow => !!row),
-                    controlContext,
-                    controlRuntime,
-                ),
-        ),
-    );
+    menuOptions =
+        props.controlsForNonCanvasObject?.menuItems ??
+        joinMenuSectionsWithSingleDividers(
+            getMenuSections(definition, controlContext, controlRuntime).map(
+                (section) =>
+                    convertControlMenuRows(
+                        section
+                            .map((item) => item.menuRow)
+                            .filter((row): row is IControlMenuRow => !!row),
+                        controlContext,
+                        controlRuntime,
+                    ),
+            ),
+        );
 
     toolbarItems = normalizeToolbarItems(
         getToolbarItems(definition, controlContext, controlRuntime)
@@ -502,6 +533,7 @@ const ButtonWithTooltip: React.FunctionComponent<{
     onClick: React.MouseEventHandler;
     iconScale?: number;
     disabled?: boolean;
+    testId?: string;
 }> = (props) => {
     return (
         <BloomTooltip
@@ -511,6 +543,7 @@ const ButtonWithTooltip: React.FunctionComponent<{
             }}
         >
             <button
+                data-testid={props.testId}
                 onClick={props.onClick}
                 css={getIconCss(
                     props.iconScale,

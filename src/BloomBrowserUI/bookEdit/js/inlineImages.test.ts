@@ -25,6 +25,7 @@ import {
     kInlineImageBottomClass,
     kInlineImageClass,
     kInlineImageRightClass,
+    kInlineImageWidthVar,
     kInlineImageSelectedClass,
     kInlineImagesRestoredEvent,
     kKeepFirstInFieldClass,
@@ -721,6 +722,25 @@ describe("inlineImages", () => {
             expect(editableFor(group, "fr").textContent).toBe("b");
         });
 
+        // The other half of that fallback. Once the person has typed in the block, their typing
+        // is the most recent thing they did, so ctrl+z belongs to ckeditor: going first here
+        // would bring the picture back BEFORE the typing, which is not the order anything
+        // happened in. These two stacks cannot be merged, so this is how they are ordered.
+        it("declines the removed-image case once the user has typed in that block", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+            ]);
+            removeInlineImage(insertInlineImage(group));
+            const editable = editableFor(group, "en");
+            putCaretIn(editable);
+            // Sanity check: with nothing typed since, this is the case that says yes.
+            expect(inlineImageCanUndo()).toBe(true);
+
+            editable.querySelector("p")!.textContent = "a and some more words";
+
+            expect(inlineImageCanUndo()).toBe(false);
+        });
+
         it("undoes a dock and size change in every editable at once", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
@@ -878,14 +898,38 @@ describe("inlineImages", () => {
             select(insertInlineImage(group));
             clearInlineImageUndoState();
 
+            const image = getInlineImages(group)[0];
+
             prepareInlineImageUndo(group);
             discardPendingInlineImageUndo();
             commitPendingInlineImageUndo(group);
             expect(inlineImageCanUndo()).toBe(false);
 
+            // Something has to actually change between prepare and commit: on this two-phase
+            // path the change has already landed by the time we commit, so a snapshot that
+            // still describes the group means the operation ended where it began, and that is
+            // deliberately not recorded.
             prepareInlineImageUndo(group);
+            image.style.setProperty(kInlineImageWidthVar, "55%");
             commitPendingInlineImageUndo(group);
             expect(inlineImageCanUndo()).toBe(true);
+        });
+
+        it("does not record an operation that ended where it began", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+            ]);
+            select(insertInlineImage(group));
+            clearInlineImageUndoState();
+
+            // What a drag reverted by the fit-or-revert rule leaves behind: the gesture ran, so
+            // it prepared and committed, but the picture is back where it started. An undo point
+            // there would do nothing visible, and would make the NEXT undo take back a change
+            // the person had stopped thinking about.
+            prepareInlineImageUndo(group);
+            commitPendingInlineImageUndo(group);
+
+            expect(inlineImageCanUndo()).toBe(false);
         });
 
         it("forgets everything when the page changes", () => {

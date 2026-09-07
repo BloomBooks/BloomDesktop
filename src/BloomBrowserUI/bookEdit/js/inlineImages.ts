@@ -78,6 +78,20 @@ export const kInlineImageWidthVar = "--inline-image-width";
 export const kInlineImageOffsetVar = "--inline-image-offset";
 export const kInlineImageAspectRatioVar = "--inline-image-aspect-ratio";
 
+/**
+ * The size of the block that --inline-image-offset was measured against, "width,height" in
+ * layout pixels. The offset is the one piece of an inline image's geometry that is an absolute
+ * distance -- the width is a percentage of the block and the aspect ratio is a ratio -- so it is
+ * the one piece that means something different when the block changes size, which happens when
+ * the book is drawn at another page size, when a different layout is chosen for the page, and
+ * when a pane is dragged in Change Layout. Keeping the size it was measured against lets the
+ * offset be re-measured for the new block (adjustInlineImageOffsetsIfBlockSizeChanged).
+ *
+ * This is what bloom-canvas does for canvas elements, with data-imgsizebasedon; the name follows
+ * that one, and like it the attribute must be all lowercase to be a valid data-* attribute.
+ */
+export const kInlineImageOffsetBasedOnAttr = "data-inline-image-offset-basedon";
+
 // Classes owned by BloomField.ts, which already knows how to protect an embedded image:
 // keepFirstInField keeps the required <p> after the image, and preventRemoval undoes a
 // ctrl+a DEL that would otherwise take the image with it.
@@ -154,6 +168,38 @@ export function getInlineImage(
  * "the other image in the same block". Undefined only for a wrapper built by hand (an old
  * book, or the test.pug page), which insertInlineImage never produces.
  */
+/**
+ * Records the block size this image's offset was measured against. Call it wherever the offset
+ * has just been settled, so that a later change of block size has something to re-measure from.
+ */
+export function recordInlineImageOffsetBaseline(
+    wrapper: HTMLElement,
+    editable: HTMLElement,
+): void {
+    wrapper.setAttribute(
+        kInlineImageOffsetBasedOnAttr,
+        `${editable.clientWidth},${editable.clientHeight}`,
+    );
+}
+
+/**
+ * The block size this image's offset was measured against, or undefined for an image saved
+ * before this was recorded (or by a Bloom that did not record it), which is not an error: the
+ * caller records the current size and leaves the offset alone.
+ */
+export function getInlineImageOffsetBaseline(
+    wrapper: HTMLElement,
+): { widthLayoutPx: number; heightLayoutPx: number } | undefined {
+    const parts = (
+        wrapper.getAttribute(kInlineImageOffsetBasedOnAttr) ?? ""
+    ).split(",");
+    if (parts.length !== 2) return undefined;
+    const widthLayoutPx = parseFloat(parts[0]);
+    const heightLayoutPx = parseFloat(parts[1]);
+    if (!(widthLayoutPx > 0) || !(heightLayoutPx > 0)) return undefined;
+    return { widthLayoutPx, heightLayoutPx };
+}
+
 export function getInlineImageId(wrapper: HTMLElement): string | undefined {
     return wrapper.getAttribute(kInlineImageIdAttr) ?? undefined;
 }
@@ -470,6 +516,9 @@ type InlineImageEditableSnapshot = {
 type InlineImageUndoItem = {
     translationGroup: HTMLElement;
     editables: InlineImageEditableSnapshot[];
+    // The group's text at the moment of the snapshot, so we can tell whether the person has
+    // typed since. See inlineImageCanUndo, where that decides who ctrl+z belongs to.
+    textAtSnapshot: string;
 };
 
 const inlineImageUndoStack: InlineImageUndoItem[] = [];
@@ -495,17 +544,47 @@ export function prepareInlineImageUndo(element: HTMLElement): void {
  * Pushes the state captured by prepareInlineImageUndo, now that the operation really
  * happened. Ignores a pending snapshot belonging to some other translation group, so a
  * mismatched or superseded operation cannot push a misleading undo point.
+ *
+ * A snapshot identical to where the group has ended up is dropped rather than pushed. A drag
+ * arrives here whenever the pointer moved at all, and the fit-or-revert rule can put every
+ * move of a gesture back where it started -- a drag into a full side, or past another image's
+ * level, ends exactly where it began. Pushing that would give the person an Undo that visibly
+ * does nothing, and would make the NEXT Undo take back a change they had stopped thinking about.
  */
 export function commitPendingInlineImageUndo(element: HTMLElement): void {
     clearInlineImageUndoOnPageChange();
     const translationGroup = getTranslationGroupOf(element);
     if (
         pendingInlineImageUndo &&
-        pendingInlineImageUndo.translationGroup === translationGroup
+        pendingInlineImageUndo.translationGroup === translationGroup &&
+        // Only meaningful on this path: here the change has already landed, so a snapshot that
+        // still matches the group means the operation ended where it began. The one-call
+        // recordInlineImageUndoPoint runs BEFORE its change, where the snapshot always matches.
+        !isInlineImageSnapshotStillTrue(pendingInlineImageUndo)
     ) {
         inlineImageUndoStack.push(pendingInlineImageUndo);
     }
     pendingInlineImageUndo = undefined;
+}
+
+/**
+ * Whether the group looks exactly as this snapshot recorded it, image for image. The wrapper
+ * markup carries identity, dock and geometry, so comparing it compares everything an undo
+ * would restore.
+ */
+function isInlineImageSnapshotStillTrue(item: InlineImageUndoItem): boolean {
+    const now = takeInlineImageSnapshot(item.translationGroup);
+    if (now.editables.length !== item.editables.length) return false;
+    return now.editables.every((current, i) => {
+        const then = item.editables[i];
+        return (
+            current.editable === then.editable &&
+            current.wrapperHtmls.length === then.wrapperHtmls.length &&
+            current.wrapperHtmls.every(
+                (html, j) => html === then.wrapperHtmls[j],
+            )
+        );
+    });
 }
 
 /** Throws away a prepared snapshot, for an operation that turned out not to happen. */
@@ -520,7 +599,17 @@ export function discardPendingInlineImageUndo(): void {
  */
 export function recordInlineImageUndoPoint(element: HTMLElement): void {
     prepareInlineImageUndo(element);
-    commitPendingInlineImageUndo(element);
+    const translationGroup = getTranslationGroupOf(element);
+    // Pushed straight, not through commitPendingInlineImageUndo: the change this records has
+    // not happened yet, so that function's "did anything actually change?" test would be
+    // asking about a change still in the future and would throw the snapshot away.
+    if (
+        pendingInlineImageUndo &&
+        pendingInlineImageUndo.translationGroup === translationGroup
+    ) {
+        inlineImageUndoStack.push(pendingInlineImageUndo);
+    }
+    pendingInlineImageUndo = undefined;
 }
 
 /**
@@ -553,10 +642,11 @@ export function inlineImageCanUndo(): boolean {
     // deleted an image and then pressed ctrl+z. The image they were working on is gone, so if
     // we said no here, deleting an inline image could never be undone at all. We can recognize
     // that case -- the snapshot holds more images than the group does now -- and then it is
-    // enough that the caret is still in the block we would be restoring into.
-    // (Cost: if the user typed in that same block after deleting, we go first and their
-    // typing needs a second ctrl+z. These stacks are independent and cannot be ordered
-    // against each other; see the comment on the chain in workspaceRoot.handleUndo.)
+    // enough that the caret is still in the block we would be restoring into, AND that the
+    // person has not typed since. Without that second condition we would go first and bring
+    // the picture back before their typing, which is the wrong order and the one thing these
+    // independent stacks can get wrong (see the comment on the chain in
+    // workspaceRoot.handleUndo). Typing after a delete is what hands ctrl+z back to CKEditor.
     const countInSnapshot = top.editables.reduce(
         (total, snapshot) => total + snapshot.wrapperHtmls.length,
         0,
@@ -567,7 +657,11 @@ export function inlineImageCanUndo(): boolean {
     );
     if (countInSnapshot > countNow) {
         const focused = getElementWithFocusOrSelection();
-        return !!focused && top.translationGroup.contains(focused);
+        if (!focused || !top.translationGroup.contains(focused)) return false;
+        return (
+            getInlineImageUndoTextFingerprint(top.translationGroup) ===
+            top.textAtSnapshot
+        );
     }
     return false;
 }
@@ -642,11 +736,34 @@ const getTranslationGroupOf = (element: HTMLElement): HTMLElement | undefined =>
     (element.closest(".bloom-translationGroup") as HTMLElement | null) ??
     undefined;
 
+/**
+ * The text of a translation group, ignoring the inline images themselves. Comparing this with
+ * what it was when a snapshot was taken says whether the person has typed since, which is what
+ * decides whether ctrl+z belongs to the picture or to the typing (see inlineImageCanUndo).
+ *
+ * A wrapper's own text is left out on purpose: an operation that adds or removes a picture also
+ * adds or removes whatever text is inside it, and that must not read as typing.
+ */
+function getInlineImageUndoTextFingerprint(
+    translationGroup: HTMLElement,
+): string {
+    return getEditables(translationGroup)
+        .map((editable) => {
+            const copy = editable.cloneNode(true) as HTMLElement;
+            copy.querySelectorAll(kInlineImageSelector).forEach((wrapper) =>
+                wrapper.remove(),
+            );
+            return copy.textContent ?? "";
+        })
+        .join("|");
+}
+
 function takeInlineImageSnapshot(
     translationGroup: HTMLElement,
 ): InlineImageUndoItem {
     return {
         translationGroup,
+        textAtSnapshot: getInlineImageUndoTextFingerprint(translationGroup),
         editables: getEditables(translationGroup).map((editable) => ({
             editable,
             wrapperHtmls: getInlineImagesInEditable(editable).map(
@@ -675,6 +792,25 @@ function restoreInlineImageSnapshot(
     OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
 }
 
+/**
+ * Take the selection marking off every inline image in the given DOM.
+ *
+ * bloom-inlineImage-selected is editing UI, but it is not a bloom-ui class (it sits on the
+ * wrapper the book owns, and removing bloom-ui elements would take the picture with it), so
+ * nothing strips it on the way to disk. Saving with a picture selected therefore writes the
+ * class into the book's HTML, and from there into spreadsheet exports and published books.
+ * removeEditingDebris is where the other marks of an editing session come off for the same
+ * reason -- origami-layout-mode, the textBox-identifier labels -- so this belongs with them.
+ */
+export function clearInlineImageSelection(container: HTMLElement): void {
+    container
+        .querySelectorAll(
+            kInlineImageSelector + "." + kInlineImageSelectedClass,
+        )
+        .forEach((wrapper) =>
+            wrapper.classList.remove(kInlineImageSelectedClass),
+        );
+}
 // The inline image the user is working on, if any: the one the interaction layer has marked
 // as selected, else one that contains the focus or the caret (which is how an island the
 // user clicked into shows up before there is any selection UI).
@@ -719,7 +855,7 @@ function clearInlineImageUndoOnPageChange(): void {
 
 // All the translation groups in (or equal to) the container that hold at least one inline
 // image.
-function getTranslationGroupsWithInlineImages(
+export function getTranslationGroupsWithInlineImages(
     container: HTMLElement,
 ): HTMLElement[] {
     const groups = new Set<HTMLElement>();
@@ -746,21 +882,39 @@ function wireUpImage(wrapper: HTMLElement): void {
         const editable = wrapper.closest(
             kEditableSelector,
         ) as HTMLElement | null;
-        // Each language's copy has its own img, so each records its own ratio; there is
-        // nothing to sync here.
         if (editable) OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
     });
 }
 
+/**
+ * Writes the picture's real shape onto the wrapper, and onto this picture's copies in the
+ * group's other editables.
+ *
+ * Each copy has its own img and could in principle learn its own ratio, but only the copy in
+ * the showing language reliably does: a copy's load can land before the src changed, or not
+ * at the moment the sync stamps the markup across. A copy left with no ratio falls back to
+ * kDefaultInlineImageAspectRatio and is the wrong shape -- and the one that mattered was the
+ * lang="z" prototype, which is hidden, so nothing showed it, and which is what
+ * TranslationGroupManager clones when a language is added to the collection later. Measured:
+ * choosing a 274x300 picture left "en" at "274 / 300" and "z" at "".
+ */
 function setAspectRatioFromNaturalSize(
     wrapper: HTMLElement,
     img: HTMLImageElement,
 ): void {
     if (!img.naturalWidth || !img.naturalHeight) return; // not loaded (or a placeholder)
-    wrapper.style.setProperty(
-        kInlineImageAspectRatioVar,
-        `${img.naturalWidth} / ${img.naturalHeight}`,
-    );
+    const ratio = `${img.naturalWidth} / ${img.naturalHeight}`;
+    wrapper.style.setProperty(kInlineImageAspectRatioVar, ratio);
+    const id = getInlineImageId(wrapper);
+    const group = getTranslationGroupOf(wrapper);
+    if (!id || !group) return;
+    getEditables(group).forEach((editable) => {
+        getInlineImagesInEditable(editable)
+            .filter((each) => getInlineImageId(each) === id)
+            .forEach((each) =>
+                each.style.setProperty(kInlineImageAspectRatioVar, ratio),
+            );
+    });
 }
 
 // A copy of the wrapper as it should be persisted and replicated: no transient UI, no

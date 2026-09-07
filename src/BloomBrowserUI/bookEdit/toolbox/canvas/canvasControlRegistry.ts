@@ -1259,7 +1259,14 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         menu: {
             iconScale: 1.2,
         },
-        action: () => {
+        action: (ctx) => {
+            // See IControlContext.deleteThisObject: an inline image deletes itself, because
+            // it is not the page's active canvas element and deleting it means more than
+            // removing one element.
+            if (ctx.deleteThisObject) {
+                ctx.deleteThisObject();
+                return;
+            }
             getCanvasElementManager()?.deleteCurrentCanvasElement?.();
         },
     },

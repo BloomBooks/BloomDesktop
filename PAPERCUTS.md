@@ -19,6 +19,22 @@ House rules:
 
 ---
 
+## 2026-09-06 — The e2e suite can hijack and then kill the developer's own Bloom
+
+- **Cut:** Running `pnpm exec playwright test` while a Bloom from the same worktree is running
+  ended that Bloom, its `dotnet watch`, the go.sh launcher and the Vite dev server. Bloom hands a
+  collection off to an already-running instance of itself (the case `launchBloom.ts:666` allows
+  for), so the developer's Bloom became the one serving the test collection, discovery matched it,
+  and `stopBloom` killed its whole process tree. Nothing warns about this: `launchBloom.ts` says
+  it "ALWAYS launches its own Bloom", and the README's only note about a running Bloom is about
+  port 5173.
+- **Idea:** Refuse to start when a Bloom from this repo root is already running (the
+  `bloom-automation` skill's `bloomProcessStatus.mjs` already detects it), or make discovery
+  refuse a serving pid that is not a descendant of the pid we spawned. At the least, say it in
+  README.md and in `launchBloom.ts`.
+- **Context:** branch inline-images, while running the whole suite for the inline-image toolbar
+  tests.
+
 ## 2026-09-02 — notion_automation.py needs Python, which not every dev machine has
 
 - **Cut:** `.github/skills/improve-test-automation-coverage/notion_automation.py` is the only way the
@@ -189,6 +205,14 @@ House rules:
   `Bloom.dll`, is older than its source, and names the newer file (`assertBuildIsNotStale` in
   `src/BloomE2E/fixtures/launchBloom.ts`). The stale build still has to be rebuilt by hand, or
   bypassed with `BLOOM_E2E_VITE_PORT`, but it can no longer fail a test in silence.
+- **Seen again 2026-09-07:** the `BLOOM_E2E_VITE_PORT` escape covers only the front end. A C#
+  edit makes `Bloom.dll` stale, and `build/agent-dotnet.sh` cannot clear it: it builds into a
+  private per-terminal tree by design, while `assertBuildIsNotStale` reads
+  `output\Debug\AnyCPU\Bloom.dll`. So the only way through is a plain
+  `dotnet build src/BloomExe/BloomExe.csproj`, which needs the developer's Bloom stopped first
+  (MSB3027) -- the one thing AGENTS.md otherwise arranges for agents never to have to do. Cost
+  here: 16 failed tests and a full suite run. Worth saying in the fixture's error text, which
+  names the file but not how to rebuild it.
 
 
 ## 2026-08-10 — check-csharp-ApplicationExit.sh greps whole files, not the diff

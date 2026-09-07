@@ -5,8 +5,11 @@
 // stops meaning what it says.
 
 import { Page } from "playwright/test";
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from "node:fs";
+// "node:path", not "path": a bare specifier resolves to the path@0.12.7 package that is in
+// node_modules as somebody's dependency, and that package calls util.isString, which Node
+// removed. The whole suite then fails to load with "util.isString is not a function".
+import * as path from "node:path";
 import less from "less";
 
 const lessPath = path.join(

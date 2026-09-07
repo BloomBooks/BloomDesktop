@@ -300,7 +300,65 @@ describe("BloomField", () => {
             const execCommand = vi.fn();
             (document as any).execCommand = execCommand;
 
-            // Simulate the damage ctrl+a DEL does, then the keyup that follows it.
+            // Simulate the damage ctrl+a DEL does: the keydown, then the removal it caused,
+            // then the keyup. The guard compares the count across the keystroke, so the
+            // keydown is part of the gesture, not scaffolding.
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", { bubbles: true }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        // What made this a test: the count used to be taken once, at page setup, so a picture
+        // the person deleted from its own menu left it short for good and every keystroke they
+        // typed afterwards fired a browser undo -- taking back their typing, character by
+        // character. Comparing across the keystroke instead means a deletion nothing typed is
+        // simply the new state of the box.
+        it("does not undo the typing that follows a deliberate deletion of the image", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            // The menu's Delete: no keystroke involved.
+            editable.querySelector(".bloom-inlineImage")!.remove();
+
+            // And now the person types.
+            for (let i = 0; i < 3; i++) {
+                editable.dispatchEvent(
+                    new KeyboardEvent("keydown", { bubbles: true }),
+                );
+                editable.dispatchEvent(
+                    new KeyboardEvent("keyup", { bubbles: true }),
+                );
+            }
+
+            expect(execCommand).not.toHaveBeenCalled();
+        });
+
+        // The other half: an image inserted after page setup was never counted, so ctrl+a DEL
+        // could take it out with nothing to put it back.
+        it("protects an inline image inserted after the field was wired up", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+            // Sanity check: nothing to protect when the field was wired up.
+            expect(
+                editable.querySelectorAll(".bloom-preventRemoval").length,
+            ).toBe(0);
+
+            editable.insertAdjacentHTML("afterbegin", inlineImageHtml);
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", { bubbles: true }),
+            );
             editable.querySelector(".bloom-inlineImage")!.remove();
             editable.dispatchEvent(
                 new KeyboardEvent("keyup", { bubbles: true }),

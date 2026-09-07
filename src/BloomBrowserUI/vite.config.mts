@@ -850,6 +850,7 @@ export default defineConfig(async ({ command }) => {
                 "**/.{idea,git,cache,output,temp}/**",
                 "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
                 "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via pnpm e2e canvas)
+                "**/bookEdit/inline-images-e2e/**", // Exclude Playwright e2e suite (run via pnpm e2e inline-images)
                 "**/react_components/component-tester/**", // Exclude playwright component tests
                 "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
             ],

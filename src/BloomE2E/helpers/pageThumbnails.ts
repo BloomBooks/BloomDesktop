@@ -284,7 +284,15 @@ export async function runPageMenuCommand(
 /**
  * The menu item for a command, in the shell page (the menu is portaled out of the iframe).
  * Exported so a test can assert on a command's enabled state without running it.
+ *
+ * A command whose menu entry carries addEllipsis (Choose Different Layout) is shown with "..."
+ * after it, so the match allows a trailing one rather than each caller having to know which
+ * commands open a dialog.
  */
 export function pageMenuItem(page: Page, command: PageMenuCommand): Locator {
-    return page.getByRole("menuitem", { name: command, exact: true });
+    // No PageMenuCommand contains a regular-expression metacharacter, so the label goes in as it
+    // is; the only latitude is the optional ellipsis.
+    return page.getByRole("menuitem", {
+        name: new RegExp("^" + command + "(\\.\\.\\.)?$"),
+    });
 }

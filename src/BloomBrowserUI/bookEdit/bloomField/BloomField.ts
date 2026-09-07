@@ -867,20 +867,24 @@ export default class BloomField {
     // inadvertently remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
     // tries to safeguard elements bearing that class.
     private static PreventRemovalOfSomeElements(field: HTMLElement) {
-        const numberThatShouldBeThere = $(field).find(
-            ".bloom-preventRemoval",
-        ).length;
-        if (numberThatShouldBeThere > 0) {
-            $(field).keyup((e) => {
-                if (
-                    $(field).find(".bloom-preventRemoval").length <
-                    numberThatShouldBeThere
-                ) {
-                    document.execCommand("undo");
-                    e.preventDefault();
-                }
-            });
-        }
+        // The count is taken on each keydown and compared on the matching keyup, so what this
+        // guards is the keystroke itself. Taking it once here instead would get two cases wrong,
+        // and inline images reach both: an image added AFTER page setup was never counted and so
+        // was unprotected, and an image the person deliberately deleted (from its menu) left the
+        // count permanently short, so every keystroke they typed afterwards fired a browser undo.
+        let countBeforeTheKeystroke = 0;
+        const countPreventRemoval = () =>
+            $(field).find(".bloom-preventRemoval").length;
+        $(field).keydown(() => {
+            countBeforeTheKeystroke = countPreventRemoval();
+        });
+        $(field).keyup((e) => {
+            if (countPreventRemoval() < countBeforeTheKeystroke) {
+                document.execCommand("undo");
+                e.preventDefault();
+            }
+            countBeforeTheKeystroke = countPreventRemoval();
+        });
 
         //OK, now what if the above fails in some scenario? This adds a last-resort way of getting
         //bloom-editable back to the state it was in when the page was first created, by having

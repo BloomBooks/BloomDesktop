@@ -20,7 +20,10 @@ import {
 } from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
 import {
+    clearInlineImageSelection,
     clearInlineImageUndoState,
+    inlineImageCanUndo,
+    inlineImageUndo,
     commitInlineImageUndoForImageChange,
     handleInlineImageChanged,
     kInlineImageClass,
@@ -29,6 +32,7 @@ import {
 } from "./inlineImages";
 import {
     cleanupInlineImageInteractions,
+    adjustInlineImageOffsetsIfBlockSizeChanged,
     setupInlineImageInteractions,
 } from "./inlineImageInteractions";
 import { setupOrigami, cleanupOrigami } from "./origami";
@@ -617,6 +621,11 @@ export function SetupElements(
     // ...and their own interaction layer: the right-click menu that adds and removes them,
     // selecting one, dragging it to another dock, and resizing it.
     setupInlineImageInteractions(container);
+    // An inline image's offset is an absolute distance, so a block that has changed size since
+    // it was written -- another page size, another layout for the page, a pane dragged in Change
+    // Layout -- needs it re-measured, or the text after the picture is pushed off the end of the
+    // block. After setupInlineImages, which is what makes the languages' copies agree.
+    adjustInlineImageOffsetsIfBlockSizeChanged(container);
 
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
@@ -1380,6 +1389,9 @@ function removeEditingDebris() {
         textLabels[i].remove();
     }
     removeTransientVideoTimestampParams(document.body);
+    // A picture that is selected when the page is saved would otherwise carry that class into
+    // the book's HTML, and from there into spreadsheet exports and published books.
+    clearInlineImageSelection(document.body);
     cleanupNiceScroll(); // don't leave the nicescroll debris around
 }
 
@@ -2089,6 +2101,31 @@ export function attachToCkEditor(element) {
             getToolboxBundleExports()?.updateMarkupAfterUndoOrRedo();
         }
     });
+
+    // Ctrl+Z has to reach the inline-image undo stack, which the top-bar Undo button reaches
+    // through workspaceRoot.handleUndo. Nothing else binds the key: it arrives in the page and
+    // ckeditor's undo plugin runs it as the "undo" command. That command restores the saved HTML
+    // of ONE editable, and an inline image exists once per language in the group, so letting it
+    // have the key put the focused block's copy back and left the others -- including the lang="z"
+    // prototype a language added later is built from -- at the geometry the person had just
+    // undone. Measured: 40% restored in "en" while another copy stayed at 47.7%.
+    //
+    // So we take the command when this layer owns the moment, and cancel ckeditor's. The gate is
+    // the same one handleUndo consults, and it says yes only when an inline image is the active
+    // thing in the group being restored, so ordinary typing keeps its ctrl+z.
+    ckedit.on(
+        "beforeCommandExec",
+        (evt) => {
+            if (evt.data.name !== "undo") return;
+            if (!inlineImageCanUndo()) return;
+            inlineImageUndo();
+            evt.cancel();
+        },
+        // Ahead of the undo plugin's own listeners, so the snapshot machinery does not run.
+        null,
+        null,
+        1,
+    );
 
     // hide the toolbar when ckeditor starts
     ckedit.on("instanceReady", (evt) => {
