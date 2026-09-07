@@ -218,7 +218,12 @@ const FOLDERS_THAT_ARE_NOT_SOURCE = new Set([
     "__tests__",
     "component-tests",
     "canvas-e2e-tests",
+    "inline-images-e2e",
     "test",
+    // Playwright writes .last-run.json here whenever somebody runs one of the front end's own
+    // Playwright suites (pnpm e2e ...). It is an artifact, but it sits inside the source tree, so
+    // without this the next e2e run refuses to start, naming a file nobody edited.
+    "test-results",
 ]);
 
 /**
