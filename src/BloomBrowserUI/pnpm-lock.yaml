@@ -93,6 +93,9 @@ importers:
             bloom-player:
                 specifier: alpha
                 version: 2.20.1-alpha.6
+            bloom-table:
+                specifier: github:BloomBooks/bloom-table#dist-v1.0.0
+                version: https://codeload.github.com/BloomBooks/bloom-table/tar.gz/ee0207c7b99d91f25317fb391caa110cd8484d8a(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
             calculate-aspect-ratio:
                 specifier: 0.1.3
                 version: 0.1.3
@@ -4071,6 +4074,23 @@ packages:
             {
                 integrity: sha512-t207Shb4He2mWVSqRNDiBKCVXyxFtUWBZzGLzcXa92MCJfSsSCdkHsLqgg/GpRi4QSrYuKCsYLVj94QOleCRRw==,
             }
+
+    bloom-table@https://codeload.github.com/BloomBooks/bloom-table/tar.gz/ee0207c7b99d91f25317fb391caa110cd8484d8a:
+        resolution:
+            {
+                gitHosted: true,
+                integrity: sha512-sF7iquKH2kYarCu7++6eUMlsKKEMr/btow9ZON7TIBB2CY72pbHBRmA+3KBLVOIgBXPYYLT4q+lVfqOTSwDngA==,
+                tarball: https://codeload.github.com/BloomBooks/bloom-table/tar.gz/ee0207c7b99d91f25317fb391caa110cd8484d8a,
+            }
+        version: 1.0.0
+        engines: { node: ">=22.12.0" }
+        peerDependencies:
+            "@emotion/react": ^11.0.0
+            "@emotion/styled": ^11.0.0
+            "@mui/icons-material": ^5.0.0
+            "@mui/material": ^5.0.0
+            react: ^18.0.0
+            react-dom: ^18.0.0
 
     body-parser@1.20.6:
         resolution:
@@ -13555,6 +13575,15 @@ snapshots:
             - supports-color
 
     bloom-player@2.20.1-alpha.6: {}
+
+    bloom-table@https://codeload.github.com/BloomBooks/bloom-table/tar.gz/ee0207c7b99d91f25317fb391caa110cd8484d8a(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+        dependencies:
+            "@emotion/react": 11.14.0(@types/react@18.3.31)(react@18.3.1)
+            "@emotion/styled": 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
+            "@mui/icons-material": 5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
+            "@mui/material": 5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+            react: 18.3.1
+            react-dom: 18.3.1(react@18.3.1)
 
     body-parser@1.20.6:
         dependencies:

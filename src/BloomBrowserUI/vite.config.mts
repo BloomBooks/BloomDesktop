@@ -885,6 +885,16 @@ export default defineConfig(async ({ command }) => {
             environmentOptions: {
                 jsdom: {},
             },
+            server: {
+                deps: {
+                    // Process bloom-table with Vite's resolver rather than handing it to
+                    // Node's ESM loader. Its ESM build imports MUI by subpath
+                    // (@mui/material/Divider and friends), and MUI 5 ships no "exports"
+                    // map, so Node rejects those as unsupported directory imports and the
+                    // whole test file fails to load. Vite resolves them via "main".
+                    inline: ["bloom-table"],
+                },
+            },
         },
 
         // DEPENDENCY OPTIMIZATION
