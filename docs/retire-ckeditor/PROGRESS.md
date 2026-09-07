@@ -80,9 +80,12 @@ Stage 0 checklist (PLAN.md §6):
 - [x] Environment unblocked: `vp`/`volta` PATH untangled, `init.sh` clean, `output/browser`
       repopulated. Full front-end suite green: **591 passed**.
 - [x] `toolbox.ts` selection-bracket prep commit (`2707d98a8`) — §5.7.3 done
-- [ ] Capture the paste/drop baseline (rows C1–C7, incl. **C7 drop**): needs a running Bloom
-- [ ] Handler-accumulation repro (§4.10) + the X4 listener-leak test: needs a running Bloom
-- [ ] Page-reload timing baseline (§4.11): needs a running Bloom
+- [x] **Paste/drop baseline captured** (2026-09-07, `PASTE-DROP-BASELINE.md`, C1–C7 incl. drop) — and
+      it found that **the paste filter is bypassed whenever the payload contains a styled span**
+      (BL-12357's `cke/id` test is always true), letting tables/iframes/images/divs into the book.
+- [x] Handler-accumulation repro (§4.10) — **reproduced** 2026-09-07 (1 → 2 → 3 handlers);
+      `liveChecks/handlerAccumulation.mjs` is the X4 test, failing until §4.10 lands
+- [~] Page-reload timing baseline (§4.11) — superseded by BL-13502's measurements (see 2026-09-07)
 - [x] Rebased onto `origin/master` (was 64 behind; one conflict in `toolbox.ts`, resolved). Now 0
       behind. Typecheck clean, 63 tests green.
 - [x] **G1 verified, both halves.** Automated: `verifyCaretPreservation.mjs` PASS (caret at the right
@@ -973,8 +976,20 @@ it has set up) that I did not chase. **To close G2:** find what makes the Talkin
 box on typing (start in `audioRecording.ts`'s `updateMarkupAsync`), get spans to appear, then re-run
 `verifyCaretPreservation.mjs` and check the caret *and* that the spans are there.
 
-**Left for later:** the paste/drop baseline (needs synthetic `ClipboardEvent`s with real web-page
-payloads; feasible over CDP, not started).
+**Paste/drop baseline captured (§4.8, rows C1–C7)** — `liveChecks/pasteDropBaseline.mjs` →
+`PASTE-DROP-BASELINE.md`, by dispatching synthetic `paste` and `drop` events carrying `text/html`,
+which go through CKEditor's clipboard plugin and Bloom's paste transforms exactly as real ones do.
+Every row except C5 behaves as the inventory says, and drop matches paste throughout. **C5 does not,
+and the reason is a real bug:** `BloomField.restoreHtmlMarkupIfNecessary` (BL-12357) tests
+`dataTransfer.getData("cke/id")` to detect an internal CKEditor copy, but CKEditor assigns an id to
+*every* transfer, so the test is always true — and when the pasted HTML contains `<span style=` it
+replaces CKEditor's *filtered* HTML with the *full* clipboard HTML. `liveChecks/pasteFilterBypass.mjs`
+shows the same payload with and without one styled span: without, `table/iframe/img/div#id` are all
+stripped; with, **all four reach the book**. So the BL-3899 guarantee is effectively off for
+web-page pastes today. Full write-up in `PASTE-DROP-BASELINE.md` ▸ Findings. **This is worth a card
+of its own, ahead of anything else found today** — it is a one-condition fix on master
+(`getTransferType() === DATA_TRANSFER_INTERNAL`), and it should be confirmed once with a real
+clipboard paste, since the capture used synthetic events.
 
 **A harness lesson:** the jQuery-UI accordion's `h3.ui-accordion-header-active` class is not a reliable
 "which tool is active" signal — it said Canvas Tool while the Talking Book panel was plainly open.
@@ -994,8 +1009,13 @@ working tree. Bloom can be launched from this worktree with the `run-bloom` skil
   integration branch's first PR could open now. Nothing done pending the answer.
 - **Restore the three hook-reformatted master files** in the sync merge (needs one `--no-verify`
   commit)? Or leave the noise.
-- **File the two reader-tools bugs** found above (stale bookmark span in undo snapshots; Ctrl+Z runs
-  two undos), after a master repro? And the dead `data-page-id` check in `ImageUndoManager`?
+- **File the bugs found today** — in priority order: (1) the **paste-filter bypass** (BL-12357's
+  `cke/id` test admits every paste containing a styled span; tables/iframes/images/divs get in) —
+  confirm with a real clipboard first; (2) Ctrl+Z with a reader tool active runs two undos and breaks
+  Ctrl+Y; (3) the reader-tools undo restores stale `cke_bm_` bookmark spans; (4) edit key handlers
+  accumulate on every `SetupElements` re-run (F6 double-wraps); (5) the dead `data-page-id` check in
+  `ImageUndoManager`. All reproduced on this branch; (2)–(5) are untouched by our changes, and (1) is
+  in code we have not modified at all.
 
 ### Stage 0's remainder — four items, all needing a running Bloom
 
@@ -1009,10 +1029,9 @@ Branch off **`BL-6681-ckeditor`** instead (the files below are new; nothing conf
    2026-09-07 attempt (see that entry), so first work out what makes it mark up, then re-run
    `verifyCaretPreservation.mjs` and confirm `audio-sentence` spans appear alongside the caret check.
    G3 is verified.
-2. **Capture the paste/drop baseline** → `PASTE-DROP-BASELINE.md`, rows C1–C7. Use a **real web-page
-   clipboard payload**, not hand-written tidy HTML. Do it before any further code change — this is the
-   row-set whose failure is silent. Include **C7 (drop)**, the row CKEditor has been covering
-   invisibly.
+2. ~~Capture the paste/drop baseline~~ — done 2026-09-07 with synthetic events; **remaining:** one
+   manual confirmation with a real clipboard (copy a web-page table containing coloured text into a
+   Bloom box) that the styled-span bypass happens for real pastes too, then file it.
 3. ~~Handler-accumulation repro~~ — **reproduced 2026-09-07** (`liveChecks/handlerAccumulation.mjs`,
    1 → 2 → 3 handlers). Remaining: file its card (John's call), and keep that script as the X4
    listener-leak test — it fails today and should pass once §4.10's signal-scoped teardown lands.
