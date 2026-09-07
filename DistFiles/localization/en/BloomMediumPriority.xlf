@@ -60,6 +60,11 @@
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
         <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. It is a checkable on/off command that removes the first-line indent from just that one paragraph, overriding the indent that the paragraph's style gives it. Typically used on a paragraph continued from the previous page.</note>
       </trans-unit>
+      <trans-unit id="EditTab.InlineImage.AddImage" translate="no">
+        <source xml:lang="en">Add Image</source>
+        <note>ID: EditTab.InlineImage.AddImage</note>
+        <note>Command in the menu you get by right-clicking a block of text in the Edit tab. It puts a picture inside the text block, with the text wrapping around it (like an inline image in Word).</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
