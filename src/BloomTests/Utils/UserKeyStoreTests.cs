@@ -283,6 +283,25 @@ namespace BloomTests.Utils
         }
 
         [Test]
+        public void CanRead_ValueThisAccountCannotDecrypt_IsFalse()
+        {
+            // What a file copied from another computer or another Windows account looks like:
+            // the protection method is one this Bloom knows, but the value will not decrypt.
+            // Such a key must survive, so a caller that removes cleared keys leaves it alone.
+            WriteRawFile(
+                "{ 'version': 1, 'keys': { 'someService': { 'value': 'bm90LWEtcHJvdGVjdGVkLWJsb2I=',"
+                    + " 'protection': 'windows-dpapi-currentuser' } } }"
+            );
+            Assert.That(
+                UserKeyStore.GetProtectionMethod("someService"),
+                Is.EqualTo("windows-dpapi-currentuser"),
+                "sanity: the key is on file with a protection method this version knows"
+            );
+
+            Assert.That(UserKeyStore.CanRead("someService"), Is.False);
+        }
+
+        [Test]
         public void ProtectThenUnprotect_RoundTripsThePlaintext()
         {
             const string original = "sk-or-v1-EXAMPLE-key_0123456789";

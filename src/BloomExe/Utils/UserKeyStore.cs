@@ -135,15 +135,17 @@ namespace Bloom.Utils
         }
 
         /// <summary>
-        /// True when this version of Bloom knows how to read the key of this name, and there is
-        /// such a key. A caller that removes the keys the user no longer wants asks this first:
-        /// a key protected by a method only a newer Bloom understands is invisible to
-        /// <see cref="Get"/>, so its absence from what the user is looking at means nothing, and
-        /// removing it would throw away what the newer Bloom stored.
+        /// True when there is a key of this name and <see cref="Get"/> can actually read it.
+        /// A caller that removes the keys the user no longer wants asks this first, because a
+        /// key it cannot read never reached the user: its absence from what they are looking at
+        /// means nothing, and removing it would throw away a key that is not theirs to lose.
+        /// Two kinds of key are unreadable, and both must survive: one protected by a method
+        /// only a newer Bloom understands, and one written by another Windows account or on
+        /// another computer, which this account cannot decrypt.
         /// </summary>
         public static bool CanRead(string name)
         {
-            return GetProtectionMethod(name) == kDpapiCurrentUserProtection;
+            return Get(name) != null;
         }
 
         /// <summary>
