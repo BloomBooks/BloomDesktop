@@ -62,7 +62,7 @@ it, PR'd into it and **squash-merged**, so integration carries one commit per st
 | Date | Merged `master` at | Watchlist commits in that range |
 | --- | --- | --- |
 | 2026-08-06 | `9b6ba1cd9` | **0** of 51 — clean merge, nothing of ours touched |
-| 2026-09-07 | `f0d9f1472` | **11** of 433 — one conflict, `toolbox.ts` (BL-16717 made bookmarks conditional inside the extracted seam); resolved by teaching the seam. Nightly run [34134257000](https://github.com/BloomBooks/BloomDesktop/actions/runs/34134257000) triggered |
+| 2026-09-07 | `f0d9f1472` | **11** of 433 — one conflict, `toolbox.ts` (BL-16717 made bookmarks conditional inside the extracted seam); resolved by teaching the seam. Nightly [34134257000](https://github.com/BloomBooks/BloomDesktop/actions/runs/34134257000): TS, C#, visual-regression and React suites **green**; BloomE2E failed 2 of 47 (Test Case 356 gear positioning — in active development in another worktree; 170 publish talking-book languages), neither near undo, and master's own nightlies have failed daily this week |
 
 All of PLAN.md §10 is decided except the Stage-5 legacy-cleanup lifetime, which blocks nothing.
 
