@@ -14,6 +14,7 @@ import {
     getBloomApiPrefix,
     getAsync,
     postJsonAsync,
+    postString,
     postDataWithConfigAsync,
     trackEvent,
 } from "../../utils/bloomApi";
@@ -38,7 +39,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
     searchLang: string;
 }> = (props) => {
     const [open, setOpen] = useState(true);
-    // Keys are loaded from durable Bloom settings before the gallery is rendered,
+    // Keys are loaded from the per-user key store before the gallery is rendered,
     // so providers (e.g. Pixabay) receive their initial API key in their constructor.
     const [providerKeys, setProviderKeys] = useState<
         IProviderKeysV1 | undefined
@@ -65,17 +66,14 @@ const ImageGalleryDialog: React.FunctionComponent<{
     // so the component can render before the network round-trip completes.
     // There are no dependencies to react to; [] is correct.
     useEffect(() => {
-        getAsync("app/userSetting?settingName=ImageGalleryProviderKeys")
+        getAsync("imageGallery/providerKeys")
             .then((r) => {
-                const json = r?.data?.settingValue as string;
-                if (json) {
-                    try {
-                        const keys = JSON.parse(json) as IProviderKeysV1;
-                        setProviderKeys(keys);
-                        pixabayKeyPresentRef.current = !!keys.pixabay;
-                    } catch {
-                        // ignore malformed stored value
-                    }
+                const keys = r?.data as IProviderKeysV1;
+                // Bloom replies with the format version plus one property per provider the
+                // user has a key for, so anything past the version means there is a key.
+                if (keys && Object.keys(keys).length > 1) {
+                    setProviderKeys(keys);
+                    pixabayKeyPresentRef.current = !!keys.pixabay;
                 }
             })
             .finally(() => setKeysLoaded(true));
@@ -259,10 +257,10 @@ const ImageGalleryDialog: React.FunctionComponent<{
                             // key supplied while the chooser is open is reflected in what this
                             // visit reports.
                             pixabayKeyPresentRef.current = !!keys.pixabay;
-                            postJsonAsync("app/userSetting", {
-                                settingName: "ImageGalleryProviderKeys",
-                                settingValue: JSON.stringify(keys),
-                            });
+                            postString(
+                                "imageGallery/providerKeys",
+                                JSON.stringify(keys),
+                            );
                         }}
                         onLanguageChange={(lang) =>
                             postJsonAsync("app/userSetting", {

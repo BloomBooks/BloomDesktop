@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
+using Bloom.Utils;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Core.ClearShare;
@@ -497,7 +498,7 @@ namespace Bloom.web.controllers
                     // Bloom owns the OpenRouter key: supply the per-user stored key so the AI
                     // image editor doesn't have to ask for it again. It hands any newly
                     // obtained key back via aiImageEditor/saveCredentials.
-                    apiKey = OpenRouterCredentialStore.GetApiKey(),
+                    apiKey = UserKeyStore.Get(UserKeyStore.kOpenRouterName),
                     // In a Playground template book all features are unlocked for
                     // "try it out", so the AI image editor opens — but it's a shared demo
                     // context, so it must not let the user set/save an OpenRouter API key.
@@ -564,7 +565,7 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Receives the user's OpenRouter API key from the AI image editor (manual key entry)
-        /// and persists it per-user via <see cref="OpenRouterCredentialStore"/>. A null/empty
+        /// and persists it per Windows user via <see cref="UserKeyStore"/>. A null/empty
         /// apiKey clears the stored key (sign-out). Session-gated so a stray frame can't
         /// overwrite the user's stored key.
         /// </summary>
@@ -593,7 +594,7 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            OpenRouterCredentialStore.Save(payload.apiKey);
+            UserKeyStore.Set(UserKeyStore.kOpenRouterName, payload.apiKey);
             request.PostSucceeded();
         }
 

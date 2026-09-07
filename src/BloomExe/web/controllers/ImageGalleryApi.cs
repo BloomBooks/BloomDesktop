@@ -14,6 +14,8 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Utils;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Reporting;
@@ -96,6 +98,11 @@ namespace Bloom.web.controllers
                 "ImageCollections"
             );
 
+        /// <summary>
+        /// The start of the name of every key stored for a gallery provider.
+        /// </summary>
+        private const string kGalleryKeyPrefix = UserKeyStore.kImageGalleryNamePrefix;
+
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterAsyncEndpointHandler(
@@ -136,6 +143,60 @@ namespace Bloom.web.controllers
                 HandleLocalCollectionImage,
                 false
             );
+            apiHandler.RegisterEndpointHandler(
+                "imageGallery/providerKeys",
+                HandleProviderKeys,
+                false
+            );
+        }
+
+        /// <summary>
+        /// Gets or sets the API keys the user has for the gallery's search providers, such as
+        /// the key they fetched from Pixabay's site. The gallery's shape for these is one JSON
+        /// object of provider id to key, plus a "version" property; Bloom keeps each key as
+        /// its own entry, named with the gallery's provider id, so neither side needs a
+        /// change when the gallery gains a provider.
+        ///
+        /// These are per Windows user, not per collection and not per copy of Bloom. See
+        /// <see cref="UserKeyStore"/>, which explains why they cannot be Bloom settings.
+        /// </summary>
+        private void HandleProviderKeys(ApiRequest request)
+        {
+            if (request.HttpMethod == HttpMethods.Get)
+            {
+                // One flat object, the shape the gallery expects: the format version plus
+                // one property per provider that has a key.
+                var keys = new Dictionary<string, object> { ["version"] = 1 };
+                foreach (var name in UserKeyStore.GetNames(kGalleryKeyPrefix))
+                {
+                    // Null when the key cannot be decrypted on this computer, which the
+                    // gallery reads the same way as never having had a key: it asks for one.
+                    var key = UserKeyStore.Get(name);
+                    if (!string.IsNullOrEmpty(key))
+                        keys[name.Substring(kGalleryKeyPrefix.Length)] = key;
+                }
+                request.ReplyWithJson(JsonConvert.SerializeObject(keys));
+            }
+            else
+            {
+                var posted = JObject.Parse(request.RequiredPostString());
+                var providerIds = new HashSet<string>();
+                foreach (var property in posted.Properties())
+                {
+                    if (property.Name == "version")
+                        continue;
+                    providerIds.Add(property.Name);
+                    UserKeyStore.Set(kGalleryKeyPrefix + property.Name, (string)property.Value);
+                }
+                // The gallery sends every key it has, so a provider missing from the post is a
+                // key the user removed.
+                foreach (var name in UserKeyStore.GetNames(kGalleryKeyPrefix))
+                {
+                    if (!providerIds.Contains(name.Substring(kGalleryKeyPrefix.Length)))
+                        UserKeyStore.Set(name, null);
+                }
+                request.PostSucceeded();
+            }
         }
 
         /// <summary>
