@@ -1584,7 +1584,10 @@ canvas.moving {
         // Enhance: Canva uses these handles on text boxes to resize the box by modifying
         // font size. This is nice for tweaking things but it's not clear how it should interact
         // with our style system. For now we're just not showing them for text boxes.
-        .bloom-ui-canvas-element-resize-handle {
+        // A table keeps them: it counts as a text box because every cell holds one, but its rows
+        // share out the height the way its columns share out the width, so a person needs the
+        // corner that changes both at once.
+        &:not(.holds-table) .bloom-ui-canvas-element-resize-handle {
             display: none;
         }
     }

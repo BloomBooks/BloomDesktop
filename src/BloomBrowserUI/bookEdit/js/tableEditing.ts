@@ -34,6 +34,7 @@ import {
     refreshTableFeatureStatus,
     tablesMayBeRestructured,
 } from "./tableFeature";
+import { noteTableChange } from "./undoOrdering";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
@@ -249,6 +250,10 @@ function onTableHistoryUpdated(e: Event): void {
     // undo can have restored the cells of the table that holds it. Wiring from
     // the outermost table covers both.
     if (table?.isConnected) wireBloomContentOfNewCells(outermostTable(table));
+    // After the wiring, not before: wiring attaches CKEditor to the cells the operation built,
+    // and an attach can be reported as a CKEditor change. Recording the table's change last
+    // leaves the table as the more recent of the two, which is what it is.
+    noteTableChange();
 }
 
 /** The table that holds `table`, and holds no other table itself. */

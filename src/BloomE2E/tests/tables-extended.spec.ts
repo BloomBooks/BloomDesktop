@@ -89,7 +89,13 @@ import {
     getVideoSource,
     SHORT_VIDEO,
 } from "../helpers/videos";
-import { getZoom, setZoom, switchTab, undo } from "../helpers/workspace";
+import {
+    canUndo,
+    getZoom,
+    setZoom,
+    switchTab,
+    undo,
+} from "../helpers/workspace";
 
 test.use({
     collectionSpec: {
@@ -142,17 +148,19 @@ test.describe("more ways to use a table", () => {
             await setChangeLayoutMode(page, true);
             // Origami offers the list of types only for a section with nothing in it yet, so make
             // one: split the page's text section and take the empty half. That is also how a
-            // person adds a table to a page that already has text on it.
-            await splitSection(page, "right", 0);
+            // person adds a table to a page that already has text on it. Splitting from the top
+            // edge puts the empty half above the text, which is where a table belongs on a page
+            // that also has text: the table is what the text is about.
+            await splitSection(page, "top", 0);
         });
 
         await step("Choose Table for the empty half", async () => {
-            const offered = await getSectionTypesOffered(page, 1);
+            const offered = await getSectionTypesOffered(page, 0);
             expect(
                 offered,
                 "An empty page section should offer Table among the things it can hold.",
             ).toContain("table");
-            await chooseSectionType(page, "table", 1);
+            await chooseSectionType(page, "table", 0);
             await setChangeLayoutMode(page, false);
             await waitForTableAttached(page);
         });
@@ -177,7 +185,9 @@ test.describe("more ways to use a table", () => {
 
         await step("Split the table's own section in two", async () => {
             await setChangeLayoutMode(page, true);
-            await splitSection(page, "right", 1);
+            // The table's own section is the top one, and a right split is what takes width away
+            // from it; the case below this one is about the table fitting what is left.
+            await splitSection(page, "right", 0);
             await setChangeLayoutMode(page, false);
             await waitForTableAttached(page);
         });
@@ -204,17 +214,15 @@ test.describe("more ways to use a table", () => {
         });
     });
 
-    // The cells keep the widths they had before the split, so they now stick out of the table's
-    // own box and the right-hand column is cut off by the edge of the section: a two-column table
-    // 132 pixels wide inside a table box the split left 127 pixels wide. Nothing re-fits the table
-    // to the space it has. Marked fixme rather than weakened, because a table that does not fit
-    // its section is the thing a person sees.
-    test.fixme(
-        "re-fits the table to a section that has been made narrower",
-        async ({ page }) => {
-            await expectCellsTile(page);
-        },
-    );
+    // A table has to fit the space its section gives it, and the section here has just lost half
+    // its width. The table library answers that on its own: a column's minimum width gives way to
+    // an equal share of the table when 60px each will not fit, and columns with widths in pixels
+    // shrink in proportion. See buildColumnTemplate in bloom-table's src/table-renderer.ts.
+    test("re-fits the table to a section that has been made narrower", async ({
+        page,
+    }) => {
+        await expectCellsTile(page);
+    });
 
     test("adds a table to a canvas page", async ({ page, step }) => {
         await step("Add a Canvas page", async () => {
@@ -363,61 +371,115 @@ test.describe("more ways to use a table", () => {
         });
     });
 
-    // Dragging the mouse across the words in a cell selects nothing: window.getSelection() is
-    // empty afterwards. The press does not reach the cell's text box. On a canvas page the drawing
-    // surface lies over the table, so the canvas element's own handler gets the press
-    // (CanvasElementPointerInteractions.onMouseDown), and what that handler does with it is place a
-    // caret at the point and collapse it, which is a click rather than the start of a selection.
-    // This case appeared to pass earlier for a bad reason: the typing helper used to clear a box
-    // with select-all and Delete, and that selection was still what the page reported. Marked
-    // fixme rather than weakened, because selecting a few words with the mouse is how a person
-    // edits text.
-    test.fixme(
-        "selects text when the mouse is dragged across a cell",
-        async ({ page }) => {
-            const rectBefore = (await measureTable(page)).rect;
-            const selected = await dragAcrossCellText(page, 0, 0, "en");
-            expect(
-                selected,
-                `Dragging across the text in a cell should select it, but the page reports ` +
-                    `"${selected}" selected.`,
-            ).toContain("Apple");
-            expectSameRect(
-                (await measureTable(page)).rect,
-                rectBefore,
-                "the table after a drag across the text in a cell",
-            );
-        },
-    );
+    // Selecting a few words with the mouse is how a person edits text, so a press inside the cell
+    // a person is typing in belongs to that cell's text box: isMouseEventAlreadyHandled in
+    // CanvasElementPointerInteractions.ts lets it through, and the browser makes the selection.
+    test("selects text when the mouse is dragged across a cell", async ({
+        page,
+    }) => {
+        const rectBefore = (await measureTable(page)).rect;
+        const selected = await dragAcrossCellText(page, 0, 0, "en");
+        expect(
+            selected,
+            `Dragging across the text in a cell should select it, but the page reports ` +
+                `"${selected}" selected.`,
+        ).toContain("Apple");
+        expectSameRect(
+            (await measureTable(page)).rect,
+            rectBefore,
+            "the table after a drag across the text in a cell",
+        );
+    });
 
-    // The two sets of controls are drawn in the same place at the bottom-left of the table: the
-    // canvas element's toolbar covers the table pill and the "Add row at the bottom edge" button
-    // (measured overlap: the toolbar at x=428 y=761 w=24 h=28 over the pill at x=404 y=757 w=34
-    // h=20 and the add button at x=446 y=757 w=36 h=20). This is why the other tests in this suite
-    // add a row through the row menu instead of that button. Marked fixme rather than weakened,
-    // because both sets of controls have to be clickable.
-    test.fixme(
-        "shows the table's chrome and the element's toolbar without them colliding",
-        async ({ page }) => {
+    // Both sets of controls sit at the bottom-left of the table, and both have to be clickable:
+    // bloom-table draws the table pill and the "Add row at the bottom edge" button in a band just
+    // below the table, so Bloom's canvas element toolbar starts below that band rather than
+    // directly under the control frame. See kTableChromeBandHeight in CanvasElementSelectionUi.ts.
+    test("shows the table's chrome and the element's toolbar without them colliding", async ({
+        page,
+    }) => {
+        await clickCell(page, 0, 0);
+        const chrome = await measureChrome(page);
+        expect(
+            chrome.length,
+            "Clicking a cell should show the table's own chrome: the pills and the add buttons.",
+        ).toBeGreaterThan(0);
+        const pieces = [
+            ...chrome,
+            {
+                name: "the canvas element's toolbar",
+                rect: await getCanvasElementToolbarRect(page),
+            },
+        ];
+        expectNoOverlap(
+            pieces,
+            "the table's chrome and the canvas element's toolbar",
+        );
+    });
+
+    // The other order, and the one that used to go wrong. The table library's history keeps every
+    // structural operation until that operation is undone, so once a row has been added the table
+    // always has something to undo; a caller that asks the table first therefore took the row back
+    // off however long ago it was added, and the typing that came after it could never be reached
+    // at all. Undo now goes to whichever of the two stacks was written to last (undoOrdering.ts).
+    test("undoes the typing that came after the row, and then the row", async ({
+        page,
+        step,
+    }) => {
+        await step("Add a row from the row menu", async () => {
             await clickCell(page, 0, 0);
-            const chrome = await measureChrome(page);
+            await openTableMenu(page, "row", 1);
+            await clickTableMenuCommand(page, "Add Row Below");
+            await expect
+                .poll(async () => (await getTableShape(page)).rows, {
+                    message: "The row menu should have added a row.",
+                })
+                .toBe(3);
+        });
+
+        await step("Type in the new row, key by key", async () => {
+            // Key by key because CKEditor's undo stack is built from key events, and the quick
+            // way of filling a box in raises none. The new row's own cell, because it is empty:
+            // emptying a box that already holds something is select-all and Delete, which
+            // CKEditor answers by rebuilding the paragraph, and the box it hands back reports
+            // nothing undoable however much is then typed into it.
+            await typeInCellKeyByKey(page, 2, 0, "en", "Cherry");
+        });
+
+        await step(
+            "Undo, and check the typing went rather than the row",
+            async () => {
+                await undo(page);
+                await expect
+                    .poll(async () => getCellText(page, 2, 0, "en"), {
+                        message:
+                            "The first undo should have taken back the typing, which is the more " +
+                            "recent of the two things done.",
+                    })
+                    .not.toBe("Cherry");
+                expect(
+                    (await getTableShape(page)).rows,
+                    "Undoing the typing should have left the row that was added before it.",
+                ).toBe(3);
+            },
+        );
+
+        await step("Keep undoing, and check the row goes too", async () => {
+            // Not exactly one more press: CKEditor decides for itself how many snapshots six
+            // keystrokes are worth, and every one of them is text the person typed after the row
+            // and is entitled to get back first. What matters is that the row is still reachable
+            // once the typing is exhausted, rather than stranded behind it.
+            for (let press = 0; press < 10; press++) {
+                if ((await getTableShape(page)).rows === 2) break;
+                if (!(await canUndo(page))) break;
+                await undo(page);
+            }
             expect(
-                chrome.length,
-                "Clicking a cell should show the table's own chrome: the pills and the add buttons.",
-            ).toBeGreaterThan(0);
-            const pieces = [
-                ...chrome,
-                {
-                    name: "the canvas element's toolbar",
-                    rect: await getCanvasElementToolbarRect(page),
-                },
-            ];
-            expectNoOverlap(
-                pieces,
-                "the table's chrome and the canvas element's toolbar",
-            );
-        },
-    );
+                (await getTableShape(page)).rows,
+                "Undoing past the typing should have reached the row that was added before it.",
+            ).toBe(2);
+        });
+    });
 
     test("undoes a row that was added through the row menu", async ({
         page,
@@ -456,27 +518,21 @@ test.describe("more ways to use a table", () => {
         });
     });
 
-    // Undo cannot reach past a table's own structural change. Text undo is CKEditor's, and each
-    // text box keeps its own stack; adding and then undoing a row rebuilds the table's markup, so
-    // every box in it is a new one with an empty stack. Asked straight after the row undo, with
-    // the cursor back in the cell that was typed in, the page reports no CKEditor instance with
-    // anything undoable: {"tableCanUndo":false,"origamiCanUndo":false,"imageCanUndo":false,
-    // "ckeditorCanUndo":false,"undoable":false,"activeLang":"en"}. So the typing that came before
-    // the row can never be taken back, while a person pressing Ctrl+Z twice expects it to be.
-    // Marked fixme rather than weakened.
-    test.fixme(
-        "undoes the typing that came before the row",
-        async ({ page }) => {
-            await clickCell(page, 1, 0);
-            await undo(page);
-            await expect
-                .poll(async () => getCellText(page, 1, 0, "en"), {
-                    message:
-                        "The second undo should have taken back the typing that came before the row.",
-                })
-                .not.toBe("Banana");
-        },
-    );
+    // Undo has to reach past a table's own structural change to the typing that came before it.
+    // Text undo belongs to CKEditor and each text box keeps its own stack, so the boxes have to
+    // survive the row coming back off: the table library takes the inserted cells out in place
+    // rather than rebuilding the table from a snapshot (undoInsertionInPlace in bloom-table's
+    // src/structure.ts), which leaves every other box, and its stack, standing.
+    test("undoes the typing that came before the row", async ({ page }) => {
+        await clickCell(page, 1, 0);
+        await undo(page);
+        await expect
+            .poll(async () => getCellText(page, 1, 0, "en"), {
+                message:
+                    "The second undo should have taken back the typing that came before the row.",
+            })
+            .not.toBe("Banana");
+    });
 
     test("re-tiles the cells when the whole table is made wider", async ({
         page,
@@ -494,8 +550,8 @@ test.describe("more ways to use a table", () => {
 
         await step("Drag the table's side handle outwards", async () => {
             await clickCell(page, 0, 0);
-            // The east side handle, not a corner: Bloom hides the corner handles for a canvas
-            // element that holds text, which a table does (see the case that follows).
+            // The east side handle, which changes the width alone. The case that follows
+            // covers the corner, which changes width and height together.
             const { before, after } = await dragCanvasElementSide(
                 page,
                 "e",
@@ -516,36 +572,6 @@ test.describe("more ways to use a table", () => {
             },
         );
     });
-
-    // A table cannot be made taller by dragging. Bloom decides which handles a canvas element gets
-    // from what is inside it: an element holding a visible text box gets the east and west side
-    // handles and no corner handles at all (`has-text` in editMode.less, set in
-    // CanvasElementSelectionUi.ts), and every cell of a table holds one. So the south handle is
-    // offered only when the element's height is not automatic, and the corner handles, which are
-    // the ones that change both measurements at once, are hidden: the se handle is in the markup
-    // but never visible. A person resizing a table can therefore change its width and not its
-    // height. Marked fixme rather than weakened, because dragging a table's corner is the ordinary
-    // way to resize a table.
-    test.fixme(
-        "re-tiles the cells when the table is resized by a corner",
-        async ({ page }) => {
-            await clickCell(page, 0, 0);
-            const { before, after } = await dragCanvasElementCorner(
-                page,
-                "se",
-                60,
-                40,
-            );
-            expect(
-                after.width > before.width && after.height > before.height,
-                `Dragging the bottom right corner out should have made the table bigger, but it went ` +
-                    `from ${Math.round(before.width)}x${Math.round(before.height)} to ` +
-                    `${Math.round(after.width)}x${Math.round(after.height)}.`,
-            ).toBe(true);
-            await expectCellsTile(page);
-            await expectPictureInsideCell(page, 1, 1);
-        },
-    );
 
     test("keeps the table workable at 150% zoom", async ({ page, step }) => {
         const wasAt = (await getZoom(page)).zoom;
@@ -916,6 +942,60 @@ test.describe("more ways to use a table", () => {
                 bloomApp.collectionDir.length,
                 "The collection folder should be known.",
             ).toBeGreaterThan(0);
+        });
+    });
+
+    // A corner handle changes a canvas element's width and height at once, which is what a table
+    // needs: its rows share out the height the way its columns share out the width. Every cell of
+    // a table holds a text box, so a table counts as has-text and would lose its corners with the
+    // other text boxes; the `holds-table` class on the control frame is what keeps them (set in
+    // CanvasElementSelectionUi.ts, honoured in editMode.less).
+    // Second to last, before the deletion: a corner drag gives the table fixed row heights, and
+    // the tests above are written for the sizing the ones before them left.
+    test("re-tiles the cells when the table is resized by a corner", async ({
+        page,
+        step,
+    }) => {
+        let original = { width: 0, height: 0 };
+        await step("Drag the bottom right corner out", async () => {
+            await goToPage(page, canvasPage.id);
+            await waitForTableAttached(page);
+            await clickCell(page, 0, 0);
+            const { before, after } = await dragCanvasElementCorner(
+                page,
+                "se",
+                60,
+                40,
+            );
+            expect(
+                after.width > before.width && after.height > before.height,
+                `Dragging the bottom right corner out should have made the table bigger, but it went ` +
+                    `from ${Math.round(before.width)}x${Math.round(before.height)} to ` +
+                    `${Math.round(after.width)}x${Math.round(after.height)}.`,
+            ).toBe(true);
+            original = { width: before.width, height: before.height };
+            await expectCellsTile(page);
+            await expectPictureInsideCell(page, 1, 1);
+        });
+
+        await step("Drag it back", async () => {
+            // A resize a person cannot reverse by dragging the same handle the other way is a
+            // resize they are stuck with.
+            const { before, after } = await dragCanvasElementCorner(
+                page,
+                "se",
+                -60,
+                -40,
+            );
+            expect(
+                Math.abs(after.width - original.width) < 4 &&
+                    Math.abs(after.height - original.height) < 4,
+                `Dragging the corner back should have returned the table to its old size of ` +
+                    `${Math.round(original.width)}x${Math.round(original.height)}, but it went ` +
+                    `from ${Math.round(before.width)}x${Math.round(before.height)} to ` +
+                    `${Math.round(after.width)}x${Math.round(after.height)}.`,
+            ).toBe(true);
+            await expectCellsTile(page);
         });
     });
 

@@ -1110,10 +1110,16 @@ export async function measureChrome(
  * Drag a table to somewhere else on the canvas, and wait until it has moved. `dx` and `dy` are how
  * far it should go, in the page's own pixels.
  *
- * The press is aimed two pixels inside the table's top left corner, which is the table's own border
- * and grid gap rather than a cell: a press in a cell puts the caret in it, and the drag then selects
- * text instead of moving anything. That is the same point rightClickCanvasElementEdge uses.
+ * The press is aimed two pixels inside the table's top edge, which is the table's own border and
+ * grid gap rather than a cell: a press in a cell puts the caret in it, and the drag then selects
+ * text instead of moving anything.
+ *
+ * It is aimed well along that edge rather than at the corner, because the canvas element's north
+ * west resize handle sits over the corner and takes the press: a drag from there resizes the table
+ * instead of moving it.
  */
+const kCornerHandleReach = 24;
+
 export async function dragTableBy(
     page: Page,
     tableIndex: number,
@@ -1121,7 +1127,7 @@ export async function dragTableBy(
     dy: number,
 ): Promise<{ before: IRect; after: IRect }> {
     const before = (await measureTable(page, tableIndex)).rect;
-    const startX = before.x + 2;
+    const startX = before.x + Math.min(kCornerHandleReach, before.width / 2);
     const startY = before.y + 2;
     await page.mouse.move(startX, startY);
     await page.mouse.down();
@@ -1597,10 +1603,15 @@ export async function dragAcrossCellText(
                 `so there is nothing to drag across. It holds ` +
                 `"${(await box.innerText()).trim()}".`,
         );
-    const y = words.y + words.height / 2;
-    await page.mouse.move(words.x + 1, y);
+    // The rectangle is in the page iframe's coordinates and the mouse works in the window's, so
+    // the drag has to be shifted by where that iframe sits.
+    const offset = await pageFrameOffset(page);
+    const y = offset.y + words.y + words.height / 2;
+    await page.mouse.move(offset.x + words.x + 1, y);
     await page.mouse.down();
-    await page.mouse.move(words.x + words.width - 1, y, { steps: 10 });
+    await page.mouse.move(offset.x + words.x + words.width - 1, y, {
+        steps: 10,
+    });
     await page.mouse.up();
     const frame = editablePageFrame(page);
     const selection = async () =>

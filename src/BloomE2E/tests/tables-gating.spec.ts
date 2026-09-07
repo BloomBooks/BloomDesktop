@@ -461,13 +461,13 @@ test.describe("a book with a table where tables cannot be made", () => {
                 await setChangeLayoutMode(belowPro, true);
                 // The list of types is offered only for a section with nothing in it yet, so make
                 // one. This is also how a person adds a table to a page that already has text.
-                await splitSection(belowPro, "right", 0);
-                const offer = await getTableSectionTypeOffer(belowPro, 1);
+                await splitSection(belowPro, "top", 0);
+                const offer = await getTableSectionTypeOffer(belowPro, 0);
                 expect(
                     offer.offered,
                     `Below Pro the Table entry should stay on offer, so that a person can see ` +
                         `that tables exist. The section offers: ` +
-                        `${(await getSectionTypesOffered(belowPro, 1)).join(", ")}.`,
+                        `${(await getSectionTypesOffered(belowPro, 0)).join(", ")}.`,
                 ).toBe(true);
                 expect(
                     offer.needsSubscription,
@@ -483,14 +483,14 @@ test.describe("a book with a table where tables cannot be made", () => {
         await step(
             "Check clicking that entry opens the subscription dialog and makes no table",
             async () => {
-                await clickTableSectionType(belowPro, 1);
+                await clickTableSectionType(belowPro, 0);
                 await waitForSubscriptionDialog(
                     belowPro,
                     "Clicking the dimmed Table entry",
                 );
                 await closeSubscriptionDialog(belowPro);
                 expect(
-                    await getSectionTypesOffered(belowPro, 1),
+                    await getSectionTypesOffered(belowPro, 0),
                     "The section should still be empty and still offering its list of types, " +
                         "because the click explained itself instead of making a table.",
                 ).toContain("table");
@@ -760,16 +760,16 @@ test.describe("a book with a table where tables cannot be made", () => {
             async () => {
                 await goToPage(withoutExperiment, textPage.id);
                 await setChangeLayoutMode(withoutExperiment, true);
-                await splitSection(withoutExperiment, "right", 0);
+                await splitSection(withoutExperiment, "top", 0);
                 const offer = await getTableSectionTypeOffer(
                     withoutExperiment,
-                    1,
+                    0,
                 );
                 expect(
                     offer.offered,
                     `With the experiment off the Table entry should be gone, not dimmed: there ` +
                         `is no subscription to buy that would turn an experiment on. The section ` +
-                        `offers: ${(await getSectionTypesOffered(withoutExperiment, 1)).join(", ")}.`,
+                        `offers: ${(await getSectionTypesOffered(withoutExperiment, 0)).join(", ")}.`,
                 ).toBe(false);
                 await setChangeLayoutMode(withoutExperiment, false);
             },

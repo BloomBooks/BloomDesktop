@@ -105,10 +105,10 @@ export function handleUndo(): void {
     // First see if origami is active and knows about something we can undo.
     // (Origami undo works only while the origami tool is active.)
     const contentWindow = getEditablePageBundleExports();
-    // Check table (bloom-table) undo first. Structural grid ops leave no
-    // CKEditor footprint, while pure text edits inside cells leave
-    // tableCanUndo() false and so still route to CKEditor below.
-    if (contentWindow && contentWindow.tableCanUndo()) {
+    // Check table (bloom-table) undo first. Structural grid ops leave no CKEditor footprint, and
+    // when both stacks hold something, whichever was written to last wins; see undoOrdering.ts.
+    // A pure text edit inside a cell routes to CKEditor below.
+    if (contentWindow && contentWindow.tableShouldHandleUndo()) {
         contentWindow.tableUndo();
         return;
     }
@@ -140,12 +140,19 @@ export function handleUndo(): void {
     if (contentWindow && contentWindow.imageOperationCanUndo()) {
         contentWindow.imageOperationUndo();
     } else if (contentWindow && contentWindow.ckeditorCanUndo()) {
-        contentWindow.ckeditorUndo();
+        const ckeditorUndidSomething = contentWindow.ckeditorUndo();
         // As above: this undo replaces the content of an editable, and there is no keystroke
         // to trigger the markup update that repaints the tools' highlights over the new text
         // nodes. (We call ckeditor's undoManager directly rather than its undo command, so the
         // afterCommandExec handler in attachToCkEditor doesn't see this one.)
         toolboxWindow?.updateMarkupAfterUndoOrRedo();
+        // ckeditor says it can undo more often than it can (see ckeditorUndo), and a table's
+        // history is behind it: the person typed in a cell after changing the table's shape, so
+        // the shape change is the next thing they expect back. Without this, their Undo does
+        // nothing at all and the row they added is out of reach.
+        if (!ckeditorUndidSomething && contentWindow.tableCanUndo()) {
+            contentWindow.tableUndo();
+        }
     }
     // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
 }
@@ -274,7 +281,9 @@ export function doWhenToolboxLoaded(
 export function canUndo(): string {
     // See comments on handleUndo()
     const contentWindow = getEditablePageBundleExports();
-    if (contentWindow && contentWindow.tableCanUndo()) {
+    // When the table declines because CKEditor changed more recently, the ckeditorCanUndo() test
+    // further down is what answers, and it is true by the same reckoning: see undoOrdering.ts.
+    if (contentWindow && contentWindow.tableShouldHandleUndo()) {
         return "yes";
     }
     if (contentWindow && contentWindow.origamiCanUndo()) {

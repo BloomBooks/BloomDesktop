@@ -18,6 +18,11 @@ import {
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
 import { tableHistoryManager } from "bloom-table";
+import {
+    getCkeditorChangeOrder,
+    getTableChangeOrder,
+    shouldUndoGoToTable,
+} from "./js/undoOrdering";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -69,10 +74,11 @@ export interface IPageFrameExports {
     getTheOneCanvasElementManager(): CanvasElementManager;
 
     ckeditorCanUndo(): boolean;
-    ckeditorUndo(): void;
+    ckeditorUndo(): boolean;
     imageOperationCanUndo(): boolean;
     imageOperationUndo(): boolean;
 
+    tableShouldHandleUndo(): boolean;
     tableCanUndo(): boolean;
     tableUndo(): void;
 
@@ -338,14 +344,39 @@ export function ckeditorCanUndo(): boolean {
     return false;
 }
 
-export function ckeditorUndo() {
+/**
+ * Undo the most recent change ckeditor knows about, and say whether it undid anything.
+ *
+ * undo() answers false when it finds nothing to restore, which happens even after
+ * ckeditorCanUndo() said yes: ckeditor sets its hasUndo flag on the first keystroke of a
+ * group and clears it only when it next refreshes its state, so a manager whose snapshots
+ * have already been restored keeps claiming an undo it cannot perform. The caller needs to
+ * know, so that an Undo the person pressed is not swallowed here. (See workspaceRoot.handleUndo.)
+ */
+export function ckeditorUndo(): boolean {
     // review: do we need to examine all instances?
-    (<any>CKEDITOR.currentInstance).undoManager.undo();
+    return (<any>CKEDITOR.currentInstance).undoManager.undo();
 }
 
-// Whether the bloom-table library (which lives in this page iframe, where the
-// tables are attached) has a table operation it can undo. Called cross-frame
-// from workspaceRoot.canUndo()/handleUndo().
+// Whether the next Undo belongs to the bloom-table library (which lives in this page iframe,
+// where the tables are attached) rather than to CKEditor. Called cross-frame from
+// workspaceRoot.canUndo()/handleUndo().
+//
+// It is not enough that the library has an operation to undo: its history holds every structural
+// operation until that operation is undone, so after "add a row, then type in a cell" both it and
+// CKEditor have something, and the typing is what came last. See undoOrdering.ts.
+export function tableShouldHandleUndo(): boolean {
+    return shouldUndoGoToTable({
+        tableCanUndo: tableHistoryManager.canUndo(),
+        ckeditorCanUndo: ckeditorCanUndo(),
+        tableChangeOrder: getTableChangeOrder(),
+        ckeditorChangeOrder: getCkeditorChangeOrder(),
+    });
+}
+
+// Whether the bloom-table library has an operation in its history that it could undo. This is
+// the plain question, with no reckoning of what CKEditor has done; tableShouldHandleUndo() above
+// is the one that decides whose Undo it is.
 export function tableCanUndo(): boolean {
     return tableHistoryManager.canUndo();
 }
@@ -440,6 +471,7 @@ interface EditablePageBundleApi {
     getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
     ckeditorCanUndo: typeof ckeditorCanUndo;
     ckeditorUndo: typeof ckeditorUndo;
+    tableShouldHandleUndo: typeof tableShouldHandleUndo;
     tableCanUndo: typeof tableCanUndo;
     tableUndo: typeof tableUndo;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
@@ -521,6 +553,7 @@ window.editablePageBundle = {
     getTheOneCanvasElementManager,
     ckeditorCanUndo,
     ckeditorUndo,
+    tableShouldHandleUndo,
     tableCanUndo,
     tableUndo,
     addRequestPageContentDelay,

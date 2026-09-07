@@ -213,19 +213,35 @@ test.describe("a table on a canvas page", () => {
         });
     });
 
-    // The table's "+" button for a new row sits just under its bottom edge, which is exactly
-    // where Bloom puts the toolbar of the selected canvas element, so the button is underneath
-    // the toolbar's Duplicate and Delete buttons and cannot be pressed. Worse, a press there
-    // lands on Delete and takes the whole table away. The right-edge "+" for a new column is
-    // clear of the toolbar, and the test below presses that one, so this is about the bottom
-    // button alone. Reported in the branch's own review; nothing in the test is wrong.
-    test.fixme("gains a row from the bottom + button", async ({ page }) => {
-        await clickCell(page, 0, 0);
-        const grown = await clickAddButton(page, "row");
-        expect(grown.rows, "The + button should have added a third row.").toBe(
-            3,
+    // The table's "+" button for a new row sits just under its bottom edge, in the same band as
+    // the table pill. Bloom's canvas element toolbar starts below that whole band, so a press
+    // aimed at the "+" reaches the "+" rather than the toolbar's Delete button.
+    test("gains a row from the bottom + button", async ({ page, step }) => {
+        await step(
+            "Press the + button under the table's bottom edge",
+            async () => {
+                await clickCell(page, 0, 0);
+                const grown = await clickAddButton(page, "row");
+                expect(
+                    grown.rows,
+                    "The + button should have added a third row.",
+                ).toBe(3);
+                await expectCellsTile(page);
+            },
         );
-        await expectCellsTile(page);
+
+        await step("Take the new row off again", async () => {
+            // The tests in this file share one table, and the ones after this expect the two rows
+            // it started with.
+            await openTableMenu(page, "row", 2);
+            await clickTableMenuCommand(page, "Delete Row");
+            await expect
+                .poll(async () => (await getTableShape(page)).rows, {
+                    message:
+                        "Delete Row should have taken the table back to two rows.",
+                })
+                .toBe(2);
+        });
     });
 
     test("gains a column from the right + button, and a row and back from the row menu", async ({
@@ -257,7 +273,8 @@ test.describe("a table on a canvas page", () => {
         });
 
         await step("Add a row from the row menu", async () => {
-            // The row menu, because the bottom "+" is unreachable (see the fixme above).
+            // The row menu, which inserts below the row it was opened on, rather than the bottom
+            // "+", which always appends at the far edge. The test above covers the "+".
             await openTableMenu(page, "row", 1);
             await clickTableMenuCommand(page, "Add Row Below");
             await expect
@@ -700,39 +717,37 @@ test.describe("a table on a canvas page", () => {
         });
     });
 
-    // Each table has one picture cell, and in the reader's copy only the original's shows its
-    // picture. The copy's cell records data-content-type="image" and its bloom-canvas is empty:
-    // publishing turns the img a picture cell holds into a background image in the cell's style
-    // attribute, and for the duplicated table that never happens, so the reader loses the picture.
-    // Marked fixme rather than weakened: a duplicated table's picture belongs in the book. (Wiring
-    // the copy up as a table, which the clone cleanup now allows, did not cure this.)
-    test.fixme(
-        "shows both tables' pictures in a BloomPUB preview",
-        async ({ page }) => {
-            await openPublishDestination(page, "BloomPUB");
-            const player = await showBloomPubPreview(page);
-            expect(
-                await countCellPictures(player),
-                "Both picture cells should show their picture in the reader's copy.",
-            ).toEqual({ pictureCells: 2, showingAPicture: 2 });
-            await switchTab(page, "collection");
-        },
-    );
+    // Each table has one picture cell, and publishing turns the img such a cell holds into a
+    // background image in the cell's style attribute. A duplicated table's picture has to survive
+    // that as the original's does, which depends on the page reaching C# with no drawing surface
+    // left in the cell: the html-to-xml conversion loses whatever follows a canvas element, and
+    // what follows it in a picture cell is the picture. See removeOrphanedDrawingSurfaces in
+    // CanvasElementManager.ts.
+    test("shows both tables' pictures in a BloomPUB preview", async ({
+        page,
+    }) => {
+        await openPublishDestination(page, "BloomPUB");
+        const player = await showBloomPubPreview(page);
+        expect(
+            await countCellPictures(player),
+            "Both picture cells should show their picture in the reader's copy.",
+        ).toEqual({ pictureCells: 2, showingAPicture: 2 });
+        await switchTab(page, "collection");
+    });
 
-    // The picture cell in the reader's copy still holds the canvas Bloom draws speech bubbles on,
-    // classed comical-generated comical-editing. That surface exists only for the editor, and
-    // Bloom's own publishing takes it out elsewhere, so a cell keeping it is editing markup that
-    // has reached the reader. Marked fixme rather than weakened.
-    test.fixme(
-        "leaves no drawing surface in a BloomPUB preview",
-        async ({ page }) => {
-            await openPublishDestination(page, "BloomPUB");
-            const player = await showBloomPubPreview(page);
-            expect(
-                await countDrawingSurfacesInCells(player),
-                "The reader's copy should carry none of Bloom's drawing surfaces.",
-            ).toBe(0);
-            await switchTab(page, "collection");
-        },
-    );
+    // The canvas Bloom draws speech bubbles on, classed comical-generated, exists only for the
+    // editor, so no cell in the reader's copy may hold one. Comical removes the surfaces of the
+    // bloom-canvases it is editing at that moment, and that list is replaced rather than added to,
+    // so a cell's surface can outlive it; Bloom takes any leftover out before the page is saved.
+    test("leaves no drawing surface in a BloomPUB preview", async ({
+        page,
+    }) => {
+        await openPublishDestination(page, "BloomPUB");
+        const player = await showBloomPubPreview(page);
+        expect(
+            await countDrawingSurfacesInCells(player),
+            "The reader's copy should carry none of Bloom's drawing surfaces.",
+        ).toBe(0);
+        await switchTab(page, "collection");
+    });
 });

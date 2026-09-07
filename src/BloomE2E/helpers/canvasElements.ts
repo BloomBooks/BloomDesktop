@@ -529,10 +529,9 @@ export type Side = "n" | "e" | "s" | "w";
  * changed size. `distance` is how far the handle moves, in the page's own pixels: outwards for a
  * positive number on the east or south side, and for a negative one on the west or north.
  *
- * A canvas element holding text, which a table does, is resized this way rather than by its
- * corners: Bloom hides the corner handles for such an element (`has-text` in `editMode.less`) and
- * shows the east and west ones instead, plus the south one when the element's height is not
- * automatic.
+ * A canvas element holding text gets the east and west handles, plus the south one when its
+ * height is not automatic, and no corners (`has-text` in `editMode.less`). A table gets these and
+ * the corners as well, so either helper works on one.
  *
  * Returns the element's rect before and after, so the caller can say what should have changed.
  */

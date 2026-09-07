@@ -2326,6 +2326,7 @@ export class CanvasElementManager {
 
         Comical.setActiveBubbleListener(undefined);
         Comical.stopEditing();
+        this.removeOrphanedDrawingSurfaces();
         this.getAllBloomCanvasesOnPage().forEach((bloomCanvas) =>
             this.saveCurrentCanvasElementStateAsCurrentLangAlternate(
                 bloomCanvas as HTMLElement,
@@ -2353,6 +2354,25 @@ export class CanvasElementManager {
             "click",
             CanvasElementManager.onDocClickClearActiveElement,
         );
+    }
+
+    /**
+     * Take out any drawing surface Comical left behind.
+     *
+     * Comical.stopEditing() only removes the surfaces belonging to the bloom-canvases it is
+     * currently editing, and that list is replaced, not added to, every time something calls
+     * Comical.startEditing with a shorter list (refreshCanvasElementEditing passes one canvas).
+     * A surface it has forgotten stays in the page, and the page is about to be saved: a canvas
+     * element in the saved html is editing markup that must never reach the book, and inside a
+     * table cell it costs the cell its picture, because the html-to-xml conversion on the C#
+     * side loses what follows the canvas.
+     */
+    private removeOrphanedDrawingSurfaces(): void {
+        Array.from(
+            document.getElementsByClassName("comical-generated"),
+        ).forEach((surface) => {
+            if (surface.tagName === "CANVAS") surface.remove();
+        });
     }
 
     public cleanUp(): void {

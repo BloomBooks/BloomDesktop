@@ -81,6 +81,7 @@ import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
+import { noteCkeditorChange } from "./undoOrdering";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -2078,6 +2079,14 @@ export function attachToCkEditor(element) {
         if (commandName === "undo" || commandName === "redo") {
             getToolboxBundleExports()?.updateMarkupAfterUndoOrRedo();
         }
+    });
+
+    // A table's own undo stack is separate from this one, and whichever of the two was written
+    // to last is the one the next Undo belongs to. See undoOrdering.ts. The undoable() test keeps
+    // the changes ckeditor makes while it attaches itself to a box out of the reckoning: only a
+    // change a person could undo counts as a change the person made.
+    ckedit.on("change", () => {
+        if (ckedit.undoManager?.undoable()) noteCkeditorChange();
     });
 
     // hide the toolbar when ckeditor starts
