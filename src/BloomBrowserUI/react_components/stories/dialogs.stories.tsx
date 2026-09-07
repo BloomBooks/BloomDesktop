@@ -7,6 +7,7 @@ import {
 } from "../confirmDialog";
 import { AutoUpdateSoftwareDialog } from "../AutoUpdateSoftwareDialog";
 import { ForumInvitationDialogLauncher } from "../forumInvitationDialog";
+import { SignInInvitationDialog } from "../signInInvitationDialog";
 import {
     INumberChooserDialogProps,
     NumberChooserDialog,
@@ -95,6 +96,13 @@ export const ForumInvitationDialogStory: Story = {
             <ForumInvitationDialogLauncher />
         </StorybookDialogWrapper>
     ),
+};
+
+export const SignInInvitationDialogStory: Story = {
+    name: "SignInInvitationDialog",
+    // Unlike the other dialogs here, this one is not launched by an event; it shows itself when the
+    // server says a Team Collection user needs to be invited to sign in. So just render it open.
+    render: () => <SignInInvitationDialog closeDialog={() => undefined} />,
 };
 
 const numberChooserDialogProps: INumberChooserDialogProps = {

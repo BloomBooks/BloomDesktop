@@ -87,7 +87,6 @@ const AppActionButton: React.FunctionComponent<{
 // Keep this component mostly declarative. The hook owns websocket/API state so the JSX can stay focused on the workflow.
 const AppPublisherScreenContents: React.FunctionComponent<{
     isActive: boolean;
-    onBusyChange?: (busy: boolean) => void;
 }> = (props) => {
     const screenState = useAppBuilderPublisherScreen(props.isActive);
     const [showSettingsDialog, setShowSettingsDialog] = React.useState(false);
@@ -95,21 +94,10 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         React.useState(false);
     const [showUsbDebuggingHelpDialog, setShowUsbDebuggingHelpDialog] =
         React.useState(false);
-    // An effect (not an event handler) is warranted here, even though "notify the parent of a
-    // change" usually belongs in the handler that caused the change: busyAction has no single
-    // originating handler. It is set/cleared from several asynchronous sources inside
-    // useAppBuilderPublisherScreen — the "actionComplete" websocket event, the status-poll
-    // recovery that reconciles with the backend after a blank/reload, and the action-start call —
-    // so the only place that observes every transition is a render keyed on the resulting value.
-    // What we are doing is synchronizing an external system (the publish-tab host, which makes the
-    // operation modal by blocking the other publish tools while C# blocks the main workspace tabs)
-    // to that state, which is exactly what effects are for. The cleanup resets it to false so
-    // leaving or unmounting never leaves the publish tools stuck disabled.
-    React.useEffect(() => {
-        props.onBusyChange?.(!!screenState.busyAction);
-        return () => props.onBusyChange?.(false);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [screenState.busyAction]);
+    // Note: this screen no longer tells the publish-tab host when it is busy. Blocking the other
+    // publish tools during a prepare/build/install is now driven by the same C# navigation lock
+    // that greys out the main workspace tabs (RabPublishApi sets it; PublishTabPane reads it),
+    // so the two can't disagree, and the lock survives this component remounting mid-action.
     const prepareTooltip = useL10n(
         "Create the Reading App Builder project in this collection's Bloom App Data folder.",
         "PublishTab.Apps.Prepare.TooltipBloomAppData",
@@ -731,7 +719,6 @@ const AppPublisherScreenContents: React.FunctionComponent<{
 
 export const AppPublisherScreen: React.FunctionComponent<{
     isActive: boolean;
-    onBusyChange?: (busy: boolean) => void;
 }> = (props) => {
     const optionsPanel = (
         <SettingsPanel>
@@ -770,10 +757,7 @@ export const AppPublisherScreen: React.FunctionComponent<{
                 bannerDescriptionMarkdown="Create an app that you can install on your Android phone, share with others, and publish on the Google Play Store."
                 optionsPanelContents={optionsPanel}
             >
-                <AppPublisherScreenContents
-                    isActive={props.isActive}
-                    onBusyChange={props.onBusyChange}
-                />
+                <AppPublisherScreenContents isActive={props.isActive} />
             </PublishScreenTemplate>
         </Typography>
     );

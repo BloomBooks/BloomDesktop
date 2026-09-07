@@ -56,9 +56,27 @@ function isCustomLayoutOutsideFrontCoverPage(
     );
 }
 
-function getNonUiImages(page: HTMLElement): HTMLImageElement[] {
+// The images that belong to the book itself: one inside an image container, or the old shape of a
+// background image sitting straight inside the bloom-canvas. Being *somewhere* under the
+// bloom-canvas is not enough, because on a custom layout the branding and licence images are canvas
+// elements inside that same bloom-canvas, alongside the real picture. We refuse branding, licence
+// and QR images by class as well. That is belt and braces against a branding pack wrapping its logo
+// in an image container -- unlike the equivalent search in Book.cs, where the cost of being wrong is
+// a wrong book icon, being wrong here writes a wrong cover image into the book. See BL-16776.
+function getContentImages(page: HTMLElement): HTMLImageElement[] {
     return Array.from(page.querySelectorAll("img")).filter(
-        (img) => !img.closest(".bloom-ui"),
+        (img) =>
+            !img.closest(".bloom-ui") &&
+            (!!img.closest(kImageContainerSelector) ||
+                // The old shape: a background image sitting straight inside the bloom-canvas, not
+                // yet converted to a canvas element with an image container. Book.cs makes the same
+                // allowance, and only for a direct child -- deeper descendants of the bloom-canvas
+                // are the other canvas elements on the cover, branding among them.
+                img.parentElement?.classList.contains(kBloomCanvasClass) ===
+                    true) &&
+            !img.classList.contains("branding") &&
+            !img.classList.contains("licenseImage") &&
+            !img.classList.contains("bloom-qrcode"),
     );
 }
 
@@ -80,20 +98,35 @@ export function normalizeCoverImageDesignation(page: HTMLElement): void {
         return;
     }
 
-    const nonUiImages = getNonUiImages(page);
+    const contentImages = getContentImages(page);
     const markedImages = Array.from(
         page.querySelectorAll('[data-book="coverImage"]'),
     ) as HTMLElement[];
-
-    const backgroundImage = getFirstNonPlaceholderImage(
-        nonUiImages.filter((img) => img.closest(`.${kBackgroundImageClass}`)),
+    // A mark on something that is not one of the book's own images is wrong however it got there,
+    // so it does not get a vote here, and the loop below strips it. That is what heals a book
+    // already saved with its branding logo marked as the cover image.
+    const markedContentImages = markedImages.filter((element) =>
+        contentImages.includes(element as HTMLImageElement),
     );
-    const markedRealImage = getFirstNonPlaceholderImage(markedImages);
-    const firstRealImage = getFirstNonPlaceholderImage(nonUiImages);
+    const backgroundImages = contentImages.filter((img) =>
+        img.closest(`.${kBackgroundImageClass}`),
+    );
 
-    // The one we want to be marked as the cover image
+    const backgroundImage = getFirstNonPlaceholderImage(backgroundImages);
+    const markedRealImage = getFirstNonPlaceholderImage(markedContentImages);
+    const firstRealImage = getFirstNonPlaceholderImage(contentImages);
+
+    // The one we want to be marked as the cover image. The last resort is the background image
+    // even when it is still a placeholder: on a custom cover that is the cover image's slot, so
+    // handing the mark back to it restores what a book looked like before it was mis-marked. We
+    // still never mark a placeholder that is not the background image, which would be inventing
+    // a cover image the book does not have.
     const chosenElement =
-        backgroundImage ?? markedRealImage ?? firstRealImage ?? markedImages[0];
+        backgroundImage ??
+        markedRealImage ??
+        firstRealImage ??
+        markedContentImages[0] ??
+        backgroundImages[0];
 
     for (const markedElement of markedImages) {
         if (markedElement !== chosenElement) {
@@ -422,6 +455,12 @@ async function doChangeGifImage(
             "imageGallery/imageGalleryResult",
             {
                 localPath: filePath,
+                // Say where this came from, or the endpoint records it as an image-chooser pick
+                // from an "unknown" provider (see ImageGalleryApi.TrackPictureChosenFromGallery).
+                // A GIF change never opens the chooser at all: it goes straight to the native file
+                // picker, so it belongs with the other pictures the user took off their own disk.
+                // "local-disk" is the id the chooser uses for that route too.
+                provider: "local-disk",
             },
         );
         const result = changeResponse!.data as {
@@ -1182,6 +1221,25 @@ export function SetupMetadataButton(parent: HTMLElement) {
     }
 }
 
+// Turn the src of an image into the file name we want to show a human in the alt text.
+// Strips any query string, then undoes the URL encoding.
+//
+// decodeURIComponent, not decodeURI: decodeURI deliberately leaves the characters that are
+// reserved in a URL (@ # $ & + , / : ; = ?) still escaped, so a file name like
+// "This Image !@#$%^&().jpg" came out as the half-decoded "This Image !%40%23%24%^%26().jpg".
+// It is a file name here, not a URL, so every escape should be undone.
+export function getDisplayNameFromImageUrl(rawImageUrl: string): string {
+    const nameWithoutQueryString = rawImageUrl.split("?")[0];
+    try {
+        return decodeURIComponent(nameWithoutQueryString);
+    } catch {
+        // decodeURIComponent throws on a stray '%' that isn't a valid escape, which a real file
+        // name can certainly contain ("50%.jpg"). Such a name is already readable as it stands,
+        // so show it unchanged rather than letting this throw and lose the alt text entirely.
+        return nameWithoutQueryString;
+    }
+}
+
 // Instead of "missing", we want to show it in the right ui language. We also want the text
 // to indicate that it might not be missing, just didn't load (this happens on slow machines)
 function SetAlternateTextOnImages(element) {
@@ -1196,8 +1254,7 @@ function SetAlternateTextOnImages(element) {
         //don't show this on the empty license image when we don't know the license yet
         const englishText =
             "This image, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
-        const nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
-        const decodedName = decodeURI(nameWithoutQueryString);
+        const decodedName = getDisplayNameFromImageUrl(rawImageUrl);
         // show English to start with in case localization never returns even a failure
         $(element).attr(
             "alt",

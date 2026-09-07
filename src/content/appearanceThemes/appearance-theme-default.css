@@ -125,8 +125,9 @@
     --marginBox-border-width: medium; /* must not be 0px/0mm/0in to have a border. 'medium' is a keyword. */
 
     /* In some themes, at edit-
-    time, the format button lands under the page number. See BL-13206. The name is is intentionally vague about direction and what we do with it. */
-    --formatButton-pageNumber-dodge: 0;
+    time, the format button lands under the page number. See BL-13206. The name is is intentionally vague about direction and what we do with it.
+    Must have a unit: this feeds a calc() with px, where a unitless 0 makes the whole expression invalid (BL-14901). */
+    --formatButton-pageNumber-dodge: 0px;
 }
 
 /* this rule might not always be what we need for every kind of interactive page, but it's a good default.

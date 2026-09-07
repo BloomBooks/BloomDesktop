@@ -82,15 +82,7 @@ function loadReaderSettingsWithRetry(
     onLoaded: (settings: ReaderSettings) => void,
     onFailed: () => void,
 ): void {
-    get("readers/io/readerToolSettings", (settingsFileContent) => {
-        const normalizedSettings = tryNormalizeReaderSettings(
-            settingsFileContent.data,
-        );
-        if (normalizedSettings) {
-            onLoaded(normalizedSettings);
-            return;
-        }
-
+    const retryOrFail = () => {
         if (attemptsRemaining > 1) {
             window.setTimeout(() => {
                 loadReaderSettingsWithRetry(
@@ -103,7 +95,35 @@ function loadReaderSettingsWithRetry(
         }
 
         onFailed();
-    });
+    };
+
+    get(
+        "readers/io/readerToolSettings",
+        (settingsFileContent) => {
+            const normalizedSettings = tryNormalizeReaderSettings(
+                settingsFileContent.data,
+            );
+            // Act on the reply outside the request's promise chain. bloomApi.get() hangs
+            // our error callback on a .catch() *after* this handler, so anything thrown in
+            // here -- a genuine bug in onLoaded, not a failed request -- would otherwise be
+            // caught, retried, and finally reported as a load failure, hiding it. Out here
+            // it fails fast and gets reported, which is what this repo wants. (BL-16732)
+            window.setTimeout(() => {
+                if (normalizedSettings) {
+                    onLoaded(normalizedSettings);
+                    return;
+                }
+
+                retryOrFail();
+            }, 0);
+        },
+        // A request that outright fails has to count as a failed attempt too. Without this
+        // error callback, bloomApi.get() reports the error and never calls anyone back, so
+        // neither onLoaded nor onFailed ever runs -- and every caller waiting on us waits
+        // forever. Callers act on that by doing nothing at all, which is invisible.
+        // (BL-16732)
+        retryOrFail,
+    );
 }
 
 function getSetupDialogWindow(): Window | null {
@@ -216,16 +236,34 @@ export function beginLoadSynphonySettings(): JQueryPromise<void> {
             maxReaderSettingsLoadAttempts,
             (normalizedSettings) => {
                 const newSettingsContent = JSON.stringify(normalizedSettings);
+                // readerToolsInitialized and lastReaderToolSettingsContent are module state
+                // in whichever frame loaded this module, but the ReaderToolsModel they
+                // describe lives in a holder on the top window which
+                // getTheOneReaderToolsModel() deliberately *replaces* when the frame that
+                // created it is reloaded. So our memory of having loaded the settings can
+                // outlive the model that holds them, and then "the settings are unchanged"
+                // is no reason to skip the work: the model in front of us has never seen
+                // them. Refreshing is what gets them into it. Without this, synphony stays
+                // undefined and every reader-tool feature needing it is silently dead
+                // (e.g. Set Up Levels/Stages) until Bloom is restarted. (BL-16732)
                 const shouldRefresh =
-                    newSettingsContent !== lastReaderToolSettingsContent;
+                    newSettingsContent !== lastReaderToolSettingsContent ||
+                    !getTheOneReaderToolsModel().synphony;
                 if (!shouldRefresh) {
                     result.resolve();
                     return;
                 }
-                beginRefreshEverything(normalizedSettings).then(() => {
-                    lastReaderToolSettingsContent = newSettingsContent;
-                    result.resolve();
-                });
+                beginRefreshEverything(normalizedSettings).then(
+                    () => {
+                        lastReaderToolSettingsContent = newSettingsContent;
+                        result.resolve();
+                    },
+                    // Refreshing fetches the sample-texts list, and if that request fails we
+                    // have no settings worth remembering -- but our callers still have to be
+                    // released. A caller left waiting forever is precisely what the user
+                    // experiences as a button that does nothing. (BL-16732)
+                    () => result.resolve(),
+                );
             },
             () => {
                 readerToolsInitialized = false;

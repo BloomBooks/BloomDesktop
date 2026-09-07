@@ -85,6 +85,65 @@ namespace BloomTests.SubscriptionAndFeatures
             Assert.AreEqual(expectedResult, subscription.IsExpired());
         }
 
+        // BL-16786: the expiration date is the last day the subscription works, so it does not
+        // become expired until the following day. This has to agree with the Subscription tab of
+        // the Collection Settings dialog, which compares whole dates; otherwise, on the expiration
+        // day itself, the dialog says the subscription is fine while the tools say it is not.
+        [TestCase(1, false)]
+        [TestCase(0, false)]
+        [TestCase(-1, true)]
+        public void IsExpired_AtDayBoundary_TreatsExpirationDayAsStillValid(
+            int daysFromToday,
+            bool expectedExpired
+        )
+        {
+            var dayTestStarted = DateTime.Now.Date;
+            var expiration = dayTestStarted.AddDays(daysFromToday);
+            var code = MakeCodeExpiringOn(expiration);
+            var subscription = new Subscription(code);
+            var isExpired = subscription.IsExpired();
+            var tier = subscription.Tier;
+
+            // We built the code relative to today, but Subscription reads the clock again for
+            // itself, so if midnight happened in between, the answers we just captured are about
+            // the wrong day. That is a property of the test, not a bug in Subscription.
+            if (DateTime.Now.Date != dayTestStarted)
+                Assert.Ignore("The date changed while this test was running; rerun it.");
+
+            // sanity checks: if we didn't build a well-formed code for the intended date,
+            // the assertions below would pass or fail for the wrong reason.
+            Assert.AreEqual(
+                "ok",
+                subscription.GetIntegrityLabel(),
+                $"the generated test code {code} is not well formed"
+            );
+            Assert.AreEqual(expiration, subscription.ExpirationDate);
+
+            Assert.AreEqual(expectedExpired, isExpired);
+            // The tier is what actually disables the subscription-only tools.
+            Assert.AreEqual(
+                expectedExpired ? SubscriptionTier.Basic : SubscriptionTier.Enterprise,
+                tier
+            );
+        }
+
+        /// <summary>
+        /// Build a valid subscription code that expires on the given date, using the same
+        /// arithmetic as the private code-generating spreadsheet (and, on the reading end,
+        /// Subscription.CalculateExpirationDate).
+        /// </summary>
+        private static string MakeCodeExpiringOn(DateTime expiration)
+        {
+            const string descriptor = "UnitTest-E";
+            var datePart = (int)(expiration - new DateTime(1899, 12, 30)).TotalDays - 40000;
+            var upperDescriptor = descriptor.ToUpperInvariant();
+            var descriptorSum = 0;
+            for (var i = 0; i < upperDescriptor.Length; i++)
+                descriptorSum += upperDescriptor[i] * i;
+            var checksum = ((int)Math.Floor(Math.Sqrt(datePart)) + descriptorSum) % 10000;
+            return $"{descriptor}-{datePart:D6}-{checksum:D4}";
+        }
+
         [TestCase(null, SubscriptionTier.Basic)]
         [TestCase("", SubscriptionTier.Basic)]
         [TestCase("Legacy-LC-005839-2533", SubscriptionTier.Basic)] // expired, so basic

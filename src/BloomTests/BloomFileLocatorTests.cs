@@ -121,6 +121,34 @@ namespace BloomTests
         }
 
         /// <summary>
+        /// BrowserRoot is relative to the application (or solution) folder, so testing for a file
+        /// with it resolves against the process's current working directory - which Bloom does not
+        /// control and which is often not the application folder. AbsoluteBrowserRoot exists so that
+        /// nothing locating a file that ships with Bloom has to care. See BL-16577.
+        /// </summary>
+        [Test]
+        public void AbsoluteBrowserRoot_IsAFullPathToAnExistingFolder()
+        {
+            // Sanity check: the thing we are about to say is *not* usable on its own really is
+            // relative, so this test is testing what it claims to.
+            Assert.That(
+                Path.IsPathRooted(BloomFileLocator.BrowserRoot),
+                Is.False,
+                "BrowserRoot has become absolute; AbsoluteBrowserRoot and this test may no longer be needed."
+            );
+
+            var absoluteBrowserRoot = BloomFileLocator.AbsoluteBrowserRoot;
+
+            Assert.That(Path.IsPathRooted(absoluteBrowserRoot), Is.True);
+            Assert.That(
+                Directory.Exists(absoluteBrowserRoot),
+                Is.True,
+                $"{absoluteBrowserRoot} should be the folder holding the files we ship."
+            );
+            Assert.That(absoluteBrowserRoot, Does.EndWith(BloomFileLocator.BrowserRoot));
+        }
+
+        /// <summary>
         /// Make sure we DO search the remaining xmatter paths.
         /// </summary>
         [Test]

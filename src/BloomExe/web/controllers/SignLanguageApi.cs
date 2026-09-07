@@ -1048,6 +1048,8 @@ namespace Bloom.web.controllers
                 {
                     foreach (var videoPath in filesModifiedSinceDeactivate)
                     {
+                        // The encoded form of the real file name is what we search for, because
+                        // that is what is in the src (BL-16669).
                         var expectedSrcAttr = UrlPathString.CreateFromUnencodedString(
                             BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
                         );
@@ -1132,7 +1134,7 @@ namespace Bloom.web.controllers
                         BookStorage.GetVideoFolderName + Path.GetFileName(tempName);
                     HtmlDom.SetVideoElementUrl(
                         videoContainerElement,
-                        UrlPathString.CreateFromUnencodedString(trimmedFileName, true),
+                        UrlPathString.CreateFromUnencodedString(trimmedFileName),
                         false
                     );
                 }

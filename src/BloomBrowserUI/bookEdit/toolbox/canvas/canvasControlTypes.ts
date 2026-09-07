@@ -116,6 +116,10 @@ export interface IControlContext {
     elementType: CanvasElementType;
     hasImage: boolean;
     hasRealImage: boolean;
+    // True when the image slot is an empty placeholder (it shows placeHolder.png).
+    // Distinct from !hasRealImage, which is also true for an image that failed to
+    // load: an empty slot is a normal state a user can fill, a broken image is not.
+    isPlaceholderImage: boolean;
     hasVideo: boolean;
     hasPreviousVideoContainer: boolean;
     hasNextVideoContainer: boolean;
@@ -148,7 +152,7 @@ export interface IControlContext {
     // hidden until the user enables the feature in Experimental Features.
     aiImageEditingAvailable: boolean;
     // True when the current image's format is one the AI Image Editor can actually
-    // edit (see aiEditorImageFormats.ts). False for formats the editor can't open
+    // edit (see aiImageEditorImageFormats.ts). False for formats the editor can't open
     // (e.g. svg), which keeps "Edit with AI" disabled for them.
     imageIsAiEditableFormat: boolean;
 }

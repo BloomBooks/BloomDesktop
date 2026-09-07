@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Threading.Tasks;
 using Bloom.Api;
+using SIL.Reporting;
 
 namespace Bloom.Publish.Rab
 {
@@ -33,15 +37,73 @@ namespace Bloom.Publish.Rab
         /// of a prepare/build/install action. While an action runs — i.e. while its Cancel button is
         /// showing — the operation is modal: the user cannot navigate to another workspace tab until
         /// it finishes or is cancelled. Mirrors how a BloomLibrary upload locks the tabs (see
-        /// LibraryPublishApi.SetParentControlsState). The publish-tool switcher on the Publish tab is
-        /// blocked separately on the React side (PublishTabPane).
-        /// Note that SetTabsEnabled is a single shared flag, so if an upload and an Apps action ever
-        /// overlap, whichever finishes first unlocks the tabs for both; making the lock compose across
-        /// its several independent users is BL-16654.
+        /// LibraryPublishApi.SetParentControlsState). The switcher between publish tools on the
+        /// Publish tab follows the same lock: WorkspaceView reports it to the browser as
+        /// "navigationLocked" and PublishTabPane disables the other tools while it is set (BL-16654).
+        /// SetTabsEnabled remains a single shared flag rather than a count, deliberately: now that the
+        /// publish-tool switcher is locked too, the user cannot start a second publish operation while
+        /// one is running, so two of them can no longer overlap and race to unlock the tabs.
         /// </summary>
         private void SetWorkspaceTabsEnabled(bool enable)
         {
             _publishView?.WorkspaceView?.SetTabsEnabled(enable);
+        }
+
+        /// <summary>
+        /// Report how one of the long-running App Builder stages turned out. Called for build and
+        /// install; prepare is fast and local, so it is deliberately not reported.
+        /// </summary>
+        /// <param name="stage">"build" or "install".</param>
+        /// <param name="result">"success", "cancelled" or "failed".</param>
+        /// <param name="error">The exception, when it failed. We send its type as a normalised
+        /// errorKind and never the raw Gradle log, which is enormous and full of file paths.</param>
+        private void TrackRabAction(
+            string stage,
+            string result,
+            Stopwatch stopwatch,
+            Exception error = null
+        )
+        {
+            // Everything here is wrapped, not just the send. Gathering the properties calls
+            // GetStatus(), which reads and parses files, and this method is called from inside the
+            // try/catch that decides whether the action succeeded -- so an I/O hiccup here would
+            // have written "the build failed" to the log of a build that finished fine.
+            // (BloomAnalytics.Track guards its own send; this covers the gathering above it.)
+            try
+            {
+                var properties = new Dictionary<string, string>
+                {
+                    { "stage", stage },
+                    { "result", result },
+                    {
+                        "elapsedSeconds",
+                        Math.Round(stopwatch.Elapsed.TotalSeconds, 1)
+                            .ToString(CultureInfo.InvariantCulture)
+                    },
+                };
+                if (error != null)
+                    properties["errorKind"] = error.GetType().Name;
+                // A status read costs a little file poking, which is nothing next to the action that
+                // just finished, and it is the only place the book count and artifact size live.
+                var status = _rabProjectService.GetStatus();
+                if (status != null)
+                {
+                    properties["bookCount"] = (status.TrackedBooks?.Length ?? 0).ToString();
+                    if (status.ApkSizeBytes > 0)
+                        properties["apkSizeMB"] = Math.Round(
+                                status.ApkSizeBytes / 1024.0 / 1024.0,
+                                1
+                            )
+                            .ToString(CultureInfo.InvariantCulture);
+                }
+                BloomAnalytics.Track("Publish App", properties);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent(
+                    $"[analytics] FAILED to report the App Builder {stage} outcome: {e.Message}"
+                );
+            }
         }
 
         /// <summary>
@@ -198,21 +260,25 @@ namespace Bloom.Publish.Rab
                     _ = Task.Run(async () =>
                     {
                         var succeeded = false;
+                        var stopwatch = Stopwatch.StartNew();
                         try
                         {
                             try
                             {
                                 await _rabProjectService.BuildAsync();
                                 succeeded = true;
+                                TrackRabAction("build", "success", stopwatch);
                             }
                             catch (OperationCanceledException)
                                 when (_rabProjectService.IsCancellationRequested)
                             {
                                 _rabProjectService.ReportCancellation("Build");
+                                TrackRabAction("build", "cancelled", stopwatch);
                             }
                             catch (Exception error)
                             {
                                 _rabProjectService.ReportFailure("Build", error);
+                                TrackRabAction("build", "failed", stopwatch, error);
                             }
                         }
                         finally
@@ -240,21 +306,25 @@ namespace Bloom.Publish.Rab
                     _ = Task.Run(async () =>
                     {
                         var succeeded = false;
+                        var stopwatch = Stopwatch.StartNew();
                         try
                         {
                             try
                             {
                                 await _rabProjectService.InstallAsync();
                                 succeeded = true;
+                                TrackRabAction("install", "success", stopwatch);
                             }
                             catch (OperationCanceledException)
                                 when (_rabProjectService.IsCancellationRequested)
                             {
                                 _rabProjectService.ReportCancellation("Try on phone");
+                                TrackRabAction("install", "cancelled", stopwatch);
                             }
                             catch (Exception error)
                             {
                                 _rabProjectService.ReportFailure("Try on phone", error);
+                                TrackRabAction("install", "failed", stopwatch, error);
                             }
                         }
                         finally

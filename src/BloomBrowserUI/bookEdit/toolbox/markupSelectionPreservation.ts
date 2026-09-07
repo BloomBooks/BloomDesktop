@@ -14,6 +14,12 @@
 // a word break, so fixing a letter mid-word makes the reader tools briefly mis-analyse the word
 // ("hous"-bookmark-"e"). It is corrected when the user clicks away.
 //
+// The bookmark span also SPLITS the text node the caret is in, and Chromium then goes on painting
+// a ligature's old glyphs across the join (BL-16717), so since that fix the caret is only recorded
+// when something below in the pipeline might actually rewrite the box; for ordinary typing with no
+// tool active, nothing is inserted at all. The caller decides that (it knows whether a tool is
+// active), and passes it in.
+//
 // THE PLANNED IMPLEMENTATION records the caret as a character offset into the editable's text
 // instead, which perturbs nothing and therefore fixes that mis-analysis rather than preserving it.
 // When that lands, only the four functions below change; toolbox.ts should not need to.
@@ -25,7 +31,9 @@
 export interface SavedMarkupSelection {
     // Deliberately unknown[]: callers must treat this as opaque, and the planned replacement stores
     // something quite different (a character offset, not DOM markers).
-    bookmarks: unknown[];
+    // Undefined when the caller said nothing would rewrite the box, so nothing was recorded and
+    // the restore has nothing to do (BL-16717).
+    bookmarks: unknown[] | undefined;
 }
 
 /** The editor object CKEditor attaches to each editable div, if it attached one. */
@@ -57,10 +65,18 @@ export function boxParticipatesInMarkup(editableDiv: HTMLElement): boolean {
  * Returns undefined if the caret could not be recorded, which today means the editor reported no
  * selection — the caller should abandon this markup pass entirely (we may be changing pages).
  *
+ * `boxMightBeRewritten` says whether anything in the pass that follows could replace the box's
+ * content (a tool is active, or there is a comment or nbsp to clean up). If nothing can, there is
+ * no selection to preserve, and recording it would cost a bookmark span that splits the text node
+ * the user is typing in (BL-16717) — so in that case nothing is inserted, and the record returned
+ * is an empty one whose restore does nothing. The "no selection" check above still applies either
+ * way, so the caller's abandon-the-pass behaviour does not depend on this flag.
+ *
  * Only call this when boxParticipatesInMarkup() is true.
  */
 export function saveSelectionForMarkup(
     editableDiv: HTMLElement,
+    boxMightBeRewritten: boolean,
 ): SavedMarkupSelection | undefined {
     const editor = getEditorOfBox(editableDiv);
     if (!editor) {
@@ -69,6 +85,9 @@ export function saveSelectionForMarkup(
     const selection = editor.getSelection();
     if (!selection) {
         return undefined; // may be changing pages?
+    }
+    if (!boxMightBeRewritten) {
+        return { bookmarks: undefined };
     }
     // There is also createBookmarks2(), which avoids actually inserting anything. That has the
     // advantage that changing a character in the middle of a word would let the whole word be
@@ -92,6 +111,9 @@ export function restoreSelectionAfterMarkup(
     editableDiv: HTMLElement,
     saved: SavedMarkupSelection,
 ): void {
+    if (!saved.bookmarks) {
+        return; // nothing was recorded, because nothing could have moved the caret
+    }
     const editor = getEditorOfBox(editableDiv);
     if (!editor) {
         return;
@@ -108,12 +130,14 @@ export function restoreSelectionAfterMarkup(
  * keystrokes would go to that wrong position (BL-10133). So the caret is put right immediately, and
  * recorded afresh for the restore that follows the actual markup change.
  *
- * Returns undefined under the same conditions as saveSelectionForMarkup().
+ * Returns undefined under the same conditions as saveSelectionForMarkup(). The new record is made
+ * the same way the old one was: if nothing was recorded the first time, nothing is now. (In
+ * practice this path is only reached with a tool active, so a caret was recorded.)
  */
 export function restoreAndResaveSelectionForMarkup(
     editableDiv: HTMLElement,
     saved: SavedMarkupSelection,
 ): SavedMarkupSelection | undefined {
     restoreSelectionAfterMarkup(editableDiv, saved);
-    return saveSelectionForMarkup(editableDiv);
+    return saveSelectionForMarkup(editableDiv, saved.bookmarks !== undefined);
 }

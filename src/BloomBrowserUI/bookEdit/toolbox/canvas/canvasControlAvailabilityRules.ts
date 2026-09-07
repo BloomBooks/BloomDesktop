@@ -13,6 +13,7 @@
 //
 // Keep rule objects behavior-focused and side-effect free.
 import { AvailabilityRulesMap } from "./canvasControlTypes";
+import { pageAllowsCanvasElements } from "./canvasElementDomUtils";
 
 export const imageAvailabilityRules: AvailabilityRulesMap = {
     chooseImage: {
@@ -33,14 +34,20 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
     },
     editWithAi: {
         // Only offered when the AI Image Editing experimental feature is turned on.
-        // The AI Image Editor needs a real raster image to work on, the user must be
-        // allowed to modify it, and its format must be one the editor can actually edit
-        // (so it stays disabled for e.g. an svg the editor can't open).
+        // Two cases are allowed, and the user must be able to modify the image in both:
+        //   - An empty placeholder slot. The editor's "create" tools make an image with
+        //     no source, so an empty slot is a perfectly good thing to launch on
+        //     (BL-16744). Its format is not examined: the user is going to make a new
+        //     image, not edit placeHolder.png.
+        //   - A real raster image whose format the editor can actually open, so the item
+        //     stays disabled for e.g. an svg.
+        // A broken image (hasImage, but neither real nor a placeholder) stays disabled:
+        // there is nothing to edit and nothing the user asked to fill.
         visible: (ctx) => ctx.aiImageEditingAvailable && ctx.hasImage,
         enabled: (ctx) =>
-            ctx.hasRealImage &&
             ctx.canModifyImage &&
-            ctx.imageIsAiEditableFormat,
+            (ctx.isPlaceholderImage ||
+                (ctx.hasRealImage && ctx.imageIsAiEditableFormat)),
     },
     missingMetadata: {
         surfacePolicy: {
@@ -62,19 +69,12 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
             ctx.isCustomPage && ctx.hasImage && !ctx.isNavigationButton,
     },
     becomeBackground: {
-        visible: (ctx) => {
-            const isXmatterPage =
-                !!ctx.page?.classList.contains("bloom-frontMatter") ||
-                !!ctx.page?.classList.contains("bloom-backMatter");
-            const pageAllowsCanvasElements = !isXmatterPage || ctx.isCustomPage;
-            return (
-                ctx.hasImage &&
-                ctx.hasRealImage &&
-                !ctx.isNavigationButton &&
-                !ctx.isBackgroundImage &&
-                pageAllowsCanvasElements
-            );
-        },
+        visible: (ctx) =>
+            ctx.hasImage &&
+            ctx.hasRealImage &&
+            !ctx.isNavigationButton &&
+            !ctx.isBackgroundImage &&
+            pageAllowsCanvasElements(ctx.page),
     },
     imageBackground: {
         visible: (ctx) => ctx.hasImage,

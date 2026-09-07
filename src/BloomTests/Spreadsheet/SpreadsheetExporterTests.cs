@@ -73,6 +73,7 @@ namespace BloomTests.Spreadsheet
         private List<ContentRow> _rows;
         private List<ContentRow> _pageContentRows;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _spreadsheetFolder;
         private TemporaryFolder _bookFolder;
         private ProgressSpy _progressSpy;
@@ -82,8 +83,9 @@ namespace BloomTests.Spreadsheet
         {
             var dom = new HtmlDom(bookHtml, true);
 
-            _spreadsheetFolder = new TemporaryFolder("SpreadsheetExporterTests");
-            _bookFolder = new TemporaryFolder("SpreadsheetExporterTests_Book");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _spreadsheetFolder = new TemporaryFolder(_testFolder, "Spreadsheet");
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
             mockLangDisplayNameResolver
@@ -119,8 +121,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _spreadsheetFolder?.Dispose();
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [Test]
@@ -276,9 +278,15 @@ namespace BloomTests.Spreadsheet
                 .Returns("English");
             var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
 
-            using (var bookFolder = new TemporaryFolder("SpreadsheetExporterTests_NormBook"))
-            using (var sheetFolder = new TemporaryFolder("SpreadsheetExporterTests_NormSheet"))
+            // This method is static, so it can't use the fixture's own folder.
+            using (
+                var testFolder = SpreadsheetTestFolders.MakeFolderNamed(
+                    "SpreadsheetExporterTests_Norm"
+                )
+            )
             {
+                var bookFolder = new TemporaryFolder(testFolder, "Book");
+                var sheetFolder = new TemporaryFolder(testFolder, "Sheet");
                 var sheet = exporter.ExportToFolder(
                     dom,
                     bookFolder.FolderPath,

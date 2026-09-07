@@ -56,7 +56,7 @@ namespace BloomTests.Book
         public void TearDown()
         {
             _browser?.Dispose();
-            _server?.Dispose();
+            RetiredTestServers.Retire(_server);
             _folder?.Dispose();
         }
 

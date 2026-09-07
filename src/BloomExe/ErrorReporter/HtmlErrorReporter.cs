@@ -474,41 +474,41 @@ namespace Bloom.ErrorReporter
                             }
 
                             // ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
-                            BloomServer.RegisterThreadBlocking();
-
-                            try
+                            using (BloomServer.ReportThreadBlocking())
                             {
-                                dlg.ShowDialog();
-                                Logger.WriteMinorEvent("closing error report dialog");
-
-                                // Take action if the user clicked a button other than Close
-                                if (
-                                    dlg.CloseSource == "closedByAlternateButton"
-                                    && onExtraButtonClicked != null
-                                )
+                                try
                                 {
-                                    onExtraButtonClicked(message, exception);
-                                }
-                                else if (dlg.CloseSource == "closedByReportButton")
-                                {
-                                    var onClicked =
-                                        onReportButtonClicked != null
-                                            ? onReportButtonClicked
-                                            : DefaultOnReportClicked;
-                                    onClicked(message, exception);
-                                }
+                                    dlg.ShowDialog();
+                                    Logger.WriteMinorEvent("closing error report dialog");
 
-                                // Note: With the way LibPalaso's ErrorReport is designed,
-                                // its intention is that after OnShowDetails is invoked and closed, you will not come back to the Notify Dialog
-                                // This code has been implemented to follow that model
-                                //
-                                // But now that we have more options, it might be nice to come back to this dialog.
-                                // If so, you'd need to add/update some code in this section.
-                            }
-                            finally
-                            {
-                                ResetToDefaults();
-                                BloomServer.RegisterThreadUnblocked();
+                                    // Take action if the user clicked a button other than Close
+                                    if (
+                                        dlg.CloseSource == "closedByAlternateButton"
+                                        && onExtraButtonClicked != null
+                                    )
+                                    {
+                                        onExtraButtonClicked(message, exception);
+                                    }
+                                    else if (dlg.CloseSource == "closedByReportButton")
+                                    {
+                                        var onClicked =
+                                            onReportButtonClicked != null
+                                                ? onReportButtonClicked
+                                                : DefaultOnReportClicked;
+                                        onClicked(message, exception);
+                                    }
+
+                                    // Note: With the way LibPalaso's ErrorReport is designed,
+                                    // its intention is that after OnShowDetails is invoked and closed, you will not come back to the Notify Dialog
+                                    // This code has been implemented to follow that model
+                                    //
+                                    // But now that we have more options, it might be nice to come back to this dialog.
+                                    // If so, you'd need to add/update some code in this section.
+                                }
+                                finally
+                                {
+                                    ResetToDefaults();
+                                }
                             }
                         }
                     }

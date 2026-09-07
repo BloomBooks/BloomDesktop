@@ -34,6 +34,11 @@
                 width: @panel-button-icon-size;
                 margin-top: -2px;
             }
+            // Material-UI dims a disabled button's text but not our image, which would
+            // leave a bright icon next to a grayed-out label. See BL-16691.
+            &:disabled img {
+                opacity: 0.4;
+            }
             & > span {
                 font-size: larger;
             }

@@ -17,6 +17,11 @@ vi.mock("../bloomImages", () => ({
     isPlaceHolderImage: (src: string | null) =>
         !!src && src.toLowerCase().includes("placeholder.png"),
     SetupMetadataButton: vi.fn(),
+    // Mirrors the real helper in bloomImages.ts: the first bloom-backgroundImage in the canvas.
+    getBackgroundCanvasElementFromBloomCanvas: (bloomCanvas: HTMLElement) =>
+        bloomCanvas.getElementsByClassName(
+            "bloom-backgroundImage",
+        )[0] as HTMLElement,
 }));
 
 vi.mock("../bloomEditing", () => ({
@@ -79,11 +84,20 @@ const pastedImageInfo = {
 
 // Build a bloom-canvas holding one canvas element, whose image starts out as a placeholder.
 // isBackground controls whether that canvas element is the background image or an overlay.
-function makeCanvasWithPlaceholder(isBackground: boolean): {
+// pageClasses says what kind of page the canvas sits on; the paste rules depend on that, since
+// a standard-layout xmatter page cannot hold canvas elements at all (BL-16542). The default is
+// an ordinary content page.
+function makeCanvasWithPlaceholder(
+    isBackground: boolean,
+    pageClasses = "bloom-page numberedPage",
+): {
     bloomCanvas: HTMLElement;
     canvasElement: HTMLElement;
     img: HTMLImageElement;
 } {
+    const page = document.createElement("div");
+    page.className = pageClasses;
+    document.body.appendChild(page);
     const bloomCanvas = document.createElement("div");
     bloomCanvas.classList.add("bloom-canvas");
     const canvasElement = document.createElement("div");
@@ -94,7 +108,7 @@ function makeCanvasWithPlaceholder(isBackground: boolean): {
     canvasElement.innerHTML =
         '<div class="bloom-imageContainer"><img src="placeHolder.png" /></div>';
     bloomCanvas.appendChild(canvasElement);
-    document.body.appendChild(bloomCanvas);
+    page.appendChild(bloomCanvas);
     return {
         bloomCanvas,
         canvasElement,
@@ -232,11 +246,11 @@ describe("CanvasElementClipboard only claims a placeholder background (BL-16542)
         expect(wrapWithRequestPageContentDelay).not.toHaveBeenCalled();
     });
 
-    test("a background that already holds a real image is left alone; the paste becomes a new canvas element", () => {
+    test("a background that already holds a real image on an ordinary page is left alone; the paste becomes a new canvas element", () => {
         // Nothing is selected (the state right after the page is displayed), so the only way
         // this paste could replace the background is the empty-canvas branch. That branch must
-        // not fire once the background holds a real image: replacing the picture the user can
-        // see needs them to select it first. See BL-16542.
+        // not fire once the background holds a real image: on a page that can hold overlays,
+        // replacing the picture the user can see needs them to select it first. See BL-16542.
         const { bloomCanvas, img } = makeCanvasWithPlaceholder(true);
         img.setAttribute("src", "realBackground.png");
         const host = makeHost(bloomCanvas, undefined);
@@ -271,5 +285,79 @@ describe("CanvasElementClipboard only claims a placeholder background (BL-16542)
 
         expect(img.getAttribute("src")).toBe("pasted.png");
         expect(host.adjustBackgroundImageSize).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe("CanvasElementClipboard replaces the background on a page that can't hold canvas elements (BL-16542)", () => {
+    beforeEach(() => {
+        document.body.innerHTML = "";
+        vi.mocked(SetupMetadataButton).mockReset();
+        vi.mocked(changeImageInfo).mockClear();
+        vi.mocked(wrapWithRequestPageContentDelay).mockClear();
+    });
+
+    test("a standard-layout xmatter page's real background image is replaced even with nothing selected", () => {
+        // The original bug on this card: a Standard Layout front cover cannot hold an overlay,
+        // so a paste there can only mean "replace the cover picture".
+        const { bloomCanvas, canvasElement, img } = makeCanvasWithPlaceholder(
+            true,
+            "bloom-page bloom-frontMatter outsideFrontCover",
+        );
+        img.setAttribute("src", "realBackground.png");
+        const host = makeHost(bloomCanvas, undefined);
+
+        // Sanity checks: nothing is selected, and the background is a real image, so neither of
+        // the earlier branches can be what handles this paste.
+        expect(host.getActiveElement()).toBeUndefined();
+        expect(img.getAttribute("src")).toBe("realBackground.png");
+
+        makeClipboard(host).finishPasteImageFromClipboard(pastedImageInfo);
+
+        expect(img.getAttribute("src")).toBe("pasted.png");
+        expect(host.adjustBackgroundImageSize).toHaveBeenCalledTimes(1);
+        // Replacing a background image must refresh its copyright button (BL-16605).
+        expect(SetupMetadataButton).toHaveBeenCalledTimes(1);
+        expect(vi.mocked(SetupMetadataButton).mock.calls[0][0]).toBe(
+            canvasElement,
+        );
+        // We must not have gone on to add a canvas element to a page that can't hold one.
+        expect(wrapWithRequestPageContentDelay).not.toHaveBeenCalled();
+    });
+
+    test("a placeholder background on a standard-layout xmatter page is still filled in", () => {
+        // Same page kind, but the empty-canvas branch gets there first. Either way the pasted
+        // image becomes the background; this guards against the two branches fighting.
+        const { bloomCanvas, img } = makeCanvasWithPlaceholder(
+            true,
+            "bloom-page bloom-frontMatter outsideFrontCover",
+        );
+        const host = makeHost(bloomCanvas, undefined);
+
+        expect(img.getAttribute("src")).toBe("placeHolder.png");
+
+        makeClipboard(host).finishPasteImageFromClipboard(pastedImageInfo);
+
+        expect(img.getAttribute("src")).toBe("pasted.png");
+        expect(host.adjustBackgroundImageSize).toHaveBeenCalledTimes(1);
+        expect(wrapWithRequestPageContentDelay).not.toHaveBeenCalled();
+    });
+
+    test("a custom-layout xmatter page still gets a new canvas element", () => {
+        // Once the user switches the cover to Custom Layout it holds free-floating items, so
+        // pasting there means "add another item", exactly as on an ordinary page.
+        const { bloomCanvas, img } = makeCanvasWithPlaceholder(
+            true,
+            "bloom-page bloom-frontMatter outsideFrontCover bloom-customLayout",
+        );
+        img.setAttribute("src", "realBackground.png");
+        const host = makeHost(bloomCanvas, undefined);
+
+        makeClipboard(host).finishPasteImageFromClipboard(pastedImageInfo);
+
+        expect(img.getAttribute("src")).toBe("realBackground.png");
+        expect(changeImageInfo).not.toHaveBeenCalled();
+        expect(host.adjustBackgroundImageSize).not.toHaveBeenCalled();
+        expect(SetupMetadataButton).not.toHaveBeenCalled();
+        expect(wrapWithRequestPageContentDelay).toHaveBeenCalledTimes(1);
     });
 });

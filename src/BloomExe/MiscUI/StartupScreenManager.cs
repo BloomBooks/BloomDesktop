@@ -180,13 +180,38 @@ namespace Bloom.MiscUI
         /// They are done in the order added, except that high priority ones go first.
         /// If there are none, and the minimum time has expired, it closes the splash screen.
         /// </summary>
-        private static void DoStartupAction(object sender, EventArgs e)
+        /// <remarks>
+        /// Internal rather than private only so that a test can drive one step of the queue without an
+        /// Application.Idle pump; see StartupScreenManagerTests.
+        /// </remarks>
+        internal static void DoStartupAction(object sender, EventArgs e)
         {
             if (_current != null)
             {
                 // got Idle event while startup action in progress. Wait till it finishes.
                 return;
             }
+
+            // Everything below is guarded, not just the task invocation: hiding the splash screen and
+            // running the "do this when the splash screen closes" action can throw too (both touch
+            // forms that may already be disposed), and a throw from any of it would leave the queue
+            // wedged just the same. See HandleStartupActionFailure. (BL-16678)
+            try
+            {
+                PickAndRunNextStartupAction();
+            }
+            catch (Exception error)
+            {
+                HandleStartupActionFailure(error);
+            }
+        }
+
+        /// <summary>
+        /// The body of DoStartupAction: choose the next action that should run and run it, or close the
+        /// splash screen and stand down when there are none left.
+        /// </summary>
+        private static void PickAndRunNextStartupAction()
+        {
             _current = _startupActions.FirstOrDefault(a =>
                 a.Enabled && a.Priority == StartupActionPriority.high
             );
@@ -196,9 +221,11 @@ namespace Bloom.MiscUI
             {
                 if (DateTime.Now > _earliestWeShouldCloseTheSplashScreen)
                 {
-                    CloseSplashScreen();
-                    // We can stop running altogether until some new action gets added or enabled.
+                    // Stand down first. If closing the splash screen throws, we still want to be out of
+                    // the idle queue: otherwise we would come straight back here on the next idle event
+                    // and throw again, forever. (BL-16678)
                     Application.Idle -= DoStartupAction;
+                    CloseSplashScreen();
                 }
                 return;
             }
@@ -301,6 +328,60 @@ namespace Bloom.MiscUI
             ConsiderCurrentTaskDone();
         }
 
+        /// <summary>
+        /// A startup action threw. Report it, and above all get it out of the queue so the rest of
+        /// startup can go on.
+        /// </summary>
+        /// <remarks>
+        /// This is not about hiding the error -- we report it as loudly as we can -- it is about not
+        /// letting it wedge startup. DoStartupAction runs from Application.Idle and returns immediately
+        /// while _current is set, so an exception used to leave the queue dead for the rest of the run:
+        /// the splash screen never closed, no later action ever ran (including the one that offers the
+        /// Open/Create Collections dialog when a collection won't open), nothing went on to call
+        /// ProgramExit.Exit() so not even its 20-second force-quit net was armed, and Main's finally
+        /// never released the single-instance token. The user was left with an invisible Bloom they
+        /// could neither see nor quit, and the next launch was turned away with "Bloom is already
+        /// running". See BL-16678.
+        /// </remarks>
+        private static void HandleStartupActionFailure(Exception error)
+        {
+            // First, unwedge the queue. Do this before reporting, which shows a dialog and could throw
+            // in its own right.
+            ConsiderCurrentTaskDone();
+
+            Logger.WriteError("A Bloom startup action failed", error);
+            NonFatalProblem.Report(
+                ModalIf.All,
+                PassiveIf.None,
+                "Bloom had a problem while starting up.",
+                null,
+                error
+            );
+        }
+
+        /// <summary>
+        /// Get the splash screen out of the way of a dialog we are about to show, without doing the
+        /// things that belong to startup actually being over. In particular
+        /// DoLastOfAllAfterClosingSplashScreen brings the main window to the front, which is both
+        /// wrong here (there may not be one yet) and wasteful, since it is a one-shot: consuming it
+        /// now means the main window doesn't come to the front when it finally does open.
+        /// This does the same thing DoStartupAction does for a task with ShouldHideSplashScreen.
+        /// </summary>
+        public static void HideSplashScreenForDialog()
+        {
+            if (_splashForm != null)
+            {
+                _splashForm.Hide();
+                _splashForm = null; // it's gone, not needed again
+            }
+
+            if (_doWhenSplashScreenShouldClose != null)
+            {
+                _doWhenSplashScreenShouldClose();
+                _doWhenSplashScreenShouldClose = null;
+            }
+        }
+
         public static void PutSplashAbove(Form aboveThis)
         {
             if (_splashForm != null)
@@ -317,6 +398,19 @@ namespace Bloom.MiscUI
         /// dialog, we can go on with the next task as long as we know the one for which
         /// the progress dialog was launched is complete.
         /// </summary>
+        /// <summary>
+        /// Forget every queued action and any action in progress. For tests: this queue is static, so a
+        /// fixture that adds actions must clear them rather than running them out, which would execute
+        /// whatever another fixture had left queued (and close the splash screen) at an arbitrary point
+        /// in the run.
+        /// </summary>
+        internal static void ClearQueueForTests()
+        {
+            _startupActions.Clear();
+            _current = null;
+            Application.Idle -= DoStartupAction;
+        }
+
         public static void ConsiderCurrentTaskDone()
         {
             if (_current == null)

@@ -80,6 +80,7 @@ namespace Bloom.web.controllers
                 }
                 else
                 {
+                    // All we want here is the HTML encoding; a heading is prose, never a url.
                     HeadingHtml = UrlPathString.CreateFromUnencodedString(heading).HtmlXmlEncoded;
                 }
 
@@ -725,16 +726,17 @@ namespace Bloom.web.controllers
                             dlg.SetScaledSize(731, height);
 
                             // ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
-                            BloomServer._theOneInstance.RegisterThreadBlocking();
-                            try
+                            using (BloomServer._theOneInstance.ReportThreadBlocking())
                             {
-                                // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
-                                dlg.ShowDialog(owner);
-                            }
-                            finally
-                            {
-                                BloomServer._theOneInstance.RegisterThreadUnblocked();
-                                _additionalPathsToInclude = null;
+                                try
+                                {
+                                    // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
+                                    dlg.ShowDialog(owner);
+                                }
+                                finally
+                                {
+                                    _additionalPathsToInclude = null;
+                                }
                             }
                         }
                     }
@@ -1171,10 +1173,18 @@ namespace Bloom.web.controllers
                             {
                                 ResetScreenshotFile();
                             }
-                            else if (IsBloomProcessInForeground())
+                            else if (
+                                IsBloomProcessInForeground()
+                                && !AutomationWindowPlacement.IsOffEveryMonitor
+                            )
                             {
                                 // Bloom is the foreground app: a plain screen copy is cheaper
                                 // and avoids re-triggering any paint-related bugs.
+                                //
+                                // Not when the window is off every monitor, though. Copying from
+                                // those screen coordinates would save whatever the desktop has
+                                // there, which is nothing. Render the window itself instead, the
+                                // way the not-in-front case already does.
                                 var scaledBounds = controlForScreenshotting.Bounds;
 #if !__MonoCS__
                                 scaledBounds =

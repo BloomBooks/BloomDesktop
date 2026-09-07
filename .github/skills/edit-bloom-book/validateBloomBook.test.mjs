@@ -59,6 +59,37 @@ test("validator accepts known-good sample shell books", () => {
     }
 });
 
+test("validator accepts Arithmetic-template editables inside a numberRow", (testContext) => {
+    const result = validateTemporaryBook(
+        testContext,
+        `<div class="bloom-page" id="page1">
+            <div class="marginBox">
+                <div class="numberRow bloom-ignoreOverflow">
+                    <div class="bloom-editable Equation-style" lang="*"><p>1</p></div>
+                </div>
+            </div>
+        </div>`,
+    );
+
+    assert.deepEqual(result.errors, []);
+});
+
+test("validator rejects a localized editable inside a numberRow", (testContext) => {
+    const result = validateTemporaryBook(
+        testContext,
+        `<div class="bloom-page" id="page1">
+            <div class="marginBox">
+                <div class="numberRow bloom-ignoreOverflow">
+                    <div class="bloom-editable" lang="en"><p>one</p></div>
+                </div>
+            </div>
+        </div>`,
+    );
+
+    assert.equal(result.errors.length, 1, JSON.stringify(result.errors));
+    assert.match(result.errors[0], /bloom-translationGroup/);
+});
+
 test("validator rejects malformed translation groups", (testContext) => {
     const result = validateTemporaryBook(
         testContext,

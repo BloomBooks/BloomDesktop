@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using Bloom.Api;
 using Newtonsoft.Json;
 
@@ -14,6 +15,9 @@ namespace Bloom.Edit
         private const string kApiUrlPart = "edit/pageControls/";
         private const string kWebsocketStateId = "edit/pageControls/state";
         private const string kWebsocketContext = "pageThumbnailList-pageControls";
+
+        // How much one Ctrl+mousewheel notch changes the page zoom, in percentage points.
+        private const int kZoomPercentPerNotch = 10;
         private readonly BloomWebSocketServer _webSocketServer;
         private readonly EditingModel _editingModel;
         private DateTime _lastButtonClickedTime = DateTime.Now; // initially, instance creation time
@@ -86,21 +90,19 @@ namespace Bloom.Edit
                 )
                 .Measureable();
 
+            // The browser sends the number of Ctrl+mousewheel notches that it accumulated
+            // since the last request, positive to zoom in. It sends at most one request
+            // every 150ms, because one request per notch could freeze the UI thread for
+            // minutes (BL-16762). See setupWheelZooming in bloomEditing.ts.
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "zoomMinus",
+                kApiUrlPart + "zoomBy",
                 request =>
                 {
-                    _editingModel.AdjustPageZoom(-10);
-                    request.PostSucceeded();
-                },
-                true
-            );
-
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "zoomPlus",
-                request =>
-                {
-                    _editingModel.AdjustPageZoom(10);
+                    var notches = int.Parse(
+                        request.RequiredParam("notches"),
+                        CultureInfo.InvariantCulture
+                    );
+                    _editingModel.AdjustPageZoom(notches * kZoomPercentPerNotch);
                     request.PostSucceeded();
                 },
                 true

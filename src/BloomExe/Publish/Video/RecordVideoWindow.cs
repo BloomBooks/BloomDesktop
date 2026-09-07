@@ -16,7 +16,6 @@ using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
@@ -210,7 +209,7 @@ namespace Bloom.Publish.Video
                 // But what we actually need for `a%` is `a%2525`. This is confusing but matches what we do for the preview in js code:
                 // encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
                 // See BL-11319.
-                + UrlPathString.CreateFromUnencodedString(bookUrl, true).UrlEncoded
+                + UrlPathString.CreateFromUnencodedString(bookUrl).UrlEncoded
                 + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&useOriginalPageSize={_shouldUseOriginalPageSize}&skipActivities=true{pageRangeParams}";
             // The user can make choices in the preview instance of BloomPlayer...currently language and
             // whether to play image descriptions...that need to be communicated to the recording window.
@@ -1501,7 +1500,7 @@ namespace Bloom.Publish.Video
                 RobustFile.Copy(_finalVideo.Path, destFileName, true);
             }
 
-            Analytics.Track(
+            BloomAnalytics.Track(
                 "Publish Audio/Video",
                 new Dictionary<string, string>()
                 {

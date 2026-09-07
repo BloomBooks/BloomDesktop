@@ -394,12 +394,6 @@ namespace Bloom.web.controllers
                         ?? ExperimentalFeatures.IsFeatureEnabled(
                             ExperimentalFeatures.kTeamCollections
                         ),
-                    allowAppBuilder = dialog?.PendingAllowAppBuilder
-                        ?? ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kAppBuilder),
-                    allowAiImageEditing = dialog?.PendingAllowAiImageEditing
-                        ?? ExperimentalFeatures.IsFeatureEnabled(
-                            ExperimentalFeatures.kAiImageEditing
-                        ),
                     showQrCode = dialog?.PendingShowQrCode
                         ?? _collectionSettings.ShowBlorgLanguageQrCode,
                     qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
@@ -433,20 +427,6 @@ namespace Bloom.web.controllers
                 dialog.PendingAllowTeamCollection = allowTeamCollection;
                 if (allowTeamCollection != previousValue)
                     dialog.ChangeThatRequiresRestart();
-            }
-
-            var allowAppBuilderToken = data["allowAppBuilder"];
-            if (allowAppBuilderToken != null)
-            {
-                var allowAppBuilder = allowAppBuilderToken.Value<bool>();
-                dialog.PendingAllowAppBuilder = allowAppBuilder;
-            }
-
-            var allowAiImageEditingToken = data["allowAiImageEditing"];
-            if (allowAiImageEditingToken != null)
-            {
-                var allowAiImageEditing = allowAiImageEditingToken.Value<bool>();
-                dialog.PendingAllowAiImageEditing = allowAiImageEditing;
             }
 
             var showQrCodeToken = data["showQrCode"];
@@ -509,9 +489,23 @@ namespace Bloom.web.controllers
                     _collectionSettings.Language1Tag
                 );
             }
-            var jsonString =
-                $"{{\"languageName\":\"{languageName}\",\"languageCode\":\"{langTag}\"}}";
-            request.ReplyWithJson(jsonString);
+            request.ReplyWithJson(MakeLanguageDataJson(languageName, langTag));
+        }
+
+        /// <summary>
+        /// Builds the JSON that the languageData endpoint returns. A display name is arbitrary
+        /// user text: it can perfectly well contain a double quote or a backslash (BL-16209), so
+        /// it has to be serialized rather than pasted into a hand-built JSON string. Getting that
+        /// wrong produced invalid JSON, which made the whole collection tab fail to render.
+        /// The callers of this endpoint treat languageName as a string (one of them asks it for
+        /// its .length), so keep coercing a null name to empty the way the old hand-built string
+        /// did rather than sending a JSON null.
+        /// </summary>
+        internal static string MakeLanguageDataJson(string languageName, string languageTag)
+        {
+            return JsonConvert.SerializeObject(
+                new { languageName = languageName ?? "", languageCode = languageTag ?? "" }
+            );
         }
 
         // Used by BookSettingsDialog and others

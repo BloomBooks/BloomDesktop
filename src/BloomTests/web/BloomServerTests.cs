@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2018 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -166,6 +167,64 @@ namespace BloomTests.web
 
                 Assert.That(BloomServer.CanOpenConsecutivePorts(startingPort, 2), Is.False);
             }
+        }
+
+        /// <summary>
+        /// A bundle we inject into a page at the server root imports its sibling chunks by bare
+        /// name, so the server is regularly asked for files that sit directly in the browser folder
+        /// with no directory in the request at all (BL-16577).
+        ///
+        /// It must resolve those to a full path. Finding a file that ships with Bloom may not depend
+        /// on the process's current working directory: Windows File Explorer sets that to the folder
+        /// of a file the user double-clicked, and any Open/Save dialog can move it mid-session.
+        /// We deliberately do NOT move the current directory here to prove that - it is
+        /// process-wide state, and doing so makes other tests in this assembly fail
+        /// unpredictably - so instead we assert the property that a current-directory-relative
+        /// lookup would violate: the path we resolved to and served is rooted.
+        /// </summary>
+        [Test]
+        public void CanGetJavascriptDirectlyInBrowserRoot_AndResolvesItToAFullPath()
+        {
+            // Named like a Vite chunk (which is what the real requests are), but unique so we
+            // neither collide with nor depend on any particular chunk of the current build.
+            var chunkName = "BloomServerTestsChunk" + Guid.NewGuid().ToString("N") + ".js";
+            var chunkPath = Path.Combine(BloomFileLocator.AbsoluteBrowserRoot, chunkName);
+            using (var server = CreateBloomServer())
+            {
+                try
+                {
+                    RobustFile.WriteAllText(chunkPath, "// pretend chunk");
+
+                    var transaction = MakeJavascriptRequest(server, chunkName);
+
+                    Assert.That(transaction.StatusCode, Is.Not.EqualTo(404));
+                    Assert.That(transaction.ReplyContents, Is.EqualTo("// pretend chunk"));
+                    Assert.That(
+                        Path.IsPathRooted(transaction.ReplyImagePath),
+                        Is.True,
+                        $"Served {transaction.ReplyImagePath}, which is not a full path, so finding it depended on the current working directory."
+                    );
+                    Assert.That(transaction.ReplyImagePath, Is.EqualTo(chunkPath));
+                }
+                finally
+                {
+                    RobustFile.Delete(chunkPath);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Requests a JS file by bare name. The assetv query parameter is what the server itself
+        /// redirects JS requests to (see ProcessRequestAsync); supplying it up front keeps this
+        /// test on the file-serving path instead of getting the redirect.
+        /// </summary>
+        private PretendRequestInfo MakeJavascriptRequest(BloomServer server, string fileName)
+        {
+            var transaction = new PretendRequestInfo(
+                BloomServer.ServerUrlWithBloomPrefixEndingInSlash + fileName + "?assetv=test"
+            );
+            server.MakeReply(transaction);
+            return transaction;
         }
 
         [Test]
@@ -965,20 +1024,72 @@ namespace BloomTests.web
                 server.MakeReply(transaction);
                 Assert.That(transaction.ReplyContents, Is.EqualTo(testData));
 
-                // single level of Url encoding fed to server
-                var encUrl = txtFile.ToLocalhost().Replace(" ", "%20"); // ToLocalHost() does partial encoding, but not for spaces.
+                // single level of Url encoding fed to server.
+                // The Replace is a no-op and the comment that used to be here ("ToLocalHost() does
+                // partial encoding, but not for spaces") was wrong: ToLocalhost escapes each path
+                // component with Uri.EscapeDataString, which does encode a space, so by this point
+                // there is no literal space left to replace. That makes this case identical to the
+                // one above; kept because it costs nothing and states the intent explicitly.
+                var encUrl = txtFile.ToLocalhost().Replace(" ", "%20");
                 var encTransaction = new PretendRequestInfo(encUrl);
                 Assert.That(encTransaction.RawUrl.Contains("%20"), Is.True);
                 server.MakeReply(encTransaction);
                 Assert.That(encTransaction.ReplyContents, Is.EqualTo(testData));
 
-                // double level of Url encoding fed to server
+                // double level of Url encoding fed to server.
+                // This works because ProcessAnyFileContent decodes a second time and keeps that
+                // result only when it is what finds the file. Worth knowing: it is NOT that the
+                // server decodes twice unconditionally -- a file whose name really contains "%41"
+                // relies on the same guard to be left alone. See
+                // FileNameContainingPercentThenHexDigits_IsFound below for the other side of it.
                 var enc2TxtFile = txtFile.Replace(" ", "%20"); // encodes spaces
                 var enc2Url = enc2TxtFile.ToLocalhost(); // double encodes spaces
                 var enc2Transaction = new PretendRequestInfo(enc2Url);
                 Assert.That(enc2Transaction.RawUrl.Contains("%2520"), Is.True);
                 server.MakeReply(enc2Transaction);
                 Assert.That(enc2Transaction.ReplyContents, Is.EqualTo(testData));
+            }
+        }
+
+        /// <summary>
+        /// BL-16669: a file name may itself contain a '%' followed by two hex digits, which looks
+        /// exactly like an escape. Encoded for the url that '%' becomes "%25", and the server has
+        /// to end up asking the disk for the real name rather than for the name you get by
+        /// decoding one time too many.
+        ///
+        /// Note how this coexists with HandleDoubleEncodedUrls above, which needs the opposite:
+        /// ProcessAnyFileContent decodes a second time but keeps the result ONLY if that is what
+        /// finds the file (BloomServer.cs, "if (RobustFileExistsWithCaseCheck(tempPath))"). So the
+        /// two cases are distinguished by what is actually on disk, not by guessing -- which is
+        /// the same approach this branch adopted elsewhere.
+        /// </summary>
+        [Test]
+        public void FileNameContainingPercentThenHexDigits_IsFound()
+        {
+            using (var server = CreateBloomServer())
+            {
+                Directory.CreateDirectory(_collectionPath);
+                var txtFile = Path.Combine(_collectionPath, "photo%41.txt");
+                const string testData = @"This is a test!\r\n";
+                File.WriteAllText(txtFile, testData);
+                // Sanity check: nothing exists under the wrongly-decoded name, so a pass here can
+                // only mean the server found the file we actually made.
+                Assert.That(
+                    File.Exists(Path.Combine(_collectionPath, "photoA.txt")),
+                    Is.False,
+                    "test setup: the wrongly-decoded name must not exist"
+                );
+
+                var transaction = new PretendRequestInfo(txtFile.ToLocalhost());
+                Assert.That(
+                    transaction.RawUrl.Contains("photo%2541.txt"),
+                    Is.True,
+                    "test setup: the '%' in the name should have been encoded as %25"
+                );
+
+                server.MakeReply(transaction);
+
+                Assert.That(transaction.ReplyContents, Is.EqualTo(testData));
             }
         }
 

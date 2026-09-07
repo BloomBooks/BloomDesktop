@@ -296,14 +296,10 @@ namespace Bloom.Publish.BloomPub
                             claimedFilenames
                         );
                         if (newFilename != null)
-                        {
-                            var oldEncoded = System.Web.HttpUtility.UrlPathEncode(filename);
-                            var newEncoded = System.Web.HttpUtility.UrlPathEncode(newFilename);
                             div.SetAttribute(
                                 "style",
-                                style.Replace(oldEncoded, newEncoded).Replace(filename, newFilename)
+                                ReplaceBackgroundImageFilename(style, newFilename)
                             );
-                        }
                     }
 
                     // After ConvertImagesToBackground, all content images (inside
@@ -470,18 +466,54 @@ namespace Bloom.Publish.BloomPub
                     .Cast<SafeXmlElement>()
             )
             {
-                preservedImages.Add(System.Web.HttpUtility.UrlDecode(img.GetAttribute("src")));
+                // An img @src is URL-encoded (see the encoding conventions in UrlPathString), and
+                // must be decoded the matching way; HttpUtility.UrlDecode would eat a literal '+'.
+                preservedImages.Add(
+                    UrlPathString.CreateFromUrlEncodedString(img.GetAttribute("src")).NotEncoded
+                );
             }
             return preservedImages;
         }
 
         private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
         {
-            var filename = style.Substring(
-                style.IndexOf(kBackgroundImage) + kBackgroundImage.Length
-            );
-            filename = filename.Substring(0, filename.IndexOf("'"));
-            return System.Web.HttpUtility.UrlDecode(filename);
+            // The url in the style is URL-encoded (HtmlDom.SetImageElementUrl wrote it with
+            // UrlPathString.UrlEncoded), so decode it the matching way. HttpUtility.UrlDecode is
+            // NOT the matching way: it would turn a '+' in a real file name into a space (BL-3259).
+            return UrlPathString
+                .CreateFromUrlEncodedString(ExtractEncodedUrlFromStyle(style, out _, out _))
+                .NotEncoded;
+        }
+
+        /// <summary>
+        /// Return the encoded url between the quotes of a "background-image:url('...')" style,
+        /// along with where in <paramref name="style"/> it starts and ends.
+        /// </summary>
+        private static string ExtractEncodedUrlFromStyle(string style, out int start, out int end)
+        {
+            start = style.IndexOf(kBackgroundImage) + kBackgroundImage.Length;
+            end = style.IndexOf("'", start);
+            return style.Substring(start, end - start);
+        }
+
+        /// <summary>
+        /// Point a "background-image:url('...')" style at a different file in the same folder,
+        /// leaving the rest of the style alone.
+        /// </summary>
+        /// <remarks>
+        /// This replaces the url outright rather than looking for the old name in the style and
+        /// substituting, because the search is what used to go wrong: it encoded the old and new
+        /// names with HttpUtility.UrlPathEncode, which encodes neither '%' nor '#' nor '&amp;', while
+        /// the style itself was written with UrlPathString.UrlEncoded, which encodes all three. So
+        /// for any such name nothing matched, the style went on naming the file that the resize
+        /// had just replaced, and the image vanished from the published book (BL-16669).
+        /// </remarks>
+        private static string ReplaceBackgroundImageFilename(string style, string newFilename)
+        {
+            ExtractEncodedUrlFromStyle(style, out var start, out var end);
+            return style.Substring(0, start)
+                + UrlPathString.CreateFromUnencodedString(newFilename).UrlEncoded
+                + style.Substring(end);
         }
 
         private static void CreateVersionFileWithSha(string bookFilePath, string outputDirectory)

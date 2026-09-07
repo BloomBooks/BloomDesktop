@@ -80,6 +80,34 @@ namespace Bloom
             return Uri.UnescapeDataString(uri);
         }
 
+        /// <summary>
+        /// Arrange for the form to put itself in front of other applications when it is first
+        /// shown. A window shown while another application (say, the Windows Explorer window
+        /// Bloom was launched from) holds the foreground opens behind it, and a dialog with no
+        /// owner is then very hard to find. Same idea as Shell.ReallyComeToFront, except that we
+        /// stay topmost for a moment instead of dropping it immediately: when the window we are
+        /// racing was made foreground by the close of a previous dialog, that raise can arrive
+        /// after Shown, and an instant toggle loses to it. Clearing TopMost re-asserts our place
+        /// at the top of the ordinary windows anyway, so the late drop wins the race whichever
+        /// order things happened in. See BL-16690.
+        /// </summary>
+        public static void BringToFrontWhenShown(this Form form)
+        {
+            form.Shown += (sender, args) =>
+            {
+                form.TopMost = true;
+                form.Activate();
+                var timer = new Timer { Interval = 1500 };
+                timer.Tick += (s, e) =>
+                {
+                    timer.Dispose();
+                    if (!form.IsDisposed)
+                        form.TopMost = false;
+                };
+                timer.Start();
+            };
+        }
+
         public static int ToInt(this bool value)
         {
             if (value)

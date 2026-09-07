@@ -32,7 +32,7 @@ namespace BloomTests.TeamCollection
         public void OneTimeSetUp()
         {
             _localCollection = new TemporaryFolder("TeamCollectionApiTests");
-            var collectionPath = CollectionSettings.GetSettingsFilePath(
+            var collectionPath = CollectionSettings.GetDefaultSettingsFilePath(
                 _localCollection.FolderPath
             );
             _tcManager = new TeamCollectionManager(
@@ -251,7 +251,7 @@ namespace BloomTests.TeamCollection
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _server?.Dispose();
+            RetiredTestServers.Retire(_server);
             _server = null;
         }
 
