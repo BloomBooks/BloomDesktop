@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -19,6 +19,7 @@ using Bloom.TeamCollection;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
+using Newtonsoft.Json.Linq;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
@@ -299,6 +300,28 @@ namespace Bloom.Spreadsheet
                     bool rowHasWidget = !string.IsNullOrWhiteSpace(
                         currentRow.GetCell(InternalSpreadsheet.WidgetSourceColumnLabel).Text
                     );
+                    // Any [inline image] rows for this row's translation group immediately
+                    // follow it (possibly after an [image description] row, which the image
+                    // handling below consumes separately).
+                    var inlineImageRows = new List<ContentRow>();
+                    {
+                        var lookAhead = _currentRowIndex + 1;
+                        if (
+                            lookAhead < _inputRows.Count
+                            && _inputRows[lookAhead].MetadataKey
+                                == InternalSpreadsheet.ImageDescriptionRowLabel
+                        )
+                            lookAhead++;
+                        while (
+                            lookAhead < _inputRows.Count
+                            && _inputRows[lookAhead].MetadataKey
+                                == InternalSpreadsheet.InlineImageRowLabel
+                        )
+                        {
+                            inlineImageRows.Add(_inputRows[lookAhead]);
+                            lookAhead++;
+                        }
+                    }
                     var typesInRow = MakeBlockTypes(
                         rowHasText,
                         rowHasImage,
@@ -345,7 +368,8 @@ namespace Bloom.Spreadsheet
                                 currentRow,
                                 _blocksOnPage[translationGroupIndex][
                                     _blockOnPageIndexes[translationGroupIndex]
-                                ]
+                                ],
+                                inlineImageRows
                             );
                         }
 
@@ -377,6 +401,18 @@ namespace Bloom.Spreadsheet
                         // not have all the required slots.
                         typesInRow &= ~typesToPut;
                     }
+                    // The [inline image] rows belong to this row's group; consume them so the
+                    // main loop doesn't see them (their bracketed label would otherwise be
+                    // misread as xmatter).
+                    _currentRowIndex += inlineImageRows.Count;
+                }
+                else if (rowTypeLabel == InternalSpreadsheet.InlineImageRowLabel)
+                {
+                    // Normally consumed by the [page content] handling above; one can only
+                    // reach the main loop this way if it was separated from its group's row.
+                    Warn(
+                        $"Row {CurrentRowIndexForMessages} is an {InternalSpreadsheet.InlineImageRowLabel} row that does not directly follow its text row, so Bloom could not use it."
+                    );
                 }
                 else if (rowTypeLabel.StartsWith("[") && rowTypeLabel.EndsWith("]")) //This row is xmatter
                 {
@@ -1695,6 +1731,253 @@ namespace Bloom.Spreadsheet
                 .Contains(className);
         }
 
+        /// <summary>
+        /// Builds inline-image wrappers from the [inline image] rows that followed a
+        /// group's row: for each row, copies the image file from the spreadsheet's images
+        /// folder into the book folder and reconstructs the wrapper markup from the
+        /// [details] JSON. Only called when the spreadsheet has the [details] column;
+        /// the rows (possibly none) are then the authority on what inline images the
+        /// group has.
+        /// </summary>
+        private SafeXmlElement[] BuildInlineImageWrappers(List<ContentRow> inlineImageRows)
+        {
+            if (inlineImageRows == null)
+                return Array.Empty<SafeXmlElement>();
+            return inlineImageRows.Select(BuildInlineImageWrapper).ToArray();
+        }
+
+        /// <summary>
+        /// The inverse of SpreadsheetExporter.GetInlineImageDetails plus makeInlineImageWrapper
+        /// (inlineImages.ts): reconstructs one .bloom-inlineImage wrapper from an
+        /// [inline image] row's [image source] file and [details] JSON
+        /// (e.g. {"kind":"inline-image","location":"right","offset":"24px","width":"40%"}).
+        /// The aspect ratio is
+        /// measured from the image file itself (we never stretch images), or left off when
+        /// the file can't be found, since the CSS falls back to the image's natural ratio.
+        /// Everything else about the wrapper is constant or freshly minted, notably the id
+        /// shared by the copies that will be stamped into each editable, which only
+        /// edit-time sync/undo cares about.
+        /// </summary>
+        private SafeXmlElement BuildInlineImageWrapper(ContentRow row)
+        {
+            var location = "right";
+            string offset = null;
+            string offsetBasedOn = null;
+            var width = "40%";
+            var details = row.GetCell(InternalSpreadsheet.DetailsColumnLabel).Content;
+            if (!string.IsNullOrWhiteSpace(details))
+            {
+                try
+                {
+                    foreach (var property in JObject.Parse(details).Properties())
+                    {
+                        switch (property.Name)
+                        {
+                            case "kind":
+                                if (property.Value.ToString() != "inline-image")
+                                    Warn(
+                                        $"Row {CurrentRowIndexForMessages} is an {InternalSpreadsheet.InlineImageRowLabel} row, but its {InternalSpreadsheet.DetailsColumnLabel} cell says its kind is \"{property.Value}\"."
+                                    );
+                                break;
+                            case "location":
+                                location = property.Value.ToString();
+                                break;
+                            case "offset":
+                                offset = property.Value.ToString();
+                                break;
+                            case "offsetBasedOn":
+                                offsetBasedOn = property.Value.ToString();
+                                break;
+                            case "width":
+                                width = property.Value.ToString();
+                                break;
+                            default:
+                                Warn(
+                                    $"Bloom did not understand \"{property.Name}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages}."
+                                );
+                                break;
+                        }
+                    }
+                }
+                catch (Newtonsoft.Json.JsonReaderException)
+                {
+                    Warn(
+                        $"Bloom could not read the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages} (\"{details}\"); the image will get a default position and size."
+                    );
+                }
+            }
+            if (
+                location != "left"
+                && location != "right"
+                && location != "middle"
+                && location != "bottom"
+            )
+            {
+                Warn(
+                    $"Bloom did not understand the location \"{location}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages}."
+                );
+                location = "right";
+            }
+
+            var wrapper = (SafeXmlElement)_destinationDom.RawDom.CreateElement("div");
+            wrapper.SetAttribute("data-bloom-inline-image-id", HtmlDom.GenerateNewHtmlId());
+            var dockClass =
+                "bloom-inlineImage" + char.ToUpperInvariant(location[0]) + location.Substring(1);
+            // bloom-keepFirstInField tells BloomField to put the field's required empty <p>
+            // AFTER the pictures, which is what a floating dock wants. A bottom-docked picture
+            // sits at the end of the block, so the <p> belongs before it, and the class has to
+            // stay off -- setInlineImageDock (inlineImages.ts) removes it for the same reason.
+            // With it on, importing a bottom picture added a blank line under the text.
+            var keepFirst = location == "bottom" ? "" : " bloom-keepFirstInField";
+            wrapper.SetAttribute(
+                "class",
+                $"bloom-inlineImage {dockClass}{keepFirst} bloom-preventRemoval"
+            );
+            wrapper.SetAttribute("contenteditable", "false");
+            var src = CopyInlineImageFileToBook(row, out var copiedImagePath);
+            var style = $"--inline-image-width: {width};";
+            if (
+                copiedImagePath != null
+                && ImageUtils.TryGetImageSize(copiedImagePath, out var size)
+            )
+                style += $" --inline-image-aspect-ratio: {size.Width} / {size.Height};";
+            if (!string.IsNullOrEmpty(offset) && location != "bottom")
+            {
+                style += $" --inline-image-offset: {offset};";
+                // The offset is an absolute distance, so it means the right thing only in a block
+                // the size of the one it was measured in. Carrying that size over is what lets the
+                // editor re-measure it for the block it has landed in
+                // (adjustInlineImageOffsetsIfBlockSizeChanged, inlineImageInteractions.ts); without
+                // it the picture keeps a displacement from another layout and pushes the text after
+                // it off the end.
+                if (!string.IsNullOrEmpty(offsetBasedOn))
+                    wrapper.SetAttribute("data-inline-image-offset-basedon", offsetBasedOn);
+            }
+            wrapper.SetAttribute("style", style);
+
+            var img = (SafeXmlElement)_destinationDom.RawDom.CreateElement("img");
+            img.SetAttribute("src", src);
+            img.SetAttribute("alt", "");
+            wrapper.AppendChild(img);
+            return wrapper;
+        }
+
+        /// <summary>
+        /// Copies an [inline image] row's image file (its [image source] cell, e.g.
+        /// "images/foo.jpg") from the spreadsheet folder into the book folder, and returns
+        /// the url-encoded src the book's img element should carry. A blank cell means the
+        /// image was never chosen; it becomes the placeholder src. copiedImagePath is the
+        /// full path of the file now in the book folder, or null when nothing was copied
+        /// (blank cell, missing file, or the null folders of unit tests).
+        /// </summary>
+        private string CopyInlineImageFileToBook(ContentRow row, out string copiedImagePath)
+        {
+            copiedImagePath = null;
+            var source = row.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Content;
+            if (
+                string.IsNullOrWhiteSpace(source)
+                || source == InternalSpreadsheet.BlankContentIndicator
+            )
+                return "placeHolder.png";
+            var fileName = Path.GetFileName(source);
+            // Paths can be null in unit tests. Like the video import, we overwrite an
+            // existing file of the same name rather than renaming, on the theory that
+            // identical names in one book refer to the same image.
+            if (_pathToSpreadsheetFolder != null && _pathToBookFolder != null)
+            {
+                var sourcePath = Path.Combine(_pathToSpreadsheetFolder, source);
+                if (!RobustFile.Exists(sourcePath))
+                {
+                    Warn(
+                        $"Image \"{sourcePath}\" for an inline image on row {CurrentRowIndexForMessages} was not found."
+                    );
+                }
+                else
+                {
+                    try
+                    {
+                        var destPath = Path.Combine(_pathToBookFolder, fileName);
+                        RobustFile.Copy(sourcePath, destPath, true);
+                        copiedImagePath = destPath;
+                    }
+                    catch (Exception e)
+                        when (e is IOException
+                            || e is SecurityException
+                            || e is UnauthorizedAccessException
+                        )
+                    {
+                        Warn(
+                            $"Bloom had trouble copying the file \"{sourcePath}\" to the book: {e.Message}"
+                        );
+                    }
+                }
+            }
+            return UrlPathString.CreateFromUnencodedString(fileName).UrlEncoded;
+        }
+
+        /// <summary>
+        /// Gets clones of the group's inline-image wrappers: the .bloom-inlineImage children
+        /// of the first bloom-editable that has any. The edit-time code (inlineImages.ts)
+        /// keeps every editable's copies identical, so any one editable's set is canonical.
+        /// The clones preserve document order: floating-dock wrappers first, bottom-docked last.
+        /// </summary>
+        private static SafeXmlElement[] GetInlineImageWrappers(SafeXmlElement group)
+        {
+            foreach (var editable in SafeSelectNodesByClassName(group, "./div", "bloom-editable"))
+            {
+                var wrappers = editable
+                    .ChildNodes.OfType<SafeXmlElement>()
+                    .Where(e => HasExactClassName(e, "bloom-inlineImage"))
+                    .Select(e => (SafeXmlElement)e.CloneNode(true))
+                    .ToArray();
+                if (wrappers.Length > 0)
+                    return wrappers;
+            }
+            return Array.Empty<SafeXmlElement>();
+        }
+
+        /// <summary>
+        /// Puts clones of the given inline-image wrappers back into an editable whose content
+        /// the import has just replaced. Floating-dock wrappers go at the top of the editable
+        /// in their original order; bottom-docked ones go at the end -- the two slots the
+        /// edit-time code maintains. Does nothing if the new content already contains inline
+        /// images (a cell that carried its own markup must not be second-guessed).
+        /// </summary>
+        /// <summary>
+        /// Takes every inline image wrapper out of this editable, leaving its text alone.
+        /// </summary>
+        private static void RemoveInlineImages(SafeXmlElement editable)
+        {
+            foreach (
+                var wrapper in editable
+                    .ChildNodes.OfType<SafeXmlElement>()
+                    .Where(e => HasExactClassName(e, "bloom-inlineImage"))
+                    .ToArray()
+            )
+                editable.RemoveChild(wrapper);
+        }
+
+        private static void StampInlineImages(SafeXmlElement editable, SafeXmlElement[] wrappers)
+        {
+            if (wrappers.Length == 0)
+                return;
+            if (
+                editable
+                    .ChildNodes.OfType<SafeXmlElement>()
+                    .Any(e => HasExactClassName(e, "bloom-inlineImage"))
+            )
+                return;
+            var firstChild = editable.FirstChild;
+            foreach (var wrapper in wrappers)
+            {
+                var clone = (SafeXmlElement)wrapper.CloneNode(true);
+                if (HasExactClassName(clone, "bloom-inlineImageBottom"))
+                    editable.AppendChild(clone);
+                else
+                    editable.InsertBefore(clone, firstChild);
+            }
+        }
+
         private List<SafeXmlElement> GetBloomCanvases(SafeXmlElement ancestor)
         {
             return SafeSelectNodesByClassName(ancestor, ".//div", "bloom-canvas").ToList();
@@ -1824,7 +2107,11 @@ namespace Bloom.Spreadsheet
         /// </summary>
         /// <param name="row"></param>
         /// <param name="group"></param>
-        private async Task PutRowInGroupAsync(ContentRow row, SafeXmlElement group)
+        private async Task PutRowInGroupAsync(
+            ContentRow row,
+            SafeXmlElement group,
+            List<ContentRow> inlineImageRows = null
+        )
         {
             if (HasExactClassName(group, "QuizAnswer-style"))
             {
@@ -1863,6 +2150,25 @@ namespace Bloom.Spreadsheet
                     }
                 }
             }
+            // Inline images (.bloom-inlineImage wrappers; see inlineImages.ts) are replicated
+            // into every editable of the group. The language cells carry only text; the export
+            // writes each image to its own [inline image] row after the group's row, and when
+            // the spreadsheet has the [details] column those rows are the authority. A
+            // spreadsheet without the column (e.g. made by an older Bloom) can't tell us
+            // anything about inline images, so then we preserve whatever the target group
+            // already has, snapshotted before we overwrite any editable.
+            // CONSTRAINT: [details] is written today only by the inline-image export, which is
+            // what makes its presence a safe signal. Whatever else starts writing that column
+            // (canvas elements are the plan) must bring its own signal for this test, or a sheet
+            // carrying only canvas-element details would be read as saying "this group has no
+            // inline images" and would clear the pictures the group has.
+            SafeXmlElement[] inlineImageWrappers;
+            var sheetKnowsAboutInlineImages =
+                _sheet.GetColumnForTag(InternalSpreadsheet.DetailsColumnLabel) >= 0;
+            if (sheetKnowsAboutInlineImages)
+                inlineImageWrappers = BuildInlineImageWrappers(inlineImageRows);
+            else
+                inlineImageWrappers = GetInlineImageWrappers(group);
             var sheetLanguages = _sheet.Languages;
             foreach (var lang in sheetLanguages)
             {
@@ -1882,11 +2188,23 @@ namespace Bloom.Spreadsheet
 
                 if (IsEmptyCell(content))
                 {
-                    editable.ParentNode.RemoveChild(editable);
+                    if (inlineImageWrappers.Length > 0)
+                    {
+                        // An editable whose only content is an inline image exports as a blank
+                        // cell; deleting the editable would delete the image. Keep it, with
+                        // empty text.
+                        editable.InnerXml = "<p></p>";
+                        StampInlineImages(editable, inlineImageWrappers);
+                    }
+                    else
+                    {
+                        editable.ParentNode.RemoveChild(editable);
+                    }
                 }
                 else
                 {
                     editable.InnerXml = content;
+                    StampInlineImages(editable, inlineImageWrappers);
                 }
 
                 await AddAudioAsync(editable, lang, row);
@@ -1904,6 +2222,22 @@ namespace Bloom.Spreadsheet
                         "<span class='bloom-audio-split-marker'>\u200B</span></span>"
                     );
                 }
+            }
+
+            // The lang="z" prototype editable also carries a copy of each inline image, so
+            // that a language added later inherits it (see insertInlineImage); keep it in step.
+            var prototype = HtmlDom.GetEditableChildInLang(group, "z");
+            if (prototype != null)
+            {
+                // Unlike the language editables, the prototype is not rewritten from a cell, so
+                // whatever it holds is what it held before the import. When the spreadsheet is
+                // the authority and says this block has no pictures, the prototype's copies have
+                // to go as well: otherwise a picture the user deleted from the spreadsheet is
+                // still there, invisibly, and comes back the next time a language is added to
+                // the collection.
+                if (sheetKnowsAboutInlineImages)
+                    RemoveInlineImages(prototype);
+                StampInlineImages(prototype, inlineImageWrappers);
             }
 
             if (RemoveOtherLanguages)
