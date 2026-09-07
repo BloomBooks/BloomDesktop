@@ -21,6 +21,7 @@ import {
     launchBloom,
     type ILaunchedBloom,
     type ICollectionSpec,
+    type IRelaunchChanges,
 } from "./launchBloom";
 import { chromium } from "@playwright/test";
 import {
@@ -28,6 +29,12 @@ import {
     startProblemDialogWatcher,
     type IProblemDialogWatcher,
 } from "./problemDialogWatcher";
+import {
+    beginCaption,
+    finishCaption,
+    runStep,
+    type StepFunction,
+} from "../helpers/caption";
 
 /**
  * What a test gets about the Bloom it is driving. Every field except collectionDir is replaced by
@@ -51,11 +58,15 @@ export interface IBloomApp {
      * rewrite the .bloomCollection; use it to change collection settings, which have no API and
      * live in a WinForms dialog CDP cannot reach.
      *
+     * `changes` replaces launch options that Bloom reads only at startup, such as which
+     * experimental features are on; see IRelaunchChanges.
+     *
      * A restart invalidates the `page` fixture and the old ports. Take the page this returns, or
      * read bloomApp.page afterwards; the old Page object throws once its target is gone.
      */
     restart: (
         betweenStopAndStart?: () => void | Promise<void>,
+        changes?: IRelaunchChanges,
     ) => Promise<Page>;
 }
 
@@ -84,6 +95,17 @@ interface IBloomWorkerFixtures {
 interface IBloomTestFixtures {
     /** Fails the test when Bloom raised a problem dialog while it ran. Runs automatically. */
     failOnBloomProblem: void;
+    /**
+     * Puts this test's name and clock on the caption strip in the Bloom window, and stops the
+     * clock when it ends. Runs automatically, so a test that never calls `step` still shows.
+     */
+    e2eCaption: void;
+    /**
+     * Run one step of the test: `await step("Add a row", async () => { ... })`. It shows on the
+     * caption strip in the Bloom window and nests in the Playwright report. Purely cosmetic in
+     * the window; it never changes what the test does or whether it passes.
+     */
+    step: StepFunction;
 }
 
 // How long we wait for Bloom's WebView2 to expose the shell document after the HTTP server is up.
@@ -256,12 +278,12 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                     cdpPort: launched.cdpPort,
                     bloomPid: launched.bloomPid,
                     collectionDir: launched.collectionDir,
-                    restart: async (betweenStopAndStart) => {
+                    restart: async (betweenStopAndStart, changes) => {
                         // Close the old CDP connection first: it holds a socket into the process
                         // that is about to be killed.
                         await browser?.close();
                         browser = undefined;
-                        await launched!.restart(betweenStopAndStart);
+                        await launched!.restart(betweenStopAndStart, changes);
                         browser = await connectOverCdpWithRetry(
                             launched!.cdpPort,
                         );
@@ -312,6 +334,33 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
     // that returns (or bloomApp.page) from then on: this one points at a dead target.
     page: async ({ bloomApp }, use) => {
         await use(bloomApp.page);
+    },
+
+    e2eCaption: [
+        async ({ bloomApp }, use, testInfo) => {
+            // Read bloomApp.page at each call rather than capturing it: restart() replaces it.
+            await beginCaption(
+                () => bloomApp.page,
+                testInfo.file,
+                testInfo.title,
+            );
+            await use();
+            await finishCaption(() => bloomApp.page);
+        },
+        { auto: true },
+    ],
+
+    step: async ({ bloomApp, e2eCaption }, use) => {
+        // Depending on e2eCaption only orders the setup: the caption must know the test before a
+        // step can be added to it.
+        void e2eCaption;
+        await use(((title, body, options) =>
+            runStep(
+                () => bloomApp.page,
+                title,
+                body,
+                options,
+            )) as StepFunction);
     },
 
     failOnBloomProblem: [

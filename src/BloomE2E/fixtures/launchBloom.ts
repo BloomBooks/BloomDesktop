@@ -41,10 +41,27 @@ export interface ILaunchedBloom {
      *
      * The ports change, so the caller must re-attach. This object's httpPort, cdpPort and
      * bloomPid are updated in place; fixtures/bloomTest.ts reconnects over CDP.
+     *
+     * `changes` replaces launch options for this start and every later one, for the options a
+     * person changes in the collection Settings dialog and Bloom then reads only at startup.
      */
     restart: (
         betweenStopAndStart?: () => void | Promise<void>,
+        changes?: IRelaunchChanges,
     ) => Promise<void>;
+}
+
+/**
+ * What a restart may change about how Bloom is launched. Everything else stays as the first
+ * launch had it.
+ */
+export interface IRelaunchChanges {
+    /**
+     * The experimental features the restarted Bloom has on, replacing whatever the last launch
+     * had. An empty array means none, which is how a test asks what Bloom does with an
+     * experiment turned off.
+     */
+    experimentalFeatures?: string[];
 }
 
 /**
@@ -81,14 +98,14 @@ export interface ILaunchBloomOptions {
     collectionSpec?: ICollectionSpec;
     /**
      * Experimental features this Bloom should have on, by the tokens ExperimentalFeatures.cs uses:
-     * "team-collections", "experimental-source-books". A person turns these on in the Advanced tab
-     * of the collection Settings dialog, which is WinForms and so unreachable, and the saved
-     * setting is shared with the developer's own Bloom, so the launch hands them to this instance
-     * on its command line instead (--experimental-features, which Bloom accepts only beside
-     * --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
+     * "tables", "team-collections", "experimental-source-books". A person turns these on in the
+     * Advanced tab of the collection Settings dialog, which is WinForms and so unreachable, and
+     * the saved setting is shared with the developer's own Bloom, so the launch hands them to this
+     * instance on its command line instead (--experimental-features, which Bloom accepts only
+     * beside --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
      */
     experimentalFeatures?: string[];
-    /** How long to wait for Bloom to start serving the collection. Default 120 seconds. */
+    /** How long to wait for Bloom to start serving the collection. Default 240 seconds. */
     readyTimeoutMs?: number;
 }
 
@@ -375,12 +392,23 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * the same thing, and gets a window. A setting that names a monitor is left alone, because that
  * window IS visible.
  */
-function environmentForBloom(): NodeJS.ProcessEnv {
+function environmentForBloom(
+    experimentalFeatures: string[] | undefined,
+): NodeJS.ProcessEnv {
+    const environment: NodeJS.ProcessEnv = { ...process.env };
     const asked = process.env.BLOOM_AUTOMATION_MONITOR?.trim().toLowerCase();
-    if (process.env.PWDEBUG && (asked === "headless" || asked === "0")) {
-        return { ...process.env, BLOOM_AUTOMATION_MONITOR: "" };
-    }
-    return process.env;
+    if (process.env.PWDEBUG && (asked === "headless" || asked === "0"))
+        environment.BLOOM_AUTOMATION_MONITOR = "";
+    // Always set, even for a run that wants no experimental features at all: under --e2e this
+    // variable is the whole answer, so naming the features here is what keeps a run from
+    // inheriting whatever the developer has turned on in the user.config every Bloom of this
+    // version shares. A run that wants none says so with the "none" token, because an empty
+    // environment variable cannot be told from an absent one on Windows. See
+    // ExperimentalFeatures.kE2eNoFeatures.
+    environment.BLOOM_E2E_EXPERIMENTAL_FEATURES = experimentalFeatures?.length
+        ? experimentalFeatures.join(",")
+        : "none";
+    return environment;
 }
 
 /**
@@ -642,7 +670,7 @@ async function startBloomOn(
     if (experimentalFeatures?.length)
         args.push("--experimental-features", experimentalFeatures.join(","));
     const bloomProcess: ChildProcess = execFile(exe, args, {
-        env: environmentForBloom(),
+        env: environmentForBloom(experimentalFeatures),
     });
     let exitStatus: { code: number | null; signal: string | null } | undefined;
     bloomProcess.stdout?.on("data", (d) => recordOutput(String(d)));
@@ -740,6 +768,31 @@ async function killAndWaitForPortToGoDark(
  * copy of a prepared fixture — and wait until it is serving it. The returned object carries the
  * discovered ports, a restart(), and a stop() that tears everything down.
  */
+/**
+ * Delete a run's temp folder, and never in place of the error that made us give up on the launch.
+ *
+ * A Bloom that failed part way through starting can still hold its collection file open, so
+ * removing the folder throws EBUSY. That used to be the only error the run reported, which said
+ * nothing about why Bloom had not started. The folder is left behind instead; a later run clears
+ * it.
+ */
+function removeTempRoot(tempRoot: string): void {
+    try {
+        // Retries, because Bloom can release its file handles a moment after it dies.
+        fs.rmSync(tempRoot, {
+            recursive: true,
+            force: true,
+            maxRetries: 20,
+            retryDelay: 500,
+        });
+    } catch (error) {
+        process.stderr.write(
+            `[e2e] could not delete ${tempRoot}: ${(error as Error).message}
+`,
+        );
+    }
+}
+
 export async function launchBloom(
     options: ILaunchBloomOptions,
 ): Promise<ILaunchedBloom> {
@@ -761,11 +814,20 @@ export async function launchBloom(
             ? writeNewCollection(tempRoot, options.collectionSpec)
             : copyPreparedCollection(tempRoot, options.collectionName!);
     } catch (error) {
-        fs.rmSync(tempRoot, { recursive: true, force: true });
+        removeTempRoot(tempRoot);
         throw error;
     }
 
-    const readyTimeoutMs = options.readyTimeoutMs ?? 120000;
+    // Four minutes, not the two you would expect a start to need. A Bloom cold-starting while a
+    // second e2e Bloom is starting on the same machine -- one developer running two suites, or two
+    // agents in two worktrees -- has been seen to take a little over two minutes to serve its
+    // collection, so a two-minute limit failed runs whose only fault was the company they kept.
+    // Nothing waits this long in a healthy run: the loop stops the moment Bloom answers.
+    const readyTimeoutMs = options.readyTimeoutMs ?? 240000;
+
+    // The experimental features the Bloom running now was given. A restart may replace them
+    // (ILaunchedBloom.restart), so this is a variable rather than a read of the options.
+    let experimentalFeatures = options.experimentalFeatures;
 
     // The Bloom running right now. restart() replaces it, so everything that kills or reports on
     // Bloom reads this variable rather than capturing the first launch.
@@ -775,7 +837,7 @@ export async function launchBloom(
     // reads `running`, so it still names the right pids after a restart.
     const cleanUpOnExit = () => {
         if (running) killProcessTree(running.pids);
-        fs.rmSync(tempRoot, { recursive: true, force: true });
+        removeTempRoot(tempRoot);
     };
     process.once("exit", cleanUpOnExit);
 
@@ -783,11 +845,11 @@ export async function launchBloom(
         running = await startBloomOn(
             collectionDir,
             readyTimeoutMs,
-            options.experimentalFeatures,
+            experimentalFeatures,
         );
     } catch (error) {
         process.removeListener("exit", cleanUpOnExit);
-        fs.rmSync(tempRoot, { recursive: true, force: true });
+        removeTempRoot(tempRoot);
         throw error;
     }
 
@@ -797,16 +859,18 @@ export async function launchBloom(
         bloomPid: running.servingPid,
         collectionDir,
 
-        restart: async (betweenStopAndStart) => {
+        restart: async (betweenStopAndStart, changes) => {
             await killAndWaitForPortToGoDark(running!);
             // Bloom releases its file handles slightly after it dies, and the caller is usually
             // about to rewrite one of the files it had open.
             await delay(1000);
             if (betweenStopAndStart) await betweenStopAndStart();
+            if (changes?.experimentalFeatures)
+                experimentalFeatures = changes.experimentalFeatures;
             running = await startBloomOn(
                 collectionDir,
                 readyTimeoutMs,
-                options.experimentalFeatures,
+                experimentalFeatures,
             );
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;

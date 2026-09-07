@@ -12,7 +12,10 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Page } from "@playwright/test";
 
-/** What one page of a book holds, reduced to the things the copy-page test measures. */
+/**
+ * What one page of a book holds, reduced to the things the tests measure: what a copy should have
+ * preserved, and what a table should look like once it is on disk.
+ */
 export interface IPageContents {
     /** The page div's own id. Bloom gives a pasted page a fresh one. */
     id: string;
@@ -31,6 +34,38 @@ export interface IPageContents {
      * component sizes. Comparing these says whether a custom layout survived the copy.
      */
     layout: string[];
+    /** Every table on the page, in document order, nested tables included. */
+    tables: ITableDescription[];
+    /**
+     * Any editing-only markup the page still carries. This should always be empty: the table
+     * library appends its chrome to the body and marks its own state on the cells, and Bloom
+     * calls removeTableEditingArtifacts before it saves. Anything listed here is markup that
+     * has been written into the book, where it will confuse a later load and reach the reader.
+     */
+    editingArtifacts: string[];
+}
+
+/**
+ * One table as the saved file describes it. Everything here is read from the markup rather than
+ * measured, because the file is what a later load, a publish, or a spreadsheet export will read.
+ */
+export interface ITableDescription {
+    /** 0 for a table on the page, 1 for a table inside a cell of one, and so on. */
+    depth: number;
+    rows: number;
+    columns: number;
+    /** `data-column-widths` verbatim, e.g. "fill,fill" or "150px,fill". */
+    columnWidths: string;
+    /** `data-row-heights` verbatim. */
+    rowHeights: string;
+    /** What each of the table's own cells holds, in row-major order. */
+    cellContentTypes: string[];
+    /** The `src` of every image in the table's own cells, book-relative. */
+    imageSources: string[];
+    /** The `src` of every video in the table's own cells, trim fragment included. */
+    videoSources: string[];
+    /** How many of the table's cells are covered by a merge, so are not shown. */
+    mergedAwayCellCount: number;
 }
 
 /** A book as read from disk: its pages, plus the user-defined styles its head carries. */
@@ -59,6 +94,66 @@ export async function readBook(
         const styleElement = document.querySelector(
             'style[title="userModifiedStyles"]',
         );
+        // The editing-only markup the table library and Bloom put on a table while it is being
+        // edited. None of it should survive a save.
+        const artifactSelectors = [
+            "[data-table-attached]",
+            ".cell--selected",
+            ".table--selected",
+            ".bloom-current-table",
+            ".bloom-pointer-near",
+            "[data-table-overlay]",
+            ".bloom-sel-overlay",
+            "[data-btable-anchor-name]",
+            "[data-ui-active-row-index]",
+            ".bloom-pulse-fill",
+            ".bloom-pulse-border",
+        ];
+        const describeTables = (pageDiv: Element) =>
+            [...pageDiv.querySelectorAll(".bloom-table")].map((tableDiv) => {
+                // The table's OWN cells: a nested table's cells belong to that table, and are
+                // described by its own entry in this list.
+                const cells = [
+                    ...tableDiv.querySelectorAll(":scope > .bloom-cell"),
+                ];
+                const sizes = (name: string) =>
+                    tableDiv.getAttribute(name) ?? "";
+                const countOf = (name: string) => {
+                    const value = sizes(name);
+                    return value === "" ? 0 : value.split(",").length;
+                };
+                const inOwnCells = (selector: string) =>
+                    cells.flatMap((cellDiv) => [
+                        ...cellDiv.querySelectorAll(selector),
+                    ]);
+                let depth = 0;
+                for (
+                    let ancestor = tableDiv.parentElement;
+                    ancestor;
+                    ancestor = ancestor.parentElement
+                )
+                    if (ancestor.classList.contains("bloom-table")) depth++;
+                return {
+                    depth,
+                    rows: countOf("data-row-heights"),
+                    columns: countOf("data-column-widths"),
+                    columnWidths: sizes("data-column-widths"),
+                    rowHeights: sizes("data-row-heights"),
+                    cellContentTypes: cells.map(
+                        (cellDiv) =>
+                            cellDiv.getAttribute("data-content-type") ?? "",
+                    ),
+                    imageSources: inOwnCells("img").map(
+                        (img) => img.getAttribute("src") ?? "",
+                    ),
+                    videoSources: inOwnCells("video source").map(
+                        (source) => source.getAttribute("src") ?? "",
+                    ),
+                    mergedAwayCellCount: cells.filter((cellDiv) =>
+                        cellDiv.classList.contains("bloom-skip"),
+                    ).length,
+                };
+            });
         const pages = [
             ...document.querySelectorAll("div.bloom-page.numberedPage"),
         ].map((pageDiv) => ({
@@ -103,6 +198,10 @@ export async function readBook(
                             : ["left", "right"];
                     return `${orientation} ${sizeOf(first)} | ${sizeOf(second)}`;
                 },
+            ),
+            tables: describeTables(pageDiv),
+            editingArtifacts: artifactSelectors.filter(
+                (selector) => pageDiv.querySelector(selector) !== null,
             ),
         }));
         return {

@@ -42,9 +42,9 @@ export function videoBoxes(page: Page): Locator {
  * Put the video file at `filePath` into `videoBox`, through the Sign Language tool, and wait until
  * the box shows it.
  *
- * `videoBox` is the `.bloom-videoContainer` to fill; see videoBoxes for every one on the page.
- * Bloom re-encodes the file, so this takes a few seconds even for a one-second video, and the file
- * that ends up in the book is not byte-for-byte the one passed in.
+ * `videoBox` is the `.bloom-videoContainer` to fill; for a table cell, that is the container inside
+ * the cell. Bloom re-encodes the file, so this takes a few seconds even for a one-second video, and
+ * the file that ends up in the book is not byte-for-byte the one passed in.
  */
 export async function chooseVideoFile(
     page: Page,
@@ -59,6 +59,14 @@ export async function chooseVideoFile(
         Path.resolve(filePath),
         "text/plain",
     );
+
+    // The Sign Language tool turns the camera on as soon as it opens, so that a person can see
+    // themselves before recording, and WebView2 answers that with a permission prompt of its own
+    // over the panel. Nothing in the page can dismiss it, and it takes the presses aimed at the
+    // tool underneath. Granting the permission first means it is never asked for.
+    await page
+        .context()
+        .grantPermissions(["camera"], { origin: new URL(page.url()).origin });
 
     // Clicking the box is what takes Bloom to the Sign Language tool, and it is also what tells the
     // tool which box to import into, so it cannot be skipped by opening the tool directly.
