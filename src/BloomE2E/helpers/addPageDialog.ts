@@ -62,9 +62,15 @@ export async function openAddPageDialog(page: Page): Promise<void> {
     await waitForAddPageThumbnails(page);
 }
 
+// The two things this one dialog (PageChooserDialog) calls itself: "Add Page..." when it is
+// adding a page and "Choose Different Layout..." when it is changing the layout of the page the
+// person is on. Everything else about it is the same, so both are recognized here.
+const kPageChooserDialogTitles = /(Add Page|Choose Different Layout)/;
+
 /**
- * The open Add Page dialog, wherever Bloom mounted it. Throws, naming the frames it looked in, if
- * no dialog appears within the timeout.
+ * The open page chooser dialog, wherever Bloom mounted it, whether it was opened to add a page or
+ * to choose a different layout. Throws, naming the frames it looked in, if no dialog appears
+ * within the timeout.
  */
 async function findAddPageDialog(
     page: Page,
@@ -77,7 +83,7 @@ async function findAddPageDialog(
                 for (const frame of page.frames()) {
                     const dialog = frame
                         .locator('[role="dialog"]')
-                        .filter({ hasText: "Add Page" });
+                        .filter({ hasText: kPageChooserDialogTitles });
                     if ((await dialog.count().catch(() => 0)) > 0) {
                         found = dialog.first();
                         return true;
@@ -88,7 +94,7 @@ async function findAddPageDialog(
             {
                 timeout: timeoutMs,
                 message:
-                    "The Add Page dialog never appeared. Frames: " +
+                    "The page chooser dialog never appeared. Frames: " +
                     page
                         .frames()
                         .map((f) => f.name() || "(main)")
@@ -99,12 +105,12 @@ async function findAddPageDialog(
     return found!;
 }
 
-/** True while an Add Page dialog is open in any frame. */
+/** True while the page chooser dialog is open in any frame, in either of its two roles. */
 async function isAddPageDialogOpen(page: Page): Promise<boolean> {
     for (const frame of page.frames()) {
         const count = await frame
             .locator('[role="dialog"]')
-            .filter({ hasText: "Add Page" })
+            .filter({ hasText: kPageChooserDialogTitles })
             .count()
             .catch(() => 0);
         if (count > 0) return true;
@@ -273,7 +279,74 @@ export async function addPageFromDialog(
     label: string,
     templateBookFolderName?: string,
 ): Promise<void> {
+    const dialog = await selectTemplatePageInDialog(
+        page,
+        label,
+        templateBookFolderName,
+    );
+    const before = (await getPages(page)).length;
+    await dialog.getByRole("button", { name: "Add Page", exact: true }).click();
+    await expect
+        .poll(() => isAddPageDialogOpen(page), {
+            timeout: 30000,
+            message: "The Add Page dialog did not close after Add Page.",
+        })
+        .toBe(false);
+    await expect
+        .poll(async () => (await getPages(page)).length, {
+            timeout: 60000,
+            message: `Bloom never added the "${label}" page from the dialog.`,
+        })
+        .toBe(before + 1);
+    await waitForEditablePage(page);
+}
+
+/**
+ * In the dialog opened by the page menu's "Choose Different Layout", select this layout and
+ * click "Use This Layout", then wait for the page to be shown again. The book keeps the same
+ * number of pages: Bloom imports the template page and moves the existing text into it
+ * (HtmlDom.MigrateEditableData), so this is how a test exercises what that migration does to
+ * content the person has already put on the page.
+ */
+export async function chooseDifferentLayout(
+    page: Page,
+    label: string,
+    templateBookFolderName?: string,
+): Promise<void> {
+    const dialog = await selectTemplatePageInDialog(
+        page,
+        label,
+        templateBookFolderName,
+    );
+    await dialog
+        .getByRole("button", { name: "Use This Layout", exact: true })
+        .click();
+    await expect
+        .poll(() => isAddPageDialogOpen(page), {
+            timeout: 30000,
+            message: "The dialog did not close after Use This Layout.",
+        })
+        .toBe(false);
+    await waitForEditablePage(page);
+}
+
+/**
+ * Select a template page in the open dialog and return the dialog, for a caller that will then
+ * click whichever confirming button it wants. Shared by adding a page and choosing a different
+ * layout, which differ only in that button and in what happens afterwards.
+ */
+async function selectTemplatePageInDialog(
+    page: Page,
+    label: string,
+    templateBookFolderName?: string,
+): Promise<Locator> {
     const dialog = await findAddPageDialog(page);
+    // The groups are read from thumbnails that arrive over a websocket, so a dialog asked what it
+    // offers too early answers "nothing" -- and the error below then reports an empty list of
+    // layouts rather than a dialog that was not ready. openAddPageDialog waits for these itself;
+    // this is for the caller that opened the dialog some other way (the page menu's Choose
+    // Different Layout), and waiting twice costs nothing.
+    await waitForAddPageThumbnails(page);
     const groups = await getAddPageDialogGroups(page);
     const group = groups.find(
         (g) =>
@@ -315,19 +388,5 @@ export async function addPageFromDialog(
         `Selecting "${label}" never showed it in the dialog's preview pane.`,
     ).toBeVisible({ timeout: 15000 });
 
-    const before = (await getPages(page)).length;
-    await dialog.getByRole("button", { name: "Add Page", exact: true }).click();
-    await expect
-        .poll(() => isAddPageDialogOpen(page), {
-            timeout: 30000,
-            message: "The Add Page dialog did not close after Add Page.",
-        })
-        .toBe(false);
-    await expect
-        .poll(async () => (await getPages(page)).length, {
-            timeout: 60000,
-            message: `Bloom never added the "${label}" page from the dialog.`,
-        })
-        .toBe(before + 1);
-    await waitForEditablePage(page);
+    return dialog;
 }

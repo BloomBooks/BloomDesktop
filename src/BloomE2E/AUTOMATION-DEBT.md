@@ -543,3 +543,51 @@ creates one `_workspaceReactControl`. Worth finding, because the duplicate is wh
 the test-side check necessary.
 (Found 2026-09-01 while making `jumpToPage` queue a jump.)
 
+
+## The spreadsheet round trip: fixed, except for the Export dialog
+
+Exporting a book to a spreadsheet used to end by calling `ProcessExtra.SafeStartInFront` on the
+.xlsx it wrote, which opens the file in whatever the machine uses for spreadsheets. A test that
+exported left an Excel window on the developer's screen that nothing in the test could close, so
+neither half of the round trip could be driven.
+
+fixed for the file handling 2026-09-06 (`inline-images-spreadsheet.spec.ts`,
+`helpers/spreadsheet.ts`): under `--e2e`, `SpreadsheetApi.ExportToSpreadsheet` records the path it
+wrote instead of opening the file, and `e2e/lastExportedSpreadsheet` reports it. That path is also
+the test's completion signal, since the export runs in the background behind a progress dialog.
+The import side needed nothing new: its file chooser already takes its answer from
+`e2e/nextFileToChoose`. `SetSpreadsheetFolder` also stops writing
+`Settings.Default.ExportImportFileFolder` under `--e2e`, for the reason
+`FileIOApi.SelectFileUsingDialog` stops writing `FilePathMemory`: those settings are machine-wide
+and shared with the developer's own Bloom.
+
+Still open: **the Export dialog is not driven.** `helpers/spreadsheet.ts` sends the same
+`spreadsheet/export` POST that the dialog's Export button sends, so the dialog itself, and the
+folder its Choose Folder button picks, are untested. Everything after the POST is Bloom's own
+work. Fixing this needs no new hook, only a test id on the two buttons; `BloomButton` now carries
+its `l10nKey` as `data-testid`, so a `data-testid` reaches every dialog button, and what is left
+is a test that walks the dialog.
+
+Also still open: **a nested context-menu item has no test id.** Both spreadsheet commands are on
+the book menu's "More" submenu, and `LocalizableNestedMenuItem` renders through a third-party
+`NestedMenuItem` that does not carry one, unlike every other item in that menu. So
+`helpers/spreadsheet.ts` finds "More" by its English label. See "The Edit tab's page thumbnail
+menu has no stable test ids" for the same problem elsewhere.
+
+## A launched Bloom sometimes exposes no debugging target at all
+
+Once in a nine-file run on 2026-09-07, `inline-images-zoom.spec.ts` failed before any test code
+ran: `Bloom's WebView2 never exposed the shell document it is driving within 90s`, with
+`Targets seen: none` -- so it is not the wrong-document case above (that one lists the documents
+it found), and not the worker crash either (the worker was alive and reported the failure). The
+spec passed on its own immediately afterwards, and the other eight files in the same run were
+green.
+
+`Targets seen: none` says the debugging listener answered but had nothing on it, which points at
+Bloom still starting rather than at anything the test did. Whether the 90 seconds is simply too
+short on a loaded machine is not known; nobody has caught it with Bloom's own log alongside.
+
+How to react, until it is understood: **re-run the file**, and treat a failure that follows one
+file across runs as a real problem in that file rather than this entry. Fix direction: have
+`findShellPage` say what Bloom's process was doing when it gave up (it has the pid), so the next
+occurrence distinguishes a slow start from a Bloom that never got there.
