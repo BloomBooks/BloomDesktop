@@ -857,7 +857,7 @@ namespace Bloom.Book
                 foreach (var div in list)
                 {
                     var innerText = div.InnerText.Trim();
-                    if (String.IsNullOrEmpty(innerText))
+                    if (String.IsNullOrEmpty(innerText) && !HasInlineImage(div))
                     {
                         Logger.WriteEvent(
                             $"An empty duplicate div for {langTag} has been removed from a translation group."
@@ -887,6 +887,19 @@ namespace Bloom.Book
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Whether this editable holds an inline (Word-style) image: a .bloom-inlineImage wrapper
+        /// (see inlineImages.ts). Such a block can be entirely without text -- a picture and the
+        /// empty paragraph that has to follow it -- so InnerText alone says it is empty, and
+        /// anything that discards an "empty" block would discard the picture with it.
+        /// </summary>
+        private static bool HasInlineImage(SafeXmlNode div)
+        {
+            return div.SafeSelectNodes(
+                    ".//div[contains(concat(' ', @class, ' '), ' bloom-inlineImage ')]"
+                ).Length > 0;
         }
 
         /// <summary>
