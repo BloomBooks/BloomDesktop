@@ -191,10 +191,13 @@ The worker-scoped fixture launches Bloom on a temp copy of that collection and y
 
 - `page` — Playwright's `page`, overridden to be Bloom's shell document (the top bar and
   the showing tab). Most tests need nothing else.
-- `bloomApp` — `{ page, httpPort, cdpPort, bloomPid, collectionDir, restart }`. Build book
-  paths from `collectionDir`, never from `output/testing-inputs`. `restart(callback)`
+- `bloomApp` — `{ page, httpPort, cdpPort, bloomPid, collectionDir, userSettingsDir, restart }`.
+  Build book paths from `collectionDir`, never from `output/testing-inputs`. `restart(callback)`
   stops Bloom, runs the callback, and starts it again, which is how a test changes what
-  Bloom reads only at startup, such as the collection's languages.
+  Bloom reads only at startup, such as the collection's languages. `userSettingsDir` is where
+  this Bloom keeps its user settings (`user.config`): a folder of its own in the temp folder,
+  empty at launch, so a test's Bloom starts from default settings and shares none with the
+  developer's Bloom or the previous run. `helpers/userSettings.ts` reads what it saved there.
 
 The fixture also watches for the "Bloom had a problem" dialog and fails the test with the
 exception it scrapes from behind the dialog's own "Learn More" link. See

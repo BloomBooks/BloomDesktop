@@ -129,6 +129,9 @@ namespace Bloom
                     StartupLauncherPort.HasValue
                         ? $"launcherPort={StartupLauncherPort.Value}"
                         : null,
+                    BloomSettingsProvider.UserSettingsFolder != null
+                        ? $"userSettingsFolder={BloomSettingsProvider.UserSettingsFolder}"
+                        : null,
                 }.Where(value => value != null)
             );
 
@@ -144,6 +147,30 @@ namespace Bloom
             // final call to CleanupTempFolder. Also prevents our temp files competing with
             // other programs for 64K available default temp file names.
             TempFile.NamePrefix = "bloom";
+
+            // Parse our own startup arguments before anything reads Settings.Default:
+            // --user-settings-folder decides where the settings live (it sets
+            // BloomSettingsProvider.UserSettingsFolder), and a settings provider fixes its location
+            // when it is constructed, which happens the first time a setting is read.
+            var args = ParseStartupPortArguments(args1, out var startupPortErrorMessage);
+            if (startupPortErrorMessage != null)
+            {
+                // A rejected launch touches no settings, its own or anyone else's, so the error is
+                // reported before anything reads Settings.Default. CheckForCorruptUserConfig and
+                // SetUpLocalization below both do, and by now the parser has cleared any folder a
+                // --user-settings-folder named, so they would read, and might repair, the shared
+                // profile of whoever is running Bloom. Only what a message box needs is set up.
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                MessageBox.Show(
+                    startupPortErrorMessage,
+                    "Bloom",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                return 1;
+            }
+
             CheckForCorruptUserConfig();
             // Ensure that the registration information is loaded early before Team Collection
             // needs it.
@@ -182,18 +209,6 @@ namespace Bloom
             // Another goal is for it to happen before this method breaks off into various paths, so that
             // every startup path calls it.
             SetUpLocalization();
-
-            var args = ParseStartupPortArguments(args1, out var startupPortErrorMessage);
-            if (startupPortErrorMessage != null)
-            {
-                MessageBox.Show(
-                    startupPortErrorMessage,
-                    "Bloom",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
-                return 1;
-            }
 
             // Old comment: Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
             // Aug 2023, we've moved away from GeckoFx/Firefox to wv2, but I don't know if this is still needed or not...
@@ -348,8 +363,15 @@ namespace Bloom
                 if (Settings.Default.NeedUpgrade)
                 {
                     //see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
-                    Settings.Default.Upgrade();
-                    Settings.Default.Reload();
+                    // A folder named with --user-settings-folder holds exactly the settings its
+                    // owner put there (see BloomSettingsProvider), so nothing is brought in from
+                    // another version's file; an automated run would otherwise inherit the
+                    // developer's settings after all.
+                    if (BloomSettingsProvider.UserSettingsFolder == null)
+                    {
+                        Settings.Default.Upgrade();
+                        Settings.Default.Reload();
+                    }
                     Settings.Default.NeedUpgrade = false;
                     Settings.Default.MaximizeWindow = true; // this is needed to force this to be written to the file, where a user can find it to modify it by hand (our video maker)
                     Settings.Default.Save();
@@ -791,6 +813,7 @@ namespace Bloom
             StartupLabel = null;
             StartupAutomation = false;
             StartupLauncherPort = null;
+            BloomSettingsProvider.UserSettingsFolder = null;
             RunningE2eTests = false;
             StartupExperimentalFeatures = null;
 
@@ -848,10 +871,18 @@ namespace Bloom
                         value => StartupExperimentalFeatures = value,
                         out errorMessage
                     )
+                    || TryHandleUserSettingsFolderArgument(args, ref i, out errorMessage)
                 )
                 {
                     if (errorMessage != null)
+                    {
+                        // The launch is being rejected, so it must not use a settings folder an
+                        // earlier --user-settings-folder already set. A rejected launch touches
+                        // nothing: Main reports the error before anything reads settings, and
+                        // clearing the folder here means the launch never owned one.
+                        BloomSettingsProvider.UserSettingsFolder = null;
                         return Array.Empty<string>();
+                    }
 
                     continue;
                 }
@@ -864,10 +895,63 @@ namespace Bloom
             if (StartupExperimentalFeatures != null && !RunningE2eTests)
             {
                 errorMessage = "Bloom only accepts --experimental-features together with --e2e.";
+                // Rejected, so it owns no settings folder either (see the rejection above).
+                BloomSettingsProvider.UserSettingsFolder = null;
                 return Array.Empty<string>();
             }
 
             return remainingArgs.ToArray();
+        }
+
+        /// <summary>
+        /// Handle --user-settings-folder: the folder to keep user.config in, stored on
+        /// BloomSettingsProvider.UserSettingsFolder (the provider that consumes it). Stored as a
+        /// full path, because Bloom changes its working directory during startup
+        /// (NormalizeWorkingDirectory) and a relative path would otherwise point somewhere else by
+        /// the time the settings are saved.
+        /// </summary>
+        private static bool TryHandleUserSettingsFolderArgument(
+            string[] args,
+            ref int index,
+            out string errorMessage
+        )
+        {
+            const string optionName = "--user-settings-folder";
+            if (
+                !TryParseStartupStringArgument(
+                    args,
+                    ref index,
+                    optionName,
+                    out var value,
+                    out errorMessage
+                )
+            )
+            {
+                return false;
+            }
+
+            if (errorMessage != null)
+                return true;
+
+            if (BloomSettingsProvider.UserSettingsFolder != null)
+            {
+                errorMessage = $"Bloom only accepts one {optionName} argument.";
+                return true;
+            }
+
+            try
+            {
+                BloomSettingsProvider.UserSettingsFolder = Path.GetFullPath(value);
+            }
+            catch (Exception e)
+                when (e is ArgumentException
+                    || e is NotSupportedException
+                    || e is System.IO.PathTooLongException
+                )
+            {
+                errorMessage = $"Bloom cannot use \"{value}\" as the {optionName}: {e.Message}";
+            }
+            return true;
         }
 
         private static bool TryHandleStartupFlagArgument(
@@ -2914,7 +2998,8 @@ Anyone looking specifically at our issue tracking system can read what you sent 
         private static void CheckForCorruptUserConfig()
         {
             //First check the user.config we get through using the palaso stuff.  This is the one in a folder with a name like Bloom/3.5.0.0
-            var palasoSettings = new SIL.Settings.CrossPlatformSettingsProvider();
+            // (or the folder --user-settings-folder named; BloomSettingsProvider knows which).
+            var palasoSettings = new BloomSettingsProvider();
             palasoSettings.Initialize(null, null);
             var error = palasoSettings.CheckForErrorsInSettingsFile();
             if (error != null)

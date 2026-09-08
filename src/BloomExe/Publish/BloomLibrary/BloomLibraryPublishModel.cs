@@ -656,15 +656,40 @@ namespace Bloom.Publish.BloomLibrary
                 : UploadDestination.Production;
 
             var bloomExePath = Program.BloomExePath;
-            var command =
-                $"\"{bloomExePath}\" upload \"{rootFolderPath}\" -u {WebUserId} -d {target}";
+            var arguments = $"upload \"{rootFolderPath}\" -u {WebUserId} -d {target}";
+            // The upload runs in a second Bloom, which signs in with the login this one saved in
+            // its user settings. When this Bloom keeps its settings in a folder of its own (see
+            // BloomSettingsProvider), the second one has to read the same folder, or it finds no
+            // login at all, or somebody else's.
+            if (BloomSettingsProvider.UserSettingsFolder != null)
+                arguments +=
+                    $" --user-settings-folder \"{BloomSettingsProvider.UserSettingsFolder}\"";
+            // An automated run wants the second Bloom to behave as this one does: no modal dialogs.
+            if (Program.RunningE2eTests)
+                arguments += " --e2e";
+            var command = $"\"{bloomExePath}\" {arguments}";
             if (SIL.PlatformUtilities.Platform.IsLinux)
                 command = $"/opt/mono5-sil/bin/mono {command}";
 
             // The Bloom process run as a command line tool for bulk upload is safe for using the current culture.
             // We don't wait for this to finish, so we don't use the CommandLineRunner methods.
             ProcessStartInfo startInfo;
-            if (SIL.PlatformUtilities.Platform.IsWindows)
+            if (Program.RunningE2eTests)
+            {
+                // An automated run has nobody to read a terminal window, and the window below stays
+                // open (cmd /k) until a person closes it, so it would outlive the test. Run the
+                // upload with no window at all; BloomBulkUploadLog.txt in the collection folder
+                // gets everything the window would have shown, and is what a test reads.
+                startInfo = new ProcessStartInfo()
+                {
+                    FileName = bloomExePath,
+                    Arguments = arguments,
+                    WorkingDirectory = Path.GetDirectoryName(bloomExePath),
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+            }
+            else if (SIL.PlatformUtilities.Platform.IsWindows)
             {
                 startInfo = new ProcessStartInfo()
                 {
@@ -707,7 +732,15 @@ namespace Bloom.Publish.BloomLibrary
             BookUploaded = true; // Flag that an upload has occurred
             BookUploadedId = null; // Multiple books have been uploaded, so a single id doesn't exist: all may need to be updated
 
-            ProcessExtra.StartInFront(startInfo);
+            if (Program.RunningE2eTests)
+            {
+                // There is no window to bring to the front.
+                Process.Start(startInfo);
+            }
+            else
+            {
+                ProcessExtra.StartInFront(startInfo);
+            }
             progress.WriteMessage("Starting bulk upload in a terminal window...");
             progress.WriteMessage(
                 "This process will skip books if it can tell that nothing has changed since the last bulk upload."
