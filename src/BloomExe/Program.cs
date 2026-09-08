@@ -114,10 +114,6 @@ namespace Bloom
         // rebuild and relaunch us.
         internal static int? StartupLauncherPort { get; private set; }
 
-        // The folder --user-settings-folder asked Bloom to keep its user.config in lives on
-        // BloomSettingsProvider.UserSettingsFolder (where the provider that consumes it is), which
-        // ParseStartupPortArguments sets directly. See BloomSettingsProvider.
-
         internal static string StartupRequestedPortSummary =>
             string.Join(
                 ", ",
