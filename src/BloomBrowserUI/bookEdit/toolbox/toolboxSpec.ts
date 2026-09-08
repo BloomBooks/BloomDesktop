@@ -154,4 +154,26 @@ describe("toolbox tests", () => {
         expect(div.innerHTML).toBe("<p>A b c</p>");
         expect(div.querySelector("p")!.firstChild).not.toBe(textNodeBefore);
     });
+
+    // cleanUpNbsps empties any ckeditor bookmark span while it works and refills it at the end.
+    // That refill has to happen whether or not the box was rewritten.
+    it("cleanUpNbsps restores bookmark content on both the rewritten and the untouched path", () => {
+        const bookmark =
+            '<span data-cke-bookmark="1" id="cke_bm_1A" style="display: none;">&nbsp;</span>';
+
+        // Nothing to convert: the nodes are left alone and the bookmark keeps its content.
+        const untouched = document.createElement("div");
+        untouched.innerHTML = `<p>A b&nbsp;${bookmark}</p>`;
+        const textNodeBefore = untouched.querySelector("p")!.firstChild;
+        expect(textNodeBefore?.nodeType).toBe(Node.TEXT_NODE);
+        cleanUpNbsps(untouched);
+        expect(untouched.innerHTML).toBe(`<p>A b&nbsp;${bookmark}</p>`);
+        expect(untouched.querySelector("p")!.firstChild).toBe(textNodeBefore);
+
+        // Something to convert: the box is rewritten and the bookmark still gets its content back.
+        const rewritten = document.createElement("div");
+        rewritten.innerHTML = `<p>A&nbsp;b ${bookmark}c</p>`;
+        cleanUpNbsps(rewritten);
+        expect(rewritten.innerHTML).toBe(`<p>A b ${bookmark}c</p>`);
+    });
 });
