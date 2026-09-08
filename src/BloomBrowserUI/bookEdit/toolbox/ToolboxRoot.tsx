@@ -958,6 +958,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                             : toolboxHeaderIconStyles
                                     }
                                     data-toolid={section.id}
+                                    data-testid="toolbox-header-icon"
                                     style={{
                                         backgroundImage: `url(${toolIconPathByToolId[section.id] || ""})`,
                                     }}

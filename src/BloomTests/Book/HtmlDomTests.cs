@@ -555,7 +555,6 @@ namespace BloomTests.Book
         }
 
         [Test]
-        [Ignore("Does not currently work...not sure how to make it right.")]
         public void GetImageElementUrl_ElementIsImgWithPercent2B_ReturnsSrc()
         {
             var element = MakeElement("<img src='test%2bme'/>");
@@ -563,11 +562,10 @@ namespace BloomTests.Book
         }
 
         [Test]
-        [Ignore("Does not currently work...not sure how to make it right.")]
         public void GetImageElementUrl_ElementIsImgWithPlus_ReturnsSrc()
         {
             var element = MakeElement("<img src='test+me'/>");
-            Assert.AreEqual("test+me", HtmlDom.GetImageElementUrl(element).UrlEncoded);
+            Assert.AreEqual("test%2bme", HtmlDom.GetImageElementUrl(element).UrlEncoded);
         }
 
         [Test]

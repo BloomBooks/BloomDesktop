@@ -130,7 +130,12 @@ namespace BloomTests
             }
         }
 
-        [Test, Ignore("Will fix in BL-2558")]
+        [
+            Test,
+            Ignore(
+                "Fails because the indenting XmlWriter puts inline-only children of a block on separate lines, which HTML renders as a space. BL-2558 was closed as not reproducible; needs a decision to fix the writer or delete this test."
+            )
+        ]
         public void SaveAsHTML_HasEmUpAgainstStrong_DoesNotInsertSpace()
         {
             var dom = SafeXmlDocument.Create();
