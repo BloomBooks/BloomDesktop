@@ -146,7 +146,14 @@ export async function selectTextInGroup(
         box,
         `Clicking in the "${languageTag}" box of "${groupSelector}" did not give it the focus.`,
     ).toBeFocused({ timeout: 15000 });
-    for (let i = 0; i < text.length; i++) {
+    // One press per character as the caret counts them: an emoji, or a letter with its combining
+    // accents, is one caret step but several UTF-16 code units, so text.length would overrun.
+    const graphemes = [
+        ...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(
+            text,
+        ),
+    ].length;
+    for (let i = 0; i < graphemes; i++) {
         await pressKey(page, "Shift+ArrowRight");
     }
 
@@ -206,17 +213,13 @@ function formatButton(
 }
 
 /**
- * Click a button of the formatting toolbar that floats above the box with selected text: Bold,
- * Italic, Underline, Superscript, or Remove Formatting. Select the text first
- * (selectTextInGroup); the toolbar is not there otherwise, and this says so.
- *
- * Returns as soon as the click is delivered. CKEditor applies the style at once, but assert on the
- * result with expectFormatting rather than reading the box straight away.
+ * The formatting toolbar's button for a command, waited for. Throws, saying why, when the toolbar
+ * is not showing, which is what happens when no text is selected.
  */
-export async function clickFormatButton(
+async function visibleFormatButton(
     page: Page,
     command: FormatCommand | "textColor",
-): Promise<void> {
+): Promise<Locator> {
     const button = formatButton(page, command);
     try {
         await button.waitFor({ state: "visible", timeout: 15000 });
@@ -226,13 +229,96 @@ export async function clickFormatButton(
                 `only while text in a box is selected; select some first.`,
         );
     }
+    return button;
+}
+
+/**
+ * Whether the toolbar shows a style button as "on", which CKEditor does when the selected text
+ * already has that style. Only the four style buttons have such a state.
+ */
+async function isFormatButtonOn(
+    page: Page,
+    command: FormatCommand,
+): Promise<boolean> {
+    const classes =
+        (await formatButton(page, command).getAttribute("class")) ?? "";
+    return classes.split(/\s+/).includes("cke_button_on");
+}
+
+/**
+ * Whether the current selection has none of the formatting the toolbar can put on text: nothing
+ * formatted inside it, and no formatting element around it either.
+ */
+async function isSelectionPlain(page: Page): Promise<boolean> {
+    return editablePageFrame(page).evaluate(() => {
+        const selection = document.getSelection();
+        if (!selection || selection.rangeCount === 0) return false;
+        const range = selection.getRangeAt(0);
+        const formatted = "strong,b,em,i,u,sup,span[style]";
+        if (range.cloneContents().querySelector(formatted)) return false;
+        const around =
+            range.commonAncestorContainer instanceof Element
+                ? range.commonAncestorContainer
+                : range.commonAncestorContainer.parentElement;
+        return !around?.closest(formatted);
+    });
+}
+
+/**
+ * Wait for a formatting command to have taken effect on the selection. A style command toggles
+ * its toolbar button, so this waits for the button to leave the state it was in before; Remove
+ * Formatting has no button state, so this waits for the selection to be plain.
+ */
+async function waitForFormatCommand(
+    page: Page,
+    command: FormatCommand,
+    buttonWasOn: boolean,
+): Promise<void> {
+    if (command === "removeFormat") {
+        await expect
+            .poll(() => isSelectionPlain(page), {
+                timeout: 15000,
+                message:
+                    "Remove Formatting left formatting on the selected text.",
+            })
+            .toBe(true);
+        return;
+    }
+    await expect
+        .poll(() => isFormatButtonOn(page, command), {
+            timeout: 15000,
+            message: `The ${command} button never changed state, so the command did not land.`,
+        })
+        .toBe(!buttonWasOn);
+}
+
+/**
+ * Click a button of the formatting toolbar that floats above the box with selected text: Bold,
+ * Italic, Underline, Superscript, or Remove Formatting. Select the text first
+ * (selectTextInGroup); the toolbar is not there otherwise, and this says so.
+ *
+ * Returns once the command has taken effect on the selection (see waitForFormatCommand). The
+ * Text Color button only opens the palette; pickTextColorFromToolbar drives that.
+ */
+export async function clickFormatButton(
+    page: Page,
+    command: FormatCommand | "textColor",
+): Promise<void> {
+    const button = await visibleFormatButton(page, command);
+    if (command === "textColor") {
+        await button.click();
+        return;
+    }
+    const wasOn = await isFormatButtonOn(page, command);
     await button.click();
+    await waitForFormatCommand(page, command, wasOn);
 }
 
 /**
  * Press the keyboard shortcut for a formatting command into the box that has the focus: Ctrl+B,
  * Ctrl+I, Ctrl+U, or Ctrl+Space for Remove Formatting. Superscript has no shortcut, and asking for
- * one throws.
+ * one throws. Returns once the command has taken effect on the selection, read from the same
+ * toolbar the buttons live on, so the text must be selected here too.
  */
 export async function pressFormatShortcut(
     page: Page,
@@ -240,7 +326,10 @@ export async function pressFormatShortcut(
 ): Promise<void> {
     const key = SHORTCUT[command];
     if (!key) throw new Error(`There is no keyboard shortcut for ${command}.`);
+    await visibleFormatButton(page, command);
+    const wasOn = await isFormatButtonOn(page, command);
     await pressKey(page, key);
+    await waitForFormatCommand(page, command, wasOn);
 }
 
 /**
@@ -275,6 +364,11 @@ export async function pickTextColorFromToolbar(
             .frameLocator("iframe")
             .locator(`span.cke_colorbox[style*="${code}" i]`),
     });
+    const selectedText = () =>
+        editablePageFrame(page).evaluate(
+            () => document.getSelection()?.toString() ?? "",
+        );
+    const selectedBefore = await selectedText();
     for (let attempt = 1; attempt <= 6; attempt++) {
         await clickFormatButton(page, "textColor");
         const opened = await panel
@@ -282,15 +376,14 @@ export async function pickTextColorFromToolbar(
             .then(() => true)
             .catch(() => false);
         if (!opened) continue;
-        // The palette is showing. Click the swatch straight away, before the selection check can
-        // hide the panel; if the panel goes anyway, the click times out and the loop tries again.
-        try {
-            await swatch.click({ timeout: 2000 });
-            await panel.waitFor({ state: "hidden", timeout: 15000 });
-            return;
-        } catch {
-            if (!(await panel.isVisible())) continue;
-            // The panel is still showing, so the swatch itself is what is missing.
+        // CKEditor checks the selection at most 200ms after the last mouse or key event (its
+        // checkSelectionChange throttle), and that is the check in which Bloom may hide the panel
+        // that has just opened. A swatch click delivered into a panel that closes at that moment
+        // lands on the text beneath it and moves the selection, which is worse than a retry. So
+        // wait out that one check, and click only a panel that is still showing afterwards.
+        await page.waitForTimeout(kSelectionCheckMs);
+        if (!(await panel.isVisible())) continue;
+        if ((await swatch.count()) !== 1) {
             const offered = await panel
                 .frameLocator("iframe")
                 .locator("span.cke_colorbox")
@@ -306,12 +399,28 @@ export async function pickTextColorFromToolbar(
                 `The text color palette has no swatch for #${code}. It offers: ${offered.join(", ")}.`,
             );
         }
+        await swatch.click();
+        await panel.waitFor({ state: "hidden", timeout: 15000 });
+        const selectedAfter = await selectedText();
+        if (selectedAfter !== selectedBefore)
+            throw new Error(
+                `Picking a text color changed the selection from "${selectedBefore}" to ` +
+                    `"${selectedAfter}", so the click did not land on the palette.`,
+            );
+        return;
     }
     throw new Error(
         "The text color palette never stayed open long enough to pick a color, though the Text " +
             "Color button was clicked six times.",
     );
 }
+
+/**
+ * How long CKEditor can take to run its selection check after a mouse or key event: it throttles
+ * checkSelectionChange to one per 200ms. pickTextColorFromToolbar waits this long after opening
+ * the palette, because the check that follows the click is the one in which Bloom may close it.
+ */
+const kSelectionCheckMs = 250;
 
 /**
  * Read back the character formatting of one language's box of one translation group, paragraph by

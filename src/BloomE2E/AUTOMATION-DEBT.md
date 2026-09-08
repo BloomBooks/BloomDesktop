@@ -515,8 +515,12 @@ check lands after the click has opened the panel, the panel is hidden again whil
 shows as "on": the click looks as if it did nothing, and the next click closes the panel CKEditor
 thinks is open rather than showing it. Seen 2026-09-08 (Test Case ID 364,
 `text-formatting-shortcuts.spec.ts`): the second color pick of a run failed this way about one run in
-two, the first never did. `helpers/textFormatting.ts pickTextColorFromToolbar` clicks again until
-the panel is showing, which is what a person does. Fix direction: find out why the panel reappears
+two, the first never did. Worse, a swatch click delivered into a panel that closed at that moment
+landed on the text beneath it and moved the selection, so the color went on half a word.
+`helpers/textFormatting.ts pickTextColorFromToolbar` therefore waits out CKEditor's 200ms
+selection-check throttle after the panel opens, clicks a swatch only in a panel that is still
+showing, clicks the button again otherwise (which is what a person does), and fails if the
+selection moved. Fix direction: find out why the panel reappears
 on its own (CKEditor's floatpanel remembers `showBlockParams`, and Bloom's `display:none` bypasses
 its `hide`, so its state and the DOM disagree from then on) and hide it through `panel.hide()`
 instead, or only on `selectionChange` rather than on every check. A person can hit this too.
