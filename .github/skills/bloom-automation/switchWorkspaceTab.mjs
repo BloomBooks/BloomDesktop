@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 import {
+    asksForHelp,
     fetchBloomInstanceInfo,
     findRunningStandardBloomInstance,
     getDefaultRepoRoot,
@@ -11,8 +12,15 @@ import {
     toWorkspaceTabsEndpoint,
 } from "./bloomProcessCommon.mjs";
 
+const usage =
+    "Usage: node .github/skills/bloom-automation/switchWorkspaceTab.mjs (--running-bloom | --http-port <port>) --tab <collection|edit|publish> [--json] [--timeout-ms <ms>]";
+
 const parseArgs = () => {
     const args = process.argv.slice(2);
+    if (asksForHelp(args)) {
+        printHelp();
+        process.exit(0);
+    }
     const options = {
         runningBloom: false,
         httpPort: undefined,
@@ -68,19 +76,19 @@ const parseArgs = () => {
             continue;
         }
 
-        if (arg === "--help") {
-            printHelp();
-            process.exit(0);
-        }
+        // A typo must not be ignored: an option this script does not know is a request it
+        // cannot carry out, so say so rather than do something else.
+        console.error(`Unknown option ${arg}.
+
+${usage}`);
+        process.exit(2);
     }
 
     return options;
 };
 
 const printHelp = () => {
-    console.log(
-        "Usage: node .github/skills/bloom-automation/switchWorkspaceTab.mjs (--running-bloom | --http-port <port>) --tab <collection|edit|publish> [--json] [--timeout-ms <ms>]",
-    );
+    console.log(usage);
 };
 
 const normalizeTab = (tab) => {

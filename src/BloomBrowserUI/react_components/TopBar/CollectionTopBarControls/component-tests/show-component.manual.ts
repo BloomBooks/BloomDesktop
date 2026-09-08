@@ -5,9 +5,6 @@
 import { Page, test } from "../../../component-tester/playwrightTest";
 import { setTestComponent } from "../../../component-tester/setTestComponent";
 
-const includeManualTests = process.env.PLAYWRIGHT_INCLUDE_MANUAL === "1";
-const manualDescribe = includeManualTests ? test.describe : test.describe.skip;
-
 const routeTopBarStatus = async (page: Page, status: string) => {
     await page.route("**/*", (route) => {
         const url = route.request().url();
@@ -22,7 +19,7 @@ const routeTopBarStatus = async (page: Page, status: string) => {
     });
 };
 
-manualDescribe("Manual Interactive Testing", () => {
+test.describe("Manual Interactive Testing", () => {
     test("default", async ({ page }) => {
         test.setTimeout(0);
 

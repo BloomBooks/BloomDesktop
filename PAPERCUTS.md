@@ -19,6 +19,18 @@ House rules:
 
 ---
 
+## 2026-09-03 — The e2e fixture launches a stale Bloom.exe when output/Debug/x64 is older than AnyCPU
+
+- **Cut:** `findBloomExe` in `src/BloomE2E/fixtures/launchBloom.ts` tries `Debug/x64` before
+  `Debug/AnyCPU` in a fixed order. `dotnet build src/BloomExe/BloomExe.csproj` writes to `AnyCPU`, so
+  a leftover `x64` folder from an earlier build wins, and the suite runs an old exe against the
+  freshly built `output/browser`. It looked like a broken test: a blank Collections tab,
+  `e2e/isCollectionReady` never true, and `BLOOM_AUTOMATION_MONITOR` ignored (the exe predated it).
+  Nothing in the run says which exe was launched; `common/instanceInfo` does.
+- **Idea:** pick the newest `Bloom.exe` among the candidates (or the one matching the newest
+  `output/browser`), and log the chosen path once at launch so a stale exe is visible in the output.
+- **Context:** Test Case ID 358, PR #8289; cost about 20 minutes of misdiagnosis.
+
 ## 2026-09-02 — Two BloomE2E sessions on one machine corrupt each other via the shared profile
 
 - **Cut:** BloomE2E runs from two worktrees at once (e.g. a developer session plus
@@ -59,6 +71,20 @@ House rules:
   AGENTS.md / the BloomE2E README, or point the test processes' L10NSharp writable folders at
   the isolated temp dir the way TestTempDirectory already isolates %TEMP%.
 - **Context:** preflight of PR #8275, branch automateTests.
+
+## 2026-09-02 — notion_automation.py needs Python, which not every dev machine has
+
+- **Cut:** `.github/skills/improve-test-automation-coverage/notion_automation.py` is the only way the
+  add-e2e-test flow reads or updates a Notion test card, and both it and the skill text assume `py`.
+  On a machine with no Python (only the Windows Store stub) every `show`/`set` fails, and an agent
+  ends up hand-porting the script to Node before it can read the card.
+- **Idea:** Rewrite it as `notion_automation.mjs`: the repo already requires Node and the script is
+  stdlib-only (`urllib` → `fetch`), so nothing else changes; update the skill text and worker brief.
+- **Context:** Hit while automating Test Case ID 356 on a machine with no Python.
+- seen again 2026-09-03 (Test Case ID 358): ported to Node once more, this time with the card
+  split (`[Automated portion]` / `[Manual portion]`, related both ways) that `add-e2e-test` asks
+  for and the Python script has no command for either.
+## 2026-09-01 — bloom-automation skill doesn't warn that Bloom's ports change across restarts
 
 - **Cut:** Bloom picks a free HTTP port at startup, so after `Program.RestartBloom` (e.g.
   toggling "Show translations which have not been approved yet") the launcher-relaunched Bloom
@@ -203,6 +229,34 @@ House rules:
   `output/browser/bookPreviewBundle.js` and say "run ./init.sh first" instead of launching
   into a Bloom that fails later.
 - **Context:** BuildServer worktree, while verifying the new launcher control surface.
+
+
+## 2026-09-04 — An e2e test cannot use a data-testid you just added to the front end
+- **Cut:** `src/BloomE2E` launches a real `Bloom.exe`, and that Bloom loads its UI from the
+  shared `output\browser`, not from a Vite dev server. So a `data-testid` added to a `.tsx`
+  file is invisible to the test until someone repopulates `output\browser` with a full
+  `pnpm build`, which AGENTS.md tells agents not to run, because it wrecks the dev server and
+  the Bloom the developer has running against it. The add-e2e-test skill says to prefer a
+  testid over matching an English label, and the environment says the testid cannot take
+  effect. The failure does not look like a build problem: the locator finds nothing, in a
+  Bloom whose markup is correct in the source you are reading, so it reads as a wrong selector
+  and you go looking for a different one. Cost, roughly an hour, twice. (Related: the
+  2026-07-24 cut about go.sh on a worktree whose `output/browser` was never built.)
+- **Workaround:** start a Vite dev server on port 5173 and set `BLOOM_E2E_VITE_PORT=5173` for
+  the run (README, "Testing a front-end change"). That needs 5173 free, which it was not here:
+  another project's dev server held it. Failing that, match an English `aria-label` the front
+  end already writes, or ask the developer to run the full build once no Bloom is running from
+  that worktree.
+- **Idea:** have the e2e fixture build the front end into its own tree (the way
+  `build/agent-vite.sh` already does) and point the Bloom it launches at that, so a test runs
+  against the source in the worktree rather than against whatever was last built, on whatever
+  port is free.
+- **Context:** the Add-Tables branch's e2e tests, 2026-09-04; ported to the e2e-infrastructure
+  branch with the tests' helpers.
+- **Update 2026-09-05:** the fixture now refuses to launch a Bloom whose bundle, or whose
+  `Bloom.dll`, is older than its source, and names the newer file (`assertBuildIsNotStale` in
+  `src/BloomE2E/fixtures/launchBloom.ts`). The stale build still has to be rebuilt by hand, or
+  bypassed with `BLOOM_E2E_VITE_PORT`, but it can no longer fail a test in silence.
 
 
 ## 2026-08-10 — check-csharp-ApplicationExit.sh greps whole files, not the diff

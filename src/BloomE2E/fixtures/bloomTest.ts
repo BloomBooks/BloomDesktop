@@ -115,6 +115,13 @@ interface IBloomWorkerFixtures {
     /** A collection to create for this test alone. Set it with test.use(). Preferred. */
     collectionSpec: ICollectionSpec | undefined;
     /**
+     * Experimental features this Bloom should have on, by their ExperimentalFeatures.cs tokens
+     * (e.g. ["team-collections"]). Set it with test.use(). See
+     * ILaunchBloomOptions.experimentalFeatures for why this is not done the way a person does it.
+     * Honoured only for a Bloom launched on a collection.
+     */
+    experimentalFeatures: string[] | undefined;
+    /**
      * Set with test.use() to launch Bloom with NO collection, at the Choose Collection dialog;
      * the test then uses the chooserApp fixture instead of bloomApp. collectionSpec still names
      * the collection the test can open FROM the dialog (chooserApp.collectionToOpen).
@@ -145,8 +152,32 @@ const SHELL_READY_TIMEOUT_MS = 90000;
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// How we recognize Bloom's shell document: it is the page holding the top bar's tab strip.
-const SHELL_MARKER = '[role="tablist"]';
+// How we recognize a candidate for Bloom's shell document: it is a page holding the top bar, which
+// carries this test id (react_components/TopBar/TopBar.tsx).
+const SHELL_MARKER = '[data-testid="workspace-top-bar"]';
+
+// Bloom's own answer to "which document are you driving?". The endpoint exists only under --e2e,
+// and reports the URL of the shell browser the C# side sends its commands to
+// (E2eTestingApi.HandleGetShellUrl).
+const SHELL_URL_ENDPOINT = "e2e/shellUrl";
+
+// How we recognize the Choose Collection dialog's document: a dialog title bar with no
+// workspace tab strip (the shell has the tab strip; the problem dialog has neither an h1
+// title of this shape nor tabs).
+const CHOOSER_MARKER = "#draggable-dialog-title h1";
+
+/**
+ * The file name part of a shell URL, e.g. "bloom45mgnfsl.htm" from
+ * "http://localhost:8095/bloom/C$3A/.../bloom45mgnfsl.htm?x=1". Bloom names each shell document
+ * after a temp file, so the file name identifies the document while the query string does not:
+ * the workspace rewrites its own query as the user moves around (updateWorkspaceUrlParam).
+ */
+function shellDocumentName(url: string): string {
+    const withoutQuery = url.split(/[?#]/)[0];
+    return withoutQuery
+        .substring(withoutQuery.lastIndexOf("/") + 1)
+        .toLowerCase();
+}
 
 /**
  * Connect to the WebView2's CDP endpoint, retrying while it comes up. Bloom's HTTP API reports
@@ -174,48 +205,101 @@ export async function connectOverCdpWithRetry(
 }
 
 /**
- * Find Bloom's shell document among the CDP page targets. We identify it by the top bar's tab
- * strip rather than by URL, which also excludes the separately-hosted problem dialog and any
- * DevTools target. Polling matters: the WebView2 target exists, as about:blank, for a second or
- * two before Bloom navigates it to the shell, and the React top bar mounts later still.
+ * Find the shell document Bloom is actually driving, among the CDP page targets.
+ *
+ * Two tests are applied, and both are needed. The top bar's test id finds the candidates, which
+ * also excludes the separately-hosted problem dialog and any DevTools target; then Bloom itself is
+ * asked which document it drives, and only that one is returned. The marker alone is not enough:
+ * a run can expose more than one workspace-root document, and attaching to an undriven one costs
+ * an hour, because the test's own clicks work while nothing Bloom loads ever appears (see
+ * AUTOMATION-DEBT.md). The hook alone is not enough either: it answers "" until the workspace
+ * view has built its browser, and an older Bloom.exe in output/Debug does not have the endpoint at
+ * all, so the marker match stays as the fallback for a hook that never answers.
+ *
+ * Polling matters: the WebView2 target exists, as about:blank, for a second or two before Bloom
+ * navigates it to the shell, and the React top bar mounts later still.
  */
-async function findShellPage(browser: Browser): Promise<Page> {
-    return findPageByMarker(
-        browser,
-        (marker) => !!document.querySelector(marker),
-        SHELL_MARKER,
-        "the workspace shell (the top bar's tab strip)",
+async function findShellPage(
+    browser: Browser,
+    httpPort: number,
+): Promise<Page> {
+    const deadline = Date.now() + SHELL_READY_TIMEOUT_MS;
+    let lastUrls: string[] = [];
+    let markerOnlyMatch: Page | undefined;
+    let hookEverAnswered = false;
+    while (Date.now() < deadline) {
+        const pages = browser
+            .contexts()
+            .flatMap((context) => context.pages())
+            .filter((page) => !page.url().startsWith("devtools://"))
+            // Keep only this Bloom's own documents. Another Bloom (another worktree, or the
+            // developer's) can answer on this CDP port, and its pages carry the same marker and
+            // answer the same hook, so a page from a different HTTP port must not win.
+            .filter(
+                (page) =>
+                    !page.url().startsWith("http") ||
+                    page.url().includes(`:${httpPort}/`),
+            );
+        lastUrls = pages.map((page) => page.url());
+        for (const page of pages) {
+            const hasTopBar = await page
+                .evaluate(
+                    (marker) => !!document.querySelector(marker),
+                    SHELL_MARKER,
+                )
+                .catch(() => false);
+            if (!hasTopBar) continue;
+            if (!markerOnlyMatch) markerOnlyMatch = page;
+            const drivenUrl = await page
+                .evaluate(async (endpoint) => {
+                    const response = await fetch(`/bloom/api/${endpoint}`);
+                    return response.ok ? await response.text() : "";
+                }, SHELL_URL_ENDPOINT)
+                .catch(() => "");
+            if (!drivenUrl) continue;
+            hookEverAnswered = true;
+            if (shellDocumentName(drivenUrl) === shellDocumentName(page.url()))
+                return page;
+        }
+        await delay(500);
+    }
+    // Re-check it before handing it back. It was found on some earlier turn of the loop, possibly
+    // ninety seconds ago, and Bloom navigates the shell target while it starts up, so by now the
+    // page may be gone.
+    if (markerOnlyMatch) {
+        const stillThere = await markerOnlyMatch
+            .evaluate(
+                (marker) => !!document.querySelector(marker),
+                SHELL_MARKER,
+            )
+            .catch(() => false);
+        if (!stillThere) markerOnlyMatch = undefined;
+    }
+    if (markerOnlyMatch && !hookEverAnswered) {
+        console.warn(
+            `Bloom never answered ${SHELL_URL_ENDPOINT}, so the shell document was chosen by ` +
+                `${SHELL_MARKER} alone. If this test fails oddly, check that output/Debug holds a ` +
+                `Bloom.exe new enough to have that endpoint.`,
+        );
+        return markerOnlyMatch;
+    }
+    throw new Error(
+        `Bloom's WebView2 never exposed the shell document it is driving within ` +
+            `${SHELL_READY_TIMEOUT_MS / 1000}s. Pages carrying ${SHELL_MARKER} were ` +
+            `${markerOnlyMatch ? "found" : "not found"}; ${SHELL_URL_ENDPOINT} ` +
+            `${hookEverAnswered ? "answered, but named a different document" : "never answered"}. ` +
+            `Targets seen: ${lastUrls.join(", ") || "none"}.`,
     );
 }
-
-// How we recognize the Choose Collection dialog's document: a dialog title bar with no
-// workspace tab strip (the shell has the tab strip; the problem dialog has neither an h1
-// title of this shape nor tabs).
-const CHOOSER_MARKER = "#draggable-dialog-title h1";
 
 /**
- * Find the Choose Collection dialog's document among the CDP page targets. Same polling logic
- * as findShellPage; the dialog is rebuilt from scratch when its UI language changes, so this
- * runs against a fresh connection each time (see IChooserBloomApp.reattachToChooser).
+ * Find the Choose Collection dialog's document among the CDP page targets: a page carrying the
+ * dialog's title bar and no workspace top bar. The dialog is rebuilt from scratch when its UI
+ * language changes, so this runs against a fresh connection each time (see
+ * IChooserBloomApp.reattachToChooser). Polls the way findShellPage does: the target exists, as
+ * about:blank, before Bloom navigates it, and React mounts the dialog later still.
  */
 async function findChooserPage(browser: Browser): Promise<Page> {
-    return findPageByMarker(
-        browser,
-        (marker) =>
-            !!document.querySelector(marker) &&
-            !document.querySelector('[role="tablist"]'),
-        CHOOSER_MARKER,
-        "the Choose Collection dialog",
-    );
-}
-
-/** The shared scan-and-poll behind findShellPage and findChooserPage. */
-async function findPageByMarker(
-    browser: Browser,
-    matches: (marker: string) => boolean,
-    marker: string,
-    description: string,
-): Promise<Page> {
     const deadline = Date.now() + SHELL_READY_TIMEOUT_MS;
     let lastUrls: string[] = [];
     while (Date.now() < deadline) {
@@ -226,14 +310,19 @@ async function findPageByMarker(
         lastUrls = pages.map((page) => page.url());
         for (const page of pages) {
             const found = await page
-                .evaluate(matches, marker)
+                .evaluate(
+                    ([chooser, shell]) =>
+                        !!document.querySelector(chooser) &&
+                        !document.querySelector(shell),
+                    [CHOOSER_MARKER, SHELL_MARKER],
+                )
                 .catch(() => false);
             if (found) return page;
         }
         await delay(500);
     }
     throw new Error(
-        `Bloom's WebView2 never exposed ${description} within ` +
+        `Bloom's WebView2 never exposed the Choose Collection dialog within ` +
             `${SHELL_READY_TIMEOUT_MS / 1000}s. Targets seen: ${lastUrls.join(", ") || "none"}.`,
     );
 }
@@ -241,10 +330,19 @@ async function findPageByMarker(
 export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
     collectionName: [undefined, { scope: "worker", option: true }],
     collectionSpec: [undefined, { scope: "worker", option: true }],
+    experimentalFeatures: [undefined, { scope: "worker", option: true }],
     startAtChooser: [false, { scope: "worker", option: true }],
 
     _launchedApp: [
-        async ({ collectionName, collectionSpec, startAtChooser }, use) => {
+        async (
+            {
+                collectionName,
+                collectionSpec,
+                experimentalFeatures,
+                startAtChooser,
+            },
+            use,
+        ) => {
             // Reassigned by restart() and the reattach methods, and read by the teardown below,
             // so the connection we close is always the current one.
             let browser: Browser | undefined;
@@ -292,7 +390,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                         reattachToShell: async () => {
                             app.page = await reconnectAndFind(
                                 launched!.cdpPort,
-                                findShellPage,
+                                (b) => findShellPage(b, launched!.httpPort),
                             );
                             return app.page;
                         },
@@ -312,12 +410,12 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                 launched = await launchBloom({
                     collectionName,
                     collectionSpec,
+                    experimentalFeatures,
                 });
                 const app: ICollectionBloomApp = {
                     mode: "collection",
-                    page: await reconnectAndFind(
-                        launched.cdpPort,
-                        findShellPage,
+                    page: await reconnectAndFind(launched.cdpPort, (b) =>
+                        findShellPage(b, launched!.httpPort),
                     ),
                     httpPort: launched.httpPort,
                     cdpPort: launched.cdpPort,
@@ -329,9 +427,11 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                         await browser?.close();
                         browser = undefined;
                         await launched!.restart(betweenStopAndStart);
+                        // Resolve the shell again: the restarted Bloom has a new shell document,
+                        // and the old page object points at a dead target.
                         app.page = await reconnectAndFind(
                             launched!.cdpPort,
-                            findShellPage,
+                            (b) => findShellPage(b, launched!.httpPort),
                         );
                         app.httpPort = launched!.httpPort;
                         app.cdpPort = launched!.cdpPort;
@@ -341,7 +441,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                     reattachToShell: async () => {
                         app.page = await reconnectAndFind(
                             launched!.cdpPort,
-                            findShellPage,
+                            (b) => findShellPage(b, launched!.httpPort),
                         );
                         return app.page;
                     },

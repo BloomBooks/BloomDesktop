@@ -108,6 +108,11 @@ namespace Bloom
         internal static string StartupLabel { get; private set; }
         internal static bool StartupAutomation { get; private set; }
 
+        // Experimental features an e2e run asked for, passed as
+        // --experimental-features <comma-separated tokens>, or null when none were asked for.
+        // Only accepted together with --e2e; see ExperimentalFeatures.TokensFromE2eCommandLine.
+        internal static string StartupExperimentalFeatures { get; private set; }
+
         // Control port of the dev launcher (scripts/watchBloomExe.mjs) that started
         // this Bloom, passed as --launcher-port. When present, DevLauncher watches for
         // pending C# changes and offers a dev-only toast that asks the launcher to
@@ -787,6 +792,7 @@ namespace Bloom
             StartupAutomation = false;
             StartupLauncherPort = null;
             RunningE2eTests = false;
+            StartupExperimentalFeatures = null;
 
             var remainingArgs = new List<string>();
 
@@ -834,6 +840,14 @@ namespace Bloom
                         value => RunningE2eTests = value,
                         out errorMessage
                     )
+                    || TryHandleStartupStringArgument(
+                        args,
+                        ref i,
+                        "--experimental-features",
+                        () => StartupExperimentalFeatures,
+                        value => StartupExperimentalFeatures = value,
+                        out errorMessage
+                    )
                 )
                 {
                     if (errorMessage != null)
@@ -843,6 +857,14 @@ namespace Bloom
                 }
 
                 remainingArgs.Add(args[i]);
+            }
+
+            // Refuse rather than ignore: a run that asks for a feature and does not get it fails
+            // in some far-away place, looking like a broken feature instead of a bad command line.
+            if (StartupExperimentalFeatures != null && !RunningE2eTests)
+            {
+                errorMessage = "Bloom only accepts --experimental-features together with --e2e.";
+                return Array.Empty<string>();
             }
 
             return remainingArgs.ToArray();
@@ -2024,10 +2046,32 @@ namespace Bloom
             string errorFilePath = FileException.GetFilePathIfPresent(error);
             // We want to skip over exceptions thrown by Autofac.
             originalError = MiscUtils.UnwrapUntilInterestingException(originalError);
+            // The FileException is usually inside the Autofac wrappers, not outside them
+            // (CollectionSettings is built by the project container), so look again now that
+            // they are gone. Without this the report says only "FileException" and the cause,
+            // which FileException deliberately keeps out of InnerException, is lost. (BL-16802)
+            if (originalError is FileException fileError)
+            {
+                errorFilePath = errorFilePath ?? fileError.FilePath;
+                originalError = fileError.OriginalException ?? originalError;
+            }
             Logger.WriteError(
                 $"*** Error loading collection {Path.GetFileNameWithoutExtension(projectPath)}, on filepath: {errorFilePath}",
                 originalError
             );
+
+            if (RunningE2eTests)
+            {
+                // No human is present during an e2e run to dismiss the dialog below, and each
+                // occurrence would file an error report. Put the cause where the test harness
+                // captures Bloom's output, then quit: without a collection the only thing left
+                // would be the collection chooser, which the harness cannot drive either, and a
+                // Bloom that exits before serving the collection is what fails the test. (BL-16802)
+                Console.Error.WriteLine(
+                    $"Error loading collection (e2e): {errorFilePath}{Environment.NewLine}{originalError}"
+                );
+                Environment.Exit(1);
+            }
 
             // Normally, NotifyUserOfProblem would take an exception and do this special-exception processing for us.
             // But in this case, we don't pass the exception to NotifyUserOfProblem because we may subsequently end up

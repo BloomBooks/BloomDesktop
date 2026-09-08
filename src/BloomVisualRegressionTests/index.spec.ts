@@ -39,6 +39,13 @@ const testingInputsRoot =
     process.env.BLOOM_TESTING_INPUTS_DIR ??
     Path.join(repoRoot, "output", "testing-inputs");
 const sourceCollectionsRoot = Path.join(testingInputsRoot, "collections");
+// The ONE collection this suite renders. We launch a single Bloom on it (see
+// launchDedicatedBloom) and Bloom cannot be made to switch collections mid-run, so a book in any
+// other collection of the inputs repository is out of reach: selecting it fails. The inputs
+// repository does now hold other collections (page-copy, for the BloomE2E copy-page test), so
+// both the launch and the enumeration of books below go through this constant rather than taking
+// whatever collections happen to be there.
+const TESTED_COLLECTION = "basic";
 if (!fs.existsSync(sourceCollectionsRoot)) {
     throw new Error(
         `Could not find the test-input collections at ${sourceCollectionsRoot}.\n` +
@@ -201,6 +208,12 @@ describe("All books", () => {
     let playerPage: Page;
     let browser: Browser;
     let context: BrowserContext;
+    // Every image comparison the CURRENT case has failed. A case compares one book-preview image
+    // and one image per bloom-player page, and a stale baseline usually affects several of them.
+    // Throwing on the first mismatch meant the later comparisons never even captured their
+    // images, so accepting a real layout change took one ~3-minute run per image (BL-16638 took
+    // three rounds). So collect them all and fail once, at the end of the case.
+    let comparisonFailures: string[] = [];
 
     beforeAll(async () => {
         await launchDedicatedBloom();
@@ -219,10 +232,6 @@ describe("All books", () => {
             ],
         });
         context = await browser.newContext();
-        andikaIsInstalled = await isFontInstalled(context, "Andika");
-        if (andikaIsInstalled) {
-            console.warn(chalk.black.bgYellow(ANDIKA_INSTALLED_WARNING));
-        }
         page = await context.newPage();
         playerPage = await context.newPage();
         await playerPage.setViewportSize({ width: 900, height: 1200 });
@@ -237,26 +246,24 @@ describe("All books", () => {
         cleanupTempCollections();
     });
 
-    // NB: currently, we don't have a way of making Bloom change collections, or re-running it with a different collection
-    // The inputs repository currently holds only the one collection, so this is ok for now.
-    const collectionFolders = fs
-        .readdirSync(sourceCollectionsRoot)
-        .filter((f) =>
-            fs.statSync(Path.join(sourceCollectionsRoot, f)).isDirectory(),
+    // NB: currently, we don't have a way of making Bloom change collections, or re-running it with
+    // a different collection, so we render only the books of TESTED_COLLECTION -- the one the Bloom
+    // we launch has open. (We used to take every collection in the inputs repository, which was
+    // fine while it held only one; when the page-copy collection was added for the BloomE2E
+    // copy-page test, its books became tests that could never pass, because selecting a book that
+    // is not in the open collection fails.)
+    const collectionFolder = Path.join(
+        sourceCollectionsRoot,
+        TESTED_COLLECTION,
+    );
+    const bookFolders = fs
+        .readdirSync(collectionFolder)
+        .filter(
+            (f) =>
+                fs.statSync(Path.join(collectionFolder, f)).isDirectory() &&
+                !f.startsWith("Sample Texts"),
         )
-        .map((f) => Path.join(sourceCollectionsRoot, f));
-
-    const bookFolders = collectionFolders.flatMap((collectionPath) => {
-        var paths = fs
-            .readdirSync(collectionPath)
-            .filter(
-                (f) =>
-                    fs.statSync(Path.join(collectionPath, f)).isDirectory() &&
-                    !f.startsWith("Sample Texts"),
-            )
-            .map((f) => Path.join(collectionPath, f));
-        return paths;
-    });
+        .map((f) => Path.join(collectionFolder, f));
     const brandings = ["Default", "Local-Community", "UEEP[Uzbek]"];
     // The appearance themes to test. These match the files in src/content/appearanceThemes/.
     const themes = [
@@ -292,6 +299,7 @@ describe("All books", () => {
     });
 
     test.each(cases)("$title", async (testCase) => {
+        comparisonFailures = [];
         // Park the capture pages before we mutate this book. Otherwise the previous case's still-open
         // book-preview / bloom-player page keeps requesting book and staged-BloomPUB files while this
         // case rewrites them, which caused mid-run "file is being used by another process" and
@@ -329,6 +337,14 @@ describe("All books", () => {
         await selectTab("publish");
         const stagedUrl = await makeBloomPubPreview();
         await capturePlayerPages(stagedUrl, testCase.label, screenshotsDir);
+
+        // One failure for the whole case, listing every image that did not match, so a single run
+        // shows all the baselines that need looking at.
+        if (comparisonFailures.length > 0)
+            throw new Error(
+                `${comparisonFailures.length} of this case's images did not match their ` +
+                    `reference:\n  ${comparisonFailures.join("\n  ")}`,
+            );
     });
 
     // Create the reference image if it does not exist yet; otherwise capture a current image and
@@ -336,13 +352,10 @@ describe("All books", () => {
     // `screenshotsDir` is always in the SOURCE inputs tree (output/testing-inputs, or whatever
     // BLOOM_TESTING_INPUTS_DIR names), never in the temp copy, so that an accepted new baseline is
     // a file a developer can commit to the inputs repository. See readme.md.
-    // `isPlayerCapture` marks a bloom-player screenshot, whose text comes from whatever Andika the
-    // machine has (see andikaIsInstalled), as opposed to a book-preview one, which does not.
     async function captureOrCompare(
         label: string,
         screenshotsDir: string,
         shoot: (imagePath: string) => Promise<void>,
-        isPlayerCapture = false,
     ) {
         const referencePath = Path.join(
             screenshotsDir,
@@ -361,9 +374,6 @@ describe("All books", () => {
             referencePath,
             currentPath,
             Path.join(screenshotsDir, `${label}-diff.png`),
-            isPlayerCapture && andikaIsInstalled
-                ? ANDIKA_INSTALLED_WARNING
-                : undefined,
         );
     }
 
@@ -518,52 +528,6 @@ describe("All books", () => {
         return result.text();
     }
 
-    // The bloom-player captures must not depend on which fonts this machine has installed. When Bloom
-    // stages a BloomPUB it strips the book's own @font-face rules (BL-12594) and leaves the font to
-    // bloom-player, which declares Andika as `local("Andika")` first and the Bloom-served woff2 only
-    // as a fallback. So a machine with Andika installed renders every player page with its own copy of
-    // the font, and its glyphs differ from the reference images (which come from a machine without it,
-    // like the CI runner) by tens to hundreds of pixels per page. That has twice led someone to "fix"
-    // the suite by regenerating the baselines on their own machine, which just moved the failure to
-    // CI. The book-preview captures are unaffected: the staged book's own @font-face points at the
-    // served copy. So we don't refuse to run; we warn once up front, and when a player page then
-    // mismatches we say in the failure itself that the font is the likely cause, so nobody reads it
-    // as a regression or accepts it as a new baseline.
-    let andikaIsInstalled = false;
-    const ANDIKA_INSTALLED_WARNING =
-        `Andika is installed on this machine. bloom-player prefers an installed Andika over the copy ` +
-        `Bloom serves, so the bloom-player screenshots will be rendered with this machine's Andika and ` +
-        `will probably differ from the reference images (which are rendered without it, as on CI). ` +
-        `Player-page differences on this machine are probably that, not a regression, and must not be ` +
-        `accepted as new baselines. Uninstall Andika to make these comparisons meaningful; Bloom ` +
-        `does not need it installed.`;
-
-    // The probe is a @font-face whose only source is local(<family>): it loads if and only if the
-    // font is installed. Chrome may either resolve with no faces or reject when it is not.
-    async function isFontInstalled(
-        context: BrowserContext,
-        family: string,
-    ): Promise<boolean> {
-        const probe = await context.newPage();
-        try {
-            await probe.setContent(
-                `<style>@font-face { font-family: "bloom-vr-probe"; src: local("${family}"); }</style>`,
-            );
-            return await probe.evaluate(async () => {
-                try {
-                    const faces = await (globalThis as any).document.fonts.load(
-                        '16px "bloom-vr-probe"',
-                    );
-                    return faces.some((f: any) => f.status === "loaded");
-                } catch {
-                    return false;
-                }
-            });
-        } finally {
-            await probe.close();
-        }
-    }
-
     // Build the bloom-player URL for the staged book at a specific page (0-based). Mirrors what the
     // desktop app does (see RecordVideoWindow): the staged URL is already single-encoded, and
     // URLSearchParams encodes it again so it survives as a query parameter (see BL-11319).
@@ -630,6 +594,10 @@ describe("All books", () => {
                 content:
                     ".nicescroll-rails,.nicescroll-cursors{display:none!important}",
             });
+            // Render the book's text from the fonts Bloom serves, whatever this machine has
+            // installed; see SERVED_FONTS_ONLY_CSS. Also before the settle wait: it restyles the
+            // text, and the wait for document.fonts.ready below is what covers the reload.
+            await playerPage.addStyleTag({ content: SERVED_FONTS_ONLY_CSS });
             const active = await playerPage.waitForSelector(
                 ACTIVE_PLAYER_PAGE,
                 { timeout: 30000 },
@@ -684,18 +652,33 @@ describe("All books", () => {
                 async (imagePath) => {
                     await pageElement.screenshot({ path: imagePath });
                 },
-                true,
             );
         }
     }
 
-    // `likelyCause`, when given, is an explanation to attach to a mismatch (see andikaIsInstalled):
-    // something we know about this machine that makes the difference expected rather than a regression.
+    // Compare one captured image against its reference. This does NOT throw on a mismatch: it
+    // appends a description to comparisonFailures, and the test body fails the case once it has
+    // compared every image. Anything thrown while comparing (notably Pixelmatch's "Image sizes do
+    // not match", which is itself a real failure) is recorded the same way.
     async function comparePreviewImage(
         referencePath: string,
         testPath: string,
         diffPath: string,
-        likelyCause?: string,
+    ) {
+        try {
+            await compareOrThrow(referencePath, testPath, diffPath);
+        } catch (error) {
+            comparisonFailures.push(
+                `${testPath}: ${error instanceof Error ? error.message : String(error)}`,
+            );
+        }
+    }
+
+    // The comparison itself: write a diff image and throw when the two images differ at all.
+    async function compareOrThrow(
+        referencePath: string,
+        testPath: string,
+        diffPath: string,
     ) {
         const referenceImage = PNG.sync.read(fs.readFileSync(referencePath));
         const testImage = PNG.sync.read(fs.readFileSync(testPath));
@@ -726,12 +709,11 @@ describe("All books", () => {
                 ),
             );
             // A thrown Error rather than expect(...).toBe(0), so the failure itself carries the
-            // diff path and, when we know one, the likely cause; the console lines above are lost in
-            // a long run's output.
+            // diff path; the console lines above are lost in a long run's output.
+            // comparePreviewImage catches this and records it.
             throw new Error(
-                `${testPath} differed from the reference by ${numberOfDifferentPixels} pixels. ` +
-                    `The diff image is at ${diffPath}.` +
-                    (likelyCause ? `\n\n${likelyCause}` : ""),
+                `${testPath} differed from ${referencePath} by ${numberOfDifferentPixels} pixels. ` +
+                    `The diff image is at ${diffPath}.`,
             );
         }
     }
@@ -770,6 +752,48 @@ function writeDirectionalDiff(reference: PNG, current: PNG, diffPath: string) {
         out.data[i + 3] = 255;
     }
     fs.writeFileSync(diffPath, PNG.sync.write(out) as Uint8Array);
+}
+
+// The bloom-player captures must not depend on which fonts this machine has installed. When Bloom
+// stages a BloomPUB it strips the book's own @font-face rules (BL-12594) and leaves the font to
+// bloom-player, which declares each Andika face as `local(...)` first and the Bloom-served WOFF2
+// only as a fallback. So a machine with Andika installed used to render every player page with
+// its own copy of the font, and its glyphs differed from the reference images (rendered without
+// it, as on the CI runner) by hundreds to thousands of pixels per page; that twice led someone to
+// "fix" the suite by regenerating the baselines on their own machine, which just moved the failure
+// to CI. (The book-preview captures were never affected: the staged book's own @font-face points at
+// the served copy.)
+//
+// So after loading a player page we add these rules: one @font-face per face bloom-player declares,
+// with the same family, weight and style descriptors, and the served WOFF2 as the ONLY source.
+// When several @font-face rules have identical descriptors the last one wins, so these replace the
+// player's own, and the text renders from Bloom's WOFF2 whatever is installed. The URLs are the
+// ones bloom-player itself falls back to, so a run requests exactly the files CI does. Measured
+// 2026-09-03: with Andika faces forced to an installed font, 51 of 84 comparisons differed (199 to
+// 14351 pixels); with these rules added as well, 0 of 84.
+const SERVED_FONTS_ONLY_CSS = [
+    servedFontFaces("Andika"),
+    servedFontFaces("Andika New Basic"),
+].join("\n");
+
+// The four @font-face rules (regular, bold, italic, bold italic) for one family, each with the
+// served file as its only source. The URL is the one bloom-player uses: the family name under
+// ./host/fonts/, followed by " Bold", " Italic" or " Bold Italic" for the other faces, which Bloom
+// answers with the matching WOFF2 (see FontsApi.ProcessHostFontsRequest).
+function servedFontFaces(family: string): string {
+    const variants = [
+        ["normal", "normal", ""],
+        ["bold", "normal", " Bold"],
+        ["normal", "italic", " Italic"],
+        ["bold", "italic", " Bold Italic"],
+    ];
+    return variants
+        .map(
+            ([weight, style, variant]) =>
+                `@font-face{font-family:"${family}";font-weight:${weight};font-style:${style};` +
+                `src:url("./host/fonts/${family}${variant}")}`,
+        )
+        .join("\n");
 }
 
 // Ports Bloom uses: it takes the next free block starting at 8089 (8089, 8092, 8095, ...). We probe
@@ -833,18 +857,20 @@ async function findBloomServingCollection(
     return null;
 }
 
-// Populate the throwaway temp collection that Bloom will open, by copying the source collections.
-// A plain copy is enough for determinism now: output/testing-inputs is one exact commit of the
-// inputs repository (build/testing-inputs.pin), so there is no working tree to differ from it. The
-// screenshots/ folders are left out — they are baselines and outputs, read and written in the
-// source tree (see captureOrCompare), and copying 48 reference PNGs per book would only slow the
-// run down.
+// Populate the throwaway temp collection that Bloom will open, by copying TESTED_COLLECTION. The
+// inputs repository's other collections belong to other suites and we never open them, so we do
+// not copy them. A plain copy is enough for determinism now: output/testing-inputs is one exact
+// commit of the inputs repository (build/testing-inputs.pin), so there is no working tree to
+// differ from it. The screenshots/ folders are left out — they are baselines and outputs, read and
+// written in the source tree (see captureOrCompare), and copying 48 reference PNGs per book would
+// only slow the run down.
 function populateTempCollections(dest: string) {
-    fs.cpSync(sourceCollectionsRoot, dest, {
+    const source = Path.join(sourceCollectionsRoot, TESTED_COLLECTION);
+    fs.cpSync(source, Path.join(dest, TESTED_COLLECTION), {
         recursive: true,
-        filter: (source) => Path.basename(source) !== "screenshots",
+        filter: (path) => Path.basename(path) !== "screenshots",
     });
-    console.log(`Rendering the test collections from ${sourceCollectionsRoot}`);
+    console.log(`Rendering the test collection from ${source}`);
 }
 
 // Populate a throwaway temp collection (see populateTempCollections) and launch a dedicated Bloom on
@@ -862,8 +888,8 @@ async function launchDedicatedBloom() {
 
     const collection = Path.join(
         tempCollectionsRoot,
-        "basic",
-        "basic.bloomCollection",
+        TESTED_COLLECTION,
+        `${TESTED_COLLECTION}.bloomCollection`,
     );
     // The exe lands in a config/platform-specific folder depending on the build; try the known
     // locations. Release is included because CI runs the suite against Release builds. Debug is
@@ -911,7 +937,7 @@ async function launchDedicatedBloom() {
     });
 
     // Discover which port our instance opened on by matching the collection folder it has open.
-    const wantFolder = Path.join(tempCollectionsRoot, "basic");
+    const wantFolder = Path.join(tempCollectionsRoot, TESTED_COLLECTION);
     const startTime = Date.now();
     while (Date.now() - startTime < 90000) {
         const match = await findBloomServingCollection(wantFolder);

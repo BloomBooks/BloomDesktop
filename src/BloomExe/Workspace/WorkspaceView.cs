@@ -179,6 +179,8 @@ namespace Bloom.Workspace
                 _workspaceReactControl.BrowserCreated += (unused, args) =>
                 {
                     _mainBrowser = _workspaceReactControl.Browser;
+                    if (Program.RunningE2eTests)
+                        MainBrowserForE2eTests = _mainBrowser;
                     _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
                     _editingView.InitializeMainBrowserForEditMode();
                     MaybeOpenMainBrowserDevTools();
@@ -280,6 +282,14 @@ namespace Bloom.Workspace
                 shouldHideSplashScreen: true
             ); // possibility of error message boxes (BL-12155)
         }
+
+        /// <summary>
+        /// The browser holding the workspace root document that Bloom drives: the one whose page
+        /// iframe the Edit tab navigates. Set only under --e2e, for the e2e/shellUrl endpoint.
+        /// More than one document in a run carries the workspace root's markup, and a test that
+        /// attaches to the wrong one sees its own clicks work while nothing Bloom does arrives.
+        /// </summary>
+        internal static Browser MainBrowserForE2eTests { get; private set; }
 
         internal void ReloadWorkspaceRootDocument()
         {

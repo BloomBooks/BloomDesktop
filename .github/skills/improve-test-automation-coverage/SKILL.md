@@ -49,8 +49,11 @@ forbidden: marking a PR ready for review, moving any Orca card to Peer Review, s
 ## The Automation lifecycle this skill drives
 
 `Planned` → `Building` (you, at claim time) → `PR Pending` (worker, when the draft PR exists,
-with the PR URL in `Automation Notes`) → `Automated` or `Partial` (a human, after merge; a
-separate sweep of `PR Pending` cards is planned). A worker that finds a case not feasible as
+with the PR URL in `Automation Notes`) → `Automated` (a human, after merge; a separate sweep of
+`PR Pending` cards is planned). A worker whose test covers only part of a card's steps splits the
+card when it sets `PR Pending`, as `add-e2e-test` describes: the original becomes the
+`[Automated portion]` and keeps its id, the uncovered steps move to a new `[Manual portion]` row.
+A card is never left half automated. A worker that finds a case not feasible as
 written sets it to `Has automation problems` with a dated note that says what the card, or
 Bloom, needs; that is the queue for the developer who wrote the card. The developer telling the worker
 that the card is not ready counts as such a finding, as much as a technical block does. Such a card is out of
@@ -183,7 +186,8 @@ The worker has asked you to review its test, and is blocked until you reply.
    `add-e2e-test`: the title carries `[Test Case ID <id>]`; the test builds its own collection
    unless a fixture is justified; the behavior under test goes through the real UI, setup may use
    the API; waits are state-based; no native dialogs; helpers reused rather than re-implemented;
-   the covered and uncovered Test Steps match what the worker says; `AUTOMATION-DEBT.md` records
+   the covered and uncovered Test Steps match what the worker says, and any uncovered step means
+   the card was split into an automated and a manual portion; `AUTOMATION-DEBT.md` records
    anything the worker could not automate cleanly. Run the `code-review` skill on the worktree
    for a second opinion when the diff touches C# or the shared helpers.
 2. If you want to see it run, run it yourself through the lock, from that worktree's
@@ -214,6 +218,27 @@ open and there is nothing more to do. Confirm the Notion card is
 in the state the outcome implies (`PR Pending` with a PR URL; `Has automation problems` with a
 dated note; or `Planned` with a `Blocked:` note) and fix it with `notion_automation.py set` if the worker forgot. Do not delete the worktree: the
 PR lives on that branch.
+
+## Resuming a stalled run
+
+A run stalls when the controller or a worker stops for a reason outside the work: a Claude
+usage limit, a machine sleep, an Orca restart. Symptoms: `check` shows an `escalation`
+"Agent exited unexpectedly", or heartbeats "rejected ... capability is revoked", and the cards
+stay `Building`. A new controller can take the run over:
+
+1. `orca orchestration worker-list --json` filtered on the run id gives every dispatch, its
+   task, and its worktree. `git -C <worktree> status --short` shows what the dead worker left.
+   Nothing is lost: the work is uncommitted in the worktree.
+2. For each task whose dispatch is `failed` or `abandoned`, start a replacement in the SAME
+   worktree: `worker-start --task <task_id> --retry-of <old dispatch> --worktree id:<worktree id>
+   --agent claude --model claude-fable-5-1`. Then send the new dispatch a follow-up that says
+   the predecessor died, that its work is in the worktree, to read `git status` and `git diff`
+   first and continue from it, and where the brief file is. Restate any review fixes you had
+   already sent the dead worker.
+3. Acknowledge the stale inbox messages, then continue Step 3 as usual.
+
+Do not reset a card to `Planned` because its worker died; the claim and the worktree are
+still good.
 
 ## Step 4 — Report
 

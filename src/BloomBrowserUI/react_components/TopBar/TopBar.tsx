@@ -130,6 +130,10 @@ export const TopBar: React.FunctionComponent = () => {
         <ScopedCssBaseline>
             <div
                 ref={topBarRef}
+                // How automation recognizes Bloom's shell document among the WebView2's CDP
+                // targets, and the one stable marker on the top bar as a whole. See
+                // src/BloomE2E/fixtures/bloomTest.ts (SHELL_MARKER).
+                data-testid="workspace-top-bar"
                 css={css`
                     background-color: ${getColorForTab(activeTab)};
                     padding-top: 2px;
@@ -162,6 +166,9 @@ const Tab: React.FunctionComponent<{
         <li role="presentation">
             <a
                 role="tab"
+                // Automation clicks tabs by this id. The visible label is localized, so matching
+                // on it would confine every test to an English UI.
+                data-testid={`workspace-tab-${props.tab.id}`}
                 aria-selected={props.selected ? "true" : "false"}
                 aria-disabled={props.disabled ? "true" : "false"}
                 css={css`
@@ -223,6 +230,7 @@ export const BloomTabs: React.FunctionComponent<{
     return (
         <ul
             role="tablist"
+            data-testid="workspace-tabs"
             css={
                 // style as tabs
                 css`

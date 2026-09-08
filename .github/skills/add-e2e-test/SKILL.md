@@ -87,27 +87,43 @@ carries the API mechanics.
   `test("change UI language repeatedly [Test Case ID 69]", ...)` — so the code and the
   inventory stay tied. Read the card's Test Steps checkboxes; they are the behavior
   contract. When the automated test lands, set the card's `Automation` property to
-  `Automated` — or to `Partial` when the automated test covers only part of the steps,
-  and say which part in `Automation Notes`. While the test is still in an open PR, the
-  card belongs in `PR Pending` instead, with the PR URL in `Automation Notes`. The title string is the whole mechanism;
+  `Automated`. While the test is still in an open PR, the card belongs in `PR Pending`
+  instead, with the PR URL in `Automation Notes`. The title string is the whole mechanism;
   the library provides no helper or annotation for it, deliberately, so that grepping
   `Test Case ID` across `src/BloomE2E/tests/` finds every tie.
+- **When the test covers only part of the card's steps, split the card.** A card marked
+  `Automated` while some of its steps are still human-run hides those steps: nobody reads
+  `Automation Notes` when planning a manual run. So a card is never half automated.
+  1. Rename the original to `<title> [Automated portion]`. It keeps its `Test Case ID`,
+     because the test source carries that id, and keeps only the steps the test covers.
+  2. Add a row `<title> [Manual portion]` with the next free `Test Case ID` and the same
+     `Test Suite Run`, `Areas`, `Priority`, and `Dokimion ID`. Move the uncovered steps into
+     it. Start its body with a callout that names the automated card and says, per step,
+     why it is not automated (microphone, native dialog, WinForms surface) and which
+     `AUTOMATION-DEBT.md` entry covers it. Its `Automation` is `Manual`, or `Keep manual`
+     when the steps can never be automated.
+  3. Link the two rows through the `Related Cases` relation property, in both directions,
+     and name the other card's id in each `Summary`.
+  Do this when you set `PR Pending`, not after the merge. Example: Test Case ID 349,
+  "Duplicate Page [Automated portion]", and its manual portion, Test Case ID 810.
 - **Writing a new e2e test that has no manual card:** add a row to the inventory so it
   remains the inventory of ALL tests, not only human-run ones. Allocate the next free
   `Test Case ID`, fill in the title, Summary, and Areas, and set `Automation` to
   `Automated`.
 - **The `Automation` select property** holds the case's automation lifecycle:
-  `Manual` → `Planned` → `Building` → `PR Pending` → `Automated` (or `Partial`), with
-  `Keep manual` as the deliberate opt-out.
+  `Manual` → `Planned` → `Building` → `PR Pending` → `Automated`, with `Keep manual` as
+  the deliberate opt-out.
   - Empty means the same as `Manual` — the legacy rows were not bulk-stamped.
   - `Planned` marks a case the team judged a good automation candidate. To find work,
     filter the current suite run on `Automation = Planned`.
   - `Building` means someone is automating it right now. Set it when you start, so two
-    people or agents do not automate the same case; set `Automated` (or `Partial`,
-    with the covered part named in `Automation Notes`) when the test lands.
+    people or agents do not automate the same case; set `Automated` when the test lands,
+    after splitting the card if the test covers only part of its steps.
   - `PR Pending` means the test exists in an open PR that has not merged. Put the PR URL
     in `Automation Notes`. The `improve-test-automation-coverage` skill leaves cards here;
-    a human (or a later sweep) moves them to `Automated` or `Partial` after the merge.
+    a human (or a later sweep) moves them to `Automated` after the merge.
+  - `Partial` is retired. A card that would have been `Partial` is split instead (see
+    above). A card still marked `Partial` is one that still needs the split.
   - `Has automation problems` means an automation attempt found the card not automatable as
     written. `Automation Notes` says which step blocks it and what the card, or Bloom, needs.
     The developer who owns the card fixes that and sets `Planned` again.
@@ -190,8 +206,13 @@ Rules that hold regardless of the final API:
 - Real mouse events, not synthetic `element.click()`, for targets that need them
   (book tiles, Settings, PREVIEW); the helper layer handles this — never hand-roll
   `Input.dispatchMouseEvent` inside a test.
-- NEVER trigger native OS dialogs (file pickers, the WinForms Image Toolbox, video
-  capture) — Playwright cannot dismiss them and the run hangs.
+- NEVER trigger native OS dialogs (the WinForms Image Toolbox, video capture, the folder
+  chooser) — Playwright cannot dismiss them and the run hangs. The one exception is the "choose
+  a file" or "choose a folder" dialog: arm `armFileChooser` (helpers/talkingBook.ts, over the
+  `e2e/nextFileToChoose` hook) with the path you want BEFORE the click that opens it, and Bloom
+  answers with that path instead of showing a dialog. It answers one dialog only, so arm it
+  immediately before the click; a path armed and never used would otherwise answer some later
+  test's chooser.
 - NEVER submit a problem report. The fixture fails the test with gathered detail when
   a "Bloom had a problem" dialog appears; do not loop-dismiss it.
 - Waits are event/state-based (poll an API, await a selector), never fixed sleeps.
@@ -267,22 +288,55 @@ Dependencies point down only:
    header and the CDP endpoint does not answer on `localhost`) and `helpers/realClick.ts`
    (`realClick`, `realClickAt`). Tests do not import these; surface modules wrap them.
 2. **One module per Bloom surface**, named after the surface:
-   - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`. Bloom hides the
-     Edit and Publish tabs until a book is selected.
+   - `helpers/workspace.ts` — `switchTab`, `getTabs`, `waitForActiveTab`, and the zoom
+     control's `getZoom`, `setZoom`. Bloom hides the Edit and Publish tabs until a book is
+     selected.
    - `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
    - `helpers/bookMaking.ts` — `makeBookFromTemplate`, `addPage`, `findBookFolder`,
-     `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`, `typeInGroup`,
+     `setContentLanguages`, `getPages`, `getContentPages`, `goToPage`, `clickInGroup`, `typeInGroup`,
      `waitForEditablePage`, `editablePageFrame`. A book made from a template starts with
      front and back matter only, so a test that needs content calls `addPage`. Bloom writes
      a page only when the book leaves it, so `goToPage` is also how a test saves what it
-     typed.
+     typed. `makeBookFromBookInCollection`, `getFactoryTemplateFolder` and
+     `getFactoryTemplatePageLabels` serve tests about templates and derivatives.
+     `waitForEditablePage` waits for Bloom's editing state machine (via `e2e/isEditingPage`)
+     as well as for the page, because an add or a jump asked for before that is silently
+     dropped.
    - `helpers/pageList.ts` — `duplicatePageWithButton`, `duplicatePageWithContextMenu`,
      `movePageToSlotOf`, and the API route `duplicateCurrentPage` for setup.
    - `helpers/images.ts` — `chooseImageFile` (setup, no picker), `cropImage`,
      `getImagePlacement`.
-   - `helpers/publish.ts` — `openPublishDestination`, `getTextLanguageRows`,
-     `expectTextLanguageRows`, `clickTextLanguage`, `showBloomPubPreview`,
-     `getPreviewLanguages`, `getLanguagesInBook`, `getTooltipForLanguage`.
+   - `helpers/formatDialog.ts` — the format gear and the Format dialog it opens:
+     `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
+     `getFormatDialogPlacement`, `scrollFormatGearIntoView`, `scrollFormatGearPartlyIntoView`,
+     `zoomUntilFormatGearIsOutOfView`.
+   - `helpers/addPageDialog.ts` — `openAddPageDialog`, `getAddPageDialogGroups`,
+     `scrollAddPageDialog`, `closeAddPageDialog`, `addPageFromDialog`. The real Add Page
+     dialog, for tests whose subject is the dialog; `addPage` is the API route to a page.
+     Identify a group by its `templateBookFolder`, not its heading: the heading is localized
+     ("Basic Pages" for Basic Book), and the machine running the test can have downloaded
+     templates of its own in the list.
+   - `helpers/files.ts` — `fingerprintFolder`, `isInsideFolder`. Files on disk; nothing
+     here talks to Bloom.
+   - `helpers/publish.ts` — `openPublishDestination`, `getLanguageRows`,
+     `expectLanguageRows`, `expectLanguageRowsInAnyOrder`, `clickLanguage`,
+     `getTooltipForLanguage`, `showBloomPubPreview`,
+     `getPreviewLanguages`, `getLanguagesInBook`, `isTalkingBookFeatureOn`,
+     `expectTalkingBookFeature`, `stageBloomPub`, `getStagedNarrationIds`. The Publish tab has
+     TWO language lists — Text Languages and Talking Book Languages — rendered by the same
+     component, so every reader takes which one it means (`"text"` or `"audio"`) right after
+     `page`. Assertions on a list must use the polled `expectLanguageRows`, not a bare `expect`
+     on `getLanguageRows`: the lists are filled from `publish/languagesInBook` after the screen
+     mounts, and reading once races that answer.
+   - `helpers/talkingBook.ts` — `openToolboxWithTalkingBook`, `getNarrationSentences`,
+     `addNarration`, `getNarratedLanguages`, `importNarration`, `armFileChooser`,
+     `isImportRecordingEnabled`, `setRecordingMode`, `openAdvancedSection`. Narration cannot be
+     RECORDED in a test (it needs
+     a microphone), so a test that needs a book with audio calls `addNarration`, which puts an
+     mp3 where a recording would have gone — the sentence ids it is named after come from
+     Bloom's own tool, which marks them when the toolbox opens. `importNarration` drives the
+     real Import Recording button instead, and is only for the test whose subject that is: Bloom
+     offers it solely in whole-text-box mode and solely to a Pro subscription.
    This list is a map, not the index. The folder is the index: new modules appear there
    before anyone updates this file.
 3. **Tests**, which call surface helpers and nothing lower.
@@ -305,11 +359,39 @@ pnpm exec playwright test tests/workspace-tabs.spec.ts   # one file
 pnpm exec playwright test -g "switching workspace tabs"  # one test by title
 ```
 
-A run opens a real Bloom window; that is expected. It needs a built `Bloom.exe` under
-`output/{Debug,Release}/{x64,AnyCPU,}/` (build it yourself; see "Build Bloom whenever it
-helps") and the inputs at `output/testing-inputs`. Point
+A run launches a real Bloom and its window appears on the developer's desktop, unless
+`BLOOM_AUTOMATION_MONITOR` says otherwise. That one variable decides where every window a run
+opens goes, the splash screen included: `headless`, or `0`, puts them all off every monitor; a
+1-based monitor number puts them on that monitor; and any other value, unset included, leaves Bloom
+to place them as it always does. `headless` moves the window off-screen rather than minimizing it,
+because WebView2 stops painting a minimized window and every screenshot then comes back blank.
+`--debug` clears a `headless` setting, so a debug session has a window to step through. The monitor
+number counts left to right, so 1 is the leftmost monitor; it is **not** the number Windows Settings
+shows beside each display, and no API reproduces those. Bloom writes the whole mapping to its log at
+startup. See `src/BloomE2E/README.md` for the table and that log line.
+
+A run needs a built `Bloom.exe` under `output/{Debug,Release}/{x64,AnyCPU,}/` (build it yourself;
+see "Build Bloom whenever it helps") and the inputs at `output/testing-inputs`. Point
 `BLOOM_TESTING_INPUTS_DIR` at a bloom-testing-inputs checkout to use your own in-progress
 collections instead of the pinned ones.
+
+The launched Bloom serves its React UI from the built `output/browser`, so **an edit to a `.tsx`
+file does not reach a run until that bundle is rebuilt.** To test the working tree instead, start
+a dev server and name its port in `BLOOM_E2E_VITE_PORT`; the fixture passes `--vite-port` and
+Bloom loads every React control from it. Set `PORT` as well as `--port`, or the dev server's
+HMR and React-Refresh URLs still point at 5173 and the page fails to load its entry module.
+
+```bash
+PORT=5173 pnpm exec vite --port 5173 --strictPort   # in src/BloomBrowserUI
+BLOOM_E2E_VITE_PORT=5173 pnpm test                  # in src/BloomE2E
+```
+
+**Use 5173, and set the variable.** The page list and the toolbox write `http://localhost:5173`
+into their own imports, so on any other port those two frames load nothing and come up empty,
+which reads as the feature being missing. And leaving the variable unset does not mean "no dev
+server": a dev build of Bloom probes 5173 by itself, so an unset variable and a server elsewhere
+means the run quietly tests the built bundle, however old it is. Stop a Bloom that already holds
+5173 rather than moving the dev server. See AUTOMATION-DEBT.md.
 
 `.github/workflows/nightly.yml` does not run this suite yet. The step it will need is the
 same `pnpm test` in that folder, after the Release build and the testing-inputs fetch that
