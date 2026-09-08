@@ -2508,7 +2508,45 @@ namespace Bloom.Book
             {
                 HtmlDom.ReconstructBackgroundImgWrapper(node, backgroundImgValues);
             }
+
+            RestoreTransparencyClasses(imgOrDivWithBackgroundImage, otherAttributes);
             return true;
+        }
+
+        // The classes that record the user's Transparency choice for an image (Auto is the absence of both).
+        // See getImageTransparencyMode in bloomImages.ts and HtmlDom.GetImageTransparencyMode.
+        private static readonly string[] _transparencyClasses =
+        {
+            "bloom-opaque",
+            "bloom-transparent",
+        };
+
+        /// <summary>
+        /// Copy the user's Transparency choice (Opaque/Transparent, stored as a class on the img)
+        /// from the saved data-div attributes to the image. Classes in general are deliberately not
+        /// copied back from the data-div (e.g. bloom-imageLoadError is meant to be re-derived each
+        /// time the book is opened), but these two are user data that would otherwise be lost every
+        /// time the xmatter is regenerated from the template. The data-div copy is authoritative:
+        /// a transparency class it lacks is removed from the image, so Auto is restored too.
+        /// See BL-16819.
+        /// </summary>
+        private static void RestoreTransparencyClasses(
+            SafeXmlElement img,
+            List<Tuple<string, XmlString>> savedAttributes
+        )
+        {
+            var savedClasses =
+                savedAttributes
+                    ?.Find(a => a.Item1 == "class")
+                    ?.Item2.Unencoded.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                ?? new string[0];
+            foreach (var transparencyClass in _transparencyClasses)
+            {
+                if (savedClasses.Contains(transparencyClass))
+                    img.AddClass(transparencyClass);
+                else
+                    img.RemoveClass(transparencyClass);
+            }
         }
 
         /// <summary>

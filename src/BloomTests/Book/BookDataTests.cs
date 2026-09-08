@@ -3316,6 +3316,117 @@ namespace BloomTests.Book
             }
         }
 
+        /// <summary>
+        /// BL-16819: the user's Transparency choice for the cover image (Opaque or Transparent, as
+        /// opposed to Auto) is stored as a class on the img. It must survive the round trip through
+        /// the data-div that happens every time the book is opened and the xmatter is regenerated.
+        /// </summary>
+        [TestCase("bloom-opaque", "bloom-transparent")]
+        [TestCase("bloom-transparent", "bloom-opaque")]
+        public void SuckInDataFromEditedDom_ThenSynchronize_CoverImageTransparencyClassSurvives(
+            string transparencyClass,
+            string otherTransparencyClass
+        )
+        {
+            var bookDom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='coverImage' src='old.png'>old.png</div>
+				</div>
+				<div class='bloom-page'>
+					 <div class='bloom-canvas'>
+						<img data-book='coverImage' src='old.png'></img>
+					</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(bookDom, _collectionSettings, null);
+
+            // The user chose Opaque (or Transparent) from the image menu and then saved the page.
+            var editedPageDom = new HtmlDom(
+                $@"<html ><head></head><body>
+				<div class='bloom-page'>
+					 <div class='bloom-canvas'>
+						<img data-book='coverImage' src='new.png' class='{transparencyClass}'></img>
+					</div>
+				</div>
+			 </body></html>"
+            );
+            data.SuckInDataFromEditedDom(editedPageDom);
+
+            var dataDivImage = bookDom.SelectSingleNodeHonoringDefaultNS(
+                "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+            );
+            Assert.That(dataDivImage.GetAttribute("src"), Is.EqualTo("new.png"));
+            Assert.That(
+                dataDivImage.GetAttribute("class"),
+                Contains.Substring(transparencyClass),
+                "the transparency choice should be saved in the data-div"
+            );
+
+            // Simulate reopening the book: the xmatter is regenerated from the template (whose
+            // img has no transparency class), then filled in from the data-div.
+            var pageImage = (SafeXmlElement)
+                bookDom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@class='bloom-page']//img[@data-book='coverImage']"
+                );
+            pageImage.RemoveAttribute("class");
+            Assert.That(pageImage.HasClass(transparencyClass), Is.False, "sanity check");
+            data.SynchronizeDataItemsThroughoutDOM();
+
+            pageImage = (SafeXmlElement)
+                bookDom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@class='bloom-page']//img[@data-book='coverImage']"
+                );
+            Assert.That(pageImage.GetAttribute("src"), Is.EqualTo("new.png"));
+            Assert.That(
+                pageImage.HasClass(transparencyClass),
+                Is.True,
+                $"{transparencyClass} should be restored to the cover image from the data-div"
+            );
+            Assert.That(pageImage.HasClass(otherTransparencyClass), Is.False);
+        }
+
+        /// <summary>
+        /// BL-16819: the data-div is authoritative, so if it says the cover image is on Auto (no
+        /// transparency class), a stale override on the page image must be removed. And copying the
+        /// transparency classes must not start copying other classes; in particular
+        /// bloom-imageLoadError is deliberately re-derived each time the book is opened (BL-14241).
+        /// </summary>
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_DataDivCoverImageIsAuto_RemovesStaleTransparencyClass_CopiesNoOtherClasses()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='coverImage' src='new.png' class='bloom-imageLoadError'>new.png</div>
+				</div>
+				<div class='bloom-page'>
+					 <div class='bloom-canvas'>
+						<img data-book='coverImage' src='placeholder.png' class='bloom-opaque bloom-transparent someOtherClass'></img>
+					</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            data.SynchronizeDataItemsThroughoutDOM();
+            var pageImage = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//img[@data-book='coverImage']");
+            Assert.That(pageImage.GetAttribute("src"), Is.EqualTo("new.png"));
+            Assert.That(pageImage.HasClass("bloom-opaque"), Is.False);
+            Assert.That(pageImage.HasClass("bloom-transparent"), Is.False);
+            Assert.That(
+                pageImage.HasClass("someOtherClass"),
+                Is.True,
+                "unrelated classes on the page image should be left alone"
+            );
+            Assert.That(
+                pageImage.HasClass("bloom-imageLoadError"),
+                Is.False,
+                "classes other than the transparency ones should not be copied from the data-div"
+            );
+        }
+
         [Test]
         public void SynchronizeDataItemsThroughoutDOM_CopiesTextBoxAudioData_ButNotJunkData_RemovesUnwantedItems()
         {
