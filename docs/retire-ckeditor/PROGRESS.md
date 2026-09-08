@@ -1064,6 +1064,49 @@ Bloom with the screen unlocked and run `liveChecks/verifyDeleteCanvasElement.mjs
 with Ctrl+Y, undoes again). If it passes, PR the branch into the Stage 1 branch's target once Stage 1
 merges (rebase `--onto`, see above).
 
+### 2026-09-08 — Stage 2b live-checked: the core works; two real gaps found
+
+With the screen unlocked, Bloom launched normally (the `about:blank` stall of the previous evening was
+the locked session, as suspected). `verifyDeleteCanvasElement.mjs` against "Large birds" (a Leveled
+Reader book), second canvas element of a three-element family:
+
+| Check | Result |
+| --- | --- |
+| Delete records an entry; `canUndo` yes; Undo button enabled | **PASS** |
+| Undo button restores the element at its index; no legacy mechanism ran | **PASS** |
+| The whole family's `data-bubble` specs are exactly as before (Comical renumbering undone) | **PASS** |
+| The restored element has a live CKEditor | **PASS** |
+| Ctrl+Y redoes the deletion once, through our binding, and pushes no second entry | **PASS — only with focus outside every text box** (see 1) |
+| Undo after that redo restores it again | **FAIL in a reader book** (see 2) |
+
+**Two findings, both about the Stage 1 arbitration rather than Stage 2b's code:**
+
+1. **Ctrl+Y never reaches our binding while focus is in a CKEditor box.** CKEditor's keystroke
+   handler stops propagation of Ctrl+Y even when it has *nothing* to redo (a window-level listener saw
+   no keydown at all), so the "last resort" document listener is unreachable from inside a box — and
+   the restore leaves focus *in* the restored element's box. Redo works with focus on the page's grey
+   surround. Options: (a) listen in the **capture** phase and act when the stack `canRedo()`, keeping
+   the Change Layout guard — our structural redo then pre-empts CKEditor's and the reader tools' text
+   redo whenever the stack holds something, which is the order a user probably expects after undoing
+   a deletion; (b) accept until Stage 3 removes CKEditor. **John's call; (a) recommended.**
+2. **The reader-tools provider shadows the stack's entries in reader books.** After the redo, the
+   Undo button ran the toolbox provider five times in a row without effect: this is a Leveled Reader
+   book, so the model's markup type is active, its `activeElement` was the editable inside the
+   *deleted* element, and `canUndo()` stays true against that detached box (`textContent !==
+   undoStack[0].text`), so our entry is never reached. The book was restored by muting the provider
+   for one press. Pre-existing quirk in the model, but our providers-first ordering (PLAN §3, "legacy
+   providers before our entries — reproduces today's button path") turns it into "Undo does nothing"
+   for a canvas deletion in any reader book. Options: (a) consult **our entries first** when the
+   stack has one — the mechanisms are contextually exclusive, and a stack entry is an operation the
+   user just did; (b) make the toolbox provider's `canUndo` false when its `activeElement` is
+   detached (`!isConnected`) — a one-line fix on master's `readerToolsModel.canUndo`, worth doing
+   regardless. **John's call; do (b) now, and lean to (a).**
+
+The harness now clicks the page's surround before Ctrl+Y and mutes the reader provider for the
+final restore, with comments saying why, so it passes as a regression check while both questions
+are open. "Large birds" is left exactly as found. Bloom is still running from this worktree (HTTP
+8089, CDP 8091), window on monitor 1.
+
 **Observed, not chased — the reader-tools undo arms itself in books without a reader tool.** In "A
 house for mouse" (Basic Book, toolbox shows only Canvas/Talking Book/Settings), after this session
 had earlier opened a Decodable Reader book and re-run `SetupElements` on this page, typing in a text
@@ -1130,9 +1173,11 @@ Active, tested (52 tests) and live-verified. What remains:
 
 ### Stage 2 — after the Stage 1 PR
 
-- **2b (undo delete canvas element) is built and unit-tested** on
-  `BL-6681-stage2b-undo-delete-canvas-element` (stacked on Stage 1); its live check is written and
-  still to be run — see the 2026-09-07 (late) entry. Then PR it.
+- **2b (undo delete canvas element) is built, unit-tested and live-checked** on
+  `BL-6681-stage2b-undo-delete-canvas-element` (stacked on Stage 1). Before its PR, settle the two
+  arbitration questions in the 2026-09-08 entry (Ctrl+Y in the capture phase; our entries before the
+  legacy providers, and/or the reader model's detached `activeElement`) — they decide whether Redo
+  and reader-book Undo work for it at all.
 - **2a (undo delete page) after BL-13502 merges**, re-derived from `MergeCurrentPageThenSave`.
 - Rename our planned `PageSnapshot` entry kind before Stage 3 (BL-13502 owns that name).
 
