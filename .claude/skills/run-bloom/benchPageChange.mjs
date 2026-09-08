@@ -2,7 +2,12 @@
 // run before and after the pageClicked change and the numbers compared.
 //
 // Phases (all observed over CDP; no instrumentation added to Bloom):
-//   click        -> we dispatch a real click on the page-list thumbnail
+//   click        -> we dispatch a click event on the page-list thumbnail. A synthetic event, not
+//                   a CDP input event: it goes straight to the element and so skips hit testing
+//                   and any pointer handling above it. That is fine for what this measures --
+//                   everything downstream of the click is the real thing -- but it means the
+//                   "click" mark is when the handler ran, not when a user's finger would have
+//                   landed.
 //   pageClicked  -> POST pageList/pageClicked completes
 //   pageContent  -> POST editView/pageContent completes  (the browser has handed C# the
 //                   outgoing page's content: this is the round trip the change removes)

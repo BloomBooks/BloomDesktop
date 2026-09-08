@@ -1849,6 +1849,13 @@ namespace Bloom.Edit
                 // book still needs writing, so we must not clear the flags that say so. Clearing
                 // them would make the next save believe there was nothing to do, and the change
                 // would never be written at all.
+                //
+                // The next attempt also has to be a FULL save. _modifiedPageElement names one page,
+                // and the next edit will replace it with whichever page that edit was on -- so a
+                // per-page write would then save that page and quietly leave this one's change
+                // behind for good. Once a write has failed we can no longer say the book differs
+                // from disk in one page only, so we stop claiming it.
+                _nextSaveMustBeFull = true;
                 return;
             }
             _bookDomHasUnwrittenChanges = false;
