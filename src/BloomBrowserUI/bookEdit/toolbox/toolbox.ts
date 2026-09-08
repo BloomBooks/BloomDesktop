@@ -1628,6 +1628,15 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
     const preserveNbspAfter = [" ", "«", "—"];
     const preserveNbspBefore = [" ", "»", ":", ";", "!", "?"];
 
+    // Whether we actually converted anything. Assigning innerHTML rebuilds every node in the box
+    // even when the string is unchanged. Besides losing the selection, that detaches the text
+    // node holding ckeditor's "filling char" (the U+200B it puts at the caret on Blink and
+    // remembers by node so it can take it out again). Once detached, nothing removes the
+    // character, and it gets saved into the book: a title typed with Enter at a word boundary
+    // came out as "One" U+200B "Two" (BL-16808). Almost every keystroke leaves nothing to convert,
+    // so only write when there is something to write.
+    let replacedAnNbsp = false;
+
     let i = -1;
     let j = -1;
     // Simultaneously loop through the text and the html, finding each corresponding nbsp.
@@ -1675,9 +1684,10 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
                 editableDivText.substring(0, j) +
                 " " +
                 editableDivText.substring(j + 1);
+            replacedAnNbsp = true;
         }
     }
-    editableDiv.innerHTML = editableDivHtml;
+    if (replacedAnNbsp) editableDiv.innerHTML = editableDivHtml;
 
     // Restore the bookmarks. See comment above.
     if (originalBookMarkContent)
