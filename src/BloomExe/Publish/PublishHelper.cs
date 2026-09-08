@@ -1639,12 +1639,16 @@ namespace Bloom.Publish
         /// will not return any files for fonts that we know cannot be embedded without reference to the
         /// license details.
         /// </remarks>
+        /// <param name="embeddedFontFamilies">Families the user embedded in the book folder (see
+        /// EmbeddedFonts). These are always treated as licensed for embedding, and an installed font
+        /// of the same name does not get a say.</param>
         public static void CheckFontsForEmbedding(
             IWebSocketProgress progress,
             HashSet<FontInfo> fontsWanted,
             IFontFinder fontFileFinder,
             out List<string> filesToEmbed,
-            out HashSet<string> badFonts
+            out HashSet<string> badFonts,
+            ICollection<string> embeddedFontFamilies = null
         )
         {
             filesToEmbed = new List<string>();
@@ -1675,7 +1679,21 @@ namespace Bloom.Publish
                 var missingLicense = false;
                 var badFileType = false;
                 var fileExtension = "";
-                if (_fontMetadataMap.TryGetValue(font.fontFamily, out var meta))
+                if (embeddedFontFamilies != null && embeddedFontFamilies.Contains(font.fontFamily))
+                {
+                    // Fonts the user embedded in the book folder have no GlyphTypeface-readable
+                    // metadata, but per the feature decision we treat them as OK to embed. We must
+                    // not consult the metadata map here: an installed font of the same name must not
+                    // decide the fate of the book's own font.
+                    badLicense = false;
+                    missingLicense = false;
+                    if (filesFound)
+                    {
+                        fileExtension = Path.GetExtension(fontFile).ToLowerInvariant();
+                        badFileType = !FontMetadata.fontFileTypesBloomKnows.Contains(fileExtension);
+                    }
+                }
+                else if (_fontMetadataMap.TryGetValue(font.fontFamily, out var meta))
                 {
                     fileExtension = meta.fileExtension;
                     switch (meta.determinedSuitability)
@@ -1871,6 +1889,20 @@ namespace Bloom.Publish
         }
 
         /// <summary>
+        /// The regular expression that matches a reference to the given font family in a CSS rule.
+        /// The lookbehind keeps it from matching the font-family inside an @font-face rule: those
+        /// declare a font rather than use one, and rewriting one would point the default font at the
+        /// bad font's file.
+        /// </summary>
+        internal static System.Text.RegularExpressions.Regex MakeBadFontCssRegex(string font)
+        {
+            var family = System.Text.RegularExpressions.Regex.Escape(font);
+            return new System.Text.RegularExpressions.Regex(
+                $"(?<!@font-face\\s*\\{{\\s*)font-family:\\s*'?{family}'?;"
+            );
+        }
+
+        /// <summary>
         /// Fix the standard CSS files to replace any fonts listed in badFonts with the defaultFont value.
         /// </summary>
         public static void FixCssReferencesForBadFonts(
@@ -1888,9 +1920,7 @@ namespace Bloom.Publish
                 var cssText = cssTextOrig;
                 foreach (var font in badFonts)
                 {
-                    var cssRegex = new System.Text.RegularExpressions.Regex(
-                        $"font-family:\\s*'?{font}'?;"
-                    );
+                    var cssRegex = MakeBadFontCssRegex(font);
                     cssText = cssRegex.Replace(cssText, $"font-family: '{defaultFont}';");
                 }
                 if (cssText != cssTextOrig)
@@ -1903,9 +1933,7 @@ namespace Bloom.Publish
                 var cssText = cssTextOrig;
                 foreach (var font in badFonts)
                 {
-                    var cssRegex = new System.Text.RegularExpressions.Regex(
-                        $"font-family:\\s*'?{font}'?;"
-                    );
+                    var cssRegex = MakeBadFontCssRegex(font);
                     cssText = cssRegex.Replace(cssText, $"font-family: '{defaultFont}';");
                 }
                 if (cssText != cssTextOrig)

@@ -32,6 +32,11 @@ namespace Bloom.FontProcessing
         public string determinedSuitabilityNotes { get; private set; }
         public string fileExtension { get; private set; }
 
+        // Where this font came from. Null for ordinary system/Bloom-served fonts; kSourceBook for a
+        // font the user embedded by dropping a file in the book folder. This is surfaced in the UI
+        // (see IFontMetaData in fontSelectComponent.tsx) so we can tell the user where the font lives.
+        public string source { get; private set; }
+
         public static HashSet<string> fontFileTypesBloomKnows = new HashSet<string>()
         {
             ".ttf",
@@ -46,6 +51,9 @@ namespace Bloom.FontProcessing
         public const string kUnsuitable = "unsuitable"; // license problem
         public const string kUnknown = "unknown"; // no license information
         public const string kInvalid = "invalid"; // bad file format (eg, .ttc)
+
+        // Values for the source field.
+        public const string kSourceBook = "book"; // embedded in the book folder
 
         /// <summary>
         /// On Windows, we can use System.Windows.Media (which provides the GlyphTypeface class) to
@@ -62,6 +70,26 @@ namespace Bloom.FontProcessing
             variants = group.GetAvailableVariants().ToArray();
 
             SetFontMetadata(fontName, group.Normal);
+        }
+
+        /// <summary>
+        /// Constructor for a font embedded in a book (see EmbeddedFonts). We deliberately do NOT
+        /// call SetFontMetadata: GlyphTypeface cannot read WOFF/WOFF2 on Windows, and per the
+        /// feature decision embedded fonts are treated as suitable for embedding without inspecting
+        /// the font's license bits. The family name and variants come from the filenames.
+        /// </summary>
+        public FontMetadata(string fontName, FontGroup group, string sourceLabel)
+        {
+            name = fontName;
+            // Take the extension from whichever face we have, so a group with no normal file still
+            // reports something rather than throwing.
+            var anyFile =
+                group.Normal ?? group.Bold ?? group.Italic ?? group.BoldItalic ?? string.Empty;
+            fileExtension = Path.GetExtension(anyFile);
+            variants = group.GetAvailableVariants().ToArray();
+            source = sourceLabel;
+            determinedSuitability = kOK;
+            determinedSuitabilityNotes = "Embedded in book";
         }
 
         /// <summary>

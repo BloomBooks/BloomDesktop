@@ -1892,6 +1892,16 @@ namespace BloomTests.Publish.BloomPub
                 FontGroups.TryGetValue(fontName, out result);
                 return result;
             }
+
+            public void AddEmbeddedFonts(IDictionary<string, FontGroup> embedded)
+            {
+                foreach (var kvp in embedded)
+                {
+                    FontGroups[kvp.Key] = kvp.Value;
+                    if (!string.IsNullOrEmpty(kvp.Value.Normal))
+                        FilesForFont[kvp.Key] = kvp.Value.Normal;
+                }
+            }
         }
 
         [Test]
@@ -2142,6 +2152,78 @@ namespace BloomTests.Publish.BloomPub
                     "NotAllowed reference replaced with Andika"
                 );
             }
+        }
+
+        [Test]
+        public void EmbedFonts_FontInBookFolder_IsEmbeddedNotReplaced()
+        {
+            var bookHeadContent =
+                @"
+                        <style type='text/css' title='userModifiedStyles'>
+                            /*<![CDATA[*/
+                            .Embedded-style[lang='xyz'] { font-family: MyEmbedded ! important; font-size: 12pt  }
+                            /*]]>*/
+                        </style>";
+            var bookBodyContent =
+                @"
+                    <div class='bloom-page' id='guid1'></div>";
+            var testBook = CreateBookWithPhysicalFile(
+                bookBodyContent,
+                bookHeadContent,
+                bringBookUpToDate: false
+            );
+            // The finder does NOT know about this font: it is resolved only because EmbedFonts
+            // discovers the file the user dropped in the book folder.
+            var fontFileFinder = new StubFontFinder();
+            FontsApi.AvailableFontMetadataDictionary.Clear();
+            PublishHelper.ClearFontMetadataMapForTests();
+            fontFileFinder.NoteFontsWeCantInstall = true;
+
+            // Drop the embedded font file into the book folder root.
+            var embeddedFontFileName = "MyEmbedded.woff2";
+            File.WriteAllText(
+                Path.Combine(testBook.FolderPath, embeddedFontFileName),
+                "phony woff2"
+            );
+
+            var stubProgress = new StubProgress();
+            var fontsWanted = new HashSet<PublishHelper.FontInfo>
+            {
+                new PublishHelper.FontInfo
+                {
+                    fontFamily = "MyEmbedded",
+                    fontStyle = "normal",
+                    fontWeight = "400",
+                },
+            };
+
+            BloomPubMaker.EmbedFonts(testBook, stubProgress, fontsWanted, fontFileFinder);
+
+            // The font file is still in the book folder (it was already in place; we must not lose it).
+            Assert.That(
+                File.Exists(Path.Combine(testBook.FolderPath, embeddedFontFileName)),
+                Is.True,
+                "embedded font file should remain in the book folder"
+            );
+            // It was treated as OK to embed, not as a missing/bad font.
+            Assert.That(
+                stubProgress.MessagesNotLocalized,
+                Has.Member("Checking MyEmbedded font: License OK for embedding.")
+            );
+            // fonts.css has a woff2 @font-face for it.
+            var fontSource = RobustFile.ReadAllText(Path.Combine(testBook.FolderPath, "fonts.css"));
+            Assert.That(
+                fontSource,
+                Does.Contain(
+                    "@font-face {font-family:'MyEmbedded'; font-weight:normal; font-style:normal; src:url('MyEmbedded.woff2') format('woff2');}"
+                )
+            );
+            // The reference was NOT replaced with the default font.
+            var styleNode = testBook.OurHtmlDom.SelectSingleNode(
+                "//head/style[@type='text/css' and @title='userModifiedStyles']"
+            );
+            Assert.That(styleNode.InnerXml, Does.Contain("font-family: MyEmbedded"));
+            Assert.That(styleNode.InnerXml, Does.Not.Contain("Andika"));
         }
 
         private static SafeXmlDocument MakeDom(string bodyInnerXml)

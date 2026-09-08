@@ -31,6 +31,12 @@ const FontInformationPane: React.FunctionComponent<{
         "This shows in the popup when hovering over a useable font.",
     );
 
+    const EmbeddedFontMessage = useL10n(
+        "This font is embedded in this book. It will travel with the book to BloomPUB and BloomLibrary.",
+        "FontInformationPane.EmbeddedInBook",
+        "This shows in the popup when hovering over a font that the user embedded in the book folder.",
+    );
+
     const UnknownFontMessage = useL10n(
         "Bloom cannot determine what rules govern the use of this font. Please read the license and make sure it allows embedding in ebooks and the web. Before publishing to bloomlibrary.org, you will probably have to make a special request to the Bloom team to investigate this font so that we can make sure we won't get in trouble for hosting it.",
         "FontInformationPane.FontUnknown",
@@ -60,13 +66,15 @@ const FontInformationPane: React.FunctionComponent<{
             : GeneralUnsuitableFontLicenseMessage;
 
     const mainMessage =
-        suitability === "ok"
-            ? OkayFontMessage
-            : suitability === "unknown"
-              ? UnknownFontMessage
-              : suitability === "invalid"
-                ? UnsuitableFontFormatMessage
-                : UnsuitableFontLicenseMessage;
+        props.metadata?.source === "book"
+            ? EmbeddedFontMessage
+            : suitability === "ok"
+              ? OkayFontMessage
+              : suitability === "unknown"
+                ? UnknownFontMessage
+                : suitability === "invalid"
+                  ? UnsuitableFontFormatMessage
+                  : UnsuitableFontLicenseMessage;
 
     const styleWording = useL10n(
         "Styles",

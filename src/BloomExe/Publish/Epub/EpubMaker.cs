@@ -2771,12 +2771,18 @@ namespace Bloom.Publish.Epub
         {
             var warningMessages = new List<string>();
             var fontFileFinder = FontFileFinder.GetInstance(Program.RunningUnitTests);
+            // Make any fonts the user embedded in the book folder resolvable, so they get embedded
+            // here rather than treated as missing and replaced with the default font. The paths in
+            // the groups are absolute, which is what CopyFileToEpub below needs.
+            var embeddedFontGroups = EmbeddedFonts.GetEmbeddedFontGroups(Book.FolderPath);
+            fontFileFinder.AddEmbeddedFonts(embeddedFontGroups);
             PublishHelper.CheckFontsForEmbedding(
                 progress,
                 _fontsUsedInBook,
                 fontFileFinder,
                 out List<string> filesToEmbed,
-                out HashSet<string> badFonts
+                out HashSet<string> badFonts,
+                embeddedFontGroups.Keys
             );
             foreach (var file in filesToEmbed)
             {

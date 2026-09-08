@@ -5,6 +5,7 @@ using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using Bloom.Api;
+using Bloom.Book;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
@@ -17,8 +18,16 @@ namespace Bloom.FontProcessing
         private static ConcurrentDictionary<string, FontMetadata> _fontNameToMetadata =
             new ConcurrentDictionary<string, FontMetadata>();
         private static FontFileFinder _finder;
+        private readonly BookSelection _bookSelection;
 
-        public FontsApi() { }
+        public FontsApi(BookSelection bookSelection)
+        {
+            _bookSelection = bookSelection;
+        }
+
+        // The folder of the currently selected book, or null if none is selected. Fonts embedded
+        // in this folder are offered in addition to the system/served fonts.
+        private string CurrentBookFolder => _bookSelection?.CurrentSelection?.FolderPath;
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -152,7 +161,19 @@ namespace Bloom.FontProcessing
 
         private void HandleMetadataRequest(ApiRequest request)
         {
-            request.ReplyWithJson(JsonConvert.SerializeObject(AvailableFontMetadata));
+            // Start from the cached system/served font metadata, then add (and let it shadow) any
+            // fonts embedded in the current book. Computed fresh per request; see HandleNamesRequest.
+            var all = AvailableFontMetadata.ToList();
+            var bookFolder = CurrentBookFolder;
+            if (bookFolder != null)
+            {
+                foreach (var kvp in EmbeddedFonts.GetEmbeddedFontGroups(bookFolder))
+                {
+                    all.RemoveAll(metadata => metadata.name == kvp.Key);
+                    all.Add(EmbeddedFonts.MakeEmbeddedFontMetadata(kvp.Key, kvp.Value));
+                }
+            }
+            request.ReplyWithJson(JsonConvert.SerializeObject(all));
         }
 
         private static IEnumerable<FontMetadata> GetFontMetadataSortedByName()

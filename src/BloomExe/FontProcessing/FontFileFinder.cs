@@ -49,6 +49,16 @@ namespace Bloom.FontProcessing
         }
 
         /// <summary>
+        /// Throw away the singleton. Tests must call this when they have used AddEmbeddedFonts,
+        /// because in a test run GetInstance is asked to reuse the instance, so one test's embedded
+        /// fonts would otherwise still be resolvable in the next one.
+        /// </summary>
+        internal static void ResetInstanceForTests()
+        {
+            _instance = null;
+        }
+
+        /// <summary>
         /// This is really hard. We somehow need to figure out what font file(s) are used for a particular font.
         /// http://stackoverflow.com/questions/16769758/get-a-font-filename-based-on-the-font-handle-hfont
         /// has some ideas; the result would be Windows-specific.
@@ -165,6 +175,20 @@ namespace Bloom.FontProcessing
             FontGroup result;
             FontNameToFiles.TryGetValue(fontName, out result);
             return result;
+        }
+
+        /// <summary>
+        /// Add the fonts embedded in a book (see EmbeddedFonts) so that GetFileForFont/GetGroupForFont
+        /// will resolve them just like system or Bloom-served fonts. A book's embedded font overrides
+        /// any installed font of the same name. Used by the publish pipeline so embedded fonts get
+        /// embedded rather than replaced with a fallback.
+        /// </summary>
+        public void AddEmbeddedFonts(IDictionary<string, FontGroup> embedded)
+        {
+            if (FontNameToFiles == null)
+                InitializeFontData();
+            foreach (var kvp in embedded)
+                FontNameToFiles[kvp.Key] = kvp.Value;
         }
 
         /// <summary>
@@ -428,5 +452,6 @@ namespace Bloom.FontProcessing
         bool NoteFontsWeCantInstall { get; set; }
         HashSet<string> FontsWeCantInstall { get; }
         FontGroup GetGroupForFont(string fontName);
+        void AddEmbeddedFonts(IDictionary<string, FontGroup> embedded);
     }
 }

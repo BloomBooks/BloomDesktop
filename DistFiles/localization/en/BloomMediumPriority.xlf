@@ -1053,6 +1053,11 @@
         <source xml:lang="en">Font is not installed on this computer</source>
         <note>ID: BookSettings.Fonts.FontNotInstalled</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Fonts.EmbeddedInBook" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Embedded in this book</source>
+        <note>ID: BookSettings.Fonts.EmbeddedInBook</note>
+        <note>Shows beneath a font name in the book settings font table when the font is embedded in the book folder.</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Fonts.FirstPage" sil:dynamic="true">
         <source xml:lang="en">First Page</source>
         <note>ID: BookSettings.Fonts.FirstPage</note>

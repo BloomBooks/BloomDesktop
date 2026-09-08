@@ -1034,17 +1034,32 @@ namespace Bloom.Publish.BloomPub
                 x.fontFamily == "Andika New Basic"
             );
 
+            // Make any fonts the user embedded in the book folder resolvable, so they get embedded
+            // here rather than treated as missing and replaced with the default font.
+            var embeddedFontGroups = EmbeddedFonts.GetEmbeddedFontGroups(book.FolderPath);
+            fontFileFinder.AddEmbeddedFonts(embeddedFontGroups);
+
             PublishHelper.CheckFontsForEmbedding(
                 progress,
                 fontsWanted,
                 fontFileFinder,
                 out List<string> filesToEmbed,
-                out HashSet<string> badFonts
+                out HashSet<string> badFonts,
+                embeddedFontGroups.Keys
             );
             foreach (var file in filesToEmbed)
             {
                 // Enhance: do we need to worry about problem characters in font file names?
                 var dest = Path.Combine(book.FolderPath, Path.GetFileName(file));
+                // A font embedded in the book folder is already in place (its file IS in book.FolderPath).
+                if (
+                    string.Equals(
+                        Path.GetFullPath(file),
+                        Path.GetFullPath(dest),
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                    continue;
                 RobustFile.Copy(file, dest);
             }
             // Create the fonts.css file, which tells the browser where to find the fonts for those families.

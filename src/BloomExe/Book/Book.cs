@@ -2287,6 +2287,9 @@ namespace Bloom.Book
             if (WriteFontFaces)
             {
                 var serve = FontServe.GetInstance();
+                // Fonts embedded in the book folder by the user. Their src urls are bare file names
+                // that resolve relative to this file, so they render in editing and the web reader.
+                cssBuilder.Insert(0, EmbeddedFonts.GetFontFaceDeclarations(FolderPath));
                 cssBuilder.Insert(0, serve.GetAllFontFaceDeclarations());
             }
             try
@@ -2305,6 +2308,8 @@ namespace Bloom.Book
         private void RemoveFontFaceDeclarations(string path)
         {
             var contents = RobustFile.ReadAllText(path);
+            // Remove all @font-face declarations: bloom-player provides its own for the shipped fonts,
+            // and these cause problems with synthesizing font variants (BL-12594).
             contents = Regex.Replace(contents, "^@font-face.*$\n", "", RegexOptions.Multiline);
             RobustFile.WriteAllText(path, contents);
         }

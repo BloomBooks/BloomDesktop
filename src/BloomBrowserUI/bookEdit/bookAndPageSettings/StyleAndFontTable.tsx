@@ -152,6 +152,11 @@ export function useFontMetaData(fontName: string): IFontMetaData | undefined {
 const FontInfoFromMetadata: React.FunctionComponent<{
     fontMetaData: IFontMetaData | undefined;
 }> = ({ fontMetaData }) => {
+    const embeddedInBookMessage = useL10n(
+        "Embedded in this book",
+        "BookSettings.Fonts.EmbeddedInBook",
+        "Shows beneath a font name in the book settings font table when the font is embedded in the book folder.",
+    );
     if (!fontMetaData) return null;
 
     let warningMessage: string | undefined = undefined;
@@ -176,6 +181,11 @@ const FontInfoFromMetadata: React.FunctionComponent<{
             name={fontMetaData.name}
             warningMessage={warningMessage}
             additionalInfo={additionalInfo}
+            infoMessage={
+                fontMetaData.source === "book"
+                    ? embeddedInBookMessage
+                    : undefined
+            }
         />
     );
 };
@@ -186,6 +196,7 @@ const FontInfo: React.FunctionComponent<{
     name: string;
     warningMessage?: string;
     additionalInfo?: React.ReactElement;
+    infoMessage?: string;
 }> = (props) => {
     return (
         <div
@@ -202,6 +213,16 @@ const FontInfo: React.FunctionComponent<{
             >
                 {props.name}
             </div>
+            {props.infoMessage && (
+                <div
+                    css={css`
+                        padding-top: 3px;
+                        font-style: italic;
+                    `}
+                >
+                    {props.infoMessage}
+                </div>
+            )}
             {props.warningMessage && (
                 <div
                     css={css`

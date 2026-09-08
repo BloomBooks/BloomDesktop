@@ -3127,6 +3127,11 @@
         <note>ID: FontInformationPane.FontOkay</note>
         <note>This shows in the popup when hovering over a useable font.</note>
       </trans-unit>
+      <trans-unit id="FontInformationPane.EmbeddedInBook" translate="no">
+        <source xml:lang="en">This font is embedded in this book. It will travel with the book to BloomPUB and BloomLibrary.</source>
+        <note>ID: FontInformationPane.EmbeddedInBook</note>
+        <note>This shows in the popup when hovering over a font that the user embedded in the book folder.</note>
+      </trans-unit>
       <trans-unit id="FontInformationPane.FontUnknown">
         <source xml:lang="en">Bloom cannot determine what rules govern the use of this font. Please read the license and make sure it allows embedding in ebooks and the web. Before publishing to bloomlibrary.org, you will probably have to make a special request to the Bloom team to investigate this font so that we can make sure we won't get in trouble for hosting it.</source>
         <note>ID: FontInformationPane.FontUnknown</note>
