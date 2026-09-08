@@ -1743,7 +1743,7 @@ namespace Bloom.Book
                 // The user's Transparency choice for an image (Opaque/Transparent; Auto is the absence
                 // of both). Changing the choice removes the old class from the img, and the data-div
                 // copy must follow, or the old choice comes back when the cover image is restored from
-                // the data-div on the next open. See RestoreTransparencyClasses and BL-16819.
+                // the data-div on the next open. See _imgClassesToRestoreFromDataDiv and BL-16819.
                 "bloom-opaque",
                 "bloom-transparent",
             }
@@ -2519,28 +2519,33 @@ namespace Bloom.Book
                 HtmlDom.ReconstructBackgroundImgWrapper(node, backgroundImgValues);
             }
 
-            RestoreTransparencyClasses(imgOrDivWithBackgroundImage, otherAttributes);
+            RestoreImgClassesFromDataDiv(imgOrDivWithBackgroundImage, otherAttributes);
             return true;
         }
 
-        // The classes that record the user's Transparency choice for an image (Auto is the absence of both).
-        // See getImageTransparencyMode in bloomImages.ts and HtmlDom.GetImageTransparencyMode.
-        private static readonly string[] _transparencyClasses =
+        // The img classes that are user data and so must be restored from the data-div copy when
+        // an image (currently only the cover image) is refilled from it. Classes in general are
+        // deliberately NOT copied back (e.g. bloom-imageLoadError is meant to be re-derived each
+        // time the book is opened), so a class only gets restored by being listed here.
+        // A class listed here should normally also be in _classesToRemoveIfAbsent, so that the
+        // data-div copy follows the img when the class is removed from it.
+        // Currently these are the classes that record the user's Transparency choice for an image
+        // (Auto is the absence of both). See getImageTransparencyMode in bloomImages.ts and
+        // HtmlDom.GetImageTransparencyMode.
+        private static readonly string[] _imgClassesToRestoreFromDataDiv =
         {
             "bloom-opaque",
             "bloom-transparent",
         };
 
         /// <summary>
-        /// Copy the user's Transparency choice (Opaque/Transparent, stored as a class on the img)
-        /// from the saved data-div attributes to the image. Classes in general are deliberately not
-        /// copied back from the data-div (e.g. bloom-imageLoadError is meant to be re-derived each
-        /// time the book is opened), but these two are user data that would otherwise be lost every
-        /// time the xmatter is regenerated from the template. The data-div copy is authoritative:
-        /// a transparency class it lacks is removed from the image, so Auto is restored too.
+        /// Make the img's _imgClassesToRestoreFromDataDiv classes match the class attribute saved
+        /// in the data-div. The data-div copy is authoritative: a listed class it lacks is removed
+        /// from the image (so, for the transparency classes, Auto is restored too). Without this,
+        /// the user's choice would be lost every time the xmatter is regenerated from the template.
         /// See BL-16819.
         /// </summary>
-        private static void RestoreTransparencyClasses(
+        private static void RestoreImgClassesFromDataDiv(
             SafeXmlElement img,
             List<Tuple<string, XmlString>> savedAttributes
         )
@@ -2550,12 +2555,12 @@ namespace Bloom.Book
                     ?.Find(a => a.Item1 == "class")
                     ?.Item2.Unencoded.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 ?? new string[0];
-            foreach (var transparencyClass in _transparencyClasses)
+            foreach (var className in _imgClassesToRestoreFromDataDiv)
             {
-                if (savedClasses.Contains(transparencyClass))
-                    img.AddClass(transparencyClass);
+                if (savedClasses.Contains(className))
+                    img.AddClass(className);
                 else
-                    img.RemoveClass(transparencyClass);
+                    img.RemoveClass(className);
             }
         }
 
