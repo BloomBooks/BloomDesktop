@@ -374,6 +374,9 @@ export const EditingControlButton: React.FunctionComponent<{
             <BloomButton
                 enabled={props.enabled}
                 l10nKey={props.l10nKey}
+                // For the e2e tests (src/BloomE2E/helpers/workspace.ts), which must find the
+                // button by something other than its localized label.
+                data-testid={`edit-top-bar-${props.onClickAction}-button`}
                 onMouseDown={(e) => {
                     // Keep focus in the main editable browser; otherwise this button takes focus
                     // first and copy/cut/paste/undo may run against the wrong context.

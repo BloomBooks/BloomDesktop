@@ -76,6 +76,14 @@ Format dialog, so the test drives it in the Format dialog (`helpers/fontChooser.
 Settings route stays manual. `settings/setFontForLanguage` is not a way round it: like the other
 settings endpoints it only records a pending change on the open dialog.
 
+seen again 2026-09-08 (Test Case ID 364, `text-formatting-shortcuts.spec.ts`): the manual test undoes
+with the Edit tab's Undo button and with Ctrl+Z. The button is in the React top bar now, so the test
+clicks it (`helpers/workspace.ts clickUndoButton`, by a test id added for it). Ctrl+Z is still a
+WinForms accelerator that the shell handles before the browser sees it, so no test can press it; the
+test calls `undo`, the production path with only the key press missing, for that step. Fix
+direction: an `e2e/` hook that runs the shell's own accelerator handling for a named key, so a test
+can say "press Ctrl+Z" and have the shell answer as it does for a person.
+
 ## Native OS dialogs hang automation
 
 File pickers, the Image Toolbox, and video capture open native windows Playwright
@@ -496,6 +504,22 @@ bundle, every time.
 So: **to test the working tree, serve the dev server on 5173 and set
 `BLOOM_E2E_VITE_PORT=5173`.** Fix direction: emit the port into those two pug files the way the
 shell gets it, so `--vite-port` means what it says. (Found 2026-09-02.)
+
+## The text color palette sometimes does not open on the first click
+
+The formatting toolbar's Text Color button drops down a CKEditor panel of swatches. `attachToCkEditor`
+in `bookEdit/js/bloomEditing.ts` hides every `.cke_panel` on every CKEditor `selectionCheck`, to stop
+the palette from popping up on its own each time the toolbar shows (its comment says nobody knows
+why it does). CKEditor checks the selection a moment after each mouseup, on a timer, so when that
+check lands after the click has opened the panel, the panel is hidden again while the button still
+shows as "on": the click looks as if it did nothing, and the next click closes the panel CKEditor
+thinks is open rather than showing it. Seen 2026-09-08 (Test Case ID 364,
+`text-formatting-shortcuts.spec.ts`): the second color pick of a run failed this way about one run in
+two, the first never did. `helpers/textFormatting.ts pickTextColorFromToolbar` clicks again until
+the panel is showing, which is what a person does. Fix direction: find out why the panel reappears
+on its own (CKEditor's floatpanel remembers `showBlockParams`, and Bloom's `display:none` bypasses
+its `hide`, so its state and the DOM disagree from then on) and hide it through `panel.hide()`
+instead, or only on `selectionChange` rather than on every check. A person can hit this too.
 
 ## Canvas element toolbar buttons are anonymous
 
