@@ -109,21 +109,92 @@ namespace BloomTests.Book
         [Test]
         public void TextOfInnerHtml_HandlesLinebreakSpanWithNoByteOrderMarkProperly()
         {
-            // Markup should be removed, linebreak replaced with \n, whitespace should be trimmed.
+            // Markup should be removed, both the linebreak span and the paragraph boundary
+            // replaced with \n, whitespace should be trimmed. (The space between the paragraphs
+            // is what Bloom 6.2 and earlier wrote out for a paragraph boundary.)
             var input =
                 "<p>Enter</p> <p>Shift-Enter<span class=\"bloom-linebreak\"></span>Last Line </p>";
             var output = BookData.TextOfInnerHtml(input);
-            Assert.That(output, Is.EqualTo("Enter Shift-Enter\nLast Line"));
+            Assert.That(output, Is.EqualTo("Enter\nShift-Enter\nLast Line"));
         }
 
         [Test]
         public void TextOfInnerHtml_HandlesLinebreakSpanWithByteOrderMarkProperly()
         {
-            // Markup should be removed, linebreak replaced with \n, byte order mark should be removed, whitespace should be trimmed.
+            // Markup should be removed, linebreak span and paragraph boundary replaced with \n,
+            // byte order mark should be removed, whitespace should be trimmed.
             var input =
                 "<p>Enter</p> <p>Shift-Enter<span class=\"bloom-linebreak\"></span>﻿Last Line </p>";
             var output = BookData.TextOfInnerHtml(input);
-            Assert.That(output, Is.EqualTo("Enter Shift-Enter\nLast Line"));
+            Assert.That(output, Is.EqualTo("Enter\nShift-Enter\nLast Line"));
+        }
+
+        [Test]
+        public void TextOfInnerHtml_EnterInTitle_BecomesNewline()
+        {
+            // A title typed as "a", Enter, "b" reaches us as two paragraphs with no whitespace
+            // between them. See https://issues.bloomlibrary.org/youtrack/issue/BL-16808.
+            var output = BookData.TextOfInnerHtml("<p>a</p><p>b</p>");
+            Assert.That(output, Is.EqualTo("a\nb"));
+        }
+
+        [Test]
+        public void TextOfInnerHtml_TitleFromOldBookWithTidyIndentation_SameAsFreshlyTyped()
+        {
+            // A book written by Bloom 6.2 or earlier has the paragraphs of its title separated by
+            // the indentation Tidy left in the file. Left alone, that indentation would end up in
+            // the title itself ("a\n            b"), so we replace it rather than adding to it and
+            // an old book reports what a new one does.
+            var oldBook = "<p>a</p>\n            <p>b</p>";
+            var freshlyTyped = "<p>a</p><p>b</p>";
+
+            // Sanity check that the two really do differ in the way this test is about.
+            Assert.That(
+                oldBook,
+                Does.Contain("</p>\n            <p>"),
+                "test data should carry the indentation an older Bloom wrote"
+            );
+            Assert.That(freshlyTyped, Does.Contain("</p><p>"));
+
+            Assert.That(BookData.TextOfInnerHtml(oldBook), Is.EqualTo("a\nb"));
+            Assert.That(
+                BookData.TextOfInnerHtml(oldBook),
+                Is.EqualTo(BookData.TextOfInnerHtml(freshlyTyped))
+            );
+        }
+
+        [Test]
+        public void SuckInDataFromEditedDom_TitleTypedWithEnter_NewlineReachesMetaData()
+        {
+            // The whole path a title takes from the editing DOM to meta.json (and so to
+            // bloomlibrary.org), for a title typed "Where Are", Enter, "The Fish Going?".
+            // See https://issues.bloomlibrary.org/youtrack/issue/BL-16808.
+            var titleXml = "<p>Where Are</p><p>The Fish Going?</p>";
+            HtmlDom bookDom = new HtmlDom(
+                $@"<html ><head></head><body>
+				<div class='bloom-page' id='guid2'>
+					<div lang='xyz' data-book='bookTitle'>{titleXml}</div>
+				</div>
+			 </body></html>"
+            );
+
+            // Sanity check: the paragraphs really are adjacent, which is what the browser gives
+            // us and what used to make the two lines run together.
+            Assert.That(
+                titleXml.Contains("</p><p>"),
+                Is.True,
+                "test data should have no whitespace between the paragraphs"
+            );
+
+            var data = new BookData(bookDom, _collectionSettings, null);
+            var info = new BookInfo(_collectionSettings.FolderPath, true);
+            Assert.That(info.Title, Is.Null.Or.Empty, "sanity check: no title before we start");
+
+            data.SuckInDataFromEditedDom(bookDom, info);
+
+            Assert.That(info.Title, Is.EqualTo("Where Are\nThe Fish Going?"));
+            Assert.That(info.AllTitles, Does.Contain("Where Are\nThe Fish Going?"));
+            Assert.That(info.OriginalTitle, Is.EqualTo("Where Are\nThe Fish Going?"));
         }
 
         [Test]

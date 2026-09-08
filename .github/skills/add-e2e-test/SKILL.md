@@ -206,8 +206,13 @@ Rules that hold regardless of the final API:
 - Real mouse events, not synthetic `element.click()`, for targets that need them
   (book tiles, Settings, PREVIEW); the helper layer handles this — never hand-roll
   `Input.dispatchMouseEvent` inside a test.
-- NEVER trigger native OS dialogs (file pickers, the WinForms Image Toolbox, video
-  capture) — Playwright cannot dismiss them and the run hangs.
+- NEVER trigger native OS dialogs (the WinForms Image Toolbox, video capture, the folder
+  chooser) — Playwright cannot dismiss them and the run hangs. The one exception is the "choose
+  a file" or "choose a folder" dialog: arm `armFileChooser` (helpers/talkingBook.ts, over the
+  `e2e/nextFileToChoose` hook) with the path you want BEFORE the click that opens it, and Bloom
+  answers with that path instead of showing a dialog. It answers one dialog only, so arm it
+  immediately before the click; a path armed and never used would otherwise answer some later
+  test's chooser.
 - NEVER submit a problem report. The fixture fails the test with gathered detail when
   a "Bloom had a problem" dialog appears; do not loop-dismiss it.
 - Waits are event/state-based (poll an API, await a selector), never fixed sleeps.
@@ -313,9 +318,25 @@ Dependencies point down only:
      templates of its own in the list.
    - `helpers/files.ts` — `fingerprintFolder`, `isInsideFolder`. Files on disk; nothing
      here talks to Bloom.
-   - `helpers/publish.ts` — `openPublishDestination`, `getTextLanguageRows`,
-     `expectTextLanguageRows`, `clickTextLanguage`, `showBloomPubPreview`,
-     `getPreviewLanguages`, `getLanguagesInBook`, `getTooltipForLanguage`.
+   - `helpers/publish.ts` — `openPublishDestination`, `getLanguageRows`,
+     `expectLanguageRows`, `expectLanguageRowsInAnyOrder`, `clickLanguage`,
+     `getTooltipForLanguage`, `showBloomPubPreview`,
+     `getPreviewLanguages`, `getLanguagesInBook`, `isTalkingBookFeatureOn`,
+     `expectTalkingBookFeature`, `stageBloomPub`, `getStagedNarrationIds`. The Publish tab has
+     TWO language lists — Text Languages and Talking Book Languages — rendered by the same
+     component, so every reader takes which one it means (`"text"` or `"audio"`) right after
+     `page`. Assertions on a list must use the polled `expectLanguageRows`, not a bare `expect`
+     on `getLanguageRows`: the lists are filled from `publish/languagesInBook` after the screen
+     mounts, and reading once races that answer.
+   - `helpers/talkingBook.ts` — `openToolboxWithTalkingBook`, `getNarrationSentences`,
+     `addNarration`, `getNarratedLanguages`, `importNarration`, `armFileChooser`,
+     `isImportRecordingEnabled`, `setRecordingMode`, `openAdvancedSection`. Narration cannot be
+     RECORDED in a test (it needs
+     a microphone), so a test that needs a book with audio calls `addNarration`, which puts an
+     mp3 where a recording would have gone — the sentence ids it is named after come from
+     Bloom's own tool, which marks them when the toolbox opens. `importNarration` drives the
+     real Import Recording button instead, and is only for the test whose subject that is: Bloom
+     offers it solely in whole-text-box mode and solely to a Pro subscription.
    This list is a map, not the index. The folder is the index: new modules appear there
    before anyone updates this file.
 3. **Tests**, which call surface helpers and nothing lower.

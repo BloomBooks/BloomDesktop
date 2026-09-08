@@ -163,6 +163,34 @@ House rules:
 - **Context:** BuildServer worktree, while verifying the new launcher control surface.
 
 
+## 2026-09-04 — An e2e test cannot use a data-testid you just added to the front end
+- **Cut:** `src/BloomE2E` launches a real `Bloom.exe`, and that Bloom loads its UI from the
+  shared `output\browser`, not from a Vite dev server. So a `data-testid` added to a `.tsx`
+  file is invisible to the test until someone repopulates `output\browser` with a full
+  `pnpm build`, which AGENTS.md tells agents not to run, because it wrecks the dev server and
+  the Bloom the developer has running against it. The add-e2e-test skill says to prefer a
+  testid over matching an English label, and the environment says the testid cannot take
+  effect. The failure does not look like a build problem: the locator finds nothing, in a
+  Bloom whose markup is correct in the source you are reading, so it reads as a wrong selector
+  and you go looking for a different one. Cost, roughly an hour, twice. (Related: the
+  2026-07-24 cut about go.sh on a worktree whose `output/browser` was never built.)
+- **Workaround:** start a Vite dev server on port 5173 and set `BLOOM_E2E_VITE_PORT=5173` for
+  the run (README, "Testing a front-end change"). That needs 5173 free, which it was not here:
+  another project's dev server held it. Failing that, match an English `aria-label` the front
+  end already writes, or ask the developer to run the full build once no Bloom is running from
+  that worktree.
+- **Idea:** have the e2e fixture build the front end into its own tree (the way
+  `build/agent-vite.sh` already does) and point the Bloom it launches at that, so a test runs
+  against the source in the worktree rather than against whatever was last built, on whatever
+  port is free.
+- **Context:** the Add-Tables branch's e2e tests, 2026-09-04; ported to the e2e-infrastructure
+  branch with the tests' helpers.
+- **Update 2026-09-05:** the fixture now refuses to launch a Bloom whose bundle, or whose
+  `Bloom.dll`, is older than its source, and names the newer file (`assertBuildIsNotStale` in
+  `src/BloomE2E/fixtures/launchBloom.ts`). The stale build still has to be rebuilt by hand, or
+  bypassed with `BLOOM_E2E_VITE_PORT`, but it can no longer fail a test in silence.
+
+
 ## 2026-08-10 — check-csharp-ApplicationExit.sh greps whole files, not the diff
 
 - **Cut:** The pre-commit check greps each *staged file* for `Application.Exit`, so touching a

@@ -82,9 +82,9 @@ pnpm test:ui          # interactive UI
 
 ### Component-local test helpers
 
-Every component folder includes a `test.sh` wrapper that runs Playwright against just that component's specs. Manual Playwright suites are excluded automatically.
+Every component folder includes a `test.sh` wrapper that runs Playwright against just that component's specs. The manual `show-component.manual.ts` harnesses are not tests and are not collected; only `show.sh` runs them.
 
-- `./test.sh` &mdash; run the entire component suite (manual specs are skipped).
+- `./test.sh` &mdash; run the entire component suite.
 - `./test.sh component-tests/url-sync-preselection.uitest.ts` &mdash; run a single file.
 - `./test.sh component-tests/url-sync-preselection.uitest.ts -g "Scrolls preselected book into view"` &mdash; run one test case by name.
 - `./test.sh --grep "URL Synchronization"` &mdash; run tests matching a pattern.

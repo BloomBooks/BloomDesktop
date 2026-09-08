@@ -108,6 +108,11 @@ namespace Bloom
         internal static string StartupLabel { get; private set; }
         internal static bool StartupAutomation { get; private set; }
 
+        // Experimental features an e2e run asked for, passed as
+        // --experimental-features <comma-separated tokens>, or null when none were asked for.
+        // Only accepted together with --e2e; see ExperimentalFeatures.TokensFromE2eCommandLine.
+        internal static string StartupExperimentalFeatures { get; private set; }
+
         // Control port of the dev launcher (scripts/watchBloomExe.mjs) that started
         // this Bloom, passed as --launcher-port. When present, DevLauncher watches for
         // pending C# changes and offers a dev-only toast that asks the launcher to
@@ -787,6 +792,7 @@ namespace Bloom
             StartupAutomation = false;
             StartupLauncherPort = null;
             RunningE2eTests = false;
+            StartupExperimentalFeatures = null;
 
             var remainingArgs = new List<string>();
 
@@ -834,6 +840,14 @@ namespace Bloom
                         value => RunningE2eTests = value,
                         out errorMessage
                     )
+                    || TryHandleStartupStringArgument(
+                        args,
+                        ref i,
+                        "--experimental-features",
+                        () => StartupExperimentalFeatures,
+                        value => StartupExperimentalFeatures = value,
+                        out errorMessage
+                    )
                 )
                 {
                     if (errorMessage != null)
@@ -843,6 +857,14 @@ namespace Bloom
                 }
 
                 remainingArgs.Add(args[i]);
+            }
+
+            // Refuse rather than ignore: a run that asks for a feature and does not get it fails
+            // in some far-away place, looking like a broken feature instead of a bad command line.
+            if (StartupExperimentalFeatures != null && !RunningE2eTests)
+            {
+                errorMessage = "Bloom only accepts --experimental-features together with --e2e.";
+                return Array.Empty<string>();
             }
 
             return remainingArgs.ToArray();
