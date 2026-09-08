@@ -150,9 +150,25 @@ namespace Bloom
             // Parse our own startup arguments before anything reads Settings.Default:
             // --user-settings-folder decides where the settings live (it sets
             // BloomSettingsProvider.UserSettingsFolder), and a settings provider fixes its location
-            // when it is constructed, which happens the first time a setting is read. A bad argument
-            // is reported further down, once WinForms is ready to show a dialog.
+            // when it is constructed, which happens the first time a setting is read.
             var args = ParseStartupPortArguments(args1, out var startupPortErrorMessage);
+            if (startupPortErrorMessage != null)
+            {
+                // A rejected launch touches no settings, its own or anyone else's, so the error is
+                // reported before anything reads Settings.Default. CheckForCorruptUserConfig and
+                // SetUpLocalization below both do, and by now the parser has cleared any folder a
+                // --user-settings-folder named, so they would read, and might repair, the shared
+                // profile of whoever is running Bloom. Only what a message box needs is set up.
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                MessageBox.Show(
+                    startupPortErrorMessage,
+                    "Bloom",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                return 1;
+            }
 
             CheckForCorruptUserConfig();
             // Ensure that the registration information is loaded early before Team Collection
@@ -192,17 +208,6 @@ namespace Bloom
             // Another goal is for it to happen before this method breaks off into various paths, so that
             // every startup path calls it.
             SetUpLocalization();
-
-            if (startupPortErrorMessage != null)
-            {
-                MessageBox.Show(
-                    startupPortErrorMessage,
-                    "Bloom",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
-                return 1;
-            }
 
             // Old comment: Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
             // Aug 2023, we've moved away from GeckoFx/Firefox to wv2, but I don't know if this is still needed or not...
@@ -862,9 +867,9 @@ namespace Bloom
                     if (errorMessage != null)
                     {
                         // The launch is being rejected, so it must not use a settings folder an
-                        // earlier --user-settings-folder already set: leaving it set would have
-                        // startup open (and possibly self-heal) that folder's user.config before
-                        // the error is reported. A rejected launch touches nothing.
+                        // earlier --user-settings-folder already set. A rejected launch touches
+                        // nothing: Main reports the error before anything reads settings, and
+                        // clearing the folder here means the launch never owned one.
                         BloomSettingsProvider.UserSettingsFolder = null;
                         return Array.Empty<string>();
                     }
