@@ -2158,17 +2158,32 @@ namespace Bloom
                     if (Program.StartupAutomation)
                     {
                         // An automation run (--automation, e.g. the Playwright suites) keeps its
-                        // windows on the screen BLOOM_AUTOMATION_MONITOR chooses, and never takes
-                        // the user's foreground, exactly like Shell and SplashScreen. CenterScreen
-                        // would put the dialog on whichever monitor the mouse is on, and
-                        // BringToFrontWhenShown would steal focus from whatever the developer is
-                        // doing while the tests run.
-                        dlg.StartPosition = FormStartPosition.Manual;
-                        var area = Shell.GetAutomationScreen().WorkingArea;
-                        dlg.Location = new System.Drawing.Point(
-                            area.Left + (area.Width - dlg.Width) / 2,
-                            area.Top + (area.Height - dlg.Height) / 2
-                        );
+                        // windows where BLOOM_AUTOMATION_MONITOR says, and never takes the user's
+                        // foreground, exactly like Shell and SplashScreen (see
+                        // AutomationWindowPlacement). CenterScreen would put the dialog on
+                        // whichever monitor the mouse is on, and BringToFrontWhenShown would steal
+                        // focus from whatever the developer is doing while the tests run.
+                        var placement = AutomationWindowPlacement.GetChoice();
+                        if (placement == AutomationWindowPlacement.Choice.OffEveryMonitor)
+                        {
+                            dlg.StartPosition = FormStartPosition.Manual;
+                            var offScreenArea =
+                                AutomationWindowPlacement.GetBoundsOffEveryMonitor();
+                            dlg.Location = new System.Drawing.Point(
+                                offScreenArea.Left,
+                                offScreenArea.Top
+                            );
+                            dlg.ShowInTaskbar = false;
+                        }
+                        else if (placement == AutomationWindowPlacement.Choice.OnTheChosenMonitor)
+                        {
+                            dlg.StartPosition = FormStartPosition.Manual;
+                            var area = AutomationWindowPlacement.GetChosenMonitor().WorkingArea;
+                            dlg.Location = new System.Drawing.Point(
+                                area.Left + (area.Width - dlg.Width) / 2,
+                                area.Top + (area.Height - dlg.Height) / 2
+                            );
+                        }
                     }
                     else
                     {
