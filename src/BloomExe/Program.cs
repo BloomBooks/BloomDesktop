@@ -1467,7 +1467,7 @@ namespace Bloom
                     var shell = _projectContext.ProjectWindow as Shell;
                     if (shell != null)
                     {
-                        shell.Invoke((Action)(() => shell.ReallyComeToFront()));
+                        shell.Invoke((Action)(() => shell.FinishPuttingShellInFront()));
                     }
                 }
             };
@@ -1909,7 +1909,7 @@ namespace Bloom
                 // another application (Chrome, say) took the foreground as our previous window closed,
                 // and Bloom comes up invisible behind it. BL-16784.
                 if (!StartupScreenManager.WillBringMainWindowToFrontWhenSplashCloses)
-                    (_projectContext.ProjectWindow as Shell)?.ReallyComeToFront();
+                    (_projectContext.ProjectWindow as Shell)?.FinishPuttingShellInFront();
 
                 if (BloomThreadCancelService != null)
                     BloomThreadCancelService.Dispose();

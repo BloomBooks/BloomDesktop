@@ -99,7 +99,7 @@ namespace Bloom
         /// well as Windows, while only taking the foreground is Windows-only. We kept the hold
         /// cross-platform because the race it wins is not peculiar to Windows, so there was no
         /// reason to withhold it -- but note that it is unverified on Linux, since we do not
-        /// currently build or test there. Before this, Shell.ReallyComeToFront toggled topmost
+        /// currently build or test there. Before this, Shell.FinishPuttingShellInFront toggled topmost
         /// instantly, so Linux did not hold it at all. BL-16784.
         /// </summary>
         public static void BringToFrontNow(this Form form)

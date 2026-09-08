@@ -386,7 +386,7 @@ namespace Bloom
                     (Action)(
                         () =>
                         {
-                            shell.ReallyComeToFront();
+                            shell.FinishPuttingShellInFront();
                         }
                     )
                 );
@@ -404,7 +404,7 @@ namespace Bloom
         /// and two in Program (the splash-screen one-shot and OpenProjectWindow) -- so inlining it
         /// would mean repeating that pairing in each of them.
         /// </summary>
-        public void ReallyComeToFront()
+        public void FinishPuttingShellInFront()
         {
             // An instant toggle is what we used to do here, and it is why Bloom could come up
             // behind Chrome. (BL-16784)  See comments for BringToFrontNow for why this works better.
