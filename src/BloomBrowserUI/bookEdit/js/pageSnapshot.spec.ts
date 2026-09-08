@@ -287,6 +287,39 @@ describe("pageSnapshot", () => {
             "the change that landed mid-gather must trigger another snapshot, not be dropped",
         ).toBe(3);
     });
+    it("does not count an edit made while the baseline was being read as already sent", async () => {
+        // The baseline gather waits for the page's load-time work to finish, and the user can start
+        // typing before it does. The baseline then already contains that typing. Treating it as
+        // "already sent" would swallow the edit: nothing would ever post it, and quitting would
+        // write what C# holds.
+        let release: (value: string) => void = () => {};
+        const slowGather = () =>
+            new Promise<string>((resolve) => {
+                release = resolve;
+            });
+        startWatchingPageForSnapshots(slowGather);
+
+        changeThePage("typed while the page was still loading");
+        await Promise.resolve(); // let the observer see it
+        release("hello, typed while the page was still loading");
+        await letTheBaselineSettle();
+
+        // The follow-up gather reports the same content the baseline did.
+        vi.advanceTimersByTime(quietMsForTests);
+        await vi.runAllTicks();
+        release("hello, typed while the page was still loading");
+        await vi.runAllTicks();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(
+            posted.length,
+            "the edit that landed during the baseline must be posted",
+        ).toBe(1);
+        expect(posted[0].body).toBe(
+            "hello, typed while the page was still loading",
+        );
+    });
     it("does not treat a failed post as sent, so the content is offered again", async () => {
         // Recording it as sent before the post resolved would mean C# never got this content and
         // we never tried again -- the next save would then write what C# still held, losing

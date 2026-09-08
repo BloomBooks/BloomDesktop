@@ -279,11 +279,20 @@ function takeBaseline(pageId: string): void {
     void gatherPageContent!().then(
         (baseline) => {
             if (pageIdBeingWatched !== pageId) return; // moved on while we waited
-            lastPosted = baseline;
             baselineTaken = true;
-            // If the page changed while we were taking the baseline, that change may or may not
-            // be in it; go round again rather than assume.
-            if (changeCount > 0) scheduleSnapshot();
+            if (changeCount > 0) {
+                // The page changed while we were reading it -- the gather waits for the delay
+                // register, and the user can type in that time -- so the baseline may already
+                // contain an edit. Treating it as "already sent" would swallow that edit: the
+                // follow-up snapshot would match it and post nothing, and quitting would write
+                // what C# holds. So the baseline counts for nothing and the follow-up posts
+                // whatever is there. That costs one redundant post on a page the user did not
+                // touch, which C# then finds unchanged.
+                lastPosted = undefined;
+                scheduleSnapshot();
+            } else {
+                lastPosted = baseline;
+            }
         },
         () => {
             if (pageIdBeingWatched !== pageId) return;
