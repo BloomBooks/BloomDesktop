@@ -12,6 +12,7 @@ import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
 import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
+import { suppressesOverflowMarking } from "../flowText/flowIndicators";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -469,6 +470,12 @@ export default class OverflowChecker {
             OverflowChecker.getSelfOverflowAmounts(editable);
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
+
+        if (suppressesOverflowMarking(editable)) {
+            // A chained box with another box after it on the page is meant to be full: the
+            // flow moves the extra text on, so there is no problem to report here.
+            overflowY = 0;
+        }
         overflowY =
             theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
                 editable,

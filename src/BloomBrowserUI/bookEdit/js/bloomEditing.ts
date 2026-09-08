@@ -79,6 +79,7 @@ import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
+import { setupFlowText, suspendFlowText } from "../flowText/flowTrigger";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -962,6 +963,8 @@ export function SetupElements(
     // were prematurely overflowing before the images were set to the right size.
     GetOverflowChecker().AddOverflowHandlers(container);
 
+    setupFlowText(container);
+
     const editor = GetEditor();
 
     // Applying this to the body element allows it to work for any bloom-editable that can get
@@ -1322,6 +1325,7 @@ export function localizeCkeditorTooltips(bar: JQuery) {
 
 // This is invoked when we are about to change pages.
 function removeEditingDebris() {
+    suspendFlowText();
     resetAbovePageControls();
     // We are mirroring the Change Layout mode toggle behavior here, in case the user changes
     // pages while the Change Layout mode toggle is on.

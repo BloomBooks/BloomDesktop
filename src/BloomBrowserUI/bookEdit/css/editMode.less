@@ -1856,3 +1856,28 @@ svg.bloom-videoControl {
     left: 50%;
     transform: translate(-50%, -50%);
 }
+
+// Flow text: marks on a translation group whose text runs on into another box. The group is
+// not positioned by default, and the editable's own ::after is taken by the language tip, so
+// the glyph goes on the group and the group gets a positioning context here.
+.bloom-page .bloom-translationGroup.bloom-flow-hasNext,
+.bloom-page .bloom-translationGroup.bloom-flow-refused {
+    position: relative;
+}
+
+.bloom-page .bloom-translationGroup.bloom-flow-hasNext::after {
+    // U+2935 DOWNWARDS ARROW WITH TIP LEFTWARDS: the text carries on in the next box.
+    content: "\2935";
+    position: absolute;
+    right: 2px;
+    bottom: 0;
+    font-size: 10px;
+    line-height: 10px;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+// Flow cannot move text through this box; kRefusedReasonAttr says why.
+.bloom-page .bloom-translationGroup.bloom-flow-refused {
+    outline: 1px dashed @WarningColor;
+}

@@ -293,3 +293,20 @@ want first in `MruProjects`, or delete the entries so Bloom shows the collection
 the branch rather than the version in that path.
 
 **Context:** BL-16781, after re-basing the `dev-blorgswitch` worktree onto Version6.5.
+
+## 2026-09-08 — compileLess.mjs reports "up-to-date" for a .less file you just changed
+
+`node src/BloomBrowserUI/scripts/compileLess.mjs` printed `Less: 0 compiled, 183 up-to-date`
+after edits to `bookEdit/css/editMode.less` and `content/bookLayout/basePage-sharedRules.less`.
+`needsBuild` compares each entry against the dependency list restored from
+`output/browser/.less-watch-state.json`, and deleting that state file does not help: with no
+dependencies recorded it falls back to comparing the entry's own mtime with the output's, and a
+watcher from an earlier `pnpm dev` had already refreshed the outputs.
+
+**Workaround:** delete the output CSS files you care about
+(`output/browser/bookEdit/css/editMode.css`, `output/browser/bookLayout/basePage.css`) and run
+`compileLess.mjs` again; a missing output always builds.
+
+**Idea:** give the script a `--force` flag, or have it hash the sources rather than trust mtimes.
+
+**Context:** Phase 1 of the flow-text work, verifying that two .less edits compile.

@@ -44,6 +44,7 @@ import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { getPageIFrame } from "../../utils/shared";
+import { reflowAllChainsOnPage } from "../flowText/flowTrigger";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -2290,6 +2291,14 @@ export default class StyleEditor {
     }
 
     public cleanupAfterStyleChange(doNotShrink?: boolean) {
+        // A new style breaks the text somewhere else, so settle the chains before we measure
+        // anything, and again once a font the style asked for has arrived.
+        reflowAllChainsOnPage("styleChange");
+        const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
+        fonts?.ready?.then(() =>
+            reflowAllChainsOnPage("styleChangeFontsReady"),
+        );
+
         const editable = this.boxBeingEdited;
         const styleName = StyleEditor.GetStyleNameForElement(editable);
         if (!styleName) {

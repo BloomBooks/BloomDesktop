@@ -245,6 +245,17 @@ span.bloom-linebreak {
     }
 }
 
+// A box whose text flows into another box must break its lines greedily: the flow code
+// measures the text one line at a time and hands the next box everything that did not fit,
+// so a wrapper that moves a word back to avoid an orphan would put the break somewhere the
+// flow did not predict. This must be in the book stylesheet, not only in edit mode, so that
+// the published book breaks the text in the same places the editor did.
+.bloom-page
+    .bloom-translationGroup[data-flow-chain]
+    > .bloom-editable.bloom-visibility-code-on {
+    text-wrap: wrap;
+}
+
 // Rules that are shared by both the regular book front matter and the more minimalist epub front matter.
 // These rules were moved from bloom-xmatter-sharedRules.less to basePage-sharedRules.less in Bloom 6.0.
 .frontCover {
