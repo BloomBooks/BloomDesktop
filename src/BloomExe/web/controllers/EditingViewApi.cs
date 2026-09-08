@@ -42,30 +42,6 @@ namespace Bloom.web.controllers
                 HandleSaveToolboxSetting,
                 true
             );
-            // (editView/pageContent used to live here: the browser's answer to a save that C# had
-            // started. Nothing asks any more -- the browser volunteers the page as it is edited,
-            // via editView/pageSnapshot below.)
-            // Save the current page from content the browser gathered on its own initiative, without
-            // reloading the page. Unlike editView/pageContent (which is the browser answering a save
-            // that C# started, and always ends in a navigation), this lets Javascript save whenever it
-            // needs the book on disk to be current and then simply carry on editing the same page.
-            // The reply is not sent until the save is finished, so Javascript can await it.
-            //
-            // It answers whether the save actually happened. It can decline -- the user may have
-            // started changing pages, or an external process may have replaced the book on disk --
-            // and a caller that carries on regardless would be working from a file that does not
-            // say what it thinks it says. That is not hypothetical: the AI Image Editor saves so
-            // that the file matches the page it is about to read image sources from.
-            apiHandler.RegisterEndpointHandler(
-                "editView/savePageInPlace",
-                request =>
-                {
-                    var pageContentData = request.RequiredPostString(unescape: false);
-                    request.ReplyWithBoolean(View.Model.SavePageInPlace(pageContentData));
-                },
-                true, // updates the book DOM, writes files, and refreshes the page list: UI thread
-                true
-            );
             // The browser volunteering the current content of the page it is editing, so that a
             // later save does not have to ask for it and wait. All this does is remember the
             // string; see PageSnapshot for what it is for and why "no snapshot" means "nothing to
@@ -81,9 +57,9 @@ namespace Bloom.web.controllers
                 {
                     var pageId = request.RequiredParam("pageId");
                     var loadId = request.GetParamOrNull("loadId");
-                    var pageContentData = request.RequiredPostString(unescape: false);
+                    var pageContent = request.RequiredPostString(unescape: false);
                     request.ReplyWithBoolean(
-                        View.Model.ReceivePageSnapshot(pageId, loadId, pageContentData)
+                        View.Model.ReceivePageSnapshot(pageId, loadId, pageContent)
                     );
                 },
                 false,
@@ -663,11 +639,11 @@ namespace Bloom.web.controllers
 
         private void HandlePageDomLoaded(ApiRequest request)
         {
-            // The browser sends "<pageId> <loadId>"; the load id identifies this particular load of
-            // the page, so that snapshots from a load we have moved on from can be ignored.
-            var parts = request.RequiredPostString().Split(' ');
-            var pageId = parts[0];
-            var loadId = parts.Length > 1 ? parts[1] : null;
+            // The load id identifies this particular load of the page, so that snapshots from a
+            // load we have moved on from can be ignored (see PageSnapshot).
+            var requestData = DynamicJson.Parse(request.RequiredPostJson());
+            string pageId = requestData.pageId;
+            string loadId = requestData.loadId;
             View.Model.HandlePageDomLoadedEvent(pageId, loadId);
             request.PostSucceeded();
         }

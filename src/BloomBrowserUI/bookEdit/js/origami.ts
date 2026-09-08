@@ -1,4 +1,4 @@
-﻿import { SetupImage } from "./bloomImages";
+import { SetupImage } from "./bloomImages";
 import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementPageBridge";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";

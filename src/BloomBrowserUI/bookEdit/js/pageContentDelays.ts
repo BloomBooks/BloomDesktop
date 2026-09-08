@@ -9,13 +9,12 @@
 // So any code doing such work registers here for its duration (preferably via
 // wrapWithRequestPageContentDelay, which cannot forget to deregister), and every route that gathers
 // page content goes through whenNoActiveDelays() first:
-//   - the C#-initiated save (requestPageContent in bloomEditing.ts). This is the route the register
-//     really exists for: C# picks the moment, so in-flight work has no other way to hold it off.
-//   - the browser-initiated ones (getPageContentForSaveWhenReady, used by savePageWithoutReloading
-//     and by the page list's commands, via collectCurrentPageContent). Javascript could in
-//     principle await its own work instead, but it cannot know about work someone else started, so
-//     it waits here too. That also means the *command* does not begin -- C# is not asked to
-//     duplicate or delete a page until the page has settled.
+//   - getPageContentForSaveWhenReady in bloomEditing.ts, which is how the page snapshot
+//     (pageSnapshot.ts) reads the page after every change, and how the page list's commands
+//     collect it to send along (collectCurrentPageContent). Javascript could in principle await
+//     its own work instead, but it cannot know about work someone else started, so it waits here.
+//     That also means the *command* does not begin -- C# is not asked to duplicate or delete a
+//     page until the page has settled.
 //   - the off-screen book processor (captureContentForExternalProcessing).
 
 // Upper bound (not a fixed wait) on how long we wait for in-flight async DOM work to finish before

@@ -133,19 +133,12 @@ namespace Bloom
     }
 
     /// <summary>
-    /// Nothing to say beyond "the collection is closing". This used to carry a PostponedWork /
-    /// Delayed / FailureAction protocol so that a subscriber could say "I will finish this later,
-    /// you carry on" — its own comment called it a bit of a kludge — and it existed for exactly
-    /// one subscriber, EditingModel, because saving the page being edited meant asking the browser
-    /// and waiting. That save is synchronous now (see PageSnapshot), so subscribers simply do their
-    /// work and return.
+    /// Called when the user is quitting or changing to another collection. There is nothing to say
+    /// beyond that, so the payload is always null. (It used to carry a protocol for postponing the
+    /// close until the page being edited had been saved; see Shell.OnClosing for what that was and
+    /// why it is gone.)
     /// </summary>
-    public class CollectionClosingArgs { }
-
-    /// <summary>
-    /// called when the user is quiting or changing to another collection
-    /// </summary>
-    public class CollectionClosing : Event<CollectionClosingArgs>
+    public class CollectionClosing : Event<object>
     {
         public CollectionClosing()
             : base("CollectionClosing", LoggingLevel.Major) { }

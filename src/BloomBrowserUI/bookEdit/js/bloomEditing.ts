@@ -65,7 +65,7 @@ import { showInvisibles, hideInvisibles } from "./showInvisibles";
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import {
     post,
     postBoolean,
@@ -1345,8 +1345,7 @@ export function localizeCkeditorTooltips(bar: JQuery) {
 // div, so nothing outside that div matters either.)
 //
 // This works entirely on 'cloneOfBody', a detached copy of the live body, so the live page is
-// untouched and remains editable. Compare the old removeEditingDebris(), which did this to the
-// live DOM and so forced a page reload after every save.
+// untouched and remains editable.
 //
 // Note that there is deliberately nothing here corresponding to the old call to
 // resetAbovePageControls(): the above-page controls are a bloom-ui element that lives outside the
@@ -1368,22 +1367,18 @@ function removeEditingDebrisFromClone(cloneOfBody: HTMLElement) {
     // clones the whole body, so a save that happens while it is there writes it into the book.
     // The window is real: it is created while text is being fitted, which is exactly when the
     // user is typing, and a save right after typing is the commonest save there is.
-    //
-    // Found by the page-snapshot experiment, which gathers far more often than a save does and so
-    // caught it in the act (see SavingWithoutReloading.md). It is not new: any save has always
-    // been able to pick it up.
     cloneOfBody.querySelector("#measureTextDiv")?.remove();
     removeTransientVideoTimestampParams(cloneOfBody);
     removeEditorChromeFromClone(cloneOfBody);
 }
 
 // Return the page body + user stylesheet combined with the <SPLIT-DATA> delimiter that C# splits
-// on. Shared by the live save path (requestPageContentInternal), the save-without-reloading path
-// (savePageWithoutReloading), and the off-screen capture path (captureContentForExternalProcessing),
-// so the cleanup steps and the delimiter can't drift between them.
+// on. Shared by the live editor's gathers (getPageContentForSaveWhenReady) and the off-screen
+// capture path (captureContentForExternalProcessing), so the cleanup steps and the delimiter can't
+// drift between them.
 //
 // Deliberately NOT exported: every caller should come through getPageContentForSaveWhenReady() (or
-// one of the two paths above, which do their own waiting), so that nobody can gather the page while
+// the off-screen path, which does its own waiting), so that nobody can gather the page while
 // asynchronous work that belongs in it is still running. It is also deliberately synchronous, so
 // that no other event handler can run part way through capturing the page.
 //
@@ -1397,9 +1392,10 @@ function getPageContentForSave(): string {
 }
 
 // The way anything outside this file gets the current page's content: wait for any in-flight async
-// DOM work that belongs in the saved page, then gather. This is what the page list's commands use
-// (see collectCurrentPageContent in pageThumbnailList/currentPageContent.ts) to send the content
-// along with a request that will make C# save it.
+// DOM work that belongs in the saved page, then gather. The page snapshot (pageSnapshot.ts) reads
+// the page through this, and so do the page list's commands (see collectCurrentPageContent in
+// pageThumbnailList/currentPageContent.ts) to send the content along with a request that will make
+// C# save it.
 //
 // Note the gather happens in the continuation of the await, with nothing awaited in between, so no
 // timer can start new work between our finding the register empty and our reading the page.
@@ -1408,39 +1404,14 @@ export async function getPageContentForSaveWhenReady(): Promise<string> {
     return getPageContentForSave();
 }
 
-// Gather the current page's content and ask C# to save it into the book, WITHOUT the page being
-// reloaded afterwards. This lets Javascript initiate a save at a point of its own choosing (e.g.
-// before some operation that needs the book on disk to be up to date) and simply carry on editing
-// the same page.
+// Save the page and have C# rebuild it from the updated book DOM. Unlike an ordinary save, the
+// page IS reloaded, and for these callers that is the point rather than a cost: they have
+// restructured the page in ways that have never been through SetupElements (a new origami layout,
+// an imported video, a translation group replaced by a derived field), and the reload is what runs
+// the page's setup over the result.
 //
-// There used to be a counterpart, requestPageContent(), for the other direction: C# starting a save
-// and waiting for the browser to answer on editView/pageContent. Nothing asks any more -- the
-// browser volunteers the page as it is edited (see pageSnapshot.ts), so C# already has it.
-//
-// Resolves TRUE once the book DOM has been updated and written to disk, and FALSE if C# declined
-// to save -- the user may have started changing pages, or an external process may have replaced
-// the book on disk. Callers that save so that the file will match the page they are about to work
-// from must check: carrying on after a refused save means reading a file that does not say what
-// they think it says.
-export async function savePageWithoutReloading(): Promise<boolean> {
-    const content = await getPageContentForSaveWhenReady();
-    const response = await postString("editView/savePageInPlace", content);
-    // C# sends this as JSON, so axios normally hands us a real boolean. Accept the string too:
-    // "did we save?" is not worth making dependent on the reply's content type, and getting it
-    // wrong the other way would have the AI image editor cry failure after every good save.
-    const data = (response as AxiosResponse<boolean | string> | void)?.data;
-    return data === true || data === "true";
-}
-
-// Save the page and have C# rebuild it from the updated book DOM. Unlike
-// savePageWithoutReloading(), the page IS reloaded, and for these callers that is the point rather
-// than a cost: they have restructured the page in ways that have never been through SetupElements
-// (a new origami layout, an imported video, a translation group replaced by a derived field), and
-// the reload is what runs the page's setup over the result.
-//
-// What has gone is the round trip. Sending the content with the request means C# no longer has to
-// ask us for it and wait for the answer on a separate API before it can do anything. See
-// EditingModel.SavePageAndReloadIt.
+// Sending the content with the request means C# does not have to ask us for it and wait for the
+// answer on a separate API before it can do anything. See EditingModel.SavePageAndReloadIt.
 //
 // The post itself might navigate this very frame out from under us, hence postThatMightNavigate.
 //
@@ -1602,15 +1573,14 @@ function resizeCanvasElementsToFitContent(): void {
 }
 
 // Used by the off-screen "process whole book" path (C# BookProcessor, driven by the
-// external/process-book API). It gathers the same page content that requestPageContent() would save
-// (via the shared extractAndStripPageContentForSave()), but instead of posting it to the editView/pageContent
-// API (which feeds the LIVE EditingModel and would corrupt the live editor's state), it stashes the
-// combined result on window.__bloomExternalPageContent for the C# caller to poll. Like every other
-// gathering path it goes through whenNoActiveDelays() first, so browser-based measurements (image
-// sizing, canvas-element layout, etc.) are complete before we capture the page. It also resizes
-// text canvas elements to fit their content (see
-// resizeCanvasElementsToFitContent), since that auto-height adjustment is otherwise deferred on a
-// timer the wait loop does not track.
+// external/process-book API). It gathers the same page content a save would (via the shared
+// getPageContentForSave()), but instead of posting it to an API that feeds the LIVE EditingModel
+// (which would corrupt the live editor's state), it stashes the combined result on
+// window.__bloomExternalPageContent for the C# caller to poll. Like every other gathering path it
+// goes through whenNoActiveDelays() first, so browser-based measurements (image sizing,
+// canvas-element layout, etc.) are complete before we capture the page. It also resizes text canvas
+// elements to fit their content (see resizeCanvasElementsToFitContent), since that auto-height
+// adjustment is otherwise deferred on a timer the wait loop does not track.
 export function captureContentForExternalProcessing(
     fitImageTextSplits?: boolean,
 ): void {

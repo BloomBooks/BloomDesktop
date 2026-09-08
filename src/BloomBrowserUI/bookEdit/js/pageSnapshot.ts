@@ -51,20 +51,14 @@ export function getPageLoadId(): string {
 // How long the page must be quiet before we take a snapshot.
 //
 // This is small on purpose, and the size of it decides how much typing an exit could lose. What
-// it has to buy is coalescing: measured on a real page, ONE keystroke produces about nine
-// MutationObserver batches, because CKEditor does a lot of DOM work per key. 25 ms collapses those
-// into a single gather, and no lower value would buy anything more -- below about 25 ms the lag is
-// dominated by the POST, not by us.
-//
-// Measured on a 26 KB page (see Edit/SavingWithoutReloading.md):
-//   gather                                    0.4 ms median (0.2 - 1.6)
-//   keystroke -> C# has the content           ~49 ms  (25 debounce + gather + POST)
-//   posts while typing                        one per keystroke
+// it has to buy is coalescing: ONE keystroke produces about nine MutationObserver batches, because
+// CKEditor does a lot of DOM work per key. 25 ms collapses those into a single gather, and no lower
+// value would buy anything more -- below about 25 ms the lag is dominated by the POST, not by us.
 //
 // The cost of being this eager is one POST per keystroke instead of one per pause, and one extra
 // snapshot per page visit (a short debounce catches the page mid-settle as well as settled). Both
-// are cheap: the gather is off the critical path at 0.4 ms, the POST goes to localhost and C#
-// only stores the string, replacing the last one.
+// are cheap: the gather takes well under a millisecond, the POST goes to localhost and C# only
+// stores the string, replacing the last one. Measurements are in Edit/SavingWithoutReloading.md.
 const kQuietMs = 25;
 
 // How long to wait before offering the content again when C# did not take it. Longer than the
@@ -100,7 +94,7 @@ let changeCount = 0;
 // The page we have already complained about, so that a page which fails every time reports once
 // rather than on every keystroke.
 let pageWeReportedAFailureFor: string | undefined;
-// How many posts in a row have failed outright. Governs the backoff, and how soon we stop asking.
+// How many posts in a row have failed outright. Governs the backoff.
 let consecutiveFailedPosts = 0;
 // Tell the user, at most once for this page. Reporting is the whole reason a snapshot post is
 // made quietly (see postStringQuietly): so that WE decide when to speak, rather than the request
@@ -184,11 +178,10 @@ async function takeSnapshot(): Promise<void> {
             //   content as sent, and never offer it again; the next save would write what C# still
             //   held, losing everything typed since the snapshot before.
             //
-            // They are retried differently, because only one of them is loud. A refusal costs
-            // nothing and ends by itself the moment the page reports ready, so we simply keep
-            // offering. A failure is reported to the user by wrapAxios on every attempt, so a
-            // server that is not answering would put a dialog in front of the user every second
-            // for as long as they stayed on the page. That one backs off and gives up on its own.
+            // They are retried differently. A refusal costs nothing and ends by itself the moment
+            // the page reports ready, so we simply keep offering. A failure means the server is
+            // not answering, so that one backs off (and is reported once, see
+            // reportFailureOncePerPage, rather than on every attempt).
             const response = reply as { data?: boolean | string } | void;
             const refused = !!response && response.data === false;
             const failed = !response;
@@ -282,7 +275,6 @@ export function notePageContentMayHaveChanged(): void {
 
 // Read the page once, and treat that as already sent. See the long note in
 // startWatchingPageForSnapshots for why a baseline is needed at all.
-//
 function takeBaseline(pageId: string): void {
     void gatherPageContent!().then(
         (baseline) => {
@@ -329,13 +321,12 @@ export function startWatchingPageForSnapshots(
     // page, and the observer cannot tell those from the user's own edits.
     //
     // That mattered: it broke the property C# depends on, that no snapshot means no unsaved
-    // changes. (Found by watching the real app: a page nobody had touched posted one anyway.)
+    // changes.
     //
     // The gather waits for the delay register -- but that is NOT enough to make this the settled
-    // page, and measurement says so: the baseline still differs from the settled content, and the
-    // one snapshot an untouched page posts is byte-identical to the settled page. At the moment
-    // we run, the asynchronous fix-ups have not registered their delays yet, so the register is
-    // empty and the gather returns immediately.
+    // page: at the moment we run, the asynchronous fix-ups have not registered their delays yet,
+    // so the register is empty and the gather returns immediately. So an untouched page still
+    // posts one snapshot, byte-identical to the settled page.
     //
     // Deliberately NOT "fixed" by delaying the baseline until the page is quiet. That would make
     // the baseline include any edit the user managed in the meantime, and since load-time

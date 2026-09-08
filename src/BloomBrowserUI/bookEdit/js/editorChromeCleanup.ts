@@ -5,11 +5,10 @@
 // still does; this is not a replacement for it. What it changes is what we SEND, and that matters
 // because of how the page snapshot decides to send anything at all: it posts whenever the gathered
 // string differs from the last one it sent (see pageSnapshot.ts). Chrome in that string therefore
-// made pages look edited when nobody had touched them --  C# would hold a snapshot, conclude there
-// were unsaved changes, and save on the way out. Measured on one book, this is the difference
-// between six of its eight pages re-saving themselves on every visit and none of them doing so.
+// made pages look edited when nobody had touched them -- C# would hold a snapshot, conclude there
+// were unsaved changes, and save on the way out.
 //
-// The offenders, in the order they were found:
+// The offenders:
 //   * CKEditor’s toolbars and qTip’s bubbles, which those libraries append to the document body.
 //     Big (they were 20 KB of a 26 KB page) and restless: a bubble fades in and slides into place,
 //     so its inline style changes several times a second while it appears.
@@ -21,10 +20,6 @@
 //     noted the wart -- "we unfortunately save in the file the qtip attributes that get added like
 //     aria-describedby=qtip-0 and has-qtip=true" -- and BookData._attributesNotToCopy already
 //     refuses to copy them into the data div, calling them "junk that gets left behind by UI".
-//
-// This is also the cleanup EditingModel.GetCleanCurrentPageFromBodyAndCss asks for in its
-// "Enhance: it would be nice if ALL the cleanup happened in one place, probably the Javascript
-// method that retrieves the page content".
 //
 // Nothing here may touch the live page; the caller passes a detached deep copy of document.body.
 export function removeEditorChromeFromClone(cloneOfBody: HTMLElement) {

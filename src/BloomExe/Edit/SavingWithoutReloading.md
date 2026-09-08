@@ -55,52 +55,44 @@ That is no longer true:
 
 On top of that:
 
-- `EditingStateMachine.ToSavedInPlace(pageContentData, reportFailure)` — a save that begins and ends
-  in `Editing`. No `SavePending` wait, no `SavedAndStripped`, no navigation.
-- `EditingStateMachine.ToSavedInPlaceThenNavigating(pageContentData, doBeforeSaveToDisk,
-  reportFailure)` — the same thing for a request that also has to *change* something and then show
-  another page. `doBeforeSaveToDisk` plays exactly the role it plays in `ToSavePending`: it runs
-  after the browser's content is in the book DOM and before the book is written to disk, and
-  returns the page to go to. So the whole `SavePending → SavedAndStripped → Navigating` sequence
-  collapses into one `Editing → Navigating` step.
-- **`EditingModel.SaveThen(..., pageContentFromBrowser)`** — the way in. Given the content it does
-  the whole save here and now (privately, via `SavePageInPlaceThen`); without it, or if we turn out
-  not to be in a state to save, it asks the browser exactly as it always did. So a caller opts in
-  by passing one more argument and needs to know nothing else: in particular it does not have to
-  know that only a `Declined` outcome may fall back, which is the rule that, got wrong, deletes a
-  page twice. Both routes reuse `UpdateBookDomFromBrowserPageContent()` and `SaveBookToDisk()`, so
-  they make exactly the same "just this page vs. full book save" decision.
-- `EditingModel.SavePageInPlace(pageContentData)` — save and stay put, for the one caller that
-  wants no navigation at all (Copy Page).
-- API `editView/savePageInPlace`, called by `savePageWithoutReloading()` in `bloomEditing.ts`. The
-  reply is not sent until the save has finished, so Javascript can `await` it.
+- `EditingStateMachine.SaveThenNavigate(pageContent, changeBookBeforeWriting, reportFailure)` --
+  save the current page from content we already hold, run the caller's action (which runs after the
+  browser's content is in the book DOM and before the book is written, and returns the page to go
+  to), write the book, navigate. The whole `SavePending -> SavedAndStripped -> Navigating` sequence
+  collapses into one `Editing -> Navigating` step.
+- **`EditingModel.MergeCurrentPageThenSave(changeBookBeforeWriting, ..., pageContent)`** -- the way
+  in for everything that changes pages. Given the content it uses it; otherwise it uses the snapshot
+  the browser last volunteered (see "The page snapshot" below), and a null snapshot means the page
+  has not changed.
+- `EditingModel.SaveCurrentPageAndBook(pageContent)` -- save and stay put: leaving the Edit tab,
+  closing the collection, Copy Page, opening the AI image editor. Both routes go through the same
+  `UpdateBookDomFromBrowserPageContent()` and `SaveBookToDisk()`, so every save makes the same
+  "nothing / just this page / whole book" decision and clears the same flags.
 
-### What has been converted so far
+### What the page list sends
 
-Everything the **page list frame** initiates. `collectCurrentPageContent()`
-(`pageThumbnailList/currentPageContent.ts`) gathers the editable page's content — it can, because
-`getEditablePageBundleExports()` reaches across frames — and every one of these sends it along with
-its request:
+Everything the **page list frame** initiates sends the current page's content along with its
+request. `collectCurrentPageContent()` (`pageThumbnailList/currentPageContent.ts`) gathers it -- it
+can, because `getEditablePageBundleExports()` reaches across frames -- so the save uses the freshest
+possible copy rather than a snapshot up to a debounce interval old:
 
 | Command | Was | Is now |
 | --- | --- | --- |
-| clicking a page thumbnail | `SaveThen` round trip, then navigate | same `SaveThen`, given the content |
-| Duplicate Page (button and context menu) | `SaveThen` round trip, then duplicate, then navigate | ditto |
+| clicking a page thumbnail | round trip, then navigate | save from the content sent, then navigate, in one step |
+| Duplicate Page (button and context menu) | round trip, then duplicate, then navigate | ditto |
 | Delete Page (button and context menu) | ditto | ditto |
 | Paste Page (context menu) | ditto | ditto |
 | dragging a page to a new position | ditto | ditto |
-| Change Layout, import a video, convert a field to a derived one | `SaveThen` round trip, then reload the page | ditto — and they keep the reload, which is doing a second job for them (§1) |
-| **Copy Page** (context menu) | `SaveThen` round trip **and a reload of the page being copied** | `SavePageInPlace` — no navigation at all |
+| Change Layout, import a video, convert a field to a derived one | round trip, then reload the page | ditto -- and they keep the reload, which is doing a second job for them (section 1) |
+| **Copy Page** (context menu) | round trip **and a reload of the page being copied** | `SaveCurrentPageAndBook` -- no navigation at all |
 
-Copy Page is the first of these to lose its reload entirely: copying doesn't change the page you
-are looking at, so with the content in hand there is nothing left to navigate to. The others still
-navigate, because they are *going somewhere* (the new page, the next page, the moved page); what
-they lose is the round trip, and with it the `SavePending` window in which a second command is
-silently dropped.
+Copy Page loses its reload entirely: copying doesn't change the page you are looking at, so with
+the content in hand there is nothing left to navigate to. The others still navigate, because they
+are *going somewhere* (the new page, the next page, the moved page); what they lose is the round
+trip, and with it the `SavePending` window in which a second command was silently dropped.
 
-Not converted, because the request comes from a separate dialog window that cannot reach the page
-frame: Add Page (`AddPageDialog`) and Duplicate Many Times (`duplicateManyDlgBundle`). Both still
-use `SaveThen`, which is why it has to stay.
+Requests from a separate dialog window (Add Page, Duplicate Many Times) cannot reach the page
+frame to collect its content; they send none, and the snapshot is used.
 
 Everything below is the inventory of what else could be converted, and what that would let us
 delete.
@@ -172,8 +164,8 @@ tool markup present, images sized. Neither the unit tests nor the typecheck will
 ### What the round trip actually costs — measured, before changing anything
 
 Do not do this work for speed. Measured on a running Bloom (7-page book, 25 KB page), driving real
-thumbnail clicks and watching the API traffic from outside:
-`.claude/skills/run-bloom/benchPageChange.mjs` and `benchSaveGather.mjs`.
+thumbnail clicks and watching the API traffic from outside, with two throwaway CDP scripts that
+were removed once the round trip they measured was gone.
 
 | Phase of a page change | median ms from click |
 | --- | --- |

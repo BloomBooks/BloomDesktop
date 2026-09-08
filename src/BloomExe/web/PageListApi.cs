@@ -105,10 +105,9 @@ namespace Bloom.web
         {
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
-            // The page list sends the current page's content with the click when it can, so we can
-            // save it without asking the browser and waiting. It is absent when there is no page
-            // to collect from, or collecting threw; then we fall back to asking (see
-            // PageListController.OnPageSelectedChanged).
+            // The page list sends the current page's content with the click when it can. It is
+            // absent when there is no page to collect from, or collecting threw; then the snapshot
+            // the browser last volunteered is used (see PageListController.OnPageSelectedChanged).
             string pageContent = requestData.IsDefined("pageContent")
                 ? requestData.pageContent
                 : null;
@@ -150,8 +149,7 @@ namespace Bloom.web
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
             string commandId = requestData.commandId;
-            // See HandlePageClickedRequest: sent when the page list could collect it, so that the
-            // commands which save the current page first need not ask the browser and wait.
+            // See HandlePageClickedRequest.
             string pageContent = requestData.IsDefined("pageContent")
                 ? requestData.pageContent
                 : null;
@@ -169,8 +167,7 @@ namespace Bloom.web
                 // releases the sync lock a moment AFTER we return, while the UI thread is already
                 // free to pump whatever we queued -- so a dialog could ask for its content while
                 // the lock is still held. The delay makes that ordering certain rather than merely
-                // likely. (Removing it during BL-13502 is what brought this to light; the reason
-                // had never been written down.)
+                // likely.
                 //
                 // The cost is a small window in which typing would miss the page snapshot that
                 // came with this request. That is a trade made knowingly: a lost keystroke is

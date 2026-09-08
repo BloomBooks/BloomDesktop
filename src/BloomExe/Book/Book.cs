@@ -4303,9 +4303,8 @@ namespace Bloom.Book
         /// <summary>
         /// Finish a delayed save. pageToSaveToDisk should be the value from the out param of UpdateDomFromEditedPage().
         /// It is the one page that needs saving, if reallyNeedFullSave is false; if that is true, it is not used.
-        /// </summary>
-        /// <summary>
-        /// Write the page, or the whole book if it has to be. Returns FALSE if nothing reached
+        ///
+        /// Returns FALSE if nothing reached
         /// disk: the file could not be written, or the page was found to be empty and refused.
         /// Both of those tell the user; the return value is for the caller, which otherwise clears
         /// the flags that say the change still needs writing, and so never tries again.

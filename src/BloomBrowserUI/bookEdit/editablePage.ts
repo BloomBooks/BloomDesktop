@@ -41,7 +41,10 @@ function getPageId(): string {
 document.addEventListener("DOMContentLoaded", () => {
     // The load id goes with it: from here until the next page reports ready, C# accepts snapshots
     // only from this load. See getPageLoadId().
-    postString("editView/pageDomLoaded", getPageId() + " " + getPageLoadId());
+    postJson("editView/pageDomLoaded", {
+        pageId: getPageId(),
+        loadId: getPageLoadId(),
+    });
 });
 
 // This allows strong typing to be done for exported functions.
@@ -55,10 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
 // but I think it is unwise. It is so easy for an extra file to get imported into another bundle,
 // and then it will bring this along, with disastrous results.
 export interface IPageFrameExports {
-    // Gather the current page's content and have C# save it, without the page being reloaded
-    // afterwards.
-    // Resolves false if C# declined to save; see savePageWithoutReloading in bloomEditing.ts.
-    savePageWithoutReloading(): Promise<boolean>;
     // The combined "body <SPLIT-DATA> userCss" string that a save needs, gathered without
     // disturbing the live page.
     getPageContentForSaveWhenReady(): Promise<string>;
@@ -126,10 +125,9 @@ export interface IPageFrameExports {
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
-// For example, workspaceBundle.getEditablePageBundleExports().savePageWithoutReloading() can be called.
+// For example, workspaceBundle.getEditablePageBundleExports().pageUnloading() can be called.
 import {
     getPageContentForSaveWhenReady,
-    savePageWithoutReloading,
     captureContentForExternalProcessing,
     pageUnloading,
     topBarButtonClick,
@@ -159,7 +157,6 @@ import type {
 } from "./aiImageEditor/aiImageEditorShared";
 export {
     getPageContentForSaveWhenReady,
-    savePageWithoutReloading,
     captureContentForExternalProcessing,
     pageUnloading,
     notePageContentMayHaveChanged,
@@ -183,7 +180,7 @@ export {
     applyAiImageEditorReplacements,
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
-import { postString } from "../utils/bloomApi";
+import { postJson } from "../utils/bloomApi";
 export { origamiCanUndo, origamiUndo };
 
 const styleSheets = [
@@ -422,7 +419,6 @@ export function SayHello() {
 // Legacy global exposure: mimic old webpack window["editablePageBundle"] contract used by other iframes / C#
 // NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
 interface EditablePageBundleApi {
-    savePageWithoutReloading: typeof savePageWithoutReloading;
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
     getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
@@ -482,8 +478,8 @@ declare global {
         //      the finished page onto window.__bloomExternalPageContent.
         //   3. C# polls window.__bloomExternalPageContent until it is non-empty and reads it back.
         //
-        // Why globals + polling, rather than posting to the editView/pageContent API the way the live
-        // editor's requestPageContent() does:
+        // Why globals + polling, rather than posting to the editView/pageSnapshot API the way the
+        // live editor does:
         //   - That API feeds the live EditingModel; reusing it off-screen would corrupt the real
         //     editor's state. We want the same page-cleanup output, delivered out-of-band.
         //   - C#'s JS runner on this path (RunJavascriptWithStringResult_Sync_Dangerous) is
@@ -501,7 +497,6 @@ declare global {
 }
 
 window.editablePageBundle = {
-    savePageWithoutReloading,
     captureContentForExternalProcessing,
     getPageContentForSaveWhenReady,
     pageUnloading,

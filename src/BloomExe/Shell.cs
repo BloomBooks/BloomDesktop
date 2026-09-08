@@ -216,7 +216,7 @@ namespace Bloom
             _closing = true;
             Logger.WriteMinorEvent("starting to shut Bloom down");
 
-            _collectionClosingEvent.Raise(new CollectionClosingArgs());
+            _collectionClosingEvent.Raise(null);
 
             if (
                 !string.IsNullOrEmpty(_nameToChangeCollectionUponClosing)

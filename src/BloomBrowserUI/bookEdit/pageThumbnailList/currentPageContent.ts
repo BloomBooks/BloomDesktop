@@ -11,7 +11,7 @@ import { getEditablePageBundleExports } from "../js/workspaceFrames";
 //
 // This is async because it must NOT read the page while asynchronous work whose results belong in
 // the saved page is still running -- image sizing, canvas-element fitting, a clipboard paste. That
-// is what the delay register in bloomEditing.ts tracks, and awaiting getPageContentForSaveWhenReady
+// is what the delay register in pageContentDelays.ts tracks, and awaiting getPageContentForSaveWhenReady
 // is how we stay behind it. The gathering itself is still cheap (well under a millisecond: it works
 // on a clone and does no layout), and the wait is normally zero, and capped either way.
 //

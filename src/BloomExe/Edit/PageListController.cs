@@ -32,11 +32,11 @@ namespace Bloom.Edit
 
             _thumbNailList.Thumbnailer = thumbnailProvider;
             _thumbNailList.RelocatePageEvent = relocatePageEvent;
-            _thumbNailList.PageSelectedChanged += new EventHandler(OnPageSelectedChanged);
+            _thumbNailList.PageSelectedChanged += OnPageSelectedChanged;
             _thumbNailList.Model = model;
         }
 
-        private void OnPageSelectedChanged(object page, EventArgs e)
+        private void OnPageSelectedChanged(object page, PageSelectedChangedEventArgs e)
         {
             if (page == null)
                 return;
@@ -50,16 +50,14 @@ namespace Bloom.Edit
             //
             // The click usually brings the outgoing page's content with it, which is the freshest
             // copy there is; when it does not, MergeCurrentPageThenSave uses the snapshot the
-            // browser last volunteered. Either way the save and the move happen in one step, with
-            // nothing to wait for in between -- which is what stopped a second page click being
-            // silently discarded.
+            // browser last volunteered.
             _model.MergeCurrentPageThenSave(
                 () => pageId,
-                // Clicking a thumbnail changes nothing in the book: the action just names the page
-                // to go to. This is the case the whole "do not write a page nobody edited"
-                // optimisation exists for, so it must not claim the book changed.
+                // Clicking a thumbnail changes nothing in the book. This is the case the whole "do
+                // not write a page nobody edited" optimisation exists for, so it must not claim
+                // the book changed.
                 actionChangesTheBook: false,
-                pageContentFromBrowser: (e as PageSelectedChangedEventArgs)?.PageContentFromBrowser
+                pageContent: e.PageContent
             );
         }
 

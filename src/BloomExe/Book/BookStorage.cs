@@ -722,9 +722,8 @@ namespace Bloom.Book
         /// And currently Bloom Saves even when just switching pages without changing anything.
         /// On a long book (e.g., BL-7253) using this makes page switching two seconds faster,
         /// as well as preventing heap fragmentation that eventually leads to running out of memory.
-        /// </summary>
-        /// <summary>
-        /// Write just the one page into the book's file. Returns FALSE if it did not write, which
+        ///
+        /// Returns FALSE if it did not write, which
         /// today means the page looked empty and was refused; the caller must then not treat the
         /// book as written, or the change is lost for good.
         /// </summary>

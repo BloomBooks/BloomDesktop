@@ -1846,10 +1846,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             {
                 if (InEditMode)
                 {
-                    // Get the latest edits into the report. Synchronous now (see PageSnapshot), so
-                    // this is just "save, then show the dialog" -- it used to need the dialog
-                    // packaged as an action to run whenever the save eventually finished, and a
-                    // second copy of it for the case where no save could be started.
+                    // Get the latest edits into the report.
                     _editingView.Model.SaveCurrentPageAndBook();
                 }
                 ReportAndLogProblem();
