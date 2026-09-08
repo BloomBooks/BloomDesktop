@@ -40,8 +40,8 @@ import {
     openPublishToWeb,
 } from "../helpers/libraryPublish";
 import {
-    TEST_ENTERPRISE_SUBSCRIPTION_CODE,
-    TEST_BOOKSHELVES,
+    kEnterpriseSubscriptionCode,
+    kTestBookshelves,
     restartWithCollectionSettings,
     type ICollectionSettings,
 } from "../helpers/collectionSettings";
@@ -67,7 +67,7 @@ test.use({
     collectionSpec: {
         name: "bulk-upload-quick-test",
         languages: ["en"],
-        subscriptionCode: TEST_ENTERPRISE_SUBSCRIPTION_CODE,
+        subscriptionCode: kEnterpriseSubscriptionCode,
     },
 });
 
@@ -83,7 +83,7 @@ const BOOK_TITLES = [
 ];
 const COPYRIGHT_HOLDER = "Bloom Automated Test";
 // The collection goes on the first shelf, then moves to the second.
-const [FIRST_BOOKSHELF, SECOND_BOOKSHELF] = TEST_BOOKSHELVES;
+const [FIRST_BOOKSHELF, SECOND_BOOKSHELF] = kTestBookshelves;
 // The front/back matter pack the collection starts with (the fixture's default) and the one it
 // moves to along with the bookshelf, so the last upload has to bring every book up to date.
 const FIRST_XMATTER_PACK = "Factory";
@@ -130,7 +130,7 @@ async function restartReadyToUpload(
 ): Promise<Page> {
     await restartWithCollectionSettings(bloomApp, {
         languages: ["en"],
-        subscriptionCode: TEST_ENTERPRISE_SUBSCRIPTION_CODE,
+        subscriptionCode: kEnterpriseSubscriptionCode,
         ...settings,
     });
     const page = bloomApp.page;

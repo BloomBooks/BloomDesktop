@@ -25,12 +25,12 @@ import {
 import { selectBook } from "../helpers/collection";
 import { restartWithCollectionSettings } from "../helpers/collectionSettings";
 import {
-    clickTextLanguage,
-    expectTextLanguageRows,
-    expectTextLanguageRowsInAnyOrder,
+    clickLanguage,
+    expectLanguageRows,
+    expectLanguageRowsInAnyOrder,
+    getLanguageRows,
     getLanguagesInBook,
     getPreviewLanguages,
-    getTextLanguageRows,
     getTooltipForLanguage,
     openPublishDestination,
     showBloomPubPreview,
@@ -139,8 +139,9 @@ test.describe("the Text Languages publish list", () => {
 
         // German is absent because it has no text on a content page; English is disabled because
         // the book shows it, which makes it required.
-        await expectTextLanguageRows(
+        await expectLanguageRows(
             page,
+            "text",
             [
                 {
                     name: "English",
@@ -166,8 +167,9 @@ test.describe("the Text Languages publish list", () => {
 
         // The BloomPUB screen shows the same list, because both screens read one setting.
         await openPublishDestination(page, "BloomPUB");
-        await expectTextLanguageRows(
+        await expectLanguageRows(
             page,
+            "text",
             [
                 {
                     name: "English",
@@ -198,10 +200,10 @@ test.describe("the Text Languages publish list", () => {
         const page = bloomApp.page;
         await openPublishDestination(page, "Web");
 
-        expect(await getTooltipForLanguage(page, "English")).toBe(
+        expect(await getTooltipForLanguage(page, "text", "English")).toBe(
             "This is disabled because this language is currently shown in the book, so it is required.",
         );
-        expect(await getTooltipForLanguage(page, "French")).toBe(
+        expect(await getTooltipForLanguage(page, "text", "French")).toBe(
             "Select this if you want readers to be able to choose to read the book in this language.",
         );
     });
@@ -218,8 +220,9 @@ test.describe("the Text Languages publish list", () => {
             (await getLanguagesInBook(page)).find((l) => l.code === "fr")
                 ?.required,
         ).toBe(true);
-        await expectTextLanguageRows(
+        await expectLanguageRows(
             page,
+            "text",
             [
                 {
                     name: "English",
@@ -247,16 +250,17 @@ test.describe("the Text Languages publish list", () => {
         await switchTab(page, "edit");
         await setContentLanguages(page, ["en", "fr", "es"]);
         await openPublishDestination(page, "Web");
-        expect((await getTextLanguageRows(page)).every((r) => r.disabled)).toBe(
-            true,
-        );
+        expect(
+            (await getLanguageRows(page, "text")).every((r) => r.disabled),
+        ).toBe(true);
 
         // Back to one language: only English stays required.
         await switchTab(page, "edit");
         await setContentLanguages(page, ["en"]);
         await openPublishDestination(page, "Web");
-        await expectTextLanguageRows(
+        await expectLanguageRows(
             page,
+            "text",
             [
                 {
                     name: "English",
@@ -300,8 +304,9 @@ test.describe("the Text Languages publish list", () => {
 
         await openPublishDestination(page, "Web");
         // An incomplete language sorts below the complete ones.
-        await expectTextLanguageRows(
+        await expectLanguageRows(
             page,
+            "text",
             [
                 {
                     name: "English",
@@ -329,7 +334,7 @@ test.describe("the Text Languages publish list", () => {
         await switchTab(page, "edit");
         await setContentLanguages(page, ["en", "fr"]);
         await openPublishDestination(page, "Web");
-        const french = (await getTextLanguageRows(page)).find(
+        const french = (await getLanguageRows(page, "text")).find(
             (r) => r.name === "French",
         );
         expect(french).toEqual({
@@ -381,8 +386,9 @@ test.describe("the Text Languages publish list", () => {
         await openPublishDestination(withoutSpanish, "Web");
         // In any order: where a language the collection no longer names sits in the list is not
         // part of what this test is about.
-        await expectTextLanguageRowsInAnyOrder(
+        await expectLanguageRowsInAnyOrder(
             withoutSpanish,
+            "text",
             [
                 {
                     name: "English",
@@ -420,7 +426,7 @@ test.describe("the Text Languages publish list", () => {
 
         // THE ACTION UNDER TEST: a real click on a real check box.
         await openPublishDestination(bloomApp.page, "Web");
-        await clickTextLanguage(bloomApp.page, "Spanish");
+        await clickLanguage(bloomApp.page, "text", "Spanish");
         await expect
             .poll(
                 async () =>
@@ -437,7 +443,7 @@ test.describe("the Text Languages publish list", () => {
         // The BloomPUB screen shows the same setting, because there is only one.
         await openPublishDestination(bloomApp.page, "BloomPUB");
         expect(
-            (await getTextLanguageRows(bloomApp.page)).find(
+            (await getLanguageRows(bloomApp.page, "text")).find(
                 (r) => r.name === "Spanish",
             )?.checked,
         ).toBe(false);
@@ -451,19 +457,19 @@ test.describe("the Text Languages publish list", () => {
 
         // Put Spanish back, and the publication carries all three. bloom-player names a language
         // the way the language names itself, so Spanish appears as "español (Spanish)".
-        await clickTextLanguage(bloomApp.page, "Spanish");
+        await clickLanguage(bloomApp.page, "text", "Spanish");
         const playerWithSpanish = await showBloomPubPreview(bloomApp.page);
         // Sorted, because the order bloom-player lists them in is not what this test is about.
         expect((await getPreviewLanguages(playerWithSpanish)).sort()).toEqual(
             ["English", "French", "español (Spanish)"].sort(),
         );
-        await clickTextLanguage(bloomApp.page, "Spanish");
+        await clickLanguage(bloomApp.page, "text", "Spanish");
 
         // It survives leaving the tab and coming back.
         await switchTab(bloomApp.page, "collection");
         await openPublishDestination(bloomApp.page, "Web");
         expect(
-            (await getTextLanguageRows(bloomApp.page)).find(
+            (await getLanguageRows(bloomApp.page, "text")).find(
                 (r) => r.name === "Spanish",
             )?.checked,
         ).toBe(false);
@@ -473,7 +479,7 @@ test.describe("the Text Languages publish list", () => {
         await selectBook(afterRestart, bookFolder);
         await openPublishDestination(afterRestart, "Web");
         expect(
-            (await getTextLanguageRows(afterRestart)).find(
+            (await getLanguageRows(afterRestart, "text")).find(
                 (r) => r.name === "Spanish",
             )?.checked,
         ).toBe(false);

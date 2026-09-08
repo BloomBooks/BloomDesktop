@@ -289,6 +289,12 @@ public class EditingStateMachine
         }
         catch (Exception)
         {
+            // The caller's failure action is how it recovers from work that did not get done;
+            // it is needed just as much when the post-save action is what threw as when saving
+            // the page content did. Without this, an exception here left the caller believing
+            // its work was still in progress forever -- which is what made Bloom impossible to
+            // close in BL-16776.
+            failureAction?.Invoke();
             // We must not get stuck in the SavedAndStripped state, so we'll navigate to the page
             // we were on before the save.
             ToNavigating(pageId);
