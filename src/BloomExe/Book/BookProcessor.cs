@@ -280,9 +280,9 @@ namespace Bloom.Book
         /// given off-screen browser until it is non-empty or we time out, returning the result.
         ///
         /// We deliberately keep this "poll a window global" approach for the off-screen processor rather than
-        /// the async editView/pageContent API callback the live editor uses: that callback pattern needs the
-        /// live EditingModel and edit WebSocket channel, which a throwaway off-screen browser doesn't have,
-        /// and the per-page loop here wants a deterministic in-line result. Each poll blocks the calling
+        /// the editView/pageSnapshot API the live editor posts to: that feeds the live EditingModel, which a
+        /// throwaway off-screen browser has no business touching, and the per-page loop here wants a
+        /// deterministic in-line result. Each poll blocks the calling
         /// thread while the browser's OWN thread runs the script, so we never pump the main UI message loop
         /// between polls (just sleep briefly) — this is what replaced the old
         /// RunJavascriptWithStringResult_Sync_Dangerous, which pumped the main loop and risked the reentrancy
