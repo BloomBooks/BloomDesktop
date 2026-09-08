@@ -209,6 +209,18 @@ const StatusText: React.FC<{
     );
 };
 
+// Today's date in the user's own time zone, formatted so that it can be compared as a string
+// with the YYYY-MM-DD expiration date that the server sends us. Note that we deliberately do
+// not use toISOString(), which would give us the date in UTC and so could be off by a day
+// (BL-16786); the C# code that decides whether a subscription is expired uses local time.
+export function getTodayAsYYYYMMDD(): string {
+    const now = new Date();
+    const twoDigits = (n: number) => n.toString().padStart(2, "0");
+    return `${now.getFullYear()}-${twoDigits(now.getMonth() + 1)}-${twoDigits(
+        now.getDate(),
+    )}`;
+}
+
 export function getSafeLocalizedDate(dateAsYYYYMMDD: string | null) {
     const dateParts = dateAsYYYYMMDD ? dateAsYYYYMMDD.split("-") : null;
     return dateParts
@@ -252,7 +264,7 @@ function getStatusSansEditingBlorgBook(
     expiryDateStringAsYYYYMMDD: string,
     missingBrandingFiles: boolean,
 ): Status {
-    const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
+    const todayAsYYYYMMDD = getTodayAsYYYYMMDD();
     if (subscriptionCode === "" || subscriptionCodeIntegrity === "none") {
         return "None";
     }

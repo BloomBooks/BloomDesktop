@@ -64,50 +64,61 @@ namespace BloomTests.web.controllers
         }
 
         /// <summary>
-        /// The Collection Settings dialog and the Publish tab answer "is this name custom?"
-        /// differently for the sign language. The dialog uses IsCustomName, comparing against the
-        /// name the chooser offered. PublishApi compares against the name already stored in the
-        /// collection after setting the tag. This test exists so that difference is visible and
-        /// pinned: if someone unifies the two, it fails and they have to decide which answer they
-        /// want rather than changing behavior by accident.
+        /// Both places that let you choose the collection's sign language -- the Collection
+        /// Settings dialog and the Publish tab -- must reach the same answer for the same
+        /// selection. They did not before BL-16760: the Publish tab set the writing system's Tag
+        /// first and compared DesiredName against the name LibPalaso derived from it, so for a
+        /// language the two naming systems disagree about (mzc: LibPalaso "Madagascar Sign
+        /// Language", the chooser "Malagasy Sign Language") it recorded an untouched name as
+        /// custom. Both now ask IsCustomName, which compares only the two names the chooser sent.
         /// </summary>
         [Test]
-        public void PublishApiRule_AndIsCustomName_CanDisagreeForTheSameSelection()
+        public void IsCustomName_UntouchedName_IsNotCustom_EvenWhenLibPalasoDisagreesAboutTheName()
         {
-            // The user accepted the name the chooser offered, so it is not custom...
-            var args = Selection(defaultName: "Deutsch", desiredName: "Deutsch");
-            Assert.That(args.IsCustomName, Is.False);
+            // What the chooser sends for mzc when the user accepts the name it offers. The front
+            // end sets DesiredName = customDisplayName || defaultName (see languageData.ts), so
+            // with nothing typed these are identical by construction.
+            var args = new LanguageChangeEventArgs
+            {
+                LanguageTag = "mzc",
+                DefaultName = "Malagasy Sign Language",
+                DesiredName = "Malagasy Sign Language",
+            };
+            Assert.That(args.DefaultName, Is.EqualTo(args.DesiredName), "test setup");
 
-            // ...but the name already stored in the collection was different (a name LibPalaso
-            // derived from the tag, or one left over from a previous selection), and PublishApi
-            // compares against that instead -- so it calls the very same selection custom.
-            const string nameAlreadyInTheCollection = "German";
-            var publishApiRule = nameAlreadyInTheCollection != args.DesiredName;
+            // The old Publish-tab rule, which is what a caller gets if it reads the name back out
+            // of the writing system after setting its Tag. Sanity check that it really does answer
+            // differently here -- otherwise this test would pass for the wrong reason.
+            const string nameLibPalasoDerivesFromTheTag = "Madagascar Sign Language";
+            var oldPublishApiRule = nameLibPalasoDerivesFromTheTag != args.DesiredName;
+            Assert.That(oldPublishApiRule, Is.True, "test setup: the two naming systems disagree");
+
             Assert.That(
-                publishApiRule,
-                Is.True,
-                "PublishApi's comparison is against the stored name, not the chooser's default"
-            );
-            Assert.That(
-                publishApiRule,
-                Is.Not.EqualTo(args.IsCustomName),
-                "the two rules disagree here; see the remarks on LanguageChangeEventArgs.IsCustomName"
+                args.IsCustomName,
+                Is.False,
+                "the user typed nothing, so the name is not custom"
             );
         }
 
         /// <summary>
-        /// And where the stored name happens to match the chooser's default, the two rules agree --
-        /// which is why the difference has gone unnoticed.
+        /// And the error ran the other way too: a name the user really did type was recorded as
+        /// not custom whenever it happened to match LibPalaso's name for the tag.
         /// </summary>
         [Test]
-        public void PublishApiRule_AndIsCustomName_AgreeWhenStoredNameIsTheDefault()
+        public void IsCustomName_TypedNameMatchingLibPalasos_IsStillCustom()
         {
-            var args = Selection(defaultName: "Deutsch", desiredName: "German");
-            const string nameAlreadyInTheCollection = "Deutsch";
+            var args = new LanguageChangeEventArgs
+            {
+                LanguageTag = "mzc",
+                DefaultName = "Malagasy Sign Language",
+                DesiredName = "Madagascar Sign Language", // typed by the user
+            };
 
-            var publishApiRule = nameAlreadyInTheCollection != args.DesiredName;
-            Assert.That(publishApiRule, Is.EqualTo(args.IsCustomName));
-            Assert.That(args.IsCustomName, Is.True, "test setup");
+            const string nameLibPalasoDerivesFromTheTag = "Madagascar Sign Language";
+            var oldPublishApiRule = nameLibPalasoDerivesFromTheTag != args.DesiredName;
+            Assert.That(oldPublishApiRule, Is.False, "test setup: the old rule missed this one");
+
+            Assert.That(args.IsCustomName, Is.True);
         }
     }
 }

@@ -50,6 +50,11 @@
         <note>ID: EditTab.Image.EditWithAI</note>
         <note>Context-menu item on an image in the Edit tab; opens the AI image editor in an overlay. The "..." indicates further UI will open, as in the sibling item "Choose image from your computer...".</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.SlotLabel.CanvasBackground" translate="no">
+        <source xml:lang="en">Canvas Background</source>
+        <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
+        <note>Names one picture of a page that has several, shown over the picture in the AI image editor's strip of the book's images. This is the picture behind the page, which other pictures sit on top of. The code puts the page name in front of it, giving e.g. "Page 3 - Canvas Background".</note>
+      </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">No Indent</source>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>

@@ -19,7 +19,7 @@ stops the wrong half ending up in the wrong bundle:
 | `aiImageEditorOverlay.ts` | **top window** (workspace root) | `workspaceBundle.openAiImageEditor` |
 | `aiImageEditorPageCommands.ts` | **page iframe** | `editablePageBundle` (`launchAiImageEditor`, `applyAiImageEditorReplacements`) |
 | `aiImageEditorShared.ts` | either — pure, no DOM, no api calls | — |
-| `aiImageEditorSlotMatching.ts`, `aiImageEditorImageFormats.ts` | either — pure | — |
+| `aiImageEditorImageFormats.ts` | either — pure | — |
 
 So:
 

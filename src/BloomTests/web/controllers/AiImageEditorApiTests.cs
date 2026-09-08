@@ -9,6 +9,7 @@ using System.Threading;
 using Bloom;
 using Bloom.Book;
 using Bloom.ImageProcessing;
+using Bloom.SafeXml;
 using Bloom.web.controllers;
 using NUnit.Framework;
 using SIL.Code;
@@ -1231,53 +1232,107 @@ namespace BloomTests.web.controllers
         }
 
         // ------------------------------------------------------------------
-        // IsUserChangeableImageElement: branding/license/QR images are off-limits.
+        // SelectImageSlotsOnPage: a page's slots are its image containers, in document
+        // order. The index of a slot in that list is its whole identity, and the page frame
+        // works out the same index for itself (slotIndexOnPage in aiImageEditorPageCommands.ts),
+        // so these two numberings have to agree.
         // ------------------------------------------------------------------
 
-        private static Bloom.SafeXml.SafeXmlElement MakeImgWithClass(string className)
+        private static SafeXmlElement MakePageWithBody(string bodyOfPage)
         {
-            var classAttr = className == null ? "" : $" class='{className}'";
             var dom = new HtmlDom(
                 $@"<html><head></head><body>
                     <div class='bloom-page' id='page1'><div class='marginBox'>
-                        <img src='pic.png'{classAttr}/>
+                        {bodyOfPage}
                     </div></div>
                   </body></html>"
             );
-            return (Bloom.SafeXml.SafeXmlElement)dom.RawDom.SelectSingleNode("//img");
+            return (SafeXmlElement)dom.RawDom.SelectSingleNode("//div[@id='page1']");
         }
 
         [Test]
-        public void IsUserChangeableImageElement_PlainImage_IsChangeable()
+        public void SelectImageSlotsOnPage_ReturnsContainersInDocumentOrder()
         {
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer'><img src='first.png'/></div>
+                  <div class='bloom-imageContainer'><img src='second.png'/></div>"
+            );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(2));
             Assert.That(
-                AiImageEditorApi.IsUserChangeableImageElement(MakeImgWithClass(null)),
-                Is.True
+                AiImageEditorApi.GetImageElementOfSlot(slots[0]).GetAttribute("src"),
+                Is.EqualTo("first.png")
+            );
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(slots[1]).GetAttribute("src"),
+                Is.EqualTo("second.png")
             );
         }
 
         [TestCase("branding")]
         [TestCase("licenseImage")]
         [TestCase("bloom-qrcode")]
-        public void IsUserChangeableImageElement_ProtectedImage_IsNotChangeable(string className)
+        public void SelectImageSlotsOnPage_ImageOutsideAContainer_IsNotASlot(string className)
         {
+            // Branding, license and QR-code images are never in an image container, which is
+            // why neither side of the bridge needs a list of them: they are not slots, so
+            // they cannot be offered to the AI image editor or overwritten by a commit.
+            var page = MakePageWithBody(
+                $@"<img class='{className}' src='protected.png'/>
+                   <div class='bloom-imageContainer'><img src='real.png'/></div>"
+            );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(1), $"'{className}' must not be a slot");
             Assert.That(
-                AiImageEditorApi.IsUserChangeableImageElement(MakeImgWithClass(className)),
-                Is.False,
-                $"an image with class '{className}' must not be user-changeable"
+                AiImageEditorApi.GetImageElementOfSlot(slots[0]).GetAttribute("src"),
+                Is.EqualTo("real.png")
             );
         }
 
         [Test]
-        public void IsUserChangeableImageElement_ProtectedClassAmongOthers_IsNotChangeable()
+        public void SelectImageSlotsOnPage_ClassAmongOthers_IsStillASlot()
         {
-            // The class check must find the protected class even when combined with others.
-            Assert.That(
-                AiImageEditorApi.IsUserChangeableImageElement(
-                    MakeImgWithClass("bloom-imageContainer branding")
-                ),
-                Is.False
+            // The class test must find bloom-imageContainer among other classes, and must
+            // not match a class that merely contains those characters.
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer bloom-backgroundImage'><img src='real.png'/></div>
+                  <div class='bloom-imageContainerish'><img src='notASlot.png'/></div>"
             );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(1));
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(slots[0]).GetAttribute("src"),
+                Is.EqualTo("real.png")
+            );
+        }
+
+        [Test]
+        public void GetImageElementOfSlot_BackgroundImageSlot_ReturnsTheContainer()
+        {
+            // A slot can wear its picture as a background image instead of holding an img.
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer' style=""background-image:url('bg.png')""></div>"
+            );
+
+            var slot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+
+            Assert.That(AiImageEditorApi.GetImageElementOfSlot(slot), Is.SameAs(slot));
+        }
+
+        [Test]
+        public void GetImageElementOfSlot_SlotWithNoPicture_ReturnsNull()
+        {
+            var page = MakePageWithBody(@"<div class='bloom-imageContainer'></div>");
+
+            var slot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+
+            Assert.That(AiImageEditorApi.GetImageElementOfSlot(slot), Is.Null);
         }
 
         // ------------------------------------------------------------------
@@ -1671,7 +1726,7 @@ namespace BloomTests.web.controllers
             // (updated by ImageUpdater) and as the next book-up-to-date pass. Pin that
             // agreement down rather than trusting the two to stay in step by inspection.
             var name = MakePngWithCredits("pic.png", "Ada Lovelace", "Copyright 1843 Ada");
-            var img = MakeImgWithClass(null); // its src is "pic.png", the file we just made
+            var img = MakePlainImg(); // its src is "pic.png", the file we just made
 
             ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
                 _bookFolder.Path,
@@ -1687,6 +1742,204 @@ namespace BloomTests.web.controllers
             Assert.That(attributes.copyright, Is.EqualTo(img.GetAttribute("data-copyright")));
             Assert.That(attributes.creator, Is.EqualTo(img.GetAttribute("data-creator")));
             Assert.That(attributes.license, Is.EqualTo(img.GetAttribute("data-license")));
+        }
+
+        // A plain image element, for a test that needs one and nothing around it.
+        private static SafeXmlElement MakePlainImg()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page' id='page1'><div class='marginBox'>
+                        <img src='pic.png'/>
+                    </div></div>
+                  </body></html>"
+            );
+            return (SafeXmlElement)dom.RawDom.SelectSingleNode("//img");
+        }
+
+        // The single page of a one-page DOM, as the label helpers take it.
+        private static SafeXmlElement FirstPageOf(string pageMarkup)
+        {
+            var dom = new HtmlDom("<html><head></head><body>" + pageMarkup + "</body></html>");
+            var page = dom
+                .RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                .OfType<SafeXmlElement>()
+                .FirstOrDefault();
+            if (page == null)
+                Assert.Fail("the test markup has no bloom-page, so there is nothing to name");
+            return page;
+        }
+
+        [Test]
+        public void GetPageNameForImageSlotLabel_NumberedPage_SaysPageAndTheNumber()
+        {
+            var page = FirstPageOf(
+                "<div class='bloom-page numberedPage' id='p1' data-page-number='3'>"
+                    + "<div class='pageLabel'>Basic Text &amp; Picture</div></div>"
+            );
+
+            // The user thinks in page numbers, not template names, so the number wins over the
+            // page's own label when the page has one.
+            Assert.That(AiImageEditorApi.GetPageNameForImageSlotLabel(page), Is.EqualTo("Page 3"));
+        }
+
+        [Test]
+        public void GetPageNameForImageSlotLabel_FrontMatter_UsesThePageName()
+        {
+            var page = FirstPageOf(
+                // Bloom writes data-page-number='' on an unnumbered page (BL-7303).
+                "<div class='bloom-page bloom-frontMatter' id='cover' data-page-number=''>"
+                    + "<div class='pageLabel'>Front Cover</div></div>"
+            );
+
+            // Front matter has no page number, so the page's own name is all we can say. It is
+            // the English name: the AI image editor's user interface is English only.
+            Assert.That(
+                AiImageEditorApi.GetPageNameForImageSlotLabel(page),
+                Is.EqualTo("Front Cover")
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_OnePictureOnThePage_JustNamesThePage()
+        {
+            // Nothing to tell it apart from, so the page name is enough. This is the common
+            // case: a full-page picture is one canvas background image and nothing else.
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", true, 1, 1),
+                Is.EqualTo("Page 3")
+            );
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", false, 1, 1),
+                Is.EqualTo("Page 3")
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_BackgroundAndAPictureOnIt_NamesTheBackgroundAndNumbersTheRest()
+        {
+            // Two empty slots on one page show the same graphic in the AI image editor, so
+            // without these names the user cannot tell which slot is which (BL-16744).
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 1", true, 0, 2),
+                Is.EqualTo("Page 1 - Canvas Background")
+            );
+            // The pictures on top of the background start at 1, not at 2.
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 1", false, 1, 2),
+                Is.EqualTo("Page 1 - Image 1")
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_TwoPicturesAndNoBackground_NumbersThem()
+        {
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", false, 1, 2),
+                Is.EqualTo("Page 3 - Image 1")
+            );
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", false, 2, 2),
+                Is.EqualTo("Page 3 - Image 2")
+            );
+        }
+
+        [Test]
+        public void GetPageNameForImageSlotLabel_NoNumberAndNoLabel_SaysNothing()
+        {
+            // HtmlDom can leave a page with no data-page-number attribute at all (BL-12903).
+            // No label is better than a made-up one such as "unknown".
+            var page = FirstPageOf("<div class='bloom-page' id='p1'></div>");
+
+            Assert.That(AiImageEditorApi.GetPageNameForImageSlotLabel(page), Is.Null);
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_NoPageName_NamesTheSlotOnly()
+        {
+            // Nothing to say about the page, but two slots still have to be told apart.
+            Assert.That(AiImageEditorApi.BuildImageSlotLabel(null, false, 1, 1), Is.Null);
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel(null, false, 2, 2),
+                Is.EqualTo("Image 2")
+            );
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel(null, true, 0, 2),
+                Is.EqualTo("Canvas Background")
+            );
+        }
+
+        [Test]
+        public void IsBackgroundImage_TellsTheCanvasBackgroundFromAPictureOnTopOfIt()
+        {
+            // EnumerateBookImages asks HtmlDom which slot is the canvas background, and labels
+            // that one "Canvas Background" rather than "Image 1". This test pins the markup
+            // that question is asked about, so a change to the canvas DOM breaks here.
+            var page = FirstPageOf(
+                "<div class='bloom-page numberedPage' id='p1' data-page-number='1'>"
+                    + "<div class='bloom-canvas'>"
+                    + "<div class='bloom-canvas-element bloom-backgroundImage'>"
+                    + "<div class='bloom-imageContainer'><img src='back.png'/></div></div>"
+                    + "<div class='bloom-canvas-element'>"
+                    + "<div class='bloom-imageContainer'><img src='front.png'/></div></div>"
+                    + "</div></div>"
+            );
+            var images = HtmlDom
+                .SelectChildImgAndBackgroundImageElements(page)
+                .OfType<SafeXmlElement>()
+                .ToList();
+
+            // Sanity: both pictures are there, in the order the labels will number them.
+            Assert.That(images.Count, Is.EqualTo(2), "setup");
+            Assert.That(images[0].GetAttribute("src"), Is.EqualTo("back.png"), "setup");
+
+            Assert.That(HtmlDom.IsBackgroundImage(images[0]), Is.True);
+            Assert.That(HtmlDom.IsBackgroundImage(images[1]), Is.False);
+        }
+
+        [Test]
+        public void BuildImageSlotLabelsForPage_BackgroundAndTwoPicturesOnIt_NamesThenNumbers()
+        {
+            var labels = AiImageEditorApi.BuildImageSlotLabelsForPage(
+                "Page 4",
+                new[] { true, false, false }
+            );
+
+            Assert.That(
+                labels,
+                Is.EqualTo(
+                    new[] { "Page 4 - Canvas Background", "Page 4 - Image 1", "Page 4 - Image 2" }
+                )
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabelsForPage_SeveralCanvasesOnThePage_NumbersThemAll()
+        {
+            // A Picture Dictionary page has six canvases, so six background images. Naming
+            // them all "Canvas Background" would give six identical labels, which is the
+            // confusion these labels exist to remove (BL-16744).
+            var labels = AiImageEditorApi.BuildImageSlotLabelsForPage(
+                "Page 4",
+                new[] { true, true, true }
+            );
+
+            Assert.That(
+                labels,
+                Is.EqualTo(new[] { "Page 4 - Image 1", "Page 4 - Image 2", "Page 4 - Image 3" }),
+                "identical labels would tell the user nothing"
+            );
+            Assert.That(labels.Distinct().Count(), Is.EqualTo(3), "every label must be distinct");
+        }
+
+        [Test]
+        public void BuildImageSlotLabelsForPage_OneCanvasOnly_JustNamesThePage()
+        {
+            // The common case: a full-page picture is one canvas background and nothing else.
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabelsForPage("Page 4", new[] { true }),
+                Is.EqualTo(new[] { "Page 4" })
+            );
         }
     }
 

@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
+using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Core.ClearShare;
 using SIL.IO;
@@ -277,14 +278,21 @@ namespace Bloom.web.controllers
 
         /// <summary>The image the user right-clicked, as the page frame sends it to
         /// <see cref="HandleSaveThenLaunch"/> and as we hand it back to the browser once the page
-        /// has been saved. See IAiImageEditorTarget in aiImageEditorShared.ts. The page frame sends only
-        /// the file name; we fill in the page id, since we are the ones who know which page we
-        /// saved, and the overlay (in the top window) has no page DOM of its own to read it from.
+        /// has been saved. See IAiImageEditorTarget in aiImageEditorShared.ts. The page frame sends
+        /// only the slot's index among the page's image containers; we fill in the page id, since
+        /// we are the ones who know which page we saved, and the overlay (in the top window) has
+        /// no page DOM of its own to read it from.
         /// </summary>
         private class SaveThenLaunchRequest
         {
-            public string imageFileName { get; set; }
             public string pageId { get; set; }
+
+            /// <summary>Which image slot of that page the user clicked, as its index among the
+            /// page's image containers in document order. The page frame counts them, because
+            /// only it can see which slot the user clicked; we just carry it back to the
+            /// overlay, where it names the book image "{pageId}:{slotIndex}".
+            /// </summary>
+            public int slotIndex { get; set; }
         }
 
         /// <summary>
@@ -327,7 +335,7 @@ namespace Bloom.web.controllers
         {
             // Must be read before SaveThen: by the time our callbacks run the request is complete.
             // Deliberately unguarded: the only caller is launchAiImageEditor in
-            // aiImageEditorPageCommands.ts, which always sends {imageFileName}, so a parse failure means
+            // aiImageEditorPageCommands.ts, which always sends {slotIndex}, so a parse failure means
             // we broke our own contract and we want to hear about it with the real exception rather
             // than a generic "invalid payload" that says nothing (see AGENTS.md, "Don't be overly
             // defensive about error handling").
@@ -883,15 +891,40 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// True if an image-bearing element is one the user is allowed to replace. Branding,
-        /// license, and QR-code images are never user-changeable, so they are excluded both
-        /// from the list offered to the AI image editor and from being overwritten at commit.
+        /// The image slots of one page, in document order: its image containers. A slot's index
+        /// in this list is its whole identity, and it is what "{pageId}:{ordinal}" holds.
         /// Internal for testing.
+        ///
+        /// An image container is exactly what a user may replace, which is why nothing here
+        /// filters. The branding, license and QR-code images live outside any container, so
+        /// they are not slots and cannot be edited or overwritten.
+        ///
+        /// slotIndexOnPage in aiImageEditorPageCommands.ts numbers the same containers on the live
+        /// page, so the index the page frame sends at launch means the same thing here. It has
+        /// one exclusion this does not need: Bloom injects controls into the live page, and a
+        /// save strips them, so they are never in the DOM we read.
         /// </summary>
-        internal static bool IsUserChangeableImageElement(SafeXmlElement element) =>
-            !element.HasClass("branding")
-            && !element.HasClass("licenseImage")
-            && !element.HasClass("bloom-qrcode");
+        internal static SafeXmlElement[] SelectImageSlotsOnPage(SafeXmlElement page) =>
+            page.SafeSelectNodes(
+                    ".//*[contains(concat(' ', normalize-space(@class), ' '), ' "
+                        + HtmlDom.kImageContainerClass
+                        + " ')]"
+                )
+                .OfType<SafeXmlElement>()
+                .ToArray();
+
+        /// <summary>
+        /// The element of a slot that carries the picture: the container's own img, or the
+        /// container itself when it wears the picture as a background image. Null when the slot
+        /// holds neither, which a slot with no picture at all can do.
+        /// </summary>
+        internal static SafeXmlElement GetImageElementOfSlot(SafeXmlElement slot)
+        {
+            var img = slot.SelectSingleNode("./img") as SafeXmlElement;
+            if (img != null)
+                return img;
+            return (slot.GetAttribute("style") ?? "").Contains("background-image") ? slot : null;
+        }
 
         /// <summary>
         /// Locates the bytes for a history result by id. The AI image editor may store a
@@ -1001,6 +1034,119 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// What to call a page when naming one of its image slots to the user: "Page 3" for a
+        /// numbered page, or the page's own name (e.g. "Front Cover") for front or back matter.
+        /// Null when the page says neither, in which case the slot goes unlabelled.
+        /// In the user interface language.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately not HtmlDom.GetNumberOrLabelOfPageWhereElementLives: that returns the
+        /// number bare, with no "Page", and answers "unknown" for a page whose
+        /// data-page-number attribute is missing rather than empty, which HtmlDom itself can
+        /// produce (see BL-12903). "unknown" would be worse than no label at all.
+        /// </remarks>
+        internal static string GetPageNameForImageSlotLabel(SafeXmlElement page)
+        {
+            // Back matter pages do carry page numbers, but they are clearer by name.
+            var number = page.GetAttribute("data-page-number");
+            if (!string.IsNullOrWhiteSpace(number) && !HtmlDom.IsBackMatterPage(page))
+                // "Page" plus the number, rather than a "Page {0}" string of our own: the
+                // word already exists in our strings, and a translator meeting a bare format
+                // string has less to go on than the word itself.
+                return LocalizationManager.GetString("ReaderSetup.PageHeader", "Page")
+                    + " "
+                    + number;
+
+            var label = page.SelectSingleNode("./div[@class='pageLabel']")?.InnerText.Trim();
+            if (string.IsNullOrEmpty(label))
+                return null;
+            // Page labels are localized under a dynamic id built from the English label, the
+            // same way the page list in the Edit tab does it.
+            return LocalizationManager.GetString("TemplateBooks.PageLabel." + label, label);
+        }
+
+        /// <summary>
+        /// Names one image slot for the user. A page with a single image slot needs no more than
+        /// the page name. A page with several says which slot this is: "Page 3 - Canvas
+        /// Background" for the canvas background image, "Page 3 - Image 1" for the pictures on
+        /// top of it. Every empty slot looks the same in the AI image editor, so this label is
+        /// the only thing that tells two of them apart (BL-16744).
+        /// </summary>
+        /// <param name="pageName">from <see cref="GetPageNameForImageSlotLabel"/>, may be null</param>
+        /// <param name="isCanvasBackground">true for the canvas background image</param>
+        /// <param name="imageNumber">
+        /// the 1-based position of this slot among the page's images, counting every slot that is
+        /// not being named as the canvas background. A page with several canvases names none of
+        /// them, so there every slot is counted. Ignored when isCanvasBackground is true.
+        /// </param>
+        /// <param name="slotCount">how many image slots this page offers in all</param>
+        internal static string BuildImageSlotLabel(
+            string pageName,
+            bool isCanvasBackground,
+            int imageNumber,
+            int slotCount
+        )
+        {
+            // The only picture on the page. There is nothing to tell it apart from.
+            if (slotCount < 2)
+                return pageName;
+
+            var whichSlot = isCanvasBackground
+                ? LocalizationManager.GetString(
+                    "AiImageEditor.SlotLabel.CanvasBackground",
+                    "Canvas Background"
+                )
+                : LocalizationManager.GetString("EditTab.CustomPage.Image", "Image")
+                    + " "
+                    + imageNumber;
+            if (string.IsNullOrEmpty(pageName))
+                return whichSlot;
+            // The separator is not localizable. It carries no meaning to translate, and a
+            // string of nothing but two placeholders and a dash gives a translator no context.
+            return pageName + " - " + whichSlot;
+        }
+
+        /// <summary>
+        /// Names every image slot of one page, in the order the page offers them. Kept in one
+        /// place because a slot's name depends on what else the page holds, not just on itself.
+        /// </summary>
+        /// <param name="pageName">from <see cref="GetPageNameForImageSlotLabel"/>, may be null</param>
+        /// <param name="isCanvasBackground">
+        /// for each slot of the page, in order, whether it is the background image of a canvas
+        /// </param>
+        internal static List<string> BuildImageSlotLabelsForPage(
+            string pageName,
+            IReadOnlyList<bool> isCanvasBackground
+        )
+        {
+            // "Canvas Background" names a slot only when the page has exactly one canvas. A
+            // Picture Dictionary page has six, so six background images; calling them all
+            // "Canvas Background" would be six identical labels, which is the very confusion
+            // the label exists to remove. There, plain numbering tells them apart.
+            var nameTheBackground = isCanvasBackground.Count(background => background) == 1;
+
+            var labels = new List<string>();
+            var imageNumber = 0;
+            foreach (var background in isCanvasBackground)
+            {
+                // The background is named, not numbered, so the numbering of the pictures on
+                // top of it starts at 1 whether or not the page has a background.
+                var nameAsBackground = background && nameTheBackground;
+                if (!nameAsBackground)
+                    imageNumber++;
+                labels.Add(
+                    BuildImageSlotLabel(
+                        pageName,
+                        nameAsBackground,
+                        imageNumber,
+                        isCanvasBackground.Count
+                    )
+                );
+            }
+            return labels;
+        }
+
+        /// <summary>
         /// Enumerates every image the user is allowed to change across the whole book — all
         /// pages including front cover and xmatter, including empty placeholder slots —
         /// excluding only branding and license images. Each entry is a reference (id +
@@ -1020,17 +1166,27 @@ namespace Bloom.web.controllers
                 var pageId = page.GetAttribute("id");
                 if (string.IsNullOrEmpty(pageId) || !SafeId.IsMatch(pageId))
                     continue;
-                var pageLabel = page.GetAttribute("data-page-number");
+                var pageName = GetPageNameForImageSlotLabel(page);
 
-                var holders = HtmlDom.SelectChildImgAndBackgroundImageElements(page);
-                // Ordinal is the index within the full holder list so that commit can
-                // re-find the element deterministically; the branding/license skip below
-                // only affects which slots we offer, not the indexing.
-                for (var ordinal = 0; ordinal < holders.Length; ordinal++)
+                var slots = SelectImageSlotsOnPage(page);
+                // The slots this page offers, gathered before any is added to the result,
+                // because a slot's label depends on how many the page has: a page with one
+                // image says just "Page 2", a page with more says "Page 2 - Image 1" and so on.
+                var slotsOnThisPage =
+                    new List<(
+                        string id,
+                        string src,
+                        bool isPlaceholder,
+                        bool isCanvasBackground,
+                        ImageCredits credits
+                    )>();
+                // Ordinal is the index within the full slot list, so a slot we decline to offer
+                // below still holds its place. That is what lets the page frame send an index it
+                // worked out for itself, without knowing which slots we kept.
+                for (var ordinal = 0; ordinal < slots.Length; ordinal++)
                 {
-                    if (!(holders[ordinal] is SafeXmlElement element))
-                        continue;
-                    if (!IsUserChangeableImageElement(element))
+                    var element = GetImageElementOfSlot(slots[ordinal]);
+                    if (element == null)
                         continue;
 
                     var relativePath = HtmlDom.GetImageElementUrl(element).PathOnly.NotEncoded;
@@ -1044,22 +1200,44 @@ namespace Bloom.web.controllers
                     if (!IsImageFileName(relativePath))
                         continue;
 
-                    images.Add(
-                        new
-                        {
-                            id = pageId + ":" + ordinal,
-                            src = (folderAsUrlPrefix + "/" + relativePath).ToLocalhost(),
-                            pageLabel = string.IsNullOrEmpty(pageLabel) ? null : pageLabel,
+                    slotsOnThisPage.Add(
+                        (
+                            id: pageId + ":" + ordinal,
+                            src: (folderAsUrlPrefix + "/" + relativePath).ToLocalhost(),
                             // The AI image editor shows its own placeholder graphic for empty
                             // slots rather than trying to load the (book-less)
                             // placeHolder.png.
-                            isPlaceholder = ImageUtils.IsPlaceholderImageFilename(relativePath),
+                            isPlaceholder: ImageUtils.IsPlaceholderImageFilename(relativePath),
+                            // A bloom-canvas can hold one background image with pictures on
+                            // top of it. The background is worth naming as such, because the
+                            // user thinks of it as the page's picture, not as "image 1".
+                            isCanvasBackground: HtmlDom.IsBackgroundImage(element),
                             // The image's current credits, so a result derived from it can
                             // carry (or amend) them. The AI image editor owns the credit
                             // *decision* and hands back whatever it chose on commit; Bloom
                             // only embeds that into the file. Null when the image has no
                             // usable metadata.
-                            credits = GetCreditsForImageFile(book.FolderPath, relativePath),
+                            credits: GetCreditsForImageFile(book.FolderPath, relativePath)
+                        )
+                    );
+                }
+
+                // Now that the whole page is known, name its slots and add them.
+                var labels = BuildImageSlotLabelsForPage(
+                    pageName,
+                    slotsOnThisPage.Select(slot => slot.isCanvasBackground).ToList()
+                );
+                for (var i = 0; i < slotsOnThisPage.Count; i++)
+                {
+                    var slot = slotsOnThisPage[i];
+                    images.Add(
+                        new
+                        {
+                            id = slot.id,
+                            src = slot.src,
+                            pageLabel = labels[i],
+                            isPlaceholder = slot.isPlaceholder,
+                            credits = slot.credits,
                         }
                     );
                 }
@@ -1339,20 +1517,16 @@ namespace Bloom.web.controllers
                 return false;
             }
 
-            var holders = HtmlDom.SelectChildImgAndBackgroundImageElements(page);
-            if (ordinal < 0 || ordinal >= holders.Length)
+            var slots = SelectImageSlotsOnPage(page);
+            if (ordinal < 0 || ordinal >= slots.Length)
             {
                 error = "Image index out of range";
                 return false;
             }
-            if (!(holders[ordinal] is SafeXmlElement element))
+            var element = GetImageElementOfSlot(slots[ordinal]);
+            if (element == null)
             {
                 error = "Image element not found";
-                return false;
-            }
-            if (!IsUserChangeableImageElement(element))
-            {
-                error = "Image is not user-changeable";
                 return false;
             }
 

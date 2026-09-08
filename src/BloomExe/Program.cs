@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -30,6 +31,7 @@ using BloomTemp;
 using CommandLine;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
+using Newtonsoft.Json.Linq;
 using Sentry;
 using SIL.Core.Desktop.i18n;
 using SIL.IO;
@@ -1309,6 +1311,11 @@ namespace Bloom
         {
             try
             {
+                // A Bloom that ./go.sh launched cannot restart itself: the launcher owns the
+                // Vite dev server and the process tree, and it stops the whole stack when
+                // Bloom exits.  So we ask the launcher to do the restart instead.
+                if (args == null && AskDevLauncherToRestartBloom())
+                    return;
                 var program = BloomExePath;
                 if (SIL.PlatformUtilities.Platform.IsLinux)
                 {
@@ -1343,6 +1350,73 @@ namespace Bloom
             catch (Exception e)
             {
                 ErrorReport.NotifyUserOfProblem(e, "Bloom encountered a problem while restarting.");
+            }
+        }
+
+        /// <summary>
+        /// If ./go.sh launched this Bloom, tells its launcher to restart Bloom, and returns
+        /// true.  The launcher rebuilds, relaunches Bloom, and closes this instance itself.
+        /// Returns false for an installed Bloom, and when the launcher does not answer.
+        /// </summary>
+        /// <remarks>
+        /// The launcher writes output/bloom-launcher.json beside the folder that holds
+        /// Bloom.exe.  That file can be stale, so we ask the control API for its status
+        /// before we trust it.  See scripts/watchBloomExeControl.mjs.
+        ///
+        /// The launcher answers before it does the work, so a launcher that accepts and then
+        /// fails leaves this Bloom running.  Whatever the caller saved is still saved, so the
+        /// next start of Bloom uses it.
+        /// </remarks>
+        private static bool AskDevLauncherToRestartBloom()
+        {
+            var exeFolder = Path.GetDirectoryName(BloomExePath);
+            if (string.IsNullOrEmpty(exeFolder))
+                return false;
+            // Bloom.exe is at <repo>/output/Debug/AnyCPU/Bloom.exe, the launcher file at
+            // <repo>/output/bloom-launcher.json.
+            var launcherFile = Path.GetFullPath(
+                Path.Combine(exeFolder, "..", "..", "bloom-launcher.json")
+            );
+            if (!RobustFile.Exists(launcherFile))
+                return false;
+            try
+            {
+                var record = JObject.Parse(RobustFile.ReadAllText(launcherFile));
+                var controlUrl = record["controlUrl"]?.ToString();
+                if (string.IsNullOrEmpty(controlUrl))
+                    return false;
+                var ourProcessId = Process.GetCurrentProcess().Id;
+                // Task.Run keeps this off the user interface thread, which the caller may be on.
+                var launcherAccepted = Task.Run(async () =>
+                {
+                    using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) })
+                    {
+                        // The file survives a hard kill of the launcher, so this probe is
+                        // the only trustworthy sign that somebody is listening.
+                        var response = await client.GetAsync(controlUrl.TrimEnd('/') + "/status");
+                        if (!response.IsSuccessStatusCode)
+                            return false;
+                        var status = JObject.Parse(await response.Content.ReadAsStringAsync());
+                        // The launcher restarts the Bloom that it started.  If that is some
+                        // other Bloom, asking would close that one and leave this one running.
+                        if ((int?)status["bloomProcessId"] != ourProcessId)
+                            return false;
+                        var restart = await client.PostAsync(
+                            controlUrl.TrimEnd('/') + "/restart",
+                            new StringContent("")
+                        );
+                        return restart.IsSuccessStatusCode;
+                    }
+                }).Result;
+                if (!launcherAccepted)
+                    return false;
+                Logger.WriteEvent("Asked the dev launcher to restart Bloom.");
+                return true;
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent("Could not ask the dev launcher to restart Bloom: " + e.Message);
+                return false;
             }
         }
 
