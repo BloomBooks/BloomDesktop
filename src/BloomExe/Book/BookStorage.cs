@@ -59,7 +59,7 @@ namespace Bloom.Book
         HtmlDom Dom { get; }
         void Save();
 
-        void SaveForPageChanged(string pageId, SafeXmlElement modifiedPage);
+        bool SaveForPageChanged(string pageId, SafeXmlElement modifiedPage);
         HtmlDom GetRelocatableCopyOfDom(bool withUpdatedStylesheets = true);
         HtmlDom MakeDomRelocatable(HtmlDom dom);
         string SaveHtml(HtmlDom bookDom);
@@ -723,14 +723,19 @@ namespace Bloom.Book
         /// On a long book (e.g., BL-7253) using this makes page switching two seconds faster,
         /// as well as preventing heap fragmentation that eventually leads to running out of memory.
         /// </summary>
-        public void SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
+        /// <summary>
+        /// Write just the one page into the book's file. Returns FALSE if it did not write, which
+        /// today means the page looked empty and was refused; the caller must then not treat the
+        /// book as written, or the change is lost for good.
+        /// </summary>
+        public bool SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
         {
             // We've seen pages get emptied out, and we don't know why. This is a safety check.
             // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
             if (CheckForEmptyMarginBoxOnPage(modifiedPage))
             {
                 // This has been logged and reported to the user. We don't want to save the empty page.
-                return;
+                return false;
             }
 
             // Convert the one page to HTML
@@ -760,6 +765,7 @@ namespace Bloom.Book
             });
             ValidateSave(tempPath);
             BookInfo.Save();
+            return true;
         }
 
         private static string GetBloomFormatVersionToWrite(string existingVersion)

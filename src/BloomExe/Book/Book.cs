@@ -4325,7 +4325,8 @@ namespace Bloom.Book
                         // running the full Save rather quickly fragments the heap...allocating about 16 7-megabyte
                         // memory chunks in each Save...to the point where Bloom runs out of memory.)
 
-                        SaveForPageChanged(pageId, pageToSaveToDisk);
+                        if (!SaveForPageChanged(pageId, pageToSaveToDisk))
+                            return false;
                     }
                     else
                     {
@@ -5015,14 +5016,22 @@ namespace Bloom.Book
             }
         }
 
-        public void SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
+        /// <summary>
+        /// Write just the one page. Returns FALSE if nothing was written -- see
+        /// BookStorage.SaveForPageChanged, which refuses a page that looks empty. The caller must
+        /// not then treat the book as written: the per-page path names one page, and the next edit
+        /// will name a different one, so a change dropped here is dropped for good.
+        /// </summary>
+        public bool SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
         {
             Guard.Against(HasFatalError, "Save failed: " + FatalErrorDescription);
             Guard.Against(!IsSaveable, "Tried to save a non-editable book.");
-            Storage.SaveForPageChanged(pageId, modifiedPage);
+            if (!Storage.SaveForPageChanged(pageId, modifiedPage))
+                return false;
             // Same as Save(): eagerly record the Created entry once the user has given the book a title.
             RecordPendingCreatedHistoryEvent(onlyIfTitleChanged: true);
             DoPostSaveTasks();
+            return true;
         }
 
         private void DoPostSaveTasks()
