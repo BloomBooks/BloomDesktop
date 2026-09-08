@@ -1736,11 +1736,14 @@ namespace Bloom.Edit
         /// otherwise the snapshot the browser last volunteered is used. Either may be null, meaning
         /// the page has not changed since it loaded; then nothing is merged, and the book is written
         /// only if something else (a data-div change, a forced full save) is waiting to be written.
+        /// While a page is still loading there is likewise nothing to merge -- the page we left was
+        /// saved before the navigation began -- but anything that navigation's write left behind
+        /// (see SaveBookToDisk) is still written.
         ///
-        /// Returns false if we were not in a state to save, or if the write failed. The failure has
-        /// been reported to the user; the return value is for callers that must not carry on as
-        /// though the file now says what they think it says. The AI image editor opens the book
-        /// FROM DISK, so opening it after a save that did not happen would edit stale images.
+        /// Returns false if there was no page to save, or if the write failed. The failure has been
+        /// reported to the user; the return value is for callers that must not carry on as though
+        /// the file now says what they think it says. The AI image editor opens the book FROM DISK,
+        /// so opening it after a save that did not happen would edit stale images.
         ///
         /// The one thing this cannot do is save a change made in the last few tens of
         /// milliseconds, which the browser has not posted yet. See "The freshness window" in
@@ -1748,9 +1751,12 @@ namespace Bloom.Edit
         /// </summary>
         public bool SaveCurrentPageAndBook(string pageContent = null)
         {
-            if (CannotSavePage() || !_havePageToSave || !_stateMachine.Editing)
+            if (CannotSavePage() || !_havePageToSave)
                 return false;
-            pageContent = pageContent ?? CurrentPageSnapshotOrNull;
+            if (_stateMachine.Editing)
+                pageContent = pageContent ?? CurrentPageSnapshotOrNull;
+            else
+                pageContent = null;
             UpdateBookDomFromBrowserPageContent(pageContent);
             if (!SaveBookToDisk())
                 return false;
@@ -1779,8 +1785,8 @@ namespace Bloom.Edit
             // have been reported when it happened.
             try
             {
-                if (SaveCurrentPageAndBook())
-                    CurrentBook.RecordPendingCreatedHistoryEvent();
+                SaveCurrentPageAndBook();
+                CurrentBook.RecordPendingCreatedHistoryEvent();
             }
             catch (Exception e)
             {

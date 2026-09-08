@@ -346,6 +346,11 @@ public class EditingStateMachine
         try
         {
             var pageIdToGoTo = changeBookBeforeWriting();
+            // If the write fails we still navigate. The action has already changed the book in
+            // memory, and the page list already shows the result; the user has been told about the
+            // failure, and EditingModel.SaveBookToDisk keeps the book marked as needing a full
+            // write, so the next save retries it. Staying put would leave the editor showing a page
+            // the list no longer agrees with.
             _saveBook();
             if (pageIdToGoTo == null)
             {

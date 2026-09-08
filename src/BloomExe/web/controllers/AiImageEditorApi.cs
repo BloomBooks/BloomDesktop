@@ -343,7 +343,7 @@ namespace Bloom.web.controllers
             // from the saved DOM. Saving is synchronous now (see PageSnapshot), so the answer is
             // available right here: it throws if the save went wrong (the user has then already
             // been shown "Bloom had trouble saving a page..."), and returns false if it declined
-            // to save at all -- we are mid-navigation, or an external program has replaced the
+            // to save at all -- there is no page to save, or an external program has replaced the
             // book on disk and its content must not be overwritten.
             //
             // Either way we must NOT open: the whole point of saving first is that the editor
