@@ -3319,19 +3319,24 @@ namespace BloomTests.Book
         /// <summary>
         /// BL-16819: the user's Transparency choice for the cover image (Opaque or Transparent, as
         /// opposed to Auto) is stored as a class on the img. It must survive the round trip through
-        /// the data-div that happens every time the book is opened and the xmatter is regenerated.
+        /// the data-div that happens every time the book is opened and the xmatter is regenerated,
+        /// and so must a later change of that choice, including back to Auto (no class at all).
         /// </summary>
         [TestCase("bloom-opaque", "bloom-transparent")]
         [TestCase("bloom-transparent", "bloom-opaque")]
-        public void SuckInDataFromEditedDom_ThenSynchronize_CoverImageTransparencyClassSurvives(
-            string transparencyClass,
-            string otherTransparencyClass
+        [TestCase("bloom-opaque", "")]
+        [TestCase("bloom-transparent", "")]
+        public void SuckInDataFromEditedDom_ThenSynchronize_CoverImageTransparencyChoiceSurvives(
+            string firstChoice,
+            string secondChoice
         )
         {
+            // Like a real book, the data-div entry has lang='*', so that saving the page updates
+            // that entry in place (merging attributes) rather than creating a new one.
             var bookDom = new HtmlDom(
                 @"<html ><head></head><body>
 				<div id='bloomDataDiv'>
-					<div data-book='coverImage' src='old.png'>old.png</div>
+					<div data-book='coverImage' lang='*' src='old.png'>old.png</div>
 				</div>
 				<div class='bloom-page'>
 					 <div class='bloom-canvas'>
@@ -3341,50 +3346,65 @@ namespace BloomTests.Book
 				</body></html>"
             );
             var data = new BookData(bookDom, _collectionSettings, null);
+            var dataDivImageXpath = "//div[@id='bloomDataDiv']/div[@data-book='coverImage']";
+            var pageImageXpath = "//div[@class='bloom-page']//img[@data-book='coverImage']";
 
-            // The user chose Opaque (or Transparent) from the image menu and then saved the page.
-            var editedPageDom = new HtmlDom(
-                $@"<html ><head></head><body>
-				<div class='bloom-page'>
-					 <div class='bloom-canvas'>
-						<img data-book='coverImage' src='new.png' class='{transparencyClass}'></img>
+            // The user picks a Transparency option from the image menu and Bloom saves the page.
+            void SaveCoverWithTransparencyChoice(string transparencyClass)
+            {
+                var editedPageDom = new HtmlDom(
+                    $@"<html ><head></head><body>
+					<div class='bloom-page'>
+						 <div class='bloom-canvas'>
+							<img data-book='coverImage' src='new.png' class='{transparencyClass}'></img>
+						</div>
 					</div>
-				</div>
-			 </body></html>"
-            );
-            data.SuckInDataFromEditedDom(editedPageDom);
-
-            var dataDivImage = bookDom.SelectSingleNodeHonoringDefaultNS(
-                "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
-            );
-            Assert.That(dataDivImage.GetAttribute("src"), Is.EqualTo("new.png"));
-            Assert.That(
-                dataDivImage.GetAttribute("class"),
-                Contains.Substring(transparencyClass),
-                "the transparency choice should be saved in the data-div"
-            );
+				 </body></html>"
+                );
+                data.SuckInDataFromEditedDom(editedPageDom);
+            }
 
             // Simulate reopening the book: the xmatter is regenerated from the template (whose
             // img has no transparency class), then filled in from the data-div.
-            var pageImage = (SafeXmlElement)
-                bookDom.SelectSingleNodeHonoringDefaultNS(
-                    "//div[@class='bloom-page']//img[@data-book='coverImage']"
-                );
-            pageImage.RemoveAttribute("class");
-            Assert.That(pageImage.HasClass(transparencyClass), Is.False, "sanity check");
-            data.SynchronizeDataItemsThroughoutDOM();
+            SafeXmlElement ReopenBookAndGetCoverImage()
+            {
+                var templateImage = (SafeXmlElement)
+                    bookDom.SelectSingleNodeHonoringDefaultNS(pageImageXpath);
+                templateImage.RemoveAttribute("class");
+                data.SynchronizeDataItemsThroughoutDOM();
+                return (SafeXmlElement)bookDom.SelectSingleNodeHonoringDefaultNS(pageImageXpath);
+            }
 
-            pageImage = (SafeXmlElement)
-                bookDom.SelectSingleNodeHonoringDefaultNS(
-                    "//div[@class='bloom-page']//img[@data-book='coverImage']"
-                );
+            SaveCoverWithTransparencyChoice(firstChoice);
+            var dataDivImages = bookDom.SafeSelectNodes(dataDivImageXpath);
+            Assert.That(dataDivImages.Length, Is.EqualTo(1), "sanity check");
+            Assert.That(dataDivImages[0].GetAttribute("src"), Is.EqualTo("new.png"));
+            Assert.That(
+                dataDivImages[0].GetAttribute("class"),
+                Contains.Substring(firstChoice),
+                "the transparency choice should be saved in the data-div"
+            );
+
+            var pageImage = ReopenBookAndGetCoverImage();
             Assert.That(pageImage.GetAttribute("src"), Is.EqualTo("new.png"));
             Assert.That(
-                pageImage.HasClass(transparencyClass),
+                pageImage.HasClass(firstChoice),
                 Is.True,
-                $"{transparencyClass} should be restored to the cover image from the data-div"
+                $"{firstChoice} should be restored to the cover image from the data-div"
             );
-            Assert.That(pageImage.HasClass(otherTransparencyClass), Is.False);
+
+            // Now the user changes their mind.
+            SaveCoverWithTransparencyChoice(secondChoice);
+            pageImage = ReopenBookAndGetCoverImage();
+            foreach (var transparencyClass in new[] { "bloom-opaque", "bloom-transparent" })
+            {
+                Assert.That(
+                    pageImage.HasClass(transparencyClass),
+                    Is.EqualTo(transparencyClass == secondChoice),
+                    $"after changing from {firstChoice} to '{secondChoice}' and reopening, "
+                        + $"{transparencyClass} should {(transparencyClass == secondChoice ? "" : "not ")}be on the cover image"
+                );
+            }
         }
 
         /// <summary>

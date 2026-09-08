@@ -1736,7 +1736,17 @@ namespace Bloom.Book
         // doesn't have them. (ui-suppressHighlight should never get into the DOM at all, but if it somehow sneaks by,
         // at least the next Save should be able to remove it.)
         static HashSet<string> _classesToRemoveIfAbsent = new HashSet<string>(
-            new[] { "bloom-postAudioSplit", "ui-suppressHighlight" }
+            new[]
+            {
+                "bloom-postAudioSplit",
+                "ui-suppressHighlight",
+                // The user's Transparency choice for an image (Opaque/Transparent; Auto is the absence
+                // of both). Changing the choice removes the old class from the img, and the data-div
+                // copy must follow, or the old choice comes back when the cover image is restored from
+                // the data-div on the next open. See RestoreTransparencyClasses and BL-16819.
+                "bloom-opaque",
+                "bloom-transparent",
+            }
         );
 
         private List<Tuple<string, XmlString>> GetAttributesToSave(SafeXmlElement node)
