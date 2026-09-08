@@ -1736,7 +1736,17 @@ namespace Bloom.Book
         // doesn't have them. (ui-suppressHighlight should never get into the DOM at all, but if it somehow sneaks by,
         // at least the next Save should be able to remove it.)
         static HashSet<string> _classesToRemoveIfAbsent = new HashSet<string>(
-            new[] { "bloom-postAudioSplit", "ui-suppressHighlight" }
+            new[]
+            {
+                "bloom-postAudioSplit",
+                "ui-suppressHighlight",
+                // The user's Transparency choice for an image (Opaque/Transparent; Auto is the absence
+                // of both). Changing the choice removes the old class from the img, and the data-div
+                // copy must follow, or the old choice comes back when the cover image is restored from
+                // the data-div on the next open. See _imgClassesToRestoreFromDataDiv and BL-16819.
+                "bloom-opaque",
+                "bloom-transparent",
+            }
         );
 
         private List<Tuple<string, XmlString>> GetAttributesToSave(SafeXmlElement node)
@@ -2508,7 +2518,50 @@ namespace Bloom.Book
             {
                 HtmlDom.ReconstructBackgroundImgWrapper(node, backgroundImgValues);
             }
+
+            RestoreImgClassesFromDataDiv(imgOrDivWithBackgroundImage, otherAttributes);
             return true;
+        }
+
+        // The img classes that are user data and so must be restored from the data-div copy when
+        // an image (currently only the cover image) is refilled from it. Classes in general are
+        // deliberately NOT copied back (e.g. bloom-imageLoadError is meant to be re-derived each
+        // time the book is opened), so a class only gets restored by being listed here.
+        // A class listed here should normally also be in _classesToRemoveIfAbsent, so that the
+        // data-div copy follows the img when the class is removed from it.
+        // Currently these are the classes that record the user's Transparency choice for an image
+        // (Auto is the absence of both). See getImageTransparencyMode in bloomImages.ts and
+        // HtmlDom.GetImageTransparencyMode.
+        private static readonly string[] _imgClassesToRestoreFromDataDiv =
+        {
+            "bloom-opaque",
+            "bloom-transparent",
+        };
+
+        /// <summary>
+        /// Make the img's _imgClassesToRestoreFromDataDiv classes match the class attribute saved
+        /// in the data-div. The data-div copy is authoritative: a listed class it lacks is removed
+        /// from the image (so, for the transparency classes, Auto is restored too). Without this,
+        /// the user's choice would be lost every time the xmatter is regenerated from the template.
+        /// See BL-16819.
+        /// </summary>
+        private static void RestoreImgClassesFromDataDiv(
+            SafeXmlElement img,
+            List<Tuple<string, XmlString>> savedAttributes
+        )
+        {
+            var savedClasses =
+                savedAttributes
+                    ?.Find(a => a.Item1 == "class")
+                    ?.Item2.Unencoded.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                ?? new string[0];
+            foreach (var className in _imgClassesToRestoreFromDataDiv)
+            {
+                if (savedClasses.Contains(className))
+                    img.AddClass(className);
+                else
+                    img.RemoveClass(className);
+            }
         }
 
         /// <summary>
