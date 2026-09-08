@@ -306,6 +306,28 @@ namespace BloomTests
             Assert.That(BloomSettingsProvider.UserSettingsFolder, Is.Null);
         }
 
+        [Test]
+        public void ParseStartupPortArguments_ClearsUserSettingsFolderWhenExperimentalFeaturesLackE2e()
+        {
+            // The experimental-features check rejects the launch after the loop, so it has to clear
+            // the folder the loop already accepted, the same as a rejection inside the loop does.
+            Program.ParseStartupPortArguments(
+                new[]
+                {
+                    @"--user-settings-folder=C:alid",
+                    "--experimental-features",
+                    "team-collections",
+                },
+                out var errorMessage
+            );
+
+            Assert.That(
+                errorMessage,
+                Is.EqualTo("Bloom only accepts --experimental-features together with --e2e.")
+            );
+            Assert.That(BloomSettingsProvider.UserSettingsFolder, Is.Null);
+        }
+
         // --- IsBenignUnobservedTaskSocketNoise: the Sentry BeforeSend filter for
         //     BLOOM-DESKTOP-EQ4 / -E4J / -E9K ---
 

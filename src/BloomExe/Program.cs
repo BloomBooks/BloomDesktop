@@ -895,6 +895,8 @@ namespace Bloom
             if (StartupExperimentalFeatures != null && !RunningE2eTests)
             {
                 errorMessage = "Bloom only accepts --experimental-features together with --e2e.";
+                // Rejected, so it owns no settings folder either (see the rejection above).
+                BloomSettingsProvider.UserSettingsFolder = null;
                 return Array.Empty<string>();
             }
 
