@@ -7,6 +7,10 @@ import {
 } from "../js/bloomEditing";
 import { getLanguageChainOnPage } from "./flowChain";
 import {
+    removeContinueButtons,
+    updateContinueButtons,
+} from "./flowContinueButton";
+import {
     kChainedGroupSelector,
     kFlowChainAttr,
     kReflowingAttr,
@@ -14,7 +18,12 @@ import {
 import { rebalanceChain } from "./flowEngine";
 import { LineMeasurer } from "./flowFit";
 import { stripTransientFlowMarkup, updateIndicators } from "./flowIndicators";
-import { createPretextMeasurer } from "./flowPretextMeasurer";
+import {
+    placeOverflowMarker,
+    removeOverflowMarker,
+} from "./flowOverflowMarker";
+import { getPretextMeasurer } from "./flowPretextMeasurer";
+import { handleSeamKey } from "./flowSeamKeys";
 import { markRefusals } from "./flowSupport";
 import { timePass } from "./flowTiming";
 import { OverflowMeasurer, verifyAndNudge } from "./flowVerify";
@@ -37,7 +46,6 @@ const kDelayId = "flowText";
 let observer: MutationObserver | undefined;
 let observedContainer: HTMLElement | undefined;
 let activeOptions: FlowTextOptions = {};
-let defaultMeasurer: LineMeasurer | undefined;
 
 const pendingTriggers = new Set<HTMLElement>();
 let pendingFrame: number | undefined;
@@ -59,6 +67,7 @@ export function setupFlowText(
 
     container.addEventListener("compositionstart", onCompositionStart, true);
     container.addEventListener("compositionend", onCompositionEnd, true);
+    container.addEventListener("keydown", handleSeamKey, true);
 
     observer = new MutationObserver(onMutations);
     observer.observe(container, {
@@ -73,6 +82,7 @@ export function setupFlowText(
     // over-full. Settle it now, and again once the real fonts are in place, because the
     // fallback font breaks the text somewhere else.
     reflowAllChainsOnPage("load");
+    refreshContinueButtons();
     const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
     const watchedObserver = observer;
     fonts?.ready?.then(() => {
@@ -95,6 +105,7 @@ export function suspendFlowText(): void {
         onCompositionEnd,
         true,
     );
+    observedContainer?.removeEventListener("keydown", handleSeamKey, true);
 
     if (pendingFrame !== undefined) {
         cancelFrame(pendingFrame);
@@ -104,6 +115,7 @@ export function suspendFlowText(): void {
     finishPass();
     pendingTriggers.clear();
     isComposing = false;
+    removeContinueButtons(document);
     stripTransientFlowMarkup(document);
     observedContainer = undefined;
     activeOptions = {};
@@ -218,6 +230,7 @@ function finishPass(): void {
 /** One pass over the chains that these boxes belong to. */
 function flowTriggers(triggers: HTMLElement[], reason: string): void {
     if (!triggers.length) {
+        refreshContinueButtons();
         return;
     }
 
@@ -242,6 +255,10 @@ function flowTriggers(triggers: HTMLElement[], reason: string): void {
 
                 flowOneChain(trigger, chain);
             });
+
+            // A box that gained or lost a following box has gained or lost somewhere for its
+            // extra text to go, and an emptied box may now be able to take another box's.
+            refreshContinueButtons();
         });
     } finally {
         // Our own mutations are queued by now; drop them rather than let them start a pass.
@@ -251,6 +268,12 @@ function flowTriggers(triggers: HTMLElement[], reason: string): void {
 }
 
 function flowOneChain(trigger: HTMLElement, chain: HTMLElement[]): void {
+    // A marker names the character where a box's text stops fitting, so it means nothing once
+    // the text moves: the pass is about to change what each box holds, and a marker left in
+    // place would travel with the text it precedes and then mark a point in the middle of
+    // another box's text.
+    chain.forEach(removeOverflowMarker);
+
     if (rebalanceChain(trigger, getMeasurer())) {
         // The measurer works from font metrics, so every box it touched needs the real
         // layout's opinion. A box that fits costs one measurement and nothing more.
@@ -262,15 +285,29 @@ function flowOneChain(trigger: HTMLElement, chain: HTMLElement[]): void {
     }
 
     updateIndicators(chain);
+
+    // Only the last box of the chain on this page can have a character at which its text
+    // runs out; every earlier one hands its extra text to the box after it. So the marker
+    // belongs to the last box alone, and it goes back on only if that box is still
+    // overflowing, which on this page means the text needs a box on a later page.
+    placeOverflowMarker(
+        chain[chain.length - 1],
+        getMeasurer(),
+        activeOptions.measureOverflow,
+    );
+}
+
+/**
+ * Put the "continue text from the box above" offer on the empty boxes that can take an
+ * earlier box's overflow, and take it off the rest. OverflowChecker calls this as well,
+ * because a box can start or stop overflowing without any chain existing yet.
+ */
+function refreshContinueButtons(): void {
+    updateContinueButtons(observedContainer ?? document);
 }
 
 function getMeasurer(): LineMeasurer {
-    if (activeOptions.measurer) {
-        return activeOptions.measurer;
-    }
-
-    defaultMeasurer = defaultMeasurer ?? createPretextMeasurer();
-    return defaultMeasurer;
+    return activeOptions.measurer ?? getPretextMeasurer();
 }
 
 function requestFrame(callback: () => void): number {

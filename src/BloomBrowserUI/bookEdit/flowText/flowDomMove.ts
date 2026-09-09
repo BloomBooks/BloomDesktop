@@ -7,9 +7,13 @@
 // halves back together before the next fit, so the words never get re-ordered.
 
 import { EditableDivUtils } from "../js/editableDivUtils";
-import { kNoIndentClass } from "../textContextMenu/noIndent";
 import { supportsChainedPair } from "./flowChain";
-import { kContinuationAttr, kContinuationAttrValue } from "./flowConstants";
+import {
+    kContinuationAttr,
+    kContinuationAttrValue,
+    kOverflowMarkerSelector,
+} from "./flowConstants";
+import { suppressesOverflowMarking } from "./flowIndicators";
 import {
     getLastTopLevelParagraph,
     getParagraphSegments,
@@ -120,6 +124,11 @@ export function rebalanceAdjacentBoxes(
         markFirstParagraphAsContinuation(combined);
     }
 
+    // newCurrent becomes a box that has another box after it on the page, so nothing in it
+    // can be the character at which the chain's text stops fitting.
+    Array.from(newCurrent.querySelectorAll(kOverflowMarkerSelector)).forEach(
+        (marker) => marker.remove(),
+    );
     normalizeChainedEditable(newCurrent);
     normalizeChainedEditable(combined);
 
@@ -156,26 +165,30 @@ function buildCombinedEditable(
     currentEditable: HTMLElement,
     nextEditable: HTMLElement,
 ): HTMLElement {
+    // A box that holds nothing but its placeholder <p><br></p> contributes no text at all.
+    // Cloning that paragraph in would make it a real, empty paragraph of the combined
+    // content, and the split would then hand one of the boxes a paragraph break the user
+    // never typed; the caret lands after it, and everything typed next goes into the wrong
+    // paragraph.
     const combined = document.createElement("div");
-    currentEditable.childNodes.forEach((child) => {
-        combined.appendChild(child.cloneNode(true));
-    });
+    if (!isEmptyChainedEditable(currentEditable)) {
+        currentEditable.childNodes.forEach((child) => {
+            combined.appendChild(child.cloneNode(true));
+        });
+    }
 
     const nextClone = document.createElement("div");
-    nextEditable.childNodes.forEach((child) => {
-        nextClone.appendChild(child.cloneNode(true));
-    });
+    if (!isEmptyChainedEditable(nextEditable)) {
+        nextEditable.childNodes.forEach((child) => {
+            nextClone.appendChild(child.cloneNode(true));
+        });
+    }
     const nextParagraphs = getTopLevelParagraphs(nextClone);
     const combinedLastParagraph = getLastTopLevelParagraph(combined);
     if (
         combinedLastParagraph &&
         nextParagraphs[0]?.hasAttribute(kContinuationAttr)
     ) {
-        // A box that holds nothing but its placeholder paragraph is transparent: the next
-        // box's continuation marker then describes a paragraph that starts in a box further
-        // back, and the merged paragraph has to carry the marker on, or the paragraph would
-        // arrive in that earlier box as a paragraph of its own.
-        const currentIsEmpty = isEmptyChainedEditable(currentEditable);
         const firstContinuationParagraph = nextParagraphs[0];
         clearPlaceholderLineBreak(combinedLastParagraph);
         clearPlaceholderLineBreak(firstContinuationParagraph);
@@ -186,9 +199,6 @@ function buildCombinedEditable(
         }
 
         firstContinuationParagraph.remove();
-        if (currentIsEmpty) {
-            markParagraphAsContinuation(combinedLastParagraph);
-        }
     }
 
     nextClone.childNodes.forEach((child) => {
@@ -372,17 +382,17 @@ export function startsWithContinuationParagraph(
 
 /**
  * A continuation paragraph must not take the first-line indent of its style: the line it
- * continues already started in the previous box. The class is the same one the "No Indent"
- * command uses.
+ * continues already started in the previous box. The attribute alone carries that; the
+ * stylesheet rule for p[data-flow-continuation] does the rest. Never add or remove the
+ * "No Indent" class here, because it is the user's own choice and we cannot tell it apart
+ * from one of ours.
  */
 function markParagraphAsContinuation(paragraph: HTMLParagraphElement): void {
     paragraph.setAttribute(kContinuationAttr, kContinuationAttrValue);
-    paragraph.classList.add(kNoIndentClass);
 }
 
 function clearParagraphContinuation(paragraph: HTMLParagraphElement): void {
     paragraph.removeAttribute(kContinuationAttr);
-    paragraph.classList.remove(kNoIndentClass);
 }
 
 /** Bring a chained box back to the markup shape the flow code relies on. */
@@ -390,6 +400,7 @@ export function normalizeChainedEditable(editable: HTMLElement): void {
     EditableDivUtils.normalizeBloomLineBreakSpansInElement(editable);
     ensureChainedParagraphStructure(editable);
     stripStrayContinuationMarkers(editable);
+    pruneOverflowMarkers(editable);
     pruneEmptyInlineElements(editable);
     mergeAdjacentEquivalentInlineElements(editable);
     ensureEmptyParagraphsHaveLineBreaks(editable);
@@ -428,13 +439,34 @@ function ensureChainedParagraphStructure(editable: HTMLElement): void {
 
 /**
  * Only the first paragraph of a box can be the tail of a paragraph in the previous box, so
- * a marker anywhere else is stale. The bloom-noIndent class stays: on a later paragraph we
- * cannot tell our own class from one the user chose with the "No Indent" command.
+ * a marker anywhere else is stale.
  */
 function stripStrayContinuationMarkers(editable: HTMLElement): void {
     getTopLevelParagraphs(editable)
         .slice(1)
         .forEach((paragraph) => paragraph.removeAttribute(kContinuationAttr));
+}
+
+/**
+ * A box holds at most one overflow marker, and only the last linked box on the page holds
+ * one at all: a box that hands its extra text to a following box has no character at which
+ * its text stops fitting. A detached container is not on any page, so we cannot tell where
+ * it belongs and keep the first marker; the caller strips it if the container is the head of
+ * a pair.
+ */
+function pruneOverflowMarkers(editable: HTMLElement): void {
+    const markers = Array.from(
+        editable.querySelectorAll(kOverflowMarkerSelector),
+    );
+    const keep =
+        editable.isConnected && suppressesOverflowMarking(editable)
+            ? undefined
+            : markers[0];
+    markers.forEach((marker) => {
+        if (marker !== keep) {
+            marker.remove();
+        }
+    });
 }
 
 function ensureEmptyParagraphsHaveLineBreaks(editable: HTMLElement): void {

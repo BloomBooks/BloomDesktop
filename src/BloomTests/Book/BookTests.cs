@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -1001,6 +1001,37 @@ namespace BloomTests.Book
                 existingPage,
                 "<div class='bloom-page somekind'>hello</div>"
             );
+        }
+
+        [Test]
+        public void InsertPageAfter_DuplicatedPage_HasNoFlowChainOrOverflowMarker()
+        {
+            var marker = ((char)0x200c).ToString();
+            SetDom(
+                @"<div class='bloom-page numberedPage' id='flowPage'>
+					<div class='bloom-translationGroup' data-flow-chain='chain-1'>
+						<div class='bloom-editable normal-style bloom-visibility-code-on' lang='xyz'>
+							<p>text that fits<span class='bloom-overflowStart'>MARKER</span> and text that does not</p>
+						</div>
+					</div>
+				</div>".Replace("MARKER", marker)
+            );
+            var book = CreateBook();
+            var existingPage = book.GetPages().First();
+
+            book.InsertPageAfter(existingPage, existingPage);
+
+            var newPageDiv = book.GetPageByIndex(1).GetDivNodeForThisPage();
+            Assert.That(newPageDiv.GetAttribute("id"), Is.Not.EqualTo("flowPage"));
+            AssertThatXmlIn.Element(newPageDiv).HasNoMatchForXpath(".//*[@data-flow-chain]");
+            AssertThatXmlIn
+                .Element(newPageDiv)
+                .HasNoMatchForXpath(".//span[contains(@class,'bloom-overflowStart')]");
+            // The text itself comes across, and the original page keeps its own markup.
+            Assert.That(newPageDiv.InnerXml, Does.Contain("text that fits"));
+            AssertThatXmlIn
+                .Dom(book.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//*[@data-flow-chain]", 1);
         }
 
         [Test]

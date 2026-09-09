@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+    getCombinedChainText,
     normalizeChainedEditable,
     pullOverflowBackward,
     pushOverflowForward,
@@ -18,7 +19,7 @@ describe("flowDomMove", () => {
     it("pushOverflowForward moves inline overflow into the next box without creating line paragraphs", () => {
         const current = makeEditable("<p>Hello <strong>world</strong></p>");
         const next = makeEditable(
-            '<p data-flow-continuation="true" class="bloom-noIndent"> again</p>',
+            '<p data-flow-continuation="true"> again</p>',
         );
 
         const changed = pushOverflowForward(current, next, 8);
@@ -26,7 +27,7 @@ describe("flowDomMove", () => {
         expect(changed).toBe(true);
         expect(current.innerHTML).toBe("<p>Hello <strong>wo</strong></p>");
         expect(next.innerHTML).toBe(
-            '<p data-flow-continuation="true" class="bloom-noIndent"><strong>rld</strong> again</p>',
+            '<p data-flow-continuation="true"><strong>rld</strong> again</p>',
         );
         expect(next.querySelectorAll("p")).toHaveLength(1);
     });
@@ -42,7 +43,7 @@ describe("flowDomMove", () => {
         expect(changed).toBe(true);
         expect(current.innerHTML).toBe("<p>Alpha be</p>");
         expect(next.innerHTML).toBe(
-            '<p data-flow-continuation="true" class="bloom-noIndent">ta</p><p>Gamma <em>delta</em></p><p>Epsilon</p>',
+            '<p data-flow-continuation="true">ta</p><p>Gamma <em>delta</em></p><p>Epsilon</p>',
         );
         expect(next.querySelectorAll("p")).toHaveLength(3);
     });
@@ -50,7 +51,7 @@ describe("flowDomMove", () => {
     it("pullOverflowBackward pulls a prefix from the next box into the current paragraph", () => {
         const current = makeEditable("<p>Hello <strong>wo</strong></p>");
         const next = makeEditable(
-            '<p data-flow-continuation="true" class="bloom-noIndent"><strong>rld</strong> again</p>',
+            '<p data-flow-continuation="true"><strong>rld</strong> again</p>',
         );
 
         const changed = pullOverflowBackward(current, next, 3);
@@ -58,7 +59,7 @@ describe("flowDomMove", () => {
         expect(changed).toBe(true);
         expect(current.innerHTML).toBe("<p>Hello <strong>world</strong></p>");
         expect(next.innerHTML).toBe(
-            '<p data-flow-continuation="true" class="bloom-noIndent"> again</p>',
+            '<p data-flow-continuation="true"> again</p>',
         );
         expect(current.querySelectorAll("p")).toHaveLength(1);
     });
@@ -78,22 +79,48 @@ describe("flowDomMove", () => {
 
     it("rebalanceAdjacentBoxes preserves semantic word order when more text spills into an existing continuation paragraph", () => {
         const current = makeEditable("<p>One two three four five</p>");
-        const next = makeEditable(
-            '<p data-flow-continuation="true" class="bloom-noIndent">six.</p>',
-        );
+        const next = makeEditable('<p data-flow-continuation="true">six.</p>');
 
         const changed = rebalanceAdjacentBoxes(current, next, 9);
 
         expect(changed).toBe(true);
         expect(current.innerHTML).toBe("<p>One two t</p>");
         expect(next.innerHTML).toBe(
-            '<p data-flow-continuation="true" class="bloom-noIndent">hree four fivesix.</p>',
+            '<p data-flow-continuation="true">hree four fivesix.</p>',
         );
+    });
+
+    it("marks a continuation paragraph with the attribute alone, never with the No Indent class", () => {
+        const current = makeEditable("<p>One two three</p>");
+        const next = makeEditable("<p><br></p>");
+
+        pushOverflowForward(current, next, 4);
+
+        const continuationParagraph = next.querySelector("p");
+        expect(
+            continuationParagraph?.getAttribute("data-flow-continuation"),
+        ).toBe("true");
+        expect(
+            continuationParagraph?.classList.contains("bloom-noIndent"),
+        ).toBe(false);
+    });
+
+    it("keeps the user's No Indent class on a paragraph that stops being a continuation", () => {
+        const current = makeEditable("<p>One two </p>");
+        const next = makeEditable(
+            '<p data-flow-continuation="true" class="bloom-noIndent">three</p>',
+        );
+
+        pullOverflowBackward(current, next, 5);
+
+        const merged = current.querySelector("p");
+        expect(merged?.hasAttribute("data-flow-continuation")).toBe(false);
+        expect(current.innerHTML).toContain("One two three");
     });
 
     it("normalizeChainedEditable keeps the continuation marker only on the first paragraph", () => {
         const editable = makeEditable(
-            '<p data-flow-continuation="true" class="bloom-noIndent">one</p>' +
+            '<p data-flow-continuation="true">one</p>' +
                 '<p data-flow-continuation="true">two</p>',
         );
 
@@ -105,5 +132,56 @@ describe("flowDomMove", () => {
         expect(paragraphs[1].hasAttribute("data-flow-continuation")).toBe(
             false,
         );
+    });
+
+    it("treats an empty next box as contributing no text at all", () => {
+        const current = makeEditable("<p>One two three</p>");
+        const next = makeEditable("<p><br></p>");
+
+        expect(getCombinedChainText(current, next)).toBe("One two three\n");
+    });
+
+    it("does not turn an empty box's placeholder paragraph into a paragraph break", () => {
+        // Everything fits, so nothing should move and neither box should gain a paragraph.
+        const current = makeEditable("<p>One two three</p>");
+        const next = makeEditable("<p><br></p>");
+
+        const changed = rebalanceAdjacentBoxes(current, next, 500);
+
+        expect(changed).toBe(false);
+        expect(current.innerHTML).toBe("<p>One two three</p>");
+        expect(next.innerHTML).toBe("<p><br></p>");
+        expect(current.querySelectorAll("p")).toHaveLength(1);
+    });
+
+    it("leaves no trailing empty paragraph in the box that receives the tail", () => {
+        const current = makeEditable("<p>One two three four</p>");
+        const next = makeEditable("<p><br></p>");
+
+        rebalanceAdjacentBoxes(current, next, 8);
+
+        expect(current.innerHTML).toBe("<p>One two </p>");
+        expect(next.innerHTML).toBe(
+            '<p data-flow-continuation="true">three four</p>',
+        );
+        expect(next.querySelectorAll("p")).toHaveLength(1);
+    });
+
+    it("keeps a continuation marker when the box before it is empty", () => {
+        const current = makeEditable("<p><br></p>");
+        const next = makeEditable(
+            '<p data-flow-continuation="true">tail text</p>',
+        );
+
+        expect(getCombinedChainText(current, next)).toBe("tail text\n");
+
+        rebalanceAdjacentBoxes(current, next, 5);
+
+        expect(
+            current.querySelector("p")?.getAttribute("data-flow-continuation"),
+        ).toBe("true");
+        expect(
+            next.querySelector("p")?.getAttribute("data-flow-continuation"),
+        ).toBe("true");
     });
 });

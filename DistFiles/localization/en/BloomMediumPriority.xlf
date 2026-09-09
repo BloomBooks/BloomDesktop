@@ -55,10 +55,20 @@
         <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
         <note>Names one picture of a page that has several, shown over the picture in the AI image editor's strip of the book's images. This is the picture behind the page, which other pictures sit on top of. The code puts the page name in front of it, giving e.g. "Page 3 - Canvas Background".</note>
       </trans-unit>
+      <trans-unit id="EditTab.FlowText.ContinueFromBoxAbove">
+        <source xml:lang="en">Continue text from the box above</source>
+        <note>ID: EditTab.FlowText.ContinueFromBoxAbove</note>
+        <note>Label on the button an empty text box shows in the Edit tab when a text box above it on the same page holds more text than fits. Clicking it links the two boxes, so that the text which does not fit flows down into the empty one.</note>
+      </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">No Indent</source>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
         <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. It is a checkable on/off command that removes the first-line indent from just that one paragraph, overriding the indent that the paragraph's style gives it. Typically used on a paragraph continued from the previous page.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.TextContextMenu.UnlinkTextBox">
+        <source xml:lang="en">Unlink text box</source>
+        <note>ID: EditTab.TextContextMenu.UnlinkTextBox</note>
+        <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. Shown only for a text box whose text flows on from, or into, another text box. It separates this box, and every box after it, from that group, so the text stops moving between them. The text itself stays where it is.</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">

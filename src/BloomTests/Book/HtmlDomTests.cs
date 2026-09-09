@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom;
@@ -34,6 +34,88 @@ namespace BloomTests.Book
             var dom = new HtmlDom();
             dom.Title = "<b>one</b>1";
             Assert.AreEqual("one1", dom.Title);
+        }
+
+        [Test]
+        public void RemoveFlowMarkup_RemovesChainAttributeAndOverflowMarker()
+        {
+            var marker = ((char)0x200c).ToString();
+            var dom = new HtmlDom(
+                @"<html><body><div class='bloom-page' id='page1'>
+					<div class='bloom-translationGroup' data-flow-chain='chain-1'>
+						<div class='bloom-editable normal-style' lang='en'>
+							<p>text that fits<span class='bloom-overflowStart'>MARKER</span> and text that does not</p>
+						</div>
+					</div>
+					<div class='bloom-translationGroup' data-flow-chain='chain-1'>
+						<div class='bloom-editable normal-style' lang='en'><p><br/></p></div>
+					</div>
+				</div></body></html>".Replace("MARKER", marker)
+            );
+            var pageDiv = dom.RawDom.SelectSingleNode("//div[@id='page1']") as SafeXmlElement;
+
+            HtmlDom.RemoveFlowMarkup(pageDiv);
+
+            AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//*[@data-flow-chain]");
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasNoMatchForXpath("//span[contains(@class,'bloom-overflowStart')]");
+            // The text on either side of the marker stays, and stays in order.
+            Assert.That(pageDiv.InnerXml, Does.Contain("text that fits and text that does not"));
+        }
+
+        [Test]
+        public void RemoveFlowMarkup_LeavesOtherSpansAlone()
+        {
+            var dom = new HtmlDom(
+                @"<html><body><div class='bloom-page' id='page1'>
+					<div class='bloom-translationGroup' data-flow-chain='chain-1'>
+						<div class='bloom-editable normal-style' lang='en'>
+							<p>one <span class='bloom-linebreak'></span><em>two</em> <span id='cke_bm_1S'> </span>three</p>
+						</div>
+					</div>
+				</div></body></html>"
+            );
+            var pageDiv = dom.RawDom.SelectSingleNode("//div[@id='page1']") as SafeXmlElement;
+
+            HtmlDom.RemoveFlowMarkup(pageDiv);
+
+            var assertThatResult = AssertThatXmlIn.Dom(dom.RawDom);
+            assertThatResult.HasSpecifiedNumberOfMatchesForXpath(
+                "//span[contains(@class,'bloom-linebreak')]",
+                1
+            );
+            assertThatResult.HasSpecifiedNumberOfMatchesForXpath("//em", 1);
+            assertThatResult.HasSpecifiedNumberOfMatchesForXpath("//span[@id='cke_bm_1S']", 1);
+        }
+
+        [Test]
+        public void RemoveOverflowMarkers_RemovesMarkersButKeepsTheChainAttribute()
+        {
+            var marker = ((char)0x200c).ToString();
+            var dom = new HtmlDom(
+                (
+                    @"<html><body><div class='bloom-page' id='page1'>
+					<div class='bloom-translationGroup' data-flow-chain='chain-1'>
+						<div class='bloom-editable normal-style' lang='en'>
+							<p>text that fits<span class='bloom-overflowStart'>MARKER</span> and text that does not</p>
+						</div>
+					</div>
+				</div></body></html>"
+                ).Replace("MARKER", marker)
+            );
+            var pageDiv = dom.RawDom.SelectSingleNode("//div[@id='page1']") as SafeXmlElement;
+
+            HtmlDom.RemoveOverflowMarkers(pageDiv);
+
+            var assertThatResult = AssertThatXmlIn.Dom(dom.RawDom);
+            assertThatResult.HasNoMatchForXpath("//span[contains(@class,'bloom-overflowStart')]");
+            // Publishing takes the marker out; the chain attribute is harmless and stays.
+            assertThatResult.HasSpecifiedNumberOfMatchesForXpath("//*[@data-flow-chain]", 1);
+            Assert.That(pageDiv.InnerXml, Does.Contain("text that fits"));
+            // An ordinal comparison, because the default one ignores a zero-width character
+            // and so reports every string as containing it.
+            Assert.That(pageDiv.InnerXml.IndexOf(marker, StringComparison.Ordinal), Is.EqualTo(-1));
         }
 
         [Test]

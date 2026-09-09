@@ -550,3 +550,58 @@ creates one `_workspaceReactControl`. Worth finding, because the duplicate is wh
 the test-side check necessary.
 (Found 2026-09-01 while making `jumpToPage` queue a jump.)
 
+
+## No helper reports the languages a page is showing
+
+A bilingual page shows one text box per content language inside each translation group, and each
+language's text flows through its own boxes. A test about that needs to address "box 0 of French"
+and "box 1 of French" separately from the English ones. `setContentLanguages` turns a language on
+for the book, but nothing reports which language tags actually reached the page being edited, so a
+test has to guess the tags from the collection spec and hope the page shows them in that order.
+
+Blocks: the bilingual test in `tests/flow-text-same-page.spec.ts` (`test.fixme`, "each language of
+a bilingual page flows on its own").
+
+The fix is a reading helper in `helpers/bookMaking.ts` -- `getPageLanguages(page)`, over the
+visible editables of the page's translation groups -- so a test asks the page rather than assuming.
+`helpers/flowText.ts` already takes a language tag on every function; it is only the list of tags
+that is missing.
+
+## Change Layout drops a text box's flow chain
+
+`HtmlDom.MigrateChildren` copies a translation group's content and some of its attributes to the
+new layout's group, the way it copies `data-imgsizebasedon`. It does not yet copy
+`data-flow-chain`, so changing a linked page's layout separates its boxes. That is C# work
+belonging to the cross-page phase of the flow-text feature, not a limit of the automation.
+
+Blocks: `tests/flow-text-chain-management.spec.ts` (`test.fixme`, "Change Layout on a linked page
+keeps the chain").
+
+The helper to drive the UI is already there: `helpers/origami.ts` (`setChangeLayoutMode`,
+`chooseSectionType`, `splitSection`). The test is a few lines once the attribute survives.
+
+## A word moved by the pass loses the space in front of it
+
+Reopening a page whose two boxes are linked corrupts the text. The pass that runs as the page
+opens measures the text again, moves a word or two from the first box into the second, and each
+moved word arrives with nothing in front of it: the reader sees `usedtostand,thewater` where the
+text said `used to stand, the water`. Every word is still there, and still in order.
+
+The mechanism: CKEditor does not keep a real space at the end of a paragraph it owns. It writes a
+zero-width filler (U+200B) there instead. `moveLastWordForward` (`flowVerify.ts`) then takes the
+last word of the box, which now ends with that filler rather than with a space, and
+`pushOverflowForward` puts word and filler at the head of the next box, where the filler separates
+nothing. One space is lost per word moved, and the loss is in the saved page.
+
+This is not a limit of the automation, and it is not particular to a reopened page: any pass that
+nudges a word forward loses that word's space. Reopening a page is simply where a nudge is certain
+to happen. The unit tests do not catch it because jsdom has no CKEditor, so the space is a real
+space there; `bookEdit/flowText/flowDomMoveSpec.ts` covers the move itself and passes.
+
+Blocks: `tests/flow-text-same-page.spec.ts` (`test.fixme`, "the link and the text survive leaving
+the page and coming back").
+
+The fix is a decision about the engine rather than a line of code: where the flow keeps the space
+at a box boundary. Carrying the space with the word that moves, and dropping CKEditor's filler
+when a fragment is extracted, would hold the text together; both belong with the move code
+(`flowDomMove.ts`, `flowVerify.ts`) and want unit tests of their own.

@@ -101,6 +101,48 @@ describe("rebalanceChain", () => {
         expect(textOf(chain[1])).toBe("three four");
     });
 
+    it("never measures the last box on the page", () => {
+        const chain = makeChainedPage([
+            "<p>one two three four five six</p>",
+            "<p><br></p>",
+        ]);
+        const measuredBoxes: number[] = [];
+        const measurer: LineMeasurer = {
+            measureFit: (text: string, metrics: BoxMetrics) => {
+                measuredBoxes.push(metrics.width);
+                return Math.min(text.length, 7);
+            },
+        };
+        // jsdom lays nothing out, so give the two boxes widths we can tell apart.
+        Object.defineProperty(chain[0], "clientWidth", { value: 111 });
+        Object.defineProperty(chain[1], "clientWidth", { value: 222 });
+
+        rebalanceChain(chain[0], measurer);
+
+        // Every measurement asked about box 1's box, never box 2's.
+        expect(measuredBoxes).toContain(111);
+        expect(measuredBoxes).not.toContain(222);
+    });
+
+    it("leaves the marker in the last box and takes it out of the box before it", () => {
+        const marker = `<span class="bloom-overflowStart">${String.fromCharCode(
+            0x200c,
+        )}</span>`;
+        const chain = makeChainedPage([
+            `<p>one two ${marker}three four five six</p>`,
+            `<p>seven ${marker}eight</p>`,
+        ]);
+
+        rebalanceChain(chain[0], measurerThatFits(100));
+
+        expect(
+            chain[0].querySelectorAll("span.bloom-overflowStart"),
+        ).toHaveLength(0);
+        expect(
+            chain[1].querySelectorAll("span.bloom-overflowStart").length,
+        ).toBeLessThanOrEqual(1);
+    });
+
     it("does nothing when the trigger's group is not chained", () => {
         const chain = makeChainedPage(["<p>one two three</p>"], "");
         chain[0]

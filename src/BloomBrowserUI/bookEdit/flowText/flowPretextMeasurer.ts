@@ -15,6 +15,14 @@ export function createPretextMeasurer(): LineMeasurer {
     return { measureFit: getTextThatFits };
 }
 
+let theMeasurer: LineMeasurer | undefined;
+
+/** The one measurer the editing code shares. Made on first use, not at load time. */
+export function getPretextMeasurer(): LineMeasurer {
+    theMeasurer = theMeasurer ?? createPretextMeasurer();
+    return theMeasurer;
+}
+
 /**
  * Lay the text out line by line at this width, and report the offset of the first character
  * that no longer has a line to sit on.

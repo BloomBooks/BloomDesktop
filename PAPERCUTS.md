@@ -310,3 +310,16 @@ watcher from an earlier `pnpm dev` had already refreshed the outputs.
 **Idea:** give the script a `--force` flag, or have it hash the sources rather than trust mtimes.
 
 **Context:** Phase 1 of the flow-text work, verifying that two .less edits compile.
+
+## 2026-09-08 — NUnit's Does.Contain says every string contains a zero-width character
+
+A test that asserted `Does.Not.Contain(marker)`, where `marker` is `"‌"`, failed against a
+string the character had already been removed from, and the paired `Does.Contain(marker)` passed
+against a string that never held it. `Does.Contain` compares with the current culture, and a
+culture-sensitive comparison treats U+200C (and U+200B, U+FEFF, the soft hyphen) as ignorable, so
+both directions of the assertion are meaningless.
+
+**Workaround:** assert with an ordinal comparison instead:
+`Assert.That(text.IndexOf(marker, StringComparison.Ordinal), Is.EqualTo(-1))`.
+
+**Context:** Phase 2 of the flow-text work, testing HtmlDom.RemoveOverflowMarkers.

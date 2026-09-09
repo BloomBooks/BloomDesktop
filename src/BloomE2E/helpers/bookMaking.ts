@@ -443,6 +443,42 @@ export async function addPage(
                     .join(", ") +
                 ".",
         );
+    await insertTemplatePage(page, template, times, `"${templatePageLabel}"`);
+}
+
+/**
+ * Add content pages to the selected book by the template page's ID rather than its label. Use
+ * this when the page matters more than its name: a label is localized and two templates can
+ * share one, while an id names exactly one page of one template book.
+ */
+export async function addPageWithId(
+    page: Page,
+    templatePageId: string,
+    times = 1,
+): Promise<void> {
+    const templates = await apiGetJson<ITemplatePage[]>(
+        page,
+        "e2e/templatePages",
+    );
+    const template = templates.find((t) => t.id === templatePageId);
+    if (!template)
+        throw new Error(
+            `No template offers a page with the id "${templatePageId}". On offer: ` +
+                templates
+                    .map((t) => `${t.templateBookTitle}: ${t.label} (${t.id})`)
+                    .join(", ") +
+                ".",
+        );
+    await insertTemplatePage(page, template, times, `"${template.label}"`);
+}
+
+/** Insert one of the Add Page dialog's template pages, and wait until the book has it. */
+async function insertTemplatePage(
+    page: Page,
+    template: ITemplatePage,
+    times: number,
+    describedAs: string,
+): Promise<void> {
     const before = (await getPages(page)).length;
     await apiPost(
         page,
@@ -464,7 +500,7 @@ export async function addPage(
     await expect
         .poll(async () => (await getPages(page)).length, {
             timeout: 60000,
-            message: `Bloom never added the "${templatePageLabel}" page(s).`,
+            message: `Bloom never added the ${describedAs} page(s).`,
         })
         .toBe(before + times);
     await waitForEditablePage(page);

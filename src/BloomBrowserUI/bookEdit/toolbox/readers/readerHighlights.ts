@@ -84,6 +84,12 @@ function shouldSkipElementForReaderText(element: Element): boolean {
     if (element.classList.contains("bloom-audio-split-marker")) {
         return true;
     }
+    // The overflow marker is saved content too, and its zero-width character sits wherever the
+    // text stops fitting, which is usually in the middle of a word. synphony_lib does not treat
+    // U+200C as a word splitter, so a marker left in would corrupt the word count.
+    if (element.classList.contains("bloom-overflowStart")) {
+        return true;
+    }
     // CKEditor's bookmarks are hidden spans with ids like cke_bm_123S, holding a placeholder
     // character that would otherwise break a word in two.
     if (element.id.startsWith("cke_")) {

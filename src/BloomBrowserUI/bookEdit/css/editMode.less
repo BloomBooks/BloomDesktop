@@ -1881,3 +1881,38 @@ svg.bloom-videoControl {
 .bloom-page .bloom-translationGroup.bloom-flow-refused {
     outline: 1px dashed @WarningColor;
 }
+
+// Flow text: the offer an empty box makes to take the text that does not fit in an earlier
+// box (flowContinueButton.ts). It is a bloom-ui element inside the translation group, placed
+// over the middle of its own box, so it must stay out of the text's own flow.
+.bloom-page .bloom-translationGroup > .bloom-flow-continue {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    max-width: 90%;
+    padding: 4px 8px;
+    border: 1px solid @bloom-blue;
+    border-radius: 3px;
+    background-color: white;
+    color: @bloom-blue;
+    font-family: @UIFontStack;
+    font-size: 10px;
+    line-height: 1.2;
+    text-align: center;
+    text-indent: 0;
+    cursor: pointer;
+    pointer-events: auto;
+
+    &:hover {
+        background-color: @bloom-blue;
+        color: white;
+    }
+}
+
+// While a pass is moving text, what does not fit is about to change, so the offer would be
+// about a state that is on its way out.
+.bloom-page[data-flow-reflowing]
+    .bloom-translationGroup
+    > .bloom-flow-continue {
+    display: none;
+}

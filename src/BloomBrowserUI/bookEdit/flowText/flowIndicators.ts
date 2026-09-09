@@ -13,6 +13,8 @@ import {
 } from "./flowConstants";
 
 const kTranslationGroupSelector = ".bloom-translationGroup";
+// OverflowChecker's own class for a box holding more text than fits.
+const kOverflowClass = "overflow";
 
 /**
  * Show, on each group of the chain, whether its text carries on into a following box and
@@ -20,12 +22,21 @@ const kTranslationGroupSelector = ".bloom-translationGroup";
  */
 export function updateIndicators(chain: HTMLElement[]): void {
     chain.forEach((editable, index) => {
+        const hasNext = index < chain.length - 1;
+        if (hasNext) {
+            // The box is meant to be full: its extra text has gone into the box after it. The
+            // red overflow marking would be reporting a problem the user does not have, and
+            // OverflowChecker (which asks suppressesOverflowMarking below) will not run again
+            // until the user's next keystroke.
+            editable.classList.remove(kOverflowClass);
+        }
+
         const group = editable.closest(kTranslationGroupSelector);
         if (!group) {
             return;
         }
 
-        setClass(group, kHasNextClass, index < chain.length - 1);
+        setClass(group, kHasNextClass, hasNext);
         setClass(group, kHasPrevClass, index > 0);
     });
 }

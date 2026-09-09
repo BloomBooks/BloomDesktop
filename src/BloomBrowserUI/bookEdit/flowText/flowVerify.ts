@@ -5,6 +5,7 @@
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { pushOverflowForward } from "./flowDomMove";
 import {
+    findLastWordStart,
     getComparableLinearizedLength,
     linearizeEditable,
 } from "./flowLinearize";
@@ -86,35 +87,4 @@ function moveLastWordForward(
     }
 
     return pushOverflowForward(editable, nextEditable, keepOffset);
-}
-
-/**
- * The offset at which the box's last word begins, counting the whitespace that precedes the
- * word as part of what the box keeps. With no whitespace at all the box holds one word, so
- * the last grapheme is what moves.
- */
-function findLastWordStart(text: string): number | undefined {
-    const withoutTrailingSpace = text.replace(/\s+$/, "");
-    if (!withoutTrailingSpace.length) {
-        return undefined;
-    }
-
-    for (let index = withoutTrailingSpace.length - 1; index >= 0; index--) {
-        if (/\s/.test(withoutTrailingSpace[index])) {
-            return index + 1;
-        }
-    }
-
-    return findLastGraphemeStart(withoutTrailingSpace);
-}
-
-function findLastGraphemeStart(text: string): number | undefined {
-    let lastStart: number | undefined = undefined;
-    for (const part of new Intl.Segmenter(undefined, {
-        granularity: "grapheme",
-    }).segment(text)) {
-        lastStart = part.index;
-    }
-
-    return lastStart;
 }

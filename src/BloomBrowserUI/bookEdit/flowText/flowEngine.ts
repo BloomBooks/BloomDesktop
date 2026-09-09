@@ -33,6 +33,9 @@ export function rebalanceChain(
     // Every box can only give and take once per direction, hence the cap.
     for (let pass = 0; pass < chain.length * 2; pass++) {
         let passChanged = false;
+        // The loop stops one short of the end on purpose: the last box on the page is never
+        // measured, because nothing can move out of it here. Where its text stops fitting is
+        // recorded by the overflow marker, and the box after it is on another page.
         for (let index = 0; index < chain.length - 1; index++) {
             passChanged =
                 rebalancePair(chain[index], chain[index + 1], measurer) ||

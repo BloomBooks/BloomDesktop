@@ -127,6 +127,47 @@ export function restoreCollapsedSelectionInChain(
 }
 
 /**
+ * Where the caret is inside this one box, counted the way linearizeEditable() counts, or
+ * undefined if the caret is not in the box. This is the form the overflow marker needs: it
+ * changes one box's markup and has to put the caret back in the same box.
+ */
+export function getCollapsedSelectionOffsetInEditable(
+    editable: HTMLElement,
+): number | undefined {
+    return getCollapsedSelectionOffsetInChain([editable])?.offset;
+}
+
+/**
+ * Put the caret back at an offset that getCollapsedSelectionOffsetInEditable() gave.
+ *
+ * This works from the boundary table rather than from EditableDivUtils.makeSelectionIn(),
+ * which counts textContent: an overflow marker holds a zero-width character that the
+ * linearized text does not, so the two ways of counting disagree in a box that has one.
+ */
+export function restoreCollapsedSelectionInEditable(
+    editable: HTMLElement,
+    offset: number,
+): void {
+    const content = linearizeEditable(editable);
+    const comparableLength = getComparableLinearizedLength(content.text);
+    const wanted = Math.max(0, Math.min(offset, comparableLength));
+    const point =
+        content.points[wanted] ??
+        getLastSelectableBoundary(editable) ??
+        content.points[comparableLength];
+    const selection = editable.ownerDocument.defaultView?.getSelection();
+    if (!point || !selection) {
+        return;
+    }
+
+    const range = editable.ownerDocument.createRange();
+    range.setStart(point.container, point.offset);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+}
+
+/**
  * The offset whose recorded DOM position is exactly this container and offset, or undefined
  * if no offset maps to it.
  */

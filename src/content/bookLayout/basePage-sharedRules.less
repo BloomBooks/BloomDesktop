@@ -256,6 +256,15 @@ span.bloom-linebreak {
     text-wrap: wrap;
 }
 
+// The first paragraph of a box that continues a paragraph from the box before it. The line
+// it continues already started, so it takes neither the first-line indent of its style nor
+// the space a new paragraph would get above it. The attribute alone carries this, so the
+// user's own "No Indent" choice stays their own.
+.bloom-editable p[data-flow-continuation] {
+    text-indent: 0;
+    margin-top: 0;
+}
+
 // Rules that are shared by both the regular book front matter and the more minimalist epub front matter.
 // These rules were moved from bloom-xmatter-sharedRules.less to basePage-sharedRules.less in Bloom 6.0.
 .frontCover {

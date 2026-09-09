@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -1890,6 +1890,63 @@ namespace Bloom.Book
                 "class",
                 editedPageDiv.GetAttribute("class").Replace(" bloom-templateMode", "")
             );
+        }
+
+        // The attribute that links a text box to the boxes its text flows through, and the
+        // marker that records where the text of a box stops fitting. Both live in
+        // bookEdit/flowText/flowConstants.ts.
+        public const string kFlowChainAttrName = "data-flow-chain";
+        public const string kOverflowStartClass = "bloom-overflowStart";
+
+        /// <summary>
+        /// Take the flow-text markup off a page: the chain attribute that links its text
+        /// boxes to boxes on other pages, and the marker that says where the text of a box
+        /// stops fitting. A page that is duplicated, pasted or added must not join the chain
+        /// its original belongs to, and its marker describes a fit that was measured for
+        /// other text.
+        /// </summary>
+        public static void RemoveFlowMarkup(SafeXmlElement pageDiv)
+        {
+            if (pageDiv == null)
+                return;
+
+            pageDiv.RemoveAttribute(kFlowChainAttrName);
+            foreach (
+                SafeXmlElement group in pageDiv
+                    .SafeSelectNodes($".//*[@{kFlowChainAttrName}]")
+                    .Cast<SafeXmlElement>()
+                    .ToArray()
+            )
+            {
+                group.RemoveAttribute(kFlowChainAttrName);
+            }
+
+            RemoveOverflowMarkers(pageDiv);
+        }
+
+        /// <summary>
+        /// Remove the spans that record where each box's text stops fitting. They belong to
+        /// editing only: they must not reach a PDF, an ePUB or a BloomPUB, where the
+        /// zero-width character they hold would sit in the middle of a word.
+        /// </summary>
+        public static void RemoveOverflowMarkers(SafeXmlElement element)
+        {
+            if (element == null)
+                return;
+
+            // The marker holds nothing but a zero-width character, so there is no content to
+            // keep when the element goes.
+            foreach (
+                SafeXmlElement marker in element
+                    .SafeSelectNodes(
+                        $".//span[contains(concat(' ', @class, ' '), ' {kOverflowStartClass} ')]"
+                    )
+                    .Cast<SafeXmlElement>()
+                    .ToArray()
+            )
+            {
+                marker.ParentNode?.RemoveChild(marker);
+            }
         }
 
         // duplicates information in musicToolsControl.tsx
