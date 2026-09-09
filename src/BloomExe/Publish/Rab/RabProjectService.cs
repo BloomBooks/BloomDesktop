@@ -19,6 +19,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
+using Bloom.FreezeDoctor;
 using Bloom.Publish.BloomPub;
 using Bloom.ToPalaso;
 using Bloom.web;
@@ -812,6 +813,13 @@ namespace Bloom.Publish.Rab
 
         private void Build()
         {
+            // The longest deliberate operation Bloom has: a Gradle build exceeds a minute even on a fast
+            // machine. BloomPubMaker marks its own work nested inside this; the scope counts depth, so the
+            // inner one finishing does not end the patience for this one.
+            using var _longOperation = FreezeDoctorSupport.LongOperation(
+                "building an app with Reading App Builder"
+            );
+
             // Build reuses BloomPUBs created during the current Apps-screen session and regenerates only missing ones.
             var paths = GetPaths();
             EnsureWorkspaceFolders(paths);
