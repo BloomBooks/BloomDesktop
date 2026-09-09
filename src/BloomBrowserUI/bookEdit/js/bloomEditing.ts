@@ -1636,6 +1636,12 @@ export const pageUnloading = () => {
     if (theOneCanvasElementManager) {
         theOneCanvasElementManager.cleanUp();
     }
+    // Let the toolbox let go of this page's elements. It bound handlers to them with its own
+    // frame's jQuery when we called configureElementsForTools, and it outlives this page, so
+    // it has to be told now, while the elements are still here. See releaseElementsForTools.
+    getToolboxBundleExports()
+        ?.getTheOneToolbox()
+        ?.releaseElementsForTools(document.body);
 };
 
 export function topBarButtonClick(button: { command: string }) {

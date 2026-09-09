@@ -377,6 +377,36 @@ export class ToolBox {
             });
     }
 
+    /// Undoes the jQuery bookkeeping that configureElementsForTools (and the
+    /// configureElements() of each tool) created on the page that is about to be replaced.
+    /// Call this while the outgoing page is still in the DOM.
+    ///
+    /// This is not optional tidying. jQuery 1.x keeps every element it has bound a handler
+    /// to in the global jQuery.cache of the frame whose jQuery did the binding, and the
+    /// entry holds a hard reference to the element (cache[n].handle.elem). We bind with the
+    /// toolbox frame's jQuery onto elements that live in the page frame's document, and
+    /// switching pages keeps the toolbox frame while navigating the page frame (see
+    /// EditingView.SwitchPage). Nothing in that navigation tells jQuery its elements are
+    /// gone, so without this every page ever visited stays in the cache, and each retained
+    /// .bloom-editable keeps its detached document, and hence that page's whole JS realm
+    /// (CKEditor, React, the page's module graph) alive for the rest of the session.
+    ///
+    /// A single sweep of the subtree is deliberate, rather than an unbind method on each
+    /// tool to pair with its configureElements: cleanData removes events and data for every
+    /// element regardless of which tool bound them, so a new tool cannot reintroduce the
+    /// leak by forgetting to clean up after itself.
+    ///
+    /// jQuery's expando key is per-jQuery-instance, so this only ever touches the toolbox
+    /// frame's own cache. The page frame's jQuery cache is untouched, and dies with the page.
+    public releaseElementsForTools(container: HTMLElement) {
+        const elements = $(container).find("*").addBack();
+        // cleanData is what jQuery itself calls when it removes elements; it is not in the
+        // published typings, hence the cast.
+        (
+            $ as unknown as { cleanData: (e: ArrayLike<Element>) => void }
+        ).cleanData(elements.get());
+    }
+
     public getTheOneGameTool(): GameTool | undefined {
         return GameTool.theOneDragActivityTool;
     }
