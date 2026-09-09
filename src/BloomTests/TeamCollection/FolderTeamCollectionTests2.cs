@@ -1988,6 +1988,40 @@ namespace BloomTests.TeamCollection
         }
 
         /// <summary>
+        /// A sync that throws must not leave the collection looking permanently busy: the
+        /// periodic connection check skips its tick while a write is in progress, so a stuck
+        /// flag would silently disable it for the rest of the session.
+        /// </summary>
+        [Test]
+        public void SyncAtStartup_Throws_StillClearsTheBusyFlag()
+        {
+            WithMockManagedCollection(
+                "SyncThrowsClearsBusy",
+                (tc, mockTcManager) =>
+                {
+                    Assert.That(
+                        tc.IsWritingToRepo,
+                        Is.False,
+                        "setup problem: should not start out busy"
+                    );
+
+                    // The repo has no Books folder and no collection files, so the sync throws
+                    // somewhere inside rather than returning normally.
+                    Assert.Catch(
+                        () => tc.SyncAtStartup(new ProgressSpy(), firstTimeJoin: false),
+                        "setup problem: this sync was supposed to fail"
+                    );
+
+                    Assert.That(
+                        tc.IsWritingToRepo,
+                        Is.False,
+                        "a failed sync must not leave the collection looking busy forever"
+                    );
+                }
+            );
+        }
+
+        /// <summary>
         /// If a racing watcher failure disconnected us while the overflow warning was queued for
         /// the UI thread, the manager has swapped in a different collection with a different
         /// message log -- so writing ours would put the warning where nothing reads it.
