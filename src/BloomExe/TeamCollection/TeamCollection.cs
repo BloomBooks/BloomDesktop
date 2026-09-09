@@ -2474,6 +2474,24 @@ namespace Bloom.TeamCollection
         /// keeping the progress dialog open until the user responds</returns>
         public bool SyncAtStartup(IWebSocketProgress progress, bool firstTimeJoin = false)
         {
+            try
+            {
+                return SyncAtStartupInternal(progress, firstTimeJoin);
+            }
+            finally
+            {
+                // BL-16729: the real work below clears this on its normal return and on its two
+                // explicit abort paths, but any other exception -- SynchronizeRepoAndLocal
+                // catches those and carries on -- used to leave it set for the rest of the
+                // session. Since IsWritingToRepo consults it, that permanently disabled the
+                // periodic connection check: Dropbox could stop later and no tick would ever
+                // look. Clearing it here covers every exit.
+                _syncIsRunning = false;
+            }
+        }
+
+        private bool SyncAtStartupInternal(IWebSocketProgress progress, bool firstTimeJoin)
+        {
             Debug.Assert(
                 !string.IsNullOrEmpty(CollectionId),
                 "Collection ID must get set before we start syncing books"
