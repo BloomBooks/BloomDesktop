@@ -127,6 +127,15 @@ namespace BloomTests.Collection
         }
 
         [Test]
+        public void Filter_AcceptsFontFilesButNotOtherFilesInTheFontsFolder()
+        {
+            var fontsFolder = Path.Combine(_collectionFolder.FolderPath, "fonts");
+            Assert.That(_filter.ShouldAllow(Path.Combine(fontsFolder, "Foo.ttf")), Is.True);
+            Assert.That(_filter.ShouldAllow(Path.Combine(fontsFolder, "Foo-Bold.otf")), Is.True);
+            Assert.That(_filter.ShouldAllow(Path.Combine(fontsFolder, "readme.txt")), Is.False);
+        }
+
+        [Test]
         public void Filter_RejectsOtherRootFiles()
         {
             Assert.That(

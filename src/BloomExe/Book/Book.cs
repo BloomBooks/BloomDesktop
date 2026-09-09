@@ -1111,10 +1111,63 @@ namespace Bloom.Book
 
             Storage.CleanupUnusedSupportFiles(forCopyOfUpToDateBook);
 
+            // A copy made for publishing lives in a temporary folder, so its parent is not the
+            // collection. It has already been given the fonts it needs.
+            if (!forCopyOfUpToDateBook && !Program.RunningHarvesterMode)
+                StoreUsedFontsInCollection();
+
             Save();
             UpToDate = true;
 
             _bookRefreshEvent?.Raise(this);
+        }
+
+        /// <summary>
+        /// Make sure the collection has a copy of every font this book uses that Bloom does not
+        /// already serve, so the font travels with the book when the book is published or shared.
+        /// Fonts the book carries in its own folder, which is how a downloaded book arrives, move
+        /// up into the collection fonts folder.
+        /// </summary>
+        private void StoreUsedFontsInCollection()
+        {
+            try
+            {
+                var movedFontsUp = EmbeddedFonts.GetEmbeddedFontGroups(FolderPath).Count > 0;
+                EmbeddedFonts.MoveBookFontsToCollection(FolderPath);
+
+                var alreadyStored = EmbeddedFonts.GetAvailableStoredFontGroups(FolderPath);
+                var serve = FontServe.GetInstance();
+                var installedMetadata = FontsApi.AvailableFontMetadataDictionary;
+                var finder = FontFileFinder.GetInstance(isReuseAllowed: true);
+                var toStore = EmbeddedFonts
+                    .ChooseFontsToStore(
+                        FontsUsedInBook.GetFontsUsed(FolderPath),
+                        family => alreadyStored.ContainsKey(family),
+                        family => serve.HasFamily(family),
+                        family => installedMetadata.TryGetValue(family, out var meta) ? meta : null,
+                        family => finder.GetGroupForFont(family)
+                    )
+                    .ToList();
+                foreach (var kvp in toStore)
+                    EmbeddedFonts.StoreFontInCollection(FolderPath, kvp.Key, kvp.Value);
+
+                // The @font-face rules were written before we had these files, so they have to be
+                // written again now that the files are where the rules will point.
+                if (movedFontsUp || toStore.Count > 0)
+                    CreateOrUpdateDefaultLangStyles();
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent(
+                    "Storing the fonts used by " + FolderPath + " failed: " + e.Message
+                );
+                NonFatalProblem.Report(
+                    ModalIf.None,
+                    PassiveIf.Alpha,
+                    "Bloom could not store a copy of a font this book uses.",
+                    exception: e
+                );
+            }
         }
 
         private void VerifyLayout(HtmlDom dom)
@@ -2287,8 +2340,9 @@ namespace Bloom.Book
             if (WriteFontFaces)
             {
                 var serve = FontServe.GetInstance();
-                // Fonts embedded in the book folder by the user. Their src urls are bare file names
-                // that resolve relative to this file, so they render in editing and the web reader.
+                // The fonts Bloom stored for this book, in the collection fonts folder or in
+                // the book folder root. Their src urls resolve relative to this file, so they
+                // render in editing and in the web reader.
                 cssBuilder.Insert(0, EmbeddedFonts.GetFontFaceDeclarations(FolderPath));
                 cssBuilder.Insert(0, serve.GetAllFontFaceDeclarations());
             }

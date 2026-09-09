@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Reflection;
-using Bloom.CLI;
+using Bloom.FontProcessing;
 using BloomTemp;
 using NUnit.Framework;
 using SIL.IO;
@@ -37,7 +37,7 @@ namespace BloomTests.CLI
                     cssContents
                 );
 
-                var fontsUsed = GetUsedFontsCommand.GetFontsUsed(bookFolder.FolderPath).ToList();
+                var fontsUsed = FontsUsedInBook.GetFontsUsed(bookFolder.FolderPath).ToList();
 
                 foreach (var langInBook in languagesInHtml)
                     Assert.That(fontsUsed, Does.Contain($"{langInBook} Font"));

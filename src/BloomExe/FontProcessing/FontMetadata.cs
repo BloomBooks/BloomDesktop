@@ -32,9 +32,14 @@ namespace Bloom.FontProcessing
         public string determinedSuitabilityNotes { get; private set; }
         public string fileExtension { get; private set; }
 
-        // Where this font came from. Null for ordinary system/Bloom-served fonts; kSourceBook for a
-        // font the user embedded by dropping a file in the book folder. This is surfaced in the UI
-        // (see IFontMetaData in fontSelectComponent.tsx) so we can tell the user where the font lives.
+        // The name (not the path) of the file the metadata was read from. Set only for a font Bloom
+        // stored as a file, where we can tell the user which file the font came from.
+        internal string fileName { get; private set; }
+
+        // Where this font came from. Null for ordinary system/Bloom-served fonts; kSourceCollection
+        // for a font Bloom stored in the collection fonts folder; kSourceBook for one stored in the
+        // book folder itself. This is surfaced in the UI (see IFontMetaData in
+        // fontSelectComponent.tsx) so we can tell the user where the font lives.
         public string source { get; private set; }
 
         public static HashSet<string> fontFileTypesBloomKnows = new HashSet<string>()
@@ -53,7 +58,8 @@ namespace Bloom.FontProcessing
         public const string kInvalid = "invalid"; // bad file format (eg, .ttc)
 
         // Values for the source field.
-        public const string kSourceBook = "book"; // embedded in the book folder
+        public const string kSourceBook = "book"; // stored in the book folder
+        public const string kSourceCollection = "collection"; // stored in the collection fonts folder
 
         /// <summary>
         /// On Windows, we can use System.Windows.Media (which provides the GlyphTypeface class) to
@@ -73,23 +79,27 @@ namespace Bloom.FontProcessing
         }
 
         /// <summary>
-        /// Constructor for a font embedded in a book (see EmbeddedFonts). We deliberately do NOT
-        /// call SetFontMetadata: GlyphTypeface cannot read WOFF/WOFF2 on Windows, and per the
-        /// feature decision embedded fonts are treated as suitable for embedding without inspecting
-        /// the font's license bits. The family name and variants come from the filenames.
+        /// Constructor for a font Bloom stored as a file (see EmbeddedFonts). The license and the
+        /// other metadata are read from the file in the normal way, so a stored font whose license
+        /// forbids embedding is rejected like any other. The family name and the variants come from
+        /// the filenames: the naming convention, not the font file, defines the CSS family name.
+        ///
+        /// fileName and fileExtension name the stored file itself, because the messages that report
+        /// a font problem show that name to the user. Only the read happens somewhere else.
         /// </summary>
         public FontMetadata(string fontName, FontGroup group, string sourceLabel)
         {
             name = fontName;
-            // Take the extension from whichever face we have, so a group with no normal file still
-            // reports something rather than throwing.
-            var anyFile =
-                group.Normal ?? group.Bold ?? group.Italic ?? group.BoldItalic ?? string.Empty;
-            fileExtension = Path.GetExtension(anyFile);
+            fileExtension = Path.GetExtension(group.Normal);
+            fileName = Path.GetFileName(group.Normal);
             variants = group.GetAvailableVariants().ToArray();
             source = sourceLabel;
-            determinedSuitability = kOK;
-            determinedSuitabilityNotes = "Embedded in book";
+
+            // The folders that hold stored fonts gain files while Bloom runs, and WPF builds one
+            // DirectWrite font collection per folder on the first read and never refreshes it. A
+            // file added later is missing from that collection, so the read returns null and
+            // throws. Reading a copy that sits in a folder of its own avoids that.
+            SetFontMetadata(fontName, StoredFontMetadataCache.MakeIsolatedCopy(group.Normal));
         }
 
         /// <summary>

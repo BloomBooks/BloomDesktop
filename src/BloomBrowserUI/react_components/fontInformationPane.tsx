@@ -31,10 +31,10 @@ const FontInformationPane: React.FunctionComponent<{
         "This shows in the popup when hovering over a useable font.",
     );
 
-    const EmbeddedFontMessage = useL10n(
-        "This font is embedded in this book. It will travel with the book to BloomPUB and BloomLibrary.",
-        "FontInformationPane.EmbeddedInBook",
-        "This shows in the popup when hovering over a font that the user embedded in the book folder.",
+    const StoredFontMessage = useL10n(
+        "Bloom keeps a copy of this font with the collection, so it travels with the books you publish or share.",
+        "FontInformationPane.StoredFont",
+        "This shows in the popup when hovering over a font that Bloom stored a copy of.",
     );
 
     const UnknownFontMessage = useL10n(
@@ -65,9 +65,11 @@ const FontInformationPane: React.FunctionComponent<{
             ? MicrosoftFontsArentFree
             : GeneralUnsuitableFontLicenseMessage;
 
+    // A font Bloom stored still has to pass the license check, so the reassuring message about
+    // travelling with the book belongs only to a font that passed.
     const mainMessage =
-        props.metadata?.source === "book"
-            ? EmbeddedFontMessage
+        props.metadata?.source && suitability === "ok"
+            ? StoredFontMessage
             : suitability === "ok"
               ? OkayFontMessage
               : suitability === "unknown"

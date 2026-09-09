@@ -61,6 +61,44 @@ namespace BloomTests.TeamCollection
         }
 
         [Test]
+        public void RootLevelCollectionFilesIn_IncludesTheCollectionFonts()
+        {
+            var fontsFolder = Path.Combine(_collectionFolder.FolderPath, "fonts");
+            Directory.CreateDirectory(fontsFolder);
+            File.WriteAllText(Path.Combine(fontsFolder, "Foo.ttf"), "not really a font");
+            File.WriteAllText(Path.Combine(fontsFolder, "Foo-Bold.otf"), "not really a font");
+            File.WriteAllText(Path.Combine(fontsFolder, "readme.txt"), "not a font at all");
+
+            var files = Bloom.TeamCollection.TeamCollection.RootLevelCollectionFilesIn(
+                _collectionFolder.FolderPath
+            );
+
+            // The separator has to be "/", because these names are compared against zip entries.
+            Assert.That(files, Does.Contain("fonts/Foo.ttf"));
+            Assert.That(files, Does.Contain("fonts/Foo-Bold.otf"));
+            Assert.That(files, Does.Not.Contain("fonts/readme.txt"));
+        }
+
+        [Test]
+        public void PutCollectionFiles_RoundTripsTheCollectionFonts()
+        {
+            var fontsFolder = Path.Combine(_collectionFolder.FolderPath, "fonts");
+            Directory.CreateDirectory(fontsFolder);
+            var localFontPath = Path.Combine(fontsFolder, "Foo.ttf");
+            File.WriteAllText(localFontPath, "pretend font data");
+
+            _collection.CopyRepoCollectionFilesFromLocal(_collectionFolder.FolderPath);
+            // Sanity check: removing the local copy proves the extraction put it back.
+            File.Delete(localFontPath);
+            Assert.That(File.Exists(localFontPath), Is.False);
+
+            _collection.CopyRepoCollectionFilesToLocal(_collectionFolder.FolderPath);
+
+            Assert.That(File.Exists(localFontPath), Is.True);
+            Assert.That(File.ReadAllText(localFontPath), Is.EqualTo("pretend font data"));
+        }
+
+        [Test]
         public void GetLikelyLocalPathForBookId_RemotelyRenamedBook_ReturnsPathWithNewName()
         {
             const string oldName = "My old name";

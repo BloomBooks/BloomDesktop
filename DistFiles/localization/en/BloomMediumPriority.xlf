@@ -1053,10 +1053,15 @@
         <source xml:lang="en">Font is not installed on this computer</source>
         <note>ID: BookSettings.Fonts.FontNotInstalled</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.EmbeddedInBook" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Embedded in this book</source>
-        <note>ID: BookSettings.Fonts.EmbeddedInBook</note>
-        <note>Shows beneath a font name in the book settings font table when the font is embedded in the book folder.</note>
+      <trans-unit id="BookSettings.Fonts.StoredWithBook" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Stored with this book</source>
+        <note>ID: BookSettings.Fonts.StoredWithBook</note>
+        <note>Shows beneath a font name in the book settings font table when Bloom keeps a copy of the font in the book folder.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Fonts.StoredWithCollection" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Stored with this collection</source>
+        <note>ID: BookSettings.Fonts.StoredWithCollection</note>
+        <note>Shows beneath a font name in the book settings font table when Bloom keeps a copy of the font in the collection.</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.FirstPage" sil:dynamic="true">
         <source xml:lang="en">First Page</source>

@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bloom.Book;
+using Bloom.FontProcessing;
 using CommandLine;
 using SIL.IO;
 using Directory = System.IO.Directory;
@@ -71,7 +72,7 @@ namespace Bloom.CLI
 
                 //book.BringBookUpToDate(new NullProgress());
 
-                var fonts = GetFontsUsed(options.BookPath).ToList();
+                var fonts = FontsUsedInBook.GetFontsUsed(options.BookPath).ToList();
                 fonts.Sort();
 
                 Directory.CreateDirectory(Path.GetDirectoryName(options.ReportPath));
@@ -104,72 +105,6 @@ namespace Bloom.CLI
                 Debug.WriteLine(message);
                 Console.Error.WriteLine(message);
                 return Task.FromResult((int)GetUsedFontsExitCode.UnhandledException);
-            }
-        }
-
-        /// <summary>
-        /// Examine the stylesheets and collect the font families they mention.
-        /// Note that the process used by ePub and bloomPub publication to
-        /// determine fonts is more complicated, using the DOM in an actual browser.
-        /// </summary>
-        /// <returns>Enumerable of font names</returns>
-        internal static IEnumerable<string> GetFontsUsed(string bookPath)
-        {
-            string bookHtmContent = null;
-            string defaultLangStylesPath = null;
-
-            var result = new HashSet<string>();
-            // Css for styles are contained in the actual html
-            foreach (
-                var filePath in Directory
-                    .EnumerateFiles(bookPath, "*.*")
-                    .Where(f => f.EndsWith(".css") || f.EndsWith(".htm") || f.EndsWith(".html"))
-            )
-            {
-                var fileContents = RobustFile.ReadAllText(filePath, Encoding.UTF8);
-
-                if (filePath.EndsWith(".htm"))
-                    bookHtmContent = fileContents;
-                else if (filePath.EndsWith("defaultLangStyles.css"))
-                {
-                    defaultLangStylesPath = filePath;
-                    // Delay processing defaultLangStyles to the end when we know we have the htm content.
-                    continue;
-                }
-
-                HtmlDom.FindFontsUsedInCss(fileContents, result, false);
-            }
-
-            ProcessDefaultLangStyles(bookHtmContent, defaultLangStylesPath, result);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Special processing is needed for defaultLangStyles.css.
-        /// This file is designed to hold information about each language seen by this book and its ancestors.
-        /// But that means we may have font information for a language not present in this version of the book.
-        /// We don't want to include those fonts.
-        /// </summary>
-        private static void ProcessDefaultLangStyles(
-            string bookHtmContent,
-            string defaultLangStylesPath,
-            HashSet<string> result
-        )
-        {
-            if (bookHtmContent == null || defaultLangStylesPath == null)
-                return;
-            // Note that this code does not return all the fonts that are served with Bloom
-            // (Andika, Andika New Basic, and ABeeZee), but only the ones that are actually
-            // used in the book.
-            var htmlDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(bookHtmContent, false));
-            var langToFont = htmlDom.GetDefaultFontsForLanguages(
-                Path.GetDirectoryName(defaultLangStylesPath)
-            );
-            if (langToFont != null)
-            {
-                foreach (var pair in langToFont)
-                    result.Add(pair.Value);
             }
         }
     }

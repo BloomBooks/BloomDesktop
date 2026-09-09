@@ -3127,10 +3127,10 @@
         <note>ID: FontInformationPane.FontOkay</note>
         <note>This shows in the popup when hovering over a useable font.</note>
       </trans-unit>
-      <trans-unit id="FontInformationPane.EmbeddedInBook" translate="no">
-        <source xml:lang="en">This font is embedded in this book. It will travel with the book to BloomPUB and BloomLibrary.</source>
-        <note>ID: FontInformationPane.EmbeddedInBook</note>
-        <note>This shows in the popup when hovering over a font that the user embedded in the book folder.</note>
+      <trans-unit id="FontInformationPane.StoredFont" translate="no">
+        <source xml:lang="en">Bloom keeps a copy of this font with the collection, so it travels with the books you publish or share.</source>
+        <note>ID: FontInformationPane.StoredFont</note>
+        <note>This shows in the popup when hovering over a font that Bloom stored a copy of.</note>
       </trans-unit>
       <trans-unit id="FontInformationPane.FontUnknown">
         <source xml:lang="en">Bloom cannot determine what rules govern the use of this font. Please read the license and make sure it allows embedding in ebooks and the web. Before publishing to bloomlibrary.org, you will probably have to make a special request to the Bloom team to investigate this font so that we can make sure we won't get in trouble for hosting it.</source>
@@ -4748,6 +4748,15 @@
         <note>ID: PublishTab.FontProblem.Microsoft</note>
         <note>This shows in the popup when hovering over a font that Microsoft owns (or distributes).</note>
       </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.UploadBlocked" translate="no">
+        <source xml:lang="en">Bloom will not upload this book to BloomLibrary.org until this font is replaced or its license problem is resolved.</source>
+        <note>ID: PublishTab.FontProblem.UploadBlocked</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.StoredFile" translate="no">
+        <source xml:lang="en">Bloom stored a copy of this font as "{0}". Choose a different font for the text that uses it.</source>
+        <note>ID: PublishTab.FontProblem.StoredFile</note>
+        <note>{0} is replaced by the name of the font file Bloom stored.  Do not try to translate it.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.FontProblem.Result">
         <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the "READ" button or downloads for BloomPUB or ePUB.</source>
         <note>ID: PublishTab.FontProblem.Result</note>
@@ -4903,6 +4912,11 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess">
         <source xml:lang="en">Our server will soon process your book into various formats and add them to [your book's page] on BloomLibrary.org. Check back in about 10 minutes. If we encounter any problems, your book's page will tell you about them.</source>
         <note>ID: PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.StoppedForFontLicense" translate="no">
+        <source xml:lang="en">Upload stopped. This book uses {0} font(s) whose license does not allow Bloom to embed them: {1}. Fix the fonts and try again.</source>
+        <note>ID: PublishTab.Upload.StoppedForFontLicense</note>
+        <note>{0} is replaced by the number of fonts, {1} by a list of font names.  Do not try to translate them.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.TimeProblem">
         <source xml:lang="en">There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</source>

@@ -16,6 +16,7 @@ using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using BloomTests.Book;
+using BloomTests.FontProcessing;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
@@ -2179,11 +2180,16 @@ namespace BloomTests.Publish.BloomPub
             PublishHelper.ClearFontMetadataMapForTests();
             fontFileFinder.NoteFontsWeCantInstall = true;
 
-            // Drop the embedded font file into the book folder root.
-            var embeddedFontFileName = "MyEmbedded.woff2";
-            File.WriteAllText(
+            // Put the stored font file into the book folder root. It has to be a real font whose
+            // license allows embedding, because the license is read from the file.
+            var installedGroup = InstalledTestFonts.FindFamilyWithGoodLicense(out _);
+            if (installedGroup == null)
+                Assert.Ignore("No font with a known-good license is installed on this computer.");
+            var embeddedFontFileName = "MyEmbedded.ttf";
+            File.Copy(
+                installedGroup.Normal,
                 Path.Combine(testBook.FolderPath, embeddedFontFileName),
-                "phony woff2"
+                true
             );
 
             var stubProgress = new StubProgress();
@@ -2210,12 +2216,12 @@ namespace BloomTests.Publish.BloomPub
                 stubProgress.MessagesNotLocalized,
                 Has.Member("Checking MyEmbedded font: License OK for embedding.")
             );
-            // fonts.css has a woff2 @font-face for it.
+            // fonts.css has an @font-face for it.
             var fontSource = RobustFile.ReadAllText(Path.Combine(testBook.FolderPath, "fonts.css"));
             Assert.That(
                 fontSource,
                 Does.Contain(
-                    "@font-face {font-family:'MyEmbedded'; font-weight:normal; font-style:normal; src:url('MyEmbedded.woff2') format('woff2');}"
+                    "@font-face {font-family:'MyEmbedded'; font-weight:normal; font-style:normal; src:url('MyEmbedded.ttf') format('opentype');}"
                 )
             );
             // The reference was NOT replaced with the default font.

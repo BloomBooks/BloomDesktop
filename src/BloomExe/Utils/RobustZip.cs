@@ -141,7 +141,8 @@ namespace Bloom.Utils
                         continue;
                     if (ShouldFileBeIgnored(path))
                         continue;
-                    zipFile.AddTopLevelFile(path, true);
+                    // A name may hold a relative folder path, as the collection fonts folder does.
+                    zipFile.AddFileAtRelativePath(path, name.Replace('\\', '/'), true);
                 }
 
                 zipFile.Save();

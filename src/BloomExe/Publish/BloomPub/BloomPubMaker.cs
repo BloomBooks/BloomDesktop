@@ -599,7 +599,8 @@ namespace Bloom.Publish.BloomPub
                 modifiedBook,
                 progress,
                 fontsUsed,
-                FontFileFinder.GetInstance(Program.RunningUnitTests)
+                FontFileFinder.GetInstance(Program.RunningUnitTests),
+                bookFolderPath
             );
 
             var bookFile = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
@@ -1019,11 +1020,15 @@ namespace Bloom.Publish.BloomPub
         /// in the local folder, and insert a link to it into the book.
         /// </summary>
         /// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
+        /// <param name="storedFontsSourceFolder">the original book folder, which is where we look
+        /// for the fonts Bloom stored for this book and its collection. The book we are given is a
+        /// temporary copy, and its parent folder is not the collection.</param>
         public static void EmbedFonts(
             Book.Book book,
             IWebSocketProgress progress,
             HashSet<PublishHelper.FontInfo> fontsWanted,
-            IFontFinder fontFileFinder
+            IFontFinder fontFileFinder,
+            string storedFontsSourceFolder = null
         )
         {
             // "Andika" already in BR in the standard four faces, don't need to embed or make rule.
@@ -1034,10 +1039,12 @@ namespace Bloom.Publish.BloomPub
                 x.fontFamily == "Andika New Basic"
             );
 
-            // Make any fonts the user embedded in the book folder resolvable, so they get embedded
-            // here rather than treated as missing and replaced with the default font.
-            var embeddedFontGroups = EmbeddedFonts.GetEmbeddedFontGroups(book.FolderPath);
-            fontFileFinder.AddEmbeddedFonts(embeddedFontGroups);
+            // Make the fonts Bloom stored for this book resolvable, so they get embedded here
+            // rather than treated as missing and replaced with the default font.
+            var storedFontGroups = EmbeddedFonts.GetAvailableStoredFontGroups(
+                storedFontsSourceFolder ?? book.FolderPath
+            );
+            fontFileFinder.AddEmbeddedFonts(EmbeddedFonts.ToFontGroups(storedFontGroups));
 
             PublishHelper.CheckFontsForEmbedding(
                 progress,
@@ -1045,13 +1052,13 @@ namespace Bloom.Publish.BloomPub
                 fontFileFinder,
                 out List<string> filesToEmbed,
                 out HashSet<string> badFonts,
-                embeddedFontGroups.Keys
+                storedFontGroups
             );
             foreach (var file in filesToEmbed)
             {
                 // Enhance: do we need to worry about problem characters in font file names?
                 var dest = Path.Combine(book.FolderPath, Path.GetFileName(file));
-                // A font embedded in the book folder is already in place (its file IS in book.FolderPath).
+                // A font stored in this book folder is already in place (its file IS in book.FolderPath).
                 if (
                     string.Equals(
                         Path.GetFullPath(file),

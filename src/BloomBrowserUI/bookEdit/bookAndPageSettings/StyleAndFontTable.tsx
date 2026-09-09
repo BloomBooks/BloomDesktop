@@ -152,10 +152,15 @@ export function useFontMetaData(fontName: string): IFontMetaData | undefined {
 const FontInfoFromMetadata: React.FunctionComponent<{
     fontMetaData: IFontMetaData | undefined;
 }> = ({ fontMetaData }) => {
-    const embeddedInBookMessage = useL10n(
-        "Embedded in this book",
-        "BookSettings.Fonts.EmbeddedInBook",
-        "Shows beneath a font name in the book settings font table when the font is embedded in the book folder.",
+    const storedWithCollectionMessage = useL10n(
+        "Stored with this collection",
+        "BookSettings.Fonts.StoredWithCollection",
+        "Shows beneath a font name in the book settings font table when Bloom keeps a copy of the font in the collection.",
+    );
+    const storedWithBookMessage = useL10n(
+        "Stored with this book",
+        "BookSettings.Fonts.StoredWithBook",
+        "Shows beneath a font name in the book settings font table when Bloom keeps a copy of the font in the book folder.",
     );
     if (!fontMetaData) return null;
 
@@ -182,9 +187,11 @@ const FontInfoFromMetadata: React.FunctionComponent<{
             warningMessage={warningMessage}
             additionalInfo={additionalInfo}
             infoMessage={
-                fontMetaData.source === "book"
-                    ? embeddedInBookMessage
-                    : undefined
+                fontMetaData.source === "collection"
+                    ? storedWithCollectionMessage
+                    : fontMetaData.source === "book"
+                      ? storedWithBookMessage
+                      : undefined
             }
         />
     );

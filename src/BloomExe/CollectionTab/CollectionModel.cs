@@ -11,6 +11,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.FontProcessing;
 using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.Properties;
@@ -20,6 +21,7 @@ using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
 using Bloom.web.controllers;
+using BloomTemp;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
@@ -369,6 +371,7 @@ namespace Bloom.CollectionTab
             }
 
             _currentEditableCollectionSelection.SelectCollection(editableCollection);
+            RemoveCollectionFontsNoBookUses(editableCollection);
             yield return editableCollection;
             // If we're locked to one downloaded book, we don't need to show the source collections, or even to load them.
             if (!_collectionSettings.EditingABlorgBook)
@@ -384,6 +387,30 @@ namespace Bloom.CollectionTab
                     SetupChangeNotifications(collection);
                     yield return collection;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Delete from the collection fonts folder the files of every family that no book in the
+        /// editable collection uses. This is the only thing that ever removes a stored font, so it
+        /// runs once, when the collection opens.
+        /// </summary>
+        private void RemoveCollectionFontsNoBookUses(BookCollection editableCollection)
+        {
+            if (Program.RunningHarvesterMode)
+                return;
+            try
+            {
+                var familiesInUse = new HashSet<string>();
+                foreach (var bookInfo in editableCollection.GetBookInfos())
+                    familiesInUse.UnionWith(FontsUsedInBook.GetFontsUsed(bookInfo.FolderPath));
+                EmbeddedFonts.RemoveUnusedCollectionFonts(_pathToCollection, familiesInUse);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent(
+                    "Removing the unused fonts of " + _pathToCollection + " failed: " + e.Message
+                );
             }
         }
 
@@ -879,13 +906,22 @@ namespace Bloom.CollectionTab
             }
             else
             {
-                BookCompressor.CompressBookDirectory(
-                    outputPath,
-                    sourceDirectory,
-                    MakeBloomPackBookFileFilter(sourceDirectory),
-                    dirNamePrefix,
-                    forReaderTools
-                );
+                // A single book leaves the collection, so it must carry its own copies of the fonts
+                // Bloom stored for the collection. We zip a temporary copy rather than putting
+                // those files into the book the user is still working on.
+                using (var tempFolder = new TemporaryFolder("BloomPackWithFonts"))
+                {
+                    var folderToZip =
+                        EmbeddedFonts.CopyBookWithItsFonts(sourceDirectory, tempFolder.FolderPath)
+                        ?? sourceDirectory;
+                    BookCompressor.CompressBookDirectory(
+                        outputPath,
+                        folderToZip,
+                        MakeBloomPackBookFileFilter(folderToZip),
+                        dirNamePrefix,
+                        forReaderTools
+                    );
+                }
             }
         }
 
@@ -1129,15 +1165,24 @@ namespace Bloom.CollectionTab
                 };
 
                 Logger.WriteEvent("Zipping up {0} ...", destFileName);
-                var zipFile = new BloomZipFile(destFileName);
-                zipFile.AddDirectoryContents(srcFolderName, excludedExtensions);
-                foreach (var path in extraFilesToInclude ?? new string[0])
+                // The book leaves the collection, so it must carry its own copies of the fonts
+                // Bloom stored for the collection. We zip a temporary copy rather than putting
+                // those files into the book the user is still working on.
+                using (var tempFolder = new TemporaryFolder("BloomSourceWithFonts"))
                 {
-                    zipFile.AddTopLevelFile(path);
-                }
+                    var folderToZip =
+                        EmbeddedFonts.CopyBookWithItsFonts(srcFolderName, tempFolder.FolderPath)
+                        ?? srcFolderName;
+                    var zipFile = new BloomZipFile(destFileName);
+                    zipFile.AddDirectoryContents(folderToZip, excludedExtensions);
+                    foreach (var path in extraFilesToInclude ?? new string[0])
+                    {
+                        zipFile.AddTopLevelFile(path);
+                    }
 
-                Logger.WriteEvent("Saving {0} ...", destFileName);
-                zipFile.Save();
+                    Logger.WriteEvent("Saving {0} ...", destFileName);
+                    zipFile.Save();
+                }
 
                 if (destFileName.EndsWith(".bloom"))
                     Logger.WriteEvent("Finished writing .bloom file.");

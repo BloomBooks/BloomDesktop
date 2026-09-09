@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.FontProcessing;
 using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
@@ -1061,6 +1062,18 @@ namespace Bloom.TeamCollection
             foreach (var path in Directory.EnumerateFiles(folder, "ReaderTools*.json"))
             {
                 files.Add(Path.GetFileName(path));
+            }
+            // The fonts Bloom stored for the collection are shared like the other collection files.
+            // The separator must be "/", because that is what a zip entry name uses and the caller
+            // compares these names against the entries in the repo zip.
+            var fontsFolder = Path.Combine(folder, EmbeddedFonts.kFontsFolderName);
+            if (Directory.Exists(fontsFolder))
+            {
+                foreach (var path in Directory.EnumerateFiles(fontsFolder))
+                {
+                    if (EmbeddedFonts.IsFontFileWeStore(path))
+                        files.Add(EmbeddedFonts.kFontsFolderName + "/" + Path.GetFileName(path));
+                }
             }
             return files;
         }

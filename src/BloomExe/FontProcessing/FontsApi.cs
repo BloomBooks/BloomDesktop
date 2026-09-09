@@ -25,8 +25,8 @@ namespace Bloom.FontProcessing
             _bookSelection = bookSelection;
         }
 
-        // The folder of the currently selected book, or null if none is selected. Fonts embedded
-        // in this folder are offered in addition to the system/served fonts.
+        // The folder of the currently selected book, or null if none is selected. The fonts Bloom
+        // stored for this book and its collection are offered in addition to the system/served ones.
         private string CurrentBookFolder => _bookSelection?.CurrentSelection?.FolderPath;
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -161,16 +161,23 @@ namespace Bloom.FontProcessing
 
         private void HandleMetadataRequest(ApiRequest request)
         {
-            // Start from the cached system/served font metadata, then add (and let it shadow) any
-            // fonts embedded in the current book. Computed fresh per request; see HandleNamesRequest.
+            // Start from the cached system/served font metadata, then add (and let it shadow) the
+            // fonts Bloom stored for this collection or this book. Computed fresh per request; see
+            // HandleNamesRequest.
             var all = AvailableFontMetadata.ToList();
             var bookFolder = CurrentBookFolder;
             if (bookFolder != null)
             {
-                foreach (var kvp in EmbeddedFonts.GetEmbeddedFontGroups(bookFolder))
+                foreach (var kvp in EmbeddedFonts.GetAvailableStoredFontGroups(bookFolder))
                 {
                     all.RemoveAll(metadata => metadata.name == kvp.Key);
-                    all.Add(EmbeddedFonts.MakeEmbeddedFontMetadata(kvp.Key, kvp.Value));
+                    all.Add(
+                        EmbeddedFonts.MakeEmbeddedFontMetadata(
+                            kvp.Key,
+                            kvp.Value.Group,
+                            kvp.Value.Source
+                        )
+                    );
                 }
             }
             request.ReplyWithJson(JsonConvert.SerializeObject(all));

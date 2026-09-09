@@ -29,8 +29,9 @@ export interface IFontMetaData {
     // These values are also listed in FontMetadata in src/BloomExe/FontProcessing/FontMetadata.cs.
     determinedSuitability: "ok" | "unknown" | "unsuitable" | "invalid";
     determinedSuitabilityNotes?: string;
-    // Where the font came from. Undefined for ordinary system/Bloom fonts; "book" when the user
-    // embedded it by dropping a file in the book folder. See FontMetadata.source in the C# code.
+    // Where the font came from. Undefined for ordinary system/Bloom fonts; "collection" when
+    // Bloom stored a copy of it in the collection fonts folder; "book" when the copy is in the
+    // book folder itself. See FontMetadata.source in the C# code.
     source?: string;
 }
 

@@ -1639,16 +1639,16 @@ namespace Bloom.Publish
         /// will not return any files for fonts that we know cannot be embedded without reference to the
         /// license details.
         /// </remarks>
-        /// <param name="embeddedFontFamilies">Families the user embedded in the book folder (see
-        /// EmbeddedFonts). These are always treated as licensed for embedding, and an installed font
-        /// of the same name does not get a say.</param>
+        /// <param name="storedFontGroups">Families Bloom stored as files for this book (see
+        /// EmbeddedFonts), each with the files that make it up and where they live. The license
+        /// comes from those files, not from an installed font of the same name.</param>
         public static void CheckFontsForEmbedding(
             IWebSocketProgress progress,
             HashSet<FontInfo> fontsWanted,
             IFontFinder fontFileFinder,
             out List<string> filesToEmbed,
             out HashSet<string> badFonts,
-            ICollection<string> embeddedFontFamilies = null
+            IDictionary<string, StoredFontGroup> storedFontGroups = null
         )
         {
             filesToEmbed = new List<string>();
@@ -1679,21 +1679,22 @@ namespace Bloom.Publish
                 var missingLicense = false;
                 var badFileType = false;
                 var fileExtension = "";
-                if (embeddedFontFamilies != null && embeddedFontFamilies.Contains(font.fontFamily))
-                {
-                    // Fonts the user embedded in the book folder have no GlyphTypeface-readable
-                    // metadata, but per the feature decision we treat them as OK to embed. We must
-                    // not consult the metadata map here: an installed font of the same name must not
-                    // decide the fate of the book's own font.
-                    badLicense = false;
-                    missingLicense = false;
-                    if (filesFound)
-                    {
-                        fileExtension = Path.GetExtension(fontFile).ToLowerInvariant();
-                        badFileType = !FontMetadata.fontFileTypesBloomKnows.Contains(fileExtension);
-                    }
-                }
-                else if (_fontMetadataMap.TryGetValue(font.fontFamily, out var meta))
+                // A font Bloom stored as a file is judged by that file. We must not consult the
+                // metadata map for it: an installed font of the same name must not decide the fate
+                // of the book's own font.
+                FontMetadata meta = null;
+                if (
+                    storedFontGroups != null
+                    && storedFontGroups.TryGetValue(font.fontFamily, out var storedGroup)
+                )
+                    meta = EmbeddedFonts.MakeEmbeddedFontMetadata(
+                        font.fontFamily,
+                        storedGroup.Group,
+                        storedGroup.Source
+                    );
+                else
+                    _fontMetadataMap.TryGetValue(font.fontFamily, out meta);
+                if (meta != null)
                 {
                     fileExtension = meta.fileExtension;
                     switch (meta.determinedSuitability)
@@ -1985,7 +1986,13 @@ namespace Bloom.Publish
             return false;
         }
 
-        public static async Task ReportInvalidFontsAsync(
+        /// <summary>
+        /// Look at every font the book uses and report the ones with problems to the progress
+        /// output.
+        /// </summary>
+        /// <returns>The families whose license forbids embedding. A book that uses one of them
+        /// must not be uploaded to BloomLibrary.</returns>
+        public static async Task<HashSet<string>> ReportInvalidFontsAsync(
             string destDirName,
             IProgress progress,
             Control controlToInvokeOn
@@ -2126,6 +2133,36 @@ namespace Bloom.Publish
                 foreach (var meta in FontsApi.AvailableFontMetadata)
                     _fontMetadataMap.Add(meta.name, meta);
             }
+            // destDirName is the staging copy of the book folder, so it holds the font files that
+            // travel with the book. Those are judged by their own files, not by an installed font
+            // that happens to have the same name.
+            var storedFontGroups = EmbeddedFonts.GetAvailableStoredFontGroups(destDirName);
+            Func<string, FontMetadata> lookup = family =>
+            {
+                if (storedFontGroups.TryGetValue(family, out var stored))
+                    return EmbeddedFonts.MakeEmbeddedFontMetadata(
+                        family,
+                        stored.Group,
+                        stored.Source
+                    );
+                _fontMetadataMap.TryGetValue(family, out var meta);
+                return meta;
+            };
+            return ReportFontProblems(fontsFound, lookup, progress);
+        }
+
+        /// <summary>
+        /// Write a red message to the progress output for each font that has a problem.
+        /// </summary>
+        /// <param name="lookup">Returns the metadata for a font family, or null if we have none.</param>
+        /// <returns>The families whose license forbids embedding.</returns>
+        internal static HashSet<string> ReportFontProblems(
+            IEnumerable<string> fontsFound,
+            Func<string, FontMetadata> lookup,
+            IProgress progress
+        )
+        {
+            var fontsThatBlockUpload = new HashSet<string>();
             var cssGenericFonts = new HashSet<string>
             {
                 "serif",
@@ -2138,64 +2175,82 @@ namespace Bloom.Publish
             {
                 if (cssGenericFonts.Contains(font.ToLowerInvariant()))
                     continue;
-                if (_fontMetadataMap.TryGetValue(font, out var meta))
+                var meta = lookup(font);
+                // A font we know nothing about is not reported here. It is not on this computer,
+                // and its license is unknown.
+                if (meta == null)
+                    continue;
+                string msg2 = null;
+                var licenseForbidsEmbedding = false;
+                switch (meta.determinedSuitability)
                 {
-                    string msg2 = null;
-                    switch (meta.determinedSuitability)
-                    {
-                        case FontMetadata.kOK:
-                            break;
-                        case FontMetadata.kUnknown:
-                            //progress.WriteWarning("This book has a font, \"{0}\", which has an unknown license.", font);
-                            break;
-                        case FontMetadata.kUnsuitable:
+                    case FontMetadata.kOK:
+                        break;
+                    case FontMetadata.kUnknown:
+                        //progress.WriteWarning("This book has a font, \"{0}\", which has an unknown license.", font);
+                        break;
+                    case FontMetadata.kUnsuitable:
+                        msg2 = LocalizationManager.GetString(
+                            "PublishTab.FontProblem.License",
+                            "The metadata inside this font tells us that it may not be embedded for free in ebooks and the web."
+                        );
+                        licenseForbidsEmbedding = true;
+                        break;
+                    case FontMetadata.kInvalid:
+                        if (meta.determinedSuitabilityNotes.Contains("exception"))
                             msg2 = LocalizationManager.GetString(
-                                "PublishTab.FontProblem.License",
-                                "The metadata inside this font tells us that it may not be embedded for free in ebooks and the web."
+                                "PublishTab.FontProblem.Exception",
+                                "The font's file cannot be processed by Bloom and may be corrupted or not a font file."
                             );
-                            break;
-                        case FontMetadata.kInvalid:
-                            if (meta.determinedSuitabilityNotes.Contains("exception"))
-                                msg2 = LocalizationManager.GetString(
-                                    "PublishTab.FontProblem.Exception",
-                                    "The font's file cannot be processed by Bloom and may be corrupted or not a font file."
-                                );
-                            else
-                                msg2 = String.Format(
-                                    LocalizationManager.GetString(
-                                        "PublishTab.FontProblem.Format",
-                                        "Bloom cannot publish ePUBs and BloomPubs with this font's format ({0})."
-                                    ),
-                                    meta.fileExtension
-                                );
-                            break;
-                    }
-                    if (msg2 != null)
-                    {
-                        var msgFmt1 = LocalizationManager.GetString(
-                            "PublishTab.FontProblem",
-                            "This book has a font, \"{0}\", which has the following problem:"
-                        );
-                        var msg3 = LocalizationManager.GetString(
-                            "PublishTab.FontProblem.Result",
-                            "BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the \"READ\" button or downloads for BloomPUB or ePUB."
-                        );
-                        var msg4 = LocalizationManager.GetString(
-                            "PublishTab.FontProblem.CheckInBookSettingsDialog",
-                            "Check the Fonts section of the Book Settings dialog to locate this font."
-                        );
-                        // progress.WriteError() uses Color.Red, but also exposes a link to "report error" which we don't want here.
-                        progress.WriteMessageWithColor("Red", msgFmt1, font);
-                        progress.WriteMessageWithColor("Red", " \u2022 {0}", msg2);
-                        progress.WriteMessageWithColor("Red", " \u2022 {0}", msg3);
-                        progress.WriteMessageWithColor("Red", " \u2022 {0}", msg4);
-                    }
+                        else
+                            msg2 = String.Format(
+                                LocalizationManager.GetString(
+                                    "PublishTab.FontProblem.Format",
+                                    "Bloom cannot publish ePUBs and BloomPubs with this font's format ({0})."
+                                ),
+                                meta.fileExtension
+                            );
+                        break;
                 }
-                else
+                if (msg2 == null)
+                    continue;
+                var msgFmt1 = LocalizationManager.GetString(
+                    "PublishTab.FontProblem",
+                    "This book has a font, \"{0}\", which has the following problem:"
+                );
+                var msg3 = licenseForbidsEmbedding
+                    ? LocalizationManager.GetString(
+                        "PublishTab.FontProblem.UploadBlocked",
+                        "Bloom will not upload this book to BloomLibrary.org until this font is replaced or its license problem is resolved."
+                    )
+                    : LocalizationManager.GetString(
+                        "PublishTab.FontProblem.Result",
+                        "BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the \"READ\" button or downloads for BloomPUB or ePUB."
+                    );
+                var msg4 = LocalizationManager.GetString(
+                    "PublishTab.FontProblem.CheckInBookSettingsDialog",
+                    "Check the Fonts section of the Book Settings dialog to locate this font."
+                );
+                // progress.WriteError() uses Color.Red, but also exposes a link to "report error" which we don't want here.
+                progress.WriteMessageWithColor("Red", msgFmt1, font);
+                progress.WriteMessageWithColor("Red", " \u2022 {0}", msg2);
+                progress.WriteMessageWithColor("Red", " \u2022 {0}", msg3);
+                if (meta.source != null)
                 {
-                    //progress.WriteWarning("This book has a font, \"{0}\", which is not on this computer and whose license is unknown.", font);
+                    var msgStored = String.Format(
+                        LocalizationManager.GetString(
+                            "PublishTab.FontProblem.StoredFile",
+                            "Bloom stored a copy of this font as \"{0}\". Choose a different font for the text that uses it."
+                        ),
+                        meta.fileName
+                    );
+                    progress.WriteMessageWithColor("Red", " \u2022 {0}", msgStored);
                 }
+                progress.WriteMessageWithColor("Red", " \u2022 {0}", msg4);
+                if (licenseForbidsEmbedding)
+                    fontsThatBlockUpload.Add(font);
             }
+            return fontsThatBlockUpload;
         }
 
         private const string AILangTagFragment = "-x-ai";

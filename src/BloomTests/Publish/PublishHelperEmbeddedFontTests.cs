@@ -1,18 +1,21 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Bloom.FontProcessing;
 using Bloom.Publish;
 using Bloom.web;
 using Bloom.web.controllers;
+using BloomTests.FontProcessing;
 using NUnit.Framework;
 using SIL.IO;
+using SIL.Progress;
 using SIL.TestUtilities;
 
 namespace BloomTests.Publish
 {
     /// <summary>
-    /// Tests for the parts of PublishHelper that deal with fonts the user embedded in the book
-    /// folder, and for the CSS rewriting that replaces fonts we cannot embed.
+    /// Tests for the parts of PublishHelper that deal with the fonts Bloom stored as files, and
+    /// for the CSS rewriting that replaces fonts we cannot embed.
     /// </summary>
     [TestFixture]
     public class PublishHelperEmbeddedFontTests
@@ -64,12 +67,15 @@ namespace BloomTests.Publish
         }
 
         [Test]
-        public void CheckFontsForEmbedding_EmbeddedFamilyShadowsUnsuitableInstalledFont()
+        public void CheckFontsForEmbedding_StoredFamilyShadowsUnsuitableInstalledFont()
         {
-            using (var tempFontFolder = new TemporaryFolder("EmbeddedFamilyShadows"))
+            var goodGroup = InstalledTestFonts.FindFamilyWithGoodLicense(out _);
+            if (goodGroup == null)
+                Assert.Ignore("No font with a known-good license is installed on this computer.");
+            using (var tempFontFolder = new TemporaryFolder("StoredFamilyShadows"))
             {
-                var fontPath = Path.Combine(tempFontFolder.Path, "Shadowed.woff2");
-                File.WriteAllText(fontPath, "phony woff2");
+                var fontPath = Path.Combine(tempFontFolder.Path, "Shadowed.ttf");
+                File.Copy(goodGroup.Normal, fontPath, true);
                 var group = new FontGroup { Normal = fontPath };
 
                 // An installed font of the same name whose license forbids embedding.
@@ -109,7 +115,10 @@ namespace BloomTests.Publish
                     fontFileFinder,
                     out List<string> filesToEmbed,
                     out HashSet<string> badFonts,
-                    new[] { "Shadowed" }
+                    new Dictionary<string, StoredFontGroup>
+                    {
+                        { "Shadowed", new StoredFontGroup(group, FontMetadata.kSourceCollection) },
+                    }
                 );
 
                 Assert.That(
@@ -118,6 +127,129 @@ namespace BloomTests.Publish
                     "the book's own font must not be rejected because of a same-named installed font"
                 );
                 Assert.That(filesToEmbed, Does.Contain(fontPath));
+            }
+        }
+
+        [Test]
+        public void CheckFontsForEmbedding_StoredFontWithUnreadableFile_IsRejected()
+        {
+            using (var tempFontFolder = new TemporaryFolder("StoredFontWithUnreadableFile"))
+            {
+                var fontPath = Path.Combine(tempFontFolder.Path, "Restricted.ttf");
+                File.WriteAllText(fontPath, "not really a font");
+                var group = new FontGroup { Normal = fontPath };
+                // Sanity check: the file we just wrote really is unusable.
+                Assert.That(
+                    EmbeddedFonts
+                        .MakeEmbeddedFontMetadata(
+                            "Restricted",
+                            group,
+                            FontMetadata.kSourceCollection
+                        )
+                        .determinedSuitability,
+                    Is.EqualTo(FontMetadata.kInvalid)
+                );
+
+                FontsApi.AvailableFontMetadataDictionary.Clear();
+                PublishHelper.ClearFontMetadataMapForTests();
+
+                var fontFileFinder = new StubFontFinder();
+                fontFileFinder.FontGroups["Restricted"] = group;
+                fontFileFinder.FilesForFont["Restricted"] = fontPath;
+
+                var fontsWanted = new HashSet<PublishHelper.FontInfo>
+                {
+                    new PublishHelper.FontInfo
+                    {
+                        fontFamily = "Restricted",
+                        fontStyle = "normal",
+                        fontWeight = "400",
+                    },
+                };
+
+                PublishHelper.CheckFontsForEmbedding(
+                    new NullWebSocketProgress(),
+                    fontsWanted,
+                    fontFileFinder,
+                    out List<string> filesToEmbed,
+                    out HashSet<string> badFonts,
+                    new Dictionary<string, StoredFontGroup>
+                    {
+                        {
+                            "Restricted",
+                            new StoredFontGroup(group, FontMetadata.kSourceCollection)
+                        },
+                    }
+                );
+
+                Assert.That(badFonts, Does.Contain("Restricted"));
+                Assert.That(filesToEmbed, Is.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Records what was written to the progress output, with the color of each message.
+        /// </summary>
+        private class RecordingProgress : GenericProgress
+        {
+            public readonly List<string> Messages = new List<string>();
+            public readonly List<string> RedMessages = new List<string>();
+
+            public override void WriteMessage(string message, params object[] args)
+            {
+                Messages.Add(string.Format(message, args));
+            }
+
+            public override void WriteMessageWithColor(
+                string colorName,
+                string message,
+                params object[] args
+            )
+            {
+                var text = string.Format(message, args);
+                Messages.Add(text);
+                if (colorName == "Red")
+                    RedMessages.Add(text);
+            }
+        }
+
+        [Test]
+        public void ReportFontProblems_ReportsAndBlocksOnlyTheUnsuitableFont()
+        {
+            using (var tempFontFolder = new TemporaryFolder("ReportFontProblems"))
+            {
+                var goodPath = Path.Combine(tempFontFolder.Path, "Good.ttf");
+                File.WriteAllText(goodPath, "phony ttf");
+                var badPath = Path.Combine(tempFontFolder.Path, "Bad.ttf");
+                File.WriteAllText(badPath, "phony ttf");
+                var good = new FontMetadata("Good", new FontGroup { Normal = goodPath });
+                good.SetSuitabilityForTest(FontMetadata.kOK);
+                var bad = new FontMetadata("Bad", new FontGroup { Normal = badPath });
+                bad.SetSuitabilityForTest(FontMetadata.kUnsuitable);
+                // Sanity check: the two fonts really do differ before we call the method.
+                Assert.That(good.determinedSuitability, Is.EqualTo(FontMetadata.kOK));
+                Assert.That(bad.determinedSuitability, Is.EqualTo(FontMetadata.kUnsuitable));
+
+                var progress = new RecordingProgress();
+                var blocking = PublishHelper.ReportFontProblems(
+                    new[] { "Good", "Bad" },
+                    family => family == "Good" ? good : bad,
+                    progress
+                );
+
+                Assert.That(blocking, Is.EquivalentTo(new[] { "Bad" }));
+                Assert.That(
+                    progress.RedMessages.Any(m =>
+                        m.Contains("Bloom will not upload this book to BloomLibrary.org")
+                    ),
+                    Is.True,
+                    "the user should be told that the upload is blocked"
+                );
+                Assert.That(
+                    progress.RedMessages.Any(m => m.Contains("Good")),
+                    Is.False,
+                    "nothing should be reported for a font that is fine"
+                );
             }
         }
 

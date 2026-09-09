@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -13,6 +14,7 @@ using Amazon.S3;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.FontProcessing;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
@@ -299,7 +301,7 @@ namespace Bloom.WebLibraryIntegration
                     )
                     {
                         var stagingDirectory = stagingDirectoryTempFolder.FolderPath;
-                        await SetUpStagingAsync(
+                        var fontsThatBlockUpload = await SetUpStagingAsync(
                             bookFolder,
                             stagingDirectory,
                             progress,
@@ -314,6 +316,13 @@ namespace Bloom.WebLibraryIntegration
                             isForBulkUpload,
                             controlToInvokeOn
                         );
+                        if (fontsThatBlockUpload.Count > 0)
+                        {
+                            // ReportInvalidFontsAsync has already explained each font, so the
+                            // caller should not add any more failure text.
+                            ReportUploadStoppedForFontLicense(fontsThatBlockUpload, progress);
+                            return "quiet";
+                        }
 
                         string[] filesToUpload = null;
                         List<FilePathAndHash> bookFiles = GetStagedFilesAndHashes(stagingDirectory);
@@ -497,7 +506,8 @@ namespace Bloom.WebLibraryIntegration
         }
 
         // Copy the needed files to the staging directory and make any modifications needed before upload.
-        private async Task SetUpStagingAsync(
+        // Returns the font families whose license forbids embedding, which stop the upload.
+        private async Task<HashSet<string>> SetUpStagingAsync(
             string pathToBloomBookDirectory,
             string stagingDirectory,
             IProgress progress,
@@ -539,7 +549,14 @@ namespace Bloom.WebLibraryIntegration
                     metadataLang2Code
                 );
 
-            await PublishHelper.ReportInvalidFontsAsync(
+            // The languages left out of this upload have just been stripped, so a font only one of
+            // them named is no longer used and should not travel with the book.
+            EmbeddedFonts.RemoveUnusedBookFonts(
+                stagingDirectory,
+                new HashSet<string>(FontsUsedInBook.GetFontsUsed(stagingDirectory))
+            );
+
+            var fontsThatBlockUpload = await PublishHelper.ReportInvalidFontsAsync(
                 stagingDirectory,
                 progress,
                 controlToInvokeOn
@@ -575,6 +592,28 @@ namespace Bloom.WebLibraryIntegration
             //PublishHelper.SimplifyBackgroundImages(xmlDomFromHtmlFile); // after really cropping
 
             XmlHtmlConverter.SaveDOMAsHtml5(xmlDomFromHtmlFile, htmlFile);
+
+            return fontsThatBlockUpload;
+        }
+
+        /// <summary>
+        /// Tell the user that we are not uploading the book because one or more of its fonts may
+        /// not be embedded.
+        /// </summary>
+        private static void ReportUploadStoppedForFontLicense(
+            HashSet<string> fontsThatBlockUpload,
+            IProgress progress
+        )
+        {
+            var separator = CultureInfo.CurrentCulture.TextInfo.ListSeparator + " ";
+            progress.WriteError(
+                LocalizationManager.GetString(
+                    "PublishTab.Upload.StoppedForFontLicense",
+                    "Upload stopped. This book uses {0} font(s) whose license does not allow Bloom to embed them: {1}. Fix the fonts and try again."
+                ),
+                fontsThatBlockUpload.Count,
+                string.Join(separator, fontsThatBlockUpload.OrderBy(f => f))
+            );
         }
 
         private void ProcessVideosInTempDirectory(string destDirName)
@@ -854,6 +893,14 @@ namespace Bloom.WebLibraryIntegration
 
             Directory.CreateDirectory(tempFolderPath);
             BookStorage.CopyDirectory(book.FolderPath, tempFolderPath);
+            // The copy is outside the collection, so it cannot reach the fonts Bloom stored there.
+            // Give it its own copies now, while we still know which collection the book came from.
+            // BringBookUpToDate below then writes @font-face rules that name them by bare filename.
+            EmbeddedFonts.CopyStoredFontsIntoBook(
+                book.FolderPath,
+                tempFolderPath,
+                new HashSet<string>(FontsUsedInBook.GetFontsUsed(book.FolderPath))
+            );
             // In the temp folder it's safe to assume we can save changes.
             var bookInfo = new BookInfo(tempFolderPath, true, new AlwaysEditSaveContext());
             var copiedBook = bookServer.GetBookFromBookInfo(bookInfo);

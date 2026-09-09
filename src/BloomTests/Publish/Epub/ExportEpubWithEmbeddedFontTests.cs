@@ -1,13 +1,14 @@
 using System.IO;
 using Bloom.FontProcessing;
 using Bloom.Publish.Epub;
+using BloomTests.FontProcessing;
 using NUnit.Framework;
 
 namespace BloomTests.Publish.Epub
 {
     /// <summary>
-    /// Tests that a font the user embedded by dropping a .woff2 file into the book folder is
-    /// embedded in the ePUB, rather than reported as missing and replaced by the default font.
+    /// Tests that a font Bloom stored as a file in the book folder is embedded in the ePUB,
+    /// rather than reported as missing and replaced by the default font.
     /// </summary>
     [TestFixture]
     public class ExportEpubWithEmbeddedFontTests : ExportEpubTestsBaseClass
@@ -49,10 +50,14 @@ namespace BloomTests.Publish.Epub
                 "test setup should have put the font reference in userModifiedStyles"
             );
 
-            // The font the user dropped into the book folder. Content is irrelevant; the family name
+            // The font Bloom stored in the book folder. It has to be a real font whose license
+            // allows embedding, because the license is read from the file. The family name still
             // comes from the file name.
-            var fontFileName = "MyEmbedded.woff2";
-            File.WriteAllText(Path.Combine(book.FolderPath, fontFileName), "phony woff2");
+            var installedGroup = InstalledTestFonts.FindFamilyWithGoodLicense(out _);
+            if (installedGroup == null)
+                Assert.Ignore("No font with a known-good license is installed on this computer.");
+            var fontFileName = "MyEmbedded.ttf";
+            File.Copy(installedGroup.Normal, Path.Combine(book.FolderPath, fontFileName), true);
 
             MakeEpub("output", "FontInBookFolder_IsEmbeddedInEpub", book);
 
@@ -62,7 +67,7 @@ namespace BloomTests.Publish.Epub
                 FixContentForXPathValueSlash(_manifestContent),
                 Does.Contain(kFontsSlash + fontFileName)
             );
-            Assert.That(_manifestContent, Does.Contain("application/font-woff2"));
+            Assert.That(_manifestContent, Does.Contain("application/vnd.ms-opentype"));
 
             // fonts.css declares the family, pointing from css/ back out to fonts/.
             var fontCssData = ExportEpubTestsBaseClass.GetZipContent(
@@ -76,7 +81,7 @@ namespace BloomTests.Publish.Epub
                         + EpubMaker.kFontsFolder
                         + "/"
                         + fontFileName
-                        + "') format('woff2');}"
+                        + "') format('opentype');}"
                 )
             );
 

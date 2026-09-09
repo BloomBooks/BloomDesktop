@@ -40,6 +40,15 @@ namespace Bloom.Utils
         }
 
         /// <summary>
+        /// Add a file under the given name, which may hold a folder path relative to the root of
+        /// the archive, with "/" as the separator.
+        /// </summary>
+        public void AddFileAtRelativePath(string path, string relativePath, bool compress = true)
+        {
+            AddFile(path, relativePath, compress);
+        }
+
+        /// <summary>
         /// Adds a directory's contents (all files and subdirectories), but not the directory itself.
         /// </summary>
         /// <param name="directoryPath">The directory to add recursively</param>

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Bloom.Book;
+using Bloom.FontProcessing;
 
 namespace Bloom.Collection
 {
@@ -32,6 +33,10 @@ namespace Bloom.Collection
 
             if (folder.ToLowerInvariant() == "sample texts")
                 return false;
+
+            // The fonts Bloom stored for the collection travel with it, one copy for all its books.
+            if (folder.ToLowerInvariant() == EmbeddedFonts.kFontsFolderName)
+                return EmbeddedFonts.IsFontFileWeStore(fullPath);
 
             if (_bookFilters.TryGetValue(folder, out BookFileFilter bookFilter))
                 return bookFilter.ShouldAllow(fullPath);
