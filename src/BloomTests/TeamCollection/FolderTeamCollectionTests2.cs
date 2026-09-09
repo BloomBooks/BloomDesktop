@@ -1777,6 +1777,85 @@ namespace BloomTests.TeamCollection
         #region BL-16729: noticing that we can no longer watch the repo
 
         /// <summary>
+        /// Callers reach MakeDisconnected both directly (a synchronous CheckConnection from an
+        /// API handler that is not on the UI thread) and indirectly (a watcher or heartbeat
+        /// failure marshalled onto the UI thread), so two can arrive at once. Exactly one must
+        /// do the work.
+        /// </summary>
+        [Test]
+        public void MakeDisconnected_ManyThreadsAtOnce_DisconnectsExactlyOnce()
+        {
+            using (var collectionFolder = new TemporaryFolder("DisconnectRace_Collection"))
+            using (var repoFolder = new TemporaryFolder("DisconnectRace_Repo"))
+            {
+                Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                    collectionFolder.FolderPath
+                );
+                RobustFile.WriteAllText(settingsPath, "This is a fake settings file");
+                FolderTeamCollection.CreateTeamCollectionLinkFile(
+                    collectionFolder.FolderPath,
+                    repoFolder.FolderPath
+                );
+                using (
+                    var tcManager = new TeamCollectionManager(
+                        settingsPath,
+                        null,
+                        new BookStatusChangeEvent(),
+                        null,
+                        null,
+                        null
+                    )
+                )
+                {
+                    Assert.That(
+                        tcManager.CurrentCollection,
+                        Is.Not.Null,
+                        "setup problem: should have connected to the repo"
+                    );
+
+                    var wonCount = 0;
+                    System.Threading.Tasks.Parallel.For(
+                        0,
+                        16,
+                        i =>
+                        {
+                            var won = tcManager.MakeDisconnected(
+                                new TeamCollectionMessage(
+                                    MessageAndMilestoneType.Error,
+                                    "TeamCollection.LostContactWithRepo",
+                                    "we lost it"
+                                ),
+                                repoFolder.FolderPath
+                            );
+                            if (won)
+                                System.Threading.Interlocked.Increment(ref wonCount);
+                        }
+                    );
+
+                    Assert.That(
+                        wonCount,
+                        Is.EqualTo(1),
+                        "exactly one caller should be told it did the disconnecting"
+                    );
+                    // Counting messages alone would not catch a double disconnect, because the
+                    // message log de-duplicates Errors -- so assert on the object identity too.
+                    Assert.That(
+                        tcManager.CurrentCollectionEvenIfDisconnected,
+                        Is.InstanceOf<DisconnectedTeamCollection>()
+                    );
+                    Assert.That(
+                        tcManager.MessageLog.Messages.Count(m =>
+                            m.L10NId == "TeamCollection.OperatingDisconnected"
+                        ),
+                        Is.EqualTo(1),
+                        "the disconnect messages should have been written exactly once"
+                    );
+                }
+            }
+        }
+
+        /// <summary>
         /// Makes a TeamCollection over throwaway folders, with a mocked manager, and runs the
         /// given check against it. Used by the watcher-failure tests below, which do not need
         /// any book content.
