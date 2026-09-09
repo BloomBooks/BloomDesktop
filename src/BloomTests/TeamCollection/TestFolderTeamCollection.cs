@@ -48,12 +48,20 @@ namespace BloomTests.TeamCollection
         public TeamCollectionMessage PretendConnectionProblem;
         public int CheckConnectionCallCount;
 
+        /// <summary>
+        /// Set to have the intercepted CheckConnection throw instead of answering, so a test can
+        /// cover what the periodic check does when the probe itself fails.
+        /// </summary>
+        public bool PretendCheckConnectionThrows;
+
         public override TeamCollectionMessage CheckConnection(bool writeHistoryMessages)
         {
             CheckConnectionCallCount++;
-            if (InterceptCheckConnection)
-                return PretendConnectionProblem;
-            return base.CheckConnection(writeHistoryMessages);
+            if (!InterceptCheckConnection)
+                return base.CheckConnection(writeHistoryMessages);
+            if (PretendCheckConnectionThrows)
+                throw new IOException("pretend the probe itself blew up");
+            return PretendConnectionProblem;
         }
 
         protected override void OnCreated(object sender, FileSystemEventArgs e)

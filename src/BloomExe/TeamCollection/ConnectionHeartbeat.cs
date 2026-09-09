@@ -105,6 +105,12 @@ namespace Bloom.TeamCollection
                 // An exception here is not evidence that the repo is gone, so we don't
                 // disconnect over it. This matches TeamCollectionManager.CheckConnection.
                 NonFatalProblem.ReportSentryOnly(ex);
+                // It is also not evidence that the repo is FINE, so this tick tells us nothing
+                // either way -- which means it breaks the run. Without this reset, a failure,
+                // then a throwing probe, then another failure would count as two consecutive
+                // failures and disconnect a collection that was never shown to be unreachable
+                // twice in a row.
+                _tracker.Reset();
             }
             finally
             {

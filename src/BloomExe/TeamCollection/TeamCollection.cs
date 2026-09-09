@@ -646,6 +646,13 @@ namespace Bloom.TeamCollection
             // work to the UI thread, exactly as the disconnect path does.
             TeamCollectionManager.RunOnUiThreadLater(() =>
             {
+                // By the time this runs, a racing watcher failure may have disconnected us. The
+                // manager has then swapped in a DisconnectedTeamCollection with its own message
+                // log, so writing to ours would put the warning somewhere the status dialog no
+                // longer reads -- and "you may have missed some changes" is moot next to "you
+                // have lost contact with the collection" anyway.
+                if (!IsLiveCollection)
+                    return;
                 MessageLog.WriteMessage(
                     MessageAndMilestoneType.Error,
                     kMayHaveMissedChangesId,
