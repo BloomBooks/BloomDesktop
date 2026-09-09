@@ -360,6 +360,11 @@ namespace Bloom.web.controllers
             else
             {
                 issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
+                // Tell any Freeze Doctor that this problem has already been reported, so it does not file a
+                // second card about the same trouble. Cheap insurance against duplicate reports, since a
+                // user reporting a problem by hand and a Doctor noticing the same problem are exactly the
+                // situation where both would fire.
+                FreezeDoctor.FreezeDoctorSupport.NoteBloomReportedAProblem(issueId);
                 if (includeBook || _additionalPathsToInclude?.Any() == true)
                 {
                     try

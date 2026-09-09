@@ -1,0 +1,90 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    **Everything the Doctor does lives here. Only its window and its entry point live in the
+    BloomFreezeDoctor project.**
+
+    The reason is testing. Two things:
+
+    * **What lives in the exe is untestable by nature.** Program.cs is a process entry point that takes a
+      singleton mutex and pumps a message loop; StatusForm is a window with modal dialogs and tray
+      interaction. Nothing there can be asserted on without driving a UI.
+    * **Neither this project nor the test project enables UseWindowsForms, and that is worth defending.**
+      Referencing the exe would pull WinForms into the dependency closure of everything the tests touch,
+      and the pressure would then be to reach for a Control or a MessageBox in code that has no business
+      needing one. Keeping the line where it is keeps that temptation out of reach rather than merely
+      discouraged.
+
+    So the rule for a new file: it belongs in BloomFreezeDoctor only if it is Windows Forms, or the
+    process entry point. Everything else belongs here - including the parts that talk to processes,
+    files and the network. Note what this project is therefore NOT: it is not "the pure logic". It holds
+    WindowsTargetProbe, ReportOutbox and YouTrackSubmitter, which do all three. Detection logic is where
+    the subtle mistakes live and must be testable without a frozen Bloom to hand, but that is an argument
+    for keeping such code here, not for keeping anything else out.
+
+    Both projects use RootNamespace BloomFreezeDoctor, so moving a file across the line changes no
+    `using` and no call site anywhere.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PlatformTarget>x64</PlatformTarget>
+    <RootNamespace>BloomFreezeDoctor</RootNamespace>
+    <AssemblyName>BloomFreezeDoctor.Core</AssemblyName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      So the tests can reach `internal` members. Used sparingly, for helpers whose behaviour has a stated
+      consequence somewhere else - SafeFileName's null-versus-empty, for instance, which decides whether
+      an Event Log search matches the right process or every message ever written.
+    -->
+    <InternalsVisibleTo Include="BloomFreezeDoctor.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The wire format Bloom and the Doctor share. Its own project so that Bloom can reference just the
+      wire format without dragging in the Doctor's diagnostics - ClrMD, the AWS SDK, the Event Log
+      reader - none of which Bloom has any use for.
+    -->
+    <ProjectReference Include="..\BloomFreezeDoctor.Protocol\BloomFreezeDoctor.Protocol.csproj" />
+  </ItemGroup>
+
+  <!--
+    **Every package here that BloomExe also uses must be pinned to the SAME version BloomExe uses.**
+    Not a tidiness rule - the Doctor is installed into Bloom's own folder, which can hold only one copy
+    of any DLL. Disagree, and one of the two runs against a version its .deps.json never named.
+
+    It shows up first as a broken build. A running Doctor holds its DLLs open, and MSBuild skips copying
+    a file that is already identical - so a matched dependency is invisible, while a mismatched one is
+    rewritten on every Bloom build and fails with MSB3027 naming BloomFreezeDoctor.
+  -->
+  <ItemGroup>
+    <!-- Reading the Windows Event Log for crash and unexpected-shutdown entries. -->
+    <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.1" />
+    <!-- Reading another process's command line, to spot headless runs and the WebView2 debug port. -->
+    <PackageReference Include="System.Management" Version="9.0.7" />
+    <!-- Walking managed stacks out of a dump, or out of a live process without suspending it. -->
+    <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.1.512801" />
+    <!-- Asking the target's own runtime to write its dump, over the diagnostics IPC pipe. -->
+    <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.510501" />
+    <!--
+      libpalaso, for SIL.IO.RobustFile and RobustIO: the outbox's staging-to-final rename races against
+      whatever else on Windows has just touched the files it wrote, and a plain rename loses often enough
+      to discard a gathered report. RobustIO retries; see the note at that call.
+
+      Keep the version in step with BloomExe's SIL.* references by hand.
+    -->
+    <PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
+    <!--
+      Not used here: SIL.Core.Desktop drags it in, so it lands in the folder either way. Pinned only to
+      match BloomExe, which asks for beta0005 where the transitive resolution alone would settle on
+      beta0004.
+    -->
+    <PackageReference Include="L10NSharp" Version="10.0.0-beta0005" />
+  </ItemGroup>
+
+</Project>
