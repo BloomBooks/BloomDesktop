@@ -479,6 +479,23 @@ namespace Bloom.TeamCollection
         protected internal virtual bool IsWritingToRepo => _syncIsRunning;
 
         /// <summary>
+        /// True if this is the collection the manager is currently using. False for one we have
+        /// been disconnected from but which has not been disposed yet. Virtual so tests can
+        /// drive the periodic connection check without a whole live TeamCollectionManager.
+        /// </summary>
+        protected internal virtual bool IsLiveCollection => TCManager?.CurrentCollection == this;
+
+        /// <summary>
+        /// Tell the manager we have noticed we can no longer reach the repo. Goes through the
+        /// ITeamCollectionManager interface (rather than the concrete TCManager) so it is
+        /// mockable in tests.
+        /// </summary>
+        internal void ReportConnectionProblem(TeamCollectionMessage problem)
+        {
+            _tcManager?.NoticeConnectionProblem(problem, RepoDescription);
+        }
+
+        /// <summary>
         /// Start monitoring the repo so we can get notifications of new and changed books.
         /// </summary>
         protected virtual internal void StartMonitoring()
@@ -544,15 +561,26 @@ namespace Bloom.TeamCollection
         /// </summary>
         private void OnLocalFolderWatcherError(object sender, ErrorEventArgs e)
         {
-            var ex = e.GetException();
-            Logger.WriteError("Watcher on the local collection folder failed", ex);
-            NonFatalProblem.ReportSentryOnly(ex, "Watcher on the local collection folder failed");
-            if (ex is InternalBufferOverflowException)
+            // As in HandleRepoWatcherError, nothing may escape into the watcher's callback.
+            try
             {
-                // We lost some notifications of local collection-file edits. Syncing collection
-                // files to the repo is exactly what we would have done for each of them, so just
-                // do it once, the same way OnChanged does.
-                RequestCollectionFilesSyncOnIdle();
+                var ex = e.GetException();
+                Logger.WriteError("Watcher on the local collection folder failed", ex);
+                NonFatalProblem.ReportSentryOnly(
+                    ex,
+                    "Watcher on the local collection folder failed"
+                );
+                if (ex is InternalBufferOverflowException)
+                {
+                    // We lost some notifications of local collection-file edits. Syncing
+                    // collection files to the repo is exactly what we would have done for each of
+                    // them, so just do it once, the same way OnChanged does.
+                    RequestCollectionFilesSyncOnIdle();
+                }
+            }
+            catch (Exception handlerFailure)
+            {
+                NonFatalProblem.ReportSentryOnly(handlerFailure);
             }
         }
 
@@ -564,21 +592,60 @@ namespace Bloom.TeamCollection
         /// </summary>
         internal void HandleRepoWatcherError(string watchedPath, Exception ex)
         {
-            Logger.WriteError($"Team Collection watcher failed on {watchedPath}", ex);
-            NonFatalProblem.ReportSentryOnly(
-                ex,
-                $"Team Collection watcher failed on {watchedPath}"
-            );
-
-            if (ex is InternalBufferOverflowException)
+            // Nothing may escape into a FileSystemWatcher callback: an unhandled exception on
+            // that thread takes the process down with it.
+            try
             {
-                // The folder is fine; our buffer filled faster than we drained it, so we lost
-                // some notifications. Disconnecting a collection that is actually working would
-                // be a self-inflicted outage at exactly the busiest moment. But nothing else
-                // about this is visible to the user, so say so twice: an Error message (which
-                // makes the Reload Collection button appear) and a toast, since a recoloured
-                // button alone is easy to miss. Errors are de-duplicated in the message log, and
-                // the toastId de-duplicates the toast, so a storm of overflows yields one of each.
+                Logger.WriteError($"Team Collection watcher failed on {watchedPath}", ex);
+                NonFatalProblem.ReportSentryOnly(
+                    ex,
+                    $"Team Collection watcher failed on {watchedPath}"
+                );
+
+                if (ex is InternalBufferOverflowException)
+                {
+                    HandleLostNotifications();
+                    return;
+                }
+
+                // Anything else means the watch itself is dead: .NET will not re-establish it, so
+                // we would never hear about another change even if the folder came back. We don't
+                // bother confirming with Directory.Exists first; that would block this thread on a
+                // dead share and could not change the outcome.
+                _tcManager?.NoticeConnectionProblem(
+                    new TeamCollectionMessage(
+                        MessageAndMilestoneType.Error,
+                        "TeamCollection.LostContactWithRepo",
+                        "Bloom can no longer watch the Team Collection folder at \"{0}\", so it will not see changes made by your teammates. Usually this means the folder, or the drive or network it is on, is no longer available.",
+                        RepoDescription
+                    ),
+                    RepoDescription
+                );
+            }
+            catch (Exception handlerFailure)
+            {
+                NonFatalProblem.ReportSentryOnly(handlerFailure);
+            }
+        }
+
+        /// <summary>
+        /// A watcher's buffer overflowed: the folder is fine, but our buffer filled faster than
+        /// we drained it, so we lost some notifications. Disconnecting a collection that is
+        /// actually working would be a self-inflicted outage at exactly the busiest moment. But
+        /// nothing else about this is visible to the user, so say so twice: an Error message
+        /// (which makes the Reload Collection button appear) and a toast, since a recoloured
+        /// button alone is easy to miss. Errors are de-duplicated in the message log, and the
+        /// toastId de-duplicates the toast, so a storm of overflows yields one of each.
+        /// </summary>
+        internal void HandleLostNotifications()
+        {
+            // Both repo watchers can overflow at the same moment, on different thread-pool
+            // threads. TeamCollectionMessageLog keeps one unsynchronized list which it
+            // enumerates to de-duplicate and then appends to, and the UI reads that same list,
+            // so writing to it from here directly could duplicate entries or throw. Hand the
+            // work to the UI thread, exactly as the disconnect path does.
+            TeamCollectionManager.RunOnUiThreadLater(() =>
+            {
                 MessageLog.WriteMessage(
                     MessageAndMilestoneType.Error,
                     kMayHaveMissedChangesId,
@@ -594,22 +661,7 @@ namespace Bloom.TeamCollection
                     action: new ToastAction { Callback = () => _tcManager?.ShowStatusDialog() },
                     toastId: "team-collection-missed-changes"
                 );
-                return;
-            }
-
-            // Anything else means the watch itself is dead: .NET will not re-establish it, so we
-            // would never hear about another change even if the folder came back. We don't
-            // bother confirming with Directory.Exists first; that would block this thread on a
-            // dead share and could not change the outcome.
-            _tcManager?.NoticeConnectionProblem(
-                new TeamCollectionMessage(
-                    MessageAndMilestoneType.Error,
-                    "TeamCollection.LostContactWithRepo",
-                    "Bloom can no longer watch the Team Collection folder at \"{0}\", so it will not see changes made by your teammates. Usually this means the folder, or the drive or network it is on, is no longer available.",
-                    RepoDescription
-                ),
-                RepoDescription
-            );
+            });
         }
 
         private const string kMayHaveMissedChangesId = "TeamCollection.MayHaveMissedChanges";

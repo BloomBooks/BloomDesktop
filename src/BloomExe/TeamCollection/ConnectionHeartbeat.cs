@@ -92,10 +92,7 @@ namespace Bloom.TeamCollection
                     }
                     else if (_tracker.RecordResult(problem))
                     {
-                        _teamCollection.TCManager.NoticeConnectionProblem(
-                            problem,
-                            _teamCollection.RepoDescription
-                        );
+                        _teamCollection.ReportConnectionProblem(problem);
                     }
                     else if (problem != null)
                     {
@@ -134,7 +131,7 @@ namespace Bloom.TeamCollection
         {
             return !_disposed
                 && _teamCollection.IsMonitoring
-                && _teamCollection.TCManager?.CurrentCollection == _teamCollection
+                && _teamCollection.IsLiveCollection
                 && !_teamCollection.IsWritingToRepo;
         }
 
