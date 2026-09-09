@@ -970,9 +970,20 @@ namespace Bloom.web.controllers
             SafeXmlElement slot
         )
         {
-            var draggableId = slot.ParentWithAttribute(kDraggableIdAttribute)
-                ?.GetAttribute(kDraggableIdAttribute);
+            var draggable = slot.ParentWithAttribute(kDraggableIdAttribute);
+            var draggableId = draggable?.GetAttribute(kDraggableIdAttribute);
             if (string.IsNullOrEmpty(draggableId))
+                return Array.Empty<SafeXmlElement>();
+
+            // Which of the draggable's own slots this is. A target holds a copy of the
+            // draggable's whole content, so the copy of THIS slot is the one in the same position
+            // inside the target, not every slot the target happens to hold: taking them all would
+            // repoint every one of a draggable's copies at whichever single picture the user had
+            // edited. Nothing Bloom ships puts two pictures in one draggable, but
+            // copyContentToTarget copies a whole bloom-canvas when it finds one, which is exactly
+            // that shape, so pair by position rather than trusting there to be only one.
+            var positionInDraggable = Array.IndexOf(SelectImageSlotsOnPage(draggable), slot);
+            if (positionInDraggable < 0)
                 return Array.Empty<SafeXmlElement>();
 
             // Compare the attribute here rather than building an XPath around draggableId, which
@@ -982,7 +993,12 @@ namespace Bloom.web.controllers
                 .Where(target => target.GetAttribute(kGameTargetOfAttribute) == draggableId)
                 // A target's copy is a whole image container, so it is a slot in its own right;
                 // ask the same two helpers the real slots go through.
-                .SelectMany(target => SelectImageSlotsOnPage(target))
+                .Select(target =>
+                {
+                    var copies = SelectImageSlotsOnPage(target);
+                    return positionInDraggable < copies.Length ? copies[positionInDraggable] : null;
+                })
+                .Where(copy => copy != null)
                 .Select(GetImageElementOfSlot)
                 .Where(element => element != null)
                 .ToArray();

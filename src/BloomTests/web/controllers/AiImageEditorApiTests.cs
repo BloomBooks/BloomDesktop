@@ -1434,6 +1434,54 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
+        public void GetGameTargetImageCopiesOfSlot_DraggableWithTwoPictures_ReturnsOnlyTheMatchingCopy()
+        {
+            // A target copies its draggable's whole content, so a draggable holding two pictures
+            // gives the target two copies. Each of the draggable's slots must map to the copy in
+            // the SAME position; returning both would let one AI edit overwrite the other
+            // picture's copy as well. Nothing Bloom ships builds a draggable like this, but
+            // copyContentToTarget copies a whole bloom-canvas when it finds one, which is this
+            // shape, so the pairing is pinned rather than left to luck.
+            var page = MakePageWithBody(
+                @"<div class='bloom-canvas-element' data-draggable-id='d1'>
+                      <div class='bloom-canvas'>
+                          <div class='bloom-imageContainer'><img src='dog.png'/></div>
+                          <div class='bloom-imageContainer'><img src='cat.png'/></div>
+                      </div>
+                  </div>
+                  <div data-target-of='d1'>
+                      <div class='bloom-targetWrapper'>
+                          <div class='bloom-canvas'>
+                              <div class='bloom-imageContainer'><img src='dog.png'/></div>
+                              <div class='bloom-imageContainer'><img src='cat.png'/></div>
+                          </div>
+                      </div>
+                  </div>"
+            );
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+            Assert.That(slots.Length, Is.EqualTo(4), "two pictures and two copies of them");
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(slots[1]).GetAttribute("src"),
+                Is.EqualTo("cat.png"),
+                "sanity check: slot 1 should be the draggable's second picture"
+            );
+
+            var copiesOfFirst = AiImageEditorApi.GetGameTargetImageCopiesOfSlot(page, slots[0]);
+            var copiesOfSecond = AiImageEditorApi.GetGameTargetImageCopiesOfSlot(page, slots[1]);
+
+            Assert.That(copiesOfFirst.Length, Is.EqualTo(1), "one copy, not both");
+            Assert.That(copiesOfFirst[0].GetAttribute("src"), Is.EqualTo("dog.png"));
+            Assert.That(copiesOfSecond.Length, Is.EqualTo(1), "one copy, not both");
+            Assert.That(copiesOfSecond[0].GetAttribute("src"), Is.EqualTo("cat.png"));
+            // And they are different elements, so replacing one picture cannot touch the other.
+            Assert.That(
+                copiesOfFirst[0] == copiesOfSecond[0],
+                Is.False,
+                "each of the draggable's pictures must map to its own copy"
+            );
+        }
+
+        [Test]
         public void GetGameTargetImageCopiesOfSlot_AnotherDraggablesTarget_IsNotReturned()
         {
             var page = MakePageWithBody(
