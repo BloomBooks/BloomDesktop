@@ -48,7 +48,7 @@ namespace Bloom.Utils
     /// a scheme that had to stay secret was never on offer.
     ///
     /// The format is
-    /// <code>{ "version": 1, "services": { "openRouter": { "value": "&lt;base64&gt;", "method": "1" } } }</code>.
+    /// <code>{ "version": 1, "services": { "OR": { "value": "&lt;base64&gt;", "method": "1" } } }</code>.
     ///
     /// Nothing here knows what any key is for. A caller picks a name and owns its meaning,
     /// so a new service needs no change to this class.
@@ -126,9 +126,10 @@ namespace Bloom.Utils
 
         /// <summary>
         /// The name under which the user's OpenRouter API key is stored (the "Edit with AI"
-        /// feature).
+        /// feature). It is deliberately terse: the name goes into the file, where the less it
+        /// says the better (see the class comment).
         /// </summary>
-        public const string kOpenRouterName = "openRouter";
+        public const string kOpenRouterName = "OR";
 
         /// <summary>
         /// The start of the name of every image gallery provider key, for example

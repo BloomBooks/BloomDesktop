@@ -48,12 +48,9 @@ namespace BloomTests.web
         }
 
         [Test]
-        public void GetKey_WhenThereIsNone_RepliesNull()
+        public void GetKey_WhenThereIsNone_RepliesWithNothing()
         {
-            Assert.That(
-                ApiTest.GetString(_server, "serviceKeys/key", "name=openRouter"),
-                Is.EqualTo("null")
-            );
+            Assert.That(ApiTest.GetString(_server, "serviceKeys/key", "name=openRouter"), Is.Empty);
         }
 
         [Test]
@@ -77,7 +74,8 @@ namespace BloomTests.web
             );
             Assert.That(
                 ApiTest.GetString(_server, "serviceKeys/key", "name=openRouter"),
-                Is.EqualTo(JToken.FromObject(key).ToString(Newtonsoft.Json.Formatting.None))
+                Is.EqualTo(key),
+                "the GET must give back the bare string that was posted"
             );
         }
 

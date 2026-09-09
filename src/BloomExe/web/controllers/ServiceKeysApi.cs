@@ -14,8 +14,8 @@ namespace Bloom.web.controllers
     ///
     /// Two endpoints, because there are two shapes of caller:
     ///
-    /// serviceKeys/key handles ONE key by its full name, and its value is the bare string. That
-    /// suits a feature with a single key, such as "Edit with AI" (name "openRouter").
+    /// serviceKeys/key handles ONE key by its full name, and its value is the bare string in
+    /// both directions. That suits a feature with a single key, such as "Edit with AI".
     ///
     /// serviceKeys/keys handles a whole NAMESPACE at once, named by a prefix, as one flat JSON
     /// object of short name to key plus a "version" property. That suits the image gallery,
@@ -47,9 +47,10 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// GET returns the one key named by the "name" parameter as a JSON string, or null
-        /// when there is none, or when there is one this computer cannot decrypt -- which the
-        /// caller should treat the same way, by asking the user for the key again.
+        /// GET returns the one key named by the "name" parameter as plain text, the same bare
+        /// string a POST sends. The body is empty when there is no such key, and also when
+        /// there is one this computer cannot decrypt -- which the caller should treat the same
+        /// way, by asking the user for the key again.
         /// POST stores the posted body as that key's value; an empty body removes it.
         /// </summary>
         private void HandleKey(ApiRequest request)
@@ -57,7 +58,7 @@ namespace Bloom.web.controllers
             var name = request.RequiredParam("name");
             if (request.HttpMethod == HttpMethods.Get)
             {
-                request.ReplyWithJson(JsonConvert.SerializeObject(ServiceKeyStore.Get(name)));
+                request.ReplyWithText(ServiceKeyStore.Get(name) ?? "");
                 return;
             }
             // A key can hold any character a service cares to use, "+" and "%" among them, so

@@ -635,8 +635,9 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     // Bloom owns the OpenRouter API key. A key the user pastes into the
                     // AI Image Editor is handed up here so Bloom persists it per-user (and
                     // supplies it on the next launch). A null apiKey clears the stored key.
+                    // The name must match ServiceKeyStore.kOpenRouterName.
                     postString(
-                        "serviceKeys/key?name=openRouter",
+                        "serviceKeys/key?name=OR",
                         data.payload?.apiKey ?? "",
                     );
                     break;
