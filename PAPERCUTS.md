@@ -19,6 +19,11 @@ House rules:
 
 ---
 
+## 2026-09-04 — Launcher times out waiting for BLOOM_AUTOMATION_READY while a direct dotnet watch works
+- **Cut:** `go.mjs` / `launcherControl.mjs --ensure-running` built Bloom in ~6s, printed `dotnet watch ⌚ Loaded 2 project(s)`, then never saw the ready marker and tore the whole stack down after the 120s `launchTimeoutMs` in `scripts/watchBloomExe.mjs` — three times in a row. Running `dotnet watch run --project src/BloomExe/BloomExe.csproj --non-interactive -- --automation` by hand from the same shell started Bloom and printed `BLOOM_AUTOMATION_READY` within seconds (alongside a running BetaInternal, so it was not the single-instance token).
+- **Idea:** Find what differs when `watchBloomExe.mjs` spawns dotnet watch (`--vite-port`/`--label` args, control-port env, stdout piping) and make the launcher print dotnet watch's later output or the Bloom PID's window titles when it gives up, so the failure is diagnosable. Consider making the timeout configurable.
+- **Context:** worktree Format-Gear-Positioning-356 at the Version6.5 tip, while fixing BL-16809; hit by Claude.
+
 ## 2026-09-03 — The e2e fixture launches a stale Bloom.exe when output/Debug/x64 is older than AnyCPU
 
 - **Cut:** `findBloomExe` in `src/BloomE2E/fixtures/launchBloom.ts` tries `Debug/x64` before
@@ -71,6 +76,37 @@ House rules:
 - **Context:** BloomDesktop, during `/preflight` of PR #8267 (BL-16786). Not the same cut as the
   2026-07-27 entry (C# host aborting alongside vitest): both the wedged run and the successful
   `--pool=threads` run overlapped a `dotnet test`, so concurrency wasn't the differentiator here.
+
+## 2026-08-26 — A Bloom launched by ./go.sh cannot be watched by the Freeze Doctor
+
+- **Cut:** `go.sh` runs Bloom with `--automation`, and the Doctor deliberately refuses to watch any
+  run whose command line carries that flag (such runs legitimately have no window, so watching them
+  would manufacture zombie reports). So the repo’s sanctioned dev launcher produces the one kind of
+  Bloom the Doctor ignores, and an agent following AGENTS.md cannot test the Doctor at all. Launching
+  the built exe directly instead dies at Velopack init when given no arguments ("Bloom Problem"
+  immediately), though the same binary starts fine with go.sh’s own arguments. F5 works, which is why
+  every successful manual test of this feature so far has been F5.
+- **Idea:** either have go.sh omit `--automation` (or offer a flag to), or say in AGENTS.md that testing
+  the Freeze Doctor needs F5 rather than go.sh, and why. Also worth noting that go.sh builds to
+  `output/Debug/AnyCPU` while launch.json runs `output/Debug/x64`.
+- **Context:** BL-16719, trying to run a crash test unattended. A related false start: 
+  `build/agent-dotnet.sh` builds into `output/agent/<key>/`, so `output/Debug/x64` was eleven commits
+  stale and the first attempt silently exercised old code.
+
+## 2026-07-30 — Visual regression suite reports only the first stale image per case
+- **Cut:** Each case in `src/BloomVisualRegressionTests/index.spec.ts` compares the book preview
+  and then every bloom-player page in sequence, and every comparison throws on failure — so the
+  first stale baseline kills the case and the later comparisons never even capture their images.
+  After BL-16370 the stale previews meant **no** player page was compared for weeks: BL-16638
+  started as 10 baselines, became 22, and would have taken three accept-and-rerun rounds to
+  bottom out (10 previews → 10 player pages → 2 more hidden behind those). Each layer costs a
+  full ~3-minute run to discover, and the nightly reads as "one failure per case" the whole time.
+- **Idea:** Accumulate per-comparison failures for the case (label, pixel count, diff path), let
+  the preview capture and the whole player loop run to completion, then fail once at the end with
+  the full list. Proven to work — the change was made temporarily during BL-16638 to capture all
+  84 images in one run, then reverted. Roughly 20–30 lines, confined to that spec file.
+- **Context:** BL-16638 / PR #8134. Andrew chose "make a papercut entry" over fixing it inline.
+  Loop at `index.spec.ts:426`, assertion at `index.spec.ts:486`.
 
 ## 2026-07-28 — One talkingBookSpec test fails only under full-suite worker load
 - **Cut:** `talkingBookSpec.ts > showTool(checksum=missing, audio=missing, scenario=PreTextBox) => UPDATE`
