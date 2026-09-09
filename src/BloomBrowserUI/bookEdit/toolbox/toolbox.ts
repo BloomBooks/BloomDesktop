@@ -1509,20 +1509,41 @@ function handlePageEditing(
                 if (!ckeditorSelection) {
                     return; // may be changing pages?
                 }
+                // If there's no tool active, we don't need to update the markup.
+                const activeTool =
+                    currentTool && toolbox.toolboxIsShowing()
+                        ? currentTool
+                        : undefined;
+
+                // Restoring a bookmark goes through ckeditor's selectRanges(), and in the
+                // Chromium-based WebView2 (ckeditor's "webkit" branch) that plants a zero-width
+                // "filling char" (U+200B) at the caret whenever the caret sits
+                // next to an inline element, such as the bloom-linebreak span Shift+Enter inserts.
+                // ckeditor removes it again by node reference, so anything that later rebuilds the
+                // box's HTML (Show Hidden Characters, a reader tool's markup) leaves the character
+                // behind to be saved into the book (BL-16808). Nothing below rewrites this box
+                // unless a tool is active, or there is actually a comment or an nbsp to clean up;
+                // if nothing rewrites the box there is no selection to preserve. So only take a
+                // bookmark when one of those is true, which for ordinary typing is never. (Same
+                // gate as master's BL-16717 change.)
+                const needsBookmarks =
+                    !!activeTool || editableMightBeRewritten(editableDiv);
+
                 // there is also createBookmarks2(), which avoids actually inserting anything. That has the
                 // advantage that changing a character in the middle of a word will allow the entire word to
                 // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
                 // actually go back to where it was: it gets shifted to the right.
-                let bookmarks = ckeditorSelection.createBookmarks(true);
+                let bookmarks = needsBookmarks
+                    ? ckeditorSelection.createBookmarks(true)
+                    : undefined;
 
                 // For some reason, we have cases, mostly (always?) on paste, where
                 // ckeditor is inserting tons of comments which are messing with our parsing
                 // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
                 removeCommentsFromEditableHtml(editableDiv);
 
-                // If there's no tool active, we don't need to update the markup.
-                if (currentTool && toolbox.toolboxIsShowing()) {
-                    if (currentTool.isUpdateMarkupAsync()) {
+                if (activeTool) {
+                    if (activeTool.isUpdateMarkupAsync()) {
                         // It's possible that removeCommentsFromEditableHtml moved the selection, typically
                         // to the start of the editableDiv. This doesn't matter on the synchronous branch,
                         // because we restore it at the end of this method, after the other updates, and no
@@ -1534,14 +1555,16 @@ function handlePageEditing(
                         // it now, and then again after actually changing the markup, which might move the selection again.
                         // (This is why we don't allow updateMarkupAsync to modify the DOM, except by means of
                         // the function it returns, which is executed synchronously with fixing the selection.)
-                        ckeditorOfThisBox
-                            .getSelection()
-                            .selectBookmarks(bookmarks);
+                        if (bookmarks) {
+                            ckeditorOfThisBox
+                                .getSelection()
+                                .selectBookmarks(bookmarks);
+                        }
                         ckeditorSelection = ckeditorOfThisBox.getSelection();
                         bookmarks = ckeditorSelection.createBookmarks(true);
 
                         const actualUpdateFunc =
-                            await currentTool.updateMarkupAsync();
+                            await activeTool.updateMarkupAsync();
                         if (
                             keydownEventCounter ===
                             counterValueThatIdentifiesThisKeyDown
@@ -1559,7 +1582,7 @@ function handlePageEditing(
                         // Unfortunately, we can't easily do that in a top-level (general for all tools) way because of
                         // our current architecture. Namely, the reader tools have a lower-level
                         // doMarkup() which gets called more than just from here.
-                        currentTool.updateMarkup();
+                        activeTool.updateMarkup();
                     }
                 }
 
@@ -1571,7 +1594,9 @@ function handlePageEditing(
                 // in some way that is still not understood. This was fixed by changing all this to trigger on
                 // a different event (keydown instead of keypress).
                 // Note: causing the bookmarks to be selected actually removes the bookmark spans.
-                ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
+                if (bookmarks) {
+                    ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
+                }
             }
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
@@ -1628,6 +1653,16 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
     const preserveNbspAfter = [" ", "«", "—"];
     const preserveNbspBefore = [" ", "»", ":", ";", "!", "?"];
 
+    // Whether we actually converted anything. Assigning innerHTML rebuilds every node in the box
+    // even when the string is unchanged. Besides losing the selection, that detaches the text
+    // node holding ckeditor's "filling char" (the U+200B it puts at the caret in the
+    // Chromium-based WebView2 and remembers by node so it can take it out again). Once
+    // detached, nothing removes the
+    // character, and it gets saved into the book: a title typed with Enter at a word boundary
+    // came out as "One" U+200B "Two" (BL-16808). Almost every keystroke leaves nothing to convert,
+    // so only write when there is something to write.
+    let replacedAnNbsp = false;
+
     let i = -1;
     let j = -1;
     // Simultaneously loop through the text and the html, finding each corresponding nbsp.
@@ -1675,9 +1710,10 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
                 editableDivText.substring(0, j) +
                 " " +
                 editableDivText.substring(j + 1);
+            replacedAnNbsp = true;
         }
     }
-    editableDiv.innerHTML = editableDivHtml;
+    if (replacedAnNbsp) editableDiv.innerHTML = editableDivHtml;
 
     // Restore the bookmarks. See comment above.
     if (originalBookMarkContent)
@@ -1700,6 +1736,19 @@ function setCkeditorBookmarkContent(
     });
 
     return existingContent;
+}
+
+// Could the clean-up steps in handlePageEditing's mainTask (removeCommentsFromEditableHtml and
+// cleanUpNbsps) actually change this box? Both rewrite innerHTML only when they find something
+// to fix, so this looks for the two things they look for. It deliberately over-estimates - an
+// nbsp that cleanUpNbsps would decide to keep still counts - because the only cost of a false
+// yes is that we take a ckeditor bookmark we didn't need, which is what the code did
+// unconditionally before. A false NO would be a bug: we'd lose the user's insertion point when
+// one of them did rewrite the box.
+// (exported for testing)
+export function editableMightBeRewritten(editable: HTMLElement): boolean {
+    const html = editable.innerHTML;
+    return html.includes("<!--") || html.includes("&nbsp;");
 }
 
 // exported for testing
