@@ -61,11 +61,28 @@ namespace Bloom.TeamCollection
             {
                 _oldMessageLength = new FileInfo(_logFilePath).Length;
             }
-            Messages = new List<TeamCollectionMessage>();
         }
 
         // Review: currently includes milestones. Should it?
-        public List<TeamCollectionMessage> Messages { get; private set; }
+        private readonly List<TeamCollectionMessage> _messages = new List<TeamCollectionMessage>();
+
+        /// <summary>
+        /// A snapshot of the messages so far. Deliberately a copy: callers enumerate this from
+        /// threads that are not the UI thread (teamCollection/getLog and
+        /// teamCollection/logImportant are both registered with handleOnUiThread false), and
+        /// enumerating the live list while another thread appends to it throws
+        /// "Collection was modified". See BL-16729.
+        /// </summary>
+        public List<TeamCollectionMessage> Messages
+        {
+            get
+            {
+                lock (_messagesLock)
+                {
+                    return new List<TeamCollectionMessage>(_messages);
+                }
+            }
+        }
 
         /// <summary>
         /// Guards Messages. Writers are not all on the UI thread: several API endpoints are
@@ -85,11 +102,11 @@ namespace Bloom.TeamCollection
                 {
                     // correctly 0 if none match
                     var index =
-                        Messages.FindLastIndex(m =>
+                        _messages.FindLastIndex(m =>
                             m.MessageType == MessageAndMilestoneType.LogDisplayed
                             || m.MessageType == MessageAndMilestoneType.Reloaded
                         ) + 1;
-                    return Messages
+                    return _messages
                         .Skip(index)
                         .Where(m =>
                             m.MessageType == MessageAndMilestoneType.Error
@@ -118,10 +135,10 @@ namespace Bloom.TeamCollection
                 {
                     // correctly 0 if none match
                     var index =
-                        Messages.FindLastIndex(m =>
+                        _messages.FindLastIndex(m =>
                             m.MessageType == MessageAndMilestoneType.Reloaded
                         ) + 1;
-                    return Messages
+                    return _messages
                         .Skip(index)
                         .Where(m =>
                             m.MessageType == MessageAndMilestoneType.Error
@@ -148,10 +165,10 @@ namespace Bloom.TeamCollection
                 {
                     // correctly 0 if none match
                     var index =
-                        Messages.FindLastIndex(m =>
+                        _messages.FindLastIndex(m =>
                             m.MessageType == MessageAndMilestoneType.Reloaded
                         ) + 1;
-                    return Messages
+                    return _messages
                         .Skip(index)
                         .Where(m => m.MessageType == MessageAndMilestoneType.NewStuff)
                         .ToList();
@@ -165,7 +182,7 @@ namespace Bloom.TeamCollection
             {
                 lock (_messagesLock)
                 {
-                    var last = Messages.FindLast(m =>
+                    var last = _messages.FindLast(m =>
                         m.MessageType == MessageAndMilestoneType.ClobberPending
                         || m.MessageType == MessageAndMilestoneType.ShowedClobbered
                         || m.MessageType == MessageAndMilestoneType.Reloaded
@@ -183,7 +200,7 @@ namespace Bloom.TeamCollection
             {
                 lock (_messagesLock)
                 {
-                    var last = Messages.FindLast(m =>
+                    var last = _messages.FindLast(m =>
                         m.MessageType == MessageAndMilestoneType.Reloaded
                     );
                     return last == null ? DateTime.MinValue : last.When;
@@ -220,7 +237,7 @@ namespace Bloom.TeamCollection
             {
                 if (IsRedundantMessage(messageType, l10nId, message, param0, param1))
                     return;
-                Messages.Add(msg);
+                _messages.Add(msg);
             }
             AfterMessageAdded(msg);
         }
@@ -229,7 +246,7 @@ namespace Bloom.TeamCollection
         {
             lock (_messagesLock)
             {
-                Messages.Add(message);
+                _messages.Add(message);
             }
             AfterMessageAdded(message);
         }
@@ -302,7 +319,7 @@ namespace Bloom.TeamCollection
                 // the message is redundant with a current session report. But currently we reset completely for each
                 // session, and problems (particularly the one produced by a bad zip file in the repo) tend to be very
                 // frequent. We need to look at everything to weed out duplicates.
-                return Messages.Any(msg =>
+                return _messages.Any(msg =>
                     (
                         msg.MessageType == MessageAndMilestoneType.Error
                         || msg.MessageType == MessageAndMilestoneType.ErrorNoReload

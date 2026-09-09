@@ -485,7 +485,23 @@ namespace Bloom.TeamCollection
         public void NoticeConnectionProblem(TeamCollectionMessage message, string repoDescription)
         {
             if (CurrentCollection == null)
-                return; // already disconnected, or not a TC at all.
+            {
+                // Already disconnected, or not a TC at all -- but also the window during
+                // ConnectToTeamCollection where a brand-new collection is being set up and has
+                // not been published as CurrentCollection yet. A watcher failing to start in
+                // that window has nowhere to go, so at least record it rather than dropping it
+                // on the floor. See the open question on BL-16729 about whether a collection we
+                // cannot watch should be treated as disconnected outright.
+                SIL.Reporting.Logger.WriteError(
+                    "Team Collection connection problem with no current collection to disconnect: "
+                        + message?.TextForDisplay,
+                    new ApplicationException(message?.RawEnglishMessageTemplate ?? "unknown")
+                );
+                NonFatalProblem.ReportSentryOnly(
+                    $"Team Collection connection problem dropped (no current collection): {message?.L10NId}"
+                );
+                return;
+            }
 
             // Deliberately no "a disconnect is already queued" flag here. Racing callers are
             // handled by MakeDisconnected being idempotent: whichever gets to the UI thread
@@ -575,17 +591,60 @@ namespace Bloom.TeamCollection
         /// </summary>
         public bool MakeDisconnected(TeamCollectionMessage message, string repoDescription)
         {
-            var previousCollection = CurrentCollection;
-            if (
-                previousCollection == null
-                && CurrentCollectionEvenIfDisconnected is DisconnectedTeamCollection
-            )
+            TeamCollection previousCollection;
+            // Claim the transition atomically. Callers arrive both directly (a synchronous
+            // CheckConnection from an API handler that is not on the UI thread) and indirectly
+            // (a watcher or heartbeat failure marshalled onto the UI thread), so without this
+            // two of them could capture the same live collection, both pass the guard, and both
+            // go on to stop it and build a replacement.
+            lock (_disconnectLock)
             {
-                return false;
+                if (_disconnectInProgress)
+                    return false;
+                previousCollection = CurrentCollection;
+                if (
+                    previousCollection == null
+                    && CurrentCollectionEvenIfDisconnected is DisconnectedTeamCollection
+                )
+                {
+                    return false;
+                }
+                // Null this inside the claim, so that anything looking at it while we build the
+                // replacement sees "disconnected" rather than a half-built state.
+                CurrentCollection = null;
+                _disconnectInProgress = true;
             }
-            // Null this first, so that anything looking at it while we build the replacement sees
-            // "disconnected" rather than a half-built state.
-            CurrentCollection = null;
+            try
+            {
+                CompleteDisconnect(previousCollection, message, repoDescription);
+            }
+            finally
+            {
+                // Cleared in a finally, and only ever within this one synchronous method, so
+                // unlike a flag held across an asynchronous marshal it cannot latch on and leave
+                // us permanently unable to disconnect.
+                lock (_disconnectLock)
+                {
+                    _disconnectInProgress = false;
+                }
+            }
+            return true;
+        }
+
+        private readonly object _disconnectLock = new object();
+        private bool _disconnectInProgress;
+
+        /// <summary>
+        /// The rest of the disconnect, run by whichever caller won the claim above. Deliberately
+        /// outside the lock: it writes to the message log, which raises an event that reaches
+        /// WinForms and the websocket server.
+        /// </summary>
+        private void CompleteDisconnect(
+            TeamCollection previousCollection,
+            TeamCollectionMessage message,
+            string repoDescription
+        )
+        {
             // BL-16729: we have given up on this collection, so stop its file system watchers and
             // its periodic connection check. Otherwise a dead watcher goes on raising Error, and a
             // live one goes on queueing repo changes into an object nobody is using any more.
@@ -624,7 +683,6 @@ namespace Bloom.TeamCollection
             // milestone into the log, and thus suppress it. If we're disconnected, whatever gets in the
             // message log, we want to offer Reload...after all, the message says to use it.
             MessageLog.NextTeamCollectionDialogShouldForceReloadButton = true;
-            return true;
         }
 
         public static string GetTcLogPathFromLcPath(string localCollectionFolder)
