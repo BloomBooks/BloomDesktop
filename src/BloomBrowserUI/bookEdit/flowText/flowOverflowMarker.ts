@@ -73,7 +73,7 @@ export function placeOverflowMarker(
             comparableLength,
         ),
     );
-    const offset = confirmFitOffset(
+    const offset = findFitOffsetInBox(
         editable,
         content.text,
         proposal,
@@ -144,13 +144,16 @@ export function createOverflowMarker(document: Document): HTMLSpanElement {
  *
  * The candidates are the word starts, plus the prediction itself: a box whose text has no
  * whitespace at all has no word starts, and there the prediction is all we have.
+ *
+ * The text must be the text the box currently holds, because the probe measures the box: a
+ * caller that wants the fit offset for other text puts that text in the box first.
  */
-function confirmFitOffset(
+export function findFitOffsetInBox(
     editable: HTMLElement,
     text: string,
     proposal: number,
     comparableLength: number,
-    fitProbe: MarkerFitProbe,
+    fitProbe: MarkerFitProbe = textUpToOffsetFitsInBox,
 ): number {
     const candidates = getFitCandidates(text, proposal, comparableLength);
     if (!candidates.length) {
@@ -194,7 +197,12 @@ function confirmFitOffset(
     return low < 0 ? 0 : candidates[low];
 }
 
-/** The offsets the marker may take, in ascending order. */
+/**
+ * The offsets the marker may take, in ascending order: the start of every word but the first.
+ * The prediction only says where to start looking; it is a count of characters, and a marker
+ * put at it would cut a word in two. It is a candidate of its own only when the text has no
+ * word starts at all, so that one unbroken run of characters can still be cut.
+ */
 function getFitCandidates(
     text: string,
     proposal: number,
@@ -203,23 +211,11 @@ function getFitCandidates(
     const candidates: number[] = [];
     let offset = findNextWordStart(text, 0);
     while (offset !== undefined && offset < comparableLength) {
-        if (
-            proposal > 0 &&
-            proposal < offset &&
-            !candidates.includes(proposal)
-        ) {
-            candidates.push(proposal);
-        }
-
         candidates.push(offset);
         offset = findNextWordStart(text, offset);
     }
 
-    if (
-        proposal > 0 &&
-        proposal < comparableLength &&
-        !candidates.includes(proposal)
-    ) {
+    if (!candidates.length && proposal > 0 && proposal < comparableLength) {
         candidates.push(proposal);
     }
 

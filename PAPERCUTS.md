@@ -323,3 +323,20 @@ both directions of the assertion are meaningless.
 `Assert.That(text.IndexOf(marker, StringComparison.Ordinal), Is.EqualTo(-1))`.
 
 **Context:** Phase 2 of the flow-text work, testing HtmlDom.RemoveOverflowMarkers.
+
+## 2026-09-08 — The shared localizationManager test mock empties every {0}
+
+`vitest.setup.ts` mocks `asyncGetText(key, defaultText, ...args)`, but the real signature is
+`asyncGetText(id, englishText, comment, ...args)`. The mock therefore takes the *comment* as the
+first format argument and replaces `{0}` with `arg || ""`, so a label that names something, e.g.
+"Continue text from page {0}", comes back as "Continue text from page " in every unit test while
+being right in Bloom. The assertion that fails looks like a bug in the code under test.
+
+**Workaround:** none needed in production code; a test either asserts the label before the
+localization promise settles, or the code keeps its English label when the localized text has
+lost the placeholder.
+
+**Idea:** give the mock the real signature, and have it drop the comment argument.
+
+**Context:** Phase 4 of the flow-text work, labelling the button that offers to continue the text
+of an earlier page.

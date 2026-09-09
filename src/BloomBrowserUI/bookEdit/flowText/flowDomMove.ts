@@ -12,6 +12,8 @@ import {
     kContinuationAttr,
     kContinuationAttrValue,
     kOverflowMarkerSelector,
+    kSeamSpaceAttr,
+    kSeamSpaceAttrValue,
 } from "./flowConstants";
 import { suppressesOverflowMarking } from "./flowIndicators";
 import {
@@ -24,6 +26,13 @@ import {
     resolveEndBoundary,
     resolveStartBoundary,
 } from "./flowLinearize";
+
+// The space of a seam at the head of a paragraph, with whatever zero-width characters stand in
+// front of it: the editor's end-of-paragraph filler (U+200B) and the overflow marker's own
+// character (U+200C), either of which can be the first thing in a half that has just moved.
+const kLeadingSeamSpace = new RegExp(
+    "^[" + String.fromCharCode(0x200b, 0x200c) + "]*[^\\S\\n]+",
+);
 
 export type ExtractedFlowFragment = {
     fragment: DocumentFragment;
@@ -51,9 +60,10 @@ export function pushOverflowForward(
         return false;
     }
 
+    const cutOffset = cutOffsetForBoundary(currentContent.text, keepOffset);
     const fragment = extractEditableFragment(
         currentEditable,
-        keepOffset,
+        cutOffset,
         currentContent.text.length,
     );
     if (!fragment.fragment.hasChildNodes()) {
@@ -96,6 +106,27 @@ export function pullOverflowBackward(
 }
 
 /**
+ * The offset the text is actually cut at, given the offset the caller asked for. Whitespace that
+ * ends just before the cut belongs to the text that moves, not to the text that stays.
+ *
+ * CKEditor keeps no real space at the end of a paragraph it owns: it writes a zero-width filler
+ * there instead. So a space left at the end of the box that stays is deleted as soon as the user
+ * edits that box, and the two words on either side of the cut then run together for good. A space
+ * at the head of the box that receives the text is not touched.
+ *
+ * A paragraph break, which the linearized text writes as a newline, stays where it is: it is the
+ * structure of the text rather than a separator inside a line.
+ */
+export function cutOffsetForBoundary(text: string, offset: number): number {
+    let cut = Math.max(0, Math.min(offset, text.length));
+    while (cut > 0 && /[^\S\n]/.test(text[cut - 1])) {
+        cut--;
+    }
+
+    return cut;
+}
+
+/**
  * Put the first fitOffset characters of the two boxes' combined text in currentEditable and
  * the rest in nextEditable. fitOffset counts characters of the text that
  * getCombinedChainText() returns for the same pair. This both pushes overflow forward and
@@ -114,7 +145,7 @@ export function rebalanceAdjacentBoxes(
     // keystroke, so a pass that changes nothing must leave the boxes alone.
     const combined = buildCombinedEditable(currentEditable, nextEditable);
     const combinedContent = linearizeEditable(combined);
-    const splitOffset = Math.min(fitOffset, combinedContent.text.length);
+    const splitOffset = cutOffsetForBoundary(combinedContent.text, fitOffset);
 
     const currentFragment = extractEditableFragment(combined, 0, splitOffset);
     const newCurrent = document.createElement("div");
@@ -122,6 +153,7 @@ export function rebalanceAdjacentBoxes(
 
     if (currentFragment.endInsideParagraph) {
         markFirstParagraphAsContinuation(combined);
+        takeSeamSpaceIntoAttribute(combined);
     }
 
     // newCurrent becomes a box that has another box after it on the page, so nothing in it
@@ -142,6 +174,71 @@ export function rebalanceAdjacentBoxes(
     }
 
     return currentChanged || nextChanged;
+}
+
+/**
+ * The same split as rebalanceAdjacentBoxes, for a pair whose second box is on another page and
+ * so is not in the document at all. The caller has the second box's content as HTML, from C#,
+ * and gets back what each of the two boxes should hold. Nothing in the document is touched: the
+ * caller applies the first half to its own box and sends the second half to C#, and if C# refuses
+ * it, the caller has changed nothing yet.
+ */
+export function splitCombinedAcrossPages(
+    currentEditable: HTMLElement,
+    nextContentHtml: string,
+    fitOffset: number,
+): { currentHtml: string; nextHtml: string } {
+    const combined = buildCombinedAcrossPages(currentEditable, nextContentHtml);
+    const combinedText = linearizeEditable(combined).text;
+    const splitOffset = cutOffsetForBoundary(combinedText, fitOffset);
+
+    const headFragment = extractEditableFragment(combined, 0, splitOffset);
+    const newCurrent = document.createElement("div");
+    setEditableContentFromFragment(newCurrent, headFragment.fragment);
+    if (headFragment.endInsideParagraph) {
+        markFirstParagraphAsContinuation(combined);
+        takeSeamSpaceIntoAttribute(combined);
+    }
+
+    // Where the text stops fitting is measured afresh once each box holds this content, so a
+    // marker carried over from the content we just took apart means nothing.
+    [newCurrent, combined].forEach((container) => {
+        Array.from(container.querySelectorAll(kOverflowMarkerSelector)).forEach(
+            (marker) => marker.remove(),
+        );
+        normalizeChainedEditable(container);
+    });
+
+    return { currentHtml: newCurrent.innerHTML, nextHtml: combined.innerHTML };
+}
+
+/**
+ * The text of the current box and of a box on another page as one string, joined the way
+ * splitCombinedAcrossPages joins them. A fitOffset for that function is an offset into this.
+ */
+export function getCombinedTextAcrossPages(
+    currentEditable: HTMLElement,
+    nextContentHtml: string,
+): string {
+    return linearizeEditable(
+        buildCombinedAcrossPages(currentEditable, nextContentHtml),
+    ).text;
+}
+
+/** The current box's content and the other page's content as one detached container. */
+function buildCombinedAcrossPages(
+    currentEditable: HTMLElement,
+    nextContentHtml: string,
+): HTMLElement {
+    const detachedNext = document.createElement("div");
+    detachedNext.innerHTML = nextContentHtml;
+    // A marker in the content C# holds says where that box's text stopped fitting when it was
+    // last measured somewhere else, and the text is about to move, so it means nothing here.
+    Array.from(detachedNext.querySelectorAll(kOverflowMarkerSelector)).forEach(
+        (marker) => marker.remove(),
+    );
+    normalizeChainedEditable(detachedNext);
+    return buildCombinedEditable(currentEditable, detachedNext);
 }
 
 /**
@@ -192,6 +289,7 @@ function buildCombinedEditable(
         const firstContinuationParagraph = nextParagraphs[0];
         clearPlaceholderLineBreak(combinedLastParagraph);
         clearPlaceholderLineBreak(firstContinuationParagraph);
+        giveBackSeamSpace(firstContinuationParagraph);
         while (firstContinuationParagraph.firstChild) {
             combinedLastParagraph.appendChild(
                 firstContinuationParagraph.firstChild,
@@ -201,7 +299,9 @@ function buildCombinedEditable(
         firstContinuationParagraph.remove();
     }
 
-    nextClone.childNodes.forEach((child) => {
+    // Copy the list first: childNodes is live, and appending a node elsewhere takes it out of
+    // the list mid-walk, which skips every second node.
+    Array.from(nextClone.childNodes).forEach((child) => {
         combined.appendChild(child);
     });
     return combined;
@@ -295,6 +395,7 @@ export function prependFragmentToEditable(
         insertedParagraphs[insertedParagraphs.length - 1];
     if (extracted.startInsideParagraph) {
         markFirstParagraphAsContinuation(extracted.fragment);
+        takeSeamSpaceIntoAttribute(extracted.fragment);
     }
 
     editable.insertBefore(extracted.fragment, editable.firstChild);
@@ -342,6 +443,72 @@ export function appendFragmentToEditable(
 }
 
 /**
+ * Take the space at the head of a box's first paragraph out of the text and record it in the
+ * attribute instead. Call this on the tail of a split, whose first character is the space the
+ * text was cut at.
+ *
+ * See kSeamSpaceAttr: whitespace at the edge of a paragraph is not storable, so the space is
+ * carried as markup and put back by giveBackSeamSpace when the halves are joined.
+ */
+export function takeSeamSpaceIntoAttribute(container: ParentNode): void {
+    const paragraph = getTopLevelParagraphs(container)[0];
+    if (!paragraph) {
+        return;
+    }
+
+    // A marker that says where a box's text stopped fitting means nothing in a half that has
+    // just moved, and it stands between the head of the paragraph and the space of the seam.
+    Array.from(paragraph.querySelectorAll(kOverflowMarkerSelector)).forEach(
+        (marker) => marker.remove(),
+    );
+    paragraph.normalize();
+
+    const firstText = findFirstTextNode(paragraph);
+    if (!firstText || !kLeadingSeamSpace.test(firstText.data)) {
+        // The cut fell inside a word, so no space belongs at this seam. Clear any attribute an
+        // earlier cut of the same paragraph left, which would otherwise put a space mid-word.
+        paragraph.removeAttribute(kSeamSpaceAttr);
+        return;
+    }
+
+    firstText.data = firstText.data.replace(kLeadingSeamSpace, "");
+    paragraph.setAttribute(kSeamSpaceAttr, kSeamSpaceAttrValue);
+}
+
+/** Put the space the attribute records back at the head of the paragraph, and clear it. */
+export function giveBackSeamSpace(paragraph: HTMLElement): void {
+    if (!paragraph.hasAttribute(kSeamSpaceAttr)) {
+        return;
+    }
+
+    paragraph.removeAttribute(kSeamSpaceAttr);
+    const firstText = findFirstTextNode(paragraph);
+    if (firstText) {
+        firstText.data = " " + firstText.data;
+    } else {
+        paragraph.insertBefore(
+            document.createTextNode(" "),
+            paragraph.firstChild,
+        );
+    }
+}
+
+function findFirstTextNode(node: Node): Text | undefined {
+    if (node.nodeType === Node.TEXT_NODE) {
+        return node as Text;
+    }
+
+    for (const child of Array.from(node.childNodes)) {
+        const found = findFirstTextNode(child);
+        if (found) {
+            return found;
+        }
+    }
+
+    return undefined;
+}
+
+/**
  * Pour nextParagraph into previousParagraph and remove it. Set keepContinuationOnMerged
  * when previousParagraph is itself the tail of a paragraph that starts in an earlier box.
  */
@@ -352,6 +519,7 @@ export function mergeAdjacentParagraphs(
 ): void {
     clearPlaceholderLineBreak(previousParagraph);
     clearPlaceholderLineBreak(nextParagraph);
+    giveBackSeamSpace(nextParagraph);
     while (nextParagraph.firstChild) {
         previousParagraph.appendChild(nextParagraph.firstChild);
     }

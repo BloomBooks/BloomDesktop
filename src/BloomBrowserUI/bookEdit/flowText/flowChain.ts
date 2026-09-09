@@ -62,6 +62,21 @@ function isChainBoxForLanguage(child: Element, language: string): boolean {
 }
 
 /**
+ * The translation groups of a page that flow text can use, in document order. C# counts the same
+ * ones (HtmlDom.GetEltsWithClassNotInBloomCanvas), and the place of a group in this list is how
+ * the browser and C# name the same group.
+ */
+export function getFlowGroupsOfPage(page: HTMLElement): HTMLElement[] {
+    return Array.from(
+        page.querySelectorAll<HTMLElement>(kTranslationGroupSelector),
+    ).filter(
+        (group) =>
+            !group.closest(kBloomCanvasSelector) &&
+            !group.classList.contains("box-header-off"),
+    );
+}
+
+/**
  * Can we move text into and out of this box? We only handle a box whose top-level children
  * are paragraphs, and which holds nothing whose position we would have to reason about.
  */

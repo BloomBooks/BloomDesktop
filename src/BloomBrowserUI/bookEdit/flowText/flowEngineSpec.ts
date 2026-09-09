@@ -47,9 +47,13 @@ describe("rebalanceChain", () => {
         document.body.innerHTML = "";
     });
 
+    // The words of this run are three characters each, so that a box of seven characters holds
+    // two of them and the split falls on a space rather than inside a word.
+    const kThreeBoxRun = "<p>one two abc def ghi</p>";
+
     it("pushes what does not fit through box 1 into box 2 and on into box 3", () => {
         const chain = makeChainedPage([
-            "<p>one two three four five six</p>",
+            kThreeBoxRun,
             "<p><br></p>",
             "<p><br></p>",
         ]);
@@ -58,22 +62,26 @@ describe("rebalanceChain", () => {
 
         expect(changed).toBe(true);
         expect(textOf(chain[0])).toBe("one two");
-        expect(textOf(chain[1])).toBe("three");
-        expect(textOf(chain[2])).toBe("four five six");
+        expect(textOf(chain[1])).toBe("abc def");
+        expect(textOf(chain[2])).toBe("ghi");
     });
 
     it("pulls the text back when the boxes grow", () => {
         const chain = makeChainedPage([
-            "<p>one two three four five six</p>",
+            kThreeBoxRun,
             "<p><br></p>",
             "<p><br></p>",
         ]);
         rebalanceChain(chain[0], measurerThatFits(7));
+        // Sanity check the start state: the text is divided over the three boxes, so the pull
+        // below has something to pull.
+        expect(textOf(chain[2])).toBe("ghi");
 
         const changed = rebalanceChain(chain[1], measurerThatFits(100));
 
         expect(changed).toBe(true);
-        expect(textOf(chain[0])).toBe("one two three four five six");
+        // Both seams are joined back with their space, so the run reads as it did.
+        expect(textOf(chain[0])).toBe("one two abc def ghi");
         expect(textOf(chain[1])).toBe("");
         expect(textOf(chain[2])).toBe("");
     });

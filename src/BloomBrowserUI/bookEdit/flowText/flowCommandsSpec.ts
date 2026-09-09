@@ -6,6 +6,8 @@ import {
     kFlowChainAttr,
     kHasNextClass,
     kHasPrevClass,
+    kSeamSpaceAttr,
+    kSeamSpaceAttrValue,
 } from "./flowConstants";
 
 /** One box of the page: its text, and the chain id its group carries. */
@@ -28,6 +30,7 @@ function makePage(boxes: BoxSpec[]): HTMLElement {
         paragraph.textContent = spec.text;
         if (spec.continuation) {
             paragraph.setAttribute(kContinuationAttr, kContinuationAttrValue);
+            paragraph.setAttribute(kSeamSpaceAttr, kSeamSpaceAttrValue);
         }
         editable.appendChild(paragraph);
         group.appendChild(editable);
@@ -121,11 +124,9 @@ describe("flowCommands", () => {
 
             unlinkBox(box(page, 1));
 
-            expect(
-                box(page, 1)
-                    .querySelector("p")!
-                    .hasAttribute(kContinuationAttr),
-            ).toBe(false);
+            const paragraph = box(page, 1).querySelector("p")!;
+            expect(paragraph.hasAttribute(kContinuationAttr)).toBe(false);
+            expect(paragraph.hasAttribute(kSeamSpaceAttr)).toBe(false);
         });
 
         it("leaves a group of another chain alone", () => {

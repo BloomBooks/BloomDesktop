@@ -372,10 +372,35 @@ export async function waitForEditablePage(
 export interface IBookPage {
     /** The page's id, which is what editView/jumpToPage takes. */
     id: string;
-    /** The page list's caption for the page: its number, or its name for front and back matter. */
+    /** The name of the template page this page was made from, e.g. "Just Text". */
     caption: string;
+    /**
+     * What the page list writes under the page, and what Bloom calls the page when it names one to
+     * the person: the page number for a content page, a name such as "Front Cover" for front and
+     * back matter.
+     */
+    numberLabel: string;
     /** False for the cover, the credits page, and the rest of the front and back matter. */
     isContentPage: boolean;
+}
+
+/**
+ * What Bloom calls one page when it names it to the person: its page number, or its name for
+ * front and back matter. A test that checks a message naming a page compares against this.
+ */
+export async function getPageNumberLabel(
+    page: Page,
+    pageId: string,
+): Promise<string> {
+    const pages = await getPages(page);
+    const found = pages.find((p) => p.id === pageId);
+    if (!found)
+        throw new Error(
+            `The book has no page ${pageId}. Its pages are: ${pages
+                .map((p) => `${p.id} (${p.numberLabel})`)
+                .join(", ")}.`,
+        );
+    return found.numberLabel;
 }
 
 /**

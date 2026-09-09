@@ -963,7 +963,10 @@ export function SetupElements(
     // were prematurely overflowing before the images were set to the right size.
     GetOverflowChecker().AddOverflowHandlers(container);
 
-    setupFlowText(container);
+    setupFlowText(container, {
+        markOverflow: (editable) =>
+            OverflowChecker.AdjustSizeOrMarkOverflow(editable),
+    });
 
     const editor = GetEditor();
 

@@ -144,6 +144,14 @@ export function walkNode(
         return;
     }
 
+    if (node.tagName === "P") {
+        // The start of a paragraph is a place inside it. A paragraph with text overwrites
+        // this with the start of that text; an empty one, such as the one Enter has just
+        // made, keeps it, so that a caret put back here goes into the paragraph and what is
+        // typed next goes in with it.
+        points[getText().length] = { container: node, offset: 0 };
+    }
+
     Array.from(node.childNodes).forEach((child) => {
         walkNode(child, points, getText, setText, markerOffsets);
     });
@@ -180,7 +188,9 @@ function appendLogicalBreak(
     setText: (value: string) => void,
     boundary: BoundaryPoint,
 ): void {
-    points[getText().length] = boundary;
+    // The offset before the break keeps the point the paragraph's own content gave it, which
+    // is inside the paragraph: a caret put back at the end of a paragraph's text belongs in
+    // that paragraph, not between it and the next.
     if (!getText().endsWith("\n")) {
         setText(getText() + "\n");
     }

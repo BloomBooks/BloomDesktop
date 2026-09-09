@@ -803,6 +803,19 @@ namespace Bloom.Edit
 
         public IPage CurrentPage => _pageSelection.CurrentSelection;
 
+        /// <summary>
+        /// Redraw one page's thumbnail in the page list. Code that changes a page other than the
+        /// one being edited (see FlowTextApi, which moves text onto a later page) has to ask for
+        /// this: nothing else notices that the page is no longer what its thumbnail shows.
+        /// </summary>
+        public void RefreshThumbnail(IPage page)
+        {
+            if (page == null || _view == null)
+                return;
+
+            _view.UpdateThumbnailAsync(page);
+        }
+
         public bool CanAddPages => !CurrentBook.IsCalendar;
 
         public bool CanDuplicatePage

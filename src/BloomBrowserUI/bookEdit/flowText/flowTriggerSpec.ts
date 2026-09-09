@@ -1,11 +1,25 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BoxMetrics, LineMeasurer } from "./flowFit";
 import { getFlowPassSamples, kMetricsPropertyName } from "./flowTiming";
+// Nothing here is about the pages the browser cannot see, and a call to C# in a test would
+// hang: the boundary work is exercised in flowCrossPageSpec.
+vi.mock("./flowBoundaryClient", () => ({
+    peekNext: () => Promise.resolve(undefined),
+    setNextContent: () => Promise.resolve(true),
+    getPendingCaret: () => Promise.resolve(undefined),
+    getPendingOverflow: () => Promise.resolve(undefined),
+    postPendingCaret: () => Promise.resolve(),
+    unlinkFrom: () => Promise.resolve(),
+    jumpToPage: () => undefined,
+}));
+
 import {
     FlowTextOptions,
     reflowAllChainsOnPage,
+    requestPassFor,
     setupFlowText,
     suspendFlowText,
+    waitForBoundaryWork,
 } from "./flowTrigger";
 
 // jsdom lays nothing out, so the real measurer would have nothing to work from. This one
@@ -127,6 +141,19 @@ describe("flowTrigger", () => {
         expect(reasonsOfPasses()).toEqual([]);
     });
 
+    it("brings the offers up to date when a box in no chain changes class", async () => {
+        const { page, loneBox } = makePage(2, true);
+        setupFlowText(page, makeOptions());
+        clearSamples();
+
+        // The talking book tool marks a box this way, and the flow refuses such a box.
+        loneBox!.classList.add("audio-sentence");
+        await flushMutations();
+        runFrames();
+
+        expect(reasonsOfPasses()).toEqual(["mutation"]);
+    });
+
     it("marks the page while a pass is owed, and unmarks it afterwards", async () => {
         const { page, boxes } = makePage(2);
         setupFlowText(page, makeOptions());
@@ -136,6 +163,11 @@ describe("flowTrigger", () => {
 
         expect(page.getAttribute("data-flow-reflowing")).toBe("true");
         runFrames();
+
+        // The pass goes on after the frame: whether the text needs a box on a later page is a
+        // question for C#, and the page stays marked until the answer has been acted on.
+        expect(page.getAttribute("data-flow-reflowing")).toBe("true");
+        await waitForBoundaryWork();
 
         expect(page.hasAttribute("data-flow-reflowing")).toBe(false);
     });
@@ -220,5 +252,21 @@ describe("flowTrigger", () => {
         await flushMutations();
 
         expect(frameQueue).toHaveLength(0);
+    });
+
+    it("asks for the overflow warning on a box that text has arrived in", () => {
+        const { page, boxes } = makePage(2);
+        const marked: HTMLElement[] = [];
+        setupFlowText(page, {
+            ...makeOptions(),
+            markOverflow: (editable) => marked.push(editable),
+        });
+        // Sanity check: opening the page settles the chain without asking for the warning,
+        // because OverflowChecker checks every box itself as the page opens.
+        expect(marked).toEqual([]);
+
+        requestPassFor([boxes[1]], "continueInto");
+
+        expect(marked).toEqual([boxes[1]]);
     });
 });

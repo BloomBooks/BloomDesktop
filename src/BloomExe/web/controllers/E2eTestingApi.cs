@@ -115,10 +115,11 @@ namespace Bloom.web.controllers
                 false // does not need the UI thread
             );
 
-            // GET returns the selected book's pages as JSON: id, caption, and whether the page is
-            // front or back matter. A test needs page ids to navigate (editView/jumpToPage takes
-            // one), and the page-list thumbnails do not expose which pages are xmatter, so without
-            // this a test has to guess from thumbnail markup.
+            // GET returns the selected book's pages as JSON: id, caption, the label the page list
+            // shows (its page number, or a name for front and back matter), and whether the page
+            // is front or back matter. A test needs page ids to navigate (editView/jumpToPage
+            // takes one), and the page-list thumbnails do not expose which pages are xmatter, so
+            // without this a test has to guess from thumbnail markup.
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "pages",
                 HandleGetPages,
@@ -195,10 +196,10 @@ namespace Bloom.web.controllers
             // GET returns true when no flow pass is pending anywhere in Bloom. The browser's own
             // passes are visible to a test through the data-flow-reflowing attribute on the page,
             // so this reports only what a test cannot see from the page: the cross-page work C#
-            // does. There is none yet, so it is always true. Read-only.
+            // does, which is every handler of FlowTextApi. Read-only.
             apiHandler.RegisterBooleanEndpointHandler(
                 kApiUrlPart + "flowText/isIdle",
-                request => true,
+                request => FlowTextApi.IsIdle,
                 null, // read only
                 false // does not need the UI thread
             );
@@ -281,15 +282,25 @@ namespace Bloom.web.controllers
                 request.ReplyWithJson(new object[0]);
                 return;
             }
-            var pages = book.GetPages()
-                .Select(page => new
-                {
-                    id = page.Id,
-                    caption = page.Caption,
-                    isContentPage = !page.IsXMatter,
-                })
-                .ToArray();
-            request.ReplyWithJson(pages);
+            // GetCaptionOrPageNumber counts the content pages as it goes, so the pages have to be
+            // walked in order and the counter shared between them. That rules out a LINQ
+            // projection: a ref argument cannot be passed from inside a lambda.
+            var pageNumber = 0;
+            var pages = new List<object>();
+            foreach (var page in book.GetPages())
+            {
+                var numberLabel = page.GetCaptionOrPageNumber(ref pageNumber, out var unusedI18nId);
+                pages.Add(
+                    new
+                    {
+                        id = page.Id,
+                        caption = page.Caption,
+                        numberLabel,
+                        isContentPage = !page.IsXMatter,
+                    }
+                );
+            }
+            request.ReplyWithJson(pages.ToArray());
         }
 
         /// <summary>

@@ -7,6 +7,9 @@ import {
     rebalanceAdjacentBoxes,
 } from "./flowDomMove";
 
+// CKEditor's own end-of-paragraph filler, U+200B ZERO WIDTH SPACE.
+const kCkEditorFiller = String.fromCharCode(0x200b);
+
 function makeEditable(innerHtml: string): HTMLElement {
     const editable = document.createElement("div");
     editable.className = "bloom-editable";
@@ -160,11 +163,60 @@ describe("flowDomMove", () => {
 
         rebalanceAdjacentBoxes(current, next, 8);
 
-        expect(current.innerHTML).toBe("<p>One two </p>");
+        // The cut falls on a space, and neither half can hold it, so the attribute records it.
+        expect(current.innerHTML).toBe("<p>One two</p>");
         expect(next.innerHTML).toBe(
-            '<p data-flow-continuation="true">three four</p>',
+            '<p data-flow-continuation="true" data-flow-seam-space="true">three four</p>',
         );
         expect(next.querySelectorAll("p")).toHaveLength(1);
+    });
+
+    it("records the seam space in the attribute wherever the caller asked to cut", () => {
+        const current = makeEditable("<p>One two three four</p>");
+        const next = makeEditable("<p><br></p>");
+        // Sanity check: the caller asks to cut one character past the space, and the cut has to
+        // move back onto it, because neither half of the paragraph can hold the space itself.
+        expect(getCombinedChainText(current, next)).toBe(
+            "One two three four\n",
+        );
+
+        rebalanceAdjacentBoxes(current, next, 8);
+
+        expect(current.textContent).toBe("One two");
+        expect(next.textContent).toBe("three four");
+        expect(
+            next.querySelector("p")!.getAttribute("data-flow-seam-space"),
+        ).toBe("true");
+    });
+
+    it("leaves a paragraph break where it is", () => {
+        const current = makeEditable("<p>One two</p><p>three four</p>");
+        const next = makeEditable("<p><br></p>");
+
+        // Cut at the paragraph break: "One two" is 7 characters and the break is the eighth.
+        rebalanceAdjacentBoxes(current, next, 8);
+
+        expect(current.textContent).toBe("One two");
+        expect(next.textContent).toBe("three four");
+        expect(current.querySelectorAll("p")).toHaveLength(1);
+        expect(next.querySelectorAll("p")).toHaveLength(1);
+        // The text after a break starts its own paragraph, so it continues nothing.
+        expect(
+            next.querySelector("p")?.hasAttribute("data-flow-continuation"),
+        ).toBe(false);
+    });
+
+    it("joins the halves back with one space when the box has CKEditor's filler at its end", () => {
+        // What the box holds after the user has edited it: the real space at the end of the
+        // paragraph is gone, and a zero-width filler stands there instead.
+        const current = makeEditable(`<p>One two${kCkEditorFiller}</p>`);
+        const next = makeEditable(
+            '<p data-flow-continuation="true" data-flow-seam-space="true">three four</p>',
+        );
+
+        expect(
+            getCombinedChainText(current, next).replace(kCkEditorFiller, ""),
+        ).toBe("One two three four\n");
     });
 
     it("keeps a continuation marker when the box before it is empty", () => {

@@ -8,6 +8,8 @@ import {
 import { getLanguageChainOnPage } from "./flowChain";
 import {
     removeContinueButtons,
+    resetPendingOverflowCache,
+    setFlowPassRunner,
     updateContinueButtons,
 } from "./flowContinueButton";
 import {
@@ -15,7 +17,18 @@ import {
     kFlowChainAttr,
     kReflowingAttr,
 } from "./flowConstants";
+import {
+    beginCrossPageRun,
+    placePendingCaret,
+    resetCrossPageCache,
+    settleCrossPageBoundary,
+} from "./flowCrossPage";
 import { rebalanceChain } from "./flowEngine";
+import {
+    removeFlowFromLabels,
+    resetFlowFromCache,
+    updateFlowFromLabels,
+} from "./flowFromLabel";
 import { LineMeasurer } from "./flowFit";
 import { stripTransientFlowMarkup, updateIndicators } from "./flowIndicators";
 import {
@@ -35,6 +48,12 @@ export type FlowTextOptions = {
     measureOverflow?: OverflowMeasurer;
     requestFrame?: (callback: () => void) => number;
     cancelFrame?: (handle: number) => void;
+    /**
+     * Show or clear Bloom's own overflow warning on a box whose text this code has changed.
+     * The warning is OverflowChecker's, and it otherwise runs only on the user's keystrokes;
+     * text that arrives from another page arrives without one.
+     */
+    markOverflow?: (editable: HTMLElement) => void;
 };
 
 const kPageSelector = ".bloom-page";
@@ -48,6 +67,14 @@ let observedContainer: HTMLElement | undefined;
 let activeOptions: FlowTextOptions = {};
 
 const pendingTriggers = new Set<HTMLElement>();
+// The last box of a chain on this page, whose next box is on a later page. Settling that
+// boundary is a round trip, so it happens after the pass, one box at a time.
+const pendingBoundaries = new Set<HTMLElement>();
+let boundaryWork: Promise<void> | undefined;
+let boundaryWorkStarted = false;
+// A push can leave text that still does not fit, and a pull can free room for more, so the
+// boundary settles again after a move. This caps that, in case the two disagree.
+const kMaxBoundaryRounds = 6;
 let pendingFrame: number | undefined;
 let passReason = "mutation";
 // True from the moment we owe a pass until the moment it has run: it is what owns the save
@@ -69,6 +96,12 @@ export function setupFlowText(
     container.addEventListener("compositionend", onCompositionEnd, true);
     container.addEventListener("keydown", handleSeamKey, true);
 
+    setFlowPassRunner({ applyWithoutPass, requestPassFor });
+    // What the other pages hold is read afresh for each page the reader edits.
+    resetCrossPageCache();
+    resetPendingOverflowCache();
+    resetFlowFromCache();
+
     observer = new MutationObserver(onMutations);
     observer.observe(container, {
         childList: true,
@@ -86,9 +119,14 @@ export function setupFlowText(
     const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
     const watchedObserver = observer;
     fonts?.ready?.then(() => {
-        if (observer === watchedObserver) {
-            reflowAllChainsOnPage("fontsReady");
+        if (observer !== watchedObserver) {
+            return;
         }
+
+        reflowAllChainsOnPage("fontsReady");
+        // The text the user was typing in moved onto this page, so the caret follows it here.
+        // It goes in after the fonts, because which character is on which line depends on them.
+        void placePendingCaret(observedContainer ?? document);
     });
 }
 
@@ -114,8 +152,14 @@ export function suspendFlowText(): void {
 
     finishPass();
     pendingTriggers.clear();
+    pendingBoundaries.clear();
+    setFlowPassRunner(undefined);
+    resetCrossPageCache();
+    resetPendingOverflowCache();
+    resetFlowFromCache();
     isComposing = false;
     removeContinueButtons(document);
+    removeFlowFromLabels(document);
     stripTransientFlowMarkup(document);
     observedContainer = undefined;
     activeOptions = {};
@@ -176,8 +220,18 @@ function getTriggerEditables(record: MutationRecord): HTMLElement[] {
     }
 
     const editable = element.closest<HTMLElement>(".bloom-editable");
-    if (!editable || !editable.closest(kChainedGroupSelector)) {
+    if (!editable) {
         return [];
+    }
+
+    if (!editable.closest(kChainedGroupSelector)) {
+        // An edit in a box outside every chain moves no text. A change to the box's own
+        // classes can still change what the flow says about it, such as whether it is a box
+        // the flow refuses, and the offer on the empty box after it has to follow suit; the
+        // pass such a trigger starts does nothing but bring the offers up to date.
+        return record.type === "attributes" && element === editable
+            ? [editable]
+            : [];
     }
 
     return [editable];
@@ -223,8 +277,34 @@ function finishPass(): void {
     }
 
     passOutstanding = false;
-    setPageReflowing(false);
+    updateReflowingAttr();
     removeRequestPageContentDelay(kDelayId);
+}
+
+/**
+ * Run the work of a pass without the observer treating our own changes as the user's editing.
+ * flowContinueButton uses this when it puts text C# handed back into a box.
+ */
+export function applyWithoutPass(work: () => void): void {
+    const wasFlowing = isFlowing;
+    isFlowing = true;
+    try {
+        work();
+    } finally {
+        observer?.takeRecords();
+        isFlowing = wasFlowing;
+    }
+}
+
+/** Settle these boxes now: text has arrived in them that nobody has measured. */
+export function requestPassFor(editables: HTMLElement[], reason: string): void {
+    flowTriggers(editables, reason);
+    editables.forEach(markOverflow);
+}
+
+/** Settles when the boundary work asked for so far has finished. For a test to await. */
+export function waitForBoundaryWork(): Promise<void> {
+    return boundaryWork ?? Promise.resolve();
 }
 
 /** One pass over the chains that these boxes belong to. */
@@ -243,8 +323,10 @@ function flowTriggers(triggers: HTMLElement[], reason: string): void {
                     return;
                 }
 
+                // A chain of one group on this page still has work to do: its text may have
+                // to go on to a box on a later page, or come back from one.
                 const chain = getLanguageChainOnPage(trigger);
-                if (chain.length < 2) {
+                if (!chain.length) {
                     return;
                 }
 
@@ -254,6 +336,7 @@ function flowTriggers(triggers: HTMLElement[], reason: string): void {
                 }
 
                 flowOneChain(trigger, chain);
+                pendingBoundaries.add(chain[chain.length - 1]);
             });
 
             // A box that gained or lost a following box has gained or lost somewhere for its
@@ -264,6 +347,64 @@ function flowTriggers(triggers: HTMLElement[], reason: string): void {
         // Our own mutations are queued by now; drop them rather than let them start a pass.
         observer?.takeRecords();
         isFlowing = false;
+    }
+
+    // The pass has settled the boxes on this page. Whether the text goes on to the next page
+    // is a question for C#, so it is asked after the pass rather than in it.
+    startBoundaryWork();
+}
+
+function startBoundaryWork(): void {
+    if (!pendingBoundaries.size || boundaryWorkStarted) {
+        return;
+    }
+
+    boundaryWorkStarted = true;
+    beginCrossPageRun();
+    addRequestPageContentDelay(kDelayId);
+    updateReflowingAttr();
+    boundaryWork = runBoundaryWork().finally(() => {
+        boundaryWork = undefined;
+        boundaryWorkStarted = false;
+        updateReflowingAttr();
+        removeRequestPageContentDelay(kDelayId);
+    });
+}
+
+async function runBoundaryWork(): Promise<void> {
+    for (let round = 0; round < kMaxBoundaryRounds; round++) {
+        const boxes = Array.from(pendingBoundaries);
+        pendingBoundaries.clear();
+        if (!boxes.length) {
+            return;
+        }
+
+        for (const box of boxes) {
+            if (!box.isConnected || !observer) {
+                continue;
+            }
+
+            const moved = await settleCrossPageBoundary(box, {
+                measurer: getMeasurer(),
+                measureOverflow: activeOptions.measureOverflow,
+                applyWithoutPass,
+            });
+            if (moved) {
+                // The box holds different text now, and nothing has measured it: the marker,
+                // the indicators, the overflow warning and the offers on the other boxes are
+                // all out of date.
+                flowTriggers([box], "crossPage");
+                markOverflow(box);
+            }
+        }
+    }
+
+    pendingBoundaries.clear();
+}
+
+function markOverflow(editable: HTMLElement): void {
+    if (editable.isConnected) {
+        activeOptions.markOverflow?.(editable);
     }
 }
 
@@ -303,7 +444,11 @@ function flowOneChain(trigger: HTMLElement, chain: HTMLElement[]): void {
  * because a box can start or stop overflowing without any chain existing yet.
  */
 function refreshContinueButtons(): void {
-    updateContinueButtons(observedContainer ?? document);
+    const root = observedContainer ?? document;
+    updateContinueButtons(root);
+    // The same changes decide which box, if any, says its text flows in from an earlier page:
+    // a group joins or leaves a chain, or another group of its chain arrives on this page.
+    updateFlowFromLabels(root);
 }
 
 function getMeasurer(): LineMeasurer {
@@ -333,6 +478,14 @@ function onCompositionEnd(): void {
     if (passOutstanding) {
         scheduleFrame();
     }
+}
+
+/**
+ * The attribute says a pass is in progress, and it has to stay on while the boundary work
+ * runs: that work is a pass that is waiting for an answer from C#.
+ */
+function updateReflowingAttr(): void {
+    setPageReflowing(passOutstanding || boundaryWorkStarted);
 }
 
 function setPageReflowing(reflowing: boolean): void {

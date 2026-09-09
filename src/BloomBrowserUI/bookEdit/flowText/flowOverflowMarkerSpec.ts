@@ -102,6 +102,21 @@ describe("flowOverflowMarker", () => {
         expect(editable.textContent).toContain("One two ");
     });
 
+    it("never cuts inside a word, even when the layout says part of it fits", () => {
+        // The layout says "One twothr" fits. The marker still goes before the long word: the
+        // prediction is a count of characters, and text moves a whole word at a time.
+        const editable = makeEditable("<p>One twothreefourfive</p>");
+
+        const offset = placeOverflowMarker(
+            editable,
+            measurerAt(10),
+            alwaysOverflows,
+            probeUpTo(10),
+        );
+
+        expect(offset).toBe(4);
+    });
+
     it("lets another word in when the measurer was too cautious", () => {
         const editable = makeEditable("<p>One two three four five</p>");
 
@@ -288,11 +303,12 @@ describe("flowOverflowMarker", () => {
             '<p>One <span id="cke_bm_1S" style="display:none"> </span>two three</p>',
         );
 
+        // "two" starts at offset 5, right after the bookmark's own space.
         placeOverflowMarker(
             editable,
             measurerAt(4),
             alwaysOverflows,
-            probeUpTo(4),
+            probeUpTo(5),
         );
 
         expect(

@@ -2,7 +2,6 @@
 // The caret is recorded as one offset into the whole chain's text, so it survives however
 // much of the text moves from one box to another.
 
-import { EditableDivUtils } from "../js/editableDivUtils";
 import { startsWithContinuationParagraph } from "./flowDomMove";
 import {
     BoundaryPoint,
@@ -80,7 +79,14 @@ export function getCollapsedSelectionOffsetInChain(
     };
 }
 
-/** Put the caret back at the offset that getCollapsedSelectionOffsetInChain() gave. */
+/**
+ * Put the caret back at the offset that getCollapsedSelectionOffsetInChain() gave.
+ *
+ * This works from the boundary table rather than from EditableDivUtils.makeSelectionIn(),
+ * which counts textContent: the linearized text has a character for each paragraph break
+ * and none for the zero-width character of an overflow marker, so the two ways of counting
+ * disagree in any box with more than one paragraph or with a marker.
+ */
 export function restoreCollapsedSelectionInChain(
     chain: HTMLElement[],
     selectionState: CollapsedSelectionState,
@@ -88,9 +94,11 @@ export function restoreCollapsedSelectionInChain(
     let remaining = Math.max(0, selectionState.offset);
     for (let index = 0; index < chain.length; index++) {
         const editable = chain[index];
-        const content = linearizeEditable(editable);
-        const comparableLength = getComparableLinearizedLength(content.text);
-        if (remaining > comparableLength) {
+        const comparableLength = getComparableEditableLength(editable);
+        // The last box takes whatever is left: a move can leave the chain a character shorter
+        // than it was, when the space at a seam goes into an attribute, and a caret that was at
+        // the end of the text still belongs at the end of the text.
+        if (remaining > comparableLength && index < chain.length - 1) {
             remaining -= comparableLength;
             continue;
         }
@@ -108,20 +116,7 @@ export function restoreCollapsedSelectionInChain(
         }
 
         editable.focus();
-        if (EditableDivUtils.makeSelectionIn(editable, remaining, 0, false)) {
-            return;
-        }
-
-        const point =
-            remaining === comparableLength
-                ? (getLastSelectableBoundary(editable) ??
-                  content.points[comparableLength])
-                : content.points[Math.min(remaining, comparableLength)];
-        if (!point) {
-            return;
-        }
-
-        EditableDivUtils.selectAtOffset(point.container, point.offset);
+        restoreCollapsedSelectionInEditable(editable, remaining);
         return;
     }
 }
@@ -137,13 +132,7 @@ export function getCollapsedSelectionOffsetInEditable(
     return getCollapsedSelectionOffsetInChain([editable])?.offset;
 }
 
-/**
- * Put the caret back at an offset that getCollapsedSelectionOffsetInEditable() gave.
- *
- * This works from the boundary table rather than from EditableDivUtils.makeSelectionIn(),
- * which counts textContent: an overflow marker holds a zero-width character that the
- * linearized text does not, so the two ways of counting disagree in a box that has one.
- */
+/** Put the caret back at an offset that getCollapsedSelectionOffsetInEditable() gave. */
 export function restoreCollapsedSelectionInEditable(
     editable: HTMLElement,
     offset: number,

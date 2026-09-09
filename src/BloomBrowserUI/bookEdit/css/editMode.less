@@ -1909,6 +1909,33 @@ svg.bloom-videoControl {
     }
 }
 
+// Flow text: the label saying that this box's text continues from a box on an earlier page
+// (flowFromLabel.ts). It is a bloom-ui element inside the translation group, placed at the top
+// right of its own box, so it must stay out of the text's own flow; the group is its positioning
+// context. It is a label and not a control, so it takes no clicks.
+.bloom-page .bloom-translationGroup > .bloom-flow-from {
+    position: absolute;
+    transform: translateX(-100%);
+    z-index: 1000;
+    max-width: 90%;
+    padding: 0 2px;
+    color: @bloom-blue;
+    font-family: @UIFontStack;
+    font-size: 10px;
+    line-height: 1.2;
+    text-align: right;
+    text-indent: 0;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+// The absolutely positioned label is placed against its group, so the group has to be the
+// positioning context. The group carrying the label is the first of its chain on the page, so it
+// wears none of the flow classes above: the label itself is what says it needs this.
+.bloom-page .bloom-translationGroup:has(> .bloom-flow-from) {
+    position: relative;
+}
+
 // While a pass is moving text, what does not fit is about to change, so the offer would be
 // about a state that is on its way out.
 .bloom-page[data-flow-reflowing]

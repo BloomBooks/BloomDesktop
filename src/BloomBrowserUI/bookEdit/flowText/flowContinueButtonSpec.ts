@@ -1,10 +1,35 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// What C# would say about the pages the browser cannot see, and what it was asked to do.
+let pendingOverflow:
+    | {
+          pageId: string;
+          pageNumber: string;
+          indexInPage: number;
+          previewText: string;
+      }
+    | undefined;
+let continueIntoResult:
+    | { chainId: string; targetHtmlByLang: Record<string, string> }
+    | undefined;
+const continueIntoCalls: Record<string, unknown>[] = [];
+
+vi.mock("./flowBoundaryClient", () => ({
+    getPendingOverflow: () => Promise.resolve(pendingOverflow),
+    continueInto: (args: Record<string, unknown>) => {
+        continueIntoCalls.push(args);
+        return Promise.resolve(continueIntoResult);
+    },
+}));
+
 import {
     canOfferContinue,
     findContinueSourceOnPage,
+    getContinueButtonLabel,
     hasContinueButton,
     joinToSourceBox,
     removeContinueButtons,
+    resetPendingOverflowCache,
     updateContinueButtons,
 } from "./flowContinueButton";
 import {
@@ -92,9 +117,20 @@ function buttonsOn(page: HTMLElement): HTMLElement[] {
     );
 }
 
+/** Let the round trip to C# and the update it schedules finish. */
+async function flushAnswers(): Promise<void> {
+    for (let tick = 0; tick < 5; tick++) {
+        await Promise.resolve();
+    }
+}
+
 describe("flowContinueButton", () => {
     beforeEach(() => {
         document.body.innerHTML = "";
+        resetPendingOverflowCache();
+        pendingOverflow = undefined;
+        continueIntoResult = undefined;
+        continueIntoCalls.length = 0;
     });
 
     afterEach(() => {
@@ -275,13 +311,15 @@ describe("flowContinueButton", () => {
             expect(findContinueSourceOnPage(box(page, 1))).toBeUndefined();
         });
 
-        it("refuses a box in a page with no origami layout", () => {
+        it("refuses a box that is not part of the page's own layout", () => {
             const page = makePage([
                 { text: { en: "long text" }, overflowing: ["en"] },
                 { text: { en: "" } },
             ]);
-            page.querySelectorAll(".split-pane-component").forEach((pane) =>
-                pane.classList.remove("split-pane-component"),
+            // Everything the page lays out is inside its marginBox. A box outside one is
+            // something laid over the page, and its size is not the page's business.
+            page.querySelectorAll(".marginBox").forEach((marginBox) =>
+                marginBox.classList.remove("marginBox"),
             );
 
             expect(canOfferContinue(box(page, 1))).toBe(false);
@@ -352,6 +390,99 @@ describe("flowContinueButton", () => {
             expect(
                 groupOf(box(page, 1, "fr")).getAttribute(kFlowChainAttr),
             ).toBeTruthy();
+        });
+    });
+
+    describe("a source on an earlier page", () => {
+        function makeEmptyPage(): HTMLElement {
+            const page = makePage([{ text: { en: "" } }]);
+            page.id = "page-4";
+            return page;
+        }
+
+        it("offers the page C# names, and says which page it is", async () => {
+            pendingOverflow = {
+                pageId: "page-2",
+                pageNumber: "3",
+                indexInPage: 1,
+                previewText: "and the rest of it",
+            };
+            const page = makeEmptyPage();
+
+            // The first call has no answer to work from; it asks, and puts the button up when
+            // the answer arrives.
+            updateContinueButtons(page);
+            expect(buttonsOn(page).length).toBe(0);
+            await flushAnswers();
+
+            expect(buttonsOn(page).length).toBe(1);
+            expect(getContinueButtonLabel(box(page, 0))).toBe(
+                "Continue text from page 3",
+            );
+        });
+
+        it("offers nothing when C# says no earlier page has text to spare", async () => {
+            const page = makeEmptyPage();
+
+            updateContinueButtons(page);
+            await flushAnswers();
+
+            expect(buttonsOn(page).length).toBe(0);
+        });
+
+        it("brings the text across and links the group when it is clicked", async () => {
+            pendingOverflow = {
+                pageId: "page-2",
+                pageNumber: "3",
+                indexInPage: 1,
+                previewText: "and the rest of it",
+            };
+            continueIntoResult = {
+                chainId: "chain-9",
+                targetHtmlByLang: { en: "<p>and the rest of it</p>" },
+            };
+            const page = makeEmptyPage();
+            updateContinueButtons(page);
+            await flushAnswers();
+
+            buttonsOn(page)[0].click();
+            await flushAnswers();
+
+            expect(continueIntoCalls).toEqual([
+                {
+                    sourcePageId: "page-2",
+                    sourceIndexInPage: 1,
+                    targetPageId: "page-4",
+                    targetIndexInPage: 0,
+                    lang: "en",
+                },
+            ]);
+            expect(box(page, 0).textContent).toBe("and the rest of it");
+            expect(groupOf(box(page, 0)).getAttribute(kFlowChainAttr)).toBe(
+                "chain-9",
+            );
+            expect(buttonsOn(page).length).toBe(0);
+        });
+
+        it("prefers a source on this page: text must not jump over a box that could hold it", async () => {
+            pendingOverflow = {
+                pageId: "page-2",
+                pageNumber: "3",
+                indexInPage: 1,
+                previewText: "and the rest of it",
+            };
+            const page = makePage([
+                { text: { en: "long text" }, overflowing: ["en"] },
+                { text: { en: "" } },
+            ]);
+            page.id = "page-4";
+
+            updateContinueButtons(page);
+            await flushAnswers();
+
+            expect(getContinueButtonLabel(box(page, 1))).toBe(
+                kContinueButtonEnglish,
+            );
         });
     });
 

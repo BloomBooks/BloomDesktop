@@ -3,11 +3,14 @@
 // There is only one: Unlink. Linking is done by the button an empty box offers (see
 // flowContinueButton), so there is no command for it.
 
+import { unlinkFrom } from "./flowBoundaryClient";
+import { getFlowGroupsOfPage } from "./flowChain";
 import {
     kContinuationAttr,
     kFlowChainAttr,
     kHasNextClass,
     kHasPrevClass,
+    kSeamSpaceAttr,
 } from "./flowConstants";
 
 const kTranslationGroupSelector = ".bloom-translationGroup";
@@ -15,8 +18,8 @@ const kPageSelector = ".bloom-page";
 
 export interface UnlinkOptions {
     /**
-     * Clear the chain from the groups that are on other pages, which only C# can reach. The
-     * caller supplies it; without one, unlinkBox changes this page alone.
+     * Clear the chain from the groups that are on other pages, which only C# can reach. Without
+     * one, unlinkBox asks C# itself (flowBoundaryClient.unlinkFrom); a test supplies its own.
      */
     unlinkOnOtherPages?: (chainId: string, fromGroup: HTMLElement) => void;
     /**
@@ -63,7 +66,7 @@ export function unlinkBox(
         .filter((other) => other === group || comesAfter(other, group))
         .forEach(unlinkGroup);
 
-    options.unlinkOnOtherPages?.(chainId, group);
+    (options.unlinkOnOtherPages ?? unlinkOnLaterPages)(chainId, group);
 
     // A chain needs two boxes to be a chain: one box on its own has nowhere to send its extra
     // text and nowhere to get any from, and getLanguageChainOnPage passes over it. So a group
@@ -77,6 +80,24 @@ export function unlinkBox(
     options.onUnlinked?.(affected);
 }
 
+/**
+ * Take the groups of this chain that are on the later pages out of it. Only C# can reach them,
+ * and it names a group by its page and its place among the flow groups of that page.
+ */
+function unlinkOnLaterPages(chainId: string, fromGroup: HTMLElement): void {
+    const page = fromGroup.closest<HTMLElement>(kPageSelector);
+    if (!page?.id) {
+        return;
+    }
+
+    const indexInPage = getFlowGroupsOfPage(page).indexOf(fromGroup);
+    if (indexInPage < 0) {
+        return;
+    }
+
+    void unlinkFrom(chainId, page.id, indexInPage);
+}
+
 function unlinkGroup(group: HTMLElement): void {
     group.removeAttribute(kFlowChainAttr);
     group.classList.remove(kHasNextClass);
@@ -84,10 +105,12 @@ function unlinkGroup(group: HTMLElement): void {
     getEditables(group).forEach((editable) => {
         // The first paragraph carried the attribute that says it is the tail of a paragraph
         // that began in the box before. Nothing begins it elsewhere now, so it is an
-        // ordinary paragraph, and it takes its style's indent and top margin back.
-        editable
-            .querySelector(`:scope > p[${kContinuationAttr}]`)
-            ?.removeAttribute(kContinuationAttr);
+        // ordinary paragraph, and it takes its style's indent and top margin back. The space
+        // that stood at the seam has no place at the start of a paragraph, so its attribute
+        // goes too.
+        const tail = editable.querySelector(`:scope > p[${kContinuationAttr}]`);
+        tail?.removeAttribute(kContinuationAttr);
+        tail?.removeAttribute(kSeamSpaceAttr);
     });
 }
 

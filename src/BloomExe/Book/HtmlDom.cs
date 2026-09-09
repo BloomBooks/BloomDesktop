@@ -1020,7 +1020,7 @@ namespace Bloom.Book
             return GetEltsWithClassNotInBloomCanvas(pageElement, "bloom-translationGroup");
         }
 
-        private static List<SafeXmlElement> GetEltsWithClassNotInBloomCanvas(
+        internal static List<SafeXmlElement> GetEltsWithClassNotInBloomCanvas(
             SafeXmlElement pageElement,
             string targetClass
         )
@@ -1404,6 +1404,13 @@ namespace Bloom.Book
                 var oldSize = oldParent.GetAttribute("data-imgsizebasedon");
                 if (!string.IsNullOrEmpty(oldSize))
                     newParent.SetAttribute("data-imgsizebasedon", oldSize);
+
+                // A translation group's place in a chain of linked text boxes is a claim about
+                // this box on this page, and Change Layout keeps the box and the page. Losing it
+                // would strand the text of the boxes after it on later pages.
+                var oldChain = oldParent.GetAttribute(kFlowChainAttrName);
+                if (!string.IsNullOrEmpty(oldChain))
+                    newParent.SetAttribute(kFlowChainAttrName, oldChain);
             }
         }
 
@@ -1899,6 +1906,36 @@ namespace Bloom.Book
         public const string kOverflowStartClass = "bloom-overflowStart";
 
         /// <summary>
+        /// Replace everything in this element with the nodes of an HTML fragment. The browser
+        /// owns the content of a text box and sends it as HTML, so this is how C# takes what the
+        /// browser built without parsing it itself.
+        /// </summary>
+        public static void SetInnerHtmlFromFragment(SafeXmlElement target, string html)
+        {
+            if (target == null)
+                return;
+
+            // RemoveAll would take the attributes off as well, and the box would lose
+            // its class and lang. Only the content is the browser's to replace.
+            while (target.FirstChild != null)
+                target.RemoveChild(target.FirstChild);
+            if (string.IsNullOrEmpty(html))
+                return;
+
+            var wrapped = XmlHtmlConverter.GetXmlDomFromHtml(
+                $"<html><body><div id='flowFragment'>{html}</div></body></html>"
+            );
+            var holder = wrapped.SelectSingleNode("//div[@id='flowFragment']") as SafeXmlElement;
+            if (holder == null)
+                return;
+
+            foreach (var child in holder.ChildNodes)
+            {
+                target.AppendChild(target.OwnerDocument.ImportNode(child, true));
+            }
+        }
+
+        /// <summary>
         /// Take the flow-text markup off a page: the chain attribute that links its text
         /// boxes to boxes on other pages, and the marker that says where the text of a box
         /// stops fitting. A page that is duplicated, pasted or added must not join the chain
@@ -1922,6 +1959,21 @@ namespace Bloom.Book
             }
 
             RemoveOverflowMarkers(pageDiv);
+
+            // A paragraph that is no longer part of a chain continues nothing, so it records no
+            // seam either.
+            foreach (
+                SafeXmlElement paragraph in pageDiv
+                    .SafeSelectNodes(
+                        $".//p[@{FlowTextChains.kContinuationAttrName} or @{FlowTextChains.kSeamSpaceAttrName}]"
+                    )
+                    .Cast<SafeXmlElement>()
+                    .ToArray()
+            )
+            {
+                paragraph.RemoveAttribute(FlowTextChains.kContinuationAttrName);
+                paragraph.RemoveAttribute(FlowTextChains.kSeamSpaceAttrName);
+            }
         }
 
         /// <summary>

@@ -60,6 +60,21 @@
         <note>ID: EditTab.FlowText.ContinueFromBoxAbove</note>
         <note>Label on the button an empty text box shows in the Edit tab when a text box above it on the same page holds more text than fits. Clicking it links the two boxes, so that the text which does not fit flows down into the empty one.</note>
       </trans-unit>
+      <trans-unit id="EditTab.FlowText.ContinueFromPage" translate="no">
+        <source xml:lang="en">Continue text from page {0}</source>
+        <note>ID: EditTab.FlowText.ContinueFromPage</note>
+        <note>Label on the button an empty text box shows in the Edit tab when a text box on an earlier page holds more text than fits. {0} is the number of that earlier page. Clicking it links the two boxes, so that the text which does not fit flows onto this page.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FlowText.FlowsFromPage" translate="no">
+        <source xml:lang="en">Text flows here from page {0}</source>
+        <note>ID: EditTab.FlowText.FlowsFromPage</note>
+        <note>Small label shown in the Edit tab above a text box whose text continues from a linked text box on an earlier page. {0} is that page's number.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FlowText.FlowsFromPreviousPage" translate="no">
+        <source xml:lang="en">Text flows here from the previous page</source>
+        <note>ID: EditTab.FlowText.FlowsFromPreviousPage</note>
+        <note>Small label shown in the Edit tab above a text box whose text continues from a linked text box on an earlier page. This wording is used when that page has no page number.</note>
+      </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">No Indent</source>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>

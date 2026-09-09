@@ -13,6 +13,18 @@ export const kChainedGroupSelector = `.bloom-translationGroup[${kFlowChainAttr}]
 export const kContinuationAttr = "data-flow-continuation";
 export const kContinuationAttrValue = "true";
 
+// Goes beside the continuation attribute when the text was cut at a space, and says that the
+// join has to put that space back.
+//
+// The space itself cannot be stored: no whitespace survives at the edge of a paragraph. The
+// editor writes a paragraph's trailing space as a zero-width filler, and a space at the head of
+// a paragraph does not come back from the saved page. So the two halves of a cut paragraph hold
+// no whitespace at the cut, and this attribute is what says a space belongs there. Nothing needs
+// it outside the editor: in the book each half is a paragraph of its own text box, and neither
+// wants a space at its edge.
+export const kSeamSpaceAttr = "data-flow-seam-space";
+export const kSeamSpaceAttrValue = "true";
+
 // Marks the character at which the text of a box stops fitting in it. OverflowChecker puts
 // it in whenever a normal-style box overflows, whether or not the box is part of a chain,
 // and takes it out again when the box fits. It is content markup: it is saved with the page,
@@ -50,3 +62,21 @@ export const kContinueButtonClass = "bloom-flow-continue";
 export const kContinueButtonTestId = "flow-text-continue";
 export const kContinueButtonL10nId = "EditTab.FlowText.ContinueFromBoxAbove";
 export const kContinueButtonEnglish = "Continue text from the box above";
+
+// The same offer, when the box whose text does not fit is on an earlier page. {0} is what the
+// reader calls that page, which C# works out (FlowTextChains.FindPendingOverflowBefore).
+export const kContinueFromPageL10nId = "EditTab.FlowText.ContinueFromPage";
+export const kContinueFromPageEnglish = "Continue text from page {0}";
+
+// The label a box wears when its text continues from a linked box on an EARLIER PAGE. A box
+// whose previous linked box is on this page carries kHasPrevClass instead, which the reader can
+// see for themselves. It is a bloom-ui element, so HtmlDom takes it out of the page Bloom saves.
+// {0} is what the reader calls the earlier page, which C# works out (FlowTextApi previous).
+export const kFlowFromClass = "bloom-flow-from";
+export const kFlowFromTestId = "flow-text-flows-from";
+export const kFlowFromPageL10nId = "EditTab.FlowText.FlowsFromPage";
+export const kFlowFromPageEnglish = "Text flows here from page {0}";
+export const kFlowFromPreviousPageL10nId =
+    "EditTab.FlowText.FlowsFromPreviousPage";
+export const kFlowFromPreviousPageEnglish =
+    "Text flows here from the previous page";

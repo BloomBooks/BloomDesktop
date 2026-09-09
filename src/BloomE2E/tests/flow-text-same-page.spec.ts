@@ -19,6 +19,7 @@ import {
     makeBookFromTemplate,
 } from "../helpers/bookMaking";
 import {
+    assertRunIsIntact,
     clickContinueText,
     getBoxTexts,
     getCaretOwner,
@@ -107,40 +108,30 @@ test.describe("text flowing between two boxes on one page", () => {
         expect(await getCaretOwner(page)).toBe(1);
     });
 
-    // The chain id and the continuation paragraph do survive the round trip; the text does
-    // not. The pass that runs as the page opens measures the text again and moves a word or
-    // two forward, and each word it moves arrives with no space in front of it, so the reader
-    // sees "usedtostand,thewater". CKEditor writes the paragraph's trailing space as a
-    // zero-width filler, and the word that moves carries that filler with it instead of a
-    // space. Fixing it means deciding how the flow holds the space at a box boundary, which
-    // is a decision about the engine, not about this test. See AUTOMATION-DEBT.md, "A word
-    // moved by the pass loses the space in front of it".
-    test.fixme(
-        "the link and the text survive leaving the page and coming back [Test Case ID TBD]",
-        async ({ page }) => {
-            test.setTimeout(300000);
-            await goToPage(page, flowPageId);
-            const chainId = await getChainId(page, 0);
+    test("the link and the text survive leaving the page and coming back [Test Case ID TBD]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        await goToPage(page, flowPageId);
+        const chainId = await getChainId(page, 0);
 
-            // Bloom writes a page when the book leaves it, so this saves and reloads.
-            await goToPage(page, otherPageId);
-            await goToPage(page, flowPageId);
+        // THE ACTION UNDER TEST: leave the page and come back. Bloom writes a page when the
+        // book leaves it, so this saves and reloads, and a pass runs as the page opens.
+        await goToPage(page, otherPageId);
+        await goToPage(page, flowPageId);
 
-            expect(await getChainId(page, 0)).toBe(chainId);
-            expect(await getChainId(page, 1)).toBe(chainId);
-            expect(await hasContinuationParagraph(page, 1)).toBe(true);
+        expect(await getChainId(page, 0)).toBe(chainId);
+        expect(await getChainId(page, 1)).toBe(chainId);
+        expect(await hasContinuationParagraph(page, 1)).toBe(true);
 
-            // Every word is still there, and still in order. Which word the split falls on
-            // is not part of the claim: the pass measures the text again as the page opens,
-            // so a word can sit on the other side of the break than it did before.
-            const texts = await getBoxTexts(page);
-            expect(texts[0].length).toBeGreaterThan(0);
-            expect(texts[1].length).toBeGreaterThan(0);
-            expect(normalize(texts.join(" "))).toBe(
-                normalize(kTextTooLongForOneBox),
-            );
-        },
-    );
+        // Every word is still there, and still in order. Which word the split falls on is not
+        // part of the claim: the pass measures the text again as the page opens, so a word can
+        // sit on the other side of the break than it did before.
+        const texts = await getBoxTexts(page);
+        expect(texts[0].length).toBeGreaterThan(0);
+        expect(texts[1].length).toBeGreaterThan(0);
+        assertRunIsIntact(texts, kTextTooLongForOneBox);
+    });
 
     test("backspace at the start of the second box pulls text back [Test Case ID TBD]", async ({
         page,
