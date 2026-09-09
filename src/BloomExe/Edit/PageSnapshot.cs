@@ -120,8 +120,18 @@ namespace Bloom.Edit
         /// should then log that it is saving a page the browser still considers half-changed.
         ///
         /// Sleeping the UI thread is deliberate: the alternative is another asynchronous protocol
-        /// for the callers that used to have one and were glad to lose it. It works because the
-        /// notices that end the wait arrive on server threads, not the UI thread.
+        /// for the callers that used to have one and were glad to lose it. The notices that end
+        /// the wait arrive on server threads, so the sleep does not stop them.
+        ///
+        /// What the sleep CAN stop is the work itself, when that work needs C#. Work that runs
+        /// entirely in the browser (fitting a canvas element, waiting for an image to load)
+        /// finishes and releases us. Work that calls an API which runs on the UI thread cannot
+        /// finish while we sleep on it; and when the save itself is inside an API handler that
+        /// holds the server's sync lock (leaving the tab from the tab bar is one), work that calls
+        /// any synchronised API is blocked too. In those cases the wait runs out, the save goes
+        /// ahead exactly as it would have without the wait, and the log names the work -- which
+        /// is how we will find out which kinds of work this matters for. The cap is kept short
+        /// for that reason.
         /// </summary>
         public bool WaitUntilIdle(int maxMs, out string busyWith)
         {

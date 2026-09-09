@@ -358,6 +358,57 @@ describe("pageSnapshot", () => {
         expect(posted[1].body).toBe("with the image sized");
     });
 
+    it("says idle only after the page as it is AFTER the work has been posted, even if a post was already in flight", async () => {
+        // The gather may have read the page before the work began and be sitting in its post when
+        // the work finishes; what it sends predates the work. Idle must still wait for a snapshot
+        // taken afterwards, or C# saves the old page.
+        let release: (value: string) => void = () => {};
+        const slowGather = () =>
+            new Promise<string>((resolve) => {
+                release = resolve;
+            });
+        startWatchingPageForSnapshots(slowGather);
+        release("baseline");
+        await letTheBaselineSettle();
+        posted.length = 0;
+
+        // The user types; a snapshot run starts and is now reading the page.
+        changeThePage("before the work");
+        await Promise.resolve();
+        vi.advanceTimersByTime(quietMsForTests);
+        await vi.runAllTicks();
+
+        // Meanwhile some work registers, changes the page, and finishes -- all while that run is
+        // still out.
+        addRequestPageContentDelay("sizing an image");
+        changeThePage("after the work");
+        await Promise.resolve();
+        removeRequestPageContentDelay("sizing an image");
+        await Promise.resolve();
+
+        // The run comes back with what it read before the work.
+        release("before the work");
+        await vi.runAllTicks();
+        for (let i = 0; i < 4; i++) await Promise.resolve();
+        // The gather taken because of the idle notice reports the finished page.
+        release("after the work");
+        await vi.runAllTicks();
+        for (let i = 0; i < 6; i++) await Promise.resolve();
+
+        const urls = posted.map((p) => p.url.split("?")[0]);
+        expect(urls).toEqual([
+            "editView/pageBusy",
+            "editView/pageSnapshot",
+            "editView/pageSnapshot",
+            "editView/pageIdle",
+        ]);
+        expect(posted[1].body).toBe("before the work");
+        expect(
+            posted[2].body,
+            "the page as it is after the work must have been sent before idle",
+        ).toBe("after the work");
+    });
+
     it("offers the busy notice again when C# refuses it, while the work is still going", async () => {
         // C# refuses notices about a load it is not yet showing, exactly as it refuses snapshots,
         // and this page may simply not have reported itself ready yet.

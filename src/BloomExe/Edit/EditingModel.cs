@@ -1737,9 +1737,10 @@ namespace Bloom.Edit
         }
 
         // How long a snapshot-based save will wait for the browser to finish work that belongs in
-        // the page. The same as the browser's own cap on waiting for that work before gathering
-        // anyway (kMaxWaitTimeMs in pageContentDelays.ts).
-        private const int kMaxWaitForBusyPageMs = 4000;
+        // the page. Long enough for work that runs entirely in the browser; short enough that work
+        // which cannot finish while we sleep (see PageSnapshot.WaitUntilIdle) costs a pause rather
+        // than a freeze.
+        private const int kMaxWaitForBusyPageMs = 2000;
 
         /// <summary>
         /// The current page's content as the browser last reported it, or null if the page has not

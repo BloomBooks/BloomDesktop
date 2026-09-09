@@ -290,13 +290,18 @@ async function tellCSharpBusy(pageId: string, what: string): Promise<void> {
     }
 }
 
-// Idle means "and you already have the page as it is now", so the snapshot goes first: either
-// the gather that was parked behind the register (see takeSnapshot) finishes and posts, or we
-// take one now, which posts only if the page actually changed. Only then do we say idle, and
-// only if the page has not gone busy again meanwhile -- the next idle will speak for that.
+// Idle means "and you already have the page as it is now", so the snapshot goes first, and only
+// then do we say idle -- and only if the page has not gone busy again meanwhile; the next idle
+// will speak for that.
+//
+// A run already under way is not enough on its own. It may have been parked behind the register
+// (see takeSnapshot), in which case it will post the finished page; but it may equally have read
+// the page BEFORE the work began and be sitting in its post, in which case what it sends predates
+// the work. So once it is done we gather again regardless: that posts only if the page differs
+// from what was last sent, so in the first case it costs one gather and no post.
 async function tellCSharpIdle(pageId: string): Promise<void> {
     if (busy) await runDone;
-    else await takeSnapshot();
+    await takeSnapshot();
     if (pageIdBeingWatched !== pageId || busyWith !== undefined) return;
     await postStringQuietly(snapshotUrl(kIdleApi, pageId), "");
 }

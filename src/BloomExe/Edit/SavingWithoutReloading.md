@@ -485,11 +485,18 @@ page click, which carries the content with it, cannot save a half-changed page. 
 snapshot could, because the snapshot it holds predates the work. So the browser tells C# when the
 register goes busy, naming the work (`editView/pageBusy`), and when it is idle again
 (`editView/pageIdle`) -- and it says idle only *after* it has posted the finished page. A
-snapshot-based save waits for that, sleeping the UI thread for at most 4 s
-(`PageSnapshot.WaitUntilIdle`); it is a plain sleep rather than another asynchronous protocol, and it
-works because those two notices, like the snapshot itself, arrive on server threads. If the wait runs
-out, the save goes ahead and the log records what the page was still busy with, so a report of a
-lost change can be read against it.
+snapshot-based save waits for that, sleeping the UI thread for at most 2 s
+(`PageSnapshot.WaitUntilIdle`); it is a plain sleep rather than another asynchronous protocol, and
+the two notices, like the snapshot itself, arrive on server threads, so the sleep does not stop
+them. If the wait runs out, the save goes ahead and the log records what the page was still busy
+with, so a report of a lost change can be read against it.
+
+The sleep has a known limit. Work that runs entirely in the browser finishes and releases the wait.
+Work that calls a C# API on the UI thread cannot finish while the UI thread sleeps; and when the
+save is itself inside an API handler holding the server's sync lock (leaving the tab from the tab
+bar goes through `workspace/selectTab`), work that calls any synchronised API is blocked as well. In
+those cases the wait costs a pause and then behaves exactly as before the wait existed -- and the
+log says which work it was, which is how we will learn whether any of them matter.
 
 ### Would observing `.bloom-page` instead of the body be better?
 
