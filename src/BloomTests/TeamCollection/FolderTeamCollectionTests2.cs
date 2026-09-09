@@ -1842,6 +1842,7 @@ namespace BloomTests.TeamCollection
                 "WatcherOverflowWarns",
                 (tc, mockTcManager) =>
                 {
+                    tc.PretendIsLiveCollection = true;
                     Assert.That(
                         tc.MessageLog.CurrentErrors,
                         Is.Empty,
@@ -1885,6 +1886,7 @@ namespace BloomTests.TeamCollection
                 "WatcherOverflowDedupes",
                 (tc, mockTcManager) =>
                 {
+                    tc.PretendIsLiveCollection = true;
                     var booksPath = Path.Combine(tc.RepoDescription, "Books");
 
                     tc.HandleRepoWatcherError(booksPath, new InternalBufferOverflowException());
@@ -1901,6 +1903,34 @@ namespace BloomTests.TeamCollection
                         tc.MessageLog.CurrentErrors.Count,
                         Is.EqualTo(1),
                         "a storm of overflows should not fill the log with identical messages"
+                    );
+                }
+            );
+        }
+
+        /// <summary>
+        /// If a racing watcher failure disconnected us while the overflow warning was queued for
+        /// the UI thread, the manager has swapped in a different collection with a different
+        /// message log -- so writing ours would put the warning where nothing reads it.
+        /// </summary>
+        [Test]
+        public void HandleRepoWatcherError_OverflowAfterDisconnect_WritesNothing()
+        {
+            WithMockManagedCollection(
+                "WatcherOverflowAfterDisconnect",
+                (tc, mockTcManager) =>
+                {
+                    tc.PretendIsLiveCollection = false; // we have already been disconnected
+
+                    tc.HandleRepoWatcherError(
+                        Path.Combine(tc.RepoDescription, "Books"),
+                        new InternalBufferOverflowException()
+                    );
+
+                    Assert.That(
+                        tc.MessageLog.CurrentErrors,
+                        Is.Empty,
+                        "nothing should go into the log of a collection we have given up on"
                     );
                 }
             );
@@ -2372,6 +2402,56 @@ namespace BloomTests.TeamCollection
                             ),
                         Times.Never,
                         "a failure either side of a skipped tick is not a consecutive run"
+                    );
+                }
+            );
+        }
+
+        /// <summary>
+        /// A probe that throws tells us nothing either way, so it must break the run rather than
+        /// silently preserving the earlier strike. Otherwise a failure, a throwing probe, and
+        /// another failure would disconnect a collection that was never shown to be unreachable
+        /// twice in a row.
+        /// </summary>
+        [Test]
+        public void HeartbeatTick_ProbeThrowsBetweenFailures_DoesNotDisconnect()
+        {
+            WithHeartbeat(
+                "HeartbeatProbeThrows",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+                    heartbeat.Tick(null); // strike one
+
+                    tc.PretendCheckConnectionThrows = true;
+                    Assert.DoesNotThrow(
+                        () => heartbeat.Tick(null),
+                        "a throwing probe must not escape the tick"
+                    );
+                    tc.PretendCheckConnectionThrows = false;
+
+                    heartbeat.Tick(null);
+
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never,
+                        "the failures either side of the throwing probe were not consecutive"
+                    );
+
+                    // Sanity check that the tracker is merely reset, not broken: two clean
+                    // failures in a row after this should still disconnect.
+                    heartbeat.Tick(null);
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Once
                     );
                 }
             );

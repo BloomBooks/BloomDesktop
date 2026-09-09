@@ -67,23 +67,36 @@ namespace Bloom.TeamCollection
         // Review: currently includes milestones. Should it?
         public List<TeamCollectionMessage> Messages { get; private set; }
 
+        /// <summary>
+        /// Guards Messages. Writers are not all on the UI thread: several API endpoints are
+        /// registered with handleOnUiThread false and can end up here via CheckConnection, and
+        /// (BL-16729) a file system watcher failing calls in from a thread-pool thread. Because
+        /// WriteMessage enumerates the list to de-duplicate and then appends to it, while the
+        /// status properties below enumerate the same list, an unguarded overlap could produce
+        /// duplicate entries or throw InvalidOperationException.
+        /// </summary>
+        private readonly object _messagesLock = new object();
+
         public List<TeamCollectionMessage> CurrentErrors
         {
             get
             {
-                // correctly 0 if none match
-                var index =
-                    Messages.FindLastIndex(m =>
-                        m.MessageType == MessageAndMilestoneType.LogDisplayed
-                        || m.MessageType == MessageAndMilestoneType.Reloaded
-                    ) + 1;
-                return Messages
-                    .Skip(index)
-                    .Where(m =>
-                        m.MessageType == MessageAndMilestoneType.Error
-                        || m.MessageType == MessageAndMilestoneType.ErrorNoReload
-                    )
-                    .ToList();
+                lock (_messagesLock)
+                {
+                    // correctly 0 if none match
+                    var index =
+                        Messages.FindLastIndex(m =>
+                            m.MessageType == MessageAndMilestoneType.LogDisplayed
+                            || m.MessageType == MessageAndMilestoneType.Reloaded
+                        ) + 1;
+                    return Messages
+                        .Skip(index)
+                        .Where(m =>
+                            m.MessageType == MessageAndMilestoneType.Error
+                            || m.MessageType == MessageAndMilestoneType.ErrorNoReload
+                        )
+                        .ToList();
+                }
             }
         }
 
@@ -101,17 +114,21 @@ namespace Bloom.TeamCollection
         {
             get
             {
-                // correctly 0 if none match
-                var index =
-                    Messages.FindLastIndex(m => m.MessageType == MessageAndMilestoneType.Reloaded)
-                    + 1;
-                return Messages
-                    .Skip(index)
-                    .Where(m =>
-                        m.MessageType == MessageAndMilestoneType.Error
-                        || m.MessageType == MessageAndMilestoneType.NewStuff
-                    )
-                    .ToList();
+                lock (_messagesLock)
+                {
+                    // correctly 0 if none match
+                    var index =
+                        Messages.FindLastIndex(m =>
+                            m.MessageType == MessageAndMilestoneType.Reloaded
+                        ) + 1;
+                    return Messages
+                        .Skip(index)
+                        .Where(m =>
+                            m.MessageType == MessageAndMilestoneType.Error
+                            || m.MessageType == MessageAndMilestoneType.NewStuff
+                        )
+                        .ToList();
+                }
             }
         }
 
@@ -127,14 +144,18 @@ namespace Bloom.TeamCollection
         {
             get
             {
-                // correctly 0 if none match
-                var index =
-                    Messages.FindLastIndex(m => m.MessageType == MessageAndMilestoneType.Reloaded)
-                    + 1;
-                return Messages
-                    .Skip(index)
-                    .Where(m => m.MessageType == MessageAndMilestoneType.NewStuff)
-                    .ToList();
+                lock (_messagesLock)
+                {
+                    // correctly 0 if none match
+                    var index =
+                        Messages.FindLastIndex(m =>
+                            m.MessageType == MessageAndMilestoneType.Reloaded
+                        ) + 1;
+                    return Messages
+                        .Skip(index)
+                        .Where(m => m.MessageType == MessageAndMilestoneType.NewStuff)
+                        .ToList();
+                }
             }
         }
 
@@ -142,12 +163,17 @@ namespace Bloom.TeamCollection
         {
             get
             {
-                var last = Messages.FindLast(m =>
-                    m.MessageType == MessageAndMilestoneType.ClobberPending
-                    || m.MessageType == MessageAndMilestoneType.ShowedClobbered
-                    || m.MessageType == MessageAndMilestoneType.Reloaded
-                );
-                return last?.MessageType == MessageAndMilestoneType.ClobberPending ? last : null;
+                lock (_messagesLock)
+                {
+                    var last = Messages.FindLast(m =>
+                        m.MessageType == MessageAndMilestoneType.ClobberPending
+                        || m.MessageType == MessageAndMilestoneType.ShowedClobbered
+                        || m.MessageType == MessageAndMilestoneType.Reloaded
+                    );
+                    return last?.MessageType == MessageAndMilestoneType.ClobberPending
+                        ? last
+                        : null;
+                }
             }
         }
 
@@ -155,10 +181,13 @@ namespace Bloom.TeamCollection
         {
             get
             {
-                var last = Messages.FindLast(m =>
-                    m.MessageType == MessageAndMilestoneType.Reloaded
-                );
-                return last == null ? DateTime.MinValue : last.When;
+                lock (_messagesLock)
+                {
+                    var last = Messages.FindLast(m =>
+                        m.MessageType == MessageAndMilestoneType.Reloaded
+                    );
+                    return last == null ? DateTime.MinValue : last.When;
+                }
             }
         }
 
@@ -184,15 +213,34 @@ namespace Bloom.TeamCollection
             string param1 = ""
         )
         {
-            if (IsRedundantMessage(messageType, l10nId, message, param0, param1))
-                return;
             var msg = new TeamCollectionMessage(messageType, l10nId, message, param0, param1);
-            WriteMessage(msg);
+            // The de-duplication check and the append have to be one atomic step, or two
+            // concurrent writers can both decide the message is new and both add it.
+            lock (_messagesLock)
+            {
+                if (IsRedundantMessage(messageType, l10nId, message, param0, param1))
+                    return;
+                Messages.Add(msg);
+            }
+            AfterMessageAdded(msg);
         }
 
         public void WriteMessage(TeamCollectionMessage message)
         {
-            Messages.Add(message);
+            lock (_messagesLock)
+            {
+                Messages.Add(message);
+            }
+            AfterMessageAdded(message);
+        }
+
+        /// <summary>
+        /// Deliberately called with the lock released: raising the status-changed event reaches
+        /// WinForms and the websocket server, and holding a lock across that is how deadlocks
+        /// happen. Everything here reads only the message it was handed.
+        /// </summary>
+        private void AfterMessageAdded(TeamCollectionMessage message)
+        {
             SIL.Reporting.Logger.WriteEvent(message.TextForDisplay);
             TeamCollectionManager.RaiseTeamCollectionStatusChanged();
             // Using Environment.NewLine here means the format of the file will be appropriate for the
