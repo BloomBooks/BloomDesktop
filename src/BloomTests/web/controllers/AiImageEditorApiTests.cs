@@ -1336,6 +1336,169 @@ namespace BloomTests.web.controllers
         }
 
         // ------------------------------------------------------------------
+        // Bloom Games targets. A target holds a COPY of its draggable's content, image
+        // container and all, so the copy looks just like a slot of its own. It stays IN the
+        // slot list — the page frame counts it too, and the two numberings have to agree —
+        // but it is not offered to the AI image editor, and an off-page commit repoints it so
+        // it goes on showing its draggable's picture (BL-16793).
+        // ------------------------------------------------------------------
+
+        // A draggable holding one picture, plus the target that copies it. Mirrors what
+        // copyContentToTarget builds: the copy is an image container inside a
+        // bloom-targetWrapper. targetOf defaults to the draggable's id, as it is once a game
+        // has been set up; pass "" for a target straight out of a template, which has not been
+        // paired with a draggable yet.
+        private static string GameDraggableAndTargetHtml(
+            string draggableId,
+            string pictureFileName,
+            string targetOf = null
+        ) =>
+            $@"<div class='bloom-canvas-element' data-draggable-id='{draggableId}'>
+                   <div class='bloom-imageContainer'><img src='{pictureFileName}'/></div>
+               </div>
+               <div data-target-of='{targetOf ?? draggableId}'>
+                   <div class='bloom-targetWrapper'>
+                       <div class='bloom-imageContainer'><img src='{pictureFileName}'/></div>
+                   </div>
+               </div>";
+
+        [Test]
+        public void SelectImageSlotsOnPage_StillCountsAGameTargetsCopy()
+        {
+            // The copy must keep its place in this list even though we decline to offer it:
+            // an ordinal is an index into the UNFILTERED list, and slotIndexOnPage in
+            // aiImageEditorPageCommands.ts counts the copy on the live page as well. Filtering
+            // the copy out here instead would silently shift every later slot on the page.
+            var page = MakePageWithBody(GameDraggableAndTargetHtml("d1", "dog.png"));
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(2), "the target's copy must still hold an index");
+            Assert.That(
+                AiImageEditorApi.IsSlotInsideGameTarget(slots[0]),
+                Is.False,
+                "the draggable's own slot"
+            );
+            Assert.That(
+                AiImageEditorApi.IsSlotInsideGameTarget(slots[1]),
+                Is.True,
+                "the target's copy"
+            );
+        }
+
+        [Test]
+        public void IsSlotInsideGameTarget_TargetNotYetPairedWithADraggable_IsStillATarget()
+        {
+            // The Games templates ship data-target-of="", so presence of the attribute is what
+            // marks a target, not its value.
+            var page = MakePageWithBody(GameDraggableAndTargetHtml("d1", "dog.png", targetOf: ""));
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(2));
+            Assert.That(AiImageEditorApi.IsSlotInsideGameTarget(slots[1]), Is.True);
+        }
+
+        [Test]
+        public void IsSlotInsideGameTarget_OrdinarySlot_IsFalse()
+        {
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer'><img src='real.png'/></div>"
+            );
+
+            var slot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+
+            Assert.That(AiImageEditorApi.IsSlotInsideGameTarget(slot), Is.False);
+        }
+
+        [Test]
+        public void GetGameTargetImageCopiesOfSlot_DraggableWithATarget_ReturnsTheCopy()
+        {
+            var page = MakePageWithBody(GameDraggableAndTargetHtml("d1", "dog.png"));
+            var draggablesSlot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+            Assert.That(
+                AiImageEditorApi.IsSlotInsideGameTarget(draggablesSlot),
+                Is.False,
+                "sanity check: slot 0 should be the draggable's own, not the copy"
+            );
+
+            var copies = AiImageEditorApi.GetGameTargetImageCopiesOfSlot(page, draggablesSlot);
+
+            Assert.That(copies.Length, Is.EqualTo(1));
+            Assert.That(copies[0].GetAttribute("src"), Is.EqualTo("dog.png"));
+            Assert.That(
+                copies[0].ParentWithAttribute(AiImageEditorApi.kGameTargetOfAttribute),
+                Is.Not.Null,
+                "what came back must be the copy inside the target, not the draggable's own img"
+            );
+        }
+
+        [Test]
+        public void GetGameTargetImageCopiesOfSlot_AnotherDraggablesTarget_IsNotReturned()
+        {
+            var page = MakePageWithBody(
+                GameDraggableAndTargetHtml("d1", "dog.png")
+                    + GameDraggableAndTargetHtml("d2", "cat.png")
+            );
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+            Assert.That(slots.Length, Is.EqualTo(4), "two draggables and two copies");
+            var secondDraggablesSlot = slots[2];
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(secondDraggablesSlot).GetAttribute("src"),
+                Is.EqualTo("cat.png"),
+                "sanity check: slot 2 should be the second draggable's own"
+            );
+
+            var copies = AiImageEditorApi.GetGameTargetImageCopiesOfSlot(
+                page,
+                secondDraggablesSlot
+            );
+
+            Assert.That(copies.Length, Is.EqualTo(1));
+            Assert.That(copies[0].GetAttribute("src"), Is.EqualTo("cat.png"));
+        }
+
+        [Test]
+        public void GetGameTargetImageCopiesOfSlot_SlotOutsideAnyDraggable_ReturnsNone()
+        {
+            // A canvas background is not a draggable, so it has no target and nothing to keep
+            // in step — even on a page that does have a game on it.
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer' style=""background-image:url('bg.png')""></div>"
+                    + GameDraggableAndTargetHtml("d1", "dog.png")
+            );
+            var backgroundSlot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(backgroundSlot),
+                Is.SameAs(backgroundSlot),
+                "sanity check: slot 0 should be the background"
+            );
+
+            Assert.That(
+                AiImageEditorApi.GetGameTargetImageCopiesOfSlot(page, backgroundSlot),
+                Is.Empty
+            );
+        }
+
+        [Test]
+        public void GetGameTargetImageCopiesOfSlot_DraggableWhoseTargetIsEmpty_ReturnsNone()
+        {
+            // A target's content is cleared in some game modes, and a target of a text or video
+            // draggable never holds a picture at all.
+            var page = MakePageWithBody(
+                @"<div class='bloom-canvas-element' data-draggable-id='d1'>
+                      <div class='bloom-imageContainer'><img src='dog.png'/></div>
+                  </div>
+                  <div data-target-of='d1'></div>"
+            );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(1), "an empty target holds no slot");
+            Assert.That(AiImageEditorApi.GetGameTargetImageCopiesOfSlot(page, slots[0]), Is.Empty);
+        }
+
+        // ------------------------------------------------------------------
         // EmbedCreditsInNewImageFile: an AI-generated result file has no metadata of its own,
         // and Bloom rebuilds the data-copyright/creator/license attributes from the file's
         // metadata, so whatever credits the result should have must be written into the new

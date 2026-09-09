@@ -903,6 +903,11 @@ namespace Bloom.web.controllers
         /// page, so the index the page frame sends at launch means the same thing here. It has
         /// one exclusion this does not need: Bloom injects controls into the live page, and a
         /// save strips them, so they are never in the DOM we read.
+        ///
+        /// Deciding which slots to OFFER is a separate job, done in EnumerateBookImages: a slot
+        /// it declines still holds its index here. Keeping this list unfiltered is what lets the
+        /// page frame work out an index for itself without knowing which slots we kept, so
+        /// resist the temptation to move any of that filtering in here.
         /// </summary>
         internal static SafeXmlElement[] SelectImageSlotsOnPage(SafeXmlElement page) =>
             page.SafeSelectNodes(
@@ -924,6 +929,63 @@ namespace Bloom.web.controllers
             if (img != null)
                 return img;
             return (slot.GetAttribute("style") ?? "").Contains("background-image") ? slot : null;
+        }
+
+        /// <summary>
+        /// Marks a Bloom Games target: the place a draggable is meant to be dragged to, whose
+        /// value is the data-draggable-id of that draggable. The rest of Bloom's knowledge of
+        /// games lives in the front end (see GameTool.tsx and bloom-player's
+        /// dragActivityRuntime.ts); these two constants are all this file needs.
+        /// </summary>
+        internal const string kGameTargetOfAttribute = "data-target-of";
+
+        /// <summary>Marks a canvas element the reader can drag in a Bloom Game.</summary>
+        internal const string kDraggableIdAttribute = "data-draggable-id";
+
+        /// <summary>
+        /// True when this image slot is inside a Bloom Games target, which makes its picture a
+        /// COPY of a draggable's rather than an image of its own: Bloom fills a target by cloning
+        /// the whole content of its draggable, image container and all (copyContentToTarget in
+        /// bloom-player's dragActivityRuntime.ts). Such a slot is not worth offering to the AI
+        /// image editor — the draggable's own slot is the real one, and Bloom regenerates target
+        /// content from the draggable, so an edit made to the copy would just be overwritten
+        /// (BL-16793).
+        ///
+        /// Keyed on the attribute's PRESENCE, not its value: the Games templates ship
+        /// data-target-of="" and the id is filled in at runtime.
+        /// </summary>
+        internal static bool IsSlotInsideGameTarget(SafeXmlElement slot) =>
+            slot.ParentWithAttribute(kGameTargetOfAttribute) != null;
+
+        /// <summary>
+        /// The image elements of the Bloom Games target(s) that hold a copy of this slot's
+        /// picture — empty for the great majority of slots, which are not part of a game at all.
+        /// A slot has such copies only when it belongs to a draggable that has a target; a canvas
+        /// background, or a draggable whose target has no content, has none. Internal for testing.
+        /// </summary>
+        /// <param name="page">the page the slot lives on; targets are matched within it only</param>
+        /// <param name="slot">an image container from <see cref="SelectImageSlotsOnPage"/></param>
+        internal static SafeXmlElement[] GetGameTargetImageCopiesOfSlot(
+            SafeXmlElement page,
+            SafeXmlElement slot
+        )
+        {
+            var draggableId = slot.ParentWithAttribute(kDraggableIdAttribute)
+                ?.GetAttribute(kDraggableIdAttribute);
+            if (string.IsNullOrEmpty(draggableId))
+                return Array.Empty<SafeXmlElement>();
+
+            // Compare the attribute here rather than building an XPath around draggableId, which
+            // comes out of the book's own markup and would need quoting.
+            return page.SafeSelectNodes(".//*[@" + kGameTargetOfAttribute + "]")
+                .OfType<SafeXmlElement>()
+                .Where(target => target.GetAttribute(kGameTargetOfAttribute) == draggableId)
+                // A target's copy is a whole image container, so it is a slot in its own right;
+                // ask the same two helpers the real slots go through.
+                .SelectMany(target => SelectImageSlotsOnPage(target))
+                .Select(GetImageElementOfSlot)
+                .Where(element => element != null)
+                .ToArray();
         }
 
         /// <summary>
@@ -1185,6 +1247,13 @@ namespace Bloom.web.controllers
                 // worked out for itself, without knowing which slots we kept.
                 for (var ordinal = 0; ordinal < slots.Length; ordinal++)
                 {
+                    // A Bloom Games target shows a copy of its draggable's picture, so its image
+                    // container is a second slot showing the same image. Offering it made a game
+                    // page look like it had nearly twice as many pictures as it has, and editing
+                    // the copy would achieve nothing (BL-16793).
+                    if (IsSlotInsideGameTarget(slots[ordinal]))
+                        continue;
+
                     var element = GetImageElementOfSlot(slots[ordinal]);
                     if (element == null)
                         continue;
@@ -1623,7 +1692,10 @@ namespace Bloom.web.controllers
             {
                 // Leave the live (current) page to the front-end: it will call Bloom's
                 // changeImage() with newSrc and these attributes so the canvas + normal save
-                // flow handle it.
+                // flow handle it. A game target on that page needs nothing from us either:
+                // applyAiImageEditorReplacements makes the swapped slot the active canvas
+                // element, and that is what makes Bloom rebuild the copy the draggable's
+                // target holds (see the comment on that line).
                 creditAttributes = ReadCreditAttributes(book.FolderPath, newFileName);
                 return true;
             }
@@ -1639,6 +1711,33 @@ namespace Bloom.web.controllers
                 element,
                 new NullProgress()
             );
+
+            // If this slot belongs to a Bloom Games draggable, its target holds a copy of the
+            // picture, and nothing else will repoint that copy: we no longer offer it to the AI
+            // image editor, and the front end rebuilds a target's copy only when its draggable
+            // becomes the selected canvas element — which, this not being the page the user has
+            // open, it never does. Left alone, the target would go on showing the replaced
+            // picture, and its reference to the old file would also stop
+            // DeleteSupersededAiImageFiles reclaiming it (BL-16793).
+            //
+            // This repoints the copy and re-derives its credit attributes; it deliberately does
+            // not touch the sizing and cropping the copy inherited from the draggable. Those
+            // suit the old image's shape, so a replacement of a different shape looks right only
+            // once the user next selects that draggable and the front end rebuilds the copy
+            // properly. Guessing at them here would mean a second, poorer implementation of
+            // copyContentToTarget.
+            foreach (var copy in GetGameTargetImageCopiesOfSlot(page, slots[ordinal]))
+            {
+                HtmlDom.SetImageElementUrl(
+                    copy,
+                    UrlPathString.CreateFromUnencodedString(newFileName)
+                );
+                ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
+                    book.FolderPath,
+                    copy,
+                    new NullProgress()
+                );
+            }
 
             if (element.HasAttribute("data-book"))
                 pageForDataDivSync = page;
