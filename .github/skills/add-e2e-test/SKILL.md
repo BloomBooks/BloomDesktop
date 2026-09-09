@@ -208,10 +208,11 @@ Rules that hold regardless of the final API:
   `Input.dispatchMouseEvent` inside a test.
 - NEVER trigger native OS dialogs (the WinForms Image Toolbox, video capture, the folder
   chooser) — Playwright cannot dismiss them and the run hangs. The one exception is the "choose
-  a file" dialog: arm `armFileChooser` (helpers/talkingBook.ts, over the `e2e/nextChosenFile`
-  hook) with the path you want BEFORE the click that opens it, and Bloom answers with that path
-  instead of showing a dialog. It answers one dialog only, so arm it immediately before the
-  click; a path armed and never used would otherwise answer some later test's chooser.
+  a file" or "choose a folder" dialog: arm `armFileChooser` (helpers/talkingBook.ts, over the
+  `e2e/nextFileToChoose` hook) with the path you want BEFORE the click that opens it, and Bloom
+  answers with that path instead of showing a dialog. It answers one dialog only, so arm it
+  immediately before the click; a path armed and never used would otherwise answer some later
+  test's chooser.
 - NEVER submit a problem report. The fixture fails the test with gathered detail when
   a "Bloom had a problem" dialog appears; do not loop-dismiss it.
 - Waits are event/state-based (poll an API, await a selector), never fixed sleeps.

@@ -145,7 +145,7 @@ export function getNarratedLanguages(
  * rather than a sentence. Every other test wants addNarration.
  *
  * The button ends in a native file chooser, which Playwright cannot dismiss, so this pre-answers
- * it through Bloom's e2e hook before clicking (see E2eTestingApi's nextChosenFile).
+ * it through Bloom's e2e hook before clicking (see E2eTestingApi's nextFileToChoose).
  *
  * `bookFolder` is needed to wait for the import to finish -- see the comment on the wait below.
  */
@@ -204,12 +204,7 @@ export async function armFileChooser(
     page: Page,
     filePath: string,
 ): Promise<void> {
-    await apiPost(
-        page,
-        "e2e/nextChosenFile",
-        JSON.stringify({ Path: filePath }),
-        "application/json",
-    );
+    await apiPost(page, "e2e/nextFileToChoose", filePath, "text/plain");
 }
 
 /**

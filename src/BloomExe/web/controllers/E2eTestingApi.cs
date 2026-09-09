@@ -155,61 +155,38 @@ namespace Bloom.web.controllers
                 false // does not need the UI thread
             );
 
-            // POST {"path": ...}: the path the NEXT native "choose a file" dialog should return,
-            // instead of opening. Playwright cannot dismiss a native dialog, so any UI path that
-            // opens one hangs the run (see AUTOMATION-DEBT.md); pre-answering the dialog lets a
-            // test drive such a path for real. It is deliberately a single-shot answer, so a test
-            // that arms it and then takes a route that opens no dialog does not leave a booby trap
-            // for the next test. See FileIOApi.SelectFileUsingDialog, the one consumer.
+            // There is deliberately no endpoint here for setting the collection's subscription
+            // tier. Several parts of Bloom keep the Subscription object they were handed at
+            // startup (FeatureStatusApi is one), so a tier replaced later is invisible to them,
+            // and a test that set it that way would still find tier-gated features hidden. A test
+            // that needs a tier launches the collection with a real subscription code in its
+            // .bloomCollection instead; see kEnterpriseSubscriptionCode in BloomE2E.
+
+            // POST body is the full path of a file or folder, and it makes the NEXT file or folder
+            // chooser Bloom would open answer with that path instead of showing a native dialog,
+            // which hangs a run (see AUTOMATION-DEBT.md, "Native OS dialogs hang automation").
+            // Every one of Bloom's choosers goes through BloomOpenFileDialog or
+            // BloomFolderChooser, and both consume the same armed path, so this covers choosing a
+            // video, an image file, a spreadsheet, a reader file or a folder alike. Arming the
+            // answer rather than short-circuiting the feature means the test still drives the real
+            // UI and Bloom still runs all of its post-dialog code: for a video, the copy into the
+            // book folder, the ffmpeg re-encode, the progress dialog and the update of the video
+            // container. Off the UI thread: it only stores a string.
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "nextChosenFile",
-                HandleSetNextChosenFile,
+                kApiUrlPart + "nextFileToChoose",
+                HandleSetNextFileToChoose,
                 false // does not need the UI thread
             );
         }
 
         /// <summary>
-        /// The path POST e2e/nextChosenFile arms, waiting to be handed to the next file dialog, or
-        /// null when nothing is armed. Static because the one consumer, FileIOApi, is a separate
-        /// Autofac-built api class with no reference to this one, and because a test arms this for
-        /// the process rather than for any one book or collection.
+        /// POST e2e/nextFileToChoose: answer the next file or folder chooser with this path rather
+        /// than opening a dialog (see the registration above).
         /// </summary>
-        private static string _nextChosenFilePath;
-
-        /// <summary>
-        /// What POST e2e/nextChosenFile takes. JSON rather than a bare string so that an absent
-        /// member can mean "disarm" without colliding with a path that happens to be empty.
-        /// </summary>
-        private class E2eNextChosenFile
+        private void HandleSetNextFileToChoose(ApiRequest request)
         {
-            public string Path;
-        }
-
-        /// <summary>
-        /// POST e2e/nextChosenFile: arm the answer the next native file dialog will give. An
-        /// absent or empty path disarms, which is how a test can undo an answer it never used.
-        /// </summary>
-        private void HandleSetNextChosenFile(ApiRequest request)
-        {
-            var path = request.RequiredPostObject<E2eNextChosenFile>().Path;
-            _nextChosenFilePath = string.IsNullOrEmpty(path) ? null : path;
+            MiscUI.BloomOpenFileDialog.SetNextPathToChooseInE2eTests(request.RequiredPostString());
             request.PostSucceeded();
-        }
-
-        /// <summary>
-        /// Take the path a test armed with POST e2e/nextChosenFile, if there is one, and disarm it
-        /// so it answers exactly one dialog. False, leaving <paramref name="path"/> null, means no
-        /// test armed an answer and the caller should open its dialog as usual.
-        ///
-        /// Callers must check Program.RunningE2eTests first: this is reachable from production code
-        /// (unlike the endpoints above, which are registered only in e2e mode), so the guard that
-        /// keeps it out of a normal run has to be at the call site.
-        /// </summary>
-        internal static bool TryTakeNextChosenFile(out string path)
-        {
-            path = _nextChosenFilePath;
-            _nextChosenFilePath = null;
-            return path != null;
         }
 
         /// <summary>

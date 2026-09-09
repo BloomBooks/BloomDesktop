@@ -487,6 +487,28 @@ export async function getShownPageId(page: Page): Promise<string | undefined> {
 }
 
 /**
+ * Leave the page being edited and come back to it, which saves it and builds its editing surfaces
+ * again. Use it when something on the page has been left in a state the page cannot get out of by
+ * itself, such as a drawing surface that stays over the page until the page is rebuilt.
+ *
+ * Throws if the book has only one page, because then there is nowhere to go and back from.
+ */
+export async function reloadPageBeingEdited(page: Page): Promise<void> {
+    const wasShowing = await getShownPageId(page);
+    if (!wasShowing)
+        throw new Error(
+            "The Edit tab is not showing a page, so there is none to reload.",
+        );
+    const other = (await getPages(page)).find((p) => p.id !== wasShowing);
+    if (!other)
+        throw new Error(
+            "The book has only one page, so there is nowhere to go and come back from.",
+        );
+    await goToPage(page, other.id);
+    await goToPage(page, wasShowing);
+}
+
+/**
  * Show a page in the Edit tab. This is also how a test SAVES what it typed: Bloom writes the page
  * it is leaving, so text typed into a box reaches the file only once the book moves off that page.
  */
@@ -573,6 +595,29 @@ export async function typeInGroup(
     // Bloom's editor reacts to typing; confirm the box holds what we meant before moving on, so a
     // later failure cannot be blamed on text that never arrived.
     await expect(box).toHaveText(text, { timeout: 15000 });
+}
+
+/**
+ * The font one language's box of one translation group is shown in: the first family of its computed
+ * font-family, without quotes, e.g. "Andika". This is how a test checks that a font chosen in the
+ * Format dialog reached the text.
+ */
+export async function getFontFamilyInGroup(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<string> {
+    const box = editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
+        .first();
+    await box.waitFor({ state: "visible", timeout: 30000 });
+    const family = await box.evaluate(
+        (element) => getComputedStyle(element).fontFamily,
+    );
+    return family
+        .split(",")[0]
+        .trim()
+        .replace(/^["']|["']$/g, "");
 }
 
 /** One front or back matter page, as the Edit tab showed it. */
