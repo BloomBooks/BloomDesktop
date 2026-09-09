@@ -145,9 +145,8 @@ namespace Bloom
             // Tell any Freeze Doctor already running that a Bloom has started, as early in Main as it can
             // go, so it adopts us at once instead of at its next five-second sweep. Everything before this
             // is time in which a hang or a crash cannot be doctored, because Bloom only asks for a dump if
-            // a Doctor is already watching. Announced from where the Doctor is launched instead, much
-            // further down, it was measured arriving 6.2 seconds in - by which time the sweep had already
-            // found us and it bought nothing.
+            // a Doctor is already watching; announced from where the Doctor is launched, much further
+            // down, it would arrive after the sweep had found us anyway.
             //
             // Not any earlier than this, though: it reads a setting, and CheckForCorruptUserConfig above is
             // what makes reading one safe.
@@ -362,6 +361,11 @@ namespace Bloom
                     Settings.Default.Save();
 
                     StartUpWithFirstOrNewVersionBehavior = true;
+
+                    // The announcement at the top of Main read RunFreezeDoctor before this migration, so on
+                    // the first run of a new version it saw the default (off) and stayed silent. Now that the
+                    // user's real value is in, tell a running Doctor again; a repeat is harmless.
+                    DoctorLauncher.AnnounceToAnyDoctor();
                 }
                 // Migrate from old monolithic experimental features setting.
                 ExperimentalFeatures.MigrateFromOldSettings();
