@@ -1981,15 +1981,17 @@ export function editableMightBeRewritten(editable: HTMLElement): boolean {
 // and there are comments to remove, the selection will contract to an
 // insertion point at the start.
 export function removeCommentsFromEditableHtml(editable: HTMLElement) {
+    // [\s\S] is a hack representing every character (including newline)
+    const commentRegex = /<!--[\s\S]*?-->/g;
     // This test makes it less likely we will move the selection. But you should still allow for
     // the possibility.
-    if (editable.innerHTML.includes("<!--")) {
+    if (editable.innerHTML.replace(commentRegex, "") !== editable.innerHTML) {
         // Don't bake ckeditor's zero-width filling char into the html we write back, where it
         // would be orphaned and saved into the book (BL-16490). See
-        // removeTrackedCkEditorFillingChar, and the same step in cleanUpNbsps.
+        // removeTrackedCkEditorFillingChar, and the same step in cleanUpNbsps. Taking it out
+        // changes the html, so read it again afterwards.
         EditableDivUtils.removeTrackedCkEditorFillingChar(editable);
-        // [\s\S] is a hack representing every character (including newline)
-        editable.innerHTML = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
+        editable.innerHTML = editable.innerHTML.replace(commentRegex, "");
     }
 }
 

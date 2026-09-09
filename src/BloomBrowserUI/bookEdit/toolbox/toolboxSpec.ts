@@ -258,4 +258,27 @@ describe("toolbox tests", () => {
 
         expect(div.innerHTML).toBe(`<p>a${zwsp}b</p>`);
     });
+
+    it("removeCommentsFromEditableHtml leaves the box (and ckeditor's filling char) alone when there is no comment to remove", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        // "<!--" can appear in serialized html without being a comment node: attribute
+        // values don't escape "<". That must not count as something to rewrite.
+        p.setAttribute("data-note", "<!-- not a comment");
+        const textNode = document.createTextNode("ab");
+        p.appendChild(textNode);
+        const fillingCharNode = document.createTextNode(zwsp);
+        p.appendChild(fillingCharNode);
+        div.appendChild(p);
+        stubCkEditorTracking(div, fillingCharNode);
+        // sanity check the setup
+        expect(div.innerHTML).toContain("<!--");
+
+        removeCommentsFromEditableHtml(div);
+
+        expect(p.childNodes[0]).toBe(textNode); // not rebuilt
+        expect(fillingCharNode.textContent).toBe(zwsp);
+        expect(p.childNodes[1]).toBe(fillingCharNode);
+    });
 });
