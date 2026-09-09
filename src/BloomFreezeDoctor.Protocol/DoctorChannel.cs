@@ -198,9 +198,9 @@ public static class DoctorChannelLayout
     //  direction needs nothing: an old Doctor only ever looks at offsets that append-only growth leaves
     //  untouched.)
     //
-    //  That case is the common one in the field, not a curiosity: the Doctor updates itself through
-    //  Velopack while Bloom versions linger on people's machines, and the planned 6.4 backport
-    //  guarantees more than one Bloom vintage writing this page at any given time.
+    //  That case is not a curiosity: a Doctor outlives the Bloom that started it and adopts the next one
+    //  it finds, which can be an install of another version or channel, so more than one Bloom vintage
+    //  can write this page on one machine.
     //
     //  The rule for a reader, when there is eventually more than one vintage to handle, is on the END of
     //  the field and not its start — a field that begins inside the written region but runs past the end
@@ -228,7 +228,7 @@ public static class DoctorChannelLayout
     /// seeing half of one update and half of the next — mattering most for the strings, since a torn
     /// activity name would be gibberish on a card.
     ///
-    /// Deliberately 8-byte aligned, which is why the two ints above it come first and ProcessId moved
+    /// Deliberately 8-byte aligned, which is why the two ints above it come first and ProcessId sits
     /// below it: an unaligned 64-bit read is not guaranteed to be atomic.
     /// </summary>
     internal const int OffsetWriteSequence = 8;
@@ -491,9 +491,9 @@ public static class DoctorChannelReader
 }
 
 /// <summary>
-/// Publishes Bloom's state into the shared page. Lives in Bloom; here in the Doctor's repo only so that
-/// the two sides share one description of the format, and so the Doctor's own tests can write a channel
-/// to read back.
+/// Publishes Bloom's state into the shared page. Used by Bloom; in the shared project so that the two
+/// sides share one description of the format, and so the Doctor's own tests can write a channel to read
+/// back.
 ///
 /// **Every method must be safe to call from anywhere and must never throw**, because the callers are
 /// Bloom's UI thread and Bloom's shutdown path. Diagnostics that can break the application they
@@ -548,10 +548,10 @@ public sealed class DoctorChannelWriter : IDisposable
             _view.Write(DoctorChannelLayout.OffsetPayloadBytes, DoctorChannelLayout.PayloadBytes);
             _view.Write(DoctorChannelLayout.OffsetProcessId, processId);
             // The heartbeats are deliberately NOT seeded here, and a test pins that
-            // (A_heartbeat_that_never_ticked_reads_as_infinitely_old_rather_than_as_fresh). Seeding them
-            // to "now" would read as healthy, which sounds tidier and is the dangerous direction: a Bloom
-            // that hangs BEFORE its first tick - during startup, which is a real freeze - would then look
-            // perfectly well. "Never ticked" erring towards alarm is the correct bias.
+            // (TryRead_HeartbeatNeverTicked_AgeIsInfinite). Seeding them to "now" would read as healthy,
+            // which sounds tidier and is the dangerous direction: a Bloom that hangs BEFORE its first tick -
+            // during startup, which is a real freeze - would then look perfectly well. "Never ticked"
+            // erring towards alarm is the correct bias.
         }
         catch (Exception)
         {

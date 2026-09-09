@@ -4,8 +4,8 @@ using NUnit.Framework;
 namespace BloomFreezeDoctor.Tests;
 
 /// <summary>
-/// Tests for the detection rules. Several of these exist because the Phase 0 spike showed the
-/// obvious implementation would be wrong; those name the trap they are guarding.
+/// Tests for the detection rules. Several of these guard against an obvious implementation that would be
+/// wrong; those name the trap.
 /// </summary>
 [TestFixture]
 public class FreezeDetectorTests
@@ -63,7 +63,7 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void Healthy_target_is_healthy_and_silent()
+    public void Observe_HealthyTarget_HealthyAndNoReport()
     {
         var verdict = RunSeconds(0, 30, Healthy);
 
@@ -72,7 +72,7 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void Becomes_suspect_at_twenty_seconds_but_does_not_report_yet()
+    public void Observe_UnresponsiveForTwentySeconds_SuspectButNoReport()
     {
         _detector.Observe(Healthy(0));
         var justBefore = RunSeconds(1, 19, NotResponding);
@@ -89,7 +89,7 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void Reports_once_at_sixty_seconds_and_not_again()
+    public void Observe_UnresponsiveForSixtySeconds_ReportsFrozenOnce()
     {
         _detector.Observe(Healthy(0));
 
@@ -108,7 +108,7 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void Recovery_after_a_reported_freeze_is_itself_reported()
+    public void Observe_RecoveryAfterReportedFreeze_ReportsRecovered()
     {
         _detector.Observe(Healthy(0));
         var frozen = RunSeconds(1, 60, NotResponding);
@@ -129,7 +129,7 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void Dying_while_frozen_produces_one_report_not_two()
+    public void Observe_DiesWhileFrozen_ReportsDiedWhileFrozenOnly()
     {
         _detector.Observe(Healthy(0));
         var frozen = RunSeconds(1, 60, NotResponding);
@@ -146,7 +146,7 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void A_long_operation_buys_patience_but_not_immunity()
+    public void Observe_LongOperationInProgress_ReportsAtFiveMinutesNotOne()
     {
         _detector.Observe(Healthy(0));
 
@@ -175,10 +175,10 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void A_stale_heartbeat_with_corroboration_catches_the_freeze_Tier_A_cannot_see()
+    public void Observe_StaleHeartbeatWithCorroboration_ReportsFrozen()
     {
-        // The spike's headline finding: with the UI thread stuck in an STA managed wait, the window
-        // still answers messages. Only the heartbeat notices.
+        // The freeze an outside watcher cannot see: with the UI thread stuck in an STA managed wait, the
+        // window still answers messages. Only the heartbeat notices.
         _detector.Observe(Healthy(0));
 
         var verdict = RunSeconds(
@@ -196,7 +196,7 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void A_stale_heartbeat_alone_is_not_enough()
+    public void Observe_StaleHeartbeatWithoutCorroboration_NoReport()
     {
         // WM_TIMER is the lowest-priority message, so a busy-but-live UI can starve the heartbeat.
         // Without corroboration that must not become a report.
@@ -213,7 +213,7 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void A_debugged_process_stays_poisoned_when_we_cannot_tell_when_the_debugger_left()
+    public void IsPoisonedByDebugger_DebuggerLeftAtUnknownTime_StaysTrue()
     {
         // Stopping the debugger is a hard kill leaving no proof of shutdown, and it is the most
         // common thing a developer does all day. Asking a dead process about its debugger is
@@ -244,12 +244,12 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void A_debugger_that_left_long_before_the_freeze_does_not_excuse_it()
+    public void IsPoisonedByDebugger_DebuggerLeftLongBeforeFreeze_False()
     {
-        // The case the old permanent poison got wrong, and the reason Bloom now records WHEN a debugger
-        // left. Attach a debugger in the morning, detach it, and hours later Bloom genuinely freezes: that
-        // freeze is real, and it is happening on the machine of somebody well placed to help diagnose it.
-        // Writing off the rest of the run threw exactly that report away.
+        // The reason Bloom records WHEN a debugger left, rather than only that one was here. Attach a
+        // debugger in the morning, detach it, and hours later Bloom genuinely freezes: that freeze is real,
+        // and it is happening on the machine of somebody well placed to help diagnose it. Writing off the
+        // rest of the run would throw exactly that report away.
         _detector.Observe(
             Healthy(0) with
             {
@@ -300,7 +300,7 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void A_debugger_that_left_during_the_freeze_does_excuse_it()
+    public void IsPoisonedByDebugger_DebuggerLeftDuringFreeze_True()
     {
         // The other direction, and the one that must not regress: a developer sitting at a breakpoint
         // produces a heartbeat gap indistinguishable from a freeze. If they detach while it is still
@@ -325,7 +325,7 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void A_debugger_still_attached_when_the_process_died_explains_the_death()
+    public void IsPoisonedByDebugger_DebuggerAttachedAtDeath_True()
     {
         // Terminating from a debugger is a TerminateProcess: no clean-exit proof, so it looks exactly like
         // an unreported crash. Bloom cannot record a detach because Bloom is already gone — so what the
@@ -356,7 +356,7 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void A_sleeping_machine_does_not_manufacture_a_freeze()
+    public void Observe_GapFromMachineSleep_NotAFreeze()
     {
         // The gap between observations is what gives this away: the Doctor cannot run while the
         // machine is asleep, so a jump far beyond our cadence means the world stopped, not that
@@ -385,11 +385,11 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void No_visible_window_for_thirty_seconds_is_a_zombie()
+    public void Observe_NoVisibleWindowForThirtySeconds_ReportsZombie()
     {
         // "Visible" matters: a healthy Bloom keeps an invisible top-level window all session,
         // because its splash screen is hidden rather than closed. Counting any window would mean
-        // never detecting state 3.
+        // never detecting a zombie.
         _detector.Observe(Healthy(0));
 
         var verdict = RunSeconds(
@@ -404,10 +404,10 @@ public class FreezeDetectorTests
     }
 
     [Test]
-    public void An_apparently_healthy_exit_is_not_the_detectors_call()
+    public void Observe_HealthyThenExited_ExitedWithoutReport()
     {
-        // Phase 1 reports an exit only with corroborating evidence, and Phase 3 on the absence of a
-        // clean-exit proof. Neither is something the detector can see, so it must not guess.
+        // An exit is reported only on corroborating evidence, which the detector cannot see, so it must
+        // not guess.
         RunSeconds(0, 30, Healthy);
 
         var exited = _detector.Observe(Healthy(31) with { IsAlive = false });

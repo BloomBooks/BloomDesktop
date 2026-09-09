@@ -10,34 +10,23 @@ namespace BloomFreezeDoctor.Outbox;
 /// <summary>
 /// Files reports to Bloom's YouTrack, deduplicating by fingerprint.
 ///
-/// Everything here was verified against the real tracker during the Phase 0 spike (project `AUT`, test
-/// card deleted afterwards): the token can create issues, search by a fingerprint string in a
-/// description, attach files, and restrict an attachment to the Developers group. That last one is what
-/// decision D2 requires, so it is not optional.
+/// The token can create issues, search by a fingerprint string in a description, attach files, and
+/// restrict an attachment to the Developers group. That last one is not optional: a dump can contain a
+/// user's own content.
 /// </summary>
 public sealed class YouTrackSubmitter : IReportSubmitter
 {
     /// <summary>
     /// The shared `auto_report_creator` permanent token, in the same split form Bloom itself uses.
     ///
-    /// **SETTLED - August 2026, by John Thomson. Please do not re-open this without new information.**
-    /// There is no new risk here. The key was already exposed by Bloom itself, and this code uses it in
-    /// the ways we intend it to be used. Reviewers and review bots raise it repeatedly because a token in
-    /// source looks alarming on sight; the reasoning below is the answer, and the short form is this
-    /// paragraph so that nobody has to read the rest to find it.
-    ///
-    /// Decision D6: BloomDesktop is already a public repository and already carries this token in the
-    /// clear, so reusing it here adds no new exposure. It is not a secret we are leaking; it is a
-    /// secret the project already treats as shipped. A serverless relay, so that nothing is shipped at
-    /// all, remains on the list as later hardening for both applications.
-    ///
-    /// **Reviewed again in August 2026** when a review pointed out that the token now travels inside a
-    /// second executable, and deliberately left as it is. What the Doctor does with the token is under our
-    /// control exactly as what Bloom does with it is, so a second program of ours carrying it adds no risk
-    /// that the first did not already carry. The risk that does exist is the pre-existing one and is not
-    /// changed by anything here: anyone who takes the token out of either binary and puts it in a program
-    /// of their own can do whatever it permits. That is an argument for narrowing what the account is
-    /// allowed to do, or for the relay above — not for treating the two executables differently.
+    /// **A token in source is deliberate; do not re-open this without new information.** Reviewers and
+    /// review bots raise it because it looks alarming on sight, so the reasoning is here. BloomDesktop is a public repository and already ships this token in the clear
+    /// in Bloom itself, so a second executable of ours carrying it adds no exposure the first does not
+    /// already carry; what either program does with it is under our control. The risk that does exist -
+    /// anyone can take the token out of either binary and use whatever it permits - is pre-existing and
+    /// unchanged by anything here. The answer to it is to narrow what the account may do, or a serverless
+    /// relay so that nothing is shipped at all, which remains on the list as later hardening for both
+    /// applications - not treating the two executables differently.
     /// </summary>
     private const string TokenPiece =
         @"YXV0b19yZXBvcnRfY3JlYXRvcg==.NzQtMA==.V9k0yNUN7Df5eqo4QEk5N4BBKqmEHV";
@@ -54,20 +43,16 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     /// The largest single file we will try to *attach*. Anything bigger goes to the support bucket instead
     /// and the card gets a link — see <see cref="SupportFileUploader"/>.
     ///
-    /// **This is a limit of the tracker, not a policy of ours**, and the distinction matters: a
-    /// self-imposed "a card is not a file server" cap would discard every minidump, which is 16-17 MB for a
-    /// real Bloom by this project's own measurement in ManagedStacksCollector — and raising our own number
-    /// would not help, because Bloom measured YouTrack's real ceiling at about 10 MB in July 2020 and gave
-    /// up attaching altogether (that measurement is still in ProblemReportApi, above the commented-out
-    /// attach call it replaced). So 8 MB, which sits under that ceiling with room to spare, and the bucket
-    /// for everything larger.
+    /// **This is a limit of the tracker, not a policy of ours.** YouTrack's real ceiling is about 10 MB
+    /// (Bloom's ProblemReportApi measured it, and gave up attaching altogether), so 8 MB sits under it with
+    /// room to spare. A real Bloom's minidump is 16-17 MB (see ManagedStacksCollector), so every dump takes
+    /// the bucket route.
     /// </summary>
     public const long MaxSingleAttachmentBytes = 8 * 1024 * 1024;
 
     /// <summary>
-    /// Total attachment bytes for one card. Still worth bounding — a card is not a file server — but no
-    /// longer the thing standing between a dump and the person who needs it, since anything too big to
-    /// attach is uploaded and linked rather than dropped.
+    /// Total attachment bytes for one card. A card is not a file server; anything that does not fit is
+    /// uploaded and linked rather than dropped.
     /// </summary>
     public const long MaxAttachmentBytes = 20 * 1024 * 1024;
 
@@ -94,8 +79,7 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             var body = BuildBody(bundle);
 
             // Dedupe first: if this exact problem already has a card, add to it rather than filing
-            // another. Searching is available to us (verified in the spike), so this is a real
-            // capability rather than an aspiration.
+            // another.
             //
             // A card the outbox already knows about wins over searching, and is the only way to reach it:
             // this bundle exists because it could not be folded into a sibling that was being uploaded at
@@ -146,13 +130,12 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             if (created.IssueId == null)
                 return created;
 
-            // **Once the card exists, the outcome is Filed whatever happens next.** Attaching and
-            // uploading used to run bare, so a connection dropping during them unwound into the catch
-            // below and returned NetworkUnavailable with no issue id - which is a lie with consequences:
-            // the bundle went back to Pending, the retry found the card by fingerprint and posted "This
-            // happened again" about its own first attempt, the recurrence path deliberately attaches
-            // nothing, and the S3 links for a minidump already uploaded existed only in a local variable
-            // and were lost with it. The dump stayed in the bucket with nothing pointing at it.
+            // **Once the card exists, the outcome is Filed whatever happens next.** A connection dropping
+            // while attaching or uploading must not unwind into the catch below, which would return
+            // NetworkUnavailable with no issue id - a lie with consequences: the bundle goes back to
+            // Pending, the retry finds the card by fingerprint and posts "This happened again" about its
+            // own first attempt, the recurrence path deliberately attaches nothing, and the S3 links for a
+            // minidump already uploaded are lost with the local variable that held them.
             try
             {
                 await AttachArtifactsAsync(created.IssueId, bundle, cancellation)
@@ -191,11 +174,10 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         }
         catch (Exception e)
         {
-            // Anything else must not escape, and the case that made this necessary is not exotic: a
-            // captive portal or corporate proxy answers 200 with an HTML block page, JsonNode.Parse throws
-            // JsonException, and nothing here caught it. It unwound out of the drain, which left the bundle
-            // stuck in Uploading - invisible to every later drain until the reclaim timer - and out of
-            // `--drain`, which had no handler at all and simply died in front of whoever was using it.
+            // Anything else must not escape, and the case is not exotic: a captive portal or corporate
+            // proxy answers 200 with an HTML block page, and JsonNode.Parse throws. Left to unwind out of
+            // the drain, that would leave the bundle stuck in Uploading - invisible to every later drain
+            // until the reclaim timer - and would kill `--drain` in front of whoever was using it.
             //
             // Treated as a network problem because that is what it behaves like: try again later.
             return new SubmitResult
@@ -206,17 +188,6 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         }
     }
 
-    /// <summary>
-    /// Looks for a card already carrying this fingerprint. Restricted to the same project, so a test
-    /// run in `AUT` can never comment on a real `BL` card.
-    /// </summary>
-    /// <summary>
-    /// The file names of a card's existing attachments, so a recurrence can tell whether the evidence it
-    /// holds is already there. See <see cref="RecurrenceArtifacts"/>.
-    ///
-    /// An empty list on failure, which errs towards attaching: a duplicate dump on a card is untidy, a
-    /// missing one is unrecoverable once the user's machine has cleared its outbox.
-    /// </summary>
     /// <summary>
     /// Whether this card already carries a crash dump, by any route - attached, or linked in the support
     /// bucket because it was too big to attach. See RecurrenceArtifacts.ShowsADump.
@@ -272,6 +243,13 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         }
     }
 
+    /// <summary>
+    /// The file names of a card's existing attachments, so a recurrence can tell whether the evidence it
+    /// holds is already there. See <see cref="RecurrenceArtifacts"/>.
+    ///
+    /// An empty list on failure, which errs towards attaching: a duplicate dump on a card is untidy, a
+    /// missing one is unrecoverable once the user's machine has cleared its outbox.
+    /// </summary>
     private async Task<IReadOnlyList<string>> AttachmentNamesOnAsync(
         string issueId,
         CancellationToken cancellation
@@ -300,6 +278,10 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         }
     }
 
+    /// <summary>
+    /// Looks for a card already carrying this fingerprint. Restricted to the same project, so a test
+    /// run in `AUT` can never comment on a real `BL` card.
+    /// </summary>
     private async Task<string?> FindExistingIssueAsync(
         BundleMetadata metadata,
         CancellationToken cancellation
@@ -386,12 +368,11 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     /// <summary>
     /// Looks up the tracker's internal id for a project. Returns the id, or the failure to report.
     ///
-    /// **It returns the failure rather than just null, and that is the whole point of the shape.** It used
-    /// to return null for any non-success status, and the caller turned null into RejectedPermanently -
-    /// so an ordinary 5xx or gateway timeout on this one GET marked a gathered report failed FOR GOOD and
-    /// stopped every retry. Every other call in this class routes its failures through
-    /// <see cref="ClassifyFailure"/>; this one silently did not, which defeated the one thing the outbox
-    /// exists for: surviving the flaky network that so often arrives with a freeze.
+    /// **It returns the failure rather than just null, and that is the whole point of the shape.** A bare
+    /// null would be turned into RejectedPermanently by the caller, so an ordinary 5xx or gateway timeout
+    /// on this one GET would mark a gathered report failed FOR GOOD and stop every retry - defeating the one
+    /// thing the outbox exists for, surviving the flaky network that so often arrives with a freeze. Like
+    /// every other call in this class, it routes failures through <see cref="ClassifyFailure"/>.
     /// </summary>
     private async Task<(string? Id, SubmitResult? Failure)> FindProjectIdAsync(
         string shortName,
@@ -461,10 +442,10 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         // for a dump that is not there - or told a dump is "near enough a copy" of nothing at all.
         if (contributingADump)
         {
-            // Says WHAT is true, not why. The earlier wording guessed the reason - "the first report was
-            // made after the process had already gone, when no dump could be taken" - and the guess was
-            // wrong the first time it was ever printed: that card's dump had been taken perfectly well and
-            // was sitting in the support bucket, 422 bytes over the attachment ceiling.
+            // Says WHAT is true, not why. A guess at the reason - "the first report was made after the
+            // process had already gone, when no dump could be taken" - is easily wrong: that card's dump
+            // may have been taken perfectly well and be sitting in the support bucket, a few hundred bytes
+            // over the attachment ceiling.
             text.AppendLine(
                 "**The crash dump from this occurrence is attached**, because the card was not already "
                     + "carrying one."
@@ -495,16 +476,13 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     /// Adds our findings to a card that already exists for this fingerprint. Returns null on success, or
     /// the classified failure.
     ///
-    /// **It classifies rather than throwing, and that is the point.** `EnsureSuccessStatusCode` here threw
-    /// an <c>HttpRequestException</c>, which the caller's catch turned into `NetworkUnavailable` — so a
-    /// flat, permanent refusal (a 400, a 403, a card that has since been deleted) was recorded as "no
-    /// network" and retried every five minutes for thirty days. Worse, the drain stops at the first bundle
-    /// it cannot send, so that one undeliverable comment sat at the head of the queue and blocked every
-    /// report behind it, indefinitely.
-    ///
-    /// This is the same trap <see cref="FindProjectIdAsync"/> was fixed for; every other call in this
-    /// class already routes its failures through <see cref="ClassifyFailure"/>, which draws the line in
-    /// the right place here too — a definite refusal is permanent, a 429 or 5xx is worth retrying.
+    /// **It classifies rather than throwing, and that is the point.** An <c>HttpRequestException</c> thrown
+    /// here would be caught by the caller as `NetworkUnavailable` — so a flat, permanent refusal (a 400, a
+    /// 403, a card that has since been deleted) would be recorded as "no network" and retried every five
+    /// minutes for thirty days. Worse, the drain stops at the first bundle it cannot send, so that one
+    /// undeliverable comment would sit at the head of the queue and block every report behind it,
+    /// indefinitely. <see cref="ClassifyFailure"/> draws the line in the right place: a definite refusal is
+    /// permanent, a 429 or 5xx is worth retrying.
     /// </summary>
     private async Task<SubmitResult?> CommentAsync(
         string issueId,
@@ -532,9 +510,9 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     }
 
     /// <summary>
-    /// Uploads the artifacts and then restricts each to the Developers group, which is decision D2's
-    /// requirement: a dump can contain book text, file paths and the user's own details, so it must not
-    /// be visible to everyone who can see the card.
+    /// Uploads the artifacts and then restricts each to the Developers group: a dump can contain book
+    /// text, file paths and the user's own details, so it must not be visible to everyone who can see the
+    /// card.
     ///
     /// Restriction is a second call because the upload is multipart and cannot carry the visibility
     /// object. If that second call fails we delete the attachment rather than leave it unrestricted —
@@ -568,7 +546,7 @@ public sealed class YouTrackSubmitter : IReportSubmitter
                 if (attachmentId == null)
                 {
                     // A non-success status, which UploadAsync reports by returning null rather than
-                    // throwing. Used to be skipped in silence.
+                    // throwing.
                     failed.Add(path);
                     continue;
                 }
@@ -583,9 +561,9 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             }
         }
 
-        // Say what did not make it, the same way the too-large path does. Skipping in silence left a card
-        // that looked complete and was not - and the evidence it was missing is on a machine we will lose
-        // access to, so nobody would find out until they went looking for a dump that was never there.
+        // Say what did not make it, the same way the too-large path does. Skipping in silence would leave
+        // a card that looks complete and is not - and the evidence it is missing is on a machine we will
+        // lose access to, so nobody would find out until they went looking for a dump that was never there.
         if (failed.Count > 0)
             await SayWhatCouldNotBeAttachedAsync(issueId, bundle, failed, cancellation)
                 .ConfigureAwait(false);
@@ -791,26 +769,12 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     }
 
     /// <summary>
-    /// Uploads the artifacts too large to attach, and adds one comment with links to them.
+    /// Says where a file we could not get onto the card still is, and how long that will remain true.
     ///
-    /// After the card exists, rather than before, and for the same reason Bloom does it this way: an upload
-    /// made before the card was created would be orphaned in the bucket if the creation then failed, and
-    /// the retry would upload it again. This way nothing reaches the bucket unless there is a card to point
-    /// at it.
-    ///
-    /// A failure here is reported on the card rather than swallowed. The dump is usually the most valuable
-    /// thing in a report, so "we could not get it to you, and here is where it is on the user's machine" is
-    /// worth far more than silence.
-    /// </summary>
-    /// <summary>
-    /// Says where a file we could not get onto the card still is, and - the part that took a second look -
-    /// how long that will remain true.
-    ///
-    /// "Still on the user's machine at <c>…</c>" was written as though the folder were permanent. It is
-    /// not: the outbox drops a bundle 30 days after it was gathered, and sooner than that if more than
-    /// <see cref="ReportOutbox.MaxBundles"/> reports pile up and it stops being one of the newest. So the
-    /// sentence could be true when the card was filed and quietly false by the time somebody acted on it -
-    /// which is worse than saying nothing, because it sends them looking.
+    /// The folder is not permanent: the outbox drops a bundle 30 days after it was gathered, and sooner
+    /// than that if more than <see cref="ReportOutbox.MaxBundles"/> reports pile up and it stops being one
+    /// of the newest. A sentence that left that out could be true when the card was filed and quietly false
+    /// by the time somebody acted on it - which is worse than saying nothing, because it sends them looking.
     ///
     /// Both dates matter and only one can be given, so the wording promises the floor and warns about the
     /// other. A machine with twenty queued reports is a machine in a bad state, which is exactly when
@@ -827,21 +791,21 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     /// <summary>
     /// Sends the artifacts too large to attach to the support bucket, and links them from a comment.
     ///
-    /// **On how these are protected - SETTLED, August 2026, by John Thomson. Please do not re-open this
-    /// without new information.** An unguessable URL is sufficient.
+    /// After the card exists, rather than before, for the same reason Bloom does it this way: an upload
+    /// made before the card was created would be orphaned in the bucket if the creation then failed, and
+    /// the retry would upload it again. A failure here is reported on the card rather than swallowed: the
+    /// dump is usually the most valuable thing in a report, so "we could not get it to you, and here is
+    /// where it is on the user's machine" is worth far more than silence.
     ///
-    /// The question, recorded so nobody has to rediscover it: an ATTACHED dump is restricted to the
-    /// Developers group, which is what decision D2 requires, whereas one in the bucket is a public-read
-    /// URL linked from a comment with ordinary visibility, protected only by the random component of its
-    /// key (see <see cref="SupportFileUploader.MakeUnguessableKey"/>). Those are not the same protection,
-    /// and the difference is not a corner case: a real Bloom's minidump is 16-17 MB by this project's own
-    /// measurement, so the bucket is the route essentially every production dump will take, and D2's group
-    /// restriction therefore almost never applies to a dump in practice. This came to light only because a
-    /// simulated crash produced an 8,389,030-byte dump - 422 bytes over the attachment ceiling - and the
-    /// next one 8,054,542, so the same crash was seen going both ways in one afternoon.
-    ///
-    /// Accepted deliberately. The key carries a full GUID, which is the same protection a presigned link
-    /// would give and does not expire awkwardly in the middle of an investigation.
+    /// **On how these are protected: an unguessable URL is sufficient. This is deliberate; do not re-open
+    /// it without new information.** An ATTACHED dump is restricted to the
+    /// Developers group, whereas one in the bucket is a public-read URL linked from a comment with ordinary
+    /// visibility, protected only by the random component of its key (see
+    /// <see cref="SupportFileUploader.MakeUnguessableKey"/>). Those are not the same protection, and the
+    /// difference is not a corner case: a real Bloom's minidump is 16-17 MB, so the bucket is the route
+    /// essentially every production dump takes. Accepted deliberately: the key carries a full GUID, which
+    /// is the same protection a presigned link would give without expiring awkwardly in the middle of an
+    /// investigation.
     /// </summary>
     private async Task UploadWhatCouldNotBeAttachedAsync(
         string issueId,
@@ -899,8 +863,8 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     /// uploaded to the bucket instead.
     ///
     /// One place decides, and both the card's text and the upload itself read the answer from here — so
-    /// what the card says happened to a file is what actually happened to it. They were separate walks
-    /// over the same list with the same arithmetic repeated, which is a standing invitation to drift.
+    /// what the card says happened to a file is what actually happened to it. Two walks over the same list
+    /// with the same arithmetic repeated would be a standing invitation to drift.
     /// </summary>
     private static (List<string> ToAttach, List<string> TooBig) SortArtifacts(QueuedBundle bundle)
     {

@@ -18,9 +18,6 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
-        // No VelopackApp.Build().Run() here any more, and nothing has to take its place. The Doctor is
-        // installed by Bloom's installer and updated when Bloom is, so nothing re-invokes this exe with
-        // install or update hook arguments, and there is no first-thing-in-Main obligation to honour.
         var options = CommandLineOptions.Parse(args);
 
         // The queue-inspection switches are for support and for testing, and must work whether or not
@@ -59,10 +56,7 @@ internal static class Program
             // But say so when somebody asked for something that only a Doctor which actually RUNS can
             // honour. `--force`, `--project` and `--target-name` are all requests to be the Doctor on
             // particular terms, and silently exiting 0 makes them look accepted when they have been
-            // discarded: the running Doctor keeps its own settings and knows nothing of these. That cost a
-            // manual test of the crash path before this line existed — the command appeared to succeed,
-            // and the run was quietly conducted by an auto-launched Doctor with neither the force flag nor
-            // the test project, so nothing was filed and the crash path looked broken.
+            // discarded: the running Doctor keeps its own settings and knows nothing of these.
             if (options.ForceFiling || options.ProjectWasGiven || options.TargetNameWasGiven)
             {
                 // Without this the message goes nowhere: this is a WinExe, so it has no console of its own
@@ -125,11 +119,11 @@ internal static class Program
                 window.BeginInvoke(() =>
                 {
                     // Asked AGAIN, here on the UI thread, because the check above was made on the
-                    // supervisor's thread and can be out of date by the time this runs. The case that
-                    // caught us: a CRASHED Bloom is already gone when its report lands, so "nothing left
-                    // to watch" is true the instant the report is raised. The reveal and this exit were
-                    // both queued, the reveal ran first, and then this killed the window it had just put
-                    // on screen - so a crash was gathered perfectly and reported to nobody.
+                    // supervisor's thread and can be out of date by the time this runs. The case this
+                    // guards: a CRASHED Bloom is already gone when its report lands, so "nothing left to
+                    // watch" is true the instant the report is raised. If the reveal and this exit are
+                    // both queued, the reveal runs first and this then kills the window it just put on
+                    // screen.
                     if (window.MustNotQuitYet)
                         return;
                     Application.Exit();
@@ -215,7 +209,7 @@ internal static class Program
         if (pending == 0)
             return 0;
         // Wrapped because this is a support tool and it must not die in front of whoever is using it.
-        // SubmitAsync no longer lets anything escape, so this is belt rather than braces - but a stack
+        // SubmitAsync lets nothing escape, so this is belt rather than braces - but a stack
         // trace here tells the person nothing they can act on, whereas a line saying what went wrong and
         // leaving the queue intact does.
         DrainOutcome outcome;
@@ -253,11 +247,9 @@ internal static class Program
     /// <summary>
     /// One line at startup saying which Doctor this is and what it was told to do.
     ///
-    /// Every Doctor on the machine writes to the same doctor.log, and until now nothing identified them or
-    /// recorded when one started - so a log containing two instances could not be read at all. A real case
-    /// made that concrete: four lines appeared from a process nobody could account for, and there was no way
-    /// to tell where it came from, what arguments it had, or which Bloom it thought it was watching. This
-    /// line answers all of that for the price of one write per run.
+    /// Every Doctor on the machine writes to the same doctor.log, so without this a log containing two
+    /// instances cannot be read: nothing says where each came from, what arguments it had, or which Bloom
+    /// it thought it was watching.
     ///
     /// The exe path matters as much as the arguments: it is what BloomChannel derives the channel from, and
     /// therefore the difference between a Doctor built from this worktree and one from an installed Bloom.

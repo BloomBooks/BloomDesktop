@@ -6,13 +6,11 @@ namespace BloomFreezeDoctor.Tests;
 /// <summary>
 /// Choosing, among the Event Log entries Windows writes for one crash, the one that says WHICH crash.
 ///
-/// This is the bug that made the crash-fingerprint work do nothing at all, and it is worth stating why it
-/// escaped: taking the first entry that names Bloom looks obviously correct, the code read as if it were,
-/// and on a real machine it produced a null identity every single time. Only the data showed it - three
-/// entries for one crash, and the useful one is not the first.
+/// Taking the first entry that names Bloom looks obviously correct and yields a null identity every single
+/// time: Windows writes three entries for one crash, and the useful one is not the first.
 /// </summary>
 [TestFixture]
-public class WhichCrashEntryIdentifiesItTests
+public class WindowsExitEvidenceCollectorCrashPickingTests
 {
     /// <summary>The 1000 entry: names Bloom, so it matches - and carries no exception.</summary>
     private const string ApplicationError =
@@ -27,10 +25,10 @@ public class WhichCrashEntryIdentifiesItTests
         + "   at Bloom.FreezeDoctor.FreezeSimulator.Crash() in C:\\x\\y.cs:line 243\r\n";
 
     [Test]
-    public void The_real_entry_order_yields_the_identity()
+    public void PickTheCrashThatIdentifiesItself_RealEntryOrder_FindsSignature()
     {
-        // Newest first, exactly as measured on this machine at 15:18:55 - the Application Error entry comes
-        // before the .NET Runtime one. Stopping at the first match is what was wrong.
+        // Newest first, as Windows returns them: the Application Error entry comes before the .NET Runtime
+        // one, so stopping at the first match would identify nothing.
         var picked = WindowsExitEvidenceCollector.PickTheCrashThatIdentifiesItself(
             new[] { ApplicationError, DotNetRuntime }
         );
@@ -46,11 +44,11 @@ public class WhichCrashEntryIdentifiesItTests
     }
 
     [Test]
-    public void An_unidentifiable_crash_is_still_a_crash()
+    public void PickTheCrashThatIdentifiesItself_ApplicationErrorOnly_FoundWithoutSignature()
     {
         // Environment.FailFast and an access violation produce a 1000 entry and no managed one. That must
         // still count as evidence of a crash - it is what the classifier reports on - and simply leave the
-        // fingerprint to fall back on what it used before.
+        // fingerprint to fall back on the UI thread's stack.
         var picked = WindowsExitEvidenceCollector.PickTheCrashThatIdentifiesItself(
             new[] { ApplicationError }
         );
@@ -60,7 +58,7 @@ public class WhichCrashEntryIdentifiesItTests
     }
 
     [Test]
-    public void No_entries_means_no_crash_and_no_identity()
+    public void PickTheCrashThatIdentifiesItself_NoEntries_NotFound()
     {
         var picked = WindowsExitEvidenceCollector.PickTheCrashThatIdentifiesItself(
             Array.Empty<string>()
@@ -71,7 +69,7 @@ public class WhichCrashEntryIdentifiesItTests
     }
 
     [Test]
-    public void It_takes_the_newest_identifiable_crash_not_a_later_one()
+    public void PickTheCrashThatIdentifiesItself_TwoManagedCrashes_PicksNewest()
     {
         // Two managed crashes inside the five-minute window - a machine crashing repeatedly. The newest is
         // the one this death is about; an older one would identify the wrong fault.

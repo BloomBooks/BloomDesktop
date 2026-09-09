@@ -6,7 +6,7 @@ namespace BloomFreezeDoctor.Gathering;
 
 /// <summary>
 /// One titled chunk of a report. A section either has a body or has a reason it could not be
-/// gathered; the plan's rule (§4) is that a section we cannot collect says so in one line and the
+/// gathered; the rule is that a section we cannot collect says so in one line and the
 /// report still goes out, so a failure here is content, never an exception.
 /// </summary>
 public sealed record ReportSection
@@ -61,16 +61,10 @@ public sealed record GatherContext
     /// Called the moment nothing further needs the target process alive — which, for a Bloom that is dying
     /// and waiting for us, is the moment it may finish dying.
     ///
-    /// **This is not a nicety; without it a crashing Bloom waits for the whole pipeline.** The crash path
-    /// released Bloom only when the entire gather had finished, and a gather is bounded by two minutes and
-    /// includes every collector, the log copy, queueing the report, and uploading a 17 MB dump to S3 over
-    /// whatever connection the user has. None of that needs Bloom. Once the runtime has written the dump,
-    /// everything else reads the *file*.
-    ///
-    /// It went unnoticed because the old three-second wait capped the damage: Bloom gave up long before the
-    /// gather ended, so the misplaced signal cost nothing except the dump. Making the wait generous — which
-    /// it had to become, since a real dump takes longer than three seconds — turned a harmless mistake into
-    /// a crashing Bloom held open while a card is filed.
+    /// **This is not a nicety; without it a crashing Bloom waits for the whole pipeline.** A gather is
+    /// bounded by two minutes and includes every collector, the log copy, queueing the report, and
+    /// uploading a 17 MB dump to S3 over whatever connection the user has. None of that needs Bloom: once
+    /// the runtime has written the dump, everything else reads the *file*.
     /// </summary>
     public Action? TargetNoLongerNeeded { get; init; }
 
@@ -98,7 +92,8 @@ public sealed record GatherContext
     /// Narrower than <see cref="IsAboutAFreeze"/>: is the UI thread suspected of being STUCK.
     ///
     /// A zombie is not. Bloom is alive, its message loop is running perfectly, and its window has gone -
-    /// which is why the deductions that suit a freeze read as nonsense on a zombie report. A real one said:
+    /// which is why the deductions that suit a freeze read as nonsense on a zombie report. Otherwise it
+    /// would read:
     ///
     ///     Verdict: alive with no visible window for 31s
     ///     No thread is burning CPU, so this is a wait rather than a spin.

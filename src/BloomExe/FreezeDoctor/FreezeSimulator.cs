@@ -13,7 +13,7 @@ namespace Bloom.FreezeDoctor
     ///
     /// This exists because the alternative is worse. Without it, testing the Doctor against Bloom means
     /// waiting for a real freeze — which is precisely the thing we cannot reproduce, and the reason the
-    /// Doctor is being built at all.
+    /// Doctor exists at all.
     ///
     /// **Two safeguards, because this deliberately breaks Bloom.** It does nothing unless the
     /// `BLOOM_SIMULATE_FREEZE` environment variable is set, and it does nothing on a Release channel. So
@@ -255,11 +255,10 @@ namespace Bloom.FreezeDoctor
                 //
                 // The Wait Chain Traversal API - what Resource Monitor's "Analyze Wait Chain" runs on - is
                 // blind to `Monitor`, `SemaphoreSlim` and async waits, so every other kind here produces
-                // an empty chain. That code once reported thread ids that were pure garbage (the native
-                // structure's second half is a union) and nothing noticed, because nothing had ever fed
-                // it a wait it could see. A mutex is a genuine kernel object whose owner the kernel
-                // tracks, so this produces a real chain: this thread, blocked on a mutex, owned by that
-                // thread - a thread id that can be checked against the managed stacks in the same report.
+                // an empty chain and never exercises that code against real data. A mutex is a genuine
+                // kernel object whose owner the kernel tracks, so this produces a real chain: this thread,
+                // blocked on a mutex, owned by that thread - a thread id that can be checked against the
+                // managed stacks in the same report.
                 case "mutexchain":
                 {
                     var mutex = new Mutex(false);

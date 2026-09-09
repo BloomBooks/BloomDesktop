@@ -15,7 +15,7 @@ public sealed record GatheredReport
 
     /// <summary>
     /// A stable hash of what makes this problem *this* problem, used to recognise the same freeze
-    /// happening again (plan §5.2).
+    /// happening again.
     /// </summary>
     public required string Fingerprint { get; init; }
 
@@ -38,7 +38,7 @@ public sealed record GatheredReport
 /// <summary>
 /// Runs the collectors and assembles their output into a report.
 ///
-/// Two rules shape this class, both from the plan: **every section is optional** — one that cannot be
+/// Two rules shape this class: **every section is optional** — one that cannot be
 /// gathered says so in a line and the report still goes out — and **the whole thing is bounded**,
 /// because the person whose Bloom just froze may be waiting to restart it.
 /// </summary>

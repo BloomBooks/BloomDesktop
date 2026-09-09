@@ -3,18 +3,16 @@ namespace BloomFreezeDoctor.Gathering;
 /// <summary>
 /// Finding the UI thread among a process's threads, and saying honestly what its stack shows.
 ///
-/// Both halves came out of running a simulated SPIN and reading what the Doctor produced. The report named
-/// the thread burning a whole core, which was right and useful, and then said nothing whatever about where
-/// it was spinning - which is the only thing a developer actually needs. Two separate faults:
+/// Both halves matter most for a SPINNING UI thread, where the stack walk yields "(native)" for the upper
+/// frames:
 ///
-/// - **The UI thread was not recognised.** It was found by looking for a "RunMessageLoop" frame, and on a
-///   thread that is RUNNING rather than waiting the stack walk yields "(native)" where those frames should
-///   be. So the report had no UI-thread section at all, for the one failure where the UI thread is the
-///   whole story.
-/// - **And naming it would have made things worse.** The old description fell through to the first frame
-///   beginning "Bloom.", which on such a stack is <c>Bloom.Program.Run</c> - the bottom of every UI thread
-///   there has ever been. The report would have announced "The UI thread is blocked in Bloom.Program.Run",
-///   which is wrong twice over: it is not blocked, and that frame means nothing.
+/// - **Recognising it.** The message-loop frame is not there to match, so the thread has to be identified
+///   another way, or the report has no UI-thread section at all for the one failure where the UI thread
+///   is the whole story.
+/// - **Describing it honestly.** The first frame beginning "Bloom." on such a stack is
+///   <c>Bloom.Program.Run</c>, the bottom of every UI thread there has ever been. "The UI thread is
+///   blocked in Bloom.Program.Run" would be wrong twice over: it is not blocked, and that frame means
+///   nothing.
 ///
 /// A stack that cannot be read is a fact worth reporting as one. The dump is attached; saying which thread
 /// to open it at is worth more than a confident sentence about a frame that carries no information.
@@ -104,8 +102,8 @@ public static class UiThreadStack
         {
             if (frame.Contains("WaitMessage", StringComparison.Ordinal))
                 return null; // a healthy idle pump, not a block
-            // The bottom of every UI thread is not a blocking call, and saying it was produced the
-            // nonsense "blocked in Bloom.Program.Run" on the one stack that had nothing else in it.
+            // The bottom of every UI thread is not a blocking call, and calling it one would produce the
+            // nonsense "blocked in Bloom.Program.Run" on a stack with nothing else in it.
             if (TheBottomOfEveryUiThread.Any(b => frame.Contains(b, StringComparison.Ordinal)))
                 continue;
             if (

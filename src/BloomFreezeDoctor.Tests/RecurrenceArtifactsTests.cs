@@ -6,9 +6,9 @@ namespace BloomFreezeDoctor.Tests;
 /// <summary>
 /// What a repeat occurrence adds to a card that already exists.
 ///
-/// The rule is a compromise between two real failures: a card carrying a 16 MB dump for every crash on a
+/// The rule is a compromise between two failures: a card carrying a 16 MB dump for every crash on a
 /// machine in a bad state, and a card carrying none at all because each occurrence assumed the first had
-/// supplied it. Both happened on real runs, in that order.
+/// supplied it.
 /// </summary>
 [TestFixture]
 public class RecurrenceArtifactsTests
@@ -20,7 +20,7 @@ public class RecurrenceArtifactsTests
     };
 
     [Test]
-    public void A_dump_goes_to_a_card_that_has_none()
+    public void WorthAttaching_CardHasNoDump_ReturnsDump()
     {
         var worth = RecurrenceArtifacts.WorthAttaching(ADumpAndALog, cardAlreadyHasADump: false);
 
@@ -29,11 +29,10 @@ public class RecurrenceArtifactsTests
     }
 
     [Test]
-    public void A_card_that_already_has_a_dump_gets_nothing()
+    public void WorthAttaching_CardAlreadyHasDump_ReturnsNothing()
     {
-        // The reason a blanket "attach nothing" rule existed, and it still holds: a second dump for the
-        // same fingerprint is a near-duplicate at some 16 MB, and a machine crashing repeatedly would bury
-        // the card.
+        // The case for attaching nothing: a second dump for the same fingerprint is a near-duplicate at
+        // some 16 MB, and a machine crashing repeatedly would bury the card.
         var worth = RecurrenceArtifacts.WorthAttaching(ADumpAndALog, cardAlreadyHasADump: true);
 
         Assert.That(
@@ -44,7 +43,7 @@ public class RecurrenceArtifactsTests
     }
 
     [Test]
-    public void A_log_is_never_added_on_its_own()
+    public void WorthAttaching_LogOnly_ReturnsNothing()
     {
         // Logs are not attachments in the first place - the report body inlines the tail of Bloom's log in
         // a collapsed section - so an "it is missing" test would be true for every card and would attach a
@@ -58,7 +57,7 @@ public class RecurrenceArtifactsTests
     }
 
     [Test]
-    public void An_attached_dump_counts()
+    public void ShowsADump_AttachedDump_True()
     {
         Assert.That(
             RecurrenceArtifacts.ShowsADump(
@@ -70,7 +69,7 @@ public class RecurrenceArtifactsTests
     }
 
     [Test]
-    public void A_dump_attached_by_hand_under_any_name_still_counts()
+    public void ShowsADump_HandAttachedDumpAnyCase_True()
     {
         // Somebody has already put a dump on the card themselves. The Doctor's naming convention says
         // nothing about theirs, so the test is the extension - and case must not defeat it.
@@ -81,12 +80,12 @@ public class RecurrenceArtifactsTests
     }
 
     [Test]
-    public void A_dump_in_the_support_bucket_counts_too()
+    public void ShowsADump_DumpLinkedFromBucketComment_True()
     {
-        // The bug a real run produced, and the reason this question is no longer "does it have an
-        // ATTACHMENT". A dump 422 bytes over the attachment ceiling is uploaded to the bucket and linked
-        // from a comment: the card plainly has the dump, and has no attachment at all. Asking only about
-        // attachments meant the next occurrence uploaded a second copy and told the reader the card had
+        // The reason the question is "does the card show a dump" rather than "does it have an
+        // ATTACHMENT". A dump just over the attachment ceiling is uploaded to the bucket and linked from a
+        // comment: the card plainly has the dump, and has no attachment at all. Asking only about
+        // attachments would make the next occurrence upload a second copy and tell the reader the card had
         // none - a confident false statement, which is worse than silence.
         var comment =
             "**Files too large for a tracker attachment**, uploaded to Bloom's support bucket:\r\n\r\n"
@@ -100,7 +99,7 @@ public class RecurrenceArtifactsTests
     }
 
     [Test]
-    public void Prose_about_a_dump_that_could_not_be_sent_does_not_count()
+    public void ShowsADump_CommentAboutUnsentDump_False()
     {
         // The trap in reading the card's text: the Doctor's own comments TALK about dumps. A comment saying
         // a dump could not be attached and names the folder it is still in must not be read as the card
@@ -117,7 +116,7 @@ public class RecurrenceArtifactsTests
     }
 
     [Test]
-    public void A_book_someone_uploaded_to_the_same_bucket_does_not_count()
+    public void ShowsADump_BookInSameBucket_False()
     {
         // The other half of that: the support bucket is shared with Bloom's problem-book uploads, so the
         // bucket name alone proves nothing.
@@ -131,7 +130,7 @@ public class RecurrenceArtifactsTests
     }
 
     [Test]
-    public void A_card_with_nothing_shows_no_dump()
+    public void ShowsADump_NothingOnCard_False()
     {
         Assert.That(
             RecurrenceArtifacts.ShowsADump(Array.Empty<string>(), Array.Empty<string>()),

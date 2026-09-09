@@ -9,8 +9,8 @@ namespace BloomFreezeDoctor.Tests;
 ///
 /// Both directions cost something real, which is why the rule is pinned rather than left to whoever reads
 /// the flag next. Too short and the Doctor files a duplicate of the card the user just raised. Too long -
-/// which is what "for the rest of the run" turned out to be - and a freeze hours later goes unreported
-/// because of a layout bug somebody mentioned that morning.
+/// "for the rest of the run", say - and a freeze hours later goes unreported because of a layout bug
+/// somebody mentioned that morning.
 /// </summary>
 [TestFixture]
 public class BloomsOwnReportTests
@@ -27,7 +27,7 @@ public class BloomsOwnReportTests
         };
 
     [Test]
-    public void A_report_from_moments_ago_still_speaks_for_the_trouble()
+    public void StillAccountsForTheTrouble_ReportMomentsAgo_True()
     {
         Assert.That(
             BloomsOwnReport.StillAccountsForTheTrouble(Reported(Now.AddSeconds(-30)), Now),
@@ -37,10 +37,10 @@ public class BloomsOwnReportTests
     }
 
     [Test]
-    public void A_report_from_hours_ago_does_not()
+    public void StillAccountsForTheTrouble_ReportHoursAgo_False()
     {
-        // The case that prompted this. A developer or alpha tester files something non-fatal and carries on
-        // working; the freeze that afternoon is a different event and deserves its own card.
+        // A developer or alpha tester files something non-fatal and carries on working; the freeze that
+        // afternoon is a different event and deserves its own card.
         Assert.That(
             BloomsOwnReport.StillAccountsForTheTrouble(Reported(Now.AddHours(-2)), Now),
             Is.False,
@@ -49,7 +49,7 @@ public class BloomsOwnReportTests
     }
 
     [Test]
-    public void The_window_is_where_the_change_happens()
+    public void StillAccountsForTheTrouble_EitherSideOfWindow_ChangesAtWindow()
     {
         var justInside = Now - BloomsOwnReport.Window + TimeSpan.FromSeconds(1);
         var justOutside = Now - BloomsOwnReport.Window - TimeSpan.FromSeconds(1);
@@ -68,7 +68,7 @@ public class BloomsOwnReportTests
     }
 
     [Test]
-    public void A_Bloom_that_never_reported_anything_does_not_silence_us()
+    public void StillAccountsForTheTrouble_NeverReported_False()
     {
         var quiet = new DoctorSession { ProcessId = 4242 };
 
@@ -76,7 +76,7 @@ public class BloomsOwnReportTests
     }
 
     [Test]
-    public void No_session_at_all_does_not_silence_us()
+    public void StillAccountsForTheTrouble_NoSession_False()
     {
         // A Bloom too old to leave a session file has told us nothing, which is not the same as telling us
         // it has the problem in hand.
@@ -84,7 +84,7 @@ public class BloomsOwnReportTests
     }
 
     [Test]
-    public void A_report_stamped_in_the_future_ages_out_like_any_other()
+    public void StillAccountsForTheTrouble_ReportStampedInFuture_False()
     {
         // Clocks move backwards - a time-zone change, an NTP correction - and a naive subtraction would
         // leave such a report suppressing the Doctor until the skew had passed.

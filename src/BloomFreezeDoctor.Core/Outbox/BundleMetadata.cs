@@ -50,7 +50,7 @@ public sealed record BundleMetadata
     /// <summary>The tracker card's title.</summary>
     public required string Summary { get; init; }
 
-    /// <summary>What makes this problem this problem; the key for dedupe (plan §5.2).</summary>
+    /// <summary>What makes this problem this problem; the key for dedupe.</summary>
     public required string Fingerprint { get; init; }
 
     /// <summary>Tracker project to file into — `BL` normally, `AUT` when testing.</summary>
@@ -68,7 +68,7 @@ public sealed record BundleMetadata
     /// <summary>
     /// How many times we have seen this same problem while this bundle was waiting. One card with
     /// `occurrences: 4` beats four cards, especially since an offline user cannot tell us anything in
-    /// between (plan §5.1).
+    /// between.
     /// </summary>
     public int Occurrences { get; init; } = 1;
 
@@ -130,8 +130,8 @@ public sealed record BundleMetadata
     /// freeze that then became a death, the crash whose exit was examined afterwards.
     ///
     /// Deliberately not counted in <see cref="Occurrences"/>, which means "this same problem, again":
-    /// adding a follow-on there made the card say "this problem happened 2 times", which is a plain
-    /// misreading of one Bloom failing once and then dying of it.
+    /// counted there, a follow-on would make the card say "this problem happened 2 times", which misreads
+    /// one Bloom failing once and then dying of it.
     /// </summary>
     public IReadOnlyList<string> FollowOnNotes { get; init; } = Array.Empty<string>();
 

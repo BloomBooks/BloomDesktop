@@ -15,7 +15,7 @@ namespace BloomFreezeDoctor.Tests;
 public class ProcessIdentityTests
 {
     [Test]
-    public void A_process_is_recognised_by_its_own_id_and_start_time()
+    public void IsStillTheSameProcess_OwnIdAndStartTime_True()
     {
         var self = Process.GetCurrentProcess();
 
@@ -23,7 +23,7 @@ public class ProcessIdentityTests
     }
 
     [Test]
-    public void The_same_id_with_a_different_start_time_is_a_different_process()
+    public void IsStillTheSameProcess_SameIdDifferentStartTime_False()
     {
         // The whole point. The id is live and real - it is this very process - so anything that looked only
         // at the id would say yes. Only the start time reveals that this is not who we meant.
@@ -37,7 +37,7 @@ public class ProcessIdentityTests
     }
 
     [Test]
-    public void Start_times_are_compared_exactly_rather_than_loosely()
+    public void IsStillTheSameProcess_StartTimeOffByOneMillisecond_False()
     {
         // Deliberately pinned: a tolerance here would be the natural-looking mistake. Both values come from
         // the same kernel field so they agree to the tick, and a busy machine really can reuse an id within
@@ -52,13 +52,13 @@ public class ProcessIdentityTests
     }
 
     [Test]
-    public void An_id_that_belongs_to_nothing_is_not_ours()
+    public void IsStillTheSameProcess_NonexistentId_False()
     {
         Assert.That(ProcessIdentity.IsStillTheSameProcess(999_999_9, DateTime.Now), Is.False);
     }
 
     [Test]
-    public void An_id_we_cannot_ask_about_is_treated_as_not_ours()
+    public void IsStillTheSameProcess_UnopenableId_False()
     {
         // Process id 0 is the System Idle Process, which cannot be opened. Failing to confirm has to mean
         // no: every caller is about to believe this process's evidence, or end it.

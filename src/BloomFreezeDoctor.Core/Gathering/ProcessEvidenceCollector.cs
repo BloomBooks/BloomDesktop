@@ -8,8 +8,7 @@ namespace BloomFreezeDoctor.Gathering;
 /// stacks: is it spinning or blocked, what windows does it have, and is anything unexpected loaded
 /// into it.
 ///
-/// All of this was validated in the Phase 0 spike against real Blooms, needs no privilege beyond
-/// same-user, and cannot perturb the target.
+/// All of this needs no privilege beyond same-user, and cannot perturb the target.
 /// </summary>
 public sealed class ProcessEvidenceCollector : IEvidenceCollector
 {
@@ -96,8 +95,8 @@ public sealed class ProcessEvidenceCollector : IEvidenceCollector
     /// <summary>
     /// Explains the most confusing line in the report before anyone has to puzzle over it. When
     /// Windows says the window is responsive but we are reporting a freeze, that contradiction is not
-    /// noise — it is the fingerprint of a UI thread blocked in an STA managed wait, which the spike
-    /// measured as completely invisible from outside. Naming the class saves the reader the trip.
+    /// noise — it is the fingerprint of a UI thread blocked in an STA managed wait, which is completely
+    /// invisible from outside. Naming the class saves the reader the trip.
     /// </summary>
     private static void AppendRespondingCaveat(
         StringBuilder text,
@@ -179,7 +178,7 @@ public sealed class ProcessEvidenceCollector : IEvidenceCollector
     {
         // How long we ACTUALLY watched, not how long we meant to. Cancellation can cut the sample to
         // almost nothing, and two snapshots taken microseconds apart show no CPU use for a process that is
-        // spinning flat out - which then read as the definite deduction "rules out a spin loop".
+        // spinning flat out - which would then read as the definite deduction "rules out a spin loop".
         var sampleWasUseful = window >= CpuSampleWindow - TimeSpan.FromMilliseconds(500);
         text.AppendLine($"**CPU used per thread over {window.TotalSeconds:F1} seconds**");
         if (!sampleWasUseful)

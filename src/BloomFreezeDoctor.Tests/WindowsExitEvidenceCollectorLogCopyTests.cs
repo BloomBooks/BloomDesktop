@@ -8,13 +8,12 @@ namespace BloomFreezeDoctor.Tests;
 /// process being diagnosed is holding it open for writing the whole time.
 ///
 /// **This is the main case, not an edge case.** For a freeze, Bloom is by definition still alive and still
-/// holding its log, so a copy that cannot cope with that could only ever have worked for a Bloom that had
-/// already exited. It shipped that way and nothing noticed - the copy threw, the report simply had no log
-/// attached, and a real filed card (AUT-20929) claimed both to show "the whole log" and to have failed to
-/// attach it.
+/// holding its log, so a copy that cannot cope with that could only ever work for a Bloom that had already
+/// exited. And the failure is silent: the copy throws, the report simply has no log attached, and the card
+/// claims both to show "the whole log" and to have failed to attach it.
 /// </summary>
 [TestFixture]
-public class AttachingTheLogTests
+public class WindowsExitEvidenceCollectorLogCopyTests
 {
     private string _root = null!;
 
@@ -49,7 +48,7 @@ public class AttachingTheLogTests
     [TestCase(FileShare.Read)]
     [TestCase(FileShare.ReadWrite)]
     [TestCase(FileShare.ReadWrite | FileShare.Delete)]
-    public void The_log_can_be_attached_while_the_frozen_bloom_holds_it_open(FileShare heldWith)
+    public void CopyWhileInUse_LogHeldOpenForWriting_Copies(FileShare heldWith)
     {
         var source = Path.Combine(_root, "Log.txt");
         var destination = Path.Combine(_root, "bloom-log.txt");
@@ -69,15 +68,15 @@ public class AttachingTheLogTests
     }
 
     /// <summary>
-    /// The reason the copy above cannot simply be <c>RobustFile.Copy</c>, recorded as a test because
-    /// measuring the wrong function is how this was got wrong once already: <c>File.Copy</c> tolerates a
-    /// writer, which made the retrying wrapper look like it would too.
+    /// The reason the copy above cannot simply be <c>RobustFile.Copy</c>, recorded as a test because it is
+    /// easy to assume otherwise: <c>File.Copy</c> tolerates a writer, and the retrying wrapper looks as if
+    /// it would too.
     ///
     /// If this ever starts failing - libpalaso loosening its sharing, say - then the production code can go
     /// back to being one call, and this test is how you find out.
     /// </summary>
     [Test]
-    public void RobustFileCopy_is_refused_by_a_log_its_owner_still_holds()
+    public void RobustFileCopy_LogHeldOpenForWriting_Throws()
     {
         var source = Path.Combine(_root, "Log.txt");
         var destination = Path.Combine(_root, "robust-copy.txt");

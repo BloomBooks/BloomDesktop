@@ -22,13 +22,12 @@ public readonly record struct BloomLogCandidate
 /// <summary>
 /// Decides which of the Bloom log files in <c>%TEMP%\SIL\Bloom</c> belongs to a given Bloom process.
 ///
-/// This exists because the obvious answer is wrong, and provably so. Bloom's logger writes to
+/// This exists because the obvious answer is wrong. Bloom's logger writes to
 /// <c>Log.txt</c>, recreating it on every run, and falls back to <c>Log-tmpXXXX.txt</c> **only when
 /// Log.txt cannot be created** — that is, when another Bloom is already holding it. So the
 /// restart-after-a-freeze case, which is exactly the case we care about, is the one where the frozen
 /// Bloom owns <c>Log.txt</c> and the healthy new one owns a tmp file. Picking the most recently
-/// modified file therefore attaches the *wrong* log to the report; measured on a real machine during
-/// the spike, where the newest log belonged to a Bloom in an entirely different worktree.
+/// modified file therefore attaches the *wrong* log to the report.
 ///
 /// Instead we match on what each log says about itself: its opening "App Launched with [exe]" line
 /// carries the launching path and the time, which we compare against the process's own exe folder and
@@ -215,8 +214,8 @@ public static class BloomLogLocator
     ///
     /// A plain subtraction is wrong across midnight, and wrong by enough to matter: a Bloom started at
     /// 23:59:30 whose log line is stamped 00:00:20 is fifty seconds later, not twenty-three hours and
-    /// fifty-nine minutes earlier. Taking the difference literally put every Bloom launched within a
-    /// minute or so of midnight outside the tolerance, so its report said no log could be found.
+    /// fifty-nine minutes earlier - which would put every Bloom launched within a minute or so of
+    /// midnight outside the tolerance.
     /// </summary>
     private static TimeSpan HowFarApart(TimeSpan a, TimeSpan b)
     {

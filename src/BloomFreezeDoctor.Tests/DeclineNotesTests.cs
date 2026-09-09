@@ -17,7 +17,7 @@ public class DeclineNotesTests
     private static readonly DateTimeOffset Start = DateTimeOffset.Parse("2026-08-31T15:17:08Z");
 
     [Test]
-    public void The_first_decline_is_worth_saying()
+    public void ShouldSay_FirstDecline_True()
     {
         var notes = new DeclineNotes();
 
@@ -25,7 +25,7 @@ public class DeclineNotesTests
     }
 
     [Test]
-    public void The_same_reason_again_is_not()
+    public void ShouldSay_SameReasonAgain_False()
     {
         // The discovery sweep runs every five seconds. This is what keeps eighty-three seconds of it to one
         // line.
@@ -51,7 +51,7 @@ public class DeclineNotesTests
     }
 
     [Test]
-    public void A_changed_reason_is_worth_saying_again()
+    public void ShouldSay_ChangedReason_True()
     {
         // The case that rules out "only ever say it once". A process that is starting fails in one way and
         // then another, and the second reason is usually the more informative.
@@ -65,7 +65,7 @@ public class DeclineNotesTests
     }
 
     [Test]
-    public void A_different_process_is_worth_saying()
+    public void ShouldSay_DifferentProcess_True()
     {
         var notes = new DeclineNotes();
         notes.ShouldSay(53468, "Win32Exception: cannot read", Start);
@@ -74,10 +74,10 @@ public class DeclineNotesTests
     }
 
     [Test]
-    public void Adopting_reports_how_long_we_had_been_declining()
+    public void HowLongWeWereDeclining_AfterDeclining_ReturnsElapsed()
     {
-        // The number the run that prompted all this was missing: Bloom up at 15:17:08, watched at 15:18:31,
-        // and nothing anywhere to say what happened in between.
+        // Without this a log shows Bloom up at 15:17:08 and watched at 15:18:31, with nothing anywhere to
+        // say what happened in between.
         var notes = new DeclineNotes();
         notes.ShouldSay(53468, "Win32Exception: cannot read", Start);
 
@@ -88,7 +88,7 @@ public class DeclineNotesTests
     }
 
     [Test]
-    public void The_timer_runs_from_the_first_sighting_not_the_latest_reason()
+    public void HowLongWeWereDeclining_ReasonChanged_CountsFromFirstSighting()
     {
         // Otherwise a process whose reason changes half way through reports only the tail of the wait, and
         // under-reports exactly the case worth measuring.
@@ -106,7 +106,7 @@ public class DeclineNotesTests
     }
 
     [Test]
-    public void A_process_we_never_declined_reports_nothing()
+    public void HowLongWeWereDeclining_NeverDeclined_ReturnsNull()
     {
         // The normal case, and it must say nothing rather than "0s" - almost every Bloom is adopted on the
         // first tick that sees it, and a note on each one would be noise.
@@ -116,7 +116,7 @@ public class DeclineNotesTests
     }
 
     [Test]
-    public void Adopting_forgets_it_so_a_later_decline_speaks_up()
+    public void ShouldSay_AfterAdoption_SameReasonIsTrueAgain()
     {
         // A pid can be declined, adopted, and - after the process goes and the id is reused - declined
         // again. The second decline is new information.

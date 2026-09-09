@@ -9,13 +9,12 @@ namespace BloomFreezeDoctor;
 /// the same trouble is a duplicate. So the Doctor goes quiet. The question this class answers is: for how
 /// long?
 ///
-/// **It used to be "for the rest of the run", and that was too long.** Filing a report is not the end of a
-/// session - developers and alpha testers routinely report something non-fatal and carry straight on
-/// working, for hours. A freeze that afternoon has nothing to do with the layout bug they reported that
-/// morning, and silence about it is a real loss, while the card that would have prevented is long since
-/// filed and forgotten.
+/// **Not for the rest of the run.** Filing a report is not the end of a session - developers and alpha
+/// testers routinely report something non-fatal and carry straight on working, for hours. A freeze that
+/// afternoon has nothing to do with the layout bug they reported that morning, and silence about it is a
+/// real loss.
 ///
-/// So the suppression now expires. After <see cref="Window"/> the Doctor is armed again.
+/// So the suppression expires: after <see cref="Window"/> the Doctor is armed again.
 /// </summary>
 public static class BloomsOwnReport
 {

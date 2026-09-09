@@ -8,8 +8,8 @@ namespace BloomFreezeDoctor.Gathering;
 /// Windows' own wait-chain analysis — the data behind Resource Monitor's "Analyze Wait Chain".
 ///
 /// **Set your expectations before reading its output.** The Wait Chain Traversal API does not see .NET
-/// `Monitor`/`lock`, `SemaphoreSlim`, or async waits, which are the dominant managed deadlock kinds; the
-/// spike confirmed it returns nothing useful for a thread blocked in a managed wait. It earns its place
+/// `Monitor`/`lock`, `SemaphoreSlim`, or async waits, which are the dominant managed deadlock kinds; it
+/// returns nothing useful for a thread blocked in a managed wait. It earns its place
 /// for the cases the managed stacks cannot explain: a cross-process `SendMessage` into WebView2 that
 /// never returns, a classic Win32 critical section, or a loader-lock deadlock. So this is a bonus
 /// section, and no triage logic is built on it.
@@ -121,9 +121,9 @@ public sealed class WaitChainCollector : IEvidenceCollector
                 );
             else
             {
-                // Written because a reader who knows Bloom well still could not tell what these lines
-                // claimed, or why only some threads appeared. A chain nobody can interpret is no better
-                // than no chain, and the two questions it raises have short, definite answers.
+                // A chain nobody can interpret is no better than no chain, and the two questions these
+                // lines raise - what do they claim, and why do only some threads appear - have short,
+                // definite answers.
                 text.AppendLine();
                 text.AppendLine(
                     "> **How to read these.** Each entry is one thread and what Windows can see it waiting "
@@ -243,9 +243,8 @@ public sealed class WaitChainCollector : IEvidenceCollector
     /// <summary>
     /// The native layout as this build sees it, so a test can pin it without needing a frozen process.
     ///
-    /// It exists because the layout was wrong once and nothing noticed: the wait-chain section simply
-    /// printed rubbish, which no test and no build could catch. Asserting the size and the two offsets
-    /// that are actually read turns the next such mistake into a failing test.
+    /// A wrong layout does not fail; it prints rubbish, which no build can catch. Asserting the size and
+    /// the two offsets that are actually read turns that mistake into a failing test.
     /// </summary>
     public static (int Size, int ProcessIdOffset, int ThreadIdOffset) DescribeNativeNodeLayout() =>
         (
@@ -261,18 +260,17 @@ public sealed class WaitChainCollector : IEvidenceCollector
     private static extern void CloseThreadWaitChainSession(IntPtr session);
 
     /// <summary>
-    /// The flags that make this worth calling at all, and passing 0 instead cost us the whole point of
-    /// the collector.
+    /// The flags that make this worth calling at all.
     ///
     /// Every chain the Doctor asks about crosses a process boundary - it is always looking at Bloom from
     /// outside - and by default WCT stops at that boundary. `WCT_OUT_OF_PROC_FLAG` follows the chain into
     /// the other process, `WCT_OUT_OF_PROC_COM_FLAG` follows it through COM, and
     /// `WCT_OUT_OF_PROC_CS_FLAG` resolves critical sections owned there. Without them a UI thread stuck
-    /// in a SendMessage into WebView2 - the exact freeze this collector exists to name - produced a
-    /// one-node chain, which the `count <= 1` filter below then discarded as uninteresting.
+    /// in a SendMessage into WebView2 - the exact freeze this collector exists to name - produces a
+    /// one-node chain, which the `count <= 1` filter below discards as uninteresting.
     ///
-    /// Nothing looked wrong, because the one rehearsal that did work was the `mutexchain` simulation,
-    /// where both ends are inside Bloom and no boundary is crossed.
+    /// Note that the `mutexchain` simulation does not exercise this: both ends are inside Bloom, so no
+    /// boundary is crossed.
     /// </summary>
     private const uint FollowChainsOutOfTheProcess = 0x1 | 0x2 | 0x4;
 

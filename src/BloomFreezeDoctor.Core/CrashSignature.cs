@@ -7,15 +7,14 @@ namespace BloomFreezeDoctor;
 /// Pulls "which crash was this" out of the .NET Runtime event Windows writes when a process dies of an
 /// unhandled exception (Application log, event 1026).
 ///
-/// This exists because the report fingerprint was nearly meaningless for a crash. It hashes the reason,
-/// Bloom's version, the channel and the top frames of the UI THREAD - which is exactly right for a freeze,
-/// where the UI thread's stack IS the problem. In a crash the fault is on some other thread and the UI
-/// thread is sitting in its message pump, so those frames are identical for every crash on a given build:
-/// the fingerprint degenerated to reason+version+channel, and every unexplained crash on one build landed
-/// on one card, however unrelated. Measured, not theorised - three separate simulated crashes in one
-/// afternoon all produced fingerprint 1ec8760ad8a5.
+/// The report fingerprint alone is nearly meaningless for a crash. It hashes the reason, Bloom's version,
+/// the channel and the top frames of the UI THREAD - which is exactly right for a freeze, where the UI
+/// thread's stack IS the problem. In a crash the fault is on some other thread and the UI thread is sitting
+/// in its message pump, so those frames are identical for every crash on a given build: the fingerprint
+/// degenerates to reason+version+channel, and every unexplained crash on one build lands on one card,
+/// however unrelated.
 ///
-/// The event text carries what is actually wanted. A real one, from this machine:
+/// The event text carries what is actually wanted. A real one:
 ///
 /// <code>
 /// Application: Bloom.exe

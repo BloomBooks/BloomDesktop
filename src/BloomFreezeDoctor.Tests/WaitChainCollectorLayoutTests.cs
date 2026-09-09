@@ -6,22 +6,22 @@ namespace BloomFreezeDoctor.Tests;
 /// <summary>
 /// Pins the native layout of <c>WAITCHAIN_NODE_INFO</c>.
 ///
-/// **This exists because getting it wrong is silent.** The struct originally declared the thread fields
-/// *after* a 256-byte object name, not knowing that the second half of the native structure is a UNION in
-/// which they overlap that name. Windows wrote ProcessId and ThreadId at offset 8; we read them from
-/// around offset 276; and because the managed struct was also the wrong SIZE, every node after the first
-/// in the array was misaligned as well. The result was a report that stated thread and process ids which
-/// were pure garbage — no crash, no failing test, nothing to notice, just a card that sent whoever read it
+/// **This exists because getting it wrong is silent.** The second half of the native structure is a UNION
+/// in which the thread fields overlap the 256-byte object name. Declare them *after* that name, as the
+/// documentation's field order suggests, and Windows writes ProcessId and ThreadId at offset 8 while we
+/// read them from around offset 276; make the managed struct the wrong SIZE and every node after the first
+/// in the array is misaligned as well. The result is a report that states thread and process ids which are
+/// pure garbage — no crash, no failing test, nothing to notice, just a card that sends whoever reads it
 /// looking for a thread that never existed.
 ///
 /// Wait chains are one of the more useful things a freeze report can carry, so quietly wrong ones are
-/// worse than none. These three numbers are cheap to assert and would have caught it.
+/// worse than none. These three numbers are cheap to assert.
 /// </summary>
 [TestFixture]
-public class WaitChainLayoutTests
+public class WaitChainCollectorLayoutTests
 {
     [Test]
-    public void The_native_node_layout_is_what_windows_expects()
+    public void DescribeNativeNodeLayout_MatchesNativeStruct()
     {
         var (size, processIdOffset, threadIdOffset) = WaitChainCollector.DescribeNativeNodeLayout();
 

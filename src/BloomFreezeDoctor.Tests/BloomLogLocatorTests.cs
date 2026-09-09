@@ -5,8 +5,7 @@ namespace BloomFreezeDoctor.Tests;
 
 /// <summary>
 /// The log-matching rules. The headline test here reproduces a real situation measured on a
-/// developer's machine during the spike, where choosing the newest log would have attached the wrong
-/// one.
+/// developer's machine, where choosing the newest log would have attached the wrong one.
 /// </summary>
 [TestFixture]
 public class BloomLogLocatorTests
@@ -26,12 +25,13 @@ public class BloomLogLocatorTests
         };
 
     [Test]
-    public void A_Bloom_started_just_before_midnight_still_finds_its_log()
+    public void ChooseFor_LaunchedJustBeforeMidnight_MatchesAcrossMidnight()
     {
         // The log line carries a time of day and nothing else, so the comparison has to go the short way
-        // round the clock. Subtracting literally made these fifty seconds look like nearly twenty-four
-        // hours, putting every Bloom launched within a minute or so of midnight outside the tolerance -
-        // and the report then said, wrongly and with no hint of why, that no log could be found.
+        // round the clock. Subtracting literally would make these fifty seconds look like nearly
+        // twenty-four hours, putting every Bloom launched within a minute or so of midnight outside the
+        // tolerance - and the report would then say, wrongly and with no hint of why, that no log could be
+        // found.
         var candidates = new[]
         {
             Candidate(
@@ -57,7 +57,7 @@ public class BloomLogLocatorTests
     }
 
     [Test]
-    public void Picks_the_log_whose_launch_line_matches_the_process()
+    public void ChooseFor_TwoCandidates_PicksMatchingLaunchLine()
     {
         var candidates = new[]
         {
@@ -86,9 +86,9 @@ public class BloomLogLocatorTests
     }
 
     [Test]
-    public void The_newest_log_is_NOT_the_answer_and_that_is_the_whole_point()
+    public void ChooseFor_NewestLogBelongsToAnotherBloom_PicksByIdentityNotRecency()
     {
-        // Measured during the spike: the most recently modified log on the machine belonged to a
+        // Measured on a real machine: the most recently modified log on the machine belonged to a
         // Bloom in a different worktree (modified 17:16), while the log belonging to the live process
         // was written nearly an hour earlier (16:24). Bloom recreates Log.txt each run and only falls
         // back to Log-tmpXXXX.txt when another Bloom already holds Log.txt — so in the
@@ -128,7 +128,7 @@ public class BloomLogLocatorTests
     }
 
     [Test]
-    public void A_log_from_the_same_build_but_a_different_run_is_rejected()
+    public void ChooseFor_SameBuildDifferentRun_ReturnsNull()
     {
         // Same folder, but launched hours from this process's start: a previous session's log.
         var candidates = new[]
@@ -151,7 +151,7 @@ public class BloomLogLocatorTests
     }
 
     [Test]
-    public void Matching_tolerates_the_delay_between_process_start_and_the_log_line()
+    public void ChooseFor_StartupDelayBeforeLogLine_StillMatches()
     {
         // The log line is written after the process starts, and startup work happens in between.
         var candidates = new[]
@@ -174,7 +174,7 @@ public class BloomLogLocatorTests
     }
 
     [Test]
-    public void When_two_runs_of_one_build_both_match_the_closer_launch_time_wins()
+    public void ChooseFor_TwoRunsOfOneBuild_PicksCloserLaunchTime()
     {
         var closer = Candidate(
             @"C:\Temp\SIL\Bloom\Log.txt",
@@ -199,7 +199,7 @@ public class BloomLogLocatorTests
     }
 
     [Test]
-    public void A_log_with_no_launch_line_is_ignored_rather_than_guessed_at()
+    public void ChooseFor_NoLaunchLine_ReturnsNull()
     {
         var candidates = new[]
         {

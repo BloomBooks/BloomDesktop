@@ -39,8 +39,8 @@ public sealed class BloomLogCollector : IEvidenceCollector
         var windowsSaid = AppendWindowsCrashRecords(text, context);
 
         // FailFast's reason, which exists nowhere else: it runs no managed handlers by design, so there is
-        // no dump and nothing in Bloom's own log. Without this, failfast was the only crash kind whose
-        // report never said what went wrong. Only if Bloom's log has not already supplied a headline -
+        // no dump and nothing in Bloom's own log. Without this, failfast would be the only crash kind
+        // whose report never says what went wrong. Only if Bloom's log has not already supplied a headline -
         // that one is closer to Bloom's own account of itself.
         if (headline == null)
         {
@@ -96,9 +96,8 @@ public sealed class BloomLogCollector : IEvidenceCollector
         // CopyWhileInUse rather than RobustFile.Copy, and that is the substance of it: Bloom holds its log
         // open for writing for the whole of its run, and RobustFile.Copy is refused outright by such a file
         // - permanently, not transiently, so retrying cannot help. For a FREEZE the process is by
-        // definition still alive, so the ordinary copy could only ever have worked for a Bloom that had
-        // already exited. A real filed card (AUT-20929) went out with no log attached because of this.
-        // AttachingTheLogTests pins both halves.
+        // definition still alive, so the ordinary copy could only ever work for a Bloom that has already
+        // exited. WindowsExitEvidenceCollectorLogCopyTests pins this.
         //
         // Copy rather than reference, because Bloom overwrites Log.txt on its very next run - which, after
         // a freeze, is usually only minutes away.
@@ -141,9 +140,9 @@ public sealed class BloomLogCollector : IEvidenceCollector
             }
 
             // What was thrown, if Bloom's own error handling recorded it. For a crash this is the first
-            // thing anybody wants, and before this it was only ever present 370 lines down inside the log
-            // tail - see BloomsOwnException. It does not displace the shutdown headline above, which is a
-            // rarer and more surprising finding.
+            // thing anybody wants, and it must not be left buried in the log tail - see BloomsOwnException.
+            // It does not displace the shutdown headline above, which is a rarer and more surprising
+            // finding.
             //
             // **Only on a crash report.** The log tail is a couple of hundred lines of a real session, and
             // a real session logs handled exceptions that came to nothing. Headlining one on a FREEZE
@@ -168,10 +167,9 @@ public sealed class BloomLogCollector : IEvidenceCollector
                 text.AppendLine();
             }
 
-            // One sentence covering how much is shown AND whether the file itself is attached, because
-            // writing those separately let them contradict each other: a real card said "The whole log (18
-            // lines)" and then, further down, that the log could not be attached. Both were true - one is
-            // about the text below, one about the artifact - and together they read as nonsense.
+            // One sentence covering how much is shown AND whether the file itself is attached. Written
+            // separately they can contradict each other - "the whole log" followed by "could not be
+            // attached" - since one is about the text below and the other about the artifact.
             var howMuch =
                 lines.Count < TailLines
                     ? $"The whole log ({lines.Count} lines)"
@@ -198,9 +196,9 @@ public sealed class BloomLogCollector : IEvidenceCollector
             text.AppendLine();
         }
 
-        // Why the attachment failed, once, after the log itself - and deliberately not phrased as a failure
-        // to READ, which is what the old shared catch said even when the tail had just been read fine.
-        // The line above has already told the reader whether the file is attached; this only says why not.
+        // Why the attachment failed, once, after the log itself - phrased as an attachment failure, not a
+        // failure to READ, since the tail may have been read fine. The line above has already told the
+        // reader whether the file is attached; this only says why not.
         if (attachmentFailure != null)
         {
             text.AppendLine($"*(the attachment failed: {attachmentFailure})*");
@@ -354,8 +352,8 @@ public sealed class BloomLogCollector : IEvidenceCollector
             }
             catch (Exception)
             {
-                // The machine-wide archive normally needs administrator rights. Per the plan we try and
-                // move on without ever prompting.
+                // The machine-wide archive normally needs administrator rights. We try and move on
+                // without ever prompting.
             }
         }
         if (reported == 0)

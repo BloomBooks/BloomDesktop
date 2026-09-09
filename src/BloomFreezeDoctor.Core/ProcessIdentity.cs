@@ -11,13 +11,12 @@ namespace BloomFreezeDoctor;
 /// of those after the id has been handed to somebody else means reading another process's evidence, or -
 /// on the paths that end a stuck Bloom - killing a stranger.
 ///
-/// **Why nothing has gone wrong so far, and why that is not a reason to leave it.** While the Doctor is
-/// watching a Bloom it holds an open handle to that process (see <see cref="WindowsTargetProbe"/>), and
-/// Windows will not reuse an id while any handle to the process object remains open. So every id the
-/// supervisor currently acts on is pinned, and the reuse cannot happen. But that safety is a side effect
-/// of a line in another class whose stated purpose is detecting a debugger, it ends the moment the probe
-/// is disposed, and nothing would fail if somebody removed it. An identity check makes each call site
-/// safe on its own terms rather than by an argument spanning three files.
+/// **The open handle is not a substitute for this check.** While the Doctor is watching a Bloom it holds
+/// an open handle to that process (see <see cref="WindowsTargetProbe"/>), and Windows will not reuse an
+/// id while any handle to the process object remains open, so the reuse cannot happen while the probe is
+/// alive. But that safety is a side effect of a line whose stated purpose is detecting a debugger, it ends
+/// the moment the probe is disposed, and nothing would fail if somebody removed it. An identity check
+/// makes each call site safe on its own terms.
 ///
 /// The pair is the id plus the process's start time, which is the conventional Windows identity: an id
 /// that has been reused necessarily belongs to a process that started later than the one we knew.

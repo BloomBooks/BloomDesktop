@@ -13,7 +13,7 @@ namespace BloomFreezeDoctor.Tests;
 /// rather than left to be read off a real report months later.
 /// </summary>
 [TestFixture]
-public class ServerPoolDescriptionTests
+public class EvidenceGathererServerPoolTests
 {
     /// <summary>
     /// A snapshot carrying nothing but the server counts. Every other member is required, and none of them
@@ -43,7 +43,7 @@ public class ServerPoolDescriptionTests
         };
 
     [Test]
-    public void A_healthy_pool_is_reported_without_alarm()
+    public void DescribeServerWorkers_HealthyPool_NoStarvationWarning()
     {
         var text = EvidenceGatherer.DescribeServerWorkers(Pool(8, busy: 3, blocked: 1, queued: 0));
 
@@ -62,7 +62,7 @@ public class ServerPoolDescriptionTests
     }
 
     [Test]
-    public void An_exhausted_pool_says_so()
+    public void DescribeServerWorkers_AllWorkersBlocked_SaysEveryWorkerBlocked()
     {
         // BloomServer's own rule for growing the pool: every live worker blocked. Nothing is queued, so
         // work is not yet held up.
@@ -77,7 +77,7 @@ public class ServerPoolDescriptionTests
     }
 
     [Test]
-    public void An_exhausted_pool_with_work_queued_behind_it_is_the_loudest_case()
+    public void DescribeServerWorkers_AllBlockedWithQueue_SaysRequestsWaiting()
     {
         // The shape of a server-side deadlock rather than a slow operation: no worker can take the next
         // request, and requests are waiting.
@@ -91,7 +91,7 @@ public class ServerPoolDescriptionTests
     }
 
     [Test]
-    public void More_blocked_than_the_pool_still_counts_as_exhausted()
+    public void DescribeServerWorkers_MoreBlockedThanWorkers_StillExhausted()
     {
         // The counts are read without a lock and from two different places, so they can disagree by one.
         // The comparison is >= rather than == precisely so a transient over-count does not make the
@@ -102,7 +102,7 @@ public class ServerPoolDescriptionTests
     }
 
     [Test]
-    public void An_empty_pool_claims_nothing()
+    public void DescribeServerWorkers_EmptyPool_NoStarvationWarning()
     {
         // Before the server starts, or if Bloom is too old to publish these, the counts are all zero.
         // Zero blocked of zero satisfies >= arithmetically, and announcing starvation there would be a

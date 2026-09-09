@@ -5,18 +5,17 @@ using NUnit.Framework;
 namespace BloomFreezeDoctor.Tests;
 
 /// <summary>
-/// Decision D4 in both of its regimes. The exit codes used here were measured in the Phase 0 spike
-/// rather than recalled, and the "quiet" cases matter as much as the reportable ones: this classifier's
-/// main job in Phase 1 is to keep the tracker clean.
+/// The exit codes used here were measured rather than recalled, and the "quiet" cases matter as much as
+/// the reportable ones: this classifier's main job is to keep the tracker clean.
 /// </summary>
 [TestFixture]
 public class ExitClassifierTests
 {
     [Test]
-    public void A_bare_exit_stays_quiet()
+    public void Classify_BareExitCode_DoesNotReport()
     {
-        // The whole point of the Phase 1 rule: a Bloom that simply vanished is indistinguishable from
-        // the user closing it in a way we could not see.
+        // The whole point of the rule: a Bloom that simply vanished is indistinguishable from the user
+        // closing it in a way we could not see.
         var conclusion = ExitClassifier.Classify(new ExitEvidence { ExitCode = 1 });
 
         Assert.That(conclusion.ShouldReport, Is.False);
@@ -31,7 +30,7 @@ public class ExitClassifierTests
     [TestCase(ExitClassifier.ExitCodeUnhandledManagedException, "0xE0434352")]
     [TestCase(ExitClassifier.ExitCodeFailFast, "0x80131623")]
     [TestCase(ExitClassifier.ExitCodeAccessViolation, "0xC0000005")]
-    public void A_crash_exit_code_is_reportable(int exitCode, string expectedInText)
+    public void Classify_CrashExitCode_ReportsCrash(int exitCode, string expectedInText)
     {
         var conclusion = ExitClassifier.Classify(new ExitEvidence { ExitCode = exitCode });
 
@@ -41,7 +40,7 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void Event_log_or_WER_evidence_is_enough_on_its_own()
+    public void Classify_EventLogOrWerEvidenceAlone_Reports()
     {
         var fromEventLog = ExitClassifier.Classify(
             new ExitEvidence { ExitCode = 1, HasEventLogCrashEntry = true }
@@ -56,7 +55,7 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void A_stalled_shutdown_that_Bloom_forced_gets_its_own_verdict()
+    public void Classify_LogShowsForcedShutdown_ReportsForcedAfterStalledShutdown()
     {
         // Exit code 1, same as a Task Manager kill — but Bloom's log says which it was, and this is a
         // real bug we would otherwise never hear about.
@@ -65,20 +64,19 @@ public class ExitClassifierTests
         );
 
         Assert.That(conclusion.Verdict, Is.EqualTo(ExitVerdict.ForcedAfterStalledShutdown));
-        Assert.That(conclusion.ShouldReport, Is.True, "reportable in either regime");
+        Assert.That(conclusion.ShouldReport, Is.True, "reportable");
         Assert.That(conclusion.Explanation, Does.Contain("stalled"));
     }
 
     [Test]
-    public void A_missing_clean_exit_proof_is_not_by_itself_worth_a_card()
+    public void Classify_MissingCleanExitProofAlone_DoesNotReport()
     {
-        // The deliberate reversal. This case used to be reported, with the card's own text conceding it
-        // "may be a user-initiated kill" - which is exactly what it usually was. Absence of proof has too
-        // many innocent causes to act on: Task Manager, a Windows shutdown that force-closed Bloom, a
-        // power cut a moment before the machine noticed.
+        // Absence of proof has too many innocent causes to act on: Task Manager, a Windows shutdown that
+        // force-closed Bloom, a power cut a moment before the machine noticed. A card about it would
+        // usually be a card about a user-initiated kill.
         //
         // Nothing is lost by declining, because a real crash does not present this way: see
-        // An_unhandled_exception_on_a_foreign_thread_is_reported below.
+        // Classify_UnhandledExceptionOnForeignThread_ReportsCrash below.
         var conclusion = ExitClassifier.Classify(
             new ExitEvidence { ExitCode = -1, CleanExitProofPresent = false }
         );
@@ -91,12 +89,12 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void An_unhandled_exception_on_a_foreign_thread_is_reported()
+    public void Classify_UnhandledExceptionOnForeignThread_ReportsCrash()
     {
         // The case the whole exit path exists for: an exception thrown, and not caught, on a thread Bloom
         // does not control. Bloom's own reporting never sees it and the process simply vanishes.
         //
-        // Measured on 2026-08-31 with a minimal .NET 8 program throwing on a thread-pool thread: the
+        // Measured with a minimal .NET 8 program throwing on a thread-pool thread: the
         // ProcessExit handler did NOT run (so there is no clean-exit proof), and the process exit code was
         // 0xE0434352, alongside a .NET Runtime event, an Application Error event and a WER report. The exit
         // code comes from the CLR rather than from any Windows feature that can be switched off, which is
@@ -115,7 +113,7 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void Nothing_is_said_when_the_proof_is_present()
+    public void Classify_CleanExitProofPresent_CleanAndDoesNotReport()
     {
         var conclusion = ExitClassifier.Classify(
             new ExitEvidence
@@ -136,13 +134,12 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void A_process_terminated_from_outside_is_quiet_without_needing_to_be_excused()
+    public void Classify_TerminatedFromOutside_DoesNotReport()
     {
-        // This replaces two explicit exemptions - "the machine went down" and "a debugger could account
-        // for it" - which existed only to excuse an absence back when an absence was reportable. They are
-        // unnecessary now, and this is the shape of the case they used to catch.
+        // No explicit exemption for "the machine went down" or "a debugger could account for it" is
+        // needed, because neither ever reaches the crash signals.
         //
-        // Measured on 2026-08-31: a TerminateProcess kill, which is exactly what "Stop Debugging" and Task
+        // Measured: a TerminateProcess kill, which is exactly what "Stop Debugging" and Task
         // Manager both do, gives exit code -1, no ProcessExit, no Application Error event and no WER
         // report. A machine losing power leaves even less. So none of them reaches the crash signals at
         // all, and nothing has to recognise them by name to stay quiet.
@@ -158,18 +155,14 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void Real_crash_evidence_is_reported_even_on_a_machine_that_has_been_debugging()
+    public void Classify_CrashEvidenceOnDebuggedMachine_StillReports()
     {
-        // A deliberate change of behaviour, and worth being explicit about. The classifier used to refuse
-        // outright if a debugger had been near the process, however bad the evidence looked. It no longer
-        // knows about debuggers at all.
-        //
-        // Nothing reaches the tracker that should not: a debugged Bloom is blocked from FILING one level
-        // up, by BloomTargetWatcher.ReasonsFilingWouldNormallyBeBlocked - see
-        // BloomTargetWatcherTests.A_target_seen_under_a_debugger_is_never_filed_even_if_it_later_looks_clean.
-        // What changes is that the evidence is now gathered to disk instead of being thrown away, which is
-        // the right way round: a Bloom that genuinely called FailFast is worth looking at, and the person
-        // debugging it is the one best placed to.
+        // The classifier knows nothing about debuggers, however bad the evidence looks. Nothing reaches the
+        // tracker that should not: a debugged Bloom is blocked from FILING one level up, by
+        // BloomTargetWatcher.ReasonsFilingWouldNormallyBeBlocked - see
+        // BloomTargetWatcherTests.Tick_DebuggerSeenThenDetached_ReportedButMayNotFile.
+        // The evidence is still gathered to disk, which is the right way round: a Bloom that genuinely
+        // called FailFast is worth looking at, and the person debugging it is the one best placed to.
         var conclusion = ExitClassifier.Classify(
             new ExitEvidence
             {
@@ -189,7 +182,7 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void A_developer_run_still_gets_a_report_gathered_even_though_it_is_never_filed()
+    public void Classify_NeverFileDeveloperCrash_StillReports()
     {
         // These are two separate questions, and conflating them is a real trap. Whether a report may be
         // FILED is settled by the caller; this only answers whether the exit is worth reporting ON. Answer
@@ -209,7 +202,7 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void A_clean_exit_code_zero_is_quiet()
+    public void Classify_ExitCodeZero_DoesNotReport()
     {
         var conclusion = ExitClassifier.Classify(new ExitEvidence { ExitCode = 0 });
 
@@ -218,12 +211,12 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void An_exit_Bloom_itself_recorded_as_forced_is_reported_not_called_clean()
+    public void Classify_ExitRecordedAsForced_ReportsNoOrderlyShutdown()
     {
         // Bloom writes an exit record on the way out of a hard failure too - Environment.Exit before the
-        // orderly shutdown began - and marks it forced. The supervisor used to pass "there is a record"
-        // as "there is proof of a clean exit", so the loudest thing Bloom can tell us became silence,
-        // under the self-contradicting explanation "Bloom shut down properly (shutdown phase 0)".
+        // orderly shutdown began - and marks it forced. Reading "there is a record" as "there is proof of
+        // a clean exit" would turn the loudest thing Bloom can tell us into silence, under the
+        // self-contradicting explanation "Bloom shut down properly (shutdown phase 0)".
         var evidence = new ExitEvidence
         {
             CleanExitProofPresent = false,
@@ -247,10 +240,10 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void An_orderly_exit_is_still_clean()
+    public void Classify_OrderlyExit_Clean()
     {
-        // The sanity check on the test above: the new branch must not swallow the ordinary case, which is
-        // by far the commonest thing that happens to a watched Bloom.
+        // The sanity check on the test above: the forced-exit branch must not swallow the ordinary case,
+        // which is by far the commonest thing that happens to a watched Bloom.
         var evidence = new ExitEvidence
         {
             CleanExitProofPresent = true,
@@ -265,7 +258,7 @@ public class ExitClassifierTests
     }
 
     [Test]
-    public void A_shutdown_the_Doctor_asked_for_is_still_clean()
+    public void Classify_ShutdownDoctorAskedFor_Clean()
     {
         // The exit record's "forced" flag covers two quite different things - the Doctor asking Bloom to
         // quit, and a hard failure that never began the orderly path. Treating them alike would file a

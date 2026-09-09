@@ -12,12 +12,9 @@ namespace BloomFreezeDoctor.Outbox;
 /// not. The Doctor only gets a dump when Bloom notices it is crashing and asks to be dumped; a Bloom that
 /// dies without noticing - an unhandled exception on a thread it does not control, which is the case the
 /// Doctor exists for - leaves the exit examination to report it, and that runs after the process has gone,
-/// when no dump can be taken. So the first card for a problem frequently has no dump at all, and under the
-/// blanket rule the first occurrence that COULD have supplied one silently did not: the comment said the
-/// evidence was "near enough a copy" of what was already there, when what was already there was nothing.
-///
-/// A real run showed exactly that, and the dump we had held a dying Bloom open for three seconds to
-/// collect stayed on the user's machine.
+/// when no dump can be taken. So the first card for a problem frequently has no dump at all, and a blanket
+/// rule would have the first occurrence that COULD supply one silently withhold it, while the comment
+/// called the evidence "near enough a copy" of what was already there - which was nothing.
 /// </summary>
 public static class RecurrenceArtifacts
 {
@@ -37,11 +34,10 @@ public static class RecurrenceArtifacts
     /// Whether the card already carries a dump BY ANY ROUTE - attached, or linked in the support bucket
     /// because it was too large to attach.
     ///
-    /// Asking only about attachments was wrong, and wrong in the way that produces a confident false
-    /// statement rather than a missing one. A dump a few hundred bytes over the attachment ceiling is
-    /// uploaded to the bucket and linked from a comment, so the card HAS the dump and has no attachment;
-    /// the recurrence then saw no attachment, uploaded a second copy, and announced that the card had none.
-    /// Measured: 8,389,030 bytes went to the bucket, and the next run's 8,054,542 was attached beside it.
+    /// Asking only about attachments would be wrong in the way that produces a confident false statement
+    /// rather than a missing one. A dump a few hundred bytes over the attachment ceiling is uploaded to the
+    /// bucket and linked from a comment, so the card HAS the dump and has no attachment; a recurrence that
+    /// looked only at attachments would upload a second copy and announce that the card had none.
     /// </param>
     public static IReadOnlyList<string> WorthAttaching(
         IEnumerable<string> artifactPaths,

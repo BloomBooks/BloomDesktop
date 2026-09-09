@@ -29,7 +29,7 @@ namespace BloomTests.FreezeDoctor
             ApiActivityTracker.DescribeStuckRequests(TimeSpan.FromMilliseconds(-1));
 
         [Test]
-        public void A_request_is_named_with_its_path_and_thread()
+        public void DescribeStuckRequests_OneRequest_NamesPathAndThread()
         {
             Assert.That(
                 Everything(),
@@ -58,7 +58,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void The_lock_a_request_wants_is_named_and_then_the_one_it_holds()
+        public void DescribeStuckRequests_LockNoted_NamesWaitingThenHolding()
         {
             using (var activity = ApiActivityTracker.Begin("api/publish/bloompub/updatepreview"))
             {
@@ -86,7 +86,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void Longest_running_comes_first()
+        public void DescribeStuckRequests_TwoRequests_LongestRunningFirst()
         {
             using (ApiActivityTracker.Begin("api/first"))
             using (ApiActivityTracker.Begin("api/second"))
@@ -103,7 +103,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void A_flood_of_requests_is_capped_and_says_how_many_it_dropped()
+        public void DescribeStuckRequests_ManyRequests_CappedWithCountOfDropped()
         {
             // A Bloom in real trouble can have a great many in flight. The list has to stop somewhere, but
             // stopping silently would let a report look complete when it was truncated.
@@ -128,7 +128,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void Nothing_in_flight_returns_the_shared_empty_array()
+        public void DescribeStuckRequests_NothingInFlight_ReturnsSharedEmptyArray()
         {
             // Not a curiosity: the session record compares this by reference, and Bloom skips writing the
             // file when nothing has changed. A fresh empty array each time would make an idle Bloom look
@@ -143,7 +143,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void A_request_below_the_threshold_is_not_worth_naming()
+        public void DescribeStuckRequests_RequestBelowThreshold_Omitted()
         {
             using (ApiActivityTracker.Begin("api/quick"))
             {

@@ -11,11 +11,11 @@ public enum TargetState
     /// <summary>Not responding, but not for long enough to report yet.</summary>
     Suspect,
 
-    /// <summary>Not responding for long enough that we report it (plan §3.2).</summary>
+    /// <summary>Not responding for long enough that we report it.</summary>
     Frozen,
 
     /// <summary>
-    /// Alive with no visible window for long enough to count as the zombie of plan §3.6. Note
+    /// Alive with no visible window for long enough to count as a zombie. Note
     /// "visible": a healthy Bloom keeps an invisible window of its own (its splash screen is hidden
     /// rather than closed), so counting any window would mean never detecting this at all.
     /// </summary>
@@ -33,7 +33,7 @@ public readonly record struct TargetObservation
 {
     /// <summary>
     /// Monotonic time since watching began. Deliberately NOT a wall clock: the machine can sleep,
-    /// and a resumed laptop must not look like a six-hour freeze (plan §3.5).
+    /// and a resumed laptop must not look like a six-hour freeze.
     /// </summary>
     public required TimeSpan Uptime { get; init; }
 
@@ -41,8 +41,8 @@ public readonly record struct TargetObservation
     public required bool IsAlive { get; init; }
 
     /// <summary>
-    /// Whether the window answered a message probe. The spike settled which probe: use
-    /// SendMessageTimeout, because IsHungAppWindow needs about five seconds to make up its mind.
+    /// Whether the window answered a message probe - SendMessageTimeout rather than IsHungAppWindow,
+    /// which needs about five seconds to make up its mind.
     /// Both are worthless against a UI thread blocked in an STA managed wait, which is what
     /// <see cref="HeartbeatIsStale"/> is for.
     /// </summary>
@@ -55,7 +55,7 @@ public readonly record struct TargetObservation
     /// Tier B only: Bloom's UI-thread heartbeat has stopped advancing. This is the only signal that
     /// catches a freeze in an STA managed wait, where the window still answers messages. It is never
     /// trusted alone, because WM_TIMER is the lowest-priority message and can starve on a busy but
-    /// live UI (plan §3.1).
+    /// live UI.
     /// </summary>
     public bool HeartbeatIsStale { get; init; }
 
@@ -63,10 +63,9 @@ public readonly record struct TargetObservation
     /// Tier B only: independent evidence that a stale UI heartbeat means a blocked UI thread rather than a
     /// starved timer.
     ///
-    /// Today this means **Bloom's background watchdog thread is still ticking while the UI thread is
+    /// This means **Bloom's background watchdog thread is still ticking while the UI thread is
     /// not** — so the process is alive and scheduling threads, and it is the UI thread specifically that
-    /// is stuck. That is exactly the signature of a managed wait on the STA thread. When Bloom publishes
-    /// breadcrumbs and in-flight API calls, those become additional corroboration of the same kind.
+    /// is stuck. That is exactly the signature of a managed wait on the STA thread.
     /// </summary>
     public bool UiBlockCorroborated { get; init; }
 
@@ -90,7 +89,7 @@ public readonly record struct TargetObservation
     /// channel, or one is still attached, or none ever was.
     ///
     /// This is what stops <see cref="DebuggerEverAttached"/> writing off a whole run. Null is treated as
-    /// "assume it overlaps", so a Bloom that publishes nothing behaves exactly as it did before.
+    /// "assume it overlaps", so a Bloom that publishes nothing gets the cautious answer.
     /// </summary>
     public TimeSpan? DebuggerLastDetachedAge { get; init; }
 
@@ -113,8 +112,7 @@ public readonly record struct TargetObservation
 }
 
 /// <summary>
-/// The thresholds from decision D3, in one place so that dogfooding can move them without a code
-/// change.
+/// The detector's thresholds, in one place so that dogfooding can move them without a code change.
 /// </summary>
 public sealed record DetectorThresholds
 {
@@ -155,7 +153,7 @@ public enum ReportReason
 {
     None,
 
-    /// <summary>UI unresponsive past the threshold — plan state 1.</summary>
+    /// <summary>UI unresponsive past the threshold.</summary>
     Frozen,
 
     /// <summary>Was frozen and started responding again. Still worth reporting; often better evidence.</summary>
@@ -164,7 +162,7 @@ public enum ReportReason
     /// <summary>Froze, then the process died or was killed. One card, not two.</summary>
     DiedWhileFrozen,
 
-    /// <summary>Alive with no visible window — plan state 3.</summary>
+    /// <summary>Alive with no visible window.</summary>
     Zombie,
 
     /// <summary>
@@ -175,9 +173,8 @@ public enum ReportReason
 
     /// <summary>
     /// A person asked for this report — the CTRL-key "Report now" button, or `--report-now`. Bloom was
-    /// not necessarily frozen, and the card must not claim it was: this exists because the first such
-    /// report came out titled "UI frozen" about a perfectly healthy Bloom, which would have wasted
-    /// somebody's afternoon.
+    /// not necessarily frozen, and the card must not claim it was: a card titled "UI frozen" about a
+    /// perfectly healthy Bloom would waste somebody's afternoon.
     /// </summary>
     RequestedByPerson,
 }
@@ -200,8 +197,8 @@ public readonly record struct DetectorVerdict
     ///
     /// Only crashes set it, and this is why it exists: the fingerprint's distinguishing ingredient is the
     /// top of the UI thread's stack, which for a crash is the message pump - identical every time - so
-    /// unrelated crashes on one build collapsed onto one card. A crash's identity is the faulting thread's
-    /// exception and frames instead. Freezes leave this null and are fingerprinted exactly as before.
+    /// unrelated crashes on one build would collapse onto one card. A crash's identity is the faulting
+    /// thread's exception and frames instead. Freezes leave this null.
     ///
     /// Deliberately NOT the <see cref="Explanation"/>, which is prose and carries variable text; a
     /// fingerprint ingredient has to be stable across machines and rebuilds.
@@ -215,11 +212,10 @@ public readonly record struct DetectorVerdict
 /// <summary>
 /// Turns a stream of observations of one Bloom into "report now, for this reason" decisions.
 ///
-/// Everything here came out of the Phase 0 spike, so the reasons for the odd-looking rules are
-/// recorded in the comments rather than left to be rediscovered:
-/// a debugged process is poison forever, not just while the debugger is attached; a stale heartbeat
-/// needs a second opinion; and a big gap between observations means the machine slept, not that
-/// Bloom hung.
+/// The reasons for the odd-looking rules are recorded in the comments rather than left to be
+/// rediscovered: a debugged process is poison forever, not just while the debugger is attached; a stale
+/// heartbeat needs a second opinion; and a big gap between observations means the machine slept, not
+/// that Bloom hung.
 /// </summary>
 public sealed class FreezeDetector
 {
@@ -254,7 +250,7 @@ public sealed class FreezeDetector
 
     private readonly HashSet<ReportReason> _alreadyReported = new();
 
-    /// <summary>Creates a detector, optionally with thresholds other than decision D3's defaults.</summary>
+    /// <summary>Creates a detector, optionally with thresholds other than the defaults.</summary>
     public FreezeDetector(DetectorThresholds? thresholds = null)
     {
         _thresholds = thresholds ?? new DetectorThresholds();
@@ -410,7 +406,7 @@ public sealed class FreezeDetector
                 $"exited while {State.ToString().ToLowerInvariant()}"
             );
 
-        // Otherwise this is plan §3.4/§3.5 territory, and the detector is deliberately not the judge:
+        // Otherwise the detector is deliberately not the judge:
         // whether a bare exit is reportable depends on evidence it does not have (a clean-exit proof,
         // Event Log entries, WER files). The watcher asks the exit classifier about it.
         return Settle(TargetState.Exited, ReportReason.None, "exited while apparently healthy");
@@ -418,7 +414,7 @@ public sealed class FreezeDetector
 
     /// <summary>
     /// A stale heartbeat is only believed when something else agrees, because WM_TIMER is the
-    /// lowest-priority message and a busy-but-live UI can starve it (plan §3.1).
+    /// lowest-priority message and a busy-but-live UI can starve it.
     /// </summary>
     private static bool BelievesHeartbeatIsStale(TargetObservation observation) =>
         observation.HeartbeatIsStale

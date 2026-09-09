@@ -10,20 +10,17 @@ namespace BloomFreezeDoctor.Gathering;
 /// The most valuable section of any report: what every managed thread was doing, in words, with the
 /// blocked UI thread first.
 ///
-/// The Phase 0 spike settled how to get this (docs/SPIKE-FINDINGS.md §1, §6, §7):
+/// How it is obtained, in order of preference:
 ///
 /// 1. **Primary — <c>DiagnosticsClient.WriteDump</c>.** The target's own runtime writes the dump over
-///    the diagnostics IPC pipe. Measured at 2.2 MB / ~0.5 s for a small app and 7.5 MB / 1.4 s for a
-///    real Bloom, and it works **while the UI thread is wedged**. Crucially it is also the safest
-///    mechanism available, because the target does the work: if we die halfway, it simply finishes or
-///    abandons on its own.
+///    the diagnostics IPC pipe: about 7.5 MB and 1.4 s for a real Bloom, and it works **while the UI
+///    thread is wedged**. Crucially it is also the safest mechanism available, because the target does
+///    the work: if we die halfway, it simply finishes or abandons on its own.
 /// 2. **Fallback — a NON-suspending ClrMD attach.** ~200 ms, stacks only, and it cannot strand the
 ///    target.
-/// 3. **Never a suspending attach.** Measured: hard-killing a process that held
-///    <c>AttachToProcess(suspend: true)</c> left the target permanently suspended, unrecoverable
-///    except by killing it. A Doctor crash must never convert a recoverable hang into an
-///    unrecoverable one. If you are tempted to add it back, the review question is "what happens to
-///    Bloom if this process is killed on the next line?"
+/// 3. **Never a suspending attach.** If the Doctor dies while holding
+///    <c>AttachToProcess(suspend: true)</c>, the target stays suspended for good. A Doctor crash must
+///    never convert a recoverable hang into an unrecoverable one.
 /// </summary>
 public sealed class ManagedStacksCollector : IEvidenceCollector
 {
@@ -55,7 +52,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
         var started = Stopwatch.StartNew();
 
         // Run the whole thing off the calling thread: ClrMD and the dump write are synchronous and
-        // slow, and the Doctor's own UI must stay alive while it diagnoses (plan §2.1).
+        // slow, and the Doctor's own UI must stay alive while it diagnoses.
         var attempt = await Task.Run(() => TryDumpAndWalk(context, cancellation), cancellation)
             .ConfigureAwait(false);
 
@@ -94,7 +91,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
             var client = new DiagnosticsClient(context.Target.ProcessId);
             var dumpTimer = Stopwatch.StartNew();
             // DumpType.Normal is what dotnet-dump calls a mini dump: small, and still enough for
-            // ClrMD to walk managed stacks. Verified in the spike against a real Bloom.
+            // ClrMD to walk managed stacks.
             //
             // **Chosen deliberately, knowing what it costs.** Normal carries thread stacks
             // but NOT the GC heap - measured at 16-17 MB against a 234 MB working set - so the analysis a
@@ -218,8 +215,8 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
             .Select(t => new { Thread = t, Frames = SafeFrames(t) })
             .ToList();
 
-        // See UiThreadStack: matching only on the message-loop frame missed the UI thread exactly when it
-        // mattered most, because a SPINNING thread's upper frames do not survive the stack walk.
+        // See UiThreadStack: a SPINNING thread's upper frames do not survive the stack walk, so matching
+        // only on the message-loop frame would miss the UI thread exactly when it matters most.
         var uiThread = threads.FirstOrDefault(t => UiThreadStack.LooksLikeTheUiThread(t.Frames));
 
         text.AppendLine(

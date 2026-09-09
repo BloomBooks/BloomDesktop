@@ -21,18 +21,14 @@ public enum ExitExamination
 /// <summary>
 /// Decides which of the Doctor's paths owns the report for a Bloom that has just died.
 ///
-/// A pure function with its own tests because this decision has been wrong twice, both times silently,
-/// and both times it cost a whole manual run to find out:
+/// A pure function with its own tests because three booleans with four outcomes is small enough to look
+/// obviously right and be wrong, and wrong silently. Two mistakes it guards against:
 ///
-/// - Claiming the death in the discovery sweep and then calling the examination, which begins by refusing
-///   a death already claimed. Every crash was "examined" by a call that returned immediately, so a real
-///   crashing Bloom produced no report at all.
-/// - Letting the exit examination run alongside the crash-dump path. Both filed, the outbox's fingerprint
-///   dedup kept whichever arrived first, and on a real run that was the DUMPLESS one - so the card got the
-///   thinner report and the dump we held a dying Bloom open to collect was left on the user's machine.
-///
-/// Three booleans with four outcomes is small enough to look obviously right and be wrong, which is exactly
-/// the kind of thing to pin down in a table.
+/// - Claiming the death in the discovery sweep before calling an examination that begins by refusing a
+///   claimed death, so every crash is "examined" by a call that returns at once and nothing is reported.
+/// - Letting the exit examination run alongside the crash-dump path, so both file, the outbox's
+///   fingerprint dedup keeps whichever arrives first, and the card can get the DUMPLESS report while the
+///   dump we held a dying Bloom open to collect is left on the user's machine.
 /// </summary>
 public static class WhoReportsTheDeath
 {
@@ -41,10 +37,8 @@ public static class WhoReportsTheDeath
     ///
     /// "Already claimed" is tested FIRST, and that ordering is load-bearing: an earlier pass has not just
     /// decided, it has ACTED - logged its reason and released the process handle - so a later pass must do
-    /// nothing at all, whatever the reason would have been. Testing the reasons first instead let a second
-    /// pass re-take the same branch, which on a real run logged "its crash dump is already being reported"
-    /// twice a second apart and disposed an already-disposed handle. Harmless that time; not a property to
-    /// rely on.
+    /// nothing at all, whatever the reason would have been. Testing the reasons first would let a second
+    /// pass re-take the same branch, log the same reason again and dispose an already-disposed handle.
     ///
     /// After that it is the order of how much better the alternative is than a bare examination: our own
     /// doing needs no report at all, and a dump-bearing report beats a dumpless one.

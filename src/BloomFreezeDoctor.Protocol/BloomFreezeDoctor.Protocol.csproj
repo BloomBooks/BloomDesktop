@@ -5,9 +5,9 @@
     the named events they use to reach each other.
 
     Both consumers - BloomExe and BloomFreezeDoctor.Core - reference this project directly, so there is one
-    definition compiled into both sides from the same source every build. Drift is therefore not merely
-    detected but impossible, which matters because drift here produces confident, wrong reports rather than
-    an error. Nothing is packaged or versioned: no NuGet package, no API key, no version to keep in step.
+    definition compiled into both sides from the same source every build. Drift between the two sides is
+    therefore impossible, which matters because drift here would produce confident, wrong reports rather
+    than an error.
   -->
   <PropertyGroup>
     <!--
@@ -33,8 +33,7 @@
       SupportUpload.cs.
 
       Every version here must match BloomExe.csproj, kept in step by hand: both projects land in one output
-      directory, so two versions of the same assembly is a problem worth avoiding. If this layout settles,
-      they belong in Directory.Build.props alongside VelopackVersion.
+      directory, so two versions of the same assembly is a problem worth avoiding.
     -->
     <PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
     <PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />

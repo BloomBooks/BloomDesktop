@@ -47,13 +47,12 @@ public class ReportOutboxTests
         new(_root, () => _now, drainGateWait: TimeSpan.FromMilliseconds(200));
 
     [Test]
-    public async Task A_second_drainer_is_refused_while_another_holds_the_gate()
+    public async Task DrainAsync_AnotherDrainerHoldsGate_Refused()
     {
-        // This exists because the gate has now been got wrong twice: first it was in-process only, so
-        // `--drain` in another process sailed past it; then, when it became a lock file, the "somebody
-        // else holds it" case fell through and drained anyway, which made the whole gate a no-op while
-        // its comment claimed otherwise. Two processes draining one queue means duplicate YouTrack cards
-        // and a combined total past the deliberate three-a-day cap, so a comment is not enough here.
+        // Two processes draining one queue means duplicate YouTrack cards and a combined total past the
+        // deliberate three-a-day cap. The gate has to be a lock file rather than an in-process flag,
+        // because `--drain` runs in another process, and the "somebody else holds it" case has to refuse
+        // rather than fall through, or the whole gate is a no-op.
         var outbox = NewImpatientOutbox();
         outbox.Enqueue(Report(), "AUT", "Alpha", "Frozen");
         Assert.That(outbox.Pending(), Has.Count.EqualTo(1), "setup: one bundle should be waiting");
@@ -159,9 +158,9 @@ public class ReportOutboxTests
                     IssueId = issueId,
                     Error = Outcome == SubmitOutcome.Filed ? null : "pretend failure",
                     // Stands in for opening a new card, which is the only thing the daily cap counts. Left
-                    // at its default of false, this fake silently spent none of the allowance and the cap
-                    // could never engage - so the test that exists to prove the cap works passed for the
-                    // wrong reason.
+                    // at its default of false, this fake would spend none of the allowance and the cap could
+                    // never engage, so the test that exists to prove the cap works would pass for the wrong
+                    // reason.
                     CreatedNewCard = Outcome == SubmitOutcome.Filed && !CommentsOnly,
                 }
             );
@@ -169,7 +168,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void A_report_lands_on_disk_complete_with_its_artifacts()
+    public void Enqueue_WritesBundleWithArtifactsToDisk()
     {
         var outbox = NewOutbox();
         var artifact = MakeArtifact("bloom-1234.dmp");
@@ -196,7 +195,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void Staging_folders_are_never_offered_as_bundles()
+    public void List_StagingFolderPresent_NotListed()
     {
         // A half-written bundle must be invisible, or a drain could try to file an empty report.
         var outbox = NewOutbox();
@@ -206,7 +205,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void The_same_problem_twice_becomes_one_bundle_with_two_occurrences()
+    public void Enqueue_SameFingerprintTwice_OneBundleWithTwoOccurrences()
     {
         // This is what stops an offline user with a recurring freeze producing twenty cards.
         var outbox = NewOutbox();
@@ -225,7 +224,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void Different_problems_get_their_own_bundles()
+    public void Enqueue_DifferentFingerprints_SeparateBundles()
     {
         var outbox = NewOutbox();
         outbox.Enqueue(Report("fingerprintone"), "BL", "Release", "Frozen");
@@ -235,7 +234,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void A_run_we_must_not_file_is_kept_but_never_queued()
+    public void Enqueue_MayNotFile_KeptOnDiskButNotPending()
     {
         // Developer and automation runs are still gathered — that is how we exercise the gatherer
         // without touching the tracker — but they must never be waiting to be sent.
@@ -249,7 +248,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task Draining_files_pending_reports_oldest_first()
+    public async Task DrainAsync_FilesPendingOldestFirst()
     {
         var outbox = NewOutbox();
         outbox.Enqueue(Report("oldest"), "BL", "Release", "Frozen");
@@ -274,7 +273,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task An_offline_drain_leaves_everything_pending_and_stops_early()
+    public async Task DrainAsync_Offline_LeavesAllPendingAndStopsEarly()
     {
         // If one bundle cannot reach the tracker, neither will the next, and each attempt costs a
         // timeout. Stopping early matters on the connections our users actually have.
@@ -301,7 +300,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task A_permanent_rejection_stops_the_retries_for_good()
+    public async Task DrainAsync_PermanentRejection_NoFurtherRetries()
     {
         // An expired token would otherwise become an infinite retry loop against the tracker.
         var outbox = NewOutbox();
@@ -321,7 +320,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task The_daily_limit_defers_reports_rather_than_dropping_them()
+    public async Task DrainAsync_DailyLimitReached_DefersRestUntilTomorrow()
     {
         var outbox = NewOutbox();
         for (var i = 0; i < ReportOutbox.MaxFilingsPerDay + 2; i++)
@@ -347,7 +346,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void Bundles_older_than_the_retention_period_are_dropped()
+    public void Enqueue_BundleOlderThanMaxAge_Pruned()
     {
         var outbox = NewOutbox();
         outbox.Enqueue(Report("ancient"), "BL", "Release", "Frozen");
@@ -363,7 +362,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void The_queue_cannot_grow_without_bound()
+    public void Enqueue_MoreThanMaxBundles_OldestPruned()
     {
         // This is disk on someone else's machine, and a user who is never online would otherwise
         // accumulate a bundle per freeze forever.
@@ -383,7 +382,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void A_corrupt_bundle_does_not_break_the_queue()
+    public void List_CorruptBundlePresent_OthersStillListed()
     {
         var outbox = NewOutbox();
         outbox.Enqueue(Report("good"), "BL", "Release", "Frozen");
@@ -398,12 +397,11 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void A_second_problem_with_the_same_Bloom_joins_the_first_card()
+    public void Enqueue_SecondProblemSameProcess_FoldedIntoFirstBundle()
     {
         // One Bloom's collapse arrives in instalments: the UI freezes (one report), then the process
-        // dies (another, with a different reason and so a different fingerprint). Before this, nothing
-        // recognised the two as related and two cards were filed for one event - which is exactly what
-        // the first live test produced, AUT-20929 and AUT-20930.
+        // dies (another, with a different reason and so a different fingerprint). Unless the two are
+        // recognised as related, two cards are filed for one event.
         var outbox = NewOutbox();
         var dump = MakeArtifact("dump-from-the-death.dmp");
 
@@ -463,7 +461,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void A_problem_with_a_different_Bloom_gets_its_own_card()
+    public void Enqueue_DifferentProcess_SeparateBundle()
     {
         // The sanity check on the test above: folding is keyed on the process, so two Blooms in trouble
         // must still produce two cards however close together it happens.
@@ -476,7 +474,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void A_much_later_problem_with_the_same_process_id_gets_its_own_card()
+    public void Enqueue_SameProcessAfterFollowOnWindow_SeparateBundle()
     {
         // The fold is for instalments of one collapse, which arrive seconds apart. Windows reuses process
         // ids, so without a time bound a report still queued from a Bloom that died this morning could
@@ -495,7 +493,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void A_report_is_not_merged_into_a_bundle_that_has_already_been_filed()
+    public void Enqueue_FirstBundleAlreadyFiled_NotMerged()
     {
         // Merging is a read-then-write, and the supervisor drains on a timer as well as after each
         // gather, so a drain can finish in between - and a follow-on merge writes a report body and moves
@@ -572,7 +570,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task A_bundle_is_marked_as_uploading_before_the_network_call_not_after()
+    public async Task DrainAsync_MarksUploadingBeforeNetworkCall()
     {
         // The mark is the whole mechanism: it is what lets a gather arriving mid-upload tell "waiting to
         // be sent" from "going out right now", and those need opposite treatment. Marked afterwards it
@@ -596,10 +594,10 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task A_report_arriving_mid_upload_ends_up_commenting_on_the_same_card()
+    public async Task DrainAsync_ReportArrivesMidUpload_CommentsOnSameCard()
     {
-        // The case the developer asked for. A freeze is reported and starts uploading; the same Bloom then
-        // dies, and that report wants to join the first one's card. It cannot merge into a bundle that is
+        // A freeze is reported and starts uploading; the same Bloom then dies, and that report wants to
+        // join the first one's card. It cannot merge into a bundle that is
         // already going out - that is what would either be lost or overwrite the card id coming back - so
         // it takes a bundle of its own, remembers whose card it belongs on, and waits.
         var outbox = NewOutbox();
@@ -637,7 +635,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task A_report_waiting_on_a_card_is_not_filed_before_that_card_exists()
+    public async Task DrainAsync_ReportWaitingOnCard_NotFiledBeforeCardExists()
     {
         // The sanity check on the test above, and the failure it guards against: a bundle waiting for a
         // sibling's card must not be sent before that card exists, or it opens the second card this whole
@@ -670,7 +668,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task A_send_that_was_interrupted_leaves_its_report_sendable()
+    public async Task DrainAsync_InterruptedUpload_RetriedAfterTimeout()
     {
         // Marking a bundle before the network call is what lets a gather see that it must not merge. The
         // hazard that creates: the drain only ever looks at Pending, so a mark left behind by a Doctor that
@@ -724,12 +722,11 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void A_real_minidump_is_routed_to_the_bucket_rather_than_attached()
+    public void MaxSingleAttachmentBytes_IsBelowTrackerCeilingAndRealDumpSize()
     {
-        // YouTrack will not take an attachment much over 10 MB - Bloom measured about that in July 2020 and
-        // stopped attaching altogether - and a Normal dump of a real Bloom is 16-17 MB by this project's
-        // own measurement. So the dump must be sorted into the upload pile, not the attach pile. Raising
-        // our own budget to "fix" this was the earlier mistake: our number was never the binding one.
+        // YouTrack will not take an attachment much over 10 MB, and a Normal dump of a real Bloom is
+        // 16-17 MB. So the dump must be sorted into the upload pile, not the attach pile. Raising our own
+        // attachment budget would not help: YouTrack's limit is the binding one.
         const long measuredDumpBytes = 17L * 1024 * 1024;
         const long youTrackCeilingBytes = 10L * 1024 * 1024;
 
@@ -752,7 +749,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task A_report_a_person_asked_for_is_not_refused_by_the_daily_cap()
+    public async Task DrainAsync_UserRequestedReportAtDailyCap_StillFiled()
     {
         // The cap exists to bound cards nobody asked for. Telling somebody who pressed "Report now" that
         // they have had their three for today would be absurd - and pressing it is also how anyone checks
@@ -790,10 +787,10 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task A_comment_on_an_existing_card_is_not_refused_by_the_daily_cap()
+    public async Task DrainAsync_CommentOnExistingCardAtDailyCap_StillSent()
     {
-        // "It happened again" is a few lines of text with no attachments. Counting it against the cap meant
-        // three of them could silence a machine for the rest of the day about problems nobody had heard of
+        // "It happened again" is a few lines of text with no attachments. Counting it against the cap would
+        // let three of them silence a machine for the rest of the day about problems nobody had heard of
         // yet, which is the opposite of what the cap is for.
         var outbox = NewOutbox();
         for (var i = 0; i < ReportOutbox.MaxFilingsPerDay; i++)
@@ -818,7 +815,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task Comments_do_not_spend_the_allowance_that_new_cards_need()
+    public async Task DrainAsync_Comments_DoNotSpendDailyAllowance()
     {
         // The other half of the same rule, and the one that bites in the field: a machine that comments all
         // morning must still be able to open a card about something genuinely new in the afternoon.
@@ -848,12 +845,12 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void A_report_held_back_can_be_sent_after_all()
+    public void SendThisAfterAll_HeldBackBundle_BecomesPending()
     {
         // The Doctor declines to file on a developer build, on an automation run, and when the failure was
         // simulated on purpose. All three are right by default and all three are ones a developer sometimes
-        // wants to override for the report in front of them - which until now meant gathering a WHOLE NEW
-        // report, impossible once that Bloom has died.
+        // wants to override for the report in front of them - and gathering a whole new report instead is
+        // impossible once that Bloom has died.
         var outbox = NewOutbox();
         var bundle = outbox.Enqueue(Report(mayFile: false), "AUT", "Developer/Debug", "Frozen");
         Assert.That(
@@ -868,7 +865,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void Sending_after_all_leaves_everything_else_alone()
+    public void SendThisAfterAll_OrdinaryPendingBundle_Unchanged()
     {
         // Only a deliberate refusal is lifted. This is not a way to re-send something already filed, nor to
         // jog a queue that is merely slow - and a button that quietly re-sent a filed report would produce
@@ -886,7 +883,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public void Sending_a_bundle_that_is_not_there_says_so()
+    public void SendThisAfterAll_MissingBundle_ReturnsFalse()
     {
         var outbox = NewOutbox();
 
@@ -898,14 +895,11 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task A_drain_reports_which_cards_it_filed()
+    public async Task DrainAsync_ReportsFiledCardIds()
     {
-        // Not a nicety: this is the only way anything downstream can learn a card id, and its absence was
-        // a user-visible bug. Everything the Doctor gathers is QUEUED and sent by a later drain, so the
-        // drain is where card ids come into existence - and the outcome carried only a count. The window
-        // therefore announced "filed 1 report" and could not offer to open it, because nothing had ever
-        // told it which card. The one path that did work was an inline filing during gathering, which is
-        // the rare case.
+        // Not a nicety: this is the only way anything downstream can learn a card id. Everything the Doctor
+        // gathers is QUEUED and sent by a later drain, so the drain is where card ids come into existence.
+        // With only a count, the window could announce "filed 1 report" but not offer to open it.
         var outbox = NewOutbox();
         var submitter = new FakeSubmitter { DistinctIds = true };
         outbox.Enqueue(Report("first-problem"), "AUT", "Alpha", "Frozen");
@@ -928,7 +922,7 @@ public class ReportOutboxTests
     }
 
     [Test]
-    public async Task A_drain_that_files_nothing_names_no_cards()
+    public async Task DrainAsync_NothingFiled_NamesNoCards()
     {
         // The other half of the property above: no ids without a filing. Worth pinning because the caller
         // reads FiledIssueIds[^1] to offer "Open card", so a stray id here would point the button at a

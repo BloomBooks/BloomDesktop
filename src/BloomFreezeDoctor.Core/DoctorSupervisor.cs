@@ -38,8 +38,8 @@ public sealed record DoctorStatus
 /// queues it, and tries to file it.
 ///
 /// Everything here runs off the UI thread. That is a hard requirement rather than a preference: the
-/// Doctor has a visible window (decision D1), and a Freeze Doctor whose own window goes white while it
-/// diagnoses a freeze would be its own worst advertisement.
+/// Doctor has a visible window, and a Freeze Doctor whose own window goes white while it diagnoses a
+/// freeze would be its own worst advertisement.
 /// </summary>
 public sealed class DoctorSupervisor : IDisposable
 {
@@ -54,8 +54,8 @@ public sealed class DoctorSupervisor : IDisposable
 
     /// <summary>
     /// How long to stay alive after the last Bloom has gone, if reports are still waiting to be sent.
-    /// The Doctor is never *pinned* by this (see plan §3.6) — it is a courtesy window in case the network
-    /// comes back, not a dependency.
+    /// The Doctor is never *pinned* by this — it is a courtesy window in case the network comes back, not
+    /// a dependency.
     /// </summary>
     private static readonly TimeSpan LingerForOutbox = TimeSpan.FromMinutes(10);
 
@@ -76,17 +76,12 @@ public sealed class DoctorSupervisor : IDisposable
     /// for a Doctor started by hand with no Bloom to adopt, and `--target-name` narrows that when a
     /// developer's machine also runs a real Bloom of another channel.
     ///
-    /// **A consequence, and it is deliberate - SETTLED, September 2026, by John Thomson.** Because the set
-    /// is not narrowed to the channel that started us, a Doctor Bloom launched will, once that Bloom has
-    /// gone, adopt whatever other Bloom it finds - including an install of a different channel. Observed:
-    /// a Doctor started by a development Bloom outlived it and took up the BetaInternal install that
-    /// happened to be running, which is not a developer channel, so a genuine freeze there would have been
-    /// filed as a real card about work nobody had asked us to watch.
-    ///
-    /// Left as it is on purpose: "we want to catch all the real freezes we can, including older Blooms that
-    /// happen to be adopted." A freeze we notice by accident is still a freeze we would otherwise never
-    /// have heard about, and that is the whole point of the tool. Please do not narrow this to the starting
-    /// executable without new information - it reads like a bug and is a decision.
+    /// **A deliberate consequence:** because the set is not narrowed to the channel that started us, a
+    /// Doctor Bloom launched will, once that Bloom has gone, adopt whatever other Bloom it finds - including
+    /// an install of a different channel, whose freezes it will then file real cards about. That reads like
+    /// a bug and is a decision: a freeze we notice by accident is still a freeze we would otherwise never
+    /// have heard about, and that is the whole point of the tool. Do not narrow this to the starting
+    /// executable without new information.
     /// </summary>
     private readonly HashSet<string> _targetProcessNames = new(StringComparer.OrdinalIgnoreCase);
 
@@ -110,15 +105,13 @@ public sealed class DoctorSupervisor : IDisposable
     /// The one Bloom this Doctor watches, or null when it is watching none.
     ///
     /// **One, deliberately.** End users run a single Bloom - the channels share a single-instance mutex, so
-    /// running two at once takes either the Ctrl-key trick or `--automation`. Watching several was
-    /// therefore paying a real price for a case almost nobody is in: five dictionaries and sets keyed by
-    /// process id, each one a place where a stale entry silences a report or duplicates one, and both bugs
-    /// found in this area came from exactly that. A second Bloom is now simply not adopted; the Doctor says
-    /// so in its log rather than pretending it never saw it.
+    /// running two at once takes either the Ctrl-key trick or `--automation`. Watching several would mean
+    /// bookkeeping keyed by process id, where every stale entry is a place for a report to be silenced or
+    /// duplicated, all for a case almost nobody is in. A second Bloom is simply not adopted; the Doctor
+    /// says so in its log rather than pretending it never saw it.
     ///
-    /// What this costs, honestly: if a second Bloom is running and holds the single-instance token, the
-    /// Doctor cannot see it, so "Restart Bloom" may end the Bloom it watches and still fail to start a new
-    /// one. Previously it could see and offer to end them all.
+    /// What this costs: if a second Bloom is running and holds the single-instance token, the Doctor
+    /// cannot see it, so "Restart Bloom" may end the Bloom it watches and still fail to start a new one.
     /// </summary>
     private BloomTargetWatcher? _watcher;
 
@@ -154,21 +147,9 @@ public sealed class DoctorSupervisor : IDisposable
     /// <summary>Registration for the wait above, so it can be undone on the way out.</summary>
     private RegisteredWaitHandle? _bloomStartedWait;
 
-    // The four flags below describe the ONE watched Bloom, and are reset when a new one is adopted. They
-    // were sets keyed by process id, which is what a stale entry needs in order to attach itself to the
-    // wrong Bloom later; with a single target there is nothing to key and nothing to go stale.
+    // The flags below describe the ONE watched Bloom, and are reset when a new one is adopted. With a
+    // single target there is nothing to key by process id and nothing to go stale.
 
-    /// <summary>
-    /// Asked at the end of every gather what identifies this problem, and answers only for a crash whose
-    /// verdict did not already know.
-    ///
-    /// The crash-dump path is why this is resolved late rather than up front: it begins gathering while
-    /// Bloom is still alive and blocked waiting for its dump, so the event naming the exception does not
-    /// exist yet. It does by the time the collectors have finished.
-    ///
-    /// Returns null for a freeze without touching the event log - there is nothing there to find, and a
-    /// scan of the Application log is not free.
-    /// </summary>
     /// <summary>
     /// A duration rounded hard, so that repeated slow sweeps read as the same shape of slowness and get
     /// reported once rather than every five seconds with a different number of milliseconds.
@@ -190,6 +171,17 @@ public sealed class DoctorSupervisor : IDisposable
         return text!.Length <= 120 ? text : text.Substring(0, 120) + "...";
     }
 
+    /// <summary>
+    /// Asked at the end of every gather what identifies this problem, and answers only for a crash whose
+    /// verdict did not already know.
+    ///
+    /// The crash-dump path is why this is resolved late rather than up front: it begins gathering while
+    /// Bloom is still alive and blocked waiting for its dump, so the event naming the exception does not
+    /// exist yet. It does by the time the collectors have finished.
+    ///
+    /// Returns null for a freeze without touching the event log - there is nothing there to find, and a
+    /// scan of the Application log is not free.
+    /// </summary>
     private static string? LateCrashIdentity(GatherContext context)
     {
         if (context.Verdict.State != TargetState.Exited)
@@ -202,8 +194,8 @@ public sealed class DoctorSupervisor : IDisposable
     }
 
     /// <summary>
-    /// What we have already said about a process we could not describe. See <see cref="DeclineNotes"/> for
-    /// why a silent `continue` here was worth replacing.
+    /// What we have already said about a process we could not describe, so that it is said once rather than
+    /// every sweep. See <see cref="DeclineNotes"/>.
     /// </summary>
     private readonly DeclineNotes _declined = new();
 
@@ -238,10 +230,10 @@ public sealed class DoctorSupervisor : IDisposable
     /// <summary>
     /// True once its death has been claimed, so one death produces one examination.
     ///
-    /// Claimed under the same lock that reads <see cref="_weAskedItToStop"/>, and that pairing is the fix
-    /// for a real race: the watcher keeps ticking until it is disposed, so a tick arriving between "the
-    /// sweep noticed the process had gone" and "the sweep examined it" used to find the asked-to-stop flag
-    /// already cleared and file a card about a death we had caused ourselves.
+    /// Claimed under the same lock that reads <see cref="_weAskedItToStop"/>, because the watcher keeps
+    /// ticking until it is disposed: a tick arriving between "the sweep noticed the process had gone" and
+    /// "the sweep examined it" would otherwise find the asked-to-stop flag already cleared and file a card
+    /// about a death we had caused ourselves.
     /// </summary>
     private bool _exitExamined;
 
@@ -318,9 +310,8 @@ public sealed class DoctorSupervisor : IDisposable
     ///
     /// A separate event from <see cref="ReportFiled"/> rather than a flag on it, because the two need
     /// quite different words: "the tracker has been told" versus "nothing was sent, and here is where to
-    /// look". Without this the Doctor did all of its work and then showed absolutely nothing - on
-    /// precisely the runs a developer uses to test it, which is where it most needs to be visible. That is
-    /// the same failure as a "Report now" that said nothing: silence reads as failure.
+    /// look". Without it the Doctor does all of its work and then shows nothing - on precisely the runs a
+    /// developer uses to test it. Silence reads as failure.
     /// </summary>
     public event EventHandler<string>? ReportSavedWithoutFiling;
 
@@ -375,9 +366,8 @@ public sealed class DoctorSupervisor : IDisposable
     /// </summary>
     public IReadOnlyList<LiveBloom> LiveWatchedBlooms()
     {
-        // Still a list, though it can now hold only one: the callers want "is anything in my way", which
-        // reads the same whether the answer can be several or only ever one, and RestartBlockers already
-        // takes a sequence.
+        // A list, though it holds at most one: the callers want "is anything in my way", which reads the
+        // same whether the answer can be several or only ever one, and RestartBlockers takes a sequence.
         //
         // Two steps, and the split is deliberate: whether a Bloom holds the single-instance token comes
         // from its session file, and reading files under the supervisor lock is how the watchdog ends up
@@ -414,12 +404,12 @@ public sealed class DoctorSupervisor : IDisposable
             DiscoveryInterval
         );
 
-        // And listen for Bloom saying so, which turns a five-second wait into a few milliseconds. The timer
-        // above stays exactly as it was: this is an accelerator, not a replacement, and it has to be - a
-        // Bloom too old to announce itself is found only by sweeping.
-        // A pulse, not a latch - see DoctorSignals.TryCreatePulse. With a manual-reset event this wait
-        // re-armed faster than the callback could reset it, and one announcement produced 103 wake-ups and
-        // 103 needless sweeps.
+        // And listen for Bloom saying so, which turns a five-second wait into a few milliseconds. An
+        // accelerator, not a replacement for the timer: a Bloom too old to announce itself is found only by
+        // sweeping.
+        //
+        // A pulse, not a latch - see DoctorSignals.TryCreatePulse. A manual-reset event re-arms this wait
+        // faster than the callback can reset it, so one announcement produces a storm of needless sweeps.
         _bloomStarted = Protocol.DoctorSignals.TryCreatePulse(
             Protocol.DoctorSignals.BloomStartedName()
         );
@@ -449,9 +439,9 @@ public sealed class DoctorSupervisor : IDisposable
         var facts = GatherContextBuilder.DescribeRunningProcess(processId, out var whyNot);
         if (facts == null)
         {
-            // Worth a line, because this is Bloom telling us which process it is - the one adoption route
-            // that is not a guess - and it failing silently leaves a Doctor that Bloom started sitting
-            // there watching nothing, with the log showing only that it never adopted anything.
+            // Worth a line: this is Bloom telling us which process it is, the one adoption route that is not
+            // a guess, and failing silently would leave a Doctor that Bloom started watching nothing with
+            // no explanation in the log.
             Note(
                 $"asked to watch process {processId}, but cannot read it: {whyNot ?? "no reason recorded"}"
             );
@@ -541,15 +531,13 @@ public sealed class DoctorSupervisor : IDisposable
         return new ReportNowResult(outcome.IssueId, outcome.StillQueued);
     }
 
-    /// <summary>Looks for Blooms we are not yet watching, and forgets ones that have gone.</summary>
     /// <summary>
     /// Guards against a second discovery sweep starting while one is still running.
     ///
     /// The timer fires every five seconds whether or not the previous callback has returned, and a sweep can
     /// take much longer than that: it asks WMI about each candidate, which costs seconds (see
-    /// WebView2Processes.ReadCommandLine). Overlapping sweeps then compete for the same slow resource and
-    /// make each other slower - a pile-up that gets worse the longer it lasts, which is the shape of the
-    /// adoption delays measured at 34, 54, 83 and 110 seconds.
+    /// WebView2Processes.ReadCommandLine). Overlapping sweeps would compete for the same slow resource and
+    /// make each other slower, a pile-up that gets worse the longer it lasts.
     ///
     /// Skipping a tick costs nothing: the work it would have done is exactly what the sweep already running
     /// is doing.
@@ -557,17 +545,12 @@ public sealed class DoctorSupervisor : IDisposable
     private int _sweepInProgress;
 
     /// <summary>
-    /// How many discovery sweeps have actually run. Reported in the log for one specific reason: it is the
-    /// only thing that separates the two remaining explanations for the adoption delay.
-    ///
-    /// Five runs have measured a Bloom sitting unadopted for 34, 52, 54, 83 and 110 seconds, and every
-    /// instrumented path was silent - nothing declined, nothing thrown. So either the sweep ran and
-    /// genuinely found no process named Bloom while one existed, or the sweep was not running at all. The
-    /// log could not tell those apart, because "found nothing" is said once and then suppressed as a repeat,
-    /// and they call for completely different fixes.
-    ///
-    /// A count settles it. If Bloom was up for fifty seconds and the sweep number advanced by ten, the
-    /// timer was fine and the search itself is wrong; if it advanced by one, the timer stalled.
+    /// How many discovery sweeps have actually run. Logged so that a Bloom sitting unadopted can be
+    /// diagnosed from the log alone: "found nothing" is said once and then suppressed as a repeat, so
+    /// without a count there is no telling a sweep that runs and finds nothing from a sweep that is not
+    /// running, and the two call for completely different fixes. If Bloom was up for fifty seconds and the
+    /// sweep number advanced by ten, the timer was fine and the search itself is wrong; if it advanced by
+    /// one, the timer stalled.
     /// </summary>
     private int _sweepsRun;
 
@@ -590,7 +573,7 @@ public sealed class DoctorSupervisor : IDisposable
         try
         {
             // No Reset here: the event is auto-reset, so waking IS the reset and the kernel does it
-            // atomically. Doing it by hand was the bug - it raced with the wait re-arming.
+            // atomically. Resetting by hand races with the wait re-arming.
             Note("a Bloom has just started and said so; looking now rather than at the next sweep");
             Discover();
         }
@@ -601,18 +584,15 @@ public sealed class DoctorSupervisor : IDisposable
         }
     }
 
+    /// <summary>Looks for Blooms we are not yet watching, and forgets ones that have gone.</summary>
     internal void Discover()
     {
         if (Interlocked.Exchange(ref _sweepInProgress, 1) == 1)
             return;
         var sweep = Interlocked.Increment(ref _sweepsRun);
-        // Timed in two halves, because the two halves have completely different suspects and the whole
-        // point is to stop guessing between them. Measured facts so far: a new Bloom is visible to
-        // Process.GetProcessesByName within 350ms of starting - the identical call, timed from another
-        // process - yet sweeps ran 12.75 seconds apart while Bloom was starting, against a 5-second timer.
-        // So the delay is this method's own latency, and it is worth knowing whether that is spent LOOKING
-        // for Bloom or on the bookkeeping afterwards, which reads and deserialises every file in the
-        // outbox on every tick and has nothing to do with discovery.
+        // Timed in two halves, because when a sweep is slow the two halves have completely different
+        // suspects: LOOKING for Bloom, and the bookkeeping afterwards, which reads and deserialises every
+        // file in the outbox on every tick and has nothing to do with discovery.
         var lookingWatch = System.Diagnostics.Stopwatch.StartNew();
         long lookingMs = 0;
         try
@@ -663,19 +643,16 @@ public sealed class DoctorSupervisor : IDisposable
                     }
                 }
 
-                // Three runs have had a Bloom sit unadopted for 34, 83 and 110 seconds with nothing in the
-                // log, and by now the other explanations are instrumented and were silent: no process was
-                // declined, and the sweep did not throw. That leaves this - the sweep looking and genuinely
-                // finding nothing - which was the one outcome with no voice at all. Saying which NAMES were
-                // searched matters as much as the count, because "found nothing while looking for the wrong
-                // name" and "found nothing while looking for the right one" call for different fixes.
+                // Looking and genuinely finding nothing needs a voice too, or a Bloom can sit unadopted for
+                // a minute with nothing in the log to say why. Saying which NAMES were searched matters as
+                // much as the count, because "found nothing while looking for the wrong name" and "found
+                // nothing while looking for the right one" call for different fixes.
                 if (ids.Count == 0)
                 {
                     var searched = string.Join(", ", namesToSearch);
-                    // Said on the first sweep that finds nothing, and then once a minute rather than never.
-                    // Never is what it was: suppressed as a repeat, so a log going quiet meant either "still
-                    // nothing" or "no longer sweeping" and there was no way to tell which - which is exactly
-                    // the question the adoption delay turns on.
+                    // Said on the first sweep that finds nothing, and then once a minute. Suppressed
+                    // entirely as a repeat, a log going quiet could mean either "still nothing" or "no
+                    // longer sweeping", with no way to tell which.
                     if (
                         _sweepNotes.ShouldSay(-1, searched, DateTimeOffset.UtcNow)
                         || sweep % HeartbeatEverySweeps == 0
@@ -702,9 +679,8 @@ public sealed class DoctorSupervisor : IDisposable
                         continue;
                     }
                     {
-                        // Said once per reason rather than every tick, and worth saying at all because the
-                        // alternative is what we had: a Bloom running for eighty-three seconds while the
-                        // Doctor looked straight past it and the log showed nothing whatsoever.
+                        // Said once per reason rather than every tick. Without it a Bloom can run for a
+                        // minute with the Doctor looking straight past it and the log showing nothing.
                         if (
                             _declined.ShouldSay(
                                 id,
@@ -727,11 +703,10 @@ public sealed class DoctorSupervisor : IDisposable
             WindowsTargetProbe? departedProbe = null;
             var departedWasOurDoing = false;
 
-            // Only a Bloom we CHECKED can be a Bloom that has gone. Guarding on `watchedIsStillWithUs`
-            // alone was wrong, and wrong in a way that broke everything: on a tick that adopts, the check
-            // above never runs - we took the other branch - so the flag was still false, and the Bloom we
-            // had just adopted was immediately treated as departed. Every adopting tick un-adopted, which
-            // is why the log filled with "watching Bloom NNNN" five seconds apart for ever.
+            // Only a Bloom we CHECKED can be a Bloom that has gone. On a tick that adopts, the check above
+            // never runs - we took the other branch - so the flag is still false; guarding on
+            // `watchedIsStillWithUs` alone would treat the Bloom just adopted as departed, and every
+            // adopting tick would un-adopt.
             if (watchedId != 0 && !watchedIsStillWithUs)
             {
                 lock (_lock)
@@ -743,11 +718,10 @@ public sealed class DoctorSupervisor : IDisposable
                         departed = _watcher;
                         departedProbe = _probe;
                         // Read under the lock and carried out. NOT cleared: with a single target there is
-                        // nothing to clear it for, and clearing it here is what let a watcher tick arriving
-                        // moments later read "nobody asked" about a death we had caused. That was Fable's
-                        // race, and not clearing is a smaller fix than claiming the examination early -
-                        // which is what the previous attempt did, and it stopped exits being examined at
-                        // all, because ConsiderReportingAnExit refuses a death already claimed.
+                        // nothing to clear it for, and clearing it here would let a watcher tick arriving
+                        // moments later read "nobody asked" about a death we had caused. Nor is the
+                        // examination claimed here instead: ConsiderReportingAnExit refuses a death already
+                        // claimed, so claiming early would stop exits being examined at all.
                         departedWasOurDoing = _weAskedItToStop;
                         _watcher = null;
                         _probe = null;
@@ -799,11 +773,9 @@ public sealed class DoctorSupervisor : IDisposable
         catch (Exception e)
         {
             // Discovery failing must never stop the Doctor; the next tick will try again. But it must not
-            // fail SILENTLY, which is what this did, and it is now the last unexplained silence in the
-            // Doctor: three separate runs saw a Bloom sit unadopted for 83, 54 and 110 seconds with not one
-            // line in the log, and every other path through the sweep now says something. The third of
-            // those cost the crash dump outright - Bloom only asks to be dumped if a Doctor is already
-            // watching, and it asked twenty seconds before we noticed it existed.
+            // fail SILENTLY: a Bloom sitting unadopted with nothing in the log cannot be diagnosed, and it
+            // is not merely unwatched - Bloom only asks to be dumped if a Doctor is already watching, so a
+            // crash while it sits there is lost outright.
             //
             // Suppressed by repetition, like the other decline notes, because a fault here repeats every
             // five seconds for as long as it lasts. Keyed on 0: this is the sweep itself failing, not a
@@ -813,9 +785,9 @@ public sealed class DoctorSupervisor : IDisposable
         }
         finally
         {
-            // A sweep slower than its own timer period is the fault we are chasing, so say so - once per
-            // distinct shape of slowness, which in practice means when it starts and if it changes
-            // character. Below the period there is nothing to report.
+            // A sweep slower than its own timer period is worth saying so - once per distinct shape of
+            // slowness, which in practice means when it starts and if it changes character. Below the
+            // period there is nothing to report.
             var totalMs = lookingWatch.ElapsedMilliseconds;
             if (totalMs > DiscoveryInterval.TotalMilliseconds)
             {
@@ -839,10 +811,9 @@ public sealed class DoctorSupervisor : IDisposable
     /// <summary>
     /// Takes on this Bloom, or says why not.
     ///
-    /// Returns null when it adopted, and otherwise the reason - because every one of these refusals used to
-    /// be a bare `return`, and a Bloom can therefore run for a minute with the Doctor declining it every
-    /// five seconds and the log showing nothing at all. Measured twice: 83 seconds once and 54 the next
-    /// time, both unexplained. A reason nobody can read is not much better than no reason.
+    /// Returns null when it adopted, and otherwise the reason, so that the caller can log it: a bare
+    /// refusal lets a Bloom run for a minute with the Doctor declining it every five seconds and the log
+    /// showing nothing at all.
     /// </summary>
     private string? AdoptFacts(BloomTargetFacts facts)
     {
@@ -864,20 +835,17 @@ public sealed class DoctorSupervisor : IDisposable
                 return "";
             }
 
-            // A Doctor watching itself is nonsense, and it has been SEEN: a doctor.log line reads
-            // "[25736] watching Bloom 25736 (Release)" - the log prefix is the writing process's own id, so
-            // that process adopted itself. How it got there is still unknown, which is exactly why this
-            // guard is worth having: whatever route reaches here with our own id now stops, and says so,
-            // instead of quietly watching a process that can never be Bloom and reporting on its "death"
-            // when we exit.
+            // A Doctor watching itself is nonsense, yet it has been seen in a real log, by a route not yet
+            // understood. So whatever route reaches here with our own id stops and says so, instead of
+            // quietly watching a process that can never be Bloom and reporting on its "death" when we exit.
             if (facts.ProcessId == Environment.ProcessId)
                 return "that is this Doctor itself, which cannot be the Bloom we are watching";
 
-            // The headless check USED to be here, and it cost nineteen seconds of adoption latency,
-            // because deciding it needs the command line and reading that needs WMI. It now happens after
-            // adoption instead - see LetGoIfItIsAHeadlessRun. Adopting a console verb for a few seconds is
-            // harmless: nothing is reported until a Bloom has been unwell for twenty seconds at the very
-            // least, and the zombie rule waits thirty.
+            // The headless check is deliberately NOT here: deciding it needs the command line, reading that
+            // needs WMI, and paying for that before adopting delays adoption by many seconds. It happens
+            // after adoption instead - see LetGoIfItIsAHeadlessRun. Adopting a console verb for a few
+            // seconds is harmless: nothing is reported until a Bloom has been unwell for twenty seconds at
+            // the very least, and the zombie rule waits thirty.
 
             Process process;
             try
@@ -901,8 +869,7 @@ public sealed class DoctorSupervisor : IDisposable
             };
             _watcher = watcher;
             _probe = probe;
-            // Everything we remember is about the Bloom we are watching, so a new one starts clean. This is
-            // the whole of the bookkeeping that used to be five dictionaries keyed by process id.
+            // Everything we remember is about the Bloom we are watching, so a new one starts clean.
             _dumpRequested = false;
             _zombieReported = false;
             _zombieEnded = false;
@@ -910,9 +877,8 @@ public sealed class DoctorSupervisor : IDisposable
             _exitExamined = false;
             _notedASecondBloom = false;
             watcher.Start();
-            // If we had been declining this one, say how long for. That number is the whole point of the
-            // bookkeeping: "watching Bloom 53468 (Developer/Debug), 83s after first seeing it" turns an
-            // unexplained gap into a measurement.
+            // If we had been declining this one, say how long for: that turns an unexplained gap in the log
+            // into a measurement.
             var waited = _declined.HowLongWeWereDeclining(facts.ProcessId, DateTimeOffset.UtcNow);
             var after =
                 waited == null ? "" : $", {waited.Value.TotalSeconds:F0}s after first seeing it";
@@ -925,9 +891,9 @@ public sealed class DoctorSupervisor : IDisposable
         // deadlocks are made. Every route into a watcher passes here, which is the point - see
         // WatchingBloomAt.
         //
-        // So the success path must NOT return from inside the lock above, however tempting: doing that made
-        // this notification unreachable, and the window would never learn where Bloom is. The refusals do
-        // return early, which is right - there is nothing to notify anyone about.
+        // So the success path must NOT return from inside the lock above, however tempting: that would
+        // make this notification unreachable, and the window would never learn where Bloom is. The
+        // refusals do return early, which is right - there is nothing to notify anyone about.
         if (!string.IsNullOrWhiteSpace(facts.ExePath))
             WatchingBloomAt?.Invoke(this, facts.ExePath);
 
@@ -940,18 +906,18 @@ public sealed class DoctorSupervisor : IDisposable
     /// Bloom's console verbs - and lets go of it if so.
     ///
     /// A headless run legitimately has no window, so watching one would eventually produce a false zombie
-    /// report (plan §3.3). Deciding it needs the command line, and reading THAT is a WMI query which took
-    /// 18.9 seconds on a measured run for a process that had only just started. Paying that before adopting
-    /// is what delayed adoption, and the delay had a cost of its own: on one run Bloom asked to be dumped as
-    /// it crashed twenty seconds before the Doctor had noticed it existed, so the dump was never taken.
+    /// report. Deciding it needs the command line, and reading THAT is a WMI query that can take tens of
+    /// seconds for a process that has only just started. Paying that before adopting would delay adoption
+    /// by as much, and an unadopted Bloom that crashes is never dumped, because Bloom only asks for a dump
+    /// when a Doctor is already watching.
     ///
     /// Doing it afterwards is safe because nothing is reported quickly: the freeze rules need twenty seconds
     /// of silence before they even suspect, sixty before they report, and thirty for a zombie. Letting go
-    /// after a few seconds - or even after nineteen - lands well inside that.
+    /// after a few seconds - or even after twenty - lands well inside that.
     ///
     /// Note what this deliberately does NOT do: exclude `--automation`, which `go.sh` passes on every
-    /// launch. That flag says nothing about whether there is a window, and excluding it once meant the
-    /// Doctor ignored every Bloom launched from source. See BloomChannel.IsHeadlessRun.
+    /// launch. That flag says nothing about whether there is a window, and excluding it would have the
+    /// Doctor ignore every Bloom launched from source. See BloomChannel.IsHeadlessRun.
     /// </summary>
     private void LetGoIfItIsAHeadlessRun(BloomTargetFacts facts)
     {
@@ -1117,9 +1083,9 @@ public sealed class DoctorSupervisor : IDisposable
         if (verdict.Report == ReportReason.Zombie)
             lock (_lock)
                 _zombieReported = true;
-        // Say WHICH of the reasons applies. The old wording listed them all at once and left the reader to
-        // guess - and they are acted on quite differently: a developer build is permanent, a debugger can
-        // be detached, and a simulated failure means nothing was wrong in the first place.
+        // Say WHICH of the reasons applies, because they are acted on quite differently: a developer build
+        // is permanent, a debugger can be detached, and a simulated failure means nothing was wrong in the
+        // first place.
         //
         // Simulation is checked FIRST because it is the most informative answer when more than one applies,
         // which on a developer machine is the normal case: "you asked for this crash" tells the reader far
@@ -1164,8 +1130,7 @@ public sealed class DoctorSupervisor : IDisposable
     }
 
     /// <summary>
-    /// A Bloom has gone. Works out whether its going was worth reporting — plan state 2, the crash that
-    /// tells nobody.
+    /// A Bloom has gone. Works out whether its going was worth reporting — the crash that tells nobody.
     ///
     /// The detector deliberately refuses to judge this, because the answer depends on evidence gathered
     /// after the fact: the exit code (which we only have because we held a handle since before it died),
@@ -1188,14 +1153,12 @@ public sealed class DoctorSupervisor : IDisposable
         {
             if (verdict.State != TargetState.Exited)
                 return;
-            // Under _lock because every watcher raises Observed on its OWN timer thread, so with two
-            // Blooms being watched these sets are touched concurrently. An unsynchronised HashSet can
-            // corrupt itself, throw, or - worst here, because it is silent - lose the entry and let a
-            // second examination through. Only the test-and-claim is inside the lock; the work is not.
+            // Under _lock because the watcher raises Observed on its own timer thread while the discovery
+            // sweep can arrive here from another, and a lost test-and-claim would let a second examination
+            // through. Only the test-and-claim is inside the lock; the work is not.
             lock (_lock)
             {
-                // See WhoReportsTheDeath for the decision itself, and for the two bugs that put it in a
-                // tested table of its own rather than leaving it as flags read in sequence here.
+                // See WhoReportsTheDeath for the decision itself.
                 var whoseItIs = WhoReportsTheDeath.Decide(
                     weEndedIt: weAskedItToStop || _weAskedItToStop,
                     aDumpIsBeingReported: _dumpRequested,
@@ -1249,14 +1212,14 @@ public sealed class DoctorSupervisor : IDisposable
                         session?.LogPath,
                         probe.TryGetExitCode(out var code) ? code : (int?)null,
                         watcher.Target.NeverFile,
-                        // A session file with no exit record is the absence of proof that section 3.5 treats
-                        // as evidence — but only when Bloom was capable of leaving one. No session file at
-                        // all means an older Bloom, where absence means nothing.
+                        // A session file with no exit record is the absence of proof that counts as
+                        // evidence — but only when Bloom was capable of leaving one. No session file at all
+                        // means an older Bloom, where absence means nothing.
                         //
                         // An exit record only counts as proof of a CLEAN exit when it says Bloom actually
                         // walked the orderly path. Bloom writes a record on the way out of a hard failure
-                        // too; counting that as proof classified the failure as "Bloom shut down properly"
-                        // and reported nothing.
+                        // too; counting that as proof would classify the failure as "Bloom shut down
+                        // properly" and report nothing.
                         //
                         // The test is the shutdown PHASE alone, and deliberately NOT the record's
                         // EndedAtDoctorsRequest. A Doctor asking a healthy Bloom to quit produces a
@@ -1383,8 +1346,6 @@ public sealed class DoctorSupervisor : IDisposable
             // decide it has nothing left to do and exit WHILE the dump is being written - and this is the
             // likeliest path for that to happen, because the crashing Bloom is about to disappear, which
             // is precisely the event that makes the Doctor look around and find nothing left to watch.
-            // That is the exact failure _workInFlight was introduced for; the dump path was the one that
-            // never got the guard.
             Interlocked.Increment(ref _workInFlight);
             _ = Task.Run(async () =>
             {
@@ -1530,11 +1491,11 @@ public sealed class DoctorSupervisor : IDisposable
     /// Lets only one drain run at a time.
     ///
     /// Three separate things ask for a drain - startup, the five-minute timer, and the end of a gather -
-    /// and all three were fire-and-forget, so two could overlap. Both would then list the SAME pending
-    /// bundles and both walk the search-then-create flow, which is not atomic: the result is duplicate
-    /// cards, or duplicate comments on one card, and a combined total that can exceed the deliberate
-    /// three-per-day cap. That cap exists so a machine in a bad state cannot spam the tracker, so
-    /// quietly exceeding it is the worst version of this bug.
+    /// and all three are fire-and-forget, so without this two could overlap. Both would then list the SAME
+    /// pending bundles and both walk the search-then-create flow, which is not atomic: the result is
+    /// duplicate cards, or duplicate comments on one card, and a combined total that can exceed the
+    /// deliberate three-per-day cap. That cap exists so a machine in a bad state cannot spam the tracker,
+    /// so quietly exceeding it is the worst version of this bug.
     ///
     /// It WAITS rather than skipping. Skipping would be cheaper, but ReportNowAsync awaits this and then
     /// looks for its own bundle in the queue: if its drain had been skipped because another was already
@@ -1549,19 +1510,6 @@ public sealed class DoctorSupervisor : IDisposable
     private readonly SemaphoreSlim _drainGate = new(1, 1);
 
     /// <summary>
-    /// Drains, and tells the log what came of it.
-    ///
-    /// Returns nothing on purpose. It used to hand back "another Doctor process was already sending",
-    /// which no caller ever read: the two background callers discard the result, and the one that looked
-    /// like it wanted the answer - a gather deciding what to tell the user - gets everything it needs from
-    /// whether its own bundle came back with an issue id. A bool falling out of a method called DrainAsync
-    /// invites exactly the wrong reading anyway ("did the drain work?"), so there is nothing to be gained
-    /// by keeping it for a caller that may never come.
-    ///
-    /// The distinction itself is not lost - see the note on <see cref="DrainOutcome"/>, which is where it
-    /// matters and where it is still made.
-    /// </summary>
-    /// <summary>
     /// Which tracker project this Doctor files into, so the window can name it before sending anything.
     /// A Doctor Bloom started uses the real project, not the test one, and a developer about to send a
     /// report by hand should be told which before they do it and not after.
@@ -1573,9 +1521,9 @@ public sealed class DoctorSupervisor : IDisposable
     /// or a failure that was simulated on purpose.
     ///
     /// All three refusals are right by default and all three are ones a developer sometimes wants to
-    /// override for the report in front of them. The only way to file before this was "Report now", which
-    /// gathers a WHOLE NEW report: impossible once the Bloom in question has died, and about a different
-    /// moment even when it has not.
+    /// override for the report in front of them. "Report now" is no substitute: it gathers a WHOLE NEW
+    /// report, impossible once the Bloom in question has died, and about a different moment even when it
+    /// has not.
     /// </summary>
     public async Task<ReportNowResult> SendSavedReportAsync(
         string bundleDirectory,
@@ -1601,6 +1549,10 @@ public sealed class DoctorSupervisor : IDisposable
         );
     }
 
+    /// <summary>
+    /// Drains, and tells the log what came of it. Returns nothing: a caller that wants to know what became
+    /// of a particular report reads that back off its bundle afterwards.
+    /// </summary>
     private async Task DrainAsync(CancellationToken cancellation)
     {
         try
@@ -1620,15 +1572,14 @@ public sealed class DoctorSupervisor : IDisposable
                 .ConfigureAwait(false);
             if (outcome.Filed > 0)
             {
-                // Name the cards. "filed 1 report(s)" was all this said, which is no use to somebody
-                // reading the log after the fact and trying to find what was filed.
+                // Name the cards: a count alone is no use to somebody reading the log after the fact and
+                // trying to find what was filed.
                 Note(
                     $"filed {outcome.Filed} report(s): {string.Join(", ", outcome.FiledIssueIds)}"
                 );
                 // And tell the window, so it can offer to open the card. This is the ONLY place that can:
-                // gathering queues its report and returns without a card id, so every path except an
-                // inline filing used to announce "filed a report" with no way to see it. The last id is
-                // the newest, which is the one an "Open card" button should go to.
+                // gathering queues its report and returns without a card id. The last id is the newest,
+                // which is the one an "Open card" button should go to.
                 ReportFiled?.Invoke(this, outcome.FiledIssueIds[^1]);
             }
             else if (outcome.AnotherProcessIsSending)
@@ -1650,7 +1601,7 @@ public sealed class DoctorSupervisor : IDisposable
     /// <summary>
     /// Decides whether there is anything left worth staying alive for: a Bloom to watch, or a report
     /// waiting that might yet get out. Deliberately does NOT wait indefinitely on the outbox — a zombie
-    /// Bloom or a permanently offline machine must not pin the Doctor forever (plan §3.6).
+    /// Bloom or a permanently offline machine must not pin the Doctor forever.
     /// </summary>
     private void ConsiderExiting()
     {

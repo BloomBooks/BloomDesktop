@@ -9,7 +9,7 @@ namespace BloomFreezeDoctor.Tests;
 /// messages below are shaped like the real ones.
 /// </summary>
 [TestFixture]
-public class CrashEntryMatchingTests
+public class WindowsExitEvidenceCollectorTests
 {
     /// <summary>An "Application Error" entry as Windows actually writes it, for a chosen program.</summary>
     private static string ApplicationError(string exe, string pidHex) =>
@@ -21,11 +21,11 @@ public class CrashEntryMatchingTests
         + "Faulting application start time: 0x01dc0f1e2d3c4b5a";
 
     [Test]
-    public void A_pid_that_merely_appears_inside_a_hex_address_does_not_match()
+    public void EntryNamesThisBloom_PidInsideHexAddress_False()
     {
-        // The bug this test exists for. The old check looked for the bare hex pid anywhere in the
-        // message, undelimited. Every Application Error entry is full of hex - exception codes, fault
-        // offsets, module timestamps - so a short pid was near-certain to turn up inside one of them.
+        // Guards against looking for the bare hex pid anywhere in the message, undelimited. Every
+        // Application Error entry is full of hex - exception codes, fault offsets, module timestamps - so
+        // a short pid is near-certain to turn up inside one of them.
         // Pid 4096 is "1000", which is sitting in the fault offset 0x00007ff81000a4c0 below.
         var someoneElsesCrash = ApplicationError("Notepad.exe", "3b7f");
         Assert.That(
@@ -42,7 +42,7 @@ public class CrashEntryMatchingTests
     }
 
     [Test]
-    public void A_pid_quoted_as_a_process_id_does_match()
+    public void EntryNamesThisBloom_PidAsFaultingProcessId_True()
     {
         // The sanity check on the test above: the pid clause has to still work, because ".NET Runtime"
         // entries identify the process by id and do not always name the executable.
@@ -56,7 +56,7 @@ public class CrashEntryMatchingTests
     }
 
     [Test]
-    public void A_longer_pid_starting_with_our_digits_does_not_match()
+    public void EntryNamesThisBloom_LongerPidWithSamePrefix_False()
     {
         var theirs = ApplicationError("Whatever.exe", "1a2cf");
 
@@ -68,11 +68,11 @@ public class CrashEntryMatchingTests
     }
 
     [Test]
-    public void Another_programs_WebView2_crash_does_not_match()
+    public void EntryNamesThisBloom_AnotherProgramsWebView2_False()
     {
-        // Bloom is far from the only WebView2 host on a Windows machine, and the old check accepted
-        // "msedgewebview2.exe" unqualified - so Teams or Outlook losing a renderer within five minutes
-        // became evidence that Bloom had crashed.
+        // Bloom is far from the only WebView2 host on a Windows machine. Accepting "msedgewebview2.exe"
+        // unqualified would make Teams or Outlook losing a renderer within five minutes evidence that
+        // Bloom had crashed.
         var teamsRenderer = ApplicationError("msedgewebview2.exe", "5ce1");
 
         Assert.That(
@@ -84,11 +84,11 @@ public class CrashEntryMatchingTests
     }
 
     [Test]
-    public void The_channel_named_executable_matches()
+    public void EntryNamesThisBloom_ChannelNamedExecutable_MatchesOnlyThatChannel()
     {
         // The installer renames the exe per channel, so a release machine has Bloom.exe but an alpha has
-        // BloomAlpha.exe. Matching the literal "Bloom.exe" found neither of the renamed ones - which
-        // quietly disabled this evidence on every channel except release.
+        // BloomAlpha.exe. Matching the literal "Bloom.exe" would find neither of the renamed ones, quietly
+        // disabling this evidence on every channel except release.
         var alpha = ApplicationError("BloomAlpha.exe", "9f01");
 
         Assert.That(
@@ -113,7 +113,7 @@ public class CrashEntryMatchingTests
     }
 
     [Test]
-    public void An_empty_message_matches_nothing()
+    public void EntryNamesThisBloom_EmptyMessage_False()
     {
         Assert.That(
             WindowsExitEvidenceCollector.EntryNamesThisBloom("", 0x1a2c, "Bloom.exe"),

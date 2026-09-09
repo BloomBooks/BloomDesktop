@@ -10,8 +10,8 @@ namespace BloomFreezeDoctor;
 /// machine went down.
 ///
 /// Every reader here is individually failure-tolerant. A missing Event Log entry and a *failure to read*
-/// the Event Log look identical to the classifier, which is a real limitation and is why Phase 1 stays
-/// quiet by default rather than treating absence as proof of anything.
+/// the Event Log look identical to the classifier, which is a real limitation and is why the classifier
+/// never treats absence as proof of anything.
 /// </summary>
 public sealed class WindowsExitEvidenceCollector
 {
@@ -33,10 +33,6 @@ public sealed class WindowsExitEvidenceCollector
     /// <summary>
     /// Assembles the evidence for one exit. <paramref name="diedAt"/> is when we noticed the process
     /// had gone, and <paramref name="logPath"/> the log we identified as this process's, if any.
-    ///
-    /// Note what it no longer gathers: whether the machine went down, and whether a debugger could account
-    /// for the exit. Both existed only to excuse an absence, and nothing is now reported on an absence -
-    /// see <see cref="ExitClassifier.Classify"/>.
     /// </summary>
     public ExitEvidence Collect(
         int processId,
@@ -72,12 +68,10 @@ public sealed class WindowsExitEvidenceCollector
     /// wants the identity - the crash-dump path, which reports a death it was told about rather than one it
     /// examined afterwards.
     ///
-    /// It is worth that path asking, because without it the dump-bearing report - the one that exists
-    /// precisely for crashes Bloom notices - keeps the old fingerprint, and every such crash on a build
-    /// still lands on one card. The runtime writes the event as it terminates the process, and this is
-    /// called at the END of gathering, several seconds later, so the entry is normally there; a measured
-    /// run had ten seconds between the two. When it is not, this returns null and the fingerprint falls
-    /// back to what it always used, which is the pre-existing behaviour and not a regression.
+    /// Without it, every crash on a build would share one fingerprint and land on one card. The runtime
+    /// writes the event as it terminates the process, and this is called at the END of gathering, several
+    /// seconds later, so the entry is normally there. When it is not, this returns null and the
+    /// fingerprint falls back to the UI thread's frames.
     /// </summary>
     public static string? CrashSignatureFor(
         int processId,
@@ -91,7 +85,7 @@ public sealed class WindowsExitEvidenceCollector
     ///
     /// **It must not stop at the first match**, and that is the whole reason this is one method returning
     /// two things rather than a lookup returning one entry. Windows writes several entries for a single
-    /// crash and this walk sees the newest first, which measurably means:
+    /// crash and this walk sees the newest first, so one crash looks like:
     ///
     /// <code>
     /// 15:18:59  Windows Error Reporting 1001   Fault bucket 2085764476734548794, type 4
@@ -100,16 +94,13 @@ public sealed class WindowsExitEvidenceCollector
     /// </code>
     ///
     /// The Application Error entry names Bloom and so matches, but carries no exception - only the 1026
-    /// entry four lines later does. Returning the first match therefore always yielded an unparseable
-    /// message, the crash identity was always null, and the fingerprint fix that depends on it silently did
-    /// nothing at all: a real run still produced the old degenerate 1ec8760ad8a5. So the walk carries on
-    /// after its first match, looking for one that actually identifies the fault, and stops as soon as it
-    /// has both answers.
+    /// entry four lines later does. Returning the first match would yield an unparseable message and a
+    /// null crash identity every time. So the walk carries on after its first match, looking for one that
+    /// actually identifies the fault, and stops as soon as it has both answers.
     ///
     /// <paramref name="exeFileName"/> is the file name of the Bloom that died, because there is no one name
     /// to look for: the installer renames the exe per channel, so a release machine has <c>Bloom.exe</c>
-    /// but an alpha has <c>BloomAlpha.exe</c>. Matching the literal "Bloom.exe" found neither of the
-    /// renamed ones.
+    /// but an alpha has <c>BloomAlpha.exe</c>.
     /// </summary>
     private static (bool Found, string? Signature) ScanForCrashEntries(
         int processId,
@@ -158,8 +149,8 @@ public sealed class WindowsExitEvidenceCollector
         }
         catch (Exception)
         {
-            // Unreadable Event Log: indistinguishable from no entry, which Phase 1 already treats as
-            // "say nothing". Whatever the walk managed before failing still counts.
+            // Unreadable Event Log: indistinguishable from no entry, which the classifier already treats
+            // as "say nothing". Whatever the walk managed before failing still counts.
         }
         return PickTheCrashThatIdentifiesItself(candidates);
     }
@@ -168,10 +159,8 @@ public sealed class WindowsExitEvidenceCollector
     /// Given the entries that name this Bloom, newest first: was there a crash entry at all, and which
     /// crash was it.
     ///
-    /// Separated from the walk above purely so it can be tested, because the bug it fixes lived exactly
-    /// here and was invisible from the code - taking the first match looks obviously right, and produced a
-    /// null identity every single time on a real machine. See the walk's own comment for the measured
-    /// entry order.
+    /// Separated from the walk above so it can be tested: taking the first match looks obviously right
+    /// and is wrong, and nothing but a test would notice. See the walk's own comment for the entry order.
     /// </summary>
     internal static (bool Found, string? Signature) PickTheCrashThatIdentifiesItself(
         IEnumerable<string> namingThisBloomNewestFirst
@@ -277,8 +266,8 @@ public sealed class WindowsExitEvidenceCollector
 
     /// <summary>
     /// Looks for a per-user Windows Error Reporting report written around the time of death. The
-    /// machine-wide archive under ProgramData usually needs administrator rights; per plan §4.4 we try
-    /// and skip silently, never prompting.
+    /// machine-wide archive under ProgramData usually needs administrator rights; we try and skip
+    /// silently, never prompting.
     /// </summary>
     private static bool LookForWerReport(DateTime diedAt)
     {
@@ -385,10 +374,9 @@ public sealed class WindowsExitEvidenceCollector
     ///
     /// **Why not <c>RobustFile.Copy</c>, which is this repository's rule.** It is refused outright by a
     /// file whose owner holds it for writing, and Bloom holds its log open for the whole of its run — so
-    /// for a FREEZE, where the process is by definition still alive, attaching the log could only ever have
-    /// worked for a Bloom that had already exited. Retrying does not help: the refusal is not transient.
-    /// AttachingTheLogTests pins both halves of that, because getting it wrong is silent — the copy throws,
-    /// the report simply has no log, and a real card said both "the whole log" and "could not be attached".
+    /// for a FREEZE, where the process is by definition still alive, it can never work. Retrying does not
+    /// help: the refusal is not transient. WindowsExitEvidenceCollectorLogCopyTests pins this, because getting it wrong is
+    /// silent — the copy throws and the report simply has no log.
     ///
     /// Same sharing flags, and the same reasoning, as <see cref="ReadLastLines"/>: the flags ARE the
     /// requirement here, which is why this is one of the documented exceptions to the RobustFile rule.

@@ -3,15 +3,13 @@ namespace BloomFreezeDoctor.Gathering;
 /// <summary>
 /// The exception Bloom's own error handling last recorded, pulled out of Bloom's log.
 ///
-/// This exists because of what a simulated unhandled exception produced. The Doctor caught it perfectly -
-/// Bloom's fatal handler asked to be dumped, the dump was taken, the stack showed the whole crash path -
-/// and the report's headlines were:
+/// For a crash, WHAT was thrown is the first thing anybody wants. Without this the headlines of a crash
+/// report say only:
 ///
 ///     Verdict: Bloom was crashing and asked to be dumped before it died
 ///     The UI thread is blocked in System.Threading.WaitHandle.WaitOneCore.
 ///
-/// Not one word about WHAT was thrown, which for a crash is the first thing anybody wants. The answer was
-/// in the report, 370 lines down, inside the tail of Bloom's log:
+/// while the answer sits hundreds of lines down, inside the tail of Bloom's log:
 ///
 ///     exception = System.ApplicationException: FreezeSimulator was asked to throw
 ///
@@ -51,9 +49,9 @@ public static class BloomsOwnException
     /// The reason passed to <c>Environment.FailFast</c>, from the .NET Runtime event Windows writes.
     ///
     /// FailFast is the one crash with no dump and nothing in Bloom's log - it runs no managed handlers at
-    /// all, by design - so this event text is the ONLY record of why the process was killed. Leaving it out
-    /// of the headlines made failfast the only crash kind whose report did not say what went wrong, while
-    /// the answer sat in the evidence a hundred lines below:
+    /// all, by design - so this event text is the ONLY record of why the process was killed. Left out of
+    /// the headlines, failfast would be the only crash kind whose report does not say what went wrong,
+    /// while the answer sits in the evidence below:
     ///
     ///     Description: The application requested process termination through System.Environment.FailFast.
     ///     Message: FreezeSimulator was asked to fail fast

@@ -10,15 +10,15 @@ namespace BloomFreezeDoctor.Tests;
 /// <summary>
 /// Tests for the shared-memory contract between Bloom and the Doctor.
 ///
-/// **The layout is pinned here BY VALUE, on purpose.** There is one definition of it now — this project,
-/// which BloomDesktop references as a package — so the two sides can no longer hold copies that disagree.
-/// What they can still do is get out of step over a *version*: this repo changes the layout, Bloom carries
-/// on referencing the version before it, and the mismatch shows up as reports full of plausible nonsense
-/// rather than as an error, because Bloom publishes to one set of offsets and the Doctor reads another.
+/// **The layout is pinned here BY VALUE, on purpose.** There is one definition of it — the Protocol project
+/// both sides reference — so the two sides cannot hold copies that disagree. What can still happen is a
+/// Doctor of one version reading a Bloom of another: a Doctor outlives the Bloom that started it and adopts
+/// the next one it finds, which may be a different install. That mismatch shows up as reports full of
+/// plausible nonsense rather than as an error, because Bloom publishes to one set of offsets and the
+/// Doctor reads another.
 ///
-/// Pinning the numbers means changing the layout has to be deliberate here, and BloomDesktop's own test
-/// pins the layout it was compiled against — so Bloom's build fails rather than Bloom quietly publishing
-/// to the wrong place.
+/// Pinning the numbers means changing the layout has to be deliberate here, and Bloom's own test pins the
+/// layout too — so a change on one side fails a build rather than quietly publishing to the wrong place.
 ///
 /// **Which change you are making decides what you do here.** Adding a field is not a version bump: append
 /// it, grow `PayloadBytes`, and add a line to the pinned list. Moving, resizing or repurposing one breaks
@@ -28,8 +28,8 @@ namespace BloomFreezeDoctor.Tests;
 /// Four tests guard the additive path, which is the one that gets used: the offsets are pinned by value,
 /// `PayloadBytes` is checked to really be the end of the last field, the writer is checked never to touch a
 /// byte beyond it, and the reader is checked to accept a writer that recorded a smaller extent than this
-/// build knows about. The last of those is the case the mechanism exists for — a self-updating Doctor
-/// reading a Bloom too old to write everything it knows about.
+/// build knows about. The last of those is the case the mechanism exists for — a newer Doctor reading a
+/// Bloom too old to write everything it knows about.
 /// </summary>
 [TestFixture]
 public class DoctorChannelTests
@@ -49,11 +49,11 @@ public class DoctorChannelTests
             .Offset;
 
     [Test]
-    public void The_layout_is_pinned_so_a_change_cannot_pass_unnoticed()
+    public void DoctorChannelLayout_MatchesPinnedValues()
     {
-        // If you are here because this test failed: the layout changed. Bump SchemaVersion, update these
-        // numbers, and publish a version Bloom can move up to — Bloom's own pinned test will fail until
-        // its side is updated to match, which is the point.
+        // If you are here because this test failed: the layout changed. Bump SchemaVersion and update these
+        // numbers — Bloom's own pinned test will fail until its side is updated to match, which is the
+        // point.
         Assert.Multiple(() =>
         {
             Assert.That(DoctorChannelLayout.SchemaVersion, Is.EqualTo(1), "schema version");
@@ -66,7 +66,7 @@ public class DoctorChannelTests
 
             // Every field, by value. This is the check the whole additive-growth scheme rests on: it is
             // only safe to append a field without bumping SchemaVersion if the existing fields have
-            // genuinely not moved, and until now nothing verified that at all.
+            // genuinely not moved.
             //
             // Appending a field means adding a line HERE as well, which is the intended amount of
             // friction. MOVING any number already in this list means every deployed reader is wrong, so
@@ -111,7 +111,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void The_shutdown_phases_are_what_both_sides_were_built_against()
+    public void BloomShutdownPhase_MatchesPinnedNamesAndNumbers()
     {
         // <see cref="BloomShutdownPhase"/> has TWO frozen surfaces, and they break in opposite
         // directions, so both halves are pinned here:
@@ -139,7 +139,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void A_debugger_that_has_come_and_gone_is_still_remembered()
+    public void SetDebuggerAttached_AfterDetach_DetachStillVisibleToReader()
     {
         // The case this exists for. A developer attaches, sits at a breakpoint, detaches; Bloom carries on.
         // Nothing is attached any more, but there is now a long hole in the UI heartbeat that looks exactly
@@ -181,7 +181,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void A_run_with_no_debugger_never_looks_as_though_one_just_left()
+    public void SetDebuggerAttached_NeverAttached_NoDetachRecorded()
     {
         // The mistake worth guarding against: recording the detach timestamp on every call with false
         // rather than on the transition. It would then always read "detached a moment ago", which would
@@ -201,7 +201,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void Re_attaching_moves_the_detach_time_forward_rather_than_keeping_the_first_one()
+    public void SetDebuggerAttached_ReAttachAndDetach_DetachTimeMovesForward()
     {
         // Attach, detach, attach, detach. What matters for judging a gap is the LAST time a debugger left,
         // not the first, so a stale timestamp must not survive a second visit.
@@ -237,7 +237,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void PayloadBytes_is_the_end_of_the_last_field()
+    public void PayloadBytes_IsEndOfLastField()
     {
         // The mistake this catches is appending a field and forgetting to grow PayloadBytes. The field
         // would then sit outside the written region, so every reader would correctly conclude it was not
@@ -262,7 +262,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void No_two_fields_overlap_and_none_escapes_the_page()
+    public void DoctorChannelLayout_Fields_DoNotOverlapOrEscapePage()
     {
         // Guards the other half of "existing fields never move": a new field appended at the wrong offset,
         // or one sized wrongly, would quietly corrupt its neighbour on every write.
@@ -293,7 +293,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void The_writer_never_touches_a_byte_beyond_PayloadBytes()
+    public void DoctorChannelWriter_NeverWritesBeyondPayloadBytes()
     {
         // The other way to get PayloadBytes wrong: append a field, write it, and forget to grow the
         // constant. The layout test above catches that only if the field was added to the Fields table;
@@ -350,7 +350,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void A_reader_rejects_a_page_whose_payload_extent_is_impossible()
+    public void TryRead_ImpossiblePayloadExtent_ReturnsNull()
     {
         // A created-but-uninitialised section is zero-filled, and a page of zeroes otherwise looks settled
         // and sane. It must never be read as data.
@@ -411,7 +411,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void A_reader_built_against_a_larger_layout_still_accepts_an_older_writer()
+    public void TryRead_OlderWriterWithSmallerPayload_Accepted()
     {
         // The case the whole scheme exists for: a Doctor that knows about fields a Bloom is too old to
         // write. It must read what IS there rather than rejecting the page. Simulated by writing an extent
@@ -446,7 +446,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void What_Bloom_writes_is_what_the_Doctor_reads()
+    public void TryRead_AfterEveryWriterCall_ReadsWhatWasWritten()
     {
         using var writer = new DoctorChannelWriter(TestProcessId);
         Assert.That(writer.IsOpen, Is.True, "setup: the channel should have been created");
@@ -484,7 +484,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void The_heartbeat_ages_as_time_passes()
+    public void TryRead_HeartbeatAge_GrowsAsTimePasses()
     {
         // The age, not the count, is what the detector uses — so it has to be real. Both sides read
         // Environment.TickCount64, which is comparable across processes, unlike a wall clock.
@@ -504,7 +504,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void A_heartbeat_that_never_ticked_reads_as_infinitely_old_rather_than_as_fresh()
+    public void TryRead_HeartbeatNeverTicked_AgeIsInfinite()
     {
         // The dangerous failure direction: an unticked heartbeat must not read as "just now", or a Bloom
         // that wedged during startup would look perfectly healthy forever.
@@ -518,7 +518,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void A_Bloom_that_publishes_nothing_is_simply_absent_not_an_error()
+    public void TryRead_NoChannel_ReturnsNull()
     {
         // Every Bloom in the field today is this case, so it must be quiet and cheap: the Doctor falls
         // back to watching from outside.
@@ -529,7 +529,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void The_clean_exit_proof_and_shutdown_phase_survive_for_the_reader()
+    public void TryRead_AfterRecordCleanExit_ShowsCleanExitAndShutdownPhase()
     {
         using var writer = new DoctorChannelWriter(TestProcessId);
         writer.SetShutdownPhase(BloomShutdownPhase.LogWritten);
@@ -542,7 +542,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void An_over_long_activity_string_is_truncated_rather_than_corrupting_the_page()
+    public void SetActivity_OverLongString_TruncatedWithoutCorruptingNeighbours()
     {
         // Activity text comes from Bloom's own breadcrumbs, which include file paths; a long one must not
         // run over the next field.
@@ -565,13 +565,13 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void An_activity_string_with_multibyte_characters_survives_being_written_and_read()
+    public void SetActivity_MultibyteCharacters_RoundTrips()
     {
-        // Regression test. Truncating on a character boundary was added so a cut book title could not leave a
-        // broken byte in the page — and the first version of that check read one byte past the end whenever no
-        // truncation was needed. The resulting exception was swallowed, which left the write sequence at an odd
-        // value, which every reader treats as "a write is in progress" — silently disabling the channel for the
-        // rest of the run. So this test covers both the short case and the over-long one.
+        // Guards the character-boundary truncation in both directions: a cut book title must not leave a
+        // broken byte in the page, and the boundary check must not read past the end when no truncation is
+        // needed. An exception there is swallowed and leaves the write sequence at an odd value, which every
+        // reader treats as "a write is in progress" — silently disabling the channel for the rest of the run.
+        // So this test covers both the short case and the over-long one.
         using var writer = new DoctorChannelWriter(TestProcessId);
 
         writer.SetActivity("Publishing “Ekkitaaki Fulfulde” — étape 2");
@@ -598,7 +598,7 @@ public class DoctorChannelTests
     }
 
     [Test]
-    public void Writing_never_throws_even_when_the_channel_could_not_be_created()
+    public void DoctorChannelWriter_ChannelCouldNotBeCreated_WritesDoNotThrow()
     {
         // Two writers for one pid: the second cannot create the section. Bloom must survive that without
         // noticing, because publishing diagnostics is never worth failing a startup over.

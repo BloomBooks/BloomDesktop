@@ -28,8 +28,6 @@ public readonly record struct LiveBloom(
 /// * a Ctrl-held launch, which takes the token only if it happened to be first.
 ///
 /// A developer running two worktrees has exactly this: two live Blooms, neither blocking anything.
-/// Before the Doctor watched <c>--automation</c> runs at all they could not appear here; now they can,
-/// which is what made this filter necessary.
 /// </summary>
 public static class RestartBlockers
 {

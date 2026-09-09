@@ -11,15 +11,12 @@ namespace BloomFreezeDoctor.Tests;
 /// executable, so accept any of the channel names the installer produces". An empty string would go into
 /// the same comparison and match *every* message ever written - so a crash report could be assembled from
 /// somebody else's crash, and nothing about it would look wrong.
-///
-/// Reachable at all only because DoctorSupervisor now lives in Core; while it was in the WinExe this could
-/// not be tested without running the Doctor.
 /// </summary>
 [TestFixture]
-public class ExeFileNameTests
+public class DoctorSupervisorSafeFileNameTests
 {
     [Test]
-    public void A_normal_path_gives_the_file_name()
+    public void SafeFileName_NormalPath_ReturnsFileName()
     {
         Assert.That(
             DoctorSupervisor.SafeFileName(
@@ -33,7 +30,7 @@ public class ExeFileNameTests
     [TestCase("", Description = "an empty path")]
     [TestCase("   ", Description = "whitespace, which Path.GetFileName happily returns as-is")]
     [TestCase(@"C:\some\folder\", Description = "a directory, whose file name is empty")]
-    public void Anything_without_a_usable_name_comes_back_null_never_empty(string? path)
+    public void SafeFileName_NoUsableName_ReturnsNullNotEmpty(string? path)
     {
         // Null and "" travel the same route into the Event Log query, where they mean opposite things.
         // Returning "" from any of these would silently widen the search to every logged crash.
@@ -45,7 +42,7 @@ public class ExeFileNameTests
     }
 
     [Test]
-    public void A_malformed_path_does_not_throw()
+    public void SafeFileName_MalformedPath_DoesNotThrow()
     {
         // Gathering evidence about a dead Bloom must not fall over because its path was odd.
         //

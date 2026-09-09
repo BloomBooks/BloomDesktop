@@ -6,17 +6,15 @@ using SIL.IO;
 namespace BloomFreezeDoctor.Outbox;
 
 /// <summary>
-/// What a drain did. **The two fields are not interchangeable, and conflating them was a real bug:**
+/// What a drain did. **The two fields are not interchangeable:**
 /// `Filed: 0` on its own is ambiguous between "there was nothing to send" and "somebody else is sending
 /// it", and the caller that asks a user-facing question - "Report now" - needs to tell those apart, or it
 /// announces failure for a report that is about to be filed perfectly well.
 /// </summary>
 /// <param name="FiledIssueIds">
 /// The card each filed bundle landed on, which is what lets the Doctor offer to OPEN the card it just
-/// filed. This used to be a bare count, and the ids were known here and thrown away - so the only path
-/// that could light up the "Open card" button was a report filed inline during gathering. Everything the
-/// Doctor gathers is queued and sent by a later drain, which is to say: almost always, the Doctor said
-/// "filed 1 report" and then could not tell you which one.
+/// filed. A bare count would not: everything the Doctor gathers is queued and sent by a later drain, so
+/// this is the only place the ids are known.
 ///
 /// An id appears here whether the bundle opened a new card or commented on an existing one; either way
 /// there is a card worth showing.
@@ -24,11 +22,9 @@ namespace BloomFreezeDoctor.Outbox;
 /// <param name="AnotherProcessIsSending">
 /// True when another Doctor process was already draining, so we sent nothing and left the queue to it.
 ///
-/// Named for what HAPPENED rather than for the mechanism that caused it. The mechanism - a cross-process
-/// gate, with an in-process semaphore above it - is an implementation detail two layers down, and a reader
-/// meeting "gated out" here has to go and find out which gate, and then what being on the wrong side of it
-/// means for the reports. What it means is the part worth saying: nothing is stuck or lost, somebody else
-/// is sending them.
+/// Named for what HAPPENED rather than for the mechanism (a cross-process gate two layers down), because
+/// what it means for the reports is the part worth saying: nothing is stuck or lost, somebody else is
+/// sending them.
 ///
 /// It does NOT promise that our own bundle is in the batch that process is sending; it may have listed the
 /// queue before ours arrived. That is what <c>StillQueued</c> is for, and a later drain picks it up.
@@ -112,7 +108,7 @@ public interface IReportSubmitter
 /// <summary>
 /// The queue of reports waiting to be filed, and the rules about what goes in it.
 ///
-/// This exists because gathering and filing must be separate steps (plan §5.1). A freeze frequently
+/// This exists because gathering and filing must be separate steps. A freeze frequently
 /// arrives *with* a dead network — BL-16697's own log shows DNS failing moments before the freeze — so a
 /// design that files inline loses precisely the reports we most want. Everything here therefore assumes
 /// the network is absent and the machine may be restarted at any moment.
@@ -120,10 +116,10 @@ public interface IReportSubmitter
 /// **Every file operation in the Doctor goes through SIL.IO's RobustFile / RobustIO, with no exemption.**
 /// The tempting argument for exempting it — these writes are only diagnostics, so a transient failure costs
 /// nothing much — is wrong, and this class is where it shows: a plain rename to publish a gathered report
-/// into this queue fails about one run in three with "access is denied", because Windows has not finished
-/// with the files written milliseconds earlier, and each failure discards a report at the exact moment a
-/// user has just sat through a freeze. A tool whose entire purpose is to capture evidence that is otherwise
-/// lost has *less* room to be careless with the disk than Bloom does, not more.
+/// into this queue readily fails with "access is denied", because Windows has not finished with the files
+/// written milliseconds earlier, and each failure discards a report at the exact moment a user has just sat
+/// through a freeze. A tool whose entire purpose is to capture evidence that is otherwise lost has *less*
+/// room to be careless with the disk than Bloom does, not more.
 ///
 /// The only carve-outs are the three documented `robustfile-hook: allow FileStream` sites, where the
 /// sharing flags are the requirement rather than an accident — reading a log another process holds open,
@@ -359,21 +355,17 @@ public sealed class ReportOutbox
         };
         WriteMetadata(staging, metadata);
 
-        // RobustIO rather than the plain framework rename, because this exact line failed about one run in three:
-        //
-        //     IOException: Access to the path '...\.staging-20260919-100000-recent' is denied.
-        //
-        // Nothing is wrong with the code's logic. On Windows a directory whose files were written
+        // RobustIO rather than the plain framework rename. On Windows a directory whose files were written
         // milliseconds ago is quite likely to still be held by something else - a virus scanner or the
-        // search indexer following our own writes - and the rename simply loses that race. RobustIO
-        // retries for a short while, which is all this needs.
+        // search indexer following our own writes - and a plain rename simply loses that race with "Access
+        // to the path ... is denied". RobustIO retries for a short while, which is all this needs.
         //
-        // Worth being clear about what was at stake, since this is the one place in the Doctor where a
-        // transient failure destroys evidence rather than merely inconveniencing somebody: this rename IS
-        // the publish step. Before it, the bundle is a hidden staging directory nothing will ever look in;
-        // after it, the bundle is queued and will be filed. Losing the race meant throwing away a gathered
-        // report at the exact moment a user had just sat through a freeze - and a real machine, with real
-        // antivirus, is more exposed to it than a temp folder on a developer's box, not less.
+        // This is the one place in the Doctor where a transient failure destroys evidence rather than
+        // merely inconveniencing somebody: this rename IS the publish step. Before it, the bundle is a
+        // hidden staging directory nothing will ever look in; after it, the bundle is queued and will be
+        // filed. Losing the race throws away a gathered report at the exact moment a user has just sat
+        // through a freeze - and a real machine, with real antivirus, is more exposed to it than a temp
+        // folder on a developer's box, not less.
         RobustIO.MoveDirectory(staging, final);
         Prune();
         return new QueuedBundle { Directory = final, Metadata = metadata };
@@ -385,9 +377,9 @@ public sealed class ReportOutbox
     ///
     /// The Doctor declines to file on a developer build, on an automation run, and whenever the failure was
     /// deliberately simulated - all of which are right by default, and all of which a developer sometimes
-    /// wants to override for the report in front of them. Until now the only way was to gather a WHOLE NEW
-    /// report with "Report now", which cannot be done at all once the Bloom in question has died, and which
-    /// in any case reports on a different moment than the one that was interesting.
+    /// wants to override for the report in front of them. Without this the only way would be to gather a
+    /// WHOLE NEW report with "Report now", which cannot be done at all once the Bloom in question has died,
+    /// and which in any case reports on a different moment than the one that was interesting.
     ///
     /// Only NotForFiling is promoted. Anything already Pending, Uploading or Filed is left exactly as it
     /// is: this is for lifting a deliberate refusal, not for re-sending or for jogging a stuck queue.
@@ -429,21 +421,14 @@ public sealed class ReportOutbox
         List().Where(b => b.Metadata.State == BundleState.Pending).ToList();
 
     /// <summary>
-    /// Tries to file everything pending, oldest first so the queue drains in the order things happened.
-    ///
-    /// Called on Doctor startup as well as periodically, and startup is the guarantee that matters: the
-    /// most likely next event after a freeze is the user restarting Bloom, which starts the Doctor,
-    /// which drains this queue.
-    /// </summary>
-    /// <summary>
     /// The file whose exclusive lock serves as the cross-process gate for draining. It lives inside the
     /// outbox, which is the entire point: **the gate has to be scoped exactly like the thing it protects.**
     ///
-    /// This was a named `Local\` semaphore, and that was wrong in a way worth recording. `Local\` names are
-    /// per Windows LOGON SESSION, while the outbox lives under LOCALAPPDATA, which is per USER - so the
-    /// same user in two sessions (fast user switching, or a second desktop over RDP) shared one queue while
-    /// holding two different gates, and could drain it twice at once. A `Global\` name would have fixed the
-    /// scope and broken something else: creating a `Global\` object needs SeCreateGlobalPrivilege, which a
+    /// A named `Local\` kernel object would be wrong in a way worth recording. `Local\` names are per
+    /// Windows LOGON SESSION, while the outbox lives under LOCALAPPDATA, which is per USER - so the same
+    /// user in two sessions (fast user switching, or a second desktop over RDP) would share one queue while
+    /// holding two different gates, and could drain it twice at once. A `Global\` name would fix the scope
+    /// and break something else: creating a `Global\` object needs SeCreateGlobalPrivilege, which a
     /// standard user does not necessarily have, and the failure path here is "carry on ungated".
     ///
     /// A lock file in the outbox directory has neither problem. Same outbox means the same file and
@@ -469,6 +454,10 @@ public sealed class ReportOutbox
     /// always this, separately and later. That is what lets a report survive being gathered while the
     /// machine is offline, while it is over the daily cap, or moments before it shuts down.
     ///
+    /// Called on Doctor startup as well as periodically, and startup is the guarantee that matters: the
+    /// most likely next event after a freeze is the user restarting Bloom, which starts the Doctor,
+    /// which drains this queue.
+    ///
     /// Nothing is dropped for failing to send. A bundle that cannot go keeps its place and records its
     /// last error; one held back by the daily cap, or waiting on a sibling's card, is skipped without
     /// stopping the queue behind it. Every one of them is simply picked up by a later drain.
@@ -487,9 +476,9 @@ public sealed class ReportOutbox
         // list the same pending bundles and each walk the non-atomic search-then-create flow: duplicate
         // cards, or a combined total past the three-a-day cap that exists to stop a machine in a bad
         // state spamming the tracker.
-        // NOTE the two different reasons `gate` can end up null, because conflating them made this whole
-        // gate a no-op once already: a null RETURN means somebody else holds it and we must not drain,
-        // while a THROW means the gating mechanism itself is unavailable and we drain anyway.
+        // NOTE the two different reasons `gate` can end up null; conflating them would make this whole gate
+        // a no-op. A null RETURN means somebody else holds it and we must not drain, while a THROW means
+        // the gating mechanism itself is unavailable and we drain anyway.
         FileStream? gate;
         try
         {
@@ -588,8 +577,8 @@ public sealed class ReportOutbox
                 // A machine opening more cards than this on its own is telling us something we will hear
                 // from the first three anyway.
                 //
-                // `continue`, not `break`: the cap now applies per bundle rather than to the whole pass,
-                // so a capped report must not stop the queue behind it — the next one may be a comment or
+                // `continue`, not `break`: the cap applies per bundle rather than to the whole pass, so a
+                // capped report must not stop the queue behind it — the next one may be a comment or
                 // something a person actually asked for, and those are exempt.
                 continue;
             }
@@ -638,7 +627,7 @@ public sealed class ReportOutbox
                             LastError = null,
                         }
                     );
-                    // Throwing rather than skipping, because the count now comes from this list: a Filed
+                    // Throwing rather than skipping, because the count comes from this list: a Filed
                     // outcome without a card id would silently under-report what we sent. It cannot
                     // happen - the submitter only says Filed once a card exists - and if that ever stops
                     // being true we want to hear about it.
@@ -718,6 +707,14 @@ public sealed class ReportOutbox
     }
 
     /// <summary>
+    /// True for a bundle that is on its way to the tracker but has not got there: waiting in the queue, or
+    /// being sent this moment. Both are candidates for a new report to belong with; only the first can
+    /// actually be written to.
+    /// </summary>
+    private static bool IsAwaitingOrDuringSend(BundleState state) =>
+        state == BundleState.Pending || state == BundleState.Uploading;
+
+    /// <summary>
     /// Whether a bundle should be sent on this pass.
     ///
     /// Nearly always yes. The exception is a bundle that belongs on a sibling's card — it exists because
@@ -731,14 +728,6 @@ public sealed class ReportOutbox
     /// - the sibling is gone from the queue entirely (evicted, or given up on): stop waiting for a card
     ///   that is never coming and let this one be filed on its own merits.
     /// </summary>
-    /// <summary>
-    /// True for a bundle that is on its way to the tracker but has not got there: waiting in the queue, or
-    /// being sent this moment. Both are candidates for a new report to belong with; only the first can
-    /// actually be written to.
-    /// </summary>
-    private static bool IsAwaitingOrDuringSend(BundleState state) =>
-        state == BundleState.Pending || state == BundleState.Uploading;
-
     private bool ReadyToSend(QueuedBundle bundle)
     {
         var waitingFor = bundle.Metadata.CommentOnFingerprint;
@@ -836,10 +825,9 @@ public sealed class ReportOutbox
     /// One Bloom's collapse is one story, and the Doctor tends to see it in instalments: the UI stops
     /// responding, so we report a freeze; then the process dies, and the exit examination finds no proof
     /// of an orderly shutdown and reports that. Two reports, different reasons, therefore different
-    /// fingerprints - so nothing recognised them as related and two cards were filed about one event.
-    /// That is exactly what happened during the first live test (AUT-20929 and AUT-20930), and it will
-    /// happen again for a crashing Bloom now that the dump handshake works, which gathers once while
-    /// Bloom is alive and once after it has gone.
+    /// fingerprints - so nothing else recognises them as related, and without this two cards would be
+    /// filed about one event. For a crashing Bloom that is the normal case, since the dump handshake
+    /// gathers once while Bloom is alive and once after it has gone.
     ///
     /// So the tie is the process, not the fingerprint. The fingerprint's job is recognising this problem
     /// on *other* machines and is unchanged; a process id means nothing anywhere else, which is precisely
@@ -975,9 +963,9 @@ public sealed class ReportOutbox
     /// Drops bundles that are too old or too many. Runs on every enqueue, so the queue cannot grow
     /// without bound on a machine that never gets online.
     ///
-    /// **Never touches a bundle that is being sent.** Pruning went purely by age and count, so a bundle
+    /// **Never touches a bundle that is being sent.** Pruning purely by age and count would let a bundle
     /// marked <see cref="BundleState.Uploading"/> - one with a network call in flight, reading files out of
-    /// the very directory being deleted - could be pulled out from under the sender. Two ways in: a report
+    /// the very directory being deleted - be pulled out from under the sender. Two ways in: a report
     /// that has been retried for weeks and is uploading when it finally crosses the age cutoff, or a queue
     /// over <see cref="MaxBundles"/> where the one in flight is not among the newest. Losing that race
     /// costs the report AND leaves nothing for ReclaimAbandonedUploads to put back, because the bundle it
@@ -1025,10 +1013,6 @@ public sealed class ReportOutbox
         }
     }
 
-    /// <summary>
-    /// Writes metadata by temp-then-rename, because this file is rewritten on every attempt and a
-    /// power cut mid-write would otherwise lose the whole bundle rather than one attempt's record.
-    /// </summary>
     /// <summary>
     /// Runs one read-modify-write of a bundle's metadata with nobody else doing the same thing.
     ///
@@ -1086,6 +1070,10 @@ public sealed class ReportOutbox
         }
     }
 
+    /// <summary>
+    /// Writes metadata by temp-then-rename, because this file is rewritten on every attempt and a
+    /// power cut mid-write would otherwise lose the whole bundle rather than one attempt's record.
+    /// </summary>
     private static void WriteMetadata(string directory, BundleMetadata metadata)
     {
         var path = Path.Combine(directory, MetadataFileName);

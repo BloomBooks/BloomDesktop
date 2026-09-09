@@ -16,7 +16,7 @@ namespace BloomFreezeDoctor.Protocol;
 //  file survives a crash, a Doctor restart, and a reboot.
 //
 //  Everything here also removes a guess the Doctor would otherwise have to make from outside. Two are
-//  worth naming, because both were measured as getting it wrong:
+//  worth naming, because guessing gets both wrong:
 //
 //   * WHICH LOG IS THIS BLOOM'S. Bloom recreates Log.txt every run and falls back to a randomly-named
 //     Log-tmpXXXX.txt only when another Bloom already holds it — so in the restart-after-a-freeze case,
@@ -28,7 +28,7 @@ namespace BloomFreezeDoctor.Protocol;
 
 /// <summary>
 /// What Bloom records about itself when it starts, for any Doctor that comes looking — including one
-/// installed after the fact, or started after Bloom has already died.
+/// started after Bloom has already died.
 /// </summary>
 public sealed record DoctorSession
 {
@@ -303,7 +303,7 @@ public static class DoctorSessionStore
     /// <summary>
     /// Deletes session files that are of no further interest: their process is gone, and it either recorded
     /// an orderly exit that nobody asked for or it is older than the cutoff. Anything else survives until it
-    /// ages out, because an unexplained exit is precisely the evidence a Doctor installed after the fact
+    /// ages out, because an unexplained exit is precisely the evidence a Doctor started after the fact
     /// comes looking for.
     ///
     /// **What it costs**, which matters because Bloom calls this from its watchdog thread and that thread
@@ -330,13 +330,10 @@ public static class DoctorSessionStore
                 if (processIsAlive(session.ProcessId))
                     continue;
                 var tooOld = DateTimeOffset.UtcNow - session.StartedAtUtc > maxAge;
-                // "Explained" means an ORDERLY exit. An exit that was forced — a hard failure, or the Doctor
-                // ending a zombie — is not an explanation, it is the evidence; deleting it early would throw
-                // away the record of the very thing we exist to report.
-                // Both halves matter, and for different reasons. A phase of None means the orderly path was
-                // never begun — a hard failure, which is evidence. An exit we asked for is not an
-                // explanation either; it is the record of our own doing, and worth keeping for the window in
-                // which somebody might ask why that Bloom went.
+                // "Explained" means an ORDERLY exit that nobody asked for. A phase of None means the orderly
+                // path was never begun — a hard failure, which is the evidence we exist to report. An exit we
+                // asked for is not an explanation either; it is the record of our own doing, and worth keeping
+                // for the window in which somebody might ask why that Bloom went.
                 var explained =
                     session.Exit != null
                     && session.Exit.ShutdownPhase != BloomShutdownPhase.None

@@ -6,15 +6,14 @@ namespace BloomFreezeDoctor.Tests;
 /// <summary>
 /// Which of the Doctor's paths reports a Bloom that has died.
 ///
-/// A whole fixture for one three-argument function because that function has been wrong twice, and in both
-/// cases the symptom was silence - no report, or the wrong report - which no other test noticed and only a
-/// manual run exposed. Each historical bug has a test here named after it.
+/// A whole fixture for one three-argument function because every way of getting it wrong is silent - no
+/// report, or the wrong report - which no other test notices.
 /// </summary>
 [TestFixture]
 public class WhoReportsTheDeathTests
 {
     [Test]
-    public void An_ordinary_death_is_examined()
+    public void Decide_OrdinaryDeath_Examine()
     {
         Assert.That(
             WhoReportsTheDeath.Decide(
@@ -28,7 +27,7 @@ public class WhoReportsTheDeathTests
     }
 
     [Test]
-    public void A_Bloom_we_ended_is_not_reported()
+    public void Decide_WeEndedIt_WeCausedIt()
     {
         // We kill a zombie, or ask Bloom to quit so we can restart it. A killed process runs no
         // ProcessExit handler, so it leaves exactly the evidence an unexplained crash leaves - and would
@@ -44,14 +43,14 @@ public class WhoReportsTheDeathTests
     }
 
     [Test]
-    public void The_crash_dump_path_owns_a_death_it_is_already_reporting()
+    public void Decide_DumpBeingReported_TheDumpHasIt()
     {
-        // The bug a real crashthread run found. Bloom asked to be dumped as it crashed, so that path was
-        // gathering a report WITH the dump; the exit examination ran anyway and gathered a second one
-        // without it. Both were filed, the outbox's fingerprint dedup kept whichever finished first - the
-        // dumpless one, as it happened, being the quicker to gather - and the dump-bearing report was
-        // demoted to a "this happened again" comment, which deliberately attaches nothing. Net effect: we
-        // held a dying Bloom open for three seconds to collect a dump, then left it on the user's machine.
+        // Bloom asks to be dumped as it crashes, so that path gathers a report WITH the dump. If the exit
+        // examination ran anyway it would gather a second one without it; both filed, the outbox's
+        // fingerprint dedup would keep whichever finished first - the dumpless one, being quicker to
+        // gather - and the dump-bearing report would be demoted to a "this happened again" comment, which
+        // deliberately attaches nothing. Net effect: a dying Bloom held open for three seconds to collect
+        // a dump that is then left on the user's machine.
         Assert.That(
             WhoReportsTheDeath.Decide(
                 weEndedIt: false,
@@ -63,7 +62,7 @@ public class WhoReportsTheDeathTests
     }
 
     [Test]
-    public void A_death_already_claimed_is_left_alone()
+    public void Decide_AlreadyClaimed_AlreadyClaimed()
     {
         Assert.That(
             WhoReportsTheDeath.Decide(
@@ -76,13 +75,13 @@ public class WhoReportsTheDeathTests
     }
 
     [Test]
-    public void Claiming_a_death_before_deciding_would_silence_every_report()
+    public void Decide_ClaimedBeforeDeciding_NotExamined()
     {
-        // The other historical bug, and the worse of the two: fixing a race, the claim was made in the
-        // discovery sweep and THEN this decision was consulted - which, seeing the claim, answered
-        // AlreadyClaimed. So no crash was ever examined. This test states the property that makes that
-        // shape a bug: for an otherwise-reportable death, the answer depends entirely on whether somebody
-        // claimed it first, so a caller must decide before it claims, never after.
+        // The worse failure: a caller that claims the death first (to close a race in the discovery sweep,
+        // say) and THEN consults this decision sees its own claim and gets AlreadyClaimed, so no crash is
+        // ever examined. This test states the property that makes that shape a bug: for an
+        // otherwise-reportable death, the answer depends entirely on whether somebody claimed it first, so
+        // a caller must decide before it claims, never after.
         Assert.That(
             WhoReportsTheDeath.Decide(
                 weEndedIt: false,
@@ -104,11 +103,10 @@ public class WhoReportsTheDeathTests
     }
 
     [Test]
-    public void A_claimed_death_stays_claimed_whatever_the_reason_would_have_been()
+    public void Decide_AlreadyClaimedWithAnyReason_AlreadyClaimed()
     {
-        // Found in a real run's log: "its crash dump is already being reported" appeared twice, a second
-        // apart. Two passes reached the decision for one death, and because the reasons were tested before
-        // the claim, the second re-took the dump branch instead of standing down - logging again and
+        // Two passes can reach the decision for one death a second apart. If the reasons were tested before
+        // the claim, the second would re-take the dump branch instead of standing down - logging again and
         // disposing a process handle that the first pass had already released.
         //
         // A stand-down is not just a decision, it is an action: it logs, it claims, and it releases the
@@ -126,7 +124,7 @@ public class WhoReportsTheDeathTests
     }
 
     [Test]
-    public void Our_own_doing_outranks_the_dump()
+    public void Decide_WeEndedItAndDumpBeingReported_WeCausedIt()
     {
         // Both true happens when we killed a Bloom that was in the middle of crashing. Nothing should be
         // reported: the dump path files under MayFile, and this path must not file a card about our kill.

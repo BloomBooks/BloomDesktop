@@ -12,13 +12,12 @@ namespace BloomFreezeDoctor.Tests;
 /// exactly like watching the first, right up to the point where "Restart Bloom" offers to kill somebody
 /// else's work, or a stale note about one process attaches itself to another.
 ///
-/// These use REAL CHILD PROCESSES as stands-in for Bloom. They used to adopt the test host itself, which
-/// was convenient and is now forbidden: a Doctor refuses to watch its own process, because one was seen
-/// doing exactly that. A separate process is also the more faithful stand-in - the test host is the one
-/// process whose lifetime cannot tell us anything about watching another.
+/// These use REAL CHILD PROCESSES as stands-in for Bloom. They cannot adopt the test host itself, because
+/// a Doctor refuses to watch its own process. A separate process is also the more faithful stand-in - the
+/// test host is the one process whose lifetime cannot tell us anything about watching another.
 /// </summary>
 [TestFixture]
-public class OneBloomAtATimeTests
+public class DoctorSupervisorTests
 {
     private string _outbox = null!;
     private readonly List<Process> _children = new();
@@ -30,10 +29,10 @@ public class OneBloomAtATimeTests
     private Process StartAStandIn()
     {
         var child = Process.Start(
-            // Ten minutes, not one. A minute was not enough: the sweep asks WMI about each candidate, which
-            // costs seconds, and one run took 76 seconds to reach its assertion - by which time the
-            // stand-in had exited and the test failed for a reason it is not about. It is killed in
-            // teardown, so the long life costs nothing.
+            // Ten minutes: the sweep asks WMI about each candidate, which costs seconds, and a run can take
+            // over a minute to reach its assertion, by which time a shorter-lived stand-in would have exited
+            // and failed the test for a reason it is not about. It is killed in teardown, so the long life
+            // costs nothing.
             new ProcessStartInfo("ping.exe", "-n 600 127.0.0.1")
             {
                 UseShellExecute = false,
@@ -93,12 +92,11 @@ public class OneBloomAtATimeTests
     }
 
     [Test]
-    public void The_Doctor_refuses_to_watch_itself()
+    public void Adopt_OwnProcess_Refused()
     {
-        // Seen in a real doctor.log: "[25736] watching Bloom 25736 (Release)". The log prefix is the writing
-        // process's own id, so that Doctor had adopted itself. How it got there was never established,
-        // which is the point of a guard rather than a fix: watching our own process is nonsense whatever
-        // route reaches it, and it would report on that process's "death" as we exited.
+        // A Doctor has been seen adopting itself, by a route that was never established - which is why
+        // this is a guard rather than a fix: watching our own process is nonsense whatever route reaches
+        // it, and it would report on that process's "death" as we exited.
         using var supervisor = WatchingOnly("no-such-process-at-all");
 
         supervisor.Adopt(Process.GetCurrentProcess().Id);
@@ -107,7 +105,7 @@ public class OneBloomAtATimeTests
     }
 
     [Test]
-    public void Adopting_the_same_process_twice_leaves_one_watcher()
+    public void Adopt_SameProcessTwice_OneWatcher()
     {
         var standIn = StartAStandIn();
         using var supervisor = WatchingOnly(standIn.ProcessName);
@@ -125,27 +123,24 @@ public class OneBloomAtATimeTests
     }
 
     [Test]
-    public void A_discovery_tick_does_not_drop_the_Bloom_it_just_adopted()
+    public void Discover_TickThatAdopts_KeepsTheAdoptedBloom()
     {
-        // This is the test that was missing, and its absence cost a whole manual run.
-        //
-        // The one-Bloom rewrite decided whether the watched Bloom had gone from a flag that was only set
-        // in the "we already have a target" branch. On a tick that ADOPTED, that branch never ran, so the
-        // flag was still false and the freshly adopted Bloom was treated as departed - every adopting tick
-        // un-adopted. Two symptoms, both seen on a real run: the log filled with "watching Bloom NNNN"
-        // every five seconds, and the death of a real crashing Bloom was never examined at all, because
-        // the spurious departure had already claimed the one examination.
+        // Guards against deciding whether the watched Bloom has gone from a flag that is only set in the
+        // "we already have a target" branch. On a tick that ADOPTS, that branch never runs, so the freshly
+        // adopted Bloom would be treated as departed and every adopting tick would un-adopt. The symptoms
+        // are a log filling with "watching Bloom NNNN" every five seconds, and the death of a real crashing
+        // Bloom never being examined, because the spurious departure has already claimed the one
+        // examination.
         //
         // Calling Discover directly is why it is internal. Waiting on its five-second timer would make
         // this test slow and flaky for no gain; what needs asserting is what one tick does. The supervisor
         // must do the ADOPTING itself, which means letting its sweep find the stand-in by name:
-        // pre-adopting by hand takes the other branch of Discover entirely, and that is why the first
-        // version of this test passed against the bug it was written for.
+        // pre-adopting by hand takes the other branch of Discover entirely and proves nothing.
         var standIn = StartAStandIn();
         using var supervisor = WatchingOnly(standIn.ProcessName);
 
-        // One tick, which both adopts and then decides whether the adopted Bloom has gone. With the bug
-        // those happened in the same pass and the second undid the first, so this comes back empty.
+        // One tick, which both adopts and then decides whether the adopted Bloom has gone. If the second
+        // undid the first, this would come back empty.
         supervisor.Discover();
 
         var afterFirstTick = supervisor.LiveWatchedBlooms();
@@ -155,8 +150,8 @@ public class OneBloomAtATimeTests
             "the tick that adopted must not also have decided the process had gone"
         );
         // Deliberately NOT asserting WHICH process. The sweep looks up by name, and another of these can be
-        // running - a second test host, or somebody's own ping - so pinning the id made this fail for a
-        // reason the test is not about.
+        // running - a second test host, or somebody's own ping - so pinning the id would make this fail for
+        // a reason the test is not about.
         Assert.That(afterFirstTick[0].ProcessId, Is.GreaterThan(0));
 
         // A second tick, which takes the other branch - we now have a target, so it checks rather than
@@ -170,11 +165,11 @@ public class OneBloomAtATimeTests
     }
 
     [Test]
-    public void A_second_process_is_not_adopted()
+    public void Adopt_SecondProcess_Refused()
     {
         // The case that matters: a developer with two worktrees open, or an alpha tester running two
-        // channels. Before this, both were watched and both appeared in the list "Restart Bloom" offers to
-        // end - so clearing the way for one Bloom meant being asked to kill the other.
+        // channels. If both were watched, both would appear in the list "Restart Bloom" offers to end, so
+        // clearing the way for one Bloom would mean being asked to kill the other.
         var first = StartAStandIn();
         var second = StartAStandIn();
         using var supervisor = WatchingOnly(first.ProcessName);

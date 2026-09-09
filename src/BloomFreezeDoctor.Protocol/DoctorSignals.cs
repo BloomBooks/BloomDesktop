@@ -21,7 +21,7 @@ namespace BloomFreezeDoctor.Protocol;
 //  Everything here is built so that the ABSENCE of the other side costs nothing. Bloom never waits unless
 //  it has first confirmed, with a zero timeout, that a Doctor is actually watching — because an
 //  unconditional pause would make every crash worse for the majority of users, who have no Doctor
-//  installed.
+//  running.
 // =====================================================================================================
 
 /// <summary>
@@ -53,9 +53,8 @@ public static class DoctorSignals
     /// first checking whether anyone is listening - there is nobody to check for.
     ///
     /// Why it exists: adoption otherwise waits for the next poll, and that poll interval is a window in
-    /// which Bloom's own startup cannot be doctored at all. It is not merely a tidiness matter - on one
-    /// measured run Bloom crashed and asked to be dumped twenty seconds before the Doctor had noticed it
-    /// existed, and because Bloom only asks when a Doctor is already watching, the dump was never taken.
+    /// which Bloom's own startup cannot be doctored at all. A Bloom that crashes before the sweep finds it
+    /// asks to be dumped when nobody is watching yet, and the dump is never taken.
     ///
     /// Polling stays as the backstop, and must: a Bloom too old to know about any of this cannot announce
     /// itself, and those are the Blooms most worth watching.
@@ -107,10 +106,10 @@ public static class DoctorSignals
     ///
     /// Every other signal here is a latch: "a Doctor is watching this process", "the dump is complete". A
     /// latch wants manual reset, because whoever asks later must still get the answer. The Bloom-has-started
-    /// announcement is the opposite - a pulse, meaningful once - and putting it on a manual-reset event was
-    /// measurably wrong: the Doctor waits with ThreadPool.RegisterWaitForSingleObject, which re-arms the wait
-    /// before the callback has run, so a set event fires the callback again and again until something resets
-    /// it. A measured run produced 103 wake-ups and 103 needless sweeps from one announcement.
+    /// announcement is the opposite - a pulse, meaningful once - and on a manual-reset event it misfires: the
+    /// Doctor waits with ThreadPool.RegisterWaitForSingleObject, which re-arms the wait before the callback
+    /// has run, so a set event fires the callback again and again until something resets it, and one
+    /// announcement becomes a hundred needless sweeps.
     ///
     /// Auto-reset makes the kernel do it: one set releases exactly one wait and the event goes back to
     /// unsignalled with no cooperation needed. Both sides must create it the same way, because the FIRST
@@ -134,7 +133,7 @@ public static class DoctorSignals
         try
         {
             // TryOpenExisting, not OpenExisting. "Nobody has created it" is the ORDINARY answer here —
-            // most Blooms run on a machine with no Doctor installed — and OpenExisting reports that by
+            // most Blooms run with no Doctor watching — and OpenExisting reports that by
             // throwing WaitHandleCannotBeOpenedException. Using an exception for the expected case is
             // wrong on its own terms, and it is worse than usual given where this is called from:
             // Exists() and TrySignal() both come through here, and Exists() is what Bloom asks on its
@@ -171,12 +170,9 @@ public static class DoctorSignals
     /// listener creates the event and its absence is the answer to a real question; here the caller does not
     /// care who is listening and has nothing useful to do with the answer.
     ///
-    /// **It does NOT keep an announcement for a Doctor that arrives later, and I first wrote that it did.**
-    /// A Windows named event lives only while a handle to it is open, so creating one, setting it and
-    /// disposing the handle - all of which this does - destroys it again on the way out. Announcing to an
-    /// empty room is exactly that: a no-op. Observed, not reasoned: a Bloom announcing itself 9 seconds
-    /// before a Doctor started was never heard, while the same Bloom's later announcement, made once the
-    /// Doctor held the event, arrived at once.
+    /// **It does NOT keep an announcement for a Doctor that arrives later.** A Windows named event lives
+    /// only while a handle to it is open, so creating one, setting it and disposing the handle - all of
+    /// which this does - destroys it again on the way out. Announcing to an empty room is a no-op.
     ///
     /// That is a limitation and not a hole, because "no Doctor is running" is the case Bloom handles by
     /// starting one, which then finds Bloom by its own sweep. What this is for is the other case: a Doctor

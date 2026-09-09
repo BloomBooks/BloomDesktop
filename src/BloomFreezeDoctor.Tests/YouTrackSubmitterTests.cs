@@ -7,13 +7,13 @@ namespace BloomFreezeDoctor.Tests;
 /// <summary>
 /// What a card says about a file the Doctor could not attach.
 ///
-/// Pinned because the obvious wording is subtly false, and was. "Still on the user's machine at …" reads
+/// Pinned because the obvious wording is subtly false. "Still on the user's machine at …" reads
 /// as a permanent fact; the folder is not permanent, so the sentence could be true when the card was filed
 /// and quietly wrong by the time somebody acted on it - which is worse than saying nothing, because it
 /// sends them looking for a file that has gone.
 /// </summary>
 [TestFixture]
-public class WhereTheFileStillIsTests
+public class YouTrackSubmitterTests
 {
     private static QueuedBundle Bundle(DateTimeOffset gatheredAt) =>
         new()
@@ -31,7 +31,7 @@ public class WhereTheFileStillIsTests
         };
 
     [Test]
-    public void It_says_where_the_file_is()
+    public void StillOnTheUsersMachine_NamesFileAndFolder()
     {
         var text = YouTrackSubmitter.StillOnTheUsersMachine(
             Bundle(new DateTimeOffset(2026, 8, 31, 9, 0, 0, TimeSpan.Zero)),
@@ -43,11 +43,10 @@ public class WhereTheFileStillIsTests
     }
 
     [Test]
-    public void It_says_how_long_that_will_stay_true()
+    public void StillOnTheUsersMachine_NamesRetentionDate()
     {
-        // The correction John asked for. Retention runs from when the report was gathered, so a card filed
-        // today about a report gathered today promises roughly a month - and says so, rather than implying
-        // for ever.
+        // Retention runs from when the report was gathered, so a card filed today about a report gathered
+        // today promises roughly a month - and says so, rather than implying for ever.
         var text = YouTrackSubmitter.StillOnTheUsersMachine(
             Bundle(new DateTimeOffset(2026, 8, 31, 9, 0, 0, TimeSpan.Zero)),
             "Log.txt"
@@ -64,7 +63,7 @@ public class WhereTheFileStillIsTests
     }
 
     [Test]
-    public void It_warns_that_volume_can_shorten_that()
+    public void StillOnTheUsersMachine_WarnsThatBundleCapCanShortenRetention()
     {
         // Retention has two limits and only one of them is a date: a bundle also goes when it stops being
         // among the newest MaxBundles. Promising the date alone would be the same kind of wrong, on a

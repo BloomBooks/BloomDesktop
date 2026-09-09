@@ -35,7 +35,7 @@ public class BloomsOwnExceptionTests
         """;
 
     [Test]
-    public void It_finds_what_Bloom_recorded()
+    public void FindIn_RealLogTail_ReturnsRecordedException()
     {
         Assert.That(
             BloomsOwnException.FindIn(RealLogTail),
@@ -44,7 +44,7 @@ public class BloomsOwnExceptionTests
     }
 
     [Test]
-    public void It_stops_at_the_exception_and_does_not_swallow_the_stack()
+    public void FindIn_RealLogTail_ExcludesStackFrames()
     {
         // The stack follows on the next lines and is shown properly elsewhere in the report. A headline
         // carrying it would be unreadable.
@@ -52,7 +52,7 @@ public class BloomsOwnExceptionTests
     }
 
     [Test]
-    public void The_last_one_wins()
+    public void FindIn_SeveralExceptions_ReturnsLast()
     {
         // A session can log several. The one nearest the trouble being reported is the one that matters,
         // and the log tail is in time order.
@@ -69,7 +69,7 @@ public class BloomsOwnExceptionTests
     }
 
     [Test]
-    public void A_log_with_no_exception_yields_nothing()
+    public void FindIn_NoException_ReturnsNull()
     {
         Assert.That(
             BloomsOwnException.FindIn(new[] { "10:56:27 PM\tBookStorage Loading Dom from ..." }),
@@ -79,7 +79,7 @@ public class BloomsOwnExceptionTests
     }
 
     [Test]
-    public void The_marker_with_nothing_after_it_is_not_an_exception()
+    public void FindIn_EmptyMarker_ReturnsNull()
     {
         // Otherwise the report announces that Bloom recorded an exception and then names none, which reads
         // as the tool being broken.
@@ -87,7 +87,7 @@ public class BloomsOwnExceptionTests
     }
 
     [Test]
-    public void A_very_long_message_is_cut_for_the_headline()
+    public void Headline_VeryLongMessage_IsTruncated()
     {
         // Some carry a whole file path or a book's entire name. The full text is in the log below.
         var huge = "    exception = System.Exception: " + new string('x', 500);
@@ -100,11 +100,11 @@ public class BloomsOwnExceptionTests
     }
 
     [Test]
-    public void It_finds_the_reason_a_FailFast_gave()
+    public void FindFailFastReason_RealFailFastEvent_ReturnsMessage()
     {
         // FailFast is the only crash with no dump and nothing in Bloom's log - it runs no managed handlers
-        // at all, by design - so this event text is the sole record of why the process was killed. Leaving
-        // it out of the headlines made failfast the one crash kind whose report never said what went wrong.
+        // at all, by design - so this event text is the sole record of why the process was killed. Without
+        // it, failfast would be the one crash kind whose report never says what went wrong.
         Assert.That(
             BloomsOwnException.FindFailFastReason(new[] { RealFailFastEvent }),
             Is.EqualTo("FreezeSimulator was asked to fail fast")
@@ -112,7 +112,7 @@ public class BloomsOwnExceptionTests
     }
 
     [Test]
-    public void An_ordinary_crash_event_is_not_read_as_a_FailFast()
+    public void FindFailFastReason_UnhandledExceptionEvent_ReturnsNull()
     {
         var unhandled = """
             Application: Bloom.exe
@@ -124,7 +124,7 @@ public class BloomsOwnExceptionTests
     }
 
     [Test]
-    public void A_FailFast_with_no_message_names_none()
+    public void FindFailFastReason_NoMessage_ReturnsNull()
     {
         // Environment.FailFast can be called with no message at all, and announcing an empty reason reads
         // as the tool being broken.

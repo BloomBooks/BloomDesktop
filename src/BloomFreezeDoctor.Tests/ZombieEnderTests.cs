@@ -27,7 +27,7 @@ public class ZombieEnderTests
         };
 
     [Test]
-    public void A_genuine_zombie_is_ended()
+    public void Decide_GenuineZombie_ShouldEnd()
     {
         var decision = ZombieEnder.Decide(AGenuineZombie());
 
@@ -40,7 +40,7 @@ public class ZombieEnderTests
     }
 
     [Test]
-    public void A_frozen_Bloom_is_never_killed()
+    public void Decide_FrozenBloom_ShouldNotEnd()
     {
         // The most important refusal. A frozen Bloom may hold edits that live in the WebView2 DOM and have
         // not yet reached C#; killing it would throw away the user's work. A zombie has no UI, so there is
@@ -54,7 +54,7 @@ public class ZombieEnderTests
     [TestCase(TargetState.Healthy)]
     [TestCase(TargetState.Suspect)]
     [TestCase(TargetState.Exited)]
-    public void Nothing_but_a_zombie_is_ended(TargetState state)
+    public void Decide_NonZombieState_ShouldNotEnd(TargetState state)
     {
         Assert.That(
             ZombieEnder.Decide(AGenuineZombie() with { State = state }).ShouldEnd,
@@ -63,7 +63,7 @@ public class ZombieEnderTests
     }
 
     [Test]
-    public void The_evidence_is_gathered_before_anything_is_killed()
+    public void Decide_ReportNotYetGathered_ShouldNotEnd()
     {
         // Killing first would destroy the only copy of what we came for.
         var decision = ZombieEnder.Decide(AGenuineZombie() with { ReportGathered = false });
@@ -73,7 +73,7 @@ public class ZombieEnderTests
     }
 
     [Test]
-    public void A_slow_shutdown_is_given_time_to_finish_by_itself()
+    public void Decide_WithinGracePeriod_ShouldNotEnd()
     {
         var decision = ZombieEnder.Decide(
             AGenuineZombie() with
@@ -87,7 +87,7 @@ public class ZombieEnderTests
     }
 
     [Test]
-    public void A_Bloom_that_says_it_is_still_saving_is_left_alone()
+    public void Decide_WorkInProgress_ShouldNotEnd()
     {
         // Waiting costs nothing; interrupting a save can cost a book.
         var decision = ZombieEnder.Decide(AGenuineZombie() with { WorkInProgress = true });
@@ -97,7 +97,7 @@ public class ZombieEnderTests
     }
 
     [Test]
-    public void A_debugged_Bloom_is_not_ours_to_end()
+    public void Decide_DebuggerCouldExplainIt_ShouldNotEnd()
     {
         // A developer's paused Bloom looks a great deal like a zombie.
         var decision = ZombieEnder.Decide(AGenuineZombie() with { DebuggerCouldExplainIt = true });
@@ -107,7 +107,7 @@ public class ZombieEnderTests
     }
 
     [Test]
-    public void The_setting_switches_it_off_entirely()
+    public void Decide_DisabledBySetting_ShouldNotEnd()
     {
         var decision = ZombieEnder.Decide(AGenuineZombie() with { DisabledBySetting = true });
 
@@ -116,7 +116,7 @@ public class ZombieEnderTests
     }
 
     [Test]
-    public void Ending_a_process_that_has_already_gone_is_not_a_failure()
+    public void End_ProcessAlreadyGone_AlreadyGone()
     {
         // A pid that no longer exists is the outcome we wanted, however it came about.
         var outcome = ZombieEnder.End(999_999_9, DateTime.Now);
@@ -129,7 +129,7 @@ public class ZombieEnderTests
     }
 
     [Test]
-    public void A_reused_process_id_is_left_alone_rather_than_killed()
+    public void End_ProcessIdReused_AlreadyGoneAndUntouched()
     {
         // The dangerous case, and the reason End takes a start time at all. Windows hands process ids out
         // of a pool, so an id we are holding for a dead Bloom can belong to somebody else by the time we

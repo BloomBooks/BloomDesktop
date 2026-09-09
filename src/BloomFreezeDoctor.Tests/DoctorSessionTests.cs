@@ -7,8 +7,8 @@ namespace BloomFreezeDoctor.Tests;
 /// The session file: the half of the contract that has to outlive the process.
 ///
 /// Shared memory vanishes when the last handle closes, so a Bloom that crashes while no Doctor was watching
-/// leaves nothing behind. These files are what a Doctor installed *after* the fact reads — which is one of
-/// the explicit requirements — so the tests care particularly about what survives and what is kept.
+/// leaves nothing behind. These files are what a Doctor started *after* the fact reads, so the tests care
+/// particularly about what survives and what is kept.
 /// </summary>
 [TestFixture]
 public class DoctorSessionTests
@@ -38,7 +38,7 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void The_shutdown_phase_is_written_as_a_name_not_a_number()
+    public void TryWrite_ShutdownPhase_WrittenAsNameNotNumber()
     {
         // The name is the compatibility surface for THIS file, so it is worth asserting on the bytes
         // rather than only on a round trip: a round trip would keep passing if the phases were renamed,
@@ -65,7 +65,7 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void The_requests_in_flight_survive_the_round_trip()
+    public void TryRead_InFlightRequests_SurviveRoundTrip()
     {
         // The one part of a session that describes the present rather than the run, and the only route by
         // which a report learns about more than one request: the shared page has room for a single line.
@@ -100,7 +100,7 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void A_session_with_nothing_in_flight_says_so_without_a_timestamp()
+    public void TryRead_NothingInFlight_EmptyListAndNoTimestamp()
     {
         // An idle Bloom must compare equal to its own last state, or it rewrites this file every ten
         // seconds for the life of the process. That rests on there being no timestamp when there is no list.
@@ -129,7 +129,7 @@ public class DoctorSessionTests
         };
 
     [Test]
-    public void Whether_Bloom_holds_the_single_instance_token_survives_the_round_trip()
+    public void TryRead_OwnsSingleInstanceToken_SurvivesRoundTrip()
     {
         var holder = Session(5100) with { OwnsSingleInstanceToken = true };
         var bypassed = Session(5101) with { OwnsSingleInstanceToken = false };
@@ -146,7 +146,7 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void A_session_survives_a_round_trip()
+    public void TryRead_WrittenSession_SurvivesRoundTrip()
     {
         Assert.That(DoctorSessionStore.TryWrite(Session(4242), _directory), Is.True);
 
@@ -164,7 +164,7 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void An_unreadable_file_is_absent_rather_than_fatal()
+    public void TryRead_UnreadableFile_NullAndReadAllSkipsIt()
     {
         File.WriteAllText(DoctorSessionStore.PathFor(99, _directory), "{ not json at all");
 
@@ -177,7 +177,7 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void A_schema_we_do_not_understand_is_refused_rather_than_misread()
+    public void TryRead_NewerSchemaVersion_Null()
     {
         // Better to fall back to watching from outside than to build a report on fields we have
         // misinterpreted.
@@ -191,7 +191,7 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void An_exit_record_says_how_far_shutdown_got()
+    public void TryRead_ExitRecord_KeepsShutdownPhase()
     {
         var session = Session(555) with
         {
@@ -216,7 +216,7 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void Bloom_can_record_that_it_already_reported_the_problem_itself()
+    public void TryRead_BloomAlreadyReported_SurvivesRoundTrip()
     {
         // The point of this flag: a user filing a problem report by hand and a Doctor noticing the same
         // trouble is exactly the situation that would otherwise produce two cards about one problem.
@@ -234,13 +234,12 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void Saying_Bloom_already_reported_a_problem_does_not_say_Bloom_has_ended()
+    public void TryRead_BloomAlreadyReported_ExitStaysNull()
     {
-        // This is the shape of a bug Devin caught on the PR. The already-reported note used to be written
-        // *inside* the exit record, so a user who filed a report and then carried on working left a live
-        // Bloom described on disk as finished — which a reader takes as proof of an orderly shutdown, for a
-        // process that may still go on to crash. The two facts are independent and now live in separate
-        // fields.
+        // Guards against writing the already-reported note *inside* the exit record. A user who filed a
+        // report and then carried on working would leave a live Bloom described on disk as finished — which
+        // a reader takes as proof of an orderly shutdown, for a process that may still go on to crash. The
+        // two facts are independent and live in separate fields.
         var session = Session(557) with
         {
             BloomAlreadyReported = true,
@@ -259,7 +258,7 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void An_exit_the_Doctor_forced_is_not_recorded_as_an_orderly_one()
+    public void TryRead_EndedAtDoctorsRequest_SurvivesRoundTrip()
     {
         // Ending a zombie goes through Environment.Exit, which runs the same shutdown path as a clean quit.
         // Without this distinction, a Bloom we had to end would look like one that shut down properly.
@@ -280,9 +279,9 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void Pruning_keeps_an_unexplained_exit_and_discards_an_explained_one()
+    public void Prune_UnexplainedAndExplainedExits_KeepsOnlyUnexplained()
     {
-        // This is the rule that makes "a Doctor installed the day after a crash" work: the file with no
+        // This is the rule that makes "a Doctor started the day after a crash" work: the file with no
         // exit record is the evidence, so it must be the one that survives.
         var explained = Session(1001) with
         {
@@ -309,11 +308,11 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void Only_an_exit_that_was_both_orderly_and_unprompted_is_pruned()
+    public void Prune_HardFailureOrDoctorEndedExit_Kept()
     {
         // Two independent reasons to keep a file, and each has to work on its own — which is the whole
         // reason the record stores the phase and the Doctor's involvement as separate facts. A single
-        // combined flag got this right by accident and could only ever be honestly named for one of them.
+        // combined flag could only ever be honestly named for one of them.
         var orderly = Session(2101) with
         {
             Exit = new DoctorSessionExit
@@ -368,7 +367,7 @@ public class DoctorSessionTests
     }
 
     [Test]
-    public void Pruning_leaves_a_live_Bloom_alone_and_eventually_drops_an_ancient_one()
+    public void Prune_LiveAndAncientSessions_KeepsLiveDropsAncient()
     {
         var live = Session(2001);
         var ancient = Session(2002, DateTimeOffset.UtcNow - TimeSpan.FromDays(30));

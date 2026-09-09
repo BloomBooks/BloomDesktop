@@ -12,7 +12,7 @@ namespace BloomFreezeDoctor.Tests;
 public class CollapsibleSectionsTests
 {
     [Test]
-    public void A_report_with_no_marked_regions_is_returned_untouched()
+    public void RenderForACard_NoMarkedRegions_ReturnsInputUnchanged()
     {
         // Most reports have none, and the transform must be invisible to them - not merely harmless, but
         // byte-for-byte absent, since it runs on every card.
@@ -23,7 +23,7 @@ public class CollapsibleSectionsTests
     }
 
     [Test]
-    public void A_marked_region_becomes_a_collapsed_block_with_its_label_outside()
+    public void RenderForACard_MarkedRegion_BecomesDetailsBlockWithHeading()
     {
         var report =
             "Before.\n"
@@ -52,7 +52,7 @@ public class CollapsibleSectionsTests
     }
 
     [Test]
-    public void Angle_brackets_inside_a_region_are_escaped()
+    public void RenderForACard_AngleBracketsInRegion_AreEscaped()
     {
         // The reason this matters is specific: thread stacks are full of generic types, and inside <pre>
         // an unescaped `List<int>` is read as a tag and silently vanishes - taking the rest of the line
@@ -70,7 +70,7 @@ public class CollapsibleSectionsTests
     }
 
     [Test]
-    public void An_unterminated_region_does_not_swallow_the_rest_of_the_card()
+    public void RenderForACard_UnterminatedRegion_IsClosed()
     {
         // A collector that returned early mid-region would otherwise leave <details> open, and everything
         // after it - including whatever the report concluded - would be inside a collapsed block.

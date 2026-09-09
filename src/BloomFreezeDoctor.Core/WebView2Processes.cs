@@ -27,8 +27,7 @@ public readonly record struct WebView2Child
 /// Reading the port from the child's command line is not a shortcut, it is the only way that works:
 /// Bloom's own HTTP port belongs to http.sys (pid 4) and so never appears against Bloom in the TCP
 /// table, and the port arithmetic differs between Bloom versions — 6.4 and later use
-/// <c>httpPort + 2</c>, while **6.3 hardcodes 9222** (confirmed by talking to a real installed 6.3
-/// during the spike).
+/// <c>httpPort + 2</c>, while **6.3 hardcodes 9222**.
 /// </summary>
 public static class WebView2Processes
 {
@@ -57,8 +56,8 @@ public static class WebView2Processes
     /// Works out which port to talk CDP on for a given Bloom, or null if we cannot tell.
     ///
     /// Attributing the port to the right parent matters as soon as a machine has two Blooms running,
-    /// which on a developer's machine is routine: the spike's first pass reported ports globally and
-    /// would happily have handed the Doctor another Bloom's renderer.
+    /// which on a developer's machine is routine: a port found without regard to its parent may belong to
+    /// another Bloom's renderer.
     /// </summary>
     public static int? FindDebuggingPort(int bloomProcessId)
     {
@@ -143,10 +142,6 @@ public static class WebView2Processes
     }
 
     /// <summary>
-    /// Reads one process's command line. Used to spot headless runs (plan §3.3), which the process
-    /// list alone cannot reveal.
-    /// </summary>
-    /// <summary>
     /// What we have already asked WMI, keyed by process id AND start time.
     ///
     /// The key includes the start time because a process id is reused: keyed on the id alone, a Bloom that
@@ -163,15 +158,14 @@ public static class WebView2Processes
     > _commandLines = new();
 
     /// <summary>
-    /// A process's command line, asked of WMI once and then remembered.
+    /// A process's command line, asked of WMI once and then remembered. Used to spot headless runs, which
+    /// the process list alone cannot reveal.
     ///
-    /// **The caching is not an optimisation, it is the fix for a measured fault.** This query costs
-    /// 1.9-2.7 seconds on an idle machine - measured, repeatedly - and the discovery sweep called it for
-    /// every candidate every five seconds. Under the load of Bloom starting up it is far worse, and the
-    /// sweep's timer fires regardless of whether the last one finished, so the calls pile up on top of each
-    /// other and make WMI slower still. That is why a Bloom sat unadopted for 34, 54, 83 and 110 seconds on
-    /// four separate runs, and the 110-second one cost a crash dump outright: Bloom only asks to be dumped
-    /// if a Doctor is already watching, and it asked before we had noticed it existed.
+    /// **The caching is not an optimisation; it is what lets discovery keep up.** This query costs about
+    /// two seconds on an idle machine and far more while Bloom is starting up. Asked for every candidate on
+    /// every five-second sweep - whose timer fires whether or not the last sweep finished - the calls pile
+    /// up and make WMI slower still, and a Bloom can sit unadopted for a minute or more. That is long enough
+    /// to cost a crash dump outright: Bloom only asks to be dumped if a Doctor is already watching.
     ///
     /// A command line cannot change while a process lives, so asking once is not merely cheaper, it is the
     /// correct number of times to ask.

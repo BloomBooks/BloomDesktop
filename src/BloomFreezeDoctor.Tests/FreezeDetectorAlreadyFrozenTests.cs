@@ -4,12 +4,12 @@ using NUnit.Framework;
 namespace BloomFreezeDoctor.Tests;
 
 /// <summary>
-/// The case the tool has to handle well: somebody installs the Doctor **because** Bloom is already
+/// The case the tool has to handle well: somebody starts the Doctor **because** Bloom is already
 /// frozen. Waiting out a fresh threshold before telling them what they already know would be a poor
 /// showing, and Bloom's published heartbeat means we do not have to.
 /// </summary>
 [TestFixture]
-public class AlreadyFrozenTests
+public class FreezeDetectorAlreadyFrozenTests
 {
     private static TargetObservation FrozenForAges(double atSeconds, double alreadyFrozenSeconds) =>
         new()
@@ -25,7 +25,7 @@ public class AlreadyFrozenTests
         };
 
     [Test]
-    public void Adopting_a_Bloom_that_is_already_frozen_reports_immediately()
+    public void Observe_AlreadyFrozenPastThreshold_ReportsImmediately()
     {
         var detector = new FreezeDetector();
 
@@ -36,7 +36,7 @@ public class AlreadyFrozenTests
         Assert.That(
             verdict.Report,
             Is.EqualTo(ReportReason.Frozen),
-            "a Doctor installed because Bloom is frozen must not make the user wait another minute"
+            "a Doctor started because Bloom is frozen must not make the user wait another minute"
         );
         Assert.That(
             verdict.Explanation,
@@ -46,7 +46,7 @@ public class AlreadyFrozenTests
     }
 
     [Test]
-    public void A_freeze_that_has_not_yet_passed_the_threshold_still_waits()
+    public void Observe_AlreadyUnresponsiveBelowThreshold_NoReport()
     {
         // Backdating must not become "report anything that twitches": ten seconds of staleness is not a
         // freeze, and treating it as one would bury us in noise from ordinary slow moments.
@@ -59,10 +59,11 @@ public class AlreadyFrozenTests
     }
 
     [Test]
-    public void Without_a_published_heartbeat_the_clock_starts_when_we_arrive()
+    public void Observe_NoPublishedHeartbeat_ClockStartsAtFirstLook()
     {
-        // Tier A has no way to know how long a Bloom has been frozen, so it must not pretend: it starts
-        // counting from its first look. This is one of the concrete reasons Tier B is worth having.
+        // Watching from outside has no way to know how long a Bloom has been frozen, so it must not
+        // pretend: it starts counting from its first look. This is one of the concrete reasons Bloom
+        // publishes a heartbeat.
         var detector = new FreezeDetector();
 
         var first = detector.Observe(

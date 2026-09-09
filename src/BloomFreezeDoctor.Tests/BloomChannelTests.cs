@@ -25,7 +25,7 @@ public class BloomChannelTests
         "Developer/Debug",
         Description = "a worktree build, which is where much of our development happens"
     )]
-    public void Channel_comes_out_of_the_path(string exePath, string expected)
+    public void DeriveFromExePath_KnownLayouts_GivesChannel(string exePath, string expected)
     {
         Assert.That(BloomChannel.DeriveFromExePath(exePath), Is.EqualTo(expected));
     }
@@ -35,12 +35,11 @@ public class BloomChannelTests
         $@"C:\Users\jt\AppData\Local\{processName}\current\{processName}.exe";
 
     [Test]
-    public void Every_installed_channel_has_a_process_name_the_Doctor_sweeps_for()
+    public void InstalledBloomProcessNames_CoverEveryChannelAndAgreeWithDeriveFromExePath()
     {
         // The list is what the Doctor searches for to find Blooms nobody told it about, and what "Restart
         // Bloom" searches to relaunch one. A channel missing from it is a channel the Doctor never watches
         // at all - which is silent, because there is nothing to see when a tool correctly does nothing.
-        // ReleaseInternal was missing exactly that way.
         //
         // Pinned by value, so adding a channel is a deliberate edit here as well. The right-hand side is
         // what Bloom's own ApplicationUpdateSupport.ChannelName reports for that install.
@@ -70,7 +69,7 @@ public class BloomChannelTests
     }
 
     [Test]
-    public void No_swept_channel_is_mistaken_for_a_developer_build()
+    public void IsDeveloperChannel_InstalledBloomProcessNames_False()
     {
         // Every name here is an INSTALLED Bloom, so none of them may look like a developer build: that
         // would silently stop the Doctor filing from a real user's machine.
@@ -86,7 +85,7 @@ public class BloomChannelTests
     }
 
     [Test]
-    public void A_developer_build_is_recognised_from_its_exe_not_only_its_dll()
+    public void DeriveFromExePath_DeveloperExeOrDll_DeveloperDebug()
     {
         // The trap this guards: Bloom's own ChannelName tests for a path ending in "Bloom.dll",
         // because it asks about its entry assembly. From outside we see the process, whose main
@@ -108,16 +107,16 @@ public class BloomChannelTests
     [TestCase("Beta", false)]
     [TestCase("Developer/Debug", true)]
     [TestCase("Developer/Release", true)]
-    public void Developer_channels_are_flagged(string channel, bool expected)
+    public void IsDeveloperChannel_KnownChannels_FlagsDeveloperOnes(string channel, bool expected)
     {
         Assert.That(BloomChannel.IsDeveloperChannel(channel), Is.EqualTo(expected));
     }
 
     [Test]
-    public void Headless_console_verb_runs_are_recognised()
+    public void IsHeadlessRun_ConsoleVerb_True()
     {
         // These legitimately have no window, so without this check every one of them would look
-        // like the zombie of plan section 3.6.
+        // like a zombie.
         Assert.That(
             BloomChannel.IsHeadlessRun(@"""C:\...\Bloom.exe"" hydrate --bookpath foo"),
             Is.True
@@ -126,14 +125,14 @@ public class BloomChannelTests
     }
 
     [Test]
-    public void An_automation_run_is_not_treated_as_headless()
+    public void IsHeadlessRun_AutomationFlag_False()
     {
         // `--automation` says nothing about whether there is a window: in Bloom it means multi-instance,
         // print the ports for the launcher, and show them in the title. It shows the ordinary window.
         //
-        // This is pinned because getting it wrong was silent and expensive: `go.sh` passes the flag on
-        // EVERY launch, so calling it headless made the Doctor ignore the one Bloom a developer watches
-        // their own changes in, and nothing anywhere looked broken.
+        // This is pinned because getting it wrong is silent and expensive: `go.sh` passes the flag on
+        // EVERY launch, so calling it headless would make the Doctor ignore the one Bloom a developer
+        // watches their own changes in, and nothing anywhere would look broken.
         Assert.That(
             BloomChannel.IsHeadlessRun(
                 @"""C:\...\Bloom.dll"" --automation --label /x/ --vite-port 50928"
@@ -143,10 +142,10 @@ public class BloomChannelTests
     }
 
     [Test]
-    public void A_go_sh_Bloom_is_watched_but_still_never_files()
+    public void IsHeadlessRun_GoShBloom_FalseButNeverFile()
     {
-        // The pair of facts that has to hold together after `--automation` stopped meaning headless:
-        // we watch such a Bloom (previous test), and it still cannot reach the tracker. The guard that
+        // The pair of facts that has to hold together: we watch such a Bloom (previous test), and it
+        // still cannot reach the tracker. The guard that
         // does the second job is the CHANNEL - a source build lives in output/Debug - so it holds no
         // matter what the command line says.
         var facts = new BloomTargetFacts
@@ -170,7 +169,7 @@ public class BloomChannelTests
     }
 
     [Test]
-    public void An_ordinary_launch_is_not_mistaken_for_a_headless_run()
+    public void IsHeadlessRun_OrdinaryLaunch_False()
     {
         Assert.That(
             BloomChannel.IsHeadlessRun(@"""C:\Users\jt\AppData\Local\Bloom\current\Bloom.exe"" "),
@@ -179,7 +178,7 @@ public class BloomChannelTests
     }
 
     [Test]
-    public void A_collection_path_containing_a_verb_word_does_not_silence_a_real_Bloom()
+    public void IsHeadlessRun_VerbWordInsideCollectionPath_False()
     {
         // "upload" as a whole argument means the console verb; inside a path it means nothing. Get
         // this wrong and a user with an unlucky folder name gets no reports at all.
@@ -192,23 +191,22 @@ public class BloomChannelTests
     }
 
     [Test]
-    public void A_path_we_could_not_read_is_not_called_Release()
+    public void DeriveFromExePath_EmptyPath_Unknown()
     {
-        // Seen in a real log as "watching Bloom 25736 (Release)" for processes that were nothing of the
-        // kind. Reading the executable's path can fail - a process still starting, or one we lack rights
-        // to - and the answer then fell through to Release, which is a statement rather than an absence:
-        // it goes on the card, into the Doctor's log, and into the fingerprint, where it merges an
-        // unidentified Bloom with genuine Release reports.
+        // Reading the executable's path can fail - a process still starting, or one we lack rights to -
+        // and falling through to Release would be a statement rather than an absence: it goes on the
+        // card, into the Doctor's log, and into the fingerprint, where it merges an unidentified Bloom
+        // with genuine Release reports.
         Assert.That(BloomChannel.DeriveFromExePath(""), Is.EqualTo("Unknown"));
         Assert.That(BloomChannel.DeriveFromExePath(null!), Is.EqualTo("Unknown"));
         Assert.That(BloomChannel.DeriveFromExePath("   "), Is.EqualTo("Unknown"));
     }
 
     [Test]
-    public void A_path_we_can_read_but_do_not_recognise_is_still_Release()
+    public void DeriveFromExePath_UnrecognisedPath_Release()
     {
-        // The other half, and the reason only the empty case changed: an ordinary installation is exactly
-        // a path this method does not otherwise match, and Release is the right answer for it.
+        // The other half: an ordinary installation is exactly a path this method does not otherwise
+        // match, and Release is the right answer for it.
         Assert.That(
             BloomChannel.DeriveFromExePath(@"C:\Program Files\Bloom\Bloom.exe"),
             Is.EqualTo("Release")

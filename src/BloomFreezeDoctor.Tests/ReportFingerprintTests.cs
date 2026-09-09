@@ -7,20 +7,17 @@ namespace BloomFreezeDoctor.Tests;
 /// <summary>
 /// That two different crashes get two different fingerprints, and so two different cards.
 ///
-/// The bug this pins was invisible from inside the code and obvious from the data: three separate
-/// simulated crashes on one afternoon, with three different processes, all produced fingerprint
-/// 1ec8760ad8a5 and piled onto one card as "This happened again". The fingerprint's only distinguishing
-/// ingredient was the top of the UI thread's stack - exactly right for a freeze, where that stack IS the
-/// problem, and worthless for a crash, where the fault is on another thread and the UI thread is sitting
-/// in its message pump looking identical every time.
+/// A fingerprint whose only distinguishing ingredient is the top of the UI thread's stack is exactly right
+/// for a freeze, where that stack IS the problem, and worthless for a crash, where the fault is on another
+/// thread and the UI thread is sitting in its message pump looking identical every time: every crash on a
+/// build would pile onto one card as "This happened again".
 /// </summary>
 [TestFixture]
-public class CrashFingerprintTests
+public class ReportFingerprintTests
 {
     /// <summary>
     /// A crash report's context. The UI-thread stack is deliberately IDENTICAL between the two crashes
-    /// below - that is the whole point: it is what the old fingerprint hashed, and it cannot tell them
-    /// apart.
+    /// below - that is the whole point: a fingerprint built from it alone cannot tell them apart.
     /// </summary>
     private static GatherContext CrashContext() =>
         new()
@@ -56,7 +53,7 @@ public class CrashFingerprintTests
     };
 
     [Test]
-    public void Two_unrelated_crashes_get_two_fingerprints()
+    public void For_TwoCrashesWithDifferentIdentities_DifferentFingerprints()
     {
         var context = CrashContext();
 
@@ -79,11 +76,11 @@ public class CrashFingerprintTests
     }
 
     [Test]
-    public void Without_a_crash_identity_they_collapse_which_is_the_bug()
+    public void For_TwoCrashesWithoutIdentity_SameFingerprint()
     {
         // The sanity check that gives the test above its meaning. Same two contexts, same stacks, no crash
-        // identity supplied - and the fingerprints are equal. This is the old behaviour, kept here as an
-        // executable record of why the identity is needed rather than a claim in a comment.
+        // identity supplied - and the fingerprints are equal. An executable record of why the identity is
+        // needed rather than a claim in a comment.
         var context = CrashContext();
 
         Assert.That(
@@ -94,7 +91,7 @@ public class CrashFingerprintTests
     }
 
     [Test]
-    public void The_same_crash_twice_still_gets_one_fingerprint()
+    public void For_SameCrashTwice_SameFingerprint()
     {
         // Deduplication still has to work, or we have traded one bug for its opposite: a machine crashing
         // the same way twenty times should open one card, not twenty.
@@ -108,10 +105,10 @@ public class CrashFingerprintTests
     }
 
     [Test]
-    public void A_freeze_is_fingerprinted_exactly_as_before()
+    public void For_FreezesWithDifferentUiStacks_DifferentFingerprints()
     {
         // Freezes must be untouched by this: their identity is the UI thread's stack, and passing no
-        // identity has to give the same answer it always did.
+        // identity must still tell them apart by it.
         var frozen = CrashContext() with
         {
             Verdict = new DetectorVerdict

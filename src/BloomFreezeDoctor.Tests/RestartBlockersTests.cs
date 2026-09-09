@@ -17,7 +17,7 @@ public class RestartBlockersTests
         new(pid, state, holdsToken);
 
     [Test]
-    public void The_Bloom_holding_the_token_is_in_the_way()
+    public void IsInTheWay_HoldsToken_True()
     {
         Assert.That(
             RestartBlockers.IsInTheWay(Bloom(100, TargetState.Frozen, holdsToken: true)),
@@ -26,12 +26,11 @@ public class RestartBlockersTests
     }
 
     [Test]
-    public void A_Bloom_that_holds_no_token_is_not_in_the_way()
+    public void IsInTheWay_HoldsNoToken_False()
     {
-        // The case that made this class necessary: an --automation run bypasses the token, so a developer
-        // with two worktrees open has a live Bloom that blocks nothing. Until the Doctor started watching
-        // those at all it could not arise; now it can, and asking to kill a healthy Bloom would be a
-        // regression the user would meet before any freeze did.
+        // The case that makes this class necessary: an --automation run bypasses the token, so a developer
+        // with two worktrees open has a live Bloom that blocks nothing, and asking to kill a healthy Bloom
+        // would be a regression the user would meet before any freeze did.
         Assert.That(
             RestartBlockers.IsInTheWay(Bloom(101, TargetState.Healthy, holdsToken: false)),
             Is.False
@@ -39,7 +38,7 @@ public class RestartBlockersTests
     }
 
     [Test]
-    public void A_Bloom_that_did_not_say_is_treated_as_being_in_the_way()
+    public void IsInTheWay_TokenUnknown_True()
     {
         // The asymmetry is the whole design. A Bloom that cannot tell us is one that wrote no session file
         // - it predates the Doctor entirely, or died before it got that far - and such a Bloom holds the
@@ -52,7 +51,7 @@ public class RestartBlockersTests
     }
 
     [Test]
-    public void Only_the_blockers_are_kept()
+    public void InTheWay_MixedBlooms_KeepsOnlyBlockers()
     {
         var watched = new[]
         {
@@ -74,13 +73,10 @@ public class RestartBlockersTests
     [TestCase(TargetState.Healthy, "running normally")]
     [TestCase(TargetState.Frozen, "frozen")]
     [TestCase(TargetState.Zombie, "running with no window")]
-    public void A_blocker_is_described_by_what_it_is_actually_doing(
-        TargetState state,
-        string expected
-    )
+    public void Describe_EachState_NamesWhatItIsDoing(TargetState state, string expected)
     {
-        // The old wording called every blocker "frozen". Telling somebody their working Bloom is frozen is
-        // how they stop believing the rest of what the Doctor says.
+        // Calling every blocker "frozen" would be wrong for most of them, and telling somebody their
+        // working Bloom is frozen is how they stop believing the rest of what the Doctor says.
         var described = RestartBlockers.Describe(Bloom(55, state, holdsToken: true));
 
         Assert.That(described, Does.Contain("process 55"));
@@ -88,7 +84,7 @@ public class RestartBlockersTests
     }
 
     [Test]
-    public void A_Bloom_we_are_only_guessing_about_says_so()
+    public void Describe_TokenUnknown_SaysSo()
     {
         var guessed = RestartBlockers.Describe(Bloom(56, TargetState.Frozen, holdsToken: null));
         var known = RestartBlockers.Describe(Bloom(57, TargetState.Frozen, holdsToken: true));

@@ -12,18 +12,14 @@ namespace BloomTests.FreezeDoctor
     /// (src/BloomFreezeDoctor, in this repository): the layout it expects, and the health it
     /// publishes through it.
     ///
-    /// **What this fixture is for changed when the protocol became a package.** It used to guard against
-    /// two hand-maintained copies of the same file drifting apart. There is only one definition now — the
-    /// `BloomFreezeDoctor.Protocol` package — so drift in that sense is no longer possible.
+    /// It pins the layout Bloom *expects*, by value. The Doctor's own tests pin the same layout, so a
+    /// change to the shared `BloomFreezeDoctor.Protocol` project that moved an offset or the schema version
+    /// has to be made deliberately on both sides. Silently, Bloom would compile, run, and publish its health
+    /// to offsets a Doctor of another vintage no longer reads, and the reports would be plausible nonsense
+    /// that nobody could tell from real ones.
     ///
-    /// It still earns its place, for a different reason: it pins the layout Bloom *expects* against the
-    /// layout the referenced package version actually has. A package upgrade that changed an offset or
-    /// the schema version would otherwise be silent — Bloom would compile, run, and publish its health to
-    /// offsets the Doctor no longer reads, and the reports would be plausible nonsense that nobody could
-    /// tell from real ones. Asserting the numbers BY VALUE here turns that into a failed build.
-    ///
-    /// So: if this fails after a version bump, the layout changed, and Bloom's side needs looking at
-    /// rather than the numbers here being updated to match.
+    /// So: if this fails, the layout changed, and Bloom's side needs looking at rather than the numbers
+    /// here being updated to match.
     /// </summary>
     [TestFixture]
     public class FreezeDoctorProtocolTests
@@ -32,12 +28,12 @@ namespace BloomTests.FreezeDoctor
         private const int TestProcessId = 999_002;
 
         [Test]
-        public void ShutdownPhasesAreWhatBloomWasBuiltAgainst()
+        public void BloomShutdownPhase_NamesAndNumbers_MatchPinnedValues()
         {
             // Bloom's own copy of the pin in the Doctor's DoctorChannelTests, for the same reason the
-            // layout above is pinned twice: a package upgrade that renumbered these would otherwise make
-            // Bloom write phases the Doctor reads as something else, silently. The NUMBER is what goes
-            // into the shared page; the NAME is what goes into the session file. Neither may change.
+            // layout above is pinned twice: renumbering these would otherwise make Bloom write phases a
+            // Doctor of another vintage reads as something else, silently. The NUMBER is what goes into
+            // the shared page; the NAME is what goes into the session file. Neither may change.
             var expected = new[]
             {
                 "None=0",
@@ -54,10 +50,10 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void LayoutIsWhatBloomWasBuiltAgainst()
+        public void DoctorChannelLayout_MatchesPinnedValues()
         {
-            // If you are here because this failed, a package upgrade changed the layout. Do NOT just update
-            // these numbers to match: check what moved and why. Adding a field should never reach this test
+            // If you are here because this failed, the layout changed. Do NOT just update these numbers to
+            // match: check what moved and why. Adding a field should never reach this test
             // (see the next one); anything that MOVES a field is a SchemaVersion bump, and Bloom's side of
             // the protocol needs looking at before the numbers here are touched.
             Assert.That(DoctorChannelLayout.SchemaVersion, Is.EqualTo(1), "schema version");
@@ -74,7 +70,7 @@ namespace BloomTests.FreezeDoctor
             );
 
             // Every field, by value, from the layout's own published description of itself. This is what
-            // turns "the package quietly moved a field" from a silent wrong-offset bug into a failed build.
+            // turns "a field quietly moved" from a silent wrong-offset bug into a failed build.
             var expected = new[]
             {
                 "SchemaVersion@0+4",
@@ -103,7 +99,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void AddingAFieldToTheProtocolDoesNotBreakBloom()
+        public void DoctorChannelLayout_PayloadBytes_EndsAtLastFieldAndNeverShrinks()
         {
             // The counterpart to the test above, and the reason it can be strict without being a nuisance.
             //
@@ -114,7 +110,7 @@ namespace BloomTests.FreezeDoctor
             //
             // So what is pinned here is not a number that may not change; it is the *invariant* that makes
             // growth safe. If this fails, the layout has been rearranged rather than extended, and every
-            // Doctor already installed is reading Bloom's page wrongly.
+            // Doctor already in the field is reading Bloom's page wrongly.
             var end = DoctorChannelLayout.Fields.Max(f => f.Offset + f.Size);
 
             Assert.That(
@@ -138,7 +134,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void NestedLongOperationsDoNotEndEachOthersPatience()
+        public void LongOperation_Nested_InnerExitKeepsOuterDepth()
         {
             // The failure this guards against is silent and lasts the whole session. The Doctor waits five
             // minutes instead of one while a long operation runs; if an inner operation's exit cleared the
@@ -181,12 +177,12 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void OverlappingLongOperationsDoNotLeaveFinishedWorkOnDisplay()
+        public void LongOperation_Overlapping_FinishedWorkNotLeftOnDisplay()
         {
             // Scopes do not always nest. A starts, B starts, A finishes, B finishes - and B's notion of
             // "what was showing when I started" is A, which by then has been over for some time. Putting
-            // that back made the card name work that had already completed, which is exactly the class of
-            // wrongness the activity string exists to avoid.
+            // that back would make the card name work that had already completed, which is exactly the
+            // class of wrongness the activity string exists to avoid.
             Assert.That(
                 FreezeDoctorSupport.LongOperationDepth,
                 Is.Zero,
@@ -218,9 +214,9 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void ALongOperationGivesBackTheActivityItInterrupted()
+        public void LongOperation_Disposed_RestoresInterruptedActivity()
         {
-            // The other direction, and the reason the fix is not simply "clear it when the last scope
+            // The other direction, and the reason the rule is not simply "clear it when the last scope
             // closes": recording a video says what it is doing, and only then opens a scope to merge the
             // result. That standing description has to survive the scope it contains.
             FreezeDoctorSupport.SetActivity("recording a video");
@@ -244,7 +240,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void DisposingALongOperationTwiceDoesNotStealSomebodyElsesPatience()
+        public void LongOperation_DisposedTwice_DecrementsDepthOnce()
         {
             // A double Dispose is easy to arrange by accident, and an unguarded decrement would drive the
             // count negative — after which the NEXT operation's exit would not clear the flag, leaving the
@@ -265,7 +261,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void ALongOperationEndsEvenWhenItThrows()
+        public void LongOperation_BodyThrows_DepthReturnsToZero()
         {
             // `using` is the whole reason the API is a scope rather than paired calls: an exception on a
             // publish path must not leave the Doctor permanently patient.
@@ -285,7 +281,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void TheNativeDebuggerCheckActuallyResolves()
+        public void IsDebuggerPresent_PInvoke_Resolves()
         {
             // Bloom's debugger check swallows exceptions, because a diagnostic must never be able to break
             // the watchdog thread. That means a wrong DllImport signature would not fail loudly — it would
@@ -310,10 +306,10 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void ADebuggerThatHasComeAndGoneIsStillVisibleToTheDoctor()
+        public void SetDebuggerAttached_AttachedThenDetached_EverAttachedAndDetachAgePublished()
         {
-            // Bloom's end of the sticky flag. The Doctor's repo tests the mechanism; what is worth checking
-            // here is that Bloom is publishing through the call that remembers, so that a debugger which
+            // Bloom's end of the sticky flag. The Doctor's own tests cover the mechanism; what is worth
+            // checking here is that Bloom is publishing through the call that remembers, so that a debugger which
             // attached and left does not leave a heartbeat gap looking like a genuine freeze.
             using (var writer = new DoctorChannelWriter(TestProcessId))
             {
@@ -342,7 +338,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void WhatBloomPublishesSaysHowMuchOfItIsReal()
+        public void DoctorChannelWriter_NewChannel_PublishesPayloadBytes()
         {
             // A Doctor newer than this Bloom needs to be able to tell a field Bloom never wrote from a real
             // zero. That only works if Bloom actually records its extent, so it is worth asserting that it
@@ -365,7 +361,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void WhatBloomWritesCanBeReadBack()
+        public void DoctorChannelWriter_Publishes_ReaderReadsBack()
         {
             using (var writer = new DoctorChannelWriter(TestProcessId))
             {
@@ -392,7 +388,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void AnUntickedHeartbeatReadsAsInfinitelyOldRatherThanFresh()
+        public void UiHeartbeatAge_NeverTicked_MaxValue()
         {
             // The dangerous direction: if an unticked heartbeat read as "just now", a Bloom that wedged
             // during startup would look healthy for ever.
@@ -407,7 +403,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void PublishingNeverThrowsEvenWhenTheChannelCouldNotBeCreated()
+        public void DoctorChannelWriter_ChannelNotCreated_PublishingDoesNotThrow()
         {
             // Two writers for one process id: the second cannot create the section. Bloom must not care,
             // because publishing diagnostics is never worth failing a startup over.
@@ -429,14 +425,11 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void WhatBloomIsDoingIsComposedFromBothSourcesRatherThanEitherWinning()
+        public void Compose_StatedAndRequest_BothContribute()
         {
-            // Regression test for a bug introduced three times, in three different ways, which is what earns
-            // it a test rather than a comment. Every version got one of the two directions wrong: the refresh
-            // overwrote what Bloom stated ("starting up" survived less than a second); then "starting up" went
-            // straight into the shared page so there was nothing for the refresh to carry forward; then it was
-            // carried forward for ever and described an idle Bloom hours later. The two failures are opposite,
-            // so both directions are pinned here.
+            // Both directions are pinned because each is an easy mistake, and they are opposite: a refresh
+            // that overwrites what Bloom stated loses "starting up" within a second, while one that carries
+            // it forward for ever describes an idle Bloom hours later.
             const string startup = FreezeDoctorSupport.StartupActivity;
 
             Assert.Multiple(() =>
@@ -486,10 +479,11 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void SetActivityIsWhatTheComposerReads()
+        public void SetActivity_ThenComposeCurrentActivity_ContainsActivity()
         {
-            // The chain the second version of the bug broke: Start() wrote to the shared page directly, so
-            // SetActivity had never recorded anything and the composer had nothing to carry forward.
+            // Guards the chain from SetActivity to the composer. If Start() wrote to the shared page
+            // directly, SetActivity would have recorded nothing and the composer would have nothing to
+            // carry forward.
             FreezeDoctorSupport.SetActivity("Saving Foo.htm");
             try
             {
@@ -507,7 +501,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void FreezeSimulatorIsInertOnReleaseChannels()
+        public void ArmIfRequested_ReleaseOrBetaOrUnknownChannel_False()
         {
             // The safeguard that matters: this class deliberately breaks Bloom, so a stray environment
             // variable on a user's machine must not be able to set it off. Arming it for a Release channel
@@ -536,7 +530,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void FreezeSimulatorArmsOnAlphaInternalAndDeveloperChannels()
+        public void ArmIfRequested_AlphaInternalOrDeveloperChannel_True()
         {
             // Alpha and the internal channels are allowed on purpose, because they are where the Doctor is
             // actually exercised: BetaInternal carries the bulk of in-house testing of a new version, and
@@ -579,14 +573,13 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void AMisspeltSimulationKindArmsNothingAtAll()
+        public void ArmIfRequested_MisspeltKind_False()
         {
             // The failure this guards against is worse than the typo that causes it. An unrecognised kind
-            // used to arm no simulation - the switch merely logged "not a kind it knows about" 45 seconds
-            // later - while still recording in the session file that this Bloom was a deliberate
-            // rehearsal. The Doctor reads that marker and declines to file a card, so one misspelt
-            // environment variable silently turned off freeze reporting for the whole session, on a Bloom
-            // that was behaving perfectly normally and might genuinely freeze.
+            // arms no simulation; if it were still recorded in the session file as a deliberate rehearsal,
+            // the Doctor would read that marker and decline to file a card, so one misspelt environment
+            // variable would silently turn off freeze reporting for the whole session, on a Bloom that was
+            // behaving perfectly normally and might genuinely freeze.
             var saved = Environment.GetEnvironmentVariable(FreezeSimulator.EnvironmentVariable);
             try
             {
@@ -620,7 +613,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void EverySimulationKindTheSwitchHandlesIsAlsoAcceptedByTheGuard()
+        public void ArmIfRequested_EveryKnownKind_True()
         {
             // The guard and the switch are two lists that must not drift apart: a kind the switch knows
             // but the guard rejects is a simulation nobody can run, and the reverse is the silent-marker
@@ -650,7 +643,7 @@ namespace BloomTests.FreezeDoctor
         }
 
         [Test]
-        public void FreezeSimulatorStaysInertWithNoEnvironmentVariableEvenOnAlpha()
+        public void ArmIfRequested_NoEnvironmentVariableOnAlpha_False()
         {
             // Belt and braces: the channel is a gate, not a trigger. Nobody on Alpha gets a broken Bloom
             // unless they asked for one.

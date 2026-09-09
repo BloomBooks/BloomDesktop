@@ -39,8 +39,8 @@ public sealed class WebViewCollector : IEvidenceCollector
     /// <inheritdoc />
     ///
     /// <remarks>
-    /// **Only for a process that was still alive**, which is the same guard ManagedStacksCollector,
-    /// ProcessEvidenceCollector and WaitChainCollector already carry - this one was the odd one out.
+    /// **Only for a process that was still alive**, the same guard ManagedStacksCollector,
+    /// ProcessEvidenceCollector and WaitChainCollector carry.
     ///
     /// A port number outlives the process that owned it. Connect to one after Bloom has gone and the
     /// answers come from whatever holds that port NOW: on a developer machine, quite possibly their own

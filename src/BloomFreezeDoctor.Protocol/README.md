@@ -9,8 +9,7 @@ running. Both live in this repository: Bloom's side is `src/BloomExe/FreezeDocto
 defines the kernel object naming scheme and the signalling handshakes the two use to ask each other
 for something.
 
-It is a plain project both sides reference, not a published package. It exists so that one wire
-format has one definition instead of two hand-maintained copies. It contains:
+It is a plain project both sides reference, so that one wire format has one definition. It contains:
 
 - **`DoctorChannel`** — a small fixed-layout page in shared memory, written by Bloom and read by the
   Doctor, carrying a UI-thread heartbeat and what Bloom believes it is doing. Shared memory rather
@@ -22,7 +21,7 @@ format has one definition instead of two hand-maintained copies. It contains:
 - **`DoctorSignals`** — the named events the two use to reach each other: the Doctor announcing that
   it is watching, asking a stuck Bloom to exit, and the handshake around dumping a dying one.
 
-Both sides pin the layout by value in a test. There is only one definition of it now, so the two
+Both sides pin the layout by value in a test. There is only one definition of it, so the two
 cannot hold copies that disagree — but they can still get out of step over a *version*, and the
 pinned tests are what turn that into a failed build rather than a stream of plausible wrong reports.
 

@@ -6,7 +6,7 @@ namespace BloomFreezeDoctor.Gathering;
 
 /// <summary>
 /// Works out a stable identifier for "this particular problem", so that the same freeze happening
-/// twenty times becomes one card with twenty occurrences rather than twenty cards (plan §5.2).
+/// twenty times becomes one card with twenty occurrences rather than twenty cards.
 ///
 /// The hard part is choosing what to hash. Too much and every occurrence looks unique — thread ids,
 /// timings and memory addresses all differ every time. Too little and unrelated freezes collapse
@@ -40,8 +40,7 @@ public static class ReportFingerprint
 
         // A crash brings its own identity and the UI thread's stack is not it: the fault was on another
         // thread, so those frames are the message pump and are the same for every crash on this build.
-        // Hashing them made every unexplained crash on a build one card - measured, three unrelated
-        // simulated crashes all fingerprinted 1ec8760ad8a5. See DetectorVerdict.IdentifyingDetail.
+        // Hashing them would make every crash on a build one card. See DetectorVerdict.IdentifyingDetail.
         var identity = identifyingDetail ?? context.Verdict.IdentifyingDetail;
         if (!string.IsNullOrEmpty(identity))
         {
@@ -73,13 +72,12 @@ public static class ReportFingerprint
                 inUiSection = true;
                 continue;
             }
-            // End of the UI thread's frames. Two ways it ends, and only one of them was handled: the next
-            // `###` heading, OR a collapse marker, which is what actually follows the UI thread in the
-            // rendered stacks. Missing the marker let the loop keep going into the next thread, whose
-            // frames are indented identically - so whenever the UI thread yielded fewer than five usable
-            // frames (a shallow stack, or frames filtered as native or stubs), the hash was topped up from
-            // whichever other thread happened to sort first. That varies between runs, so the same freeze
-            // fingerprinted differently and the deduplication this exists for silently stopped working.
+            // End of the UI thread's frames: the next `###` heading, OR a collapse marker, which is what
+            // actually follows the UI thread in the rendered stacks. Both are needed. Without the marker
+            // the loop would run on into the next thread, whose frames are indented identically, and
+            // whenever the UI thread yields fewer than five usable frames the hash would be topped up from
+            // whichever other thread sorts first - which varies between runs, so the same freeze would
+            // fingerprint differently.
             if (
                 inUiSection
                 && (

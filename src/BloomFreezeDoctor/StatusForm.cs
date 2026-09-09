@@ -4,12 +4,12 @@ using SIL.IO;
 namespace BloomFreezeDoctor;
 
 /// <summary>
-/// The small status window the card asked for: what Bloom is doing, whether anything is waiting to be
-/// sent, and a way to restart Bloom after a report.
+/// The small status window: what Bloom is doing, whether anything is waiting to be sent, and a way to
+/// restart Bloom after a report.
 ///
-/// Deliberately plain. It is English-only (decision D1), it minimises to the tray rather than to the task
+/// Deliberately plain. It is English-only, it minimises to the tray rather than to the task
 /// bar so it can sit out of the way all day, and when Bloom launches it, it starts minimised — a window
-/// that appeared every time you started Bloom would get the Doctor uninstalled inside a week.
+/// that appeared every time you started Bloom would quickly become annoying.
 ///
 /// Its one real requirement is that it stay responsive while the Doctor works, so it does nothing here
 /// but render what the supervisor publishes.
@@ -85,9 +85,9 @@ public sealed class StatusForm : Form
 
         // The Doctor refuses to file on a developer build, on an automation run, and when the failure was
         // deliberately simulated. All three are right by default; all three are ones a developer sometimes
-        // wants to override for the report in front of them. Before this the only way was "Report now",
-        // which gathers a WHOLE NEW report - impossible once that Bloom has died, and about a different
-        // moment even when it has not.
+        // wants to override for the report in front of them. "Report now" is not a substitute: it gathers
+        // a WHOLE NEW report, impossible once that Bloom has died, and about a different moment even when
+        // it has not.
         _sendItAnyway.Text = "Send it anyway";
         _sendItAnyway.AutoSize = true;
         _sendItAnyway.Visible = false;
@@ -98,7 +98,7 @@ public sealed class StatusForm : Form
         _openCard.Visible = false;
         _openCard.Click += (_, _) => OpenFiledCard();
 
-        // Both in a strip, so adding one did not have to disturb the grid or move "Report now" off the
+        // In a strip, so adding a button does not disturb the grid or move "Report now" off the
         // right-hand side.
         var leftButtons = new FlowLayoutPanel
         {
@@ -126,7 +126,7 @@ public sealed class StatusForm : Form
 
         // Bloom's own icon rather than a system one. This icon lives in the notification area, where it
         // is the ONLY thing telling somebody the Doctor is running - and a generic blue "i" says nothing
-        // about Bloom, so it gets overlooked among every other tray icon (it was, first time out).
+        // about Bloom, so it gets overlooked among every other tray icon.
         // Reading it back off our own exe, which carries it via <ApplicationIcon>, means the tray icon
         // and the exe's icon cannot drift apart. Extracted twice rather than shared, so that whichever
         // of the form and the tray is torn down first cannot leave the other holding a disposed handle.
@@ -161,10 +161,8 @@ public sealed class StatusForm : Form
         _supervisor.ReportSavedWithoutFiling += OnReportSavedWithoutFiling;
         _supervisor.ZombieEnded += OnZombieEnded;
         // Clicking the balloon is the obvious thing to do when it has just told you about a report, so it
-        // opens whichever of the two that report was. It used to call OpenSavedReportFolder
-        // unconditionally, and filing a report deliberately clears that folder - so clicking the balloon
-        // that announced a filing did nothing whatsoever, which is the least helpful possible response to
-        // somebody acting on a notification.
+        // opens whichever of the two that report was. Filing a report clears the saved folder, so opening
+        // the folder unconditionally would do nothing after a filing.
         _tray.BalloonTipClicked += (_, _) => OpenWhateverTheLastReportWas();
 
         if (startMinimised)
@@ -183,7 +181,7 @@ public sealed class StatusForm : Form
     /// <summary>
     /// Keeps the window genuinely invisible until the Doctor has something to say.
     ///
-    /// This is the whole of "no UI until it does something". Starting minimised was not enough: a
+    /// This is the whole of "no UI until it does something". Starting minimised is not enough: a
     /// minimised window still exists, still owns a taskbar entry for a moment as it is created, and can
     /// flash on screen before it minimises. <c>Application.Run(form)</c> shows its form unconditionally,
     /// so refusing here is the only reliable way to say no - WinForms routes every path that would make a
@@ -247,8 +245,8 @@ public sealed class StatusForm : Form
     ///
     /// It must also record that the window is no longer on screen, and that is easy to miss because
     /// minimising does not change <c>Visible</c> and so never reaches <c>SetVisibleCore</c>. Missing it
-    /// left <c>_windowIsShowing</c> true for ever, which pins <c>MustNotQuitYet</c> true and makes the
-    /// Doctor unable to exit even once every Bloom has gone - while to the user, minimise and close look
+    /// would leave <c>_windowIsShowing</c> true for ever, pinning <c>MustNotQuitYet</c> true so the
+    /// Doctor cannot exit even once every Bloom has gone - while to the user, minimise and close look
     /// like the same thing, since both end at the tray.
     /// </summary>
     protected override void OnResize(EventArgs e)
@@ -263,10 +261,8 @@ public sealed class StatusForm : Form
     /// The X button puts the window away and leaves the Doctor watching. Quitting is the tray menu's
     /// "Quit", which is deliberately the only way to stop it.
     ///
-    /// John's decision, and the reason is worth keeping: closing used to end the program, tray icon and
-    /// all, while Bloom was still being watched and reports might still be queued. Somebody tidying their
-    /// screen would have switched off freeze detection for the rest of the session with nothing to suggest
-    /// they had.
+    /// If closing ended the program, somebody tidying their screen would switch off freeze detection for
+    /// the rest of the session with nothing to suggest they had.
     ///
     /// Only a person clicking X is intercepted. Our own "nothing left to do" exit arrives as
     /// <see cref="CloseReason.ApplicationExitCall"/> and the tray's Quit sets <c>_quitRequested</c>; both
@@ -282,10 +278,8 @@ public sealed class StatusForm : Form
             ShowInTaskbar = false;
             Hide();
             // Back to "hidden until somebody asks", which is exactly what closing the window means - and
-            // NOT merely tidiness. RevealYourself is the only route to visibility in this class and it
-            // returns early unless _stayHidden is set, so leaving this false made the window unreachable
-            // for the rest of the session: the tray's Show did nothing, and every later report revealed
-            // nothing, leaving "Restart Bloom" and "Show report" alive but invisible.
+            // NOT merely tidiness: RevealYourself returns early unless _stayHidden is set, so leaving this
+            // false would make every later report reveal nothing.
             _stayHidden = true;
             return;
         }
@@ -301,9 +295,9 @@ public sealed class StatusForm : Form
         // stay-hidden rule rather than being silently refused by SetVisibleCore.
         //
         // It clears the flag and calls Show() itself rather than relying on RevealYourself, whose early
-        // return makes it a no-op when the flag is already clear. Depending on that is what made this path
-        // silently do nothing once, and "the window will not come back from the tray" is the one failure
-        // this method exists to prevent. Show() and Activate() are both harmless when already visible.
+        // return makes it a no-op when the flag is already clear - and "the window will not come back from
+        // the tray" is the one failure this method exists to prevent. Show() and Activate() are both
+        // harmless when already visible.
         _stayHidden = false;
         ShowInTaskbar = true;
         WindowState = FormWindowState.Normal;
@@ -352,9 +346,7 @@ public sealed class StatusForm : Form
         // should still be offering to open that older folder.
         _savedReportFolder = null;
         _showReport.Visible = false;
-        // The card exists now, so offer to open it. Until this the id was on screen and nothing else: to
-        // actually look at what had just been filed you had to read the id off the window, go and find the
-        // tracker, and type it in.
+        // The card exists now, so offer to open it.
         _filedIssueId = issueId;
         _openCard.Visible = true;
         _sendItAnyway.Visible = false;
@@ -364,7 +356,7 @@ public sealed class StatusForm : Form
         // nothing but a tray icon.
         RevealYourself();
         // A balloon tip is native to WinForms and needs neither an AppUserModelID nor a registered COM
-        // activator, which is what made a toast with a button expensive before we had a real window.
+        // activator, unlike a toast.
         _tray.BalloonTipTitle = "Bloom problem reported";
         _tray.BalloonTipText =
             $"The Freeze Doctor sent a report about Bloom ({issueId}). Click here to open it, or restart "
@@ -422,7 +414,7 @@ public sealed class StatusForm : Form
     /// <summary>
     /// True when the Doctor must not quit yet, whatever the supervisor thinks.
     ///
-    /// Two cases, and the first is the one that bit us: a restart is in flight, where ending the old Bloom
+    /// Two cases. The first is a restart in flight, where ending the old Bloom
     /// is precisely what makes the Doctor think its work is done. The second is broader - the window is on
     /// screen, so somebody is looking at it, and a program that vanishes mid-sentence while you are reading
     /// it is indistinguishable from one that crashed. The Doctor only ever shows the window when it has
@@ -437,7 +429,7 @@ public sealed class StatusForm : Form
     ///
     /// The window is revealed for exactly the reason a filed report reveals it: the Doctor has done its
     /// job, and this is the case where somebody is most likely to be watching for that - a developer
-    /// testing the thing. Before this, such a run ended in silence and looked like a failure.
+    /// testing the thing. Silence here would look like a failure.
     /// </summary>
     private void OnReportSavedWithoutFiling(object? sender, string folder)
     {
@@ -448,10 +440,10 @@ public sealed class StatusForm : Form
         }
 
         _savedReportFolder = folder;
-        // The mirror image of what OnReportFiled does, and it was missing. Filing clears the saved folder
-        // so a later balloon does not offer a stale one; saving has to clear the filed id for the same
-        // reason. Without it, a saved-not-filed report announced after a filed one sent the balloon click
-        // off to the previous card in the browser, instead of opening the folder it had just named.
+        // The mirror image of OnReportFiled: filing clears the saved folder so a later balloon does not
+        // offer a stale one, and saving clears the filed id for the same reason - otherwise a
+        // saved-not-filed report announced after a filed one would send the balloon click off to the
+        // previous card instead of opening the folder it had just named.
         _filedIssueId = null;
         _openCard.Visible = false;
         _showReport.Visible = true;
@@ -468,10 +460,6 @@ public sealed class StatusForm : Form
         _tray.ShowBalloonTip(10_000);
     }
 
-    /// <summary>
-    /// Opens the folder holding the last unfiled report. Does nothing if there is none, or if it has since
-    /// been sent or removed - the balloon that offers this is not necessarily the one still on screen.
-    /// </summary>
     /// <summary>The card the last filed report went to, for <see cref="OpenFiledCard"/>. Null if none.</summary>
     private string? _filedIssueId;
 
@@ -491,10 +479,8 @@ public sealed class StatusForm : Form
     /// <summary>
     /// Opens the tracker card in the default browser.
     ///
-    /// The balloon that announces a filing lasts ten seconds and the window only ever showed the id as
-    /// text, so anyone wanting to see what had actually been reported had to read the id, find the tracker
-    /// and type it in — which is a poor end to a feature whose whole point is producing that card. Asked
-    /// for by the developer after watching a real report get filed and having no way to look at it.
+    /// The balloon that announces a filing lasts ten seconds, and an id shown as text leaves the person to
+    /// find the tracker and type it in — a poor end to a feature whose whole point is producing that card.
     /// </summary>
     private void OpenFiledCard()
     {
@@ -585,6 +571,10 @@ public sealed class StatusForm : Form
         }
     }
 
+    /// <summary>
+    /// Opens the folder holding the last unfiled report. Does nothing if there is none, or if it has since
+    /// been sent or removed - the balloon that offers this is not necessarily the one still on screen.
+    /// </summary>
     private void OpenSavedReportFolder()
     {
         var folder = _savedReportFolder;
@@ -622,9 +612,9 @@ public sealed class StatusForm : Form
         }
         // Hold off our own "nothing left to do" exit until Bloom has actually been started. This is not
         // belt-and-braces: ending the old Bloom is itself the thing that leaves the Doctor with nothing
-        // to watch, so without this the Doctor exits in the middle of the restart it was asked for,
-        // Application.Exit takes the confirmation dialog down with it unread, and Bloom never starts.
-        // Which is exactly what happened the first time this was tried.
+        // to watch, so without this the Doctor would exit in the middle of the restart it was asked for,
+        // Application.Exit would take the confirmation dialog down with it unread, and Bloom would never
+        // start.
         Interlocked.Increment(ref _busyWithTheUser);
         var handedOff = false;
         try
@@ -705,17 +695,16 @@ public sealed class StatusForm : Form
     /// **This button ends a FROZEN Bloom too, which was decided deliberately.** The reasoning: a frozen
     /// Bloom cannot save anything anyway, so refusing mostly leaves the user unable to start Bloom at
     /// all. The warning still names the one thing genuinely given up - a frozen Bloom does sometimes
-    /// start responding again by itself, as one did during testing - so whoever clicks decides with that
-    /// in front of them.
+    /// start responding again by itself - so whoever clicks decides with that in front of them.
     ///
     /// Note this is the EXPLICIT path only. The Doctor's own automatic policy (<see cref="ZombieEnder"/>)
     /// is untouched: it still refuses, by itself, to end a frozen Bloom or one under a debugger.
     /// </summary>
     private bool AskPermissionToEnd(IReadOnlyList<LiveBloom> inTheWay)
     {
-        // Each one described by what it is actually doing. The old wording called every blocker "frozen",
-        // which a healthy Bloom holding the token is not - and telling somebody their working Bloom is
-        // frozen is how you lose their trust in everything else the Doctor says.
+        // Each one described by what it is actually doing, not as "frozen": a healthy Bloom holding the
+        // token is not frozen, and telling somebody their working Bloom is frozen is how you lose their
+        // trust in everything else the Doctor says.
         var which = string.Join(", ", inTheWay.Select(RestartBlockers.Describe));
         var message =
             $"Bloom ({which}) is still running, and Bloom will not start a second copy, so a new Bloom "
@@ -757,9 +746,8 @@ public sealed class StatusForm : Form
     }
 
     /// <summary>
-    /// Says what came of ending a stuck Bloom. This event had no listener at all, so the Doctor could end
-    /// a process on the user's behalf and never mention it - the same silence that made a successful
-    /// gather look like a failure.
+    /// Says what came of ending a stuck Bloom. Ending a process on the user's behalf and never mentioning
+    /// it would look like the Doctor had done nothing.
     /// </summary>
     private void OnZombieEnded(object? sender, ZombieEndOutcome outcome)
     {
@@ -784,11 +772,8 @@ public sealed class StatusForm : Form
     /// Remembers a Bloom's path while we can still see it, for the restart button later - by then the
     /// process it came from is usually gone, which is why this is recorded up front.
     ///
-    /// Last one wins, rather than the first. Every Bloom we watch reports in here now, and with two of them
-    /// the newer is the better guess; keeping the first would have pinned us to whichever Bloom happened to
-    /// be running when the Doctor started. In practice the distinction rarely bites, because two Blooms on
-    /// one machine are nearly always the same executable - the failure this was fixed for was having no
-    /// path at all and falling back to whatever was installed.
+    /// Last one wins: with two Blooms the newer is the better guess, and in practice two Blooms on one
+    /// machine are nearly always the same executable anyway.
     /// </summary>
     public void RememberBloomPath(string exePath) => _bloomExeToRestart = exePath;
 
@@ -811,8 +796,8 @@ public sealed class StatusForm : Form
     {
         // Ask the supervisor which Blooms it is watching, rather than looking for a process called
         // "Bloom". The installer renames the executable per channel, so that literal name misses every
-        // Alpha and Beta install - and it also defeated `--target-name`, which exists so a stand-in can
-        // be watched during testing. This is the Bloom we are actually watching, by construction.
+        // Alpha and Beta install - and it would also defeat `--target-name`, which exists so a stand-in
+        // can be watched during testing. This is the Bloom we are actually watching, by construction.
         var target = _supervisor.LiveWatchedBlooms().FirstOrDefault();
         if (target.ProcessId == 0)
         {
@@ -868,9 +853,8 @@ public sealed class StatusForm : Form
             else if (result.Queued)
             {
                 // Gathered and safely on disk, just not sent yet: offline, over the daily limit, or
-                // another Doctor is draining the queue. Saying so matters, because the alternative was
-                // saying nothing at all and leaving "Gathering a report…" on screen, which reads as a
-                // failure and invites the user to press it again.
+                // another Doctor is draining the queue. Saying so matters: leaving "Gathering a report…"
+                // on screen reads as a failure and invites the user to press it again.
                 SayOnTheUiThread(
                     "Report saved. It will be sent when the Freeze Doctor can reach the tracker."
                 );

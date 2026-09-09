@@ -27,10 +27,9 @@ public sealed record BloomTargetFacts
     /// True when this Bloom must never produce a filed report: a developer build, or a headless job
     /// run. We still gather (and write to disk), because that is how we test the gatherer.
     ///
-    /// Note what carries a `go.sh` Bloom: the **channel**, not the command line. Such a run builds into
-    /// `output/Debug|Release`, so it derives a Developer channel and is blocked here whatever else is
-    /// true - which is why dropping `--automation` from the headless test above widened what the Doctor
-    /// *watches* without widening what it *files*.
+    /// A `go.sh` Bloom is caught by the **channel**, not the command line: it runs from
+    /// `output/Debug|Release`, so it derives a Developer channel and is blocked here whatever its command
+    /// line says.
     /// </summary>
     public bool NeverFile =>
         BloomChannel.IsDeveloperChannel(Channel) || BloomChannel.IsHeadlessRun(CommandLine);
@@ -57,8 +56,8 @@ public sealed class ReportWantedEventArgs : EventArgs
 /// and raises <see cref="ReportWanted"/> when there is something to report.
 ///
 /// Runs on a background timer, never on a UI thread. That is a requirement rather than a preference:
-/// the Doctor has a window of its own (decision D1), and a Doctor whose window goes white while it
-/// diagnoses a freeze would be its own worst advertisement.
+/// the Doctor has a window of its own, and a Doctor whose window goes white while it diagnoses a freeze
+/// would be its own worst advertisement.
 /// </summary>
 public sealed class BloomTargetWatcher : IDisposable
 {
@@ -257,12 +256,9 @@ public sealed class BloomTargetWatcher : IDisposable
     /// <summary>
     /// Whether a report about this Bloom may actually be filed, as opposed to gathered to disk and kept.
     ///
-    /// Four independent reasons never to file, and they live here — one definition, called by every path
-    /// that files — rather than being restated at each one. They were restated at each one, and two paths
-    /// got a shorter version: the crash-dump path and the exit examination each checked only the debugger
-    /// and the channel, so a **deliberately simulated** crash on a channel where the simulator is allowed
-    /// filed a real tracker card. Rehearsals reaching the tracker is the one outcome the simulated-failure
-    /// guard exists to prevent, and the paths that ran when Bloom actually died were the ones without it.
+    /// Four independent reasons never to file. They live here — one definition, called by every path that
+    /// files — rather than being restated at each one, because a path with its own shorter copy of the
+    /// list is how a **deliberately simulated** crash ends up filing a real tracker card.
     ///
     /// The four: this target has been under a debugger at some point; it is a developer build or a headless job;
     /// Bloom's own reporting has already told us about this problem, in which case a second card is noise
@@ -310,8 +306,8 @@ public sealed class BloomTargetWatcher : IDisposable
     /// **Recently, not "this run"** - see <see cref="BloomsOwnReport"/> for why the suppression expires.
     ///
     /// Read fresh each time rather than cached: the interesting case is Bloom reporting *while* we are
-    /// deciding, which is precisely when the two would otherwise collide - and, now that it expires, the
-    /// answer genuinely changes as the Bloom keeps running.
+    /// deciding, which is precisely when the two would otherwise collide - and because the suppression
+    /// expires, the answer changes as the Bloom keeps running.
     /// </summary>
     private bool BloomAlreadyReported()
     {
@@ -383,8 +379,8 @@ public sealed class BloomTargetWatcher : IDisposable
 
     /// <summary>
     /// As above, and says why when it cannot. The reason matters to the discovery sweep: reading
-    /// MainModule of a process that is still starting fails in ways worth seeing, and for a long time this
-    /// returned a bare null that the sweep turned into a silent `continue`.
+    /// MainModule of a process that is still starting fails in ways worth logging rather than silently
+    /// skipping.
     /// </summary>
     public static BloomTargetFacts? DescribeProcess(
         Process process,

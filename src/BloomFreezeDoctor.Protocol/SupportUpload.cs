@@ -112,11 +112,8 @@ public static class SupportUploadCredentials
 /// Uploads one file to the support bucket and returns a link to it.
 ///
 /// **Why this exists at all**, rather than attaching the file to the tracker card: YouTrack will not take
-/// an attachment much over 10 MB (measured at about that in July 2020 and recorded in Bloom's own
-/// ProblemReportApi), and a minidump of a real Bloom is 16-17 MB. Bloom's problem reporter reached the
-/// same wall years ago and answered it the same way — its `AttachFileToExistingIssue` call is still there,
-/// commented out, above the S3 upload that replaced it. So the Doctor's dumps go to the bucket and the
-/// card carries a link.
+/// an attachment much over 10 MB, and a minidump of a real Bloom is 16-17 MB. So the Doctor's dumps go to
+/// the bucket and the card carries a link, as Bloom's own problem reporter does with large files.
 ///
 /// Objects are uploaded **public-read**, exactly as Bloom's problem-book uploads are: the bucket serves
 /// them over plain HTTPS to whoever has the URL, so the URL is the only protection. That is a deliberate
@@ -135,11 +132,10 @@ public static class SupportFileUploader
     /// <summary>
     /// A key nobody can guess, and nobody else will collide with.
     ///
-    /// Both halves matter, and Bloom's existing single-file upload has neither: it uses the bare file name
-    /// as the key, so two users uploading `bloom-1234.dmp` overwrite each other, and anybody who knows the
-    /// naming pattern can fetch other people's uploads from a public-read bucket by trying names. A random
-    /// prefix fixes both at no cost, and the readable suffix keeps the URL self-describing for whoever
-    /// opens the card.
+    /// Both halves matter. With the bare file name as the key, two users uploading `bloom-1234.dmp` would
+    /// overwrite each other, and anybody who knows the naming pattern could fetch other people's uploads
+    /// from a public-read bucket by trying names. A random prefix fixes both at no cost, and the readable
+    /// suffix keeps the URL self-describing for whoever opens the card.
     /// </summary>
     public static string MakeUnguessableKey(string fileName) =>
         $"freeze-doctor/{Guid.NewGuid():N}/{Path.GetFileName(fileName)}";
@@ -179,9 +175,8 @@ public static class SupportFileUploader
             request.Headers.CacheControl = "no-cache";
             await transfer.UploadAsync(request, cancellation).ConfigureAwait(false);
             // Escaped per path segment, so the separators stay separators. Escaping the whole key turns
-            // them into %2F, which S3's path-style URLs do generally decode - both forms were checked
-            // against a real upload and returned the file - but some proxies and clients take %2F
-            // literally and 404, and it makes an ugly link on a card a human has to read.
+            // them into %2F, which S3's path-style URLs do generally decode, but some proxies and clients
+            // take %2F literally and 404, and it makes an ugly link on a card a human has to read.
             var escaped = string.Join("/", key.Split('/').Select(Uri.EscapeDataString));
             return $"https://s3.amazonaws.com/{BucketName}/{escaped}";
         }

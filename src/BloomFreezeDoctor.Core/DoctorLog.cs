@@ -7,10 +7,8 @@ namespace BloomFreezeDoctor;
 /// <summary>
 /// The Doctor's own log.
 ///
-/// A tool whose job is to explain other programs' failures has no business being unexplainable itself. This
-/// exists because the first time the Doctor did something unexpected, there was nothing to read: its
-/// internal notes went to <c>Debug.WriteLine</c>, which nobody sees in a released build, so the only way to
-/// find out what it had decided was to guess and re-run.
+/// A tool whose job is to explain other programs' failures has no business being unexplainable itself.
+/// <c>Debug.WriteLine</c> alone is not enough: nobody sees it in a released build.
 ///
 /// Deliberately primitive: append a line, keep it small, never throw, no dependencies. A logger that can
 /// fail or block would be a poor addition to a program that must keep working while everything around it
@@ -44,10 +42,9 @@ public static class DoctorLog
                 var directory = System.IO.Path.GetDirectoryName(Path)!;
                 Directory.CreateDirectory(directory);
                 RotateIfBig();
-                // No encoding overload on RobustFile.AppendAllText. Dropping the explicit UTF8 changes
-                // nothing that matters: .NET's default for these APIs is UTF-8 without a BOM, which is
-                // what we were asking for, and appending with an explicit UTF8 encoding would in fact
-                // have been slightly worse - it can write a BOM into the middle of an existing file.
+                // RobustFile.AppendAllText has no encoding overload, and needs none: .NET's default is
+                // UTF-8 without a BOM, and an explicit UTF8 encoding would be slightly worse, since it can
+                // write a BOM into the middle of an existing file.
                 RobustFile.AppendAllText(
                     Path,
                     $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{Environment.ProcessId}] {message}{Environment.NewLine}"

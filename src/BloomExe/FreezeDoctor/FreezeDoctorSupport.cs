@@ -115,14 +115,14 @@ namespace Bloom.FreezeDoctor
 
         /// <summary>
         /// How often the session file is rewritten. It carries facts that barely change, so this is not
-        /// about freshness — it is so that a Doctor installed *after* Bloom started, or one that had not
-        /// yet been running when Bloom did, still finds a file describing the Bloom in front of it.
+        /// about freshness — it is so that a Doctor started *after* Bloom did still finds a file describing
+        /// the Bloom in front of it.
         /// </summary>
         private static readonly TimeSpan SessionRefreshInterval = TimeSpan.FromSeconds(10);
 
         /// <summary>
-        /// How long an unexplained session file is kept. Long enough that a Doctor installed the day after
-        /// a crash can still find out about it, short enough not to accumulate.
+        /// How long an unexplained session file is kept. Long enough that a Doctor started the day after a
+        /// crash can still find out about it, short enough not to accumulate.
         /// </summary>
         private static readonly TimeSpan SessionRetention = TimeSpan.FromDays(7);
 
@@ -330,8 +330,8 @@ namespace Bloom.FreezeDoctor
             /// <summary>
             /// What this scope itself put in the shared activity slot, so that on the way out it can tell
             /// whether the slot is still its to restore. Two long operations on different threads do not
-            /// have to nest tidily, and without this check the one that finished first put back the activity
-            /// from *before* it started — overwriting the description of an operation that was still
+            /// have to nest tidily, and without this check the one that finished first would put back the
+            /// activity from *before* it started — overwriting the description of an operation that was still
             /// running, and then being overwritten in turn by a description of work already finished.
             /// </summary>
             private readonly string _myActivity;
@@ -371,9 +371,9 @@ namespace Bloom.FreezeDoctor
                     //
                     // The distinction matters because scopes can OVERLAP without nesting: A starts, B
                     // starts, A finishes, B finishes. Restoring "whatever was showing when I started"
-                    // unconditionally made B put A back - naming work that had already completed, so a
-                    // report gathered afterwards described the wrong operation. Falling back to the empty
-                    // string instead would be wrong in the other direction: a standing activity set
+                    // unconditionally would make B put A back - naming work that had already completed, so
+                    // a report gathered afterwards would describe the wrong operation. Falling back to the
+                    // empty string instead would be wrong in the other direction: a standing activity set
                     // outside any scope (a video recording says what it is doing, then opens a scope to
                     // merge) would be silently thrown away.
                     var restoreTo =
@@ -615,12 +615,6 @@ namespace Bloom.FreezeDoctor
         }
 
         /// <summary>
-        /// The background heartbeat. Deliberately does almost nothing beyond proving the process as a whole
-        /// is still scheduling threads — anything more would only add ways for it to stop for reasons that
-        /// are not the ones we care about. It does also refresh the session file, which is cheap and keeps
-        /// that work off the UI thread.
-        /// </summary>
-        /// <summary>
         /// Reads the PEB's BeingDebugged flag for this process. Wanted alongside
         /// <see cref="Debugger.IsAttached"/> because that one only sees a MANAGED debugger: a native one
         /// (WinDbg without SOS, say) can attach to a running Bloom and stop it while IsAttached stays false
@@ -659,6 +653,12 @@ namespace Bloom.FreezeDoctor
             }
         }
 
+        /// <summary>
+        /// The background heartbeat. Deliberately does almost nothing beyond proving the process as a whole
+        /// is still scheduling threads — anything more would only add ways for it to stop for reasons that
+        /// are not the ones we care about. It does also refresh the session file, which is cheap and keeps
+        /// that work off the UI thread.
+        /// </summary>
         private static void WatchdogLoop()
         {
             var sinceSessionRefresh = TimeSpan.Zero;
@@ -720,15 +720,6 @@ namespace Bloom.FreezeDoctor
         }
 
         /// <summary>
-        /// Records what Bloom is doing right now, worked out from the in-flight API requests, along with
-        /// the server's worker counts.
-        ///
-        /// This is where the Doctor's most useful sentence comes from. A stack trace says the UI thread is
-        /// waiting; this says *which request* has been running for 47 seconds, which is usually the answer.
-        /// Computed on this thread rather than in the request path, so the cost falls on a once-a-second
-        /// thread instead of on every request.
-        /// </summary>
-        /// <summary>
         /// Composes what Bloom's own code last said it was doing with what the request table says, rather
         /// than letting either clobber the other.
         ///
@@ -739,10 +730,7 @@ namespace Bloom.FreezeDoctor
         /// during startup would report "no request in flight", which is both wrong and the least helpful
         /// thing it could say.
         ///
-        /// Separated out, and internal, so a test can pin that chain: every version of this has been got
-        /// wrong once — first by the refresh overwriting the stated text, then by <see cref="Start"/> writing
-        /// to the channel directly so there was nothing to carry forward, then by "starting up" never being
-        /// retired and so describing an idle Bloom hours later.
+        /// Separated out, and internal, so a test can pin both directions.
         /// </summary>
         internal static string ComposeCurrentActivity() =>
             Compose(
@@ -772,6 +760,15 @@ namespace Bloom.FreezeDoctor
             };
         }
 
+        /// <summary>
+        /// Records what Bloom is doing right now, worked out from the in-flight API requests, along with
+        /// the server's worker counts.
+        ///
+        /// This is where the Doctor's most useful sentence comes from. A stack trace says the UI thread is
+        /// waiting; this says *which request* has been running for 47 seconds, which is usually the answer.
+        /// Computed on this thread rather than in the request path, so the cost falls on a once-a-second
+        /// thread instead of on every request.
+        /// </summary>
         private static void RecordWhatBloomIsDoing()
         {
             try
@@ -882,15 +879,12 @@ namespace Bloom.FreezeDoctor
         /// itself, but only if the process is still there to dump.
         ///
         /// **The zero-timeout check comes first, and it is the important part.** Nearly every user has no
-        /// Doctor installed, and an unconditional pause here would make every crash worse for all of them to
+        /// Doctor running, and an unconditional pause here would make every crash worse for all of them to
         /// benefit the few. So: if nobody is watching, this returns immediately and costs nothing.
         ///
         /// **And when nobody is watching, that is the end of it — Bloom does NOT dump itself.** That is
-        /// deliberate, not an omission: with no Doctor running there is nothing to file the
-        /// dump, so it would sit on a user's disk at 15-20 MB a crash waiting for somebody to think of
-        /// asking for it. If that ever looks worth building, the shape that fits what already exists is to
-        /// record the path in the session file - which is designed to outlive the process - so that a Doctor
-        /// started or installed later finds the crash and attaches it; not a parallel collection mechanism.
+        /// deliberate, not an omission: with no Doctor running there is nothing to file the dump, so it
+        /// would sit on a user's disk at 15-20 MB a crash waiting for somebody to think of asking for it.
         /// </summary>
         public static void RequestDumpBeforeDying()
         {

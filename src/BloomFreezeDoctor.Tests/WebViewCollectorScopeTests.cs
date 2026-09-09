@@ -37,7 +37,7 @@ public class WebViewCollectorScopeTests
         };
 
     [Test]
-    public void It_runs_for_a_live_process_with_a_known_port()
+    public void AppliesTo_LiveProcessWithPort_True()
     {
         Assert.That(
             new WebViewCollector().AppliesTo(Context(processWasAlive: true, cdpPort: 8091)),
@@ -47,15 +47,12 @@ public class WebViewCollectorScopeTests
     }
 
     [Test]
-    public void It_does_not_run_for_a_process_that_had_already_exited()
+    public void AppliesTo_ExitedProcess_False()
     {
-        // The finding this pins. A dead Bloom still has a port recorded in its session file, and connecting
-        // to it reaches whoever owns that port NOW - on a developer's machine, plausibly their own browser,
-        // whose page titles would then appear on a Bloom card. The reply also reads as evidence: "WebView2
-        // answers normally, so the block is in Bloom's .NET UI thread", said of a process that had gone.
-        //
-        // Its three sibling collectors - managed stacks, process evidence, wait chains - all had this guard
-        // already. This one was the odd one out.
+        // A dead Bloom still has a port recorded in its session file, and connecting to it reaches whoever
+        // owns that port NOW - on a developer's machine, plausibly their own browser, whose page titles
+        // would then appear on a Bloom card. The reply also reads as evidence: "WebView2 answers normally,
+        // so the block is in Bloom's .NET UI thread", said of a process that had gone.
         Assert.That(
             new WebViewCollector().AppliesTo(Context(processWasAlive: false, cdpPort: 8091)),
             Is.False,
@@ -64,7 +61,7 @@ public class WebViewCollectorScopeTests
     }
 
     [Test]
-    public void It_does_not_run_when_no_port_was_found()
+    public void AppliesTo_NoPort_False()
     {
         Assert.That(
             new WebViewCollector().AppliesTo(Context(processWasAlive: true, cdpPort: null)),

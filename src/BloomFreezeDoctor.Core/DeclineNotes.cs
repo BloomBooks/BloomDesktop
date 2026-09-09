@@ -4,11 +4,9 @@ namespace BloomFreezeDoctor;
 /// Remembers what the discovery sweep has already said about a process it could not describe, so the log
 /// records the reason once instead of every few seconds.
 ///
-/// This exists because of a silence that cost a real run its diagnosis. Bloom started at 15:17:08 and the
-/// Doctor only began watching it at 15:18:31 - about sixteen discovery ticks that saw the process, failed
-/// to describe it, and moved on without a word. A freeze in that window would have gone unreported with no
-/// trace of why, and afterwards there was nothing to work from: the code's only record of the decision was
-/// a `continue`.
+/// Without it, a Bloom that sits unadopted for a minute - a dozen discovery ticks that see the process,
+/// fail to describe it, and move on without a word - leaves no trace of why. A freeze in that window goes
+/// unreported, and afterwards there is nothing to work from.
 ///
 /// The two obvious ways to fix that are both wrong. Logging every decline fills the file at a line every
 /// five seconds for as long as the process lives; logging only the first loses it when the reason CHANGES,
@@ -16,8 +14,8 @@ namespace BloomFreezeDoctor;
 /// said once per process, and again if the reason itself changes.
 ///
 /// Deliberately holds ONE process rather than a dictionary keyed by process id. The Doctor watches one
-/// Bloom, and a map keyed by pid is the shape whose stale entries caused both of the bugs the one-Bloom
-/// rewrite removed; a diagnostic is not a good reason to bring it back.
+/// Bloom, and a map keyed by pid accumulates stale entries for processes that have gone; a diagnostic is
+/// not a good reason to take on that bookkeeping.
 /// </summary>
 public sealed class DeclineNotes
 {
@@ -45,8 +43,7 @@ public sealed class DeclineNotes
     /// How long we had been declining this process before adopting it, or null if we never declined it -
     /// which is the normal case, and says nothing rather than "0s".
     ///
-    /// This is the number the run above was missing. Forgets the process as it answers: it has been
-    /// adopted, so there is nothing left to suppress.
+    /// Forgets the process as it answers: it has been adopted, so there is nothing left to suppress.
     /// </summary>
     public TimeSpan? HowLongWeWereDeclining(int processId, DateTimeOffset now)
     {

@@ -8,10 +8,9 @@ namespace BloomFreezeDoctor.Tests;
 /// The named events Bloom and the Doctor use to reach each other: "please exit under your own power", and
 /// "dump me before I die".
 ///
-/// These had no tests at all until the day `TryOpen` was rewritten to stop using an exception for its most
-/// ordinary answer. They are worth having for a reason beyond that change: **the interesting case is the
-/// absent one.** Almost every Bloom in the world runs with no Doctor installed, so "nobody is listening"
-/// is the normal answer to every question here, and it has to be cheap, quiet, and above all reliable —
+/// **The interesting case is the absent one.** Almost every Bloom in the world runs with no Doctor
+/// watching, so "nobody is listening" is the normal answer to every question here, and it has to be
+/// cheap, quiet, and above all reliable —
 /// `Exists` is what a crashing Bloom calls to decide whether to wait for a dump, and getting that wrong
 /// means either a lost dump or a user watching a dead Bloom sit there.
 /// </summary>
@@ -22,7 +21,7 @@ public class DoctorSignalsTests
     private const int TestProcessId = 999_003;
 
     [Test]
-    public void Nobody_listening_is_answered_without_an_exception_and_without_a_handle()
+    public void TryOpenAndTrySignal_NobodyListening_NullAndFalseWithoutThrowing()
     {
         var name = DoctorSignals.QuitRequestName(TestProcessId);
 
@@ -39,7 +38,7 @@ public class DoctorSignalsTests
     }
 
     [Test]
-    public void An_event_that_exists_can_be_found_signalled_and_waited_on()
+    public void TryCreate_EventExists_CanBeOpenedSignalledAndWaitedOn()
     {
         var name = DoctorSignals.DumpRequestName(TestProcessId);
         Assert.That(DoctorSignals.Exists(name), Is.False, "setup: should start absent");
@@ -70,7 +69,7 @@ public class DoctorSignalsTests
     }
 
     [Test]
-    public void The_event_goes_away_again_when_the_last_handle_is_closed()
+    public void Exists_LastHandleClosed_False()
     {
         // Worth pinning because the whole design leans on it: a named event exists only while somebody
         // holds a handle, so a Doctor that has exited leaves nothing behind for Bloom to find and wait on.
@@ -90,15 +89,14 @@ public class DoctorSignalsTests
     }
 
     [Test]
-    public void An_impossible_name_is_refused_rather_than_thrown()
+    public void TryOpenExistsAndTrySignal_EmptyName_RefusedWithoutThrowing()
     {
         // The genuinely unexpected case the try/catch is still there for, as opposed to the merely absent
         // case above. Callers must get the same quiet "no" either way: publishing diagnostics is never
         // worth failing over, and the callers here are Bloom's shutdown and crash paths.
         //
         // An empty name is the reliable way to reach that branch for the three OPENING calls. Two things
-        // that look like they ought to work as triggers and do not, both established by watching this test
-        // fail:
+        // that look like they ought to work as triggers and do not:
         //
         //   * A very long name is accepted. Windows creates a 5000-character event quite happily, so there
         //     is no length guard here to lean on.
@@ -116,11 +114,11 @@ public class DoctorSignalsTests
 
     /// <summary>
     /// A wait bounded by the other side's presence rather than by the clock. This is what lets a crashing
-    /// Bloom wait a minute for its dump without risking a minute-long hang: the case a short timeout used
-    /// to protect against now ends the wait at once instead.
+    /// Bloom wait a minute for its dump without risking a minute-long hang: the case a short timeout would
+    /// protect against ends the wait at once instead.
     /// </summary>
     [Test]
-    public void A_liveness_bounded_wait_returns_as_soon_as_the_other_side_disappears()
+    public void WaitWhileTheOtherSideLives_OtherSideGone_ReturnsFalsePromptly()
     {
         var waitedFor = $@"Local\BloomFreezeDoctorTests.never.{Guid.NewGuid():N}";
         var presence = $@"Local\BloomFreezeDoctorTests.alive.{Guid.NewGuid():N}";
@@ -152,7 +150,7 @@ public class DoctorSignalsTests
     }
 
     [Test]
-    public void A_liveness_bounded_wait_honours_a_signal_that_arrives_while_the_other_side_lives()
+    public void WaitWhileTheOtherSideLives_SignalledMidWait_ReturnsTrue()
     {
         // The sanity check on the test above: a wait that always returned false quickly would pass that one
         // and be useless.
@@ -180,7 +178,7 @@ public class DoctorSignalsTests
     }
 
     [Test]
-    public void A_signal_already_set_is_honoured_even_if_the_other_side_has_since_gone()
+    public void WaitWhileTheOtherSideLives_AlreadySignalledThenOtherSideGone_ReturnsTrue()
     {
         // The Doctor can finish the dump and then exit immediately - it often has nothing left to watch,
         // since the Bloom it was dumping has just died. Discarding a completed dump because the process

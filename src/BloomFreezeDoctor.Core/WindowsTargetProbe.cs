@@ -20,16 +20,16 @@ public interface ITargetProbe
 /// <summary>
 /// The real probe: asks Windows about a Bloom process without perturbing it. Everything here is
 /// read-only, needs no special privilege for a process of our own user, and cannot leave the target in
-/// a worse state than it found it — a property worth preserving deliberately, since the spike proved
-/// how badly a suspending diagnostic can end (see docs/SPIKE-FINDINGS.md §6).
+/// a worse state than it found it. That is worth preserving deliberately: a suspending diagnostic that
+/// dies half way can leave its target suspended for good.
 /// </summary>
 public sealed class WindowsTargetProbe : ITargetProbe, IDisposable
 {
     private readonly Process _process;
 
     /// <summary>
-    /// Sticky, per the spike: a dead process cannot be asked whether it was debugged, and stopping the
-    /// debugger is the most common thing a developer does all day. Once true, always true.
+    /// Sticky: a dead process cannot be asked whether it was debugged, and stopping the debugger is the
+    /// most common thing a developer does all day. Once true, always true.
     /// </summary>
     private bool _everDebugged;
 
@@ -186,10 +186,9 @@ public sealed class WindowsTargetProbe : ITargetProbe, IDisposable
             || snapshot == null
         )
         {
-            // Note what is deliberately NOT done here: clearing PublishedSnapshot. The channel lives in
-            // the process's own memory, so the read stops working the instant Bloom dies — which is
-            // exactly when the last thing Bloom said about itself turns into evidence. Throwing it away
-            // on that tick discarded it at the moment it became worth having.
+            // PublishedSnapshot is deliberately NOT cleared here. The channel lives in the process's own
+            // memory, so the read stops working the instant Bloom dies — which is exactly when the last
+            // thing Bloom said about itself turns into evidence.
             return (false, false, false, TimeSpan.Zero);
         }
         PublishedSnapshot = snapshot;
@@ -232,9 +231,9 @@ public sealed class WindowsTargetProbe : ITargetProbe, IDisposable
     private static readonly TimeSpan StaleHeartbeatThreshold = TimeSpan.FromSeconds(5);
 
     /// <summary>
-    /// Asks the window to acknowledge a do-nothing message. This is the signal the spike settled on:
-    /// <c>IsHungAppWindow</c> needs about five seconds to make up its mind, whereas this reacts at
-    /// once. Neither can see a UI thread blocked in an STA managed wait — that needs Bloom's heartbeat.
+    /// Asks the window to acknowledge a do-nothing message. <c>IsHungAppWindow</c> needs about five
+    /// seconds to make up its mind, whereas this reacts at once. Neither can see a UI thread blocked in
+    /// an STA managed wait — that needs Bloom's heartbeat.
     /// </summary>
     private static bool WindowAnswers(IntPtr window) =>
         SendMessageTimeout(

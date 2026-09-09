@@ -67,8 +67,8 @@ public static class GatherContextBuilder
     ///
     /// It falls back to the watcher's last reading (above) for one case that the live read cannot serve at
     /// all: a Bloom that has already died. The channel lives in the process's own memory, so it goes when
-    /// the process goes, and a death report was reduced to declaring that Bloom "does not publish a health
-    /// channel" — of a Bloom that had been publishing one a second earlier.
+    /// the process goes, and without the fallback a death report would declare that Bloom "does not
+    /// publish a health channel" — of a Bloom that had been publishing one a second earlier.
     /// </summary>
     private static Protocol.DoctorChannelSnapshot? ReadPublishedState(int processId)
     {
@@ -166,13 +166,10 @@ public static class GatherContextBuilder
         try
         {
             using var process = Process.GetProcessById(processId);
-            // **No command line here, deliberately, and this is the fix for a measured 19-second delay.**
-            // Reading it means a WMI Win32_Process query, and for a process that has only just started -
-            // which is exactly when we want to adopt it - that query took 18,903 milliseconds on a measured
-            // run, all of it on the adoption path. Enumerating every process on the machine to find Bloom
-            // costs about 12 milliseconds by comparison; the sweeps that found nothing all came in under
-            // five seconds, and the one that found Bloom took nineteen. Whoever needs the command line asks
-            // for it themselves, when they can afford to wait.
+            // **No command line here, deliberately.** Reading it means a WMI Win32_Process query, which
+            // for a process that has only just started - exactly when we want to adopt it - has been
+            // measured at 19 seconds, against about 12 milliseconds to enumerate every process on the
+            // machine. Whoever needs the command line asks for it themselves, when they can afford to wait.
             return BloomTargetWatcher.DescribeProcess(process, "", out whyNot);
         }
         catch (Exception e)

@@ -30,7 +30,7 @@ public class BloomTargetWatcherTests
                 WindowResponds = Responds,
                 HasVisibleWindow = HasVisibleWindow,
                 // No departure time, so this stands for the conservative case: a debugger was seen and we
-                // cannot tell when it left, which poisons the target exactly as it always did.
+                // cannot tell when it left, which poisons the target.
                 DebuggerAttachedNow = DebuggerAttached,
                 DebuggerEverAttached = DebuggerAttached,
             };
@@ -96,7 +96,7 @@ public class BloomTargetWatcherTests
     }
 
     [Test]
-    public void An_installed_Bloom_that_freezes_produces_a_fileable_report()
+    public void Tick_InstalledBloomFreezes_ReportMayFile()
     {
         var probe = new ScriptedProbe();
         using var watcher = new BloomTargetWatcher(Facts(InstalledExe), probe);
@@ -121,10 +121,10 @@ public class BloomTargetWatcherTests
     ///
     /// Deliberately an INSTALLED exe: on a developer build the report is unfilable anyway, so the test
     /// could pass with the simulated marker doing nothing at all. Its counterpart above -
-    /// An_installed_Bloom_that_freezes_produces_a_fileable_report - is what proves the contrast.
+    /// Tick_InstalledBloomFreezes_ReportMayFile - is what proves the contrast.
     /// </summary>
     [Test]
-    public void A_deliberately_simulated_freeze_is_still_detected_and_gathered_but_never_filed()
+    public void Tick_SimulatedFreeze_ReportedButMayNotFile()
     {
         var session = new Protocol.DoctorSession
         {
@@ -156,10 +156,9 @@ public class BloomTargetWatcherTests
     }
 
     [Test]
-    public void A_developer_build_is_gathered_but_never_filed()
+    public void Tick_DeveloperBuildFreezes_ReportedButMayNotFile()
     {
-        // The primary defence from plan §3.3, and the one that covers `pnpm go` whether or not a
-        // debugger is attached.
+        // The primary defence, and the one that covers `pnpm go` whether or not a debugger is attached.
         var probe = new ScriptedProbe();
         using var watcher = new BloomTargetWatcher(Facts(DeveloperExe), probe);
 
@@ -170,12 +169,11 @@ public class BloomTargetWatcherTests
     }
 
     [Test]
-    public void An_automation_flag_does_not_by_itself_stop_an_installed_Bloom_filing()
+    public void Tick_InstalledBloomWithAutomationFlag_ReportMayFile()
     {
-        // The reversal of what this test used to assert, and deliberate. `--automation` is not a
-        // "this is a test run" flag: in Bloom it means take the multi-instance path, print the ports,
-        // and show them in the title. An installed Bloom carrying it is somebody's real Bloom, and a
-        // freeze in it is worth a card.
+        // `--automation` is not a "this is a test run" flag: in Bloom it means take the multi-instance
+        // path, print the ports, and show them in the title. An installed Bloom carrying it is somebody's
+        // real Bloom, and a freeze in it is worth a card.
         //
         // What protects our own work is the CHANNEL, one test above: a `go.sh` Bloom carries this same
         // flag but builds into output/Debug, so it is blocked as a developer build regardless.
@@ -196,7 +194,7 @@ public class BloomTargetWatcherTests
     }
 
     [Test]
-    public void A_headless_job_run_is_gathered_but_never_filed()
+    public void Tick_HeadlessJobRun_ReportedButMayNotFile()
     {
         // The command-line verbs are the genuine never-file case on the command line: they serve no
         // user, so a card about one would be a card about a script.
@@ -213,7 +211,7 @@ public class BloomTargetWatcherTests
     }
 
     [Test]
-    public void A_target_seen_under_a_debugger_is_never_filed_even_if_it_later_looks_clean()
+    public void Tick_DebuggerSeenThenDetached_ReportedButMayNotFile()
     {
         var probe = new ScriptedProbe { DebuggerAttached = true };
         using var watcher = new BloomTargetWatcher(Facts(InstalledExe), probe);
@@ -242,7 +240,7 @@ public class BloomTargetWatcherTests
     }
 
     [Test]
-    public void A_probe_that_throws_does_not_stop_the_watcher()
+    public void Tick_ProbeThrows_KeepsWatching()
     {
         // The watcher is the thing that must not die: a watcher that throws stops watching, and then
         // we learn nothing at all.
@@ -269,13 +267,13 @@ public class BloomTargetWatcherTests
     /// The same question the freeze path answers above, asked the way the crash and exit paths ask it.
     ///
     /// Those two paths do not go through Tick's ReportWanted at all — they gather directly when the
-    /// process dies — and they each used to work out for themselves whether filing was allowed, with a
-    /// shorter list of conditions than this one: the debugger and the channel, but not the simulated
-    /// marker. So a deliberately simulated CRASH on a channel where the simulator is allowed filed a real
-    /// tracker card, while a simulated FREEZE on the same machine correctly did not.
+    /// process dies — so they must ask this same method rather than keep a shorter list of conditions of
+    /// their own. A list that checked the debugger and the channel but not the simulated marker would let
+    /// a deliberately simulated CRASH file a real tracker card while a simulated FREEZE on the same
+    /// machine correctly did not.
     /// </summary>
     [Test]
-    public void A_simulated_run_may_not_file_however_the_question_is_asked()
+    public void MayFileAReport_SimulatedRun_False()
     {
         var session = new Protocol.DoctorSession
         {
@@ -302,7 +300,7 @@ public class BloomTargetWatcherTests
 
     /// <summary>The sanity check on the test above: the same call says yes when nothing forbids it.</summary>
     [Test]
-    public void An_ordinary_installed_Bloom_may_file()
+    public void MayFileAReport_OrdinaryInstalledBloom_True()
     {
         var probe = new ScriptedProbe();
         using var watcher = new BloomTargetWatcher(Facts(InstalledExe), probe);
@@ -317,17 +315,15 @@ public class BloomTargetWatcherTests
     /// <summary>
     /// `--force` exists to exercise filing on a machine that would otherwise decline, and the obvious way
     /// to exercise the crash path is a deliberately simulated crash — so the one switch for testing filing
-    /// has to work on the paths that run when Bloom dies. It was applied at exactly one of the three
-    /// deciding sites, the freeze and zombie one, so the crash dump and the exit examination ignored it
-    /// entirely and a forced run of a simulated crash filed nothing at all.
+    /// has to work on the paths that run when Bloom dies, not only at the freeze and zombie site.
     ///
-    /// This test guards the shape that prevents that: one method answers the question, so a caller cannot
+    /// This test guards the shape that makes that hold: one method answers the question, so a caller cannot
     /// have its own shorter version. The supervisor's `MayFile` is `MayFileAReport() || force`, and what
     /// this checks is the half that lives here — that a simulated run really does say no on its own, so
     /// that the override is doing something rather than papering over an answer of yes.
     /// </summary>
     [Test]
-    public void A_simulated_run_says_no_so_that_force_has_something_to_override()
+    public void ReasonsFilingWouldNormallyBeBlocked_SimulatedRun_NamesTheRehearsal()
     {
         var session = new Protocol.DoctorSession
         {

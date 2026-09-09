@@ -9,11 +9,10 @@ namespace BloomFreezeDoctor.Gathering;
 /// The state of the machine around Bloom, and whether the network was working at the moment of the
 /// freeze.
 ///
-/// The network probe earns its place because of the instruction this whole project started from: a
-/// freeze that a poor connection explains is not the bug we are hunting. BL-16697's own log shows DNS
-/// failing minutes before the user gave up, so without this the reader of a card cannot tell the two
-/// apart. Note it does not *suppress* anything — Bloom blocking its UI thread on a dead network is still
-/// a bug worth fixing — it just puts the fact on the card.
+/// The network probe earns its place because a freeze that a poor connection explains is not the bug we
+/// are hunting: in BL-16697, DNS was failing minutes before the user gave up. Without this the reader of a
+/// card cannot tell the two apart. Note it does not *suppress* anything — Bloom blocking its UI thread on
+/// a dead network is still a bug worth fixing — it just puts the fact on the card.
 /// </summary>
 public sealed class SystemEvidenceCollector : IEvidenceCollector
 {

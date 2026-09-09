@@ -151,8 +151,7 @@ public sealed class CdpClient : IAsyncDisposable
 
     /// <summary>
     /// Listens for events for a while, collecting them into <see cref="Events"/>. CDP keeps no history,
-    /// so this only ever sees what happens from now on — which is why the plan does not promise console
-    /// history unless the Doctor was already attached.
+    /// so this only ever sees what happens from now on.
     /// </summary>
     public async Task ListenAsync(TimeSpan duration, CancellationToken cancellation)
     {
@@ -180,11 +179,11 @@ public sealed class CdpClient : IAsyncDisposable
     private async Task<string?> ReceiveAsync(CancellationToken cancellation)
     {
         var buffer = new byte[16 * 1024];
-        // Bytes, and decoded only once the message is complete. Decoding each fragment as it arrived was
-        // wrong in a quiet way: a fragment boundary can fall in the middle of a multi-byte UTF-8 character,
-        // and each half then decodes to a replacement character. The JSON still parses, so nothing
-        // complains - the text inside it is simply corrupted, which for Bloom means exactly the vernacular
-        // book titles and console messages a report is quoting.
+        // Bytes, and decoded only once the message is complete. Decoding each fragment as it arrives would
+        // be wrong in a quiet way: a fragment boundary can fall in the middle of a multi-byte UTF-8
+        // character, and each half then decodes to a replacement character. The JSON still parses, so
+        // nothing complains - the text inside it is simply corrupted, which for Bloom means exactly the
+        // vernacular book titles and console messages a report is quoting.
         using var message = new MemoryStream();
         while (true)
         {
