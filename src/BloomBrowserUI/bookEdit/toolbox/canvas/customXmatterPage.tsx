@@ -567,9 +567,13 @@ function renderPageLayoutMenu(page: HTMLElement): void {
                 );
                 // Persist the newly created custom layout state so a later switch back
                 // to standard has matching server-side state to work from.
+                // report: false — the edit tab declines a jump it cannot do (it is mid-save), and
+                // that is not something to raise a problem report about. See
+                // EditingModel.JumpToPage.
                 await postString(
                     "editView/jumpToPage",
                     page.getAttribute("id")!,
+                    false,
                 );
                 renderPageLayoutMenu(page);
             } else if (selection === "custom" && response) {
