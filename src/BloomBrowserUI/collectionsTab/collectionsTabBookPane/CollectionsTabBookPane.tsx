@@ -79,7 +79,9 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
 
                 setBookTeamCollectionStatus((prevBookStatus) => ({
                     ...prevBookStatus,
-                    disconnected: true,
+                    // The field is isDisconnected; setting "disconnected" left the panel
+                    // rendering the book as available for checkout. See BL-16729.
+                    isDisconnected: true,
                     error: errorMessage,
                 }));
             },

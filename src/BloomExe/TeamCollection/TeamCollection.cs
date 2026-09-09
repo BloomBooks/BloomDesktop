@@ -155,9 +155,21 @@ namespace Bloom.TeamCollection
 
         /// <summary>
         /// Returns null if connection to repo is fine, otherwise, a message describing the problem.
+        /// </summary>
+        public TeamCollectionMessage CheckConnection()
+        {
+            return CheckConnection(true);
+        }
+
+        /// <summary>
+        /// Returns null if connection to repo is fine, otherwise, a message describing the problem.
         /// This default implementation assumes nothing useful can be done to check the connection.
         /// </summary>
-        public virtual TeamCollectionMessage CheckConnection()
+        /// <param name="writeHistoryMessages">Pass false for a side-effect-free probe. The
+        /// periodic connection check (see ConnectionHeartbeat) calls this many times over a
+        /// session; History messages are not de-duplicated, so a probe that wrote them would
+        /// fill up log.txt and raise a status-changed event on every tick.</param>
+        public virtual TeamCollectionMessage CheckConnection(bool writeHistoryMessages)
         {
             return null;
         }
@@ -449,12 +461,34 @@ namespace Bloom.TeamCollection
 
         private bool _monitoring = false;
 
+        // Periodically re-checks that the repo is still reachable, for the cases the file system
+        // watchers cannot detect (notably Dropbox stopping). Only non-null while monitoring.
+        private ConnectionHeartbeat _heartbeat;
+
+        /// <summary>
+        /// True between StartMonitoring and StopMonitoring. Note that monitoring is deliberately
+        /// off during SyncAtStartup, so this is not the same as "this is the live collection".
+        /// </summary>
+        protected internal bool IsMonitoring => _monitoring;
+
+        /// <summary>
+        /// True while we are in the middle of writing to the repo. The periodic connection check
+        /// skips its tick while this is true: an in-flight write reports its own failures, and
+        /// disconnecting out from under it would be both redundant and disruptive.
+        /// </summary>
+        protected internal virtual bool IsWritingToRepo => _syncIsRunning;
+
         /// <summary>
         /// Start monitoring the repo so we can get notifications of new and changed books.
         /// </summary>
         protected virtual internal void StartMonitoring()
         {
             _monitoring = true;
+
+            // The watchers tell us at once if the shared folder is yanked away, but only this
+            // notices that Dropbox has quietly stopped syncing. See BL-16729.
+            _heartbeat = new ConnectionHeartbeat(this);
+            _heartbeat.Start();
 
             // Set up monitoring for the local folder. Here we are looking for changes
             // to collection-level files that need to be saved to the repo.
@@ -471,11 +505,138 @@ namespace Bloom.TeamCollection
             // Conceivably we should do something to make sure we also see deletions.
             _localFolderWatcher.NotifyFilter = NotifyFilters.LastWrite;
 
+            // The default 8KB buffer holds only a couple of hundred notifications, and this
+            // watcher covers the whole local collection including every book folder, so it is
+            // the one most likely to overflow. 64KB is the documented maximum.
+            _localFolderWatcher.InternalBufferSize = kWatcherBufferSize;
+
             _localFolderWatcher.Changed += OnChanged;
             _localFolderWatcher.Created += OnChanged;
+            _localFolderWatcher.Error += OnLocalFolderWatcherError;
 
             // Begin watching.
-            _localFolderWatcher.EnableRaisingEvents = true;
+            try
+            {
+                _localFolderWatcher.EnableRaisingEvents = true;
+            }
+            catch (Exception ex)
+            {
+                // BL-16679 was a crash from exactly this call. Losing this watcher is not a
+                // reason to disconnect (see OnLocalFolderWatcherError), but we do want to know.
+                Logger.WriteError("Could not watch the local collection folder", ex);
+                NonFatalProblem.ReportSentryOnly(ex, "Could not watch the local collection folder");
+            }
+        }
+
+        /// <summary>
+        /// The buffer FileSystemWatcher uses to hold notifications until we drain them. When it
+        /// overflows, Windows discards its whole contents and we are simply never told about
+        /// those changes. 64KB is the documented maximum.
+        /// </summary>
+        protected const int kWatcherBufferSize = 64 * 1024;
+
+        /// <summary>
+        /// Deliberately NOT a reason to disconnect. This watcher exists only to push local
+        /// collection-file edits up to the repo; losing it does not stop us seeing our teammates'
+        /// work. It also watches the user's own disk, so a failure here says nothing about
+        /// whether the Team Collection is reachable, and a wrong disconnect is the worst outcome
+        /// we can produce. See BL-16729.
+        /// </summary>
+        private void OnLocalFolderWatcherError(object sender, ErrorEventArgs e)
+        {
+            var ex = e.GetException();
+            Logger.WriteError("Watcher on the local collection folder failed", ex);
+            NonFatalProblem.ReportSentryOnly(ex, "Watcher on the local collection folder failed");
+            if (ex is InternalBufferOverflowException)
+            {
+                // We lost some notifications of local collection-file edits. Syncing collection
+                // files to the repo is exactly what we would have done for each of them, so just
+                // do it once, the same way OnChanged does.
+                RequestCollectionFilesSyncOnIdle();
+            }
+        }
+
+        /// <summary>
+        /// A repo file system watcher failed, so we can no longer see what our teammates do.
+        /// Raised on a threadpool thread; must not block, and must not dispose the watcher from
+        /// inside its own callback (NoticeConnectionProblem marshals to the UI thread for us).
+        /// See BL-16729.
+        /// </summary>
+        internal void HandleRepoWatcherError(string watchedPath, Exception ex)
+        {
+            Logger.WriteError($"Team Collection watcher failed on {watchedPath}", ex);
+            NonFatalProblem.ReportSentryOnly(
+                ex,
+                $"Team Collection watcher failed on {watchedPath}"
+            );
+
+            if (ex is InternalBufferOverflowException)
+            {
+                // The folder is fine; our buffer filled faster than we drained it, so we lost
+                // some notifications. Disconnecting a collection that is actually working would
+                // be a self-inflicted outage at exactly the busiest moment. But nothing else
+                // about this is visible to the user, so say so twice: an Error message (which
+                // makes the Reload Collection button appear) and a toast, since a recoloured
+                // button alone is easy to miss. Errors are de-duplicated in the message log, and
+                // the toastId de-duplicates the toast, so a storm of overflows yields one of each.
+                MessageLog.WriteMessage(
+                    MessageAndMilestoneType.Error,
+                    kMayHaveMissedChangesId,
+                    kMayHaveMissedChangesEnglish
+                );
+                ToastService.ShowToast(
+                    ToastType.Warning,
+                    text: LocalizationManager.GetString(
+                        kMayHaveMissedChangesId,
+                        kMayHaveMissedChangesEnglish
+                    ),
+                    l10nId: kMayHaveMissedChangesId,
+                    action: new ToastAction { Callback = () => _tcManager?.ShowStatusDialog() },
+                    toastId: "team-collection-missed-changes"
+                );
+                return;
+            }
+
+            // Anything else means the watch itself is dead: .NET will not re-establish it, so we
+            // would never hear about another change even if the folder came back. We don't
+            // bother confirming with Directory.Exists first; that would block this thread on a
+            // dead share and could not change the outcome.
+            _tcManager?.NoticeConnectionProblem(
+                new TeamCollectionMessage(
+                    MessageAndMilestoneType.Error,
+                    "TeamCollection.LostContactWithRepo",
+                    "Bloom can no longer watch the Team Collection folder at \"{0}\", so it will not see changes made by your teammates. Usually this means the folder, or the drive or network it is on, is no longer available.",
+                    RepoDescription
+                ),
+                RepoDescription
+            );
+        }
+
+        private const string kMayHaveMissedChangesId = "TeamCollection.MayHaveMissedChanges";
+        private const string kMayHaveMissedChangesEnglish =
+            "Bloom may have missed some changes your teammates made. Please click \"Reload Collection\" to be sure you have the latest.";
+
+        /// <summary>
+        /// Turn a watcher on, reporting rather than throwing if the OS won't let us watch.
+        /// Returns false if we did not get monitoring going. Note that HandleRepoWatcherError
+        /// marshals asynchronously, so a failure here cannot tear the watchers down from inside
+        /// StartMonitoring itself.
+        /// </summary>
+        protected internal bool TryStartWatching(
+            FileSystemWatcherWrapper watcher,
+            string watchedPath
+        )
+        {
+            try
+            {
+                watcher.EnableRaisingEvents = true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                HandleRepoWatcherError(watchedPath, ex);
+                return false;
+            }
         }
 
         private void OnChanged(object sender, FileSystemEventArgs e)
@@ -491,10 +652,17 @@ namespace Bloom.TeamCollection
                 return; // side effect of doing a sync!
             if (Directory.Exists(e.FullPath))
                 return; // we seem to get frequent notifications that seem to be spurious for book folders.
-            // We'll wait for the system to be idle before writing to the repo. This helps to ensure things
-            // are in a consistent state, as we may get multiple write notifications during the process of
-            // writing a file. It may also help to ensure that repo writing doesn't interfere somehow with
-            // whatever is changing things.
+            RequestCollectionFilesSyncOnIdle();
+        }
+
+        /// <summary>
+        /// Arrange to push local collection-file changes to the repo once things are idle.
+        /// We wait for idle so that things are in a consistent state, as we may get multiple
+        /// write notifications during the process of writing a file. It may also help to ensure
+        /// that repo writing doesn't interfere somehow with whatever is changing things.
+        /// </summary>
+        private void RequestCollectionFilesSyncOnIdle()
+        {
             var form = Shell.GetShellOrOtherOpenForm(); // Form.ActiveForm is null when a browser is active
             if (form != null)
             {
@@ -544,6 +712,8 @@ namespace Bloom.TeamCollection
         protected virtual internal void StopMonitoring()
         {
             _monitoring = false;
+            _heartbeat?.Dispose();
+            _heartbeat = null;
             if (_localFolderWatcher != null)
             {
                 _localFolderWatcher.EnableRaisingEvents = false;

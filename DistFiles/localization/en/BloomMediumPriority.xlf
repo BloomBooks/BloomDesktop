@@ -1579,6 +1579,21 @@
         <note>ID: ImageLibrary.ThisPage</note>
         <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.LostContactWithRepo" translate="no">
+        <source xml:lang="en">Bloom can no longer watch the Team Collection folder at "{0}", so it will not see changes made by your teammates. Usually this means the folder, or the drive or network it is on, is no longer available.</source>
+        <note>ID: TeamCollection.LostContactWithRepo</note>
+        <note>Shown in the Team Collection status dialog when Bloom loses its ability to watch the shared Team Collection folder part way through a session, for example because the network share or Dropbox folder disappears. {0} is replaced with the full path of the shared folder. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.NoLongerSeeingChanges" translate="no">
+        <source xml:lang="en">Bloom can no longer see the Team Collection folder, so you will not see changes made by your teammates.</source>
+        <note>ID: TeamCollection.NoLongerSeeingChanges</note>
+        <note>A short pop-up notification (toast) in the bottom-right corner of the window, shown the moment Bloom notices part way through a session that it has lost contact with the shared Team Collection folder. Clicking it opens the Team Collection dialog, which shows the longer TeamCollection.LostContactWithRepo message. Keep it short; it has to fit in a small pop-up. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MayHaveMissedChanges" translate="no">
+        <source xml:lang="en">Bloom may have missed some changes your teammates made. Please click "Reload Collection" to be sure you have the latest.</source>
+        <note>ID: TeamCollection.MayHaveMissedChanges</note>
+        <note>Used both as a pop-up notification (toast) and in the Team Collection status dialog, when so many files changed at once that Bloom's file-change notifications overflowed and some were lost. "Reload Collection" is the label of a button in that dialog and should match its translation there. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
