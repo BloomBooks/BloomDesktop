@@ -184,4 +184,78 @@ describe("toolbox tests", () => {
         expect(div.innerHTML).toBe("<p>A b c</p>");
         expect(div.querySelector("p")!.firstChild).not.toBe(textNodeBefore);
     });
+
+    // Make div look like a box whose ckeditor is tracking fillingCharNode as its zero-width
+    // "filling char" (see EditableDivUtils.removeTrackedCkEditorFillingChar).
+    function stubCkEditorTracking(div: HTMLElement, fillingCharNode: Node) {
+        let tracked: Node | undefined = fillingCharNode;
+        (div as HTMLElement & { bloomCkEditor?: object }).bloomCkEditor = {
+            editable: () => ({
+                getCustomData: (key: string) =>
+                    key === "cke-fillingChar" && tracked
+                        ? { $: tracked }
+                        : undefined,
+                removeCustomData: () => {
+                    tracked = undefined;
+                },
+            }),
+        };
+    }
+
+    // When the rebuild does happen, the html written back is read from the live DOM, so
+    // ckeditor's filling char would be baked in as ordinary text and orphaned - the
+    // BL-16490 hazard. It must be taken out first; but a U+200B that is real text (a Thai,
+    // Khmer or Myanmar word break) must survive (BL-16843).
+    it("cleanUpNbsps takes out ckeditor's filling char, and only that, before rebuilding the box", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode(`a${zwsp}b\u00A0c d`));
+        const fillingCharNode = document.createTextNode(zwsp);
+        p.appendChild(fillingCharNode);
+        div.appendChild(p);
+        stubCkEditorTracking(div, fillingCharNode);
+        // Sanity check the setup: there is an nbsp to convert, so the box will be rebuilt,
+        // and both zero-width spaces are in it.
+        expect(div.innerHTML).toBe(`<p>a${zwsp}b&nbsp;c d${zwsp}</p>`);
+
+        cleanUpNbsps(div);
+
+        expect(div.innerHTML).toBe(`<p>a${zwsp}b c d</p>`);
+    });
+
+    it("cleanUpNbsps leaves ckeditor's filling char alone when there is no nbsp to consider", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode("ab"));
+        const fillingCharNode = document.createTextNode(zwsp);
+        p.appendChild(fillingCharNode);
+        div.appendChild(p);
+        stubCkEditorTracking(div, fillingCharNode);
+
+        cleanUpNbsps(div);
+
+        // ckeditor still needs it to show the caret; it will remove it itself.
+        expect(fillingCharNode.textContent).toBe(zwsp);
+        expect(p.childNodes[1]).toBe(fillingCharNode);
+    });
+
+    it("removeCommentsFromEditableHtml takes out ckeditor's filling char before rebuilding the box", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode(`a${zwsp}b`));
+        p.appendChild(document.createComment("x"));
+        const fillingCharNode = document.createTextNode(zwsp);
+        p.appendChild(fillingCharNode);
+        div.appendChild(p);
+        stubCkEditorTracking(div, fillingCharNode);
+        // sanity check the setup
+        expect(div.innerHTML).toBe(`<p>a${zwsp}b<!--x-->${zwsp}</p>`);
+
+        removeCommentsFromEditableHtml(div);
+
+        expect(div.innerHTML).toBe(`<p>a${zwsp}b</p>`);
+    });
 });

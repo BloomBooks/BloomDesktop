@@ -1857,6 +1857,16 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
     // We'll put them back in at the end.
     const originalBookMarkContent = setCkeditorBookmarkContent(editableDiv, "");
 
+    // If we end up rewriting the box (below), the html we write back must not carry ckeditor's
+    // zero-width "filling char" as ordinary text, or it is orphaned and saved into the book
+    // (BL-16490; and see removeTrackedCkEditorFillingChar). So take it out of the DOM first,
+    // before we read the html. We don't yet know whether we will convert anything, so this
+    // over-estimates the same way editableMightBeRewritten does: any nbsp at all. The only cost
+    // of a false yes is removing a character ckeditor was about to remove itself.
+    if (editableDiv.innerHTML.includes("&nbsp;")) {
+        EditableDivUtils.removeTrackedCkEditorFillingChar(editableDiv);
+    }
+
     let editableDivHtml = editableDiv.innerHTML;
     // innerText does not include hidden text; innerHTML does.
     // So we use textContent -- which includes hidden text -- to ensure the html and text are in sync.
@@ -1971,12 +1981,15 @@ export function editableMightBeRewritten(editable: HTMLElement): boolean {
 // and there are comments to remove, the selection will contract to an
 // insertion point at the start.
 export function removeCommentsFromEditableHtml(editable: HTMLElement) {
-    // [\s\S] is a hack representing every character (including newline)
-    const fixedHtml = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
     // This test makes it less likely we will move the selection. But you should still allow for
     // the possibility.
-    if (fixedHtml !== editable.innerHTML) {
-        editable.innerHTML = fixedHtml;
+    if (editable.innerHTML.includes("<!--")) {
+        // Don't bake ckeditor's zero-width filling char into the html we write back, where it
+        // would be orphaned and saved into the book (BL-16490). See
+        // removeTrackedCkEditorFillingChar, and the same step in cleanUpNbsps.
+        EditableDivUtils.removeTrackedCkEditorFillingChar(editable);
+        // [\s\S] is a hack representing every character (including newline)
+        editable.innerHTML = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
     }
 }
 
