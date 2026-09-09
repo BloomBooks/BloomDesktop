@@ -19,6 +19,11 @@ House rules:
 
 ---
 
+## 2026-09-04 — Launcher times out waiting for BLOOM_AUTOMATION_READY while a direct dotnet watch works
+- **Cut:** `go.mjs` / `launcherControl.mjs --ensure-running` built Bloom in ~6s, printed `dotnet watch ⌚ Loaded 2 project(s)`, then never saw the ready marker and tore the whole stack down after the 120s `launchTimeoutMs` in `scripts/watchBloomExe.mjs` — three times in a row. Running `dotnet watch run --project src/BloomExe/BloomExe.csproj --non-interactive -- --automation` by hand from the same shell started Bloom and printed `BLOOM_AUTOMATION_READY` within seconds (alongside a running BetaInternal, so it was not the single-instance token).
+- **Idea:** Find what differs when `watchBloomExe.mjs` spawns dotnet watch (`--vite-port`/`--label` args, control-port env, stdout piping) and make the launcher print dotnet watch's later output or the Bloom PID's window titles when it gives up, so the failure is diagnosable. Consider making the timeout configurable.
+- **Context:** worktree Format-Gear-Positioning-356 at the Version6.5 tip, while fixing BL-16809; hit by Claude.
+
 ## 2026-07-30 — Visual regression suite reports only the first stale image per case
 - **Cut:** Each case in `src/BloomVisualRegressionTests/index.spec.ts` compares the book preview
   and then every bloom-player page in sequence, and every comparison throws on failure — so the
