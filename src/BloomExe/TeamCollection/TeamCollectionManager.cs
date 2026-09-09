@@ -533,7 +533,7 @@ namespace Bloom.TeamCollection
         /// - other callers are on a watcher's thread or a background timer, where a synchronous
         ///   invoke can deadlock against a UI thread waiting on the BloomServer.
         /// </summary>
-        private static void RunOnUiThreadLater(Action action)
+        internal static void RunOnUiThreadLater(Action action)
         {
             var form = Shell.GetShellOrOtherOpenForm(); // Form.ActiveForm is null when a browser is active
             if (form == null || form.IsDisposed || !form.IsHandleCreated)

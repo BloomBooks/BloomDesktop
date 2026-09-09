@@ -2006,6 +2006,12 @@ namespace BloomTests.TeamCollection
         /// The periodic check calls CheckConnection many times over a session. History messages
         /// are not de-duplicated, so a probe that wrote them would fill up log.txt and raise a
         /// status-changed event on every tick of a perfectly healthy session.
+        ///
+        /// Note the limits of this test: the two History writes it guards live behind
+        /// "the repo is inside a Dropbox folder AND Dropbox is unreachable AND the folder is
+        /// also shared on the LAN", which a temp folder cannot reproduce. So this catches a
+        /// probe that writes unconditionally, but not a regression confined to that branch --
+        /// for which the `if (writeHistoryMessages)` guards themselves are the evidence.
         /// </summary>
         [Test]
         public void CheckConnection_QuietProbe_WritesNoMessages()
@@ -2178,6 +2184,275 @@ namespace BloomTests.TeamCollection
                     );
                 }
             }
+        }
+
+        /// <summary>
+        /// Drives ConnectionHeartbeat.Tick directly -- no timer, no network, no real repo -- so
+        /// the confirm-then-act policy, the guards, and disposal are all covered. Devin flagged
+        /// this integration as unverified on PR #8338.
+        /// </summary>
+        private void WithHeartbeat(
+            string testName,
+            Action<
+                ConnectionHeartbeat,
+                TestFolderTeamCollection,
+                Mock<ITeamCollectionManager>
+            > check
+        )
+        {
+            WithMockManagedCollection(
+                testName,
+                (tc, mockTcManager) =>
+                {
+                    Directory.CreateDirectory(Path.Combine(tc.RepoDescription, "Books"));
+                    tc.InterceptCheckConnection = true;
+                    tc.PretendIsLiveCollection = true;
+                    tc.StartMonitoring(); // so IsMonitoring is true
+                    try
+                    {
+                        Assert.That(
+                            tc.IsMonitoring,
+                            Is.True,
+                            "setup problem: the heartbeat's guard needs monitoring to be on"
+                        );
+                        check(new ConnectionHeartbeat(tc), tc, mockTcManager);
+                    }
+                    finally
+                    {
+                        tc.StopMonitoring();
+                    }
+                }
+            );
+        }
+
+        private static TeamCollectionMessage AProblem(string l10nId = "TeamCollection.NoNetwork")
+        {
+            return new TeamCollectionMessage(
+                MessageAndMilestoneType.Error,
+                l10nId,
+                "something is wrong"
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_ConnectionFine_ChecksAndDoesNothing()
+        {
+            WithHeartbeat(
+                "HeartbeatOk",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = null;
+
+                    heartbeat.Tick(null);
+
+                    Assert.That(
+                        tc.CheckConnectionCallCount,
+                        Is.EqualTo(1),
+                        "it should actually have looked"
+                    );
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_OneFailure_WaitsForConfirmationBeforeDisconnecting()
+        {
+            WithHeartbeat(
+                "HeartbeatOneFailure",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+
+                    heartbeat.Tick(null);
+
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never,
+                        "one failed check is very often a transient blip; we must confirm first"
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_TwoFailuresInARow_Disconnects()
+        {
+            WithHeartbeat(
+                "HeartbeatTwoFailures",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+
+                    heartbeat.Tick(null);
+                    heartbeat.Tick(null);
+
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.Is<TeamCollectionMessage>(msg =>
+                                    msg.L10NId == "TeamCollection.NoNetwork"
+                                ),
+                                It.IsAny<string>()
+                            ),
+                        Times.Once
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_RecoveryBetweenFailures_DoesNotDisconnect()
+        {
+            WithHeartbeat(
+                "HeartbeatRecovers",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+                    heartbeat.Tick(null);
+                    tc.PretendConnectionProblem = null;
+                    heartbeat.Tick(null);
+                    tc.PretendConnectionProblem = AProblem();
+
+                    heartbeat.Tick(null);
+
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never,
+                        "the good check in between means those two failures were not consecutive"
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_WritingToRepo_SkipsTheCheckAndForgetsEarlierFailures()
+        {
+            WithHeartbeat(
+                "HeartbeatBusy",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+                    heartbeat.Tick(null); // one failure on the record
+                    var callsBefore = tc.CheckConnectionCallCount;
+
+                    tc.PretendIsWritingToRepo = true;
+                    heartbeat.Tick(null);
+
+                    Assert.That(
+                        tc.CheckConnectionCallCount,
+                        Is.EqualTo(callsBefore),
+                        "should not even look while a check-in or sync is writing to the repo"
+                    );
+
+                    // The skipped tick breaks the run, so the next failure starts over.
+                    tc.PretendIsWritingToRepo = false;
+                    heartbeat.Tick(null);
+
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never,
+                        "a failure either side of a skipped tick is not a consecutive run"
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_NotTheLiveCollection_SkipsTheCheck()
+        {
+            WithHeartbeat(
+                "HeartbeatNotLive",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+                    tc.PretendIsLiveCollection = false; // e.g. we already disconnected from it
+
+                    heartbeat.Tick(null);
+                    heartbeat.Tick(null);
+
+                    Assert.That(tc.CheckConnectionCallCount, Is.EqualTo(0));
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_AfterDispose_DoesNothing()
+        {
+            WithHeartbeat(
+                "HeartbeatDisposed",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+                    heartbeat.Dispose();
+
+                    // Timer.Dispose does not wait for a callback already under way, so a Tick
+                    // can still arrive after this point. It must be inert.
+                    Assert.DoesNotThrow(() => heartbeat.Tick(null));
+                    Assert.DoesNotThrow(() => heartbeat.Tick(null));
+
+                    Assert.That(tc.CheckConnectionCallCount, Is.EqualTo(0));
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatStart_UnderUnitTests_DoesNotStartATimer()
+        {
+            WithHeartbeat(
+                "HeartbeatNoTimerInTests",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    Assert.That(
+                        Program.RunningUnitTests,
+                        Is.True,
+                        "setup problem: this test is about the RunningUnitTests guard"
+                    );
+                    tc.PretendConnectionProblem = AProblem();
+
+                    heartbeat.Start();
+
+                    // No timer means no ticks, so nothing ever checks. (If this regressed, unit
+                    // test runs would leave thread-pool timers probing the real network.)
+                    Assert.That(tc.CheckConnectionCallCount, Is.EqualTo(0));
+                    heartbeat.Dispose();
+                }
+            );
         }
 
         #endregion
