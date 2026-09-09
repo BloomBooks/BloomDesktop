@@ -984,12 +984,14 @@ public sealed class ReportOutbox
 
         // Keep the newest MaxBundles of whatever survived the age check. An uploading bundle still counts
         // towards the total - it is really there, taking up room - it simply is not a candidate for
-        // deletion, so the surplus comes off the deletable ones instead.
+        // deletion, so the surplus comes off the deletable ones instead: keep MaxBundles minus however
+        // many are uploading, newest first, and drop the rest.
         var surviving = List();
+        var uploading = surviving.Count(b => b.Metadata.State == BundleState.Uploading);
         foreach (
             var bundle in surviving
-                .Skip(MaxBundles)
                 .Where(b => b.Metadata.State != BundleState.Uploading)
+                .Skip(Math.Max(0, MaxBundles - uploading))
         )
             TryDelete(bundle.Directory);
     }

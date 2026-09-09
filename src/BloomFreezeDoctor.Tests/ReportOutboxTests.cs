@@ -382,6 +382,42 @@ public class ReportOutboxTests
     }
 
     [Test]
+    public void Enqueue_MoreThanMaxBundles_OneUploading_CapHoldsAndUploadKept()
+    {
+        // A bundle being sent must never be deleted, but protecting it must not let the queue grow past
+        // its cap: the surplus comes off the deletable bundles instead.
+        var outbox = NewOutbox();
+        var oldest = outbox.Enqueue(Report("fingerprint00"), "BL", "Release", "Frozen");
+        var uploading = oldest.Metadata with
+        {
+            State = BundleState.Uploading,
+            LastAttemptUtc = _now,
+        };
+        File.WriteAllText(
+            Path.Combine(oldest.Directory, ReportOutbox.MetadataFileName),
+            System.Text.Json.JsonSerializer.Serialize(uploading, BundleMetadata.JsonOptions)
+        );
+        for (var i = 1; i < ReportOutbox.MaxBundles + 3; i++)
+        {
+            _now = _now.AddMinutes(1);
+            outbox.Enqueue(Report($"fingerprint{i:00}"), "BL", "Release", "Frozen");
+        }
+
+        var remaining = outbox.List();
+        Assert.That(remaining, Has.Count.EqualTo(ReportOutbox.MaxBundles));
+        Assert.That(
+            remaining.Select(b => b.Metadata.Fingerprint),
+            Does.Contain("fingerprint00"),
+            "the bundle being uploaded is kept, however old"
+        );
+        Assert.That(
+            remaining.Select(b => b.Metadata.Fingerprint),
+            Does.Not.Contain("fingerprint01"),
+            "the oldest deletable bundle makes room for it"
+        );
+    }
+
+    [Test]
     public void List_CorruptBundlePresent_OthersStillListed()
     {
         var outbox = NewOutbox();

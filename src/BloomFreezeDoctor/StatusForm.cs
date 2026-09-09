@@ -648,10 +648,14 @@ public sealed class StatusForm : Form
                 {
                     // Through the supervisor, not straight to ZombieEnder: it records that this death is
                     // our doing, so the Doctor does not then file a card about the Bloom we just ended.
+                    var outcomes = new List<ZombieEndOutcome>();
                     foreach (var id in ids)
-                        _supervisor.EndBloomAtSomebodysRequest(id);
+                        outcomes.Add(_supervisor.EndBloomAtSomebodysRequest(id));
+                    return outcomes;
                 })
-                .ContinueWith(_ => FinishRestart());
+                .ContinueWith(ended =>
+                    FinishRestart(ended.Result.All(o => o != ZombieEndOutcome.CouldNotEnd))
+                );
         }
         finally
         {
@@ -665,8 +669,12 @@ public sealed class StatusForm : Form
     /// Starts Bloom back on the UI thread once whatever was in the way has gone, and releases the hold on
     /// the Doctor's exit either way - including when the window has vanished from under us, where nothing
     /// is going to start Bloom and continuing to hold the Doctor open would achieve nothing.
+    ///
+    /// If the old Bloom could not be ended, Bloom is NOT started: it would find the single-instance token
+    /// still held and exit a few seconds later, which is exactly the "Bloom will not start" the user came
+    /// here about. Say so instead.
     /// </summary>
-    private void FinishRestart()
+    private void FinishRestart(bool theWayIsClear)
     {
         try
         {
@@ -675,7 +683,12 @@ public sealed class StatusForm : Form
                 try
                 {
                     _restartBloom.Enabled = true;
-                    StartBloomNow();
+                    if (theWayIsClear)
+                        StartBloomNow();
+                    else
+                        _lastEvent.Text =
+                            "The old Bloom could not be ended, so Bloom was not restarted. "
+                            + "You may need to restart the computer.";
                 }
                 finally
                 {
